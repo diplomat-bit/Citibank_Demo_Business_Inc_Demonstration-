@@ -2021,3 +2021,1375 @@ components:
           type: string
           enum: [Savings, Budgeting, Investing, Income]
 # ... CONTINUED IN PART 5
+# ================================================================================================
+# PART 5/10: AI ADVISOR (QUANTUM) & QUANTUM WEAVER (INCUBATOR)
+# ================================================================================================
+# This file provides an exhaustive definition of the core AI services that form the
+# intelligence layer of Demo Bank. It details the conversational AI endpoints for
+# "Quantum" and the multi-stage business incubation API for the "Quantum Weaver."
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: AI ADVISOR (QUANTUM)
+# ================================================================================================
+paths:
+  /ai/advisor/sessions:
+    post:
+      tags:
+        - "AI Advisor (Quantum)"
+      summary: "Start a New Chat Session"
+      description: "Creates a new, stateful chat session with Quantum, the AI Advisor. A session ID is returned, which should be used for all subsequent messages in the conversation."
+      operationId: "startChatSession"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      responses:
+        "201":
+          description: "A new chat session was created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIChatSession"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "AI service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /ai/advisor/sessions/{sessionId}:
+    get:
+      tags:
+        - "AI Advisor (Quantum)"
+      summary: "Get Chat Session Details"
+      description: "Retrieves metadata for a specific chat session, including its creation time and the number of messages."
+      operationId: "getChatSession"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+      responses:
+        "200":
+          description: "Details of the chat session."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIChatSession"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags:
+        - "AI Advisor (Quantum)"
+      summary: "Delete a Chat Session"
+      description: "Deletes a chat session and its associated history. This action is irreversible."
+      operationId: "deleteChatSession"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+      responses:
+        "204":
+          description: "Session deleted successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /ai/advisor/sessions/{sessionId}/messages:
+    get:
+      tags:
+        - "AI Advisor (Quantum)"
+      summary: "Get Chat History"
+      description: "Retrieves the message history for a given chat session."
+      operationId: "getChatHistory"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "A paginated list of messages from the chat session."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AIChatMessage"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    post:
+      tags:
+        - "AI Advisor (Quantum)"
+      summary: "Send a Message"
+      description: "Sends a message to the AI Advisor within an existing chat session. The AI's response may include text and tool calls."
+      operationId: "sendMessage"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+      requestBody:
+        required: true
+        description: "The message payload for the AI."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AIChatRequest"
+      responses:
+        "200":
+          description: "The AI Advisor's response."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIChatResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+# ================================================================================================
+# PATHS: QUANTUM WEAVER (INCUBATOR)
+# ================================================================================================
+  /ai/weaver/pitches:
+    post:
+      tags:
+        - "Quantum Weaver (Incubator)"
+      summary: "Submit a Business Plan (Pitch)"
+      description: "Submits a new business plan to the Quantum Weaver AI for analysis. This is the first step in the AI-driven incubation process. The AI will respond with initial feedback and assessment questions."
+      operationId: "pitchToQuantumWeaver"
+      security:
+        - oAuth2Auth: [write:weaver]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeaverPitchRequest"
+      responses:
+        "202":
+          description: "The business plan was accepted and is being analyzed. The response contains the initial state object with a pitch ID."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumWeaverState"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/weaver/pitches/{pitchId}:
+    get:
+      tags:
+        - "Quantum Weaver (Incubator)"
+      summary: "Get Pitch Status"
+      description: "Retrieves the current state of a business plan submission, including its current stage, feedback, and any associated data."
+      operationId: "getWeaverPitchStatus"
+      security:
+        - oAuth2Auth: [read:weaver]
+      parameters:
+        - $ref: "#/components/parameters/PitchId"
+      responses:
+        "200":
+          description: "The current state of the business plan pitch."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumWeaverState"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /ai/weaver/pitches/{pitchId}/assessment:
+    post:
+      tags:
+        - "Quantum Weaver (Incubator)"
+      summary: "Submit Assessment Answers"
+      description: "Submits the user's answers to the AI-generated assessment questions. This is a simulated step; the API will proceed to the final review stage upon any valid submission."
+      operationId: "submitWeaverAssessment"
+      security:
+        - oAuth2Auth: [write:weaver]
+      parameters:
+        - $ref: "#/components/parameters/PitchId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      questionId:
+                        type: string
+                      answer:
+                        type: string
+      responses:
+        "200":
+          description: "Assessment answers received. The pitch is now in final review. The updated state is returned."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumWeaverState"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /ai/weaver/pitches/{pitchId}/approve:
+    post:
+      tags:
+        - "Quantum Weaver (Incubator)"
+      summary: "Approve Funding (Simulated)"
+      description: "A simulated endpoint that moves a pitch from 'final_review' to 'approved'. The AI generates a loan amount and coaching plan."
+      operationId: "approveWeaverFunding"
+      deprecated: true # This logic is now handled internally after assessment.
+      security:
+        - oAuth2Auth: [write:weaver]
+      parameters:
+        - $ref: "#/components/parameters/PitchId"
+      responses:
+        "200":
+          description: "Funding approved. The final state with loan amount and coaching plan is returned."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuantumWeaverState"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+# ================================================================================================
+# COMPONENTS: AI SERVICES
+# ================================================================================================
+components:
+  parameters:
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      description: "The unique identifier for the chat session."
+      schema:
+        type: string
+        example: "session-xyz-789"
+    PitchId:
+      name: pitchId
+      in: path
+      required: true
+      description: "The unique identifier for the business plan pitch."
+      schema:
+        type: string
+        example: "pitch_qw_abcdef"
+  schemas:
+    AIChatSession:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messageCount:
+          type: integer
+    AIChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Analyze my recent spending."
+        functionResponse:
+          type: object
+          description: "The result from a tool call requested by the AI in a previous turn."
+          nullable: true
+          properties:
+            name:
+              type: string
+              example: "send_money"
+            response:
+              type: object
+              example: {"status": "success", "transactionId": "pmt_654321"}
+    AIChatResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          description: "The text response from the AI."
+          example: "I've analyzed your spending. It seems your largest category this month was 'Dining'."
+        functionCalls:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "send_money"
+              args:
+                type: object
+                example: {"amount": 50, "recipient": "Alex", "currency": "USD"}
+    AIChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        sender:
+          type: string
+          enum: [user, ai]
+        text:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        toolExecution:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+            args:
+              type: object
+            result:
+              type: string
+              nullable: true
+            state:
+              type: string
+              enum: [pending, success, error]
+    WeaverPitchRequest:
+      type: object
+      required:
+        - businessPlan
+      properties:
+        businessPlan:
+          type: string
+          description: "The user's detailed business plan."
+          example: "Our company, 'ChronoLeap,' will create a SaaS platform that uses quantum computing to optimize supply chain logistics for mid-sized e-commerce businesses..."
+    QuantumWeaverState:
+      type: object
+      properties:
+        pitchId:
+          type: string
+          example: "pitch_qw_abcdef"
+        stage:
+          type: string
+          enum: [pitch, analysis, test, final_review, approved, error]
+        businessPlan:
+          type: string
+        feedback:
+          type: string
+          nullable: true
+        questions:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/AIQuestion"
+        loanAmount:
+          type: number
+          nullable: true
+        coachingPlan:
+          $ref: "#/components/schemas/AIPlan"
+          nullable: true
+        error:
+          type: string
+          nullable: true
+    AIQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        category:
+          type: string
+    AIPlan:
+      type: object
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/AIPlanStep"
+    AIPlanStep:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        timeline:
+          type: string
+# ... CONTINUED IN PART 6 ...
+
+# ================================================================================================
+# PART 6/10: CREATIVE AI SUITES
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to the Creative AI Suites. This includes the AI Ad Studio for video
+# generation (Veo) and the Personalization & Customization tools for generating
+# app backgrounds (Imagen) and editing card designs (Gemini Image Preview).
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: AI AD STUDIO (VEO)
+# ================================================================================================
+paths:
+  /ai/video-studio/generate:
+    post:
+      tags:
+        - "AI Ad Studio (Veo)"
+      summary: "Generate a Video Ad"
+      description: "Submits a request to generate a high-quality video ad using the Veo 2.0 model. This is an asynchronous operation that returns an operation ID for polling."
+      operationId: "generateVideoAd"
+      security:
+        - oAuth2Auth: [write:ad_studio]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateVideoRequest"
+      responses:
+        "202":
+          description: "Video generation started successfully. The response contains an operation ID to poll for status."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operationId:
+                    type: string
+                    example: "op-video-gen-12345"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "The video generation service is currently at capacity or unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /ai/video-studio/operations/{operationId}:
+    get:
+      tags:
+        - "AI Ad Studio (Veo)"
+      summary: "Get Video Generation Status"
+      description: "Polls the status of an asynchronous video generation operation using its operation ID."
+      operationId: "getVideoGenerationStatus"
+      security:
+        - oAuth2Auth: [read:ad_studio]
+      parameters:
+        - name: "operationId"
+          in: "path"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "The current status of the video generation job. If the status is 'done', the response includes a temporary URI to download the video file."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoOperationStatus"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/video-studio/cta-suggestions:
+    post:
+      tags:
+        - "AI Ad Studio (Veo)"
+      summary: "Generate Call-to-Action Suggestions"
+      description: "Uses AI to generate a list of short, catchy call-to-action (CTA) phrases based on the ad's original prompt."
+      operationId: "generateCTASuggestions"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  description: "The original prompt used to generate the video ad."
+      responses:
+        "200":
+          description: "A list of suggested CTA phrases."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Unlock Your Potential.", "Begin Your Journey.", "Create Your Future."]
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+# ================================================================================================
+# PATHS: PERSONALIZATION & CUSTOMIZATION
+# ================================================================================================
+  /ai/personalization/background:
+    post:
+      tags:
+        - "Personalization & Customization"
+      summary: "Generate a Custom App Background"
+      description: "Generates a unique background image for the application theme using the Imagen model based on a user's text prompt."
+      operationId: "generateAppBackground"
+      security:
+        - oAuth2Auth: [write:personalization]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateImageRequest"
+      responses:
+        "200":
+          description: "The generated image, returned as a base64 encoded string."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedImageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/personalization/card-design:
+    post:
+      tags:
+        - "Personalization & Customization"
+      summary: "Edit a Bank Card Design"
+      description: "Edits a base image for a bank card design using a text prompt. This endpoint utilizes the Gemini model's image editing capabilities."
+      operationId: "editCardDesign"
+      security:
+        - oAuth2Auth: [write:personalization]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditImageRequest"
+      responses:
+        "200":
+          description: "The edited image, returned as a base64 encoded string."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedImageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/personalization/card-story:
+    post:
+      tags:
+        - "Personalization & Customization"
+      summary: "Generate a Card Story"
+      description: "Uses AI to generate a short, inspiring 'Card Story' based on the prompt used to design a custom bank card."
+      operationId: "generateCardStory"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - designPrompt
+              properties:
+                designPrompt:
+                  type: string
+                  description: "The text prompt that was used to create the card's visual design."
+      responses:
+        "200":
+          description: "The AI-generated story for the card."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  story:
+                    type: string
+                    example: "This card represents resilience and rebirth. The phoenix, forged from data streams, is a symbol of your financial journey rising to new heights."
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+# ================================================================================================
+# COMPONENTS: CREATIVE AI SUITES
+# ================================================================================================
+components:
+  schemas:
+    GenerateVideoRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: "A detailed description of the video to be generated."
+          example: "A neon hologram of a cat driving a futuristic car at top speed through a cyberpunk city."
+        style:
+          type: string
+          enum: [Cinematic, Vibrant, Monochrome, Surreal, Default]
+          default: Cinematic
+        lengthSeconds:
+          type: integer
+          description: "The desired length of the video in seconds."
+          example: 15
+        voiceover:
+          type: object
+          properties:
+            style:
+              type: string
+              enum: ["Energetic Male", "Calm Female", "None"]
+              default: "None"
+            script:
+              type: string
+              description: "An optional script for the voiceover. If omitted, the AI may generate one."
+    VideoOperationStatus:
+      type: object
+      properties:
+        operationId:
+          type: string
+        status:
+          type: string
+          enum: [generating, polling, done, error]
+        message:
+          type: string
+          description: "A user-facing message describing the current step of the generation process."
+          example: "Rendering motion vectors..."
+        progress:
+          type: integer
+          description: "An estimated percentage of completion."
+          example: 65
+        videoUri:
+          type: string
+          format: uri
+          nullable: true
+          description: "A temporary, signed URL to download the generated video file. Only present when status is 'done'."
+        errorDetails:
+          type: string
+          nullable: true
+          description: "Details of the error if the status is 'error'."
+    GenerateImageRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: "A detailed description of the image to be generated."
+          example: "An isolated lighthouse on a stormy sea, with a powerful beam of light cutting through the darkness, digital art."
+        aspectRatio:
+          type: string
+          enum: ["1:1", "16:9", "9:16", "4:3", "3:4"]
+          default: "16:9"
+    EditImageRequest:
+      type: object
+      required:
+        - baseImage
+        - prompt
+      properties:
+        baseImage:
+          type: object
+          required:
+            - mimeType
+            - data
+          properties:
+            mimeType:
+              type: string
+              description: "The IANA standard MIME type of the base image."
+              example: "image/jpeg"
+            data:
+              type: string
+              format: byte
+              description: "The base64 encoded string of the base image."
+        prompt:
+          type: string
+          description: "The editing instruction for the AI."
+          example: "Add a phoenix rising from the center, with its wings made of glowing data streams."
+    GeneratedImageResponse:
+      type: object
+      properties:
+        image:
+          type: object
+          properties:
+            mimeType:
+              type: string
+              example: "image/jpeg"
+            data:
+              type: string
+              format: byte
+              description: "The base64 encoded string of the generated or edited image."
+        metadata:
+          type: object
+          properties:
+            revisedPrompt:
+              type: string
+              description: "The prompt as revised by the model for safety or clarity."
+              nullable: true
+# ... CONTINUED IN PART 7 ...
+
+# ================================================================================================
+# PART 7/10: MARKETPLACE (PLATO) & REWARDS & GAMIFICATION
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to consumer engagement platforms. This includes Plato's Marketplace for
+# AI-curated product recommendations and the full suite of Rewards & Gamification
+# endpoints for managing points, levels, and redemptions.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: MARKETPLACE (PLATO)
+# ================================================================================================
+paths:
+  /marketplace/recommendations:
+    get:
+      tags:
+        - "Marketplace (Plato)"
+      summary: "Get AI-Curated Product Recommendations"
+      description: "Retrieves a list of product recommendations from Plato's Marketplace, curated by AI based on the user's spending habits, financial goals, and recent activity."
+      operationId: "getMarketplaceRecommendations"
+      security:
+        - oAuth2Auth: [read:marketplace]
+      parameters:
+        - name: "limit"
+          in: "query"
+          description: "The number of products to return."
+          schema:
+            type: integer
+            default: 6
+        - name: "category"
+          in: "query"
+          description: "Filter recommendations by a specific category."
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "A list of AI-curated product recommendations."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketplaceProduct"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "AI recommendation service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /marketplace/products/{productId}:
+    get:
+      tags:
+        - "Marketplace (Plato)"
+      summary: "Get Product Details"
+      description: "Retrieves detailed information for a single product from the marketplace."
+      operationId: "getMarketplaceProductById"
+      security:
+        - oAuth2Auth: [read:marketplace]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      responses:
+        "200":
+          description: "Detailed product information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceProduct"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /marketplace/products/{productId}/simulate-impact:
+    post:
+      tags:
+        - "Marketplace (Plato)"
+      summary: "Simulate Purchase Impact"
+      description: "Runs an AI-powered simulation to analyze the financial impact of purchasing a specific product. The analysis includes effects on budgets, savings goals, and provides alternative product suggestions."
+      operationId: "simulatePurchaseImpact"
+      security:
+        - oAuth2Auth: [read:marketplace, interact:ai_advisor]
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      responses:
+        "200":
+          description: "A detailed analysis of the potential purchase's financial impact."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseImpactAnalysis"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "503":
+          description: "AI analysis service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+# ================================================================================================
+# PATHS: REWARDS & GAMIFICATION
+# ================================================================================================
+  /rewards/balance:
+    get:
+      tags:
+        - "Rewards & Gamification"
+      summary: "Get Reward Points Balance"
+      description: "Retrieves the user's current reward points balance and recent activity."
+      operationId: "getRewardBalance"
+      security:
+        - oAuth2Auth: [read:rewards]
+      responses:
+        "200":
+          description: "The user's reward points balance."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RewardPoints"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /rewards/gamification-status:
+    get:
+      tags:
+        - "Rewards & Gamification"
+      summary: "Get Gamification Status"
+      description: "Retrieves the user's current gamification status, including their level, title, and progress to the next level."
+      operationId: "getGamificationStatus"
+      security:
+        - oAuth2Auth: [read:profile]
+      responses:
+        "200":
+          description: "The user's current gamification status."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GamificationState"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /rewards/items:
+    get:
+      tags:
+        - "Rewards & Gamification"
+      summary: "List Redeemable Items"
+      description: "Retrieves a list of all items available for redemption with reward points."
+      operationId: "listRewardItems"
+      security:
+        - oAuth2Auth: [read:rewards]
+      responses:
+        "200":
+          description: "A list of available reward items."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RewardItem"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /rewards/items/{itemId}/redeem:
+    post:
+      tags:
+        - "Rewards & Gamification"
+      summary: "Redeem a Reward Item"
+      description: "Redeems a specific item using the user's reward points. The cost of the item will be deducted from their points balance."
+      operationId: "redeemRewardItem"
+      security:
+        - oAuth2Auth: [write:rewards]
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          description: "The unique identifier for the reward item."
+          schema:
+            type: string
+            example: "rew1"
+      responses:
+        "200":
+          description: "The redemption was successful. The response includes the updated reward points balance."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RewardPoints"
+        "400":
+          description: "Bad Request. Typically indicates insufficient points for the redemption."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+# ================================================================================================
+# COMPONENTS: MARKETPLACE & REWARDS
+# ================================================================================================
+components:
+  parameters:
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      description: "The unique identifier for the marketplace product."
+      schema:
+        type: string
+        example: "prod_12345"
+  schemas:
+    MarketplaceProduct:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+          format: float
+        category:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        aiJustification:
+          type: string
+          description: "The AI's explanation for why this product is recommended to the user."
+        esgScore:
+          type: integer
+          description: "AI-estimated score (1-5) of the product's environmental and social impact."
+        reviewSentimentScore:
+          type: integer
+          description: "AI-analyzed sentiment score (0-100) from online reviews."
+    PurchaseImpactAnalysis:
+      type: object
+      properties:
+        financialImpact:
+          type: object
+          properties:
+            budgetImpact:
+              type: string
+              example: "This purchase would use 12% of your 'Shopping' budget for the month."
+            savingsImpact:
+              type: string
+              example: "Reduces your potential monthly savings by 8%."
+            goalAlignment:
+              type: string
+              example: "Aligns 75% with your 'Upgrade Tech' financial goal."
+        alternativeSuggestions:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [Eco-Friendly, Budget-Friendly]
+              product:
+                $ref: "#/components/schemas/MarketplaceProduct"
+    RewardPoints:
+      type: object
+      properties:
+        balance:
+          type: integer
+          example: 85250
+        lastEarned:
+          type: integer
+          example: 320
+        lastRedeemed:
+          type: integer
+          example: 5000
+        currency:
+          type: string
+          example: "Points"
+    GamificationState:
+      type: object
+      properties:
+        score:
+          type: integer
+          example: 450
+        level:
+          type: integer
+          example: 3
+        levelName:
+          type: string
+          example: "Savings Specialist"
+        progress:
+          type: number
+          format: float
+          description: "Percentage progress to the next level."
+          example: 25.0
+    RewardItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "rew1"
+        name:
+          type: string
+          example: "$25 Statement Credit"
+        cost:
+          type: integer
+          description: "The cost of the item in reward points."
+          example: 25000
+        type:
+          type: string
+          enum: [cashback, giftcard, impact]
+        description:
+          type: string
+        iconName:
+          type: string
+          description: "A key for a predefined icon in the client."
+          example: "cash"
+# ... CONTINUED IN PART 8 ...
+# ================================================================================================
+# PART 8/10: CRYPTO & WEB3 HUB
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to the Crypto & Web3 Hub. It details the high-fidelity simulated
+# integrations with key partners like Metamask (wallet connection), Stripe
+# (crypto on-ramp), and Marqeta (virtual card issuance), as well as endpoints
+# for managing NFTs and other digital assets.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: CRYPTO & WEB3 HUB
+# ================================================================================================
+paths:
+  /web3/wallet/connect:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Connect a Web3 Wallet"
+      description: "Simulates the process of connecting a user's Web3 wallet (e.g., Metamask) to their Demo Bank profile. This involves a signature request and returns the connected wallet's address and primary asset balance."
+      operationId: "connectWeb3Wallet"
+      security:
+        - oAuth2Auth: [write:web3]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - signedMessage
+                - address
+              properties:
+                signedMessage:
+                  type: string
+                  description: "A signed message from the user's wallet to prove ownership."
+                  example: "0x123...abc"
+                address:
+                  type: string
+                  description: "The user's wallet address."
+                  example: "0x1a2b...c3d4"
+      responses:
+        "200":
+          description: "Wallet connected successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletInfo"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/on-ramp/quote:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Get Crypto Purchase Quote"
+      description: "Simulates getting a real-time quote for a cryptocurrency purchase via our Stripe integration. Returns the estimated amount of crypto for a given fiat amount."
+      operationId: "getCryptoQuote"
+      security:
+        - oAuth2Auth: [read:web3]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromCurrency
+                - toCrypto
+                - amount
+              properties:
+                fromCurrency:
+                  type: string
+                  example: "USD"
+                toCrypto:
+                  type: string
+                  example: "ETH"
+                amount:
+                  type: number
+                  format: float
+                  description: "The amount in the fromCurrency to spend."
+                  example: 100
+      responses:
+        "200":
+          description: "A real-time quote for the purchase."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CryptoQuote"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/on-ramp/execute:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Execute Crypto Purchase"
+      description: "Simulates executing a crypto purchase with a payment token from Stripe. This creates a transaction and updates the user's crypto asset balance."
+      operationId: "executeCryptoPurchase"
+      security:
+        - oAuth2Auth: [write:web3, write:payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CryptoPurchaseRequest"
+      responses:
+        "200":
+          description: "The crypto purchase was successful."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CryptoPurchaseConfirmation"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/virtual-card/issue:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Issue a Virtual Card"
+      description: "Simulates issuing a new, crypto-backed virtual card via our Marqeta integration. The card can be used for online purchases, drawing value from the user's crypto balance."
+      operationId: "issueVirtualCard"
+      security:
+        - oAuth2Auth: [write:web3]
+      responses:
+        "201":
+          description: "Virtual card issued successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VirtualCard"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "409":
+          description: "A virtual card already exists for this user."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /web3/nfts:
+    get:
+      tags:
+        - "Crypto & Web3"
+      summary: "List NFT Assets"
+      description: "Retrieves a list of all NFT assets associated with the user's connected wallet."
+      operationId: "listNFTs"
+      security:
+        - oAuth2Auth: [read:web3]
+      responses:
+        "200":
+          description: "A list of NFT assets."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NFTAsset"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/nfts/{nftId}:
+    get:
+      tags:
+        - "Crypto & Web3"
+      summary: "Get NFT Details"
+      description: "Retrieves detailed information for a specific NFT, including its metadata and contract address."
+      operationId: "getNFTDetails"
+      security:
+        - oAuth2Auth: [read:web3]
+      parameters:
+        - name: nftId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Detailed NFT information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NFTAsset"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+# ================================================================================================
+# COMPONENTS: CRYPTO & WEB3
+# ================================================================================================
+components:
+  schemas:
+    WalletInfo:
+      type: object
+      properties:
+        address:
+          type: string
+          example: "0x1a2b...c3d4"
+        balance:
+          type: number
+          format: float
+          description: "The balance of the primary asset (e.g., ETH)."
+          example: 12.5
+        primaryAsset:
+          type: string
+          example: "ETH"
+    CryptoQuote:
+      type: object
+      properties:
+        quoteId:
+          type: string
+        fromCurrency:
+          type: string
+        fromAmount:
+          type: number
+          format: float
+        toCrypto:
+          type: string
+        toAmount:
+          type: number
+          format: float
+          description: "The estimated amount of crypto the user will receive."
+        exchangeRate:
+          type: number
+          format: float
+        expiresAt:
+          type: string
+          format: date-time
+    CryptoPurchaseRequest:
+      type: object
+      required:
+        - quoteId
+        - paymentMethodToken
+      properties:
+        quoteId:
+          type: string
+          description: "The ID of a recently obtained quote."
+        paymentMethodToken:
+          type: string
+          description: "A single-use payment token from the client-side Stripe SDK."
+    CryptoPurchaseConfirmation:
+      type: object
+      properties:
+        purchaseId:
+          type: string
+        status:
+          type: string
+          enum: [Completed, Pending, Failed]
+        fromAmount:
+          type: number
+          format: float
+        toAmount:
+          type: number
+          format: float
+        toCrypto:
+          type: string
+        transaction:
+          $ref: "#/components/schemas/Transaction"
+    VirtualCard:
+      type: object
+      properties:
+        cardId:
+          type: string
+        cardNumber:
+          type: string
+          example: "5555 1234 5678 9012"
+        cvv:
+          type: string
+          example: "123"
+        expiry:
+          type: string
+          example: "12/28"
+        holderName:
+          type: string
+          example: "The Visionary"
+        status:
+          type: string
+          enum: [Active, Frozen]
+    NFTAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: "Quantum Vision Pass"
+        imageUrl:
+          type: string
+          format: uri
+        contractAddress:
+          type: string
+        tokenId:
+          type: string
+        collectionName:
+          type: string
+          example: "Demo Bank Genesis"
+# ... CONTINUED IN PART 9 ...
