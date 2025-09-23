@@ -3393,3 +3393,839 @@ components:
           type: string
           example: "Demo Bank Genesis"
 # ... CONTINUED IN PART 9 ...
+#
+================================================================================================
+# PART 9/10: CORPORATE FINANCE - CARDS, PAYMENTS, INVOICING
+# ================================================================================================
+# This file provides an exhaustive definition for the core of the Corporate Finance
+# suite. It details the endpoints and schemas for managing corporate card programs,
+# tracking corporate transactions, and handling the entire lifecycle of payment
+# orders and invoices.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: CORPORATE FINANCE - CARDS
+# ================================================================================================
+paths:
+  /corporate/cards:
+    get:
+      tags:
+        - "Corporate Finance - Cards"
+      summary: "List Corporate Cards"
+      description: "Retrieves a paginated list of all corporate cards associated with the user's organization, with options for filtering by status or holder."
+      operationId: "listCorporateCards"
+      security:
+        - oAuth2Auth: [read:corporate_cards]
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Active, Suspended, Lost]
+        - name: holderName
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "A paginated list of corporate cards."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CorporateCard"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+    post:
+      tags:
+        - "Corporate Finance - Cards"
+      summary: "Issue a New Corporate Card"
+      description: "Issues a new physical or virtual corporate card to an employee or for a specific purpose (e.g., marketing spend)."
+      operationId: "issueCorporateCard"
+      security:
+        - oAuth2Auth: [write:corporate_cards]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorporateCardCreate"
+      responses:
+        "201":
+          description: "The new corporate card was issued successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorporateCard"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /corporate/cards/{cardId}:
+    get:
+      tags:
+        - "Corporate Finance - Cards"
+      summary: "Get Corporate Card Details"
+      description: "Retrieves detailed information for a specific corporate card, including its full controls and recent transaction summary."
+      operationId: "getCorporateCardDetails"
+      security:
+        - oAuth2Auth: [read:corporate_cards]
+      parameters:
+        - $ref: "#/components/parameters/CardId"
+      responses:
+        "200":
+          description: "Detailed information for the corporate card."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorporateCard"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      tags:
+        - "Corporate Finance - Cards"
+      summary: "Update Card Controls"
+      description: "Updates the spending controls, limits, and status for a specific corporate card."
+      operationId: "updateCorporateCardControls"
+      security:
+        - oAuth2Auth: [write:corporate_cards]
+      parameters:
+        - $ref: "#/components/parameters/CardId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorporateCardUpdate"
+      responses:
+        "200":
+          description: "The corporate card was updated successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorporateCard"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /corporate/transactions:
+    get:
+      tags:
+        - "Corporate Finance - Cards"
+      summary: "List All Corporate Transactions"
+      description: "Retrieves a live feed of all transactions made on any corporate card within the organization."
+      operationId: "listCorporateTransactions"
+      security:
+        - oAuth2Auth: [read:corporate_cards]
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "A paginated list of corporate transactions."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CorporateTransaction"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+# ================================================================================================
+# PATHS: CORPORATE FINANCE - PAYMENTS & INVOICING
+# ================================================================================================
+  /corporate/payment-orders:
+    get:
+      tags:
+        - "Corporate Finance - Payments"
+      summary: "List Payment Orders"
+      description: "Retrieves a list of all payment orders (e.g., ACH, Wire) for the organization."
+      operationId: "listPaymentOrders"
+      security:
+        - oAuth2Auth: [read:corporate_payments]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [needs_approval, approved, processing, completed, denied, returned]
+      responses:
+        "200":
+          description: "A list of payment orders."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentOrder"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+    post:
+      tags:
+        - "Corporate Finance - Payments"
+      summary: "Create a Payment Order"
+      description: "Creates a new payment order to send funds to a counterparty."
+      operationId: "createPaymentOrder"
+      security:
+        - oAuth2Auth: [write:corporate_payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentOrderCreate"
+      responses:
+        "201":
+          description: "Payment order created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentOrder"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /corporate/payment-orders/{paymentOrderId}/approve:
+    post:
+      tags:
+        - "Corporate Finance - Payments"
+      summary: "Approve or Deny a Payment Order"
+      description: "Allows an authorized user to approve or deny a payment order that is in the 'needs_approval' state."
+      operationId: "reviewPaymentOrder"
+      security:
+        - oAuth2Auth: [write:corporate_payments]
+      parameters:
+        - name: paymentOrderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [approve, deny]
+                reason:
+                  type: string
+                  description: "Required if action is 'deny'."
+      responses:
+        "200":
+          description: "The payment order's status was updated."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentOrder"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /corporate/invoices:
+    get:
+      tags:
+        - "Corporate Finance - Payments"
+      summary: "List Invoices"
+      description: "Retrieves a list of invoices (both payable and receivable)."
+      operationId: "listInvoices"
+      security:
+        - oAuth2Auth: [read:corporate_payments]
+      responses:
+        "200":
+          description: "A list of invoices."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+# ================================================================================================
+# COMPONENTS: CORPORATE FINANCE
+# ================================================================================================
+components:
+  parameters:
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      description: "The unique identifier for the corporate card."
+      schema:
+        type: string
+        example: "corp_card_zyx987"
+  schemas:
+    CorporateCard:
+      type: object
+      properties:
+        id:
+          type: string
+        holderName:
+          type: string
+        cardNumberMask:
+          type: string
+        status:
+          type: string
+          enum: [Active, Suspended, Lost]
+        frozen:
+          type: boolean
+        controls:
+          $ref: "#/components/schemas/CorporateCardControls"
+    CorporateCardCreate:
+      type: object
+      required:
+        - holderName
+        - controls
+      properties:
+        holderName:
+          type: string
+        cardType:
+          type: string
+          enum: [Virtual, Physical]
+          default: Virtual
+        controls:
+          $ref: "#/components/schemas/CorporateCardControls"
+    CorporateCardUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Active, Suspended, Lost]
+        frozen:
+          type: boolean
+        controls:
+          $ref: "#/components/schemas/CorporateCardControls"
+    CorporateCardControls:
+      type: object
+      properties:
+        atm:
+          type: boolean
+        contactless:
+          type: boolean
+        online:
+          type: boolean
+        monthlyLimit:
+          type: number
+          description: "The spending limit in USD for the calendar month."
+    CorporateTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+        cardId:
+          type: string
+        holderName:
+          type: string
+        merchant:
+          type: string
+        amount:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [Pending, Approved, Declined]
+        timestamp:
+          type: string
+          format: date-time
+    PaymentOrder:
+      type: object
+      properties:
+        id:
+          type: string
+        counterpartyName:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        direction:
+          type: string
+          enum: [credit, debit]
+        status:
+          type: string
+          enum: [needs_approval, approved, processing, completed, denied, returned]
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          enum: [ACH, Wire, RTP]
+    PaymentOrderCreate:
+      type: object
+      required:
+        - counterpartyId
+        - amount
+        - direction
+        - type
+      properties:
+        counterpartyId:
+          type: string
+        amount:
+          type: number
+          format: float
+        direction:
+          type: string
+          enum: [credit, debit]
+        type:
+          type: string
+          enum: [ACH, Wire, RTP]
+        currency:
+          type: string
+          default: "USD"
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceNumber:
+          type: string
+        counterpartyName:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [unpaid, paid, overdue, voided]
+# ... CONTINUED IN PART 10 ...
+
+# ================================================================================================
+# PART 10/10: CORPORATE COMPLIANCE & GENERAL UTILITIES
+# ================================================================================================
+# This final file completes the Quantum Core API specification. It details the
+# advanced corporate Compliance and AI-powered Anomaly Detection systems. It also
+# covers general-purpose utility endpoints for Notifications, Security, Open Banking,
+# and Credit Health, providing a comprehensive and robust API surface.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: CORPORATE FINANCE - COMPLIANCE & ANOMALIES
+# ================================================================================================
+paths:
+  /corporate/compliance/rules:
+    get:
+      tags:
+        - "Corporate Finance - Compliance"
+      summary: "List Compliance Rules"
+      description: "Retrieves the list of all active compliance rules that are used to automatically flag transactions and other financial operations for review."
+      operationId: "listComplianceRules"
+      security:
+        - oAuth2Auth: [read:compliance]
+      responses:
+        "200":
+          description: "A list of compliance rules."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ComplianceRule"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /corporate/compliance/cases:
+    get:
+      tags:
+        - "Corporate Finance - Compliance"
+      summary: "List Compliance Cases"
+      description: "Retrieves a list of all compliance cases that have been opened for manual review."
+      operationId: "listComplianceCases"
+      security:
+        - oAuth2Auth: [read:compliance]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, closed]
+      responses:
+        "200":
+          description: "A list of compliance cases."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ComplianceCase"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /corporate/anomalies:
+    get:
+      tags:
+        - "Corporate Finance - Compliance"
+      summary: "List Financial Anomalies"
+      description: "Retrieves a list of AI-detected financial anomalies. These are not based on hard rules, but on deviations from normal behavior."
+      operationId: "listAnomalies"
+      security:
+        - oAuth2Auth: [read:compliance]
+      parameters:
+        - name: status
+          in: query
+          description: "Filter anomalies by their current status."
+          schema:
+            type: string
+            enum: [New, Under Review, Dismissed, Resolved]
+        - name: severity
+          in: query
+          description: "Filter anomalies by severity level."
+          schema:
+            type: string
+            enum: [Low, Medium, High, Critical]
+      responses:
+        "200":
+          description: "A list of AI-detected financial anomalies."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialAnomaly"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /corporate/anomalies/{anomalyId}/status:
+    put:
+      tags:
+        - "Corporate Finance - Compliance"
+      summary: "Update Anomaly Status"
+      description: "Updates the status of a financial anomaly after review (e.g., dismiss or mark as resolved)."
+      operationId: "updateAnomalyStatus"
+      security:
+        - oAuth2Auth: [write:compliance]
+      parameters:
+        - $ref: "#/components/parameters/AnomalyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [Dismissed, Resolved, Under Review]
+                comment:
+                  type: string
+                  description: "An optional comment from the reviewer."
+      responses:
+        "200":
+          description: "The updated anomaly object."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialAnomaly"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+# ================================================================================================
+# PATHS: GENERAL UTILITIES
+# ================================================================================================
+  /notifications:
+    get:
+      tags:
+        - "Notifications"
+      summary: "List Notifications"
+      description: "Retrieves a list of the user's recent notifications."
+      operationId: "listNotifications"
+      security:
+        - oAuth2Auth: [read:profile]
+      parameters:
+        - name: "read"
+          in: "query"
+          description: "Filter notifications by their read status."
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: "A list of notifications."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /notifications/mark-all-read:
+    post:
+      tags:
+        - "Notifications"
+      summary: "Mark All Notifications as Read"
+      description: "Marks all of the user's unread notifications as read."
+      operationId: "markAllNotificationsRead"
+      security:
+        - oAuth2Auth: [write:profile]
+      responses:
+        "204":
+          description: "All notifications marked as read."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /security/credit-health:
+    get:
+      tags:
+        - "Credit Health"
+      summary: "Get Credit Health Report"
+      description: "Retrieves a detailed credit health report for the user, including their credit score and the factors influencing it."
+      operationId: "getCreditHealth"
+      security:
+        - oAuth2Auth: [read:credit_health]
+      responses:
+        "200":
+          description: "The user's credit health report."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditHealthReport"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "The credit reporting service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /security/open-banking/connections:
+    get:
+      tags:
+        - "Security & Open Banking"
+      summary: "List Open Banking Connections"
+      description: "Retrieves a list of all third-party applications that the user has granted access to via Open Banking."
+      operationId: "listOpenBankingConnections"
+      security:
+        - oAuth2Auth: [read:security]
+      responses:
+        "200":
+          description: "A list of active Open Banking connections."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenBankingConnection"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /security/open-banking/connections/{connectionId}:
+    delete:
+      tags:
+        - "Security & Open Banking"
+      summary: "Revoke Open Banking Connection"
+      description: "Revokes a third-party application's access to the user's data."
+      operationId: "revokeOpenBankingConnection"
+      security:
+        - oAuth2Auth: [write:security]
+      parameters:
+        - name: connectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "Connection revoked successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+# ================================================================================================
+# COMPONENTS: COMPLIANCE & UTILITIES
+# ================================================================================================
+components:
+  parameters:
+    AnomalyId:
+      name: anomalyId
+      in: path
+      required: true
+      description: "The unique identifier for the financial anomaly."
+      schema:
+        type: string
+        example: "anom_abc123"
+  schemas:
+    ComplianceRule:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        action:
+          type: string
+          enum: [flag_for_review, block]
+        active:
+          type: boolean
+    ComplianceCase:
+      type: object
+      properties:
+        id:
+          type: string
+        reason:
+          type: string
+        entityType:
+          type: string
+          enum: [PaymentOrder, Counterparty]
+        entityId:
+          type: string
+        status:
+          type: string
+          enum: [open, closed]
+        openedDate:
+          type: string
+          format: date-time
+    FinancialAnomaly:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        details:
+          type: string
+          description: "AI-generated explanation of why it's an anomaly."
+        severity:
+          type: string
+          enum: [Low, Medium, High, Critical]
+        status:
+          type: string
+          enum: [New, Under Review, Dismissed, Resolved]
+        entityType:
+          type: string
+          enum: [PaymentOrder, Transaction, Counterparty, CorporateCard]
+        entityId:
+          type: string
+        entityDescription:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        riskScore:
+          type: integer
+          description: "A risk score from 0-100."
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        read:
+          type: boolean
+        view:
+          type: string
+          description: "A key representing the view to navigate to when the notification is clicked."
+          example: "CreditHealth"
+    CreditHealthReport:
+      type: object
+      properties:
+        score:
+          type: integer
+          example: 780
+        rating:
+          type: string
+          enum: [Excellent, Good, Fair, Poor]
+        factors:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditFactor"
+    CreditFactor:
+      type: object
+      properties:
+        name:
+          type: string
+          enum: [Payment History, Credit Utilization, Credit Age, New Credit, Credit Mix]
+        status:
+          type: string
+          enum: [Excellent, Good, Fair, Poor]
+        description:
+          type: string
+    OpenBankingConnection:
+      type: object
+      properties:
+        id:
+          type: string
+        appName:
+          type: string
+          example: "MintFusion Budgeting"
+        permissions:
+          type: array
+          items:
+            type: string
+          example: ["Read transaction history", "View account balances"]
+        connectedDate:
+          type: string
+          format: date
+# ... END OF SPECIFICATION ...
