@@ -1,0 +1,526 @@
+
+# ================================================================================================
+# PART 3/10: BUDGETS & FINANCIAL GOALS
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to personal financial management, specifically spending budgets and
+# long-term financial goals. It covers the full lifecycle from creation and
+# management to AI-powered strategic planning.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: BUDGETS
+# ================================================================================================
+paths:
+  /budgets:
+    get:
+      tags:
+        - "Budgets"
+      summary: "List All Budgets"
+      description: "Retrieves a list of all spending budgets the user has created. Each budget includes the name, limit, current spending, and progress."
+      operationId: "listBudgets"
+      security:
+        - oAuth2Auth: [read:budgets]
+      responses:
+        "200":
+          description: "A list of the user's budgets."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Budget"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    post:
+      tags:
+        - "Budgets"
+      summary: "Create a New Budget"
+      description: "Creates a new spending budget for a specific category with a monthly limit."
+      operationId: "createBudget"
+      security:
+        - oAuth2Auth: [write:budgets]
+      requestBody:
+        required: true
+        description: "The budget to create."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetCreate"
+      responses:
+        "201":
+          description: "The budget was created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "409":
+          description: "A budget for this category already exists."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /budgets/{budgetId}:
+    get:
+      tags:
+        - "Budgets"
+      summary: "Get Budget by ID"
+      description: "Retrieves detailed information for a single budget, including a list of recent transactions contributing to its spending."
+      operationId: "getBudgetById"
+      security:
+        - oAuth2Auth: [read:budgets]
+      parameters:
+        - $ref: "#/components/parameters/BudgetId"
+      responses:
+        "200":
+          description: "Detailed information for the requested budget."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      tags:
+        - "Budgets"
+      summary: "Update a Budget"
+      description: "Updates the name or limit of an existing budget."
+      operationId: "updateBudget"
+      security:
+        - oAuth2Auth: [write:budgets]
+      parameters:
+        - $ref: "#/components/parameters/BudgetId"
+      requestBody:
+        required: true
+        description: "The budget information to update."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BudgetUpdate"
+      responses:
+        "200":
+          description: "The updated budget object."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags:
+        - "Budgets"
+      summary: "Delete a Budget"
+      description: "Deletes a user-created budget."
+      operationId: "deleteBudget"
+      security:
+        - oAuth2Auth: [write:budgets]
+      parameters:
+        - $ref: "#/components/parameters/BudgetId"
+      responses:
+        "204":
+          description: "Budget deleted successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /budgets/summary:
+    get:
+      tags:
+        - "Budgets"
+      summary: "Get Budget Summary"
+      description: "Provides a high-level summary of the user's budget performance for the current period, including total budgeted amount and total spending across all budgets."
+      operationId: "getBudgetSummary"
+      security:
+        - oAuth2Auth: [read:budgets]
+      responses:
+        "200":
+          description: "A summary of budget performance."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalBudgeted:
+                    type: number
+                    format: float
+                  totalSpent:
+                    type: number
+                    format: float
+                  overallProgress:
+                    type: number
+                    format: float
+                    description: "Percentage of total budgeted amount spent."
+                  atRiskCategories:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Budget"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+# ================================================================================================
+# PATHS: FINANCIAL GOALS
+# ================================================================================================
+  /financial-goals:
+    get:
+      tags:
+        - "Financial Goals"
+      summary: "List Financial Goals"
+      description: "Retrieves a list of all long-term financial goals the user has set, such as saving for a house or a vacation."
+      operationId: "listFinancialGoals"
+      security:
+        - oAuth2Auth: [read:goals]
+      responses:
+        "200":
+          description: "A list of the user's financial goals."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinancialGoal"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    post:
+      tags:
+        - "Financial Goals"
+      summary: "Create a Financial Goal"
+      description: "Creates a new long-term financial goal with a target amount and date."
+      operationId: "createFinancialGoal"
+      security:
+        - oAuth2Auth: [write:goals]
+      requestBody:
+        required: true
+        description: "The financial goal to create."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancialGoalCreate"
+      responses:
+        "201":
+          description: "Financial goal created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialGoal"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /financial-goals/{goalId}:
+    get:
+      tags:
+        - "Financial Goals"
+      summary: "Get Financial Goal by ID"
+      description: "Retrieves detailed information for a single financial goal, including its AI-generated plan if one exists."
+      operationId: "getFinancialGoalById"
+      security:
+        - oAuth2Auth: [read:goals]
+      parameters:
+        - $ref: "#/components/parameters/GoalId"
+      responses:
+        "200":
+          description: "Detailed information for the requested financial goal."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialGoal"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      tags:
+        - "Financial Goals"
+      summary: "Update a Financial Goal"
+      description: "Updates the details of an existing financial goal, such as its name, target amount, or target date."
+      operationId: "updateFinancialGoal"
+      security:
+        - oAuth2Auth: [write:goals]
+      parameters:
+        - $ref: "#/components/parameters/GoalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinancialGoalUpdate"
+      responses:
+        "200":
+          description: "The updated financial goal object."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialGoal"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags:
+        - "Financial Goals"
+      summary: "Delete a Financial Goal"
+      description: "Deletes a financial goal. This action is permanent."
+      operationId: "deleteFinancialGoal"
+      security:
+        - oAuth2Auth: [write:goals]
+      parameters:
+        - $ref: "#/components/parameters/GoalId"
+      responses:
+        "204":
+          description: "Financial goal deleted successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /financial-goals/{goalId}/contribute:
+    post:
+      tags:
+        - "Financial Goals"
+      summary: "Contribute to a Financial Goal"
+      description: "Makes a contribution towards a financial goal. This will create a corresponding expense transaction and update the goal's progress."
+      operationId: "contributeToFinancialGoal"
+      security:
+        - oAuth2Auth: [write:goals, write:transactions]
+      parameters:
+        - $ref: "#/components/parameters/GoalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  description: "The amount to contribute."
+      responses:
+        "200":
+          description: "Contribution was successful. The updated financial goal is returned."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialGoal"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /financial-goals/{goalId}/plan:
+    post:
+      tags:
+        - "Financial Goals"
+      summary: "Generate AI Goal Plan"
+      description: "Requests the AI to generate a strategic plan for achieving the specified financial goal based on the user's current financial situation."
+      operationId: "generateAIGoalPlan"
+      security:
+        - oAuth2Auth: [read:goals, interact:ai_advisor]
+      parameters:
+        - $ref: "#/components/parameters/GoalId"
+      responses:
+        "200":
+          description: "The AI-generated plan was created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AIGoalPlan"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "503":
+          description: "AI service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+# ================================================================================================
+# COMPONENTS: BUDGETS & GOALS
+# ================================================================================================
+components:
+  parameters:
+    BudgetId:
+      name: budgetId
+      in: path
+      required: true
+      description: "The unique identifier for the budget category."
+      schema:
+        type: string
+        example: "dining"
+    GoalId:
+      name: goalId
+      in: path
+      required: true
+      description: "The unique identifier for the financial goal."
+      schema:
+        type: string
+        example: "goal_house_1"
+  schemas:
+    Budget:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "dining"
+          readOnly: true
+        name:
+          type: string
+          example: "Dining"
+        limit:
+          type: number
+          format: float
+          description: "The monthly spending limit for this category."
+          example: 400.00
+        spent:
+          type: number
+          format: float
+          description: "The amount spent in this category for the current period."
+          example: 280.50
+          readOnly: true
+        progress:
+          type: number
+          format: float
+          description: "The percentage of the budget that has been spent."
+          example: 70.125
+          readOnly: true
+        color:
+          type: string
+          description: "A hex color code for UI display."
+          example: "#f59e0b"
+    BudgetCreate:
+      type: object
+      required:
+        - name
+        - limit
+      properties:
+        name:
+          type: string
+          description: "The category name for the new budget."
+          example: "Entertainment"
+        limit:
+          type: number
+          format: float
+          description: "The monthly spending limit."
+          example: 200
+    BudgetUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "The new category name for the budget."
+          example: "Entertainment & Hobbies"
+        limit:
+          type: number
+          format: float
+          description: "The new monthly spending limit."
+          example: 250
+    FinancialGoal:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "goal_house_1"
+          readOnly: true
+        name:
+          type: string
+          example: "Down Payment for a Condo"
+        targetAmount:
+          type: number
+          format: float
+          example: 75000
+        targetDate:
+          type: string
+          format: date
+          example: "2029-12-31"
+        currentAmount:
+          type: number
+          format: float
+          example: 12500
+          readOnly: true
+        progress:
+          type: number
+          format: float
+          example: 16.67
+          readOnly: true
+        iconName:
+          type: string
+          example: "home"
+        plan:
+          $ref: "#/components/schemas/AIGoalPlan"
+          nullable: true
+    FinancialGoalCreate:
+      type: object
+      required:
+        - name
+        - targetAmount
+        - targetDate
+      properties:
+        name:
+          type: string
+        targetAmount:
+          type: number
+          format: float
+        targetDate:
+          type: string
+          format: date
+        iconName:
+          type: string
+    FinancialGoalUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        targetAmount:
+          type: number
+          format: float
+        targetDate:
+          type: string
+          format: date
+        iconName:
+          type: string
+    AIGoalPlan:
+      type: object
+      description: "An AI-generated strategic plan for achieving a financial goal."
+      properties:
+        feasibilitySummary:
+          type: string
+          description: "A brief, AI-generated summary of the goal's feasibility."
+        monthlyContribution:
+          type: number
+          format: float
+          description: "The recommended monthly contribution to reach the goal on time."
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/AIGoalPlanStep"
+    AIGoalPlanStep:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [Savings, Budgeting, Investing, Income]
+# ... CONTINUED IN PART 4 ...

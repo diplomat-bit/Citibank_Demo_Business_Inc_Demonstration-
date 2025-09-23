@@ -1,0 +1,723 @@
+
+# ================================================================================================
+# PART 1/10: FOUNDATION, USERS, AND ACCOUNTS
+# ================================================================================================
+# This is the genesis block of the Quantum Core API specification. It establishes
+# the info, servers, security, and core user-centric endpoints. This file is
+# intentionally verbose and detailed to meet professional documentation standards.
+# ------------------------------------------------------------------------------------------------
+
+openapi: 3.0.3
+info:
+  title: "Demo Bank API: The Quantum Core"
+  description: |
+    Welcome to the Quantum Core, the API that powers the Demo Bank experience. This is not merely a set of endpoints; it is a gateway to a living financial ecosystem. 
+    
+    Our API is built on the philosophy that finance should be a conversation—a dynamic, intelligent collaboration between users, developers, and our AI, Quantum. We provide programmatic access to the tools that power our next-generation platform, from personal financial management to AI-driven business incubation and corporate finance automation.
+    
+    This specification details how to securely connect to and interact with the core functionalities of Demo Bank, empowering you to build the future of finance alongside us. Our architecture is designed for scalability, security, and seamless integration, ensuring that as your vision grows, our platform grows with you.
+  version: "1.0.0"
+  contact:
+    name: "Demo Bank API Team"
+    email: "developers@demobank.com"
+    url: "https://demobank.com/developers"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  termsOfService: "https://demobank.com/terms"
+
+# ================================================================================================
+# SERVERS
+# ================================================================================================
+servers:
+  - url: "https://api.demobank.com/v1"
+    description: "Production Server"
+  - url: "https://api.staging.demobank.com/v1"
+    description: "Staging Environment for pre-production testing"
+  - url: "https://api.sandbox.demobank.com/v1"
+    description: "Sandbox for development and testing"
+
+# ================================================================================================
+# TAGS (ENDPOINT GROUPS)
+# ================================================================================================
+tags:
+  - name: "Users & Authentication"
+    description: "Manage user profiles, authentication, and session control."
+  - name: "Accounts & Balances"
+    description: "Interact with linked financial accounts (via Plaid simulation)."
+  - name: "Transactions"
+    description: "Access, search, categorize, and analyze transaction data."
+  - name: "Budgets"
+    description: "Create and manage user spending budgets and track progress."
+  - name: "Investments & Assets"
+    description: "Manage investment portfolios, discover ESG assets, and simulate growth."
+  - name: "AI Advisor (Quantum)"
+    description: "Converse with our state-of-the-art financial AI for insights and actions."
+  - name: "Quantum Weaver (Incubator)"
+    description: "Submit and track business plans for AI-driven seed funding."
+  - name: "AI Ad Studio (Veo)"
+    description: "Programmatically generate high-quality video content from text prompts."
+  - name: "Personalization & Customization"
+    description: "Endpoints for generating themes and custom card designs."
+  - name: "Financial Goals"
+    description: "Manage long-term financial goals and AI-generated strategic plans."
+  - name: "Marketplace (Plato)"
+    description: "Access AI-curated product recommendations and simulate purchase impact."
+  - name: "Crypto & Web3"
+    description: "Endpoints for managing digital assets and Web3 integrations (Metamask, Stripe, Marqeta simulations)."
+  - name: "Corporate Finance - Cards"
+    description: "Manage corporate card programs, controls, and transactions."
+  - name: "Corporate Finance - Payments"
+    description: "Endpoints for managing payment orders, counterparties, and invoices."
+  - name: "Corporate Finance - Compliance"
+    description: "Access compliance cases and AI-powered financial anomaly detection."
+  - name: "Rewards & Gamification"
+    description: "Interact with the user's reward points, level, and gamification status."
+  - name: "Credit Health"
+    description: "Access credit score, history, and related financial health factors."
+  - name: "Notifications"
+    description: "Retrieve and manage user notifications."
+  - name: "Security & Open Banking"
+    description: "Manage security settings, login activity, and third-party app connections."
+
+# ================================================================================================
+# PATHS: USERS & AUTHENTICATION
+# ================================================================================================
+paths:
+  /auth/token:
+    post:
+      tags:
+        - "Users & Authentication"
+      summary: "Obtain an OAuth2 Token"
+      description: "Standard OAuth2 token endpoint. Exchange authorization code for an access token."
+      operationId: "getAccessToken"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  description: "OAuth2 grant type."
+                  example: "authorization_code"
+                code:
+                  type: string
+                  description: "The authorization code received from the authorization server."
+                redirect_uri:
+                  type: string
+                  format: uri
+                client_id:
+                  type: string
+      responses:
+        "200":
+          description: "Access token granted successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthToken"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+
+  /auth/revoke:
+    post:
+      tags:
+        - "Users & Authentication"
+      summary: "Revoke an OAuth2 Token"
+      description: "Revokes the provided access or refresh token, effectively logging the user out of the session associated with that token."
+      operationId: "revokeToken"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: "The token to revoke."
+                token_type_hint:
+                  type: string
+                  enum: [access_token, refresh_token]
+      responses:
+        "204":
+          description: "Token revoked successfully."
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+
+  /users/me:
+    get:
+      tags:
+        - "Users & Authentication"
+      summary: "Get Current User Profile"
+      description: "Retrieves the complete profile information for the currently authenticated user, including their name, email, gamification status, and notification preferences."
+      operationId: "getCurrentUser"
+      security:
+        - oAuth2Auth: [read:profile]
+      responses:
+        "200":
+          description: "The user's complete profile information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    put:
+      tags:
+        - "Users & Authentication"
+      summary: "Update Current User Profile"
+      description: "Updates profile information for the currently authenticated user. All fields are optional. Only provided fields will be updated."
+      operationId: "updateCurrentUser"
+      security:
+        - oAuth2Auth: [write:profile]
+      requestBody:
+        description: "User profile data to update."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: "The updated user profile."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /users/me/password:
+    put:
+      tags:
+        - "Users & Authentication"
+      summary: "Change Password"
+      description: "Allows the authenticated user to change their password. Requires the current password for verification."
+      operationId: "changePassword"
+      security:
+        - oAuth2Auth: [write:profile]
+      requestBody:
+        description: "Password change request."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                  format: password
+                  description: "The user's current password."
+                newPassword:
+                  type: string
+                  format: password
+                  description: "The user's new password. Must meet complexity requirements."
+      responses:
+        "204":
+          description: "Password changed successfully."
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /users/me/2fa:
+    post:
+      tags:
+        - "Users & Authentication"
+      summary: "Setup Two-Factor Authentication"
+      description: "Initiates the setup process for Two-Factor Authentication (2FA). Returns a secret key and a QR code URI for authenticator apps."
+      operationId: "setup2FA"
+      security:
+        - oAuth2Auth: [write:security]
+      responses:
+        "200":
+          description: "2FA setup initiated. The client should display the QR code and prompt for a verification code."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secret:
+                    type: string
+                    description: "The secret key for manual entry into an authenticator app."
+                  qrCodeUri:
+                    type: string
+                    format: uri
+                    description: "A data URI for a QR code that can be scanned by authenticator apps."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    put:
+      tags:
+        - "Users & Authentication"
+      summary: "Verify and Enable Two-Factor Authentication"
+      description: "Verifies a TOTP code provided by the user and, if correct, enables 2FA for their account."
+      operationId: "enable2FA"
+      security:
+        - oAuth2Auth: [write:security]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  description: "The 6-digit code from the user's authenticator app."
+                  example: "123456"
+      responses:
+        "200":
+          description: "2FA enabled successfully. The response includes a set of recovery codes."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recoveryCodes:
+                    type: array
+                    items:
+                      type: string
+                    description: "A list of one-time use recovery codes. The user must store these securely."
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    delete:
+      tags:
+        - "Users & Authentication"
+      summary: "Disable Two-Factor Authentication"
+      description: "Disables 2FA for the user's account. This action is protected and may require re-authentication."
+      operationId: "disable2FA"
+      security:
+        - oAuth2Auth: [write:security]
+      responses:
+        "204":
+          description: "2FA disabled successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /users/me/login-history:
+    get:
+      tags:
+        - "Users & Authentication"
+      summary: "Get Login History"
+      description: "Retrieves a list of recent login events for the user's account for security auditing purposes."
+      operationId: "getLoginHistory"
+      security:
+        - oAuth2Auth: [read:security]
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "A paginated list of login history events."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  total:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LoginHistoryEvent"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /users/me/notification-preferences:
+    get:
+      tags:
+        - "Users & Authentication"
+      summary: "Get Notification Preferences"
+      description: "Retrieves the user's current notification preferences for various event types."
+      operationId: "getNotificationPreferences"
+      security:
+        - oAuth2Auth: [read:profile]
+      responses:
+        "200":
+          description: "The user's notification preferences."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    put:
+      tags:
+        - "Users & Authentication"
+      summary: "Update Notification Preferences"
+      description: "Updates the user's notification preferences."
+      operationId: "updateNotificationPreferences"
+      security:
+        - oAuth2Auth: [write:profile]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferences"
+      responses:
+        "200":
+          description: "The updated notification preferences."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationPreferences"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+# ================================================================================================
+# PATHS: ACCOUNTS & BALANCES
+# ================================================================================================
+  /accounts:
+    get:
+      tags:
+        - "Accounts & Balances"
+      summary: "List Linked Accounts"
+      description: "Fetches a list of all external financial accounts linked to the user's Demo Bank profile via the Plaid integration."
+      operationId: "listLinkedAccounts"
+      security:
+        - oAuth2Auth: [read:accounts]
+      responses:
+        "200":
+          description: "A list of linked financial accounts."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LinkedAccount"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /accounts/{accountId}:
+    get:
+      tags:
+        - "Accounts & Balances"
+      summary: "Get Account Details"
+      description: "Retrieves detailed information for a specific linked account, including current and available balances, type, and other metadata."
+      operationId: "getLinkedAccountDetails"
+      security:
+        - oAuth2Auth: [read:accounts]
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: "Detailed account information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LinkedAccount"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags:
+        - "Accounts & Balances"
+      summary: "Unlink an Account"
+      description: "Securely unlinks a financial account from the user's profile, revoking all data access and deleting cached data associated with it."
+      operationId: "unlinkAccount"
+      security:
+        - oAuth2Auth: [write:accounts]
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "204":
+          description: "Account successfully unlinked."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /accounts/{accountId}/balance:
+    get:
+      tags:
+        - "Accounts & Balances"
+      summary: "Get Account Balance"
+      description: "Fetches the real-time balance for a specific linked account. This is a direct refresh request to the underlying data provider."
+      operationId: "getAccountBalance"
+      security:
+        - oAuth2Auth: [read:accounts]
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: "The current balance of the account."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountBalance"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "503":
+          description: "The data provider (e.g., Plaid) is temporarily unavailable or the connection to the financial institution is down."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+# ================================================================================================
+# COMPONENTS
+# ================================================================================================
+components:
+  securitySchemes:
+    oAuth2Auth:
+      type: oauth2
+      description: "Standard OAuth2 for user authentication and authorization."
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.demobank.com/oauth2/auth
+          tokenUrl: https://api.demobank.com/oauth2/token
+          scopes:
+            read:profile: "Read user profile information."
+            write:profile: "Modify user profile information."
+            read:security: "Read security settings and logs."
+            write:security: "Modify security settings (e.g., password, 2FA)."
+            read:accounts: "Read access to linked accounts and balances."
+            write:accounts: "Link or unlink financial accounts."
+            read:transactions: "Read access to transaction history."
+            write:transactions: "Modify transaction data (e.g., categorization)."
+            write:payments: "Initiate payments and transfers."
+            interact:ai_advisor: "Access to the conversational AI Advisor."
+            read:weaver: "Read status of business plan submissions."
+            write:weaver: "Submit and manage business plans in the Quantum Weaver."
+            read:ad_studio: "Check status of video generation jobs."
+            write:ad_studio: "Generate video content."
+            read:corporate_cards: "Read corporate card information and controls."
+            write:corporate_cards: "Modify corporate card status and controls."
+            read:corporate_payments: "Read corporate payment orders and invoices."
+            write:corporate_payments: "Create and approve corporate payments."
+            read:compliance: "Read compliance cases and financial anomalies."
+            write:compliance: "Update the status of compliance cases and anomalies."
+            read:rewards: "Read rewards balance and available items."
+            write:rewards: "Redeem reward points for items."
+  parameters:
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      description: "The unique identifier for the linked financial account."
+      schema:
+        type: string
+        example: "acc_1a2b3c4d5e"
+    Limit:
+      name: limit
+      in: query
+      description: "The number of items to return per page."
+      schema:
+        type: integer
+        default: 50
+        minimum: 1
+        maximum: 100
+    Offset:
+      name: offset
+      in: query
+      description: "The starting index of the item list for pagination."
+      schema:
+        type: integer
+        default: 0
+  responses:
+    UnauthorizedError:
+      description: "Authentication information is missing or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: "Authenticated user does not have permission to perform this action."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: "The requested resource could not be found."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: "The request payload is malformed or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: "invalid_request"
+        message:
+          type: string
+          example: "The 'amount' parameter must be a positive number."
+        details:
+          type: object
+          nullable: true
+          example: {"field": "amount", "reason": "must be positive"}
+    OAuthToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: "Bearer"
+        expires_in:
+          type: integer
+          example: 3600
+        refresh_token:
+          type: string
+        scope:
+          type: string
+          example: "read:profile read:accounts"
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "user-visionary-01"
+          readOnly: true
+        name:
+          type: string
+          example: "The Visionary"
+        email:
+          type: string
+          format: email
+          example: "visionary@demobank.com"
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        gamification:
+          $ref: "#/components/schemas/GamificationState"
+        notificationPreferences:
+          $ref: "#/components/schemas/NotificationPreferences"
+    UserUpdate:
+      type: object
+      description: "Fields for updating a user profile. Only provided fields will be updated."
+      properties:
+        name:
+          type: string
+          example: "The Quantum Visionary"
+        email:
+          type: string
+          format: email
+          example: "visionary.new@demobank.com"
+    GamificationState:
+      type: object
+      properties:
+        score:
+          type: integer
+          example: 450
+        level:
+          type: integer
+          example: 3
+        levelName:
+          type: string
+          example: "Savings Specialist"
+        progress:
+          type: number
+          format: float
+          description: "Percentage progress to the next level."
+          example: 25.0
+        credits:
+          type: integer
+          description: "In-app credits earned through gamification."
+          example: 225
+    NotificationPreferences:
+      type: object
+      properties:
+        largeTransaction:
+          type: boolean
+          default: true
+          description: "Alert for transactions over a certain threshold."
+        budgetWarnings:
+          type: boolean
+          default: true
+          description: "Alert when approaching a budget limit."
+        aiInsights:
+          type: boolean
+          default: false
+          description: "Push notifications for new AI-generated insights."
+    LoginHistoryEvent:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+          format: ipv4
+          example: "192.168.1.1"
+        userAgent:
+          type: string
+          example: "Chrome on Windows"
+        location:
+          type: string
+          example: "New York, USA"
+        status:
+          type: string
+          enum: [Success, Failed]
+    LinkedAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The unique identifier for the linked account."
+          example: "acc_1a2b3c4d5e"
+        name:
+          type: string
+          description: "The official name of the financial institution."
+          example: "Chase"
+        mask:
+          type: string
+          description: "The last 4 digits of the account number."
+          example: "1111"
+        type:
+          type: string
+          description: "The general type of the account."
+          example: "depository"
+        subtype:
+          type: string
+          description: "The specific subtype of the account."
+          example: "checking"
+        balance:
+          $ref: "#/components/schemas/AccountBalance"
+    AccountBalance:
+      type: object
+      properties:
+        current:
+          type: number
+          format: float
+          description: "The current balance of the account."
+          example: 12532.50
+        available:
+          type: number
+          format: float
+          description: "The available balance, taking into account pending transactions."
+          nullable: true
+          example: 12300.00
+        currency:
+          type: string
+          description: "The ISO 4217 currency code."
+          example: "USD"
+# ... CONTINUED IN PART 2 ...

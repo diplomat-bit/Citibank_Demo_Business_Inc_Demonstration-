@@ -1,0 +1,326 @@
+
+# ================================================================================================
+# PART 6/10: CREATIVE AI SUITES
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to the Creative AI Suites. This includes the AI Ad Studio for video
+# generation (Veo) and the Personalization & Customization tools for generating
+# app backgrounds (Imagen) and editing card designs (Gemini Image Preview).
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: AI AD STUDIO (VEO)
+# ================================================================================================
+paths:
+  /ai/video-studio/generate:
+    post:
+      tags:
+        - "AI Ad Studio (Veo)"
+      summary: "Generate a Video Ad"
+      description: "Submits a request to generate a high-quality video ad using the Veo 2.0 model. This is an asynchronous operation that returns an operation ID for polling."
+      operationId: "generateVideoAd"
+      security:
+        - oAuth2Auth: [write:ad_studio]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateVideoRequest"
+      responses:
+        "202":
+          description: "Video generation started successfully. The response contains an operation ID to poll for status."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  operationId:
+                    type: string
+                    example: "op-video-gen-12345"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "The video generation service is currently at capacity or unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /ai/video-studio/operations/{operationId}:
+    get:
+      tags:
+        - "AI Ad Studio (Veo)"
+      summary: "Get Video Generation Status"
+      description: "Polls the status of an asynchronous video generation operation using its operation ID."
+      operationId: "getVideoGenerationStatus"
+      security:
+        - oAuth2Auth: [read:ad_studio]
+      parameters:
+        - name: "operationId"
+          in: "path"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "The current status of the video generation job. If the status is 'done', the response includes a temporary URI to download the video file."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoOperationStatus"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/video-studio/cta-suggestions:
+    post:
+      tags:
+        - "AI Ad Studio (Veo)"
+      summary: "Generate Call-to-Action Suggestions"
+      description: "Uses AI to generate a list of short, catchy call-to-action (CTA) phrases based on the ad's original prompt."
+      operationId: "generateCTASuggestions"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  description: "The original prompt used to generate the video ad."
+      responses:
+        "200":
+          description: "A list of suggested CTA phrases."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Unlock Your Potential.", "Begin Your Journey.", "Create Your Future."]
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+# ================================================================================================
+# PATHS: PERSONALIZATION & CUSTOMIZATION
+# ================================================================================================
+  /ai/personalization/background:
+    post:
+      tags:
+        - "Personalization & Customization"
+      summary: "Generate a Custom App Background"
+      description: "Generates a unique background image for the application theme using the Imagen model based on a user's text prompt."
+      operationId: "generateAppBackground"
+      security:
+        - oAuth2Auth: [write:personalization]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateImageRequest"
+      responses:
+        "200":
+          description: "The generated image, returned as a base64 encoded string."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedImageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/personalization/card-design:
+    post:
+      tags:
+        - "Personalization & Customization"
+      summary: "Edit a Bank Card Design"
+      description: "Edits a base image for a bank card design using a text prompt. This endpoint utilizes the Gemini model's image editing capabilities."
+      operationId: "editCardDesign"
+      security:
+        - oAuth2Auth: [write:personalization]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditImageRequest"
+      responses:
+        "200":
+          description: "The edited image, returned as a base64 encoded string."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedImageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /ai/personalization/card-story:
+    post:
+      tags:
+        - "Personalization & Customization"
+      summary: "Generate a Card Story"
+      description: "Uses AI to generate a short, inspiring 'Card Story' based on the prompt used to design a custom bank card."
+      operationId: "generateCardStory"
+      security:
+        - oAuth2Auth: [interact:ai_advisor]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - designPrompt
+              properties:
+                designPrompt:
+                  type: string
+                  description: "The text prompt that was used to create the card's visual design."
+      responses:
+        "200":
+          description: "The AI-generated story for the card."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  story:
+                    type: string
+                    example: "This card represents resilience and rebirth. The phoenix, forged from data streams, is a symbol of your financial journey rising to new heights."
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+# ================================================================================================
+# COMPONENTS: CREATIVE AI SUITES
+# ================================================================================================
+components:
+  schemas:
+    GenerateVideoRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: "A detailed description of the video to be generated."
+          example: "A neon hologram of a cat driving a futuristic car at top speed through a cyberpunk city."
+        style:
+          type: string
+          enum: [Cinematic, Vibrant, Monochrome, Surreal, Default]
+          default: Cinematic
+        lengthSeconds:
+          type: integer
+          description: "The desired length of the video in seconds."
+          example: 15
+        voiceover:
+          type: object
+          properties:
+            style:
+              type: string
+              enum: ["Energetic Male", "Calm Female", "None"]
+              default: "None"
+            script:
+              type: string
+              description: "An optional script for the voiceover. If omitted, the AI may generate one."
+    VideoOperationStatus:
+      type: object
+      properties:
+        operationId:
+          type: string
+        status:
+          type: string
+          enum: [generating, polling, done, error]
+        message:
+          type: string
+          description: "A user-facing message describing the current step of the generation process."
+          example: "Rendering motion vectors..."
+        progress:
+          type: integer
+          description: "An estimated percentage of completion."
+          example: 65
+        videoUri:
+          type: string
+          format: uri
+          nullable: true
+          description: "A temporary, signed URL to download the generated video file. Only present when status is 'done'."
+        errorDetails:
+          type: string
+          nullable: true
+          description: "Details of the error if the status is 'error'."
+    GenerateImageRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: "A detailed description of the image to be generated."
+          example: "An isolated lighthouse on a stormy sea, with a powerful beam of light cutting through the darkness, digital art."
+        aspectRatio:
+          type: string
+          enum: ["1:1", "16:9", "9:16", "4:3", "3:4"]
+          default: "16:9"
+    EditImageRequest:
+      type: object
+      required:
+        - baseImage
+        - prompt
+      properties:
+        baseImage:
+          type: object
+          required:
+            - mimeType
+            - data
+          properties:
+            mimeType:
+              type: string
+              description: "The IANA standard MIME type of the base image."
+              example: "image/jpeg"
+            data:
+              type: string
+              format: byte
+              description: "The base64 encoded string of the base image."
+        prompt:
+          type: string
+          description: "The editing instruction for the AI."
+          example: "Add a phoenix rising from the center, with its wings made of glowing data streams."
+    GeneratedImageResponse:
+      type: object
+      properties:
+        image:
+          type: object
+          properties:
+            mimeType:
+              type: string
+              example: "image/jpeg"
+            data:
+              type: string
+              format: byte
+              description: "The base64 encoded string of the generated or edited image."
+        metadata:
+          type: object
+          properties:
+            revisedPrompt:
+              type: string
+              description: "The prompt as revised by the model for safety or clarity."
+              nullable: true
+# ... CONTINUED IN PART 7 ...

@@ -1,0 +1,415 @@
+
+# ================================================================================================
+# PART 2/10: TRANSACTIONS
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to personal financial transactions. It covers everything from basic
+# retrieval and filtering to advanced AI-powered analysis.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: TRANSACTIONS
+# ================================================================================================
+paths:
+  /transactions:
+    get:
+      tags:
+        - "Transactions"
+      summary: "List Transactions"
+      description: "Retrieves a paginated list of the user's transactions, with extensive options for filtering and sorting."
+      operationId: "listTransactions"
+      security:
+        - oAuth2Auth: [read:transactions]
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+        - name: "accountId"
+          in: "query"
+          description: "Filter transactions by a specific linked account ID."
+          schema:
+            type: string
+        - name: "type"
+          in: "query"
+          description: "Filter transactions by type."
+          schema:
+            type: string
+            enum: [income, expense]
+        - name: "category"
+          in: "query"
+          description: "Filter transactions by a specific category name."
+          schema:
+            type: string
+        - name: "startDate"
+          in: "query"
+          description: "The start of the date range to filter transactions (inclusive)."
+          schema:
+            type: string
+            format: date
+        - name: "endDate"
+          in: "query"
+          description: "The end of the date range to filter transactions (inclusive)."
+          schema:
+            type: string
+            format: date
+        - name: "minAmount"
+          in: "query"
+          description: "Filter transactions with an amount greater than or equal to this value."
+          schema:
+            type: number
+            format: float
+        - name: "maxAmount"
+          in: "query"
+          description: "Filter transactions with an amount less than or equal to this value."
+          schema:
+            type: number
+            format: float
+        - name: "sortBy"
+          in: "query"
+          description: "The field to sort the transactions by."
+          schema:
+            type: string
+            enum: [date, amount]
+            default: date
+        - name: "sortOrder"
+          in: "query"
+          description: "The order to sort the transactions in."
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        "200":
+          description: "A paginated list of transactions matching the criteria."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedTransactions"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    post:
+      tags:
+        - "Transactions"
+      summary: "Create a Manual Transaction"
+      description: "Allows the user to manually add a transaction, such as a cash expense or an un-tracked income source."
+      operationId: "createManualTransaction"
+      security:
+        - oAuth2Auth: [write:transactions]
+      requestBody:
+        required: true
+        description: "The transaction to create."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionCreate"
+      responses:
+        "201":
+          description: "The manual transaction was created successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /transactions/search:
+    post:
+      tags:
+        - "Transactions"
+      summary: "Search Transactions"
+      description: "Performs an advanced search across transactions using a free-text query string. This can search descriptions, categories, and other metadata."
+      operationId: "searchTransactions"
+      security:
+        - oAuth2Auth: [read:transactions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: "The search term."
+                  example: "Coffee Shop"
+      responses:
+        "200":
+          description: "A list of transactions matching the search query."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /transactions/{transactionId}:
+    get:
+      tags:
+        - "Transactions"
+      summary: "Get Transaction by ID"
+      description: "Retrieves detailed information for a single transaction by its unique ID."
+      operationId: "getTransactionById"
+      security:
+        - oAuth2Auth: [read:transactions]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          description: "The requested transaction details."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    put:
+      tags:
+        - "Transactions"
+      summary: "Update a Transaction"
+      description: "Updates details for a specific transaction, commonly used for re-categorization or adding notes."
+      operationId: "updateTransaction"
+      security:
+        - oAuth2Auth: [write:transactions]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionUpdate"
+      responses:
+        "200":
+          description: "The updated transaction object."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      tags:
+        - "Transactions"
+      summary: "Delete a Manual Transaction"
+      description: "Deletes a manually created transaction. Transactions imported from linked accounts cannot be deleted."
+      operationId: "deleteManualTransaction"
+      security:
+        - oAuth2Auth: [write:transactions]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "204":
+          description: "Transaction deleted successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: "Forbidden. The requested transaction was imported from a linked account and cannot be deleted."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /transactions/categories:
+    get:
+      tags:
+        - "Transactions"
+      summary: "List Transaction Categories"
+      description: "Retrieves a list of all available transaction categories, both system-defined and user-created."
+      operationId: "listTransactionCategories"
+      security:
+        - oAuth2Auth: [read:transactions]
+      responses:
+        "200":
+          description: "A list of transaction categories."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionCategory"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /transactions/ai/detect-subscriptions:
+    post:
+      tags:
+        - "Transactions"
+      summary: "Detect Potential Subscriptions"
+      description: "Uses the AI to analyze the user's transaction history and identify potential recurring subscriptions that may have been forgotten."
+      operationId: "detectSubscriptions"
+      security:
+        - oAuth2Auth: [read:transactions, interact:ai_advisor]
+      responses:
+        "200":
+          description: "A list of potential subscriptions detected by the AI."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DetectedSubscription"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "AI service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+# ================================================================================================
+# COMPONENTS: TRANSACTIONS
+# ================================================================================================
+components:
+  parameters:
+    TransactionId:
+      name: transactionId
+      in: path
+      required: true
+      description: "The unique identifier for the transaction."
+      schema:
+        type: string
+        example: "txn_1a2b3c4d5e"
+  schemas:
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "txn_1a2b3c4d5e"
+          readOnly: true
+        accountId:
+          type: string
+          example: "acc_1a2b3c4d5e"
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+          example: "Dining"
+        description:
+          type: string
+          description: "The merchant name or transaction description."
+          example: "Coffee Shop"
+        amount:
+          type: number
+          format: float
+          example: 12.50
+        currency:
+          type: string
+          example: "USD"
+        date:
+          type: string
+          format: date
+          example: "2024-07-21"
+        carbonFootprint:
+          type: number
+          format: float
+          nullable: true
+          description: "Estimated carbon footprint in kg CO₂."
+          example: 1.2
+        isManual:
+          type: boolean
+          description: "True if the transaction was created manually by the user."
+          readOnly: true
+        notes:
+          type: string
+          nullable: true
+          description: "User-added notes for the transaction."
+    TransactionCreate:
+      type: object
+      description: "Schema for creating a new manual transaction."
+      required:
+        - type
+        - description
+        - amount
+        - date
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        description:
+          type: string
+          example: "Cash payment for lunch"
+        amount:
+          type: number
+          format: float
+        date:
+          type: string
+          format: date
+        category:
+          type: string
+          example: "Dining"
+        notes:
+          type: string
+    TransactionUpdate:
+      type: object
+      description: "Schema for updating an existing transaction."
+      properties:
+        category:
+          type: string
+          example: "Groceries"
+        description:
+          type: string
+          example: "Weekly grocery run"
+        notes:
+          type: string
+          example: "Bought ingredients for the week."
+    PaginatedTransactions:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+    TransactionCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Dining"
+        type:
+          type: string
+          enum: [system, user]
+          description: "Indicates if the category is system-defined or user-created."
+    DetectedSubscription:
+      type: object
+      description: "Represents a potential recurring subscription identified by the AI."
+      properties:
+        name:
+          type: string
+          description: "The name of the merchant for the potential subscription."
+          example: "QuantumFlix"
+        estimatedAmount:
+          type: number
+          format: float
+          description: "The estimated monthly amount of the subscription."
+          example: 15.99
+        lastCharged:
+          type: string
+          format: date
+          description: "The date of the last detected charge."
+          example: "2024-07-12"
+# ... CONTINUED IN PART 3 ...

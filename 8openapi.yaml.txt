@@ -1,0 +1,307 @@
+
+# ================================================================================================
+# PART 8/10: CRYPTO & WEB3 HUB
+# ================================================================================================
+# This file provides an exhaustive definition of all endpoints and schemas
+# related to the Crypto & Web3 Hub. It details the high-fidelity simulated
+# integrations with key partners like Metamask (wallet connection), Stripe
+# (crypto on-ramp), and Marqeta (virtual card issuance), as well as endpoints
+# for managing NFTs and other digital assets.
+# ------------------------------------------------------------------------------------------------
+
+# ================================================================================================
+# PATHS: CRYPTO & WEB3 HUB
+# ================================================================================================
+paths:
+  /web3/wallet/connect:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Connect a Web3 Wallet"
+      description: "Simulates the process of connecting a user's Web3 wallet (e.g., Metamask) to their Demo Bank profile. This involves a signature request and returns the connected wallet's address and primary asset balance."
+      operationId: "connectWeb3Wallet"
+      security:
+        - oAuth2Auth: [write:web3]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - signedMessage
+                - address
+              properties:
+                signedMessage:
+                  type: string
+                  description: "A signed message from the user's wallet to prove ownership."
+                  example: "0x123...abc"
+                address:
+                  type: string
+                  description: "The user's wallet address."
+                  example: "0x1a2b...c3d4"
+      responses:
+        "200":
+          description: "Wallet connected successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletInfo"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/on-ramp/quote:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Get Crypto Purchase Quote"
+      description: "Simulates getting a real-time quote for a cryptocurrency purchase via our Stripe integration. Returns the estimated amount of crypto for a given fiat amount."
+      operationId: "getCryptoQuote"
+      security:
+        - oAuth2Auth: [read:web3]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fromCurrency
+                - toCrypto
+                - amount
+              properties:
+                fromCurrency:
+                  type: string
+                  example: "USD"
+                toCrypto:
+                  type: string
+                  example: "ETH"
+                amount:
+                  type: number
+                  format: float
+                  description: "The amount in the fromCurrency to spend."
+                  example: 100
+      responses:
+        "200":
+          description: "A real-time quote for the purchase."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CryptoQuote"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/on-ramp/execute:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Execute Crypto Purchase"
+      description: "Simulates executing a crypto purchase with a payment token from Stripe. This creates a transaction and updates the user's crypto asset balance."
+      operationId: "executeCryptoPurchase"
+      security:
+        - oAuth2Auth: [write:web3, write:payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CryptoPurchaseRequest"
+      responses:
+        "200":
+          description: "The crypto purchase was successful."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CryptoPurchaseConfirmation"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/virtual-card/issue:
+    post:
+      tags:
+        - "Crypto & Web3"
+      summary: "Issue a Virtual Card"
+      description: "Simulates issuing a new, crypto-backed virtual card via our Marqeta integration. The card can be used for online purchases, drawing value from the user's crypto balance."
+      operationId: "issueVirtualCard"
+      security:
+        - oAuth2Auth: [write:web3]
+      responses:
+        "201":
+          description: "Virtual card issued successfully."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VirtualCard"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "409":
+          description: "A virtual card already exists for this user."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /web3/nfts:
+    get:
+      tags:
+        - "Crypto & Web3"
+      summary: "List NFT Assets"
+      description: "Retrieves a list of all NFT assets associated with the user's connected wallet."
+      operationId: "listNFTs"
+      security:
+        - oAuth2Auth: [read:web3]
+      responses:
+        "200":
+          description: "A list of NFT assets."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NFTAsset"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /web3/nfts/{nftId}:
+    get:
+      tags:
+        - "Crypto & Web3"
+      summary: "Get NFT Details"
+      description: "Retrieves detailed information for a specific NFT, including its metadata and contract address."
+      operationId: "getNFTDetails"
+      security:
+        - oAuth2Auth: [read:web3]
+      parameters:
+        - name: nftId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Detailed NFT information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NFTAsset"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+# ================================================================================================
+# COMPONENTS: CRYPTO & WEB3
+# ================================================================================================
+components:
+  schemas:
+    WalletInfo:
+      type: object
+      properties:
+        address:
+          type: string
+          example: "0x1a2b...c3d4"
+        balance:
+          type: number
+          format: float
+          description: "The balance of the primary asset (e.g., ETH)."
+          example: 12.5
+        primaryAsset:
+          type: string
+          example: "ETH"
+    CryptoQuote:
+      type: object
+      properties:
+        quoteId:
+          type: string
+        fromCurrency:
+          type: string
+        fromAmount:
+          type: number
+          format: float
+        toCrypto:
+          type: string
+        toAmount:
+          type: number
+          format: float
+          description: "The estimated amount of crypto the user will receive."
+        exchangeRate:
+          type: number
+          format: float
+        expiresAt:
+          type: string
+          format: date-time
+    CryptoPurchaseRequest:
+      type: object
+      required:
+        - quoteId
+        - paymentMethodToken
+      properties:
+        quoteId:
+          type: string
+          description: "The ID of a recently obtained quote."
+        paymentMethodToken:
+          type: string
+          description: "A single-use payment token from the client-side Stripe SDK."
+    CryptoPurchaseConfirmation:
+      type: object
+      properties:
+        purchaseId:
+          type: string
+        status:
+          type: string
+          enum: [Completed, Pending, Failed]
+        fromAmount:
+          type: number
+          format: float
+        toAmount:
+          type: number
+          format: float
+        toCrypto:
+          type: string
+        transaction:
+          $ref: "#/components/schemas/Transaction"
+    VirtualCard:
+      type: object
+      properties:
+        cardId:
+          type: string
+        cardNumber:
+          type: string
+          example: "5555 1234 5678 9012"
+        cvv:
+          type: string
+          example: "123"
+        expiry:
+          type: string
+          example: "12/28"
+        holderName:
+          type: string
+          example: "The Visionary"
+        status:
+          type: string
+          enum: [Active, Frozen]
+    NFTAsset:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: "Quantum Vision Pass"
+        imageUrl:
+          type: string
+          format: uri
+        contractAddress:
+          type: string
+        tokenId:
+          type: string
+        collectionName:
+          type: string
+          example: "Demo Bank Genesis"
+# ... CONTINUED IN PART 9 ...
