@@ -154,7 +154,7 @@ const TransactionsView: React.FC = () => {
                         <AITransactionWidget title="Subscription Hunter" prompt="Analyze these transactions to find potential recurring subscriptions the user might have forgotten about. Look for repeated payments to the same merchant around the same time each month." transactions={transactions} responseSchema={subscriptionSchema}>
                            {(result: { subscriptions: DetectedSubscription[] }) => (
                                 <ul className="text-xs text-gray-300 space-y-1">
-                                    {result.subscriptions.map(sub => <li key={sub.name}>- {sub.name} (~${sub.estimatedAmount.toFixed(2)})</li>)}
+                                    {result.subscriptions.length > 0 ? result.subscriptions.map(sub => <li key={sub.name}>- {sub.name} (~${sub.estimatedAmount.toFixed(2)})</li>) : <li>No potential subscriptions found.</li>}
                                 </ul>
                            )}
                         </AITransactionWidget>

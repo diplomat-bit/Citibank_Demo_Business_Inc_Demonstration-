@@ -1,13 +1,14 @@
 // FIX: Imported `useMemo` from react to resolve usage error.
 import React, { createContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
+// FIX: Imported `PaymentOrderStatus` type to resolve usage errors.
 import { 
     Transaction, Asset, BudgetCategory, GamificationState, IllusionType, LinkedAccount, 
     QuantumWeaverState, AIPlan, AIQuestion, Subscription, CreditScore, UpcomingBill, SavingsGoal, 
     MarketMover, MarketplaceProduct, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, 
     PaymentOperation, AIInsight, CorporateCard, CorporateTransaction, RewardPoints, Notification, 
     NFTAsset, RewardItem, APIStatus, CreditFactor, CorporateCardControls, PaymentOrder, Invoice, 
-    ComplianceCase, FinancialAnomaly, AnomalyStatus, Counterparty, PaymentOrderStatus 
+    ComplianceCase, FinancialAnomaly, AnomalyStatus, Counterparty, DynamicKpi, PaymentOrderStatus
 } from '../types';
 import { View, WeaverStage } from '../types';
 import { 
@@ -68,6 +69,9 @@ interface IDataContext {
   fetchMarketplaceProducts: () => Promise<void>;
   isMarketplaceLoading: boolean;
   addProductToTransactions: (product: MarketplaceProduct) => void;
+  dynamicKpis: DynamicKpi[];
+  addDynamicKpi: (kpi: DynamicKpi) => void;
+
 
   // Crypto & Web3
   cryptoAssets: CryptoAsset[];
@@ -153,6 +157,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [complianceCases] = useState<ComplianceCase[]>(MOCK_COMPLIANCE_CASES);
   const [financialAnomalies, setFinancialAnomalies] = useState<FinancialAnomaly[]>(MOCK_ANOMALIES);
   const [counterparties] = useState<Counterparty[]>(MOCK_COUNTERPARTIES);
+  const [dynamicKpis, setDynamicKpis] = useState<DynamicKpi[]>([]);
+
 
   // --- DERIVED STATE & MEMOS ---
   const impactData = useMemo(() => ({
@@ -339,6 +345,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // In a real app, I'd set an error state here. For now, the console log will suffice.
     }
   };
+  
+    const addDynamicKpi = (kpi: DynamicKpi) => {
+        if (!dynamicKpis.some(d => d.id === kpi.id)) {
+            setDynamicKpis(prev => [...prev, kpi]);
+        }
+    };
+
 
   // --- CRYPTO & WEB3 FUNCTIONS ---
   const connectWallet = () => setWalletInfo({ address: '0x1a2b...c3d4', balance: 12.5 });
@@ -397,7 +410,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       corporateTransactions, toggleCorporateCardFreeze, updateCorporateCardControls, rewardPoints, 
       notifications, markNotificationRead, nftAssets, mintNFT, rewardItems, redeemReward, 
       apiStatus, creditFactors, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases, 
-      financialAnomalies, updateAnomalyStatus, counterparties
+      financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi
   };
 
   return <DataContext.Provider value={value as IDataContext}>{children}</DataContext.Provider>;
