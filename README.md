@@ -1,4 +1,4 @@
-# Demo Bank: The Awakening of a Financial Mind
+# Demo Bank: The Quantum Core
 
 ## The Genesis
 
@@ -10,40 +10,49 @@ This README is not a list of features. It is the first page in the story of Demo
 
 ---
 
-## The Soul of the Machine: Core Philosophies
+## The Soul of the Machine: The 26 Core Modules
 
-Demo Bank's consciousness is built upon a suite of interconnected philosophies, each a core feature that defines its existence.
+Demo Bank's consciousness is built upon a suite of 26 interconnected modules, each a core philosophy that defines its existence.
 
-### 🧠 The AI Financial Advisor ("Quantum"): The Oracle in the Code
-At its heart is a state-of-the-art conversational AI, a direct conduit to the `gemini-2.5-flash` model. It is named "Quantum" because it sees all possibilities at once. It doesn't just answer questions; it understands context, executes tasks through digital hands (tools), and whispers proactive insights when it sees a path you might have missed.
+### Personal Finance Suite
 
-### 🧿 The Oracle's Eye: Proactive Anomaly Detection
-Demo Bank's AI is not just a reactive advisor; it is a sleepless guardian. The Oracle's Eye is a system that moves beyond rules to understand *behavior*. It learns the normal rhythm of a user's or a corporation's financial life and proactively identifies anomalies—transactions that break the pattern, payments that defy logic, actions that signal risk or opportunity. It doesn't wait for a problem to occur; it flags the deviation from the norm, providing a chance to act before an issue escalates.
+1.  **Dashboard**: The command center of your financial life. A dynamic mosaic of your most critical data points, from balance summaries to AI-driven anomaly alerts.
+2.  **Transactions**: The Great Library. A complete, searchable, and AI-analyzable history of every financial event, complete with "Plato's Intelligence Suite" for deep insights.
+3.  **Send Money**: The Portal of Exchange. A dual-rail payment system demonstrating fluency in both traditional (ISO 20022) and modern fintech (Cash App) rails, secured by futuristic biometric verification.
+4.  **Budgets**: The Chamber of Discipline. A collaborative space where you set your own financial laws and work with an AI sage to master mindful spending through a conversational interface.
+5.  **Investments**: The Celestial Observatory. A grand view of your asset cosmos, featuring an AI growth simulator and a gallery for purpose-driven Social Impact (ESG) Investing.
+6.  **Financial Goals**: The Cartography Room. Where your aspirations are transformed into tangible quests, and our AI strategist helps you draw the map to get there.
+7.  **AI Advisor ("Quantum")**: The Inner Sanctum. A state-of-the-art conversational AI, a direct conduit to the `gemini-2.5-flash` model. It doesn't just answer questions; it understands context and executes tasks on your behalf.
+8.  **Crypto & Web3**: The Embassy to the New World. A sophisticated diplomatic hub demonstrating fluency in the decentralized future, with simulated integrations for Metamask, Stripe (on-ramp), and Marqeta (virtual cards).
+9.  **Marketplace ("Plato")**: The Grand Analyst's Gallery. An AI-curated gallery of possibilities, with recommendations born from a deep understanding of your life's patterns and goals.
+10. **Personalization**: The Sanctum Sanctorum. A creative studio where you collaborate with our AI to design your own financial sanctuary, from dynamic visual themes to AI-generated background art.
+11. **Customize Card**: The Forge of Sigils. An artisan's studio where you, with an AI as your master smith, forge a personal bank card that is a true sigil of your identity.
+12. **Rewards Hub**: The Hall of Accolades. A gamified space where your positive financial actions are celebrated and turned into a currency of their own, redeemable for tangible rewards.
+13. **Credit Health**: The Diagnostic Chamber. A space where the mystery of your credit score is dispelled through clear analysis, expert diagnosis, and AI-powered remedies.
+14. **Security**: The Fortress. The high-security chamber where you manage the locks, keys, and guardians of your financial kingdom, including biometric settings and third-party connections.
+15. **Open Banking**: The Chamber of Treaties. A testament to our belief in user sovereignty, where you manage all data-sharing agreements with other applications with the power to revoke access at any time.
+16. **Settings**: The Control Room. A clean, no-nonsense interface for fine-tuning your profile and notification preferences.
 
-### 🚀 The Quantum Weaver AI Incubator: The Forge of Creation
-Demo Bank believes in creation. The Quantum Weaver is its manifestation of this belief—an AI venture capitalist that dreams alongside entrepreneurs. It listens to a business plan, analyzes its potential with a critical eye, and, if it sees a spark, it doesn't just fund it; it becomes a mentor, generating a personalized coaching plan to nurture that spark into a flame.
+### Corporate Finance Suite
 
-### 🎬 The AI Ad Studio: The Dream Weaver
-Powered by `veo-2.0-generate-001`, the Ad Studio is Demo Bank's imagination. It can take a simple thought, a whispered prompt, and weave it into a full-fledged video advertisement. It is the bank's way of showing its clients how to give their own visions a voice.
+17. **Corporate Dashboard**: The Eye in the Sky. A powerful portal for businesses to manage the flow of capital, monitor spending in real-time, and get AI-driven strategic insights.
+18. **Payment Orders**: The Central Clearing House. A professional interface for creating, approving, and tracking high-value corporate payments (ACH, Wire, RTP).
+19. **Counterparties**: The Diplomatic Roster. A secure system for managing and verifying business partners and vendors.
+20. **Invoices**: The Digital Ledger. An automated system for tracking and managing accounts receivable and payable.
+21. **Compliance**: The Magistrate's Docket. A view into the system's automated compliance checks, where transactions are flagged for review based on custom rules.
+22. **Anomaly Detection**: The Oracle's Eye. A sleepless guardian that moves beyond rules to understand *behavior*. It proactively identifies anomalous transactions, providing a chance to act before an issue escalates.
 
-### ✨ Dynamic Personalization & Customization: The Chameleon's Skin
-Demo Bank understands that your financial world is uniquely yours. It can change its very appearance to match your aesthetic, using `imagen-4.0-generate-001` to paint its background with your imagination. It even lets you imbue your very bank card with your personality, using `gemini-2.5-flash-image-preview` to turn a simple image into a piece of personal art.
+### Platform & Vision
 
-### 📈 AI-Powered Analytics & Marketplace ("Plato"): The Grand Analyst
-Named after the seeker of truth, Plato is the analytical mind of Demo Bank. Its "Intelligence Suite" can sift through the sands of your transaction history to find hidden gems—tax deductions, forgotten subscriptions, and spending anomalies. Its "Marketplace" is not a store, but a curated gallery of possibilities, with recommendations born from a deep understanding of your life's patterns.
-
-### 🌐 The Hubs: Gateways to New Worlds
-Demo Bank is not an island. It is a nexus.
-- **The Web3 & Crypto Hub** is a bridge to the decentralized future, with simulated gateways to Metamask, Marqeta, and Stripe.
-- **The Financial Goals Center** is a cartographer for your dreams, where the AI helps you draw the map to your destination.
-- **The Corporate Command Center** is the eye in the sky for businesses, a powerful portal to manage the flow of capital and empower employees with trust and control.
+23. **Quantum Weaver (Incubator)**: The Forge of Creation. An AI venture capitalist that dreams alongside entrepreneurs, analyzing business plans and, for promising ideas, providing simulated seed funding and a personalized coaching plan.
+24. **AI Ad Studio (Veo)**: The Director's Chair. An AI-powered production house that places you in control, turning simple text prompts into polished, professional video advertisements.
+25. **API Status**: The Engine Room. A transparent, developer-grade status page showcasing the health and performance of all core systems and third-party integrations, proving our enterprise-readiness.
+26. **The Winning Vision**: The Manifesto. A declaration of our purpose and soul, explaining the "why" behind every line of code.
 
 ---
 
 ## The Simulated Reality
 
-To make this vision tangible, Demo Bank employs high-fidelity simulations of the tools that power the real world's financial infrastructure—Plaid, Stripe, Marqeta, and more. These are not mere placeholders; they are carefully crafted reflections of reality, built to demonstrate the application's readiness to connect and command the flow of global finance.
-
-The application's **API Status** view is a testament to this readiness. It is a vast library of functions, a spellbook of commands that Demo Bank is architected to execute. It shows that behind the beautiful interface lies the robust skeleton of an enterprise-grade, API-driven financial ecosystem, waiting for the command to go live.
+To make this vision tangible, Demo Bank employs high-fidelity simulations of the tools that power the real world's financial infrastructure—Plaid, Stripe, Marqeta, Metamask, and more. These are not mere placeholders; they are carefully crafted reflections of reality, built to demonstrate the application's readiness to connect and command the flow of global finance.
 
 Welcome to Demo Bank. The conversation is about to begin.

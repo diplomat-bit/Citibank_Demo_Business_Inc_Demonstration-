@@ -11,10 +11,9 @@ import type { FinancialAnomaly } from '../types';
 
 /**
  * @description A list of mock financial anomalies detected by the AI. This is the
- * primary data source for the `Anomalies` view in the corporate finance module.
- * The data is intentionally rich, including an AI-generated explanation, severity,
- * status, and a risk score to demonstrate a sophisticated, AI-powered security and
- * risk management system.
+ * primary data source for the `AnomalyDetectionView`. The data is intentionally rich, 
+ * including an AI-generated explanation, severity, status, and a risk score to 
+ * demonstrate a sophisticated, AI-powered security and risk management system.
  */
 export const MOCK_ANOMALIES: FinancialAnomaly[] = [
   {

@@ -19,4 +19,5 @@ export const MOCK_INVOICES: Invoice[] = [
   { id: 'inv_1', invoiceNumber: 'INV-2024-07-001', counterpartyName: 'Client Bravo', dueDate: '2024-07-15', amount: 7500, status: 'overdue' },
   { id: 'inv_2', invoiceNumber: 'INV-2024-08-002', counterpartyName: 'Client Charlie', dueDate: '2024-08-10', amount: 12000, status: 'unpaid' },
   { id: 'inv_3', invoiceNumber: 'INV-2024-06-003', counterpartyName: 'Client Delta', dueDate: '2024-06-25', amount: 2500, status: 'paid' },
+  { id: 'inv_4', invoiceNumber: 'INV-2024-08-001', counterpartyName: 'Synergize Solutions', dueDate: '2024-08-20', amount: 4800, status: 'unpaid' },
 ];

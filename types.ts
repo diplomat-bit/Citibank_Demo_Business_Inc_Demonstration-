@@ -1,28 +1,80 @@
+// types.ts
+// This file is the grand codex, the laws of physics for the Demo Bank universe.
+// It defines the shape and structure of every piece of data that can exist.
+// A robust and explicit type system is the foundation of a scalable and maintainable application.
+
+// ================================================================================================
+// NAVIGATION & UI STATE
+// ================================================================================================
+
+/**
+ * @description Defines every possible view/page in the application.
+ * This enum is the single source of truth for navigation state.
+ */
+export enum View {
+    // Personal Finance
+    Dashboard = 'dashboard',
+    Transactions = 'transactions',
+    SendMoney = 'send-money',
+    Budgets = 'budgets',
+    Investments = 'investments',
+    FinancialGoals = 'financial-goals',
+    RewardsHub = 'rewards-hub',
+    CreditHealth = 'credit-health',
+    
+    // AI & Platform
+    AIAdvisor = 'ai-advisor',
+    QuantumWeaver = 'quantum-weaver',
+    AIAdStudio = 'ai-ad-studio',
+    
+    // Advanced Features
+    Crypto = 'crypto',
+    Marketplace = 'marketplace',
+    Personalization = 'personalization',
+    CardCustomization = 'card-customization',
+    
+    // Corporate Finance
+    CorporateDashboard = 'corporate-dashboard',
+    PaymentOrders = 'payment-orders',
+    Counterparties = 'counterparties',
+    Invoices = 'invoices',
+    Compliance = 'compliance',
+    AnomalyDetection = 'anomaly-detection',
+
+    // System & Settings
+    Security = 'security',
+    OpenBanking = 'open-banking',
+    APIStatus = 'api-status',
+    TheWinningVision = 'the-winning-vision',
+    Settings = 'settings',
+}
+
+/**
+ * @description Defines the type of dynamic, reality-bending background effect.
+ */
+export type IllusionType = 'none' | 'aurora';
+
+// ================================================================================================
+// CORE PERSONAL FINANCE TYPES
+// ================================================================================================
+
 export interface Transaction {
   id: string;
   type: 'income' | 'expense';
   category: string;
   description: string;
   amount: number;
-  date: string;
-  carbonFootprint?: number;
+  date: string; // YYYY-MM-DD
+  carbonFootprint?: number; // in kg CO₂
 }
 
 export interface Asset {
   name: string;
   value: number;
   color: string;
+  performanceYTD?: number;
   esgRating?: number;
   description?: string;
-  performanceYTD?: number;
-}
-
-export interface AIInsight {
-  id: string;
-  title: string;
-  description: string;
-  urgency: 'low' | 'medium' | 'high';
-  chartData?: { name: string; value: number }[];
 }
 
 export interface BudgetCategory {
@@ -33,36 +85,103 @@ export interface BudgetCategory {
     color: string;
 }
 
+export interface FinancialGoal {
+    id: string;
+    name: string;
+    targetAmount: number;
+    targetDate: string;
+    currentAmount: number;
+    iconName: string; // Corresponds to a key in an icon map
+    plan: AIGoalPlan | null;
+}
+
+export interface SavingsGoal {
+  id:string;
+  name: string;
+  target: number;
+  saved: number;
+  iconName: string;
+}
+
+export interface UpcomingBill {
+  id: string;
+  name: string;
+  amount: number;
+  dueDate: string;
+}
+
+export interface Subscription {
+  id: string;
+  name: string;
+  amount: number;
+  nextPayment: string;
+  iconName: string;
+}
+
+export interface LinkedAccount {
+  id: string; // Institution ID
+  name: string;
+  mask: string; // Last 4 digits of account number
+}
+
+// ================================================================================================
+// GAMIFICATION & REWARDS TYPES
+// ================================================================================================
+
 export interface GamificationState {
     score: number;
     level: number;
     levelName: string;
-    progress: number;
+    progress: number; // Percentage to next level
     credits: number;
 }
 
-export interface AIPlanStep {
-    title: string;
+export interface RewardPoints {
+    balance: number;
+    lastEarned: number;
+    lastRedeemed: number;
+    currency: string;
+}
+
+export interface RewardItem {
+    id: string;
+    name: string;
+    cost: number; // in reward points
+    type: 'cashback' | 'giftcard' | 'impact';
     description: string;
-    timeline: string;
+    iconName: string;
 }
 
-export interface AIPlan {
-    title: string;
-    summary: string;
-    steps: AIPlanStep[];
+// ================================================================================================
+// CREDIT & HEALTH TYPES
+// ================================================================================================
+
+export interface CreditScore {
+  score: number;
+  change: number; // Point change in the last period
+  rating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
 }
 
-export type IllusionType = 'none' | 'aurora';
+export interface CreditFactor {
+    name: 'Payment History' | 'Credit Utilization' | 'Credit Age' | 'New Credit' | 'Credit Mix';
+    status: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+    description: string;
+}
 
-export interface LinkedAccount {
+// ================================================================================================
+// AI & MACHINE LEARNING TYPES
+// ================================================================================================
+
+export interface AIInsight {
   id: string;
-  name: string;
-  mask: string;
+  title: string;
+  description: string;
+  urgency: 'low' | 'medium' | 'high';
+  chartData?: { name: string; value: number }[];
 }
 
 export interface AIQuestion {
-    id:string;
+    id: string;
     question: string;
     category: string;
 }
@@ -86,40 +205,28 @@ export interface QuantumWeaverState {
     error: string | null;
 }
 
-export interface Subscription {
-  id: string;
-  name: string;
-  amount: number;
-  nextPayment: string;
-  iconName: string;
+export interface AIPlanStep {
+    title: string;
+    description: string;
+    timeline: string;
 }
 
-export interface CreditScore {
-  score: number;
-  change: number;
-  rating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+export interface AIPlan {
+    title: string;
+    summary: string;
+    steps: AIPlanStep[];
 }
 
-export interface UpcomingBill {
-  id: string;
-  name: string;
-  amount: number;
-  dueDate: string;
+export interface AIGoalPlanStep {
+    title: string;
+    description: string;
+    category: 'Savings' | 'Budgeting' | 'Investing' | 'Income';
 }
 
-export interface SavingsGoal {
-  id:string;
-  name: string;
-  target: number;
-  saved: number;
-  iconName: string;
-}
-
-export interface MarketMover {
-    ticker: string;
-    name: string;
-    change: number;
-    price: number;
+export interface AIGoalPlan {
+    feasibilitySummary: string;
+    monthlyContribution: number;
+    steps: AIGoalPlanStep[];
 }
 
 export interface MarketplaceProduct {
@@ -137,11 +244,16 @@ export interface DetectedSubscription {
   lastCharged: string;
 }
 
+
+// ================================================================================================
+// CRYPTO & WEB3 TYPES
+// ================================================================================================
+
 export interface CryptoAsset {
   ticker: string;
   name: string;
-  value: number;
-  amount: number;
+  value: number; // Total value in USD
+  amount: number; // Amount of the asset owned
   color: string;
 }
 
@@ -170,6 +282,10 @@ export interface PaymentOperation {
   date: string;
 }
 
+// ================================================================================================
+// CORPORATE FINANCE TYPES
+// ================================================================================================
+
 export interface CorporateCardControls {
     atm: boolean;
     contactless: boolean;
@@ -196,98 +312,6 @@ export interface CorporateTransaction {
     timestamp: string;
 }
 
-export interface RewardPoints {
-    balance: number;
-    lastEarned: number;
-    lastRedeemed: number;
-    currency: string;
-}
-
-export interface Notification {
-    id: string;
-    message: string;
-    timestamp: string;
-    read: boolean;
-    view?: View;
-}
-
-
-export enum View {
-    Dashboard = 'dashboard',
-    Transactions = 'transactions',
-    SendMoney = 'send-money',
-    Budgets = 'budgets',
-    Investments = 'investments',
-    SASPlatforms = 'the-vision',
-    AIAdvisor = 'ai-advisor',
-    QuantumWeaver = 'quantum-weaver',
-    AIAdStudio = 'ai-ad-studio',
-    Crypto = 'crypto',
-    Goals = 'goals',
-    Marketplace = 'marketplace',
-    Security = 'security',
-    Personalization = 'personalization',
-    CardCustomization = 'card-customization',
-    OpenBanking = 'open-banking',
-    CorporateDashboard = 'corporate-dashboard',
-    APIIntegration = 'api-integration',
-    Rewards = 'rewards',
-    CreditHealth = 'credit-health',
-    Settings = 'settings',
-    // New Corporate Views
-    PaymentOrders = 'payment-orders',
-    Counterparties = 'counterparties',
-    Invoices = 'invoices',
-    Compliance = 'compliance',
-    Anomalies = 'anomalies',
-}
-
-export interface AIGoalPlanStep {
-    title: string;
-    description: string;
-    category: 'Savings' | 'Budgeting' | 'Investing' | 'Income';
-}
-
-export interface AIGoalPlan {
-    feasibilitySummary: string;
-    monthlyContribution: number;
-    steps: AIGoalPlanStep[];
-}
-
-export interface FinancialGoal {
-    id: string;
-    name: string;
-    targetAmount: number;
-    targetDate: string;
-    currentAmount: number;
-    iconName: string;
-    plan: AIGoalPlan | null;
-}
-
-export interface RewardItem {
-    id: string;
-    name: string;
-    cost: number; // in reward points
-    type: 'cashback' | 'giftcard' | 'impact';
-    description: string;
-    iconName: string; // for an icon
-}
-
-export type APIProvider = 'Plaid' | 'Stripe' | 'Marqeta' | 'Modern Treasury' | 'Google Gemini';
-
-export interface APIStatus {
-    provider: APIProvider;
-    status: 'Operational' | 'Degraded Performance' | 'Partial Outage' | 'Major Outage';
-    responseTime: number; // in ms
-}
-
-export interface CreditFactor {
-    name: 'Payment History' | 'Credit Utilization' | 'Credit Age' | 'New Credit' | 'Credit Mix';
-    status: 'Excellent' | 'Good' | 'Fair' | 'Poor';
-    description: string;
-}
-
-// Types for Corporate Financial Operations
 export interface Counterparty {
     id: string;
     name: string;
@@ -337,7 +361,6 @@ export interface ComplianceCase {
     openedDate: string;
 }
 
-// Types for AI-Powered Anomaly Detection
 export type AnomalySeverity = 'Low' | 'Medium' | 'High' | 'Critical';
 export type AnomalyStatus = 'New' | 'Under Review' | 'Dismissed' | 'Resolved';
 export type AnomalyEntityType = 'PaymentOrder' | 'Transaction' | 'Counterparty' | 'CorporateCard';
@@ -345,12 +368,40 @@ export type AnomalyEntityType = 'PaymentOrder' | 'Transaction' | 'Counterparty' 
 export interface FinancialAnomaly {
     id: string;
     description: string;
-    details: string; // AI-generated explanation of why it's an anomaly
+    details: string; // AI-generated explanation
     severity: AnomalySeverity;
     status: AnomalyStatus;
     entityType: AnomalyEntityType;
     entityId: string;
-    entityDescription: string; // e.g., "Payment to Cloud Services Inc."
+    entityDescription: string;
     timestamp: string;
     riskScore: number; // 0-100
+}
+
+
+// ================================================================================================
+// SYSTEM & MISC TYPES
+// ================================================================================================
+
+export interface Notification {
+    id: string;
+    message: string;
+    timestamp: string;
+    read: boolean;
+    view?: View;
+}
+
+export type APIProvider = 'Plaid' | 'Stripe' | 'Marqeta' | 'Modern Treasury' | 'Google Gemini';
+
+export interface APIStatus {
+    provider: APIProvider;
+    status: 'Operational' | 'Degraded Performance' | 'Partial Outage' | 'Major Outage';
+    responseTime: number; // in ms
+}
+
+export interface MarketMover {
+    ticker: string;
+    name: string;
+    change: number;
+    price: number;
 }

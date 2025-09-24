@@ -10,7 +10,7 @@
 import type { RewardItem } from '../types';
 
 /**
- * @description A list of items available for redemption in the `RewardsView`.
+ * @description A list of items available for redemption in the `RewardsHubView`.
  * This data populates the marketplace where users can spend their reward points.
  * Each item has a name, cost, type (cashback, giftcard, impact), a description,
  * and an icon, offering a diverse range of redemption options.

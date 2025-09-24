@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Preload key images to improve Largest Contentful Paint (LCP) -->
     <link rel="preload" href="/IMG_5610.webp" as="image" />
+    <link rel="preload" href="/thumb1.webp" as="image" />
+    <link rel="preload" href="/thumb2.webp" as="image" />
+    <link rel="preload" href="/thumb3.webp" as="image" />
+    <link rel="preload" href="/nft-pass.webp" as="image" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Demo Bank</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,8 +24,25 @@
   }
 }
 </script>
+<style>
+  /* Global styles for dynamic effects to prevent style tag injection */
+  .aurora-illusion {
+    background: radial-gradient(ellipse at top, #06b6d4, transparent),
+                radial-gradient(ellipse at bottom, #4f46e5, transparent);
+    background-size: 200% 200%;
+    animation: aurora-flow 15s ease-in-out infinite;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  @keyframes aurora-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+</style>
 </head>
-  <body class="bg-gray-900">
+  <body class="bg-gray-950">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

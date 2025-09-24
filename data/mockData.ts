@@ -2,10 +2,7 @@
 // All mock data constants have been moved to their own respective files within
 // the /data directory to improve maintainability, scalability, and clarity.
 //
-// To import mock data, please use the barrel file at the root of the directory,
-// which exports all constants from their new homes.
-//
-// Example:
+// To import mock data, please use the barrel file at the root of the directory:
 // import { MOCK_TRANSACTIONS, MOCK_ASSETS } from './';
 //
 // This monolithic scroll of primordial memory has served its purpose. It has been

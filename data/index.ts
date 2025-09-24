@@ -31,3 +31,4 @@ export * from './paymentOrders';
 export * from './invoices';
 export * from './complianceCases';
 export * from './anomalies';
+export * from './counterparties';

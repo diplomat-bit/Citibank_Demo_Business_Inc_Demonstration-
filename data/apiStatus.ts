@@ -11,7 +11,7 @@ import type { APIStatus } from '../types';
 
 /**
  * @description A list simulating the real-time status of various third-party APIs
- * that the application integrates with. This data is used in the `APIIntegrationView`
+ * that the application integrates with. This data is used in the `APIStatusView`
  * to create a realistic system status dashboard. Each entry includes the provider's
  * name, its current operational status, and a mock response time.
  */
