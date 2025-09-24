@@ -1,8 +1,9 @@
 
 ##Article Prologue: The Genesis of the Liminal Demo
 ---
-#Be it herein declared, the genesis of the artefact heretofore denominated *Demo* is one of a liminal nature, neither purely extant nor wholly fictive, but existing within the interstitial plane of *demonstration* and *simulation*.  
-This Entity is expressly constituted for the singular purpose of effectuating a *live mock*—an epistemic construct wherein no veritable data inheres, and whereupon the substrate of operation is predicated upon what is herein termed *Alohabwt Soup Logic* (hereinafter, the “Logic of Intermediaries”).
+**Be it herein declared, the genesis of the artefact heretofore denominated *Demo* is one of a liminal nature, neither purely extant nor wholly fictive, but existing within the interstitial plane of *demonstration* and *simulation*.  
+---
+**This Entity is expressly constituted for the singular purpose of effectuating a *live mock*—an epistemic construct wherein no veritable data inheres, and whereupon the substrate of operation is predicated upon what is herein termed *Alohabwt Soup Logic* (hereinafter, the “Logic of Intermediaries”).**
 ---
 #It is further established as a principle of operative law that *intermediaries*, presently instantiated as Application Programming Interfaces (“APIs”), possess the juridical capacity to transmit, intercept, and transmute said data.  
 Such transmutation is to be effected *autopoetically*, whereby the system itself assumes both the role of subject and object of transformation, thereby engendering a self-referential and self-sustaining operational ontology (hereinafter, the “Systemic Self–Poiesis Doctrine”).
