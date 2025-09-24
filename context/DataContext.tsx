@@ -1,9 +1,10 @@
 import React, { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
-// FIX: The import for GoogleGenAI was incorrect. The new SDK uses "@google/genai".
 import { GoogleGenAI, Type } from "@google/genai";
-import type { Transaction, Asset, BudgetCategory, GamificationState, IllusionType, LinkedAccount, QuantumWeaverState, Subscription, CreditScore, UpcomingBill, SavingsGoal, MarketMover, MarketplaceProduct, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, PaymentOperation, AIInsight, CorporateCard, CorporateTransaction, RewardPoints, Notification, NFTAsset, RewardItem, APIStatus, CreditFactor, CorporateCardControls, PaymentOrder, Invoice, ComplianceCase, FinancialAnomaly, AnomalyStatus, User, Post, LendingPoolStats, CommunityLoan, AppIntegration, Counterparty, BiometricData, ExternalAccount, VirtualAccount, ToastNotification, LoginAttempt, AIAgent, SynapticVault, PostContent } from '../types';
+// FIX: Add missing corporate finance types to the context interface to resolve errors in CorporateCommandView.
+import type { Transaction, Asset, BudgetCategory, GamificationState, IllusionType, LinkedAccount, QuantumWeaverState, AIPlan, AIQuestion, Subscription, CreditScore, UpcomingBill, SavingsGoal, MarketMover, MarketplaceProduct, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, PaymentOperation, AIInsight, CorporateCard, CorporateTransaction, RewardPoints, Notification, NFTAsset, RewardItem, APIStatus, CreditFactor, CorporateCardControls, PaymentOrder, Invoice, ComplianceCase, FinancialAnomaly, AnomalyStatus } from '../types';
 import { View, WeaverStage } from '../types';
-import { MOCK_TRANSACTIONS, MOCK_ASSETS, MOCK_IMPACT_INVESTMENTS, MOCK_BUDGETS, MOCK_SUBSCRIPTIONS, MOCK_CREDIT_SCORE, MOCK_UPCOMING_BILLS, MOCK_SAVINGS_GOALS, MOCK_MARKET_MOVERS, MOCK_FINANCIAL_GOALS, MOCK_CRYPTO_ASSETS, MOCK_PAYMENT_OPERATIONS, MOCK_CORPORATE_CARDS, MOCK_CORPORATE_TRANSACTIONS, MOCK_REWARD_POINTS, MOCK_NOTIFICATIONS, MOCK_REWARD_ITEMS, MOCK_API_STATUS, MOCK_CREDIT_FACTORS, MOCK_PAYMENT_ORDERS, MOCK_INVOICES, MOCK_COMPLIANCE_CASES, MOCK_ANOMALIES, MOCK_USERS, MOCK_POSTS, MOCK_LENDING_POOL, MOCK_APP_INTEGRATIONS, MOCK_COUNTERPARTIES, MOCK_BIOMETRIC_DATA, MOCK_LOGIN_ATTEMPTS, MOCK_AI_AGENTS, MOCK_SYNAPTIC_VAULTS } from '../data/mockData';
+// FIX: Add state for the new corporate finance data to make it available through the context.
+import { MOCK_TRANSACTIONS, MOCK_ASSETS, MOCK_IMPACT_INVESTMENTS, MOCK_BUDGETS, MOCK_SUBSCRIPTIONS, MOCK_CREDIT_SCORE, MOCK_UPCOMING_BILLS, MOCK_SAVINGS_GOALS, MOCK_MARKET_MOVERS, MOCK_FINANCIAL_GOALS, MOCK_CRYPTO_ASSETS, MOCK_PAYMENT_OPERATIONS, MOCK_CORPORATE_CARDS, MOCK_CORPORATE_TRANSACTIONS, MOCK_REWARD_POINTS, MOCK_NOTIFICATIONS, MOCK_REWARD_ITEMS, MOCK_API_STATUS, MOCK_CREDIT_FACTORS, MOCK_PAYMENT_ORDERS, MOCK_INVOICES, MOCK_COMPLIANCE_CASES, MOCK_ANOMALIES } from '../data';
 
 const LEVEL_NAMES = ["Financial Novice", "Budgeting Apprentice", "Savings Specialist", "Investment Adept", "Wealth Master"];
 const SCORE_PER_LEVEL = 200;
@@ -74,44 +75,16 @@ interface IDataContext {
   redeemReward: (item: RewardItem) => boolean;
   apiStatus: APIStatus[];
   creditFactors: CreditFactor[];
+  // FIX: Add missing corporate finance data types to the context interface to resolve errors in CorporateCommandView.
   paymentOrders: PaymentOrder[];
   invoices: Invoice[];
-  addInvoice: (invoiceData: Omit<Invoice, 'id'|'invoiceNumber'|'status'>) => void;
   complianceCases: ComplianceCase[];
   financialAnomalies: FinancialAnomaly[];
   updateAnomalyStatus: (id: string, status: AnomalyStatus) => void;
-  // New Social & P2P types
-  users: User[];
-  posts: Post[];
-  createPost: (text: string) => void;
-  lendingPool: LendingPoolStats;
-  // New Corporate Suite types
-  appIntegrations: AppIntegration[];
-  counterparties: Counterparty[];
-  createCounterparty: (name: string, type: 'business' | 'individual') => void;
-  addExternalAccountToCounterparty: (counterpartyId: string, accountData: Omit<ExternalAccount, 'id'>) => void;
-  createVirtualAccountForCounterparty: (counterpartyId: string, accountName: string) => void;
-  biometricData: BiometricData;
-  enableBiometricLock: (cardId: string) => void;
-  // New Feedback system
-  toastNotifications: ToastNotification[];
-  // New Activated Features
-  approvePaymentOrder: (orderId: string) => void;
-  denyPaymentOrder: (orderId: string) => void;
-  sendCashAppPayment: (cashtag: string, amount: number) => void;
-  // New Control Center & AI Network state
-  loginAttempts: LoginAttempt[];
-  aiAgents: AIAgent[];
-  synapticVaults: SynapticVault[];
-  createSynapticVault: (collaboratorId: string) => void;
-  // FIX: Added missing function definition to the interface.
-  createPaymentOrder: (orderData: Omit<PaymentOrder, 'id' | 'status' | 'date'>) => void;
-  mintPostAsNFT: (postId: string) => void;
 }
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
 
-// FIX: Added a return statement with the provider to satisfy the React.FC type. The component was implicitly returning void.
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const COST_PER_TREE = 250;
 
@@ -149,7 +122,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [subscriptions] = useState<Subscription[]>(MOCK_SUBSCRIPTIONS);
   const [creditScore] = useState<CreditScore>(MOCK_CREDIT_SCORE);
   const [upcomingBills] = useState<UpcomingBill[]>(MOCK_UPCOMING_BILLS);
-  const [savingsGoals] = useState<SavingsGoal[]>(MOCK_SAVINGS_GOALS);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(MOCK_SAVINGS_GOALS);
   const [marketMovers] = useState<MarketMover[]>(MOCK_MARKET_MOVERS);
   const [rewardPoints, setRewardPoints] = useState<RewardPoints>(MOCK_REWARD_POINTS);
   
@@ -174,7 +147,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // State for Corporate Command Center
   const [corporateCards, setCorporateCards] = useState<CorporateCard[]>(MOCK_CORPORATE_CARDS);
-  const [corporateTransactions, setCorporateTransactions] = useState<CorporateTransaction[]>(MOCK_CORPORATE_TRANSACTIONS);
+  const [corporateTransactions] = useState<CorporateTransaction[]>(MOCK_CORPORATE_TRANSACTIONS);
 
   // State for new interactive features
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
@@ -184,37 +157,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [apiStatus] = useState<APIStatus[]>(MOCK_API_STATUS);
   const [creditFactors] = useState<CreditFactor[]>(MOCK_CREDIT_FACTORS);
 
-  const [paymentOrders, setPaymentOrders] = useState<PaymentOrder[]>(MOCK_PAYMENT_ORDERS);
-  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  // FIX: Add state for the new corporate finance data to make it available through the context.
+  const [paymentOrders] = useState<PaymentOrder[]>(MOCK_PAYMENT_ORDERS);
+  const [invoices] = useState<Invoice[]>(MOCK_INVOICES);
   const [complianceCases] = useState<ComplianceCase[]>(MOCK_COMPLIANCE_CASES);
   const [financialAnomalies, setFinancialAnomalies] = useState<FinancialAnomaly[]>(MOCK_ANOMALIES);
 
-  // New state for Ecosystem Hub & P2P Lending
-  const [users] = useState<User[]>(MOCK_USERS);
-  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
-  const [lendingPool] = useState<LendingPoolStats>(MOCK_LENDING_POOL);
-
-  // New state for Activated Corporate Suite
-  const [appIntegrations] = useState<AppIntegration[]>(MOCK_APP_INTEGRATIONS);
-  const [counterparties, setCounterparties] = useState<Counterparty[]>(MOCK_COUNTERPARTIES);
-  const [biometricData] = useState<BiometricData>(MOCK_BIOMETRIC_DATA);
-
-  // New state for feedback system
-  const [toastNotifications, setToastNotifications] = useState<ToastNotification[]>([]);
-
-  // New state for Control Center & AI Network
-  const [loginAttempts] = useState<LoginAttempt[]>(MOCK_LOGIN_ATTEMPTS);
-  const [aiAgents] = useState<AIAgent[]>(MOCK_AI_AGENTS);
-  const [synapticVaults, setSynapticVaults] = useState<SynapticVault[]>(MOCK_SYNAPTIC_VAULTS);
-
-
-  const addToast = (message: string, type: 'success' | 'error') => {
-    const newToast = { id: Date.now(), message, type };
-    setToastNotifications(prev => [...prev, newToast]);
-    setTimeout(() => {
-        setToastNotifications(prev => prev.filter(t => t.id !== newToast.id));
-    }, 5000);
-  };
 
   const setCustomBackgroundUrl = (url: string) => {
       localStorage.setItem('customBackgroundUrl', url);
@@ -279,538 +227,515 @@ Recent Transactions: ${recentTransactionsSummary}`;
                                         items: {
                                             type: Type.OBJECT,
                                             properties: {
-                                                name: { type: Type.STRING },
-                                                value: { type: Type.NUMBER }
-                                            }
+                                                name: { type: Type.STRING, description: "The name of the item for the chart (e.g., a specific transaction description)." },
+                                                value: { type: Type.NUMBER, description: "The value (amount) for the chart." }
+                                            },
+                                            required: ["name", "value"]
                                         }
                                     }
-                                }
+                                },
+                                required: ["id", "title", "description", "urgency"]
                             }
                         }
-                    }
+                    },
+                    required: ["insights"]
                 }
             }
         });
-
-        const result = JSON.parse(response.text ?? '{}');
-        if (result.insights) {
-            setAiInsights(result.insights);
+        
+        const parsedResponse = JSON.parse(response.text);
+        if (parsedResponse.insights) {
+            setAiInsights(parsedResponse.insights);
         }
+
     } catch (error) {
-        console.error("Failed to generate dashboard insights:", error);
+        console.error("Failed to generate AI insights:", error);
+        // Fallback to a default insight on error
+        setAiInsights([{ id: 'error_1', title: 'Analysis Paused', description: 'Could not fetch fresh insights at this time. Displaying last known data.', urgency: 'low' }]);
     } finally {
         setIsInsightsLoading(false);
     }
-}, [transactions]);
+}, [transactions]); // Dependency on transactions ensures it can re-run with new data
 
-  useEffect(() => {
-      if (transactions.length > 0) {
-          generateDashboardInsights();
-      }
-  }, [generateDashboardInsights]);
-  
-  const addTransaction = (tx: Transaction) => {
-      // Future-state memo: This event stream should be mirrored to an analytics bus (e.g., Segment).
-      setTransactions(prev => [tx, ...prev]);
-      if (tx.type === 'expense') {
-          setSpendingForNextTree(prev => {
-              const newSpending = prev + tx.amount;
-              if (newSpending >= COST_PER_TREE) {
-                  setTreesPlanted(p => p + 1);
-                  return newSpending % COST_PER_TREE;
-              }
-              return newSpending;
-          });
-          setBudgets(prev => prev.map(b => b.name.toLowerCase() === tx.category.toLowerCase() ? { ...b, spent: b.spent + tx.amount } : b));
-          updateGamification(-5);
-      } else {
-          updateGamification(10);
-      }
-  };
+useEffect(() => {
+    generateDashboardInsights(); // Initial generation
+    const intervalId = setInterval(generateDashboardInsights, 35000); // Auto-refresh every 35 seconds
+    return () => clearInterval(intervalId);
+}, [generateDashboardInsights]);
 
-  const addBudget = (budget: Omit<BudgetCategory, 'id'|'spent'|'color'>) => {
-        const newBudget: BudgetCategory = {
-            id: budget.name.toLowerCase().replace(' ', '-'),
-            name: budget.name,
-            limit: budget.limit,
-            spent: 0,
-            color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-        };
-        setBudgets(prev => [...prev, newBudget]);
-        addToast(`Budget for "${budget.name}" created!`, 'success');
-  };
-  
   const handlePlaidSuccess = (publicToken: string, metadata: any) => {
     setIsImportingData(true);
-    // In a real app, you'd exchange the public token for an access token on your server.
-    // Here we just simulate adding the account and fetching transactions.
-    console.log("Plaid public token:", publicToken);
-    console.log("Plaid metadata:", metadata);
-    const newAccounts: LinkedAccount[] = metadata.accounts.map((acc: any) => ({
-        id: acc.id,
+    console.log("Plaid Link Success!", { publicToken, metadata });
+
+    const newAccount: LinkedAccount = {
+        id: metadata.institution.institution_id,
         name: metadata.institution.name,
-        mask: acc.mask
-    }));
-    setLinkedAccounts(prev => [...prev, ...newAccounts]);
-    addToast(`${metadata.institution.name} linked successfully!`, 'success');
+        mask: metadata.accounts[0].mask,
+    };
     
-    // Simulate fetching transactions after a delay
+    if (!linkedAccounts.some(acc => acc.id === newAccount.id)) {
+        setLinkedAccounts(prev => [...prev, newAccount]);
+    }
+    
     setTimeout(() => {
-        const randomTxCount = Math.floor(Math.random() * 5) + 3;
-        const newTransactions: Transaction[] = Array.from({ length: randomTxCount }, (_, i) => ({
-            id: `plaid_${Date.now()}_${i}`,
-            type: Math.random() > 0.3 ? 'expense' : 'income',
-            category: 'Imported',
-            description: `Imported from ${metadata.institution.name}`,
-            amount: Math.random() * 100,
-            date: new Date().toLocaleDateString('en-CA'),
-        }));
-        setTransactions(prev => [...newTransactions, ...prev]);
+        const plaidTransactions: Transaction[] = [
+            { id: `plaid_${Date.now()}`, type: 'expense', category: 'Shopping', description: `Zara`, amount: 152.34, date: '2024-03-22', carbonFootprint: 10.1 },
+            { id: `plaid_${Date.now()+1}`, type: 'expense', category: 'Dining', description: `The Cheesecake Factory`, amount: 85.50, date: '2024-03-21', carbonFootprint: 8.2 },
+            { id: `plaid_${Date.now()+2}`, type: 'income', category: 'Salary', description: `Paycheck`, amount: 2500.00, date: '2024-03-20' },
+            { id: `plaid_${Date.now()+3}`, type: 'expense', category: 'Groceries', description: `Whole Foods`, amount: 210.40, date: '2024-03-19', carbonFootprint: 21.8 },
+            { id: `plaid_${Date.now()+4}`, type: 'expense', category: 'Transport', description: `Uber`, amount: 25.10, date: '2024-03-18', carbonFootprint: 2.1 },
+            { id: `plaid_${Date.now()+5}`, type: 'expense', category: 'Utilities', description: `Con Edison`, amount: 112.00, date: '2024-03-15', carbonFootprint: 25.3 },
+            { id: `plaid_${Date.now()+6}`, type: 'expense', category: 'Entertainment', description: `Netflix Subscription`, amount: 15.99, date: '2024-03-12', carbonFootprint: 0.5 },
+            { id: `plaid_${Date.now()+7}`, type: 'expense', category: 'Dining', description: `Starbucks`, amount: 7.80, date: '2024-03-11', carbonFootprint: 0.8 },
+        ];
+        
+        setTransactions(prev => [...plaidTransactions, ...prev]);
+        
+        updateGamification(100);
+        
+        // The generateDashboardInsights function will automatically re-run due to the dependency change,
+        // but we can call it here to ensure immediate feedback after import simulation.
+        generateDashboardInsights();
+        
         setIsImportingData(false);
-        addToast(`Imported ${randomTxCount} transactions.`, 'success');
-    }, 2500);
+    }, 4000);
   };
-  
+
   const unlinkAccount = (id: string) => {
-    setLinkedAccounts(prev => prev.filter(acc => acc.id !== id));
+      setLinkedAccounts(prev => prev.filter(acc => acc.id !== id));
   };
-  
+
   const pitchBusinessPlan = async (plan: string) => {
-    setWeaverState(prev => ({ ...prev, stage: WeaverStage.Analysis, businessPlan: plan }));
+    setWeaverState(prev => ({ ...prev, stage: WeaverStage.Analysis, businessPlan: plan, error: null }));
+    
     try {
-        await new Promise(res => setTimeout(res, 2000)); // Simulate analysis time
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Analyze this business plan and provide initial feedback (one sentence) and 3-4 probing questions a venture capitalist would ask.
-            Plan: "${plan}"`,
-        });
-        
-        const text = response.text ?? '';
-        const feedbackMatch = text.match(/"(.*?)"/);
-        const feedback = feedbackMatch ? feedbackMatch[1] : "An interesting proposal. We have some questions.";
-        const questions = text.split('\n').slice(1).map((q, i) => ({
-            id: `q${i}`,
-            question: q.replace(/^\d+\.\s*/, '').trim(),
-            category: 'Strategy', // Simplified
-        })).filter(q => q.question);
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+      const prompt = `Analyze the following business plan. Provide brief, constructive initial feedback (1-2 sentences) and generate exactly 5 sample assessment questions based on the plan's potential weaknesses or key areas. The questions should cover different categories like Market, Finance, Operations, etc.
 
-        setWeaverState(prev => ({ ...prev, stage: WeaverStage.Test, feedback, questions }));
+Business Plan: "${plan}"`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    feedback: { type: Type.STRING },
+                    questions: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                id: { type: Type.STRING },
+                                question: { type: Type.STRING },
+                                category: { type: Type.STRING }
+                            },
+                            required: ["id", "question", "category"]
+                        }
+                    }
+                },
+                 required: ["feedback", "questions"]
+            }
+        }
+      });
+      
+      const parsedResponse = JSON.parse(response.text);
+      setWeaverState(prev => ({
+        ...prev,
+        stage: WeaverStage.Test,
+        feedback: parsedResponse.feedback,
+        questions: parsedResponse.questions,
+      }));
 
     } catch (err) {
-        console.error("Error in Weaver analysis:", err);
-        setWeaverState(prev => ({ ...prev, stage: WeaverStage.Error, error: "AI analysis failed." }));
+      console.error("Error analyzing business plan:", err);
+      setWeaverState(prev => ({ ...prev, stage: WeaverStage.Error, error: "Plato AI encountered an issue analyzing your plan. Please try again." }));
     }
   };
-  
+
   const simulateTestPass = async () => {
-    setWeaverState(prev => ({ ...prev, stage: WeaverStage.FinalReview }));
+    setWeaverState(prev => ({ ...prev, stage: WeaverStage.FinalReview, error: null }));
+
     try {
-        await new Promise(res => setTimeout(res, 2000)); // Simulate final review time
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Based on this business plan, determine a realistic seed funding amount (between $50,000 and $250,000) and generate a 3-step strategic coaching plan with a title, description, and timeline for each step. Plan: "${weaverState.businessPlan}"`,
-        });
+        const prompt = `Based on this business plan, you have approved a seed loan. Determine a realistic loan amount (between $50,000 and $250,000). Then, generate a 3-step coaching plan to guide the founder. The plan should be high-level and encouraging.
 
-        const text = response.text ?? '';
-        const loanMatch = text.match(/\$(\d{1,3}(,\d{3})*)/);
-        const loanAmount = loanMatch ? parseInt(loanMatch[1].replace(/,/g, ''), 10) : 100000;
-        
-        const steps = [...text.matchAll(/\d+\.\s\*\*(.*?)\*\*:\s(.*?)\s\((.*?)\)/g)].map(match => ({
-            title: match[1],
-            description: match[2],
-            timeline: match[3]
-        }));
+Business Plan: "${weaverState.businessPlan}"`;
 
-        const coachingPlan: AIGoalPlan = {
-            feasibilitySummary: '', // Not used here, but required by type
-            monthlyContribution: 0,
-            // @ts-ignore
-            steps: steps
-        };
-        // @ts-ignore
-        setWeaverState(prev => ({ ...prev, stage: WeaverStage.Approved, loanAmount, coachingPlan }));
-    } catch (err) {
-        console.error("Error in Weaver final review:", err);
-        setWeaverState(prev => ({ ...prev, stage: WeaverStage.Error, error: "AI final review failed." }));
-    }
-  };
-  
-   const fetchMarketplaceProducts = useCallback(async () => {
-        setIsMarketplaceLoading(true);
-        try {
-            const ai = new GoogleGenAI({apiKey: process.env.API_KEY as string});
-            const transactionSummary = transactions.slice(0, 5).map(t => t.description).join(', ');
-            const prompt = `Based on these recent purchases (${transactionSummary}), recommend 3 diverse products. For each, provide a name, a price (between 500-2000), a category, an image URL from unsplash.com, and a one-sentence AI justification for why the user might like it.`;
-
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    loanAmount: { type: Type.NUMBER },
+                    coachingPlan: {
                         type: Type.OBJECT,
                         properties: {
-                            products: {
+                            title: { type: Type.STRING },
+                            summary: { type: Type.STRING },
+                            steps: {
                                 type: Type.ARRAY,
                                 items: {
                                     type: Type.OBJECT,
                                     properties: {
-                                        id: { type: Type.STRING },
-                                        name: { type: Type.STRING },
-                                        price: { type: Type.NUMBER },
-                                        category: { type: Type.STRING },
-                                        imageUrl: { type: Type.STRING },
-                                        aiJustification: { type: Type.STRING }
-                                    }
+                                        title: { type: Type.STRING },
+                                        description: { type: Type.STRING },
+                                        timeline: { type: Type.STRING }
+                                    },
+                                    required: ["title", "description", "timeline"]
                                 }
                             }
-                        }
+                        },
+                        required: ["title", "summary", "steps"]
                     }
-                }
-            });
-
-            const result = JSON.parse(response.text ?? '{}');
-            if (result.products) {
-                setMarketplaceProducts(result.products);
+                },
+                required: ["loanAmount", "coachingPlan"]
             }
-        } catch (error) {
-            console.error("Failed to fetch marketplace products:", error);
-        } finally {
-            setIsMarketplaceLoading(false);
         }
-    }, [transactions]);
-    
-    const addProductToTransactions = (product: MarketplaceProduct) => {
-        const newTx: Transaction = {
-            id: `mkt_${product.id}_${Date.now()}`,
-            type: 'expense',
-            category: product.category,
-            description: product.name,
-            amount: product.price,
-            date: new Date().toLocaleDateString('en-CA'),
-            carbonFootprint: Math.random() * 10,
-        };
-        addTransaction(newTx);
-        addToast(`${product.name} purchased successfully!`, 'success');
-    };
-    
-    const addFinancialGoal = (goalData: Omit<FinancialGoal, 'id' | 'plan' | 'currentAmount'>) => {
-        const newGoal: FinancialGoal = {
-            ...goalData,
-            id: `goal_${Date.now()}`,
-            currentAmount: 0,
-            plan: null,
-        };
-        setFinancialGoals(prev => [newGoal, ...prev]);
-        addToast(`New goal "${goalData.name}" added!`, 'success');
-    };
-    
-    const contributeToGoal = (goalId: string, amount: number) => {
-        setFinancialGoals(prev => prev.map(g => {
-            if (g.id === goalId) {
-                const newAmount = g.currentAmount + amount;
-                addTransaction({
-                    id: `contr_${goalId}_${Date.now()}`,
-                    type: 'expense',
-                    category: 'Savings',
-                    description: `Contribution to ${g.name}`,
-                    amount: amount,
-                    date: new Date().toLocaleDateString('en-CA'),
-                });
-                return { ...g, currentAmount: Math.min(newAmount, g.targetAmount) };
-            }
-            return g;
-        }));
-    };
-    
-    const generateGoalPlan = async (goalId: string) => {
-        const goal = financialGoals.find(g => g.id === goalId);
-        if (!goal) return;
-        
-        try {
-            const ai = new GoogleGenAI({apiKey: process.env.API_KEY as string});
-            const prompt = `Create a 3-step plan to help a user achieve this financial goal: ${JSON.stringify(goal)}. Provide a feasibility summary and a recommended monthly contribution.`;
-            // Simplified for brevity, in real app would use structured JSON response
-            const response = await ai.models.generateContent({model: 'gemini-2.5-flash', contents: prompt});
-            
-            // This is a mock plan generation based on a text response.
-            const newPlan: AIGoalPlan = {
-                 feasibilitySummary: "This goal is achievable with consistent effort.",
-                 monthlyContribution: (goal.targetAmount - goal.currentAmount) / 24, // simplified 2-year plan
-                 steps: [
-                     { title: "Automate Savings", description: "Set up automatic monthly transfers.", category: 'Savings' },
-                     { title: "Cut a small expense", description: "Reduce spending in one budget category.", category: 'Budgeting' },
-                     { title: "Explore side income", description: "Look for opportunities to increase your income.", category: 'Income' }
-                 ]
-            };
-            setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, plan: newPlan } : g));
-            addToast(`AI plan generated for "${goal.name}"!`, 'success');
-        } catch (error) {
-            console.error("Failed to generate goal plan:", error);
-            addToast(`Could not generate AI plan.`, 'error');
-        }
-    };
-    
-    const connectWallet = () => {
-        setWalletInfo({ address: '0x1a2b...c3d4', balance: 4.25 });
-        addToast('Web3 Wallet Connected', 'success');
-    };
+      });
 
-    const issueCard = () => {
-        setVirtualCard({
-            cardNumber: '5555 1234 5678 9012',
-            cvv: '123',
-            expiry: '12/28',
-            holderName: 'The Visionary'
+      const parsedResponse = JSON.parse(response.text);
+      const { loanAmount, coachingPlan } = parsedResponse;
+
+      setWeaverState(prev => ({
+        ...prev,
+        stage: WeaverStage.Approved,
+        loanAmount,
+        coachingPlan,
+      }));
+      
+      const loanTx: Transaction = {
+          id: `loan_${new Date().toISOString()}`,
+          type: 'income',
+          category: 'Loan',
+          description: `QuantumWeaver Seed Loan`,
+          amount: loanAmount,
+          date: new Date().toLocaleDateString('en-CA'),
+      };
+      addTransaction(loanTx);
+
+    } catch (err) {
+        console.error("Error finalizing loan:", err);
+        setWeaverState(prev => ({ ...prev, stage: WeaverStage.Error, error: "Plato AI couldn't finalize the funding package. Please try again." }));
+    }
+  };
+
+  const addTransaction = (tx: Transaction) => {
+    setTransactions(prev => [tx, ...prev]);
+    if (tx.type === 'expense') {
+        setSpendingForNextTree(prev => {
+            const newSpending = prev + tx.amount;
+            if (newSpending >= COST_PER_TREE) {
+                setTreesPlanted(p => p + Math.floor(newSpending / COST_PER_TREE));
+                return newSpending % COST_PER_TREE;
+            }
+            return newSpending;
         });
-        addToast('Crypto-backed virtual card issued!', 'success');
+
+        const budgetToUpdate = budgets.find(b => b.name.toLowerCase() === tx.category.toLowerCase());
+        if (budgetToUpdate) {
+            setBudgets(prev => prev.map(b => b.id === budgetToUpdate.id ? { ...b, spent: b.spent + tx.amount } : b));
+        }
+    }
+    updateGamification(tx.type === 'income' ? 20 : 10);
+  };
+
+  const addProductToTransactions = (product: MarketplaceProduct) => {
+      const tx: Transaction = {
+          id: `mkt_${product.id}_${Date.now()}`,
+          type: 'expense',
+          category: product.category,
+          description: product.name,
+          amount: product.price,
+          date: new Date().toLocaleDateString('en-CA'),
+          carbonFootprint: 2.5 // Placeholder value
+      };
+      addTransaction(tx);
+  };
+
+  const addBudget = (budget: Omit<BudgetCategory, 'id' | 'spent' | 'color'>) => {
+      const newBudget: BudgetCategory = {
+          id: budget.name.toLowerCase().replace(' ', '-'),
+          ...budget,
+          spent: 0,
+          color: `#${Math.floor(Math.random()*16777215).toString(16)}`
+      };
+      setBudgets(prev => [...prev, newBudget]);
+  };
+
+  const fetchMarketplaceProducts = async () => {
+    setIsMarketplaceLoading(true);
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+        const transactionSummary = transactions.slice(0, 10).map(t => `${t.description} ($${t.amount})`).join(', ');
+        const prompt = `Based on these recent user transactions, generate 3 highly relevant, premium product recommendations for a "Plato's Marketplace". The products should be aspirational and tech-focused. For each product, provide a name, price, category, a creative image URL from a placeholder service like unsplash.it, and a short, compelling "aiJustification" explaining why the user would like it.
+
+Transactions: ${transactionSummary}`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        products: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    id: { type: Type.STRING },
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    category: { type: Type.STRING },
+                                    imageUrl: { type: Type.STRING },
+                                    aiJustification: { type: Type.STRING }
+                                },
+                                required: ["id", "name", "price", "category", "imageUrl", "aiJustification"]
+                            }
+                        }
+                    },
+                    required: ["products"]
+                }
+            }
+        });
+
+        const parsedResponse = JSON.parse(response.text);
+        setMarketplaceProducts(parsedResponse.products);
+
+    } catch (err) {
+        console.error("Error fetching marketplace products:", err);
+    } finally {
+        setIsMarketplaceLoading(false);
+    }
+  };
+
+  const addFinancialGoal = (goalData: Omit<FinancialGoal, 'id' | 'plan' | 'currentAmount'>) => {
+    const newGoal: FinancialGoal = {
+        ...goalData,
+        id: `goal_${Date.now()}`,
+        currentAmount: 0,
+        plan: null,
     };
-    
-    const buyCrypto = (usdAmount: number, cryptoTicker: string) => {
-        const crypto = cryptoAssets.find(c => c.ticker === cryptoTicker);
-        if (!crypto) return;
+    setFinancialGoals(prev => [...prev, newGoal]);
+  };
+
+  const contributeToGoal = (goalId: string, amount: number) => {
+      setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g));
+      const tx: Transaction = {
+          id: `goal_contrib_${Date.now()}`,
+          type: 'expense',
+          category: 'Savings',
+          description: `Contribution to ${financialGoals.find(g => g.id === goalId)?.name}`,
+          amount: amount,
+          date: new Date().toLocaleDateString('en-CA'),
+      };
+      addTransaction(tx);
+  };
+
+  const generateGoalPlan = async (goalId: string) => {
+    const goal = financialGoals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+        const prompt = `Generate a feasible financial plan for the following goal. Provide a brief feasibility summary, a recommended monthly contribution, and 3 actionable steps across different categories (Savings, Budgeting, Investing, Income).
         
-        const amountOfCrypto = usdAmount / (crypto.value / crypto.amount);
-        setCryptoAssets(prev => prev.map(c => 
-            c.ticker === cryptoTicker ? { ...c, amount: c.amount + amountOfCrypto } : c
-        ));
-        addTransaction({
-            id: `crypto_${Date.now()}`,
+Goal: ${goal.name}
+Target Amount: $${goal.targetAmount}
+Target Date: ${goal.targetDate}
+Current Savings for this goal: $${goal.currentAmount}`;
+
+         const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        feasibilitySummary: { type: Type.STRING },
+                        monthlyContribution: { type: Type.NUMBER },
+                        steps: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING },
+                                    description: { type: Type.STRING },
+                                    category: { type: Type.STRING, enum: ['Savings', 'Budgeting', 'Investing', 'Income'] }
+                                },
+                                required: ["title", "description", "category"]
+                            }
+                        }
+                    },
+                    required: ["feasibilitySummary", "monthlyContribution", "steps"]
+                }
+            }
+        });
+
+        const plan: AIGoalPlan = JSON.parse(response.text);
+        setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, plan } : g));
+    } catch (err) {
+        console.error("Error generating goal plan:", err);
+    }
+  };
+  
+    // --- CRYPTO & WEB3 FUNCTIONS ---
+  const connectWallet = () => {
+      // Simulate Metamask connection
+      setTimeout(() => {
+          setWalletInfo({
+              address: '0x1a2b...c3d4',
+              balance: 12.5
+          });
+      }, 500);
+  };
+
+  const issueCard = () => {
+       // Simulate Marqeta card issuance
+       setTimeout(() => {
+          setVirtualCard({
+              cardNumber: '5555 1234 5678 9012',
+              cvv: '123',
+              expiry: '12/28',
+              holderName: 'The Visionary'
+          });
+       }, 2000);
+  };
+
+  const buyCrypto = (usdAmount: number, cryptoTicker: string) => {
+      // Simulate Stripe on-ramp and Modern Treasury ledger update
+      setTimeout(() => {
+          const cryptoAmount = usdAmount / 3000; // Mock ETH price
+          setCryptoAssets(prev => prev.map(asset => asset.ticker === cryptoTicker ? { ...asset, amount: asset.amount + cryptoAmount, value: asset.value + usdAmount } : asset));
+          const tx: Transaction = {
+            id: `crypto_buy_${Date.now()}`,
             type: 'expense',
             category: 'Investments',
-            description: `Buy ${cryptoTicker}`,
+            description: `Buy ${cryptoTicker} via Stripe`,
             amount: usdAmount,
             date: new Date().toLocaleDateString('en-CA'),
-        });
-        addToast(`Successfully bought ${amountOfCrypto.toFixed(4)} ${cryptoTicker}`, 'success');
-    };
-    
-    const toggleCorporateCardFreeze = (cardId: string) => {
-        setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, frozen: !c.frozen } : c));
-    };
+            carbonFootprint: 0.2
+          };
+          addTransaction(tx);
+          setAiInsights(prev => [
+              { id: 'crypto_insight_1', title: 'Crypto Purchase Detected', description: `Our systems noticed your recent purchase of ${cryptoTicker}. We recommend monitoring market volatility.`, urgency: 'medium' },
+              ...prev
+          ]);
+      }, 1000);
+  };
 
-    const updateCorporateCard = (cardId: string, newControls: CorporateCardControls, newFrozenState: boolean) => {
-        setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, controls: newControls, frozen: newFrozenState } : c));
-        addToast('Card controls updated!', 'success');
+  const mintNFT = (name: string, imageUrl: string) => {
+    const newNft: NFTAsset = {
+        id: `nft_${Date.now()}`,
+        name,
+        imageUrl,
+        contractAddress: `0x${Math.random().toString(16).substr(2, 40)}`
     };
-    
-    const markNotificationRead = (id: string) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    };
-    
-    const mintNFT = (name: string, imageUrl: string) => {
-        const newNft: NFTAsset = {
-            id: `nft_${Date.now()}`,
-            name: name,
-            imageUrl: imageUrl,
-            contractAddress: '0xabc...def'
-        };
-        setNftAssets(prev => [newNft, ...prev]);
-        addToast(`NFT "${name}" minted!`, 'success');
-    };
+    setNftAssets(prev => [newNft, ...prev]);
+    setNotifications(prev => [
+        { id: `notif_${Date.now()}`, message: `Congratulations! You've successfully minted the "${name}" NFT.`, timestamp: 'Just now', read: false, view: View.Crypto },
+        ...prev
+    ]);
+  };
 
-    const mintPostAsNFT = (postId: string) => {
-        const postIndex = posts.findIndex(p => p.id === postId);
-        if (postIndex === -1 || posts[postIndex].nftId) {
-            addToast('This post has already been minted.', 'error');
-            return;
-        }
-    
-        const postToMint = posts[postIndex];
-    
-        const newNft: NFTAsset = {
-            id: `nft_${Date.now()}`,
-            name: `Post by ${postToMint.userName}`,
-            description: postToMint.content.text || 'A minted ecosystem post.',
-            imageUrl: postToMint.content.imageUrl || `https://source.unsplash.com/random/400x400/?abstract&sig=${Date.now()}`,
-            contractAddress: `0x${Math.random().toString(16).slice(2, 10)}${Math.random().toString(16).slice(2, 10)}`,
-            sourcePostId: postToMint.id,
-        };
-        
-        setNftAssets(prev => [newNft, ...prev]);
-    
-        const updatedPosts = [...posts];
-        updatedPosts[postIndex] = { ...updatedPosts[postIndex], nftId: newNft.id };
-        setPosts(updatedPosts);
-    
-        addToast(`Post minted as NFT!`, 'success');
+  const mintToken = (name: string, ticker: string, amount: number) => {
+    if (cryptoAssets.some(asset => asset.ticker.toUpperCase() === ticker.toUpperCase())) {
+        setNotifications(prev => [
+            { id: `notif_${Date.now()}`, message: `Error: Token with ticker ${ticker.toUpperCase()} already exists.`, timestamp: 'Just now', read: false, view: View.Crypto },
+            ...prev
+        ]);
+        return;
+    }
+    const newMockToken: CryptoAsset = {
+        ticker: ticker.toUpperCase(),
+        name: name,
+        value: Math.random() * 100,
+        amount: amount,
+        color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`
     };
-    
-    const mintToken = (name: string, ticker: string, amount: number) => {
-        const newToken: CryptoAsset = {
-            ticker: ticker,
-            name: name,
-            value: amount,
-            amount: amount,
-            color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-        };
-        setCryptoAssets(prev => [...prev, newToken]);
-        addToast(`Token "${name}" minted!`, 'success');
-    };
-
-    const initiatePayment = (details: Omit<PaymentOperation, 'id' | 'status' | 'date'>) => {
-        const newOp: PaymentOperation = {
-            ...details,
-            id: `op_${Date.now()}`,
-            status: 'Initiated',
-            date: new Date().toLocaleDateString('en-CA'),
-        };
-        setPaymentOperations(prev => [newOp, ...prev]);
-        addToast('Payment initiated.', 'success');
-    };
-
-    const redeemReward = (item: RewardItem) => {
-        if (rewardPoints.balance >= item.cost) {
-            setRewardPoints(prev => ({
-                ...prev,
-                balance: prev.balance - item.cost,
-                lastRedeemed: item.cost
-            }));
-            addToast(`Redeemed "${item.name}"!`, 'success');
-            return true;
-        }
-        addToast('Not enough points.', 'error');
-        return false;
-    };
-    
-    const updateAnomalyStatus = (id: string, status: AnomalyStatus) => {
-        setFinancialAnomalies(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-    };
-    
-    const createPost = (text: string) => {
-        // Legal memo: All user-generated content is subject to moderation analysis via a future integration (e.g., Hive AI).
-        const newPost: Post = {
-            id: `post_${Date.now()}`,
-            userId: users[0].id,
-            userName: users[0].name,
-            userProfilePic: users[0].profilePictureUrl,
-            timestamp: 'Just now',
-            content: { text: text },
-            likes: 0,
-            comments: [],
-        };
-        setPosts(prev => [newPost, ...prev]);
-        addToast('Post created!', 'success');
-    };
-    
-    const createCounterparty = (name: string, type: 'business' | 'individual') => {
-        const newCp: Counterparty = {
-            id: `cp_${Date.now()}`,
-            name,
-            type,
-            riskLevel: 'Low',
-            createdDate: new Date().toLocaleDateString('en-CA'),
-            accounts: [],
-            virtualAccounts: [],
-        };
-        setCounterparties(prev => [newCp, ...prev]);
-        addToast(`Counterparty "${name}" created!`, 'success');
-    };
-
-    const addExternalAccountToCounterparty = (counterpartyId: string, accountData: Omit<ExternalAccount, 'id'>) => {
-        const newAccount: ExternalAccount = { ...accountData, id: `ext_${Date.now()}` };
-        setCounterparties(prev => prev.map(cp => 
-            cp.id === counterpartyId ? { ...cp, accounts: [...cp.accounts, newAccount] } : cp
-        ));
-        addToast(`External account added!`, 'success');
-    };
-
-    const createVirtualAccountForCounterparty = (counterpartyId: string, accountName: string) => {
-        const newAccount: VirtualAccount = {
-            id: `va_${Date.now()}`,
-            accountName,
-            balance: 0,
-            routingNumber: `${Math.floor(100000000 + Math.random() * 900000000)}`,
-            accountNumber: `${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-        };
-        setCounterparties(prev => prev.map(cp => 
-            cp.id === counterpartyId ? { ...cp, virtualAccounts: [...(cp.virtualAccounts || []), newAccount] } : cp
-        ));
-        addToast(`Virtual account "${accountName}" created!`, 'success');
-    };
-
-    const enableBiometricLock = (cardId: string) => {
-        setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, biometricLockEnabled: true } : c));
-        addToast('Biometric lock enabled!', 'success');
-    };
-    
-    const addInvoice = (invoiceData: Omit<Invoice, 'id'|'invoiceNumber'|'status'>) => {
-        const newInvoice: Invoice = {
-            ...invoiceData,
-            id: `inv_${Date.now()}`,
-            invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
-            status: 'unpaid',
-        };
-        setInvoices(prev => [newInvoice, ...prev]);
-        addToast(`Invoice for ${invoiceData.counterpartyName} created.`, 'success');
-    };
-    
-    const approvePaymentOrder = (orderId: string) => {
-        setPaymentOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'approved' } : o));
-        addToast(`Payment order ${orderId} approved.`, 'success');
-    };
-    
-    const denyPaymentOrder = (orderId: string) => {
-        setPaymentOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'denied' } : o));
-        addToast(`Payment order ${orderId} denied.`, 'error');
-    };
-    
-    const sendCashAppPayment = (cashtag: string, amount: number) => {
-        const newTx: Transaction = {
-            id: `cashapp_${Date.now()}`,
-            type: 'expense',
-            category: 'Transfer',
-            description: `Cash App to ${cashtag}`,
-            amount: amount,
-            date: new Date().toLocaleDateString('en-CA'),
-        };
-        addTransaction(newTx);
-        addToast(`$${amount} sent to ${cashtag} via Cash App!`, 'success');
-    };
-    
-    const createSynapticVault = (collaboratorId: string) => {
-        const collaborator = users.find(u => u.id === collaboratorId);
-        if(!collaborator) return;
-        
-        const newVault: SynapticVault = {
-            id: `sv_${Date.now()}`,
-            ownerIds: [users[0].id, collaborator.id],
-            ownerNames: [users[0].name, collaborator.name],
-            status: 'active',
-            masterPrivateKeyFragment: '...'+Math.random().toString(16).slice(-4),
-            creationDate: new Date().toLocaleDateString('en-CA')
-        };
-        setSynapticVaults(prev => [newVault, ...prev]);
-        addToast(`Synaptic Vault created with ${collaborator.name}!`, 'success');
-    };
-
-    // FIX: Added implementation for the missing createPaymentOrder function.
-    const createPaymentOrder = (orderData: Omit<PaymentOrder, 'id' | 'status' | 'date'>) => {
-        const newOrder: PaymentOrder = {
-            ...orderData,
-            id: `po_${Date.now()}`,
-            status: 'needs_approval',
-            date: new Date().toLocaleDateString('en-CA'),
-        };
-        setPaymentOrders(prev => [newOrder, ...prev]);
-        addToast(`Payment order for ${orderData.counterpartyName} created.`, 'success');
-    };
+    setCryptoAssets(prev => [...prev, newMockToken]);
+    setNotifications(prev => [
+        { id: `notif_${Date.now()}`, message: `New token minted: ${amount.toLocaleString()} ${ticker.toUpperCase()} added to your portfolio.`, timestamp: 'Just now', read: false, view: View.Crypto },
+        ...prev
+    ]);
+  };
 
 
-  const value: IDataContext = {
+  const toggleCorporateCardFreeze = (cardId: string) => {
+      setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, frozen: !c.frozen } : c));
+  };
+  
+  const updateCorporateCard = (cardId: string, newControls: CorporateCardControls, newFrozenState: boolean) => {
+      setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, controls: newControls, frozen: newFrozenState } : c));
+  };
+  
+  const markNotificationRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+  
+  const initiatePayment = (details: Omit<PaymentOperation, 'id' | 'status' | 'date'>) => {
+      const newPayment: PaymentOperation = {
+          ...details,
+          id: `po_${Date.now()}`,
+          status: 'Initiated',
+          date: new Date().toLocaleDateString('en-CA'),
+      };
+      setPaymentOperations(prev => [newPayment, ...prev]);
+      
+      // Simulate status progression
+      setTimeout(() => {
+          setPaymentOperations(prev => prev.map(p => p.id === newPayment.id ? {...p, status: 'Processing' } : p));
+      }, 3000);
+      setTimeout(() => {
+          setPaymentOperations(prev => prev.map(p => p.id === newPayment.id ? {...p, status: 'Completed' } : p));
+      }, 8000);
+  };
+  
+  const redeemReward = (item: RewardItem): boolean => {
+      if (rewardPoints.balance >= item.cost) {
+          setRewardPoints(prev => ({
+              ...prev,
+              balance: prev.balance - item.cost,
+              lastRedeemed: item.cost,
+          }));
+          setNotifications(prev => [{
+              id: `notif_reward_${Date.now()}`,
+              message: `You've successfully redeemed "${item.name}" for ${item.cost.toLocaleString()} points.`,
+              timestamp: 'Just now',
+              read: false,
+              view: View.Rewards
+          }, ...prev]);
+          return true;
+      }
+      return false;
+  };
+
+  const updateAnomalyStatus = (id: string, newStatus: AnomalyStatus) => {
+    setFinancialAnomalies(prev => prev.map(a => (a.id === id ? { ...a, status: newStatus } : a)));
+  };
+
+  const impactData = {
+    treesPlanted,
+    spendingForNextTree,
+    progressToNextTree: (spendingForNextTree / COST_PER_TREE) * 100,
+  };
+
+  const value = {
     transactions,
     assets,
     impactInvestments,
     budgets,
     addBudget,
     gamification,
-    impactData: {
-      treesPlanted,
-      spendingForNextTree,
-      progressToNextTree: (spendingForNextTree / COST_PER_TREE) * 100,
-    },
+    impactData,
     customBackgroundUrl,
     setCustomBackgroundUrl,
     addTransaction,
@@ -862,36 +787,10 @@ Recent Transactions: ${recentTransactionsSummary}`;
     creditFactors,
     paymentOrders,
     invoices,
-    addInvoice,
     complianceCases,
     financialAnomalies,
     updateAnomalyStatus,
-    users,
-    posts,
-    createPost,
-    lendingPool,
-    appIntegrations,
-    counterparties,
-    createCounterparty,
-    addExternalAccountToCounterparty,
-    createVirtualAccountForCounterparty,
-    biometricData,
-    enableBiometricLock,
-    toastNotifications,
-    approvePaymentOrder,
-    denyPaymentOrder,
-    sendCashAppPayment,
-    loginAttempts,
-    aiAgents,
-    synapticVaults,
-    createSynapticVault,
-    createPaymentOrder,
-    mintPostAsNFT,
   };
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
