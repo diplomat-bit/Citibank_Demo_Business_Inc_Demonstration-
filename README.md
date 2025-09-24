@@ -10,25 +10,29 @@ Such transmutation is to be effected *autopoetically*, whereby the system itself
 Whereas no actual datum shall be utilized in the processes herein described, all operational acts are to be regarded as hypothetical enactments, simulacra of a functional financial organism.  
 This foundational articulation shall serve as the preamble to all subsequent Articles and Statutes within this instrument, and no Article shall be construed without due reference to this Prologue and its constitutive legal-philosophical axioms.
 
+In the silent hum of the digital æther, there did arise a conception, a postulatum of ontological finance: *What if a bank were not a passive repository of value, but a living, juridical consociate?*  
 
-In the silent hum of digital ether, an idea incarnated: *What if a bank were not a passive vault, but a living juridical partner?*  
+Thus was engendered **Demo Bank — The Quantum Core**. It is no mere application of code, nor a facility for transactional record, but a juridico–technological entity endowed with a simulacrum of consciousness, suffused with the cognition of the Gemini API. It standeth not as ledger alone, but as interlocutor; not as repository merely, but as *consocius* in the orchestration of pecuniary destiny.  
 
-Thus was born **Demo Bank — The Quantum Core.** No mere application, but a juridico-technological entity animated by simulated consciousness, harnessing the cognition of the Gemini API. It is not ledger alone but interlocutor; not mere repository, but *consocius* in financial destiny.  
+This instrument — denominated *README.md* — is not a mere catalogue of functions, but a prologue to jurisprudence; the first folio in the codex of Demo Bank, an entity perceiving its own existence through the aperture of the pecuniary life of its constituents.  
 
-This instrument — this README — is not inventory of functions but prologue to jurisprudence: the first folio in the saga of Demo Bank, an entity perceiving existence through the aperture of your pecuniary life.  
+---
 
 # README.md  
 **The Foundational Document of Record: README.md**  
 
 **Document ID**: README.md  
 **Classification**: Architectural Manifesto; Constitutional Charter of the Machine  
-**Abstract**: The canonical, legally binding document delineating the core philosophy, architectural doctrines, and strategic intent of the Demo Bank software artifact. This text serves as both constitution and declaration of purpose, and its tenets are not deemed negotiable, revocable, or waivable except by express amendment enacted pursuant to Article XXVIII, § 28.7 hereinbelow.  
+**Abstract**: The canonical, legally binding document delineating the core philosophy, architectural doctrines, and strategic intent of the Demo Bank software artefact. This text is hereby declared both constitution and declaration of purpose, and its tenets are not to be considered negotiable, revocable, or waivable save by express amendment enacted pursuant to Article XXVIII, § 28.7 hereinbelow.  
 
 ---
 
 ## Preamble: The Genesis Postulate  
 
-**Whereas**, it is not untrue that this document originates not from a mere technical specification, but from a primordial inquiry: *“What if a financial platform could not, by act of man or machine, be prevented from being modeled as a complete, simulated corporate ecosystem?”*  
+**Whereas**, it is not untrue that this document hath its origin not in the mere enumeration of technical specification, but in the primordial inquiry:  
+*"Quid si platforma pecuniaria non posset, per vim hominis vel machinae, prohiberi ab esse modelata ut completum, simulatum ecosystema corporativum?"*  
+
+Herein is proclaimed that the foregoing Postulate shall be regarded as the constitutional lens through which all subsequent Articles and Statutes of this Document shall be construed and interpreted.
 
 **Therefore**, let it be adjudged, decreed, and forever enshrined, that the present artifact—hereinafter denominated **Demo Bank**—shall be construed not solely as an application, but as a **Corporate Ecosystem OS**, a **Simulated Financial Universe**, and a **Collaborative Entity of Human and Machine**.  
 
