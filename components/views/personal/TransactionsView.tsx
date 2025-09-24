@@ -1,7 +1,7 @@
 import React, { useContext, useState, useMemo } from 'react';
-import { DataContext } from '../context/DataContext';
-import Card from './Card';
-import type { Transaction, DetectedSubscription } from '../types';
+import { DataContext } from '../../../context/DataContext';
+import Card from '../../Card';
+import type { Transaction, DetectedSubscription } from '../../../types';
 import { GoogleGenAI, Type } from "@google/genai";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 

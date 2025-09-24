@@ -11,14 +11,12 @@ const CardCustomizationView: React.FC = () => {
     const [error, setError] = useState('');
     const [cardStory, setCardStory] = useState('');
     const [isStoryLoading, setIsStoryLoading] = useState(false);
-    const [metallic, setMetallic] = useState(50);
-    const [holo, setHolo] = useState(false);
 
     const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => resolve((reader.result as string).split(',')[1]);
+            reader.onload = () => resolve((reader.result as string));
             reader.onerror = error => reject(error);
         });
     };
@@ -27,7 +25,7 @@ const CardCustomizationView: React.FC = () => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             const base64 = await fileToBase64(file);
-            setBaseImage(`data:${file.type};base64,${base64}`);
+            setBaseImage(base64);
             setGeneratedImage(null);
         }
     };
@@ -68,7 +66,6 @@ const CardCustomizationView: React.FC = () => {
     };
 
     const displayImage = generatedImage || baseImage;
-    const cardStyle: React.CSSProperties = { '--metallic-sheen': `${metallic}%` } as React.CSSProperties;
 
     return (
         <div className="space-y-6">
@@ -85,8 +82,7 @@ const CardCustomizationView: React.FC = () => {
                     </div>
                     <div className="flex flex-col items-center">
                         <p className="text-gray-400 mb-2">Card Preview</p>
-                        <div style={cardStyle} className={`w-full max-w-sm aspect-[85.6/54] rounded-xl bg-gray-900/50 overflow-hidden shadow-2xl border border-gray-600 flex items-center justify-center relative ${holo ? 'holo-effect' : ''}`}>
-                            <div className="absolute inset-0 metallic-overlay" style={{ opacity: metallic / 200 }}></div>
+                        <div className="w-full max-w-sm aspect-[85.6/54] rounded-xl bg-gray-900/50 overflow-hidden shadow-2xl border border-gray-600 flex items-center justify-center">
                             {isLoading && <div className="text-cyan-300">Generating...</div>}
                             {!isLoading && displayImage && <img src={displayImage} alt="Card Preview" className="w-full h-full object-cover"/>}
                             {!isLoading && !displayImage && <div className="text-gray-500">Upload an image to start</div>}
@@ -94,22 +90,10 @@ const CardCustomizationView: React.FC = () => {
                     </div>
                 </div>
             </Card>
-             <Card title="Add Physical Effects">
-                <div className="space-y-4">
-                    <div><label className="text-gray-300">Metallic Sheen: {metallic}%</label><input type="range" min="0" max="100" value={metallic} onChange={e => setMetallic(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" /></div>
-                    <div className="flex items-center justify-between"><label className="text-gray-300">Holographic Effect</label><input type="checkbox" checked={holo} onChange={e => setHolo(e.target.checked)} className="toggle toggle-sm toggle-cyan" /></div>
-                </div>
-            </Card>
              <Card title="AI-Generated Card Story">
                 {isStoryLoading ? <p>Generating story...</p> : cardStory ? <p className="text-gray-300 italic">"{cardStory}"</p> : <p className="text-gray-400">Generate a story for your unique card design.</p>}
                  <button onClick={generateCardStory} disabled={isStoryLoading || !displayImage} className="mt-4 px-4 py-2 bg-cyan-600/50 hover:bg-cyan-600 text-white rounded-lg text-sm disabled:opacity-50">{isStoryLoading ? 'Writing...' : 'Generate Story'}</button>
              </Card>
-            <style>{`
-                .toggle-cyan:checked { background-color: #06b6d4; }
-                .metallic-overlay { background: linear-gradient(110deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 60%); mix-blend-mode: overlay; pointer-events: none; }
-                .holo-effect::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(110deg, transparent 20%, #ff00ff, #00ffff, #ffff00, #ff00ff, transparent 80%); animation: holo-spin 8s linear infinite; opacity: 0.2; mix-blend-mode: screen; }
-                @keyframes holo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            `}</style>
         </div>
     );
 };
