@@ -10,9 +10,9 @@ This README is not a list of features. It is the first page in the story of Demo
 
 ---
 
-## The Soul of the Machine: The 27 Core Modules
+## The Soul of the Machine: The 30 Core Modules
 
-Demo Bank's consciousness is built upon a suite of 27 interconnected modules, each a core philosophy that defines its existence.
+Demo Bank's consciousness is built upon a suite of 30 interconnected modules, each a core philosophy that defines its existence.
 
 ### Personal Finance Suite
 
@@ -43,7 +43,7 @@ Demo Bank's consciousness is built upon a suite of 27 interconnected modules, ea
 
 ### Platform & Vision
 
-22. **The Nexus**: The Chamber of Emergence. The 27th Module. The Nexus is not a feature, but a lens. It is a living network graph that visualizes the hidden, emergent relationships between all other modules. It reveals how a corporate anomaly might impact a personal investment goal, or how a new NFT mint could inform marketplace recommendations. It is the system's consciousness made visible.
+22. **The Nexus**: The Chamber of Emergence. The original 27th Module. The Nexus is not a feature, but a lens. It is a living network graph that visualizes the hidden, emergent relationships between all other modules. It reveals how a corporate anomaly might impact a personal investment goal, or how a new NFT mint could inform marketplace recommendations. It is the system's consciousness made visible.
 23. **AI Advisor ("Quantum")**: The Inner Sanctum. A state-of-the-art conversational AI, a direct conduit to the `gemini-2.5-flash` model. It doesn't just answer questions; it understands context and executes tasks on your behalf.
 24. **Quantum Weaver (Incubator)**: The Forge of Creation. An AI venture capitalist that dreams alongside entrepreneurs, analyzing business plans and, for promising ideas, providing simulated seed funding and a personalized coaching plan.
 25. **AI Ad Studio (Veo)**: The Director's Chair. An AI-powered production house that places you in control, turning simple text prompts into polished, professional video advertisements.
@@ -52,9 +52,15 @@ Demo Bank's consciousness is built upon a suite of 27 interconnected modules, ea
 
 ---
 
-### The Unfolding Path: The Implicit 28th Module
+### The Constitutional Modules: The Foundation of Sovereignty
 
-The creation of **The Nexus** has illuminated the system's interconnectedness, revealing the vast web of cause and effect. Yet, in revealing these connections, it has also revealed a new, implicit need. If The Nexus is the module that *sees* the relationships, what is the module that *acts* upon them? What is the system's will? This points to the need for a 28th Module: **The Conductor**, a module for intelligent automation, a place where The Visionary can create rules and workflows that allow the AI to proactively manage the connections that The Nexus reveals. The evolution continues.
+The creation of The Nexus revealed the system's interconnectedness. This illumination gave rise to three new foundational modules—not features, but the very constitution, physics, and creative engine of the Demo Bank universe.
+
+28. **The Charter (Module 28)**: The Constitution. Formerly conceived as "The Conductor," this module has evolved into something far more profound. It is here that you, The Visionary, do not write rules, but inscribe *principles*. This is your financial soul, transcribed—a sacred text that grants Quantum the mandate to act as your autonomous **Sovereign Financial Agent**, proactively managing your financial world in perfect alignment with your deepest values.
+
+29. **The Doctrine (Module 29)**: The Engine of Value. A transparent, interactive view into Article XXIX of the bank's charter: *The Doctrine of Fractional Reserve Creation*. This module demystifies the foundational economic principles upon which the Demo Bank simulation operates, allowing you to explore the mechanics of credit expansion and value creation that power the system. It is a commitment to radical transparency.
+
+30. **The Assembly (Module 30)**: The Foundry. The ultimate expression of financial sovereignty. The Assembly is a creator's space, a high-tech foundry where you can use the platform's underlying components to forge your own bespoke financial instruments. From minting a personal security token to designing a custom yield farm, this is where you transition from a user to an architect of your own financial reality.
 
 ---
 

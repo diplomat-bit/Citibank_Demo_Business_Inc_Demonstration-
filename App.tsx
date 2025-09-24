@@ -29,6 +29,9 @@ import AIAdStudioView from './components/views/platform/AIAdStudioView';
 import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
 import TheNexusView from './components/views/platform/TheNexusView'; // The 27th Module
+import TheCharterView from './components/views/platform/TheCharterView';
+import FractionalReserveView from './components/views/platform/FractionalReserveView';
+import FinancialInstrumentForgeView from './components/views/platform/TheAssemblyView';
 
 // Corporate Finance Views
 import CorporateDashboardView from './components/views/corporate/CorporateDashboardView';
@@ -186,6 +189,11 @@ const App: React.FC = () => {
             case View.TheWinningVision: return <TheVisionView />;
             case View.APIStatus: return <APIStatusView />;
             
+            // Constitutional Modules
+            case View.TheCharter: return <TheCharterView />;
+            case View.FractionalReserve: return <FractionalReserveView />;
+            case View.FinancialInstrumentForge: return <FinancialInstrumentForgeView />;
+
             // Corporate Finance
             case View.CorporateDashboard: return <CorporateDashboardView setActiveView={handleSetView} />;
             case View.PaymentOrders: return <PaymentOrdersView />;

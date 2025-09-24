@@ -7,12 +7,22 @@ export interface CorporateCardControls {
     monthlyLimit: number;
 }
 
+export interface CorporateTransactionSummary {
+    id: string;
+    description: string;
+    amount: number;
+    timestamp: string;
+}
+
 export interface CorporateCard {
     id: string;
     holderName: string;
     cardNumberMask: string;
     status: 'Active' | 'Suspended' | 'Lost';
     frozen: boolean;
+    balance: number;
+    limit: number;
+    transactions: CorporateTransactionSummary[];
     controls: CorporateCardControls;
 }
 
@@ -37,7 +47,7 @@ export interface Counterparty {
 export type PaymentOrderStatus = 'needs_approval' | 'approved' | 'processing' | 'completed' | 'denied' | 'returned';
 
 export interface PaymentOrder {
-    id: string;
+    id:string;
     counterpartyName: string;
     amount: number;
     currency: 'USD';
@@ -90,4 +100,24 @@ export interface FinancialAnomaly {
     entityDescription: string;
     timestamp: string;
     riskScore: number; // 0-100
+}
+
+
+export interface AccessLog {
+    id: string;
+    user: string;
+    ip: string;
+    location: string;
+    timestamp: string;
+    status: 'Success' | 'Failed';
+    riskLevel: 'Low' | 'Medium' | 'High';
+}
+
+export interface FraudCase {
+    id: string;
+    description: string;
+    amount: number;
+    timestamp: string;
+    riskScore: number;
+    status: 'New' | 'Investigating' | 'Resolved' | 'Dismissed';
 }

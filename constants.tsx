@@ -99,6 +99,16 @@ const TheVisionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const PlatformIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
 );
+const CharterIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.586a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+);
+const DoctrineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.002 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.002 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
+);
+const ForgeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V3m0 18v-3m0-12h.01M12 9.01h.01M6 12H3m18 0h-3m-9 .01h.01M9 12.01h.01M12 21a9 9 0 110-18 9 9 0 010 18z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15a3 3 0 110-6 3 3 0 010 6z" /></svg>
+);
+
 
 // ================================================================================================
 // NAVIGATION ITEMS
@@ -140,6 +150,13 @@ export const NAV_ITEMS = [
     { id: View.Invoices, label: 'Invoices', icon: <InvoicesIcon /> },
     { id: View.Compliance, label: 'Compliance', icon: <ComplianceIcon /> },
     { id: View.AnomalyDetection, label: 'Anomaly Detection', icon: <AnomalyDetectionIcon /> },
+    
+    // --- Constitutional Modules ---
+    { type: 'divider' },
+    { type: 'header', label: 'Constitutional Modules' },
+    { id: View.TheCharter, label: 'The Charter', icon: <CharterIcon /> },
+    { id: View.FractionalReserve, label: 'The Doctrine', icon: <DoctrineIcon /> },
+    { id: View.FinancialInstrumentForge, label: 'The Forge', icon: <ForgeIcon /> },
     
     // --- Demo Bank Platform Suite ---
     { type: 'divider' },

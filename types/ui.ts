@@ -42,6 +42,11 @@ export enum View {
     TheWinningVision = 'the-winning-vision',
     Settings = 'settings',
 
+    // Constitutional Modules
+    TheCharter = 'the-charter',
+    FractionalReserve = 'fractional-reserve',
+    FinancialInstrumentForge = 'financial-instrument-forge',
+
     // Demo Bank Platform Suite
     DemoBankSocial = 'db-social',
     DemoBankERP = 'db-erp',

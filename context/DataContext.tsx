@@ -8,7 +8,8 @@ import {
     MarketMover, MarketplaceProduct, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, 
     PaymentOperation, AIInsight, CorporateCard, CorporateTransaction, RewardPoints, Notification, 
     NFTAsset, RewardItem, APIStatus, CreditFactor, CorporateCardControls, PaymentOrder, Invoice, 
-    ComplianceCase, FinancialAnomaly, AnomalyStatus, Counterparty, DynamicKpi, PaymentOrderStatus, NexusGraphData
+    ComplianceCase, FinancialAnomaly, AnomalyStatus, Counterparty, DynamicKpi, PaymentOrderStatus, NexusGraphData,
+    AccessLog, FraudCase, MLModel
 } from '../types';
 import { View, WeaverStage } from '../types';
 import { 
@@ -17,7 +18,7 @@ import {
     MOCK_FINANCIAL_GOALS, MOCK_CRYPTO_ASSETS, MOCK_PAYMENT_OPERATIONS, MOCK_CORPORATE_CARDS, 
     MOCK_CORPORATE_TRANSACTIONS, MOCK_REWARD_POINTS, MOCK_NOTIFICATIONS, MOCK_REWARD_ITEMS, 
     MOCK_API_STATUS, MOCK_CREDIT_FACTORS, MOCK_PAYMENT_ORDERS, MOCK_INVOICES, MOCK_COMPLIANCE_CASES, 
-    MOCK_ANOMALIES, MOCK_COUNTERPARTIES 
+    MOCK_ANOMALIES, MOCK_COUNTERPARTIES, MOCK_ACCESS_LOGS, MOCK_FRAUD_CASES, MOCK_ML_MODELS
 } from '../data';
 
 const LEVEL_NAMES = ["Financial Novice", "Budgeting Apprentice", "Savings Specialist", "Investment Adept", "Wealth Master"];
@@ -98,6 +99,13 @@ interface IDataContext {
   updateAnomalyStatus: (id: string, status: AnomalyStatus) => void;
   counterparties: Counterparty[];
 
+  // Mega Dashboard Data
+  accessLogs: AccessLog[];
+  fraudCases: FraudCase[];
+  updateFraudCaseStatus: (id: string, status: FraudCase['status']) => void;
+  mlModels: MLModel[];
+  retrainMlModel: (id: string) => void;
+
   // System & Misc
   impactData: {
     treesPlanted: number;
@@ -159,6 +167,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [financialAnomalies, setFinancialAnomalies] = useState<FinancialAnomaly[]>(MOCK_ANOMALIES);
   const [counterparties] = useState<Counterparty[]>(MOCK_COUNTERPARTIES);
   const [dynamicKpis, setDynamicKpis] = useState<DynamicKpi[]>([]);
+  
+  // New states for enterprise views
+  const [accessLogs] = useState<AccessLog[]>(MOCK_ACCESS_LOGS);
+  const [fraudCases, setFraudCases] = useState<FraudCase[]>(MOCK_FRAUD_CASES);
+  const [mlModels, setMlModels] = useState<MLModel[]>(MOCK_ML_MODELS);
 
 
   // --- DERIVED STATE & MEMOS ---
@@ -326,11 +339,30 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
   const mintNFT = (name: string, imageUrl: string) => setNftAssets(prev => [...prev, { id: `nft_${Date.now()}`, name, imageUrl, contractAddress: `0x...${Math.random().toString(16).substr(2, 4)}` }]);
   
-  // --- CORPORATE FINANCE FUNCTIONS ---
+  // --- CORPORATE & ENTERPRISE FUNCTIONS ---
   const toggleCorporateCardFreeze = (cardId: string) => setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, frozen: !c.frozen } : c));
   const updateCorporateCardControls = (cardId: string, newControls: CorporateCardControls) => setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, controls: newControls } : c));
   const updatePaymentOrderStatus = (id: string, status: PaymentOrderStatus) => setPaymentOrders(prev => prev.map(p => p.id === id ? { ...p, status } : p));
   const updateAnomalyStatus = (id: string, status: AnomalyStatus) => setFinancialAnomalies(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+  const updateFraudCaseStatus = (id: string, status: FraudCase['status']) => setFraudCases(prev => prev.map(c => c.id === id ? { ...c, status } : c));
+  const retrainMlModel = (id: string) => {
+    setMlModels(prev => prev.map(m => m.id === id ? {...m, status: 'Training'} : m));
+    setTimeout(() => {
+        setMlModels(prev => prev.map(m => {
+            if (m.id === id) {
+                const newAccuracy = Math.min(99.9, m.accuracy + 0.1 + Math.random() * 0.2);
+                return {
+                    ...m, 
+                    status: m.version > 2 ? 'Staging' : 'Production', // Simple logic
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    lastTrained: new Date().toISOString().split('T')[0],
+                    performanceHistory: [...m.performanceHistory, {date: new Date().toISOString().split('T')[0], accuracy: newAccuracy}]
+                };
+            }
+            return m;
+        }));
+    }, 3000);
+  };
 
   // --- MISC FUNCTIONS ---
   const setCustomBackgroundUrl = (url: string) => {
@@ -423,7 +455,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       corporateTransactions, toggleCorporateCardFreeze, updateCorporateCardControls, rewardPoints, 
       notifications, markNotificationRead, nftAssets, mintNFT, rewardItems, redeemReward, 
       apiStatus, creditFactors, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases, 
-      financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi, getNexusData
+      financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi, getNexusData,
+      accessLogs, fraudCases, updateFraudCaseStatus, mlModels, retrainMlModel,
   };
 
   return <DataContext.Provider value={value as IDataContext}>{children}</DataContext.Provider>;

@@ -32,3 +32,6 @@ export * from './invoices';
 export * from './complianceCases';
 export * from './anomalies';
 export * from './counterparties';
+export * from './accessLogs';
+export * from './fraudCases';
+export * from './mlModels';
