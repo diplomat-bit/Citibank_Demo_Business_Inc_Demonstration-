@@ -71,6 +71,68 @@ export enum View {
     DemoBankCommunications = 'db-communications',
     DemoBankCommerce = 'db-commerce',
     DemoBankTeams = 'db-teams',
+
+    // --- Mega Dashboard ---
+    // Security & Identity
+    SecurityAccessControls = 'md-sec-access-controls',
+    SecurityRoleManagement = 'md-sec-role-management',
+    SecurityAuditLogs = 'md-sec-audit-logs',
+    SecurityFraudDetection = 'md-sec-fraud-detection',
+    SecurityThreatIntelligence = 'md-sec-threat-intelligence',
+    // Finance & Banking
+    FinanceCardManagement = 'md-fin-card-management',
+    FinanceLoanApplications = 'md-fin-loan-applications',
+    FinanceMortgages = 'md-fin-mortgages',
+    FinanceInsuranceHub = 'md-fin-insurance-hub',
+    FinanceTaxCenter = 'md-fin-tax-center',
+    // Advanced Analytics
+    AnalyticsPredictiveModels = 'md-an-predictive-models',
+    AnalyticsRiskScoring = 'md-an-risk-scoring',
+    AnalyticsSentimentAnalysis = 'md-an-sentiment-analysis',
+    AnalyticsDataLakes = 'md-an-data-lakes',
+    AnalyticsDataCatalog = 'md-an-data-catalog',
+    // User & Client Tools
+    UserClientOnboarding = 'md-uc-client-onboarding',
+    UserClientKycAml = 'md-uc-kyc-aml',
+    UserClientUserInsights = 'md-uc-user-insights',
+    UserClientFeedbackHub = 'md-uc-feedback-hub',
+    UserClientSupportDesk = 'md-uc-support-desk',
+    // Developer & Integration
+    DeveloperSandbox = 'md-dev-sandbox',
+    DeveloperSdkDownloads = 'md-dev-sdk-downloads',
+    DeveloperWebhooks = 'md-dev-webhooks',
+    DeveloperCliTools = 'md-dev-cli-tools',
+    DeveloperExtensions = 'md-dev-extensions',
+    // Ecosystem & Connectivity
+    EcosystemPartnerHub = 'md-eco-partner-hub',
+    EcosystemAffiliates = 'md-eco-affiliates',
+    EcosystemIntegrationsMarketplace = 'md-eco-integrations-marketplace',
+    EcosystemCrossBorderPayments = 'md-eco-cross-border-payments',
+    EcosystemMultiCurrency = 'md-eco-multi-currency',
+    // Digital Assets & Web3
+    DigitalAssetsNftVault = 'md-da-nft-vault',
+    DigitalAssetsTokenIssuance = 'md-da-token-issuance',
+    DigitalAssetsSmartContracts = 'md-da-smart-contracts',
+    DigitalAssetsDaoGovernance = 'md-da-dao-governance',
+    DigitalAssetsOnChainAnalytics = 'md-da-on-chain-analytics',
+    // Business & Growth
+    BusinessSalesPipeline = 'md-bg-sales-pipeline',
+    BusinessMarketingAutomation = 'md-bg-marketing-automation',
+    BusinessGrowthInsights = 'md-bg-growth-insights',
+    BusinessCompetitiveIntelligence = 'md-bg-competitive-intelligence',
+    BusinessBenchmarking = 'md-bg-benchmarking',
+    // Regulation & Legal
+    RegulationLicensing = 'md-rl-licensing',
+    RegulationDisclosures = 'md-rl-disclosures',
+    RegulationLegalDocs = 'md-rl-legal-docs',
+    RegulationRegulatorySandbox = 'md-rl-regulatory-sandbox',
+    RegulationConsentManagement = 'md-rl-consent-management',
+    // Infra & Ops
+    InfraContainerRegistry = 'md-io-container-registry',
+    InfraApiThrottling = 'md-io-api-throttling',
+    InfraObservability = 'md-io-observability',
+    InfraIncidentResponse = 'md-io-incident-response',
+    InfraBackupRecovery = 'md-io-backup-recovery',
 }
 
 /**

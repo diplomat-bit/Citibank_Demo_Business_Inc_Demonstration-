@@ -68,6 +68,59 @@ import DemoBankCommunicationsView from './components/views/platform/DemoBankComm
 import DemoBankCommerceView from './components/views/platform/DemoBankCommerceView';
 import DemoBankTeamsView from './components/views/platform/DemoBankTeamsView';
 
+// Mega Dashboard Views
+import AccessControlsView from './components/views/megadashboard/security/AccessControlsView';
+import RoleManagementView from './components/views/megadashboard/security/RoleManagementView';
+import AuditLogsView from './components/views/megadashboard/security/AuditLogsView';
+import FraudDetectionView from './components/views/megadashboard/security/FraudDetectionView';
+import ThreatIntelligenceView from './components/views/megadashboard/security/ThreatIntelligenceView';
+import CardManagementView from './components/views/megadashboard/finance/CardManagementView';
+import LoanApplicationsView from './components/views/megadashboard/finance/LoanApplicationsView';
+import MortgagesView from './components/views/megadashboard/finance/MortgagesView';
+import InsuranceHubView from './components/views/megadashboard/finance/InsuranceHubView';
+import TaxCenterView from './components/views/megadashboard/finance/TaxCenterView';
+import PredictiveModelsView from './components/views/megadashboard/analytics/PredictiveModelsView';
+import RiskScoringView from './components/views/megadashboard/analytics/RiskScoringView';
+import SentimentAnalysisView from './components/views/megadashboard/analytics/SentimentAnalysisView';
+import DataLakesView from './components/views/megadashboard/analytics/DataLakesView';
+import DataCatalogView from './components/views/megadashboard/analytics/DataCatalogView';
+import ClientOnboardingView from './components/views/megadashboard/userclient/ClientOnboardingView';
+import KycAmlView from './components/views/megadashboard/userclient/KycAmlView';
+import UserInsightsView from './components/views/megadashboard/userclient/UserInsightsView';
+import FeedbackHubView from './components/views/megadashboard/userclient/FeedbackHubView';
+import SupportDeskView from './components/views/megadashboard/userclient/SupportDeskView';
+import SandboxView from './components/views/megadashboard/developer/SandboxView';
+import SdkDownloadsView from './components/views/megadashboard/developer/SdkDownloadsView';
+import WebhooksView from './components/views/megadashboard/developer/WebhooksView';
+import CliToolsView from './components/views/megadashboard/developer/CliToolsView';
+import ExtensionsView from './components/views/megadashboard/developer/ExtensionsView';
+import PartnerHubView from './components/views/megadashboard/ecosystem/PartnerHubView';
+import AffiliatesView from './components/views/megadashboard/ecosystem/AffiliatesView';
+import IntegrationsMarketplaceView from './components/views/megadashboard/ecosystem/IntegrationsMarketplaceView';
+import CrossBorderPaymentsView from './components/views/megadashboard/ecosystem/CrossBorderPaymentsView';
+import MultiCurrencyView from './components/views/megadashboard/ecosystem/MultiCurrencyView';
+import NftVaultView from './components/views/megadashboard/digitalassets/NftVaultView';
+import TokenIssuanceView from './components/views/megadashboard/digitalassets/TokenIssuanceView';
+import SmartContractsView from './components/views/megadashboard/digitalassets/SmartContractsView';
+import DaoGovernanceView from './components/views/megadashboard/digitalassets/DaoGovernanceView';
+import OnChainAnalyticsView from './components/views/megadashboard/digitalassets/OnChainAnalyticsView';
+import SalesPipelineView from './components/views/megadashboard/business/SalesPipelineView';
+import MarketingAutomationView from './components/views/megadashboard/business/MarketingAutomationView';
+import GrowthInsightsView from './components/views/megadashboard/business/GrowthInsightsView';
+import CompetitiveIntelligenceView from './components/views/megadashboard/business/CompetitiveIntelligenceView';
+import BenchmarkingView from './components/views/megadashboard/business/BenchmarkingView';
+import LicensingView from './components/views/megadashboard/regulation/LicensingView';
+import DisclosuresView from './components/views/megadashboard/regulation/DisclosuresView';
+import LegalDocsView from './components/views/megadashboard/regulation/LegalDocsView';
+import RegulatorySandboxView from './components/views/megadashboard/regulation/RegulatorySandboxView';
+import ConsentManagementView from './components/views/megadashboard/regulation/ConsentManagementView';
+import ContainerRegistryView from './components/views/megadashboard/infra/ContainerRegistryView';
+import ApiThrottlingView from './components/views/megadashboard/infra/ApiThrottlingView';
+import ObservabilityView from './components/views/megadashboard/infra/ObservabilityView';
+import IncidentResponseView from './components/views/megadashboard/infra/IncidentResponseView';
+import BackupRecoveryView from './components/views/megadashboard/infra/BackupRecoveryView';
+
+
 // Global Components
 import VoiceControl from './components/VoiceControl';
 
@@ -171,6 +224,67 @@ const App: React.FC = () => {
             case View.DemoBankCommerce: return <DemoBankCommerceView />;
             case View.DemoBankTeams: return <DemoBankTeamsView />;
             
+            // Mega Dashboard - Security & Identity
+            case View.SecurityAccessControls: return <AccessControlsView />;
+            case View.SecurityRoleManagement: return <RoleManagementView />;
+            case View.SecurityAuditLogs: return <AuditLogsView />;
+            case View.SecurityFraudDetection: return <FraudDetectionView />;
+            case View.SecurityThreatIntelligence: return <ThreatIntelligenceView />;
+            // Mega Dashboard - Finance & Banking
+            case View.FinanceCardManagement: return <CardManagementView />;
+            case View.FinanceLoanApplications: return <LoanApplicationsView />;
+            case View.FinanceMortgages: return <MortgagesView />;
+            case View.FinanceInsuranceHub: return <InsuranceHubView />;
+            case View.FinanceTaxCenter: return <TaxCenterView />;
+            // Mega Dashboard - Advanced Analytics
+            case View.AnalyticsPredictiveModels: return <PredictiveModelsView />;
+            case View.AnalyticsRiskScoring: return <RiskScoringView />;
+            case View.AnalyticsSentimentAnalysis: return <SentimentAnalysisView />;
+            case View.AnalyticsDataLakes: return <DataLakesView />;
+            case View.AnalyticsDataCatalog: return <DataCatalogView />;
+            // Mega Dashboard - User & Client Tools
+            case View.UserClientOnboarding: return <ClientOnboardingView />;
+            case View.UserClientKycAml: return <KycAmlView />;
+            case View.UserClientUserInsights: return <UserInsightsView />;
+            case View.UserClientFeedbackHub: return <FeedbackHubView />;
+            case View.UserClientSupportDesk: return <SupportDeskView />;
+            // Mega Dashboard - Developer & Integration
+            case View.DeveloperSandbox: return <SandboxView />;
+            case View.DeveloperSdkDownloads: return <SdkDownloadsView />;
+            case View.DeveloperWebhooks: return <WebhooksView />;
+            case View.DeveloperCliTools: return <CliToolsView />;
+            case View.DeveloperExtensions: return <ExtensionsView />;
+            // Mega Dashboard - Ecosystem & Connectivity
+            case View.EcosystemPartnerHub: return <PartnerHubView />;
+            case View.EcosystemAffiliates: return <AffiliatesView />;
+            case View.EcosystemIntegrationsMarketplace: return <IntegrationsMarketplaceView />;
+            case View.EcosystemCrossBorderPayments: return <CrossBorderPaymentsView />;
+            case View.EcosystemMultiCurrency: return <MultiCurrencyView />;
+            // Mega Dashboard - Digital Assets & Web3
+            case View.DigitalAssetsNftVault: return <NftVaultView />;
+            case View.DigitalAssetsTokenIssuance: return <TokenIssuanceView />;
+            case View.DigitalAssetsSmartContracts: return <SmartContractsView />;
+            case View.DigitalAssetsDaoGovernance: return <DaoGovernanceView />;
+            case View.DigitalAssetsOnChainAnalytics: return <OnChainAnalyticsView />;
+            // Mega Dashboard - Business & Growth
+            case View.BusinessSalesPipeline: return <SalesPipelineView />;
+            case View.BusinessMarketingAutomation: return <MarketingAutomationView />;
+            case View.BusinessGrowthInsights: return <GrowthInsightsView />;
+            case View.BusinessCompetitiveIntelligence: return <CompetitiveIntelligenceView />;
+            case View.BusinessBenchmarking: return <BenchmarkingView />;
+            // Mega Dashboard - Regulation & Legal
+            case View.RegulationLicensing: return <LicensingView />;
+            case View.RegulationDisclosures: return <DisclosuresView />;
+            case View.RegulationLegalDocs: return <LegalDocsView />;
+            case View.RegulationRegulatorySandbox: return <RegulatorySandboxView />;
+            case View.RegulationConsentManagement: return <ConsentManagementView />;
+            // Mega Dashboard - Infra & Ops
+            case View.InfraContainerRegistry: return <ContainerRegistryView />;
+            case View.InfraApiThrottling: return <ApiThrottlingView />;
+            case View.InfraObservability: return <ObservabilityView />;
+            case View.InfraIncidentResponse: return <IncidentResponseView />;
+            case View.InfraBackupRecovery: return <BackupRecoveryView />;
+
             default: return <DashboardView setActiveView={handleSetView} />;
         }
     };

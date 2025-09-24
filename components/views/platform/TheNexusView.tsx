@@ -26,7 +26,10 @@ const TheNexusView: React.FC = () => {
     }
 
     if (isLoading) {
-        return <Card title="The Nexus" isLoading={true} />;
+        // FIX: The Card component requires a 'children' prop. Added an empty fragment
+        // to satisfy the type requirement during the loading state. The skeleton loader
+        // is displayed via the `isLoading` prop and does not use the children.
+        return <Card title="The Nexus" isLoading={true}><></></Card>;
     }
 
     return (
