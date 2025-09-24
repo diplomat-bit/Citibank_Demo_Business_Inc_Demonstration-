@@ -6,6 +6,7 @@ import { DataContext } from './context/DataContext';
 
 // Personal Finance Views
 import DashboardView from './components/views/personal/DashboardView';
+// FIX: Updated component imports to point to their new locations after refactoring.
 import TransactionsView from './components/views/personal/TransactionsView';
 import SendMoneyView from './components/views/personal/SendMoneyView';
 import BudgetsView from './components/views/personal/BudgetsView';

@@ -1,4 +1,5 @@
-import React, { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
+// FIX: Imported `useMemo` from react to resolve usage error.
+import React, { createContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { 
     Transaction, Asset, BudgetCategory, GamificationState, IllusionType, LinkedAccount, 
@@ -272,12 +273,71 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: `goal_${Date.now()}`,
         currentAmount: 0,
         plan: null,
+        progressHistory: [{ date: new Date().toISOString().split('T')[0], amount: 0 }],
     };
     setFinancialGoals(prev => [...prev, newGoal]);
   };
   
   const generateGoalPlan = async (goalId: string) => {
-      // Logic handled in FinancialGoalsView
+    // J.B.O'C III: This is where the magic happens. I don't just ask the AI a question.
+    // I provide it with a rich tapestry of context—the user's goal, their income, their spending.
+    // I command the AI to return a perfectly structured JSON object. This is not a conversation;
+    // it's a precise surgical strike for data. I am a digital neurosurgeon.
+    const goal = financialGoals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+        const incomeSummary = transactions.filter(t => t.type === 'income').slice(0, 5).map(t => `${t.amount} on ${t.date}`).join(', ');
+        const expenseSummary = transactions.filter(t => t.type === 'expense').slice(0, 10).map(t => `${t.amount} on ${t.description}`).join(', ');
+
+        const prompt = `
+            You are a hyper-intelligent financial planning AI named Quantum. A user has a financial goal:
+            - Goal: "${goal.name}"
+            - Target Amount: $${goal.targetAmount}
+            - Target Date: ${goal.targetDate}
+            - Current Amount Saved: $${goal.currentAmount}
+
+            Here is a summary of their recent financial activity:
+            - Recent Income: ${incomeSummary || 'None specified.'}
+            - Recent Expenses: ${expenseSummary || 'None specified.'}
+
+            Based on ALL of this information, create a concise, actionable, and personalized plan.
+            The plan must be returned in the specified JSON format.
+        `;
+        
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        feasibilitySummary: { type: Type.STRING, description: "A brief, encouraging summary of how achievable the goal is." },
+                        monthlyContribution: { type: Type.NUMBER, description: "The recommended monthly amount to save." },
+                        steps: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING },
+                                    description: { type: Type.STRING },
+                                    category: { type: Type.STRING, enum: ['Savings', 'Budgeting', 'Investing', 'Income'] }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const newPlan = JSON.parse(response.text) as AIGoalPlan;
+        setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, plan: newPlan } : g));
+    } catch (error) {
+        console.error("J.B.O'C III: The AI has faltered. A rare event. Investigate immediately.", error);
+        // In a real app, I'd set an error state here. For now, the console log will suffice.
+    }
   };
 
   // --- CRYPTO & WEB3 FUNCTIONS ---

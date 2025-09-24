@@ -1,5 +1,3 @@
-
-
 // components/Card.tsx
 // This component has been significantly re-architected to function as a highly
 // versatile and state-aware container, in alignment with production-grade standards
@@ -41,7 +39,6 @@ export interface CardHeaderAction {
 export interface CardProps {
   // Core Content
   title?: string;
-  // FIX: Add subtitle prop to support subtitles in card headers.
   subtitle?: string;
   children: ReactNode;
   
@@ -58,11 +55,8 @@ export interface CardProps {
 
   // Styling and Layout
   className?: string;
-  // FIX: Changed type from `string` to `CardVariant` to prevent type errors when passing the prop to helper functions.
   variant?: CardVariant;
-  // FIX: Changed type from `string` to a specific union type to prevent type errors when passing the prop to helper functions.
   padding?: 'sm' | 'md' | 'lg' | 'none'; // Control internal padding.
-  // FIX: Add onClick prop to allow cards to be interactive.
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 
   // Custom Components
@@ -83,7 +77,7 @@ export interface CardProps {
 const getVariantClasses = (variant: CardVariant): string => {
   switch (variant) {
     case 'outline':
-      return 'bg-transparent border-2 border-gray-600/80 shadow-md';
+      return 'bg-transparent border border-gray-600/80 shadow-md';
     case 'ghost':
       return 'bg-transparent border-none shadow-none';
     case 'interactive':
@@ -170,14 +164,12 @@ const ErrorDisplay: React.FC<{ message: string; onRetry?: () => void; }> = ({ me
  */
 const CardHeader: React.FC<{
   title?: string;
-  // FIX: Add subtitle prop to support subtitles in card headers.
   subtitle?: string;
   isCollapsible?: boolean;
   isCollapsed: boolean;
   toggleCollapse: () => void;
   actions?: CardHeaderAction[];
 }> = ({ title, subtitle, isCollapsible, isCollapsed, toggleCollapse, actions }) => {
-  // FIX: Update condition to account for subtitle.
   if (!title && !subtitle && (!actions || actions.length === 0)) {
     return null; // Render no header if there's no title, subtitle and no actions.
   }
@@ -191,21 +183,23 @@ const CardHeader: React.FC<{
   };
 
   const headerCursorClass = isCollapsible ? 'cursor-pointer' : 'cursor-default';
+  const hasContent = title || subtitle;
 
   return (
-    // FIX: Group title and subtitle and adjust alignment for proper layout.
     <div
       className={`flex items-start justify-between pb-4 ${headerCursorClass}`}
       onClick={handleHeaderClick}
     >
-      <div className="flex-1 pr-4">
-        {title && (
-          <h3 className="text-xl font-semibold text-gray-100 truncate">{title}</h3>
-        )}
-        {subtitle && (
-          <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
-        )}
-      </div>
+      {hasContent && (
+        <div className="flex-1 pr-4">
+            {title && (
+            <h3 className="text-xl font-semibold text-gray-100 truncate">{title}</h3>
+            )}
+            {subtitle && (
+            <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
+            )}
+        </div>
+      )}
       <div className="flex items-center space-x-2 flex-shrink-0">
         {actions && actions.map(action => (
           <button
@@ -215,7 +209,6 @@ const CardHeader: React.FC<{
             disabled={action.disabled}
             className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {/* FIX: Cast action.icon to allow adding className prop via cloneElement. */}
             {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'h-5 w-5' })}
           </button>
         ))}
@@ -258,12 +251,13 @@ const CardFooter: React.FC<{ children?: ReactNode }> = ({ children }) => {
 
 const Card: React.FC<CardProps> = ({
   title,
-  // FIX: Destructure subtitle prop.
   subtitle,
   children,
   className = '',
-  variant = 'default',
-  padding = 'md',
+  // FIX: Removed default values from props destructuring to prevent TypeScript from widening the types to 'string'.
+  // Defaults are now handled at the point of use.
+  variant,
+  padding,
   headerActions,
   footerContent,
   isCollapsible = false,
@@ -272,7 +266,6 @@ const Card: React.FC<CardProps> = ({
   errorState = null,
   onRetry,
   loadingIndicator,
-  // FIX: Destructure onClick prop to apply it to the main div.
   onClick,
 }) => {
   // --------------------------------------------------------------------------------
@@ -323,14 +316,17 @@ const Card: React.FC<CardProps> = ({
   // --------------------------------------------------------------------------------
   // Dynamic Class Computation
   // --------------------------------------------------------------------------------
-  const baseClasses = getVariantClasses(variant);
-  const paddingClasses = getPaddingClasses(padding);
+  // FIX: Provided default values here to ensure the props are correctly typed.
+  const baseClasses = getVariantClasses(variant || 'default');
+  const paddingClasses = getPaddingClasses(padding || 'md');
+  const hasHeader = title || subtitle || (headerActions && headerActions.length > 0) || isCollapsible;
 
   // Combine all classes into a final string.
   const finalContainerClasses = `
     ${baseClasses}
     ${className}
     overflow-hidden
+    ${onClick ? 'cursor-pointer' : ''}
   `;
 
   // --------------------------------------------------------------------------------
@@ -366,7 +362,7 @@ const Card: React.FC<CardProps> = ({
           aria-hidden={isCollapsed}
         >
           <div ref={contentRef}>
-             <div className="pt-4">
+             <div className={hasHeader ? "pt-4" : ""}>
                 {children}
              </div>
           </div>
@@ -377,19 +373,17 @@ const Card: React.FC<CardProps> = ({
   // --------------------------------------------------------------------------------
   // Final Render
   // --------------------------------------------------------------------------------
-  // FIX: Pass onClick handler to the root div element.
   return (
     <div className={finalContainerClasses.trim().replace(/\s+/g, ' ')} onClick={onClick}>
       <div className={paddingClasses}>
-        <CardHeader
+        {hasHeader && <CardHeader
           title={title}
-          // FIX: Pass subtitle prop to CardHeader.
           subtitle={subtitle}
           isCollapsible={isCollapsible}
           isCollapsed={!!isCollapsed}
           toggleCollapse={toggleCollapse}
           actions={headerActions}
-        />
+        />}
         
         {/* Render loading/error states OR the main content */}
         {(isLoading || errorState) ? (
@@ -397,7 +391,7 @@ const Card: React.FC<CardProps> = ({
         ) : (
             <>
                 {renderCardContent()}
-                <CardFooter>{footerContent}</CardFooter>
+                {footerContent && <CardFooter>{footerContent}</CardFooter>}
             </>
         )}
       </div>

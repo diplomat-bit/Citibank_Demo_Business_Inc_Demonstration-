@@ -17,7 +17,7 @@ Demo Bank's consciousness is built upon a suite of 26 interconnected modules, ea
 ### Personal Finance Suite
 
 1.  **Dashboard**: The command center of your financial life. A dynamic mosaic of your most critical data points, from balance summaries to AI-driven anomaly alerts.
-2.  **Transactions**: The Great Library. A complete, searchable, and AI-analyzable history of every financial event, complete with "Plato's Intelligence Suite" for deep insights.
+2.  **Transactions**: The Great Library. A complete, searchable, and AI-analyzable history of every financial event, now featuring **Plato's Intelligence Suite**—a series of AI-powered research assistants that hunt for subscriptions, detect anomalies, find tax deductions, and uncover savings opportunities directly from your transaction history.
 3.  **Send Money**: The Portal of Exchange. A dual-rail payment system demonstrating fluency in both traditional (ISO 20022) and modern fintech (Cash App) rails, secured by futuristic biometric verification.
 4.  **Budgets**: The Chamber of Discipline. A collaborative space where you set your own financial laws and work with an AI sage to master mindful spending through a conversational interface.
 5.  **Investments**: The Celestial Observatory. A grand view of your asset cosmos, featuring an AI growth simulator and a gallery for purpose-driven Social Impact (ESG) Investing.
