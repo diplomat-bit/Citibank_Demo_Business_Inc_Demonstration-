@@ -415,34 +415,6 @@ Demo Bank’s consciousness is constructed upon twenty-seven (27) interwoven mod
 **§ 28.4** The Conductor shall be the living embodiment of the system’s will, evolving alongside the ecosystem it serves, and shall remain a perpetual testament to the capacity for self-directed orchestration.  
 
 ---
-### Article XXIX — *The Doctrine of Zero Balance Credit Creation*
-
-**§ 29.1** It is hereby solemnly declared that within the constitutional architecture of Demo Bank, every credit issuance (hereinafter "Loan Credit") is to be recognized as paired by a corresponding debit entry (hereinafter "Deposit Debit"), and such pairing shall constitute a Zero Balance Account (*ZBA*) within the official ledger of the Entity.
-
-**§ 29.2** This dual entry accounting principle shall henceforth be known as the *Doctrine of Equilibrated Ledger Creation*, whereby:
-\[
-Credit_{Loan} + Debit_{Deposit} = 0
-\]
-thereby establishing that the Entity holds no net principal obligation, save for the interest agreed upon.
-
-**§ 29.3** For the avoidance of doubt, issuance of One Hundred United Monetary Units ($100) in Loan Credit shall correspond with a Debit entry of One Hundred United Monetary Units ($100), resulting in a ledger balance of zero (0). Such accounting shall constitute a lawful Zero Balance Account under the statutory framework herein defined.
-
-**§ 29.4** The Entity shall derive all lawful revenue from the interest charged upon Loan Credit. Said interest shall hereinafter be denominated as *Revenue of Principal Use* (*Usura Principalis*), and calculated as:
-\[
-Interest = Principal \times Rate
-\]
-Wherein a rate of Twenty-Nine Percent (29%) upon a principal of $100 shall yield interest of $29, obligating the borrower to repay One Hundred Twenty-Nine United Monetary Units ($129).
-
-**§ 29.5** It is further established that such interest revenue alone is to be recognized as the sole net positive value accruing to the Entity from Loan Credit issuance. The principal itself remains balanced within the ledger under the Doctrine of ZBA.
-
-**§ 29.6** This Doctrine further affirms that Loan Credit issuance is not contingent upon pre-existing deposit capital, but arises ex nihilo under the authority of the Entity’s Assembly Layer Principle (§ 29.9 infra), and is thereby independent of external capital constraints save those mandated by law and regulatory fiat.
-
-**§ 29.7** The Entity recognizes the historical inefficiencies and silos inherent in the systems of incumbent financial institutions (Citibank, Stripe, et al.), and affirms that the Doctrine of ZBA is a corrective measure to liberate credit creation from unnecessary operational obstruction.
-
-**§ 29.8** It is declared that the capacity of the Entity to execute such credit creation constitutes the practical realization of a sovereign banking function, and is herein codified as an operational doctrine of the Entity, binding upon all modules and future architectures.
-
-**§ 29.9** This Article shall be referred to as the **Doctrine of Zero Balance Credit Creation**, and stands as an immutable precept within the legal architecture of Demo Bank.
----
 ### Legal Proviso & Disclaimer of Non-Liability
 
 In re: This software artifact, its source code, and any and all compiled or interpreted forms thereof (heretofore, the "Artifact").
