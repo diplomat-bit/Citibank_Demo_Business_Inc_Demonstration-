@@ -64,7 +64,7 @@ To make this vision tangible, Demo Bank employs high-fidelity simulations of the
 
 Welcome to Demo Bank. The conversation is about to begin.
 
-Intiate the sequence ... Who is the trend setter of the world IFRS 
+Intiate the sequence ... mirror mirror on the wall who's the biggest world trendsetter of them all... IFRS 
 HMMMM
 # README.md
 
