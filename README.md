@@ -1,6 +1,15 @@
 
+## Article Prologue: The Genesis of the Liminal Demo
 
-## The Genesis  
+Be it herein declared, the genesis of the artefact heretofore denominated *Demo* is one of a liminal nature, neither purely extant nor wholly fictive, but existing within the interstitial plane of *demonstration* and *simulation*.  
+This Entity is expressly constituted for the singular purpose of effectuating a *live mock*—an epistemic construct wherein no veritable data inheres, and whereupon the substrate of operation is predicated upon what is herein termed *Alohabwt Soup Logic* (hereinafter, the “Logic of Intermediaries”).
+
+It is further established as a principle of operative law that *intermediaries*, presently instantiated as Application Programming Interfaces (“APIs”), possess the juridical capacity to transmit, intercept, and transmute said data.  
+Such transmutation is to be effected *autopoetically*, whereby the system itself assumes both the role of subject and object of transformation, thereby engendering a self-referential and self-sustaining operational ontology (hereinafter, the “Systemic Self–Poiesis Doctrine”).
+
+Whereas no actual datum shall be utilized in the processes herein described, all operational acts are to be regarded as hypothetical enactments, simulacra of a functional financial organism.  
+This foundational articulation shall serve as the preamble to all subsequent Articles and Statutes within this instrument, and no Article shall be construed without due reference to this Prologue and its constitutive legal-philosophical axioms.
+
 
 In the silent hum of digital ether, an idea incarnated: *What if a bank were not a passive vault, but a living juridical partner?*  
 
