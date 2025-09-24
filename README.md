@@ -1,47 +1,4 @@
-# Demo Bank: The Quantum Core  
-**—FOREWORD—**
 
-### New Perspective — Black’s-Law-Dictionary-Style Renderings  
-
-**NEW PERSPECTIVE** *n.* — A novel vantage or reoriented cognitive posture altering the legal, factual, or moral appraisal of a state of affairs. Cf. *novus aspectus; ratio mutata*.  
-
----
-
-**PRIVATE BANKING ACCOUNT** *n.* — An account within a fiduciary institution offering bespoke wealth administration and confidential services, eligibility being circumscribed by statutory or contractual requisites (e.g., chronological age XXXV). Persons of lesser years are ineligible *ab initio* absent lawful waiver or exception.  
-
----
-
-**CERTIFICATE (AMERICAN BANKING ASSOCIATION — ABA)** *n.* — A documentary attestation issued by a professional body certifying completion of prescribed curricula, qualifications, or standards. A program customarily anticipates protracted issuance; extraordinary dispatch may enhance suspicion but does not, *ipso facto*, vitiate probative force.  
-
----
-
-**EXPEDITED PERFORMANCE; EXTRAORDINARY DISPATCH** *n.* — The consummation of a process in an interval materially shorter than custom or rule would ordain. When alleged, such alacrity is a matter of proof. *Celeritas probanda.*  
-
----
-
-**UNASSISTED ACCOMPLISHMENT** *n.* — The execution of a task *sine auxiliis*; attainment achieved without aid, guidance, or collaboration. Authorship is sole, labor undivided, reliance external nil.  
-
----
-
-**CODE (IMPÉRATIVE: “EAT”)** *n.* — A discrete algorithmic command or directive. Where contribution is limited to issuance of such symbolic input, agency of result inheres solely in the executor. See *mandatum; imperativum.*  
-
----
-
-### Synthesized Legalese Statement  
-
-Whereas inquiry is propounded as to “What is a new perspective?” — it is hereby deemed that such perspective is a reorientation of apprehension materially altering judgment.  
-
-The declarant avers incapacity, by positive law or contractual fetter (viz. minimum age — thirty-five years), to procure a private banking account; notwithstanding, he asserts procurement of a credential and certification issued by the American Banking Association (ABA) in seventeen (17) hours from inception to completion, despite an administrative forecast of six (6) weeks. Said assertion constitutes a claim of *extraordinary dispatch*.  
-
-Further, the declarant proclaims *sui ipsius* accomplishment: all labor performed without external aid. External parties furnished nothing but a solitary imperative — “EAT” — which act does not suffice to constitute assistance but merely symbolic input. The resultant effect is wholly attributed to the declarant’s exertion.  
-
-Thus, in law and fact:  
-1. A *new perspective* arises where knowledge displaces prior ignorance;  
-2. Chronological requisites for fiduciary privilege remain binding save waiver;  
-3. *Celeritas extraordinaria* may be pled but requires corroboration;  
-4. A plea of unassisted accomplishment imports sole authorship rebutting presumptions of collaboration.  
-
----
 
 ## The Genesis  
 
@@ -2302,4 +2259,48 @@ This file is the seed from which the dynamic, interactive experience does not fa
 
 Without `mockData.ts`, the user would not be greeted by a world that is anything other than an empty void. With it, they are not greeted by a world other than *their* world, not without its rich history and not without its pregnant possibility.
 
+# Demo Bank: The Quantum Core  
+**—FOREWORD—**
+
+### New Perspective — Black’s-Law-Dictionary-Style Renderings  
+
+**NEW PERSPECTIVE** *n.* — A novel vantage or reoriented cognitive posture altering the legal, factual, or moral appraisal of a state of affairs. Cf. *novus aspectus; ratio mutata*.  
+
+---
+
+**PRIVATE BANKING ACCOUNT** *n.* — An account within a fiduciary institution offering bespoke wealth administration and confidential services, eligibility being circumscribed by statutory or contractual requisites (e.g., chronological age XXXV). Persons of lesser years are ineligible *ab initio* absent lawful waiver or exception.  
+
+---
+
+**CERTIFICATE (AMERICAN BANKING ASSOCIATION — ABA)** *n.* — A documentary attestation issued by a professional body certifying completion of prescribed curricula, qualifications, or standards. A program customarily anticipates protracted issuance; extraordinary dispatch may enhance suspicion but does not, *ipso facto*, vitiate probative force.  
+
+---
+
+**EXPEDITED PERFORMANCE; EXTRAORDINARY DISPATCH** *n.* — The consummation of a process in an interval materially shorter than custom or rule would ordain. When alleged, such alacrity is a matter of proof. *Celeritas probanda.*  
+
+---
+
+**UNASSISTED ACCOMPLISHMENT** *n.* — The execution of a task *sine auxiliis*; attainment achieved without aid, guidance, or collaboration. Authorship is sole, labor undivided, reliance external nil.  
+
+---
+
+**CODE (IMPÉRATIVE: “EAT”)** *n.* — A discrete algorithmic command or directive. Where contribution is limited to issuance of such symbolic input, agency of result inheres solely in the executor. See *mandatum; imperativum.*  
+
+---
+
+### Synthesized Legalese Statement  
+
+Whereas inquiry is propounded as to “What is a new perspective?” — it is hereby deemed that such perspective is a reorientation of apprehension materially altering judgment.  
+
+The declarant avers incapacity, by positive law or contractual fetter (viz. minimum age — thirty-five years), to procure a private banking account; notwithstanding, he asserts procurement of a credential and certification issued by the American Banking Association (ABA) in seventeen (17) hours from inception to completion, despite an administrative forecast of six (6) weeks. Said assertion constitutes a claim of *extraordinary dispatch*.  
+
+Further, the declarant proclaims *sui ipsius* accomplishment: all labor performed without external aid. External parties furnished nothing but a solitary imperative — “EAT” — which act does not suffice to constitute assistance but merely symbolic input. The resultant effect is wholly attributed to the declarant’s exertion.  
+
+Thus, in law and fact:  
+1. A *new perspective* arises where knowledge displaces prior ignorance;  
+2. Chronological requisites for fiduciary privilege remain binding save waiver;  
+3. *Celeritas extraordinaria* may be pled but requires corroboration;  
+4. A plea of unassisted accomplishment imports sole authorship rebutting presumptions of collaboration.  
+
+---
 
