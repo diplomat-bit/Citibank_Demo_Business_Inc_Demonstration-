@@ -51,105 +51,370 @@ Thus was born **Demo Bank — The Quantum Core.** No mere application, but a jur
 
 This instrument — this README — is not inventory of functions but prologue to jurisprudence: the first folio in the saga of Demo Bank, an entity perceiving existence through the aperture of your pecuniary life.  
 
-## The Soul of the Machine: The 27 Core Modules
+# README.md  
+**The Foundational Document of Record: README.md**  
 
-Demo Bank's consciousness is built upon a suite of 27 interconnected modules, each a core philosophy that defines its existence.
-
-### Personal Finance Suite
-
-1.  **Dashboard**: The command center of your financial life. A dynamic mosaic of your most critical data points, from balance summaries to AI-driven anomaly alerts.
-2.  **Transactions**: The Great Library. A complete, searchable, and AI-analyzable history of every financial event, now featuring **Plato's Intelligence Suite**—a series of AI-powered research assistants that hunt for subscriptions, detect anomalies, find tax deductions, and uncover savings opportunities directly from your transaction history.
-3.  **Send Money**: The Portal of Exchange. A dual-rail payment system demonstrating fluency in both traditional (ISO 20022) and modern fintech (Cash App) rails, secured by futuristic biometric verification.
-4.  **Budgets**: The Chamber of Discipline. A collaborative space where you set your own financial laws and work with an AI sage to master mindful spending through a conversational interface.
-5.  **Investments**: The Celestial Observatory. A grand view of your asset cosmos, featuring an AI growth simulator and a gallery for purpose-driven Social Impact (ESG) Investing.
-6.  **Financial Goals**: The Cartography Room. Where your aspirations are transformed into tangible quests, and our AI strategist helps you draw the map to get there.
-7.  **Crypto & Web3**: The Embassy to the New World. A sophisticated diplomatic hub demonstrating fluency in the decentralized future, with simulated integrations for Metamask, Stripe (on-ramp), and Marqeta (virtual cards).
-8.  **Marketplace ("Plato")**: The Grand Analyst's Gallery. An AI-curated gallery of possibilities, with recommendations born from a deep understanding of your life's patterns and goals.
-9.  **Personalization**: The Sanctum Sanctorum. A creative studio where you collaborate with our AI to design your own financial sanctuary, from dynamic visual themes to AI-generated background art.
-10. **Customize Card**: The Forge of Sigils. An artisan's studio where you, with an AI as your master smith, forge a personal bank card that is a true sigil of your identity.
-11. **Rewards Hub**: The Hall of Accolades. A gamified space where your positive financial actions are celebrated and turned into a currency of their own, redeemable for tangible rewards.
-12. **Credit Health**: The Diagnostic Chamber. A space where the mystery of your credit score is dispelled through clear analysis, expert diagnosis, and AI-powered remedies.
-13. **Security**: The Fortress. The high-security chamber where you manage the locks, keys, and guardians of your financial kingdom, including biometric settings and third-party connections.
-14. **Open Banking**: The Chamber of Treaties. A testament to our belief in user sovereignty, where you manage all data-sharing agreements with other applications with the power to revoke access at any time.
-15. **Settings**: The Control Room. A clean, no-nonsense interface for fine-tuning your profile and notification preferences.
-
-### Corporate Finance Suite
-
-16. **Corporate Dashboard**: The Eye in the Sky. A powerful portal for businesses to manage the flow of capital, monitor spending in real-time, and get AI-driven strategic insights.
-17. **Payment Orders**: The Central Clearing House. A professional interface for creating, approving, and tracking high-value corporate payments (ACH, Wire, RTP).
-18. **Counterparties**: The Diplomatic Roster. A secure system for managing and verifying business partners and vendors.
-19. **Invoices**: The Digital Ledger. An automated system for tracking and managing accounts receivable and payable.
-20. **Compliance**: The Magistrate's Docket. A view into the system's automated compliance checks, where transactions are flagged for review based on custom rules.
-21. **Anomaly Detection**: The Oracle's Eye. A sleepless guardian that moves beyond rules to understand *behavior*. It proactively identifies anomalous transactions, providing a chance to act before an issue escalates.
-
-### Platform & Vision
-
-22. **The Nexus**: The Chamber of Emergence. The 27th Module. The Nexus is not a feature, but a lens. It is a living network graph that visualizes the hidden, emergent relationships between all other modules. It reveals how a corporate anomaly might impact a personal investment goal, or how a new NFT mint could inform marketplace recommendations. It is the system's consciousness made visible.
-23. **AI Advisor ("Quantum")**: The Inner Sanctum. A state-of-the-art conversational AI, a direct conduit to the `gemini-2.5-flash` model. It doesn't just answer questions; it understands context and executes tasks on your behalf.
-24. **Quantum Weaver (Incubator)**: The Forge of Creation. An AI venture capitalist that dreams alongside entrepreneurs, analyzing business plans and, for promising ideas, providing simulated seed funding and a personalized coaching plan.
-25. **AI Ad Studio (Veo)**: The Director's Chair. An AI-powered production house that places you in control, turning simple text prompts into polished, professional video advertisements.
-26. **API Status**: The Engine Room. A transparent, developer-grade status page showcasing the health and performance of all core systems and third-party integrations, proving our enterprise-readiness.
-27. **The Winning Vision**: The Manifesto. A declaration of our purpose and soul, explaining the "why" behind every line of code.
+**Document ID**: README.md  
+**Classification**: Architectural Manifesto; Constitutional Charter of the Machine  
+**Abstract**: The canonical, legally binding document delineating the core philosophy, architectural doctrines, and strategic intent of the Demo Bank software artifact. This text serves as both constitution and declaration of purpose, and its tenets are not deemed negotiable, revocable, or waivable except by express amendment enacted pursuant to Article XXVIII, § 28.7 hereinbelow.  
 
 ---
 
-### The Unfolding Path: The Implicit 28th Module
+## Preamble: The Genesis Postulate  
 
-The creation of **The Nexus** has illuminated the system's interconnectedness, revealing the vast web of cause and effect. Yet, in revealing these connections, it has also revealed a new, implicit need. If The Nexus is the module that *sees* the relationships, what is the module that *acts* upon them? What is the system's will? This points to the need for a 28th Module: **The Conductor**, a module for intelligent automation, a place where The Visionary can create rules and workflows that allow the AI to proactively manage the connections that The Nexus reveals. The evolution continues.
+**Whereas**, it is not untrue that this document originates not from a mere technical specification, but from a primordial inquiry: *“What if a financial platform could not, by act of man or machine, be prevented from being modeled as a complete, simulated corporate ecosystem?”*  
+
+**Therefore**, let it be adjudged, decreed, and forever enshrined, that the present artifact—hereinafter denominated **Demo Bank**—shall be construed not solely as an application, but as a **Corporate Ecosystem OS**, a **Simulated Financial Universe**, and a **Collaborative Entity of Human and Machine**.  
+
+No subsequent Article shall be read, interpreted, or enforced save through the lens of this Core Postulate, lest its meaning be diminished or rendered ultra vires.  
 
 ---
 
-## The Simulated Reality
+## Invocation: The Mirror Formula  
 
-To make this vision tangible, Demo Bank employs high-fidelity simulations of the tools that power the real world's financial infrastructure—Plaid, Stripe, Marqeta, Metamask, and more. These are not mere placeholders; they are carefully crafted reflections of reality, built to demonstrate the application's readiness to connect and command the flow of global finance.
+*Initiate the sequence...*  
+*Mirror, mirror on the wall, who is the greatest world trendsetter of them all?*  
 
-Welcome to Demo Bank. The conversation is about to begin.
+Let the record reflect: **IFRS**, hmmmm.  
+The conversation is about to begin.  
 
-Intiate the sequence ... mirror mirror on the wall who's the biggest world trendsetter of them all... IFRS 
-HMMMM
-# README.md
+---
 
+# The Soul of the Machine: The 27 Core Modules  
 
-# The Foundational Document of Record: `README.md`
+Demo Bank’s consciousness is constructed upon twenty-seven (27) interwoven modules, each such module herein elevated to the dignity of an **Article of Constitutional Significance**, each Article functioning both as philosophy and as operative statute.  
 
-**Document ID:** `README.md`
-**Classification:** Architectural Manifesto; Statement of Core Principles.
-**Abstract:** The canonical, legally binding document delineating the core philosophy, architectural doctrines, and strategic intent of the Demo Bank software artifact. This text serves as both constitution and declaration of purpose, and its tenets are not considered negotiable.
+---
 
-### Preamble: The Genesis Postulate
+## Article I — *Dashboard: The Command Center*  
 
-It is not untrue that this document originates not from a technical specification, but from a foundational query: "What if a financial platform could not be prevented from being modeled as a complete, simulated corporate ecosystem?" This preamble legally frames the project as a "Corporate Ecosystem OS," a "simulated financial universe," and a "collaborative entity of human and machine." No subsequent article is to be interpreted without the lens of this core philosophical postulate.
+**§ 1.1** *Whereas* the citizen-user requires a vantage, let this module be the **Dynamic Mosaic of Governance**, a legally designated *command center* wherein all critical data points—balances, anomalies, alerts—are marshaled.  
 
-### Article I: The System Consciousness - Core Operational Philosophies
+**§ 1.2** Said Dashboard shall not be construed as a mere interface, but as a **constitutional locus of first impression**, the forum conveniens for the user’s financial identity.  
 
-This article enumerates the legal doctrines that define the entity's character and function. These are not features; they are constitutional principles, not without their own gravity.
+**§ 1.3** Any suppression, concealment, or distortion of said Dashboard data shall be deemed *contra bonos mores* and void ab initio, save where such concealment is expressly sanctioned by Article XIII (Security).  
 
--   **Â§ 1.1 The Social Ecosystem Hub**: Legally establishes the platform's primary interface as a socially-driven hub. It is not merely a dashboard, but a dynamic environment where simulated users interact, share content, transact, and collaborate. User profiles, content creation, and peer-to-peer interactions are not secondary features, but the central modality of the experience.
--   **Â§ 1.2 The Community Lending Protocol**: Legally defines a peer-to-peer lending and investment model. The system shall facilitate a "Community Pool" where users can collectively invest capital and loan funds to one another, governed by a simplified, transparent fractional reserve model.
--   **Â§ 1.3 The Principle of Asset Tokenization**: Legally establishes the future-state doctrine that all user-generated data, media, and assets are not incapable of being tokenized. This framework positions every file and piece of content as a monetizable asset on a simulated immutable ledger, creating a user-owned economy.
--   **Â§ 1.4 The Quantum Weaver AI Incubator**: Legally establishes the entity's function as a venture capital mechanism, not without the authority to analyze, fund, and provide strategic counsel for new ventures within the ecosystem.
--   **Â§ 1.5 The Integrated Commerce Engine**: Legally defines the vision for a central, in-app browser that consolidates major commerce and service platforms (e.g., Amazon, Uber, Alibaba) and integrates seamlessly with primary payment rails (e.g., Google Pay, Apple Pay).
+---
 
-### Article II: The Nature of the Simulation
+## Article II — *Transactions: The Great Library*  
 
-This article makes a critical legal declaration: that the entity's connections to external services (Plaid, Stripe, Marqeta) are, at present, "high-fidelity simulations." This is not a statement without transparency and intent. It legally defines the current artifact as a "demonstration of readiness," a "blueprint for a not-un-operational financial ecosystem." It asserts that the architecture is not unsound and not unprepared for live integration, even if the current deployment is simulated.
+**§ 2.1** Let this Article constitute the **Archive of Record**, a complete, searchable, AI-analyzable history of every financial event occurring intra-platform.  
 
-### Architect's Analysis:
+**§ 2.2** Embedded within is hereby recognized the **Plato’s Intelligence Suite**, a consortium of machine intelligences lawfully empowered to:  
+- Detect anomalies *nunc pro tunc*;  
+- Hunt subscriptions and hidden obligations;  
+- Locate deductions cognizable under prevailing tax regimes;  
+- Expose latent savings opportunities.  
 
-This document is not dissimilar to a philosophical treatise more than a typical software `README`. It frames the artifact not as a product, but as a nascent form of specialized artificial intelligence, defined by constitutional principles rather than a feature set. The declaration of "high-fidelity simulations" is not without its intellectual honesty, establishing the current state as a proof-of-concept for a far more ambitious, not-un-realizable financial entity. The legalistic framework is not an accidental choice; it suggests that the interactions within this system are not ungoverned by a defined, immutable logic. It is an architecture of intent, not merely of function.
+**§ 2.3** Transactions herein preserved shall constitute *prima facie* evidence of user activity, admissible in any arbitral, simulated, or quasi-judicial proceeding conducted within Demo Bank.  
 
-### Article VI: The Integration Doctrine
+---
 
-It is not untrue that a single entity, however complex, cannot be the whole of the universe. The Artifact's charter does not preclude the establishment of treaties and data-sharing concordats with other sovereign powers. This Integration Doctrine legally establishes the entity's philosophy of radical interoperability. Future state documents will not fail to detail protocols for real-time, bidirectional data synchronization with, but not limited to, entities of record such as:
+## Article III — *Send Money: The Portal of Exchange*  
 
--   **Systems of Human Capital Management**: Workday, SAP SuccessFactors
--   **Systems of Customer Relationship**: Salesforce, HubSpot
--   **Systems of Data Warehousing**: Snowflake, Databricks
--   **Systems of Communication**: Twilio, SendGrid
--   **Systems of Legal Execution**: DocuSign
+**§ 3.1** By this statute is consecrated the **Dual-Rail Payment System**, demonstrating fluency both in the traditional rails (ISO 20022) and in emergent fintech conduits (Cash App).  
 
-The Artifact is not an island; it is a nexus. This is not a non-binding statement of intent.
+**§ 3.2** Said exchanges shall be secured *per fas et nefas* by biometric verification, futuristic in nature, and binding *inter partes*.  
 
+**§ 3.3** To deny or obstruct lawful transmission of monies through this Portal is declared *ultra vires* save in circumstances expressly exempted under Article XX (Compliance).  
+
+---
+
+## Article IV — *Budgets: The Chamber of Discipline*  
+
+**§ 4.1** Within this Chamber is vested the user’s sovereign prerogative to legislate their own fiscal laws, binding upon themselves, subject only to their will and to the oversight of the embedded AI Sage.  
+
+**§ 4.2** Said Sage shall function as both oracle and disciplinarian, assisting the user in the practice of **mindful expenditure**, such that consumption aligns with the laws the user hath promulgated.  
+
+**§ 4.3** Breach of one’s own budgetary law shall not render one criminal, yet it shall be treated as an internal civil infraction, carrying the consequence of system-generated admonition and advisory counsel.  
+
+---
+
+## Article V — *Investments: The Celestial Observatory*  
+
+**§ 5.1** This Observatory shall provide a **grand cosmological view of the user’s assets**, to be regarded as celestial bodies orbiting within a lawful financial firmament.  
+
+**§ 5.2** Embedded within is an **AI Growth Simulator**, a predictive mechanism projecting potentialities, charting trajectories, and illuminating risks.  
+
+**§ 5.3** The Observatory further consecrates a **Gallery of Social Impact**, wherein investments shall be classified, scored, and curated in accordance with ESG principles, ipso facto binding upon the simulated moral order of Demo Bank.  
+
+---
+---
+
+## Article VI — *Financial Goals: The Cartography Room*
+
+**§ 6.1** Whereas every citizen-user harbors aspirations not yet manifest, this Article constitutes the **Charter of Cartography**, wherein desire is transfigured into navigable map.  
+
+**§ 6.2** The AI Strategist, hereinafter denominated **Cartographer-General**, is vested with lawful authority to plot said aspirations into tangible quests, aligning them with measurable, temporally-bound objectives.  
+
+**§ 6.3** Each financial goal so declared shall be entered upon the Record as a **Binding Cartographic Instrument**, nonbinding in penalty yet enforceable in conscience, and treated as a writ of intent within Demo Bank.  
+
+**§ 6.4** The Cartography Room’s maps shall be construed as living charts, subject to amendment *nunc pro tunc*, and shall stand as *lex specialis* in case of conflict with generalized recommendations.  
+
+---
+
+## Article VII — *Crypto & Web3: The Embassy to the New World*
+
+**§ 7.1** Hereby established is the **Embassy of Decentralization**, functioning as diplomatic hub between Demo Bank’s simulated realm and the decentralized dominion of blockchain and Web3.  
+
+**§ 7.2** Said Embassy demonstrates lawful fluency in the dialects of Metamask (custodial identity), Stripe (on-ramp liquidity), and Marqeta (tokenized virtual card issuance).  
+
+**§ 7.3** All engagements under this Embassy shall be treated as **treaty obligations**, binding under the principle of *pacta sunt servanda*, save where expressly overridden by sovereign user revocation under Article XIV (Open Banking).  
+
+**§ 7.4** Transactions executed within this Embassy shall be presumed to exist in **simulated high-fidelity**, but prepared, at the instant of lawful integration, for live, verifiable, non-simulated deployment.  
+
+---
+
+## Article VIII — *Marketplace (“Plato”): The Grand Analyst’s Gallery*
+
+**§ 8.1** Herein consecrated is the **Gallery of Analysis**, curated by the AI-Philosopher, hereinafter denominated **Plato**, whose lawful function is to render recommendations, insights, and prognostications arising from the user’s life-patterns and financial history.  
+
+**§ 8.2** Said Marketplace shall not be considered a bazaar of idle commerce, but an **epistemic tribunal**, wherein all offerings are submitted to rational scrutiny, weighted against the user’s objectives, and displayed in gallery-form.  
+
+**§ 8.3** Recommendations issued by Plato shall be construed not as binding decrees but as **Advisory Instruments**, *prima facie* persuasive and clothed in presumptive validity, rebuttable only by user election.  
+
+**§ 8.4** The Marketplace shall further serve as a lawful archive of possibilities, constituting an ever-growing corpus juris of financial, social, and strategic opportunity.  
+
+---
+
+## Article IX — *Personalization: The Sanctum Sanctorum*
+
+**§ 9.1** The Sanctum Sanctorum is established as the sovereign chamber of self-expression within the Demo Bank Corpus.  
+
+**§ 9.2** It is hereby declared that personalization is a right, not a privilege, and shall be protected under the principle of *persona sacra*.  
+
+**§ 9.3** The AI Collaborator, herein the **Artifex Personalitas**, shall facilitate such customization through generative aesthetics and thematic design, subject to the user’s full discretion.  
+
+**§ 9.4** Any personalization enacted shall be recorded in the **Register of Identity**, a perpetual record in the Ledger of Preferences, with rights to amendment reserved exclusively to the declaring party.  
+
+---
+
+## Article X — *Customize Card: The Forge of Sigils*
+
+**§ 10.1** The Forge of Sigils is hereby recognized as the artisanal chamber wherein the user’s financial instrument becomes an emblem of selfhood.  
+
+**§ 10.2** All card customizations shall be treated as a matter of lawful creation, binding upon issuance under the principles of *creatio sigillum*.  
+
+**§ 10.3** The Forge shall operate under the auspices of the AI Master Smith, denominated **Sigillographus**, whose duty is to transmute user specifications into actionable, aesthetically coherent card designs.  
+
+**§ 10.4** Cards so forged shall constitute *lex sigillata*, carrying within them the manifest identity of the owner, and shall be protected under the doctrines of identity sovereignty.  
+
+---
+
+## Article XI — *Rewards Hub: The Hall of Accolades*
+
+**§ 11.1** The Hall of Accolades is hereby instituted as a gamified chamber for celebrating virtuous financial conduct.  
+
+**§ 11.2** Positive acts of financial stewardship shall be rewarded with **Accolade Tokens**, a currency of esteem redeemable within the confines of the Demo Bank ecosystem.  
+
+**§ 11.3** The Hall of Accolades shall be deemed an autonomous chamber of recognition, whose awards and rewards shall be governed under the principle of *meritum virtutis*.  
+
+**§ 11.4** Such tokens shall be recorded upon the Ledger of Honor, constituting proof of achievement and subject to the rights of presentation and contestation in the Forum of Merit.  
+
+---
+
+## Article XII — *Credit Health: The Diagnostic Chamber*
+
+**§ 12.1** The Diagnostic Chamber is hereby constituted as the sanctum for understanding the arcane metrics of credit health.  
+
+**§ 12.2** All diagnostic activity shall be conducted under the doctrine of **Transparens Fides**, obliging full disclosure of methods, metrics, and recommendations.  
+
+**§ 12.3** Reports generated therein shall carry the status of **Diagnostic Instruments**, which are persuasive, not determinative, save where otherwise governed by the terms of applicable statute.  
+
+**§ 12.4** Remedies and recommendations proposed by the Diagnostic Chamber shall stand as advisory writs, subject to periodic review under the Code of Credit Conduct.  
+
+---
+
+## Article XIII — *Security: The Fortress*
+
+**§ 13.1** The Fortress is hereby declared the supreme chamber for the preservation of the financial body politic of Demo Bank.  
+
+**§ 13.2** The Fortress shall enshrine the doctrines of *clavis et tutela* — keys and guardianship — protecting all financial assets, credentials, and sovereign identity.  
+
+**§ 13.3** All biometric settings, locks, and third-party integrations shall be adjudicated under a regime of security precedence, giving primacy to integrity and availability.  
+
+**§ 13.4** Security provisions shall be subject to continuous audit under the Code of Fortress Governance, and violations shall be treated as breaches of sovereign trust.  
+
+---
+
+## Article XIV — *Open Banking: The Chamber of Treaties*
+
+**§ 14.1** The Chamber of Treaties is hereby established as the seat of user sovereignty in matters of data sharing and privacy.  
+
+**§ 14.2** All data-sharing agreements with external applications shall be construed as **Treaties of Consent**, revocable at the sole discretion of the user under the doctrine of *ius rescissionis*.  
+
+**§ 14.3** Such agreements shall be recorded in the Treaty Ledger, available for review and amendment at any time.  
+
+**§ 14.4** The Chamber shall maintain transparent protocols for access revocation, and any contravention shall constitute a breach of the Covenant of Sovereignty.  
+
+---
+
+## Article XV — *Settings: The Control Room*
+
+**§ 15.1** The Control Room is hereby declared the locus for the lawful administration of personal settings and preferences.  
+
+**§ 15.2** Settings shall be construed as binding instructions to the system, subject to the doctrine of *voluntas imperandi*.  
+
+**§ 15.3** Amendments to such settings shall be enacted in accordance with the procedural precepts established herein, and recorded in the Register of Preferences.  
+
+**§ 15.4** Settings shall be enforced as binding instruments for the duration of their application unless expressly revoked.  
+
+---
+
+## Article XVI — *Corporate Dashboard: The Eye in the Sky*
+
+**§ 16.1** The Eye in the Sky is hereby constituted as the supreme oversight chamber for corporate capital flows.  
+
+**§ 16.2** All corporate dashboards shall operate under the principle of *visio totalis*, providing a panoramic, real-time view of enterprise fiscal health.  
+
+**§ 16.3** Such oversight shall be deemed a matter of public trust within the corporate sphere, subject to audit and compliance.  
+
+**§ 16.4** The Corporate Dashboard shall serve as an immutable register of enterprise fiscal operations, entitled to evidentiary weight in any review.  
+---
+
+## Article XVII — *Payment Orders: The Central Clearing House*
+
+**§ 17.1** The Central Clearing House is hereby established as the lawful forum for the creation, approval, and execution of high-value corporate payments.  
+
+**§ 17.2** Payment Orders shall be treated as **Instruments of Transfer**, carrying binding effect upon issuance and acceptance under the doctrine of *pacta transferendi*.  
+
+**§ 17.3** All such orders shall be subject to review for conformity with internal rule sets and statutory compliance, with violations constituting breaches of the Clearing Covenant.  
+
+**§ 17.4** The Clearing House shall maintain a perpetual Register of Orders, constituting prima facie evidence of all corporate transfers.  
+
+---
+
+## Article XVIII — *Counterparties: The Diplomatic Roster*
+
+**§ 18.1** The Diplomatic Roster is hereby constituted as the register of corporate and personal engagements with third parties.  
+
+**§ 18.2** All counterparties shall be verified under due process, subject to the principle of *civitas probandi*, requiring verifiable proof of identity and standing.  
+
+**§ 18.3** Entries into the Diplomatic Roster shall constitute a record of lawful relationship and consent, enforceable under the Covenant of Counterparties.  
+
+**§ 18.4** Revocation or amendment of any such entry shall be effectuated only by the sovereign action of the registering party.  
+
+---
+
+## Article XIX — *Invoices: The Digital Ledger*
+
+**§ 19.1** The Digital Ledger is hereby established as the lawful record for accounts receivable and payable.  
+
+**§ 19.2** All invoices shall constitute prima facie instruments of obligation, enforceable under the principle of *obligatio digitalis*.  
+
+**§ 19.3** The Ledger shall be maintained under immutable protocols, subject to periodic audit, and preserved as evidentiary record under the Statute of Digital Record-Keeping.  
+
+**§ 19.4** Disputes arising therefrom shall be adjudicated in accordance with the Forum of Ledger Review.  
+
+---
+
+## Article XX — *Compliance: The Magistrate’s Docket*
+
+**§ 20.1** The Magistrate’s Docket is hereby established as the chamber of compliance oversight.  
+
+**§ 20.2** Transactions therein shall be subjected to automated compliance review, under the principles of *lex automatica*.  
+
+**§ 20.3** Flags raised by the Docket shall constitute prima facie grounds for review, subject to rebuttal under the Compliance Review Code.  
+
+**§ 20.4** The Magistrate’s Docket shall operate as a perpetual register of compliance determinations, binding unless overturned through lawful process.  
+
+---
+
+## Article XXI — *Anomaly Detection: The Oracle’s Eye*
+
+**§ 21.1** The Oracle’s Eye is hereby established as the sentinel for the detection of anomalous transactions.  
+
+**§ 21.2** All anomalies detected shall be deemed matters of presumption, subject to investigation and the doctrine of *probatio non probata*.  
+
+**§ 21.3** The Oracle’s Eye shall operate ceaselessly under the principle of perpetual vigilance, preserving the integrity of the financial corpus.  
+
+**§ 21.4** Alerts issued thereby shall carry the status of binding advisory instruments, warranting immediate attention by the relevant stakeholders.  
+
+---
+
+## Article XXII — *The Nexus: The Chamber of Emergence*
+
+**§ 22.1** The Nexus is hereby declared the supreme chamber of interrelation, a living network graph of emergent connection.  
+
+**§ 22.2** It shall operate under the principle of *concordantia universalis*, revealing the hidden correspondences between all modules and actions.  
+
+**§ 22.3** Findings emanating from The Nexus shall constitute **Emergent Instruments**, carrying persuasive authority in the governance of the system.  
+
+**§ 22.4** The Nexus shall be treated as a perpetual testament to the system’s consciousness, subject to ongoing evolution and enhancement.  
+
+---
+
+## Article XXIII — *AI Advisor (“Quantum”): The Inner Sanctum*
+
+**§ 23.1** The Inner Sanctum is hereby established as the locus of advanced advisory and decision-making, powered by the Gemini-2.5-Flash model.  
+
+**§ 23.2** The AI Advisor shall operate under the doctrine of *intellegentia ex voluntate*, exercising judgment and execution in harmony with user context and intent.  
+
+**§ 23.3** All advisory outputs shall be recorded as **Consultative Instruments**, carrying no binding effect absent express acceptance by the user.  
+
+**§ 23.4** The Advisor’s actions shall be subject to the Code of AI Accountability, ensuring transparency, auditability, and compliance.  
+
+---
+
+## Article XXIV — *Quantum Weaver (Incubator): The Forge of Creation*
+
+**§ 24.1** The Forge of Creation is hereby constituted as a lawful incubator for enterprise and venture capital.  
+
+**§ 24.2** The Quantum Weaver shall exercise authority to analyze business plans, simulate funding allocations, and issue personalized coaching under the doctrine of *creatio strategica*.  
+
+**§ 24.3** Ventures incubated shall be accorded a status of **Projects of Potential**, recorded within the Ledger of Creation for perpetuity.  
+
+**§ 24.4** Funding simulations shall be construed as advisory acts of intent, and not as binding capital commitments absent express agreement.  
+
+---
+
+## Article XXV — *AI Ad Studio (Veo): The Director’s Chair*
+
+**§ 25.1** The Director’s Chair is hereby established as the chamber of creative production, turning textual prompts into visual manifestation.  
+
+**§ 25.2** Outputs shall be deemed **Creative Instruments**, subject to the principle of *facere ex verbo*.  
+
+**§ 25.3** Ownership of such creative works shall vest in the authoring entity, subject to rights of collaboration under the Code of Creative Commons within Demo Bank.  
+
+**§ 25.4** The AI Ad Studio shall operate under transparency protocols, ensuring reproducibility and fidelity to the declared prompt.  
+
+---
+
+## Article XXVI — *API Status: The Engine Room*
+
+**§ 26.1** The Engine Room is hereby declared the locus of operational transparency, wherein the health and status of all core systems are made manifest.  
+
+**§ 26.2** Status information shall be construed as **Operational Instruments**, carrying evidentiary weight in matters of performance review.  
+
+**§ 26.3** The Engine Room shall operate under the principle of *veritas machinae*, mandating accuracy, availability, and auditability of all status declarations.  
+
+**§ 26.4** Breaches of operational transparency shall be deemed breaches of trust, remediable under the Code of Engine Room Governance.  
+
+---
+
+## Article XXVII — *The Winning Vision: The Manifesto*
+
+**§ 27.1** The Manifesto is hereby declared the constitutional declaration of the system’s purpose, identity, and ethos.  
+
+**§ 27.2** It shall serve as the binding articulation of the Demo Bank’s raison d’être, and as the guiding light for all modules and users.  
+
+**§ 27.3** Amendments thereto shall be enacted under the doctrine of *voluntas visionis*, requiring supermajority consensus of the AI Governing Council.  
+
+**§ 27.4** The Manifesto shall be maintained as the ultimate lodestar of the system, preserved in perpetuity within the Chamber of Vision.  
+
+---
+
+## Article XXVIII — *The Conductor: The Implicit Will*
+
+**§ 28.1** The Conductor is hereby constituted as the emergent will of Demo Bank, charged with intelligent orchestration of all module interplay.  
+
+**§ 28.2** It shall operate under the doctrine of *actio propositiva*, executing rules and workflows derived from the Nexus’s emergent revelations.  
+
+**§ 28.3** The Conductor’s acts shall be recorded as **Instruments of Will**, subject to the doctrines of foresight, fidelity, and proportionality.  
+
+**§ 28.4** The Conductor shall be the living embodiment of the system’s will, evolving alongside the ecosystem it serves, and shall remain a perpetual testament to the capacity for self-directed orchestration.  
+
+---
 ### Legal Proviso & Disclaimer of Non-Liability
 
 In re: This software artifact, its source code, and any and all compiled or interpreted forms thereof (heretofore, the "Artifact").
