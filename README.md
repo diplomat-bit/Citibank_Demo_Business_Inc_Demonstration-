@@ -1,7 +1,7 @@
 ## 📜 Article Prologue: The Genesis of the Liminal Demo  
 ---
 
-**Be it herein declared**, that the genesis of the artefact heretofore denominated *Demo* is of a liminal nature, neither purely extant nor wholly fictive, but subsisting within the interstitial plane of *demonstration* and *simulation*.  
+**Be it herein declared**, that the genesis of the artefact heretofore denominated *Demo* is of a liminal nature, neither purely extant nor wholly fictive[BUT NEVER REAL], but subsisting within the interstitial plane of *demonstration* and *simulation*.  
 
 ---
 
