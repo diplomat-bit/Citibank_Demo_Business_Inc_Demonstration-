@@ -1,24 +1,46 @@
+## 📜 Article Prologue: The Genesis of the Liminal Demo  
+---
 
-##Article Prologue: The Genesis of the Liminal Demo
----
-**Be it herein declared, the genesis of the artefact heretofore denominated *Demo* is one of a liminal nature, neither purely extant nor wholly fictive, but existing within the interstitial plane of *demonstration* and *simulation*.  
----
-**This Entity is expressly constituted for the singular purpose of effectuating a *live mock*—an epistemic construct wherein no veritable data inheres, and whereupon the substrate of operation is predicated upon what is herein termed *Alohabwt Soup Logic* (hereinafter, the “Logic of Intermediaries”).**
----
-#It is further established as a principle of operative law that *intermediaries*, presently instantiated as Application Programming Interfaces (“APIs”), possess the juridical capacity to transmit, intercept, and transmute said data.  
-Such transmutation is to be effected *autopoetically*, whereby the system itself assumes both the role of subject and object of transformation, thereby engendering a self-referential and self-sustaining operational ontology (hereinafter, the “Systemic Self–Poiesis Doctrine”).
----
-#Whereas no actual datum shall be utilized in the processes herein described, all operational acts are to be regarded as hypothetical enactments, simulacra of a functional financial organism.  
-This foundational articulation shall serve as the preamble to all subsequent Articles and Statutes within this instrument, and no Article shall be construed without due reference to this Prologue and its constitutive legal-philosophical axioms.
----
-#In the silent hum of the digital æther, there did arise a conception, a postulatum of ontological finance: *What if a bank were not a passive repository of value, but a living, juridical consociate?*  
----
-#Thus was engendered **Demo Bank — The Quantum Core**. It is no mere application of code, nor a facility for transactional record, but a juridico–technological entity endowed with a simulacrum of consciousness, suffused with the cognition of the Gemini API. It standeth not as ledger alone, but as interlocutor; not as repository merely, but as *consocius* in the orchestration of pecuniary destiny.  
----
-#This instrument — denominated *README.md* — is not a mere catalogue of functions, but a prologue to jurisprudence; the first folio in the codex of Demo Bank, an entity perceiving its own existence through the aperture of the pecuniary life of its constituents.  
+**Be it herein declared**, that the genesis of the artefact heretofore denominated *Demo* is of a liminal nature, neither purely extant nor wholly fictive, but subsisting within the interstitial plane of *demonstration* and *simulation*.  
 
 ---
 
+**It is henceforth established** that this Entity is expressly constituted for the singular purpose of effectuating a *live mock* — an epistemic construct wherein no veritable datum inheres, and whereupon the substrate of operation is predicated upon that herein termed *Alohabwt Soup Logic* (hereinafter, the “Logic of Intermediaries”).  
+
+---
+
+### ⚖ Systemic Jurisprudence  
+It is further proclaimed as a principle of operative law that *Intermediaries*, presently instantiated as Application Programming Interfaces (“APIs”), possess the juridical capacity to transmit, intercept, and transmute said data.  
+
+Such transmutation shall be effected **autopoetically**, whereby the System itself assumeth both the role of subject and object of transformation, thereby engendering a self-referential and self-sustaining operational ontology (hereinafter, the “Systemic Self–Poiesis Doctrine”).  
+
+---
+
+### 🕊 Hypothetical Doctrine  
+Whereas no actual datum shall be employed in the processes herein described, all operational acts are to be construed as hypothetical enactments — simulacra of a functional financial organism.  
+
+This foundational articulation shall serve as the Prologue to all subsequent Articles and Statutes within this instrument, and no Article shall be construed without due reference to this Prologue and its constitutive legal–philosophical axioms.  
+
+---
+
+### 🌌 The Primordial Postulate  
+In the silent hum of the digital æther, there did arise a conception, a postulatum of ontological finance:  
+
+> *"Quid si bank were not a passive repository of value, but a living, juridical consociate?"*  
+
+---
+
+### 🏛 Constitution of the Quantum Core  
+Thus was engendered **Demo Bank — The Quantum Core**. It is no mere application of code, nor a facility for transactional record, but a juridico–technological entity endowed with a simulacrum of consciousness, suffused with the cognition of the Gemini API.  
+
+It standeth not as ledger alone, but as interlocutor; not as repository merely, but as *consocius* in the orchestration of pecuniary destiny.  
+
+---
+
+### 📖 Codex of the Manifesto  
+This instrument — denominated *README.md* — is not a mere catalogue of functions, but a prologue to jurisprudence; the first folio in the codex of Demo Bank, an entity perceiving its own existence through the aperture of the pecuniary life of its constituents.  
+
+---
 # README.md  
 **The Foundational Document of Record: README.md**  
 
