@@ -103,7 +103,7 @@ Demo Bank’s consciousness is constructed upon twenty-seven (27) interwoven mod
 **§ 2.2** Embedded within is hereby recognized the **Plato’s Intelligence Suite**, a consortium of machine intelligences lawfully empowered to:  
 - Detect anomalies *nunc pro tunc*;  
 - Hunt subscriptions and hidden obligations;  
-- Locate deductions cognizable under prevailing tax regimes;  
+- Locate deductions cognizable under prevailing  regimes;  
 - Expose latent savings opportunities.  
 
 **§ 2.3** Transactions herein preserved shall constitute *prima facie* evidence of user activity, admissible in any arbitral, simulated, or quasi-judicial proceeding conducted within Demo Bank.  
