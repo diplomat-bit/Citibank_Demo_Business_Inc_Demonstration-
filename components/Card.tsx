@@ -39,6 +39,7 @@ export interface CardHeaderAction {
 export interface CardProps {
   // Core Content
   title?: string;
+  titleTooltip?: string;
   subtitle?: string;
   children: ReactNode;
   
@@ -110,6 +111,18 @@ const getPaddingClasses = (padding: 'sm' | 'md' | 'lg' | 'none'): string => {
 // These components are defined within the Card module to encapsulate all card-related
 // rendering logic and prevent polluting the global component scope.
 
+const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
+    <div className="group relative flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-gray-900 border border-gray-700 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+            {text}
+        </div>
+    </div>
+);
+
+
 /**
  * @description A visually appealing loading skeleton component displayed when the card
  * is in its `isLoading` state. This provides a better user experience than a simple spinner.
@@ -164,12 +177,13 @@ const ErrorDisplay: React.FC<{ message: string; onRetry?: () => void; }> = ({ me
  */
 const CardHeader: React.FC<{
   title?: string;
+  titleTooltip?: string;
   subtitle?: string;
   isCollapsible?: boolean;
   isCollapsed: boolean;
   toggleCollapse: () => void;
   actions?: CardHeaderAction[];
-}> = ({ title, subtitle, isCollapsible, isCollapsed, toggleCollapse, actions }) => {
+}> = ({ title, titleTooltip, subtitle, isCollapsible, isCollapsed, toggleCollapse, actions }) => {
   if (!title && !subtitle && (!actions || actions.length === 0)) {
     return null; // Render no header if there's no title, subtitle and no actions.
   }
@@ -193,7 +207,10 @@ const CardHeader: React.FC<{
       {hasContent && (
         <div className="flex-1 pr-4">
             {title && (
-            <h3 className="text-xl font-semibold text-gray-100 truncate">{title}</h3>
+                 <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-semibold text-gray-100 truncate">{title}</h3>
+                    {titleTooltip && <InfoTooltip text={titleTooltip} />}
+                </div>
             )}
             {subtitle && (
             <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
@@ -251,6 +268,7 @@ const CardFooter: React.FC<{ children?: ReactNode }> = ({ children }) => {
 
 const Card: React.FC<CardProps> = ({
   title,
+  titleTooltip,
   subtitle,
   children,
   className = '',
@@ -378,6 +396,7 @@ const Card: React.FC<CardProps> = ({
       <div className={paddingClasses}>
         {hasHeader && <CardHeader
           title={title}
+          titleTooltip={titleTooltip}
           subtitle={subtitle}
           isCollapsible={isCollapsible}
           isCollapsed={!!isCollapsed}

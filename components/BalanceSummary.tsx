@@ -1,5 +1,6 @@
 
 
+
 import React, { useContext, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Card from './Card';
@@ -59,7 +60,7 @@ const BalanceSummary: React.FC = () => {
     const changePercentage = (totalBalance - change30d) !== 0 ? (change30d / (totalBalance - change30d)) * 100 : 0;
 
     return (
-        <Card title="Balance Summary">
+        <Card title="Balance Summary" titleTooltip="This shows your current liquid cash balance across all linked accounts and its fluctuation over the past few months. It serves as your primary financial snapshot.">
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <p className="text-gray-400 text-sm">Total Balance</p>

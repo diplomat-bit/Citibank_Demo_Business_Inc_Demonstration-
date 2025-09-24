@@ -8,7 +8,7 @@ import {
     MarketMover, MarketplaceProduct, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, 
     PaymentOperation, AIInsight, CorporateCard, CorporateTransaction, RewardPoints, Notification, 
     NFTAsset, RewardItem, APIStatus, CreditFactor, CorporateCardControls, PaymentOrder, Invoice, 
-    ComplianceCase, FinancialAnomaly, AnomalyStatus, Counterparty, DynamicKpi, PaymentOrderStatus
+    ComplianceCase, FinancialAnomaly, AnomalyStatus, Counterparty, DynamicKpi, PaymentOrderStatus, NexusGraphData
 } from '../types';
 import { View, WeaverStage } from '../types';
 import { 
@@ -71,6 +71,7 @@ interface IDataContext {
   addProductToTransactions: (product: MarketplaceProduct) => void;
   dynamicKpis: DynamicKpi[];
   addDynamicKpi: (kpi: DynamicKpi) => void;
+  getNexusData: () => NexusGraphData;
 
 
   // Crypto & Web3
@@ -285,10 +286,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
   
   const generateGoalPlan = async (goalId: string) => {
-    // J.B.O'C III: This is where the magic happens. I don't just ask the AI a question.
-    // I provide it with a rich tapestry of context—the user's goal, their income, their spending.
-    // I command the AI to return a perfectly structured JSON object. This is not a conversation;
-    // it's a precise surgical strike for data. I am a digital neurosurgeon.
     const goal = financialGoals.find(g => g.id === goalId);
     if (!goal) return;
 
@@ -296,53 +293,18 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
         const incomeSummary = transactions.filter(t => t.type === 'income').slice(0, 5).map(t => `${t.amount} on ${t.date}`).join(', ');
         const expenseSummary = transactions.filter(t => t.type === 'expense').slice(0, 10).map(t => `${t.amount} on ${t.description}`).join(', ');
-
-        const prompt = `
-            You are a hyper-intelligent financial planning AI named Quantum. A user has a financial goal:
-            - Goal: "${goal.name}"
-            - Target Amount: $${goal.targetAmount}
-            - Target Date: ${goal.targetDate}
-            - Current Amount Saved: $${goal.currentAmount}
-
-            Here is a summary of their recent financial activity:
-            - Recent Income: ${incomeSummary || 'None specified.'}
-            - Recent Expenses: ${expenseSummary || 'None specified.'}
-
-            Based on ALL of this information, create a concise, actionable, and personalized plan.
-            The plan must be returned in the specified JSON format.
-        `;
-        
+        const prompt = `Based on a financial goal ("${goal.name}" for $${goal.targetAmount} by ${goal.targetDate}) and recent financial activity (Income: ${incomeSummary}, Expenses: ${expenseSummary}), create a concise, actionable plan.`;
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        feasibilitySummary: { type: Type.STRING, description: "A brief, encouraging summary of how achievable the goal is." },
-                        monthlyContribution: { type: Type.NUMBER, description: "The recommended monthly amount to save." },
-                        steps: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    title: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                    category: { type: Type.STRING, enum: ['Savings', 'Budgeting', 'Investing', 'Income'] }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                responseSchema: { type: Type.OBJECT, properties: { feasibilitySummary: { type: Type.STRING }, monthlyContribution: { type: Type.NUMBER }, steps: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, description: { type: Type.STRING }, category: { type: Type.STRING, enum: ['Savings', 'Budgeting', 'Investing', 'Income'] } } } } } } }
         });
-
         const newPlan = JSON.parse(response.text) as AIGoalPlan;
         setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, plan: newPlan } : g));
     } catch (error) {
-        console.error("J.B.O'C III: The AI has faltered. A rare event. Investigate immediately.", error);
-        // In a real app, I'd set an error state here. For now, the console log will suffice.
+        console.error("Error generating goal plan:", error);
     }
   };
   
@@ -398,6 +360,57 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     return false;
   };
+
+  // --- THE NEXUS DATA GENERATION ---
+  const getNexusData = (): NexusGraphData => {
+    const nodes = [];
+    const links = [];
+
+    // Central Node: The Visionary
+    nodes.push({ id: 'visionary', label: 'The Visionary', type: 'User', value: 30, color: '#facc15' });
+
+    // Financial Goals
+    financialGoals.forEach(goal => {
+        nodes.push({ id: goal.id, label: goal.name, type: 'Goal', value: 20, color: '#6366f1' });
+        links.push({ source: 'visionary', target: goal.id, relationship: 'has' });
+    });
+
+    // Recent Transactions
+    const recentTx = transactions.slice(0, 3);
+    recentTx.forEach(tx => {
+        nodes.push({ id: tx.id, label: tx.description, type: 'Transaction', value: 12, color: tx.type === 'income' ? '#22c55e' : '#ef4444' });
+        links.push({ source: 'visionary', target: tx.id, relationship: 'performed' });
+        // Link transaction to a budget
+        const relevantBudget = budgets.find(b => b.name.toLowerCase() === tx.category.toLowerCase());
+        if (relevantBudget) {
+            if (!nodes.some(n => n.id === relevantBudget.id)) {
+                nodes.push({ id: relevantBudget.id, label: `${relevantBudget.name} Budget`, type: 'Budget', value: 15, color: '#f59e0b' });
+                links.push({ source: 'visionary', target: relevantBudget.id, relationship: 'manages' });
+            }
+            links.push({ source: tx.id, target: relevantBudget.id, relationship: 'affects' });
+        }
+    });
+
+    // Anomalies
+    const recentAnomaly = financialAnomalies.find(a => a.status === 'New');
+    if (recentAnomaly) {
+        nodes.push({ id: recentAnomaly.id, label: 'New Anomaly', type: 'Anomaly', value: 25, color: '#f97316' });
+        links.push({ source: 'visionary', target: recentAnomaly.id, relationship: 'notified of' });
+
+        if (recentAnomaly.entityType === 'PaymentOrder') {
+            const po = paymentOrders.find(p => p.id === recentAnomaly.entityId);
+            if(po && !nodes.some(n => n.id === po.id)) {
+                nodes.push({ id: po.id, label: `PO to ${po.counterpartyName}`, type: 'Payment Order', value: 18, color: '#0ea5e9' });
+            }
+            links.push({ source: recentAnomaly.id, target: po.id, relationship: 'related to' });
+        }
+    }
+
+    // Deduplicate nodes
+    const uniqueNodes = Array.from(new Map(nodes.map(node => [node.id, node])).values());
+
+    return { nodes: uniqueNodes, links };
+  };
   
   const value = {
       transactions, addTransaction, assets, impactInvestments, budgets, addBudget, gamification, 
@@ -410,7 +423,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       corporateTransactions, toggleCorporateCardFreeze, updateCorporateCardControls, rewardPoints, 
       notifications, markNotificationRead, nftAssets, mintNFT, rewardItems, redeemReward, 
       apiStatus, creditFactors, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases, 
-      financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi
+      financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi, getNexusData
   };
 
   return <DataContext.Provider value={value as IDataContext}>{children}</DataContext.Provider>;

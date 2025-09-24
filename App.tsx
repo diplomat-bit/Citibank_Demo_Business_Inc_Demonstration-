@@ -28,6 +28,7 @@ import QuantumWeaverView from './components/views/platform/QuantumWeaverView';
 import AIAdStudioView from './components/views/platform/AIAdStudioView';
 import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
+import TheNexusView from './components/views/platform/TheNexusView'; // The 27th Module
 
 // Corporate Finance Views
 import CorporateDashboardView from './components/views/corporate/CorporateDashboardView';
@@ -36,6 +37,36 @@ import CounterpartiesView from './components/views/corporate/CounterpartiesView'
 import InvoicesView from './components/views/corporate/InvoicesView';
 import ComplianceView from './components/views/corporate/ComplianceView';
 import AnomalyDetectionView from './components/views/corporate/AnomalyDetectionView';
+
+// Demo Bank Platform Views
+import DemoBankSocialView from './components/views/platform/DemoBankSocialView';
+import DemoBankERPView from './components/views/platform/DemoBankERPView';
+import DemoBankCRMView from './components/views/platform/DemoBankCRMView';
+import DemoBankAPIGatewayView from './components/views/platform/DemoBankAPIGatewayView';
+import DemoBankGraphExplorerView from './components/views/platform/DemoBankGraphExplorerView';
+import DemoBankDBQLView from './components/views/platform/DemoBankDBQLView';
+import DemoBankCloudView from './components/views/platform/DemoBankCloudView';
+import DemoBankIdentityView from './components/views/platform/DemoBankIdentityView';
+import DemoBankStorageView from './components/views/platform/DemoBankStorageView';
+import DemoBankComputerView from './components/views/platform/DemoBankComputerView';
+import DemoBankAIPlatformView from './components/views/platform/DemoBankAIPlatformView';
+import DemoBankMachineLearningView from './components/views/platform/DemoBankMachineLearningView';
+import DemoBankDevOpsView from './components/views/platform/DemoBankDevOpsView';
+import DemoBankSecurityCenterView from './components/views/platform/DemoBankSecurityCenterView';
+import DemoBankComplianceHubView from './components/views/platform/DemoBankComplianceHubView';
+import DemoBankAppMarketplaceView from './components/views/platform/DemoBankAppMarketplaceView';
+import DemoBankConnectView from './components/views/platform/DemoBankConnectView';
+import DemoBankEventsView from './components/views/platform/DemoBankEventsView';
+import DemoBankLogicAppsView from './components/views/platform/DemoBankLogicAppsView';
+import DemoBankFunctionsView from './components/views/platform/DemoBankFunctionsView';
+import DemoBankDataFactoryView from './components/views/platform/DemoBankDataFactoryView';
+import DemoBankAnalyticsView from './components/views/platform/DemoBankAnalyticsView';
+import DemoBankBIView from './components/views/platform/DemoBankBIView';
+import DemoBankIoTHubView from './components/views/platform/DemoBankIoTHubView';
+import DemoBankMapsView from './components/views/platform/DemoBankMapsView';
+import DemoBankCommunicationsView from './components/views/platform/DemoBankCommunicationsView';
+import DemoBankCommerceView from './components/views/platform/DemoBankCommerceView';
+import DemoBankTeamsView from './components/views/platform/DemoBankTeamsView';
 
 // Global Components
 import VoiceControl from './components/VoiceControl';
@@ -95,6 +126,7 @@ const App: React.FC = () => {
             case View.Settings: return <SettingsView />;
             
             // AI & Platform
+            case View.TheNexus: return <TheNexusView />;
             case View.AIAdvisor: return <AIAdvisorView previousView={previousView} />;
             case View.QuantumWeaver: return <QuantumWeaverView />;
             case View.AIAdStudio: return <AIAdStudioView />;
@@ -108,6 +140,36 @@ const App: React.FC = () => {
             case View.Invoices: return <InvoicesView />;
             case View.Compliance: return <ComplianceView />;
             case View.AnomalyDetection: return <AnomalyDetectionView />;
+
+            // Demo Bank Platform
+            case View.DemoBankSocial: return <DemoBankSocialView />;
+            case View.DemoBankERP: return <DemoBankERPView />;
+            case View.DemoBankCRM: return <DemoBankCRMView />;
+            case View.DemoBankAPIGateway: return <DemoBankAPIGatewayView />;
+            case View.DemoBankGraphExplorer: return <DemoBankGraphExplorerView />;
+            case View.DemoBankDBQL: return <DemoBankDBQLView />;
+            case View.DemoBankCloud: return <DemoBankCloudView />;
+            case View.DemoBankIdentity: return <DemoBankIdentityView />;
+            case View.DemoBankStorage: return <DemoBankStorageView />;
+            case View.DemoBankCompute: return <DemoBankComputerView />;
+            case View.DemoBankAIPlatform: return <DemoBankAIPlatformView />;
+            case View.DemoBankMachineLearning: return <DemoBankMachineLearningView />;
+            case View.DemoBankDevOps: return <DemoBankDevOpsView />;
+            case View.DemoBankSecurityCenter: return <DemoBankSecurityCenterView />;
+            case View.DemoBankComplianceHub: return <DemoBankComplianceHubView />;
+            case View.DemoBankAppMarketplace: return <DemoBankAppMarketplaceView />;
+            case View.DemoBankConnect: return <DemoBankConnectView />;
+            case View.DemoBankEvents: return <DemoBankEventsView />;
+            case View.DemoBankLogicApps: return <DemoBankLogicAppsView />;
+            case View.DemoBankFunctions: return <DemoBankFunctionsView />;
+            case View.DemoBankDataFactory: return <DemoBankDataFactoryView />;
+            case View.DemoBankAnalytics: return <DemoBankAnalyticsView />;
+            case View.DemoBankBI: return <DemoBankBIView />;
+            case View.DemoBankIoTHub: return <DemoBankIoTHubView />;
+            case View.DemoBankMaps: return <DemoBankMapsView />;
+            case View.DemoBankCommunications: return <DemoBankCommunicationsView />;
+            case View.DemoBankCommerce: return <DemoBankCommerceView />;
+            case View.DemoBankTeams: return <DemoBankTeamsView />;
             
             default: return <DashboardView setActiveView={handleSetView} />;
         }

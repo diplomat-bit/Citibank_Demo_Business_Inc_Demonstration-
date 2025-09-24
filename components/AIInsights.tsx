@@ -1,5 +1,6 @@
 
 
+
 import React, { useContext } from 'react';
 import Card from './Card';
 import type { AIInsight } from '../types';
@@ -23,7 +24,12 @@ const AIInsights: React.FC = () => {
     const { aiInsights, isInsightsLoading } = context;
 
   return (
-    <Card title="AI Advisor Insights" className="h-full" isLoading={isInsightsLoading}>
+    <Card 
+        title="AI Advisor Insights" 
+        className="h-full" 
+        isLoading={isInsightsLoading}
+        titleTooltip="Quantum, our AI, proactively analyzes your financial data to find savings, detect anomalies, and offer personalized advice. New insights appear here automatically."
+    >
         <div className="space-y-4">
             {aiInsights.map(insight => (
                 <div key={insight.id} className="relative p-4 bg-gray-700/50 rounded-lg border border-gray-600/50 hover:border-cyan-400/50 transition-all duration-200">

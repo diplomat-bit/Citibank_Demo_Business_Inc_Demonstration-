@@ -18,6 +18,9 @@ import { View } from './types';
 const DashboardIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
 );
+const NexusIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 22V12m0-10l-4 2m4-2l4 2m-4 10s-4-2-4-5m4 5s4-2 4-5" /></svg>
+);
 const TransactionsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
 );
@@ -93,7 +96,9 @@ const SettingsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const TheVisionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
 );
-
+const PlatformIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+);
 
 // ================================================================================================
 // NAVIGATION ITEMS
@@ -102,10 +107,13 @@ const TheVisionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
  * @description The single source of truth for all primary navigation items.
  * This array is used by the Sidebar component to dynamically generate the navigation menu.
  * Adding a new item here will automatically add it to the UI.
+ * Special types 'divider' and 'header' are used for visual separation.
  */
 export const NAV_ITEMS = [
     // --- Personal Finance Suite ---
     { id: View.Dashboard, label: 'Dashboard', icon: <DashboardIcon /> },
+    { id: View.TheNexus, label: 'The Nexus', icon: <NexusIcon /> },
+    { type: 'header', label: 'Personal' },
     { id: View.Transactions, label: 'Transactions', icon: <TransactionsIcon /> },
     { id: View.SendMoney, label: 'Send Money', icon: <SendMoneyIcon /> },
     { id: View.Budgets, label: 'Budgets', icon: <BudgetsIcon /> },
@@ -115,17 +123,17 @@ export const NAV_ITEMS = [
     { id: View.CreditHealth, label: 'Credit Health', icon: <CreditHealthIcon /> },
     
     // --- AI & Platform Suite ---
+    { type: 'header', label: 'AI & Advanced Features' },
     { id: View.AIAdvisor, label: 'AI Advisor', icon: <AIAdvisorIcon /> },
     { id: View.QuantumWeaver, label: 'Quantum Weaver', icon: <QuantumWeaverIcon /> },
     { id: View.AIAdStudio, label: 'AI Ad Studio', icon: <AIAdStudioIcon /> },
-
-    // --- Advanced Features ---
     { id: View.Crypto, label: 'Crypto & Web3', icon: <CryptoIcon /> },
     { id: View.Marketplace, label: 'Marketplace', icon: <MarketplaceIcon /> },
     { id: View.Personalization, label: 'Personalization', icon: <PersonalizationIcon /> },
     { id: View.CardCustomization, label: 'Customize Card', icon: <CardCustomizationIcon /> },
 
     // --- Corporate Finance Suite ---
+    { type: 'header', label: 'Corporate' },
     { id: View.CorporateDashboard, label: 'Corp Dashboard', icon: <CorpDashboardIcon /> },
     { id: View.PaymentOrders, label: 'Payment Orders', icon: <PaymentOrdersIcon /> },
     { id: View.Counterparties, label: 'Counterparties', icon: <CounterpartiesIcon /> },
@@ -133,7 +141,40 @@ export const NAV_ITEMS = [
     { id: View.Compliance, label: 'Compliance', icon: <ComplianceIcon /> },
     { id: View.AnomalyDetection, label: 'Anomaly Detection', icon: <AnomalyDetectionIcon /> },
     
+    // --- Demo Bank Platform Suite ---
+    { type: 'divider' },
+    { type: 'header', label: 'Demo Bank Platform' },
+    { id: View.DemoBankSocial, label: 'Social', icon: <PlatformIcon /> },
+    { id: View.DemoBankERP, label: 'ERP', icon: <PlatformIcon /> },
+    { id: View.DemoBankCRM, label: 'CRM', icon: <PlatformIcon /> },
+    { id: View.DemoBankAPIGateway, label: 'API Gateway', icon: <PlatformIcon /> },
+    { id: View.DemoBankGraphExplorer, label: 'Graph Explorer', icon: <PlatformIcon /> },
+    { id: View.DemoBankDBQL, label: 'DBQL', icon: <PlatformIcon /> },
+    { id: View.DemoBankCloud, label: 'Cloud', icon: <PlatformIcon /> },
+    { id: View.DemoBankIdentity, label: 'Identity', icon: <PlatformIcon /> },
+    { id: View.DemoBankStorage, label: 'Storage', icon: <PlatformIcon /> },
+    { id: View.DemoBankCompute, label: 'Compute', icon: <PlatformIcon /> },
+    { id: View.DemoBankAIPlatform, label: 'AI Platform', icon: <PlatformIcon /> },
+    { id: View.DemoBankMachineLearning, label: 'Machine Learning', icon: <PlatformIcon /> },
+    { id: View.DemoBankDevOps, label: 'DevOps', icon: <PlatformIcon /> },
+    { id: View.DemoBankSecurityCenter, label: 'Security Center', icon: <PlatformIcon /> },
+    { id: View.DemoBankComplianceHub, label: 'Compliance Hub', icon: <PlatformIcon /> },
+    { id: View.DemoBankAppMarketplace, label: 'App Marketplace', icon: <PlatformIcon /> },
+    { id: View.DemoBankConnect, label: 'Connect', icon: <PlatformIcon /> },
+    { id: View.DemoBankEvents, label: 'Events', icon: <PlatformIcon /> },
+    { id: View.DemoBankLogicApps, label: 'Logic Apps', icon: <PlatformIcon /> },
+    { id: View.DemoBankFunctions, label: 'Functions', icon: <PlatformIcon /> },
+    { id: View.DemoBankDataFactory, label: 'Data Factory', icon: <PlatformIcon /> },
+    { id: View.DemoBankAnalytics, label: 'Analytics', icon: <PlatformIcon /> },
+    { id: View.DemoBankBI, label: 'BI', icon: <PlatformIcon /> },
+    { id: View.DemoBankIoTHub, label: 'IoT Hub', icon: <PlatformIcon /> },
+    { id: View.DemoBankMaps, label: 'Maps', icon: <PlatformIcon /> },
+    { id: View.DemoBankCommunications, label: 'Communications', icon: <PlatformIcon /> },
+    { id: View.DemoBankCommerce, label: 'Commerce', icon: <PlatformIcon /> },
+    { id: View.DemoBankTeams, label: 'Teams', icon: <PlatformIcon /> },
+
     // --- System & Settings ---
+    { type: 'divider' },
     { id: View.Security, label: 'Security', icon: <SecurityIcon /> },
     { id: View.OpenBanking, label: 'Open Banking', icon: <OpenBankingIcon /> },
     { id: View.APIStatus, label: 'API Status', icon: <APIStatusIcon /> },

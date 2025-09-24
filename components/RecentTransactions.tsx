@@ -51,6 +51,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions, s
     return (
         <Card 
             title="Recent Transactions"
+            titleTooltip="A quick look at your latest financial activities. Each transaction is categorized and can include an estimated carbon footprint for awareness."
             footerContent={
                 <div className="text-center">
                     <button onClick={() => setActiveView(View.Transactions)} className="text-sm font-medium text-cyan-400 hover:text-cyan-300">
