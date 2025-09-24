@@ -11,12 +11,11 @@ import BudgetsView from './components/BudgetsView';
 import VoiceControl from './components/VoiceControl'; // Gemini's voice now echoes through the halls.
 import QuantumWeaverView from './components/QuantumWeaverView';
 import MarketplaceView from './components/MarketplaceView';
-import { View, IllusionType, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, PaymentOperation, CorporateCard, CorporateTransaction, NFTAsset, RewardItem, APIStatus, FinancialAnomaly, AnomalyStatus } from './types';
+import { View, IllusionType, FinancialGoal, AIGoalPlan, CryptoAsset, VirtualCard, PaymentOperation, CorporateCard, CorporateTransaction, NFTAsset, RewardItem, APIStatus, FinancialAnomaly, AnomalyStatus, PaymentOrder, Counterparty, Invoice, ComplianceCase, PaymentOrderStatus } from './types';
 import { DataProvider, DataContext } from './context/DataContext';
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import Card from './components/Card';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, AreaChart, Area } from 'recharts';
-import CorporateCommandView from './components/CorporateCommandView';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, AreaChart, Area, LineChart, Line } from 'recharts';
 
 
 // Due to platform constraints, new view components are defined within this file.
@@ -1246,6 +1245,236 @@ const CryptoView: React.FC = () => {
 };
 
 // ================================================================================================
+// NEW CORPORATE FINANCE VIEWS
+// ================================================================================================
+
+const CorporateDashboardView: React.FC<{ setActiveView: (view: View) => void; }> = ({ setActiveView }) => {
+    const context = useContext(DataContext);
+    if (!context) throw new Error("CorporateDashboardView must be within a DataProvider.");
+    
+    const { paymentOrders, invoices, complianceCases, corporateTransactions, financialAnomalies } = context;
+
+    const [aiInsight, setAiInsight] = useState('');
+    const [isInsightLoading, setIsInsightLoading] = useState(false);
+
+    const summaryStats = useMemo(() => ({
+        pendingApprovals: paymentOrders.filter(p => p.status === 'needs_approval').length,
+        overdueInvoices: invoices.filter(i => i.status === 'overdue').length,
+        openCases: complianceCases.filter(c => c.status === 'open').length,
+        totalOutflow: corporateTransactions.reduce((acc, tx) => acc + tx.amount, 0),
+        newAnomalies: financialAnomalies.filter(a => a.status === 'New').length,
+    }), [paymentOrders, invoices, complianceCases, corporateTransactions, financialAnomalies]);
+    
+    const spendingByCategory = useMemo(() => corporateTransactions.reduce((acc, tx) => {
+        const category = tx.merchant.includes('Steakhouse') || tx.merchant.includes('Lunch') ? 'T&E' :
+                         tx.merchant.includes('Cloud') || tx.merchant.includes('Software') ? 'Software' : 'Other';
+        if (!acc[category]) acc[category] = 0;
+        acc[category] += tx.amount;
+        return acc;
+    }, {} as { [key: string]: number }), [corporateTransactions]);
+    
+    const chartData = Object.entries(spendingByCategory).map(([name, value]) => ({ name, value }));
+    
+    useEffect(() => {
+        const generateInsight = async () => {
+            setIsInsightLoading(true);
+            try {
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+                const dataSummary = `Pending Approvals: ${summaryStats.pendingApprovals}, Overdue Invoices: ${summaryStats.overdueInvoices}, Open Compliance Cases: ${summaryStats.openCases}, New Anomalies: ${summaryStats.newAnomalies}. Recent spending is focused on: ${chartData.map(d=>d.name).join(', ')}.`;
+                const prompt = `You are a corporate finance AI controller. Based on the following summary, provide a single, concise (1-2 sentences) strategic recommendation or observation for the finance manager. Summary:\n${dataSummary}`;
+                
+                const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+                setAiInsight(response.text);
+            } catch (error) {
+                setAiInsight("An error occurred while analyzing corporate data.");
+            } finally { setIsInsightLoading(false); }
+        };
+        generateInsight();
+    }, [summaryStats, chartData]);
+
+    const StatCard: React.FC<{ title: string; value: string | number; view: View; className?: string }> = ({ title, value, view, className = '' }) => (
+        <Card variant="interactive" onClick={() => setActiveView(view)} className={`text-center ${className}`}>
+            <p className="text-3xl font-bold text-white">{value}</p>
+            <p className="text-sm text-gray-400 mt-1">{title}</p>
+        </Card>
+    );
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white tracking-wider">Corporate Dashboard</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+                <StatCard title="Pending Approvals" value={summaryStats.pendingApprovals} view={View.PaymentOrders} />
+                <StatCard title="Overdue Invoices" value={summaryStats.overdueInvoices} view={View.Invoices} />
+                <StatCard title="Open Compliance Cases" value={summaryStats.openCases} view={View.Compliance} />
+                <StatCard title="New Anomalies" value={summaryStats.newAnomalies} view={View.Anomalies} className="border-yellow-500/80 shadow-yellow-500/10" />
+                <Card className="text-center">
+                    <p className="text-3xl font-bold text-white">${(summaryStats.totalOutflow / 1000).toFixed(1)}k</p>
+                    <p className="text-sm text-gray-400 mt-1">Total Spend (7d)</p>
+                </Card>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card title="AI Controller Summary" className="lg:col-span-1">
+                     {isInsightLoading ? <p className="text-gray-400 text-sm">Analyzing...</p> : 
+                         <p className="text-gray-300 text-sm italic">"{aiInsight}"</p>
+                     }
+                </Card>
+                <Card title="Spending by Category" className="lg:col-span-2">
+                     <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                                <XAxis type="number" hide />
+                                <YAxis type="category" dataKey="name" stroke="#9ca3af" fontSize={12} width={80} />
+                                <RechartsTooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} formatter={(v: number) => `$${v.toFixed(2)}`} />
+                                <Bar dataKey="value" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={20} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
+const PaymentOrdersView: React.FC = () => {
+    // This component would be fully built out here
+    const context = useContext(DataContext);
+    if (!context) return null;
+    const { paymentOrders, updatePaymentOrderStatus } = context;
+
+    const StatusBadge: React.FC<{ status: PaymentOrderStatus }> = ({ status }) => {
+        const colors = {
+            needs_approval: 'bg-yellow-500/20 text-yellow-300',
+            approved: 'bg-cyan-500/20 text-cyan-300',
+            processing: 'bg-blue-500/20 text-blue-300',
+            completed: 'bg-green-500/20 text-green-300',
+            denied: 'bg-red-500/20 text-red-300',
+            returned: 'bg-orange-500/20 text-orange-300',
+        };
+        return <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[status]}`}>{status.replace('_', ' ')}</span>;
+    };
+    
+    return (
+        <Card title="Payment Orders">
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-400">
+                    <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
+                        <tr>
+                            <th scope="col" className="px-6 py-3">Counterparty</th>
+                            <th scope="col" className="px-6 py-3">Amount</th>
+                            <th scope="col" className="px-6 py-3">Date</th>
+                            <th scope="col" className="px-6 py-3">Status</th>
+                            <th scope="col" className="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paymentOrders.map(po => (
+                            <tr key={po.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                                <td className="px-6 py-4 font-medium text-white">{po.counterpartyName}</td>
+                                <td className="px-6 py-4 font-mono text-white">${po.amount.toFixed(2)}</td>
+                                <td className="px-6 py-4">{po.date}</td>
+                                <td className="px-6 py-4"><StatusBadge status={po.status} /></td>
+                                <td className="px-6 py-4">
+                                    {po.status === 'needs_approval' && (
+                                        <div className="flex gap-2">
+                                            <button onClick={() => updatePaymentOrderStatus(po.id, 'approved')} className="text-xs text-green-300 hover:underline">Approve</button>
+                                            <button onClick={() => updatePaymentOrderStatus(po.id, 'denied')} className="text-xs text-red-300 hover:underline">Deny</button>
+                                        </div>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </Card>
+    );
+}
+
+const CounterpartiesView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) return null;
+    const { counterparties } = context;
+    return <Card title="Counterparties"><p className="text-gray-400">This view would list all business counterparties.</p>
+        <div className="mt-4 space-y-2">
+            {counterparties.map(c => <div key={c.id} className="p-2 bg-gray-800 rounded-lg">{c.name} - {c.status}</div>)}
+        </div>
+    </Card>;
+}
+
+const InvoicesView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) return null;
+    const { invoices } = context;
+    return <Card title="Invoices"><p className="text-gray-400">This view would list all incoming and outgoing invoices.</p>
+        <div className="mt-4 space-y-2">
+            {invoices.map(i => <div key={i.id} className="p-2 bg-gray-800 rounded-lg">{i.invoiceNumber} - {i.counterpartyName} - ${i.amount} - {i.status}</div>)}
+        </div>
+    </Card>;
+}
+
+const ComplianceView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) return null;
+    const { complianceCases } = context;
+    return <Card title="Compliance Cases"><p className="text-gray-400">This view would list all compliance cases requiring review.</p>
+        <div className="mt-4 space-y-2">
+            {complianceCases.map(c => <div key={c.id} className="p-2 bg-gray-800 rounded-lg">{c.reason} - {c.status}</div>)}
+        </div>
+    </Card>;
+}
+
+const AnomaliesView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) return null;
+    const { financialAnomalies, updateAnomalyStatus } = context;
+
+    const SeverityIndicator: React.FC<{ severity: FinancialAnomaly['severity'] }> = ({ severity }) => {
+        const colors = { Critical: 'bg-red-500', High: 'bg-orange-500', Medium: 'bg-yellow-500', Low: 'bg-blue-500' };
+        return (
+            <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${colors[severity]}`}></div>
+                <span className="text-sm font-medium text-white">{severity}</span>
+            </div>
+        );
+    };
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white tracking-wider">AI-Powered Anomaly Detection</h2>
+            <Card>
+                <div className="space-y-4">
+                {financialAnomalies.map(anomaly => (
+                    <div key={anomaly.id} className="p-4 bg-gray-800/50 rounded-lg border-l-4 border-yellow-500">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <SeverityIndicator severity={anomaly.severity} />
+                                <h4 className="font-semibold text-white mt-2">{anomaly.description}</h4>
+                                <p className="text-xs text-gray-400 font-mono mt-1">{anomaly.entityDescription} - {anomaly.timestamp}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs text-gray-400">Risk Score</p>
+                                <p className="text-xl font-bold text-red-400">{anomaly.riskScore}</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-300 mt-3 italic">AI Analysis: "{anomaly.details}"</p>
+                        <div className="mt-4 flex justify-between items-center">
+                            <p className="text-xs text-gray-400">Status: <span className="font-semibold text-cyan-300">{anomaly.status}</span></p>
+                            {anomaly.status === 'New' && (
+                                <div className="flex gap-2">
+                                    <button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review')} className="text-xs px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded-lg">Review</button>
+                                    <button onClick={() => updateAnomalyStatus(anomaly.id, 'Dismissed')} className="text-xs px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded-lg">Dismiss</button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+                </div>
+            </Card>
+        </div>
+    );
+}
+
+// ================================================================================================
 // MAIN APP COMPONENT
 // ================================================================================================
 // FIX: Added the main App component, which was missing from the end of the truncated file.
@@ -1288,12 +1517,12 @@ const App: React.FC = () => {
             case View.AIAdStudio: return <AIAdStudioView />;
             case View.Goals: return <GoalsView />;
             case View.Crypto: return <CryptoView />;
-            case View.CorporateDashboard: return <CorporateCommandView setActiveView={handleSetView} />;
-            case View.PaymentOrders: return <CorporateCommandView setActiveView={handleSetView} />;
-            case View.Counterparties: return <CorporateCommandView setActiveView={handleSetView} />;
-            case View.Invoices: return <CorporateCommandView setActiveView={handleSetView} />;
-            case View.Compliance: return <CorporateCommandView setActiveView={handleSetView} />;
-            case View.Anomalies: return <CorporateCommandView setActiveView={handleSetView} />;
+            case View.CorporateDashboard: return <CorporateDashboardView setActiveView={handleSetView} />;
+            case View.PaymentOrders: return <PaymentOrdersView />;
+            case View.Counterparties: return <CounterpartiesView />;
+            case View.Invoices: return <InvoicesView />;
+            case View.Compliance: return <ComplianceView />;
+            case View.Anomalies: return <AnomaliesView />;
             default: return <Dashboard setActiveView={handleSetView} />;
         }
     };
