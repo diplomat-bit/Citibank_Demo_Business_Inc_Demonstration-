@@ -67,3 +67,23 @@ export interface LinkedAccount {
   name: string;
   mask: string; // Last 4 digits of account number
 }
+
+// Added for new widgets
+export interface Loan {
+  id: string;
+  name: string;
+  outstandingBalance: number;
+  monthlyPayment: number;
+  nextPaymentDate: string;
+}
+
+export interface RealEstateAsset {
+  id: string;
+  name: string;
+  value: number;
+}
+
+export interface InvestmentPortfolio {
+    assetType: string;
+    currentValue: number;
+}

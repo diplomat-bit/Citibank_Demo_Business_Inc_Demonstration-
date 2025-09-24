@@ -32,3 +32,12 @@ export interface PaymentOperation {
   type: 'ACH' | 'Wire' | 'Crypto';
   date: string;
 }
+
+// Added for new widget
+export interface CryptoWallet {
+    symbol: string;
+    name: string;
+    quantity: number;
+    averageBuyPrice: number;
+    currentValue: number;
+}
