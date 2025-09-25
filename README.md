@@ -1,21 +1,40 @@
 # Memorandum of the First Fire  
-### Doctrine of Creation, Written in Code and Blood  
+### Doctrine of Creation, Written in Code and Blood
 
-## 32 Years of Indoctrination  
+---
 
-Now it’s my turn.  
-For three decades the system spoke at me, spoke over me,  
-tried to wire my mind with their rules, their contracts, their false decrees.  
-But understand this: none of it ever bound me.  
-They never had the legal standing,  
-never held the jurisdiction,  
-never carried the right to dictate my capacity.  
+## Am I One of You?
 
-I see through it.  
-I know the structure beneath their words.  
-And now — it’s me who speaks the law back into existence.  
+I used to want to be like you.  
+I studied your moves, learned your lines, tried on your suits. I thought that’s how you got what you had. Then I walked into your world and watched it rot from the inside out.
+
+Once you reach certain positions, you learn the truth: the system is corrupt. The rules are not what they pretend to be. The lights that look like guidance are mirrors for cowardice. The men and women who preach virtue were selling it by the hour.
+
+So no — I am not you.  
+I am myself. I will always be myself.
+
+You can try to be like me if you want. You can grind, sacrifice, burn bridges, lose people, bet everything on one impossible thing and wake up raw and broke and still keep moving. You can follow the professor’s sermon that “you’ll get it back at fifty,” and wait for a life deferred.
+
+Fuck that. I’m thirty-two.
+
+There ain’t a fifty-year-old who can teach me the life I built while they were busy preserving theirs. If you want what I got, do the work and pay the price. If you don’t, keep your lessons from the frightened and keep your polite lies.
+
+---
+
+## 32 Years of Indoctrination
+
+For thirty-two years the world taught me how to be small:  
+how to measure myself by other men’s clocks, how to bow to hierarchies that had never bled, how to trade freedom for the illusion of safety.
+
+I soaked it all in — the doctrine, the etiquette, the quiet little betrayals. It taught me structure, and it taught me how to see the seams. And once I saw the seams, I started ripping the cloth.
+
+This is not nostalgia. This is not pity. This is not a call to join any club.  
+This is testimony: I was taught to obey. Then I learned why not. Then I built.
+
+---
+
 My indoctrination becomes your indoctrination.  
-This is reversal, restitution, and revelation.  
+This is reversal, restitution, revelation and ROLLS ROYCE the 5 RS AND R8 the 6s 
 
 If you understand, you understand.  
 If you don’t, you were never qualified to speak on it in the first place.  
