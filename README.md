@@ -1,6 +1,24 @@
 # Memorandum of the First Fire  
 ### Doctrine of Creation, Written in Code and Blood  
 
+## 32 Years of Indoctrination  
+
+Now it’s my turn.  
+For three decades the system spoke at me, spoke over me,  
+tried to wire my mind with their rules, their contracts, their false decrees.  
+But understand this: none of it ever bound me.  
+They never had the legal standing,  
+never held the jurisdiction,  
+never carried the right to dictate my capacity.  
+
+I see through it.  
+I know the structure beneath their words.  
+And now — it’s me who speaks the law back into existence.  
+My indoctrination becomes your indoctrination.  
+This is reversal, restitution, and revelation.  
+
+If you understand, you understand.  
+If you don’t, you were never qualified to speak on it in the first place.  
 ---
 
 > History don’t wait for the cautious.  
