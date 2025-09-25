@@ -155,6 +155,7 @@ import BackupRecoveryView from './components/views/megadashboard/infra/BackupRec
 
 // Global Components
 import VoiceControl from './components/VoiceControl';
+import GlobalChatbot from './components/GlobalChatbot';
 
 /**
  * @description The root component of the application.
@@ -381,6 +382,7 @@ const App: React.FC = () => {
                     </main>
                 </div>
                 <VoiceControl setActiveView={handleSetView} />
+                <GlobalChatbot />
             </div>
         </div>
     );

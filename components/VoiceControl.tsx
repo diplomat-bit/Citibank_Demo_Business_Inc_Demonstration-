@@ -59,7 +59,7 @@ const VoiceControl: React.FC<VoiceControlProps> = ({ setActiveView }) => {
         <>
             <button
                 onClick={() => setIsListening(true)}
-                className="fixed bottom-8 right-8 w-16 h-16 bg-cyan-600 hover:bg-cyan-500 rounded-full shadow-lg flex items-center justify-center text-white z-40 transition-transform hover:scale-110"
+                className="fixed bottom-8 right-28 w-16 h-16 bg-cyan-600 hover:bg-cyan-500 rounded-full shadow-lg flex items-center justify-center text-white z-40 transition-transform hover:scale-110"
                 aria-label="Activate Voice Control"
             >
                 <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></div>
