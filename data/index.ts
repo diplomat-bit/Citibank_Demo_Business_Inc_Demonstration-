@@ -44,3 +44,7 @@ export * from './admin/index';
 
 // Mega Dashboard Data
 export * from './megadashboard/index';
+// FIX: Export missing mock data files used by Mega Dashboard views.
+export * from './accessLogs';
+export * from './fraudCases';
+export * from './mlModels';

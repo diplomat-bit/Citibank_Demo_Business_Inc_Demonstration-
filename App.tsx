@@ -70,6 +70,35 @@ import DemoBankMapsView from './components/views/platform/DemoBankMapsView';
 import DemoBankCommunicationsView from './components/views/platform/DemoBankCommunicationsView';
 import DemoBankCommerceView from './components/views/platform/DemoBankCommerceView';
 import DemoBankTeamsView from './components/views/platform/DemoBankTeamsView';
+import DemoBankCMSView from './components/views/platform/DemoBankCMSView';
+import DemoBankLMSView from './components/views/platform/DemoBankLMSView';
+import DemoBankHRISView from './components/views/platform/DemoBankHRISView';
+import DemoBankProjectsView from './components/views/platform/DemoBankProjectsView';
+import DemoBankLegalSuiteView from './components/views/platform/DemoBankLegalSuiteView';
+import DemoBankSupplyChainView from './components/views/platform/DemoBankSupplyChainView';
+import DemoBankPropTechView from './components/views/platform/DemoBankPropTechView';
+import DemoBankGamingServicesView from './components/views/platform/DemoBankGamingServicesView';
+import DemoBankBookingsView from './components/views/platform/DemoBankBookingsView';
+import DemoBankCDPView from './components/views/platform/DemoBankCDPView';
+import DemoBankQuantumServicesView from './components/views/platform/DemoBankQuantumServicesView';
+import DemoBankBlockchainView from './components/views/platform/DemoBankBlockchainView';
+import DemoBankGISView from './components/views/platform/DemoBankGISView';
+import DemoBankRoboticsView from './components/views/platform/DemoBankRoboticsView';
+import DemoBankSimulationsView from './components/views/platform/DemoBankSimulationsView';
+import DemoBankVoiceServicesView from './components/views/platform/DemoBankVoiceServicesView';
+import DemoBankSearchSuiteView from './components/views/platform/DemoBankSearchSuiteView';
+import DemoBankDigitalTwinView from './components/views/platform/DemoBankDigitalTwinView';
+import DemoBankWorkflowEngineView from './components/views/platform/DemoBankWorkflowEngineView';
+import DemoBankObservabilityPlatformView from './components/views/platform/DemoBankObservabilityPlatformView';
+import DemoBankFeatureManagementView from './components/views/platform/DemoBankFeatureManagementView';
+import DemoBankExperimentationPlatformView from './components/views/platform/DemoBankExperimentationPlatformView';
+import DemoBankLocalizationPlatformView from './components/views/platform/DemoBankLocalizationPlatformView';
+import DemoBankFleetManagementView from './components/views/platform/DemoBankFleetManagementView';
+import DemoBankKnowledgeBaseView from './components/views/platform/DemoBankKnowledgeBaseView';
+import DemoBankMediaServicesView from './components/views/platform/DemoBankMediaServicesView';
+import DemoBankEventGridView from './components/views/platform/DemoBankEventGridView';
+import DemoBankApiManagementView from './components/views/platform/DemoBankApiManagementView';
+
 
 // Mega Dashboard Views
 import AccessControlsView from './components/views/megadashboard/security/AccessControlsView';
@@ -231,7 +260,35 @@ const App: React.FC = () => {
             case View.DemoBankCommunications: return <FeatureGuard view={View.DemoBankCommunications}><DemoBankCommunicationsView /></FeatureGuard>;
             case View.DemoBankCommerce: return <FeatureGuard view={View.DemoBankCommerce}><DemoBankCommerceView /></FeatureGuard>;
             case View.DemoBankTeams: return <FeatureGuard view={View.DemoBankTeams}><DemoBankTeamsView /></FeatureGuard>;
-            
+            case View.DemoBankCMS: return <FeatureGuard view={View.DemoBankCMS}><DemoBankCMSView /></FeatureGuard>;
+            case View.DemoBankLMS: return <FeatureGuard view={View.DemoBankLMS}><DemoBankLMSView /></FeatureGuard>;
+            case View.DemoBankHRIS: return <FeatureGuard view={View.DemoBankHRIS}><DemoBankHRISView /></FeatureGuard>;
+            case View.DemoBankProjects: return <FeatureGuard view={View.DemoBankProjects}><DemoBankProjectsView /></FeatureGuard>;
+            case View.DemoBankLegalSuite: return <FeatureGuard view={View.DemoBankLegalSuite}><DemoBankLegalSuiteView /></FeatureGuard>;
+            case View.DemoBankSupplyChain: return <FeatureGuard view={View.DemoBankSupplyChain}><DemoBankSupplyChainView /></FeatureGuard>;
+            case View.DemoBankPropTech: return <FeatureGuard view={View.DemoBankPropTech}><DemoBankPropTechView /></FeatureGuard>;
+            case View.DemoBankGamingServices: return <FeatureGuard view={View.DemoBankGamingServices}><DemoBankGamingServicesView /></FeatureGuard>;
+            case View.DemoBankBookings: return <FeatureGuard view={View.DemoBankBookings}><DemoBankBookingsView /></FeatureGuard>;
+            case View.DemoBankCDP: return <FeatureGuard view={View.DemoBankCDP}><DemoBankCDPView /></FeatureGuard>;
+            case View.DemoBankQuantumServices: return <FeatureGuard view={View.DemoBankQuantumServices}><DemoBankQuantumServicesView /></FeatureGuard>;
+            case View.DemoBankBlockchain: return <FeatureGuard view={View.DemoBankBlockchain}><DemoBankBlockchainView /></FeatureGuard>;
+            case View.DemoBankGIS: return <FeatureGuard view={View.DemoBankGIS}><DemoBankGISView /></FeatureGuard>;
+            case View.DemoBankRobotics: return <FeatureGuard view={View.DemoBankRobotics}><DemoBankRoboticsView /></FeatureGuard>;
+            case View.DemoBankSimulations: return <FeatureGuard view={View.DemoBankSimulations}><DemoBankSimulationsView /></FeatureGuard>;
+            case View.DemoBankVoiceServices: return <FeatureGuard view={View.DemoBankVoiceServices}><DemoBankVoiceServicesView /></FeatureGuard>;
+            case View.DemoBankSearchSuite: return <FeatureGuard view={View.DemoBankSearchSuite}><DemoBankSearchSuiteView /></FeatureGuard>;
+            case View.DemoBankDigitalTwin: return <FeatureGuard view={View.DemoBankDigitalTwin}><DemoBankDigitalTwinView /></FeatureGuard>;
+            case View.DemoBankWorkflowEngine: return <FeatureGuard view={View.DemoBankWorkflowEngine}><DemoBankWorkflowEngineView /></FeatureGuard>;
+            case View.DemoBankObservabilityPlatform: return <FeatureGuard view={View.DemoBankObservabilityPlatform}><DemoBankObservabilityPlatformView /></FeatureGuard>;
+            case View.DemoBankFeatureManagement: return <FeatureGuard view={View.DemoBankFeatureManagement}><DemoBankFeatureManagementView /></FeatureGuard>;
+            case View.DemoBankExperimentationPlatform: return <FeatureGuard view={View.DemoBankExperimentationPlatform}><DemoBankExperimentationPlatformView /></FeatureGuard>;
+            case View.DemoBankLocalizationPlatform: return <FeatureGuard view={View.DemoBankLocalizationPlatform}><DemoBankLocalizationPlatformView /></FeatureGuard>;
+            case View.DemoBankFleetManagement: return <FeatureGuard view={View.DemoBankFleetManagement}><DemoBankFleetManagementView /></FeatureGuard>;
+            case View.DemoBankKnowledgeBase: return <FeatureGuard view={View.DemoBankKnowledgeBase}><DemoBankKnowledgeBaseView /></FeatureGuard>;
+            case View.DemoBankMediaServices: return <FeatureGuard view={View.DemoBankMediaServices}><DemoBankMediaServicesView /></FeatureGuard>;
+            case View.DemoBankEventGrid: return <FeatureGuard view={View.DemoBankEventGrid}><DemoBankEventGridView /></FeatureGuard>;
+            case View.DemoBankApiManagement: return <FeatureGuard view={View.DemoBankApiManagement}><DemoBankApiManagementView /></FeatureGuard>;
+
             // Mega Dashboard - Security & Identity
             case View.SecurityAccessControls: return <FeatureGuard view={View.SecurityAccessControls}><AccessControlsView /></FeatureGuard>;
             case View.SecurityRoleManagement: return <FeatureGuard view={View.SecurityRoleManagement}><RoleManagementView /></FeatureGuard>;

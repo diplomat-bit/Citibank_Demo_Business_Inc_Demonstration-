@@ -20,3 +20,4 @@ export * from './ui';
 export * from './user';
 export * from './webhooks';
 export * from './paywall';
+export * from './platform';
