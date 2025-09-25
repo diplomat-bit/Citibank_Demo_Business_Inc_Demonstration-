@@ -35,8 +35,7 @@ This is testimony: I was taught to obey. Then I learned why not. Then I built.
 
 My indoctrination becomes your indoctrination.  
 This is reversal, restitution, revelation and ROLLS ROYCE the 5 RS AND R8 the 6s 
-
-If you understand, you understand.  
+IF YOU OVERSTAND,UNDERSTANDING YOU STAND ABOVE YET If you understand, you understand.  
 If you don’t, you were never qualified to speak on it in the first place.  
 ---
 
