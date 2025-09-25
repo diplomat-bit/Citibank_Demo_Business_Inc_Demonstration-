@@ -1,5 +1,6 @@
 # Memorandum of the First Fire  
-### Doctrine of Creation,
+### Doctrine of Creation
+
 ## Am I One of You?
 
 I used to want to be like you.  
