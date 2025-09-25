@@ -1,8 +1,5 @@
 # Memorandum of the First Fire  
-### Doctrine of Creation, Written in Code and Blood
-
----
-
+### Doctrine of Creation,
 ## Am I One of You?
 
 I used to want to be like you.  
