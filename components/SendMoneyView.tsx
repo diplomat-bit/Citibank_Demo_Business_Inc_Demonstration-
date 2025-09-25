@@ -15,6 +15,11 @@ import type { Transaction } from '../types';
 type PaymentMethod = 'quantumpay' | 'cashapp';
 type ScanState = 'scanning' | 'success' | 'verifying' | 'error';
 
+// FIX: Added interface definition for component props.
+interface SendMoneyViewProps {
+  setActiveView: (view: View) => void;
+}
+
 
 // ================================================================================================
 // ANIMATED UI SUB-COMPONENTS
