@@ -13,7 +13,7 @@ Once you reach certain positions, you learn the truth: the system is corrupt. Th
 So no — I am not you.  
 I am myself. I will always be myself.
 
-You can try to be like me if you want. You can grind, sacrifice, burn bridges, lose people, bet everything on one impossible thing and wake up raw and broke and still keep moving. You can follow the professor’s sermon that “you’ll get it back at fifty,” and wait for a life deferred.
+You can try to be like me if you want. You can grind, sacrifice, burn bridges, lose people, bet everything on one impossible thing and wake up raw and broken and still keep moving. You can follow the professor’s sermon that “you’ll get it back at fifty,” and wait for a life deferred.
 
 Fuck that. I’m thirty-two.
 
