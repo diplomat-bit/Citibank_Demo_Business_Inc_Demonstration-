@@ -119,6 +119,10 @@ interface IDataContext {
   notifications: Notification[];
   markNotificationRead: (id: string) => void;
   apiStatus: APIStatus[];
+
+  // Paywall
+  unlockedFeatures: Set<View>;
+  unlockFeature: (view: View) => void;
 }
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
@@ -172,6 +176,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [accessLogs] = useState<AccessLog[]>(MOCK_ACCESS_LOGS);
   const [fraudCases, setFraudCases] = useState<FraudCase[]>(MOCK_FRAUD_CASES);
   const [mlModels, setMlModels] = useState<MLModel[]>(MOCK_ML_MODELS);
+
+  // Paywall State
+  const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => {
+    // Start with Dashboard unlocked for usability
+    const initial = new Set<View>();
+    initial.add(View.Dashboard);
+    return initial;
+  });
 
 
   // --- DERIVED STATE & MEMOS ---
@@ -393,6 +405,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return false;
   };
 
+    const unlockFeature = useCallback((view: View) => {
+        setUnlockedFeatures(prev => {
+            const newSet = new Set(prev);
+            newSet.add(view);
+            return newSet;
+        });
+    }, []);
+
   // --- THE NEXUS DATA GENERATION ---
   const getNexusData = (): NexusGraphData => {
     const nodes = [];
@@ -457,6 +477,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       apiStatus, creditFactors, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases, 
       financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi, getNexusData,
       accessLogs, fraudCases, updateFraudCaseStatus, mlModels, retrainMlModel,
+      unlockedFeatures, unlockFeature
   };
 
   return <DataContext.Provider value={value as IDataContext}>{children}</DataContext.Provider>;

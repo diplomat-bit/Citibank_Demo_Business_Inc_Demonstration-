@@ -62,7 +62,7 @@ const AIAdStudioView: React.FC = () => {
             const intervalId = setInterval(() => {
                 setPollingMessageIndex(prev => (prev + 1) % pollingMessages.length);
             }, 2500);
-            setPollingIntervalId(intervalId as unknown as number);
+            setPollingIntervalId(intervalId);
 
             while (!operation.done) {
                 await new Promise(resolve => setTimeout(resolve, 10000)); // Poll every 10 seconds
@@ -73,7 +73,7 @@ const AIAdStudioView: React.FC = () => {
             setPollingIntervalId(null);
 
             if (operation.error) {
-                 throw new Error(operation.error.message || 'Video generation failed after polling.');
+                 throw new Error(String(operation.error.message) || 'Video generation failed after polling.');
             }
 
             const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
@@ -94,7 +94,10 @@ const AIAdStudioView: React.FC = () => {
 
         } catch (err: any) {
             console.error("Video generation failed:", err);
-            setError(err.message || 'An error occurred during video generation.');
+            // FIX: The type of `err` in a catch block can be `any` or `unknown`. 
+            // To safely set an error message string, the caught error is explicitly 
+            // converted to a string to prevent potential runtime errors if `err.message` is not a string.
+            setError(String(err?.message || 'An error occurred during video generation.'));
             setGenerationState('error');
             if (pollingIntervalId) {
                 clearInterval(pollingIntervalId);

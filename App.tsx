@@ -3,28 +3,28 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import { View } from './types';
 import { DataContext } from './context/DataContext';
+import FeatureGuard from './components/FeatureGuard';
 
 // Personal Finance Views
-import DashboardView from './components/views/personal/DashboardView';
-// FIX: Updated component imports to point to their new locations after refactoring.
-import TransactionsView from './components/views/personal/TransactionsView';
-import SendMoneyView from './components/views/personal/SendMoneyView';
-import BudgetsView from './components/views/personal/BudgetsView';
-import InvestmentsView from './components/views/personal/InvestmentsView';
+import Dashboard from './components/Dashboard';
+import TransactionsView from './components/TransactionsView';
+import SendMoneyView from './components/SendMoneyView';
+import BudgetsView from './components/BudgetsView';
+import InvestmentsView from './components/InvestmentsView';
 import CryptoView from './components/views/personal/CryptoView';
 import FinancialGoalsView from './components/views/personal/FinancialGoalsView';
-import MarketplaceView from './components/views/personal/MarketplaceView';
+import MarketplaceView from './components/MarketplaceView';
 import PersonalizationView from './components/views/personal/PersonalizationView';
 import CardCustomizationView from './components/views/personal/CardCustomizationView';
 import RewardsHubView from './components/views/personal/RewardsHubView';
 import CreditHealthView from './components/views/personal/CreditHealthView';
-import SecurityView from './components/views/personal/SecurityView';
+import SecurityView from './components/SecurityView';
 import OpenBankingView from './components/views/personal/OpenBankingView';
 import SettingsView from './components/views/personal/SettingsView';
 
 // AI & Platform Views
-import AIAdvisorView from './components/views/platform/AIAdvisorView';
-import QuantumWeaverView from './components/views/platform/QuantumWeaverView';
+import AIAdvisorView from './components/AIAdvisorView';
+import QuantumWeaverView from './components/QuantumWeaverView';
 import AIAdStudioView from './components/views/platform/AIAdStudioView';
 import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
@@ -165,135 +165,135 @@ const App: React.FC = () => {
     const renderView = () => {
         switch (activeView) {
             // Personal Finance
-            case View.Dashboard: return <DashboardView setActiveView={handleSetView} />;
-            case View.Transactions: return <TransactionsView />;
-            case View.SendMoney: return <SendMoneyView setActiveView={handleSetView} />;
-            case View.Budgets: return <BudgetsView />;
-            case View.Investments: return <InvestmentsView />;
-            case View.Crypto: return <CryptoView />;
-            case View.FinancialGoals: return <FinancialGoalsView />;
-            case View.Marketplace: return <MarketplaceView />;
-            case View.Personalization: return <PersonalizationView />;
-            case View.CardCustomization: return <CardCustomizationView />;
-            case View.RewardsHub: return <RewardsHubView />;
-            case View.CreditHealth: return <CreditHealthView />;
-            case View.Security: return <SecurityView />;
-            case View.OpenBanking: return <OpenBankingView />;
-            case View.Settings: return <SettingsView />;
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><Dashboard setActiveView={handleSetView} /></FeatureGuard>;
+            case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
+            case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={handleSetView} /></FeatureGuard>;
+            case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;
+            case View.Investments: return <FeatureGuard view={View.Investments}><InvestmentsView /></FeatureGuard>;
+            case View.Crypto: return <FeatureGuard view={View.Crypto}><CryptoView /></FeatureGuard>;
+            case View.FinancialGoals: return <FeatureGuard view={View.FinancialGoals}><FinancialGoalsView /></FeatureGuard>;
+            case View.Marketplace: return <FeatureGuard view={View.Marketplace}><MarketplaceView /></FeatureGuard>;
+            case View.Personalization: return <FeatureGuard view={View.Personalization}><PersonalizationView /></FeatureGuard>;
+            case View.CardCustomization: return <FeatureGuard view={View.CardCustomization}><CardCustomizationView /></FeatureGuard>;
+            case View.RewardsHub: return <FeatureGuard view={View.RewardsHub}><RewardsHubView /></FeatureGuard>;
+            case View.CreditHealth: return <FeatureGuard view={View.CreditHealth}><CreditHealthView /></FeatureGuard>;
+            case View.Security: return <FeatureGuard view={View.Security}><SecurityView /></FeatureGuard>;
+            case View.OpenBanking: return <FeatureGuard view={View.OpenBanking}><OpenBankingView /></FeatureGuard>;
+            case View.Settings: return <FeatureGuard view={View.Settings}><SettingsView /></FeatureGuard>;
             
             // AI & Platform
-            case View.TheNexus: return <TheNexusView />;
-            case View.AIAdvisor: return <AIAdvisorView previousView={previousView} />;
-            case View.QuantumWeaver: return <QuantumWeaverView />;
-            case View.AIAdStudio: return <AIAdStudioView />;
-            case View.TheWinningVision: return <TheVisionView />;
-            case View.APIStatus: return <APIStatusView />;
+            case View.TheNexus: return <FeatureGuard view={View.TheNexus}><TheNexusView /></FeatureGuard>;
+            case View.AIAdvisor: return <FeatureGuard view={View.AIAdvisor}><AIAdvisorView previousView={previousView} /></FeatureGuard>;
+            case View.QuantumWeaver: return <FeatureGuard view={View.QuantumWeaver}><QuantumWeaverView /></FeatureGuard>;
+            case View.AIAdStudio: return <FeatureGuard view={View.AIAdStudio}><AIAdStudioView /></FeatureGuard>;
+            case View.TheWinningVision: return <FeatureGuard view={View.TheWinningVision}><TheVisionView /></FeatureGuard>;
+            case View.APIStatus: return <FeatureGuard view={View.APIStatus}><APIStatusView /></FeatureGuard>;
             
             // Constitutional Modules
-            case View.TheCharter: return <TheCharterView />;
-            case View.FractionalReserve: return <FractionalReserveView />;
-            case View.FinancialInstrumentForge: return <FinancialInstrumentForgeView />;
+            case View.TheCharter: return <FeatureGuard view={View.TheCharter}><TheCharterView /></FeatureGuard>;
+            case View.FractionalReserve: return <FeatureGuard view={View.FractionalReserve}><FractionalReserveView /></FeatureGuard>;
+            case View.FinancialInstrumentForge: return <FeatureGuard view={View.FinancialInstrumentForge}><FinancialInstrumentForgeView /></FeatureGuard>;
 
             // Corporate Finance
-            case View.CorporateDashboard: return <CorporateDashboardView setActiveView={handleSetView} />;
-            case View.PaymentOrders: return <PaymentOrdersView />;
-            case View.Counterparties: return <CounterpartiesView />;
-            case View.Invoices: return <InvoicesView />;
-            case View.Compliance: return <ComplianceView />;
-            case View.AnomalyDetection: return <AnomalyDetectionView />;
+            case View.CorporateDashboard: return <FeatureGuard view={View.CorporateDashboard}><CorporateDashboardView setActiveView={handleSetView} /></FeatureGuard>;
+            case View.PaymentOrders: return <FeatureGuard view={View.PaymentOrders}><PaymentOrdersView /></FeatureGuard>;
+            case View.Counterparties: return <FeatureGuard view={View.Counterparties}><CounterpartiesView /></FeatureGuard>;
+            case View.Invoices: return <FeatureGuard view={View.Invoices}><InvoicesView /></FeatureGuard>;
+            case View.Compliance: return <FeatureGuard view={View.Compliance}><ComplianceView /></FeatureGuard>;
+            case View.AnomalyDetection: return <FeatureGuard view={View.AnomalyDetection}><AnomalyDetectionView /></FeatureGuard>;
 
             // Demo Bank Platform
-            case View.DemoBankSocial: return <DemoBankSocialView />;
-            case View.DemoBankERP: return <DemoBankERPView />;
-            case View.DemoBankCRM: return <DemoBankCRMView />;
-            case View.DemoBankAPIGateway: return <DemoBankAPIGatewayView />;
-            case View.DemoBankGraphExplorer: return <DemoBankGraphExplorerView />;
-            case View.DemoBankDBQL: return <DemoBankDBQLView />;
-            case View.DemoBankCloud: return <DemoBankCloudView />;
-            case View.DemoBankIdentity: return <DemoBankIdentityView />;
-            case View.DemoBankStorage: return <DemoBankStorageView />;
-            case View.DemoBankCompute: return <DemoBankComputerView />;
-            case View.DemoBankAIPlatform: return <DemoBankAIPlatformView />;
-            case View.DemoBankMachineLearning: return <DemoBankMachineLearningView />;
-            case View.DemoBankDevOps: return <DemoBankDevOpsView />;
-            case View.DemoBankSecurityCenter: return <DemoBankSecurityCenterView />;
-            case View.DemoBankComplianceHub: return <DemoBankComplianceHubView />;
-            case View.DemoBankAppMarketplace: return <DemoBankAppMarketplaceView />;
-            case View.DemoBankConnect: return <DemoBankConnectView />;
-            case View.DemoBankEvents: return <DemoBankEventsView />;
-            case View.DemoBankLogicApps: return <DemoBankLogicAppsView />;
-            case View.DemoBankFunctions: return <DemoBankFunctionsView />;
-            case View.DemoBankDataFactory: return <DemoBankDataFactoryView />;
-            case View.DemoBankAnalytics: return <DemoBankAnalyticsView />;
-            case View.DemoBankBI: return <DemoBankBIView />;
-            case View.DemoBankIoTHub: return <DemoBankIoTHubView />;
-            case View.DemoBankMaps: return <DemoBankMapsView />;
-            case View.DemoBankCommunications: return <DemoBankCommunicationsView />;
-            case View.DemoBankCommerce: return <DemoBankCommerceView />;
-            case View.DemoBankTeams: return <DemoBankTeamsView />;
+            case View.DemoBankSocial: return <FeatureGuard view={View.DemoBankSocial}><DemoBankSocialView /></FeatureGuard>;
+            case View.DemoBankERP: return <FeatureGuard view={View.DemoBankERP}><DemoBankERPView /></FeatureGuard>;
+            case View.DemoBankCRM: return <FeatureGuard view={View.DemoBankCRM}><DemoBankCRMView /></FeatureGuard>;
+            case View.DemoBankAPIGateway: return <FeatureGuard view={View.DemoBankAPIGateway}><DemoBankAPIGatewayView /></FeatureGuard>;
+            case View.DemoBankGraphExplorer: return <FeatureGuard view={View.DemoBankGraphExplorer}><DemoBankGraphExplorerView /></FeatureGuard>;
+            case View.DemoBankDBQL: return <FeatureGuard view={View.DemoBankDBQL}><DemoBankDBQLView /></FeatureGuard>;
+            case View.DemoBankCloud: return <FeatureGuard view={View.DemoBankCloud}><DemoBankCloudView /></FeatureGuard>;
+            case View.DemoBankIdentity: return <FeatureGuard view={View.DemoBankIdentity}><DemoBankIdentityView /></FeatureGuard>;
+            case View.DemoBankStorage: return <FeatureGuard view={View.DemoBankStorage}><DemoBankStorageView /></FeatureGuard>;
+            case View.DemoBankCompute: return <FeatureGuard view={View.DemoBankCompute}><DemoBankComputerView /></FeatureGuard>;
+            case View.DemoBankAIPlatform: return <FeatureGuard view={View.DemoBankAIPlatform}><DemoBankAIPlatformView /></FeatureGuard>;
+            case View.DemoBankMachineLearning: return <FeatureGuard view={View.DemoBankMachineLearning}><DemoBankMachineLearningView /></FeatureGuard>;
+            case View.DemoBankDevOps: return <FeatureGuard view={View.DemoBankDevOps}><DemoBankDevOpsView /></FeatureGuard>;
+            case View.DemoBankSecurityCenter: return <FeatureGuard view={View.DemoBankSecurityCenter}><DemoBankSecurityCenterView /></FeatureGuard>;
+            case View.DemoBankComplianceHub: return <FeatureGuard view={View.DemoBankComplianceHub}><DemoBankComplianceHubView /></FeatureGuard>;
+            case View.DemoBankAppMarketplace: return <FeatureGuard view={View.DemoBankAppMarketplace}><DemoBankAppMarketplaceView /></FeatureGuard>;
+            case View.DemoBankConnect: return <FeatureGuard view={View.DemoBankConnect}><DemoBankConnectView /></FeatureGuard>;
+            case View.DemoBankEvents: return <FeatureGuard view={View.DemoBankEvents}><DemoBankEventsView /></FeatureGuard>;
+            case View.DemoBankLogicApps: return <FeatureGuard view={View.DemoBankLogicApps}><DemoBankLogicAppsView /></FeatureGuard>;
+            case View.DemoBankFunctions: return <FeatureGuard view={View.DemoBankFunctions}><DemoBankFunctionsView /></FeatureGuard>;
+            case View.DemoBankDataFactory: return <FeatureGuard view={View.DemoBankDataFactory}><DemoBankDataFactoryView /></FeatureGuard>;
+            case View.DemoBankAnalytics: return <FeatureGuard view={View.DemoBankAnalytics}><DemoBankAnalyticsView /></FeatureGuard>;
+            case View.DemoBankBI: return <FeatureGuard view={View.DemoBankBI}><DemoBankBIView /></FeatureGuard>;
+            case View.DemoBankIoTHub: return <FeatureGuard view={View.DemoBankIoTHub}><DemoBankIoTHubView /></FeatureGuard>;
+            case View.DemoBankMaps: return <FeatureGuard view={View.DemoBankMaps}><DemoBankMapsView /></FeatureGuard>;
+            case View.DemoBankCommunications: return <FeatureGuard view={View.DemoBankCommunications}><DemoBankCommunicationsView /></FeatureGuard>;
+            case View.DemoBankCommerce: return <FeatureGuard view={View.DemoBankCommerce}><DemoBankCommerceView /></FeatureGuard>;
+            case View.DemoBankTeams: return <FeatureGuard view={View.DemoBankTeams}><DemoBankTeamsView /></FeatureGuard>;
             
             // Mega Dashboard - Security & Identity
-            case View.SecurityAccessControls: return <AccessControlsView />;
-            case View.SecurityRoleManagement: return <RoleManagementView />;
-            case View.SecurityAuditLogs: return <AuditLogsView />;
-            case View.SecurityFraudDetection: return <FraudDetectionView />;
-            case View.SecurityThreatIntelligence: return <ThreatIntelligenceView />;
+            case View.SecurityAccessControls: return <FeatureGuard view={View.SecurityAccessControls}><AccessControlsView /></FeatureGuard>;
+            case View.SecurityRoleManagement: return <FeatureGuard view={View.SecurityRoleManagement}><RoleManagementView /></FeatureGuard>;
+            case View.SecurityAuditLogs: return <FeatureGuard view={View.SecurityAuditLogs}><AuditLogsView /></FeatureGuard>;
+            case View.SecurityFraudDetection: return <FeatureGuard view={View.SecurityFraudDetection}><FraudDetectionView /></FeatureGuard>;
+            case View.SecurityThreatIntelligence: return <FeatureGuard view={View.SecurityThreatIntelligence}><ThreatIntelligenceView /></FeatureGuard>;
             // Mega Dashboard - Finance & Banking
-            case View.FinanceCardManagement: return <CardManagementView />;
-            case View.FinanceLoanApplications: return <LoanApplicationsView />;
-            case View.FinanceMortgages: return <MortgagesView />;
-            case View.FinanceInsuranceHub: return <InsuranceHubView />;
-            case View.FinanceTaxCenter: return <TaxCenterView />;
+            case View.FinanceCardManagement: return <FeatureGuard view={View.FinanceCardManagement}><CardManagementView /></FeatureGuard>;
+            case View.FinanceLoanApplications: return <FeatureGuard view={View.FinanceLoanApplications}><LoanApplicationsView /></FeatureGuard>;
+            case View.FinanceMortgages: return <FeatureGuard view={View.FinanceMortgages}><MortgagesView /></FeatureGuard>;
+            case View.FinanceInsuranceHub: return <FeatureGuard view={View.FinanceInsuranceHub}><InsuranceHubView /></FeatureGuard>;
+            case View.FinanceTaxCenter: return <FeatureGuard view={View.FinanceTaxCenter}><TaxCenterView /></FeatureGuard>;
             // Mega Dashboard - Advanced Analytics
-            case View.AnalyticsPredictiveModels: return <PredictiveModelsView />;
-            case View.AnalyticsRiskScoring: return <RiskScoringView />;
-            case View.AnalyticsSentimentAnalysis: return <SentimentAnalysisView />;
-            case View.AnalyticsDataLakes: return <DataLakesView />;
-            case View.AnalyticsDataCatalog: return <DataCatalogView />;
+            case View.AnalyticsPredictiveModels: return <FeatureGuard view={View.AnalyticsPredictiveModels}><PredictiveModelsView /></FeatureGuard>;
+            case View.AnalyticsRiskScoring: return <FeatureGuard view={View.AnalyticsRiskScoring}><RiskScoringView /></FeatureGuard>;
+            case View.AnalyticsSentimentAnalysis: return <FeatureGuard view={View.AnalyticsSentimentAnalysis}><SentimentAnalysisView /></FeatureGuard>;
+            case View.AnalyticsDataLakes: return <FeatureGuard view={View.AnalyticsDataLakes}><DataLakesView /></FeatureGuard>;
+            case View.AnalyticsDataCatalog: return <FeatureGuard view={View.AnalyticsDataCatalog}><DataCatalogView /></FeatureGuard>;
             // Mega Dashboard - User & Client Tools
-            case View.UserClientOnboarding: return <ClientOnboardingView />;
-            case View.UserClientKycAml: return <KycAmlView />;
-            case View.UserClientUserInsights: return <UserInsightsView />;
-            case View.UserClientFeedbackHub: return <FeedbackHubView />;
-            case View.UserClientSupportDesk: return <SupportDeskView />;
+            case View.UserClientOnboarding: return <FeatureGuard view={View.UserClientOnboarding}><ClientOnboardingView /></FeatureGuard>;
+            case View.UserClientKycAml: return <FeatureGuard view={View.UserClientKycAml}><KycAmlView /></FeatureGuard>;
+            case View.UserClientUserInsights: return <FeatureGuard view={View.UserClientUserInsights}><UserInsightsView /></FeatureGuard>;
+            case View.UserClientFeedbackHub: return <FeatureGuard view={View.UserClientFeedbackHub}><FeedbackHubView /></FeatureGuard>;
+            case View.UserClientSupportDesk: return <FeatureGuard view={View.UserClientSupportDesk}><SupportDeskView /></FeatureGuard>;
             // Mega Dashboard - Developer & Integration
-            case View.DeveloperSandbox: return <SandboxView />;
-            case View.DeveloperSdkDownloads: return <SdkDownloadsView />;
-            case View.DeveloperWebhooks: return <WebhooksView />;
-            case View.DeveloperCliTools: return <CliToolsView />;
-            case View.DeveloperExtensions: return <ExtensionsView />;
+            case View.DeveloperSandbox: return <FeatureGuard view={View.DeveloperSandbox}><SandboxView /></FeatureGuard>;
+            case View.DeveloperSdkDownloads: return <FeatureGuard view={View.DeveloperSdkDownloads}><SdkDownloadsView /></FeatureGuard>;
+            case View.DeveloperWebhooks: return <FeatureGuard view={View.DeveloperWebhooks}><WebhooksView /></FeatureGuard>;
+            case View.DeveloperCliTools: return <FeatureGuard view={View.DeveloperCliTools}><CliToolsView /></FeatureGuard>;
+            case View.DeveloperExtensions: return <FeatureGuard view={View.DeveloperExtensions}><ExtensionsView /></FeatureGuard>;
             // Mega Dashboard - Ecosystem & Connectivity
-            case View.EcosystemPartnerHub: return <PartnerHubView />;
-            case View.EcosystemAffiliates: return <AffiliatesView />;
-            case View.EcosystemIntegrationsMarketplace: return <IntegrationsMarketplaceView />;
-            case View.EcosystemCrossBorderPayments: return <CrossBorderPaymentsView />;
-            case View.EcosystemMultiCurrency: return <MultiCurrencyView />;
+            case View.EcosystemPartnerHub: return <FeatureGuard view={View.EcosystemPartnerHub}><PartnerHubView /></FeatureGuard>;
+            case View.EcosystemAffiliates: return <FeatureGuard view={View.EcosystemAffiliates}><AffiliatesView /></FeatureGuard>;
+            case View.EcosystemIntegrationsMarketplace: return <FeatureGuard view={View.EcosystemIntegrationsMarketplace}><IntegrationsMarketplaceView /></FeatureGuard>;
+            case View.EcosystemCrossBorderPayments: return <FeatureGuard view={View.EcosystemCrossBorderPayments}><CrossBorderPaymentsView /></FeatureGuard>;
+            case View.EcosystemMultiCurrency: return <FeatureGuard view={View.EcosystemMultiCurrency}><MultiCurrencyView /></FeatureGuard>;
             // Mega Dashboard - Digital Assets & Web3
-            case View.DigitalAssetsNftVault: return <NftVaultView />;
-            case View.DigitalAssetsTokenIssuance: return <TokenIssuanceView />;
-            case View.DigitalAssetsSmartContracts: return <SmartContractsView />;
-            case View.DigitalAssetsDaoGovernance: return <DaoGovernanceView />;
-            case View.DigitalAssetsOnChainAnalytics: return <OnChainAnalyticsView />;
+            case View.DigitalAssetsNftVault: return <FeatureGuard view={View.DigitalAssetsNftVault}><NftVaultView /></FeatureGuard>;
+            case View.DigitalAssetsTokenIssuance: return <FeatureGuard view={View.DigitalAssetsTokenIssuance}><TokenIssuanceView /></FeatureGuard>;
+            case View.DigitalAssetsSmartContracts: return <FeatureGuard view={View.DigitalAssetsSmartContracts}><SmartContractsView /></FeatureGuard>;
+            case View.DigitalAssetsDaoGovernance: return <FeatureGuard view={View.DigitalAssetsDaoGovernance}><DaoGovernanceView /></FeatureGuard>;
+            case View.DigitalAssetsOnChainAnalytics: return <FeatureGuard view={View.DigitalAssetsOnChainAnalytics}><OnChainAnalyticsView /></FeatureGuard>;
             // Mega Dashboard - Business & Growth
-            case View.BusinessSalesPipeline: return <SalesPipelineView />;
-            case View.BusinessMarketingAutomation: return <MarketingAutomationView />;
-            case View.BusinessGrowthInsights: return <GrowthInsightsView />;
-            case View.BusinessCompetitiveIntelligence: return <CompetitiveIntelligenceView />;
-            case View.BusinessBenchmarking: return <BenchmarkingView />;
+            case View.BusinessSalesPipeline: return <FeatureGuard view={View.BusinessSalesPipeline}><SalesPipelineView /></FeatureGuard>;
+            case View.BusinessMarketingAutomation: return <FeatureGuard view={View.BusinessMarketingAutomation}><MarketingAutomationView /></FeatureGuard>;
+            case View.BusinessGrowthInsights: return <FeatureGuard view={View.BusinessGrowthInsights}><GrowthInsightsView /></FeatureGuard>;
+            case View.BusinessCompetitiveIntelligence: return <FeatureGuard view={View.BusinessCompetitiveIntelligence}><CompetitiveIntelligenceView /></FeatureGuard>;
+            case View.BusinessBenchmarking: return <FeatureGuard view={View.BusinessBenchmarking}><BenchmarkingView /></FeatureGuard>;
             // Mega Dashboard - Regulation & Legal
-            case View.RegulationLicensing: return <LicensingView />;
-            case View.RegulationDisclosures: return <DisclosuresView />;
-            case View.RegulationLegalDocs: return <LegalDocsView />;
-            case View.RegulationRegulatorySandbox: return <RegulatorySandboxView />;
-            case View.RegulationConsentManagement: return <ConsentManagementView />;
+            case View.RegulationLicensing: return <FeatureGuard view={View.RegulationLicensing}><LicensingView /></FeatureGuard>;
+            case View.RegulationDisclosures: return <FeatureGuard view={View.RegulationDisclosures}><DisclosuresView /></FeatureGuard>;
+            case View.RegulationLegalDocs: return <FeatureGuard view={View.RegulationLegalDocs}><LegalDocsView /></FeatureGuard>;
+            case View.RegulationRegulatorySandbox: return <FeatureGuard view={View.RegulationRegulatorySandbox}><RegulatorySandboxView /></FeatureGuard>;
+            case View.RegulationConsentManagement: return <FeatureGuard view={View.RegulationConsentManagement}><ConsentManagementView /></FeatureGuard>;
             // Mega Dashboard - Infra & Ops
-            case View.InfraContainerRegistry: return <ContainerRegistryView />;
-            case View.InfraApiThrottling: return <ApiThrottlingView />;
-            case View.InfraObservability: return <ObservabilityView />;
-            case View.InfraIncidentResponse: return <IncidentResponseView />;
-            case View.InfraBackupRecovery: return <BackupRecoveryView />;
+            case View.InfraContainerRegistry: return <FeatureGuard view={View.InfraContainerRegistry}><ContainerRegistryView /></FeatureGuard>;
+            case View.InfraApiThrottling: return <FeatureGuard view={View.InfraApiThrottling}><ApiThrottlingView /></FeatureGuard>;
+            case View.InfraObservability: return <FeatureGuard view={View.InfraObservability}><ObservabilityView /></FeatureGuard>;
+            case View.InfraIncidentResponse: return <FeatureGuard view={View.InfraIncidentResponse}><IncidentResponseView /></FeatureGuard>;
+            case View.InfraBackupRecovery: return <FeatureGuard view={View.InfraBackupRecovery}><BackupRecoveryView /></FeatureGuard>;
 
-            default: return <DashboardView setActiveView={handleSetView} />;
+            default: return <Dashboard setActiveView={handleSetView} />;
         }
     };
 

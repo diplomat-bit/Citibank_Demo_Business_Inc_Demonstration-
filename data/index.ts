@@ -35,3 +35,4 @@ export * from './counterparties';
 export * from './accessLogs';
 export * from './fraudCases';
 export * from './mlModels';
+export * from './paywallData';
