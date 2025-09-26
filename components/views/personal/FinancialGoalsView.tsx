@@ -3,6 +3,7 @@ import React, { useContext, useState, useMemo } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import { FinancialGoal } from '../../../types';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const GOAL_ICONS: { [key: string]: React.FC<{ className?: string }> } = {
     home: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
@@ -95,25 +96,53 @@ const FinancialGoalsView: React.FC = () => {
         const plan = selectedGoal.plan;
         const categoryColors: {[key: string]: string} = { Savings: 'border-cyan-500', Budgeting: 'border-indigo-500', Investing: 'border-yellow-500', Income: 'border-green-500' };
 
+        const projectionData = useMemo(() => {
+            const data = [{ year: 'Now', value: selectedGoal.currentAmount }];
+            let futureValue = selectedGoal.currentAmount;
+            const years = new Date(selectedGoal.targetDate).getFullYear() - new Date().getFullYear();
+            for (let i = 1; i <= years; i++) {
+                futureValue += plan.monthlyContribution * 12;
+                data.push({ year: `Year ${i}`, value: futureValue });
+            }
+            return data;
+        }, [selectedGoal]);
+
+
         return (
             <div>
                  <button onClick={() => setCurrentView('LIST')} className="flex items-center text-sm text-cyan-300 hover:text-cyan-200 mb-4"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>Back to Goals</button>
-                <Card title={`AI Plan for: ${selectedGoal.name}`}>
-                    <div className="p-4 bg-gray-900/50 rounded-lg mb-6">
-                        <p className="font-semibold text-cyan-300">AI Feasibility Summary:</p>
-                        <p className="text-sm text-gray-300 italic">"{plan.feasibilitySummary}"</p>
-                        <p className="mt-3 text-center"><span className="text-gray-400">Recommended Monthly Contribution:</span> <span className="font-bold text-2xl text-white">${plan.monthlyContribution.toLocaleString()}</span></p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="lg:col-span-2">
+                        <Card title="Goal Projection">
+                            <ResponsiveContainer width="100%" height={250}>
+                                <AreaChart data={projectionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                    <defs><linearGradient id="colorGoal" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/><stop offset="95%" stopColor="#8884d8" stopOpacity={0}/></linearGradient></defs>
+                                    <XAxis dataKey="year" stroke="#9ca3af" />
+                                    <YAxis stroke="#9ca3af" tickFormatter={(tick) => `$${(tick / 1000).toFixed(0)}k`} />
+                                    <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
+                                    <Area type="monotone" dataKey="value" stroke="#8884d8" fill="url(#colorGoal)" name="Projected Savings" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </Card>
                     </div>
-                    <h4 className="text-lg font-semibold text-white mb-4">Your Action Plan:</h4>
-                    <div className="space-y-4">
-                        {plan.steps.map((step, index) => (
-                            <div key={index} className={`p-4 rounded-lg flex items-start gap-4 bg-gray-800/50 border-l-4 ${categoryColors[step.category]}`}>
-                                <input type="checkbox" checked={completedSteps.includes(index)} onChange={() => setCompletedSteps(p => p.includes(index) ? p.filter(i=>i!==index) : [...p, index])} className="mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-cyan-600 focus:ring-cyan-500"/>
-                                <div><h5 className={`font-semibold text-white ${completedSteps.includes(index) ? 'line-through text-gray-500' : ''}`}>{step.title}</h5><p className={`text-sm text-gray-400 ${completedSteps.includes(index) ? 'line-through' : ''}`}>{step.description}</p></div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
+                    <Card title={`AI Plan for: ${selectedGoal.name}`}>
+                        <div className="p-4 bg-gray-900/50 rounded-lg mb-6">
+                            <p className="font-semibold text-cyan-300">AI Feasibility Summary:</p>
+                            <p className="text-sm text-gray-300 italic">"{plan.feasibilitySummary}"</p>
+                            <p className="mt-3 text-center"><span className="text-gray-400">Recommended Monthly Contribution:</span> <span className="font-bold text-2xl text-white">${plan.monthlyContribution.toLocaleString()}</span></p>
+                        </div>
+                    </Card>
+                     <Card title="Your Action Plan">
+                        <div className="space-y-4">
+                            {plan.steps.map((step, index) => (
+                                <div key={index} className={`p-4 rounded-lg flex items-start gap-4 bg-gray-800/50 border-l-4 ${categoryColors[step.category]}`}>
+                                    <input type="checkbox" checked={completedSteps.includes(index)} onChange={() => setCompletedSteps(p => p.includes(index) ? p.filter(i=>i!==index) : [...p, index])} className="mt-1 h-5 w-5 rounded bg-gray-700 border-gray-600 text-cyan-600 focus:ring-cyan-500"/>
+                                    <div><h5 className={`font-semibold text-white ${completedSteps.includes(index) ? 'line-through text-gray-500' : ''}`}>{step.title}</h5><p className={`text-sm text-gray-400 ${completedSteps.includes(index) ? 'line-through' : ''}`}>{step.description}</p></div>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                </div>
             </div>
         );
     };

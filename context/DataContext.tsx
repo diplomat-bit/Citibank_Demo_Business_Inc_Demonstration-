@@ -16,9 +16,16 @@ import {
     NFTAsset, RewardItem, APIStatus, CreditFactor, CorporateCardControls,
     PaymentOrder, Invoice, ComplianceCase, FinancialAnomaly, AnomalyStatus, 
     Counterparty, DynamicKpi, PaymentOrderStatus, NexusGraphData, View, 
-    WeaverStage, AccessLog, FraudCase, MLModel,
+    WeaverStage, AccessLog, FraudCase, MLModel, LoanApplication, MortgageAsset,
+    ThreatIntelBrief, InsuranceClaim, RiskProfile, DataSet, DataLakeStat,
     // FIX: Imported NexusNode and NexusLink to resolve 'Cannot find name' errors.
-    NexusNode, NexusLink
+    NexusNode, NexusLink,
+    // Mega Dashboard - Business
+    SalesDeal, MarketingCampaign, GrowthMetric, Competitor, Benchmark,
+    // Mega Dashboard - Regulation
+    License, Disclosure, LegalDoc, SandboxExperiment, ConsentRecord,
+    // Mega Dashboard - Infra
+    ContainerImage, ApiUsage, Incident, BackupJob
 } from '../types'; 
 
 import { 
@@ -28,7 +35,15 @@ import {
     MOCK_CORPORATE_CARDS, MOCK_CORPORATE_TRANSACTIONS, MOCK_REWARD_POINTS, MOCK_NOTIFICATIONS,
     MOCK_REWARD_ITEMS, MOCK_API_STATUS, MOCK_CREDIT_FACTORS, MOCK_PAYMENT_ORDERS, 
     MOCK_INVOICES, MOCK_COMPLIANCE_CASES, MOCK_ANOMALIES, MOCK_COUNTERPARTIES,
-    MOCK_ACCESS_LOGS, MOCK_FRAUD_CASES, MOCK_ML_MODELS
+    MOCK_ACCESS_LOGS, MOCK_FRAUD_CASES, MOCK_ML_MODELS, 
+    // FIX: Corrected import path for megadashboard data.
+    MOCK_LOAN_APPLICATIONS,
+    MOCK_MORTGAGE_ASSETS, MOCK_THREAT_INTEL, MOCK_INSURANCE_CLAIMS, MOCK_RISK_PROFILES,
+    MOCK_DATA_CATALOG_ITEMS, MOCK_DATA_LAKE_STATS,
+    // New Mega Dashboard Data
+    MOCK_SALES_DEALS, MOCK_MARKETING_CAMPAIGNS, MOCK_GROWTH_METRICS, MOCK_COMPETITORS, MOCK_BENCHMARKS,
+    MOCK_LICENSES, MOCK_DISCLOSURES, MOCK_LEGAL_DOCS, MOCK_SANDBOX_EXPERIMENTS, MOCK_CONSENT_RECORDS,
+    MOCK_CONTAINER_IMAGES, MOCK_API_USAGE, MOCK_INCIDENTS, MOCK_BACKUP_JOBS
 } from '../data';
 
 const LEVEL_NAMES = ["Financial Novice", "Budgeting Apprentice", "Savings Specialist", "Investment Adept", "Wealth Master"];
@@ -112,6 +127,29 @@ interface IDataContext {
   updateFraudCaseStatus: (id: string, status: FraudCase['status']) => void;
   mlModels: MLModel[];
   retrainMlModel: (id: string) => void;
+  loanApplications: LoanApplication[];
+  mortgageAssets: MortgageAsset[];
+  threatIntelBriefs: ThreatIntelBrief[];
+  insuranceClaims: InsuranceClaim[];
+  riskProfiles: RiskProfile[];
+  dataCatalogItems: DataSet[];
+  dataLakeStats: DataLakeStat[];
+
+  // New Mega Dashboard Data
+  salesDeals: SalesDeal[];
+  marketingCampaigns: MarketingCampaign[];
+  growthMetrics: GrowthMetric[];
+  competitors: Competitor[];
+  benchmarks: Benchmark[];
+  licenses: License[];
+  disclosures: Disclosure[];
+  legalDocs: LegalDoc[];
+  sandboxExperiments: SandboxExperiment[];
+  consentRecords: ConsentRecord[];
+  containerImages: ContainerImage[];
+  apiUsage: ApiUsage[];
+  incidents: Incident[];
+  backupJobs: BackupJob[];
 
   // System & Misc
   impactData: {
@@ -178,9 +216,32 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [counterparties] = useState<Counterparty[]>(MOCK_COUNTERPARTIES);
   const [dynamicKpis, setDynamicKpis] = useState<DynamicKpi[]>([]);
   
+  // Mega Dashboard State
   const [accessLogs] = useState<AccessLog[]>(MOCK_ACCESS_LOGS);
   const [fraudCases, setFraudCases] = useState<FraudCase[]>(MOCK_FRAUD_CASES);
   const [mlModels, setMlModels] = useState<MLModel[]>(MOCK_ML_MODELS);
+  const [loanApplications] = useState<LoanApplication[]>(MOCK_LOAN_APPLICATIONS);
+  const [mortgageAssets] = useState<MortgageAsset[]>(MOCK_MORTGAGE_ASSETS);
+  const [threatIntelBriefs] = useState<ThreatIntelBrief[]>(MOCK_THREAT_INTEL);
+  const [insuranceClaims] = useState<InsuranceClaim[]>(MOCK_INSURANCE_CLAIMS);
+  const [riskProfiles] = useState<RiskProfile[]>(MOCK_RISK_PROFILES);
+  const [dataCatalogItems] = useState<DataSet[]>(MOCK_DATA_CATALOG_ITEMS);
+  const [dataLakeStats] = useState<DataLakeStat[]>(MOCK_DATA_LAKE_STATS);
+  // New Mega Dashboard State
+  const [salesDeals] = useState<SalesDeal[]>(MOCK_SALES_DEALS);
+  const [marketingCampaigns] = useState<MarketingCampaign[]>(MOCK_MARKETING_CAMPAIGNS);
+  const [growthMetrics] = useState<GrowthMetric[]>(MOCK_GROWTH_METRICS);
+  const [competitors] = useState<Competitor[]>(MOCK_COMPETITORS);
+  const [benchmarks] = useState<Benchmark[]>(MOCK_BENCHMARKS);
+  const [licenses] = useState<License[]>(MOCK_LICENSES);
+  const [disclosures] = useState<Disclosure[]>(MOCK_DISCLOSURES);
+  const [legalDocs] = useState<LegalDoc[]>(MOCK_LEGAL_DOCS);
+  const [sandboxExperiments] = useState<SandboxExperiment[]>(MOCK_SANDBOX_EXPERIMENTS);
+  const [consentRecords] = useState<ConsentRecord[]>(MOCK_CONSENT_RECORDS);
+  const [containerImages] = useState<ContainerImage[]>(MOCK_CONTAINER_IMAGES);
+  const [apiUsage] = useState<ApiUsage[]>(MOCK_API_USAGE);
+  const [incidents] = useState<Incident[]>(MOCK_INCIDENTS);
+  const [backupJobs] = useState<BackupJob[]>(MOCK_BACKUP_JOBS);
 
   const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => new Set<View>([View.Dashboard]));
 
@@ -409,6 +470,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       apiStatus, creditFactors, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases, 
       financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi, getNexusData,
       accessLogs, fraudCases, updateFraudCaseStatus, mlModels, retrainMlModel,
+      loanApplications, mortgageAssets, threatIntelBriefs, insuranceClaims, riskProfiles, dataCatalogItems, dataLakeStats,
+      salesDeals, marketingCampaigns, growthMetrics, competitors, benchmarks,
+      licenses, disclosures, legalDocs, sandboxExperiments, consentRecords,
+      containerImages, apiUsage, incidents, backupJobs,
       unlockedFeatures, unlockFeature
   };
 

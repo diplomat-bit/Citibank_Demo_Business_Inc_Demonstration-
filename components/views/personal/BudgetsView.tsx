@@ -3,8 +3,12 @@ import React, { useContext, useState, useMemo, useRef, useEffect } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import type { BudgetCategory, Transaction } from '../../../types';
-import { GoogleGenAI } from "@google/genai";
-import { RadialBarChart, RadialBar, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { GoogleGenAI, Chat } from "@google/genai";
+import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+
+// ================================================================================================
+// MODAL & DETAIL COMPONENTS
+// ================================================================================================
 
 const BudgetDetailModal: React.FC<{ budget: BudgetCategory | null; transactions: Transaction[]; onClose: () => void; }> = ({ budget, transactions, onClose }) => {
     if (!budget) return null;
@@ -16,7 +20,7 @@ const BudgetDetailModal: React.FC<{ budget: BudgetCategory | null; transactions:
             <div className="bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full border border-gray-700" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-gray-700 flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-white">{budget.name} Budget Details</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close modal">&times;</button>
                 </div>
                 <div className="p-6 max-h-[60vh] overflow-y-auto">
                     {relevantTransactions.length > 0 ? (
@@ -64,6 +68,55 @@ const NewBudgetModal: React.FC<{ onClose: () => void; onAdd: (budget: Omit<Budge
 };
 
 
+const AIConsejero: React.FC<{ budgets: BudgetCategory[] }> = ({ budgets }) => {
+    const chatRef = useRef<Chat | null>(null);
+    const [aiResponse, setAiResponse] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const initializeChat = async () => {
+            setIsLoading(true);
+            const budgetSummary = budgets.map(b => `${b.name}: $${b.spent.toFixed(0)} spent of $${b.limit}`).join(', ');
+            const prompt = `Based on this budget data (${budgetSummary}), provide one key insight or piece of advice for the user. Be concise and encouraging.`;
+
+            try {
+                const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+                chatRef.current = ai.chats.create({
+                    model: 'gemini-2.5-flash',
+                    config: { systemInstruction: "You are Quantum, a specialized financial advisor AI focused on budget analysis. Your tone is helpful and insightful." }
+                });
+
+                const resultStream = await chatRef.current.sendMessageStream({ message: prompt });
+                
+                let text = '';
+                for await (const chunk of resultStream) {
+                    text += chunk.text;
+                    setAiResponse(text);
+                }
+            } catch (error) {
+                console.error("AI Consejero Error:", error);
+                setAiResponse("I'm having trouble analyzing your budgets right now.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeChat();
+    }, [budgets]);
+
+    return (
+        <Card title="AI Sage Insights">
+            <div className="p-4 min-h-[6rem]">
+                {isLoading && aiResponse === '' ? (
+                    <p className="text-gray-400">The AI Sage is analyzing your spending...</p>
+                ) : (
+                    <p className="text-gray-300 italic">"{aiResponse}"</p>
+                )}
+            </div>
+        </Card>
+    );
+};
+
 const BudgetsView: React.FC = () => {
     const context = useContext(DataContext);
     if (!context) throw new Error("BudgetsView must be within a DataProvider.");
@@ -72,16 +125,43 @@ const BudgetsView: React.FC = () => {
     const [selectedBudget, setSelectedBudget] = useState<BudgetCategory | null>(null);
     const [isNewBudgetModalOpen, setIsNewBudgetModalOpen] = useState(false);
 
+    const historicalData = useMemo(() => {
+        const data: {[key: string]: any} = {};
+        transactions.forEach(tx => {
+            if(tx.type === 'expense') {
+                const month = new Date(tx.date).toLocaleString('default', { month: 'short' });
+                if(!data[month]) data[month] = {name: month};
+                data[month][tx.category] = (data[month][tx.category] || 0) + tx.amount;
+            }
+        });
+        return Object.values(data);
+    }, [transactions]);
+
+
     return (
         <>
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-3xl font-bold text-white tracking-wider">Budgets</h2>
+                    <h2 className="text-3xl font-bold text-white tracking-wider">Budgets (Allocatra)</h2>
                     <button onClick={() => setIsNewBudgetModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                         New Budget
                     </button>
                 </div>
+
+                <AIConsejero budgets={budgets} />
+                
+                <Card title="Historical Spending by Category">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={historicalData}>
+                            <XAxis dataKey="name" stroke="#9ca3af" />
+                            <YAxis stroke="#9ca3af" />
+                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
+                            <Legend />
+                            {budgets.map(b => <Bar key={b.id} dataKey={b.name} stackId="a" fill={b.color} />)}
+                        </BarChart>
+                    </ResponsiveContainer>
+                </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {budgets.map(budget => {

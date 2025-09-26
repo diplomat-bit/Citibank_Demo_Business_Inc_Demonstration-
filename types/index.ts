@@ -6,3 +6,4 @@
 // continue to work without any changes.
 
 export * from './models';
+export * from './models/megadashboard';

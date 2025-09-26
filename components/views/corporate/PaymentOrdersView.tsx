@@ -3,6 +3,7 @@ import React, { useContext, useState, useMemo } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import { PaymentOrder, PaymentOrderStatus } from '../../../types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const PaymentOrdersView: React.FC = () => {
     const context = useContext(DataContext);
@@ -16,6 +17,14 @@ const PaymentOrdersView: React.FC = () => {
         if (filter === 'all') return paymentOrders;
         return paymentOrders.filter(po => po.status === filter);
     }, [paymentOrders, filter]);
+    
+    const chartData = useMemo(() => {
+        const statusCounts = paymentOrders.reduce((acc, po) => {
+            acc[po.status] = (acc[po.status] || 0) + po.amount;
+            return acc;
+        }, {} as Record<PaymentOrderStatus, number>);
+        return Object.entries(statusCounts).map(([name, value]) => ({ name: name.replace('_', ' '), value }));
+    }, [paymentOrders]);
 
     const StatusBadge: React.FC<{ status: PaymentOrderStatus }> = ({ status }) => {
         const colors = {
@@ -54,6 +63,18 @@ const PaymentOrdersView: React.FC = () => {
         <>
             <div className="space-y-6">
                 <h2 className="text-3xl font-bold text-white tracking-wider">Payment Orders</h2>
+                
+                <Card title="Payment Volume by Status">
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={chartData}>
+                            <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                            <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `$${(v/1000)}k`} />
+                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} formatter={(v: number) => `$${v.toLocaleString()}`}/>
+                            <Bar dataKey="value" fill="#8884d8" name="Total Amount" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </Card>
+                
                 <Card>
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex space-x-2 p-1 bg-gray-900/50 rounded-lg">

@@ -3,6 +3,7 @@ import React, { useContext, useMemo, useState } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import { Invoice, InvoiceStatus } from '../../../types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const InvoicesView: React.FC = () => {
     const context = useContext(DataContext);
@@ -15,6 +16,20 @@ const InvoicesView: React.FC = () => {
         if (filter === 'all') return invoices;
         return invoices.filter(i => i.status === filter);
     }, [invoices, filter]);
+    
+    const agingData = useMemo(() => {
+        const today = new Date();
+        const buckets = { '0-30': 0, '31-60': 0, '61-90': 0, '90+': 0 };
+        invoices.filter(i => i.status === 'overdue' || i.status === 'unpaid').forEach(inv => {
+            const dueDate = new Date(inv.dueDate);
+            const daysOverdue = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
+            if (daysOverdue <= 30) buckets['0-30'] += inv.amount;
+            else if (daysOverdue <= 60) buckets['31-60'] += inv.amount;
+            else if (daysOverdue <= 90) buckets['61-90'] += inv.amount;
+            else buckets['90+'] += inv.amount;
+        });
+        return Object.entries(buckets).map(([name, value]) => ({ name, value }));
+    }, [invoices]);
     
     const StatusBadge: React.FC<{ status: InvoiceStatus }> = ({ status }) => {
         const colors = {
@@ -29,6 +44,18 @@ const InvoicesView: React.FC = () => {
     return (
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white tracking-wider">Invoices</h2>
+            
+            <Card title="Accounts Receivable Aging">
+                <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={agingData}>
+                        <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                        <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `$${(v/1000)}k`} />
+                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} formatter={(v: number) => `$${v.toLocaleString()}`}/>
+                        <Bar dataKey="value" fill="#ef4444" name="Amount Due" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </Card>
+            
             <Card>
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex space-x-2 p-1 bg-gray-900/50 rounded-lg">

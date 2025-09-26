@@ -3,12 +3,19 @@ import React, { useContext, useState } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import type { RewardItem } from '../../../types';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const REWARD_ICONS: { [key: string]: React.FC<{ className?: string }> } = {
     cash: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
     gift: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4H5z" /></svg>,
     leaf: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
 };
+
+const mockPointsHistory = [
+    { month: 'Jan', earned: 12000 }, { month: 'Feb', earned: 15000 },
+    { month: 'Mar', earned: 13000 }, { month: 'Apr', earned: 18000 },
+    { month: 'May', earned: 22000 }, { month: 'Jun', earned: 25000 },
+];
 
 
 const RewardsHubView: React.FC = () => {
@@ -55,7 +62,16 @@ const RewardsHubView: React.FC = () => {
                     </div>
                 </Card>
             </div>
-            
+             <Card title="Points Earned Over Time">
+                <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={mockPointsHistory}>
+                        <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
+                        <YAxis stroke="#9ca3af" fontSize={12} />
+                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
+                        <Line type="monotone" dataKey="earned" stroke="#8884d8" strokeWidth={2} name="Points Earned" />
+                    </LineChart>
+                </ResponsiveContainer>
+            </Card>
             <Card title="Redeem Your Points">
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {rewardItems.map(item => {

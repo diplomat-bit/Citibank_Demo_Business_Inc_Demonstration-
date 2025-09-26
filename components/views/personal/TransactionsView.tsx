@@ -1,3 +1,4 @@
+// components/views/personal/TransactionsView.tsx
 import React, { useContext, useState, useMemo } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
@@ -128,6 +129,16 @@ const TransactionsView: React.FC = () => {
             });
     }, [transactions, filter, sort, searchTerm]);
     
+    const monthlyOverviewData = useMemo(() => {
+        const monthlyData: {[key: string]: { income: number, expense: number }} = {};
+        transactions.forEach(tx => {
+            const month = new Date(tx.date).toLocaleString('default', { month: 'short', year: '2-digit' });
+            if (!monthlyData[month]) monthlyData[month] = { income: 0, expense: 0 };
+            monthlyData[month][tx.type] += tx.amount;
+        });
+        return Object.entries(monthlyData).map(([name, values]) => ({ name, ...values })).reverse();
+    }, [transactions]);
+
     // Schema for Subscription Hunter
     const subscriptionSchema = {
         type: Type.OBJECT,
@@ -149,6 +160,19 @@ const TransactionsView: React.FC = () => {
     return (
         <>
             <div className="space-y-6">
+                 <h2 className="text-3xl font-bold text-white tracking-wider">Transaction History (FlowMatrix)</h2>
+                 <Card title="Monthly Spending Overview">
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={monthlyOverviewData}>
+                            <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                            <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `$${(v/1000)}k`} />
+                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
+                            <Legend />
+                            <Bar dataKey="income" fill="#10b981" name="Total Income" />
+                            <Bar dataKey="expense" fill="#ef4444" name="Total Expense" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                 </Card>
                  <Card title="Plato's Intelligence Suite" isCollapsible>
                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <AITransactionWidget title="Subscription Hunter" prompt="Analyze these transactions to find potential recurring subscriptions the user might have forgotten about. Look for repeated payments to the same merchant around the same time each month." transactions={transactions} responseSchema={subscriptionSchema}>
