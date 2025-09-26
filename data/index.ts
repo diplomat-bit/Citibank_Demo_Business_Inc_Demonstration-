@@ -46,3 +46,4 @@ export * from './platform';
 export * from './megadashboard';
 export * from './accessLogs';
 export * from './fraudCases';
+export * from './platform/mlModels'; // Re-exporting for Predictive Models view

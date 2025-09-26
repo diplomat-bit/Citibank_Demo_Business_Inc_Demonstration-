@@ -48,15 +48,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
                 </div>
                 <div className="flex-1 overflow-y-auto">
                     <nav className="flex-1 px-2 py-4 space-y-1">
+                        {/* FIX: Refactored conditional rendering logic to correctly narrow the `NavItem` union type. Using the `in` operator on the `id` property is a robust type guard for the `NavLink` type. */}
                         {NAV_ITEMS.map((item, index) => {
-                            // FIX: Replaced separate `if` statements with an `if/else if/else` structure.
-                            // This provides clearer type narrowing for the TypeScript compiler,
-                            // resolving the "type 'never'" errors on item properties.
-                            if (item.type === 'divider') {
-                                return <hr key={`divider-${index}`} className="my-2 border-gray-700/50" />;
-                            } else if (item.type === 'header') {
-                                return <h3 key={`header-${item.label}`} className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.label}</h3>;
-                            } else {
+                            // The `NavLink` type is the only one with an `id` property, so this is a reliable type guard.
+                            if ('id' in item) {
                                 return (
                                     <a
                                         key={item.id}
@@ -73,7 +68,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
                                         <span className="mx-4 font-medium">{item.label}</span>
                                     </a>
                                 );
+                            } else if (item.type === 'divider') {
+                                return <hr key={`divider-${index}`} className="my-2 border-gray-700/50" />;
+                            } else if (item.type === 'header') {
+                                return <h3 key={`header-${item.label}`} className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.label}</h3>;
                             }
+                            return null;
                         })}
                     </nav>
                 </div>

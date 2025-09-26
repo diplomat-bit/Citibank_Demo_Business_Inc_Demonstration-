@@ -1,30 +1,19 @@
+// components/views/megadashboard/analytics/RiskScoringView.tsx
 import React from 'react';
 import Card from '../../../Card';
 
 const RiskScoringView: React.FC = () => {
-    const features = [
-        "AI contextual risk scoring per user",
-        "Predictive credit scoring",
-        "Network-based entity risk detection",
-        "Real-time fraud risk dashboard",
-        "Smart financial health indicators",
-        "Generative risk assessment reports",
-        "AI clustering of high-risk groups",
-        "Predictive trend analysis",
-        "Dynamic regulatory compliance scoring",
-        "AI correlation with external data",
-    ];
-
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Risk Scoring</h2>
-            <Card title="AI-Powered Features">
-                <ul className="list-disc list-inside space-y-2 text-gray-300">
-                    {features.map((feature, index) => (
-                        <li key={index}>{feature}</li>
-                    ))}
-                </ul>
+            <h2 className="text-3xl font-bold text-white tracking-wider">Risk Scoring Engine</h2>
+            <Card title="Mission Brief">
+                <p className="text-gray-400">A centralized, AI-native engine for calculating real-time risk scores for users, transactions, and corporate entities. Our models synthesize thousands of data points to provide a holistic and predictive risk assessment, moving beyond outdated, static scoring methods.</p>
             </Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card title="Contextual Risk Scoring"><p>Generate dynamic risk scores that adapt based on user behavior, transaction context, and real-time market signals.</p></Card>
+                <Card title="Predictive Credit Scoring"><p>Use machine learning to forecast future creditworthiness with greater accuracy than traditional FICO models.</p></Card>
+                <Card title="Generative Risk Reports"><p>Automatically generate natural-language reports explaining the factors behind any given risk score, providing transparent and auditable results.</p></Card>
+            </div>
         </div>
     );
 };
