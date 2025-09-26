@@ -184,7 +184,7 @@ const CardHeader: React.FC<{
   toggleCollapse: () => void;
   actions?: CardHeaderAction[];
 }> = ({ title, titleTooltip, subtitle, isCollapsible, isCollapsed, toggleCollapse, actions }) => {
-  if (!title && !subtitle && (!actions || actions.length === 0)) {
+  if (!title && !subtitle && (!actions || actions.length === 0) && !isCollapsible) {
     return null; // Render no header if there's no title, subtitle and no actions.
   }
 
@@ -266,12 +266,85 @@ const CardFooter: React.FC<{ children?: ReactNode }> = ({ children }) => {
 // MAIN CARD COMPONENT
 // ================================================================================================
 
+// FIX: This file was truncated. The component implementation has been completed,
+// including state management, prop handling, and the final export statement.
 const Card: React.FC<CardProps> = ({
   title,
   titleTooltip,
   subtitle,
   children,
   className = '',
-  variant,
-  padding,
-  header
+  variant = 'default',
+  padding = 'md',
+  headerActions,
+  footerContent,
+  isCollapsible = false,
+  defaultCollapsed = false,
+  isLoading = false,
+  errorState = null,
+  onRetry,
+  onClick,
+  loadingIndicator,
+}) => {
+    const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed && isCollapsible);
+
+    const toggleCollapse = useCallback(() => {
+        if (isCollapsible) {
+        setIsCollapsed(prev => !prev);
+        }
+    }, [isCollapsible]);
+
+    const baseClasses = 'w-full';
+    // FIX: Explicitly cast variant and padding to their respective literal types to resolve a compiler error where they were being inferred as generic strings.
+    const variantClasses = getVariantClasses(variant as CardVariant);
+    const mainPaddingClass = padding !== 'none' ? getPaddingClasses(padding as 'sm' | 'md' | 'lg' | 'none') : '';
+    const clickableClasses = onClick ? 'cursor-pointer' : '';
+
+    const contentWrapperClass = padding === 'none' ? '' : 'card-content-wrapper';
+
+
+    const cardContent = (
+        <>
+        {isLoading ? (
+            loadingIndicator || <LoadingSkeleton />
+        ) : errorState ? (
+            <ErrorDisplay message={errorState} onRetry={onRetry} />
+        ) : (
+            <div className={contentWrapperClass}>
+              <CardHeader
+                  title={title}
+                  titleTooltip={titleTooltip}
+                  subtitle={subtitle}
+                  isCollapsible={isCollapsible}
+                  isCollapsed={isCollapsed}
+                  toggleCollapse={toggleCollapse}
+                  actions={headerActions}
+              />
+              {!isCollapsed && (
+                  <div className="card-content">
+                      {children}
+                  </div>
+              )}
+               {(!isCollapsed && footerContent) && (
+                 <CardFooter>
+                    {footerContent}
+                 </CardFooter>
+               )}
+            </div>
+        )}
+        </>
+    );
+
+    return (
+        <div 
+            className={`${baseClasses} ${variantClasses} ${className} ${clickableClasses}`}
+            onClick={onClick}
+        >
+             <div className={mainPaddingClass}>
+                {cardContent}
+            </div>
+        </div>
+    );
+};
+
+export default Card;

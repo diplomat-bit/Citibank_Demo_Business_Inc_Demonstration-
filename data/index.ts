@@ -38,13 +38,11 @@ export * from './marketMovers';
 export * from './notifications';
 export * from './apiStatus';
 
-// Platform & Admin Data
-export * from './platform/index';
-export * from './admin/index';
+// Admin & Platform Data
+export * from './admin';
+export * from './platform';
 
 // Mega Dashboard Data
-export * from './megadashboard/index';
-// FIX: Export missing mock data files used by Mega Dashboard views.
+export * from './megadashboard';
 export * from './accessLogs';
 export * from './fraudCases';
-// FIX: Removed redundant 'mlModels' export as it's now correctly exported via the platform barrel file.

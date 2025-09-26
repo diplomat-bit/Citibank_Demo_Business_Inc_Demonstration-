@@ -129,7 +129,7 @@ const UserInsightsView: React.FC = () => {
                         <RadialBar 
                             minAngle={15} 
                             background 
-                            {/* FIX: Corrected typo from `clockWise` to `clockwise` to match the recharts API. */}
+                            // FIX: Corrected typo from `clockWise` to `clockwise` to match the recharts API.
                             clockwise 
                             dataKey="value" 
                         />

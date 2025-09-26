@@ -5,4 +5,4 @@
 // and maintainability while ensuring that all existing component imports
 // continue to work without any changes.
 
-export * from './models';
+export * from './types/models';

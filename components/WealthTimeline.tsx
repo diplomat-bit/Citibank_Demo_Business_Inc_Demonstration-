@@ -86,7 +86,7 @@ const WealthTimeline: React.FC = () => {
                 color: '#e5e7eb',
               }}
               // The 'name' property can be a number, so it must be cast to a string before using string methods.
-              formatter={(value: number, name: string) => {
+              formatter={(value: number, name: string | number) => {
                   if (value === null || value === undefined) return null;
                   const formattedValue = `$${Number(value).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                   // FIX: The 'name' property from the formatter can sometimes be a number, causing a runtime error on string method calls.

@@ -59,7 +59,8 @@ const AIAdStudioView: React.FC = () => {
 
             setGenerationState('polling');
             
-            const intervalId = setInterval(() => {
+            // FIX: window.setInterval returns a number in browsers
+            const intervalId: number = window.setInterval(() => {
                 setPollingMessageIndex(prev => (prev + 1) % pollingMessages.length);
             }, 2500);
             setPollingIntervalId(intervalId);

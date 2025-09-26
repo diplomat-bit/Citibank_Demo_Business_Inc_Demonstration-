@@ -11,7 +11,9 @@ import { View } from './types';
 // ================================================================================================
 // TYPE DEFINITIONS FOR NAVIGATION
 // ================================================================================================
-type NavLink = { id: View; label: string; icon: React.ReactElement; type?: never };
+// FIX: Added `type?: never` to NavLink to fix type inference issues in Sidebar.tsx.
+// This ensures that the 'type' property can be safely accessed on any NavItem.
+type NavLink = { id: View; label: string; icon: React.ReactElement; type?: never; };
 type NavHeader = { type: 'header'; label: string; id?: never; icon?: never };
 type NavDivider = { type: 'divider'; id?: never; label?: never; icon?: never };
 export type NavItem = NavLink | NavHeader | NavDivider;
