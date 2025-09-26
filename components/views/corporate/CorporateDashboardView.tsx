@@ -6,11 +6,11 @@ import { View } from '../../../types';
 import { GoogleGenAI } from '@google/genai';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
-interface CorporateDashboardProps {
+interface CorporateDashboardViewProps {
     setActiveView: (view: View) => void;
 }
 
-const CorporateDashboardView: React.FC<CorporateDashboardProps> = ({ setActiveView }) => {
+const CorporateDashboardView: React.FC<CorporateDashboardViewProps> = ({ setActiveView }) => {
     const context = useContext(DataContext);
     const [aiInsight, setAiInsight] = useState('');
     const [isInsightLoading, setIsInsightLoading] = useState(false);
