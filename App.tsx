@@ -6,25 +6,25 @@ import { DataContext } from './context/DataContext';
 import FeatureGuard from './components/FeatureGuard';
 
 // Personal Finance Views
-import Dashboard from './components/Dashboard';
-import TransactionsView from './components/TransactionsView';
-import SendMoneyView from './components/SendMoneyView';
-import BudgetsView from './components/BudgetsView';
-import InvestmentsView from './components/InvestmentsView';
+import DashboardView from './components/views/personal/DashboardView';
+import TransactionsView from './components/views/personal/TransactionsView';
+import SendMoneyView from './components/views/personal/SendMoneyView';
+import BudgetsView from './components/views/personal/BudgetsView';
+import InvestmentsView from './components/views/personal/InvestmentsView';
 import CryptoView from './components/views/personal/CryptoView';
 import FinancialGoalsView from './components/views/personal/FinancialGoalsView';
-import MarketplaceView from './components/MarketplaceView';
+import MarketplaceView from './components/views/personal/MarketplaceView';
 import PersonalizationView from './components/views/personal/PersonalizationView';
 import CardCustomizationView from './components/views/personal/CardCustomizationView';
 import RewardsHubView from './components/views/personal/RewardsHubView';
 import CreditHealthView from './components/views/personal/CreditHealthView';
-import SecurityView from './components/SecurityView';
+import SecurityView from './components/views/personal/SecurityView';
 import OpenBankingView from './components/views/personal/OpenBankingView';
 import SettingsView from './components/views/personal/SettingsView';
 
 // AI & Platform Views
-import AIAdvisorView from './components/AIAdvisorView';
-import QuantumWeaverView from './components/QuantumWeaverView';
+import AIAdvisorView from './components/views/platform/AIAdvisorView';
+import QuantumWeaverView from './components/views/platform/QuantumWeaverView';
 import AIAdStudioView from './components/views/platform/AIAdStudioView';
 import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
@@ -195,7 +195,7 @@ const App: React.FC = () => {
     const renderView = () => {
         switch (activeView) {
             // Personal Finance
-            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><Dashboard setActiveView={handleSetView} /></FeatureGuard>;
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;
@@ -351,7 +351,7 @@ const App: React.FC = () => {
             case View.InfraIncidentResponse: return <FeatureGuard view={View.InfraIncidentResponse}><IncidentResponseView /></FeatureGuard>;
             case View.InfraBackupRecovery: return <FeatureGuard view={View.InfraBackupRecovery}><BackupRecoveryView /></FeatureGuard>;
 
-            default: return <Dashboard setActiveView={handleSetView} />;
+            default: return <DashboardView setActiveView={handleSetView} />;
         }
     };
 

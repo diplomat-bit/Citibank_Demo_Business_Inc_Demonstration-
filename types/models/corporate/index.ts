@@ -4,7 +4,6 @@ export * from './anomaly-entity-type';
 export * from './anomaly-severity';
 export * from './anomaly-status';
 export * from './compliance-case';
-export * from './compliance-rule';
 export * from './corporate-card';
 export * from './corporate-card-controls';
 export * from './corporate-transaction';

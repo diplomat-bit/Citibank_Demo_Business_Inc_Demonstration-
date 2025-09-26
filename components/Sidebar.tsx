@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from '../types';
-import { NAV_ITEMS } from '../constants';
+import { NAV_ITEMS, NavItem } from '../constants';
 
 interface SidebarProps {
     activeView: View;
@@ -49,33 +49,25 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
                 <div className="flex-1 overflow-y-auto">
                     <nav className="flex-1 px-2 py-4 space-y-1">
                         {NAV_ITEMS.map((item, index) => {
-                            // @ts-ignore
                             if (item.type === 'divider') {
                                 return <hr key={`divider-${index}`} className="my-2 border-gray-700/50" />;
                             }
-                            // @ts-ignore
                             if (item.type === 'header') {
-                                // @ts-ignore
                                 return <h3 key={`header-${item.label}`} className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.label}</h3>;
                             }
                             return (
                                 <a
-                                    // @ts-ignore
                                     key={item.id}
                                     href="#"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        // @ts-ignore
                                         handleNavClick(item.id);
                                     }}
                                     className={`flex items-center px-4 py-2 text-gray-300 transition-colors duration-200 transform rounded-md hover:bg-gray-700/50 hover:text-white ${
-                                        // @ts-ignore
                                         activeView === item.id ? 'bg-cyan-500/20 text-cyan-300 border-l-4 border-cyan-400 pl-3' : ''
                                     }`}
                                 >
-                                    {/* @ts-ignore */}
                                     {item.icon}
-                                     {/* @ts-ignore */}
                                     <span className="mx-4 font-medium">{item.label}</span>
                                 </a>
                             );

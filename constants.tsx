@@ -9,6 +9,15 @@ import React from 'react';
 import { View } from './types';
 
 // ================================================================================================
+// TYPE DEFINITIONS FOR NAVIGATION
+// ================================================================================================
+type NavLink = { id: View; label: string; icon: React.ReactElement; type?: never };
+type NavHeader = { type: 'header'; label: string; id?: never; icon?: never };
+type NavDivider = { type: 'divider'; id?: never; label?: never; icon?: never };
+export type NavItem = NavLink | NavHeader | NavDivider;
+
+
+// ================================================================================================
 // ICON COMPONENTS
 // ================================================================================================
 // Each icon is defined as a full React component for clarity, accessibility, and ease of use.
@@ -119,7 +128,7 @@ const ForgeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
  * Adding a new item here will automatically add it to the UI.
  * Special types 'divider' and 'header' are used for visual separation.
  */
-export const NAV_ITEMS = [
+export const NAV_ITEMS: NavItem[] = [
     // --- Personal Finance Suite ---
     { id: View.Dashboard, label: 'Dashboard', icon: <DashboardIcon /> },
     { id: View.TheNexus, label: 'The Nexus', icon: <NexusIcon /> },
