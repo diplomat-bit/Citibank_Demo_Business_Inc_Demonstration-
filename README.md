@@ -2,11 +2,11 @@
 # Project Quantum Core: A New Financial Operating System
 
 **A Manifesto by James Burvel O’Callaghan III**  
-*President, Demo Bank Business Inc.*
+*President, Citibank Demo Business Inc.*
 
 ---
 
-## To the Investors, the Visionaries, the Builders of Tomorrow:
+## To the the Builders of Tomorrow:
 
 They asked me to build a demo. A simple proof-of-concept. They failed to understand the assignment.
 
