@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import Card from '../../Card';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const exampleQueries = [
     "FROM transactions SELECT description, amount WHERE amount > 100 AND category = 'Shopping' ORDER BY date DESC LIMIT 10;",
     "FROM accounts GET balance, type, name;",
     "FROM anomalies SELECT severity, details WHERE riskScore > 80;"
 ];
-
 const mockResults = {
     headers: ['description', 'amount'],
     rows: [

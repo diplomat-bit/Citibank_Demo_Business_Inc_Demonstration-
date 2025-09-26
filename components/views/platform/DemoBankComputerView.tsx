@@ -2,18 +2,17 @@ import React from 'react';
 import Card from '../../Card';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const cpuUtilizationData = Array.from({ length: 24 }, (_, i) => ({
   hour: `${i}:00`,
   'us-east-1': 50 + Math.sin(i / 3) * 20 + Math.random() * 10,
   'eu-west-2': 40 + Math.sin(i / 4) * 15 + Math.random() * 10,
 }));
-
 const networkData = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
   'Network In (Gbps)': 10 + Math.random() * 5,
   'Network Out (Gbps)': 8 + Math.random() * 4,
 }));
-
 const vmInstances = [
     { id: 1, name: 'web-prod-01', region: 'us-east-1', type: 'c5.2xlarge', status: 'Running' },
     { id: 2, name: 'web-prod-02', region: 'us-east-1', type: 'c5.2xlarge', status: 'Running' },

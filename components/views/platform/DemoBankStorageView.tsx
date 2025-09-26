@@ -2,15 +2,12 @@ import React from 'react';
 import Card from '../../Card';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const dataGrowthData = [
-    { name: 'Jan', size: 120 },
-    { name: 'Feb', size: 150 },
-    { name: 'Mar', size: 180 },
-    { name: 'Apr', size: 220 },
-    { name: 'May', size: 280 },
-    { name: 'Jun', size: 350 },
+    { name: 'Jan', size: 120 }, { name: 'Feb', size: 150 },
+    { name: 'Mar', size: 180 }, { name: 'Apr', size: 220 },
+    { name: 'May', size: 280 }, { name: 'Jun', size: 350 },
 ];
-
 const mockFiles = [
     { name: 'production-backups/', type: 'folder', size: '150 TB', modified: '2024-07-23' },
     { name: 'analytics-datasets/', type: 'folder', size: '80 TB', modified: '2024-07-22' },
@@ -18,7 +15,6 @@ const mockFiles = [
     { name: 'user-assets/', type: 'folder', size: '75 TB', modified: '2024-07-23' },
     { name: 'archive.zip', type: 'file', size: '2 TB', modified: '2024-06-30' },
 ];
-
 const FolderIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>;
 const FileIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>;
 

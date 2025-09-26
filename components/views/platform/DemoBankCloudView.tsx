@@ -2,19 +2,18 @@ import React from 'react';
 import Card from '../../Card';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const usageData = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
   cpu: 40 + Math.random() * 30,
   memory: 55 + Math.random() * 20,
 }));
-
 const costData = [
     { name: 'Compute', cost: 12500 },
     { name: 'Storage', cost: 8500 },
     { name: 'Networking', cost: 4500 },
     { name: 'AI/ML', cost: 15000 },
 ];
-
 const activeServices = [
     { id: 1, name: 'Quantum VM-01', type: 'Compute', status: 'Running' },
     { id: 2, name: 'DataLake-Prod', type: 'Storage', status: 'Available' },

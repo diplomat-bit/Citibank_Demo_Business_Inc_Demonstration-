@@ -1,19 +1,60 @@
 // components/views/platform/DemoBankMediaServicesView.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../../Card';
+import { GoogleGenAI, Type } from "@google/genai";
 
 const DemoBankMediaServicesView: React.FC = () => {
+    const [prompt, setPrompt] = useState("a high-quality preset for 4K streaming with adaptive bitrate");
+    const [generatedProfile, setGeneratedProfile] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerate = async () => {
+        setIsLoading(true);
+        setGeneratedProfile(null);
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const schema = {
+                type: Type.OBJECT,
+                properties: {
+                    profileName: { type: Type.STRING },
+                    codec: { type: Type.STRING },
+                    bitrates: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    framerate: { type: Type.NUMBER }
+                }
+            };
+            const fullPrompt = `Generate a video encoding profile in JSON format based on this requirement: "${prompt}".`;
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
+            setGeneratedProfile(JSON.parse(response.text));
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Media Services</h2>
-            <Card title="Overview">
-                <p className="text-gray-400">A complete suite of tools for broadcast-quality video streaming. Encode, protect, and stream live and on-demand video content to any device.</p>
+             <Card title="AI Encoding Profile Generator">
+                <p className="text-gray-400 mb-4">Describe the encoding requirements for your video.</p>
+                <textarea
+                    value={prompt}
+                    onChange={e => setPrompt(e.target.value)}
+                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                />
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
+                    {isLoading ? 'Generating...' : 'Generate Profile'}
+                </button>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <Card title="Video Encoding"><p>Transcode your video files into various adaptive bitrate formats.</p></Card>
-                 <Card title="Content Protection"><p>Protect your content with studio-grade DRM technologies.</p></Card>
-                 <Card title="Global CDN"><p>Deliver your video content to a global audience with low latency.</p></Card>
-            </div>
+
+            {generatedProfile && (
+                <Card title="Generated Encoding Profile">
+                    <button onClick={() => setGeneratedProfile(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
+                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded">
+                        {JSON.stringify(generatedProfile, null, 2)}
+                    </pre>
+                </Card>
+            )}
         </div>
     );
 };

@@ -2,12 +2,12 @@ import React from 'react';
 import Card from '../../Card';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const authEventsData = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
   success: 1800 + Math.random() * 400,
   failed: 20 + Math.random() * 25,
 }));
-
 const recentSignIns = [
     { id: 1, user: 'visionary@demobank.com', ip: '192.168.1.1', location: 'New York, USA', status: 'Success' },
     { id: 2, user: 'alex.c@quantum.corp', ip: '203.0.113.5', location: 'Tokyo, Japan', status: 'Success' },

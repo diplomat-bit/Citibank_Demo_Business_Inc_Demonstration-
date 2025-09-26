@@ -2,22 +2,16 @@ import React from 'react';
 import Card from '../../Card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const modelPerformanceData = [
-  { name: 'Jan', accuracy: 92.5 },
-  { name: 'Feb', accuracy: 93.1 },
-  { name: 'Mar', accuracy: 92.8 },
-  { name: 'Apr', accuracy: 94.2 },
-  { name: 'May', accuracy: 94.5 },
-  { name: 'Jun', accuracy: 95.1 },
+  { name: 'Jan', accuracy: 92.5 }, { name: 'Feb', accuracy: 93.1 },
+  { name: 'Mar', accuracy: 92.8 }, { name: 'Apr', accuracy: 94.2 },
+  { name: 'May', accuracy: 94.5 }, { name: 'Jun', accuracy: 95.1 },
 ];
-
 const apiUsageData = [
-    { name: 'Vision API', calls: 120000 },
-    { name: 'NLP API', calls: 85000 },
-    { name: 'Translation API', calls: 45000 },
-    { name: 'Prediction API', calls: 250000 },
+    { name: 'Vision API', calls: 120000 }, { name: 'NLP API', calls: 85000 },
+    { name: 'Translation API', calls: 45000 }, { name: 'Prediction API', calls: 250000 },
 ];
-
 const deployedModels = [
     { id: 1, name: 'fraud-detection-v3', endpoint: '...', status: 'Online' },
     { id: 2, name: 'product-recommender-v1.2', endpoint: '...', status: 'Online' },

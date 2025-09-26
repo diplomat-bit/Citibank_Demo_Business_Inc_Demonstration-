@@ -1,20 +1,79 @@
 // components/views/platform/DemoBankBookingsView.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../../Card';
+import { GoogleGenAI } from "@google/genai";
+
+// NOTE: In a real app, this data would come from a dedicated file e.g., /data/platform/bookingsData.ts
+const appointments = [
+    { time: '10:00 AM', service: 'Financial Consultation', client: 'Alex Chen', status: 'Confirmed' },
+    { time: '11:00 AM', service: 'API Integration Support', client: 'Brenda Rodriguez', status: 'Confirmed' },
+    { time: '02:00 PM', service: 'Mortgage Application Review', client: 'Charles Davis', status: 'Tentative' },
+];
 
 const DemoBankBookingsView: React.FC = () => {
+    const [isBookingModalOpen, setBookingModalOpen] = useState(false);
+    const [bookingDetails, setBookingDetails] = useState({ service: 'Financial Consultation', clientName: 'The Visionary', time: 'tomorrow at 3:00 PM' });
+    const [confirmationMsg, setConfirmationMsg] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerate = async () => {
+        setIsLoading(true);
+        setConfirmationMsg('');
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const prompt = `Generate a friendly and professional booking confirmation message for a client. Service: "${bookingDetails.service}", Client Name: "${bookingDetails.clientName}", Time: "${bookingDetails.time}".`;
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+            setConfirmationMsg(response.text);
+        } catch (error) {
+            setConfirmationMsg("Error generating confirmation.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
     return (
-        <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Bookings</h2>
-            <Card title="Overview">
-                <p className="text-gray-400">A comprehensive scheduling and appointment management platform. Integrate calendars, manage services, and automate client communications.</p>
-            </Card>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <Card title="Services Catalog"><p>Define and manage bookable services with custom durations and pricing.</p></Card>
-                 <Card title="Team Calendars"><p>Sync team availability and manage schedules across the organization.</p></Card>
-                 <Card title="Automated Reminders"><p>Reduce no-shows with automated email and SMS reminders for clients.</p></Card>
+        <>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Bookings</h2>
+                    <button onClick={() => setBookingModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">New Booking</button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="text-center"><p className="text-3xl font-bold text-white">15</p><p className="text-sm text-gray-400 mt-1">Bookings Today</p></Card>
+                    <Card className="text-center"><p className="text-3xl font-bold text-white">92%</p><p className="text-sm text-gray-400 mt-1">Show Rate</p></Card>
+                    <Card className="text-center"><p className="text-3xl font-bold text-white">3</p><p className="text-sm text-gray-400 mt-1">Services Offered</p></Card>
+                </div>
+
+                <Card title="Today's Schedule">
+                    <div className="space-y-3">
+                        {appointments.map((a, i) => (
+                            <div key={i} className="p-3 bg-gray-800/50 rounded-lg flex justify-between items-center">
+                                <div><p className="font-semibold text-white">{a.service}</p><p className="text-sm text-gray-400">{a.time} - {a.client}</p></div>
+                                <span className={`px-2 py-1 text-xs rounded-full ${a.status === 'Confirmed' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>{a.status}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
             </div>
-        </div>
+            {isBookingModalOpen && (
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setBookingModalOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full" onClick={e=>e.stopPropagation()}>
+                        <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Confirmation Generator</h3></div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-sm text-gray-400">Simulate a booking, then generate an AI confirmation message.</p>
+                            <select value={bookingDetails.service} onChange={e => setBookingDetails(b => ({...b, service: e.target.value}))} className="w-full bg-gray-700/50 p-2 rounded text-white">
+                                <option>Financial Consultation</option>
+                                <option>API Integration Support</option>
+                                <option>Mortgage Application Review</option>
+                            </select>
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Confirmation'}</button>
+                            { (isLoading || confirmationMsg) && <Card title="Generated Message"><div className="min-h-[6rem] text-sm text-gray-300">{isLoading ? 'Generating...' : confirmationMsg}</div></Card>}
+                        </div>
+                    </div>
+                 </div>
+            )}
+        </>
     );
 };
 

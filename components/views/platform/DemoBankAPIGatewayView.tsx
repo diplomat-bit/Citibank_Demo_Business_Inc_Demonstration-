@@ -2,17 +2,16 @@ import React from 'react';
 import Card from '../../Card';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart, Bar, Line } from 'recharts';
 
+// In a real app, this data would come from a dedicated file or a live API call
 const trafficData = Array.from({ length: 24 }, (_, i) => ({
   hour: `${i}:00`,
   requests: 1500 + Math.sin(i / 4) * 500 + Math.random() * 300,
 }));
-
 const latencyData = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
   p95: 120 + Math.random() * 20,
   p99: 180 + Math.random() * 40,
 }));
-
 const endpoints = [
     { id: 1, method: 'GET', path: '/v1/users/me', avgLatency: '85ms', errorRate: '0.1%', status: 'Healthy' },
     { id: 2, method: 'POST', path: '/v1/transactions', avgLatency: '120ms', errorRate: '0.3%', status: 'Healthy' },

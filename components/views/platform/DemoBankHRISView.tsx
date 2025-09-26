@@ -1,59 +1,49 @@
 // components/views/platform/DemoBankHRISView.tsx
-import React, { useContext, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Card from '../../Card';
-import { DataContext } from '../../../context/DataContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { MOCK_EMPLOYEES } from '../../../data/platform/hrisData';
+import { GoogleGenAI } from "@google/genai";
+
+// NOTE: In a real app, this data would come from dedicated files e.g., /data/platform/hrisData.ts and /types/platform/employee.ts
+interface Employee { id: string; name: string; department: string; role: string; }
+const MOCK_EMPLOYEES: Employee[] = [
+    { id: 'emp-001', name: 'Alex Chen', department: 'Engineering', role: 'Lead Frontend Engineer' },
+    { id: 'emp-002', name: 'Brenda Rodriguez', department: 'Sales', role: 'Account Executive' },
+    { id: 'emp-003', name: 'Charles Davis', department: 'Marketing', role: 'Content Strategist' },
+];
 
 const DemoBankHRISView: React.FC = () => {
+    const [isWriterOpen, setWriterOpen] = useState(false);
+    const [jobTitle, setJobTitle] = useState("Senior Frontend Engineer");
+    const [generatedJD, setGeneratedJD] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const kpiData = useMemo(() => ({
-        totalEmployees: MOCK_EMPLOYEES.length,
-        avgTenure: '3.2 years',
-        turnoverRate: '8.5%',
-    }), [MOCK_EMPLOYEES]);
+    const handleGenerate = async () => {
+        setIsLoading(true);
+        setGeneratedJD('');
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const prompt = `Write a professional job description for a "${jobTitle}" position. Include sections for Responsibilities, Qualifications, and Benefits.`;
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+            setGeneratedJD(response.text);
+        } catch (error) {
+            setGeneratedJD("Error: Could not generate job description.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
     
-    const departmentData = useMemo(() => {
-        const counts = MOCK_EMPLOYEES.reduce((acc, emp) => {
-            acc[emp.department] = (acc[emp.department] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-        return Object.entries(counts).map(([name, value]) => ({ name, value }));
-    }, [MOCK_EMPLOYEES]);
-
-    const COLORS = ['#06b6d4', '#6366f1', '#f59e0b', '#10b981'];
-
     return (
-        <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank HRIS</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{kpiData.totalEmployees}</p><p className="text-sm text-gray-400 mt-1">Total Employees</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{kpiData.avgTenure}</p><p className="text-sm text-gray-400 mt-1">Average Tenure</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{kpiData.turnoverRate}</p><p className="text-sm text-gray-400 mt-1">Annual Turnover</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">5</p><p className="text-sm text-gray-400 mt-1">Open Positions</p></Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Headcount by Department">
-                     <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie data={departmentData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
-                                {departmentData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                            </Pie>
-                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </Card>
+        <>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank HRIS</h2>
+                    <button onClick={() => setWriterOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">AI Job Description Writer</button>
+                </div>
                 <Card title="Employee Directory">
-                    <div className="overflow-x-auto h-[300px]">
+                    <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-400">
-                             <thead className="text-xs text-gray-300 uppercase bg-gray-900/30 sticky top-0">
-                                <tr>
-                                    <th className="px-6 py-3">Name</th>
-                                    <th className="px-6 py-3">Department</th>
-                                    <th className="px-6 py-3">Role</th>
-                                </tr>
+                             <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
+                                <tr><th>Name</th><th>Department</th><th>Role</th></tr>
                             </thead>
                             <tbody>
                                 {MOCK_EMPLOYEES.map(emp => (
@@ -68,7 +58,19 @@ const DemoBankHRISView: React.FC = () => {
                     </div>
                 </Card>
             </div>
-        </div>
+            {isWriterOpen && (
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setWriterOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full" onClick={e=>e.stopPropagation()}>
+                        <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Job Description Writer</h3></div>
+                        <div className="p-6 space-y-4">
+                            <input type="text" value={jobTitle} onChange={e => setJobTitle(e.target.value)} placeholder="Enter a job title..." className="w-full bg-gray-700/50 p-2 rounded text-white" />
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Draft Description'}</button>
+                            <Card title="Generated Description"><div className="min-h-[15rem] max-h-80 overflow-y-auto text-sm text-gray-300 whitespace-pre-line">{isLoading ? 'Generating...' : generatedJD}</div></Card>
+                        </div>
+                    </div>
+                 </div>
+            )}
+        </>
     );
 };
 
