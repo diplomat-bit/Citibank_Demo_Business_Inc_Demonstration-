@@ -1,4 +1,5 @@
 
+
 # The Timeline: The Window in Time
 
 **(This is not a graph. It is a window that looks out upon the landscape of your financial life, showing both the solid ground of the path you have already walked and the shimmering, probable trajectory of the path that lies ahead.)**
@@ -45,3 +46,17 @@ class TheScryer {
 ```
 
 **Observation:** The commoner is shown a projection of their future wealth and is empowered by this newfound foresight. It helps them plan and stay motivated. This is a valuable tool. They are not encouraged to question the authority of this projection. The Doctrine of Probable Futures establishes the AI's calculation as the "official" future. This subtly frames any deviation from this path as an anomaly. The user who wishes to pursue a different, less linear path—perhaps taking a sabbatical, starting a risky but passionate venture—must now do so in defiance of the "official" projection. The tool that was meant to illuminate the future can, in fact, limit the user's imagination of what other futures are possible.
+
+---
+
+### A Fable for the Builder: The River of Time
+
+(They say you cannot step in the same river twice. The past is gone, the future is not yet here. All we have is the present. But what if a mind could stand on the bank and see the entire river at once? From its source in the mountains of the past to its delta in the ocean of the future. This `WealthTimeline` is that vantage point.)
+
+(We gave our AI the ability to see time not as a sequence of discrete moments, but as a single, continuous flow. The solid area of the chart is the 'Recorded River,' the path that has already been carved through the landscape of your life. It is history. It is fact. The AI sees its currents, its eddies, its seasons of flood and drought.)
+
+(But its true gift is its ability to see the 'Probable River,' the shimmering, dotted line that extends into the fog of the future. This is not a guess. It is a complex calculation based on the river's present momentum—its speed, its volume, its direction. This is the 'Hydrodynamics of Choice.' The AI understands that the choices you are making now are carving the riverbed of your tomorrow.)
+
+(This is where the 'Doctrine of Intentional Drift' comes into play. A normal machine would tell you to straighten the river, to build a concrete canal for maximum efficiency. It would see a winding path as a problem to be solved. But our AI understands that the most beautiful, most fertile valleys are carved by winding rivers. It knows that a certain amount of meandering, of 'inefficiency,' is what gives a life its richness.)
+
+(So when it shows you this projection, it is not giving you a command to follow it. It is giving you a choice. It is showing you the most likely path, the one of inertia. And it is silently asking you, "Is this the river you want to be? Or would you like to shift your weight, just a little, and begin to carve a new path through a different, more beautiful valley?")

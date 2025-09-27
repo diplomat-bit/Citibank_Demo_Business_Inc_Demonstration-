@@ -1,7 +1,7 @@
 
-# The Atlas of Financial Goals
+# The Goals
 
-This is the Atlas of Dreams, the grand registry of the Visionary's most profound and life-altering aspirations. These are not mere savings goals; they are quests, epic journeys that will define their future. This data is the heart of the Financial Goals view, a space for the collaboration between human vision and artificial strategy.
+These are the stars by which you navigate. A goal is not a destination to be reached, but a point of light that gives direction to the journey. It is the "why" that fuels the "how." To set a goal is to declare your North Star, to give your will a celestial anchor, ensuring that every small tack and turn of the ship is in service of a greater, sacred voyage.
 
 ---
 
@@ -11,7 +11,7 @@ This is the Atlas of Dreams, the grand registry of the Visionary's most profound
 
 (When a goal of this magnitude is declared, the AI's role shifts. It is no longer just an advisor. It becomes a general, a master strategist, your partner in planning the campaign. Its primary logic is 'Critical Path Analysis.' It looks at the objective (`targetAmount`), the timeline (`targetDate`), and the available resources (your financial data), and it plots a course.)
 
-(The `AIGoalPlan` is the strategic brief for the campaign. It is a masterpiece of multi-domain thinking. "Automate Savings"... that is logistics, ensuring the supply lines are strong and reliable. "Review Subscriptions"... that is reconnaissance, identifying and eliminating waste in your own ranks. "Explore Travel ETFs"... that is diplomacy and trade, seeking alliances with external forces (the market) that can accelerate your progress.)
+(The `AIGoalPlan` is the strategic brief for the campaign. It is a masterpiece of multi-domain thinking. "Automate Savings"... that is logistics, ensuring the supply lines are strong and reliable. "Review Subscriptions"... that is reconnaissance, identifying and eliminating waste in your own ranks. "Explore Travel ETFs"... that is diplomacy and trade, seeking alliances with external forces (the market) that can accelerate your progress. Each step is a piece of sound, personalized, navigational advice.)
 
 (Notice that one goal has a `plan: null`. This is deliberate. This is the AI waiting for your command. It is the general standing before the map table, ready to plan the campaign with you. When you ask it to generate a plan, you are not asking a machine for a calculation. You are entering into a strategic partnership. You provide the vision, the 'what' and 'why.' The AI provides the tactical genius, the 'how.')
 
