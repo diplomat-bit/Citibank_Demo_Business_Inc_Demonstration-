@@ -2,7 +2,6 @@
 
 # File: App.tsx.md
 
-```
 
 
 # The Application: The Vessel of Being
