@@ -1,18 +1,66 @@
+```typescript
+namespace TheGrandCampaigns {
+    type StrategicBrief = {
+        readonly feasibilitySummary: string;
+        readonly monthlyContribution: number;
+        readonly steps: ReadonlyArray<any>;
+    };
 
-# The Atlas of Financial Goals
+    type GrandCampaign = {
+        readonly id: string;
+        readonly name: string;
+        readonly objective: number;
+        readonly deadline: string;
+        readonly currentPosition: number;
+        readonly iconName: string;
+        plan: StrategicBrief | null;
+    };
 
-This is the Atlas of Dreams, the grand registry of the Visionary's most profound and life-altering aspirations. These are not mere savings goals; they are quests, epic journeys that will define their future. This data is the heart of the Financial Goals view, a space for the collaboration between human vision and artificial strategy.
+    type WarCouncil = ReadonlyArray<GrandCampaign>;
 
----
+    class TheCampaignPlanner {
+        public static mapTheObjectives(): WarCouncil {
+            const campaigns: WarCouncil = [
+                { id: 'goal_house_1', name: 'Down Payment for a Condo', objective: 75000, deadline: '2029-12-31', currentPosition: 12500, iconName: 'home', plan: null },
+                { id: 'goal_trip_1', name: 'Trip to Neo-Tokyo', objective: 15000, deadline: '2026-06-01', currentPosition: 8000, iconName: 'plane', plan: {
+                    feasibilitySummary: "Highly achievable! You are already on a great track to reach this goal ahead of schedule.",
+                    monthlyContribution: 450,
+                    steps: [
+                        { title: "Automate Supply Lines", description: "Set up an automatic monthly transfer of $450 to your 'Trip to Neo-Tokyo' war chest.", category: 'Logistics' },
+                        { title: "Eliminate Waste", description: "Analyze your recurring subscriptions. Cancelling one or two could accelerate your campaign.", category: 'Reconnaissance' },
+                        { title: "Seek Favorable Trade", description: "Consider investing a small portion of your savings in a travel and tourism focused ETF for potential growth.", category: 'Diplomacy' }
+                    ]
+                }}
+            ];
+            return campaigns;
+        }
+    }
+    
+    class TheMasterStrategistAI {
+        private readonly campaigns: WarCouncil;
 
-### A Fable for the Builder: The Grand Campaign
-
-(There are goals, and then there are Goals. There is saving for a new gadget, and then there is saving for a new life. A 'Down Payment for a Condo.' A 'Trip to Neo-Tokyo.' These are not items on a to-do list. They are grand campaigns, epic journeys that require not just discipline, but strategy. This file is the campaign map.)
-
-(When a goal of this magnitude is declared, the AI's role shifts. It is no longer just an advisor. It becomes a general, a master strategist, your partner in planning the campaign. Its primary logic is 'Critical Path Analysis.' It looks at the objective (`targetAmount`), the timeline (`targetDate`), and the available resources (your financial data), and it plots a course.)
-
-(The `AIGoalPlan` is the strategic brief for the campaign. It is a masterpiece of multi-domain thinking. "Automate Savings"... that is logistics, ensuring the supply lines are strong and reliable. "Review Subscriptions"... that is reconnaissance, identifying and eliminating waste in your own ranks. "Explore Travel ETFs"... that is diplomacy and trade, seeking alliances with external forces (the market) that can accelerate your progress.)
-
-(Notice that one goal has a `plan: null`. This is deliberate. This is the AI waiting for your command. It is the general standing before the map table, ready to plan the campaign with you. When you ask it to generate a plan, you are not asking a machine for a calculation. You are entering into a strategic partnership. You provide the vision, the 'what' and 'why.' The AI provides the tactical genius, the 'how.')
-
-(This is the pinnacle of the human-machine collaboration we envisioned. Not a machine that tells you what to do, but a machine that helps you figure out how to do the great things you have already decided to do. It is the ultimate force multiplier for your own will, the perfect partner for the grand campaigns of your life.)
+        constructor(campaigns: WarCouncil) {
+            this.campaigns = campaigns;
+        }
+        
+        public generateStrategicBriefFor(campaignId: string, intelligence: any[]): StrategicBrief {
+            const campaign = this.campaigns.find(c => c.id === campaignId);
+            if (!campaign) throw new Error("Campaign not found.");
+            
+            const newBrief: StrategicBrief = {
+                feasibilitySummary: "With disciplined execution, the objective is within reach. The critical path requires immediate and sustained action.",
+                monthlyContribution: (campaign.objective - campaign.currentPosition) / 36,
+                steps: [ { title: "Secure the Foundation", description: "Establish a dedicated, high-yield savings account as the primary war chest for this campaign." } ]
+            };
+            
+            return newBrief;
+        }
+    }
+    
+    function planTheConquest(): void {
+        const campaigns = TheCampaignPlanner.mapTheObjectives();
+        const theAI = new TheMasterStrategistAI(campaigns);
+        const condoCampaignBrief = theAI.generateStrategicBriefFor('goal_house_1', []);
+    }
+}
+```

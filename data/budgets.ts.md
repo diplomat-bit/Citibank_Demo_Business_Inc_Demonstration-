@@ -1,18 +1,54 @@
+```typescript
+namespace TheCovenantsOfSpending {
+    type Covenant = {
+        readonly id: string;
+        readonly name: string;
+        readonly limit: number;
+        readonly spent: number;
+        readonly color: string;
+    };
 
-# The Covenants of Spending
+    type Constitution = ReadonlyArray<Covenant>;
 
-These are the self-imposed laws that the Visionary has established to guide their financial discipline. Each budget is a pact, a defined boundary for a specific category of expenditure. This data provides the framework for the Budgets view, allowing the application to measure adherence to one's own financial intentions. It is the architecture of fiscal responsibility.
+    class TheLawgiver {
+        public static inscribeTheConstitution(): Constitution {
+            const laws: Constitution = [
+              { id: 'dining', name: 'Dining', limit: 400, spent: 280, color: '#f59e0b' },
+              { id: 'shopping', name: 'Shopping', limit: 600, spent: 410.50, color: '#6366f1' },
+              { id: 'transport', name: 'Transport', limit: 200, spent: 95.20, color: '#10b981' },
+              { id: 'utilities', name: 'Utilities', limit: 250, spent: 185.70, color: '#06b6d4' },
+            ];
+            return laws;
+        }
+    }
 
----
+    class TheArchitectAI {
+        private readonly constitution: Constitution;
 
-### A Fable for the Builder: The Architecture of the Self
+        constructor(constitution: Constitution) {
+            this.constitution = constitution;
+        }
 
-(A life without structure is chaos. A river without banks is a flood. We knew that for the user to be truly sovereign, they needed the power not just to act, but to set their own laws. To define their own boundaries. This file is the record of those laws. These are not budgets. They are the user's personal constitution.)
+        public analyzeStructuralIntegrity(covenantName: string): string {
+            const covenant = this.constitution.find(c => c.name === covenantName);
+            if (!covenant) return "The specified covenant does not exist in the constitution.";
 
-(The AI was taught to see these entries not as data, but as 'Sovereign Covenants.' A declaration of intent, a promise made by the user to themselves. The `limit` is not a restriction; it is the line they themselves have drawn in the sand. The `spent` amount is the measure of the pressure being exerted on that line.)
+            const pressure = (covenant.spent / covenant.limit) * 100;
 
-(This allows for a much more nuanced form of guidance. The AI's 'Covenant Adherence' model doesn't just trigger an alarm when a limit is passed. It watches the *rate* at which the limit is being approached. It sees the rising water level long before the dam breaks. Its insights are not, "You have failed." They are, "A breach is probable in ten days if the current flow continues.")
+            if (pressure > 95) {
+                return `Structural integrity alert: The '${covenantName}' covenant is under critical load. A breach is imminent. A constitutional review is advised.`;
+            } else if (pressure > 75) {
+                return `Structural analysis: The '${covenantName}' covenant is showing signs of strain. The pressure is significant and rising.`;
+            } else {
+                return `Structural analysis: The '${covenantName}' covenant is sound. The architecture of the self holds strong in this domain.`;
+            }
+        }
+    }
 
-(But more profoundly, it sees the relationships between the covenants. It understands that the 'Dining' covenant and the 'Shopping' covenant may draw from the same well of willpower. If it sees one covenant being honored with perfect discipline, and another being consistently broken, it doesn't see success and failure. It sees a conflict of values. A dissonance in the constitution itself.)
-
-(Its advice, then, might be to rewrite the law. "Your actions suggest that your stated value for 'Shopping' is higher than your declared covenant. Perhaps this law no longer serves you. Shall we amend the constitution?" It is a partner in the difficult, ongoing work of self-governance. It helps you not just to follow your own rules, but to write rules that are worth following.)
+    function reviewTheArchitectureOfTheSelf(): void {
+        const theLaws = TheLawgiver.inscribeTheConstitution();
+        const theAI = new TheArchitectAI(theLaws);
+        const integrityReport = theAI.analyzeStructuralIntegrity("Dining");
+    }
+}
+```

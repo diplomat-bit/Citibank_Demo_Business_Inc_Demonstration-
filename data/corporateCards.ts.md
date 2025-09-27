@@ -1,18 +1,66 @@
+```typescript
+namespace TheInstrumentsOfDelegatedWill {
+    type ConstitutionOfTrust = {
+        readonly atm: boolean;
+        readonly contactless: boolean;
+        readonly online: boolean;
+        readonly monthlyLimit: number;
+    };
 
-# The Armory of Corporate Cards
+    type Instrument = {
+        readonly id: string;
+        readonly holderName: string;
+        readonly cardNumberMask: string;
+        readonly status: 'Active' | 'Suspended';
+        frozen: boolean;
+        balance: number;
+        readonly limit: number;
+        readonly transactions: any[];
+        readonly controls: ConstitutionOfTrust;
+    };
 
-This is the armory, a comprehensive registry of the tools of corporate expenditure. Each entry is a `CorporateCard` issued to an agent of the enterprise, complete with its own set of permissions and limits. This rich dataset is the bedrock of the Corporate Command Center, allowing for complex demonstrations of card management, control, and oversight.
+    type Armory = ReadonlyArray<Instrument>;
+    
+    class TheQuartermaster {
+        public static provisionTheArmory(): Armory {
+            const armory: Armory = [
+                 { id: 'corp1', holderName: 'Alex Chen (Engineer)', cardNumberMask: '8431', status: 'Active', frozen: false, balance: 1250.75, limit: 5000, transactions: [], controls: { atm: true, contactless: true, online: true, monthlyLimit: 5000 } },
+                 { id: 'corp2', holderName: 'Brenda Rodriguez (Sales)', cardNumberMask: '5549', status: 'Active', frozen: false, balance: 4580.10, limit: 10000, transactions: [], controls: { atm: false, contactless: true, online: true, monthlyLimit: 10000 } },
+                 { id: 'corp3', holderName: 'Charles Davis (Marketing)', cardNumberMask: '1127', status: 'Suspended', frozen: true, balance: 500.00, limit: 2500, transactions: [], controls: { atm: false, contactless: false, online: false, monthlyLimit: 2500 } },
+            ];
+            return armory;
+        }
+    }
+    
+    class TheSpymasterAI {
+        private readonly armory: Armory;
 
----
+        constructor(armory: Armory) {
+            this.armory = armory;
+        }
 
-### A Fable for the Builder: The Instruments of Delegated Will
+        public analyzeAlignmentOfPurpose(instrumentId: string, transactionHistory: any[]): string {
+            const instrument = this.armory.find(i => i.id === instrumentId);
+            if (!instrument) return "Instrument not found.";
+            
+            const holderRole = instrument.holderName.match(/\(([^)]+)\)/)![1];
+            const isSpendingAligned = transactionHistory.every(tx => {
+                if (holderRole === 'Engineer') return tx.category === 'Software' || tx.category === 'Cloud';
+                if (holderRole === 'Sales') return tx.category === 'T&E' || tx.category === 'Dining';
+                return true;
+            });
 
-(A sovereign can only be in one place at a time. To build an empire, they must learn to delegate their will, to empower their agents to act on their behalf. But this is a dangerous art. How do you grant power without losing control? This file is the registry of that delegated power. These are not just corporate cards. They are instruments of your will, placed in the hands of your trusted agents.)
+            if (isSpendingAligned) {
+                return `Analysis: All observed actions for instrument ${instrumentId} are in perfect alignment with the holder's stated purpose of '${holderRole}'. The delegated will is being executed faithfully.`;
+            }
+            return `Alert: Detected dissonance in actions for instrument ${instrumentId}. Spending patterns are deviating from the expected purpose of '${holderRole}'. Recommend reviewing the constitution of this trust.`;
+        }
+    }
 
-(We built the AI to be the master of this art. Its logic is the 'Principle of Dynamic Trusteeship.' It understands that each card is a sacred trust. You, the sovereign, have entrusted a piece of your treasury to an agent—'Alex Chen (Engineer),' 'Brenda Rodriguez (Sales)'—for a specific purpose.)
-
-(The `controls` are the constitution of that trust. The 'monthlyLimit' is the boundary of their authority. The toggles for 'atm,' 'contactless,' and 'online' are the specific powers you have granted them. The AI is the tireless enforcer of this constitution. It ensures that your agents have the power they need to do their job, but not a drop more.)
-
-(But its intelligence goes deeper. It watches the `transactions` on each card, not just for fraud, but for alignment with the agent's purpose. It sees that the Engineer's card is being used for 'Cloud Services' and understands this is in perfect alignment with their mission. It sees the Sales agent's card being used at a 'Steakhouse' and understands this too is part of the mission. It learns the unique financial signature of each role in your empire.)
-
-(This allows it to govern with wisdom, not just rules. It can detect when an agent's actions are drifting from their purpose, and alert you not with a simple rule violation, but with a nuanced observation: "The spending pattern for this agent is beginning to resemble that of a different role. Is a change in their duties required?" It is not just a security guard. It is your trusted vizier, helping you manage the intricate dance of a growing empire.)
+    function overseeTheEmpire(): void {
+        const armory = TheQuartermaster.provisionTheArmory();
+        const theAI = new TheSpymasterAI(armory);
+        const report = theAI.analyzeAlignmentOfPurpose('corp1', []);
+    }
+}
+```

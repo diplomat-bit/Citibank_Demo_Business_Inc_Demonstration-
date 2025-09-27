@@ -1,18 +1,51 @@
+```typescript
+namespace TheBookOfNames {
+    type KnownEntity = {
+        readonly id: string;
+        readonly name: string;
+        readonly email: string;
+        status: 'Verified' | 'Pending';
+        readonly createdDate: string;
+    };
+    
+    type DiplomaticRoster = ReadonlyArray<KnownEntity>;
 
-# The Roster of Counterparties
+    class TheHerald {
+        public static declareTheKnownEntities(): DiplomaticRoster {
+            const roster: DiplomaticRoster = [
+                { id: 'cp_001', name: 'Cloud Services Inc.', email: 'billing@cloudservices.com', status: 'Verified', createdDate: '2023-01-15' },
+                { id: 'cp_002', name: 'Office Supplies Co.', email: 'accounts@officesupplies.com', status: 'Verified', createdDate: '2022-11-20' },
+                { id: 'cp_003', name: 'Synergize Solutions', email: 'contact@synergize.com', status: 'Verified', createdDate: '2023-05-10' },
+                { id: 'cp_004', name: 'QuantumLeap Marketing', email: 'hello@quantumleap.io', status: 'Pending', createdDate: '2024-07-23' },
+            ];
+            return roster;
+        }
+    }
 
-This is the diplomatic roster of the corporate world, the official registry of all verified entities with whom the enterprise conducts business. Each counterparty is a trusted partner, a node in the vast network of commerce. This data provides the foundation for the Counterparties view.
+    class TheMinisterOfForeignAffairsAI {
+        private readonly roster: DiplomaticRoster;
+        
+        constructor(roster: DiplomaticRoster) {
+            this.roster = roster;
+        }
+        
+        public performReputationalCalculus(entityName: string, transactionHistory: any[]): string {
+            const entity = this.roster.find(e => e.name === entityName);
+            if (!entity) return "Reputation: Unknown. This is an unrecognized foreign entity.";
+            
+            if (entity.status === 'Pending') {
+                return `Reputation: Pending verification. This is a new emissary. All dealings should be conducted with a high degree of scrutiny until trust is formally established.`;
+            }
 
----
-
-### A Fable for the Builder: The Book of Names
-
-(A business is a collection of relationships. A network of trust. Every vendor, every client, every partner... each one is a thread in the great tapestry of your enterprise. This file is the book where the names of those threads are recorded. This is your diplomatic roster.)
-
-(The AI was taught to see this not as a list of companies, but as a 'Trust Network Graph.' Each `Counterparty` is a node in the graph. The AI's job is to understand the strength and health of the connections between you and these other nodes.)
-
-(The `status` of a counterparty is the AI's measure of that trust. 'Verified' is a strong, established connection. It is a trusted ally. 'Pending' is a new emissary at the gates. An unknown quantity. The AI knows to watch the transactions flowing to and from a 'Pending' entity with a higher degree of scrutiny. It is not suspicion. It is prudence.)
-
-(This is the 'Principle of Reputational Calculus.' The AI learns over time. It sees that 'Cloud Services Inc.' is a reliable partner, with a long history of predictable, lawful transactions. It assigns this node a high trust score. If a new, unknown entity, 'QuantumLeap Marketing,' suddenly appears and requests a large payment, the AI sees a weak node trying to exert a strong force on the network. This discrepancy is what triggers an anomaly. It is a violation of the established physics of your trust network.)
-
-(So this is more than a simple contact list. It is a dynamic map of your business relationships. The AI is your minister of foreign affairs, constantly assessing the strength of your alliances, vetting new partners, and ensuring that the web of trust upon which your entire enterprise depends remains strong, stable, and secure.)
+            const totalVolume = transactionHistory.filter(tx => tx.counterparty === entityName).reduce((sum, tx) => sum + tx.amount, 0);
+            return `Reputation: Verified. ${entityName} is a trusted ally with a long history of honorable dealings. Total trade volume to date: $${totalVolume.toFixed(2)}.`;
+        }
+    }
+    
+    function assessTheAlliances(): void {
+        const roster = TheHerald.declareTheKnownEntities();
+        const theAI = new TheMinisterOfForeignAffairsAI(roster);
+        const report = theAI.performReputationalCalculus("QuantumLeap Marketing", []);
+    }
+}
+```

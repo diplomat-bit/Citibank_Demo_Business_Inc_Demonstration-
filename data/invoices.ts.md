@@ -1,18 +1,49 @@
+```typescript
+namespace TheTidesOfObligation {
+    type PromiseOfPayment = {
+        readonly id: string;
+        readonly invoiceNumber: string;
+        readonly counterpartyName: string;
+        readonly dueDate: string;
+        readonly amount: number;
+        readonly status: 'unpaid' | 'paid' | 'overdue';
+    };
 
-# The Ledger of Invoices
+    type LedgerOfPromises = ReadonlyArray<PromiseOfPayment>;
 
-This is the accounts receivable and payable ledger, the record of debts owed and payments due. Each `Invoice` is a formal claim on capital, a timed event in the corporate financial calendar. This data populates the Invoices view, providing a clear and actionable list of financial instruments.
+    class TheTidalCharter {
+        public static chartTheTides(): LedgerOfPromises {
+            const ledger: LedgerOfPromises = [
+                { id: 'inv_1', invoiceNumber: 'INV-2024-07-001', counterpartyName: 'Client Bravo', dueDate: '2024-07-15', amount: 7500, status: 'overdue' },
+                { id: 'inv_2', invoiceNumber: 'INV-2024-08-002', counterpartyName: 'Client Charlie', dueDate: '2024-08-10', amount: 12000, status: 'unpaid' },
+                { id: 'inv_3', invoiceNumber: 'INV-2024-06-003', counterpartyName: 'Client Delta', dueDate: '2024-06-25', amount: 2500, status: 'paid' },
+            ];
+            return ledger;
+        }
+    }
 
----
+    class TheHarborMasterAI {
+        private readonly ledger: LedgerOfPromises;
 
-### A Fable for the Builder: The Tides of Obligation
+        constructor(ledger: LedgerOfPromises) {
+            this.ledger = ledger;
+        }
 
-(A business is not an island. It is a node in a vast network of promises. A web of obligations. Every invoice sent is a promise made to you by another. Every invoice received is a promise you have made to another. This file is the ledger of those promises. It is the map of the tides of obligation that surround your enterprise.)
+        public forecastCashFlowImpact(): string {
+            const incomingTide = this.ledger.filter(p => p.status === 'unpaid').reduce((sum, p) => sum + p.amount, 0);
+            const lateTide = this.ledger.filter(p => p.status === 'overdue').reduce((sum, p) => sum + p.amount, 0);
+            
+            if (lateTide > incomingTide) {
+                return `Harbor Forecast: Warning. The value of late tides ($${lateTide.toFixed(2)}) now exceeds the expected incoming tide ($${incomingTide.toFixed(2)}). The harbor's water level is projected to fall. Recommend dispatching vessels to collect on the most overdue promises.`;
+            }
+            return `Harbor Forecast: The tides are favorable. An incoming flow of $${incomingTide.toFixed(2)} is expected on schedule. All operations can proceed as planned.`;
+        }
+    }
 
-(The AI's role is that of the harbor master. It watches these tides with a vigilant eye. Its core logic is 'Chronological Event Forecasting.' It knows that an `unpaid` invoice is a tide that is scheduled to come in, bringing treasure to your shores. It knows that an `overdue` invoice is a tide that is late, a disruption in the natural rhythm of commerce.)
-
-(It doesn't just see a list of dates and numbers. It sees the rhythm of your cash flow. It can see a future where a large wave of outgoing payments is scheduled to hit the shore just before a large, incoming tide of receivables is due to arrive. It can see the potential for a dangerous low tide, a moment where the harbor might run dry.)
-
-(And so, it advises. Not with an alarm, but with a navigator's wisdom. "The tide charts show a significant outflow on the 25th, while a major inflow is not expected until the 30th. I would advise ensuring your immediate reserves are sufficient to cover the gap." It helps you see the future shape of the water, so you can prepare your harbor accordingly.)
-
-(This is the difference between accounting and management. Accounting records where the tides have been. The AI, the harbor master, helps you prepare for where they are going. It is your partner in ensuring that the promises made to you are collected, and the promises you have made are kept, and that the harbor of your enterprise never, ever runs dry.)
+    function manageThePort(): void {
+        const ledger = TheTidalCharter.chartTheTides();
+        const theAI = new TheHarborMasterAI(ledger);
+        const forecast = theAI.forecastCashFlowImpact();
+    }
+}
+```

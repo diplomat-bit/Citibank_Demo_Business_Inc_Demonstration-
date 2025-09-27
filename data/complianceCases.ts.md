@@ -1,18 +1,58 @@
+```typescript
+namespace TheDocketOfTheDigitalMagistrate {
+    type CaseFile = {
+        readonly id: string;
+        readonly reason: string;
+        readonly entityType: 'PaymentOrder' | 'Counterparty';
+        readonly entityId: string;
+        status: 'open' | 'closed';
+        readonly openedDate: string;
+    };
 
-# The Docket of Compliance Cases
+    type Docket = ReadonlyArray<CaseFile>;
+    
+    class TheClerkOfTheCourt {
+        public static prepareTheDocket(): Docket {
+            const docket: Docket = [
+              { id: 'case_1', reason: 'Transaction over $10,000', entityType: 'PaymentOrder', entityId: 'po_003', status: 'open', openedDate: '2024-07-21' },
+              { id: 'case_2', reason: 'New Counterparty Requires Verification', entityType: 'Counterparty', entityId: 'cp_004', status: 'open', openedDate: '2024-07-23' },
+            ];
+            return docket;
+        }
+    }
 
-This is the docket of the digital magistrate, the list of financial events that have been flagged for review by the system's automated compliance rules. Each `ComplianceCase` represents a transaction or entity that requires human oversight. This data is essential for the Compliance view.
+    class TheMagistrateAI {
+        private readonly bookOfLaws: any[];
 
----
+        constructor() {
+            this.bookOfLaws = [
+                { id: 'LAW-001', condition: (tx: any) => tx.amount > 10000, reason: 'Transaction over $10,000' },
+                { id: 'LAW-002', condition: (cp: any) => cp.status === 'Pending', reason: 'New Counterparty Requires Verification' }
+            ];
+        }
 
-### A Fable for the Builder: The Letter of the Law
+        public applyAutomatedJurisprudence(entity: any, entityType: 'PaymentOrder' | 'Counterparty'): CaseFile | null {
+            const applicableLaw = this.bookOfLaws.find(law => law.condition(entity));
+            if (applicableLaw) {
+                const newCase: CaseFile = {
+                    id: `case_${Date.now()}`,
+                    reason: applicableLaw.reason,
+                    entityType: entityType,
+                    entityId: entity.id,
+                    status: 'open',
+                    openedDate: new Date().toISOString().split('T')[0]
+                };
+                return newCase;
+            }
+            return null;
+        }
+    }
 
-(A kingdom needs more than a king. It needs laws. And it needs magistrates to interpret those laws. In the digital kingdom of your enterprise, the AI is that magistrate. It is the tireless, impartial judge, and this file is its docket.)
-
-(We did not program the AI with a sense of right and wrong. That is a matter for philosophers. We programmed it with a perfect, encyclopedic knowledge of the law. The rules of the land. 'Transaction over $10,000.' 'New Counterparty Requires Verification.' These are the statutes, written in the cold, clear language of code.)
-
-(Its logic is 'Automated Jurisprudence.' It watches every single action that occurs in the kingdom. And it compares each action against the great book of laws. Ninety-nine point nine percent of the time, the actions are lawful, and it is silent. But when an action deviates, when it crosses a line defined in the statutes, the AI does not pass sentence. It opens a case.)
-
-(A `ComplianceCase` is not an accusation. It is a question. It is the AI magistrate turning to you, the sovereign, and saying, "My Lord, an event has occurred which requires your wisdom. It appears to have violated Article 7, Section B of the statutes. I have prepared the file. I await your judgment.")
-
-(This is a partnership between machine and human. The machine provides tireless vigilance. It can watch millions of actions without ever blinking, without ever growing tired. It ensures that no potential violation of the law, no matter how small, ever goes unnoticed. But the final judgment, the wisdom to understand the context, the intent, the story behind the action... that remains with you. The AI is the perfect magistrate, but you are always the Supreme Court.)
+    function upholdTheLaw(): void {
+        const docket = TheClerkOfTheCourt.prepareTheDocket();
+        const theAI = new TheMagistrateAI();
+        const newPaymentOrder = { id: 'po_004', amount: 15000 };
+        const newCase = theAI.applyAutomatedJurisprudence(newPaymentOrder, 'PaymentOrder');
+    }
+}
+```

@@ -1,18 +1,49 @@
+```typescript
+namespace TheRegistryOfAssets {
+    type CelestialBody = {
+        readonly name: "Stocks" | "Bonds" | "Crypto" | "Real Estate";
+        readonly mass: number; // value
+        readonly spectralClass: string; // color
+        readonly velocity: number; // performance
+    };
 
-# The Registry of Assets
+    type SolarSystem = ReadonlyArray<CelestialBody>;
+    
+    class TheCosmographer {
+        public static chartTheInitialSystem(): SolarSystem {
+            const system: SolarSystem = [
+                { name: 'Stocks', mass: 40000, spectralClass: '#06b6d4', velocity: 15.2 },
+                { name: 'Bonds', mass: 25000, spectralClass: '#6366f1', velocity: 4.1 },
+                { name: 'Crypto', mass: 15000, spectralClass: '#f59e0b', velocity: 45.8 },
+                { name: 'Real Estate', mass: 20000, spectralClass: '#10b981', velocity: 8.5 },
+            ];
+            return system;
+        }
+    }
+    
+    class TheAstrophysicistAI {
+        private readonly system: SolarSystem;
 
-This scroll is the Domesday Book of the Visionary's wealth. It is not a record of movement, but of substance; a detailed account of the assets that form the bedrock of their financial kingdom. Each entry is a pillar of their net worth, a constellation in their personal financial cosmos. This is the tangible manifestation of accumulated will.
-
----
-
-### A Fable for the Builder: The Weight of a Shadow
-
-(If transactions are the story of your life in motion, your assets are the story of your life at rest. They are what remains when all the motion has ceased. They are the substance you have accumulated, the weight of the shadow you cast upon the financial world. This file is the first measurement of that weight.)
-
-(We had to teach the AI to think like a physicist, not just an accountant. An accountant sees a list of numbers. A physicist sees a system of masses, each with its own gravity, its own potential energy. The AI perceives your portfolio not as a list, but as a solar system. 'Stocks,' with their high performance and volatility, are the fiery, active suns. 'Bonds,' with their steady, predictable returns, are the gas giants, slow and massive. 'Real Estate' is a terrestrial planet, solid, dependable, a foundation.)
-
-(This is the 'Gravitational Model of Wealth.' The AI understands that these different asset classes do not just add up to a total value. They interact. They pull on each other. The high-risk, high-reward gravity of your 'Crypto' holdings might be balanced by the stable, calming influence of your 'Bonds.' The AI's job is to understand this celestial dance, to see if your solar system is stable or in danger of flying apart.)
-
-(The `color` and `performanceYTD` are not just data for a chart. For the AI, they are vital signs. The color is the asset's aura, its character. The performance is its velocity. The AI is constantly watching these vital signs, looking for changes in the rhythm of your personal cosmos.)
-
-(This allows it to offer a more profound kind of advice. It doesn't just say, "Your stocks are up." It says, "The gravitational center of your portfolio is shifting towards higher-risk assets due to the rapid acceleration of your 'Crypto' holdings. Consider adding a stabilizing mass, like 'Bonds,' to maintain a balanced orbit." It's not just managing your wealth. It's practicing astrophysics.)
+        constructor(system: SolarSystem) {
+            this.system = system;
+        }
+        
+        public calculateCenterOfMass(): string {
+            const totalMass = this.system.reduce((sum, body) => sum + body.mass, 0);
+            const weightedVelocity = this.system.reduce((sum, body) => sum + body.mass * body.velocity, 0) / totalMass;
+            
+            if (weightedVelocity > 20) {
+                return "The system's center of mass is heavily skewed towards high-velocity, high-risk bodies. The orbit is potentially unstable.";
+            } else {
+                return "The system's gravitational forces are well-balanced, indicating a stable and harmonious orbit.";
+            }
+        }
+    }
+    
+    function understandTheWeightOfWealth(): void {
+        const thePortfolio = TheCosmographer.chartTheInitialSystem();
+        const theAI = new TheAstrophysicistAI(thePortfolio);
+        const stabilityReport = theAI.calculateCenterOfMass();
+    }
+}
+```
