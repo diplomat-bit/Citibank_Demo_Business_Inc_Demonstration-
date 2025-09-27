@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { View } from './types';
+import { CONSTITUTIONAL_ARTICLES } from './data/constitutionalArticles';
 
 // ================================================================================================
 // TYPE DEFINITIONS FOR NAVIGATION
@@ -110,16 +111,21 @@ const TheVisionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const PlatformIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
 );
-const CharterIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.586a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-);
 const DoctrineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.002 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.002 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
 );
-const ForgeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V3m0 18v-3m0-12h.01M12 9.01h.01M6 12H3m18 0h-3m-9 .01h.01M9 12.01h.01M12 21a9 9 0 110-18 9 9 0 010 18z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15a3 3 0 110-6 3 3 0 010 6z" /></svg>
-);
 
+
+// ================================================================================================
+// INTEGRATION ICON COMPONENTS
+// ================================================================================================
+// FIX: Moved from data/integrationData.ts to allow JSX in a .tsx file and exported for use.
+export const StripeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}><path d="M28.802 6.333H14.265c-1.42 0-2.613.95-2.921 2.301l-4.111 18.06a2.98 2.98 0 002.92 3.642h14.537c1.42 0 2.613-.95 2.921-2.301l4.111-18.06a2.98 2.98 0 00-2.92-3.642z" fill="#635BFF"></path><path d="M28.665 10.463c-.428 0-.79.308-.887.72l-1.129 4.957a.91.91 0 01-.887.72h-5.263a.81.81 0 00-.79.615l-.261 1.143a.81.81 0 00.79.998h5.255a.91.91 0 01.887.72l1.129 4.957c.097.412.46.72.887.72.428 0 .79-.308.887-.72l4.11-18.06a.81.81 0 00-.79-.998h-3.41z" fill="#fff"></path></svg>);
+export const PlaidIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16z" fill="#000"/><path d="M12 5a7 7 0 100 14 7 7 0 000-14zm0 12a5 5 0 110-10 5 5 0 010 10z" fill="#000"/><path d="M12 8a4 4 0 100 8 4 4 0 000-8z" fill="#000"/></svg>);
+export const SlackIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg viewBox="0 0 122.8 122.8" xmlns="http://www.w3.org/2000/svg" {...props}><path d="M25.8 73.4c0 6.3-5.1 11.4-11.4 11.4S3 79.7 3 73.4s5.1-11.4 11.4-11.4h11.4v11.4z" fill="#36c5f0"></path><path d="M37.2 73.4c6.3 0 11.4-5.1 11.4-11.4S43.5 50.6 37.2 50.6s-11.4 5.1-11.4 11.4v11.4h11.4z" fill="#2eb67d"></path><path d="M48.6 25.8c0-6.3 5.1-11.4 11.4-11.4s11.4 5.1 11.4 11.4v11.4H48.6V25.8z" fill="#ecb22e"></path><path d="M48.6 37.2c-6.3 0-11.4 5.1-11.4 11.4s5.1 11.4 11.4 11.4 11.4-5.1 11.4-11.4H48.6V37.2z" fill="#e01e5a"></path><path d="M97 49.4c0-6.3 5.1-11.4 11.4-11.4 6.3 0 11.4 5.1 11.4 11.4s-5.1 11.4-11.4 11.4H97V49.4z" fill="#e01e5a"></path><path d="M85.6 49.4c-6.3 0-11.4 5.1-11.4 11.4s5.1 11.4 11.4 11.4 11.4-5.1 11.4-11.4V49.4H85.6z" fill="#ecb22e"></path><path d="M74.2 97c0 6.3-5.1 11.4-11.4 11.4-6.3 0-11.4-5.1-11.4-11.4V85.6h22.8V97z" fill="#2eb67d"></path><path d="M74.2 85.6c6.3 0 11.4-5.1 11.4-11.4s-5.1-11.4-11.4-11.4-11.4 5.1-11.4 11.4h11.4v11.4z" fill="#36c5f0"></path></svg>);
+export const SalesforceIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}><path d="M11.9 2.1c-5.5 0-9.8 4.4-9.8 9.8s4.4 9.8 9.8 9.8 9.8-4.4 9.8-9.8-4.3-9.8-9.8-9.8zm3.2 13.3c-.4.3-1.1.2-1.7-.1-.5-.2-1.1-.6-1.5-.9-.8-.6-1.6-1.2-2.3-1.4-.8-.2-1.6.1-2.1.7-.5.6-.6 1.4-.1 2 .5.6 1.4.7 2 .1.4-.3 1.1-.2 1.7.1.5.2 1.1.6 1.5.9.8.6 1.6 1.2 2.3 1.4.8.2 1.6-.1 2.1-.7.5-.6.6-1.4.1-2-.4-.6-1.3-.7-1.9-.1z" fill="#009DDF"/></svg>);
+export const PagerDutyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}><path d="M20 20a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2h12a2 2 0 012 2v16zM9.48 7.3a.5.5 0 00-.48.5v8.4a.5.5 0 00.48.5h5.04a.5.5 0 00.48-.5V7.8a.5.5 0 00-.48-.5H9.48zm.96 1.2h3.12v1.2H10.44V8.5zm0 2.4h3.12v1.2H10.44v-1.2zm0 2.4h3.12v1.2H10.44v-1.2z" fill="#06AC38"/></svg>);
+export const JiraIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}><path d="M11.29 21.71a1.14 1.14 0 01-1.14-1.14V3.43a1.14 1.14 0 012.28 0v17.14a1.14 1.14 0 01-1.14 1.14z" fill="#2684FF"/><path d="M11.29 21.71a1.14 1.14 0 01-1.14-1.14V3.43a1.14 1.14 0 112.28 0v17.14a1.14 1.14 0 01-1.14 1.14z" transform="rotate(60 11.29 12.57)" fill="#2684FF"/><path d="M11.29 21.71a1.14 1.14 0 01-1.14-1.14V3.43a1.14 1.14 0 012.28 0v17.14a1.14 1.14 0 01-1.14 1.14z" transform="rotate(120 11.29 12.57)" fill="#2684FF"/></svg>);
 
 // ================================================================================================
 // NAVIGATION ITEMS
@@ -165,9 +171,11 @@ export const NAV_ITEMS: NavItem[] = [
     // --- Constitutional Modules ---
     { type: 'divider' },
     { type: 'header', label: 'Constitutional Modules' },
-    { id: View.TheCharter, label: 'The Charter', icon: <CharterIcon /> },
-    { id: View.FractionalReserve, label: 'The Doctrine', icon: <DoctrineIcon /> },
-    { id: View.FinancialInstrumentForge, label: 'The Forge', icon: <ForgeIcon /> },
+    ...CONSTITUTIONAL_ARTICLES.map(article => ({
+        id: View[`Article${article.id}` as keyof typeof View],
+        label: `Article ${article.romanNumeral}`,
+        icon: <DoctrineIcon />,
+    })),
     
     // --- Demo Bank Platform Suite ---
     { type: 'divider' },

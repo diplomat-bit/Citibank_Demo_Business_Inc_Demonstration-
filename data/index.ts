@@ -47,3 +47,7 @@ export * from './megadashboard';
 export * from './accessLogs';
 export * from './fraudCases';
 export * from './platform/mlModels'; // Re-exporting for Predictive Models view
+
+// New Integration Data
+export * from './integrationData';
+export * from './constitutionalArticles';

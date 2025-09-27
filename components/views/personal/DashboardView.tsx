@@ -14,6 +14,7 @@ import ImpactTracker from '../../ImpactTracker';
 import WealthTimeline from '../../WealthTimeline';
 import AIDynamicKpiButton from '../../AIDynamicKpiButton';
 import DynamicKpiLoader from '../../DynamicKpiLoader';
+import IntegrationCodex from '../../IntegrationCodex';
 
 
 // ================================================================================================
@@ -299,6 +300,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setActiveView }) => {
                 <SavingsGoals savingsGoals={savingsGoals} />
             </div>
 
+            <IntegrationCodex module={View.Dashboard} />
         </div>
     );
 };

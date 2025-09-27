@@ -21,5 +21,5 @@ export * from './system';
 export * from './ui';
 export * from './user';
 export * from './webhooks';
-// FIX: Export megadashboard types to resolve multiple import errors.
 export * from './megadashboard';
+export * from './integration';

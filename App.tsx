@@ -29,9 +29,7 @@ import AIAdStudioView from './components/views/platform/AIAdStudioView';
 import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
 import TheNexusView from './components/views/platform/TheNexusView'; // The 27th Module
-import TheCharterView from './components/views/platform/TheCharterView';
-import FractionalReserveView from './components/views/platform/FractionalReserveView';
-import FinancialInstrumentForgeView from './components/views/platform/TheAssemblyView';
+import ConstitutionalArticleView from './components/views/platform/ConstitutionalArticleView';
 
 // Corporate Finance Views
 import CorporateDashboardView from './components/views/corporate/CorporateDashboardView';
@@ -193,6 +191,11 @@ const App: React.FC = () => {
      * @returns {React.ReactElement} The component for the currently active view.
      */
     const renderView = () => {
+        if (activeView.startsWith('article-')) {
+            const articleNumber = parseInt(activeView.replace('article-', ''), 10);
+            return <FeatureGuard view={activeView}><ConstitutionalArticleView articleNumber={articleNumber} /></FeatureGuard>;
+        }
+
         switch (activeView) {
             // Personal Finance
             case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
@@ -219,11 +222,6 @@ const App: React.FC = () => {
             case View.TheWinningVision: return <FeatureGuard view={View.TheWinningVision}><TheVisionView /></FeatureGuard>;
             case View.APIStatus: return <FeatureGuard view={View.APIStatus}><APIStatusView /></FeatureGuard>;
             
-            // Constitutional Modules
-            case View.TheCharter: return <FeatureGuard view={View.TheCharter}><TheCharterView /></FeatureGuard>;
-            case View.FractionalReserve: return <FeatureGuard view={View.FractionalReserve}><FractionalReserveView /></FeatureGuard>;
-            case View.FinancialInstrumentForge: return <FeatureGuard view={View.FinancialInstrumentForge}><FinancialInstrumentForgeView /></FeatureGuard>;
-
             // Corporate Finance
             case View.CorporateDashboard: return <FeatureGuard view={View.CorporateDashboard}><CorporateDashboardView setActiveView={handleSetView} /></FeatureGuard>;
             case View.PaymentOrders: return <FeatureGuard view={View.PaymentOrders}><PaymentOrdersView /></FeatureGuard>;

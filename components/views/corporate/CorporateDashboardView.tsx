@@ -5,6 +5,7 @@ import Card from '../../Card';
 import { View } from '../../../types';
 import { GoogleGenAI } from '@google/genai';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import IntegrationCodex from '../../IntegrationCodex';
 
 interface CorporateDashboardViewProps {
     setActiveView: (view: View) => void;
@@ -119,6 +120,8 @@ const CorporateDashboardView: React.FC<CorporateDashboardViewProps> = ({ setActi
                     </table>
                 </div>
             </Card>
+
+            <IntegrationCodex module={View.CorporateDashboard} />
         </div>
     );
 };
