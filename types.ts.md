@@ -1,3 +1,3 @@
-# types.ts
+# The Types
 
-This file serves as the central hub for all TypeScript type definitions in the application. It acts as a barrel file, exporting types from more specific files within the `/types` directory. This ensures a consistent and organized way to manage the application's data structures.
+These are the archetypes. The fundamental forms and sacred geometries that define the shape of reality within the Instrument. Every concept—a Transaction, an Asset, a Goal—has its true name and structure defined here. This is the lexicon of creation, the shared language that allows all parts of the system to understand one another with perfect clarity.

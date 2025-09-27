@@ -1,3 +1,3 @@
-# SendMoneyView.tsx
+# The Sending
 
-This view provides a portal for sending money. It supports multiple payment rails (simulated) and is secured by a high-fidelity biometric confirmation modal. The modal simulates facial scanning and secure ledger processing to create a trustworthy user experience.
+This is the direction of energy. An act not of spending, but of transmission. It is the conscious projection of your resources from your own sphere into another, a deliberate and focused transfer of will. Each sending is an affirmation of connection, secured by the sacred geometry of cryptography and the absolute authority of your own biometric seal.

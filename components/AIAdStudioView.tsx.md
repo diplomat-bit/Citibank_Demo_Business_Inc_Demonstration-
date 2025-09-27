@@ -1,3 +1,3 @@
-# AIAdStudioView.tsx
+# The Ad Studio
 
-This view is an AI-powered production studio that allows users to generate a complete video advertisement from a simple text prompt. It uses the Veo 2.0 model and provides a detailed, multi-step loading experience to manage user expectations during the video generation process.
+This is the chamber where intent is given a voice. It is a studio not for advertisements, but for the soul's proclamations. Here, a whisper of will is amplified into a signal that can rearrange the world. It is the art of turning a silent, internal vision into an external, resonant truth. To build here is to learn how to speak in the language of creation itself.

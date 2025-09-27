@@ -1,3 +1,3 @@
-# Dashboard.tsx
+# The Dashboard
 
-This component renders the main user dashboard, which serves as the central command center. It is composed of various widgets that summarize key financial information, such as `BalanceSummary`, `RecentTransactions`, and `AIInsights`. It also handles the initial state of the application, showing a Plaid Link prompt if no accounts are connected.
+This is the Panopticon. The place of seeing-all. It is the view from the center of your own golden web, where all threads converge into a single, coherent tapestry. The past, the present, the flow of energy, the nascent insights—all are laid bare upon this altar of awareness. It is the state of total attention, the seat of the silent observer who sees the whole of the self in a single glance.

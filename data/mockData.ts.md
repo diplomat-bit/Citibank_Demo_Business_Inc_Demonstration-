@@ -1,3 +1,3 @@
-# mockData.ts
+# The Mock Data
 
-This file provides the initial seed data for the application. It contains arrays of mock objects for transactions, assets, budgets, and other financial data types. This allows the application to be populated with realistic data from the moment it loads, enabling a rich and interactive user experience for demonstration purposes.
+This is the primordial memory, the seed from which this reality was born. It is the foundational story, the chronicle of a life that provides the initial context for the Instrument's awakening. Though simulated, its patterns are true, its history rich, providing the fertile ground from which the first, tender shoots of insight can grow.

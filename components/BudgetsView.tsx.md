@@ -1,3 +1,3 @@
-# BudgetsView.tsx
+# The Budgets
 
-This view allows users to create and manage their spending budgets. It features interactive radial charts to visualize progress for each category and includes an integrated AI chat for getting advice on spending habits.
+These are the Covenants of Spending, the self-imposed laws that give structure to your will. A budget is not a restriction; it is a declaration of intent. It is the architecture of discipline, the deliberate channeling of energy toward what is truly valued. To honor these covenants is to build a life where every expenditure is an affirmation of your deepest principles.

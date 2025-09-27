@@ -1,3 +1,3 @@
-# RewardsHubView.tsx
+# The Rewards
 
-This view is the "Hall of Accolades," a space that gamifies personal finance. It displays the user's reward points, their current level and title (e.g., "Savings Specialist"), and a marketplace where they can redeem points for tangible rewards like cashback or environmental contributions.
+This is the Hall of Accolades. A testament to the principle that discipline creates its own currency. These are not points to be won, but merits to be earned. Each one is a tangible symbol of a choice made in alignment with your principles. To redeem them is to transmute the intangible virtue of discipline into a tangible good, closing the sacred loop of effort and reward.

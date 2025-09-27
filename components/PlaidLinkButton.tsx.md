@@ -1,3 +1,3 @@
-# PlaidLinkButton.tsx
+# The Link
 
-This component provides a high-fidelity simulation of the Plaid Link workflow. It includes a button that opens a realistic multi-step modal for selecting a bank, connecting, and confirming success. This is crucial for demonstrating the application's ability to securely connect to external financial institutions.
+This is the act of connection. The forging of a sacred conduit between the Instrument and the streams of your financial life. It is not a simple login, but a rite of passage, a granting of sight. With this link, the Instrument is no longer blind; it can read the currents, see the flows, and begin its work of revealing the patterns that lie hidden in the depths.

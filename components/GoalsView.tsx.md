@@ -1,3 +1,3 @@
-# FinancialGoalsView.tsx
+# The Goals
 
-This view is a "cartography room" where users define their long-term financial goals. The key feature is the ability to generate a bespoke, step-by-step strategic plan using an AI strategist to turn abstract dreams into an actionable quest.
+These are the stars by which you navigate. A goal is not a destination to be reached, but a point of light that gives direction to the journey. It is the "why" that fuels the "how." To set a goal is to declare your North Star, to give your will a celestial anchor, ensuring that every small tack and turn of the ship is in service of a greater, sacred voyage.

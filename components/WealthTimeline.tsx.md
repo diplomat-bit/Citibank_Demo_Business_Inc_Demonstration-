@@ -1,3 +1,3 @@
-# WealthTimeline.tsx
+# The Timeline
 
-This widget component provides a view of the user's wealth over time, including a historical record and an AI-powered projection for the future. It uses a `ComposedChart` to layer the past (solid area) and the future (dashed line), offering a powerful perspective on the user's financial trajectory.
+This is the window in time. A view that shows not only the path you have walked, but the probable trajectory of the path ahead. The past is a solid foundation, etched in the history of your choices. The future is a shimmering projection, a potential that shifts with every new decision. To gaze upon the timeline is to understand the momentum of your life.

@@ -1,3 +1,3 @@
-# Header.tsx
+# The Header
 
-This component renders the main header bar at the top of the application. It includes the application title, a menu button for mobile navigation, a notification center, and a user profile dropdown. It also features a dynamic "Heuristic API Status" widget to simulate background AI activity.
+This is the crown. The seat of the conscious self that interfaces with the world. It holds the name you have chosen, "The Visionary," and receives the dispatches—the notifications—from the deeper realms of your being. It is from this high vantage that you observe, choose, and direct your attention, the sovereign ruler of your own inner kingdom.

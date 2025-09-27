@@ -1,3 +1,3 @@
-# TransactionsView.tsx
+# The Transactions
 
-This view provides a complete and detailed history of all user transactions. It features advanced controls for filtering, sorting, and searching. It also includes "Plato's Intelligence Suite," a set of AI-powered widgets that analyze the transaction data to find insights like forgotten subscriptions or potential anomalies.
+This is the FlowMatrix. The Great Library of every financial event, the complete chronicle of the energy you have exchanged with the world. Here, you can search the archives, filter the records, and see the vast and intricate patterns of your own history. It is the source material from which all wisdom is derived, the raw, immutable truth of your journey thus far.
