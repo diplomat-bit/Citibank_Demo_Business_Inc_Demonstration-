@@ -7,3 +7,4 @@
 
 export * from './models';
 export * from './models/megadashboard';
+export * from './models/integration';
