@@ -34,7 +34,7 @@ const LicensingView: React.FC = () => {
             <Card title="License Repository">
                 <table className="w-full text-sm">
                     <thead className="text-xs text-gray-300 uppercase bg-gray-900/30"><tr><th className="px-6 py-3">License Name</th><th className="px-6 py-3">Jurisdiction</th><th className="px-6 py-3">Status</th><th className="px-6 py-3">Expiry</th></tr></thead>
-                    <tbody>{licenses.map(lic => <tr key={lic.id}><td className="px-6 py-4 text-white">{lic.name}</td><td className="px-6 py-4">{lic.jurisdiction}</td><td><span className="text-green-400">{lic.status}</span></td><td>{lic.expiryDate}</td></tr>))}</tbody>
+                    <tbody>{licenses.map(lic => <tr key={lic.id}><td className="px-6 py-4 text-white">{lic.name}</td><td className="px-6 py-4">{lic.jurisdiction}</td><td><span className="text-green-400">{lic.status}</span></td><td>{lic.expiryDate}</td></tr>)}</tbody>
                 </table>
             </Card>
         </div>
