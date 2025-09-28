@@ -1,4 +1,3 @@
-
 # A Formalism for Financial State Dynamics  
 *A Doctoral Dissertation*  
 
@@ -51,7 +50,7 @@ At time *t*, the financial system is represented by the state vector:
 |Ψ(t)⟩ = [b_1(t), b_2(t), ..., a_1(t), ..., d_1(t), ...]
 ```  
 
-where $begin:math:text$b_i$end:math:text$ are account balances, $begin:math:text$a_j$end:math:text$ are asset values, and $begin:math:text$d_k$end:math:text$ are debt levels.  
+where `b_i` are account balances, `a_j` are asset values, and `d_k` are debt levels.  
 
 ### 2.3 The Financial Hamiltonian  
 
@@ -134,4 +133,4 @@ This dissertation establishes a novel paradigm: **finance as quantum state evolu
 > *[The narrator’s voice returns, low and deliberate]*  
 > “What once was numbers on a page now becomes a living system.  
 > Not just money — but motion.  
-> Not just balance — but becoming.”  
+> Not just balance — but becoming.”

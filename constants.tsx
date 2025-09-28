@@ -51,6 +51,9 @@ const AIAdvisorIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const QuantumWeaverIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 );
+const QuantumOracleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+);
 const CorpDashboardIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-8h1m-1 4h1m-1 4h1M9 21v-3.07a2 2 0 01.15-.76 2 2 0 011.6-1.17h.5a2 2 0 011.6 1.17c.1.4.15.76.15.76V21" /></svg>
 );
@@ -153,6 +156,7 @@ export const NAV_ITEMS: NavItem[] = [
     { type: 'header', label: 'AI & Advanced Features' },
     { id: View.AIAdvisor, label: 'AI Advisor', icon: <AIAdvisorIcon /> },
     { id: View.QuantumWeaver, label: 'Quantum Weaver', icon: <QuantumWeaverIcon /> },
+    { id: View.QuantumOracle, label: 'Quantum Oracle', icon: <QuantumOracleIcon /> },
     { id: View.AIAdStudio, label: 'AI Ad Studio', icon: <AIAdStudioIcon /> },
     { id: View.Crypto, label: 'Crypto & Web3', icon: <CryptoIcon /> },
     { id: View.Marketplace, label: 'Marketplace', icon: <MarketplaceIcon /> },
@@ -308,4 +312,25 @@ export const NAV_ITEMS: NavItem[] = [
     { id: View.APIStatus, label: 'API Status', icon: <APIStatusIcon /> },
     { id: View.TheWinningVision, label: 'The Winning Vision', icon: <TheVisionIcon /> },
     { id: View.Settings, label: 'Settings', icon: <SettingsIcon /> },
+
+    // --- Blueprints ---
+    { type: 'divider' },
+    { type: 'header', label: 'Blueprints' },
+    { id: View.CrisisAIManager, label: 'Crisis AI Manager', icon: <PlatformIcon /> },
+    { id: View.CognitiveLoadBalancer, label: 'Cognitive Load Balancer', icon: <PlatformIcon /> },
+    { id: View.HolographicMeetingScribe, label: 'Holographic Scribe', icon: <PlatformIcon /> },
+    { id: View.QuantumProofEncryptor, label: 'Quantum Encryptor', icon: <PlatformIcon /> },
+    { id: View.EtherealMarketplace, label: 'Ethereal Marketplace', icon: <PlatformIcon /> },
+    { id: View.AdaptiveUITailor, label: 'Adaptive UI Tailor', icon: <PlatformIcon /> },
+    { id: View.UrbanSymphonyPlanner, label: 'Urban Symphony Planner', icon: <PlatformIcon /> },
+    { id: View.PersonalHistorianAI, label: 'Personal Historian AI', icon: <PlatformIcon /> },
+    { id: View.DebateAdversary, label: 'Debate Adversary', icon: <PlatformIcon /> },
+    { id: View.CulturalAssimilationAdvisor, label: 'Cultural Advisor', icon: <PlatformIcon /> },
+    { id: View.DynamicSoundscapeGenerator, label: 'Soundscape Generator', icon: <PlatformIcon /> },
+    { id: View.EmergentStrategyWargamer, label: 'Strategy Wargamer', icon: <PlatformIcon /> },
+    { id: View.EthicalGovernor, label: 'Ethical Governor', icon: <PlatformIcon /> },
+    { id: View.QuantumEntanglementDebugger, label: 'Quantum Debugger', icon: <PlatformIcon /> },
+    { id: View.LinguisticFossilFinder, label: 'Linguistic Fossil Finder', icon: <PlatformIcon /> },
+    { id: View.ChaosTheorist, label: 'Chaos Theorist', icon: <PlatformIcon /> },
+    { id: View.SelfRewritingCodebase, label: 'Self-Rewriting Codebase', icon: <PlatformIcon /> },
 ];

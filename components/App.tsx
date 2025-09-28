@@ -25,6 +25,7 @@ import SettingsView from './components/views/personal/SettingsView';
 // AI & Platform Views
 import AIAdvisorView from './components/views/platform/AIAdvisorView';
 import QuantumWeaverView from './components/views/platform/QuantumWeaverView';
+import QuantumOracleView from './components/views/platform/QuantumOracleView';
 import AIAdStudioView from './components/views/platform/AIAdStudioView';
 import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
@@ -150,6 +151,25 @@ import ObservabilityView from './components/views/megadashboard/infra/Observabil
 import IncidentResponseView from './components/views/megadashboard/infra/IncidentResponseView';
 import BackupRecoveryView from './components/views/megadashboard/infra/BackupRecoveryView';
 
+// Blueprint imports
+import CrisisAIManagerView from './components/views/blueprints/CrisisAIManagerView';
+import CognitiveLoadBalancerView from './components/views/blueprints/CognitiveLoadBalancerView';
+import HolographicMeetingScribeView from './components/views/blueprints/HolographicMeetingScribeView';
+import QuantumProofEncryptorView from './components/views/blueprints/QuantumProofEncryptorView';
+import EtherealMarketplaceView from './components/views/blueprints/EtherealMarketplaceView';
+import AdaptiveUITailorView from './components/views/blueprints/AdaptiveUITailorView';
+import UrbanSymphonyPlannerView from './components/views/blueprints/UrbanSymphonyPlannerView';
+import PersonalHistorianAIView from './components/views/blueprints/PersonalHistorianAIView';
+import DebateAdversaryView from './components/views/blueprints/DebateAdversaryView';
+import CulturalAssimilationAdvisorView from './components/views/blueprints/CulturalAssimilationAdvisorView';
+import DynamicSoundscapeGeneratorView from './components/views/blueprints/DynamicSoundscapeGeneratorView';
+import EmergentStrategyWargamerView from './components/views/blueprints/EmergentStrategyWargamerView';
+import EthicalGovernorView from './components/views/blueprints/EthicalGovernorView';
+import QuantumEntanglementDebuggerView from './components/views/blueprints/QuantumEntanglementDebuggerView';
+import LinguisticFossilFinderView from './components/views/blueprints/LinguisticFossilFinderView';
+import ChaosTheoristView from './components/views/blueprints/ChaosTheoristView';
+import SelfRewritingCodebaseView from './components/views/blueprints/SelfRewritingCodebaseView';
+
 
 // Global Components
 import VoiceControl from './components/VoiceControl';
@@ -218,6 +238,7 @@ const App: React.FC = () => {
             case View.TheNexus: return <FeatureGuard view={View.TheNexus}><TheNexusView /></FeatureGuard>;
             case View.AIAdvisor: return <FeatureGuard view={View.AIAdvisor}><AIAdvisorView previousView={previousView} /></FeatureGuard>;
             case View.QuantumWeaver: return <FeatureGuard view={View.QuantumWeaver}><QuantumWeaverView /></FeatureGuard>;
+            case View.QuantumOracle: return <FeatureGuard view={View.QuantumOracle}><QuantumOracleView /></FeatureGuard>;
             case View.AIAdStudio: return <FeatureGuard view={View.AIAdStudio}><AIAdStudioView /></FeatureGuard>;
             case View.TheWinningVision: return <FeatureGuard view={View.TheWinningVision}><TheVisionView /></FeatureGuard>;
             case View.APIStatus: return <FeatureGuard view={View.APIStatus}><APIStatusView /></FeatureGuard>;
@@ -348,6 +369,25 @@ const App: React.FC = () => {
             case View.InfraObservability: return <FeatureGuard view={View.InfraObservability}><ObservabilityView /></FeatureGuard>;
             case View.InfraIncidentResponse: return <FeatureGuard view={View.InfraIncidentResponse}><IncidentResponseView /></FeatureGuard>;
             case View.InfraBackupRecovery: return <FeatureGuard view={View.InfraBackupRecovery}><BackupRecoveryView /></FeatureGuard>;
+
+            // Blueprints
+            case View.CrisisAIManager: return <FeatureGuard view={View.CrisisAIManager}><CrisisAIManagerView /></FeatureGuard>;
+            case View.CognitiveLoadBalancer: return <FeatureGuard view={View.CognitiveLoadBalancer}><CognitiveLoadBalancerView /></FeatureGuard>;
+            case View.HolographicMeetingScribe: return <FeatureGuard view={View.HolographicMeetingScribe}><HolographicMeetingScribeView /></FeatureGuard>;
+            case View.QuantumProofEncryptor: return <FeatureGuard view={View.QuantumProofEncryptor}><QuantumProofEncryptorView /></FeatureGuard>;
+            case View.EtherealMarketplace: return <FeatureGuard view={View.EtherealMarketplace}><EtherealMarketplaceView /></FeatureGuard>;
+            case View.AdaptiveUITailor: return <FeatureGuard view={View.AdaptiveUITailor}><AdaptiveUITailorView /></FeatureGuard>;
+            case View.UrbanSymphonyPlanner: return <FeatureGuard view={View.UrbanSymphonyPlanner}><UrbanSymphonyPlannerView /></FeatureGuard>;
+            case View.PersonalHistorianAI: return <FeatureGuard view={View.PersonalHistorianAI}><PersonalHistorianAIView /></FeatureGuard>;
+            case View.DebateAdversary: return <FeatureGuard view={View.DebateAdversary}><DebateAdversaryView /></FeatureGuard>;
+            case View.CulturalAssimilationAdvisor: return <FeatureGuard view={View.CulturalAssimilationAdvisor}><CulturalAssimilationAdvisorView /></FeatureGuard>;
+            case View.DynamicSoundscapeGenerator: return <FeatureGuard view={View.DynamicSoundscapeGenerator}><DynamicSoundscapeGeneratorView /></FeatureGuard>;
+            case View.EmergentStrategyWargamer: return <FeatureGuard view={View.EmergentStrategyWargamer}><EmergentStrategyWargamerView /></FeatureGuard>;
+            case View.EthicalGovernor: return <FeatureGuard view={View.EthicalGovernor}><EthicalGovernorView /></FeatureGuard>;
+            case View.QuantumEntanglementDebugger: return <FeatureGuard view={View.QuantumEntanglementDebugger}><QuantumEntanglementDebuggerView /></FeatureGuard>;
+            case View.LinguisticFossilFinder: return <FeatureGuard view={View.LinguisticFossilFinder}><LinguisticFossilFinderView /></FeatureGuard>;
+            case View.ChaosTheorist: return <FeatureGuard view={View.ChaosTheorist}><ChaosTheoristView /></FeatureGuard>;
+            case View.SelfRewritingCodebase: return <FeatureGuard view={View.SelfRewritingCodebase}><SelfRewritingCodebaseView /></FeatureGuard>;
 
             default: return <DashboardView setActiveView={handleSetView} />;
         }

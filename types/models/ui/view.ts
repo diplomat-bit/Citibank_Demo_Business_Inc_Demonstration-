@@ -19,6 +19,7 @@ export enum View {
     // AI & Platform
     AIAdvisor = 'ai-advisor',
     QuantumWeaver = 'quantum-weaver',
+    QuantumOracle = 'quantum-oracle',
     AIAdStudio = 'ai-ad-studio',
     
     // Advanced Features
@@ -184,4 +185,23 @@ export enum View {
     Article86 = 'article-86', Article87 = 'article-87', Article88 = 'article-88', Article89 = 'article-89', Article90 = 'article-90',
     Article91 = 'article-91', Article92 = 'article-92', Article93 = 'article-93', Article94 = 'article-94', Article95 = 'article-95',
     Article96 = 'article-96', Article97 = 'article-97', Article98 = 'article-98', Article99 = 'article-99', Article100 = 'article-100',
+
+    // -- Blueprints --
+    CrisisAIManager = 'bp-crisis-ai-manager',
+    CognitiveLoadBalancer = 'bp-cognitive-load-balancer',
+    HolographicMeetingScribe = 'bp-holographic-scribe',
+    QuantumProofEncryptor = 'bp-quantum-encryptor',
+    EtherealMarketplace = 'bp-ethereal-marketplace',
+    AdaptiveUITailor = 'bp-adaptive-ui-tailor',
+    UrbanSymphonyPlanner = 'bp-urban-symphony-planner',
+    PersonalHistorianAI = 'bp-personal-historian',
+    DebateAdversary = 'bp-debate-adversary',
+    CulturalAssimilationAdvisor = 'bp-cultural-advisor',
+    DynamicSoundscapeGenerator = 'bp-soundscape-generator',
+    EmergentStrategyWargamer = 'bp-strategy-wargamer',
+    EthicalGovernor = 'bp-ethical-governor',
+    QuantumEntanglementDebugger = 'bp-quantum-debugger',
+    LinguisticFossilFinder = 'bp-linguistic-fossil-finder',
+    ChaosTheorist = 'bp-chaos-theorist',
+    SelfRewritingCodebase = 'bp-self-rewriting-codebase',
 }

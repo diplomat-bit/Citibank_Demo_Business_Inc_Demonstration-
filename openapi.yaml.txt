@@ -38,6 +38,8 @@ tags:
     description: "Converse with our state-of-the-art financial AI for insights and actions."
   - name: "Quantum Weaver (Incubator)"
     description: "Submit and track business plans for AI-driven seed funding."
+  - name: "Quantum Oracle (Simulator)"
+    description: "Run what-if simulations to understand the impact of future financial events."
   - name: "AI Ad Studio (Veo)"
     description: "Programmatically generate high-quality video content from text prompts."
   - name: "Personalization & Customization"
@@ -201,6 +203,39 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
         "503":
           description: "AI service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /ai/oracle/simulate:
+    post:
+      tags:
+        - "Quantum Oracle (Simulator)"
+      summary: "Run a What-If Financial Simulation"
+      description: "Submits a hypothetical scenario to the Quantum Oracle AI. The AI simulates the impact of this scenario on the user's complete financial state and returns a detailed analysis."
+      operationId: "simulateWithQuantumOracle"
+      security:
+        - oAuth2Auth: [interact:ai_oracle]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationRequest"
+      responses:
+        "200":
+          description: "The simulation was successful. The response contains the detailed impact analysis."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "AI simulation service is temporarily unavailable."
           content:
             application/json:
               schema:
@@ -477,6 +512,7 @@ components:
             write:transactions: "Modify transaction data (e.g., categorization)."
             write:payments: "Initiate payments and transfers."
             interact:ai_advisor: "Access to the conversational AI Advisor."
+            interact:ai_oracle: "Access to the Quantum Oracle simulation AI."
             read:weaver: "Read status of business plan submissions."
             write:weaver: "Submit and manage business plans in the Quantum Weaver."
             read:ad_studio: "Check status of video generation jobs."
@@ -658,6 +694,57 @@ components:
               args:
                 type: object
                 example: {"amount": 50, "recipient": "Alex", "currency": "USD"}
+    SimulationRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+          description: "A natural language description of the scenario to simulate."
+          example: "What if I lose my job for 6 months but receive a $10,000 severance package?"
+        parameters:
+          type: object
+          description: "Key numerical parameters to guide the simulation."
+          properties:
+            durationMonths:
+              type: integer
+              example: 6
+            amountUSD:
+              type: number
+              example: 10000
+    SimulationResponse:
+      type: object
+      properties:
+        simulationId:
+          type: string
+        narrativeSummary:
+          type: string
+          description: "An AI-generated summary of the simulation's outcome."
+        keyImpacts:
+          type: array
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+                example: "Emergency Fund Depletion"
+              value:
+                type: string
+                example: "4 months"
+              severity:
+                type: string
+                enum: [low, medium, high]
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "Reduce Discretionary Spending"
+              description:
+                type: string
+                example: "Consider reducing your 'Dining' and 'Shopping' budgets by 25% to extend your financial runway."
     QuantumWeaverState:
       type: object
       properties:

@@ -1,100 +1,52 @@
-```typescript
-namespace TheUnitOfPerception {
-    type Truth = any;
-    type TruthState = "nascent" | "revealed" | "occluded" | "collapsed";
-    type OntologicalVariant = "default" | "outline" | "ghost" | "interactive";
+# A Formalism for The Perceptual Frame
+*A Treatise on the Unit of Consciousness*
 
-    interface IPerceptualFrameConfig {
-        readonly title: string;
-        readonly truthSource: Promise<Truth>;
-        readonly variant?: OntologicalVariant;
-        readonly isCollapsible?: boolean;
-    }
+---
 
-    class PerceptualFrame {
-        private containedTruth: Truth;
-        private truthState: TruthState;
-        private readonly variant: OntologicalVariant;
-        private readonly title: string;
-        private readonly isCollapsible: boolean;
-        private isCollapsed: boolean;
+## Abstract
 
-        constructor(config: IPerceptualFrameConfig) {
-            this.title = config.title;
-            this.variant = config.variant || "default";
-            this.isCollapsible = config.isCollapsible || false;
-            this.isCollapsed = false;
-            this.truthState = "nascent";
-            this.fetchTruth(config.truthSource);
-        }
+This dissertation formalizes the `Card.tsx` component as the fundamental, atomic unit of perception within the application's reality. It is not a UI container, but a "Perceptual Frame," a metaphysical window through which a single, discrete truth can be observed. We model its properties (`variant`, `isLoading`, `errorState`) as the modes of perception, defining the relationship between the observer and the truth contained within the frame.
 
-        private async fetchTruth(source: Promise<Truth>): Promise<void> {
-            try {
-                this.containedTruth = await source;
-                this.truthState = "revealed";
-            } catch (error) {
-                this.truthState = "occluded";
-            }
-        }
+---
 
-        public toggleCollapse(): void {
-            if (this.isCollapsible) {
-                this.isCollapsed = !this.isCollapsed;
-                this.truthState = this.isCollapsed ? "collapsed" : "revealed";
-            }
-        }
+## Chapter 1. The Nature of the Frame
 
-        private renderLoadingState(): React.ReactElement {
-            const ShimmeringHazeOfPotential = React.createElement('div', { className: 'shimmer' }, 'Loading...');
-            return ShimmeringHazeOfPotential;
-        }
+### 1.1 `CardVariant` as Ontological Mode
 
-        private renderErrorState(): React.ReactElement {
-            const UnknowableTruth = React.createElement('div', { className: 'error' }, 'This truth is currently unknowable.');
-            return UnknowableTruth;
-        }
+The `variant` property defines the frame's ontological relationship to the surrounding reality.
+-   **`default`**: The standard mode of perception, a clear but distinct window.
+-   **`outline`**: A frame that emphasizes its boundary, highlighting the separation between this truth and others.
+-   **`ghost`**: A frameless perception, where the truth appears to merge seamlessly with the fabric of reality.
+-   **`interactive`**: A frame that resonates with the observer's attention (hover), acknowledging the observer's effect on the observed.
 
-        private renderRevealedState(): React.ReactElement {
-            const RevealedTruth = React.createElement('div', null, this.containedTruth);
-            return RevealedTruth;
-        }
+### 1.2 `isLoading` as Nascent Truth
 
-        public presentToUser(): React.ReactElement {
-            let content: React.ReactNode;
-            switch (this.truthState) {
-                case "nascent":
-                    content = this.renderLoadingState();
-                    break;
-                case "revealed":
-                    content = this.renderRevealedState();
-                    break;
-                case "occluded":
-                    content = this.renderErrorState();
-                    break;
-                case "collapsed":
-                    content = null;
-                    break;
-            }
+The `isLoading` state represents a truth that is in a state of becoming. It is a "nascent truth," a quantum superposition of possibilities that has not yet collapsed into a single, observable reality. The `LoadingSkeleton` is the visual representation of this structured potential.
 
-            const frame = React.createElement('div', { className: `card ${this.variant}` },
-                React.createElement('h3', null, this.title),
-                content
-            );
-            return frame;
-        }
-    }
+### 1.3 `errorState` as Occluded Truth
 
-    function createAWindowIntoTruth(): void {
-        const someAsyncTruth = new Promise(resolve => setTimeout(() => resolve("This is a revealed truth."), 1000));
-        const frameConfig: IPerceptualFrameConfig = {
-            title: "A Single Truth",
-            truthSource: someAsyncTruth,
-            variant: "interactive",
-            isCollapsible: true,
-        };
+The `errorState` represents a truth that is "occluded" or unknowable at the present moment. The connection to this particular reality has been severed. The `ErrorDisplay` is the formal acknowledgment of this epistemic barrier.
 
-        const window = new PerceptualFrame(frameConfig);
-        const renderedWindow = window.presentToUser();
-    }
-}
-```
+---
+
+## Chapter 2. The Structure of Perception
+
+### 2.1 The Header: Title and Actions
+
+The `CardHeader` contains the `title`, which is the formal name of the truth being observed. The `headerActions` are the instruments provided to the observer to interact with or manipulate the observed truth.
+
+### 2.2 The Body: The Truth Itself
+
+The `children` prop represents the truth itself, the phenomenon that the frame makes visible.
+
+### 2.3 `isCollapsible` as a Veil of Consciousness
+
+The `isCollapsible` property provides a veil that the observer can draw over the frame. When collapsed, the truth is not gone, but merely hidden from conscious view, acknowledged by its title but not directly perceived. It is an act of managing cognitive load.
+
+---
+
+## Chapter 3. Conclusion
+
+The `Card` is the fundamental building block of knowledge in this universe. Every complex view is constructed from these atomic Perceptual Frames. By understanding the `Card`'s formalism, we understand the application's core epistemology: reality is a collection of discrete, observable truths, each framed and presented for the sovereign user's contemplation.
+
+> "You cannot perceive reality all at once. You can only look through one window at a time. The wisdom is in knowing which window to look through."
