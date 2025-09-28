@@ -1,11 +1,3 @@
-# ================================================================================================
-# PART 1/10: FOUNDATION, USERS, AND ACCOUNTS
-# ================================================================================================
-# This is the genesis block of the Quantum Core API specification. It establishes
-# the info, servers, security, and core user-centric endpoints. This file is
-# intentionally verbose and detailed to meet professional documentation standards.
-# ------------------------------------------------------------------------------------------------
-
 openapi: 3.0.3
 info:
   title: "Demo Bank API: The Quantum Core"
@@ -18,21 +10,19 @@ info:
   version: "1.0.0"
   contact:
     name: "Demo Bank API Team"
-    email: ""
-    url: "/developers"
+    email: "developers@demobank.com"
+    url: "https://demobank.com/developers"
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-  
-
-# ================================================================================================
-# SERVERS
-# ================================================================================================
+  termsOfService: "https://demobank.com/terms"
 servers:
-
-# ================================================================================================
-# TAGS (ENDPOINT GROUPS)
-# ================================================================================================
+  - url: "https://api.demobank.com/v1"
+    description: "Production Server"
+  - url: "https://api.staging.demobank.com/v1"
+    description: "Staging Environment for pre-production testing"
+  - url: "https://api.sandbox.demobank.com/v1"
+    description: "Sandbox for development and testing"
 tags:
   - name: "Users & Authentication"
     description: "Manage user profiles, authentication, and session control."
@@ -48,6 +38,8 @@ tags:
     description: "Converse with our state-of-the-art financial AI for insights and actions."
   - name: "Quantum Weaver (Incubator)"
     description: "Submit and track business plans for AI-driven seed funding."
+  - name: "Quantum Oracle (Simulator)"
+    description: "Run what-if simulations to understand the impact of future financial events."
   - name: "AI Ad Studio (Veo)"
     description: "Programmatically generate high-quality video content from text prompts."
   - name: "Personalization & Customization"
@@ -72,314 +64,36 @@ tags:
     description: "Retrieve and manage user notifications."
   - name: "Security & Open Banking"
     description: "Manage security settings, login activity, and third-party app connections."
-
-# ================================================================================================
-# PATHS: USERS & AUTHENTICATION
-# ================================================================================================
 paths:
-  /auth/token:
-    post:
-      tags:
-        - "Users & Authentication"
-      summary: "Obtain an OAuth2 Token"
-      description: "Standard OAuth2 token endpoint. Exchange authorization code for an access token."
-      operationId: "getAccessToken"
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                grant_type:
-                  type: string
-                  description: "OAuth2 grant type."
-                  example: "authorization_code"
-                code:
-                  type: string
-                  description: "The authorization code received from the authorization server."
-                redirect_uri:
-                  type: string
-                  format: uri
-                client_id:
-                  type: string
-      responses:
-        "200":
-          description: "Access token granted successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OAuthToken"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-
-  /auth/revoke:
-    post:
-      tags:
-        - "Users & Authentication"
-      summary: "Revoke an OAuth2 Token"
-      description: "Revokes the provided access or refresh token, effectively logging the user out of the session associated with that token."
-      operationId: "revokeToken"
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                token:
-                  type: string
-                  description: "The token to revoke."
-                token_type_hint:
-                  type: string
-                  enum: [access_token, refresh_token]
-      responses:
-        "204":
-          description: "Token revoked successfully."
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-
   /users/me:
     get:
       tags:
         - "Users & Authentication"
       summary: "Get Current User Profile"
-      description: "Retrieves the complete profile information for the currently authenticated user, including their name, email, gamification status, and notification preferences."
+      description: "Retrieves the complete profile information for the currently authenticated user, including their name, email, and gamification level."
       operationId: "getCurrentUser"
       security:
         - oAuth2Auth: [read:profile]
       responses:
         "200":
-          description: "The user's complete profile information."
+          description: "The user's profile information."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    put:
-      tags:
-        - "Users & Authentication"
-      summary: "Update Current User Profile"
-      description: "Updates profile information for the currently authenticated user. All fields are optional. Only provided fields will be updated."
-      operationId: "updateCurrentUser"
-      security:
-        - oAuth2Auth: [write:profile]
-      requestBody:
-        description: "User profile data to update."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserUpdate"
-      responses:
-        "200":
-          description: "The updated user profile."
+          description: "Unauthorized. Authentication token is missing or invalid."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
+                $ref: "#/components/schemas/Error"
 
-  /users/me/password:
-    put:
-      tags:
-        - "Users & Authentication"
-      summary: "Change Password"
-      description: "Allows the authenticated user to change their password. Requires the current password for verification."
-      operationId: "changePassword"
-      security:
-        - oAuth2Auth: [write:profile]
-      requestBody:
-        description: "Password change request."
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - currentPassword
-                - newPassword
-              properties:
-                currentPassword:
-                  type: string
-                  format: password
-                  description: "The user's current password."
-                newPassword:
-                  type: string
-                  format: password
-                  description: "The user's new password. Must meet complexity requirements."
-      responses:
-        "204":
-          description: "Password changed successfully."
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /users/me/2fa:
-    post:
-      tags:
-        - "Users & Authentication"
-      summary: "Setup Two-Factor Authentication"
-      description: "Initiates the setup process for Two-Factor Authentication (2FA). Returns a secret key and a QR code URI for authenticator apps."
-      operationId: "setup2FA"
-      security:
-        - oAuth2Auth: [write:security]
-      responses:
-        "200":
-          description: "2FA setup initiated. The client should display the QR code and prompt for a verification code."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  secret:
-                    type: string
-                    description: "The secret key for manual entry into an authenticator app."
-                  qrCodeUri:
-                    type: string
-                    format: uri
-                    description: "A data URI for a QR code that can be scanned by authenticator apps."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    put:
-      tags:
-        - "Users & Authentication"
-      summary: "Verify and Enable Two-Factor Authentication"
-      description: "Verifies a TOTP code provided by the user and, if correct, enables 2FA for their account."
-      operationId: "enable2FA"
-      security:
-        - oAuth2Auth: [write:security]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - code
-              properties:
-                code:
-                  type: string
-                  description: "The 6-digit code from the user's authenticator app."
-                  example: "123456"
-      responses:
-        "200":
-          description: "2FA enabled successfully. The response includes a set of recovery codes."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  recoveryCodes:
-                    type: array
-                    items:
-                      type: string
-                    description: "A list of one-time use recovery codes. The user must store these securely."
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    delete:
-      tags:
-        - "Users & Authentication"
-      summary: "Disable Two-Factor Authentication"
-      description: "Disables 2FA for the user's account. This action is protected and may require re-authentication."
-      operationId: "disable2FA"
-      security:
-        - oAuth2Auth: [write:security]
-      responses:
-        "204":
-          description: "2FA disabled successfully."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /users/me/login-history:
-    get:
-      tags:
-        - "Users & Authentication"
-      summary: "Get Login History"
-      description: "Retrieves a list of recent login events for the user's account for security auditing purposes."
-      operationId: "getLoginHistory"
-      security:
-        - oAuth2Auth: [read:security]
-      parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
-      responses:
-        "200":
-          description: "A paginated list of login history events."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  limit:
-                    type: integer
-                  offset:
-                    type: integer
-                  total:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/LoginHistoryEvent"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /users/me/notification-preferences:
-    get:
-      tags:
-        - "Users & Authentication"
-      summary: "Get Notification Preferences"
-      description: "Retrieves the user's current notification preferences for various event types."
-      operationId: "getNotificationPreferences"
-      security:
-        - oAuth2Auth: [read:profile]
-      responses:
-        "200":
-          description: "The user's notification preferences."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotificationPreferences"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    put:
-      tags:
-        - "Users & Authentication"
-      summary: "Update Notification Preferences"
-      description: "Updates the user's notification preferences."
-      operationId: "updateNotificationPreferences"
-      security:
-        - oAuth2Auth: [write:profile]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/NotificationPreferences"
-      responses:
-        "200":
-          description: "The updated notification preferences."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotificationPreferences"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-# ================================================================================================
-# PATHS: ACCOUNTS & BALANCES
-# ================================================================================================
   /accounts:
     get:
       tags:
         - "Accounts & Balances"
       summary: "List Linked Accounts"
-      description: "Fetches a list of all external financial accounts linked to the user's Demo Bank profile via the Plaid integration."
+      description: "Fetches a list of all external financial accounts linked to the user's Demo Bank profile."
       operationId: "listLinkedAccounts"
       security:
         - oAuth2Auth: [read:accounts]
@@ -395,471 +109,43 @@ paths:
         "401":
           $ref: "#/components/responses/UnauthorizedError"
 
-  /accounts/{accountId}:
-    get:
-      tags:
-        - "Accounts & Balances"
-      summary: "Get Account Details"
-      description: "Retrieves detailed information for a specific linked account, including current and available balances, type, and other metadata."
-      operationId: "getLinkedAccountDetails"
-      security:
-        - oAuth2Auth: [read:accounts]
-      parameters:
-        - $ref: "#/components/parameters/AccountId"
-      responses:
-        "200":
-          description: "Detailed account information."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LinkedAccount"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    delete:
-      tags:
-        - "Accounts & Balances"
-      summary: "Unlink an Account"
-      description: "Securely unlinks a financial account from the user's profile, revoking all data access and deleting cached data associated with it."
-      operationId: "unlinkAccount"
-      security:
-        - oAuth2Auth: [write:accounts]
-      parameters:
-        - $ref: "#/components/parameters/AccountId"
-      responses:
-        "204":
-          description: "Account successfully unlinked."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /accounts/{accountId}/balance:
-    get:
-      tags:
-        - "Accounts & Balances"
-      summary: "Get Account Balance"
-      description: "Fetches the real-time balance for a specific linked account. This is a direct refresh request to the underlying data provider."
-      operationId: "getAccountBalance"
-      security:
-        - oAuth2Auth: [read:accounts]
-      parameters:
-        - $ref: "#/components/parameters/AccountId"
-      responses:
-        "200":
-          description: "The current balance of the account."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AccountBalance"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "503":
-          description: "The data provider (e.g., Plaid) is temporarily unavailable or the connection to the financial institution is down."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-# ================================================================================================
-# COMPONENTS
-# ================================================================================================
-components:
-  securitySchemes:
-    oAuth2Auth:
-      type: oauth2
-      description: "Standard OAuth2 for user authentication and authorization."
-      flows:
-        authorizationCode:
-          authorizationUrl: https://api.demobank.com/oauth2/auth
-          tokenUrl: https://api.demobank.com/oauth2/token
-          scopes:
-            read:profile: "Read user profile information."
-            write:profile: "Modify user profile information."
-            read:security: "Read security settings and logs."
-            write:security: "Modify security settings (e.g., password, 2FA)."
-            read:accounts: "Read access to linked accounts and balances."
-            write:accounts: "Link or unlink financial accounts."
-            read:transactions: "Read access to transaction history."
-            write:transactions: "Modify transaction data (e.g., categorization)."
-            write:payments: "Initiate payments and transfers."
-            interact:ai_advisor: "Access to the conversational AI Advisor."
-            read:weaver: "Read status of business plan submissions."
-            write:weaver: "Submit and manage business plans in the Quantum Weaver."
-            read:ad_studio: "Check status of video generation jobs."
-            write:ad_studio: "Generate video content."
-            read:corporate_cards: "Read corporate card information and controls."
-            write:corporate_cards: "Modify corporate card status and controls."
-            read:corporate_payments: "Read corporate payment orders and invoices."
-            write:corporate_payments: "Create and approve corporate payments."
-            read:compliance: "Read compliance cases and financial anomalies."
-            write:compliance: "Update the status of compliance cases and anomalies."
-            read:rewards: "Read rewards balance and available items."
-            write:rewards: "Redeem reward points for items."
-  parameters:
-    AccountId:
-      name: accountId
-      in: path
-      required: true
-      description: "The unique identifier for the linked financial account."
-      schema:
-        type: string
-        example: "acc_1a2b3c4d5e"
-    Limit:
-      name: limit
-      in: query
-      description: "The number of items to return per page."
-      schema:
-        type: integer
-        default: 50
-        minimum: 1
-        maximum: 100
-    Offset:
-      name: offset
-      in: query
-      description: "The starting index of the item list for pagination."
-      schema:
-        type: integer
-        default: 0
-  responses:
-    UnauthorizedError:
-      description: "Authentication information is missing or invalid."
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    ForbiddenError:
-      description: "Authenticated user does not have permission to perform this action."
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFoundError:
-      description: "The requested resource could not be found."
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequestError:
-      description: "The request payload is malformed or invalid."
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-  schemas:
-    Error:
-      type: object
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: string
-          example: "invalid_request"
-        message:
-          type: string
-          example: "The 'amount' parameter must be a positive number."
-        details:
-          type: object
-          nullable: true
-          example: {"field": "amount", "reason": "must be positive"}
-    OAuthToken:
-      type: object
-      properties:
-        access_token:
-          type: string
-        token_type:
-          type: string
-          example: "Bearer"
-        expires_in:
-          type: integer
-          example: 3600
-        refresh_token:
-          type: string
-        scope:
-          type: string
-          example: "read:profile read:accounts"
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "user-visionary-01"
-          readOnly: true
-        name:
-          type: string
-          example: "The Visionary"
-        email:
-          type: string
-          format: email
-          example: "visionary@demobank.com"
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-        gamification:
-          $ref: "#/components/schemas/GamificationState"
-        notificationPreferences:
-          $ref: "#/components/schemas/NotificationPreferences"
-    UserUpdate:
-      type: object
-      description: "Fields for updating a user profile. Only provided fields will be updated."
-      properties:
-        name:
-          type: string
-          example: "The Quantum Visionary"
-        email:
-          type: string
-          format: email
-          example: "visionary.new@demobank.com"
-    GamificationState:
-      type: object
-      properties:
-        score:
-          type: integer
-          example: 450
-        level:
-          type: integer
-          example: 3
-        levelName:
-          type: string
-          example: "Savings Specialist"
-        progress:
-          type: number
-          format: float
-          description: "Percentage progress to the next level."
-          example: 25.0
-        credits:
-          type: integer
-          description: "In-app credits earned through gamification."
-          example: 225
-    NotificationPreferences:
-      type: object
-      properties:
-        largeTransaction:
-          type: boolean
-          default: true
-          description: "Alert for transactions over a certain threshold."
-        budgetWarnings:
-          type: boolean
-          default: true
-          description: "Alert when approaching a budget limit."
-        aiInsights:
-          type: boolean
-          default: false
-          description: "Push notifications for new AI-generated insights."
-    LoginHistoryEvent:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        ipAddress:
-          type: string
-          format: ipv4
-          example: "192.168.1.1"
-        userAgent:
-          type: string
-          example: "Chrome on Windows"
-        location:
-          type: string
-          example: "New York, USA"
-        status:
-          type: string
-          enum: [Success, Failed]
-    LinkedAccount:
-      type: object
-      properties:
-        id:
-          type: string
-          description: "The unique identifier for the linked account."
-          example: "acc_1a2b3c4d5e"
-        name:
-          type: string
-          description: "The official name of the financial institution."
-          example: "Chase"
-        mask:
-          type: string
-          description: "The last 4 digits of the account number."
-          example: "1111"
-        type:
-          type: string
-          description: "The general type of the account."
-          example: "depository"
-        subtype:
-          type: string
-          description: "The specific subtype of the account."
-          example: "checking"
-        balance:
-          $ref: "#/components/schemas/AccountBalance"
-    AccountBalance:
-      type: object
-      properties:
-        current:
-          type: number
-          format: float
-          description: "The current balance of the account."
-          example: 12532.50
-        available:
-          type: number
-          format: float
-          description: "The available balance, taking into account pending transactions."
-          nullable: true
-          example: 12300.00
-        currency:
-          type: string
-          description: "The ISO 4217 currency code."
-          example: "USD"
-# ================================================================================================
-# PART 2/10: TRANSACTIONS
-# ================================================================================================
-# This file provides an exhaustive definition of all endpoints and schemas
-# related to personal financial transactions. It covers everything from basic
-# retrieval and filtering to advanced AI-powered analysis.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: TRANSACTIONS
-# ================================================================================================
-paths:
   /transactions:
     get:
       tags:
         - "Transactions"
       summary: "List Transactions"
-      description: "Retrieves a paginated list of the user's transactions, with extensive options for filtering and sorting."
+      description: "Retrieves a paginated list of the user's transactions, with options for filtering and sorting."
       operationId: "listTransactions"
       security:
         - oAuth2Auth: [read:transactions]
       parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
-        - name: "accountId"
+        - name: "limit"
           in: "query"
-          description: "Filter transactions by a specific linked account ID."
+          description: "The number of transactions to return per page."
           schema:
-            type: string
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: "offset"
+          in: "query"
+          description: "The starting index of the transaction list."
+          schema:
+            type: integer
+            default: 0
         - name: "type"
           in: "query"
           description: "Filter transactions by type."
           schema:
             type: string
             enum: [income, expense]
-        - name: "category"
-          in: "query"
-          description: "Filter transactions by a specific category name."
-          schema:
-            type: string
-        - name: "startDate"
-          in: "query"
-          description: "The start of the date range to filter transactions (inclusive)."
-          schema:
-            type: string
-            format: date
-        - name: "endDate"
-          in: "query"
-          description: "The end of the date range to filter transactions (inclusive)."
-          schema:
-            type: string
-            format: date
-        - name: "minAmount"
-          in: "query"
-          description: "Filter transactions with an amount greater than or equal to this value."
-          schema:
-            type: number
-            format: float
-        - name: "maxAmount"
-          in: "query"
-          description: "Filter transactions with an amount less than or equal to this value."
-          schema:
-            type: number
-            format: float
-        - name: "sortBy"
-          in: "query"
-          description: "The field to sort the transactions by."
-          schema:
-            type: string
-            enum: [date, amount]
-            default: date
-        - name: "sortOrder"
-          in: "query"
-          description: "The order to sort the transactions in."
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: desc
       responses:
         "200":
-          description: "A paginated list of transactions matching the criteria."
+          description: "A paginated list of transactions."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PaginatedTransactions"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    post:
-      tags:
-        - "Transactions"
-      summary: "Create a Manual Transaction"
-      description: "Allows the user to manually add a transaction, such as a cash expense or an un-tracked income source."
-      operationId: "createManualTransaction"
-      security:
-        - oAuth2Auth: [write:transactions]
-      requestBody:
-        required: true
-        description: "The transaction to create."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TransactionCreate"
-      responses:
-        "201":
-          description: "The manual transaction was created successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /transactions/search:
-    post:
-      tags:
-        - "Transactions"
-      summary: "Search Transactions"
-      description: "Performs an advanced search across transactions using a free-text query string. This can search descriptions, categories, and other metadata."
-      operationId: "searchTransactions"
-      security:
-        - oAuth2Auth: [read:transactions]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - query
-              properties:
-                query:
-                  type: string
-                  description: "The search term."
-                  example: "Coffee Shop"
-      responses:
-        "200":
-          description: "A list of transactions matching the search query."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Transaction"
         "400":
           $ref: "#/components/responses/BadRequestError"
         "401":
@@ -887,1256 +173,16 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-    put:
-      tags:
-        - "Transactions"
-      summary: "Update a Transaction"
-      description: "Updates details for a specific transaction, commonly used for re-categorization or adding notes."
-      operationId: "updateTransaction"
-      security:
-        - oAuth2Auth: [write:transactions]
-      parameters:
-        - $ref: "#/components/parameters/TransactionId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TransactionUpdate"
-      responses:
-        "200":
-          description: "The updated transaction object."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    delete:
-      tags:
-        - "Transactions"
-      summary: "Delete a Manual Transaction"
-      description: "Deletes a manually created transaction. Transactions imported from linked accounts cannot be deleted."
-      operationId: "deleteManualTransaction"
-      security:
-        - oAuth2Auth: [write:transactions]
-      parameters:
-        - $ref: "#/components/parameters/TransactionId"
-      responses:
-        "204":
-          description: "Transaction deleted successfully."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          description: "Forbidden. The requested transaction was imported from a linked account and cannot be deleted."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
 
-  /transactions/categories:
-    get:
-      tags:
-        - "Transactions"
-      summary: "List Transaction Categories"
-      description: "Retrieves a list of all available transaction categories, both system-defined and user-created."
-      operationId: "listTransactionCategories"
-      security:
-        - oAuth2Auth: [read:transactions]
-      responses:
-        "200":
-          description: "A list of transaction categories."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/TransactionCategory"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /transactions/ai/detect-subscriptions:
-    post:
-      tags:
-        - "Transactions"
-      summary: "Detect Potential Subscriptions"
-      description: "Uses the AI to analyze the user's transaction history and identify potential recurring subscriptions that may have been forgotten."
-      operationId: "detectSubscriptions"
-      security:
-        - oAuth2Auth: [read:transactions, interact:ai_advisor]
-      responses:
-        "200":
-          description: "A list of potential subscriptions detected by the AI."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/DetectedSubscription"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "503":
-          description: "AI service is temporarily unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-# ================================================================================================
-# COMPONENTS: TRANSACTIONS
-# ================================================================================================
-components:
-  parameters:
-    TransactionId:
-      name: transactionId
-      in: path
-      required: true
-      description: "The unique identifier for the transaction."
-      schema:
-        type: string
-        example: "txn_1a2b3c4d5e"
-  schemas:
-    Transaction:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "txn_1a2b3c4d5e"
-          readOnly: true
-        accountId:
-          type: string
-          example: "acc_1a2b3c4d5e"
-        type:
-          type: string
-          enum: [income, expense]
-        category:
-          type: string
-          example: "Dining"
-        description:
-          type: string
-          description: "The merchant name or transaction description."
-          example: "Coffee Shop"
-        amount:
-          type: number
-          format: float
-          example: 12.50
-        currency:
-          type: string
-          example: "USD"
-        date:
-          type: string
-          format: date
-          example: "2024-07-21"
-        carbonFootprint:
-          type: number
-          format: float
-          nullable: true
-          description: "Estimated carbon footprint in kg CO₂."
-          example: 1.2
-        isManual:
-          type: boolean
-          description: "True if the transaction was created manually by the user."
-          readOnly: true
-        notes:
-          type: string
-          nullable: true
-          description: "User-added notes for the transaction."
-    TransactionCreate:
-      type: object
-      description: "Schema for creating a new manual transaction."
-      required:
-        - type
-        - description
-        - amount
-        - date
-      properties:
-        type:
-          type: string
-          enum: [income, expense]
-        description:
-          type: string
-          example: "Cash payment for lunch"
-        amount:
-          type: number
-          format: float
-        date:
-          type: string
-          format: date
-        category:
-          type: string
-          example: "Dining"
-        notes:
-          type: string
-    TransactionUpdate:
-      type: object
-      description: "Schema for updating an existing transaction."
-      properties:
-        category:
-          type: string
-          example: "Groceries"
-        description:
-          type: string
-          example: "Weekly grocery run"
-        notes:
-          type: string
-          example: "Bought ingredients for the week."
-    PaginatedTransactions:
-      type: object
-      properties:
-        limit:
-          type: integer
-        offset:
-          type: integer
-        total:
-          type: integer
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Transaction"
-    TransactionCategory:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Dining"
-        type:
-          type: string
-          enum: [system, user]
-          description: "Indicates if the category is system-defined or user-created."
-    DetectedSubscription:
-      type: object
-      description: "Represents a potential recurring subscription identified by the AI."
-      properties:
-        name:
-          type: string
-          description: "The name of the merchant for the potential subscription."
-          example: "QuantumFlix"
-        estimatedAmount:
-          type: number
-          format: float
-          description: "The estimated monthly amount of the subscription."
-          example: 15.99
-        lastCharged:
-          type: string
-          format: date
-          description: "The date of the last detected charge."
-          example: "2024-07-12"
-# ... CONTINUED IN PART 3 ...
-
-# ================================================================================================
-# PART 4/10: INVESTMENTS & ASSETS
-# ================================================================================================
-# This file provides an exhaustive definition of all endpoints and schemas
-# related to the user's investment portfolio. It includes endpoints for asset
-# management, performance tracking, ESG discovery, and interacting with the
-# AI-powered Investment Growth Simulator.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: INVESTMENTS & ASSETS
-# ================================================================================================
-paths:
-  /investments/portfolio/summary:
-    get:
-      tags:
-        - "Investments & Assets"
-      summary: "Get Portfolio Summary"
-      description: "Retrieves a high-level summary of the user's entire investment portfolio, including total value, overall performance, and asset allocation breakdown."
-      operationId: "getPortfolioSummary"
-      security:
-        - oAuth2Auth: [read:investments]
-      responses:
-        "200":
-          description: "A summary of the investment portfolio."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PortfolioSummary"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /investments/assets:
-    get:
-      tags:
-        - "Investments & Assets"
-      summary: "List All Assets"
-      description: "Retrieves a detailed list of all assets held in the user's investment portfolio."
-      operationId: "listAssets"
-      security:
-        - oAuth2Auth: [read:investments]
-      responses:
-        "200":
-          description: "A list of all assets in the portfolio."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Asset"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /investments/assets/{assetTicker}:
-    get:
-      tags:
-        - "Investments & Assets"
-      summary: "Get Asset by Ticker"
-      description: "Retrieves detailed information and historical performance data for a specific asset identified by its ticker symbol."
-      operationId: "getAssetByTicker"
-      security:
-        - oAuth2Auth: [read:investments]
-      parameters:
-        - $ref: "#/components/parameters/AssetTicker"
-      responses:
-        "200":
-          description: "Detailed information for the specified asset."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Asset"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /investments/trade:
-    post:
-      tags:
-        - "Investments & Assets"
-      summary: "Execute a Trade"
-      description: "Places a buy or sell order for a specified asset. This is a simulated endpoint and does not execute real trades."
-      operationId: "executeTrade"
-      security:
-        - oAuth2Auth: [write:investments]
-      requestBody:
-        required: true
-        description: "The details of the trade to execute."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TradeRequest"
-      responses:
-        "200":
-          description: "The trade order was successfully placed (simulated)."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TradeConfirmation"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /investments/esg-discovery:
-    get:
-      tags:
-        - "Investments & Assets"
-      summary: "Discover ESG Investments"
-      description: "Retrieves a curated list of companies that meet high Environmental, Social, and Governance (ESG) criteria, suitable for social impact investing."
-      operationId: "discoverESGInvestments"
-      security:
-        - oAuth2Auth: [read:investments]
-      responses:
-        "200":
-          description: "A list of curated ESG investment opportunities."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ESGAsset"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /investments/simulator/project-growth:
-    post:
-      tags:
-        - "Investments & Assets"
-      summary: "Run Investment Growth Simulation"
-      description: "Runs a simulation to project the future growth of the user's portfolio based on their current holdings and specified future contributions."
-      operationId: "projectPortfolioGrowth"
-      security:
-        - oAuth2Auth: [read:investments, interact:ai_advisor]
-      requestBody:
-        required: true
-        description: "The parameters for the growth simulation."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GrowthSimulationRequest"
-      responses:
-        "200":
-          description: "The results of the growth simulation, including a timeline of projected values."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GrowthSimulationResponse"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-# ================================================================================================
-# COMPONENTS: INVESTMENTS & ASSETS
-# ================================================================================================
-components:
-  parameters:
-    AssetTicker:
-      name: assetTicker
-      in: path
-      required: true
-      description: "The ticker symbol for the asset (e.g., 'QNTM', 'BTC')."
-      schema:
-        type: string
-        example: "QNTM"
-  schemas:
-    PortfolioSummary:
-      type: object
-      properties:
-        totalValue:
-          type: number
-          format: float
-          description: "The total current market value of all assets in the portfolio."
-          example: 80000.00
-        currency:
-          type: string
-          example: "USD"
-        performanceYTD:
-          type: number
-          format: float
-          description: "The weighted average year-to-date performance of the portfolio."
-          example: 18.75
-        allocation:
-          type: array
-          items:
-            type: object
-            properties:
-              assetClass:
-                type: string
-                example: "Stocks"
-              value:
-                type: number
-                format: float
-                example: 40000.00
-              percentage:
-                type: number
-                format: float
-                example: 50.0
-    Asset:
-      type: object
-      properties:
-        ticker:
-          type: string
-          example: "QNTM"
-        name:
-          type: string
-          example: "Quantum Corp"
-        assetClass:
-          type: string
-          example: "Stocks"
-        value:
-          type: number
-          format: float
-          description: "The total current market value of this holding."
-          example: 40000.00
-        quantity:
-          type: number
-          format: float
-          description: "The number of shares or units held."
-          example: 88.74
-        currentPrice:
-          type: number
-          format: float
-          description: "The current price per share or unit."
-          example: 450.75
-        performanceYTD:
-          type: number
-          format: float
-          description: "The year-to-date performance of this asset."
-          example: 15.2
-        color:
-          type: string
-          description: "A hex color code for UI display."
-          example: "#06b6d4"
-        historicalData:
-          type: array
-          items:
-            $ref: "#/components/schemas/HistoricalPricePoint"
-    HistoricalPricePoint:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-        price:
-          type: number
-          format: float
-    TradeRequest:
-      type: object
-      required:
-        - ticker
-        - type
-        - quantity
-      properties:
-        ticker:
-          type: string
-        type:
-          type: string
-          enum: [buy, sell]
-        quantity:
-          type: number
-          format: float
-          description: "The number of shares or units to trade."
-        orderType:
-          type: string
-          enum: [market, limit]
-          default: market
-        limitPrice:
-          type: number
-          format: float
-          nullable: true
-          description: "Required if orderType is 'limit'."
-    TradeConfirmation:
-      type: object
-      properties:
-        orderId:
-          type: string
-          example: "ord_trade_12345"
-        status:
-          type: string
-          example: "Filled"
-        ticker:
-          type: string
-        type:
-          type: string
-          enum: [buy, sell]
-        quantity:
-          type: number
-          format: float
-        filledPrice:
-          type: number
-          format: float
-          description: "The average price at which the order was filled."
-        timestamp:
-          type: string
-          format: date-time
-    ESGAsset:
-      type: object
-      description: "Represents a company suitable for ESG (Environmental, Social, Governance) investing."
-      properties:
-        name:
-          type: string
-          example: "TerraCycle"
-        ticker:
-          type: string
-          nullable: true
-          example: "TCLE"
-        description:
-          type: string
-          example: "Innovator in recycling and circular economy."
-        esgRating:
-          type: integer
-          description: "A score from 1 to 5 representing the company's ESG performance."
-          example: 5
-    GrowthSimulationRequest:
-      type: object
-      required:
-        - durationYears
-        - monthlyContribution
-      properties:
-        durationYears:
-          type: integer
-          description: "The number of years to project."
-          example: 10
-        monthlyContribution:
-          type: number
-          format: float
-          description: "The additional amount to invest each month."
-          example: 500
-        riskProfile:
-          type: string
-          enum: [conservative, moderate, aggressive]
-          default: moderate
-          description: "Adjusts the assumed annual growth rate for the projection."
-    GrowthSimulationResponse:
-      type: object
-      properties:
-        initialValue:
-          type: number
-          format: float
-        finalValue:
-          type: number
-          format: float
-          description: "The projected value of the portfolio at the end of the simulation period."
-        totalContributions:
-          type: number
-          format: float
-        totalGrowth:
-          type: number
-          format: float
-        projection:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProjectionTimePoint"
-    ProjectionTimePoint:
-      type: object
-      properties:
-        year:
-          type: integer
-        value:
-          type: number
-          format: float
-# ================================================================================================
-# PART 3/10: BUDGETS & FINANCIAL GOALS
-# ================================================================================================
-# This file provides an exhaustive definition of all endpoints and schemas
-# related to personal financial management, specifically spending budgets and
-# long-term financial goals. It covers the full lifecycle from creation and
-# management to AI-powered strategic planning.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: BUDGETS
-# ================================================================================================
-paths:
-  /budgets:
-    get:
-      tags:
-        - "Budgets"
-      summary: "List All Budgets"
-      description: "Retrieves a list of all spending budgets the user has created. Each budget includes the name, limit, current spending, and progress."
-      operationId: "listBudgets"
-      security:
-        - oAuth2Auth: [read:budgets]
-      responses:
-        "200":
-          description: "A list of the user's budgets."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Budget"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    post:
-      tags:
-        - "Budgets"
-      summary: "Create a New Budget"
-      description: "Creates a new spending budget for a specific category with a monthly limit."
-      operationId: "createBudget"
-      security:
-        - oAuth2Auth: [write:budgets]
-      requestBody:
-        required: true
-        description: "The budget to create."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BudgetCreate"
-      responses:
-        "201":
-          description: "The budget was created successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Budget"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "409":
-          description: "A budget for this category already exists."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /budgets/{budgetId}:
-    get:
-      tags:
-        - "Budgets"
-      summary: "Get Budget by ID"
-      description: "Retrieves detailed information for a single budget, including a list of recent transactions contributing to its spending."
-      operationId: "getBudgetById"
-      security:
-        - oAuth2Auth: [read:budgets]
-      parameters:
-        - $ref: "#/components/parameters/BudgetId"
-      responses:
-        "200":
-          description: "Detailed information for the requested budget."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Budget"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    put:
-      tags:
-        - "Budgets"
-      summary: "Update a Budget"
-      description: "Updates the name or limit of an existing budget."
-      operationId: "updateBudget"
-      security:
-        - oAuth2Auth: [write:budgets]
-      parameters:
-        - $ref: "#/components/parameters/BudgetId"
-      requestBody:
-        required: true
-        description: "The budget information to update."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BudgetUpdate"
-      responses:
-        "200":
-          description: "The updated budget object."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Budget"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    delete:
-      tags:
-        - "Budgets"
-      summary: "Delete a Budget"
-      description: "Deletes a user-created budget."
-      operationId: "deleteBudget"
-      security:
-        - oAuth2Auth: [write:budgets]
-      parameters:
-        - $ref: "#/components/parameters/BudgetId"
-      responses:
-        "204":
-          description: "Budget deleted successfully."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /budgets/summary:
-    get:
-      tags:
-        - "Budgets"
-      summary: "Get Budget Summary"
-      description: "Provides a high-level summary of the user's budget performance for the current period, including total budgeted amount and total spending across all budgets."
-      operationId: "getBudgetSummary"
-      security:
-        - oAuth2Auth: [read:budgets]
-      responses:
-        "200":
-          description: "A summary of budget performance."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  totalBudgeted:
-                    type: number
-                    format: float
-                  totalSpent:
-                    type: number
-                    format: float
-                  overallProgress:
-                    type: number
-                    format: float
-                    description: "Percentage of total budgeted amount spent."
-                  atRiskCategories:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Budget"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-# ================================================================================================
-# PATHS: FINANCIAL GOALS
-# ================================================================================================
-  /financial-goals:
-    get:
-      tags:
-        - "Financial Goals"
-      summary: "List Financial Goals"
-      description: "Retrieves a list of all long-term financial goals the user has set, such as saving for a house or a vacation."
-      operationId: "listFinancialGoals"
-      security:
-        - oAuth2Auth: [read:goals]
-      responses:
-        "200":
-          description: "A list of the user's financial goals."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FinancialGoal"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    post:
-      tags:
-        - "Financial Goals"
-      summary: "Create a Financial Goal"
-      description: "Creates a new long-term financial goal with a target amount and date."
-      operationId: "createFinancialGoal"
-      security:
-        - oAuth2Auth: [write:goals]
-      requestBody:
-        required: true
-        description: "The financial goal to create."
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FinancialGoalCreate"
-      responses:
-        "201":
-          description: "Financial goal created successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/FinancialGoal"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /financial-goals/{goalId}:
-    get:
-      tags:
-        - "Financial Goals"
-      summary: "Get Financial Goal by ID"
-      description: "Retrieves detailed information for a single financial goal, including its AI-generated plan if one exists."
-      operationId: "getFinancialGoalById"
-      security:
-        - oAuth2Auth: [read:goals]
-      parameters:
-        - $ref: "#/components/parameters/GoalId"
-      responses:
-        "200":
-          description: "Detailed information for the requested financial goal."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/FinancialGoal"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    put:
-      tags:
-        - "Financial Goals"
-      summary: "Update a Financial Goal"
-      description: "Updates the details of an existing financial goal, such as its name, target amount, or target date."
-      operationId: "updateFinancialGoal"
-      security:
-        - oAuth2Auth: [write:goals]
-      parameters:
-        - $ref: "#/components/parameters/GoalId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FinancialGoalUpdate"
-      responses:
-        "200":
-          description: "The updated financial goal object."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/FinancialGoal"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    delete:
-      tags:
-        - "Financial Goals"
-      summary: "Delete a Financial Goal"
-      description: "Deletes a financial goal. This action is permanent."
-      operationId: "deleteFinancialGoal"
-      security:
-        - oAuth2Auth: [write:goals]
-      parameters:
-        - $ref: "#/components/parameters/GoalId"
-      responses:
-        "204":
-          description: "Financial goal deleted successfully."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /financial-goals/{goalId}/contribute:
-    post:
-      tags:
-        - "Financial Goals"
-      summary: "Contribute to a Financial Goal"
-      description: "Makes a contribution towards a financial goal. This will create a corresponding expense transaction and update the goal's progress."
-      operationId: "contributeToFinancialGoal"
-      security:
-        - oAuth2Auth: [write:goals, write:transactions]
-      parameters:
-        - $ref: "#/components/parameters/GoalId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - amount
-              properties:
-                amount:
-                  type: number
-                  format: float
-                  description: "The amount to contribute."
-      responses:
-        "200":
-          description: "Contribution was successful. The updated financial goal is returned."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/FinancialGoal"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /financial-goals/{goalId}/plan:
-    post:
-      tags:
-        - "Financial Goals"
-      summary: "Generate AI Goal Plan"
-      description: "Requests the AI to generate a strategic plan for achieving the specified financial goal based on the user's current financial situation."
-      operationId: "generateAIGoalPlan"
-      security:
-        - oAuth2Auth: [read:goals, interact:ai_advisor]
-      parameters:
-        - $ref: "#/components/parameters/GoalId"
-      responses:
-        "200":
-          description: "The AI-generated plan was created successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AIGoalPlan"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "503":
-          description: "AI service is temporarily unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-# ================================================================================================
-# COMPONENTS: BUDGETS & GOALS
-# ================================================================================================
-components:
-  parameters:
-    BudgetId:
-      name: budgetId
-      in: path
-      required: true
-      description: "The unique identifier for the budget category."
-      schema:
-        type: string
-        example: "dining"
-    GoalId:
-      name: goalId
-      in: path
-      required: true
-      description: "The unique identifier for the financial goal."
-      schema:
-        type: string
-        example: "goal_house_1"
-  schemas:
-    Budget:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "dining"
-          readOnly: true
-        name:
-          type: string
-          example: "Dining"
-        limit:
-          type: number
-          format: float
-          description: "The monthly spending limit for this category."
-          example: 400.00
-        spent:
-          type: number
-          format: float
-          description: "The amount spent in this category for the current period."
-          example: 280.50
-          readOnly: true
-        progress:
-          type: number
-          format: float
-          description: "The percentage of the budget that has been spent."
-          example: 70.125
-          readOnly: true
-        color:
-          type: string
-          description: "A hex color code for UI display."
-          example: "#f59e0b"
-    BudgetCreate:
-      type: object
-      required:
-        - name
-        - limit
-      properties:
-        name:
-          type: string
-          description: "The category name for the new budget."
-          example: "Entertainment"
-        limit:
-          type: number
-          format: float
-          description: "The monthly spending limit."
-          example: 200
-    BudgetUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-          description: "The new category name for the budget."
-          example: "Entertainment & Hobbies"
-        limit:
-          type: number
-          format: float
-          description: "The new monthly spending limit."
-          example: 250
-    FinancialGoal:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "goal_house_1"
-          readOnly: true
-        name:
-          type: string
-          example: "Down Payment for a Condo"
-        targetAmount:
-          type: number
-          format: float
-          example: 75000
-        targetDate:
-          type: string
-          format: date
-          example: "2029-12-31"
-        currentAmount:
-          type: number
-          format: float
-          example: 12500
-          readOnly: true
-        progress:
-          type: number
-          format: float
-          example: 16.67
-          readOnly: true
-        iconName:
-          type: string
-          example: "home"
-        plan:
-          $ref: "#/components/schemas/AIGoalPlan"
-          nullable: true
-    FinancialGoalCreate:
-      type: object
-      required:
-        - name
-        - targetAmount
-        - targetDate
-      properties:
-        name:
-          type: string
-        targetAmount:
-          type: number
-          format: float
-        targetDate:
-          type: string
-          format: date
-        iconName:
-          type: string
-    FinancialGoalUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-        targetAmount:
-          type: number
-          format: float
-        targetDate:
-          type: string
-          format: date
-        iconName:
-          type: string
-    AIGoalPlan:
-      type: object
-      description: "An AI-generated strategic plan for achieving a financial goal."
-      properties:
-        feasibilitySummary:
-          type: string
-          description: "A brief, AI-generated summary of the goal's feasibility."
-        monthlyContribution:
-          type: number
-          format: float
-          description: "The recommended monthly contribution to reach the goal on time."
-        steps:
-          type: array
-          items:
-            $ref: "#/components/schemas/AIGoalPlanStep"
-    AIGoalPlanStep:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-        category:
-          type: string
-          enum: [Savings, Budgeting, Investing, Income]
-# ... CONTINUED IN PART 5
-# ================================================================================================
-# PART 5/10: AI ADVISOR (QUANTUM) & QUANTUM WEAVER (INCUBATOR)
-# ================================================================================================
-# This file provides an exhaustive definition of the core AI services that form the
-# intelligence layer of Demo Bank. It details the conversational AI endpoints for
-# "Quantum" and the multi-stage business incubation API for the "Quantum Weaver."
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: AI ADVISOR (QUANTUM)
-# ================================================================================================
-paths:
-  /ai/advisor/sessions:
+  /ai/advisor/chat:
     post:
       tags:
         - "AI Advisor (Quantum)"
-      summary: "Start a New Chat Session"
-      description: "Creates a new, stateful chat session with Quantum, the AI Advisor. A session ID is returned, which should be used for all subsequent messages in the conversation."
-      operationId: "startChatSession"
+      summary: "Send a message to the AI Advisor"
+      description: "Initiates or continues a conversation with Quantum, the AI Advisor. The AI can provide insights or execute tasks via tool calls."
+      operationId: "chatWithQuantum"
       security:
         - oAuth2Auth: [interact:ai_advisor]
-      responses:
-        "201":
-          description: "A new chat session was created successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AIChatSession"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "503":
-          description: "AI service is temporarily unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /ai/advisor/sessions/{sessionId}:
-    get:
-      tags:
-        - "AI Advisor (Quantum)"
-      summary: "Get Chat Session Details"
-      description: "Retrieves metadata for a specific chat session, including its creation time and the number of messages."
-      operationId: "getChatSession"
-      security:
-        - oAuth2Auth: [interact:ai_advisor]
-      parameters:
-        - $ref: "#/components/parameters/SessionId"
-      responses:
-        "200":
-          description: "Details of the chat session."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AIChatSession"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    delete:
-      tags:
-        - "AI Advisor (Quantum)"
-      summary: "Delete a Chat Session"
-      description: "Deletes a chat session and its associated history. This action is irreversible."
-      operationId: "deleteChatSession"
-      security:
-        - oAuth2Auth: [interact:ai_advisor]
-      parameters:
-        - $ref: "#/components/parameters/SessionId"
-      responses:
-        "204":
-          description: "Session deleted successfully."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /ai/advisor/sessions/{sessionId}/messages:
-    get:
-      tags:
-        - "AI Advisor (Quantum)"
-      summary: "Get Chat History"
-      description: "Retrieves the message history for a given chat session."
-      operationId: "getChatHistory"
-      security:
-        - oAuth2Auth: [interact:ai_advisor]
-      parameters:
-        - $ref: "#/components/parameters/SessionId"
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
-      responses:
-        "200":
-          description: "A paginated list of messages from the chat session."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  limit:
-                    type: integer
-                  offset:
-                    type: integer
-                  total:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/AIChatMessage"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    post:
-      tags:
-        - "AI Advisor (Quantum)"
-      summary: "Send a Message"
-      description: "Sends a message to the AI Advisor within an existing chat session. The AI's response may include text and tool calls."
-      operationId: "sendMessage"
-      security:
-        - oAuth2Auth: [interact:ai_advisor]
-      parameters:
-        - $ref: "#/components/parameters/SessionId"
       requestBody:
         required: true
         description: "The message payload for the AI."
@@ -2146,7 +192,7 @@ paths:
               $ref: "#/components/schemas/AIChatRequest"
       responses:
         "200":
-          description: "The AI Advisor's response."
+          description: "The AI Advisor's response, which may include text and tool calls."
           content:
             application/json:
               schema:
@@ -2155,18 +201,52 @@ paths:
           $ref: "#/components/responses/BadRequestError"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
+        "503":
+          description: "AI service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /ai/oracle/simulate:
+    post:
+      tags:
+        - "Quantum Oracle (Simulator)"
+      summary: "Run a What-If Financial Simulation"
+      description: "Submits a hypothetical scenario to the Quantum Oracle AI. The AI simulates the impact of this scenario on the user's complete financial state and returns a detailed analysis."
+      operationId: "simulateWithQuantumOracle"
+      security:
+        - oAuth2Auth: [interact:ai_oracle]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationRequest"
+      responses:
+        "200":
+          description: "The simulation was successful. The response contains the detailed impact analysis."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "503":
+          description: "AI simulation service is temporarily unavailable."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
-# ================================================================================================
-# PATHS: QUANTUM WEAVER (INCUBATOR)
-# ================================================================================================
-  /ai/weaver/pitches:
+  /ai/incubator/pitch:
     post:
       tags:
         - "Quantum Weaver (Incubator)"
-      summary: "Submit a Business Plan (Pitch)"
-      description: "Submits a new business plan to the Quantum Weaver AI for analysis. This is the first step in the AI-driven incubation process. The AI will respond with initial feedback and assessment questions."
+      summary: "Submit a Business Plan"
+      description: "Submits a new business plan to the Quantum Weaver AI for analysis. This is the first step in the AI-driven incubation process."
       operationId: "pitchToQuantumWeaver"
       security:
         - oAuth2Auth: [write:weaver]
@@ -2175,7 +255,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WeaverPitchRequest"
+              type: object
+              required:
+                - businessPlan
+              properties:
+                businessPlan:
+                  type: string
+                  description: "The user's detailed business plan."
+                  example: "Our company, 'ChronoLeap,' will create a SaaS platform that uses quantum computing to optimize supply chain logistics for mid-sized e-commerce businesses..."
       responses:
         "202":
           description: "The business plan was accepted and is being analyzed. The response contains the initial state object with a pitch ID."
@@ -2188,275 +275,12 @@ paths:
         "401":
           $ref: "#/components/responses/UnauthorizedError"
 
-  /ai/weaver/pitches/{pitchId}:
-    get:
-      tags:
-        - "Quantum Weaver (Incubator)"
-      summary: "Get Pitch Status"
-      description: "Retrieves the current state of a business plan submission, including its current stage, feedback, and any associated data."
-      operationId: "getWeaverPitchStatus"
-      security:
-        - oAuth2Auth: [read:weaver]
-      parameters:
-        - $ref: "#/components/parameters/PitchId"
-      responses:
-        "200":
-          description: "The current state of the business plan pitch."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuantumWeaverState"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /ai/weaver/pitches/{pitchId}/assessment:
-    post:
-      tags:
-        - "Quantum Weaver (Incubator)"
-      summary: "Submit Assessment Answers"
-      description: "Submits the user's answers to the AI-generated assessment questions. This is a simulated step; the API will proceed to the final review stage upon any valid submission."
-      operationId: "submitWeaverAssessment"
-      security:
-        - oAuth2Auth: [write:weaver]
-      parameters:
-        - $ref: "#/components/parameters/PitchId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                answers:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      questionId:
-                        type: string
-                      answer:
-                        type: string
-      responses:
-        "200":
-          description: "Assessment answers received. The pitch is now in final review. The updated state is returned."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuantumWeaverState"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /ai/weaver/pitches/{pitchId}/approve:
-    post:
-      tags:
-        - "Quantum Weaver (Incubator)"
-      summary: "Approve Funding (Simulated)"
-      description: "A simulated endpoint that moves a pitch from 'final_review' to 'approved'. The AI generates a loan amount and coaching plan."
-      operationId: "approveWeaverFunding"
-      deprecated: true # This logic is now handled internally after assessment.
-      security:
-        - oAuth2Auth: [write:weaver]
-      parameters:
-        - $ref: "#/components/parameters/PitchId"
-      responses:
-        "200":
-          description: "Funding approved. The final state with loan amount and coaching plan is returned."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuantumWeaverState"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-# ================================================================================================
-# COMPONENTS: AI SERVICES
-# ================================================================================================
-components:
-  parameters:
-    SessionId:
-      name: sessionId
-      in: path
-      required: true
-      description: "The unique identifier for the chat session."
-      schema:
-        type: string
-        example: "session-xyz-789"
-    PitchId:
-      name: pitchId
-      in: path
-      required: true
-      description: "The unique identifier for the business plan pitch."
-      schema:
-        type: string
-        example: "pitch_qw_abcdef"
-  schemas:
-    AIChatSession:
-      type: object
-      properties:
-        sessionId:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        messageCount:
-          type: integer
-    AIChatRequest:
-      type: object
-      properties:
-        message:
-          type: string
-          example: "Analyze my recent spending."
-        functionResponse:
-          type: object
-          description: "The result from a tool call requested by the AI in a previous turn."
-          nullable: true
-          properties:
-            name:
-              type: string
-              example: "send_money"
-            response:
-              type: object
-              example: {"status": "success", "transactionId": "pmt_654321"}
-    AIChatResponse:
-      type: object
-      properties:
-        text:
-          type: string
-          description: "The text response from the AI."
-          example: "I've analyzed your spending. It seems your largest category this month was 'Dining'."
-        functionCalls:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-                example: "send_money"
-              args:
-                type: object
-                example: {"amount": 50, "recipient": "Alex", "currency": "USD"}
-    AIChatMessage:
-      type: object
-      properties:
-        id:
-          type: string
-        sender:
-          type: string
-          enum: [user, ai]
-        text:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        toolExecution:
-          type: object
-          nullable: true
-          properties:
-            name:
-              type: string
-            args:
-              type: object
-            result:
-              type: string
-              nullable: true
-            state:
-              type: string
-              enum: [pending, success, error]
-    WeaverPitchRequest:
-      type: object
-      required:
-        - businessPlan
-      properties:
-        businessPlan:
-          type: string
-          description: "The user's detailed business plan."
-          example: "Our company, 'ChronoLeap,' will create a SaaS platform that uses quantum computing to optimize supply chain logistics for mid-sized e-commerce businesses..."
-    QuantumWeaverState:
-      type: object
-      properties:
-        pitchId:
-          type: string
-          example: "pitch_qw_abcdef"
-        stage:
-          type: string
-          enum: [pitch, analysis, test, final_review, approved, error]
-        businessPlan:
-          type: string
-        feedback:
-          type: string
-          nullable: true
-        questions:
-          type: array
-          nullable: true
-          items:
-            $ref: "#/components/schemas/AIQuestion"
-        loanAmount:
-          type: number
-          nullable: true
-        coachingPlan:
-          $ref: "#/components/schemas/AIPlan"
-          nullable: true
-        error:
-          type: string
-          nullable: true
-    AIQuestion:
-      type: object
-      properties:
-        id:
-          type: string
-        question:
-          type: string
-        category:
-          type: string
-    AIPlan:
-      type: object
-      properties:
-        title:
-          type: string
-        summary:
-          type: string
-        steps:
-          type: array
-          items:
-            $ref: "#/components/schemas/AIPlanStep"
-    AIPlanStep:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-        timeline:
-          type: string
-# ... CONTINUED IN PART 6 ...
-
-# ================================================================================================
-# PART 6/10: CREATIVE AI SUITES
-# ================================================================================================
-# This file provides an exhaustive definition of all endpoints and schemas
-# related to the Creative AI Suites. This includes the AI Ad Studio for video
-# generation (Veo) and the Personalization & Customization tools for generating
-# app backgrounds (Imagen) and editing card designs (Gemini Image Preview).
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: AI AD STUDIO (VEO)
-# ================================================================================================
-paths:
-  /ai/video-studio/generate:
+  /ai/ads/generate:
     post:
       tags:
         - "AI Ad Studio (Veo)"
       summary: "Generate a Video Ad"
-      description: "Submits a request to generate a high-quality video ad using the Veo 2.0 model. This is an asynchronous operation that returns an operation ID for polling."
+      description: "Submits a request to generate a video ad using the Veo 2.0 model. This is an asynchronous operation."
       operationId: "generateVideoAd"
       security:
         - oAuth2Auth: [write:ad_studio]
@@ -2468,7 +292,7 @@ paths:
               $ref: "#/components/schemas/GenerateVideoRequest"
       responses:
         "202":
-          description: "Video generation started successfully. The response contains an operation ID to poll for status."
+          description: "Video generation started. The response contains an operation ID to poll for status."
           content:
             application/json:
               schema:
@@ -2481,19 +305,13 @@ paths:
           $ref: "#/components/responses/BadRequestError"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-        "503":
-          description: "The video generation service is currently at capacity or unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
 
-  /ai/video-studio/operations/{operationId}:
+  /ai/ads/operations/{operationId}:
     get:
       tags:
         - "AI Ad Studio (Veo)"
       summary: "Get Video Generation Status"
-      description: "Polls the status of an asynchronous video generation operation using its operation ID."
+      description: "Polls the status of an asynchronous video generation operation."
       operationId: "getVideoGenerationStatus"
       security:
         - oAuth2Auth: [read:ad_studio]
@@ -2505,7 +323,7 @@ paths:
             type: string
       responses:
         "200":
-          description: "The current status of the video generation job. If the status is 'done', the response includes a temporary URI to download the video file."
+          description: "The current status of the video generation job. If 'done', the response includes the video URI."
           content:
             application/json:
               schema:
@@ -2515,992 +333,35 @@ paths:
         "401":
           $ref: "#/components/responses/UnauthorizedError"
 
-  /ai/video-studio/cta-suggestions:
-    post:
-      tags:
-        - "AI Ad Studio (Veo)"
-      summary: "Generate Call-to-Action Suggestions"
-      description: "Uses AI to generate a list of short, catchy call-to-action (CTA) phrases based on the ad's original prompt."
-      operationId: "generateCTASuggestions"
-      security:
-        - oAuth2Auth: [interact:ai_advisor]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - prompt
-              properties:
-                prompt:
-                  type: string
-                  description: "The original prompt used to generate the video ad."
-      responses:
-        "200":
-          description: "A list of suggested CTA phrases."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  suggestions:
-                    type: array
-                    items:
-                      type: string
-                    example: ["Unlock Your Potential.", "Begin Your Journey.", "Create Your Future."]
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-# ================================================================================================
-# PATHS: PERSONALIZATION & CUSTOMIZATION
-# ================================================================================================
-  /ai/personalization/background:
-    post:
-      tags:
-        - "Personalization & Customization"
-      summary: "Generate a Custom App Background"
-      description: "Generates a unique background image for the application theme using the Imagen model based on a user's text prompt."
-      operationId: "generateAppBackground"
-      security:
-        - oAuth2Auth: [write:personalization]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GenerateImageRequest"
-      responses:
-        "200":
-          description: "The generated image, returned as a base64 encoded string."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GeneratedImageResponse"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /ai/personalization/card-design:
-    post:
-      tags:
-        - "Personalization & Customization"
-      summary: "Edit a Bank Card Design"
-      description: "Edits a base image for a bank card design using a text prompt. This endpoint utilizes the Gemini model's image editing capabilities."
-      operationId: "editCardDesign"
-      security:
-        - oAuth2Auth: [write:personalization]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EditImageRequest"
-      responses:
-        "200":
-          description: "The edited image, returned as a base64 encoded string."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GeneratedImageResponse"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /ai/personalization/card-story:
-    post:
-      tags:
-        - "Personalization & Customization"
-      summary: "Generate a Card Story"
-      description: "Uses AI to generate a short, inspiring 'Card Story' based on the prompt used to design a custom bank card."
-      operationId: "generateCardStory"
-      security:
-        - oAuth2Auth: [interact:ai_advisor]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - designPrompt
-              properties:
-                designPrompt:
-                  type: string
-                  description: "The text prompt that was used to create the card's visual design."
-      responses:
-        "200":
-          description: "The AI-generated story for the card."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  story:
-                    type: string
-                    example: "This card represents resilience and rebirth. The phoenix, forged from data streams, is a symbol of your financial journey rising to new heights."
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-# ================================================================================================
-# COMPONENTS: CREATIVE AI SUITES
-# ================================================================================================
-components:
-  schemas:
-    GenerateVideoRequest:
-      type: object
-      required:
-        - prompt
-      properties:
-        prompt:
-          type: string
-          description: "A detailed description of the video to be generated."
-          example: "A neon hologram of a cat driving a futuristic car at top speed through a cyberpunk city."
-        style:
-          type: string
-          enum: [Cinematic, Vibrant, Monochrome, Surreal, Default]
-          default: Cinematic
-        lengthSeconds:
-          type: integer
-          description: "The desired length of the video in seconds."
-          example: 15
-        voiceover:
-          type: object
-          properties:
-            style:
-              type: string
-              enum: ["Energetic Male", "Calm Female", "None"]
-              default: "None"
-            script:
-              type: string
-              description: "An optional script for the voiceover. If omitted, the AI may generate one."
-    VideoOperationStatus:
-      type: object
-      properties:
-        operationId:
-          type: string
-        status:
-          type: string
-          enum: [generating, polling, done, error]
-        message:
-          type: string
-          description: "A user-facing message describing the current step of the generation process."
-          example: "Rendering motion vectors..."
-        progress:
-          type: integer
-          description: "An estimated percentage of completion."
-          example: 65
-        videoUri:
-          type: string
-          format: uri
-          nullable: true
-          description: "A temporary, signed URL to download the generated video file. Only present when status is 'done'."
-        errorDetails:
-          type: string
-          nullable: true
-          description: "Details of the error if the status is 'error'."
-    GenerateImageRequest:
-      type: object
-      required:
-        - prompt
-      properties:
-        prompt:
-          type: string
-          description: "A detailed description of the image to be generated."
-          example: "An isolated lighthouse on a stormy sea, with a powerful beam of light cutting through the darkness, digital art."
-        aspectRatio:
-          type: string
-          enum: ["1:1", "16:9", "9:16", "4:3", "3:4"]
-          default: "16:9"
-    EditImageRequest:
-      type: object
-      required:
-        - baseImage
-        - prompt
-      properties:
-        baseImage:
-          type: object
-          required:
-            - mimeType
-            - data
-          properties:
-            mimeType:
-              type: string
-              description: "The IANA standard MIME type of the base image."
-              example: "image/jpeg"
-            data:
-              type: string
-              format: byte
-              description: "The base64 encoded string of the base image."
-        prompt:
-          type: string
-          description: "The editing instruction for the AI."
-          example: "Add a phoenix rising from the center, with its wings made of glowing data streams."
-    GeneratedImageResponse:
-      type: object
-      properties:
-        image:
-          type: object
-          properties:
-            mimeType:
-              type: string
-              example: "image/jpeg"
-            data:
-              type: string
-              format: byte
-              description: "The base64 encoded string of the generated or edited image."
-        metadata:
-          type: object
-          properties:
-            revisedPrompt:
-              type: string
-              description: "The prompt as revised by the model for safety or clarity."
-              nullable: true
-# ... CONTINUED IN PART 7 ...
-
-# ================================================================================================
-# PART 7/10: MARKETPLACE (PLATO) & REWARDS & GAMIFICATION
-# ================================================================================================
-# This file provides an exhaustive definition of all endpoints and schemas
-# related to consumer engagement platforms. This includes Plato's Marketplace for
-# AI-curated product recommendations and the full suite of Rewards & Gamification
-# endpoints for managing points, levels, and redemptions.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: MARKETPLACE (PLATO)
-# ================================================================================================
-paths:
-  /marketplace/recommendations:
-    get:
-      tags:
-        - "Marketplace (Plato)"
-      summary: "Get AI-Curated Product Recommendations"
-      description: "Retrieves a list of product recommendations from Plato's Marketplace, curated by AI based on the user's spending habits, financial goals, and recent activity."
-      operationId: "getMarketplaceRecommendations"
-      security:
-        - oAuth2Auth: [read:marketplace]
-      parameters:
-        - name: "limit"
-          in: "query"
-          description: "The number of products to return."
-          schema:
-            type: integer
-            default: 6
-        - name: "category"
-          in: "query"
-          description: "Filter recommendations by a specific category."
-          schema:
-            type: string
-      responses:
-        "200":
-          description: "A list of AI-curated product recommendations."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/MarketplaceProduct"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "503":
-          description: "AI recommendation service is temporarily unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /marketplace/products/{productId}:
-    get:
-      tags:
-        - "Marketplace (Plato)"
-      summary: "Get Product Details"
-      description: "Retrieves detailed information for a single product from the marketplace."
-      operationId: "getMarketplaceProductById"
-      security:
-        - oAuth2Auth: [read:marketplace]
-      parameters:
-        - $ref: "#/components/parameters/ProductId"
-      responses:
-        "200":
-          description: "Detailed product information."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MarketplaceProduct"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-  /marketplace/products/{productId}/simulate-impact:
-    post:
-      tags:
-        - "Marketplace (Plato)"
-      summary: "Simulate Purchase Impact"
-      description: "Runs an AI-powered simulation to analyze the financial impact of purchasing a specific product. The analysis includes effects on budgets, savings goals, and provides alternative product suggestions."
-      operationId: "simulatePurchaseImpact"
-      security:
-        - oAuth2Auth: [read:marketplace, interact:ai_advisor]
-      parameters:
-        - $ref: "#/components/parameters/ProductId"
-      responses:
-        "200":
-          description: "A detailed analysis of the potential purchase's financial impact."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PurchaseImpactAnalysis"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "503":
-          description: "AI analysis service is temporarily unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-# ================================================================================================
-# PATHS: REWARDS & GAMIFICATION
-# ================================================================================================
-  /rewards/balance:
-    get:
-      tags:
-        - "Rewards & Gamification"
-      summary: "Get Reward Points Balance"
-      description: "Retrieves the user's current reward points balance and recent activity."
-      operationId: "getRewardBalance"
-      security:
-        - oAuth2Auth: [read:rewards]
-      responses:
-        "200":
-          description: "The user's reward points balance."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RewardPoints"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /rewards/gamification-status:
-    get:
-      tags:
-        - "Rewards & Gamification"
-      summary: "Get Gamification Status"
-      description: "Retrieves the user's current gamification status, including their level, title, and progress to the next level."
-      operationId: "getGamificationStatus"
-      security:
-        - oAuth2Auth: [read:profile]
-      responses:
-        "200":
-          description: "The user's current gamification status."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GamificationState"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /rewards/items:
-    get:
-      tags:
-        - "Rewards & Gamification"
-      summary: "List Redeemable Items"
-      description: "Retrieves a list of all items available for redemption with reward points."
-      operationId: "listRewardItems"
-      security:
-        - oAuth2Auth: [read:rewards]
-      responses:
-        "200":
-          description: "A list of available reward items."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RewardItem"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /rewards/items/{itemId}/redeem:
-    post:
-      tags:
-        - "Rewards & Gamification"
-      summary: "Redeem a Reward Item"
-      description: "Redeems a specific item using the user's reward points. The cost of the item will be deducted from their points balance."
-      operationId: "redeemRewardItem"
-      security:
-        - oAuth2Auth: [write:rewards]
-      parameters:
-        - name: itemId
-          in: path
-          required: true
-          description: "The unique identifier for the reward item."
-          schema:
-            type: string
-            example: "rew1"
-      responses:
-        "200":
-          description: "The redemption was successful. The response includes the updated reward points balance."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RewardPoints"
-        "400":
-          description: "Bad Request. Typically indicates insufficient points for the redemption."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-# ================================================================================================
-# COMPONENTS: MARKETPLACE & REWARDS
-# ================================================================================================
-components:
-  parameters:
-    ProductId:
-      name: productId
-      in: path
-      required: true
-      description: "The unique identifier for the marketplace product."
-      schema:
-        type: string
-        example: "prod_12345"
-  schemas:
-    MarketplaceProduct:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        price:
-          type: number
-          format: float
-        category:
-          type: string
-        imageUrl:
-          type: string
-          format: uri
-        aiJustification:
-          type: string
-          description: "The AI's explanation for why this product is recommended to the user."
-        esgScore:
-          type: integer
-          description: "AI-estimated score (1-5) of the product's environmental and social impact."
-        reviewSentimentScore:
-          type: integer
-          description: "AI-analyzed sentiment score (0-100) from online reviews."
-    PurchaseImpactAnalysis:
-      type: object
-      properties:
-        financialImpact:
-          type: object
-          properties:
-            budgetImpact:
-              type: string
-              example: "This purchase would use 12% of your 'Shopping' budget for the month."
-            savingsImpact:
-              type: string
-              example: "Reduces your potential monthly savings by 8%."
-            goalAlignment:
-              type: string
-              example: "Aligns 75% with your 'Upgrade Tech' financial goal."
-        alternativeSuggestions:
-          type: array
-          items:
-            type: object
-            properties:
-              type:
-                type: string
-                enum: [Eco-Friendly, Budget-Friendly]
-              product:
-                $ref: "#/components/schemas/MarketplaceProduct"
-    RewardPoints:
-      type: object
-      properties:
-        balance:
-          type: integer
-          example: 85250
-        lastEarned:
-          type: integer
-          example: 320
-        lastRedeemed:
-          type: integer
-          example: 5000
-        currency:
-          type: string
-          example: "Points"
-    GamificationState:
-      type: object
-      properties:
-        score:
-          type: integer
-          example: 450
-        level:
-          type: integer
-          example: 3
-        levelName:
-          type: string
-          example: "Savings Specialist"
-        progress:
-          type: number
-          format: float
-          description: "Percentage progress to the next level."
-          example: 25.0
-    RewardItem:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "rew1"
-        name:
-          type: string
-          example: "$25 Statement Credit"
-        cost:
-          type: integer
-          description: "The cost of the item in reward points."
-          example: 25000
-        type:
-          type: string
-          enum: [cashback, giftcard, impact]
-        description:
-          type: string
-        iconName:
-          type: string
-          description: "A key for a predefined icon in the client."
-          example: "cash"
-# ... CONTINUED IN PART 8 ...
-# ================================================================================================
-# PART 8/10: CRYPTO & WEB3 HUB
-# ================================================================================================
-# This file provides an exhaustive definition of all endpoints and schemas
-# related to the Crypto & Web3 Hub. It details the high-fidelity simulated
-# integrations with key partners like Metamask (wallet connection), Stripe
-# (crypto on-ramp), and Marqeta (virtual card issuance), as well as endpoints
-# for managing NFTs and other digital assets.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: CRYPTO & WEB3 HUB
-# ================================================================================================
-paths:
-  /web3/wallet/connect:
-    post:
-      tags:
-        - "Crypto & Web3"
-      summary: "Connect a Web3 Wallet"
-      description: "Simulates the process of connecting a user's Web3 wallet (e.g., Metamask) to their Demo Bank profile. This involves a signature request and returns the connected wallet's address and primary asset balance."
-      operationId: "connectWeb3Wallet"
-      security:
-        - oAuth2Auth: [write:web3]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - signedMessage
-                - address
-              properties:
-                signedMessage:
-                  type: string
-                  description: "A signed message from the user's wallet to prove ownership."
-                  example: "0x123...abc"
-                address:
-                  type: string
-                  description: "The user's wallet address."
-                  example: "0x1a2b...c3d4"
-      responses:
-        "200":
-          description: "Wallet connected successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WalletInfo"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /web3/on-ramp/quote:
-    post:
-      tags:
-        - "Crypto & Web3"
-      summary: "Get Crypto Purchase Quote"
-      description: "Simulates getting a real-time quote for a cryptocurrency purchase via our Stripe integration. Returns the estimated amount of crypto for a given fiat amount."
-      operationId: "getCryptoQuote"
-      security:
-        - oAuth2Auth: [read:web3]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - fromCurrency
-                - toCrypto
-                - amount
-              properties:
-                fromCurrency:
-                  type: string
-                  example: "USD"
-                toCrypto:
-                  type: string
-                  example: "ETH"
-                amount:
-                  type: number
-                  format: float
-                  description: "The amount in the fromCurrency to spend."
-                  example: 100
-      responses:
-        "200":
-          description: "A real-time quote for the purchase."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CryptoQuote"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /web3/on-ramp/execute:
-    post:
-      tags:
-        - "Crypto & Web3"
-      summary: "Execute Crypto Purchase"
-      description: "Simulates executing a crypto purchase with a payment token from Stripe. This creates a transaction and updates the user's crypto asset balance."
-      operationId: "executeCryptoPurchase"
-      security:
-        - oAuth2Auth: [write:web3, write:payments]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CryptoPurchaseRequest"
-      responses:
-        "200":
-          description: "The crypto purchase was successful."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CryptoPurchaseConfirmation"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /web3/virtual-card/issue:
-    post:
-      tags:
-        - "Crypto & Web3"
-      summary: "Issue a Virtual Card"
-      description: "Simulates issuing a new, crypto-backed virtual card via our Marqeta integration. The card can be used for online purchases, drawing value from the user's crypto balance."
-      operationId: "issueVirtualCard"
-      security:
-        - oAuth2Auth: [write:web3]
-      responses:
-        "201":
-          description: "Virtual card issued successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/VirtualCard"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "409":
-          description: "A virtual card already exists for this user."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /web3/nfts:
-    get:
-      tags:
-        - "Crypto & Web3"
-      summary: "List NFT Assets"
-      description: "Retrieves a list of all NFT assets associated with the user's connected wallet."
-      operationId: "listNFTs"
-      security:
-        - oAuth2Auth: [read:web3]
-      responses:
-        "200":
-          description: "A list of NFT assets."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/NFTAsset"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /web3/nfts/{nftId}:
-    get:
-      tags:
-        - "Crypto & Web3"
-      summary: "Get NFT Details"
-      description: "Retrieves detailed information for a specific NFT, including its metadata and contract address."
-      operationId: "getNFTDetails"
-      security:
-        - oAuth2Auth: [read:web3]
-      parameters:
-        - name: nftId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: "Detailed NFT information."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NFTAsset"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-
-# ================================================================================================
-# COMPONENTS: CRYPTO & WEB3
-# ================================================================================================
-components:
-  schemas:
-    WalletInfo:
-      type: object
-      properties:
-        address:
-          type: string
-          example: "0x1a2b...c3d4"
-        balance:
-          type: number
-          format: float
-          description: "The balance of the primary asset (e.g., ETH)."
-          example: 12.5
-        primaryAsset:
-          type: string
-          example: "ETH"
-    CryptoQuote:
-      type: object
-      properties:
-        quoteId:
-          type: string
-        fromCurrency:
-          type: string
-        fromAmount:
-          type: number
-          format: float
-        toCrypto:
-          type: string
-        toAmount:
-          type: number
-          format: float
-          description: "The estimated amount of crypto the user will receive."
-        exchangeRate:
-          type: number
-          format: float
-        expiresAt:
-          type: string
-          format: date-time
-    CryptoPurchaseRequest:
-      type: object
-      required:
-        - quoteId
-        - paymentMethodToken
-      properties:
-        quoteId:
-          type: string
-          description: "The ID of a recently obtained quote."
-        paymentMethodToken:
-          type: string
-          description: "A single-use payment token from the client-side Stripe SDK."
-    CryptoPurchaseConfirmation:
-      type: object
-      properties:
-        purchaseId:
-          type: string
-        status:
-          type: string
-          enum: [Completed, Pending, Failed]
-        fromAmount:
-          type: number
-          format: float
-        toAmount:
-          type: number
-          format: float
-        toCrypto:
-          type: string
-        transaction:
-          $ref: "#/components/schemas/Transaction"
-    VirtualCard:
-      type: object
-      properties:
-        cardId:
-          type: string
-        cardNumber:
-          type: string
-          example: "5555 1234 5678 9012"
-        cvv:
-          type: string
-          example: "123"
-        expiry:
-          type: string
-          example: "12/28"
-        holderName:
-          type: string
-          example: "The Visionary"
-        status:
-          type: string
-          enum: [Active, Frozen]
-    NFTAsset:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-          example: "Quantum Vision Pass"
-        imageUrl:
-          type: string
-          format: uri
-        contractAddress:
-          type: string
-        tokenId:
-          type: string
-        collectionName:
-          type: string
-          example: "Demo Bank Genesis"
-# ... CONTINUED IN PART 9 ...
-#
-================================================================================================
-# PART 9/10: CORPORATE FINANCE - CARDS, PAYMENTS, INVOICING
-# ================================================================================================
-# This file provides an exhaustive definition for the core of the Corporate Finance
-# suite. It details the endpoints and schemas for managing corporate card programs,
-# tracking corporate transactions, and handling the entire lifecycle of payment
-# orders and invoices.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: CORPORATE FINANCE - CARDS
-# ================================================================================================
-paths:
   /corporate/cards:
     get:
       tags:
         - "Corporate Finance - Cards"
       summary: "List Corporate Cards"
-      description: "Retrieves a paginated list of all corporate cards associated with the user's organization, with options for filtering by status or holder."
+      description: "Retrieves a list of all corporate cards associated with the user's organization."
       operationId: "listCorporateCards"
       security:
         - oAuth2Auth: [read:corporate_cards]
-      parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [Active, Suspended, Lost]
-        - name: holderName
-          in: query
-          schema:
-            type: string
       responses:
         "200":
-          description: "A paginated list of corporate cards."
+          description: "A list of all corporate cards."
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  limit:
-                    type: integer
-                  offset:
-                    type: integer
-                  total:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/CorporateCard"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-    post:
-      tags:
-        - "Corporate Finance - Cards"
-      summary: "Issue a New Corporate Card"
-      description: "Issues a new physical or virtual corporate card to an employee or for a specific purpose (e.g., marketing spend)."
-      operationId: "issueCorporateCard"
-      security:
-        - oAuth2Auth: [write:corporate_cards]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CorporateCardCreate"
-      responses:
-        "201":
-          description: "The new corporate card was issued successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CorporateCard"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
+                type: array
+                items:
+                  $ref: "#/components/schemas/CorporateCard"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "403":
           $ref: "#/components/responses/ForbiddenError"
 
-  /corporate/cards/{cardId}:
-    get:
-      tags:
-        - "Corporate Finance - Cards"
-      summary: "Get Corporate Card Details"
-      description: "Retrieves detailed information for a specific corporate card, including its full controls and recent transaction summary."
-      operationId: "getCorporateCardDetails"
-      security:
-        - oAuth2Auth: [read:corporate_cards]
-      parameters:
-        - $ref: "#/components/parameters/CardId"
-      responses:
-        "200":
-          description: "Detailed information for the corporate card."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CorporateCard"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
+  /corporate/cards/{cardId}/controls:
     put:
       tags:
         - "Corporate Finance - Cards"
       summary: "Update Card Controls"
-      description: "Updates the spending controls, limits, and status for a specific corporate card."
+      description: "Updates the spending controls and limits for a specific corporate card."
       operationId: "updateCorporateCardControls"
       security:
         - oAuth2Auth: [write:corporate_cards]
@@ -3511,10 +372,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CorporateCardUpdate"
+              $ref: "#/components/schemas/CorporateCardControls"
       responses:
         "200":
-          description: "The corporate card was updated successfully."
+          description: "The corporate card with its controls updated successfully."
           content:
             application/json:
               schema:
@@ -3528,109 +389,17 @@ paths:
         "404":
           $ref: "#/components/responses/NotFoundError"
 
-  /corporate/transactions:
-    get:
+  /corporate/cards/{cardId}/freeze:
+    post:
       tags:
         - "Corporate Finance - Cards"
-      summary: "List All Corporate Transactions"
-      description: "Retrieves a live feed of all transactions made on any corporate card within the organization."
-      operationId: "listCorporateTransactions"
+      summary: "Freeze or Unfreeze a Corporate Card"
+      description: "Immediately freezes or unfreezes a corporate card, preventing or allowing transactions."
+      operationId: "toggleCorporateCardFreeze"
       security:
-        - oAuth2Auth: [read:corporate_cards]
+        - oAuth2Auth: [write:corporate_cards]
       parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
-      responses:
-        "200":
-          description: "A paginated list of corporate transactions."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/CorporateTransaction"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-
-# ================================================================================================
-# PATHS: CORPORATE FINANCE - PAYMENTS & INVOICING
-# ================================================================================================
-  /corporate/payment-orders:
-    get:
-      tags:
-        - "Corporate Finance - Payments"
-      summary: "List Payment Orders"
-      description: "Retrieves a list of all payment orders (e.g., ACH, Wire) for the organization."
-      operationId: "listPaymentOrders"
-      security:
-        - oAuth2Auth: [read:corporate_payments]
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [needs_approval, approved, processing, completed, denied, returned]
-      responses:
-        "200":
-          description: "A list of payment orders."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PaymentOrder"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-    post:
-      tags:
-        - "Corporate Finance - Payments"
-      summary: "Create a Payment Order"
-      description: "Creates a new payment order to send funds to a counterparty."
-      operationId: "createPaymentOrder"
-      security:
-        - oAuth2Auth: [write:corporate_payments]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PaymentOrderCreate"
-      responses:
-        "201":
-          description: "Payment order created successfully."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaymentOrder"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-
-  /corporate/payment-orders/{paymentOrderId}/approve:
-    post:
-      tags:
-        - "Corporate Finance - Payments"
-      summary: "Approve or Deny a Payment Order"
-      description: "Allows an authorized user to approve or deny a payment order that is in the 'needs_approval' state."
-      operationId: "reviewPaymentOrder"
-      security:
-        - oAuth2Auth: [write:corporate_payments]
-      parameters:
-        - name: paymentOrderId
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/CardId"
       requestBody:
         required: true
         content:
@@ -3638,21 +407,18 @@ paths:
             schema:
               type: object
               required:
-                - action
+                - freeze
               properties:
-                action:
-                  type: string
-                  enum: [approve, deny]
-                reason:
-                  type: string
-                  description: "Required if action is 'deny'."
+                freeze:
+                  type: boolean
+                  description: "Set to true to freeze, false to unfreeze."
       responses:
         "200":
-          description: "The payment order's status was updated."
+          description: "The updated corporate card object with the new frozen status."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaymentOrder"
+                $ref: "#/components/schemas/CorporateCard"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "403":
@@ -3660,252 +426,12 @@ paths:
         "404":
           $ref: "#/components/responses/NotFoundError"
 
-  /corporate/invoices:
-    get:
-      tags:
-        - "Corporate Finance - Payments"
-      summary: "List Invoices"
-      description: "Retrieves a list of invoices (both payable and receivable)."
-      operationId: "listInvoices"
-      security:
-        - oAuth2Auth: [read:corporate_payments]
-      responses:
-        "200":
-          description: "A list of invoices."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Invoice"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-
-# ================================================================================================
-# COMPONENTS: CORPORATE FINANCE
-# ================================================================================================
-components:
-  parameters:
-    CardId:
-      name: cardId
-      in: path
-      required: true
-      description: "The unique identifier for the corporate card."
-      schema:
-        type: string
-        example: "corp_card_zyx987"
-  schemas:
-    CorporateCard:
-      type: object
-      properties:
-        id:
-          type: string
-        holderName:
-          type: string
-        cardNumberMask:
-          type: string
-        status:
-          type: string
-          enum: [Active, Suspended, Lost]
-        frozen:
-          type: boolean
-        controls:
-          $ref: "#/components/schemas/CorporateCardControls"
-    CorporateCardCreate:
-      type: object
-      required:
-        - holderName
-        - controls
-      properties:
-        holderName:
-          type: string
-        cardType:
-          type: string
-          enum: [Virtual, Physical]
-          default: Virtual
-        controls:
-          $ref: "#/components/schemas/CorporateCardControls"
-    CorporateCardUpdate:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [Active, Suspended, Lost]
-        frozen:
-          type: boolean
-        controls:
-          $ref: "#/components/schemas/CorporateCardControls"
-    CorporateCardControls:
-      type: object
-      properties:
-        atm:
-          type: boolean
-        contactless:
-          type: boolean
-        online:
-          type: boolean
-        monthlyLimit:
-          type: number
-          description: "The spending limit in USD for the calendar month."
-    CorporateTransaction:
-      type: object
-      properties:
-        id:
-          type: string
-        cardId:
-          type: string
-        holderName:
-          type: string
-        merchant:
-          type: string
-        amount:
-          type: number
-          format: float
-        status:
-          type: string
-          enum: [Pending, Approved, Declined]
-        timestamp:
-          type: string
-          format: date-time
-    PaymentOrder:
-      type: object
-      properties:
-        id:
-          type: string
-        counterpartyName:
-          type: string
-        amount:
-          type: number
-          format: float
-        currency:
-          type: string
-        direction:
-          type: string
-          enum: [credit, debit]
-        status:
-          type: string
-          enum: [needs_approval, approved, processing, completed, denied, returned]
-        date:
-          type: string
-          format: date
-        type:
-          type: string
-          enum: [ACH, Wire, RTP]
-    PaymentOrderCreate:
-      type: object
-      required:
-        - counterpartyId
-        - amount
-        - direction
-        - type
-      properties:
-        counterpartyId:
-          type: string
-        amount:
-          type: number
-          format: float
-        direction:
-          type: string
-          enum: [credit, debit]
-        type:
-          type: string
-          enum: [ACH, Wire, RTP]
-        currency:
-          type: string
-          default: "USD"
-    Invoice:
-      type: object
-      properties:
-        id:
-          type: string
-        invoiceNumber:
-          type: string
-        counterpartyName:
-          type: string
-        dueDate:
-          type: string
-          format: date
-        amount:
-          type: number
-          format: float
-        status:
-          type: string
-          enum: [unpaid, paid, overdue, voided]
-# ... CONTINUED IN PART 10 ...
-
-# ================================================================================================
-# PART 10/10: CORPORATE COMPLIANCE & GENERAL UTILITIES
-# ================================================================================================
-# This final file completes the Quantum Core API specification. It details the
-# advanced corporate Compliance and AI-powered Anomaly Detection systems. It also
-# covers general-purpose utility endpoints for Notifications, Security, Open Banking,
-# and Credit Health, providing a comprehensive and robust API surface.
-# ------------------------------------------------------------------------------------------------
-
-# ================================================================================================
-# PATHS: CORPORATE FINANCE - COMPLIANCE & ANOMALIES
-# ================================================================================================
-paths:
-  /corporate/compliance/rules:
-    get:
-      tags:
-        - "Corporate Finance - Compliance"
-      summary: "List Compliance Rules"
-      description: "Retrieves the list of all active compliance rules that are used to automatically flag transactions and other financial operations for review."
-      operationId: "listComplianceRules"
-      security:
-        - oAuth2Auth: [read:compliance]
-      responses:
-        "200":
-          description: "A list of compliance rules."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ComplianceRule"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-
-  /corporate/compliance/cases:
-    get:
-      tags:
-        - "Corporate Finance - Compliance"
-      summary: "List Compliance Cases"
-      description: "Retrieves a list of all compliance cases that have been opened for manual review."
-      operationId: "listComplianceCases"
-      security:
-        - oAuth2Auth: [read:compliance]
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [open, closed]
-      responses:
-        "200":
-          description: "A list of compliance cases."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ComplianceCase"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "403":
-          $ref: "#/components/responses/ForbiddenError"
-
   /corporate/anomalies:
     get:
       tags:
         - "Corporate Finance - Compliance"
       summary: "List Financial Anomalies"
-      description: "Retrieves a list of AI-detected financial anomalies. These are not based on hard rules, but on deviations from normal behavior."
+      description: "Retrieves a list of AI-detected financial anomalies that may require review."
       operationId: "listAnomalies"
       security:
         - oAuth2Auth: [read:compliance]
@@ -3916,12 +442,6 @@ paths:
           schema:
             type: string
             enum: [New, Under Review, Dismissed, Resolved]
-        - name: severity
-          in: query
-          description: "Filter anomalies by severity level."
-          schema:
-            type: string
-            enum: [Low, Medium, High, Critical]
       responses:
         "200":
           description: "A list of AI-detected financial anomalies."
@@ -3959,9 +479,6 @@ paths:
                 status:
                   type: string
                   enum: [Dismissed, Resolved, Under Review]
-                comment:
-                  type: string
-                  description: "An optional comment from the reviewer."
       responses:
         "200":
           description: "The updated anomaly object."
@@ -3978,124 +495,53 @@ paths:
         "404":
           $ref: "#/components/responses/NotFoundError"
 
-# ================================================================================================
-# PATHS: GENERAL UTILITIES
-# ================================================================================================
-  /notifications:
-    get:
-      tags:
-        - "Notifications"
-      summary: "List Notifications"
-      description: "Retrieves a list of the user's recent notifications."
-      operationId: "listNotifications"
-      security:
-        - oAuth2Auth: [read:profile]
-      parameters:
-        - name: "read"
-          in: "query"
-          description: "Filter notifications by their read status."
-          schema:
-            type: boolean
-      responses:
-        "200":
-          description: "A list of notifications."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Notification"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /notifications/mark-all-read:
-    post:
-      tags:
-        - "Notifications"
-      summary: "Mark All Notifications as Read"
-      description: "Marks all of the user's unread notifications as read."
-      operationId: "markAllNotificationsRead"
-      security:
-        - oAuth2Auth: [write:profile]
-      responses:
-        "204":
-          description: "All notifications marked as read."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /security/credit-health:
-    get:
-      tags:
-        - "Credit Health"
-      summary: "Get Credit Health Report"
-      description: "Retrieves a detailed credit health report for the user, including their credit score and the factors influencing it."
-      operationId: "getCreditHealth"
-      security:
-        - oAuth2Auth: [read:credit_health]
-      responses:
-        "200":
-          description: "The user's credit health report."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreditHealthReport"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "503":
-          description: "The credit reporting service is temporarily unavailable."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /security/open-banking/connections:
-    get:
-      tags:
-        - "Security & Open Banking"
-      summary: "List Open Banking Connections"
-      description: "Retrieves a list of all third-party applications that the user has granted access to via Open Banking."
-      operationId: "listOpenBankingConnections"
-      security:
-        - oAuth2Auth: [read:security]
-      responses:
-        "200":
-          description: "A list of active Open Banking connections."
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OpenBankingConnection"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /security/open-banking/connections/{connectionId}:
-    delete:
-      tags:
-        - "Security & Open Banking"
-      summary: "Revoke Open Banking Connection"
-      description: "Revokes a third-party application's access to the user's data."
-      operationId: "revokeOpenBankingConnection"
-      security:
-        - oAuth2Auth: [write:security]
-      parameters:
-        - name: connectionId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: "Connection revoked successfully."
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-# ================================================================================================
-# COMPONENTS: COMPLIANCE & UTILITIES
-# ================================================================================================
 components:
+  securitySchemes:
+    oAuth2Auth:
+      type: oauth2
+      description: "Standard OAuth2 for user authentication and authorization."
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.demobank.com/oauth2/auth
+          tokenUrl: https://api.demobank.com/oauth2/token
+          scopes:
+            read:profile: "Read user profile information."
+            write:profile: "Modify user profile information."
+            read:accounts: "Read access to linked accounts and balances."
+            read:transactions: "Read access to transaction history."
+            write:transactions: "Modify transaction data (e.g., categorization)."
+            write:payments: "Initiate payments and transfers."
+            interact:ai_advisor: "Access to the conversational AI Advisor."
+            interact:ai_oracle: "Access to the Quantum Oracle simulation AI."
+            read:weaver: "Read status of business plan submissions."
+            write:weaver: "Submit and manage business plans in the Quantum Weaver."
+            read:ad_studio: "Check status of video generation jobs."
+            write:ad_studio: "Generate video content."
+            read:corporate_cards: "Read corporate card information and controls."
+            write:corporate_cards: "Modify corporate card status and controls."
+            read:corporate_payments: "Read corporate payment orders and invoices."
+            write:corporate_payments: "Create and approve corporate payments."
+            read:compliance: "Read compliance cases and financial anomalies."
+            write:compliance: "Update the status of compliance cases and anomalies."
+            read:rewards: "Read rewards balance and available items."
+            write:rewards: "Redeem reward points for items."
   parameters:
+    TransactionId:
+      name: transactionId
+      in: path
+      required: true
+      description: "The unique identifier for the transaction."
+      schema:
+        type: string
+        example: "txn_1a2b3c4d5e"
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      description: "The unique identifier for the corporate card."
+      schema:
+        type: string
+        example: "corp_card_zyx987"
     AnomalyId:
       name: anomalyId
       in: path
@@ -4104,39 +550,308 @@ components:
       schema:
         type: string
         example: "anom_abc123"
+  responses:
+    UnauthorizedError:
+      description: "Authentication information is missing or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: "Authenticated user does not have permission to perform this action."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: "The requested resource could not be found."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: "The request payload is malformed or invalid."
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
-    ComplianceRule:
+    User:
       type: object
       properties:
         id:
           type: string
+          example: "user-visionary-01"
         name:
+          type: string
+          example: "The Visionary"
+        email:
+          type: string
+          format: email
+          example: "visionary@demobank.com"
+        levelName:
+          type: string
+          example: "Wealth Master"
+        level:
+          type: integer
+          example: 5
+    LinkedAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "The institution ID from the data provider (e.g., Plaid)."
+        name:
+          type: string
+          example: "Chase"
+        mask:
+          type: string
+          example: "1111"
+        type:
+          type: string
+          example: "depository"
+        subtype:
+          type: string
+          example: "checking"
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "txn_1a2b3c4d5e"
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+          example: "Dining"
+        description:
+          type: string
+          example: "Coffee Shop"
+        amount:
+          type: number
+          format: float
+          example: 12.50
+        date:
+          type: string
+          format: date
+          example: "2024-07-21"
+        carbonFootprint:
+          type: number
+          format: float
+          nullable: true
+          example: 1.2
+    PaginatedTransactions:
+      type: object
+      properties:
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+    AIChatRequest:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Analyze my recent spending."
+        sessionId:
+          type: string
+          description: "ID to maintain conversation history. A new session is created if omitted."
+          nullable: true
+          example: "session-xyz-789"
+        functionResponse:
+          type: object
+          description: "The result from a tool call requested by the AI in a previous turn."
+          nullable: true
+          properties:
+            name:
+              type: string
+              example: "send_money"
+            response:
+              type: object
+              example: {"status": "success", "transactionId": "pmt_654321"}
+    AIChatResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          description: "The text response from the AI."
+          example: "I've analyzed your spending. It seems your largest category this month was 'Dining'."
+        functionCalls:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "send_money"
+              args:
+                type: object
+                example: {"amount": 50, "recipient": "Alex", "currency": "USD"}
+    SimulationRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+          description: "A natural language description of the scenario to simulate."
+          example: "What if I lose my job for 6 months but receive a $10,000 severance package?"
+        parameters:
+          type: object
+          description: "Key numerical parameters to guide the simulation."
+          properties:
+            durationMonths:
+              type: integer
+              example: 6
+            amountUSD:
+              type: number
+              example: 10000
+    SimulationResponse:
+      type: object
+      properties:
+        simulationId:
+          type: string
+        narrativeSummary:
+          type: string
+          description: "An AI-generated summary of the simulation's outcome."
+        keyImpacts:
+          type: array
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+                example: "Emergency Fund Depletion"
+              value:
+                type: string
+                example: "4 months"
+              severity:
+                type: string
+                enum: [low, medium, high]
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "Reduce Discretionary Spending"
+              description:
+                type: string
+                example: "Consider reducing your 'Dining' and 'Shopping' budgets by 25% to extend your financial runway."
+    QuantumWeaverState:
+      type: object
+      properties:
+        pitchId:
+          type: string
+          example: "pitch_qw_abcdef"
+        stage:
+          type: string
+          enum: [pitch, analysis, test, final_review, approved, error]
+        feedback:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AIQuestion"
+        loanAmount:
+          type: number
+        coachingPlan:
+          $ref: "#/components/schemas/AIPlan"
+    AIQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        category:
+          type: string
+    AIPlan:
+      type: object
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/AIPlanStep"
+    AIPlanStep:
+      type: object
+      properties:
+        title:
           type: string
         description:
           type: string
-        action:
+        timeline:
           type: string
-          enum: [flag_for_review, block]
-        active:
-          type: boolean
-    ComplianceCase:
+    GenerateVideoRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          example: "A neon hologram of a cat driving a futuristic car."
+        style:
+          type: string
+          enum: [Cinematic, Vibrant, Monochrome, Surreal]
+          default: Cinematic
+        lengthSeconds:
+          type: integer
+          example: 15
+    VideoOperationStatus:
+      type: object
+      properties:
+        operationId:
+          type: string
+        status:
+          type: string
+          enum: [generating, polling, done, error]
+        message:
+          type: string
+          example: "Rendering motion vectors..."
+        videoUri:
+          type: string
+          format: uri
+          nullable: true
+          description: "A temporary, signed URL to download the generated video file. Only present when status is 'done'."
+    CorporateCard:
       type: object
       properties:
         id:
           type: string
-        reason:
+        holderName:
           type: string
-        entityType:
-          type: string
-          enum: [PaymentOrder, Counterparty]
-        entityId:
+        cardNumberMask:
           type: string
         status:
           type: string
-          enum: [open, closed]
-        openedDate:
-          type: string
-          format: date-time
+          enum: [Active, Suspended, Lost]
+        frozen:
+          type: boolean
+        controls:
+          $ref: "#/components/schemas/CorporateCardControls"
+    CorporateCardControls:
+      type: object
+      properties:
+        atm:
+          type: boolean
+        contactless:
+          type: boolean
+        online:
+          type: boolean
+        monthlyLimit:
+          type: number
+          description: "The spending limit in USD for the calendar month."
     FinancialAnomaly:
       type: object
       properties:
@@ -4158,68 +873,25 @@ components:
           enum: [PaymentOrder, Transaction, Counterparty, CorporateCard]
         entityId:
           type: string
-        entityDescription:
-          type: string
         timestamp:
           type: string
           format: date-time
         riskScore:
           type: integer
           description: "A risk score from 0-100."
-    Notification:
+    Error:
       type: object
+      required:
+        - code
+        - message
       properties:
-        id:
+        code:
           type: string
+          example: "invalid_request"
         message:
           type: string
-        timestamp:
-          type: string
-          format: date-time
-        read:
-          type: boolean
-        view:
-          type: string
-          description: "A key representing the view to navigate to when the notification is clicked."
-          example: "CreditHealth"
-    CreditHealthReport:
-      type: object
-      properties:
-        score:
-          type: integer
-          example: 780
-        rating:
-          type: string
-          enum: [Excellent, Good, Fair, Poor]
-        factors:
-          type: array
-          items:
-            $ref: "#/components/schemas/CreditFactor"
-    CreditFactor:
-      type: object
-      properties:
-        name:
-          type: string
-          enum: [Payment History, Credit Utilization, Credit Age, New Credit, Credit Mix]
-        status:
-          type: string
-          enum: [Excellent, Good, Fair, Poor]
-        description:
-          type: string
-    OpenBankingConnection:
-      type: object
-      properties:
-        id:
-          type: string
-        appName:
-          type: string
-          example: "MintFusion Budgeting"
-        permissions:
-          type: array
-          items:
-            type: string
-          example: ["Read transaction history", "View account balances"]
-        connectedDate:
-          type: string
-          format: date
-# ... END OF SPECIFICATION ...
+          example: "The 'amount' parameter must be a positive number."
+        details:
+          type: object
+          nullable: true
+          example: {"field": "amount", "reason": "must be positive"}
