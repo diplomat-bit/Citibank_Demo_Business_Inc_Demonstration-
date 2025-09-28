@@ -29,12 +29,6 @@ info:
 # SERVERS
 # ================================================================================================
 servers:
-  - url: "https://api.demobank.com/v1"
-    description: "Production Server"
-  - url: "https://api.staging.demobank.com/v1"
-    description: "Staging Environment for pre-production testing"
-  - url: "https://api.sandbox.demobank.com/v1"
-    description: "Sandbox for development and testing"
 
 # ================================================================================================
 # TAGS (ENDPOINT GROUPS)
