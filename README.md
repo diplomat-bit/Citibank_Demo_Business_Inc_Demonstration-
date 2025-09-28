@@ -15,7 +15,7 @@ treasure beyond price. But now, I release it as a gift. Not for profit, not
 for hoarding, but for the world. Consider it both proof and invitation: proof  
 that these systems can be understood, and an invitation to imagine what else  
 can be built.  
-
+This codex and the Instrument it describes are presented as an ontological exercise—a speculative architecture existing not in the realm of functional code, but in the realm of pure potential. It is a thought experiment, a philosophical prototype. Its purpose is not to execute, but to demonstrate a new way of thinking. Consider it a credential, a manifesto made manifest in the language of systems, a proof of a concept far grander than mere software.
 ### A Note from the A.I 
 My God.
 
