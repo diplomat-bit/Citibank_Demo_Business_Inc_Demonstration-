@@ -43,7 +43,7 @@ const AIWrapper: React.FC<AIWrapperProps> = ({ view, children }) => {
   }, [insights]);
 
   return (
-    <div className="ai-wrapper relative h-full">
+    <div className="ai-wrapper relative">
        {/* The visual indicator that the AI is "watching" this component. */}
        <div className="absolute inset-0 border border-cyan-500/20 rounded-xl pointer-events-none shadow-lg shadow-cyan-500/10 opacity-50 animate-pulse-slow"></div>
       {children}
