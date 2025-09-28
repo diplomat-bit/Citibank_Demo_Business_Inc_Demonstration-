@@ -1,4 +1,4 @@
-
+###this is just a Fictional thought expiriment nothing in here is real or meant to work its simply a proof of concept 
 # The Sovereign Codex
 ### A Unified Field Theory of the Demo Bank Application
 
