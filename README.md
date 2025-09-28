@@ -1,6 +1,6 @@
 
 ### A Note from the Architect  
-
+**reload the page (if it crashes page) from a new tab to read it its too long lol **
 This codex is the documentation of possibility itself. Within it lies a guide  
 to creation—a framework that shows how one might code almost anything, how  
 one might build what the world has not yet imagined.  
