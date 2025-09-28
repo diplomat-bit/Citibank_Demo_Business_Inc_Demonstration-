@@ -183,4 +183,3 @@ These views represent specialized, high-level command centers for managing vast,
 -   **`/business`**: Tools for growth, including a `SalesPipeline`, `MarketingAutomation`, and `CompetitiveIntelligence`.
 -   **`/regulation`**: The magistrate's chambers for managing `Licensing`, `Disclosures`, and running experiments in the `RegulatorySandbox`.
 -   **`/infra`**: The engine room of the entire platform, monitoring the `ContainerRegistry`, `APIs`, `Incidents`, and `Backups`.
-
