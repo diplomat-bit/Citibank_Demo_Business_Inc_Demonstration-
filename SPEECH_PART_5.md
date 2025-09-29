@@ -1,15 +1,15 @@
 
-# Part V: The Oracle
+# Part V: The Oracle of What's Next
 
-For all of human history, we have been prisoners of the present, haunted by the past. Our financial tools have been mirrors, only capable of showing us where we have been. They are excellent at recording history, at telling the story of the choices we have already made. But a map of where you have been is of little use when you are trying to navigate the undiscovered country of the future.
+For all of human history, we have been prisoners of the present, haunted by the past. Our tools have been mirrors, only capable of showing us what we have already built. They are excellent at recording history, at telling the story of the choices we have already made. But a blueprint of what you have built is of little use when you are trying to design the skyscraper of the future.
 
-A Sovereign is not a historian. A Sovereign is an architect. And an architect requires not a mirror, but a window. A window into the possible. A tool for seeing the shape of things to come.
+A creator is not a historian. A creator is an architect. And an architect requires not a mirror, but a window. A window into the possible. A tool for seeing the shape of things to come.
 
 This is the function of the Oracle.
 
-The Oracle is the faculty of this Instrument that allows you to unmoor yourself from the tyranny of the present and begin to architect time itself. It is the collection of our predictive and simulative technologies, but it is more than that. It is a loom upon which the threads of potential futures are woven.
+The Oracle is the faculty of this Instrument that allows you to unmoor yourself from the tyranny of the present and begin to architect time itself. It is the loom upon which the threads of potential futures are woven.
 
-When you engage with the Financial Goals engine, you are not just making a plan. You are asking the Oracle to chart a course through spacetime from your present location to your desired future. The AI Agent becomes your navigator, calculating the trajectory, accounting for the gravitational pull of your habits, and plotting the most efficient path.
+When you engage with the Financial Goals engine, you are not just making a plan. You are asking the Oracle to chart a course through spacetime from your present location to your desired future. The AI Co-Pilot becomes your navigator, calculating the trajectory, accounting for the gravitational pull of your habits, and plotting the most efficient path.
 
 When you enter the Quantum Oracle, you are stepping into the heart of the loom. You are no longer just charting one course; you are exploring the infinite multiverse of your own potential. You whisper a "what if" into the void—a fear, a hope, a possibility—and the Oracle weaves a thousand timelines in an instant. It shows you the probable consequences of your choices. It reveals the branching paths.
 
