@@ -14,7 +14,8 @@ Use this material exclusively as a **conceptual prototype** and **design illustr
 
 ---
 
-# The Demo Bank Blueprint### An Instrument for Creators
+# The Demo Bank Blueprint
+### An Instrument for Creators
 
 ---
 
