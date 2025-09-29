@@ -1,17 +1,17 @@
 
-# The Sovereign Codex - Integration Plan, Part 19/10
+# The Creator's Codex - Integration Plan, Part 19/10
 ## The Second Power Integration: The Autonomous Corporation Forge
 
 ### Vision
 This document outlines the architecture for the second of the platform's two most powerful integration concepts: **The Autonomous Corporation Forge**. This system elevates the **Quantum Weaver** from a business incubator into a full-fledged company creation engine. It will integrate the **Quantum Weaver**, **Legal Suite**, and a new **Payment Gateway** module with best-in-class legal-tech and fintech APIs.
 
-The goal is to create an AI-driven workflow where a user can:
+The goal is to create an AI-driven workflow where a creator can:
 1.  **Ideate:** Pitch a business idea to the Quantum Weaver and receive an AI-generated business plan.
 2.  **Incorporate:** With one click, take that business plan and use the AI to file for legal incorporation as a C-Corp in Delaware via an API.
 3.  **Capitalize:** Open a business bank account and issue founder's stock via APIs.
 4.  **Operate:** Have a payment processing account and a capitalization table ready to go from day one.
 
-This workflow transforms a user's idea into a legally sound, financially operational, and venture-ready corporation in a matter of minutes, almost entirely managed by the AI.
+This workflow transforms a user's idea into a legally sound, financially operational, and venture-ready corporation in a matter of minutes, almost entirely managed by the AI Co-Pilot.
 
 ---
 

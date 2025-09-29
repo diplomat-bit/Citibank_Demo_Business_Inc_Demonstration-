@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 16/10
+# The Creator's Codex - Integration Plan, Part 16/10
 ## Module Integrations: The Connectivity Suite
 
 This document provides the exhaustive, code-complete integration plan for the core connectivity modules: **Connect**, **Events**, **Logic Apps**, **Functions**, and **Data Factory**. These modules form the nervous system of the platform, and their power comes from their integration with external communication and data platforms.

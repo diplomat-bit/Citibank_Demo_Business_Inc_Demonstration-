@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 10/10
+# The Creator's Codex - Module Implementation Plan, Part 10/10
 ## XII. THE BLUEPRINTS
 
 This document outlines the implementation plan for the "Blueprint" modules. These are visionary, proof-of-concept features designed to showcase the future potential of the platform and its AI integration. They are treated as self-contained, high-impact demonstrations.

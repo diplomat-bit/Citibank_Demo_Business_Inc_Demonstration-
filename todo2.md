@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 2/10
+# The Creator's Codex - Module Implementation Plan, Part 2/10
 ## I. DEMO BANK PLATFORM (Suite 2)
 
 This document outlines the implementation plan for the second suite of Demo Bank Platform modules.
@@ -7,7 +7,7 @@ This document outlines the implementation plan for the second suite of Demo Bank
 ---
 
 ### 11. AI Platform - The Oracle's Sanctum
--   **Core Concept:** A centralized MLOps hub for managing the entire lifecycle of the bank's own AI models, from data labeling to deployment and monitoring.
+-   **Core Concept:** A centralized MLOps hub for managing the entire lifecycle of the platform's own AI models, from data labeling to deployment and monitoring.
 -   **Key AI Features (Gemini API):**
     -   **AI-Assisted Data Labeling:** Provide the AI with a few examples of labeled data (e.g., fraudulent vs. non-fraudulent transactions), and it will automatically label the rest of the dataset.
     -   **AI Model Documentation Generator:** `generateContent` will analyze a model's code and performance metrics to automatically generate professional, human-readable documentation for it.

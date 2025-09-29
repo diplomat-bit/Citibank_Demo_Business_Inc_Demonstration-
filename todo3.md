@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 3/10
+# The Creator's Codex - Module Implementation Plan, Part 3/10
 ## I. DEMO BANK PLATFORM (Suite 3)
 
 This document outlines the implementation plan for the third suite of Demo Bank Platform modules.

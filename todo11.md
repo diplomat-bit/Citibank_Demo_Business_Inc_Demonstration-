@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 11/10
+# The Creator's Codex - Integration Plan, Part 11/10
 ## Module Integrations: Social, ERP, CRM
 
 This document provides the exhaustive, code-complete integration plan for the **Social**, **ERP**, and **CRM** modules. The objective is to transform these from isolated features into hyper-connected command centers that rival or exceed best-in-class standalone platforms.
@@ -54,7 +54,7 @@ The Social module will become a central command for **omnichannel brand resonanc
     ```
 
 #### b. Discord API
-- **Purpose:** Integrate the bank's community Discord server directly into the Social module for moderation and engagement.
+- **Purpose:** Integrate the project's community Discord server directly into the Social module for moderation and engagement.
 - **Architectural Approach:** A Discord bot built with `discord.js` will connect to the server. It will listen for specific commands and events, relaying information to and from the Demo Bank UI via a secure WebSocket connection.
 - **Code Examples:**
   - **TypeScript (Discord Bot):**
@@ -76,7 +76,7 @@ The Social module will become a central command for **omnichannel brand resonanc
       // AI-powered FAQ responder
       if (message.content.startsWith('!faq')) {
         const question = message.content.substring(5);
-        const prompt = `You are a helpful community assistant for Demo Bank. Answer the following user question based on public knowledge about the bank: "${question}"`;
+        const prompt = `You are a helpful community assistant for Demo Bank. Answer the following user question based on public knowledge about the project: "${question}"`;
         const result = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
         message.reply(result.text);
       }

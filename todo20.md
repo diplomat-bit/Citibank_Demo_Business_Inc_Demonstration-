@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 20/10
+# The Creator's Codex - Integration Plan, Part 20/10
 ## Module Integrations: The Engagement & Data Suite
 
 This document provides the exhaustive, code-complete integration plan for the final suite of modules: **Gaming Services**, **Bookings**, and **CDP (Customer Data Platform)**.

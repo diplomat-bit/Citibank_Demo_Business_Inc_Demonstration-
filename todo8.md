@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 8/10
+# The Creator's Codex - Module Implementation Plan, Part 8/10
 ## VI. DEVELOPER & INTEGRATION and VII. ECOSYSTEM & CONNECTIVITY
 
 This document outlines the implementation plan for the Developer & Integration and Ecosystem & Connectivity suites.

@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 17/10
+# The Creator's Codex - Integration Plan, Part 17/10
 ## Module Integrations: The Data & Geospatial Suite
 
 This document provides the exhaustive, code-complete integration plan for the data-centric modules: **Analytics**, **BI (Business Intelligence)**, **IoT Hub**, and **Maps**. The goal is to show how these modules connect to external, best-in-class data platforms.
@@ -59,7 +59,7 @@ The Analytics module provides the query engine. To be truly powerful, it must be
 
 ---
 
-## 2. BI Module: The Royal Cartographer
+## 2. BI Module: The Lead Cartographer
 ### Core Concept
 The BI module is for visualization. A key enterprise integration is embedding its dashboards into other platforms, and allowing other platforms (like Tableau) to connect to its data sources.
 
@@ -88,6 +88,7 @@ The BI module is for visualization. A key enterprise integration is embedding it
     import jwt
     import uuid
     import datetime
+    import os
 
     TABLEAU_SECRET_ID = os.environ.get("TABLEAU_SECRET_ID")
     TABLEAU_SECRET_VALUE = os.environ.get("TABLEAU_SECRET_VALUE")
@@ -139,7 +140,6 @@ The IoT Hub's primary role is ingesting massive amounts of data. This data then 
       "github.com/aws/aws-sdk-go-v2/aws"
       "github.com/aws/aws-sdk-go-v2/config"
       "github.com/aws/aws-sdk-go-v2/service/kinesis"
-      "encoding/json"
     )
 
     func PutRecordToKinesis(data []byte, partitionKey string) error {

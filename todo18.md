@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 18/10
+# The Creator's Codex - Integration Plan, Part 18/10
 ## Module Integrations: The Business Operations Suite
 
 This document provides the exhaustive, code-complete integration plan for the core business operations modules: **Communications**, **Commerce**, **Teams**, **CMS**, **LMS**, and **HRIS**.
@@ -132,7 +132,7 @@ The LMS module will integrate with external course providers to offer a wider ca
 
 ---
 
-## 4. HRIS Module: The Roster of Souls
+## 4. HRIS Module: The Roster
 ### Core Concept
 The HRIS module will act as a central hub, syncing employee data from a primary HR platform like Workday to ensure all other internal systems have an up-to-date employee roster.
 
@@ -147,6 +147,7 @@ The HRIS module will act as a central hub, syncing employee data from a primary 
     # services/workday_sync.py
     # NOTE: Workday APIs are complex and often use SOAP. This is a conceptual REST example.
     import requests
+    import os
 
     WORKDAY_TENANT_URL = "https://your-tenant.workday.com"
     # Assumes OAuth 2.0 token is managed securely

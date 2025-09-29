@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 15/10
+# The Creator's Codex - Integration Plan, Part 15/10
 ## Module Integrations: Security Center, Compliance Hub, App Marketplace
 
 This document provides the exhaustive, code-complete integration plan for the **Security Center**, **Compliance Hub**, and **App Marketplace** modules. The goal is to connect these modules to industry-leading external platforms to automate security scanning, evidence collection, and app integration.

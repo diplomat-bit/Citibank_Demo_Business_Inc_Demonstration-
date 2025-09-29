@@ -1,12 +1,12 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 4/10
+# The Creator's Codex - Module Implementation Plan, Part 4/10
 ## I. DEMO BANK PLATFORM (Suite 4)
 
 This document outlines the implementation plan for the fourth suite of Demo Bank Platform modules.
 
 ---
 
-### 31. HRIS - The Roster of Souls
+### 31. HRIS - The Roster
 -   **Core Concept:** A Human Resource Information System for managing employee data, payroll, and performance.
 -   **Key AI Features (Gemini API):**
     -   **AI Job Description Writer:** From a job title and key responsibilities, `generateContent` writes a complete, professional, and inclusive job description.

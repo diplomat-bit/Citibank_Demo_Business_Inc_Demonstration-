@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 5/10
+# The Creator's Codex - Module Implementation Plan, Part 5/10
 ## I. DEMO BANK PLATFORM (Suite 5)
 
 This document outlines the implementation plan for the fifth and final suite of Demo Bank Platform modules.

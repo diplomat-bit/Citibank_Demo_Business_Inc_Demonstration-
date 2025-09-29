@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 13/10
+# The Creator's Codex - Integration Plan, Part 13/10
 ## Module Integrations: Cloud, Identity, Storage, Compute
 
 This document provides the exhaustive, code-complete integration plan for the core infrastructure modules: **Cloud**, **Identity**, **Storage**, and **Compute**. The objective is to demonstrate how these internal dashboards would be powered by real-world integrations with major cloud and identity providers.

@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Integration Plan, Part 12/10
+# The Creator's Codex - Integration Plan, Part 12/10
 ## Module Integrations: API Gateway, Graph Explorer, DBQL
 
 This document provides the exhaustive, code-complete integration plan for the **API Gateway**, **Graph Explorer**, and **DBQL** modules. The goal is to connect these internal platform tools to best-in-class external systems for management, visualization, and advanced querying.

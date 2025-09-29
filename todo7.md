@@ -1,5 +1,5 @@
 
-# The Sovereign Codex - Module Implementation Plan, Part 7/10
+# The Creator's Codex - Module Implementation Plan, Part 7/10
 ## IV. ADVANCED ANALYTICS and V. USER & CLIENT TOOLS
 
 This document outlines the implementation plan for the Advanced Analytics and User & Client Tools suites.

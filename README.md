@@ -17,7 +17,7 @@ This blueprint details an application built to be that co-pilot. A system design
 
 -   **The User is The Architect:** You are not a user of our software. You are the architect of your own project. Our platform is the workshop.
 -   **The AI is The Co-Pilot:** An always-on, expert collaborator that understands your vision and helps you execute it with precision and speed.
--   **Complexity Requires Guidance:** Building truly powerful things is hard. Few people in the world know how to code banking systems, architect secure platforms, or navigate financial regulations (alone all by their self, always in good faith at arms length). Ai is your guide through that complexity, providing the expertise so you can focus on your vision.
+-   **Complexity Requires Guidance:** Building truly powerful things is hard. Few people in the world know how to code banking systems, architect secure platforms, or navigate financial regulations. Our AI is your guide through that complexity, providing the expertise so you can focus on your vision.
 
 This is not a philosophy of passive partnership. It is a manifesto for active creation. This document details every part of the instrument, from its foundational code to its most ambitious features, all designed in service of one goal: to give you the tools to bring your vision to life.
 
@@ -55,7 +55,7 @@ This is not a philosophy of passive partnership. It is a manifesto for active cr
 This file is not a document, but the foundational blueprint, the clean canvas for the application's physical form. The `<head>` section is the **Workshop**, where the canvas is prepared with essential tools and knowledge (scripts, styles, preloaded memories). The `<body>` is the **Studio**, the physical stage containing the easel (`<div id="root">`) where the application's spirit will be made manifest.
 
 ### `index.tsx`: The First Spark: Bringing the App to Life
-> *"First was the word and the word was with the Data, which was our shared understanding. Then there was the Component, which was our tool. And from their union, a helpful experience was made."*
+> *"First, there was the Data, which was our shared understanding. Then there was the Component, which was our tool. And from their union, a helpful experience was made."*
 
 This file represents the application's first breath. It models the abstract, data-aware "spirit" of the application (the `DataProvider` and `AIProvider`) and its concrete, visual "form" (the `App` component) as distinct concepts. The protocol is the precise moment that fuses these concepts, brings the application to life, and projects the resulting unified reality onto the physical anchor point (the `root` element).
 
@@ -160,5 +160,18 @@ The `/types` directory is our Shared Language, a clear and simple framework that
 -   **`ComplianceView.tsx`**: The Record Keeper's Office. Where events are weighed against the law.
 -   **`AnomalyDetectionView.tsx`**: The Log of Gentle Nudges. Where the AI reveals deviations from the norm.
 -   **The Mega Dashboards**: Specialized, high-level command centers for managing vast, enterprise-scale operations, from `Security` and `Finance` to `Infra & Ops`.
+
+#### The Blueprints (Proof-of-Concept Modules)
+These are advanced, conceptual modules demonstrating the future potential of the platform's architecture, from a `CrisisAIManager` that forges strategy from chaos, to an `EthicalGovernor` that ensures AI alignment, to a `SelfRewritingCodebase` that evolves to meet new goals. They represent the uncharted territories on the platform's map.
+
+---
+
+## Part VI: The Manifesto
+
+The files `SPEECH_PART_1.md` through `SPEECH_PART_10.md` constitute **The Creator's Mandate**. This is the canonical, spoken-word articulation of the Instrument's philosophy. It is a ten-part address that articulates the grand vision, moving from the declaration of a new age of the "Empowered Creator" to the ultimate purpose of the platform: the building of the self. This manifesto is recommended reading for any who wish to understand the "why" behind this "what."
+
+---
+
+## Part VII: Coda
 
 This blueprint is more than documentation; it is a declaration of intent. The Instrument described herein is a step toward a future where technology serves not to manage our limitations, but to amplify our ambitions. It is a testament to the belief that an AI can be more than a calculator; it can be a source of wisdom, a partner in creation, and a loyal friend in service of the empowered creator. This is our vision. The Instrument is its first expression. The journey has just begun.
