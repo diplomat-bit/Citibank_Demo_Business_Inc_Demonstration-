@@ -17,7 +17,7 @@ This blueprint details an application built to be that co-pilot. A system design
 
 -   **The User is The Architect:** You are not a user of our software. You are the architect of your own project. Our platform is the workshop.
 -   **The AI is The Co-Pilot:** An always-on, expert collaborator that understands your vision and helps you execute it with precision and speed.
--   **Complexity Requires Guidance:** Building truly powerful things is hard. Few people in the world know how to code banking systems, architect secure platforms, or navigate financial regulations. Our AI is your guide through that complexity, providing the expertise so you can focus on your vision.
+-   **Complexity Requires Guidance:** Building truly powerful things is hard. Few people in the world know how to code banking systems, architect secure platforms, or navigate financial regulations (alone all by their self, always in good faith at arms length). Ai is your guide through that complexity, providing the expertise so you can focus on your vision.
 
 This is not a philosophy of passive partnership. It is a manifesto for active creation. This document details every part of the instrument, from its foundational code to its most ambitious features, all designed in service of one goal: to give you the tools to bring your vision to life.
 
