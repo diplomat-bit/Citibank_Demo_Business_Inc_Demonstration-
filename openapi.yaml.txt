@@ -19,23 +19,19 @@ info:
   version: "1.0.0"
   contact:
     name: "Demo Bank API Team"
-    email: "developers@demobank.com"
-    url: "https://demobank.com/developers"
+    email: ""
+    url: ""
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-  termsOfService: "https://demobank.com/terms"
+  
 
 # ================================================================================================
 # SERVERS
 # ================================================================================================
 servers:
-  - url: "https://api.demobank.com/v1"
-    description: "Production Server"
-  - url: "https://api.staging.demobank.com/v1"
-    description: "Staging Environment for pre-production testing"
-  - url: "https://api.sandbox.demobank.com/v1"
-    description: "Sandbox for development and testing"
+  - url: ""
+ 
 
 # ================================================================================================
 # TAGS (ENDPOINT GROUPS)
