@@ -1,40 +1,40 @@
 
-# The Sovereign Codex - Go-Live Strategy, Phase V
-## The Corporate Command Center
+# Go-Live Strategy, Phase V
+## The Business Co-Pilot
 
 ### I. Mission Directive
-To construct the enterprise-grade suite of tools for our business clients. This phase expands the platform's scope from the Sovereign Individual to the Sovereign Organization. The objective is to build a powerful, integrated command center for managing corporate finance, demonstrating our capability to handle the complexity and security demands of B2B fintech.
+To build our suite of tools for business clients, expanding our focus from helping individuals to helping teams collaborate. The goal is to create a powerful, integrated, and friendly platform for managing company finances, demonstrating that business software can be both capable and human-centered.
 
 ### II. Key Strategic Objectives
-1.  **Imperium Ops (Corporate Dashboard):**
-    -   Develop the central dashboard for corporate users, featuring KPI cards for pending approvals, overdue invoices, and new anomalies.
-    -   Integrate the "AI Controller Summary" to provide a high-level, actionable overview of the company's financial state.
-2.  **Instruments of Delegated Will (Card Management):**
-    -   Build the Corporate Card view, allowing admins to issue, freeze, and manage virtual and physical cards.
-    -   Implement the AI-powered spend controls suggester.
-3.  **The Chain of Command (Payment Orders):**
-    -   Build the full payment order workflow system, including creation, multi-level approval chains, and status tracking.
-4.  **The Chronicle of Broken Rhythms (Anomaly Detection):**
+1.  **The Dashboard (The Business Compass):**
+    -   Develop the central dashboard for business users, featuring clear, actionable cards for things like pending approvals and overdue invoices.
+    -   Integrate the "AI Controller Summary" to provide a high-level, plain-English overview of the company's financial health.
+2.  **Card Management (The Team Wallet):**
+    -   Build the Corporate Card view, allowing admins to easily issue, freeze, and manage virtual and physical cards for their team.
+    -   Implement the AI-powered spend controls suggester to provide helpful defaults.
+3.  **Payment Orders (The Approval Flow):**
+    -   Build a simple and transparent payment approval system, including creation, multi-level approvals, and status tracking.
+4.  **Anomaly Detection (The Watchful Friend):**
     -   Implement the Anomaly Detection view.
-    -   Build the backend AI service that continuously scans transaction streams for patterns that deviate from the established norm for a given company or user.
+    -   Build the backend AI service that continuously looks for spending patterns that seem unusual for a company or user, offering a gentle heads-up.
 5.  **Compliance & Invoicing:**
-    -   Launch the initial versions of the Compliance Center and Invoices modules, focusing on case management and tracking.
+    -   Launch the first versions of the Compliance Center and Invoices modules, focusing on clear case management and tracking.
 
 ### III. Product & Engineering Plan
--   **B2B Product Vertical:** Establish the second Product Vertical team, staffed with individuals experienced in B2B SaaS and fintech.
--   **Multi-Tenancy Architecture:** The core platform must be re-architected to support full multi-tenancy. This includes data isolation at the database level and a robust permissions model to handle corporate roles (e.g., Admin, Manager, Employee).
+-   **B2B Product Vertical:** Form our second Product Vertical team, bringing together people with a passion for making business tools that are a joy to use.
+-   **Multi-Tenancy Architecture:** We will thoughtfully architect our core platform to support multiple teams securely. This includes ensuring data is private to each company and building a flexible permissions model for different roles (e.g., Admin, Manager, Employee).
 -   **Security & Compliance:**
-    -   Begin the SOC 2 Type I audit process in parallel with development. All engineering work must be done with SOC 2 controls in mind (e.g., logging, change management, access control).
-    -   The Anomaly Detection engine will be the first major production use case for our internal AI Platform, requiring close collaboration between the B2B and AI teams.
--   **API Integrations:** Build the backend services to support future integrations with key B2B systems like NetSuite, Salesforce, and Slack.
+    -   We will begin the SOC 2 Type I audit process as we build, weaving security and compliance into the fabric of our code from the start.
+    -   The Anomaly Detection engine will be a key feature for our internal AI Platform, built in close collaboration between the B2B and AI teams.
+-   **API Integrations:** Build the foundational services that will allow us to connect with key business systems like NetSuite, Salesforce, and Slack in the future.
 
 ### IV. Team Expansion (+15 FTEs)
--   **Corporate Finance Product Vertical:**
-    -   1 Senior Product Manager (B2B Fintech experience required)
-    -   1 Senior Product Designer (Enterprise UX experience required)
-    -   5 Senior Backend Engineers (experience with multi-tenancy and financial ledgers)
+-   **Business Co-Pilot Experience Circle:**
+    -   1 Senior Product Manager (with a love for B2B)
+    -   1 Senior Product Designer (with experience in enterprise UX)
+    -   5 Senior Backend Engineers (experienced with multi-tenancy)
     -   4 Senior Frontend Engineers
     -   2 QA Engineers
 -   **Security & Compliance (2):**
-    -   1 Security Compliance Manager (to lead SOC 2 audit)
+    -   1 Security Compliance Manager (to guide our SOC 2 journey)
     -   1 Application Security Engineer

@@ -1,48 +1,48 @@
 
-# The Sovereign Codex - Go-Live Strategy, Phase VII
-## Go-To-Market & The First Cohort
+# Go-Live Strategy, Phase VII
+## Sharing Our Work & Gathering the Community
 
 ### I. Mission Directive
-To execute a flawless launch of the Demo Bank platform to a select group of Alpha and Beta users. This phase shifts focus from pure engineering to product marketing, user onboarding, and feedback collection. The goal is to validate our core value proposition, build a community of evangelists, and gather the critical insights needed to prepare for a public launch.
+To thoughtfully share the Demo Bank platform with a select group of friends, collaborators, and early believers. This phase is about shifting our focus from building in private to listening in public. The goal is to confirm that our vision resonates, to build a foundational community of evangelists, and to gather the invaluable feedback we need to prepare for a wider opening.
 
 ### II. Key Strategic Objectives
-1.  **Go-To-Market (GTM) System Implementation:**
-    -   Deploy and configure our core GTM systems:
-        -   **CRM:** Salesforce, as the central record for all customer interactions.
-        -   **Marketing Automation:** HubSpot or Marketo, for email campaigns and lead nurturing.
-        -   **Support Desk:** Zendesk or Intercom, to manage user feedback and support requests.
-2.  **Alpha Cohort Launch (The First 100):**
-    -   Recruit 100 "Visionary" users through a private, invitation-only process. This cohort will be comprised of tech-savvy individuals, fintech enthusiasts, and potential investors.
-    -   Provide white-glove onboarding and direct access to the product and engineering teams.
-    -   Objective: Achieve a Net Promoter Score (NPS) of > 70 from this group.
-3.  **Beta Cohort Launch (The First 1,000):**
-    -   Open a waitlist to build demand for the Beta program.
-    -   Onboard 1,000 users from the waitlist, focusing on gathering quantitative data on user behavior and feature adoption.
-    -   Objective: Achieve a Week 4 user retention rate of > 60%.
-4.  **Feedback Loop Implementation:**
+1.  **Community Tooling Setup:**
+    -   Set up our core tools for communicating with and supporting our community:
+        -   **CRM:** Salesforce, to keep track of our relationships.
+        -   **Marketing Automation:** HubSpot, for sharing updates via email.
+        -   **Support Desk:** Zendesk, to manage feedback and support requests.
+2.  **Alpha Circle Launch (The First 100 Friends):**
+    -   Personally invite 100 "founding members" from our network. This group will be comprised of tech-savvy friends, fintech enthusiasts, and people who believe in our mission.
+    -   Provide a warm, personal onboarding experience and direct access to our team for feedback.
+    -   Objective: To listen deeply and achieve a Net Promoter Score (NPS) of > 70 from this group.
+3.  **Beta Community Launch (The First 1,000 Collaborators):**
+    -   Open a waitlist to invite more people into our circle.
+    -   Welcome 1,000 users from the waitlist, focusing on gathering quantitative data on how they use and find value in the platform.
+    -   Objective: Achieve a Week 4 user retention rate of > 60%, indicating we've built something genuinely helpful.
+4.  **Feedback Loop Creation:**
     -   Build the in-app **Feedback Hub** module.
-    -   Establish a formal process for triaging feedback, linking it to CRM records, and prioritizing it in the product roadmap.
+    -   Establish a clear, transparent process for listening to feedback, discussing it as a team, and using it to shape our product roadmap.
 
-### III. Go-To-Market Plan
--   **Positioning:** "The Sovereign Financial Agent. The first bank built like a co-pilot, not a vault."
--   **Pre-Launch Marketing:**
-    -   Publish "The Sovereign's Oration" (the 10-part blog series) to build philosophical alignment and attract the right kind of early adopters.
-    -   Engage with key influencers in the fintech, AI, and developer communities.
-    -   Launch a simple, elegant landing page with the waitlist signup.
+### III. Sharing Our Story
+-   **Positioning:** "A financial co-pilot that feels like a friend, not a bank."
+-   **Pre-Launch Storytelling:**
+    -   Publish "The Sovereign's Oration" (rewritten as "The Co-Pilot's Charter"), a 10-part blog series on our philosophy, to attract people who share our values.
+    -   Engage in genuine conversations with key voices in the fintech, AI, and developer communities.
+    -   Launch a simple, beautiful landing page with the waitlist signup.
 -   **Launch:**
-    -   Personalized email invitations to the Alpha cohort.
-    -   Staggered invites to the Beta cohort to manage server load and ensure a smooth onboarding experience.
+    -   Send personal email invitations to our Alpha Circle.
+    -   Thoughtfully send invites to the Beta Community in waves to ensure a stable and welcoming experience for everyone.
 
 ### IV. Team Expansion (+15 FTEs)
--   **Go-To-Market Team (8):**
+-   **Community & Storytelling Team (8):**
     -   1 Head of Marketing
     -   2 Product Marketers
-    -   1 Content Marketer / Technical Writer
+    -   1 Content Marketer / Writer
     -   1 Community Manager
-    -   1 Growth Hacker / Performance Marketer
-    -   2 Sales/Success Development Reps (for future enterprise clients)
+    -   1 Growth Marketer
+    -   2 Partner/Success Guides
 -   **Support & Operations (4):**
-    -   2 Customer Support Specialists
-    -   2 GTM Operations Specialists (to manage Salesforce, HubSpot, etc.)
+    -   2 Community Support Advocates
+    -   2 Operations Specialists (to manage our community tools)
 -   **Product (3):**
-    -   +3 Product Managers to handle the increasing scope of the platform.
+    -   +3 Product Managers to help steward the growing number of ideas and features.

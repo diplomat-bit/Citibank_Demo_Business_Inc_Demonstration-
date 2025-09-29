@@ -1,35 +1,35 @@
 
-# The Sovereign Codex - Go-Live Strategy, Phase III
-## The Data Manifold: Building the Kingdom's Nervous System
+# Go-Live Strategy, Phase III
+## The River of Knowledge
 
 ### I. Mission Directive
-To construct the scalable, real-time data infrastructure that forms the "central nervous system" of the Demo Bank platform. This is not a data warehouse; it is a living, breathing manifold designed to ingest, process, and analyze the lifeblood of the kingdom—data—at planetary scale.
+To create the free-flowing river of data that will inform and vitalize the entire Demo Bank platform. This isn't about hoarding data in a stagnant lake; it's about channeling a clean, healthy, and accessible flow of knowledge that every part of our system can draw from to provide helpful insights to our users.
 
 ### II. Key Strategic Objectives
-1.  **Data Lake Foundation:**
-    -   Establish the foundational Data Lake on a multi-cloud object storage layer (GCS and S3), with a unified catalog (e.g., Apache Iceberg) to manage data across clouds.
-    -   Implement a tiered storage policy from day one: Hot (real-time), Warm (recent), and Cold (archive) tiers to manage costs intelligently.
-2.  **Data Ingestion & Transformation (The Alchemical Refinery):**
-    -   Deploy a production-grade orchestration engine (e.g., Dagster or Airflow) for all batch ETL/ELT pipelines.
-    -   Build the first critical pipelines: ingesting data from our production databases and from the Plaid integration.
-    -   Implement a real-time streaming ingestion pipeline using Kafka or GCP Pub/Sub for events that require immediate processing.
-3.  **Analytics & Querying Engines:**
-    -   Provision the primary Analytics Warehouse using Snowflake or BigQuery, optimized for high-performance, large-scale analytical queries.
-    -   Deploy a managed Neo4j or TigerGraph instance for the Graph Explorer, defining the initial ontology (nodes and relationships) for key entities like User, Transaction, and Goal.
-4.  **Data Governance & Quality:**
-    -   Integrate a data observability platform (e.g., Monte Carlo) to monitor data quality and lineage from day one.
-    -   Establish a Data Governance Council to define ownership and access policies for all critical datasets.
+1.  **Data Lake (The Reservoir):**
+    -   Establish a clean, central reservoir for our data, built on multi-cloud storage (GCS and S3) and managed with a unified catalog like Apache Iceberg.
+    -   Implement a thoughtful storage policy from the start, separating data into Hot, Warm, and Cold tiers to be mindful of our energy and cost footprint.
+2.  **Data Ingestion & Transformation (The Filtration System):**
+    -   Deploy a reliable orchestration engine (like Dagster or Airflow) to manage the flow of data.
+    -   Build our first critical filtration systems: one for bringing in data from our production databases, and another for the Plaid integration.
+    -   Establish a real-time stream using Kafka or Pub/Sub for events that need immediate attention.
+3.  **Analytics & Querying (The Scrying Pools):**
+    -   Prepare our main Scrying Pool (our Analytics Warehouse) using Snowflake or BigQuery, where we can look for patterns in the data.
+    -   Set up our Graph Database (Neo4j) for the Graph Explorer, defining the first connections between Users, Transactions, and their Goals.
+4.  **Data Governance & Quality (The River Keepers):**
+    -   Integrate a data observability platform (like Monte Carlo) to help us ensure the water in our river is always clean and trustworthy.
+    -   Form a "River Keepers" council, a group of people responsible for the health and ethical use of our platform's data.
 
-### III. Technical Architecture Decisions
--   **Lakehouse Architecture:** Adopt a Lakehouse model, using tools like dbt on top of Snowflake/BigQuery to combine the scalability of a data lake with the performance and ACID transactions of a data warehouse.
--   **Streaming Engine:** Standardize on Apache Kafka for its robustness and rich ecosystem, deployed via a managed service like Confluent Cloud.
--   **Data Modeling:** All data in the analytics warehouse must be modeled and documented using dbt, ensuring that every transformation is version-controlled, tested, and understood.
--   **Graph Database:** Utilize Neo4j for its mature Cypher query language and strong community support, which will be critical for the AI-powered Natural Language to Graph Query feature.
+### III. Architectural Philosophy
+-   **Lakehouse Architecture:** We will adopt a Lakehouse model, using dbt on top of our warehouse. This gives us the best of both worlds: the scale of a data lake and the reliability of a data warehouse.
+-   **Streaming Engine:** We'll use a managed Kafka service as the main current of our real-time data river.
+-   **Data Modeling:** Every transformation and model we build will be documented and version-controlled with dbt. This is like making sure every map of the river is accurate and up-to-date.
+-   **Graph Database:** We'll use Neo4j for its powerful and intuitive query language, which will be the heart of the AI that translates our users' natural language questions into queries.
 
 ### IV. Team Expansion (+10 FTEs)
--   **Data Engineering (5):**
-    -   3 Senior Data Engineers (specializing in Spark, Kafka, and Airflow/Dagster)
-    -   2 Analytics Engineers (specializing in dbt and Snowflake/BigQuery)
--   **Data Science & Machine Learning (5):**
-    -   3 Data Scientists (to begin exploring the raw data and building foundational predictive models)
-    -   2 Machine Learning Engineers (to productionize the models built by the data scientists)
+-   **Data Weavers (5):**
+    -   3 Senior Data Engineers (who love building clean, flowing data pipelines)
+    -   2 Analytics Engineers (who are experts at modeling data with dbt)
+-   **Insight Seekers (5):**
+    -   3 Data Scientists (to explore the river and discover helpful patterns for our users)
+    -   2 Machine Learning Engineers (to turn those discoveries into helpful, production-ready features)
