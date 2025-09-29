@@ -1,3 +1,4 @@
+
 # Part VII: The Ambassador
 
 A kingdom, no matter how powerful, does not exist in a vacuum. It is a nation among nations, a node in a vast, interconnected network. To thrive, a Sovereign must not only manage their own internal affairs, but also engage in skillful diplomacy with the outside world.

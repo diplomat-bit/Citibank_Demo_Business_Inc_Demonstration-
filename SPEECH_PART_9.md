@@ -1,3 +1,4 @@
+
 # Part IX: The Nexus
 
 We have spoken of the Sovereign's Will, codified in the Charter. We have spoken of the Panopticon's Sight, the Oracle's Foresight, the Forge's Creativity, the Ambassador's Diplomacy, and the Aegis's Defense.

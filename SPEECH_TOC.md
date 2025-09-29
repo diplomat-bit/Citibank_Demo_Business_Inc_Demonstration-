@@ -1,3 +1,4 @@
+
 # The Sovereign's Oration
 A Ten-Part Address on the Future of Individual Power
 

@@ -1,3 +1,4 @@
+
 # Part II: The Sovereign and The Agent
 
 For centuries, we have understood the relationship between human and machine as one of master and servant. We command, it obeys. But this paradigm is built on a fundamental misunderstanding. A servant, no matter how loyal, can only follow orders. It cannot understand intent. It cannot share a vision. It is a tool, and a tool can never be a partner.

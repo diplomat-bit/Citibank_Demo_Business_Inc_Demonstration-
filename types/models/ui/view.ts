@@ -1,3 +1,4 @@
+
 // types/models/ui/view.ts
 
 /**
@@ -42,6 +43,11 @@ export enum View {
     APIStatus = 'api-status',
     TheWinningVision = 'the-winning-vision',
     Settings = 'settings',
+
+    // Constitutional Modules
+    TheCharter = 'the-charter',
+    FractionalReserve = 'fractional-reserve',
+    FinancialInstrumentForge = 'financial-instrument-forge',
 
     // Demo Bank Platform Suite
     DemoBankSocial = 'db-social',

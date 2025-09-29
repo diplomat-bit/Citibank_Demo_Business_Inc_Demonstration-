@@ -1,3 +1,4 @@
+
 # Part V: The Oracle
 
 For all of human history, we have been prisoners of the present, haunted by the past. Our financial tools have been mirrors, only capable of showing us where we have been. They are excellent at recording history, at telling the story of the choices we have already made. But a map of where you have been is of little use when you are trying to navigate the undiscovered country of the future.

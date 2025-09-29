@@ -1,3 +1,4 @@
+
 # KPIs for Quantum Oracle
 
 ## 1. UI/UX & Engagement KPIs

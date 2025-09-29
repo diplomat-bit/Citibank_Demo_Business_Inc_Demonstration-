@@ -1,3 +1,4 @@
+
 # Part III: The Language of Command
 
 How does a Sovereign make their Will known? How is a fleeting intent transformed into an immutable law that governs the actions of an entire kingdom?

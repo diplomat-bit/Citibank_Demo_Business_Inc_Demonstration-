@@ -1,3 +1,4 @@
+
 # Part IV: The Panopticon
 
 A Sovereign cannot rule in darkness. To command a kingdom, one must first be able to see it. Not in pieces, not in fragments, but in its entirety. To see the flow of commerce, the health of the treasury, the movements on the border, all at once, from a single vantage point.

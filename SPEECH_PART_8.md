@@ -1,3 +1,4 @@
+
 # Part VIII: The Aegis
 
 What is a Sovereign without borders? What is a treasury without walls? A kingdom without an army is merely a province waiting to be conquered. Sovereignty, to have any meaning, must be defended.

@@ -1,3 +1,4 @@
+
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -32,6 +33,10 @@ import TheVisionView from './components/views/platform/TheVisionView';
 import APIStatusView from './components/views/platform/APIStatusView';
 import TheNexusView from './components/views/platform/TheNexusView'; // The 27th Module
 import ConstitutionalArticleView from './components/views/platform/ConstitutionalArticleView';
+import TheCharterView from './components/views/platform/TheCharterView';
+import FractionalReserveView from './components/views/platform/FractionalReserveView';
+import FinancialInstrumentForgeView from './components/views/platform/TheAssemblyView';
+
 
 // Corporate Finance Views
 import CorporateDashboardView from './components/views/corporate/CorporateDashboardView';
@@ -202,6 +207,10 @@ const App: React.FC = () => {
         if (view !== activeView) {
             setPreviousView(activeView);
             setActiveView(view);
+            // Close sidebar on navigation in mobile
+            if (window.innerWidth < 1024) {
+                setIsSidebarOpen(false);
+            }
         }
     };
     
@@ -399,6 +408,11 @@ const App: React.FC = () => {
             case View.LinguisticFossilFinder: return withAI(View.LinguisticFossilFinder, <LinguisticFossilFinderView />);
             case View.ChaosTheorist: return withAI(View.ChaosTheorist, <ChaosTheoristView />);
             case View.SelfRewritingCodebase: return withAI(View.SelfRewritingCodebase, <SelfRewritingCodebaseView />);
+            
+            // Constitutional
+            case View.TheCharter: return withAI(View.TheCharter, <TheCharterView />);
+            case View.FractionalReserve: return withAI(View.FractionalReserve, <FractionalReserveView />);
+            case View.FinancialInstrumentForge: return withAI(View.FinancialInstrumentForge, <FinancialInstrumentForgeView />);
 
             default: return withAI(View.Dashboard, <DashboardView setActiveView={handleSetView} />);
         }

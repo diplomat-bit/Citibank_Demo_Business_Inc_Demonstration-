@@ -1,3 +1,4 @@
+
 # Part VI: The Forge
 
 The sovereignty we speak of is not merely the stewardship of what already exists. It is not a passive act of management. The ultimate expression of sovereignty is the act of creation. The act of bringing something new into the world where before there was nothing.

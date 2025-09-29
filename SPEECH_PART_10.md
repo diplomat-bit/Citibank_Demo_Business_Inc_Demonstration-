@@ -1,3 +1,4 @@
+
 # Part X: The Horizon
 
 We have journeyed far. From the recognition of our servitude to the declaration of our sovereignty. We have learned the language of command, stood in the Panopticon's light, consulted the Oracle, and worked the Forge. We have sent our ambassadors to foreign lands, stood behind the safety of our Aegis, and finally, we have gazed into the golden web of the Nexus.
