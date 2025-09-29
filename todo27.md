@@ -26,7 +26,7 @@ To thoughtfully share the Demo Bank platform with a select group of friends, col
 ### III. Sharing Our Story
 -   **Positioning:** "A financial co-pilot that feels like a friend, not a bank."
 -   **Pre-Launch Storytelling:**
-    -   Publish "The Sovereign's Oration" (rewritten as "The Co-Pilot's Charter"), a 10-part blog series on our philosophy, to attract people who share our values.
+    -   Publish "The Creator's Mandate" a 10-part blog series on our philosophy, to attract people who share our values.
     -   Engage in genuine conversations with key voices in the fintech, AI, and developer communities.
     -   Launch a simple, beautiful landing page with the waitlist signup.
 -   **Launch:**
