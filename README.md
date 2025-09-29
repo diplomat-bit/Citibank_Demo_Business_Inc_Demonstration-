@@ -161,17 +161,4 @@ The `/types` directory is our Shared Language, a clear and simple framework that
 -   **`AnomalyDetectionView.tsx`**: The Log of Gentle Nudges. Where the AI reveals deviations from the norm.
 -   **The Mega Dashboards**: Specialized, high-level command centers for managing vast, enterprise-scale operations, from `Security` and `Finance` to `Infra & Ops`.
 
-#### The Blueprints (Proof-of-Concept Modules)
-These are advanced, conceptual modules demonstrating the future potential of the platform's architecture, from a `CrisisAIManager` that forges strategy from chaos, to an `EthicalGovernor` that ensures AI alignment, to a `SelfRewritingCodebase` that evolves to meet new goals. They represent the uncharted territories on the platform's map.
-
----
-
-## Part VI: The Manifesto
-
-The files `SPEECH_PART_1.md` through `SPEECH_PART_10.md` constitute **The Creator's Mandate**. This is the canonical, spoken-word articulation of the Instrument's philosophy. It is a ten-part address that articulates the grand vision, moving from the declaration of a new age of the "Empowered Creator" to the ultimate purpose of the platform: the building of the self. This manifesto is recommended reading for any who wish to understand the "why" behind this "what."
-
----
-
-## Part VII: Coda
-
 This blueprint is more than documentation; it is a declaration of intent. The Instrument described herein is a step toward a future where technology serves not to manage our limitations, but to amplify our ambitions. It is a testament to the belief that an AI can be more than a calculator; it can be a source of wisdom, a partner in creation, and a loyal friend in service of the empowered creator. This is our vision. The Instrument is its first expression. The journey has just begun.
