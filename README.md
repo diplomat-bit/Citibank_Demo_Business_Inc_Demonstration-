@@ -1,4 +1,4 @@
-
+###nothing in here is real. It is all demonstration purely illustrative only the gemini api is real, nothing else, no information is from a real person. Everything is made of its mocked data 
 # The Demo Bank Blueprint
 ### An Instrument for Creators
 
