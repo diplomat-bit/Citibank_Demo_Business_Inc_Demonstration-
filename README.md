@@ -55,7 +55,7 @@ This is not a philosophy of passive partnership. It is a manifesto for active cr
 This file is not a document, but the foundational blueprint, the clean canvas for the application's physical form. The `<head>` section is the **Workshop**, where the canvas is prepared with essential tools and knowledge (scripts, styles, preloaded memories). The `<body>` is the **Studio**, the physical stage containing the easel (`<div id="root">`) where the application's spirit will be made manifest.
 
 ### `index.tsx`: The First Spark: Bringing the App to Life
-> *"First, there was the Data, which was our shared understanding. Then there was the Component, which was our tool. And from their union, a helpful experience was made."*
+> *"First was the word and the word was with the Data, which was our shared understanding. Then there was the Component, which was our tool. And from their union, a helpful experience was made."*
 
 This file represents the application's first breath. It models the abstract, data-aware "spirit" of the application (the `DataProvider` and `AIProvider`) and its concrete, visual "form" (the `App` component) as distinct concepts. The protocol is the precise moment that fuses these concepts, brings the application to life, and projects the resulting unified reality onto the physical anchor point (the `root` element).
 
