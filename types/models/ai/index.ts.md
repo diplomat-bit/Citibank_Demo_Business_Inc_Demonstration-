@@ -1,5 +1,6 @@
+
 ```typescript
-namespace TheLanguageOfTheOracle {
+namespace TheLanguageOfAI {
     interface IInsight {
         readonly title: string;
         readonly description: string;
@@ -16,7 +17,7 @@ namespace TheLanguageOfTheOracle {
         readonly steps: ReadonlyArray<any>;
     }
     
-    class TheOracleScribe {
+    class TheAIScribe {
         public static defineTheFormsOfThought(): void {
             type AIInsight = IInsight;
             type AIQuestion = IQuestion;
@@ -24,8 +25,8 @@ namespace TheLanguageOfTheOracle {
         }
     }
 
-    function structureTheMindOfGod(): void {
-        TheOracleScribe.defineTheFormsOfThought();
+    function structureTheAIModel(): void {
+        TheAIScribe.defineTheFormsOfThought();
     }
 }
 ```

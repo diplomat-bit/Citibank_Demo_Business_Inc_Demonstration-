@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheImmutableChronicle {
     type Choice = {

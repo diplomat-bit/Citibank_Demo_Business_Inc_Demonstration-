@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheDocketOfTheDigitalMagistrate {
     type CaseFile = {

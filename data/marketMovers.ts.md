@@ -1,13 +1,14 @@
+
 ```typescript
 namespace TheWhispersOnTheWind {
-    type NarrativeCanary = {
+    type MarketSignal = {
         readonly ticker: string;
         readonly name: string;
         readonly price: number;
         readonly change: number;
     };
 
-    type MarketWhispers = ReadonlyArray<NarrativeCanary>;
+    type MarketWhispers = ReadonlyArray<MarketSignal>;
 
     class TheListeningPost {
         public static gatherWhispers(): MarketWhispers {
@@ -27,22 +28,22 @@ namespace TheWhispersOnTheWind {
             this.whispers = whispers;
         }
 
-        public correlateToSovereignInterests(portfolio: any[]): string {
+        public correlateToCreatorInterests(portfolio: any[]): string {
             const mostRelevantWhisper = this.whispers.find(w => portfolio.some(p => p.ticker === w.ticker));
             
             if (mostRelevantWhisper) {
                 const isPositive = mostRelevantWhisper.change > 0;
-                return `Intelligence briefing: The most relevant market narrative today concerns '${mostRelevantWhisper.name}'. The current sentiment is ${isPositive ? 'positive' : 'negative'}. This directly impacts your holdings. Recommend monitoring this signal closely.`;
+                return `Intelligence briefing: The most relevant market signal today concerns '${mostRelevantWhisper.name}'. The current sentiment is ${isPositive ? 'positive' : 'negative'}. This directly impacts your holdings. Recommend monitoring this signal closely.`;
             }
-            return "Intelligence briefing: No significant market narratives currently correlate directly with your primary sovereign interests. The front is quiet.";
+            return "Intelligence briefing: No significant market signals currently correlate directly with your primary creative interests. The front is quiet.";
         }
     }
     
     function interpretTheSignals(): void {
         const whispers = TheListeningPost.gatherWhispers();
         const theAI = new TheIntelligenceAgentAI(whispers);
-        const sovereignPortfolio = [{ ticker: 'QNTM' }];
-        const briefing = theAI.correlateToSovereignInterests(sovereignPortfolio);
+        const creatorPortfolio = [{ ticker: 'QNTM' }];
+        const briefing = theAI.correlateToCreatorInterests(creatorPortfolio);
     }
 }
 ```

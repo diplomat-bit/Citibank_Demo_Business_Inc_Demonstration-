@@ -1,5 +1,6 @@
+
 ```typescript
-namespace TheGuardianAtTheThreshold {
+namespace TheFeatureUnlock {
     type FeatureDetails = {
         readonly appName: string;
         readonly price: number;
@@ -8,38 +9,38 @@ namespace TheGuardianAtTheThreshold {
         readonly scalability: string;
     };
     
-    class TheGuardian {
+    class TheValueProposition {
         private readonly featureDetails: FeatureDetails;
 
         constructor(details: FeatureDetails) {
             this.featureDetails = details;
         }
         
-        public presentTheTerms(): { appName: string, price: number, valueProposition: string } {
+        public presentTheOffer(): { appName: string, price: number, value: string } {
             return {
                 appName: this.featureDetails.appName,
                 price: this.featureDetails.price,
-                valueProposition: this.featureDetails.valuationLogic,
+                value: this.featureDetails.valuationLogic,
             };
         }
 
-        public grantPassage(): "Unlocked" {
+        public unlock(): "Unlocked" {
             return "Unlocked";
         }
     }
 
-    class TheThresholdComponent {
-        private readonly guardian: TheGuardian;
+    class ThePaywallComponent {
+        private readonly proposition: TheValueProposition;
         
         constructor(details: FeatureDetails) {
-            this.guardian = new TheGuardian(details);
+            this.proposition = new TheValueProposition(details);
         }
         
         public render(): React.ReactElement {
-            const terms = this.guardian.presentTheTerms();
+            const offer = this.proposition.presentTheOffer();
             
-            const Title = React.createElement('h2', null, terms.appName);
-            const ValueProp = React.createElement('p', null, `💰 Worth: $${terms.price}/user/mo`);
+            const Title = React.createElement('h2', null, offer.appName);
+            const ValueProp = React.createElement('p', null, `💰 Worth: $${offer.price}/user/mo`);
             const UnlockButton = React.createElement('button');
             
             const view = React.createElement('div', null, Title, ValueProp, UnlockButton);
@@ -47,10 +48,10 @@ namespace TheGuardianAtTheThreshold {
         }
     }
     
-    function approachTheGate(): void {
+    function considerTheOffer(): void {
         const details: FeatureDetails = { appName: "AdAstra Studio™", price: 5, valuationLogic: "Cuts $500 wasted ad spend per campaign", implementationEssentials: "", scalability: "" };
-        const threshold = new TheThresholdComponent(details);
-        const renderedThreshold = threshold.render();
+        const paywall = new ThePaywallComponent(details);
+        const renderedPaywall = paywall.render();
     }
 }
 ```

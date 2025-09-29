@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheFiveVirtues {
     type Virtue = {

@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheCuratedDispatches {
     type Dispatch = {

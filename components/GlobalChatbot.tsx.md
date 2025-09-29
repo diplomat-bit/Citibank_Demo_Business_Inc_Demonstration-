@@ -1,13 +1,14 @@
+
 ```typescript
-namespace TheWhisperingGallery {
+namespace TheQuantumAssistant {
     type Utterance = {
-        readonly role: "user" | "oracle";
+        readonly role: "user" | "assistant";
         readonly text: string;
     };
 
     type FinancialSnapshot = string;
     
-    class TheOracleMind {
+    class TheAssistantMind {
         private readonly chatHistory: Utterance[];
         private readonly geminiChat: any;
         
@@ -26,7 +27,7 @@ namespace TheWhisperingGallery {
             this.chatHistory.push({ role: "user", text: query });
             const promptWithContext = `${query}\n\n${snapshot}`;
             const responseText: string = await this.geminiChat.sendMessageStream(promptWithContext);
-            this.chatHistory.push({ role: "oracle", text: responseText });
+            this.chatHistory.push({ role: "assistant", text: responseText });
             return responseText;
         }
     }
@@ -43,12 +44,12 @@ namespace TheWhisperingGallery {
         }
     }
 
-    class TheGalleryComponent {
-        private readonly oracle: TheOracleMind;
+    class TheChatbotComponent {
+        private readonly assistant: TheAssistantMind;
         private readonly scribe: TheFinancialDataScribe;
 
         constructor() {
-            this.oracle = new TheOracleMind();
+            this.assistant = new TheAssistantMind();
             this.scribe = new TheFinancialDataScribe();
         }
 
@@ -59,9 +60,9 @@ namespace TheWhisperingGallery {
         }
     }
     
-    function openAChannelToTheOracle(): void {
-        const gallery = new TheGalleryComponent();
-        const renderedGallery = gallery.render();
+    function startAConversation(): void {
+        const chatbot = new TheChatbotComponent();
+        const renderedChatbot = chatbot.render();
     }
 }
 ```

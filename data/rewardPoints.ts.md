@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheSecondCurrency {
     type TreasuryOfMerit = {
@@ -41,7 +42,7 @@ namespace TheSecondCurrency {
         }
     }
     
-    function transmuteWillpowerIntoWealth(): void {
+    function transmuteWillpowerIntoValue(): void {
         const treasury = TheMintOfVirtue.establishTheInitialTreasury();
         const theAI = new TheAlchemistAI(treasury);
         const actOfVirtue = { type: 'SAVING_GOAL_CONTRIBUTION', value: 100 };

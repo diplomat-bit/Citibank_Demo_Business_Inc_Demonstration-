@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheChronicleOfBrokenRhythms {
     type DissonantChord = {
@@ -45,7 +46,7 @@ namespace TheChronicleOfBrokenRhythms {
                     entityDescription: `PO #${event.id}`,
                     timestamp: new Date().toISOString(),
                     riskScore: 80
-                };
+                } as DissonantChord;
             }
             return null;
         }

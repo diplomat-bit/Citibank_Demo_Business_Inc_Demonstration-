@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheNervesOfTheWorld {
     type SenseOrgan = 'Plaid' | 'Stripe' | 'Marqeta' | 'Modern Treasury' | 'Google Gemini';

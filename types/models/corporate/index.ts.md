@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheLexiconOfTheEnterprise {
     interface IInstrumentOfDelegatedWill {
@@ -26,7 +27,7 @@ namespace TheLexiconOfTheEnterprise {
         }
     }
 
-    function giveLanguageToTheBeast(): void {
+    function giveLanguageToTheEnterprise(): void {
         TheCorporateScribe.defineTheFormsOfCollectiveAction();
     }
 }

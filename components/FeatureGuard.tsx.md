@@ -1,66 +1,67 @@
+
 ```typescript
-namespace TheKeeperOfTheKeys {
-    type RealmID = string;
+namespace TheFeatureAccessController {
+    type FeatureID = string;
     
-    interface IKeyring {
-        hasKeyFor(realmId: RealmID): boolean;
-        addKey(realmId: RealmID): void;
+    interface IAccessManager {
+        hasAccessTo(featureId: FeatureID): boolean;
+        grantAccess(featureId: FeatureID): void;
     }
 
-    class UserKeyring implements IKeyring {
-        private unlockedRealms: Set<RealmID>;
+    class UserAccessManager implements IAccessManager {
+        private unlockedFeatures: Set<FeatureID>;
         
-        constructor(initialRealms: RealmID[]) {
-            this.unlockedRealms = new Set(initialRealms);
+        constructor(initialFeatures: FeatureID[]) {
+            this.unlockedFeatures = new Set(initialFeatures);
         }
         
-        public hasKeyFor(realmId: RealmID): boolean {
-            return this.unlockedRealms.has(realmId);
+        public hasAccessTo(featureId: FeatureID): boolean {
+            return this.unlockedFeatures.has(featureId);
         }
         
-        public addKey(realmId: RealmID): void {
-            this.unlockedRealms.add(realmId);
+        public addKey(featureId: FeatureID): void {
+            this.unlockedFeatures.add(featureId);
         }
     }
 
-    class TheKeeper {
-        private readonly keyring: IKeyring;
+    class TheAccessController {
+        private readonly accessManager: IAccessManager;
 
-        constructor(keyring: IKeyring) {
-            this.keyring = keyring;
+        constructor(accessManager: IAccessManager) {
+            this.accessManager = accessManager;
         }
         
-        public permitEntry(realmId: RealmID): { canEnter: boolean, reason?: "Locked" } {
-            if (this.keyring.hasKeyFor(realmId)) {
-                return { canEnter: true };
+        public checkPermission(featureId: FeatureID): { canAccess: boolean, reason?: "Locked" } {
+            if (this.accessManager.hasAccessTo(featureId)) {
+                return { canAccess: true };
             }
-            return { canEnter: false, reason: "Locked" };
+            return { canAccess: false, reason: "Locked" };
         }
     }
 
-    class TheGuardedGateComponent {
-        private readonly keeper: TheKeeper;
+    class TheFeatureGuardComponent {
+        private readonly controller: TheAccessController;
         
-        constructor(keyring: IKeyring) {
-            this.keeper = new TheKeeper(keyring);
+        constructor(accessManager: IAccessManager) {
+            this.controller = new TheAccessController(accessManager);
         }
 
-        public render(realmId: RealmID, realmContent: React.ReactNode): React.ReactNode {
-            const permission = this.keeper.permitEntry(realmId);
+        public render(featureId: FeatureID, featureContent: React.ReactNode): React.ReactNode {
+            const permission = this.controller.checkPermission(featureId);
             
-            if (permission.canEnter) {
-                return realmContent;
+            if (permission.canAccess) {
+                return featureContent;
             } else {
-                const Paywall = React.createElement('div', null, "This realm is locked. You must first prove your worth.");
+                const Paywall = React.createElement('div', null, "This feature is locked.");
                 return Paywall;
             }
         }
     }
 
-    function seekPassageToARealm(): void {
-        const keyring = new UserKeyring(['dashboard']);
-        const gate = new TheGuardedGateComponent(keyring);
-        const renderedView = gate.render('ai-advisor', React.createElement('div'));
+    function checkFeatureAccess(): void {
+        const userAccess = new UserAccessManager(['dashboard']);
+        const guard = new TheFeatureGuardComponent(userAccess);
+        const renderedView = guard.render('ai-advisor', React.createElement('div'));
     }
 }
 ```

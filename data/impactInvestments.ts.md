@@ -1,48 +1,49 @@
+
 ```typescript
 namespace TheRegistryOfImpact {
-    type VirtuousAsset = {
+    type AlignedAsset = {
         readonly name: string;
         readonly description: string;
         readonly esgRating: number;
     };
 
-    type LedgerOfVirtue = ReadonlyArray<VirtuousAsset>;
+    type CatalogOfValues = ReadonlyArray<AlignedAsset>;
     
     class TheEthicalScout {
-        public static identifyHarmoniousEntities(): LedgerOfVirtue {
-            const ledger: LedgerOfVirtue = [
+        public static identifyAlignedEntities(): CatalogOfValues {
+            const catalog: CatalogOfValues = [
                 { name: 'TerraCycle', esgRating: 5, description: 'An innovator in the science of recycling and the art of the circular economy.' },
                 { name: 'Patagonia Works', esgRating: 5, description: 'A weaver of sustainable apparel and a warrior for environmental activism.'},
                 { name: 'Beyond Meat', esgRating: 4, description: 'An alchemist of plant-based foods, seeking to reduce humanity\'s climate impact.'},
                 { name: 'Tesla, Inc.', esgRating: 3, description: 'An accelerator of the world\'s great transition to sustainable energy.'}
             ];
-            return ledger;
+            return catalog;
         }
     }
     
-    class TheMoralAccountantAI {
-        private readonly ledger: LedgerOfVirtue;
+    class TheValuesAlignmentAI {
+        private readonly catalog: CatalogOfValues;
 
-        constructor(ledger: LedgerOfVirtue) {
-            this.ledger = ledger;
+        constructor(catalog: CatalogOfValues) {
+            this.catalog = catalog;
         }
 
         public assessOpportunity(assetName: string): string {
-            const asset = this.ledger.find(a => a.name === assetName);
+            const asset = this.catalog.find(a => a.name === assetName);
             if (!asset) {
-                return "This entity is not found in the Ledger of Virtue.";
+                return "This entity is not found in the Catalog of Values.";
             }
             if (asset.esgRating >= 4) {
-                return `An investment in ${assetName} represents an act of alignment, where financial growth and worldly healing are one and the same. It is a harmonious choice.`;
+                return `An investment in ${assetName} represents an act of alignment, where financial growth and positive impact are intertwined. It is a harmonious choice.`;
             } else {
-                 return `An investment in ${assetName} presents a moral dissonance. While it may offer financial returns, its echo in the world is not purely harmonious.`;
+                 return `An investment in ${assetName} presents a potential dissonance. While it may offer financial returns, its alignment with core impact values is not as strong.`;
             }
         }
     }
     
-    function consultTheLedgerOfVirtue(): void {
-        const virtuousAssets = TheEthicalScout.identifyHarmoniousEntities();
-        const theAI = new TheMoralAccountantAI(virtuousAssets);
+    function consultTheCatalogOfValues(): void {
+        const alignedAssets = TheEthicalScout.identifyAlignedEntities();
+        const theAI = new TheValuesAlignmentAI(alignedAssets);
         const moralCounsel = theAI.assessOpportunity("Patagonia Works");
     }
 }

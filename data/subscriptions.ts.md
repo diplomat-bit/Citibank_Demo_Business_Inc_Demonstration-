@@ -1,6 +1,7 @@
+
 ```typescript
 namespace TheSilentTides {
-    type AutomatedCovenant = {
+    type RecurringObligation = {
         readonly id: string;
         readonly name: string;
         readonly amount: number;
@@ -8,7 +9,7 @@ namespace TheSilentTides {
         readonly iconName: string;
     };
 
-    type ChartOfKnownCurrents = ReadonlyArray<AutomatedCovenant>;
+    type ChartOfKnownCurrents = ReadonlyArray<RecurringObligation>;
     
     class TheTidalMapper {
         public static chartTheCurrents(): ChartOfKnownCurrents {
@@ -35,6 +36,7 @@ namespace TheSilentTides {
 
         public scanForUnchartedCurrents(transactionHistory: any[]): string[] {
             const unchartedCurrents: string[] = [];
+            // In a real implementation, this would contain logic to find recurring patterns.
             return unchartedCurrents;
         }
     }

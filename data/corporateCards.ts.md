@@ -1,6 +1,7 @@
+
 ```typescript
 namespace TheInstrumentsOfDelegatedWill {
-    type ConstitutionOfTrust = {
+    type CharterOfTrust = {
         readonly atm: boolean;
         readonly contactless: boolean;
         readonly online: boolean;
@@ -16,7 +17,7 @@ namespace TheInstrumentsOfDelegatedWill {
         balance: number;
         readonly limit: number;
         readonly transactions: any[];
-        readonly controls: ConstitutionOfTrust;
+        readonly controls: CharterOfTrust;
     };
 
     type Armory = ReadonlyArray<Instrument>;
@@ -32,7 +33,7 @@ namespace TheInstrumentsOfDelegatedWill {
         }
     }
     
-    class TheSpymasterAI {
+    class TheOperationsAI {
         private readonly armory: Armory;
 
         constructor(armory: Armory) {
@@ -53,13 +54,13 @@ namespace TheInstrumentsOfDelegatedWill {
             if (isSpendingAligned) {
                 return `Analysis: All observed actions for instrument ${instrumentId} are in perfect alignment with the holder's stated purpose of '${holderRole}'. The delegated will is being executed faithfully.`;
             }
-            return `Alert: Detected dissonance in actions for instrument ${instrumentId}. Spending patterns are deviating from the expected purpose of '${holderRole}'. Recommend reviewing the constitution of this trust.`;
+            return `Alert: Detected dissonance in actions for instrument ${instrumentId}. Spending patterns are deviating from the expected purpose of '${holderRole}'. Recommend reviewing the charter of this trust.`;
         }
     }
 
-    function overseeTheEmpire(): void {
+    function overseeTheEnterprise(): void {
         const armory = TheQuartermaster.provisionTheArmory();
-        const theAI = new TheSpymasterAI(armory);
+        const theAI = new TheOperationsAI(armory);
         const report = theAI.analyzeAlignmentOfPurpose('corp1', []);
     }
 }

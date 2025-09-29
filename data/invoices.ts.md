@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheTidesOfObligation {
     type PromiseOfPayment = {
@@ -16,4 +17,10 @@ namespace TheTidesOfObligation {
             const ledger: LedgerOfPromises = [
                 { id: 'inv_1', invoiceNumber: 'INV-2024-07-001', counterpartyName: 'Client Bravo', dueDate: '2024-07-15', amount: 7500, status: 'overdue' },
                 { id: 'inv_2', invoiceNumber: 'INV-2024-08-002', counterpartyName: 'Client Charlie', dueDate: '2024-08-10', amount: 12000, status: 'unpaid' },
-                { id: 'inv_3', invoiceNumber: 'INV-2024-06-003', counterpartyName:
+                { id: 'inv_3', invoiceNumber: 'INV-2024-06-003', counterpartyName: 'Client Delta', dueDate: '2024-06-25', amount: 2500, status: 'paid' },
+            ];
+            return ledger;
+        }
+    }
+}
+```

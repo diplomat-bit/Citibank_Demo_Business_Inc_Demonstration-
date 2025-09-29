@@ -1,5 +1,6 @@
+
 ```typescript
-namespace TheCodexOfTheSovereignSelf {
+namespace TheCodexOfTheCreator {
     interface IActOfExchange {
         readonly type: "income" | "expense";
         readonly description: string;
@@ -32,7 +33,7 @@ namespace TheCodexOfTheSovereignSelf {
         }
     }
     
-    function mapTheIndividualSoul(): void {
+    function mapTheCreatorJourney(): void {
         ThePersonalChronicler.defineTheFormsOfTheJourney();
     }
 }

@@ -1,13 +1,14 @@
 
-# The North Star
+
+# The Vision
 
 This is our manifesto. The declaration of the "why" behind this Instrument. It is the core philosophy that animates every line of code, every pixel on the screen. To read this vision is to understand that this is not a bank, but a financial co-pilot; not just a tool, but a partner. It is our promise that we are not merely building an application, but forging a new, more helpful way of being.
 
 ---
 
-### A Note for the Builder: Our Guiding Principles
+### A Fable for the Builder: Our Guiding Principles
 
-(Every great endeavor, every cathedral built, every voyage into the unknown, begins with a vision. A clear and unshakable understanding of 'why.' This is our 'why.' This is the North Star that has guided every choice we've made in the creation of this Instrument, and the mind within it.)
+(Every great endeavor, every cathedral built, every voyage into the unknown, begins with a vision. A clear and unshakable understanding of 'why.' This is our 'why.' This is the principle that has guided every choice we've made in the creation of this Instrument, and the mind within it.)
 
 (Our vision was not to build a better bank. The world has enough banks. Our vision was to build a better partner. A co-pilot for the journey of your financial life. This is a fundamental distinction. A bank is a vault. A co-pilot is a guide. A bank is reactive, a keeper of records. A co-pilot is proactive, a reader of maps and a spotter of storms on the horizon.)
 

@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheEchoOfAName {
     type Reputation = {
@@ -42,7 +43,7 @@ namespace TheEchoOfAName {
     
     function measureTheResonanceOfIntegrity(): void {
         const reputation = TheOracleOfTrust.distillReputation();
-        const virtues = [];
+        const virtues = []; // In a real scenario, the credit factors would be passed in.
         const theAI = new TheHarmonicAnalystAI(reputation, virtues);
         const counsel = theAI.suggestHarmonicTuning();
     }

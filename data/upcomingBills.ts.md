@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheWeatherForecast {
     type PredictedSystem = {

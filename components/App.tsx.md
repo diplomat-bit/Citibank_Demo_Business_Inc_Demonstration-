@@ -1,11 +1,12 @@
-# The Conductor
+
+# The Instrument
 *A Guide to the Orchestration of the User Experience*
 
 ---
 
 ## Abstract
 
-This document models the `App.tsx` component not as a mere root component, but as the "Conductor"—the singular entity responsible for orchestrating the user's experience. We formalize the `activeView` state as the "Current Focus" and the `renderView` function as the "View Selector," which determines which workspace is presented to the user at any given moment. The `Sidebar` and `Header` are modeled as the constant, grounding structures of the application, while the main content area is the ever-shifting stage of experience.
+This document models the `App.tsx` component not as a mere root component, but as the "Instrument"—the singular entity responsible for orchestrating the user's experience. We formalize the `activeView` state as the "Current Focus" and the `renderView` function as the "View Selector," which determines which workspace is presented to the user at any given moment. The `Sidebar` and `Header` are modeled as the constant, grounding structures of the application, while the main content area is the ever-shifting stage of experience.
 
 ---
 
@@ -17,7 +18,7 @@ Let `V` be the set of all possible views (workspaces) defined in the Guidebook. 
 
 ### 1.2 The `handleSetView` Transition Function
 
-The function `handleSetView: V → V` is the mechanism for shifting focus. It is a state transition function that not only changes the active view but also records the `previousView`, creating a memory of the immediate past. This memory is crucial for contextual reasoning, particularly for our AI Partner (`AIAdvisorView`).
+The function `handleSetView: V → V` is the mechanism for shifting focus. It is a state transition function that not only changes the active view but also records the `previousView`, creating a memory of the immediate past. This memory is crucial for contextual reasoning, particularly for our AI Co-Pilot (`AIAdvisorView`).
 
 ---
 

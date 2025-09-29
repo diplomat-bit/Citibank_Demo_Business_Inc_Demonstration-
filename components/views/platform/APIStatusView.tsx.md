@@ -1,4 +1,5 @@
 
+
 # The Engine Room
 *A Guide to the System & API Status View*
 
@@ -10,9 +11,9 @@ The `APIStatusView.tsx` component is the "Engine Room" of our application. It's 
 
 ---
 
-### A Simple Metaphor: The Nervous System
+### A Simple Metaphor: The Central Nervous System
 
-Think of this view as the application's nervous system, made visible. It's a map of the senses through which our AI Partner perceives the financial world.
+Think of this view as the application's central nervous system, made visible. It's a map of the senses through which our AI Co-Pilot perceives the financial world.
 
 -   **The Nerves (`APIStatus` list)**: Each entry here—'Plaid,' 'Stripe,' 'Google Gemini'—is a nerve ending. A conduit through which vital information flows.
     -   **Plaid** is its sense of touch, allowing it to feel the pulse of your transactions.

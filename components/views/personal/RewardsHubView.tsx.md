@@ -1,3 +1,4 @@
+
 ```typescript
 namespace TheAlchemyOfVirtue {
     type Discipline = number;
