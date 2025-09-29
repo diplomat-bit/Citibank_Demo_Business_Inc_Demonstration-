@@ -5,7 +5,7 @@ This is the chamber where intent is given a voice. It is a studio not for advert
 
 ---
 
-### A Fable for the Builder: The Dream Projector
+### A Note for the Builder: The Dream Projector
 
 (They told us that machines could be logical. That they could be fast. That they could be efficient. They never told us they could be dreamers. This `AIAdStudio` is our proof that they were wrong. It is a testament to the idea that a machine, given the right tools, can become a partner in the act of creation.)
 

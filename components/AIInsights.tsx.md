@@ -1,106 +1,40 @@
-```typescript
-namespace TheOracle {
-    type Ledger = ReadonlyArray<any>;
-    type MarketData = any;
-    type Urgency = "observation" | "warning" | "critical_alert";
+# Helpful Hints from Your Partner
+*A Guide to the AI Insights Widget*
 
-    interface IWhisper {
-        readonly id: string;
-        readonly title: string;
-        readonly description: string;
-        readonly urgency: Urgency;
-        readonly supportingEvidence?: ReadonlyArray<{ name: string; value: number }>;
-    }
+---
 
-    class EmergentCounselEngine {
-        private static findBudgetDissonance(ledger: Ledger): boolean {
-            return true;
-        }
+## The Concept
 
-        private static findSavingsHarmony(ledger: Ledger): boolean {
-            return true;
-        }
-        
-        private static detectAnomalousActivity(ledger: Ledger): boolean {
-            return true;
-        }
+The `AIInsights.tsx` component is the primary space where the AI Partner, Quantum, shares proactive, helpful hints with the user. It's not just a list of notifications; it's a curated set of observations that the AI has discovered by analyzing the user's financial data.
 
-        public static scryTheWebOfConsequence(ledger: Ledger, market: MarketData): ReadonlyArray<IWhisper> {
-            const whispers: IWhisper[] = [];
+---
 
-            if (this.findBudgetDissonance(ledger)) {
-                whispers.push({
-                    id: "whisper_budget_1",
-                    title: "Budgetary Disharmony",
-                    description: "Your 'Dining' spend is creating a conflict with your 'Vacation' goal. The two frequencies are out of phase.",
-                    urgency: "warning",
-                    supportingEvidence: [{ name: "Dining", value: 450 }, { name: "Goal", value: 200 }]
-                });
-            }
+### A Simple Metaphor: Notes from a Friend
 
-            if (this.findSavingsHarmony(ledger)) {
-                whispers.push({
-                    id: "whisper_savings_1",
-                    title: "Accelerating Concordance",
-                    description: "Your disciplined saving is strengthening the harmony of your financial plan. The pattern grows stronger.",
-                    urgency: "observation"
-                });
-            }
-            
-            if (this.detectAnomalousActivity(ledger)) {
-                whispers.push({
-                    id: "whisper_anomaly_1",
-                    title: "Anomalous Resonance Detected",
-                    description: "A recent transaction carries an unusual signature compared to your established patterns. Further examination is advised.",
-                    urgency: "critical_alert"
-                });
-            }
-            
-            return whispers;
-        }
-    }
-    
-    class TheOracleComponent {
-        private whispers: ReadonlyArray<IWhisper>;
-        private isLoading: boolean;
+Think of this widget as a series of helpful sticky notes left for you by a very smart and observant friend who has looked over your finances.
 
-        constructor(ledger: Ledger, market: MarketData) {
-            this.whispers = [];
-            this.isLoading = true;
-            this.listenForWhispers(ledger, market);
-        }
+-   **The Note (`AIInsight`)**: Each insight is a single, concise note. It has a clear `title` (the main point), a short `description` (the "why"), and sometimes a small `chart` to illustrate the point visually.
 
-        private async listenForWhispers(ledger: Ledger, market: MarketData): Promise<void> {
-            this.whispers = await new Promise(resolve => 
-                setTimeout(() => resolve(EmergentCounselEngine.scryTheWebOfConsequence(ledger, market)), 1500)
-            );
-            this.isLoading = false;
-        }
+-   **The colored dot (`UrgencyIndicator`)**: Each note has a colored dot to indicate its importance.
+    -   **Blue (low)**: Just a gentle observation or an "FYI."
+    -   **Yellow (medium)**: Something you should probably look at when you have a moment.
+    -   **Red (high)**: An important and timely observation that might require your attention soon.
 
-        private renderWhisper(whisper: IWhisper): React.ReactElement {
-            const UrgencyIndicator = React.createElement('div', { className: `urgency-${whisper.urgency}` });
-            const Title = React.createElement('h4', null, whisper.title);
-            const Description = React.createElement('p', null, whisper.description);
-            const EvidenceChart = whisper.supportingEvidence ? React.createElement('div', { 'aria-label': 'Chart' }) : null;
-            
-            return React.createElement('div', { key: whisper.id }, UrgencyIndicator, Title, Description, EvidenceChart);
-        }
-        
-        public render(): React.ReactElement {
-            if (this.isLoading) {
-                return React.createElement('div', null, "Listening to the web of consequence...");
-            }
-            
-            const renderedWhispers = this.whispers.map(w => this.renderWhisper(w));
-            return React.createElement('div', null, renderedWhispers);
-        }
-    }
+---
 
-    function consultTheOracle(): void {
-        const ledger: Ledger = [];
-        const market: MarketData = {};
-        const oracle = new TheOracleComponent(ledger, market);
-        const view = oracle.render();
-    }
-}
-```
+### How It Works
+
+1.  **Listening in the Background**: In the `DataContext`, a function (`generateDashboardInsights`) is called that simulates the AI's background thinking process. This function takes a summary of the user's recent transactions and budgets.
+
+2.  **Finding Patterns**: It sends this summary to the Gemini API with a prompt asking it to find 2-3 concise, actionable insights. It specifically asks the AI to respond in a structured JSON format, including a title, description, and urgency for each insight.
+
+3.  **Delivering the Notes**: The `AIInsights` component receives this list of structured insights.
+    -   It checks if the data is still being loaded (`isLoading`) and shows a helpful loading state.
+    -   Once the insights arrive, it displays each one as a distinct, easy-to-read "note" in the list.
+    -   It uses the `UrgencyIndicator` to add the colored dot, providing a quick visual cue for each insight's importance.
+
+---
+
+### The Philosophy: A Proactive Partner
+
+This component is a core expression of our philosophy. A traditional bank just shows you your data. A financial partner helps you understand what that data *means*. The AI Insights widget is where that partnership comes to life, with the AI working proactively in the background to find helpful patterns and bring them to the user's attention in a clear, simple, and non-judgmental way.

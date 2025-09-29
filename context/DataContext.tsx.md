@@ -1,75 +1,36 @@
-```typescript
-namespace TheWellspring {
-    interface IUniversalTruth {
-        readonly transactions: ReadonlyArray<any>;
-        readonly assets: ReadonlyArray<any>;
-        readonly budgets: ReadonlyArray<any>;
-        readonly goals: ReadonlyArray<any>;
-    }
 
-    type Prayer = {
-        readonly type: "ADD_TRANSACTION" | "UPDATE_BUDGET" | "GENERATE_INSIGHTS";
-        readonly payload: any;
-    };
-    
-    class TheGuardian {
-        private universalTruth: IUniversalTruth;
+# The Heart of the App
+*A Guide to Our Shared Knowledge*
 
-        constructor(initialTruth: IUniversalTruth) {
-            this.universalTruth = initialTruth;
-        }
+---
 
-        public provideTruth<K extends keyof IUniversalTruth>(query: K): IUniversalTruth[K] {
-            return this.universalTruth[query];
-        }
+## The Central Idea
 
-        public hearPrayerAndUpdateTheWorld(prayer: Prayer): void {
-            const log = `Hearing prayer of type: ${prayer.type}. The fabric of reality shifts.`;
-            
-            let newTruth = { ...this.universalTruth };
-            
-            if (prayer.type === "ADD_TRANSACTION") {
-                newTruth = { ...newTruth, transactions: [prayer.payload, ...newTruth.transactions] };
-            }
-            if (prayer.type === "UPDATE_BUDGET") {
-                const updatedBudgets = newTruth.budgets.map(b => b.id === prayer.payload.id ? prayer.payload : b);
-                newTruth = { ...newTruth, budgets: updatedBudgets };
-            }
+Think of the `DataContext.tsx` file as the heart of our application. It's the central place where all the important, shared information lives and is kept up-to-date. Every other part of the app—from the dashboard charts to the transaction list—connects to this heart to get the truthful, consistent data it needs to function.
 
-            this.universalTruth = newTruth;
-            
-            const epilogue = "The universal truth has been updated. All who drink from the well will now know this new reality.";
-        }
-        
-        public getTheEntireCosmos(): IUniversalTruth {
-            return this.universalTruth;
-        }
-    }
+It's like a central, shared brain or a community wellspring.
 
-    class TheContextAltar {
-        private readonly guardian: TheGuardian;
+---
 
-        constructor(initialTruth: IUniversalTruth) {
-            this.guardian = new TheGuardian(initialTruth);
-        }
+### How It Works: A Simple Story
 
-        public provideToTheWorld(): React.Context<TheGuardian> {
-            const Context = React.createContext(this.guardian);
-            return Context;
-        }
-        
-        public wrapTheWorldInTruth(world: React.ReactNode, Context: React.Context<TheGuardian>): React.ReactElement {
-            const Provider = Context.Provider;
-            return React.createElement(Provider, { value: this.guardian }, world);
-        }
-    }
+1.  **The Wellspring (`DataContext`)**: We create a central source of truth, a wellspring that holds all our shared data (transactions, budgets, user goals, etc.).
 
-    function establishTheSingleSourceOfTruth(): void {
-        const primordialTruth: IUniversalTruth = { transactions: [], assets: [], budgets: [], goals: [] };
-        const altar = new TheContextAltar(primordialTruth);
-        const TheContext = altar.provideToTheWorld();
-        const theWorld = React.createElement('div');
-        const worldWrappedInTruth = altar.wrapTheWorldInTruth(theWorld, TheContext);
-    }
-}
-```
+2.  **The Guardian (`DataProvider`)**: We create a "Guardian" component whose only job is to protect and share the water from this wellspring. It wraps around our entire application, making the data available to everyone inside.
+
+3.  **Drinking from the Well (`useContext`)**: Any component in our app that needs information, like the `BalanceSummary` chart, can simply "drink from the well" using a hook called `useContext`. This gives it the most current, up-to-date information.
+
+4.  **A Ripple in the Water (`addTransaction`)**: When something changes—like a new transaction being added—the component tells the Guardian. The Guardian updates the wellspring, and this change creates a ripple that flows out to every single component that is drinking from the well. They all update automatically with the new truth.
+
+---
+
+### The Philosophy: A Single Source of Truth
+
+This approach is powerful because it keeps our app from getting confused. We don't have different parts of the app keeping their own separate, out-of-date copies of information. Everyone drinks from the same well, so everyone shares the same single source of truth.
+
+This makes our app:
+-   **Consistent:** The dashboard and the transaction page will always show the same data.
+-   **Maintainable:** We only need to update the data in one place.
+-   **Less Buggy:** It prevents a whole class of problems caused by data getting out of sync.
+
+The `DataContext` is the architectural heart that pumps life-giving, truthful data to every corner of our application, ensuring it works together as a single, harmonious whole.

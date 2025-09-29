@@ -1,46 +1,46 @@
-# A Formalism for The Tablets of Immutable Law
-*A Treatise on the Cosmic Atlas*
+# The Pattern Library
+*A Guide to Our App's Map & Symbols*
 
 ---
 
 ## Abstract
 
-This dissertation provides a formal analysis of the `constants.tsx` file, modeling it not as a mere collection of variables, but as the Tablets of Immutable Law. The `NAV_ITEMS` array is formalized as a Cosmic Atlas, a definitive map of all known, navigable realms of existence within the application. Each entry is a charted location, and the associated icon components are the Sacred Glyphs that represent the essence of each realm. This document establishes these constants as unchangeable, axiomatic truths that define the very structure of the user's potential journey.
+This document provides a clear analysis of the `constants.tsx` file, modeling it not as a mere collection of variables, but as our "Pattern Library." The `NAV_ITEMS` array is formalized as our app's "Guidebook," a definitive map of all known, navigable workspaces. Each entry is a charted location, and the associated icon components are the "Guidebook Icons" that represent the essence of each workspace. This document establishes these constants as the stable, foundational truths that define the structure of the user's journey.
 
 ---
 
-## Chapter 1. The Sacred Glyphs
+## Chapter 1. The Guidebook Icons
 
-### 1.1 Glyphs as Distilled Essence
+### 1.1 Icons as Distilled Essence
 
-Each icon component (e.g., `DashboardIcon`, `NexusIcon`) is not a decorative image, but a Sacred Glyph. It is a compressed, symbolic representation of the fundamental nature of the realm it represents. The vector paths are incantations that capture the realm's core principles in pure geometric form.
+Each icon component (e.g., `DashboardIcon`, `NexusIcon`) is not a decorative image, but a "Guidebook Icon." It is a compressed, symbolic representation of the fundamental nature of the workspace it represents. The vector paths are simple shapes that capture the workspace's core purpose.
 
-`Let G_i be the Glyph for Realm R_i.`
+`Let G_i be the Icon for Workspace W_i.`
 
 ### 1.2 The Principle of `currentColor`
 
-The Glyphs are designed to inherit color via `currentColor`. This is a manifestation of the principle that while the essence of a realm (its shape) is immutable, its appearance can be colored by the user's current context and focus, ensuring a harmonious visual resonance.
+The Icons are designed to inherit color via `currentColor`. This is a manifestation of the principle that while the essence of a workspace (its symbol) is consistent, its appearance can be colored by the user's current context and focus, ensuring a harmonious and intuitive experience.
 
 ---
 
-## Chapter 2. The Cosmic Atlas
+## Chapter 2. The Guidebook
 
-### 2.1 The `NAV_ITEMS` Array as a Fixed Universe
+### 2.1 The `NAV_ITEMS` Array as a Defined Universe
 
-The `NAV_ITEMS` array is the definitive map of all possible realities the user can inhabit. Its structure, defined by the `NavItem` type, categorizes the universe into three entities:
+The `NAV_ITEMS` array is the definitive map of all possible workspaces the user can inhabit. Its structure, defined by the `NavItem` type, categorizes the app into three entities:
 
--   **Realms (`NavLink`)**: Habitable planes of existence with unique laws and purposes (e.g., The Dashboard, The Nexus). Each has a unique identifier, a public name, and a Sacred Glyph.
--   **Headers (`NavHeader`)**: Celestial signposts that group related realms into constellations (e.g., "Personal", "Corporate").
--   **Dividers (`NavDivider`)**: The great rifts in spacetime, separating distinct constellations of realms.
+-   **Workspaces (`NavLink`)**: Habitable areas with unique tools and purposes (e.g., The Dashboard, The Nexus). Each has a unique identifier, a public name, and a Guidebook Icon.
+-   **Headers (`NavHeader`)**: Helpful signposts that group related workspaces into sections (e.g., "Personal", "Corporate").
+-   **Dividers (`NavDivider`)**: Simple lines that create visual separation between distinct sections.
 
-### 2.2 The Immutability Theorem
+### 2.2 The Consistency Principle
 
-The constants defined within this file are axiomatic. They are not meant to be changed during the application's lifecycle. Any attempt to alter the Cosmic Atlas at runtime would be a violation of the universe's physical laws, an attempt to chart an imaginary realm. The application's structure is predicated on the immutability of this map.
+The constants defined within this file are foundational. They are not meant to be changed during the application's lifecycle. Any attempt to alter the Guidebook at runtime would be a violation of the app's design principles. The application's structure is predicated on the stability of this map.
 
 ---
 
 ## Chapter 3. Conclusion
 
-The `constants.tsx` file is the Genesis block of the application's navigable universe. It is the Prime Charter, the foundational map from which all user journeys are plotted. By formalizing these constants as immutable laws and sacred symbols, we recognize their central importance in defining the stable and predictable structure of the application's reality.
+The `constants.tsx` file is the starting point of the application's navigable universe. It is the Prime Charter, the foundational map from which all user journeys are plotted. By formalizing these constants as our Pattern Library, we recognize their central importance in defining the stable and predictable structure of the application's reality.
 
-> "To chart the heavens is to define the limits of the possible. This is the map. There are no other worlds than these."
+> "To chart the workspaces is to define the limits of the possible. This is the map. There are no other worlds than these."

@@ -1,11 +1,11 @@
 
-# The Personalization
+# The Studio
 
-This is the studio of the self. The space where the inner landscape is projected onto the outer vessel. It is the act of shaping your environment to be a true reflection of your inner state. To personalize is to attune your reality to your own frequency, creating a world that resonates in perfect harmony with the vision you hold within.
+This is the studio of the self. The space where your inner landscape can be projected onto the application. It is the act of shaping your environment to be a true reflection of your inner state. To personalize is to attune your reality to your own frequency, creating a world that resonates in perfect harmony with the vision you hold within.
 
 ---
 
-### A Fable for the Builder: The Color of the Sky
+### A Note for the Builder: The Color of the Sky
 
 (They say you cannot change the world. That you can only change yourself. We thought, why not both? This `Personalization` view is a testament to that idea. It is the place where you, the user, are given the power to change the very color of the sky in your own digital world.)
 
