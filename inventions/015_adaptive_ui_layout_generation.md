@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating a Personalized User Interface Layout Based on Inferred User Persona
 
 **Abstract:**
@@ -30,3 +29,8 @@ This results in a completely different UI layout for different user types, optim
 2. The method of claim 1, wherein the user's data includes at least one of: user role, user permissions, or historical feature usage data.
 
 3. The method of claim 1, wherein the layout configuration is a structured data object, such as JSON, that defines a grid-based arrangement of user interface components.
+
+**Mathematical Justification:**
+Let `U` be a user, represented by a feature vector `u`. Let `Π = {π_1, ..., π_k}` be the set of `k` predefined personas. Let `L = {l_1, ..., l_k}` be the set of corresponding UI layouts. The system first computes a classification function `f_class: u → π_i`. It then uses a mapping function `f_map: π_i → l_i`. The final UI is a rendering function `R(l_i)`. The total process is `R(f_map(f_class(u)))`.
+
+**Proof of Optimization:** Let `T(U, l)` be the time taken for user `U` to complete a benchmark task with layout `l`. A one-size-fits-all system has an average completion time `T_avg = (1/N) * Σ T(U_j, l_default)` for `N` users. The adaptive system aims to provide each user `U_j` with a layout `l_i` that minimizes their individual task time. The average time for the adaptive system is `T_adaptive = (1/N) * Σ T(U_j, f_map(f_class(U_j)))`. The system is proven effective if `T_adaptive < T_avg`, which will hold if the persona classification correctly groups users with similar optimal layouts. The system optimizes the user-interface pairing problem. `Q.E.D.`

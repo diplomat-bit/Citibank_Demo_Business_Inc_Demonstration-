@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Generating Personalized Educational Curricula
 
 **Abstract:**
@@ -58,3 +57,8 @@ The client application receives this JSON and renders it as a clean, easy-to-fol
 2. The method of claim 1, wherein each learning module comprises a list of topics and a suggested practical project.
 
 3. The method of claim 1, wherein the request to the AI model includes a response schema to ensure the curriculum is returned in a structured format.
+
+**Mathematical Justification:**
+Let the total knowledge space be a directed acyclic graph (DAG) `G = (T, D)`, where `T` is the set of all topics and `D` represents dependencies (`t_i` must be learned before `t_j`). The user's current knowledge is a subgraph `G_0`. Their goal is to learn a topic `t_g`. A valid curriculum is a path `P` in `G` from a topic in `G_0` to `t_g`. The optimal curriculum `P*` is the shortest path. The generative AI `G_AI` is a heuristic function that finds a near-optimal path: `G_AI(G_0, t_g) → P' ≈ P*`.
+
+**Proof of Utility:** The full knowledge graph `G` is vast and often implicit. A human learner must manually perform a search over this graph, a process with high cognitive cost. The AI, having been trained on a massive corpus of educational material, possesses an implicit model of `G`. The system is proven useful because `G_AI` provides a valid and near-optimal learning path `P'`, saving the user the significant time and effort of constructing this path manually. `Q.E.D.`

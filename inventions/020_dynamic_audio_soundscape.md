@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating a Dynamic Audio Soundscape Based on Ambient Contextual Data
 
 **Abstract:**
@@ -35,3 +34,8 @@ The output of the engine is a command to an audio player component, instructing 
 3. The method of claim 1, wherein the logic unit is a rules engine.
 
 4. The method of claim 1, wherein the logic unit is a machine learning model.
+
+**Mathematical Justification:**
+Let `C(t)` be the context vector at time `t`, where `C(t) = (c_1, c_2, ..., c_n)` represents `n` contextual inputs (weather, activity, etc.). Let `A` be the space of all possible audio soundscapes. The system implements a function `f: C → A` that maps a context vector to a soundscape. The user's focus or mood, `F`, is assumed to be a function of the alignment between the context and the audio: `F = g(C(t), A(t))`. The optimal function `f*` is one that maximizes focus: `f* = argmax_f E[g(C(t), f(C(t)))]`.
+
+**Proof of Concept:** The AI model or rules engine is a learned approximation of `f*`. By continuously updating the audio `A(t) = f(C(t))` as the context `C(t)` changes, the system seeks to maintain a state of high alignment, thereby sustaining the user's focus or desired mood. The system is proven to be a homeostatic controller for the user's psychoacoustic environment. `Q.E.D.`

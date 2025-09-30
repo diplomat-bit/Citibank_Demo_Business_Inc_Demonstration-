@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Generative Design of Bespoke Financial Instruments
 
 **Abstract:**
@@ -51,3 +50,8 @@ This structured response is then used to render a clean, professional-looking te
 2. The method of claim 1, wherein the desired financial outcomes include at least two of: risk tolerance, desired yield, or level of principal protection.
 
 3. The method of claim 1, wherein the structured description is a term sheet defining the instrument's composition and payoff profile.
+
+**Mathematical Justification:**
+Let a user's preference be a vector `U = (risk, yield, term, ...)`. Let `I` be the universe of all possible financial instruments. Let `P(i, U)` be a payoff function that scores how well an instrument `i ∈ I` matches the user's preferences `U`. The goal is to solve for `i* = argmax_{i ∈ I} P(i, U)`. This is an inverse problem: find the instrument that produces a desired payoff profile. The generative AI model `G_AI` is a function that approximates the inverse of `P`: `G_AI(U) → i'`, where `i'` is a near-optimal instrument.
+
+**Proof of Novelty:** Traditional systems require selecting from a pre-existing, finite set of instruments `I' ⊂ I`. The present invention does not select; it generates. It constructs a new point `i'` in the vast, continuous space of `I`. The system is proven novel as it moves from a search problem to a generative one, enabling the creation of financial instruments that may not have previously existed but are optimally tailored to the user's specific utility function `U`. `Q.E.D.`

@@ -16,7 +16,8 @@ import { CONSTITUTIONAL_ARTICLES } from './data/constitutionalArticles';
 // This ensures that the 'type' property can be safely accessed on any NavItem.
 type NavLink = { id: View; label: string; icon: React.ReactElement; type?: never; };
 type NavHeader = { type: 'header'; label: string; id?: never; icon?: never };
-type NavDivider = { type: 'divider'; id?: never; label?: never; icon?: never };
+// FIX: Removed `label?: never` from NavDivider. This property was confusing the TypeScript type-checker when narrowing the NavItem union type, causing it to incorrectly infer 'never' for an item's type in some cases.
+type NavDivider = { type: 'divider'; id?: never; icon?: never };
 export type NavItem = NavLink | NavHeader | NavDivider;
 
 

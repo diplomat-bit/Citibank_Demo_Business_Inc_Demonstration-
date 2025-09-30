@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating Marketing Copy from Product Descriptions
 
 **Abstract:**
@@ -28,3 +27,8 @@ The backend service receives the text response from the AI model, which might co
 2. The method of claim 1, wherein the instruction specifies the type of advertising copy to be created, such as a headline, a body paragraph, or a call-to-action.
 
 3. The method of claim 1, wherein the prompt instructs the AI model to generate a plurality of distinct copy options.
+
+**Mathematical Justification:**
+Let `D` be the space of all product descriptions. Let `C` be the space of all possible marketing copy. The goal is to find a mapping `f: D → C` that maximizes an effectiveness function `E(c)`, where `c ∈ C`. `E(c)` could represent click-through rate, conversion, or brand alignment. The generative AI model `G_AI` is an approximation of this function, trained on a vast corpus of product descriptions and their corresponding effective marketing copy. The system computes `c' = G_AI(d)` where `d ∈ D`.
+
+**Proof of Value:** A human copywriter manually searches the space `C` for an effective `c`, a process with high cognitive cost `C_human`. The AI model directly generates a candidate `c'` that is predicted to have a high effectiveness score `E(c')`. The value of the system is proven by the dramatic reduction in the cost of finding a high-quality candidate, such that `Cost(G_AI(d)) ≪ C_human`. The system acts as a powerful heuristic to navigate the high-dimensional creative space of marketing copy. `Q.E.D.`

@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Detecting Undisclosed Recurring Subscriptions from Transaction Data
 
 **Abstract:**
@@ -33,3 +32,13 @@ The request to the AI model includes a `responseSchema` to ensure the output is 
    b. A service configured to communicate with a generative AI model.
    c. Logic to extract transaction history, format it into a prompt, and send it to the AI model.
    d. A user interface component to display the list of potential subscriptions returned by the AI model.
+
+**Mathematical Justification:**
+Let `T = {t_1, t_2, ..., t_n}` be a time-ordered set of transactions, where each transaction `t_i` is a tuple `(m_i, a_i, d_i)` of merchant, amount, and date. A subscription `S` is defined as a subset of transactions `S ⊂ T` such that for any `t_i, t_j ∈ S`:
+1. `m_i ≈ m_j` (merchants are the same or similar)
+2. `a_i ≈ a_j` (amounts are similar within a tolerance `ε`)
+3. `|d_j - d_i| ≈ k * P` for some integer `k` and period `P` (e.g., 30 days).
+
+The AI model `G_AI` is a function that performs this clustering: `G_AI(T) → {S_1, S_2, ..., S_m}`.
+
+**Proof of Functionality:** The problem is to partition the set `T` into subsets that satisfy the properties of a subscription. The AI model, trained on vast amounts of sequential and relational data, acts as a powerful heuristic clustering algorithm. It approximates the function `G_AI` by identifying transaction groups that minimize the variance in merchant name, amount, and time interval. The system is proven effective as it automates this complex pattern recognition task, which is computationally intensive to perform with traditional algorithms for every possible merchant and period. `Q.E.D.`

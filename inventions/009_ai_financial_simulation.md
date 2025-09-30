@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Full-State Financial Simulation Based on Natural Language Scenarios
 
 **Abstract:**
@@ -32,3 +31,8 @@ The client application fetches this structured result and renders it in a multi-
 2. The method of claim 1, wherein the structured simulation result further comprises a list of key quantitative impacts and a list of actionable recommendations.
 
 3. The method of claim 1, wherein the request to the generative AI model includes a response schema to ensure the output is in a structured JSON format.
+
+**Mathematical Justification:**
+Let the user's financial state at time `t` be a vector `S_t`. The evolution of the state is governed by a function `S_{t+1} = F(S_t, E_t)`, where `E_t` is a set of external events. A natural language prompt `p` is interpreted by an AI function `G_interpret: p → E'_t`, which defines a hypothetical event series. The simulation is the computation of the sequence `S'_0, S'_1, ..., S'_n` where `S'_{t+1} = F(S'_t, E'_t)`. The AI model `G_AI` approximates this entire simulation process: `G_AI(S_0, p) → (S'_0, ..., S'_n)`.
+
+**Proof of Value:** The value of the system lies in its ability to compute a future state trajectory `(S'_t)` that would otherwise be inaccessible to the user. By visualizing this trajectory and summarizing its key properties (narrative, impacts), the system provides the user with foresight. This foresight allows the user to make a decision `d` in the present (`t=0`) that alters their actual trajectory `(S_t)` to avoid an undesirable outcome revealed in the simulation, thus maximizing their utility function `U(S_t)`. The system is proven to be valuable as it provides actionable intelligence to increase future utility. `Q.E.D.`

@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for AI-Powered Content Moderation
 
 **Abstract:**
@@ -11,5 +10,4 @@ When a user posts content, a backend service sends the content to an LLM. **Prom
 1. A method for content moderation, comprising:
    a. Receiving user-generated content.
    b. Transmitting the content and a set of content guidelines to a generative AI model.
-   c. Prompting the model to determine if the content violates the guidelines and to provide a rationale.
-   d. Taking a moderation action based on the model's response.
+   c. Prompting the model to determine

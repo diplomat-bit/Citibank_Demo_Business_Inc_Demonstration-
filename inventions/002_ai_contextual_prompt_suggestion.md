@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Providing Context-Aware Conversational Prompts in a User Interface
 
 **Abstract:**
@@ -28,3 +27,8 @@ The component uses the `previousView` property as a key to look up the relevant 
 
 3. The method of claim 1, further comprising:
    a. Upon user selection of a prompt suggestion, automatically sending the text of said suggestion as the initial message in the conversation with the AI.
+
+**Mathematical Justification:**
+Let `V` be the set of all views, representing the user's state space, where `v_t` is the view at time `t`. Let `Q` be the space of all possible user queries. The probability of a user's intended query `q ∈ Q` is conditioned on their preceding state `v_{t-1}`: `P(q | v_{t-1})`. Let `S(v)` be the function that provides a set of suggested prompts for a given view `v`. The system's objective is to maximize the probability that the user's intended query `q` is contained within the suggested set: `maximize P(q ∈ S(v_{t-1}))`.
+
+**Proof of Efficacy:** Let `C(q)` be the cognitive cost of formulating query `q`. The cost without the system is `C_no_sys = C(q_intended)`. The cost with the system is `C_sys = min(C(q) for q in S(v_{t-1}))`, assuming the user's intent is represented in the suggestions. By pre-calculating and presenting the most probable queries, the system reduces the user's search space for formulating their intent. Thus, `C_sys` approaches zero for common intentions, proving the system is an effective amplifier of user will by minimizing cognitive cost. `Q.E.D.`

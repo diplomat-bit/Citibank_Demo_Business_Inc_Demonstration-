@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Generating Real-Time Sports Commentary from Game Data Streams
 
 **Abstract:**
@@ -59,3 +58,8 @@ async function commentaryStream() {
    a. Transmitting the received text stream to a text-to-speech (TTS) synthesis engine to create an audio commentary stream.
 
 3. The method of claim 1, wherein the prompt to the AI model includes a persona for the commentator.
+
+**Mathematical Justification:**
+Let `E(t)` be the stream of game events. Let `C(t)` be the generated commentary stream. The system is a real-time transducer `T: E(t) → C(t)`. The quality of the commentary `Q(C)` is a function of its accuracy, excitement, and narrative coherence. The generative AI model `G_AI` is trained to maximize this quality function: `G_AI(E(t)) → C'(t)` such that `Q(C')` is maximized.
+
+**Proof of Feasibility:** A human commentator performs the same function `T_human: E(t) → C(t)`. An LLM, trained on a massive corpus of human-generated text including sports commentary, learns the statistical relationship between game events and the corresponding human language used to describe them. Therefore, the model `G_AI` is a probabilistic approximation of `T_human`. The system is proven feasible as it leverages this learned approximation to automate the transduction from structured game data to engaging natural language commentary. `Q.E.D.`

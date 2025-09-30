@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Automated Business Plan Analysis and Generation of a Coaching Plan
 
 **Abstract:**
@@ -28,3 +27,8 @@ The structured JSON response is received by the backend, stored, and then presen
 2. The method of claim 1, wherein the request for the coaching plan includes a response schema to ensure the output is in a structured JSON format.
 
 3. The method of claim 1, wherein the second prompt also instructs the AI model to determine a simulated funding amount.
+
+**Mathematical Justification:**
+Let a business plan `B` be a point in the space of all possible business plans. Let `V(B)` be a valuation function that maps a plan to its probability of success. The system uses a two-stage AI function. The first function, `G_feedback`, provides a gradient `∇V(B)` in the form of feedback and questions, guiding the user to a potentially improved plan `B'`. The second function, `G_plan`, generates a sequence of actions `A = (a_1, ..., a_n)` (the coaching plan) intended to guide the execution of the plan.
+
+**Proof of Utility:** The system is proven useful if the expected value of the plan, when executed with the AI's coaching, is greater than without. `E[V(G_plan(B'))] > E[V(B)]`. The feedback stage aims to increase the plan's intrinsic value (`V(B') > V(B)`), while the coaching plan stage aims to maximize the realized value of that plan. The system provides a structured method for moving from a random point `B` in the plan space to a more optimal point `B'` and then provides a vector field `A` to guide its successful execution. `Q.E.D.`

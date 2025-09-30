@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Semantic Data Compression and Decompression
 
 **Abstract:**
@@ -28,7 +27,7 @@ The present invention uses a pair of AI models. The "Compressor" AI reads a long
 
 **Decompression Step:**
 1.  **Stored Data:** The system retrieves the compressed JSON object.
-2.  **Decompression Prompt:** The JSON object is used to construct a new prompt for another LLM instance: `You are a financial news writer. Based on the following data points, write a professional, 500-word news article about the company's quarterly earnings. Data: [JSON object text]`
+2.  **Decompression Prompt:** The JSON object is used to construct a new prompt for another LLM instance: `You are a financial news writer. Based on the following data points, write a full, 500-word news article about the company's quarterly earnings. Data: [JSON object text]`
 3.  **Decompressed Output:** The LLM generates a full-length article that, while not identical to the original, accurately represents its core information.
 
 **Claims:**
@@ -43,3 +42,8 @@ The present invention uses a pair of AI models. The "Compressor" AI reads a long
    c. Prompting the second AI model to generate a new data object by reconstructing a full narrative from the core semantic concepts.
 
 3. The method of claim 1, wherein the source data object is a text document and the core semantic concepts are a structured data object such as JSON.
+
+**Mathematical Justification:**
+Let `D` be a document, and `I(D)` be the core semantic information contained within it. Let `size(x)` be the size of a data object `x`. Traditional lossless compression finds a `D_c` such that `decompress(D_c) = D` and `size(D_c) < size(D)`. The semantic compression method defines two functions: a compressor `G_comp: D → K` and a decompressor `G_decomp: K → D'`, where `K` is a "knowledge tuple". The goal is to have `size(K) ≪ size(D)` and `I(D') ≈ I(D)`.
+
+**Proof of Efficiency:** The compression ratio is `R = size(D) / size(K)`. Because the AI can distill complex sentences into a few structured fields, `size(K)` can be orders of magnitude smaller than `D`, leading to `R ≫ R_lossless`. The information loss is `L = d(I(D), I(D'))`, where `d` is a semantic distance metric. The system is proven effective for applications where a high compression ratio `R` is desired and a small, non-zero information loss `L` is acceptable. It optimizes for semantic fidelity over syntactic identity. `Q.E.D.`

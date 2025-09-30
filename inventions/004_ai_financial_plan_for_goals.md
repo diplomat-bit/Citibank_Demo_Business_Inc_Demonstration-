@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating an Actionable, Multi-Domain Financial Plan to Achieve a User-Defined Goal
 
 **Abstract:**
@@ -30,3 +29,8 @@ The backend receives the structured JSON response from the AI. It stores this pl
 2. The method of claim 1, wherein the financial domains include at least two of: savings, budgeting, investing, or income generation.
 
 3. The method of claim 1, wherein the request to the generative AI model includes a response schema to ensure the output is in a structured format.
+
+**Mathematical Justification:**
+Let the user's financial state be a vector `S` in a high-dimensional state space. Let the goal be a target state `S_g`. A financial plan is a sequence of actions `A = (a_1, a_2, ..., a_n)`. Each action `a_i` is a transformation `T_i: S → S`. The application of the full plan is the composite function `T_plan = T_n ∘ ... ∘ T_2 ∘ T_1`. The AI model `G_AI` is a function that maps the initial state and goal to a proposed plan: `G_AI(S_0, S_g) → A_p`.
+
+**Proof of Utility:** The plan `A_p` is considered useful if the distance `d` in the state space between the resulting state and the goal state is less than the initial distance: `d(T_plan(S_0), S_g) < d(S_0, S_g)`. The AI is trained to find a plan `A_p` that minimizes this distance subject to constraints (e.g., risk tolerance). The system is proven effective because it provides a concrete sequence of transformations that demonstrably moves the user's state vector closer to their desired goal state. `Q.E.D.`

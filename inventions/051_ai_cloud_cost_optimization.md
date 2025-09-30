@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Automated Cloud Cost Anomaly Detection and Optimization
 
 **Abstract:**
@@ -16,3 +15,8 @@ A daily scheduled job fetches the previous day's detailed billing report from AW
    b. Transmitting the data to a generative AI model.
    c. Prompting the model to identify cost anomalies and optimization opportunities.
    d. Displaying the model's findings to a user.
+
+**Mathematical Justification:**
+Let `C(t)` be the total cloud cost at time `t`. Let `C(t)` be a vector of costs broken down by service `c_i`. The system learns a predictive model `M` for the expected cost `E[C(t+1) | C(t), ..., C(0)]`. An anomaly is detected if the actual cost `C_actual(t+1)` deviates significantly from the prediction: `|C_actual(t+1) - E[C(t+1)]| > kσ`, where `σ` is the standard deviation. The AI model `G_AI` is a function that both approximates `M` to detect anomalies and, upon detection, provides a causal explanation `X`: `G_AI(C(t), ...) → (Anomaly?, X)`.
+
+**Proof of Utility:** Manual anomaly detection requires a human to visually inspect `C(t)` and mentally compare it to their own implicit model of expected costs. The AI system automates this detection with a formal model `M` and further provides a root cause analysis `X`. The system is proven useful as it reduces the time-to-detection and time-to-remediation for costly anomalies. `Q.E.D.`

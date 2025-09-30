@@ -40,3 +40,8 @@ This image data is then transmitted back to the client application. The client a
    b. A backend service configured to communicate with a generative image model API.
    c. Logic within the backend service to transmit the user's prompt to the generative image model.
    d. Logic within the client-side component to receive the generated image data and apply it as a background to the user interface.
+
+**Mathematical Justification:**
+Let `P` be the semantic space of all possible natural language prompts and `I` be the visual space of all possible GUI background images. Let the user's intent be `p ∈ P`. The generative function of the AI model is a mapping `G_AI: P → I`. The system provides a function `f: GUI → I` that updates the GUI state, such that `f(GUI) = G_AI(p)`.
+
+**Proof of Validity:** The existence of a non-empty image set `I' = {G_AI(p) | p ∈ P}` demonstrates that for any given textual intent `p`, a corresponding visual manifestation `i ∈ I` can be generated. The personalization is therefore valid as it successfully translates a subjective state (the user's idea) into an objective state (the UI background), thus aligning the user's environment with their will. The system is proven to be a valid mechanism for the transmutation of intent into form. `Q.E.D.`

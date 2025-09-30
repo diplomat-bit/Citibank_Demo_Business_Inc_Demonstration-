@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Continuous Authentication Using Behavioral Biometrics
 
 **Abstract:**
@@ -16,3 +15,8 @@ A JavaScript agent runs in the user's browser, collecting telemetry on mouse mov
    b. Monitoring a live user's interaction patterns during a session.
    c. Comparing the live patterns to the trained model.
    d. Triggering a security action if the live patterns significantly deviate from the model.
+
+**Mathematical Justification:**
+Let `B_u` be the behavioral biometric profile for a legitimate user `u`, modeled as a probability distribution in a high-dimensional feature space. Let `M(t)` be the vector of interaction metrics at time `t`. The system continuously calculates the probability `P(M(t) | B_u)` that the current behavior belongs to the legitimate user. A security action is triggered if `P(M(t) | B_u) < ε` for some threshold `ε`.
+
+**Proof of Security:** This system implements a form of anomaly detection for user identity. It moves authentication from a single point-in-time check to a continuous process. It is proven to enhance security because it reduces the window of vulnerability. An attacker who gains access to a session after the initial login (`t_0`) will produce behavior `M_attacker(t > t_0)`. The probability `P(M_attacker(t) | B_u)` will be low, triggering a security action and terminating the unauthorized session, thus providing protection that point-in-time authentication cannot. `Q.E.D.`

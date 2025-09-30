@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for a High-Fidelity Biometric Confirmation Workflow with Animated Security Feedback
 
 **Abstract:**
@@ -31,3 +30,8 @@ After the final animation completes, a callback function (e.g., `onSuccess`) is 
 2. The method of claim 1, wherein the animations are rendered using Cascading Style Sheets (CSS).
 
 3. The method of claim 1, wherein the third animation represents the writing of a transaction to a secure ledger.
+
+**Mathematical Justification:**
+Let the workflow be modeled as a finite automaton `M = (Σ, S, s_0, δ, F)`, where `S` is the set of states `{IDLE, SCANNING, VERIFYING, EXECUTED, ERROR}`, `s_0 = IDLE` is the initial state, and `F = {EXECUTED}` is the set of final (accepting) states. The transition function `δ` is defined such that the path from `s_0` to `F` must pass sequentially through `SCANNING` and `VERIFYING`. `δ(IDLE, user_action) → SCANNING`, `δ(SCANNING, scan_success) → VERIFYING`, `δ(VERIFYING, verification_success) → EXECUTED`.
+
+**Proof of Security:** The state `EXECUTED` is unreachable from `IDLE` without a valid transition through the intermediate states. A transition from `SCANNING` to `VERIFYING` requires a `scan_success` input, which is contingent on a positive biometric match. Therefore, the action cannot be executed without satisfying the biometric gate. The animations are visual representations `V(s)` for each state `s ∈ S`, providing the user with a continuous, intuitive understanding of the automaton's progress towards the secure final state. `Q.E.D.`

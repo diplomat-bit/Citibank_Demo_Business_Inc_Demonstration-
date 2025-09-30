@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Dynamic API Threat Modeling
 
 **Abstract:**
@@ -16,3 +15,8 @@ In a CI/CD pipeline, whenever an OpenAPI specification file is changed, a new st
    b. Transmitting the specification to a generative AI model.
    c. Prompting the model to identify potential security threats and attack vectors based on the specification.
    d. Displaying the identified threats to a user.
+
+**Mathematical Justification:**
+Let an API specification be a formal description `S`. Let `V` be the universe of all possible security vulnerabilities. A threat model is a subset `V' ⊂ V` that is applicable to `S`. A human expert performs a function `f_human(S) → V_h ⊂ V`. This is a mapping from the specification to a set of threats. The AI model `G_AI(S) → V_ai ⊂ V` approximates this expert function.
+
+**Proof of Utility:** The effectiveness of the system is measured by its recall and precision compared to a human expert. Let `V_h` be the set of threats identified by a human. The system is useful if `(V_ai ∩ V_h) / |V_h|` (recall) is high. The generative AI, trained on a massive corpus of security documentation, vulnerability reports (CVEs), and secure coding practices, can identify patterns in the API specification that correlate with known vulnerability classes. The system is proven useful as it provides a high-recall, low-cost method for generating a baseline threat model, augmenting the human review process. `Q.E.D.`

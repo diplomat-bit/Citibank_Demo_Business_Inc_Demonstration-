@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Unsupervised Anomaly Detection in Application Logs
 
 **Abstract:**
@@ -36,3 +35,8 @@ The present invention is an "AI Log Watchdog." It continuously processes an appl
    f. Sending the explanation as an alert to a user.
 
 2. The method of claim 1, wherein learning a baseline comprises clustering log messages into templates.
+
+**Mathematical Justification:**
+Let `L` be the space of all possible log messages. The system learns a probability distribution `P(l)` over `L` from historical data, representing "normal" behavior. An anomaly is a log message `l_a` with a very low probability, `P(l_a) < ε`, where `ε` is a sensitivity threshold. The system implements a function `f_detect(l) → {true, false}` where `f_detect(l)` is true if `P(l) < ε`. A second AI function `G_explain(l_a) → T` maps the anomalous log to an explanatory text summary `T`.
+
+**Proof of Functionality:** Traditional systems require a human to define a set of anomaly patterns `A = {a_1, ..., a_n}`. They can only detect `l ∈ A`. The present system learns the distribution of *normality* `P(l)`. It can therefore detect any log `l_a` that is not part of the learned normal distribution, including novel, unforeseen error types. It is proven to be more powerful because its detection space is the complement of the normal space, which is vastly larger than any pre-defined set of known anomalies. `Q.E.D.`

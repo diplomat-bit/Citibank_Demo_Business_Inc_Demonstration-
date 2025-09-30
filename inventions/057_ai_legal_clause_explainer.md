@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Natural Language Explanation of Legal Clauses
 
 **Abstract:**
@@ -11,4 +10,9 @@ A user pastes a legal clause into a text area. The system constructs a prompt: `
 1. A method for interpreting a legal document, comprising:
    a. Receiving a portion of text from a legal document.
    b. Transmitting the text to a generative AI model with a prompt to explain its meaning in simple terms.
-   c. Displaying the AI-generated explanation to a user.
+   d. Displaying the AI-generated explanation to a user.
+
+**Mathematical Justification:**
+Let `L_legal` be the domain of legal language and `L_plain` be the domain of plain English. Let `c` be a clause in `L_legal`. The goal is to find a translation function `T: L_legal → L_plain` that preserves the core semantic meaning `I`. So, `I(c) ≈ I(T(c))`. The generative AI model `G_AI` is a learned approximation of this function: `G_AI(c) → c' ≈ T(c)`.
+
+**Proof of Value:** The cognitive cost for a non-expert to understand `c` is very high. The cost to understand `c'` is low. The value of the system is the difference in these cognitive costs. The system is proven valuable as it provides a low-cost method for semantic translation between a specialized domain language and a general one, making complex information accessible. `Q.E.D.`

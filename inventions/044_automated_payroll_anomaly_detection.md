@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Anomaly Detection in Payroll Processing
 
 **Abstract:**
@@ -15,4 +14,9 @@ When an administrator initiates a pay run, the system first compiles the current
    a. Accessing data for a current payroll run and at least one historical payroll run.
    b. Transmitting said data to a generative AI model.
    c. Prompting the model to identify significant deviations between the current and historical data.
-   d. Displaying the identified deviations to a user as anomalies.
+   d. Displaying the identified deviations to a user as an anomaly.
+
+**Mathematical Justification:**
+Let `R_t` be the set of records for the payroll run at time `t`. Let `d(r_i, r_j)` be a distance metric between two payroll records. The system learns a probability distribution `P(Δr)` for the change `Δr = r_{t} - r_{t-1}` for a given employee between pay periods. An anomaly is detected if `P(Δr_current) < ε` for some threshold `ε`. The AI model `G_AI` is a function that both computes this check and provides a natural language explanation: `G_AI(R_t, R_{t-1}) → {A, E}`, where `A` is the set of anomalous records and `E` is a set of explanations.
+
+**Proof of Functionality:** Traditional systems use hard-coded rules (e.g., `IF salary_change > 20% THEN alert`). The AI-based system learns a probabilistic model of normal changes, allowing it to detect more subtle or complex anomalies that would not trigger a simple rule. It can also explain *why* something is anomalous in context. The system is proven superior as it moves from a rigid, rule-based system to a flexible, probabilistic one with built-in explanation capabilities. `Q.E.D.`

@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Automated Generation of Code Documentation
 
 **Abstract:**
@@ -59,3 +58,8 @@ The developer highlights this function and right-clicks, selecting "AI: Generate
    e. Inserting the generated description into the code editor as a comment or docstring.
 
 2. The method of claim 1, wherein the prompt instructs the model to describe the function's parameters and return value.
+
+**Mathematical Justification:**
+Let `C` be a block of source code. Let `D(C)` be the ideal, human-readable documentation for `C`. Writing this documentation has a cognitive cost `Cost(H)`, where `H` is a human developer. The generative AI model `G_AI` is a function that approximates `D`: `G_AI(C) → D'`, where `D' ≈ D(C)`. The cost of this process is `Cost(AI)`.
+
+**Proof of Value:** The system provides value if the cost of generating and verifying the AI documentation is less than the cost of writing it manually: `Cost(AI) + Cost(Verification) < Cost(H)`. Given that `Cost(AI)` is near-zero and `D'` is a high-quality approximation, the verification cost is low. Furthermore, the existence of documentation `D'` reduces the future cognitive cost `Cost(Future_H)` for other developers to understand the code `C`. The system is proven valuable as it reduces both the initial and future costs associated with code comprehension. `Q.E.D.`

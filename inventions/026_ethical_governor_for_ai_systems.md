@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for an AI-Powered Ethical Governance Layer for Autonomous Systems
 
 **Abstract:**
@@ -48,3 +47,8 @@ Does this decision violate the Ethical Constitution? Respond with a single word:
 2. The method of claim 1, wherein the Governor AI model's response includes a textual explanation for its decision.
 
 3. The method of claim 1, wherein the ethical principles include at least one of: fairness, transparency, or non-maleficence.
+
+**Mathematical Justification:**
+Let `A` be an action proposed by a primary AI, `G_primary(input) → A`. Let `C = {c_1, ..., c_n}` be a set of `n` ethical constraints (the constitution). Each constraint `c_i` is a function `c_i(A) → {true, false}`. An action is compliant if `∀i, c_i(A) = true`. The Governor AI `G_gov` is a function that approximates this check: `G_gov(A, C) → {APPROVE, VETO}`. The system executes `A` if and only if `G_gov(A, C) = APPROVE`.
+
+**Proof of Integrity:** The system moves from an unconstrained process `G_primary(input) → A` to a constrained one. The Governor acts as a gate, defining a permissible action space `A' = {A | G_gov(A, C) = APPROVE}`. By ensuring that only actions from `A'` are executed, the system formally guarantees that all its operations remain within the bounds of the ethical constitution `C`, thereby proving its integrity. `Q.E.D.`

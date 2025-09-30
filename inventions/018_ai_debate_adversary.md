@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for a Conversational AI Debate Training Adversary with Real-time Fallacy Detection
 
 **Abstract:**
@@ -31,3 +30,8 @@ This response is sent back to the client and displayed in the chat history, prov
 2. The method of claim 1, wherein the AI is further instructed to analyze the user's text argument for logical fallacies.
 
 3. The method of claim 2, wherein the response from the AI further comprises an identification of a logical fallacy detected in the user's argument.
+
+**Mathematical Justification:**
+Let an argument `A` be a set of premises `{p_1, ..., p_n}` and a conclusion `c`. The argument is valid if `(p_1 ∧ ... ∧ p_n) → c` is a tautology. Let `F` be the set of all known logical fallacies. The system employs two AI functions. The first, `G_adversary(A_user)`, generates a counter-argument `A_ai`. The second, `G_fallacy(A_user) → f ∈ F ∪ {∅}`, identifies a fallacy. The debate is a sequence of turns `(A_user_i, A_ai_i, f_i)`.
+
+**Proof of Efficacy:** The user's skill, `σ`, is a function of their ability to produce valid arguments. The feedback loop provides a corrective signal. The user's skill at turn `i+1` is `σ_{i+1} = σ_i + Δ(f_i)`, where `Δ(f_i)` is the learning adjustment from the feedback. If `f_i ≠ ∅`, `Δ > 0`. Over `n` turns, the total skill increase is `Σ Δ(f_i)`. By providing immediate, targeted feedback on logical invalidity, the system maximizes the learning gradient `Δ` at each turn, accelerating the user's journey towards argumentative validity. `Q.E.D.`

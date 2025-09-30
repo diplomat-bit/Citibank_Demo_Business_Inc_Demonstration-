@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating a Prioritized Product Roadmap from High-Level Goals and User Feedback
 
 **Abstract:**
@@ -50,3 +49,8 @@ The AI analyzes the inputs and might return a roadmap prioritizing features that
    f. Displaying the roadmap to a user.
 
 2. The method of claim 1, wherein each feature in the roadmap includes a user story and a rationale.
+
+**Mathematical Justification:**
+Let `G` be the strategic goal. Let `F = {f_1, ..., f_n}` be the set of all user feedback. Let `Φ` be the space of all possible features. The task is to find a subset of features `Φ' ⊂ Φ` that maximizes the probability of achieving `G`, `P(G | Φ')`, given the evidence `F`. The generative AI model `G_AI` is a function that approximates this: `G_AI(G, F) → Φ''`, where `Φ''` is a candidate roadmap.
+
+**Proof of Utility:** The manual process requires a human product manager to map unstructured feedback `F` to potential features and then estimate the impact of each feature on the goal `G`, a process with high cognitive cost and uncertainty. The AI model, trained on a vast corpus of product development data, has learned the correlations between common feedback types, features, and their impact on goals like retention. The system is proven useful as it provides a data-driven, prioritized roadmap `Φ''` that is more likely to maximize `P(G | Φ'')` than a purely intuitive approach, thus accelerating the path to achieving the strategic goal. `Q.E.D.`

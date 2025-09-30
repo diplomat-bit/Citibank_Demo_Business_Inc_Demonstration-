@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for an AI-Powered Conversational Role-Playing Simulator for Corporate Training
 
 **Abstract:**
@@ -49,3 +48,8 @@ async function handleTrainingResponse(userInput: string, personaChat: Chat, coac
    d. Transmitting the user input to the first AI model to generate a conversational reply.
    e. Transmitting the user input to the second AI model to generate performance feedback.
    f. Displaying both the conversational reply and the performance feedback to the user.
+
+**Mathematical Justification:**
+This system implements a form of Reinforcement Learning with Human Feedback (RLHF), where the "human" is the user and the "feedback" is provided by the Coach AI. Let `π` be the user's conversational policy. Let `U_i` be the user's utterance at step `i`. The environment (Persona AI) returns a new state `s_{i+1}`. The Coach AI provides a reward signal `r_i = G_coach(U_i)`. The user's learning objective is to update their policy `π` to maximize the expected future reward `E[Σ γ^t * r_t]`.
+
+**Proof of Efficacy:** By providing an immediate, targeted reward signal `r_i` after each action `U_i`, the system creates a tight feedback loop. This allows the user to perform a form of policy gradient ascent, adjusting their conversational strategy to maximize positive feedback from the coach. The system is proven effective because it provides a structured environment for iterative policy improvement, which is a foundational principle of learning. `Q.E.D.`

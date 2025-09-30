@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generative Design of User Onboarding Workflows
 
 **Abstract:**
@@ -13,7 +12,7 @@ The present invention provides an "AI Onboarding Strategist." A product manager 
 **Detailed Description of the Invention:**
 A product manager enters a description of their app: `A collaborative project management tool for small teams. The core value is seeing your team's work in one place.`
 
-The backend constructs a prompt for a generative AI model, including a `responseSchema`:
+The backend constructs a prompt for a generative AI model, including a `responseSchema`.
 **Prompt:** `You are a world-class UX designer specializing in user onboarding. Design a 3-step onboarding flow for the following product. For each step, provide a title, a short body text, and the key user action. Product: "A collaborative project management tool for small teams. The core value is seeing your team's work in one place."`
 **Schema:**
 ```json
@@ -72,3 +71,8 @@ async function generateOnboarding(productDescription: string): Promise<Onboardin
 2. The method of claim 1, wherein each step in the structured data object includes a title, body text, and a key user action.
 
 3. The method of claim 1, wherein the request to the AI model includes a response schema to ensure the output is in a structured format.
+
+**Mathematical Justification:**
+Let `F` be the set of all possible onboarding flows. Let `R(f)` be the user retention rate for a flow `f ∈ F`. The goal is to find `f* = argmax_{f ∈ F} R(f)`. The product description `D` provides the context. The generative AI model `G_AI` acts as a heuristic function `G_AI(D) → f'`, which generates a candidate flow `f'` that is predicted to have a high retention rate.
+
+**Proof of Utility:** The space `F` is combinatorially large and cannot be exhaustively searched. A human designer uses their own heuristics to design a candidate flow. The AI model, having been trained on a massive corpus of successful and unsuccessful product designs, has learned a more powerful heuristic function. The system is proven useful because it automates the generation of a high-quality candidate flow `f'`, significantly reducing the design time and increasing the probability that the chosen flow is near-optimal. `Q.E.D.`

@@ -1,45 +1,43 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { DataContext } from '../../../context/DataContext';
 import { View } from '../../../types';
-import { NAV_ITEMS, NavItem } from '../../../constants';
-import DashboardTile from '../../DashboardTile';
+import BalanceSummary from '../../BalanceSummary';
+import RecentTransactions from '../../RecentTransactions';
+import InvestmentPortfolio from '../../InvestmentPortfolio';
+import AIInsights from '../../AIInsights';
+import WealthTimeline from '../../WealthTimeline';
+import ImpactTracker from '../../ImpactTracker';
 
 interface DashboardViewProps {
-    openModalView: (view: View) => void;
+    setActiveView: (view: View) => void;
 }
 
-const DashboardView: React.FC<DashboardViewProps> = ({ openModalView }) => {
+const DashboardView: React.FC<DashboardViewProps> = ({ setActiveView }) => {
+    const context = useContext(DataContext);
+    if (!context) throw new Error("Dashboard must be within a DataProvider");
 
-    const renderSection = (header: string, items: NavItem[]) => (
-        <div key={header}>
-            <h2 className="text-2xl font-bold text-white tracking-wider mb-4 mt-8">{header}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {items.map(item => {
-                     if ('id' in item) {
-                        return <DashboardTile key={item.id} item={item} onClick={() => openModalView(item.id)} />;
-                    }
-                    return null;
-                })}
-            </div>
-        </div>
-    );
-
-    // Group NAV_ITEMS by their headers
-    const sections: { [key: string]: NavItem[] } = {};
-    let currentHeader = 'Main';
-    NAV_ITEMS.forEach(item => {
-        if (item.type === 'header') {
-            currentHeader = item.label;
-        } else if (item.type !== 'divider' && 'id' in item) {
-            if (!sections[currentHeader]) {
-                sections[currentHeader] = [];
-            }
-            sections[currentHeader].push(item);
-        }
-    });
+    const { transactions, impactData } = context;
 
     return (
         <div className="space-y-6">
-            {Object.entries(sections).map(([header, items]) => renderSection(header, items))}
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <BalanceSummary />
+                </div>
+                <AIInsights />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="lg:col-span-3">
+                    <RecentTransactions transactions={transactions.slice(0, 5)} setActiveView={setActiveView} />
+                </div>
+                <div className="lg:col-span-2">
+                    <InvestmentPortfolio />
+                </div>
+            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <WealthTimeline />
+                <ImpactTracker treesPlanted={impactData.treesPlanted} progress={impactData.progressToNextTree} />
+            </div>
         </div>
     );
 };

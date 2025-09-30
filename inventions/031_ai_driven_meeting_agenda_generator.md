@@ -1,8 +1,7 @@
-
 **Title of Invention:** System and Method for Context-Aware Meeting Agenda Generation
 
 **Abstract:**
-A system for automatically generating a meeting agenda is disclosed. The system receives a meeting title, a list of participants, and a date. It then accesses the calendars and recent work documents (e.g., from Google Docs, Office 365) of the participants for the period leading up to the meeting. This contextual data is provided to a generative AI model, which is prompted to synthesize a relevant, structured agenda. The agenda includes suggested discussion topics, time allocations for each topic, and links to the relevant source documents.
+A system for automatically generating a meeting agenda is disclosed. The system receives a meeting title, a list of participants, and a date. It then accesses the calendars and recent work documents (e.g., from Google Docs, Office 35) of the participants for the period leading up to the meeting. This contextual data is provided to a generative AI model, which is prompted to synthesize a relevant, structured agenda. The agenda includes suggested discussion topics, time allocations for each topic, and links to the relevant source documents.
 
 **Background of the Invention:**
 Creating an effective meeting agenda is crucial for productivity, but is often a manual and time-consuming task. Meeting organizers may not be aware of all the relevant context or recent work done by participants. This can lead to unfocused meetings with poorly defined goals. There is a need for a system that can intelligently assist in the creation of agendas by automatically gathering context and suggesting a relevant structure.
@@ -47,3 +46,8 @@ The present invention connects to users' productivity suites (e.g., Google Works
    e. Presenting the agenda to a user.
 
 2. The method of claim 1, wherein the generated agenda includes a plurality of timed discussion topics.
+
+**Mathematical Justification:**
+Let `M` be the meeting, defined by a topic `T` and participants `{P_1, ..., P_n}`. Let `A_i` be the set of recent digital artifacts for participant `P_i`. The total context is `C = U A_i`. Let `Rel(a, T)` be a relevance function for an artifact `a` to the topic `T`. The system finds a relevant context subset `C' = {a ∈ C | Rel(a, T) > ε}`. The AI is a function `G_AI(M, C') → Agenda`. An optimal agenda is one that maximizes the meeting's productivity `Prod(M, Agenda)`.
+
+**Proof of Utility:** A human organizer manually and imperfectly searches `C` to create an agenda `A_h`. The AI performs a more comprehensive search to find `C'` and generates `A_ai`. The system is proven useful if the expected productivity of the AI-generated agenda is greater than the human one: `E[Prod(M, A_ai)] > E[Prod(M, A_h)]`. This holds because the AI's context set `C'` is more complete and its generation function `G_AI` is trained on a vast corpus of effective meeting structures, leading to a more optimal agenda. `Q.E.D.`

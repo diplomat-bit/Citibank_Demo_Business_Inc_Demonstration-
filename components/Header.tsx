@@ -1,11 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { DataContext } from '../context/DataContext';
-// FIX: The Notification type needs to be imported to be used in the handleNotificationClick function.
 import { View, Notification } from '../types';
 
 /**
  * @description A dynamic widget to show the simulated real-time status of the "Heuristic API".
- * This component creates the illusion of an always-on, proactive AI analyzing data in the background.
  */
 const HeuristicAPIStatus: React.FC = () => {
     const messages = [
@@ -22,7 +20,7 @@ const HeuristicAPIStatus: React.FC = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentMessageIndex(prevIndex => (prevIndex + 1) % messages.length);
-        }, 4000); // Change message every 4 seconds
+        }, 4000);
 
         return () => clearInterval(interval);
     }, []);
@@ -42,11 +40,11 @@ const HeuristicAPIStatus: React.FC = () => {
 };
 
 interface HeaderProps {
-    onMenuClick: () => void;
     setActiveView: (view: View) => void;
+    onMenuClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, setActiveView }) => {
+const Header: React.FC<HeaderProps> = ({ setActiveView, onMenuClick }) => {
   const context = useContext(DataContext);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -55,7 +53,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActiveView }) => {
     throw new Error("Header must be used within a DataProvider");
   }
 
-  // FIX: Destructure `markNotificationRead` from context to fix property not found error.
   const { notifications, markNotificationRead } = context;
   const unreadCount = notifications.filter(n => !n.read).length;
   
@@ -70,9 +67,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActiveView }) => {
   return (
     <header className="py-4 px-6 bg-gray-900/30 backdrop-blur-md border-b border-gray-700/50 flex justify-between items-center z-20">
       <div className="flex items-center">
-        <button onClick={onMenuClick} className="text-gray-400 focus:outline-none lg:hidden mr-4">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+        <button onClick={onMenuClick} className="lg:hidden mr-4 text-gray-400 hover:text-white" aria-label="Open navigation menu">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
         <h1 className="text-lg sm:text-xl font-semibold text-white tracking-wider uppercase">DEMO BANK</h1>

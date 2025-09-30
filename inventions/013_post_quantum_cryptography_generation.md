@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for AI-Driven Generation of Post-Quantum Cryptographic Schemes
 
 **Abstract:**
@@ -28,3 +27,8 @@ This structured response is then presented to the user in a clear interface. Thi
 2. The method of claim 1, wherein the post-quantum cryptographic scheme is based on lattice-based cryptography.
 
 3. The method of claim 1, wherein the response from the model further includes instructions for the secure handling of a private key.
+
+**Mathematical Justification:**
+Let `D` be the space of all data structures and `C` be the space of all post-quantum cryptographic schemes. Let `S(c)` be the security level of a scheme `c ∈ C` and `P(c, d)` be the performance cost of using scheme `c` on data `d ∈ D`. The goal is to find a scheme `c*` that maximizes security while keeping performance cost below a threshold `P_max`: `c* = argmax_{c ∈ C} S(c)` subject to `P(c, d) ≤ P_max`. This is a complex optimization problem. The generative AI model `G_AI` acts as a heuristic function `G_AI: D → C'` where `C' ⊂ C` is a small set of near-optimal candidates.
+
+**Proof of Utility:** The search space `C` is vast and computationally expensive to explore. The AI model, trained on the corpus of cryptographic research, provides a powerful heuristic that drastically prunes the search space. It provides a candidate `c' = G_AI(d)` such that the probability `P(S(c') > S_avg)` is high, where `S_avg` is the average security of a randomly chosen scheme. The system is proven useful as it provides a computationally tractable method for finding a high-security cryptographic configuration. `Q.E.D.`

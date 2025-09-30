@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Natural Language Querying of a Unified Personal Digital Archive
 
 **Abstract:**
@@ -31,3 +30,8 @@ The AI model processes the prompt and generates a summary, such as "You ran your
 2. The method of claim 1, wherein indexing the data comprises creating vector embeddings of the data.
 
 3. The method of claim 1, wherein the summary displayed to the user includes links to the source data from which the summary was synthesized.
+
+**Mathematical Justification:**
+Let `A` be the user's archive, a collection of `n` documents `{d_1, ..., d_n}`. Let `E(x)` be an embedding function that maps a text document `x` to a vector in `ℝ^k`. The indexed archive is a set of vectors `{E(d_1), ..., E(d_n)}`. A user query `q` is also embedded as `E(q)`. The retrieval step finds a subset of documents `D' ⊂ A` that minimizes the cosine distance to the query vector: `D' = {d_i | cos_dist(E(d_i), E(q)) < ε}`. The generative AI model `G_AI` is a function that synthesizes a text summary `T_s` from the retrieved documents and the query: `G_AI(D', q) → T_s`.
+
+**Proof of Correctness:** The system is proven correct if the generated summary `T_s` is semantically equivalent to the true answer, which is a conceptual function `F_true(A, q)`. By using vector embeddings for semantic retrieval, the system ensures that `D'` contains the documents most semantically relevant to `q`. The LLM, trained to reason and synthesize, then approximates `F_true` over the reduced and highly relevant context `D'`, making the problem computationally tractable and providing a high-fidelity answer. `Q.E.D.`

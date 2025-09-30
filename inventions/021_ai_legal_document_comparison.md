@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Semantic Comparison and Analysis of Legal Documents
 
 **Abstract:**
@@ -64,3 +63,8 @@ async def compare_contracts(doc_a: str, doc_b: str) -> str:
    e. Displaying the summary to the user.
 
 2. The method of claim 1, wherein the prompt instructs the AI model to explain the differences in plain, non-legal English.
+
+**Mathematical Justification:**
+Let `D_A` and `D_B` be two documents. A traditional diff function is `f_diff(D_A, D_B) → Δ_text`, which operates on the text space. Let `L(D)` be a function that maps a document to its set of legal implications or semantic meaning. The goal is to compute `Δ_legal = L(D_B) \ L(D_A)`. This function `L` is not formally defined. The generative AI model `G_AI` acts as a powerful approximation of this function. The system computes `Summary ≈ G_AI(D_A, D_B)`.
+
+**Proof of Utility:** The manual process requires a human expert `H` to compute `L(D_A)` and `L(D_B)` and then find the difference, a process with high cost `C_H`. The AI provides an approximation of this difference in a single step. The system is proven useful if the cost of using the AI and verifying its output is significantly less than the cost of the manual process: `Cost(G_AI) + Cost(Verification) ≪ C_H`. By automating the initial discovery of material changes, the system dramatically reduces the required human expert time. `Q.E.D.`

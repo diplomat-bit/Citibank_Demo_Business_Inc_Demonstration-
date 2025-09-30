@@ -108,3 +108,8 @@ async def analyze_game_balance(stats: dict) -> dict:
 2. The method of claim 1, wherein the suggestion is a specific numerical change to a game parameter such as damage, health, or speed.
 
 3. The method of claim 1, wherein the request to the AI model includes a response schema to ensure the analysis is returned in a structured format.
+
+**Mathematical Justification:**
+Let a game's state be defined by a set of parameters `Θ`. Let a game element `e` have a win rate `W(e, Θ)`. A perfectly balanced game would have `W(e, Θ) = 50%` for all `e`. The balance problem is an optimization problem: find `Θ*` that minimizes the variance of win rates `Var(W(e, Θ))`. The generative AI model `G_AI` acts as a gradient descent step. Given the current win rates (the gradient), it suggests a change `ΔΘ`: `G_AI(W(e, Θ_i)) → ΔΘ_i`. The new parameter set is `Θ_{i+1} = Θ_i + ΔΘ_i`.
+
+**Proof of Utility:** The function `Var(W(e, Θ))` is a complex, high-dimensional, non-convex function, making it difficult to optimize. The AI model, trained on vast amounts of game design theory and data, provides a powerful heuristic for estimating the gradient and proposing a `ΔΘ` that is likely to reduce the variance. This automates a step that would otherwise require significant human intuition and trial-and-error, thus accelerating the convergence to a balanced state `Θ*`. `Q.E.D.`

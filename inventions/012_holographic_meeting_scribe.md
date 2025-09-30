@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating a 3D Mind Map Visualization from Meeting Transcripts
 
 **Abstract:**
@@ -28,3 +27,8 @@ The backend receives the structured JSON graph data. This data is then passed to
 2. The method of claim 1, wherein the three-dimensional representation is an interactive mind map.
 
 3. The method of claim 1, wherein the generative AI model is further prompted to extract action items, and said action items are distinctly visualized in the three-dimensional representation.
+
+**Mathematical Justification:**
+Let a conversation `C` be a sequence of utterances `(u_1, u_2, ..., u_n)`. A linear summary is a function `f: C → T` where `T` is a text string. This is a projection from a high-dimensional space of interaction to a one-dimensional space, resulting in information loss. The present invention defines a function `G_AI: C → Γ(N, E)`, where `Γ` is a graph with nodes `N` (concepts) and edges `E` (relationships). A rendering function `R: Γ → ℝ³` then maps this graph into a 3D visual space.
+
+**Proof of Superiority:** The graph representation `Γ` preserves more of the topological structure of the conversation's concept space than a linear text summary `T`. The dimensionality of the graph (`|N|`, `|E|`) is greater than the dimensionality of the string `T`. By visualizing this higher-dimensional structure in `ℝ³`, the system allows for more efficient cognitive parsing of the conversation's key components and their interdependencies, thus providing a superior summary of the original conversation `C`. `Q.E.D.`

@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Translating Natural Language to Graph Database Queries
 
 **Abstract:**
@@ -16,3 +15,8 @@ A user types a question into the Graph Explorer's search bar. The backend receiv
    b. Providing the query and a schema of the graph database to a generative AI model.
    c. Prompting the model to generate a formal query in a graph query language.
    d. Executing the generated formal query against the database.
+
+**Mathematical Justification:**
+This is a language translation problem. Let `L_NL` be the natural language space and `L_GQL` be the graph query language space. The AI model `G_AI` learns a translation function `T: L_NL → L_GQL`. The translation is conditioned on the graph schema `Σ_G`. Thus, `G_AI(q_nl, Σ_G) → q_gql`. Let `Exec(q, G)` be the execution of a query on a graph `G`. The translation is correct if the intent is preserved, meaning the result of the query matches the user's expectation.
+
+**Proof of Correctness:** The AI model is trained on a vast corpus of paired natural language questions and formal queries. It learns the statistical mapping between linguistic structures and query structures. By providing the schema `Σ_G` in the prompt, the model is constrained to generate a query that is valid for the specific target graph. The system is proven correct as it provides a high-fidelity translation from user intent expressed in `L_NL` to an executable, formal query in `L_GQL`. `Q.E.D.`

@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Predictive Supply Chain Disruption Modeling
 
 **Abstract:**
@@ -61,3 +60,8 @@ This structured alert data is then displayed on the user's Supply Chain dashboar
 2. The method of claim 1, wherein the external data sources include at least two of: a news feed, a weather service, or a freight tracking service.
 
 3. The method of claim 1, wherein the AI model is further prompted to suggest mitigating actions for the identified disruptions.
+
+**Mathematical Justification:**
+Let the supply chain be a directed graph `G = (V, E)`, where `V` are locations and `E` are shipping lanes. Let `C(e)` be the capacity or transit time of an edge `e ∈ E`. Let `W(t)` be a vector of world state data at time `t`. A disruption is an event that significantly increases `C(e)`. The system uses a generative AI model `G_AI` as a predictive function `G_AI(G, W(t)) → P(D_{t+k})`, which outputs a probability distribution over a set of future disruption events `D` at a future time `t+k`.
+
+**Proof of Utility:** A traditional system is reactive, only observing a change `ΔC(e)` after it occurs. The present system is proactive. It computes `P(D)` before the disruption, allowing the user to take a mitigating action `a` (e.g., reroute) that minimizes the expected cost. The utility is proven by comparing the expected cost with and without the system: `E[Cost | a] < E[Cost]`. By providing a predictive probability distribution `P(D)`, the system enables preventative actions that reduce expected future costs. `Q.E.D.`

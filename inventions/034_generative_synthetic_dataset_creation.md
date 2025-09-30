@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Generating Synthetic Datasets from Natural Language Descriptions
 
 **Abstract:**
@@ -88,3 +87,8 @@ async def generate_synthetic_data(prompt: str, num_rows: int) -> dict:
    e. Presenting the data rows to the user.
 
 2. The method of claim 1, wherein the request to the AI model includes a response schema to ensure the generated data is returned in a structured format.
+
+**Mathematical Justification:**
+Let `P` be a probability distribution representing real-world data. The goal of synthetic data generation is to create a dataset `D_synth` whose distribution `P_synth` is as close as possible to `P`. The user provides a natural language prompt `p` which describes a set of constraints on `P`. The AI model `G_AI` is a function that maps this prompt to a synthetic dataset: `G_AI(p) → D_synth`.
+
+**Proof of Validity:** The system is proven valid if the Kullback-Leibler (KL) divergence between the real-world distribution and the synthetic distribution is minimized: `min D_KL(P || P_synth)`. The AI model, trained on a massive corpus of real-world text and data, learns an implicit model of `P`. By conditioning on the user's prompt `p`, it generates samples from an approximation of the conditional probability distribution `P | p`. This ensures the generated data is not just random, but statistically similar to the real-world data described by the user. `Q.E.D.`

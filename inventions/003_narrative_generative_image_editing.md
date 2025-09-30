@@ -1,4 +1,3 @@
-
 **Title of Invention:** A System and Method for Narrative-Driven Generative Image Editing for Financial Instruments
 
 **Abstract:**
@@ -33,3 +32,8 @@ Optionally, the user can trigger a second AI call. The system sends the original
    c. Displaying the generated text story alongside the edited image.
 
 3. The method of claim 1, wherein the visual design is for a financial instrument.
+
+**Mathematical Justification:**
+Let `I` be the space of all possible images and `P` be the semantic space of all possible text prompts. A base image is a point `i ∈ I` and a user's narrative intent is a prompt `p ∈ P`. The generative AI model is a function `G: I × P → I` that maps an image and a prompt to a new image. The system computes the new image `i' = G(i, p)`.
+
+**Proof of Concept:** The function `G` is non-trivial if `i' ≠ i` for a non-empty set of prompts `P' ⊂ P`. The system is proven effective if the semantic distance `d(S(i'), S(p))` is minimized, where `S(x)` is a function that extracts the semantic concepts from an object `x`. The AI model is trained to minimize this distance, thus ensuring the generated image `i'` is a valid semantic fusion of the original image `i` and the narrative prompt `p`. This constitutes a successful transmutation of narrative intent onto a visual medium. `Q.E.D.`

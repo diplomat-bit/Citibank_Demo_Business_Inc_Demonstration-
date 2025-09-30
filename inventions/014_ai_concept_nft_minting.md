@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Minting AI-Generated Concepts as Non-Fungible Tokens
 
 **Abstract:**
@@ -34,3 +33,8 @@ Once the transaction is confirmed on the blockchain, a new NFT representing the 
 2. The method of claim 1, wherein the storage system is a decentralized storage network.
 
 3. The method of claim 1, wherein the digital asset is an image.
+
+**Mathematical Justification:**
+Let `p` be the user's prompt (the "conceptual genotype"). Let `G_AI(p) → a` be the generative function producing a digital asset (the "phenotype"). Let `H(x)` be a cryptographic hash function. Let `M(a, p)` be the metadata object. Let the blockchain be a distributed ledger `L`. The minting process is a function `F_mint(M) → L'` which appends a new ownership record `(token_id, owner_address)` to the ledger, where `token_id` is derived from `H(M)`.
+
+**Proof of Novelty and Ownership:** The system creates a unique, verifiable link from the abstract concept `p` to a unique token on the ledger `L`. The uniqueness of the token is guaranteed by the cryptographic properties of `H`. The ownership is guaranteed by the consensus rules of the ledger `L`. The system is proven to be a valid method for establishing a cryptographically secure chain of provenance from a purely conceptual, user-generated idea to a unique, ownable digital asset. `Q.E.D.`

@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Simulating Cross-Cultural Communication with AI-Driven Feedback
 
 **Abstract:**
@@ -29,3 +28,8 @@ The client application receives both responses and displays them to the user. Th
    e. Displaying both the conversational reply and the feedback to the user.
 
 2. The method of claim 1, wherein the feedback includes a qualitative assessment of the effectiveness of the user's text input.
+
+**Mathematical Justification:**
+Let `C` be a cultural archetype, defined by a set of communication norms. Let `U` be the user's utterance. Let `E(U, C)` be an effectiveness score of the utterance within the culture. The goal of the user is to learn a policy `π(state) → U` that maximizes `Σ E(U_i, C)`. The system provides two functions. The persona AI, `G_persona(U)`, simulates the next state. The coach AI, `G_coach(U, C) → f`, provides feedback `f`, which is a noisy signal of the gradient `∇E`. `f ≈ ∇E(U, C)`.
+
+**Proof of Learning:** The system provides a reinforcement learning environment. The user's policy `π` is updated at each step `i` based on the feedback: `π_{i+1} = π_i + α * f_i`, where `α` is a learning rate. By providing an immediate, targeted feedback signal `f_i` after each action `U_i`, the system enables the user to perform gradient ascent on the effectiveness function `E`, thus provably accelerating the learning of a culturally effective communication policy `π`. `Q.E.D.`

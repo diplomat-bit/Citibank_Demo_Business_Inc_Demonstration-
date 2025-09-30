@@ -1,4 +1,3 @@
-
 **Title of Invention:** An Autonomous Agent and Method for Goal-Driven Software Code Refactoring
 
 **Abstract:**
@@ -67,3 +66,8 @@ class RefactoringAgent:
 2. The method of claim 1, wherein the AI agent uses a generative AI model to generate both the plan and the modified code.
 
 3. The method of claim 1, wherein if the automated test suite fails, the agent attempts to automatically fix the code using the test failure message as context.
+
+**Mathematical Justification:**
+Let a codebase be a state `S`. A refactoring goal `G` defines a target state `S'` where the external behavior `B(S) = B(S')` is identical, but an internal quality metric `Q(S') > Q(S)` is improved (e.g., lower complexity, higher performance). The agent is a system that attempts to find a sequence of transformations `T_1, ..., T_n` such that `T_n(...T_1(S)...) → S'`. Each step is validated by a test suite `T_suite`, which acts as an invariant: `∀i, T_suite(T_i(...(S)...)) = PASS`.
+
+**Proof of Operation:** The process is a guided state space search. The AI's plan `A = (a_1, ..., a_n)` provides a heuristic to guide the search from `S` to `S'`. The test suite `T_suite` acts as a hard constraint, ensuring the agent remains on the manifold of behaviorally-equivalent programs. The agent is proven to function correctly if it can produce a final state `S_final` such that `T_suite(S_final) = PASS` and `Q(S_final) > Q(S)`. `Q.E.D.`

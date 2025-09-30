@@ -48,3 +48,8 @@ async def generate_swot_analysis(company_name: str):
    c. Providing the gathered textual data as context to a generative AI model.
    d. Prompting the model to generate a SWOT analysis for the target company based on the context.
    e. Displaying the generated SWOT analysis to the user.
+
+**Mathematical Justification:**
+Let `C` be a company. Let `W` be the set of all publicly available information about `C`. A SWOT analysis is a function `f_swot: W → {S, W, O, T}` that maps this information to four sets of categorized insights. The human process, `f_human`, involves manually constructing a subset `W' ⊂ W` and then applying human reasoning. This process is slow and `W'` is often incomplete. The automated system uses a function `G_gather` to construct a more comprehensive subset `W''`. It then uses an AI model `G_AI` to approximate the reasoning process: `G_AI(W'') → {S', W', O', T'}`.
+
+**Proof of Value:** The system provides value in two ways. First, `|W''| > |W'|`, meaning the AI's analysis is based on a more complete dataset. Second, the time `t_AI` to compute `G_AI(W'')` is drastically less than the time `t_human` to compute `f_human(W')`. As long as the quality of the AI's output is comparable to a human's, the system provides a significant efficiency gain, thus proving its value. `Q.E.D.`

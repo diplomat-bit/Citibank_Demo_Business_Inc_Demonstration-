@@ -28,8 +28,6 @@ interface IDataContext {
   // Loading & Error states
   isLoading: boolean;
   error: string | null;
-  apiKey: string | null;
-  generateApiKey: () => Promise<string | null>;
 
   // Personal Finance
   transactions: Transaction[];
@@ -157,11 +155,7 @@ export const DataContext = createContext<IDataContext | undefined>(undefined);
 
 // Helper for API calls
 const apiFetch = async (endpoint: string, options?: RequestInit) => {
-    const apiKey = localStorage.getItem('apiKey');
     const headers = new Headers(options?.headers);
-    if (apiKey) {
-        headers.append('Authorization', `Bearer ${apiKey}`);
-    }
 
     const response = await fetch(endpoint, { ...options, headers });
     if (!response.ok) {
@@ -176,7 +170,6 @@ const apiFetch = async (endpoint: string, options?: RequestInit) => {
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string|null>(null);
-    const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('apiKey'));
 
     // All data states, initialized as empty
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -250,10 +243,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => new Set<View>([View.Dashboard, View.DeveloperApiKeys]));
     
      const fetchData = useCallback(async () => {
-        if (!apiKey) {
-            setIsLoading(false);
-            return;
-        }
         setIsLoading(true);
         setError(null);
         try {
@@ -332,39 +321,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         } catch (err: any) {
             console.error("Failed to fetch data:", err);
-            if (err.message.includes('401')) {
-                setError("Your API Key is invalid or has expired. Please generate a new one.");
-                setApiKey(null);
-                localStorage.removeItem('apiKey');
-            } else {
-                setError("Could not connect to the server. Please ensure it's running.");
-            }
+            setError("Could not connect to the server. Please ensure it's running.");
         } finally {
             setIsLoading(false);
         }
-    }, [apiKey]);
+    }, []);
 
 
     useEffect(() => {
         fetchData();
     }, [fetchData]);
-
-    const generateApiKey = async (): Promise<string | null> => {
-        try {
-            const response = await apiFetch('/api/auth/generate-key', { method: 'POST' });
-            const newKey = response.apiKey;
-            if (newKey) {
-                localStorage.setItem('apiKey', newKey);
-                setApiKey(newKey);
-                // Trigger a data refetch with the new key
-                await fetchData();
-                return newKey;
-            }
-        } catch (err: any) {
-            setError(err.message);
-        }
-        return null;
-    };
     
     const addTransaction = useCallback(async (tx: Omit<Transaction, 'id'>) => {
         try {
@@ -498,7 +464,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   
     const value: IDataContext = {
-        isLoading, error, refetchData: fetchData, apiKey, generateApiKey,
+        isLoading, error, refetchData: fetchData,
         transactions, addTransaction, assets, portfolioAssets, impactInvestments, budgets, addBudget, 
         financialGoals, addFinancialGoal, generateGoalPlan, subscriptions, upcomingBills, savingsGoals, gamification, 
         rewardPoints, rewardItems, redeemReward, creditScore, creditFactors, customBackgroundUrl, 

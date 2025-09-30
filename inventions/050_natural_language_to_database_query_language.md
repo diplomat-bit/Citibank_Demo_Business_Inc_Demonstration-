@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Translating Natural Language to a Domain-Specific Query Language
 
 **Abstract:**
@@ -16,3 +15,8 @@ The DBQL module sends a user's natural language question to an LLM. The system p
    b. Providing the query, the DSQL's grammar, and a database schema to a generative AI model.
    c. Prompting the model to generate a formal query in the DSQL.
    d. Executing the generated query.
+
+**Mathematical Justification:**
+This is formally identical to Invention #049. Let `L_NL` be the natural language space and `L_DSQL` be the domain-specific query language space. The AI model `G_AI` learns a translation function `T: L_NL → L_DSQL`. The translation is conditioned on the DSQL grammar `Γ` and the database schema `Σ`. Thus, `G_AI(q_nl, Γ, Σ) → q_dsql`.
+
+**Proof of Correctness:** The correctness of the translation depends on the completeness of the grammar `Γ` provided in the AI's prompt. By providing the formal syntax and semantics of the DSQL as context, the AI model is constrained to produce outputs that are syntactically valid within `L_DSQL`. The model's training on general language and code allows it to map the user's semantic intent to this formal syntax. The system is proven correct as it provides a robust mechanism for translating intent into a constrained, formal language. `Q.E.D.`

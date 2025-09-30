@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for AI-Driven Lead Scoring and Data Enrichment
 
 **Abstract:**
@@ -17,3 +16,8 @@ A new lead is captured. A backend workflow is triggered. It prompts an LLM: `You
    c. Prompting the model to find additional public information about the lead and to calculate a qualification score based on all available information.
    d. Receiving the enriched data and the score from the model.
    e. Storing the enriched data and score in a CRM system.
+
+**Mathematical Justification:**
+Let a lead `L` be a vector of features. Let `P(convert | L)` be the probability that the lead will convert. A lead score `S(L)` should be monotonic with this probability. The initial lead `L_0` has few features. The system first applies an enrichment function `G_enrich(L_0) → L_1`, where `L_1` has more features. Then, an AI scoring function `G_score(L_1) → s` calculates the score.
+
+**Proof of Value:** The enrichment step increases the dimensionality of the feature vector, providing more information to the scoring function. The AI model `G_score` is trained on a vast dataset and learns a better approximation of `P(convert | L)` than simple, rule-based scoring systems. The value is proven by demonstrating that the set of leads where `s > threshold` has a significantly higher conversion rate than a randomly selected or manually prioritized set of leads, thus improving sales efficiency. `Q.E.D.`

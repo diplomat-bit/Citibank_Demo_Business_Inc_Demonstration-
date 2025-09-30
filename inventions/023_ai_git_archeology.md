@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Natural Language Querying of Software Version Control History
 
 **Abstract:**
@@ -66,3 +65,8 @@ def git_archeologist_query(question: str):
    f. Displaying the answer to the user.
 
 2. The method of claim 1, wherein indexing the commit history involves creating vector embeddings of commit messages and code changes.
+
+**Mathematical Justification:**
+Let `H` be the set of all commits in a repository's history. Let a user's query be `q`. A traditional search `f_keyword(q, H) → H' ⊂ H` finds commits `h ∈ H'` where `q` is a substring of `h`. This is a syntactic match. The present invention uses an embedding function `E(x)` to map text `x` to a vector. The retrieval function becomes `f_semantic(q, H) → H'' ⊂ H`, where `H'' = {h | cos_dist(E(q), E(h)) < ε}`. The generative model `G_AI` then synthesizes an answer `A` from the retrieved context: `G_AI(H'', q) → A`.
+
+**Proof of Superiority:** The semantic search `f_semantic` can find relevant commits even if they do not contain the exact keywords of the query, thus `H''` is a more complete and accurate context set than `H'`. The generative model `G_AI` synthesizes a direct answer `A`, whereas `f_keyword` only returns a list of documents `H'` that the user must manually analyze. The system is proven superior as it provides a more accurate retrieval and a higher-level synthesis of information, reducing human analysis time. `Q.E.D.`

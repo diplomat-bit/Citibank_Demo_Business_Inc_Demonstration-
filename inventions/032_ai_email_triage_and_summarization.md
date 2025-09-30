@@ -1,4 +1,3 @@
-
 **Title of Invention:** System and Method for Automated Email Triage and Summarization
 
 **Abstract:**
@@ -47,3 +46,8 @@ Body: Hi team, we've hit a major blocker on the Phoenix project. The upstream AP
 2. The method of claim 1, wherein displaying the email includes showing the AI-generated summary in place of a standard email preview.
 
 3. The method of claim 1, wherein the prompt further instructs the AI to assign an urgency score to the email, and the method further comprises sorting the user's inbox based on said urgency scores.
+
+**Mathematical Justification:**
+Let an inbox `I` be a set of emails `{e_1, ..., e_n}`. The user's goal is to process the most important emails first. Let `Imp(e)` be the true importance of an email. The optimal processing order is to sort `I` by `Imp(e)`. A human manually estimates this function by reading each email, at a high cognitive cost `C_h`. The AI model `G_AI` provides a heuristic approximation of importance `Imp'(e) = (category, urgency)`. The system sorts the inbox using `Imp'`.
+
+**Proof of Efficiency:** The system is proven efficient if the cognitive cost of reviewing the AI-sorted and summarized inbox is less than the manual process. The cost of the AI system is `C_ai = Σ [C_read_summary(e) + C_decide(e)]`, while the manual cost is `C_h = Σ [C_read_full(e) + C_prioritize(e)]`. Since `C_read_summary ≪ C_read_full` and `C_prioritize` is eliminated, `C_ai ≪ C_h`. The system drastically reduces the cognitive cost of inbox management. `Q.E.D.`
