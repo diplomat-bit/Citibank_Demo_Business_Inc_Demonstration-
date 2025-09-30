@@ -47,14 +47,14 @@ The output `λ = G(s, σ_put)` is typically a `200 OK` response with the updated
 
 ---
 
-## 3. Constants and Constraints
+## 3. Foundational Laws
 
-**Constant 3.1: Idempotency of `PUT` and `DELETE`**
+**Law 3.1: Idempotency of `PUT` and `DELETE`**
 For any `σ_put` or `σ_delete` request, applying the function multiple times yields the same state as applying it once.
 `T(T(s, σ), σ) = T(s, σ)`.
 
-**Constant 3.2: Safety of `GET`**
-The `GET` method is defined as "safe," meaning `T(s, σ_get) = s` for all `s ∈ S`. This is a fundamental constant of the HTTP protocol as implemented here.
+**Law 3.2: Safety of `GET`**
+The `GET` method is defined as "safe," meaning `T(s, σ_get) = s` for all `s ∈ S`. This is a fundamental law of the HTTP protocol as implemented here.
 
 ---
 

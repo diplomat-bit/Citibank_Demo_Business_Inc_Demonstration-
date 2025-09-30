@@ -1,38 +1,39 @@
-# The Main Snapshot
-*A Guide to the Balance Summary Widget*
+
+# The Statement of Position
+*A Guide to the Balance Summary Instrument*
 
 ---
 
 ## The Concept
 
-The `BalanceSummary.tsx` component is the most important single piece of information on the user's dashboard. It's the "main snapshot" or the "financial headline," designed to answer two simple questions immediately: "Where am I now?" and "Which way am I heading?"
+The `BalanceSummary.tsx` component is the single most critical piece of intelligence on the sovereign's command center. It is the "statement of position," designed to answer two simple questions with absolute authority: "What is the current state of my resources?" and "What is their vector?"
 
 ---
 
-### A Simple Metaphor: The Compass
+### A Simple Metaphor: The Battle Map
 
-Think of this widget as the compass on the dashboard of a ship.
+Think of this instrument as the main battle map in the war room.
 
--   **The Large Number (`absoluteBalance`)**: This is the compass needle pointing to your current heading—your exact financial position right now. It's big, clear, and unambiguous.
+-   **The Large Number (`absoluteBalance`)**: This is the precise coordinate of your army's current position. It's large, clear, and undeniable.
 
--   **The Change (`recentMomentum`)**: This tells you if you're moving forward or backward. It's your speed and direction, showing your momentum over the last 30 days.
+-   **The Change (`recentMomentum`)**: This is your army's momentum—its speed and direction of advance or retreat over the last 30-day campaign.
 
--   **The Chart (`historicalTrajectory`)**: This is the wake behind your ship. It shows the path you've taken over the last few months, giving context to your current position and momentum.
+-   **The Chart (`historicalTrajectory`)**: This is the line of past campaigns. It shows the territory you've already conquered or ceded, giving critical context to your current position and momentum.
 
 ---
 
 ### How It Works
 
-1.  **The Alchemist's Work**: The component doesn't just display a number; it calculates it. It takes the entire list of `transactions` (the ledger) and "distills" it into a single, cohesive story.
+1.  **The Distillation of Truth**: The component doesn't just display a number; it forges it. It takes the entire `transactions` chronicle and distills it into a single, cohesive statement of reality.
 
-2.  **Calculating the Present**: It starts with an assumed balance and then walks through every single transaction in chronological order, adding the income and subtracting the expenses, to arrive at the final, current balance. This is the **absoluteBalance**.
+2.  **Calculating the Present**: It begins with a known position and then processes every single action in the chronicle, adding resources gained and subtracting resources expended, to arrive at the final, current **absoluteBalance**.
 
-3.  **Distilling Momentum**: It then looks back 30 days into this calculated history to find out what the balance was then. By comparing that past value to the present, it calculates the **recentMomentum**.
+3.  **Calculating Momentum**: It then looks back 30 days into this chronicle to find the position at that time. By comparing that past state to the present, it calculates the **recentMomentum**.
 
-4.  **Mapping the Journey**: Finally, it takes the full history of the running balance and groups it by month to create the simple, clear data points needed to draw the **historicalTrajectory** chart.
+4.  **Mapping the Campaign**: Finally, it takes the full history of your resource levels and plots it over time to draw the **historicalTrajectory** chart, the map of your journey so far.
 
 ---
 
-### The Philosophy: A Grounding in Reality
+### The Philosophy: A Foundation in Reality
 
-The purpose of this component is to provide a single, truthful, and grounding piece of information. Before you can plan your future journey, you must know your exact location. The Balance Summary provides this anchor in the present moment. The AI Partner also uses this "snapshot of now" as the foundation for all its reasoning and advice, ensuring its counsel is always relevant to the user's current reality.
+The purpose of this component is to provide a single, truthful, and grounding piece of intelligence. Before you can plan your next campaign, you must know your exact position on the map. The Balance Summary provides this anchor in the present moment. The AI Instrument also uses this "snapshot of now" as the foundation for all its strategic counsel, ensuring its advice is always grounded in your current reality.

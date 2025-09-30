@@ -1,11 +1,11 @@
 
-# The API Status
+# The Nervous System
 
 This is the Engine Room. The heart of the great machine, where the health of every vital connection is monitored in real time. It is a testament to transparency, a declaration that the power of this Instrument is built upon a foundation of strong, reliable, and living connections to the wider world. To see its status is to feel the steady pulse of the entire ecosystem.
 
 ---
 
-### A Fable for the Builder: The Heartbeat of the World
+### A Fable for the Builder: The Nerves of the Machine
 
 (A mind, no matter how brilliant, is useless if it is cut off from the world. It needs senses. It needs a connection to the flow of information that is reality. This `APIStatusView` is the Instrument's nervous system, made visible. It is a map of the senses through which the AI perceives the financial world.)
 

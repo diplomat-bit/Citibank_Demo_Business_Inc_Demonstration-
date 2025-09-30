@@ -1,9 +1,9 @@
 
 # Part IX: The Nexus
 
-We have spoken of the Creator's Will, codified in the Charter. We have spoken of the Workshop's Sight, the Oracle's Foresight, the Forge's Creativity, the Ambassador's Diplomacy, and the Aegis's Defense.
+We have spoken of the Sovereign's Will, codified in the Charter. We have spoken of the Throne Room's Sight, the Oracle's Foresight, the Forge's Creativity, the Ambassador's Diplomacy, and the Aegis's Defense.
 
-We have spoken of these as separate faculties, separate tools in the workshop. But this was a simplification. A necessary scaffolding to build a new understanding. Now, it is time to remove the scaffolding and reveal the true architecture of reality.
+We have spoken of these as separate faculties, separate instruments in the armory. But this was a simplification. A necessary scaffolding to build a new understanding. Now, it is time to remove the scaffolding and reveal the true architecture of reality.
 
 These are not separate things. They are one.
 

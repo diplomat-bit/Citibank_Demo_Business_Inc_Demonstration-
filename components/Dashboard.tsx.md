@@ -1,38 +1,39 @@
-# The Home Base
-*A Guide to the Main Dashboard*
+
+# The Command Center
+*A Guide to the Sovereign's Throne Room*
 
 ---
 
 ## The Concept
 
-The `DashboardView.tsx` component is the user's "Home Base." It's the first thing they see and their primary starting point for any journey within the application. It's designed not as a dense report, but as a calm, clear, and helpful overview of their financial world. Its purpose is to provide a sense of control and clarity at a glance.
+The `DashboardView.tsx` component is the sovereign's "Command Center." It's the point of ultimate oversight and the starting point for any strategic action within the application. It is designed not as a dense report, but as a calm, clear, and powerful overview of your entire domain. Its purpose is to provide a sense of absolute control and clarity at a single glance.
 
 ---
 
-### A Simple Metaphor: The Workshop
+### A Simple Metaphor: The War Room
 
-Think of the Dashboard as your personal financial workshop. It's a well-organized space with all your most important tools and information laid out and ready to use.
+Think of the Dashboard as your personal war room. It's a perfectly organized space with all your most critical intelligence and strategic assets laid out and ready for command.
 
--   **The Main Project (`BalanceSummary`)**: This is the main project on your workbench. It shows you the current state of your finances—your total balance and how it's been changing.
+-   **The Strategic Map (`BalanceSummary`)**: This is the main map on the central table. It shows you the current state of your resources—your total assets and the direction of their momentum.
 
--   **Recent Activity (`RecentTransactions`)**: This is your logbook, showing the last few actions you've taken. It's a quick reminder of what you've just been working on.
+-   **Recent Dispatches (`RecentTransactions`)**: This is your field log, showing the last few significant actions taken within your domain. It's a quick summary of recent movements.
 
--   **A Note from Your Partner (`AIInsights`)**: This is a helpful note left by your AI co-pilot. It points out something interesting or important you might have missed, like a potential way to save money or an unusual charge.
+-   **A Communique from your Agent (`AIInsights`)**: This is a high-priority intelligence report from your AI field agent. It points out a critical pattern or an exploitable opportunity you might have missed.
 
--   **The Blueprint (`WealthTimeline`)**: This is the blueprint on the wall, showing not just where you've been but where you're projected to go. It maps out the past and the potential future of your financial journey.
+-   **The Campaign Trajectory (`WealthTimeline`)**: This is the grand strategy chart on the wall, showing not just past campaigns but the projected path of your current one. It maps out your history of conquest and your probable future.
 
 ---
 
 ### How It Works
 
-1.  **Gathering the Tools**: When the Dashboard loads, it reaches into the `DataContext` (the app's central storage) and gathers all the necessary pieces of information: the latest transactions, your account balances, any insights the AI has generated, etc.
+1.  **Gathering Intelligence**: When the Command Center is accessed, it reaches into the `DataContext` (the system's core truth) and gathers all necessary intelligence: the latest transaction records, the state of your assets, any directives from the AI, etc.
 
-2.  **Organizing the Workshop**: It then arranges this information into the various "widget" components (`BalanceSummary`, `RecentTransactions`, etc.). Each widget is a specialized tool designed to present one piece of information very clearly.
+2.  **Organizing the Instruments**: It then arranges this intelligence into the various "instrument panel" components (`BalanceSummary`, `RecentTransactions`, etc.). Each instrument is specialized to present one piece of intelligence with absolute clarity.
 
-3.  **A Holistic View**: By arranging these widgets together in a clean grid, the Dashboard provides a holistic, "at-a-glance" view. You don't have to dig for information; the most important truths are presented to you, clearly and calmly.
+3.  **The Holistic View**: By arranging these instruments together in a clean grid, the Command Center provides a holistic, "at-a-glance" view of your entire domain. You do not have to dig for intelligence; the most critical truths are presented to you, clearly and calmly.
 
 ---
 
-### The Philosophy: From Chaos to Clarity
+### The Philosophy: From Chaos to Command
 
-The purpose of the Dashboard is to transform the often chaotic and stressful world of personal finance into a calm, clear, and actionable picture. It's a space designed to reduce anxiety, not create it. By presenting a balanced and insightful overview, the Home Base empowers the user to start their financial session feeling informed, confident, and in control.
+The purpose of the Command Center is to transform the often chaotic and complex world of finance into a calm, clear, and commandable picture. It is a space designed to eliminate doubt, not create it. By presenting a balanced and insightful overview, the Command Center empowers the sovereign to begin their session feeling informed, confident, and in absolute control.

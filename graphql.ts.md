@@ -3,7 +3,7 @@
 
 ## Abstract
 
-This document provides a formal mathematical description of the application's data layer, modeling the GraphQL schema as a topological data manifold `M`. In this framework, data entities (e.g., `User`, `Transaction`) are treated as submanifolds, and relationships are defined as continuous maps between them. A GraphQL query is formalized as a projection operator `π` that maps a higher-dimensional entity submanifold onto a lower-dimensional submanifold defined by the selected fields.
+This document provides a formal mathematical description of the application's data layer, modeling the GraphQL schema as a topological data manifold `M`. In this framework, data entities (e.g., `User`, `Transaction`) are treated as submanifolds, and relationships are defined as continuous maps between them. A GraphQL query is formalized as a projection operator `π` that maps a higher-dimensional entity submanifold onto a lower-dimensional submanifold defined by the selected fields. This is the physics of our data's reality.
 
 ---
 
@@ -45,7 +45,7 @@ This operator takes a point `p ∈ E_i` and maps it to a tuple of its field valu
 `π(p) = (φ_{j_1}(p), φ_{j_2}(p), ..., φ_{j_n}(p))`
 
 **Function 3.2: The Mutation as a Manifold Transformation `T`**
-A GraphQL mutation `M` is a transformation `T: M → M` that alters the structure of the manifold `M`. For instance, creating a new transaction is a transformation `T_create` that adds a new point `p_{new}` to the `E_transaction` submanifold.
+A GraphQL mutation `M` is a transformation `T: M → M` that alters the structure of the manifold `M`. Creating a new transaction is a transformation `T_create` that adds a new point `p_{new}` to the `E_transaction` submanifold.
 
 `T_create(p_{data}): M → M ∪ {p_{new}}`
 
@@ -53,4 +53,4 @@ A GraphQL mutation `M` is a transformation `T: M → M` that alters the structur
 
 ## 4. Conclusion
 
-By modeling the GraphQL schema as a data manifold, we can apply the rigorous tools of topology and differential geometry to reason about our data layer. Queries and mutations are no longer just procedural operations but are well-defined mathematical transformations on a formal space. This approach ensures a high degree of consistency and allows for powerful static analysis of data operations.
+By modeling the GraphQL schema as a data manifold, we can apply the rigorous tools of topology and differential geometry to command our data layer. Queries and mutations are no longer just procedural operations but are well-defined mathematical transformations on a formal space. This approach ensures an absolute degree of consistency and allows for powerful static analysis of all data operations.

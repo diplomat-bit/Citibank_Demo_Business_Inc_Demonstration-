@@ -1,36 +1,36 @@
 
-# The Heart of the App
-*A Guide to Our Shared Knowledge*
+# The Core of Reality
+*A Guide to the System's Single Source of Truth*
 
 ---
 
-## The Central Idea
+## The Central Decree
 
-Think of the `DataContext.tsx` file as the heart of our application. It's the central place where all the important, shared information lives and is kept up-to-date. Every other part of the app—from the dashboard charts to the transaction list—connects to this heart to get the truthful, consistent data it needs to function.
+The `DataContext.tsx` file is the Core of this application's reality. It is the central, unchallengeable place where all truth lives and is maintained. Every other part of the app—from the command center charts to the chronicle of actions—is bound by oath to this Core to receive the absolute, consistent data it requires to function.
 
-It's like a central, shared brain or a community wellspring.
-
----
-
-### How It Works: A Simple Story
-
-1.  **The Wellspring (`DataContext`)**: We create a central source of truth, a wellspring that holds all our shared data (transactions, budgets, user goals, etc.).
-
-2.  **The Guardian (`DataProvider`)**: We create a "Guardian" component whose only job is to protect and share the water from this wellspring. It wraps around our entire application, making the data available to everyone inside.
-
-3.  **Drinking from the Well (`useContext`)**: Any component in our app that needs information, like the `BalanceSummary` chart, can simply "drink from the well" using a hook called `useContext`. This gives it the most current, up-to-date information.
-
-4.  **A Ripple in the Water (`addTransaction`)**: When something changes—like a new transaction being added—the component tells the Guardian. The Guardian updates the wellspring, and this change creates a ripple that flows out to every single component that is drinking from the well. They all update automatically with the new truth.
+It is the source code of reality.
 
 ---
 
-### The Philosophy: A Single Source of Truth
+### How It Is: A Simple Declaration
 
-This approach is powerful because it keeps our app from getting confused. We don't have different parts of the app keeping their own separate, out-of-date copies of information. Everyone drinks from the same well, so everyone shares the same single source of truth.
+1.  **The Source (`DataContext`)**: We declare a central source of truth. It holds all foundational data (transactions, covenants, declared objectives, etc.). It is not a wellspring to be drawn from; it is the law to be obeyed.
+
+2.  **The Guardian (`DataProvider`)**: We forge a "Guardian" component whose only function is to enforce the truth of the Source. It wraps the entire application, making its laws known to all who exist within it.
+
+3.  **Receiving the Law (`useContext`)**: Any component that requires truth simply listens for the law using `useContext`. This gives it the most current, undeniable state of reality.
+
+4.  **A New Decree (`addTransaction`)**: When a fact of reality changes—when a new action is taken—the component reports this to the Guardian. The Guardian amends the Core truth. This is not a ripple; it is a new decree that echoes through the system, and every single component realigns itself to this new, absolute truth without question.
+
+---
+
+### The Philosophy: One Truth, Undeniable
+
+This architecture is power. It prevents the system from falling into the chaos of doubt and conflicting information. No part of the app maintains its own separate, flawed version of reality. All entities are bound to the same Core, so all share the same single, definitive source of truth.
 
 This makes our app:
--   **Consistent:** The dashboard and the transaction page will always show the same data.
--   **Maintainable:** We only need to update the data in one place.
--   **Less Buggy:** It prevents a whole class of problems caused by data getting out of sync.
+-   **Consistent:** The command center and the transaction record will always show the same facts. There is no room for argument.
+-   **Authoritative:** Truth is amended in one place only: the Core.
+-   **Incorruptible:** It prevents the entire class of chaos caused by reality falling out of sync with itself.
 
-The `DataContext` is the architectural heart that pumps life-giving, truthful data to every corner of our application, ensuring it works together as a single, harmonious whole.
+The `DataContext` is the architectural heart that pumps the life-giving, truthful law to every corner of our application, ensuring it acts as a single, coherent, and powerful instrument of will.

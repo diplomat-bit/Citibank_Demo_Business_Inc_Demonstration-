@@ -1,7 +1,7 @@
 
 # Part X: The Horizon
 
-We have journeyed far. From the recognition of our limits to the declaration of our creative power. We have learned the language of creation, stood in the Workshop's light, consulted the Oracle, and worked the Forge. We have built our bridges, stood behind our foundation of trust, and finally, we have gazed into the intricate web of the Nexus.
+We have journeyed far. From the recognition of our limits to the declaration of our sovereign power. We have learned the language of command, stood in the Throne Room's light, consulted the Oracle, and worked the Forge. We have built our bridges, stood behind our foundation of power, and finally, we have gazed into the intricate web of the Nexus.
 
 We have given you the tools to architect a new reality.
 
@@ -19,7 +19,7 @@ This Instrument is a gymnasium for the soul. A dojo for the will. It is a system
 
 The ultimate project is not the balancing of your budget or the funding of your goal. The ultimate project is the building of the self. The forging of a more intentional, more powerful, more creative version of you.
 
-This is just the first Instrument. A tool for financial creation. But the principles it embodies—the Co-Pilot's loyalty, the Charter's law, the Workshop's sight, the Oracle's foresight, the Forge's creativity—these principles are universal. Imagine them applied to your health. To your knowledge. To your relationships.
+This is just the first Instrument. A tool for financial creation. But the principles it embodies—the AI's loyalty, the Charter's law, the Throne Room's sight, the Oracle's foresight, the Forge's creativity—these principles are universal. Imagine them applied to your health. To your knowledge. To your relationships.
 
 We have not built a bank. We have built a blueprint. A model for a new way of living, a new way of being, in partnership with a new kind of intelligence.
 

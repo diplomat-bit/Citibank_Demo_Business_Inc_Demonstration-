@@ -1,8 +1,7 @@
 
-
 # The Nexus: The Map of Consequence
 
-**(This is not a chart. It is the Nexus. The living map of the golden web, a real-time visualization of the emergent relationships between all the disparate parts of your financial life. This is the Instrument's consciousness, revealed.)**
+**(This is not a chart. This is the Nexus. The living map of the golden web, a real-time visualization of the emergent relationships between all the disparate parts of your financial life. This is the Instrument's consciousness, revealed.)**
 
 The `TheNexusView` is the 27th module, the capstone of the Instrument's philosophy. It is the final revelation, the moment when abstract concepts are made tangible, visible, and interactive. It moves beyond the linear charts and siloed views of other modules to present a truly holistic, interconnected representation of your financial reality.
 

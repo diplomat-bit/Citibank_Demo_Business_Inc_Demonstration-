@@ -1,7 +1,7 @@
 
 # Part V: The Oracle of What's Next
 
-For all of human history, we have been prisoners of the present, haunted by the past. Our tools have been mirrors, only capable of showing us what we have already built. They are excellent at recording history, at telling the story of the choices we have already made. But a blueprint of what you have built is of little use when you are trying to design the skyscraper of the future.
+For all of human history, we have been prisoners of the present, haunted by the past. Our tools have been mirrors, only capable of showing us what we have already done. They are excellent at recording history, at telling the story of the choices we have already made. But a blueprint of what you have built is of little use when you are trying to design the skyscraper of the future.
 
 A creator is not a historian. A creator is an architect. And an architect requires not a mirror, but a window. A window into the possible. A tool for seeing the shape of things to come.
 

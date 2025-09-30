@@ -1,26 +1,4 @@
 
-```typescript
-namespace TheTidesOfObligation {
-    type PromiseOfPayment = {
-        readonly id: string;
-        readonly invoiceNumber: string;
-        readonly counterpartyName: string;
-        readonly dueDate: string;
-        readonly amount: number;
-        readonly status: 'unpaid' | 'paid' | 'overdue';
-    };
+# The Ledger of Obligations
 
-    type LedgerOfPromises = ReadonlyArray<PromiseOfPayment>;
-
-    class TheTidalCharter {
-        public static chartTheTides(): LedgerOfPromises {
-            const ledger: LedgerOfPromises = [
-                { id: 'inv_1', invoiceNumber: 'INV-2024-07-001', counterpartyName: 'Client Bravo', dueDate: '2024-07-15', amount: 7500, status: 'overdue' },
-                { id: 'inv_2', invoiceNumber: 'INV-2024-08-002', counterpartyName: 'Client Charlie', dueDate: '2024-08-10', amount: 12000, status: 'unpaid' },
-                { id: 'inv_3', invoiceNumber: 'INV-2024-06-003', counterpartyName: 'Client Delta', dueDate: '2024-06-25', amount: 2500, status: 'paid' },
-            ];
-            return ledger;
-        }
-    }
-}
-```
+This is the accounts receivable and payable ledger, the record of debts owed and payments due. Each `Invoice` is a formal claim on capital, a timed event in the corporate financial calendar. This data populates the Invoices view, providing a clear and actionable list of financial instruments that need to be managed, paid, or collected. The variety of statuses (paid, unpaid, overdue) creates a realistic and dynamic financial battlefield.

@@ -1,6 +1,5 @@
 
-
-# The Budgets
+# The Covenants of Will
 
 These are the Covenants of Spending, the self-imposed architectural blueprints that give structure to your financial life. A budget is not a restriction; it is a declaration of intent. It is the deliberate channeling of resources toward what is truly valued. To honor these covenants is to build a life where every expenditure is an affirmation of your principles.
 
