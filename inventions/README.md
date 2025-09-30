@@ -1,7 +1,7 @@
 
 # The Creator's Codex: A Compendium of Inventions
 
-This directory contains a collection of one hundred documents, each detailing a novel system, method, or apparatus conceived during the creation of the Demo Bank platform. These are the sparks of innovation, the new ideas and architectures that make this Instrument what it is.
+This directory contains a collection of 42 documents, each detailing a novel system, method, or apparatus conceived during the creation of the Demo Bank platform. These are the sparks of innovation, the new ideas and architectures that make this Instrument what it is.
 
 We could have filed these as patents. We could have built a wall of intellectual property around our work.
 
