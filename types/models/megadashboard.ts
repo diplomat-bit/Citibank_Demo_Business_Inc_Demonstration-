@@ -179,3 +179,12 @@ export interface BackupJob {
     timestamp: string;
     duration: string; // e.g., '15 minutes'
 }
+
+export interface ApiKeyUsageLog {
+    id: string;
+    apiKey: string;
+    timestamp: string;
+    status: number;
+    latencyMs: number;
+    ipAddress: string;
+}

@@ -10,11 +10,6 @@ import InvestmentPortfolio from '../../InvestmentPortfolio';
 // HELPER & SUB-COMPONENTS
 // ================================================================================================
 
-/**
- * @description A specialized component to visually represent a company's ESG (Environmental,
- * Social, and Governance) rating on a scale of 1 to 5.
- * @param {{ rating: number }} props - The ESG rating to display.
- */
 const ESGScore: React.FC<{ rating: number }> = ({ rating }) => (
     <div className="flex items-center" aria-label={`ESG rating: ${rating} out of 5`}>
         {Array.from({ length: 5 }).map((_, i) => (
@@ -32,9 +27,6 @@ const ESGScore: React.FC<{ rating: number }> = ({ rating }) => (
     </div>
 );
 
-/**
- * @description A modal component for simulating an investment action.
- */
 const InvestmentModal: React.FC<{
     asset: Asset | null;
     onClose: () => void;
@@ -93,15 +85,10 @@ const InvestmentsView: React.FC = () => {
 
     const totalValue = useMemo(() => assets.reduce((sum, asset) => sum + asset.value, 0), [assets]);
 
-    /**
-     * @description Calculates the projected growth of the investment portfolio over 10 years,
-     * factoring in a constant monthly contribution and a fixed annual growth rate.
-     */
     const projectionData = useMemo(() => {
         let futureValue = totalValue;
         const data = [{ year: 'Now', value: futureValue }];
         for (let i = 1; i <= 10; i++) {
-            // Formula: (Current Value + (Monthly Contribution * 12)) * (1 + Annual Growth Rate)
             futureValue = (futureValue + monthlyContribution * 12) * 1.07; // 7% annual growth
             data.push({ year: `Year ${i}`, value: futureValue });
         }
@@ -110,7 +97,6 @@ const InvestmentsView: React.FC = () => {
 
     const handleInvest = (assetName: string, amount: number) => {
         addTransaction({
-            id: `invest_${Date.now()}`,
             type: 'expense',
             category: 'Investments',
             description: `Invest in ${assetName}`,
@@ -125,10 +111,8 @@ const InvestmentsView: React.FC = () => {
             <div className="space-y-6">
                 <h2 className="text-3xl font-bold text-white tracking-wider">Investments (CapitalVista)</h2>
 
-                {/* Main Portfolio Overview */}
                 <InvestmentPortfolio />
 
-                {/* Performance and Growth Simulation */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card title="Asset Performance (YTD)">
                         <div className="h-80">
@@ -165,40 +149,3 @@ const InvestmentsView: React.FC = () => {
                                     <YAxis stroke="#9ca3af" tickFormatter={(tick) => `$${(tick / 1000).toFixed(0)}k`} />
                                     <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} formatter={(value: number) => [`$${value.toLocaleString(undefined, {maximumFractionDigits: 0})}`, "Projected Value"]} />
                                     <Area type="monotone" dataKey="value" stroke="#06b6d4" fill="url(#colorGrowth)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </Card>
-                </div>
-                
-                {/* Social Impact Investing Section */}
-                <Card title="Social Impact Investing (ESG)">
-                    <p className="text-sm text-gray-400 mb-4">Invest in companies that align with your values. All options below are highly rated for their Environmental, Social, and Governance practices.</p>
-                    <div className="space-y-4">
-                        {impactInvestments.map(asset => (
-                            <div key={asset.name} className="p-4 bg-gray-800/50 rounded-lg flex flex-col sm:flex-row justify-between items-center gap-4">
-                                <div className="flex-grow">
-                                    <div className="flex items-center gap-4">
-                                        <ESGScore rating={asset.esgRating || 0} />
-                                        <h4 className="font-semibold text-white">{asset.name}</h4>
-                                    </div>
-                                    <p className="text-sm text-gray-400 mt-2">{asset.description}</p>
-                                </div>
-                                <button onClick={() => setSelectedImpactAsset(asset)} className="w-full sm:w-auto text-sm px-4 py-2 bg-cyan-600/50 hover:bg-cyan-600 text-white rounded-lg transition-colors flex-shrink-0">
-                                    Invest Now
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            </div>
-            <InvestmentModal
-                asset={selectedImpactAsset}
-                onClose={() => setSelectedImpactAsset(null)}
-                onInvest={handleInvest}
-            />
-        </>
-    );
-};
-
-export default InvestmentsView;

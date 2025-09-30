@@ -35,27 +35,35 @@ const DemoBankExperimentationPlatformView: React.FC = () => {
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Experimentation</h2>
             <Card title="AI A/B Test Designer">
-                <p className="text-gray-400 mb-4">State your hypothesis for the experiment.</p>
+                <p className="text-gray-400 mb-4">State your hypothesis for the experiment, and our AI will generate a structured test plan.</p>
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Generating...' : 'Design Test'}
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
+                    {isLoading ? 'Designing Test...' : 'Design Test'}
                 </button>
             </Card>
 
-            {generatedTest && (
+            {(isLoading || generatedTest) && (
                 <Card title="Generated Test Plan">
-                     <button onClick={() => setGeneratedTest(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
-                     <div className="space-y-3 text-sm">
-                        <p><strong className="text-cyan-300">Primary Metric:</strong> {generatedTest.primaryMetric}</p>
-                        <p><strong className="text-cyan-300">Secondary Metric:</strong> {generatedTest.secondaryMetric}</p>
-                        <div>
-                            <p className="font-semibold text-gray-200 mt-2">Variants:</p>
-                            {generatedTest.variants.map((v: any, i: number) => <p key={i}>- <strong>{v.name}:</strong> {v.description}</p>)}
-                        </div>
+                     <div className="space-y-4 text-sm">
+                        {isLoading ? <p>Generating...</p> : (
+                            <>
+                                <div><strong className="text-cyan-300 font-semibold">Primary Metric:</strong> <span className="text-gray-200">{generatedTest.primaryMetric}</span></div>
+                                <div><strong className="text-cyan-300 font-semibold">Secondary Metric:</strong> <span className="text-gray-200">{generatedTest.secondaryMetric}</span></div>
+                                <div className="pt-2">
+                                    <p className="font-semibold text-gray-100">Variants:</p>
+                                    {generatedTest.variants.map((v: any, i: number) => (
+                                        <div key={i} className="mt-2 p-2 bg-gray-900/50 rounded-md">
+                                            <p className="font-bold text-white">{v.name}:</p> 
+                                            <p className="text-gray-300">{v.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                      </div>
                 </Card>
             )}

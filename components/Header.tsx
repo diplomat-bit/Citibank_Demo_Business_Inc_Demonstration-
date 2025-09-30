@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { DataContext } from '../context/DataContext';
-import { View } from '../types';
+// FIX: The Notification type needs to be imported to be used in the handleNotificationClick function.
+import { View, Notification } from '../types';
 
 /**
  * @description A dynamic widget to show the simulated real-time status of the "Heuristic API".
@@ -54,10 +55,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActiveView }) => {
     throw new Error("Header must be used within a DataProvider");
   }
 
+  // FIX: Destructure `markNotificationRead` from context to fix property not found error.
   const { notifications, markNotificationRead } = context;
   const unreadCount = notifications.filter(n => !n.read).length;
   
-  const handleNotificationClick = (notification: typeof notifications[0]) => {
+  const handleNotificationClick = (notification: Notification) => {
       if (notification.view) {
           setActiveView(notification.view);
       }

@@ -1,17 +1,15 @@
 // components/views/platform/DemoBankLMSView.tsx
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Card from '../../Card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { DataContext } from '../../../context/DataContext';
 import { GoogleGenAI, Type } from "@google/genai";
-
-// NOTE: In a real app, this data would come from a dedicated file e.g., /data/platform/lmsData.ts
-const MOCK_COURSES = [
-    { id: 'lms-101', title: 'Introduction to Demo Bank APIs', category: 'Developer', enrollment: 1250, completionRate: 85 },
-    { id: 'lms-102', title: 'Advanced Financial Modeling', category: 'Finance', enrollment: 800, completionRate: 72 },
-    { id: 'lms-201', title: 'AI in Modern Banking', category: 'Strategy', enrollment: 2500, completionRate: 91 },
-];
+import { Course } from '../../../types';
 
 const DemoBankLMSView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) throw new Error("LMSView must be within a DataProvider");
+    const { courses } = context;
+
     const [isOutlineModalOpen, setOutlineModalOpen] = useState(false);
     const [topic, setTopic] = useState("Introduction to Corporate Finance");
     const [generatedOutline, setGeneratedOutline] = useState<any>(null);
@@ -47,7 +45,7 @@ const DemoBankLMSView: React.FC = () => {
                                 <tr><th>Title</th><th>Category</th><th>Enrollments</th><th>Completion</th></tr>
                             </thead>
                             <tbody>
-                                {MOCK_COURSES.map(c => (
+                                {courses.map(c => (
                                     <tr key={c.id} className="border-b border-gray-800 hover:bg-gray-800/50">
                                         <td className="px-6 py-4 font-medium text-white">{c.title}</td>
                                         <td className="px-6 py-4">{c.category}</td>
@@ -61,13 +59,13 @@ const DemoBankLMSView: React.FC = () => {
                 </Card>
             </div>
              {isOutlineModalOpen && (
-                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setOutlineModalOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full" onClick={e=>e.stopPropagation()}>
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setOutlineModalOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Course Outliner</h3></div>
                         <div className="p-6 space-y-4">
                             <input type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder="Enter a course topic..." className="w-full bg-gray-700/50 p-2 rounded text-white" />
-                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Outline'}</button>
-                            {generatedOutline && <div className="max-h-80 overflow-y-auto space-y-3 p-2">{generatedOutline.modules.map((m: any, i: number) => (<div key={i}><h4 className="font-semibold text-cyan-300">{m.title}</h4><ul className="list-disc list-inside text-sm text-gray-300">{m.lessons.map((l: string, j: number) => <li key={j}>{l}</li>)}</ul></div>))}</div>}
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Outline'}</button>
+                            {(isLoading || generatedOutline) && <Card title="Generated Outline"><div className="min-h-[15rem] max-h-80 overflow-y-auto space-y-4 p-2">{isLoading ? <p>Generating...</p> : generatedOutline.modules.map((m: any, i: number) => (<div key={i}><h4 className="font-semibold text-cyan-300">{m.title}</h4><ul className="list-disc list-inside text-sm text-gray-300">{m.lessons.map((l: string, j: number) => <li key={j}>{l}</li>)}</ul></div>))}</div></Card>}
                         </div>
                     </div>
                  </div>

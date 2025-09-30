@@ -4,11 +4,11 @@ import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import type { Transaction, DetectedSubscription } from '../../../types';
 import { GoogleGenAI, Type } from "@google/genai";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 // ================================================================================================
 // MODAL & DETAIL COMPONENTS
 // ================================================================================================
+
 const TransactionDetailModal: React.FC<{ transaction: Transaction | null; onClose: () => void }> = ({ transaction, onClose }) => {
     if (!transaction) return null;
 
@@ -17,7 +17,7 @@ const TransactionDetailModal: React.FC<{ transaction: Transaction | null; onClos
             <div className="bg-gray-800 rounded-lg shadow-2xl max-w-md w-full border border-gray-700" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-gray-700 flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-white">Transaction Details</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close modal">&times;</button>
                 </div>
                 <div className="p-6 space-y-3">
                     <div className="flex justify-between text-sm"><span className="text-gray-400">Description:</span> <span className="text-white font-semibold">{transaction.description}</span></div>
@@ -33,16 +33,15 @@ const TransactionDetailModal: React.FC<{ transaction: Transaction | null; onClos
 };
 
 // ================================================================================================
-// AI WIDGET COMPONENT (REFACTORED)
+// PLATO'S INTELLIGENCE SUITE (AI WIDGETS)
 // ================================================================================================
 
 const AITransactionWidget: React.FC<{
     title: string;
-    prompt: string;
+    insightType: 'subscriptions' | 'anomaly' | 'tax' | 'savings';
     transactions: Transaction[];
-    responseSchema?: any; // Allow passing a response schema for structured JSON
     children?: (result: any) => React.ReactNode;
-}> = ({ title, prompt, transactions, responseSchema, children }) => {
+}> = ({ title, insightType, transactions, children }) => {
     const [result, setResult] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -51,13 +50,40 @@ const AITransactionWidget: React.FC<{
         setIsLoading(true);
         setError('');
         setResult(null);
+        
+        let prompt = '';
+        let responseSchema: any = null;
+        let isTextOnly = true;
+
+        switch(insightType) {
+            case 'subscriptions':
+                prompt = "Analyze these transactions to find potential recurring subscriptions the user might have forgotten about. Look for repeated payments to the same merchant around the same time each month.";
+                responseSchema = { type: Type.OBJECT, properties: { subscriptions: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, estimatedAmount: { type: Type.NUMBER }, lastCharged: { type: Type.STRING } } } } } };
+                isTextOnly = false;
+                break;
+            case 'anomaly':
+                prompt = "Analyze these transactions and identify one transaction that seems most unusual or out of place compared to the others. Briefly explain why.";
+                break;
+            case 'tax':
+                prompt = "Scan these transactions and identify one potential tax-deductible expense. Explain your reasoning.";
+                break;
+            case 'savings':
+                prompt = "Based on spending patterns, suggest one specific and actionable way to save money.";
+                break;
+            default:
+                setError('Invalid insight type');
+                setIsLoading(false);
+                return;
+        }
+
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const transactionSummary = transactions.slice(0, 20).map(t => `${t.date} - ${t.description}: $${t.amount.toFixed(2)} (${t.type})`).join('\n');
             const fullPrompt = `${prompt}\n\nHere are the most recent transactions for context:\n${transactionSummary}`;
             
-            const config: any = { responseMimeType: responseSchema ? "application/json" : "text/plain" };
+            const config: any = {};
             if (responseSchema) {
+                config.responseMimeType = "application/json";
                 config.responseSchema = responseSchema;
             }
 
@@ -68,7 +94,7 @@ const AITransactionWidget: React.FC<{
             });
 
             const textResult = response.text.trim();
-            setResult(responseSchema ? JSON.parse(textResult) : textResult);
+            setResult(isTextOnly ? { text: textResult } : JSON.parse(textResult));
 
         } catch (err) {
             console.error(`Error generating ${title}:`, err);
@@ -79,10 +105,10 @@ const AITransactionWidget: React.FC<{
     };
 
     return (
-        <div className="p-3 bg-gray-900/40 rounded-lg border border-gray-700/50">
+        <div className="p-4 bg-gray-900/40 rounded-lg border border-gray-700/50 h-full flex flex-col">
             <h4 className="font-semibold text-gray-200 text-sm mb-2">{title}</h4>
-            <div className="space-y-2 min-h-[4rem] flex flex-col justify-center">
-                {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+            <div className="space-y-2 min-h-[5rem] flex-grow flex flex-col justify-center">
+                {error && <p className="text-red-400 text-xs text-center p-2">{error}</p>}
                 {isLoading && (
                     <div className="flex items-center justify-center space-x-2">
                          <div className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.3s]"></div>
@@ -91,11 +117,13 @@ const AITransactionWidget: React.FC<{
                     </div>
                 )}
                 {!isLoading && result && children && children(result)}
-                {!isLoading && result && !children && <p className="text-gray-300 text-xs">{result}</p>}
+                {!isLoading && result && !children && <p className="text-gray-300 text-xs p-2">{result.text}</p>}
                 {!isLoading && !result && !error && (
-                    <button onClick={handleGenerate} className="text-xs font-medium text-cyan-300 hover:text-cyan-200">
-                        Generate Insight
-                    </button>
+                    <div className="text-center">
+                        <button onClick={handleGenerate} className="text-sm font-medium text-cyan-300 hover:text-cyan-200 transition-colors">
+                            Ask Plato AI
+                        </button>
+                    </div>
                 )}
             </div>
         </div>
@@ -103,7 +131,7 @@ const AITransactionWidget: React.FC<{
 };
 
 // ================================================================================================
-// MAIN TRANSACTIONS VIEW
+// MAIN TRANSACTIONS VIEW (FlowMatrix)
 // ================================================================================================
 const TransactionsView: React.FC = () => {
     const context = useContext(DataContext);
@@ -129,62 +157,22 @@ const TransactionsView: React.FC = () => {
             });
     }, [transactions, filter, sort, searchTerm]);
     
-    const monthlyOverviewData = useMemo(() => {
-        const monthlyData: {[key: string]: { income: number, expense: number }} = {};
-        transactions.forEach(tx => {
-            const month = new Date(tx.date).toLocaleString('default', { month: 'short', year: '2-digit' });
-            if (!monthlyData[month]) monthlyData[month] = { income: 0, expense: 0 };
-            monthlyData[month][tx.type] += tx.amount;
-        });
-        return Object.entries(monthlyData).map(([name, values]) => ({ name, ...values })).reverse();
-    }, [transactions]);
-
-    // Schema for Subscription Hunter
-    const subscriptionSchema = {
-        type: Type.OBJECT,
-        properties: {
-            subscriptions: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING },
-                        estimatedAmount: { type: Type.NUMBER },
-                        lastCharged: { type: Type.STRING }
-                    }
-                }
-            }
-        }
-    };
-
     return (
         <>
             <div className="space-y-6">
                  <h2 className="text-3xl font-bold text-white tracking-wider">Transaction History (FlowMatrix)</h2>
-                 <Card title="Monthly Spending Overview">
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={monthlyOverviewData}>
-                            <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
-                            <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `$${(v/1000)}k`} />
-                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
-                            <Legend />
-                            <Bar dataKey="income" fill="#10b981" name="Total Income" />
-                            <Bar dataKey="expense" fill="#ef4444" name="Total Expense" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                 </Card>
                  <Card title="Plato's Intelligence Suite" isCollapsible>
                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <AITransactionWidget title="Subscription Hunter" prompt="Analyze these transactions to find potential recurring subscriptions the user might have forgotten about. Look for repeated payments to the same merchant around the same time each month." transactions={transactions} responseSchema={subscriptionSchema}>
+                        <AITransactionWidget title="Subscription Hunter" insightType="subscriptions" transactions={transactions}>
                            {(result: { subscriptions: DetectedSubscription[] }) => (
-                                <ul className="text-xs text-gray-300 space-y-1">
-                                    {result.subscriptions.length > 0 ? result.subscriptions.map(sub => <li key={sub.name}>- {sub.name} (~${sub.estimatedAmount.toFixed(2)})</li>) : <li>No potential subscriptions found.</li>}
+                                <ul className="text-xs text-gray-300 space-y-1 p-2">
+                                    {result.subscriptions && result.subscriptions.length > 0 ? result.subscriptions.map(sub => <li key={sub.name}>- {sub.name} (~${sub.estimatedAmount.toFixed(2)})</li>) : <li>No potential subscriptions found.</li>}
                                 </ul>
                            )}
                         </AITransactionWidget>
-                        <AITransactionWidget title="Anomaly Detection" prompt="Analyze these transactions and identify one transaction that seems most unusual or out of place compared to the others. Briefly explain why." transactions={transactions} />
-                        <AITransactionWidget title="Tax Deduction Finder" prompt="Scan these transactions and identify one potential tax-deductible expense. Explain your reasoning." transactions={transactions} />
-                        <AITransactionWidget title="Savings Finder" prompt="Based on spending patterns, suggest one specific and actionable way to save money." transactions={transactions} />
+                        <AITransactionWidget title="Anomaly Detection" insightType="anomaly" transactions={transactions}/>
+                        <AITransactionWidget title="Tax Deduction Finder" insightType="tax" transactions={transactions}/>
+                        <AITransactionWidget title="Savings Finder" insightType="savings" transactions={transactions}/>
                      </div>
                 </Card>
                 <Card>
@@ -192,7 +180,7 @@ const TransactionsView: React.FC = () => {
                         <input type="text" placeholder="Search transactions..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full md:w-1/3 bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500" />
                         <div className="flex items-center gap-4">
                             <select value={filter} onChange={e => setFilter(e.target.value as any)} className="bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500">
-                                <option value="all">All</option>
+                                <option value="all">All Types</option>
                                 <option value="income">Income</option>
                                 <option value="expense">Expense</option>
                             </select>

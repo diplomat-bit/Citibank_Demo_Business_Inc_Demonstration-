@@ -1,12 +1,11 @@
 // @/context/DataContext.tsx
-// --- The Absolute Source of Truth: All Data, Logic, and State Handlers ---
-// This file serves as the God-file, containing all mock data imports, derived state
-// computations, API simulations, business logic (e.g., impact tracking, gamification),
-// and context providers, implementing every function placeholder fully and robustly.
+// --- The Live Data Nexus: All Data Fetching, State, and API Interactions ---
+// This file has been completely refactored to be the application's live data layer.
+// It removes all mock data imports and implements real-time data fetching from a backend server.
+// It manages loading/error states and provides functions to mutate data via API calls.
 
 import React, { createContext, useState, ReactNode, useEffect, useCallback, useMemo } from 'react';
-import { GoogleGenAI, Chat, Type, Modality } from "@google/genai"; // Including for API dependencies
-
+import { GoogleGenAI, Type } from "@google/genai";
 import { 
     Transaction, Asset, BudgetCategory, GamificationState, IllusionType,
     LinkedAccount, QuantumWeaverState, AIPlan, AIQuestion, Subscription, 
@@ -18,61 +17,43 @@ import {
     Counterparty, DynamicKpi, PaymentOrderStatus, NexusGraphData, View, 
     WeaverStage, AccessLog, FraudCase, MLModel, LoanApplication, MortgageAsset,
     ThreatIntelBrief, InsuranceClaim, RiskProfile, DataSet, DataLakeStat,
-    // FIX: Imported NexusNode and NexusLink to resolve 'Cannot find name' errors.
     NexusNode, NexusLink,
-    // Mega Dashboard - Business
     SalesDeal, MarketingCampaign, GrowthMetric, Competitor, Benchmark,
-    // Mega Dashboard - Regulation
     License, Disclosure, LegalDoc, SandboxExperiment, ConsentRecord,
-    // Mega Dashboard - Infra
-    ContainerImage, ApiUsage, Incident, BackupJob
+    ContainerImage, ApiUsage, Incident, BackupJob,
+    PayRun, Project, Course, Employee, PortfolioAsset
 } from '../types'; 
 
-import { 
-    MOCK_TRANSACTIONS, MOCK_ASSETS, MOCK_IMPACT_INVESTMENTS, MOCK_BUDGETS,
-    MOCK_SUBSCRIPTIONS, MOCK_CREDIT_SCORE, MOCK_UPCOMING_BILLS, MOCK_SAVINGS_GOALS,
-    MOCK_MARKET_MOVERS, MOCK_FINANCIAL_GOALS, MOCK_CRYPTO_ASSETS, MOCK_PAYMENT_OPERATIONS,
-    MOCK_CORPORATE_CARDS, MOCK_CORPORATE_TRANSACTIONS, MOCK_REWARD_POINTS, MOCK_NOTIFICATIONS,
-    MOCK_REWARD_ITEMS, MOCK_API_STATUS, MOCK_CREDIT_FACTORS, MOCK_PAYMENT_ORDERS, 
-    MOCK_INVOICES, MOCK_COMPLIANCE_CASES, MOCK_ANOMALIES, MOCK_COUNTERPARTIES,
-    MOCK_ACCESS_LOGS, MOCK_FRAUD_CASES, MOCK_ML_MODELS, 
-    // FIX: Corrected import path for megadashboard data.
-    MOCK_LOAN_APPLICATIONS,
-    MOCK_MORTGAGE_ASSETS, MOCK_THREAT_INTEL, MOCK_INSURANCE_CLAIMS, MOCK_RISK_PROFILES,
-    MOCK_DATA_CATALOG_ITEMS, MOCK_DATA_LAKE_STATS,
-    // New Mega Dashboard Data
-    MOCK_SALES_DEALS, MOCK_MARKETING_CAMPAIGNS, MOCK_GROWTH_METRICS, MOCK_COMPETITORS, MOCK_BENCHMARKS,
-    MOCK_LICENSES, MOCK_DISCLOSURES, MOCK_LEGAL_DOCS, MOCK_SANDBOX_EXPERIMENTS, MOCK_CONSENT_RECORDS,
-    MOCK_CONTAINER_IMAGES, MOCK_API_USAGE, MOCK_INCIDENTS, MOCK_BACKUP_JOBS
-} from '../data';
-
-const LEVEL_NAMES = ["Financial Novice", "Budgeting Apprentice", "Savings Specialist", "Investment Adept", "Wealth Master"];
-const SCORE_PER_LEVEL = 200;
-const COST_PER_TREE = 250;
-
 interface IDataContext {
+  // Loading & Error states
+  isLoading: boolean;
+  error: string | null;
+  apiKey: string | null;
+  generateApiKey: () => Promise<string | null>;
+
   // Personal Finance
   transactions: Transaction[];
-  addTransaction: (tx: Transaction) => void;
+  addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<void>;
   assets: Asset[];
+  portfolioAssets: PortfolioAsset[];
   impactInvestments: Asset[];
   budgets: BudgetCategory[];
   addBudget: (budget: Omit<BudgetCategory, 'id' | 'spent' | 'color'>) => void;
   financialGoals: FinancialGoal[];
-  addFinancialGoal: (goalData: Omit<FinancialGoal, 'id' | 'plan' | 'currentAmount'>) => void;
+  addFinancialGoal: (goal: Omit<FinancialGoal, 'id' | 'currentAmount' | 'plan' | 'progressHistory'>) => void;
   generateGoalPlan: (goalId: string) => Promise<void>;
   subscriptions: Subscription[];
   upcomingBills: UpcomingBill[];
   savingsGoals: SavingsGoal[];
   
   // Gamification & Rewards
-  gamification: GamificationState;
-  rewardPoints: RewardPoints;
+  gamification: GamificationState | null;
+  rewardPoints: RewardPoints | null;
   rewardItems: RewardItem[];
   redeemReward: (item: RewardItem) => boolean;
-
+  
   // Credit & Health
-  creditScore: CreditScore;
+  creditScore: CreditScore | null;
   creditFactors: CreditFactor[];
   
   // UI & Personalization
@@ -85,12 +66,9 @@ interface IDataContext {
   aiInsights: AIInsight[];
   isInsightsLoading: boolean;
   generateDashboardInsights: () => Promise<void>;
-  weaverState: QuantumWeaverState;
-  pitchBusinessPlan: (plan: string) => Promise<void>;
-  simulateTestPass: () => Promise<void>;
   marketplaceProducts: MarketplaceProduct[];
-  fetchMarketplaceProducts: () => Promise<void>;
   isMarketplaceLoading: boolean;
+  fetchMarketplaceProducts: () => Promise<void>;
   addProductToTransactions: (product: MarketplaceProduct) => void;
   dynamicKpis: DynamicKpi[];
   addDynamicKpi: (kpi: DynamicKpi) => void;
@@ -100,33 +78,35 @@ interface IDataContext {
   // Crypto & Web3
   cryptoAssets: CryptoAsset[];
   nftAssets: NFTAsset[];
-  mintNFT: (name: string, imageUrl: string) => void;
   paymentOperations: PaymentOperation[];
   walletInfo: any | null; // Simplified
-  virtualCard: VirtualCard | null;
   connectWallet: () => void;
+  virtualCard: VirtualCard | null;
   issueCard: () => void;
-  buyCrypto: (usdAmount: number, cryptoTicker: string) => void;
+  buyCrypto: (amount: number, currency: string) => void;
+  mintNFT: (name: string, imageUrl: string) => void;
 
   // Corporate Finance
   corporateCards: CorporateCard[];
   corporateTransactions: CorporateTransaction[];
-  toggleCorporateCardFreeze: (cardId: string) => void;
-  updateCorporateCardControls: (cardId: string, newControls: CorporateCardControls) => void;
   paymentOrders: PaymentOrder[];
-  updatePaymentOrderStatus: (id: string, status: PaymentOrderStatus) => void;
+  updatePaymentOrderStatus: (orderId: string, status: PaymentOrderStatus) => void;
   invoices: Invoice[];
   complianceCases: ComplianceCase[];
   financialAnomalies: FinancialAnomaly[];
-  updateAnomalyStatus: (id: string, status: AnomalyStatus) => void;
+  updateAnomalyStatus: (anomalyId: string, status: AnomalyStatus) => void;
   counterparties: Counterparty[];
+  toggleCorporateCardFreeze: (cardId: string) => void;
+  updateCorporateCardControls: (cardId: string, controls: CorporateCardControls) => void;
+  payRuns: PayRun[];
+
 
   // Mega Dashboard Data
   accessLogs: AccessLog[];
   fraudCases: FraudCase[];
-  updateFraudCaseStatus: (id: string, status: FraudCase['status']) => void;
+  updateFraudCaseStatus: (caseId: string, status: FraudCase['status']) => void;
   mlModels: MLModel[];
-  retrainMlModel: (id: string) => void;
+  retrainMlModel: (modelId: string) => void;
   loanApplications: LoanApplication[];
   mortgageAssets: MortgageAsset[];
   threatIntelBriefs: ThreatIntelBrief[];
@@ -134,8 +114,6 @@ interface IDataContext {
   riskProfiles: RiskProfile[];
   dataCatalogItems: DataSet[];
   dataLakeStats: DataLakeStat[];
-
-  // New Mega Dashboard Data
   salesDeals: SalesDeal[];
   marketingCampaigns: MarketingCampaign[];
   growthMetrics: GrowthMetric[];
@@ -151,331 +129,394 @@ interface IDataContext {
   incidents: Incident[];
   backupJobs: BackupJob[];
 
+  // Demo Bank Platform
+  projects: Project[];
+  courses: Course[];
+  employees: Employee[];
+
   // System & Misc
-  impactData: {
-    treesPlanted: number;
-    progressToNextTree: number;
-  };
+  impactData: { treesPlanted: number; progressToNextTree: number; };
   linkedAccounts: LinkedAccount[];
-  unlinkAccount: (id: string) => void;
-  handlePlaidSuccess: (publicToken: string, metadata: any) => void;
   isImportingData: boolean;
+  handlePlaidSuccess: (publicToken: string, metadata: any) => void;
+  unlinkAccount: (accountId: string) => void;
   marketMovers: MarketMover[];
   notifications: Notification[];
-  markNotificationRead: (id: string) => void;
+  markNotificationRead: (notificationId: string) => void;
   apiStatus: APIStatus[];
 
   // Paywall
   unlockedFeatures: Set<View>;
   unlockFeature: (view: View) => void;
+
+  // New functions to interact with backend
+  refetchData: () => void;
 }
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
 
+// Helper for API calls
+const apiFetch = async (endpoint: string, options?: RequestInit) => {
+    const apiKey = localStorage.getItem('apiKey');
+    const headers = new Headers(options?.headers);
+    if (apiKey) {
+        headers.append('Authorization', `Bearer ${apiKey}`);
+    }
+
+    const response = await fetch(endpoint, { ...options, headers });
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error on ${endpoint}: ${errorText}`);
+    }
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
+};
+
+
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string|null>(null);
+    const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('apiKey'));
 
-  // --- STATE MANAGEMENT ---
-  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
-  const [assets] = useState<Asset[]>(MOCK_ASSETS);
-  const [impactInvestments] = useState<Asset[]>(MOCK_IMPACT_INVESTMENTS);
-  const [budgets, setBudgets] = useState<BudgetCategory[]>(MOCK_BUDGETS);
-  const [treesPlanted, setTreesPlanted] = useState<number>(12);
-  const [spendingForNextTree, setSpendingForNextTree] = useState<number>(170);
-  const [gamification, setGamification] = useState<GamificationState>({ score: 450, level: 3, levelName: "Savings Specialist", progress: 25, credits: 225 });
-  const [customBackgroundUrl, setCustomBackgroundUrlState] = useState<string | null>(() => localStorage.getItem('customBackgroundUrl'));
-  const [activeIllusion, setActiveIllusionState] = useState<IllusionType>(() => (localStorage.getItem('activeIllusion') as IllusionType) || 'none');
-  const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([]);
-  const [weaverState, setWeaverState] = useState<QuantumWeaverState>({ stage: WeaverStage.Pitch, businessPlan: '', feedback: '', questions: [], loanAmount: 0, coachingPlan: null, error: null });
-  const [subscriptions] = useState<Subscription[]>(MOCK_SUBSCRIPTIONS);
-  const [creditScore] = useState<CreditScore>(MOCK_CREDIT_SCORE);
-  const [upcomingBills] = useState<UpcomingBill[]>(MOCK_UPCOMING_BILLS);
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(MOCK_SAVINGS_GOALS);
-  const [marketMovers] = useState<MarketMover[]>(MOCK_MARKET_MOVERS);
-  const [rewardPoints, setRewardPoints] = useState<RewardPoints>(MOCK_REWARD_POINTS);
-  const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProduct[]>([]);
-  const [isMarketplaceLoading, setIsMarketplaceLoading] = useState(false);
-  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>(MOCK_FINANCIAL_GOALS);
-  const [cryptoAssets, setCryptoAssets] = useState<CryptoAsset[]>(MOCK_CRYPTO_ASSETS);
-  const [nftAssets, setNftAssets] = useState<NFTAsset[]>([]);
-  const [paymentOperations, setPaymentOperations] = useState<PaymentOperation[]>(MOCK_PAYMENT_OPERATIONS);
-  const [walletInfo, setWalletInfo] = useState<any | null>(null);
-  const [virtualCard, setVirtualCard] = useState<VirtualCard | null>(null);
-  const [aiInsights, setAiInsights] = useState<AIInsight[]>([]);
-  const [isInsightsLoading, setIsInsightsLoading] = useState(false);
-  const [isImportingData, setIsImportingData] = useState(false);
-  const [corporateCards, setCorporateCards] = useState<CorporateCard[]>(MOCK_CORPORATE_CARDS);
-  const [corporateTransactions] = useState<CorporateTransaction[]>(MOCK_CORPORATE_TRANSACTIONS);
-  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
-  const [rewardItems] = useState<RewardItem[]>(MOCK_REWARD_ITEMS);
-  const [apiStatus] = useState<APIStatus[]>(MOCK_API_STATUS);
-  const [creditFactors] = useState<CreditFactor[]>(MOCK_CREDIT_FACTORS);
-  const [paymentOrders, setPaymentOrders] = useState<PaymentOrder[]>(MOCK_PAYMENT_ORDERS);
-  const [invoices] = useState<Invoice[]>(MOCK_INVOICES);
-  const [complianceCases] = useState<ComplianceCase[]>(MOCK_COMPLIANCE_CASES);
-  const [financialAnomalies, setFinancialAnomalies] = useState<FinancialAnomaly[]>(MOCK_ANOMALIES);
-  const [counterparties] = useState<Counterparty[]>(MOCK_COUNTERPARTIES);
-  const [dynamicKpis, setDynamicKpis] = useState<DynamicKpi[]>([]);
-  
-  // Mega Dashboard State
-  const [accessLogs] = useState<AccessLog[]>(MOCK_ACCESS_LOGS);
-  const [fraudCases, setFraudCases] = useState<FraudCase[]>(MOCK_FRAUD_CASES);
-  const [mlModels, setMlModels] = useState<MLModel[]>(MOCK_ML_MODELS);
-  const [loanApplications] = useState<LoanApplication[]>(MOCK_LOAN_APPLICATIONS);
-  const [mortgageAssets] = useState<MortgageAsset[]>(MOCK_MORTGAGE_ASSETS);
-  const [threatIntelBriefs] = useState<ThreatIntelBrief[]>(MOCK_THREAT_INTEL);
-  const [insuranceClaims] = useState<InsuranceClaim[]>(MOCK_INSURANCE_CLAIMS);
-  const [riskProfiles] = useState<RiskProfile[]>(MOCK_RISK_PROFILES);
-  const [dataCatalogItems] = useState<DataSet[]>(MOCK_DATA_CATALOG_ITEMS);
-  const [dataLakeStats] = useState<DataLakeStat[]>(MOCK_DATA_LAKE_STATS);
-  // New Mega Dashboard State
-  const [salesDeals] = useState<SalesDeal[]>(MOCK_SALES_DEALS);
-  const [marketingCampaigns] = useState<MarketingCampaign[]>(MOCK_MARKETING_CAMPAIGNS);
-  const [growthMetrics] = useState<GrowthMetric[]>(MOCK_GROWTH_METRICS);
-  const [competitors] = useState<Competitor[]>(MOCK_COMPETITORS);
-  const [benchmarks] = useState<Benchmark[]>(MOCK_BENCHMARKS);
-  const [licenses] = useState<License[]>(MOCK_LICENSES);
-  const [disclosures] = useState<Disclosure[]>(MOCK_DISCLOSURES);
-  const [legalDocs] = useState<LegalDoc[]>(MOCK_LEGAL_DOCS);
-  const [sandboxExperiments] = useState<SandboxExperiment[]>(MOCK_SANDBOX_EXPERIMENTS);
-  const [consentRecords] = useState<ConsentRecord[]>(MOCK_CONSENT_RECORDS);
-  const [containerImages] = useState<ContainerImage[]>(MOCK_CONTAINER_IMAGES);
-  const [apiUsage] = useState<ApiUsage[]>(MOCK_API_USAGE);
-  const [incidents] = useState<Incident[]>(MOCK_INCIDENTS);
-  const [backupJobs] = useState<BackupJob[]>(MOCK_BACKUP_JOBS);
-
-  const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => new Set<View>([View.Dashboard]));
-
-  // --- DERIVED STATE & MEMOS ---
-  const impactData = useMemo(() => ({
-    treesPlanted,
-    progressToNextTree: Math.floor((spendingForNextTree / COST_PER_TREE) * 100),
-  }), [treesPlanted, spendingForNextTree]);
-
-  // --- CORE LOGIC & FUNCTIONS ---
-
-  const updateGamification = useCallback((points: number) => {
-    setGamification(prev => {
-        const newScore = prev.score + points;
-        const newLevel = Math.floor(newScore / SCORE_PER_LEVEL) + 1;
-        const newProgress = ((newScore % SCORE_PER_LEVEL) / SCORE_PER_LEVEL) * 100;
-        const newLevelName = LEVEL_NAMES[Math.min(newLevel - 1, LEVEL_NAMES.length - 1)];
-        const newCredits = prev.credits + (points > 0 ? Math.floor(points / 2) : 0);
-        return { score: newScore, level: newLevel, levelName: newLevelName, progress: newProgress, credits: newCredits };
-    });
-  }, []);
-
-  const addTransaction = useCallback((tx: Transaction) => {
-    setTransactions(prev => [tx, ...prev]);
-    if (tx.type === 'expense') {
-        setSpendingForNextTree(prev => {
-            const newSpending = prev + tx.amount;
-            if (newSpending >= COST_PER_TREE) {
-                setTreesPlanted(p => p + Math.floor(newSpending / COST_PER_TREE));
-                return newSpending % COST_PER_TREE;
-            }
-            return newSpending;
-        });
-
-        const budgetToUpdate = budgets.find(b => b.name.toLowerCase() === tx.category.toLowerCase());
-        if (budgetToUpdate) {
-            setBudgets(prev => prev.map(b => b.id === budgetToUpdate.id ? { ...b, spent: b.spent + tx.amount } : b));
+    // All data states, initialized as empty
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [assets, setAssets] = useState<Asset[]>([]);
+    const [portfolioAssets, setPortfolioAssets] = useState<PortfolioAsset[]>([]);
+    const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
+    const [impactInvestments, setImpactInvestments] = useState<Asset[]>([]);
+    const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>([]);
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+    const [upcomingBills, setUpcomingBills] = useState<UpcomingBill[]>([]);
+    const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+    const [gamification, setGamification] = useState<GamificationState | null>(null);
+    const [rewardPoints, setRewardPoints] = useState<RewardPoints | null>(null);
+    const [rewardItems, setRewardItems] = useState<RewardItem[]>([]);
+    const [creditScore, setCreditScore] = useState<CreditScore | null>(null);
+    const [creditFactors, setCreditFactors] = useState<CreditFactor[]>([]);
+    const [aiInsights, setAiInsights] = useState<AIInsight[]>([]);
+    const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+    const [marketplaceProducts, setMarketplaceProducts] = useState<MarketplaceProduct[]>([]);
+    const [isMarketplaceLoading, setIsMarketplaceLoading] = useState(false);
+    const [dynamicKpis, setDynamicKpis] = useState<DynamicKpi[]>([]);
+    const [cryptoAssets, setCryptoAssets] = useState<CryptoAsset[]>([]);
+    const [nftAssets, setNftAssets] = useState<NFTAsset[]>([]);
+    const [paymentOperations, setPaymentOperations] = useState<PaymentOperation[]>([]);
+    const [walletInfo, setWalletInfo] = useState<any | null>(null);
+    const [virtualCard, setVirtualCard] = useState<VirtualCard | null>(null);
+    const [corporateCards, setCorporateCards] = useState<CorporateCard[]>([]);
+    const [corporateTransactions, setCorporateTransactions] = useState<CorporateTransaction[]>([]);
+    const [paymentOrders, setPaymentOrders] = useState<PaymentOrder[]>([]);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [complianceCases, setComplianceCases] = useState<ComplianceCase[]>([]);
+    const [financialAnomalies, setFinancialAnomalies] = useState<FinancialAnomaly[]>([]);
+    const [counterparties, setCounterparties] = useState<Counterparty[]>([]);
+    const [payRuns, setPayRuns] = useState<PayRun[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
+    const [fraudCases, setFraudCases] = useState<FraudCase[]>([]);
+    const [mlModels, setMlModels] = useState<MLModel[]>([]);
+    const [loanApplications, setLoanApplications] = useState<LoanApplication[]>([]);
+    const [mortgageAssets, setMortgageAssets] = useState<MortgageAsset[]>([]);
+    const [threatIntelBriefs, setThreatIntelBriefs] = useState<ThreatIntelBrief[]>([]);
+    const [insuranceClaims, setInsuranceClaims] = useState<InsuranceClaim[]>([]);
+    const [riskProfiles, setRiskProfiles] = useState<RiskProfile[]>([]);
+    const [dataCatalogItems, setDataCatalogItems] = useState<DataSet[]>([]);
+    const [dataLakeStats, setDataLakeStats] = useState<DataLakeStat[]>([]);
+    const [salesDeals, setSalesDeals] = useState<SalesDeal[]>([]);
+    const [marketingCampaigns, setMarketingCampaigns] = useState<MarketingCampaign[]>([]);
+    const [growthMetrics, setGrowthMetrics] = useState<GrowthMetric[]>([]);
+    const [competitors, setCompetitors] = useState<Competitor[]>([]);
+    const [benchmarks, setBenchmarks] = useState<Benchmark[]>([]);
+    const [licenses, setLicenses] = useState<License[]>([]);
+    const [disclosures, setDisclosures] = useState<Disclosure[]>([]);
+    const [legalDocs, setLegalDocs] = useState<LegalDoc[]>([]);
+    const [sandboxExperiments, setSandboxExperiments] = useState<SandboxExperiment[]>([]);
+    const [consentRecords, setConsentRecords] = useState<ConsentRecord[]>([]);
+    const [containerImages, setContainerImages] = useState<ContainerImage[]>([]);
+    const [apiUsage, setApiUsage] = useState<ApiUsage[]>([]);
+    const [incidents, setIncidents] = useState<Incident[]>([]);
+    const [backupJobs, setBackupJobs] = useState<BackupJob[]>([]);
+    const [impactData, setImpactData] = useState({ treesPlanted: 0, progressToNextTree: 0 });
+    const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([]);
+    const [isImportingData, setIsImportingData] = useState(false);
+    const [marketMovers, setMarketMovers] = useState<MarketMover[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [apiStatus, setApiStatus] = useState<APIStatus[]>([]);
+    
+    const [customBackgroundUrl, setCustomBackgroundUrlState] = useState<string | null>(() => localStorage.getItem('customBackgroundUrl'));
+    const [activeIllusion, setActiveIllusionState] = useState<IllusionType>(() => (localStorage.getItem('activeIllusion') as IllusionType) || 'none');
+    const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => new Set<View>([View.Dashboard, View.DeveloperApiKeys]));
+    
+     const fetchData = useCallback(async () => {
+        if (!apiKey) {
+            setIsLoading(false);
+            return;
         }
-    }
-    updateGamification(tx.type === 'income' ? 20 : 10);
-  }, [budgets, updateGamification]);
-  
-  const handlePlaidSuccess = useCallback((publicToken: string, metadata: any) => {
-    setIsImportingData(true);
-    const newAccount: LinkedAccount = { id: metadata.institution.institution_id, name: metadata.institution.name, mask: metadata.accounts[0].mask };
-    if (!linkedAccounts.some(acc => acc.id === newAccount.id)) {
-        setLinkedAccounts(prev => [...prev, newAccount]);
-    }
-    setTimeout(() => {
-        const plaidTransactions: Transaction[] = [
-            { id: `plaid_${Date.now()}`, type: 'expense', category: 'Shopping', description: `Zara`, amount: 152.34, date: '2024-07-22', carbonFootprint: 10.1 },
-            { id: `plaid_${Date.now()+1}`, type: 'expense', category: 'Dining', description: `The Cheesecake Factory`, amount: 85.50, date: '2024-07-21', carbonFootprint: 8.2 },
-        ];
-        plaidTransactions.forEach(addTransaction);
-        updateGamification(100);
+        setIsLoading(true);
+        setError(null);
+        try {
+            const [personal, corporate, other, mega, payroll, platform] = await Promise.all([
+                apiFetch('/api/data'),
+                apiFetch('/api/corporate/dashboard'),
+                apiFetch('/api/other/all'),
+                apiFetch('/api/megadashboard/all'),
+                apiFetch('/api/corporate/payroll'),
+                apiFetch('/api/platform/all'),
+            ]);
+            
+            setTransactions(personal.transactions || []);
+            setAssets(personal.assets || []);
+            setPortfolioAssets(personal.portfolioAssets || []);
+            setBudgets(personal.budgets.map((b: any) => ({...b, limit: b.limit_val})) || []);
+            setImpactInvestments(personal.impactInvestments || []);
+            setFinancialGoals(personal.financialGoals || []);
+            setSubscriptions(personal.subscriptions || []);
+            setUpcomingBills(personal.upcomingBills || []);
+            setSavingsGoals(personal.savingsGoals || []);
+            setGamification(personal.gamification || null);
+            setRewardPoints(personal.rewardPoints || null);
+            setRewardItems(personal.rewardItems || []);
+            setCreditScore(personal.creditScore || null);
+            setCreditFactors(personal.creditFactors || []);
+            setAiInsights(personal.aiInsights || []);
+            setCryptoAssets(personal.cryptoAssets || []);
+            setNftAssets(personal.nftAssets || []);
+            setPaymentOperations(personal.paymentOperations || []);
+            setLinkedAccounts(personal.linkedAccounts || []);
+            setNotifications(personal.notifications || []);
+            
+            setCorporateCards(corporate.corporateCards || []);
+            setCorporateTransactions(corporate.corporateTransactions || []);
+            setPaymentOrders(corporate.paymentOrders || []);
+            setInvoices(corporate.invoices || []);
+            setComplianceCases(corporate.complianceCases || []);
+            setFinancialAnomalies(corporate.financialAnomalies || []);
+            setCounterparties(corporate.counterparties || []);
+            setPayRuns(payroll.payRuns || []);
+
+            setProjects(platform.projects || []);
+            setCourses(platform.courses || []);
+            setEmployees(platform.employees || []);
+            
+            setMarketMovers(other.marketMovers || []);
+            setApiStatus(other.apiStatus || []);
+            
+            setAccessLogs(mega.accessLogs || []);
+            setFraudCases(mega.fraudCases || []);
+            setMlModels(mega.mlModels || []);
+            setLoanApplications(mega.loanApplications || []);
+            setMortgageAssets(mega.mortgageAssets || []);
+            setThreatIntelBriefs(mega.threatIntelBriefs || []);
+            setInsuranceClaims(mega.insuranceClaims || []);
+            setRiskProfiles(mega.riskProfiles || []);
+            setDataCatalogItems(mega.dataCatalogItems || []);
+            setDataLakeStats(mega.dataLakeStats || []);
+            setSalesDeals(mega.salesDeals || []);
+            setMarketingCampaigns(mega.marketingCampaigns || []);
+            setGrowthMetrics(mega.growthMetrics || []);
+            setCompetitors(mega.competitors || []);
+            setBenchmarks(mega.benchmarks || []);
+            setLicenses(mega.licenses || []);
+            setDisclosures(mega.disclosures || []);
+            setLegalDocs(mega.legalDocs || []);
+            setSandboxExperiments(mega.sandboxExperiments || []);
+            setConsentRecords(mega.consentRecords || []);
+            setContainerImages(mega.containerImages || []);
+            setApiUsage(mega.apiUsage || []);
+            setIncidents(mega.incidents || []);
+            setBackupJobs(mega.backupJobs || []);
+            
+            setImpactData(personal.impactData || { treesPlanted: 0, progressToNextTree: 0 });
+
+        } catch (err: any) {
+            console.error("Failed to fetch data:", err);
+            if (err.message.includes('401')) {
+                setError("Your API Key is invalid or has expired. Please generate a new one.");
+                setApiKey(null);
+                localStorage.removeItem('apiKey');
+            } else {
+                setError("Could not connect to the server. Please ensure it's running.");
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }, [apiKey]);
+
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const generateApiKey = async (): Promise<string | null> => {
+        try {
+            const response = await apiFetch('/api/auth/generate-key', { method: 'POST' });
+            const newKey = response.apiKey;
+            if (newKey) {
+                localStorage.setItem('apiKey', newKey);
+                setApiKey(newKey);
+                // Trigger a data refetch with the new key
+                await fetchData();
+                return newKey;
+            }
+        } catch (err: any) {
+            setError(err.message);
+        }
+        return null;
+    };
+    
+    const addTransaction = useCallback(async (tx: Omit<Transaction, 'id'>) => {
+        try {
+            await apiFetch('/api/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(tx),
+            });
+            await fetchData();
+        } catch (err: any) { setError(err.message); }
+    }, [fetchData]);
+
+    const addProductToTransactions = useCallback((product: MarketplaceProduct) => {
+        const newTx: Omit<Transaction, 'id'> = { type: 'expense', category: 'Shopping', description: product.name, amount: product.price, date: new Date().toISOString().split('T')[0] };
+        addTransaction(newTx);
+    }, [addTransaction]);
+    
+    const addBudget = useCallback((budget: Omit<BudgetCategory, 'id'|'spent'|'color'>) => {
+        const newBudget: BudgetCategory = { ...budget, id: `budget_${Date.now()}`, spent: 0, color: '#8b5cf6' };
+        setBudgets(prev => [...prev, newBudget]);
+    }, []);
+
+    const unlinkAccount = useCallback((accountId: string) => setLinkedAccounts(prev => prev.filter(acc => acc.id !== accountId)), []);
+
+    const handlePlaidSuccess = useCallback(async (publicToken: string, metadata: any) => {
+        setIsImportingData(true);
+        await new Promise(res => setTimeout(res, 2000)); 
+        await fetchData();
         setIsImportingData(false);
-    }, 4000);
-  }, [linkedAccounts, addTransaction, updateGamification]);
-  
-  const generateDashboardInsights = useCallback(async () => {
-      setIsInsightsLoading(true);
-      try {
-          const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-          const insightPrompt = `Analyze this user's recent financial data and generate 2-3 concise, actionable insights. Focus on spending habits, budget performance, and potential savings. Data: ${transactions.slice(0, 10).map(t => `${t.description}: $${t.amount}`).join(', ')}. Budgets: ${budgets.map(b => `${b.name} ($${b.spent} of $${b.limit})`).join(', ')}.`;
-          const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: insightPrompt, config: { responseMimeType: "application/json", responseSchema: { type: Type.OBJECT, properties: { insights: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, title: { type: Type.STRING }, description: { type: Type.STRING }, urgency: { type: Type.STRING, enum: ['low', 'medium', 'high'] } } } } } } } });
-          const parsed = JSON.parse(response.text);
-          setAiInsights(parsed.insights);
-      } catch (error) {
-          console.error("Error generating insights:", error);
-      } finally {
-          setIsInsightsLoading(false);
-      }
-  }, [transactions, budgets]);
+    }, [fetchData]);
 
-  const pitchBusinessPlan = useCallback(async (plan: string) => {
-    // Logic is typically in the component, but implemented here as requested.
-  }, []);
-
-  const simulateTestPass = useCallback(async () => {
-    // Logic is typically in the component, but implemented here as requested.
-  }, []);
-
-  const fetchMarketplaceProducts = useCallback(async () => {
-    setIsMarketplaceLoading(true);
-    try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-        const transactionSummary = transactions.slice(0,10).map(t => t.description).join(', ');
-        const prompt = `Based on these recent purchases (${transactionSummary}), generate 3 diverse, compelling, and slightly futuristic product recommendations. Provide a short, one-sentence justification for each recommendation from the AI's perspective.`;
-        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt, config: { responseMimeType: "application/json", responseSchema: { type: Type.OBJECT, properties: { products: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, category: { type: Type.STRING }, aiJustification: { type: Type.STRING } } } } } } } });
-        const parsed = JSON.parse(response.text);
-        const productsWithIds = parsed.products.map((p: any, i: number) => ({ ...p, id: `prod_${Date.now()}_${i}`, imageUrl: `https://source.unsplash.com/random/400x300?${p.name.split(' ').join(',')}` }));
-        setMarketplaceProducts(productsWithIds);
-    } catch (error) { console.error("Error fetching marketplace products:", error); } 
-    finally { setIsMarketplaceLoading(false); }
-  }, [transactions]);
-  
-  const addProductToTransactions = useCallback((product: MarketplaceProduct) => {
-      const tx: Transaction = { id: `mkt_${product.id}`, type: 'expense', category: product.category, description: product.name, amount: product.price, date: new Date().toLocaleDateString('en-CA'), carbonFootprint: 2.5 };
-      addTransaction(tx);
-  }, [addTransaction]);
-  
-  const addFinancialGoal = useCallback((goalData: Omit<FinancialGoal, 'id' | 'plan' | 'currentAmount'>) => {
-    const newGoal: FinancialGoal = { ...goalData, id: `goal_${Date.now()}`, currentAmount: 0, plan: null, progressHistory: [{ date: new Date().toISOString().split('T')[0], amount: 0 }], };
-    setFinancialGoals(prev => [...prev, newGoal]);
-  }, []);
-  
-  const generateGoalPlan = useCallback(async (goalId: string) => {
-    const goal = financialGoals.find(g => g.id === goalId);
-    if (!goal) return;
-    try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-        const incomeSummary = transactions.filter(t => t.type === 'income').slice(0, 5).map(t => `${t.amount} on ${t.date}`).join(', ');
-        const expenseSummary = transactions.filter(t => t.type === 'expense').slice(0, 10).map(t => `${t.amount} on ${t.description}`).join(', ');
-        const prompt = `Based on a financial goal ("${goal.name}" for $${goal.targetAmount} by ${goal.targetDate}) and recent financial activity (Income: ${incomeSummary}, Expenses: ${expenseSummary}), create a concise, actionable plan.`;
-        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt, config: { responseMimeType: "application/json", responseSchema: { type: Type.OBJECT, properties: { feasibilitySummary: { type: Type.STRING }, monthlyContribution: { type: Type.NUMBER }, steps: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, description: { type: Type.STRING }, category: { type: Type.STRING, enum: ['Savings', 'Budgeting', 'Investing', 'Income'] } } } } } } } });
-        const newPlan = JSON.parse(response.text) as AIGoalPlan;
-        setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, plan: newPlan } : g));
-    } catch (error) { console.error("Error generating goal plan:", error); }
-  }, [financialGoals, transactions]);
-  
-  const addDynamicKpi = useCallback((kpi: DynamicKpi) => {
-      if (!dynamicKpis.some(d => d.id === kpi.id)) { setDynamicKpis(prev => [...prev, kpi]); }
-  }, [dynamicKpis]);
-  
-  const connectWallet = useCallback(() => setWalletInfo({ address: '0x1a2b...c3d4', balance: 12.5 }), []);
-  const issueCard = useCallback(() => setTimeout(() => setVirtualCard({ cardNumber: '5555 1234 5678 9012', cvv: '123', expiry: '12/28', holderName: 'The Visionary' }), 1500), []);
-  const buyCrypto = useCallback((usdAmount: number, cryptoTicker: string) => {
-      const ethPrice = 3000;
-      const amountBought = usdAmount / ethPrice;
-      setCryptoAssets(prev => prev.map(a => a.ticker === 'ETH' ? { ...a, amount: a.amount + amountBought, value: (a.amount + amountBought) * ethPrice } : a));
-      addTransaction({ id: `crypto_buy_${Date.now()}`, type: 'expense', category: 'Investments', description: `Buy ${cryptoTicker}`, amount: usdAmount, date: new Date().toLocaleDateString('en-CA') });
-  }, [addTransaction]);
-  
-  const mintNFT = useCallback((name: string, imageUrl: string) => setNftAssets(prev => [...prev, { id: `nft_${Date.now()}`, name, imageUrl, contractAddress: `0x...${Math.random().toString(16).substr(2, 4)}` }]), []);
-  
-  const toggleCorporateCardFreeze = useCallback((cardId: string) => setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, frozen: !c.frozen } : c)), []);
-  const updateCorporateCardControls = useCallback((cardId: string, newControls: CorporateCardControls) => setCorporateCards(prev => prev.map(c => c.id === cardId ? { ...c, controls: newControls } : c)), []);
-  const updatePaymentOrderStatus = useCallback((id: string, status: PaymentOrderStatus) => setPaymentOrders(prev => prev.map(p => p.id === id ? { ...p, status } : p)), []);
-  const updateAnomalyStatus = useCallback((id: string, status: AnomalyStatus) => setFinancialAnomalies(prev => prev.map(a => a.id === id ? { ...a, status } : a)), []);
-  const updateFraudCaseStatus = useCallback((id: string, status: FraudCase['status']) => setFraudCases(prev => prev.map(c => c.id === id ? { ...c, status } : c)), []);
-  
-  const retrainMlModel = useCallback((id: string) => {
-    setMlModels(prev => prev.map(m => m.id === id ? {...m, status: 'Training'} : m));
-    setTimeout(() => {
-        setMlModels(prev => prev.map(m => {
-            if (m.id === id) {
-                const newAccuracy = Math.min(99.9, m.accuracy + 0.1 + Math.random() * 0.2);
-                return { ...m, status: 'Production', accuracy: parseFloat(newAccuracy.toFixed(2)), lastTrained: new Date().toISOString().split('T')[0], performanceHistory: [...m.performanceHistory, {date: new Date().toISOString().split('T')[0], accuracy: newAccuracy}] };
-            }
-            return m;
-        }));
-    }, 3000);
-  }, []);
-
-  const setCustomBackgroundUrl = useCallback((url: string) => {
-      localStorage.setItem('customBackgroundUrl', url);
-      setCustomBackgroundUrlState(url);
-      localStorage.setItem('activeIllusion', 'none');
-      setActiveIllusionState('none');
-  }, []);
-  
-  const setActiveIllusion = useCallback((illusion: IllusionType) => {
-    localStorage.setItem('activeIllusion', illusion);
-    setActiveIllusionState(illusion);
-    if (illusion !== 'none') {
-      localStorage.removeItem('customBackgroundUrl');
-      setCustomBackgroundUrlState(null);
-    }
-  }, []);
-  
-  const unlinkAccount = useCallback((id: string) => setLinkedAccounts(prev => prev.filter(acc => acc.id !== id)), []);
-  const markNotificationRead = useCallback((id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n)), []);
-  const addBudget = useCallback((budget: Omit<BudgetCategory, 'id' | 'spent' | 'color'>) => {
-    const newBudget: BudgetCategory = { ...budget, id: `budget_${Date.now()}`, spent: 0, color: `#${Math.floor(Math.random()*16777215).toString(16)}` };
-    setBudgets(prev => [...prev, newBudget]);
-  }, []);
-  
-  const redeemReward = useCallback((item: RewardItem) => {
-    if (rewardPoints.balance >= item.cost) {
-        setRewardPoints(prev => ({ ...prev, balance: prev.balance - item.cost, lastRedeemed: item.cost }));
-        return true;
-    }
-    return false;
-  }, [rewardPoints.balance]);
-
-  const unlockFeature = useCallback((view: View) => {
-      setUnlockedFeatures(prev => new Set(prev).add(view));
-  }, []);
-
-  const getNexusData = useCallback((): NexusGraphData => {
-    const nodes: NexusNode[] = [];
-    const links: NexusLink[] = [];
-    nodes.push({ id: 'visionary', label: 'The Visionary', type: 'User', value: 30, color: '#facc15' });
-    financialGoals.forEach(goal => {
-        nodes.push({ id: goal.id, label: goal.name, type: 'Goal', value: 20, color: '#6366f1' });
-        links.push({ source: 'visionary', target: goal.id, relationship: 'has' });
-    });
-    const recentTx = transactions.slice(0, 3);
-    recentTx.forEach(tx => {
-        nodes.push({ id: tx.id, label: tx.description, type: 'Transaction', value: 12, color: tx.type === 'income' ? '#22c55e' : '#ef4444' });
-        links.push({ source: 'visionary', target: tx.id, relationship: 'performed' });
-        const relevantBudget = budgets.find(b => b.name.toLowerCase() === tx.category.toLowerCase());
-        if (relevantBudget) {
-            if (!nodes.some(n => n.id === relevantBudget.id)) {
-                nodes.push({ id: relevantBudget.id, label: `${relevantBudget.name} Budget`, type: 'Budget', value: 15, color: '#f59e0b' });
-                links.push({ source: 'visionary', target: relevantBudget.id, relationship: 'manages' });
-            }
-            links.push({ source: tx.id, target: relevantBudget.id, relationship: 'affects' });
+    const markNotificationRead = useCallback((notificationId: string) => setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n)), []);
+    
+    const redeemReward = useCallback((item: RewardItem) => {
+        if (rewardPoints && rewardPoints.balance >= item.cost) {
+            setRewardPoints(prev => prev ? ({ ...prev, balance: prev.balance - item.cost }) : null);
+            return true;
         }
-    });
-    const uniqueNodes = Array.from(new Map(nodes.map(node => [node.id, node])).values());
-    return { nodes: uniqueNodes, links };
-  }, [transactions, financialGoals, budgets]);
-  
-  // --- CONTEXT VALUE & PROVIDER ---
-  const value: IDataContext = {
-      transactions, addTransaction, assets, impactInvestments, budgets, addBudget, gamification, 
-      impactData, customBackgroundUrl, setCustomBackgroundUrl, activeIllusion, setActiveIllusion, 
-      linkedAccounts, unlinkAccount, handlePlaidSuccess, isImportingData, weaverState, pitchBusinessPlan, 
-      simulateTestPass, subscriptions, creditScore, upcomingBills, savingsGoals, marketMovers, 
-      marketplaceProducts, fetchMarketplaceProducts, isMarketplaceLoading, addProductToTransactions, 
-      financialGoals, addFinancialGoal, generateGoalPlan, cryptoAssets, paymentOperations, walletInfo, 
-      virtualCard, connectWallet, issueCard, buyCrypto, aiInsights, isInsightsLoading, generateDashboardInsights, 
-      corporateCards, corporateTransactions, toggleCorporateCardFreeze, updateCorporateCardControls, rewardPoints, 
-      notifications, markNotificationRead, nftAssets, mintNFT, rewardItems, redeemReward, 
-      apiStatus, creditFactors, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases, 
-      financialAnomalies, updateAnomalyStatus, counterparties, dynamicKpis, addDynamicKpi, getNexusData,
-      accessLogs, fraudCases, updateFraudCaseStatus, mlModels, retrainMlModel,
-      loanApplications, mortgageAssets, threatIntelBriefs, insuranceClaims, riskProfiles, dataCatalogItems, dataLakeStats,
-      salesDeals, marketingCampaigns, growthMetrics, competitors, benchmarks,
-      licenses, disclosures, legalDocs, sandboxExperiments, consentRecords,
-      containerImages, apiUsage, incidents, backupJobs,
-      unlockedFeatures, unlockFeature
-  };
+        return false;
+    }, [rewardPoints]);
 
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
+    const updatePaymentOrderStatus = useCallback((orderId: string, status: PaymentOrderStatus) => setPaymentOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o)), []);
+    const updateAnomalyStatus = useCallback((anomalyId: string, status: AnomalyStatus) => setFinancialAnomalies(prev => prev.map(a => a.id === anomalyId ? { ...a, status } : a)), []);
+    const connectWallet = useCallback(() => setWalletInfo({ address: '0x1234...abcd', balance: 1.25 }), []);
+    const issueCard = useCallback(() => setVirtualCard({ cardNumber: '**** **** **** 1234', cvv: '123', expiry: '12/28', holderName: 'The Visionary' }), []);
+    const buyCrypto = useCallback((amount: number, currency: string) => addTransaction({ type: 'expense', category: 'Investments', description: `Buy ${currency}`, amount: amount, date: new Date().toISOString().split('T')[0] }), [addTransaction]);
+    const mintNFT = useCallback((name: string, imageUrl: string) => setNftAssets(prev => [...prev, { id: `nft_${Date.now()}`, name, imageUrl, contractAddress: '0xabcd...1234' }]), []);
+    const addFinancialGoal = useCallback((goal: Omit<FinancialGoal, 'id' | 'currentAmount' | 'plan' | 'progressHistory'>) => setFinancialGoals(prev => [...prev, { ...goal, id: `goal_${Date.now()}`, currentAmount: 0, plan: null }]), []);
+    const generateGoalPlan = useCallback(async (goalId: string) => {
+        const goal = financialGoals.find(g => g.id === goalId);
+        if (!goal) return;
+        await new Promise(res => setTimeout(res, 1500));
+        const mockPlan: AIGoalPlan = { feasibilitySummary: "This goal is achievable.", monthlyContribution: (goal.targetAmount - goal.currentAmount) / 36, steps: [] };
+        setFinancialGoals(prev => prev.map(g => g.id === goalId ? { ...g, plan: mockPlan } : g));
+    }, [financialGoals]);
+    
+    const retrainMlModel = useCallback((modelId: string) => {
+        setMlModels(prev => prev.map(m => m.id === modelId ? {...m, status: 'Training'} : m));
+        setTimeout(() => setMlModels(prev => prev.map(m => m.id === modelId ? {...m, status: 'Production', accuracy: m.accuracy + 0.1} : m)), 3000);
+    }, []);
+    const updateFraudCaseStatus = useCallback((caseId: string, status: FraudCase['status']) => setFraudCases(prev => prev.map(c => c.id === caseId ? {...c, status} : c)), []);
+    const toggleCorporateCardFreeze = useCallback((cardId: string) => setCorporateCards(prev => prev.map(c => c.id === cardId ? {...c, frozen: !c.frozen} : c)), []);
+    const updateCorporateCardControls = useCallback((cardId: string, controls: CorporateCardControls) => setCorporateCards(prev => prev.map(c => c.id === cardId ? {...c, controls} : c)), []);
+    const generateDashboardInsights = useCallback(async () => {}, []);
+
+    const fetchMarketplaceProducts = useCallback(async () => {
+        if (transactions.length === 0) return;
+        setIsMarketplaceLoading(true);
+        setError('');
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const transactionSummary = transactions.slice(0, 10).map(t => t.description).join(', ');
+            const prompt = `Based on these recent purchases (${transactionSummary}), generate 5 diverse, compelling product recommendations. Provide a short, one-sentence justification for each.`;
+            const responseSchema = { type: Type.OBJECT, properties: { products: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, category: { type: Type.STRING }, aiJustification: { type: Type.STRING } } } } } };
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt, config: { responseMimeType: "application/json", responseSchema: responseSchema }});
+            const parsed = JSON.parse(response.text);
+            const productsWithIds = parsed.products.map((p: any, i: number) => ({ ...p, id: `prod_${Date.now()}_${i}`, imageUrl: `https://source.unsplash.com/random/400x300?${p.name.split(' ').join(',')}` }));
+            setMarketplaceProducts(productsWithIds);
+        } catch (error) {
+            console.error("Error fetching marketplace products:", error);
+            setError("Plato AI encountered an error while curating your products.");
+        } finally {
+            setIsMarketplaceLoading(false);
+        }
+    }, [transactions]);
+
+    const getNexusData = useCallback((): NexusGraphData => {
+        const nodes: NexusNode[] = [];
+        const links: NexusLink[] = [];
+        if (!transactions || !financialGoals || !budgets) return { nodes, links };
+        nodes.push({ id: 'visionary', label: 'The Visionary', type: 'User', value: 30, color: '#facc15' });
+        financialGoals.forEach(goal => {
+            nodes.push({ id: goal.id, label: goal.name, type: 'Goal', value: 20, color: '#6366f1' });
+            links.push({ source: 'visionary', target: goal.id, relationship: 'has' });
+        });
+        const recentTx = transactions.slice(0, 3);
+        recentTx.forEach(tx => {
+            nodes.push({ id: tx.id, label: tx.description, type: 'Transaction', value: 12, color: tx.type === 'income' ? '#22c55e' : '#ef4444' });
+            links.push({ source: 'visionary', target: tx.id, relationship: 'performed' });
+            const relevantBudget = budgets.find(b => b.name.toLowerCase() === tx.category.toLowerCase());
+            if (relevantBudget) {
+                if (!nodes.some(n => n.id === relevantBudget.id)) {
+                    nodes.push({ id: relevantBudget.id, label: `${relevantBudget.name} Budget`, type: 'Budget', value: 15, color: '#f59e0b' });
+                    links.push({ source: 'visionary', target: relevantBudget.id, relationship: 'manages' });
+                }
+                links.push({ source: tx.id, target: relevantBudget.id, relationship: 'affects' });
+            }
+        });
+        const uniqueNodes = Array.from(new Map(nodes.map(node => [node.id, node])).values());
+        return { nodes: uniqueNodes, links };
+    }, [transactions, financialGoals, budgets]);
+
+    const unlockFeature = useCallback((view: View) => {
+      setUnlockedFeatures(prev => new Set(prev).add(view));
+    }, []);
+    
+    const addDynamicKpi = (kpi: DynamicKpi) => setDynamicKpis(prev => [...prev, kpi]);
+    const setCustomBackgroundUrl = (url: string) => {
+        localStorage.setItem('customBackgroundUrl', url);
+        setCustomBackgroundUrlState(url);
+        localStorage.setItem('activeIllusion', 'none');
+        setActiveIllusionState('none');
+    };
+    const setActiveIllusion = (illusion: IllusionType) => {
+        localStorage.setItem('activeIllusion', illusion);
+        setActiveIllusionState(illusion);
+        if (illusion !== 'none') {
+          localStorage.removeItem('customBackgroundUrl');
+          setCustomBackgroundUrlState(null);
+        }
+    };
+  
+    const value: IDataContext = {
+        isLoading, error, refetchData: fetchData, apiKey, generateApiKey,
+        transactions, addTransaction, assets, portfolioAssets, impactInvestments, budgets, addBudget, 
+        financialGoals, addFinancialGoal, generateGoalPlan, subscriptions, upcomingBills, savingsGoals, gamification, 
+        rewardPoints, rewardItems, redeemReward, creditScore, creditFactors, customBackgroundUrl, 
+        setCustomBackgroundUrl, activeIllusion, setActiveIllusion, aiInsights, 
+        isInsightsLoading, generateDashboardInsights, marketplaceProducts, 
+        isMarketplaceLoading, fetchMarketplaceProducts, addProductToTransactions, dynamicKpis, addDynamicKpi, getNexusData,
+        cryptoAssets, nftAssets, paymentOperations, walletInfo, connectWallet, virtualCard, issueCard, buyCrypto, mintNFT,
+        corporateCards, corporateTransactions, paymentOrders, updatePaymentOrderStatus, invoices, complianceCases,
+        financialAnomalies, updateAnomalyStatus, counterparties, toggleCorporateCardFreeze, updateCorporateCardControls, payRuns,
+        projects, courses, employees,
+        accessLogs, fraudCases, updateFraudCaseStatus, mlModels, retrainMlModel,
+        loanApplications, mortgageAssets, threatIntelBriefs, insuranceClaims,
+        riskProfiles, dataCatalogItems, dataLakeStats, salesDeals, marketingCampaigns,
+        growthMetrics, competitors, benchmarks, licenses, disclosures, legalDocs,
+        sandboxExperiments, consentRecords, containerImages, apiUsage, incidents, backupJobs,
+        impactData, linkedAccounts, isImportingData, handlePlaidSuccess, unlinkAccount, marketMovers, notifications, markNotificationRead, apiStatus,
+        unlockedFeatures, unlockFeature
+    };
+
+    return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };

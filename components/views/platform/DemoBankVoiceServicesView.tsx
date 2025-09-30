@@ -6,13 +6,30 @@ import { GoogleGenAI } from "@google/genai";
 const DemoBankVoiceServicesView: React.FC = () => {
     const [prompt, setPrompt] = useState('Welcome to Demo Bank. How can I help you today?');
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [generatedAudio, setGeneratedAudio] = useState<string | null>(null);
 
-    const handleGenerate = () => {
-        // In a real app, this would call a text-to-speech API.
-        // We will simulate this by setting the prompt text.
-        setGeneratedAudio(prompt);
-        setIsPlaying(false);
+    const handleGenerate = async () => {
+        setIsLoading(true);
+        setGeneratedAudio(null);
+        // In a real app, this would call a text-to-speech API (e.g., Google TTS).
+        // For this demo, we will simulate the generation and store the text itself.
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const validationPrompt = `Is the following text appropriate for a professional voice assistant? Text: "${prompt}"`;
+            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: validationPrompt });
+            // Simple check for demo purposes
+            if(response.text.toLowerCase().includes("yes")){
+                setGeneratedAudio(prompt);
+            } else {
+                setGeneratedAudio("Content may be inappropriate for generation.");
+            }
+        } catch(e) {
+            setGeneratedAudio("Could not generate audio at this time.");
+        } finally {
+            setIsLoading(false);
+            setIsPlaying(false);
+        }
     };
     
     const handlePlay = () => {
@@ -34,16 +51,15 @@ const DemoBankVoiceServicesView: React.FC = () => {
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded">
-                    Generate Audio
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
+                    {isLoading ? 'Generating...' : 'Generate Audio'}
                 </button>
             </Card>
 
             {generatedAudio && (
                 <Card title="Generated Audio">
-                    <button onClick={() => setGeneratedAudio(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
                     <div className="flex items-center gap-4">
                         <button onClick={handlePlay} disabled={isPlaying} className="p-3 bg-cyan-500/20 rounded-full disabled:opacity-50">
                             {isPlaying ? (

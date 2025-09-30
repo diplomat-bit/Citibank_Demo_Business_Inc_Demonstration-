@@ -67,16 +67,16 @@ const DemoBankSupplyChainView: React.FC = () => {
                 </Card>
             </div>
             {isRiskModalOpen && (
-                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setRiskModalOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full" onClick={e=>e.stopPropagation()}>
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setRiskModalOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Supplier Risk Report</h3></div>
                         <div className="p-6 space-y-4">
                             <div className="flex gap-4">
                                 <input type="text" value={supplierInfo.name} onChange={e => setSupplierInfo(p => ({...p, name: e.target.value}))} placeholder="Supplier Name" className="w-full bg-gray-700/50 p-2 rounded text-white" />
                                 <input type="text" value={supplierInfo.country} onChange={e => setSupplierInfo(p => ({...p, country: e.target.value}))} placeholder="Country" className="w-full bg-gray-700/50 p-2 rounded text-white" />
                             </div>
-                            <button onClick={handleGenerateReport} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Report'}</button>
-                            <Card title="Generated Report"><div className="min-h-[10rem] max-h-60 overflow-y-auto text-sm text-gray-300 whitespace-pre-line">{isLoading ? 'Generating...' : riskReport}</div></Card>
+                            <button onClick={handleGenerateReport} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Report'}</button>
+                            <Card title="Generated Report"><div className="min-h-[10rem] max-h-60 overflow-y-auto text-sm text-gray-300 whitespace-pre-line prose prose-invert max-w-none">{isLoading ? 'Generating...' : riskReport}</div></Card>
                         </div>
                     </div>
                  </div>

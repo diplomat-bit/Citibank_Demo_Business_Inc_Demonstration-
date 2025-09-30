@@ -1,9 +1,7 @@
-
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom/client';
+import App from './components/App';
 import { DataProvider } from './context/DataContext';
-import { AIProvider } from './context/AIContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -14,9 +12,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <DataProvider>
-      <AIProvider>
-        <App />
-      </AIProvider>
+      <App />
     </DataProvider>
   </React.StrictMode>
 );

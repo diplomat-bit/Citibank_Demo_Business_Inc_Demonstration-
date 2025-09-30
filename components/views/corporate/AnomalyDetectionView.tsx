@@ -8,6 +8,7 @@ import { GoogleGenAI } from '@google/genai';
 const AnomalyDetectionView: React.FC = () => {
     const context = useContext(DataContext);
     if (!context) throw new Error("AnomalyDetectionView must be within a DataProvider.");
+    // FIX: Destructure `updateAnomalyStatus` from context to fix property not found error.
     const { financialAnomalies, updateAnomalyStatus } = context;
 
     const SeverityIndicator: React.FC<{ severity: FinancialAnomaly['severity'] }> = ({ severity }) => {

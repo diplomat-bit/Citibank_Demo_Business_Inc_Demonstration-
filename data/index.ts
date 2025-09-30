@@ -23,6 +23,7 @@ export * from './paymentOperations';
 export * from './rewardPoints';
 export * from './rewardItems';
 export * from './creditFactors';
+export * from './portfolioAssets';
 
 // Corporate Finance Data
 export * from './corporateCards';
@@ -32,6 +33,8 @@ export * from './invoices';
 export * from './complianceCases';
 export * from './anomalies';
 export * from './counterparties';
+export * from './corporate/payrollData';
+
 
 // System & Market Data
 export * from './marketMovers';
@@ -51,3 +54,8 @@ export * from './platform/mlModels'; // Re-exporting for Predictive Models view
 // New Integration Data
 export * from './integrationData';
 export * from './constitutionalArticles';
+
+// Demo Bank Platform Data
+export * from './platform/projectsData';
+export * from './platform/lmsData';
+export * from './platform/hrisData';

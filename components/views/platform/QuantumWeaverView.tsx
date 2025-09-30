@@ -1,16 +1,118 @@
 // components/views/platform/QuantumWeaverView.tsx
 import React, { useState, useContext, useEffect } from 'react';
-import { DataContext } from '../../../context/DataContext';
 import { WeaverStage, AIPlan, AIQuestion } from '../../../types';
 import Card from '../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
 
+// ================================================================================================
+// STAGE-SPECIFIC SUB-COMPONENTS
+// ================================================================================================
+const PitchStage: React.FC<{ onSubmit: (plan: string) => void; isLoading: boolean; }> = ({ onSubmit, isLoading }) => {
+    const [plan, setPlan] = useState('');
+    return (
+        <Card title="Quantum Weaver: Business Incubator" subtitle="Pitch your business idea to our AI venture capitalist.">
+            <p className="text-gray-400 mb-4 text-sm">Submit your plan for analysis. Promising ideas will receive simulated seed funding and a personalized, AI-generated coaching plan to accelerate growth.</p>
+            <textarea
+                value={plan}
+                onChange={(e) => setPlan(e.target.value)}
+                placeholder="Describe your business idea, target market, value proposition, and what makes it unique..."
+                className="w-full h-48 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-cyan-500 focus:border-cyan-500"
+                disabled={isLoading}
+                aria-label="Business plan input"
+            />
+            <button
+                onClick={() => onSubmit(plan)}
+                disabled={!plan.trim() || isLoading}
+                className="w-full mt-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg disabled:opacity-50 transition-colors"
+            >
+                {isLoading ? 'Submitting to AI...' : 'Pitch to Plato AI'}
+            </button>
+        </Card>
+    );
+};
+const AnalysisStage: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
+    <Card>
+        <div className="flex flex-col items-center justify-center h-64 text-center">
+            <div className="relative w-24 h-24">
+                <div className="absolute inset-0 border-4 border-cyan-500/30 rounded-full"></div>
+                <div className="absolute inset-4 border-4 border-t-cyan-500 border-transparent rounded-full animate-spin"></div>
+            </div>
+            <h3 className="text-2xl font-semibold text-white mt-6">{title}</h3>
+            <p className="text-gray-400 mt-2">{subtitle}</p>
+        </div>
+    </Card>
+);
+const TestStage: React.FC<{ feedback: string; questions: AIQuestion[]; onPass: () => void; isLoading: boolean; }> = ({ feedback, questions, onPass, isLoading }) => (
+    <Card title="Plato's Initial Assessment">
+        <div className="p-4 bg-gray-900/50 rounded-lg mb-6">
+            <p className="text-lg text-cyan-300 mb-2 font-semibold">Initial Feedback:</p>
+            <div className="text-gray-300 italic"><p>"{feedback}"</p></div>
+        </div>
+        <p className="text-lg text-cyan-300 mb-4 font-semibold">Sample Assessment Questions:</p>
+        <div className="space-y-4 mb-6">
+            {questions.map((q) => (
+                <div key={q.id} className="p-3 bg-gray-800/50 rounded-lg border-l-4 border-cyan-500">
+                    <p className="font-semibold text-gray-200">{q.question}</p>
+                    <p className="text-xs text-cyan-400 mt-1 uppercase tracking-wider">{q.category}</p>
+                </div>
+            ))}
+        </div>
+        <button
+            onClick={onPass}
+            disabled={isLoading}
+            className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg disabled:opacity-50 transition-colors"
+        >
+            {isLoading ? "Finalizing..." : "Simulate Passing the Test"}
+        </button>
+    </Card>
+);
+const ApprovedStage: React.FC<{ loanAmount: number; coachingPlan: AIPlan; }> = ({ loanAmount, coachingPlan }) => (
+    <div className="space-y-6">
+        <Card>
+            <div className="text-center p-6">
+                <h2 className="text-3xl font-bold text-white">Congratulations! Your vision is funded.</h2>
+                <p className="text-cyan-300 text-5xl font-light my-4">${loanAmount.toLocaleString()}</p>
+                <p className="text-gray-400">simulated seed funding has been deposited into your account.</p>
+            </div>
+        </Card>
+        <Card title={coachingPlan.title || "Your AI-Generated Coaching Plan"}>
+            <p className="text-sm text-gray-400 mb-4">{coachingPlan.summary}</p>
+            <div className="space-y-4">
+                {coachingPlan.steps.map((step, index) => (
+                    <div key={index} className="p-4 bg-gray-800/50 rounded-lg border-l-4 border-indigo-500">
+                        <h4 className="font-semibold text-white">{step.title}</h4>
+                        <p className="text-sm text-gray-400 mt-1">{step.description}</p>
+                        <p className="text-xs text-indigo-300 mt-2 font-mono">Timeline: {step.timeline}</p>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    </div>
+);
+const ErrorStage: React.FC<{ error: string }> = ({ error }) => (
+    <Card>
+        <div className="flex flex-col items-center justify-center h-64 text-center">
+            <h3 className="text-xl font-semibold text-white mb-2">An Error Occurred</h3>
+            <p className="text-red-300">{error}</p>
+        </div>
+    </Card>
+);
+
+// ================================================================================================
+// MAIN VIEW COMPONENT: QuantumWeaverView (Loomis Quantum)
+// ================================================================================================
+
 const QuantumWeaverView: React.FC = () => {
-    const context = useContext(DataContext);
-    if (!context) throw new Error("QuantumWeaverView must be used within a DataProvider.");
-    
-    const [businessPlanInput, setBusinessPlanInput] = useState('');
-    const [weaverState, setWeaverState] = useState({ stage: WeaverStage.Pitch, businessPlan: '', feedback: '', questions: [], loanAmount: 0, coachingPlan: null, error: null });
+    const [weaverState, setWeaverState] = useState<{
+        stage: WeaverStage;
+        businessPlan: string;
+        feedback: string;
+        questions: AIQuestion[];
+        loanAmount: number;
+        coachingPlan: AIPlan | null;
+        error: string | null;
+    }>({ stage: WeaverStage.Pitch, businessPlan: '', feedback: '', questions: [], loanAmount: 0, coachingPlan: null, error: null });
+
     const isLoading = weaverState.stage === WeaverStage.Analysis || weaverState.stage === WeaverStage.FinalReview;
 
     const pitchBusinessPlan = async (plan: string) => {
@@ -35,7 +137,7 @@ const QuantumWeaverView: React.FC = () => {
                 }
             });
             const parsed = JSON.parse(response.text);
-            const questionsWithIds = parsed.questions.map((q: any, i: number) => ({...q, id: `q_${i}`}));
+            const questionsWithIds = parsed.questions.map((q: any, i: number) => ({...q, id: `q_${Date.now()}_${i}`}));
             setWeaverState(prev => ({ ...prev, stage: WeaverStage.Test, feedback: parsed.feedback, questions: questionsWithIds }));
         } catch (error) {
             setWeaverState(prev => ({ ...prev, stage: WeaverStage.Error, error: "Failed to analyze business plan." }));
@@ -85,35 +187,5 @@ const QuantumWeaverView: React.FC = () => {
     
     return <div className="space-y-6">{renderStage()}</div>
 };
-
-// Sub-components for each stage
-const PitchStage: React.FC<{ onSubmit: (plan: string) => void; isLoading: boolean; }> = ({ onSubmit, isLoading }) => {
-    const [plan, setPlan] = useState('');
-    return (
-        <Card title="Quantum Weaver: Business Incubator">
-            <p className="text-gray-400 mb-4">Pitch your business idea to our AI venture capitalist to apply for seed funding and receive personalized coaching.</p>
-            <textarea value={plan} onChange={(e) => setPlan(e.target.value)} placeholder="Describe your business idea, target market, and what makes it unique..." className="w-full h-48 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white" disabled={isLoading} />
-            <button onClick={() => onSubmit(plan)} disabled={!plan.trim() || isLoading} className="w-full mt-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg disabled:opacity-50">{isLoading ? 'Submitting...' : 'Pitch to Plato AI'}</button>
-        </Card>
-    );
-};
-const AnalysisStage: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => <Card><div className="flex flex-col items-center justify-center h-64 text-center"><div className="relative w-24 h-24"><div className="absolute inset-0 border-4 border-cyan-500/30 rounded-full"></div><div className="absolute inset-4 border-4 border-t-cyan-500 border-transparent rounded-full animate-spin"></div></div><h3 className="text-2xl font-semibold text-white mt-6">{title}</h3><p className="text-gray-400 mt-2">{subtitle}</p></div></Card>;
-const TestStage: React.FC<{ feedback: string; questions: AIQuestion[]; onPass: () => void; isLoading: boolean; }> = ({ feedback, questions, onPass, isLoading }) => (
-    <Card title="Plato's Assessment">
-        <p className="text-lg text-cyan-300 mb-2">Initial Feedback:</p><div className="text-gray-300 italic mb-6"><p>"{feedback}"</p></div>
-        <p className="text-lg text-cyan-300 mb-4">Sample Assessment Questions:</p>
-        <div className="space-y-4 mb-6">{questions.map((q) => (<div key={q.id} className="p-3 bg-gray-900/50 rounded-lg"><p className="font-semibold text-gray-200">{q.question}</p><p className="text-xs text-cyan-400 mt-1 uppercase tracking-wider">{q.category}</p></div>))}</div>
-        <button onClick={onPass} disabled={isLoading} className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg disabled:opacity-50">{isLoading ? "Finalizing..." : "Simulate Passing the Test"}</button>
-    </Card>
-);
-const ApprovedStage: React.FC<{ loanAmount: number; coachingPlan: AIPlan; }> = ({ loanAmount, coachingPlan }) => (
-    <div className="space-y-6">
-        <Card><div className="text-center"><h2 className="text-2xl font-bold text-white">Congratulations! Your vision is funded.</h2><p className="text-cyan-300 text-4xl font-light my-2">${loanAmount.toLocaleString()}</p><p className="text-gray-400">seed funding has been deposited into your account.</p></div></Card>
-        <Card title="Your AI-Generated Coaching Plan">
-            <div className="space-y-4">{coachingPlan.steps.map((step, index) => (<div key={index} className="p-3 bg-gray-800/50 rounded-lg"><h4 className="font-semibold text-white">{step.title}</h4><p className="text-sm text-gray-400">{step.description}</p><p className="text-xs text-cyan-400 mt-1">Timeline: {step.timeline}</p></div>))}</div>
-        </Card>
-    </div>
-);
-const ErrorStage: React.FC<{ error: string }> = ({ error }) => <Card><div className="flex flex-col items-center justify-center h-64 text-center"><h3 className="text-xl font-semibold text-white mb-2">An Error Occurred</h3><p className="text-red-300">{error}</p></div></Card>;
 
 export default QuantumWeaverView;

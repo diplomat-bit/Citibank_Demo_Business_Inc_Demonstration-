@@ -4,7 +4,7 @@ import Card from '../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
 
 const DemoBankMediaServicesView: React.FC = () => {
-    const [prompt, setPrompt] = useState("a high-quality preset for 4K streaming with adaptive bitrate");
+    const [prompt, setPrompt] = useState("a high-quality preset for 4K streaming with adaptive bitrate for web");
     const [generatedProfile, setGeneratedProfile] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -18,7 +18,7 @@ const DemoBankMediaServicesView: React.FC = () => {
                 properties: {
                     profileName: { type: Type.STRING },
                     codec: { type: Type.STRING },
-                    bitrates: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    bitratesKbps: { type: Type.ARRAY, items: { type: Type.NUMBER } },
                     framerate: { type: Type.NUMBER }
                 }
             };
@@ -36,22 +36,21 @@ const DemoBankMediaServicesView: React.FC = () => {
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Media Services</h2>
              <Card title="AI Encoding Profile Generator">
-                <p className="text-gray-400 mb-4">Describe the encoding requirements for your video.</p>
+                <p className="text-gray-400 mb-4">Describe the encoding requirements for your video, and our AI will generate a technical profile.</p>
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Generating...' : 'Generate Profile'}
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
+                    {isLoading ? 'Generating Profile...' : 'Generate Profile'}
                 </button>
             </Card>
 
-            {generatedProfile && (
+            {(isLoading || generatedProfile) && (
                 <Card title="Generated Encoding Profile">
-                    <button onClick={() => setGeneratedProfile(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
-                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded">
-                        {JSON.stringify(generatedProfile, null, 2)}
+                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
+                        {isLoading ? 'Generating...' : JSON.stringify(generatedProfile, null, 2)}
                     </pre>
                 </Card>
             )}

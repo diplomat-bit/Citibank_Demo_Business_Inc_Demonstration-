@@ -13,7 +13,7 @@ const contracts = [
 
 const DemoBankLegalSuiteView: React.FC = () => {
     const [isNdaModalOpen, setIsNdaModalOpen] = useState(false);
-    const [ndaParams, setNdaParams] = useState({ partyA: 'Demo Bank', partyB: '', topic: '' });
+    const [ndaParams, setNdaParams] = useState({ partyA: 'Demo Bank', partyB: 'FutureTech Solutions', topic: 'Project Phoenix' });
     const [generatedNda, setGeneratedNda] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -73,13 +73,14 @@ const DemoBankLegalSuiteView: React.FC = () => {
 
             {isNdaModalOpen && (
                  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setIsNdaModalOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-3xl w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI NDA Generator</h3></div>
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh]">
                             <div className="space-y-4">
+                                <p className="text-sm text-gray-400">Enter the details for the NDA.</p>
                                 <input type="text" value={ndaParams.partyB} onChange={e => setNdaParams(p => ({...p, partyB: e.target.value}))} placeholder="Receiving Party Name" className="w-full bg-gray-700/50 p-2 rounded text-white" />
                                 <input type="text" value={ndaParams.topic} onChange={e => setNdaParams(p => ({...p, topic: e.target.value}))} placeholder="Confidential Topic (e.g., Project X)" className="w-full bg-gray-700/50 p-2 rounded text-white" />
-                                <button onClick={handleGenerateNda} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Document'}</button>
+                                <button onClick={handleGenerateNda} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Document'}</button>
                             </div>
                             <div className="bg-gray-900/50 p-4 rounded-lg overflow-y-auto">
                                 {isLoading && <p>Generating...</p>}

@@ -71,6 +71,7 @@ const MarketplaceView: React.FC = () => {
         throw new Error("MarketplaceView must be within a DataProvider.");
     }
     
+    // FIX: Destructure `addProductToTransactions` from context to resolve property not found error.
     const { transactions, addProductToTransactions } = context;
 
     /**

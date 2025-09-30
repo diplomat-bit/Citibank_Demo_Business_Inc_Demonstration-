@@ -15,3 +15,4 @@ export * from './invoice';
 export * from './invoice-status';
 export * from './payment-order';
 export * from './payment-order-status';
+export * from './payroll';

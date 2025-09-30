@@ -29,7 +29,7 @@ const DemoBankRoboticsView: React.FC = () => {
                     }
                 }
             };
-            const fullPrompt = `Translate the following high-level robotics task into a sequence of simple commands for a robotic arm. Task: "${prompt}".`;
+            const fullPrompt = `You are a robotics engineer. Translate the following high-level robotics task into a sequence of simple JSON commands for a robotic arm. Task: "${prompt}".`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
             setGeneratedCommands(JSON.parse(response.text));
         } catch (error) {
@@ -48,22 +48,21 @@ const DemoBankRoboticsView: React.FC = () => {
                 <Card className="text-center"><p className="text-3xl font-bold text-white">12</p><p className="text-sm text-gray-400 mt-1">Active Simulations</p></Card>
             </div>
             <Card title="AI Robotics Command Generator">
-                <p className="text-gray-400 mb-4">Describe a task for a robotic arm.</p>
+                <p className="text-gray-400 mb-4">Describe a high-level task for a robotic arm.</p>
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Generating...' : 'Generate Command Sequence'}
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
+                    {isLoading ? 'Generating Commands...' : 'Generate Command Sequence'}
                 </button>
             </Card>
 
-            {generatedCommands && (
+            {(isLoading || generatedCommands) && (
                 <Card title="Generated Commands">
-                    <button onClick={() => setGeneratedCommands(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
                     <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
-                        {JSON.stringify(generatedCommands, null, 2)}
+                        {isLoading ? 'Generating...' : JSON.stringify(generatedCommands, null, 2)}
                     </pre>
                 </Card>
             )}

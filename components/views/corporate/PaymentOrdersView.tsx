@@ -11,6 +11,7 @@ const PaymentOrdersView: React.FC = () => {
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
     if (!context) throw new Error("PaymentOrdersView must be within a DataProvider.");
+    // FIX: Destructure `updatePaymentOrderStatus` from context to fix property not found error.
     const { paymentOrders, updatePaymentOrderStatus } = context;
 
     const filteredOrders = useMemo(() => {

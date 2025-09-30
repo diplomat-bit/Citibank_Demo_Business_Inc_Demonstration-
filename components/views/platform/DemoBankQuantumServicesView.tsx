@@ -24,13 +24,13 @@ const DemoBankQuantumServicesView: React.FC = () => {
                             properties: {
                                 type: { type: Type.STRING },
                                 target: { type: Type.NUMBER },
-                                control: { type: Type.NUMBER }
+                                control: { type: Type.NUMBER, description: "Control qubit, if applicable" }
                             }
                         }
                     }
                 }
             };
-            const fullPrompt = `Translate the following request into a simple quantum circuit JSON representation. Request: "${prompt}"`;
+            const fullPrompt = `You are a quantum computing expert. Translate the following request into a simple quantum circuit JSON representation. A Bell state requires a Hadamard gate on qubit 0 and then a CNOT gate with qubit 0 as control and qubit 1 as target. Request: "${prompt}"`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
             setGeneratedCircuit(JSON.parse(response.text));
         } catch (error) {
@@ -55,19 +55,18 @@ const DemoBankQuantumServicesView: React.FC = () => {
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                     placeholder="e.g., Entangle two qubits"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Generating...' : 'Generate Circuit'}
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
+                    {isLoading ? 'Generating Circuit...' : 'Generate Circuit'}
                 </button>
             </Card>
 
-            {generatedCircuit && (
+            {(isLoading || generatedCircuit) && (
                 <Card title="Generated Quantum Circuit">
-                     <button onClick={() => setGeneratedCircuit(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
-                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded">
-                        {JSON.stringify(generatedCircuit, null, 2)}
+                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
+                        {isLoading ? 'Generating...' : JSON.stringify(generatedCircuit, null, 2)}
                     </pre>
                 </Card>
             )}

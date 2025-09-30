@@ -16,13 +16,13 @@ const DemoBankSimulationsView: React.FC = () => {
             const schema = {
                 type: Type.OBJECT,
                 properties: {
-                    volatilityIndex: { type: Type.NUMBER },
-                    interestRateChange: { type: Type.NUMBER },
+                    volatilityIndex: { type: Type.NUMBER, description: "0.0 to 1.0" },
+                    interestRateChange: { type: Type.NUMBER, description: "Basis points change" },
                     marketSentiment: { type: Type.STRING, enum: ['Bearish', 'Neutral', 'Bullish'] },
-                    simulationSteps: { type: Type.NUMBER }
+                    simulationSteps: { type: Type.NUMBER, description: "Number of steps/days to simulate" }
                 }
             };
-            const fullPrompt = `Generate a set of parameters for a financial market simulation based on this scenario: "${prompt}".`;
+            const fullPrompt = `You are a quantitative analyst. Generate a set of parameters for a financial market simulation based on this scenario: "${prompt}".`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
             setGeneratedParams(JSON.parse(response.text));
         } catch (error) {
@@ -45,18 +45,17 @@ const DemoBankSimulationsView: React.FC = () => {
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Generating...' : 'Generate Parameters'}
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
+                    {isLoading ? 'Generating Parameters...' : 'Generate Parameters'}
                 </button>
             </Card>
 
-            {generatedParams && (
+            {(isLoading || generatedParams) && (
                 <Card title="Generated Parameters">
-                    <button onClick={() => setGeneratedParams(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
-                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded">
-                        {JSON.stringify(generatedParams, null, 2)}
+                    <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
+                        {isLoading ? 'Generating...' : JSON.stringify(generatedParams, null, 2)}
                     </pre>
                 </Card>
             )}

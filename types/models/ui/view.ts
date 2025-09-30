@@ -13,6 +13,7 @@ export enum View {
     SendMoney = 'send-money',
     Budgets = 'budgets',
     Investments = 'investments',
+    PortfolioExplorer = 'portfolio-explorer',
     FinancialGoals = 'financial-goals',
     RewardsHub = 'rewards-hub',
     CreditHealth = 'credit-health',
@@ -36,6 +37,7 @@ export enum View {
     Invoices = 'invoices',
     Compliance = 'compliance',
     AnomalyDetection = 'anomaly-detection',
+    Payroll = 'payroll',
 
     // System & Settings
     Security = 'security',
@@ -135,6 +137,7 @@ export enum View {
     UserClientSupportDesk = 'md-uc-support-desk',
     // Developer & Integration
     DeveloperSandbox = 'md-dev-sandbox',
+    DeveloperApiKeys = 'md-dev-api-keys',
     DeveloperSdkDownloads = 'md-dev-sdk-downloads',
     DeveloperWebhooks = 'md-dev-webhooks',
     DeveloperCliTools = 'md-dev-cli-tools',

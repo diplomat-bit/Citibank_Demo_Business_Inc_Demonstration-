@@ -4,7 +4,7 @@ import {
     LoanApplication, MortgageAsset, ThreatIntelBrief, InsuranceClaim, RiskProfile, DataSet, DataLakeStat,
     SalesDeal, MarketingCampaign, GrowthMetric, Competitor, Benchmark,
     License, Disclosure, LegalDoc, SandboxExperiment, ConsentRecord,
-    ContainerImage, ApiUsage, Incident, BackupJob
+    ContainerImage, ApiUsage, Incident, BackupJob, ApiKeyUsageLog
 } from '../types';
 
 export const MOCK_LOAN_APPLICATIONS: LoanApplication[] = [
@@ -132,3 +132,16 @@ export const MOCK_BACKUP_JOBS: BackupJob[] = [
     { id: 'bak-2', service: 'Data Lake (Hot Storage)', status: 'Success', timestamp: '2024-07-24 03:00 AM', duration: '1.5 hours' },
     { id: 'bak-3', service: 'Event Store', status: 'Failed', timestamp: '2024-07-24 04:00 AM', duration: '5 minutes' },
 ];
+
+export const MOCK_API_KEY_USAGE: ApiKeyUsageLog[] = Array.from({length: 50}, (_, i) => {
+    const key = `db_sk_live_...${['XXXX', 'YYYY', 'ZZZZ'][i%3]}`;
+    const status = Math.random() > 0.1 ? 200 : (Math.random() > 0.5 ? 401 : 500);
+    return {
+        id: `log-${i}`,
+        apiKey: key,
+        timestamp: new Date(Date.now() - i * 60000).toISOString(),
+        status: status,
+        latencyMs: 50 + Math.random() * 150,
+        ipAddress: `203.0.113.${i}`
+    };
+});

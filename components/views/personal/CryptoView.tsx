@@ -9,6 +9,7 @@ const CryptoView: React.FC = () => {
     const context = useContext(DataContext);
     if (!context) throw new Error("CryptoView must be within a DataProvider.");
     
+    // FIX: Destructure missing functions from context to resolve property not found errors.
     const { cryptoAssets, walletInfo, virtualCard, connectWallet, issueCard, buyCrypto, nftAssets, mintNFT, paymentOperations } = context;
     
     const [isIssuingCard, setIsIssuingCard] = useState(false);
@@ -16,7 +17,7 @@ const CryptoView: React.FC = () => {
     const [isStripeModalOpen, setStripeModalOpen] = useState(false);
     const [buyAmount, setBuyAmount] = useState('100');
 
-    const handleIssueCard = () => { setIsIssuingCard(true); issueCard(); };
+    const handleIssueCard = () => { setIsIssuingCard(true); setTimeout(() => { issueCard(); setIsIssuingCard(false); }, 2000); };
     const handleMetaMaskConnect = () => { connectWallet(); setIsMetaMaskModalOpen(false); };
     const handleBuyCrypto = () => { buyCrypto(parseFloat(buyAmount), 'ETH'); setStripeModalOpen(false); };
     

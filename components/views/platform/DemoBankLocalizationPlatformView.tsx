@@ -28,7 +28,7 @@ const DemoBankLocalizationPlatformView: React.FC = () => {
                     }
                 }
             };
-            const fullPrompt = `Translate the English string "${prompt}" into Spanish, French, and Japanese.`;
+            const fullPrompt = `Translate the English string "${prompt}" into Spanish, French, German, and Japanese.`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
             setGeneratedTranslations(JSON.parse(response.text));
         } catch (error) {
@@ -42,26 +42,25 @@ const DemoBankLocalizationPlatformView: React.FC = () => {
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Localization</h2>
             <Card title="AI Translation Generator">
-                <p className="text-gray-400 mb-4">Enter a string to translate into multiple languages.</p>
+                <p className="text-gray-400 mb-4">Enter a source string in English to translate into multiple languages.</p>
                 <input
                     type="text"
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
                     {isLoading ? 'Translating...' : 'Generate Translations'}
                 </button>
             </Card>
 
-            {generatedTranslations && (
+            {(isLoading || generatedTranslations) && (
                  <Card title="Generated Translations">
-                     <button onClick={() => setGeneratedTranslations(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
-                     <div className="space-y-2">
-                        {generatedTranslations.translations.map((t: any, i: number) => (
-                            <div key={i} className="flex justify-between items-center text-sm p-2 bg-gray-900/50 rounded">
-                                <span className="font-semibold text-cyan-300">{t.language}</span>
-                                <span className="text-gray-200">{t.text}</span>
+                     <div className="space-y-3">
+                        {isLoading ? <p>Translating...</p> : generatedTranslations.translations.map((t: any, i: number) => (
+                            <div key={i} className="flex justify-between items-center text-sm p-3 bg-gray-900/50 rounded-lg">
+                                <span className="font-semibold text-cyan-300 w-1/4">{t.language}</span>
+                                <span className="text-gray-200 w-3/4 text-right font-mono">{t.text}</span>
                             </div>
                         ))}
                      </div>

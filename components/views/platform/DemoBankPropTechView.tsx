@@ -12,7 +12,7 @@ const properties = [
 
 const DemoBankPropTechView: React.FC = () => {
     const [isGeneratorOpen, setGeneratorOpen] = useState(false);
-    const [features, setFeatures] = useState('2 bed, 2 bath, downtown, balcony with city view, newly renovated kitchen');
+    const [features, setFeatures] = useState('2 bed, 2 bath, downtown, balcony with city view, newly renovated kitchen, rooftop pool');
     const [generatedDesc, setGeneratedDesc] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -21,7 +21,7 @@ const DemoBankPropTechView: React.FC = () => {
         setGeneratedDesc('');
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `Write an exciting and appealing real estate property listing description based on these features: ${features}. Make it sound modern and desirable.`;
+            const prompt = `You are a creative real estate copywriter. Write an exciting and appealing property listing description based on these features: ${features}. Make it sound modern and desirable.`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
             setGeneratedDesc(response.text);
         } catch (error) {
@@ -70,8 +70,8 @@ const DemoBankPropTechView: React.FC = () => {
                         <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Listing Description Generator</h3></div>
                         <div className="p-6 space-y-4">
                             <textarea value={features} onChange={e => setFeatures(e.target.value)} placeholder="Enter property features..." className="w-full h-24 bg-gray-700/50 p-2 rounded text-white" />
-                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Description'}</button>
-                            <Card title="Generated Description"><div className="min-h-[10rem] max-h-60 overflow-y-auto text-sm text-gray-300">{isLoading ? 'Generating...' : generatedDesc}</div></Card>
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Description'}</button>
+                            <Card title="Generated Description"><div className="min-h-[10rem] max-h-60 overflow-y-auto text-sm text-gray-300 prose prose-invert max-w-none">{isLoading ? 'Generating...' : generatedDesc}</div></Card>
                         </div>
                     </div>
                  </div>

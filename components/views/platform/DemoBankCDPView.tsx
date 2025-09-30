@@ -23,13 +23,15 @@ const DemoBankCDPView: React.FC = () => {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const schema = {
                 type: Type.OBJECT, properties: {
-                    rules: { type: Type.ARRAY, items: {
-                        type: Type.OBJECT, properties: {
-                            field: { type: Type.STRING },
-                            operator: { type: Type.STRING },
-                            value: { type: Type.STRING }
+                    rules: {
+                        type: Type.ARRAY, items: {
+                            type: Type.OBJECT, properties: {
+                                field: { type: Type.STRING },
+                                operator: { type: Type.STRING },
+                                value: { type: Type.STRING }
+                            }
                         }
-                    }}
+                    }
                 }
             };
             const fullPrompt = `Translate the following natural language description into a structured set of rules for a customer data platform audience segment. Description: "${prompt}"`;
@@ -76,13 +78,14 @@ const DemoBankCDPView: React.FC = () => {
                 </Card>
             </div>
              {isBuilderOpen && (
-                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setBuilderOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full" onClick={e=>e.stopPropagation()}>
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setBuilderOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Audience Builder</h3></div>
                         <div className="p-6 space-y-4">
-                             <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your audience..." className="w-full h-20 bg-gray-700/50 p-2 rounded text-white" />
-                             <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Rules'}</button>
-                             {generatedRules && <Card title="Generated Ruleset"><pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded">{JSON.stringify(generatedRules, null, 2)}</pre></Card>}
+                             <p className="text-sm text-gray-400">Describe the customer segment you want to build in plain English.</p>
+                             <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your audience..." className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500" />
+                             <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Rules'}</button>
+                             {(isLoading || generatedRules) && <Card title="Generated Ruleset"><pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded">{isLoading ? 'Generating...' : JSON.stringify(generatedRules, null, 2)}</pre></Card>}
                         </div>
                     </div>
                  </div>

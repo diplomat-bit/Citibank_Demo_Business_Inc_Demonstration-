@@ -13,7 +13,7 @@ const DemoBankKnowledgeBaseView: React.FC = () => {
         setGeneratedArticle('');
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const fullPrompt = `Write a simple, clear knowledge base article with step-by-step instructions for the topic: "${prompt}". Use markdown for formatting.`;
+            const fullPrompt = `You are a helpful technical writer. Write a simple, clear knowledge base article with step-by-step instructions for the topic: "${prompt}". Use markdown for formatting, including headers and numbered lists.`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt });
             setGeneratedArticle(response.text);
         } catch (error) {
@@ -27,23 +27,22 @@ const DemoBankKnowledgeBaseView: React.FC = () => {
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Knowledge Base</h2>
             <Card title="AI Article Drafter">
-                <p className="text-gray-400 mb-4">Enter the title of the article you want to write.</p>
+                <p className="text-gray-400 mb-4">Enter the title of the help article you want to write.</p>
                 <input
                     type="text"
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
                     {isLoading ? 'Drafting...' : 'Generate Article Draft'}
                 </button>
             </Card>
 
-            {generatedArticle && (
+            {(isLoading || generatedArticle) && (
                  <Card title="Generated Draft">
-                     <button onClick={() => setGeneratedArticle('')} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
                      <div className="prose prose-invert prose-sm max-w-none text-gray-300 whitespace-pre-line bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
-                        {generatedArticle}
+                        {isLoading ? 'Drafting...' : generatedArticle}
                      </div>
                 </Card>
             )}

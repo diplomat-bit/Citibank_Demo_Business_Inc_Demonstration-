@@ -21,7 +21,7 @@ const DemoBankBookingsView: React.FC = () => {
         setConfirmationMsg('');
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `Generate a friendly and professional booking confirmation message for a client. Service: "${bookingDetails.service}", Client Name: "${bookingDetails.clientName}", Time: "${bookingDetails.time}".`;
+            const prompt = `Generate a friendly and professional booking confirmation message for a client. Service: "${bookingDetails.service}", Client Name: "${bookingDetails.clientName}", Time: "${bookingDetails.time}". Include details on how to prepare.`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
             setConfirmationMsg(response.text);
         } catch (error) {
@@ -36,7 +36,7 @@ const DemoBankBookingsView: React.FC = () => {
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Bookings</h2>
-                    <button onClick={() => setBookingModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">New Booking</button>
+                    <button onClick={() => setBookingModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">AI Confirmation Writer</button>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -57,9 +57,9 @@ const DemoBankBookingsView: React.FC = () => {
                 </Card>
             </div>
             {isBookingModalOpen && (
-                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setBookingModalOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full" onClick={e=>e.stopPropagation()}>
-                        <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Confirmation Generator</h3></div>
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setBookingModalOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
+                        <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI Confirmation Writer</h3></div>
                         <div className="p-6 space-y-4">
                             <p className="text-sm text-gray-400">Simulate a booking, then generate an AI confirmation message.</p>
                             <select value={bookingDetails.service} onChange={e => setBookingDetails(b => ({...b, service: e.target.value}))} className="w-full bg-gray-700/50 p-2 rounded text-white">
@@ -67,8 +67,8 @@ const DemoBankBookingsView: React.FC = () => {
                                 <option>API Integration Support</option>
                                 <option>Mortgage Application Review</option>
                             </select>
-                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Confirmation'}</button>
-                            { (isLoading || confirmationMsg) && <Card title="Generated Message"><div className="min-h-[6rem] text-sm text-gray-300">{isLoading ? 'Generating...' : confirmationMsg}</div></Card>}
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Confirmation'}</button>
+                            { (isLoading || confirmationMsg) && <Card title="Generated Message"><div className="min-h-[6rem] max-h-60 overflow-y-auto text-sm text-gray-300 whitespace-pre-line">{isLoading ? 'Generating...' : confirmationMsg}</div></Card>}
                         </div>
                     </div>
                  </div>

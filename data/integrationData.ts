@@ -23,7 +23,6 @@ import {
 const dashboardIntegrations: IntegrationPlatform[] = [
     {
         name: 'Plaid',
-        // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
         logo: React.createElement(PlaidIcon),
         description: 'Securely connect user bank accounts to fetch real-time transaction and balance data.',
         snippets: [
@@ -34,7 +33,6 @@ const dashboardIntegrations: IntegrationPlatform[] = [
     },
     {
         name: 'Stripe',
-        // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
         logo: React.createElement(StripeIcon),
         description: 'Process payments, manage subscriptions, and integrate financial services.',
         snippets: [
@@ -60,28 +58,24 @@ const dashboardUseCases: UseCase[] = [
 const corpIntegrations: IntegrationPlatform[] = [
     {
         name: 'Salesforce',
-        // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
         logo: React.createElement(SalesforceIcon),
         description: 'Sync customer data, invoices, and payment statuses with your CRM.',
         snippets: [{ language: 'typescript', label: 'Update Account', code: `// TypeScript (using jsforce)\nimport jsforce from 'jsforce';\nconst conn = new jsforce.Connection({...});\nconn.login(username, password, (err, userInfo) => {\n  conn.sobject("Account").update({ \n    Id: '001...', Name: 'New Name' \n  });\n});` }, { language: 'python', label: 'Query Contacts', code: `# Python (using simple-salesforce)\nfrom simple_salesforce import Salesforce\nsf = Salesforce(username='...', password='...', security_token='...')\ndata = sf.query("SELECT Id, Name FROM Contact")` }, { language: 'go', label: 'Create Lead', code: `// Go (conceptual)\nclient := salesforce.NewClient(...)\nlead := &salesforce.Lead{LastName: "Smith"}\n_ = client.Create(lead)` }]
     },
     {
         name: 'Slack',
-        // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
         logo: React.createElement(SlackIcon),
         description: 'Send real-time notifications for critical events like payment approvals or compliance alerts.',
         snippets: [{ language: 'typescript', label: 'Post Message', code: `// TypeScript (using @slack/web-api)\nimport { WebClient } from '@slack/web-api';\nconst web = new WebClient(token);\n\nawait web.chat.postMessage({\n  channel: '#finance-alerts',\n  text: 'Payment PO-005 needs approval.'\n});` }, { language: 'python', label: 'Send Alert', code: `# Python (using slack_sdk)\nimport slack_sdk\nclient = slack_sdk.WebClient(token=token)\n\nclient.chat_postMessage(\n  channel="#compliance",\n  text="New anomaly detected: ANOM-001"\n)` }, { language: 'go', label: 'Post to Channel', code: `// Go (using slack-go)\nimport "github.com/slack-go/slack"\n\napi := slack.New("xoxb-...")\n_, _, err := api.PostMessage(\n  "C12345",\n  slack.MsgOptionText("Hello world", false),\n)` }]
     },
      {
         name: 'PagerDuty',
-        // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
         logo: React.createElement(PagerDutyIcon),
         description: 'Automatically trigger incidents for high-severity financial anomalies.',
         snippets: [{ language: 'typescript', label: 'Trigger Incident', code: `// TypeScript (using @pagerduty/pdjs)\nimport { events } from '@pagerduty/pdjs';\n\nevents.send({\n  routing_key: 'YOUR_KEY',\n  event_action: 'trigger',\n  payload: { ... }\n});` }, { language: 'python', label: 'Trigger Event', code: `# Python (using pdpyras)\nfrom pdpyras import APISession\nsession = APISession(api_key)\nsession.trigger(\n  'High-risk anomaly detected',\n  'your-service-id'\n)` }, { language: 'go', label: 'Send Event', code: `// Go (conceptual)\nclient := pagerduty.NewClient(...)\nevent := &pagerduty.Event{...}\n_ = client.Send(event)` }]
     },
       {
         name: 'Jira',
-        // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
         logo: React.createElement(JiraIcon),
         description: 'Create tickets for fraud cases, compliance reviews, or payment failures.',
         snippets: [{ language: 'typescript', label: 'Create Issue', code: `// TypeScript (using jira.js)\nimport { JiraClient } from 'jira.js';\n\nconst client = new JiraClient({...});\nconst issue = await client.issues.createIssue({...});` }, { language: 'python', label: 'New Ticket', code: `# Python (using jira)\nfrom jira import JIRA\njira = JIRA(server='...', basic_auth=('...', '...'))\n\njira.create_issue(project='FIN', summary='...')` }, { language: 'go', label: 'Create Issue', code: `// Go (using go-jira)\nimport "github.com/andygrunwald/go-jira"\n\njiraClient, _ := jira.NewClient(...)` }]

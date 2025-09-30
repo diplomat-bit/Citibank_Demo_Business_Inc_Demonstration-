@@ -146,6 +146,7 @@ const BudgetsView: React.FC = () => {
     const context = useContext(DataContext);
     if (!context) throw new Error("BudgetsView must be within a DataProvider.");
     
+    // FIX: Destructure `addBudget` from context to fix property not found error.
     const { budgets, transactions, addBudget } = context;
     const [selectedBudget, setSelectedBudget] = useState<BudgetCategory | null>(null);
     const [isNewBudgetModalOpen, setIsNewBudgetModalOpen] = useState(false);

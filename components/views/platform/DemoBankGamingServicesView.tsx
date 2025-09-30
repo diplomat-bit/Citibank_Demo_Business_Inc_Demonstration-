@@ -79,14 +79,14 @@ const DemoBankGamingServicesView: React.FC = () => {
                 </Card>
             </div>
              {isGeneratorOpen && (
-                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setGeneratorOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full" onClick={e=>e.stopPropagation()}>
+                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setGeneratorOpen(false)}>
+                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-lg w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b border-gray-700"><h3 className="text-lg font-semibold text-white">AI In-Game Item Generator</h3></div>
                         <div className="p-6 space-y-4">
                             <input type="text" value={itemParams.type} onChange={e => setItemParams(p => ({...p, type: e.target.value}))} placeholder="Item Type" className="w-full bg-gray-700/50 p-2 rounded text-white" />
                             <input type="text" value={itemParams.theme} onChange={e => setItemParams(p => ({...p, theme: e.target.value}))} placeholder="Item Theme" className="w-full bg-gray-700/50 p-2 rounded text-white" />
-                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">{isLoading ? 'Generating...' : 'Generate Item'}</button>
-                             {generatedItem && <Card title={generatedItem.name}><p className="text-sm italic text-gray-400 mb-2">{generatedItem.description}</p><ul className="text-sm space-y-1">{generatedItem.stats.map((s: any, i:number) => <li key={i}><strong className="text-cyan-300">{s.name}:</strong> {s.value}</li>)}</ul></Card>}
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">{isLoading ? 'Generating...' : 'Generate Item'}</button>
+                             {(isLoading || generatedItem) && <Card title={generatedItem?.name || "..."}><div className="min-h-[8rem]">{isLoading ? <p>Generating...</p> : <><p className="text-sm italic text-gray-400 mb-2">{generatedItem.description}</p><ul className="text-sm space-y-1">{generatedItem.stats.map((s: any, i:number) => <li key={i}><strong className="text-cyan-300">{s.name}:</strong> {s.value}</li>)}</ul></>}</div></Card>}
                         </div>
                     </div>
                  </div>

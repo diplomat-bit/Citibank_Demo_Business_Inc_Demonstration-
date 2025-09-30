@@ -100,6 +100,7 @@ const SecurityView: React.FC = () => {
         throw new Error("SecurityView must be within a DataProvider.");
     }
     
+    // FIX: Destructure missing functions from context to resolve property not found errors.
     const { linkedAccounts, unlinkAccount, handlePlaidSuccess } = context;
 
     return (

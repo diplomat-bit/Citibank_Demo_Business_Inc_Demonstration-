@@ -35,7 +35,7 @@ const DemoBankGISView: React.FC = () => {
                     }
                 }
             };
-            const fullPrompt = `Generate a simple GeoJSON object for the following location: "${prompt}".`;
+            const fullPrompt = `Generate a simple GeoJSON object for the following location: "${prompt}". Provide a few coordinate points to define the shape.`;
             const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
             setGeneratedGeoJson(JSON.parse(response.text));
         } catch (error) {
@@ -53,19 +53,18 @@ const DemoBankGISView: React.FC = () => {
                 <textarea
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
-                    className="w-full h-20 bg-gray-700/50 p-2 rounded text-white"
+                    className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                     placeholder="e.g., A point for the Eiffel Tower"
                 />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
+                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
                     {isLoading ? 'Generating...' : 'Generate GeoJSON'}
                 </button>
             </Card>
 
-            {generatedGeoJson && (
+            {(isLoading || generatedGeoJson) && (
                 <Card title="Generated GeoJSON">
-                    <button onClick={() => setGeneratedGeoJson(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
                     <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
-                        {JSON.stringify(generatedGeoJson, null, 2)}
+                        {isLoading ? 'Generating...' : JSON.stringify(generatedGeoJson, null, 2)}
                     </pre>
                 </Card>
             )}
