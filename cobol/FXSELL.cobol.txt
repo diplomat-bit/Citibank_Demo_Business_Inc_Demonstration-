@@ -5,7 +5,30 @@
       ******************************************************************
       * LIVE BANK - EXECUTE FX SELL
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT FX-TRADE-FILE ASSIGN TO FXMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD FX-TRADE-FILE.
+       01 FX-FILE-RECORD PIC X(131).
+       WORKING-STORAGE SECTION.
+       01 WS-TRADE-DETAILS.
+          05 WS-CURRENCY-PAIR PIC X(07).
+          05 WS-AMOUNT        PIC S9(13)V99.
+       COPY CPFX01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "EXECUTING FOREIGN CURRENCY SALE.".
+           DISPLAY "FXSELL - FOREIGN CURRENCY SALE".
+           OPEN I-O FX-TRADE-FILE.
+           DISPLAY "ENTER CURRENCY PAIR (e.g. EUR/USD): ".
+           ACCEPT WS-CURRENCY-PAIR.
+           DISPLAY "ENTER AMOUNT TO SELL: ".
+           ACCEPT WS-AMOUNT.
+           CALL "FXRATE" GIVING WS-CURRENT-RATE.
+           DISPLAY "EXECUTING AT RATE: " WS-CURRENT-RATE.
+           DISPLAY "VALIDATING CURRENCY POSITION...".
+           DISPLAY "TRADE BOOKED. PENDING SETTLEMENT.".
+      *    (LOGIC TO WRITE FX-TRADE-RECORD)
+           CLOSE FX-TRADE-FILE.
            STOP RUN.

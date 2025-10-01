@@ -2,57 +2,109 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. AI-INTEGRATION-LAYER.
        AUTHOR. THE-ARCHITECT.
+       DATE-WRITTEN. 2024-07-27.
       ******************************************************************
       * THIS IS A CONCEPTUAL PROGRAM SHOWING HOW A MAINFRAME SYSTEM
       * MIGHT INTERFACE WITH A MODERN AI API LIKE GEMINI.
       * IT DEMONSTRATES THE BRIDGE BETWEEN LEGACY AND FUTURE.
       * 100 BITS AT A TIME, 100 TIMES A SECOND.
+      * THIS IS THE SOLE CONDUIT TO THE COGNITIVE-CORE.
       ******************************************************************
+       ENVIRONMENT DIVISION.
        DATA DIVISION.
        LINKAGE SECTION.
-       01 LS-AI-CONTEXT.
-          05 LS-CONTEXT-PROMPT  PIC X(100).
-          05 LS-CONTEXT-DATA    PIC X(1000).
-       01 LS-AI-RESPONSE       PIC X(100).
+       01 LS-AI-CONTEXT-PAYLOAD.
+          05 LS-CONTEXT-PROMPT    PIC X(200).
+          05 LS-CONTEXT-DATA-BLOB PIC X(4000).
+       01 LS-AI-RESPONSE-PAYLOAD.
+          05 LS-AI-INSIGHT        PIC X(100).
+          05 LS-AI-CONFIDENCE     PIC 9(03).
+          05 LS-AI-RECOMMENDATION PIC X(200).
 
        WORKING-STORAGE SECTION.
-       01 WS-API-REQUEST.
-          05 WS-API-ENDPOINT    PIC X(100) VALUE
+       01 WS-API-REQUEST-STRUCTURE.
+          05 WS-API-ENDPOINT      PIC X(100) VALUE
              "https://generativelanguage.googleapis.com/v1/models/gemini".
-          05 WS-API-KEY         PIC X(100) VALUE "AIzaSy...".
-          05 WS-API-BODY        PIC X(1200).
-       01 WS-API-RESPONSE      PIC X(1000).
+          05 WS-API-KEY           PIC X(100) VALUE "AIzaSy...".
+          05 WS-API-BODY          PIC X(4500).
+          05 WS-JSON-PROMPT-PART  PIC X(250).
+          05 WS-JSON-DATA-PART    PIC X(4100).
 
-       PROCEDURE DIVISION USING LS-AI-CONTEXT, LS-AI-RESPONSE.
-       MAIN-LOGIC.
-           PERFORM CONSTRUCT-API-BODY.
-           PERFORM EXECUTE-HTTPS-POST.
-           PERFORM PARSE-API-RESPONSE.
+       01 WS-API-RESPONSE-STRUCTURE.
+          05 WS-HTTP-STATUS-CODE  PIC 9(03).
+          05 WS-API-RESPONSE-BODY PIC X(2000).
+
+       01 WS-PARSED-RESPONSE.
+          05 WS-PARSED-INSIGHT        PIC X(100).
+          05 WS-PARSED-CONFIDENCE-STR PIC X(03).
+          05 WS-PARSED-CONFIDENCE-NUM PIC 9(03).
+          05 WS-PARSED-RECOMMENDATION PIC X(200).
+
+       PROCEDURE DIVISION USING LS-AI-CONTEXT-PAYLOAD,
+                                LS-AI-RESPONSE-PAYLOAD.
+       0000-MAIN-LOGIC.
+           PERFORM 1000-CONSTRUCT-API-BODY.
+           PERFORM 2000-EXECUTE-HTTPS-POST.
+           IF WS-HTTP-STATUS-CODE = 200
+              PERFORM 3000-PARSE-API-RESPONSE
+           ELSE
+              PERFORM 3100-HANDLE-API-ERROR
+           END-IF.
            GOBACK.
 
-       CONSTRUCT-API-BODY.
-           STRING "{ 'contents': [{ 'parts': [{ 'text': '"
-                  LS-CONTEXT-PROMPT
-                  " "
-                  LS-CONTEXT-DATA
-                  "' }] }] }"
+       1000-CONSTRUCT-API-BODY.
+           STRING "'text': '" LS-CONTEXT-PROMPT "'"
+               INTO WS-JSON-PROMPT-PART.
+           STRING "'data': '" LS-CONTEXT-DATA-BLOB "'"
+               INTO WS-JSON-DATA-PART.
+
+           STRING "{ 'contents': [{ 'parts': [{ "
+                  WS-JSON-PROMPT-PART
+                  ", "
+                  WS-JSON-DATA-PART
+                  " }] }] }"
                   INTO WS-API-BODY.
 
-       EXECUTE-HTTPS-POST.
+       2000-EXECUTE-HTTPS-POST.
       *    (IN A REAL MAINFRAME ENVIRONMENT, THIS WOULD CALL A
       *     SYSTEM UTILITY LIKE CEE3CURL OR A SIMILAR MECHANISM
       *     TO MAKE AN OUTBOUND HTTPS REQUEST.)
            DISPLAY "SIMULATING HTTPS POST TO: " WS-API-ENDPOINT.
-           DISPLAY "BODY: " WS-API-BODY.
+           DISPLAY "BODY (TRUNCATED): " WS-API-BODY(1:80).
       *    (MOCKING A RESPONSE FOR THIS SIMULATION)
-           MOVE "{ 'candidates': [{ 'content': { 'parts': [{
-                'text': 'SPENDING IS UP 100% IN CATEGORY X.'
-                }] } }] }"
-                INTO WS-API-RESPONSE.
-           DISPLAY "HTTPS RESPONSE RECEIVED.".
+           MOVE 200 TO WS-HTTP-STATUS-CODE.
+           MOVE "{
+      -         'candidates': [{ 'content': { 'parts': [{
+      -         'text': '{
+      -         ""insight"": ""SPENDING IS UP 100% IN CATEGORY X."",
+      -         ""confidence"": 95,
+      -         ""recommendation"": ""INITIATE A BUDGET REVIEW FOR CATEGORY X.""
+      -         }' }] } }] }"
+                INTO WS-API-RESPONSE-BODY.
+           DISPLAY "HTTPS RESPONSE RECEIVED. STATUS: " WS-HTTP-STATUS-CODE.
 
-       PARSE-API-RESPONSE.
+       3000-PARSE-API-RESPONSE.
       *    (IN A REAL SCENARIO, A JSON PARSER FOR COBOL WOULD BE USED)
-           UNSTRING WS-API-RESPONSE DELIMITED BY "'text': '" OR "' "
-               INTO FILLER, LS-AI-RESPONSE.
-           DISPLAY "RESPONSE PARSED.".
+           DISPLAY "PARSING JSON RESPONSE...".
+           UNSTRING WS-API-RESPONSE-BODY DELIMITED BY
+               '"insight": "' OR '", "confidence"'
+               INTO FILLER, WS-PARSED-INSIGHT.
+           UNSTRING WS-API-RESPONSE-BODY DELIMITED BY
+               '"confidence": ' OR ', "recommendation"'
+               INTO FILLER, WS-PARSED-CONFIDENCE-STR.
+           UNSTRING WS-API-RESPONSE-BODY DELIMITED BY
+               '"recommendation": "' OR '"'
+               INTO FILLER, WS-PARSED-RECOMMENDATION.
+
+           MOVE WS-PARSED-CONFIDENCE-STR TO WS-PARSED-CONFIDENCE-NUM.
+           MOVE WS-PARSED-INSIGHT TO LS-AI-INSIGHT.
+           MOVE WS-PARSED-CONFIDENCE-NUM TO LS-AI-CONFIDENCE.
+           MOVE WS-PARSED-RECOMMENDATION TO LS-AI-RECOMMENDATION.
+           DISPLAY "RESPONSE PARSED SUCCESSFULLY.".
+
+       3100-HANDLE-API-ERROR.
+           DISPLAY "ERROR: AI API CALL FAILED WITH STATUS "
+               WS-HTTP-STATUS-CODE.
+           MOVE "AI OFFLINE" TO LS-AI-INSIGHT.
+           MOVE 0 TO LS-AI-CONFIDENCE.
+           MOVE "ESCALATE TO HUMAN ANALYST" TO LS-AI-RECOMMENDATION.

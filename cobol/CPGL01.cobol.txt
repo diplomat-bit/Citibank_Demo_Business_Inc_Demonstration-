@@ -1,11 +1,31 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR GENERAL LEDGER ACCOUNT
+      * LIVE BANK - COPYBOOK FOR GENERAL LEDGER ACCOUNT (V2.0)
+      * DEFINES A SINGLE ACCOUNT IN THE 100,000-ACCOUNT CHART.
       ******************************************************************
        01 GL-ACCOUNT-RECORD.
-          05 GL-ACCOUNT-NUMBER    PIC X(15).
-          05 GL-ACCOUNT-DESC      PIC X(50).
-          05 GL-ACCOUNT-BALANCE   PIC S9(15)V99 COMP-3.
-          05 GL-DEBIT-CREDIT-IND  PIC X(01).
-             88 IS-DEBIT          VALUE 'D'.
-             88 IS-CREDIT         VALUE 'C'.
+          05 GL-ACCOUNT-NUMBER      PIC X(15).
+          05 GL-ACCOUNT-DESC        PIC X(50).
+          05 GL-HIERARCHY.
+             10 GL-PARENT-ACCOUNT   PIC X(15).
+             10 GL-LEVEL            PIC 9(02).
+          05 GL-ACCOUNT-TYPE        PIC X(01).
+             88 IS-ASSET            VALUE 'A'.
+             88 IS-LIABILITY        VALUE 'L'.
+             88 IS-EQUITY           VALUE 'E'.
+             88 IS-REVENUE          VALUE 'R'.
+             88 IS-EXPENSE          VALUE 'X'.
+          05 GL-BALANCES.
+             10 GL-CURRENT-BALANCE  PIC S9(15)V99 COMP-3.
+             10 GL-DEBIT-CREDIT-IND PIC X(01).
+                88 IS-DEBIT          VALUE 'D'.
+                88 IS-CREDIT         VALUE 'C'.
+          05 GL-PERIOD-TOTALS.
+             10 GL-PTD-DEBITS       PIC S9(13)V99 COMP-3.
+             10 GL-PTD-CREDITS      PIC S9(13)V99 COMP-3.
+             10 GL-YTD-DEBITS       PIC S9(15)V99 COMP-3.
+             10 GL-YTD-CREDITS      PIC S9(15)V99 COMP-3.
+          05 GL-BUDGET-INFO.
+             10 GL-BUDGET-AMOUNT    PIC S9(13)V99 COMP-3.
+             10 GL-BUDGET-PERIOD    PIC X(04).
+          05 GL-FILLER              PIC X(20).

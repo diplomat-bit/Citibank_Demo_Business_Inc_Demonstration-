@@ -1,10 +1,25 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR TELLER MASTER RECORD
+      * LIVE BANK - COPYBOOK FOR TELLER MASTER RECORD (V2.0)
       ******************************************************************
        01 TELLER-MASTER-RECORD.
-          05 TM-TELLER-ID         PIC X(08).
-          05 TM-TELLER-NAME       PIC X(50).
-          05 TM-DRAWER-ID         PIC X(10).
-          05 TM-DRAWER-CASH-LIMIT PIC S9(9)V99 COMP-3.
-          05 TM-AUTH-LEVEL        PIC 9(01).
+          05 TM-TELLER-ID           PIC X(08).
+          05 TM-TELLER-NAME         PIC X(50).
+          05 TM-BRANCH-INFO.
+             10 TM-BRANCH-ID        PIC X(04).
+             10 TM-BRANCH-LOCATION  PIC X(30).
+          05 TM-DRAWER-INFO.
+             10 TM-DRAWER-ID        PIC X(10).
+             10 TM-DRAWER-STATUS    PIC X(01).
+                88 DRAWER-OPEN       VALUE 'O'.
+                88 DRAWER-CLOSED     VALUE 'C'.
+             10 TM-DRAWER-CASH-LIMIT PIC S9(9)V99 COMP-3.
+          05 TM-AUTHORIZATION-LEVELS.
+             10 TM-AUTH-LEVEL       PIC 9(01).
+             10 TM-CASH-ADV-LIMIT   PIC S9(7)V99 COMP-3.
+             10 TM-CHECK-CASH-LIMIT PIC S9(7)V99 COMP-3.
+          05 TM-DAILY-TOTALS.
+             10 TM-TOTAL-CASH-IN    PIC S9(11)V99 COMP-3.
+             10 TM-TOTAL-CASH-OUT   PIC S9(11)V99 COMP-3.
+             10 TM-TX-COUNT         PIC 9(05).
+          05 TM-FILLER              PIC X(20).

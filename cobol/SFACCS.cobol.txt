@@ -5,8 +5,30 @@
       ******************************************************************
       * LIVE BANK - LOG SAFE DEPOSIT BOX ACCESS
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT SAFE-DEPOSIT-FILE ASSIGN TO SFMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD SAFE-DEPOSIT-FILE.
+       01 SF-FILE-RECORD PIC X(114).
+       WORKING-STORAGE SECTION.
+       01 WS-INPUT-DETAILS.
+          05 WS-BOX-NUM    PIC X(10).
+          05 WS-CUST-ID    PIC 9(10).
+       COPY CPSF01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "VERIFYING IDENTITY FOR BOX ACCESS...".
-           DISPLAY "LOGGING ACCESS TO BOX...".
+           DISPLAY "SFACCS - SAFE DEPOSIT BOX ACCESS".
+           OPEN I-O SAFE-DEPOSIT-FILE.
+           DISPLAY "ENTER BOX NUMBER: ".
+           ACCEPT WS-BOX-NUM.
+           DISPLAY "ENTER CUSTOMER ID FOR VERIFICATION: ".
+           ACCEPT WS-CUST-ID.
+      *    (LOGIC TO READ FILE AND VERIFY WS-CUST-ID IS AUTHORIZED)
+           DISPLAY "IDENTITY VERIFIED. AWAITING DUAL KEY TURN...".
+           DISPLAY "ACCESS GRANTED. LOGGING ENTRY...".
+      *    (LOGIC TO UPDATE SF-LAST-ACCESS-DATE/TIME/USER)
+      *    (LOGIC TO REWRITE RECORD)
+           CLOSE SAFE-DEPOSIT-FILE.
            STOP RUN.

@@ -5,7 +5,30 @@
       ******************************************************************
       * LIVE BANK - REVIEW AUDIT LOGS
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT AUDIT-LOG-FILE ASSIGN TO AUDITLOG.
+       DATA DIVISION.
+       FILE SECTION.
+       FD AUDIT-LOG-FILE.
+       01 AUDIT-LOG-RECORD         PIC X(80).
+       WORKING-STORAGE SECTION.
+       01 WS-EOF-FLAG PIC X(01) VALUE 'N'.
+       01 WS-FILTER.
+          05 WS-START-DATE PIC X(10).
+          05 WS-END-DATE   PIC X(10).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
+           DISPLAY "AULOG - AUDIT LOG REVIEW".
+           DISPLAY "ENTER START DATE (YYYY-MM-DD): ".
+           ACCEPT WS-START-DATE.
+           DISPLAY "ENTER END DATE (YYYY-MM-DD): ".
+           ACCEPT WS-END-DATE.
+           OPEN INPUT AUDIT-LOG-FILE.
            DISPLAY "LOADING AUDIT LOGS FOR REVIEW...".
+           PERFORM READ-AND-DISPLAY-LOGS.
+           CLOSE AUDIT-LOG-FILE.
            STOP RUN.
+       READ-AND-DISPLAY-LOGS.
+           READ AUDIT-LOG-FILE AT END MOVE 'Y' TO WS-EOF-FLAG.
+           PERFORM UNTIL

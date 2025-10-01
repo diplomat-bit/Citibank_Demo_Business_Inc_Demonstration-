@@ -5,7 +5,42 @@
       ******************************************************************
       * LIVE BANK - INVESTMENTS MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-IV-MENU      VALUE 'X'.
+
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "INVESTMENTS MODULE ACCESSED.".
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-IV-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY " ".
+           DISPLAY "*************************************************".
+           DISPLAY "*          INVESTMENT SERVICES SYSTEM (IVS)     *".
+           DISPLAY "*************************************************".
+           DISPLAY "*   1. EXECUTE BUY ORDER                        *".
+           DISPLAY "*   2. EXECUTE SELL ORDER                       *".
+           DISPLAY "*   3. INQUIRE POSITION                         *".
+           DISPLAY "*   4. VIEW PORTFOLIO SUMMARY                   *".
+           DISPLAY "*   X. EXIT TO MAIN MENU                        *".
+           DISPLAY "*************************************************".
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1"
+                   CALL "IVBUY"
+               WHEN "2"
+                   CALL "IVSELL"
+               WHEN "3"
+                   CALL "IVINQ"
+               WHEN "4"
+                   CALL "IVPORT"
+               WHEN "X"
+                   DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER
+                   DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

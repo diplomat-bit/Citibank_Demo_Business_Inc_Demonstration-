@@ -1,10 +1,20 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR INVESTMENT RECORD
+      * LIVE BANK - COPYBOOK FOR INVESTMENT RECORD (V2.0)
       ******************************************************************
        01 INVESTMENT-RECORD.
-          05 IV-ACCOUNT-ID        PIC 9(12).
-          05 IV-CUSIP             PIC X(09).
-          05 IV-QUANTITY          PIC S9(9)V99 COMP-3.
-          05 IV-COST-BASIS        PIC S9(13)V99 COMP-3.
-          05 IV-PURCHASE-DATE     PIC X(10).
+          05 IV-ACCOUNT-ID          PIC 9(12).
+          05 IV-POSITION-ID         PIC X(12).
+          05 IV-SECURITY-DETAILS.
+             10 IV-CUSIP            PIC X(09).
+             10 IV-TICKER-SYMBOL    PIC X(05).
+             10 IV-ASSET-TYPE       PIC X(04). *> E.G. 'STCK', 'BOND'
+          05 IV-HOLDING-DETAILS.
+             10 IV-QUANTITY         PIC S9(9)V9(6) COMP-3.
+             10 IV-COST-BASIS       PIC S9(13)V99 COMP-3.
+             10 IV-MARKET-VALUE     PIC S9(13)V99 COMP-3.
+             10 IV-UNREALIZED-GAIN-LOSS PIC S9(13)V99 COMP-3.
+          05 IV-TRADE-DATES.
+             10 IV-PURCHASE-DATE    PIC X(10).
+             10 IV-LAST-TRADE-DATE  PIC X(10).
+          05 IV-FILLER              PIC X(20).

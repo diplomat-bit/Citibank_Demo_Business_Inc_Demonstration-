@@ -5,7 +5,29 @@
       ******************************************************************
       * LIVE BANK - RENT SAFE DEPOSIT BOX
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT SAFE-DEPOSIT-FILE ASSIGN TO SFMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD SAFE-DEPOSIT-FILE.
+       01 SF-FILE-RECORD PIC X(114).
+       WORKING-STORAGE SECTION.
+       01 WS-INPUT-DETAILS.
+          05 WS-BOX-NUM    PIC X(10).
+          05 WS-CUST-ID    PIC 9(10).
+       COPY CPSF01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "PROCESSING NEW SAFE DEPOSIT BOX RENTAL.".
+           DISPLAY "SFRENT - NEW SAFE DEPOSIT BOX RENTAL".
+           OPEN I-O SAFE-DEPOSIT-FILE.
+           DISPLAY "ENTER BOX NUMBER: ".
+           ACCEPT WS-BOX-NUM.
+           DISPLAY "ENTER PRIMARY CUSTOMER ID: ".
+           ACCEPT WS-CUST-ID.
+      *    (LOGIC TO VALIDATE CUSTOMER, CHECK BOX AVAILABILITY)
+           DISPLAY "COLLECTING SIGNATURES AND ISSUING KEYS...".
+      *    (LOGIC TO POPULATE AND WRITE SAFE-DEPOSIT-RECORD)
+           DISPLAY "BOX RENTAL COMPLETE.".
+           CLOSE SAFE-DEPOSIT-FILE.
            STOP RUN.

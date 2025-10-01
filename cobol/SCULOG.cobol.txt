@@ -2,11 +2,65 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. SCULOG.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 1995-02-01.
       ******************************************************************
       * LIVE BANK - VIEW USER ACCESS LOGS
+      *
+      * DISPLAYS SYSTEM ACCESS LOGS WITH FILTERING CAPABILITIES.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT AUDIT-LOG-FILE ASSIGN TO AUDITLOG.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD AUDIT-LOG-FILE.
+       01 AUDIT-LOG-RECORD.
+          05 LOG-TIMESTAMP      PIC X(27).
+          05 LOG-USER-ID        PIC X(08).
+          05 LOG-EVENT-TYPE     PIC X(10).
+          05 LOG-STATUS         PIC X(01).
+          05 LOG-DETAILS        PIC X(34).
+
+       WORKING-STORAGE SECTION.
+       01 WS-PROGRAM-SWITCHES.
+          05 WS-EOF-FLAG         PIC X(01) VALUE 'N'.
+             88 END-OF-FILE        VALUE 'Y'.
+
+       01 WS-FILTER-CRITERIA.
+          05 WS-FILTER-USER-ID    PIC X(08).
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           DISPLAY "DISPLAYING SYSTEM ACCESS LOGS...".
-           DISPLAY "FILTERING FOR 100 MOST RECENT ENTRIES...".
+       0000-MAIN-LOGIC.
+           PERFORM 1000-INITIALIZATION.
+           PERFORM 2000-PROCESS-LOGS UNTIL END-OF-FILE.
+           PERFORM 3000-TERMINATION.
            STOP RUN.
+
+       1000-INITIALIZATION.
+           DISPLAY " ".
+           DISPLAY "SCULOG - SYSTEM ACCESS LOG VIEWER".
+           OPEN INPUT AUDIT-LOG-FILE.
+           DISPLAY "ENTER USER ID TO FILTER (OR ALL): ".
+           ACCEPT WS-FILTER-USER-ID.
+           DISPLAY "TIMESTAMP                   USER      EVENT       STATUS".
+           DISPLAY "--------------------------- --------  ----------  ------".
+
+       2000-PROCESS-LOGS.
+           READ AUDIT-LOG-FILE
+               AT END SET END-OF-FILE TO TRUE
+           END-READ.
+           IF NOT END-OF-FILE
+              IF (WS-FILTER-USER-ID = "ALL") OR
+                 (LOG-USER-ID = WS-FILTER-USER-ID)
+                 DISPLAY LOG-TIMESTAMP " " LOG-USER-ID " "
+                         LOG-EVENT-TYPE " " LOG-STATUS
+              END-IF
+           END-IF.
+
+       3000-TERMINATION.
+           CLOSE AUDIT-LOG-FILE.
+           DISPLAY "END OF LOGS.".
+           DISPLAY "SCULOG MODULE TERMINATED.".
+           DISPLAY " ".

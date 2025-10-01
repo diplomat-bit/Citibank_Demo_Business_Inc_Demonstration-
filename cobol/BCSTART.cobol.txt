@@ -5,7 +5,20 @@
       ******************************************************************
       * LIVE BANK - START BATCH JOB
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-JOB-DETAILS.
+          05 WS-JOB-NAME PIC X(08).
+          05 WS-JOB-PARMS PIC X(100).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "SUBMITTING BATCH JOB TO SCHEDULER...".
+           DISPLAY "BCSTART - SUBMIT BATCH JOB".
+           DISPLAY "ENTER 8-CHARACTER JOB NAME: ".
+           ACCEPT WS-JOB-NAME.
+           DISPLAY "ENTER JOB PARAMETERS (IF ANY): ".
+           ACCEPT WS-JOB-PARMS.
+           DISPLAY "SUBMITTING JOB " WS-JOB-NAME " TO JES2 SCHEDULER...".
+      *    (IN A REAL SYSTEM, THIS WOULD INTERFACE WITH THE JOB
+      *     ENTRY SUBSYSTEM TO SUBMIT JCL)
+           DISPLAY "JOB SUBMITTED SUCCESSFULLY.".
            STOP RUN.

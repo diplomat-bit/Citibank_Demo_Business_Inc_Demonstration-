@@ -2,10 +2,28 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. TMMENU.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 2024-07-27.
       ******************************************************************
       * LIVE BANK - TELLER MANAGEMENT MENU
       ******************************************************************
-       PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           DISPLAY "TELLER MANAGEMENT MODULE.".
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SCREEN.
+          05 FILLER PIC X(80) VALUE ALL "*".
+          05 FILLER PIC X(80) VALUE
+             "*            TELLER MANAGEMENT SYSTEM (TMS)            *".
+          05 FILLER PIC X(80) VALUE ALL "*".
+          05 FILLER PIC X(80) VALUE "*   1. OPEN TELLER DRAWER                          *".
+          05 FILLER PIC X(80) VALUE "*   2. BALANCE DRAWER                              *".
+          05 FILLER PIC X(80) VALUE "*   3. CLOSE TELLER DRAWER                         *".
+          05 FILLER PIC X(80) VALUE "*                                                    *".
+          05 FILLER PIC X(80) VALUE "*   X. EXIT TO MAIN MENU                           *".
+          05 FILLER PIC X(80) VALUE ALL "*".
+       LINKAGE SECTION.
+       01 LS-CHOICE PIC X(01).
+
+       PROCEDURE DIVISION USING LS-CHOICE.
+       0000-MAIN-LOGIC.
+           DISPLAY WS-MENU-SCREEN.
+           ACCEPT LS-CHOICE.
            GOBACK.

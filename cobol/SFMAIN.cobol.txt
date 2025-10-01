@@ -5,7 +5,31 @@
       ******************************************************************
       * LIVE BANK - SAFE DEPOSIT BOX MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-SF-MENU      VALUE 'X'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "SAFE DEPOSIT BOX MODULE ACCESSED.".
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-SF-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY " ".
+           DISPLAY "*************************************************".
+           DISPLAY "*         SAFE DEPOSIT BOX SYSTEM (SDS)         *".
+           DISPLAY "*************************************************".
+           DISPLAY "*   1. RENT NEW BOX                             *".
+           DISPLAY "*   2. LOG BOX ACCESS                           *".
+           DISPLAY "*   X. EXIT TO MAIN MENU                        *".
+           DISPLAY "*************************************************".
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1" CALL "SFRENT"
+               WHEN "2" CALL "SFACCS"
+               WHEN "X" DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

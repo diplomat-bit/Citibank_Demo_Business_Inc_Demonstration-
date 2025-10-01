@@ -5,7 +5,33 @@
       ******************************************************************
       * LIVE BANK - VIEW BATCH JOB LOG
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT JOB-LOG-FILE ASSIGN TO JOBLOGS.
+       DATA DIVISION.
+       FILE SECTION.
+       FD JOB-LOG-FILE.
+       01 LOG-RECORD PIC X(132).
+       WORKING-STORAGE SECTION.
+       01 WS-INQUIRY-JOB-ID PIC X(08).
+       01 WS-EOF-FLAG PIC X(01) VALUE 'N'.
+          88 END-OF-FILE VALUE 'Y'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "DISPLAYING LOG FOR BATCH JOB...".
+           DISPLAY "BCLOG - BATCH JOB LOG VIEWER".
+           DISPLAY "ENTER JOB ID TO VIEW LOG: ".
+           ACCEPT WS-INQUIRY-JOB-ID.
+           DISPLAY "RETRIEVING LOG FOR " WS-INQUIRY-JOB-ID "...".
+      *    (SIMULATION: FIND AND OPEN THE CORRECT LOG SPOOL FILE)
+           OPEN INPUT JOB-LOG-FILE.
+           PERFORM DISPLAY-LOG-LINES UNTIL END-OF-FILE.
+           CLOSE JOB-LOG-FILE.
            STOP RUN.
+
+       DISPLAY-LOG-LINES.
+           READ JOB-LOG-FILE
+               AT END SET END-OF-FILE TO TRUE
+           END-READ.
+           IF NOT END-OF-FILE
+              DISPLAY LOG-RECORD
+           END-IF.

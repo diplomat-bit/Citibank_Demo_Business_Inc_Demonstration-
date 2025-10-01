@@ -1,11 +1,21 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR FX TRADE RECORD
+      * LIVE BANK - COPYBOOK FOR FX TRADE RECORD (V2.0)
       ******************************************************************
        01 FX-TRADE-RECORD.
-          05 FX-TRADE-ID          PIC X(16).
-          05 FX-FROM-CURRENCY     PIC X(03).
-          05 FX-TO-CURRENCY       PIC X(03).
-          05 FX-FROM-AMOUNT       PIC S9(13)V99 COMP-3.
-          05 FX-TO-AMOUNT         PIC S9(13)V99 COMP-3.
-          05 FX-EXCHANGE-RATE     PIC S9(5)V9(6) COMP-3.
+          05 FX-TRADE-ID            PIC X(16).
+          05 FX-CUSTOMER-ID         PIC 9(10).
+          05 FX-COUNTERPARTY        PIC X(30).
+          05 FX-TRADE-DETAILS.
+             10 FX-FROM-CURRENCY    PIC X(03).
+             10 FX-TO-CURRENCY      PIC X(03).
+             10 FX-FROM-AMOUNT      PIC S9(13)V99 COMP-3.
+             10 FX-TO-AMOUNT        PIC S9(13)V99 COMP-3.
+             10 FX-EXCHANGE-RATE    PIC S9(5)V9(6) COMP-3.
+          05 FX-DATE-DETAILS.
+             10 FX-TRADE-DATE       PIC X(10).
+             10 FX-VALUE-DATE       PIC X(10).
+          05 FX-STATUS              PIC X(01).
+             88 FX-BOOKED           VALUE 'B'.
+             88 FX-SETTLED          VALUE 'S'.
+          05 FX-FILLER              PIC X(40).

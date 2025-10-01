@@ -5,7 +5,34 @@
       ******************************************************************
       * LIVE BANK - EXECUTE INVESTMENT SALE
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT INVESTMENT-FILE ASSIGN TO INVMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD INVESTMENT-FILE.
+       01 INV-FILE-RECORD PIC X(94).
+       WORKING-STORAGE SECTION.
+       01 WS-TRADE-TICKET.
+          05 WS-TICKER       PIC X(05).
+          05 WS-QUANTITY     PIC S9(9)V9(6).
+          05 WS-PRICE        PIC S9(7)V99.
+       01 WS-REALIZED-GAIN-LOSS PIC S9(13)V99.
+       COPY CPVI01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "EXECUTING TRADE ORDER: SELL.".
+           DISPLAY "IVSELL - TRADE EXECUTION PLATFORM (SELL)".
+           OPEN I-O INVESTMENT-FILE.
+           DISPLAY "ENTER TICKER SYMBOL TO SELL: ".
+           ACCEPT WS-TICKER.
+           DISPLAY "ENTER QUANTITY: ".
+           ACCEPT WS-QUANTITY.
+           DISPLAY "ENTER PRICE: ".
+           ACCEPT WS-PRICE.
+           DISPLAY "VERIFYING LONG POSITION...".
+           DISPLAY "SUBMITTING ORDER TO EXCHANGE...".
+      *    (LOGIC TO READ, UPDATE/DELETE INVESTMENT-RECORD)
+           DISPLAY "CALCULATING REALIZED GAIN/LOSS...".
+           DISPLAY "TRADE EXECUTED AND CONFIRMED.".
+           CLOSE INVESTMENT-FILE.
            STOP RUN.

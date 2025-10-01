@@ -2,11 +2,51 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LAMAIN.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 2024-07-27.
       ******************************************************************
       * LIVE BANK - LOANS ADMINISTRATION MAIN
+      *
+      * THIS IS THE SUB-MENU CONTROLLER FOR THE LOANS ADMINISTRATION
+      * SYSTEM (LAS). 100% PRINCIPAL. 100% INTEREST. 100% SECURED.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-LA-MENU      VALUE 'X'.
+
+       01 WS-MENU-SCREEN.
+          05 FILLER PIC X(80) VALUE ALL "*".
+          05 FILLER PIC X(80) VALUE
+             "*           LOANS ADMINISTRATION SYSTEM (LAS)            *".
+          05 FILLER PIC X(80) VALUE ALL "*".
+          05 FILLER PIC X(80) VALUE "*   1. ORIGINATE NEW LOAN                          *".
+          05 FILLER PIC X(80) VALUE "*   2. INQUIRE LOAN STATUS                         *".
+          05 FILLER PIC X(80) VALUE "*   3. PROCESS LOAN PAYMENT                        *".
+          05 FILLER PIC X(80) VALUE "*                                                    *".
+          05 FILLER PIC X(80) VALUE "*   X. EXIT TO MAIN MENU                           *".
+          05 FILLER PIC X(80) VALUE ALL "*".
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           DISPLAY "LOANS ADMINISTRATION MODULE ACCESSED.".
-           DISPLAY "100% PRINCIPAL. 100% INTEREST. 100% SECURED.".
+       0000-MAIN-LOGIC.
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-LA-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY WS-MENU-SCREEN.
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1"
+                   CALL "LAOPEN"
+               WHEN "2"
+                   CALL "LAINQ"
+               WHEN "3"
+                   CALL "LAPAY"
+               WHEN "X"
+                   DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER
+                   DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

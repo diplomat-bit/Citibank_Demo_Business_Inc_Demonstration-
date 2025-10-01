@@ -5,7 +5,28 @@
       ******************************************************************
       * LIVE BANK - INQUIRE BATCH JOB STATUS
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-INQUIRY-JOB-ID PIC X(08).
+       01 WS-JOB-STATUS-RECORD.
+          05 WS-JOB-STATUS   PIC X(10).
+          05 WS-START-TIME   PIC X(08).
+          05 WS-END-TIME     PIC X(08).
+          05 WS-RETURN-CODE  PIC X(04).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "ENTER JOB ID FOR STATUS INQUIRY.".
+           DISPLAY "BCSTAT - BATCH JOB STATUS INQUIRY".
+           DISPLAY "ENTER JOB ID FOR STATUS INQUIRY: ".
+           ACCEPT WS-INQUIRY-JOB-ID.
+           DISPLAY "QUERYING JOB SCHEDULER FOR " WS-INQUIRY-JOB-ID "...".
+      *    (SIMULATION OF INTERFACING WITH JES/SCHEDULER)
+           MOVE "COMPLETED" TO WS-JOB-STATUS.
+           MOVE "01:05:30" TO WS-START-TIME.
+           MOVE "01:15:00" TO WS-END-TIME.
+           MOVE "0000" TO WS-RETURN-CODE.
+
+           DISPLAY "STATUS: " WS-JOB-STATUS.
+           DISPLAY "START TIME: " WS-START-TIME.
+           DISPLAY "END TIME: " WS-END-TIME.
+           DISPLAY "RETURN CODE: " WS-RETURN-CODE.
            STOP RUN.

@@ -5,7 +5,31 @@
       ******************************************************************
       * LIVE BANK - PROCESS CD MATURITY
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT TIME-DEPOSIT-FILE ASSIGN TO TDMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD TIME-DEPOSIT-FILE.
+       01 TD-FILE-RECORD PIC X(108).
+       WORKING-STORAGE SECTION.
+       01 WS-EOF-FLAG PIC X(01) VALUE 'N'.
+          88 END-OF-FILE VALUE 'Y'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "PROCESSING MATURED CERTIFICATES OF DEPOSIT...".
+           DISPLAY "TDMATR - CD MATURITY BATCH PROCESSING".
+           OPEN I-O TIME-DEPOSIT-FILE.
+           PERFORM PROCESS-RECORDS UNTIL END-OF-FILE.
+           CLOSE TIME-DEPOSIT-FILE.
            STOP RUN.
+
+       PROCESS-RECORDS.
+           READ TIME-DEPOSIT-FILE
+               AT END SET END-OF-FILE TO TRUE
+           END-READ.
+           IF NOT END-OF-FILE
+      *        (LOGIC TO CHECK IF TD-MATURITY-DATE IS TODAY.
+      *         IF YES, PROCESS RENEWAL OR PAYOUT BASED ON
+      *         TD-RENEWAL-CODE AND REWRITE THE RECORD.)
+               DISPLAY "CHECKING RECORD FOR MATURITY..."
+           END-IF.

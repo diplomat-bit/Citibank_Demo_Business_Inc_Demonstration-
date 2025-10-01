@@ -5,7 +5,31 @@
       ******************************************************************
       * LIVE BANK - OPEN TIME DEPOSIT (CD)
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT TIME-DEPOSIT-FILE ASSIGN TO TDMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD TIME-DEPOSIT-FILE.
+       01 TD-FILE-RECORD PIC X(108).
+       WORKING-STORAGE SECTION.
+       01 WS-INPUT-DETAILS.
+          05 WS-CUST-ID    PIC 9(10).
+          05 WS-PRINCIPAL  PIC S9(13)V99.
+          05 WS-TERM       PIC 9(03).
+       COPY CPTD01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "OPENING NEW CERTIFICATE OF DEPOSIT.".
+           DISPLAY "TDOPEN - OPEN NEW CERTIFICATE OF DEPOSIT".
+           OPEN I-O TIME-DEPOSIT-FILE.
+           DISPLAY "ENTER CUSTOMER ID: ".
+           ACCEPT WS-CUST-ID.
+           DISPLAY "ENTER PRINCIPAL AMOUNT: ".
+           ACCEPT WS-PRINCIPAL.
+           DISPLAY "ENTER TERM IN MONTHS: ".
+           ACCEPT WS-TERM.
+           DISPLAY "FETCHING CURRENT RATES FOR " WS-TERM " MONTHS...".
+      *    (LOGIC TO POPULATE AND WRITE TIME-DEPOSIT-RECORD)
+           DISPLAY "NEW CD ACCOUNT OPENED.".
+           CLOSE TIME-DEPOSIT-FILE.
            STOP RUN.

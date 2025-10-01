@@ -2,15 +2,98 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. LAINQ.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 1990-03-05.
       ******************************************************************
       * LIVE BANK - INQUIRE LOAN
+      *
+      * RETRIEVES AND DISPLAYS A LOAN RECORD FROM THE MASTER FILE.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT LOAN-MASTER-FILE ASSIGN TO LOANMAST
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS RANDOM
+               RECORD KEY IS LM-LOAN-ID
+               FILE STATUS IS WS-LOANMAST-STATUS.
+
        DATA DIVISION.
+       FILE SECTION.
+       FD LOAN-MASTER-FILE.
+       01 LOAN-FILE-RECORD    PIC X(131).
+
        WORKING-STORAGE SECTION.
-       01 WS-INQUIRY-ID PIC 9(12).
+       01 WS-PROGRAM-SWITCHES.
+          05 WS-LOANMAST-STATUS     PIC X(02).
+             88 LOANMAST-OK            VALUE '00'.
+             88 LOANMAST-NOT-FOUND     VALUE '23'.
+
+       01 WS-INPUT-FIELDS.
+          05 WS-INQUIRY-ID        PIC 9(12).
+
+       COPY CPLA01 REPLACING ==LOAN-MASTER-RECORD== BY
+                               ==WS-LOAN-MASTER==.
+
+       01 WS-DISPLAY-SCREEN.
+          05 FILLER PIC X(80) VALUE ALL "-".
+          05 DS-LINE-1.
+             10 FILLER         PIC X(10) VALUE "LOAN ID: ".
+             10 DS-LOAN-ID     PIC 9(12).
+          05 DS-LINE-2.
+             10 FILLER         PIC X(10) VALUE "CUST ID: ".
+             10 DS-CUST-ID     PIC 9(10).
+          05 DS-LINE-3.
+             10 FILLER         PIC X(20) VALUE "ORIGINAL PRINCIPAL: ".
+             10 DS-ORIG-PRIN   PIC $$$,$$$,$$9.99.
+          05 DS-LINE-4.
+             10 FILLER         PIC X(20) VALUE "CURRENT PRINCIPAL:  ".
+             10 DS-CURR-PRIN   PIC $$$,$$$,$$9.99.
+          05 DS-LINE-5.
+             10 FILLER         PIC X(20) VALUE "STATUS: ".
+             10 DS-STATUS      PIC X(15).
+          05 FILLER PIC X(80) VALUE ALL "-".
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
+       0000-MAIN-LOGIC.
+           PERFORM 1000-INITIALIZATION.
+           PERFORM 2000-ACCEPT-INQUIRY-ID.
+           PERFORM 3000-READ-LOAN-RECORD.
+           IF LOANMAST-OK
+              PERFORM 4000-DISPLAY-LOAN-DATA
+           END-IF.
+           PERFORM 9999-TERMINATION.
+           STOP RUN.
+
+       1000-INITIALIZATION.
+           DISPLAY " ".
+           DISPLAY "INITIALIZING LAINQ - LOAN INQUIRY MODULE.".
+           OPEN INPUT LOAN-MASTER-FILE.
+
+       2000-ACCEPT-INQUIRY-ID.
            DISPLAY "ENTER LOAN ID FOR INQUIRY: ".
            ACCEPT WS-INQUIRY-ID.
-           DISPLAY "RETRIEVING LOAN RECORD FOR " WS-INQUIRY-ID.
-           STOP RUN.
+
+       3000-READ-LOAN-RECORD.
+           MOVE WS-INQUIRY-ID TO LM-LOAN-ID OF WS-LOAN-MASTER.
+           READ LOAN-MASTER-FILE INTO WS-LOAN-MASTER
+               INVALID KEY MOVE '23' TO WS-LOANMAST-STATUS.
+           IF LOANMAST-NOT-FOUND
+              DISPLAY "ERROR: LOAN ID NOT FOUND."
+           END-IF.
+
+       4000-DISPLAY-LOAN-DATA.
+           MOVE LM-LOAN-ID OF WS-LOAN-MASTER TO DS-LOAN-ID.
+           MOVE LM-CUSTOMER-ID OF WS-LOAN-MASTER TO DS-CUST-ID.
+           MOVE LM-ORIGINAL-PRINCIPAL OF WS-LOAN-MASTER TO DS-ORIG-PRIN.
+           MOVE LM-CURRENT-PRINCIPAL OF WS-LOAN-MASTER TO DS-CURR-PRIN.
+           EVALUATE LM-STATUS OF WS-LOAN-MASTER
+               WHEN 'A' MOVE 'ACTIVE' TO DS-STATUS
+               WHEN 'P' MOVE 'PAID IN FULL' TO DS-STATUS
+               WHEN 'D' MOVE 'DEFAULT' TO DS-STATUS
+           END-EVALUATE.
+           DISPLAY WS-DISPLAY-SCREEN.
+
+       9999-TERMINATION.
+           CLOSE LOAN-MASTER-FILE.
+           DISPLAY "LAINQ MODULE TERMINATED.".
+           DISPLAY " ".

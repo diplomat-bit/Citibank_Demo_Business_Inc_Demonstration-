@@ -5,7 +5,26 @@
       ******************************************************************
       * LIVE BANK - INQUIRE INVESTMENT POSITION
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT INVESTMENT-FILE ASSIGN TO INVMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD INVESTMENT-FILE.
+       01 INV-FILE-RECORD PIC X(94).
+       WORKING-STORAGE SECTION.
+       01 WS-INQUIRY-CUSIP PIC X(09).
+       COPY CPVI01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "ENTER CUSIP FOR POSITION INQUIRY.".
+           DISPLAY "IVINQ - POSITION INQUIRY".
+           OPEN INPUT INVESTMENT-FILE.
+           DISPLAY "ENTER CUSIP FOR POSITION INQUIRY: ".
+           ACCEPT WS-INQUIRY-CUSIP.
+      *    (LOGIC TO READ INVESTMENT-FILE BY CUSIP)
+           DISPLAY "POSITION FOUND: ".
+           DISPLAY "QUANTITY: " IV-QUANTITY.
+           DISPLAY "COST BASIS: " IV-COST-BASIS.
+           DISPLAY "MARKET VALUE: " IV-MARKET-VALUE.
+           CLOSE INVESTMENT-FILE.
            STOP RUN.

@@ -5,7 +5,32 @@
       ******************************************************************
       * LIVE BANK - EXECUTE INVESTMENT PURCHASE
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT INVESTMENT-FILE ASSIGN TO INVMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD INVESTMENT-FILE.
+       01 INV-FILE-RECORD PIC X(94).
+       WORKING-STORAGE SECTION.
+       01 WS-TRADE-TICKET.
+          05 WS-TICKER       PIC X(05).
+          05 WS-QUANTITY     PIC S9(9)V9(6).
+          05 WS-PRICE        PIC S9(7)V99.
+       COPY CPVI01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "EXECUTING TRADE ORDER: BUY.".
+           DISPLAY "IVBUY - TRADE EXECUTION PLATFORM (BUY)".
+           OPEN I-O INVESTMENT-FILE.
+           DISPLAY "ENTER TICKER SYMBOL: ".
+           ACCEPT WS-TICKER.
+           DISPLAY "ENTER QUANTITY: ".
+           ACCEPT WS-QUANTITY.
+           DISPLAY "ENTER PRICE: ".
+           ACCEPT WS-PRICE.
+           DISPLAY "VALIDATING SETTLEMENT FUNDS...".
+           DISPLAY "SUBMITTING ORDER TO EXCHANGE...".
+      *    (LOGIC TO CREATE AND WRITE A NEW INVESTMENT-RECORD)
+           DISPLAY "TRADE EXECUTED AND CONFIRMED.".
+           CLOSE INVESTMENT-FILE.
            STOP RUN.

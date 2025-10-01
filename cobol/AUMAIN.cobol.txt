@@ -5,7 +5,34 @@
       ******************************************************************
       * LIVE BANK - AUDIT MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-AU-MENU      VALUE 'X'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "AUDIT MODULE ACCESSED.".
+           DISPLAY "*** AUDIT MODULE - RESTRICTED ACCESS ***".
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-AU-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY " ".
+           DISPLAY "*************************************************".
+           DISPLAY "*              AUDIT SYSTEM (AUS)               *".
+           DISPLAY "*************************************************".
+           DISPLAY "*   1. REVIEW SYSTEM AUDIT LOGS                 *".
+           DISPLAY "*   2. GENERATE TRANSACTION AUDIT TRAIL         *".
+           DISPLAY "*   3. FLAG TRANSACTION FOR MANUAL REVIEW       *".
+           DISPLAY "*   X. EXIT TO MAIN MENU                        *".
+           DISPLAY "*************************************************".
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1" CALL "AULOG"
+               WHEN "2" CALL "AUTRAIL"
+               WHEN "3" CALL "AUFLAG"
+               WHEN "X" DISPLAY "EXITING AUDIT MODULE..."
+               WHEN OTHER DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

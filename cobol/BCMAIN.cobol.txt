@@ -5,7 +5,35 @@
       ******************************************************************
       * LIVE BANK - BATCH CONTROL MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-BC-MENU      VALUE 'X'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "BATCH CONTROL MODULE ACCESSED.".
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-BC-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY " ".
+           DISPLAY "*************************************************".
+           DISPLAY "*           BATCH CONTROL SYSTEM (BCS)          *".
+           DISPLAY "*************************************************".
+           DISPLAY "*   1. SUBMIT NEW BATCH JOB                     *".
+           DISPLAY "*   2. INQUIRE JOB STATUS                       *".
+           DISPLAY "*   3. VIEW JOB LOG                             *".
+           DISPLAY "*   4. RUN END-OF-DAY PROCESSING                *".
+           DISPLAY "*   X. EXIT TO MAIN MENU                        *".
+           DISPLAY "*************************************************".
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1" CALL "BCSTART"
+               WHEN "2" CALL "BCSTAT"
+               WHEN "3" CALL "BCLOG"
+               WHEN "4" CALL "BCEND"
+               WHEN "X" DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

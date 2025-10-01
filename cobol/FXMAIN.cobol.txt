@@ -5,7 +5,33 @@
       ******************************************************************
       * LIVE BANK - FOREIGN EXCHANGE MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-FX-MENU      VALUE 'X'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "FOREIGN EXCHANGE MODULE ACCESSED.".
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-FX-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY " ".
+           DISPLAY "*************************************************".
+           DISPLAY "*        FOREIGN EXCHANGE SYSTEM (FXS)          *".
+           DISPLAY "*************************************************".
+           DISPLAY "*   1. GET LIVE FX RATES                        *".
+           DISPLAY "*   2. EXECUTE FX BUY                           *".
+           DISPLAY "*   3. EXECUTE FX SELL                          *".
+           DISPLAY "*   X. EXIT TO MAIN MENU                        *".
+           DISPLAY "*************************************************".
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1" CALL "FXRATE"
+               WHEN "2" CALL "FXBUY"
+               WHEN "3" CALL "FXSELL"
+               WHEN "X" DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

@@ -1,10 +1,30 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR DEPOSIT ACCOUNT RECORD
+      * LIVE BANK - COPYBOOK FOR DEPOSIT ACCOUNT RECORD (V2.0)
+      * DEFINES THE 100-POINT STATE OF A SINGLE DEPOSIT ACCOUNT.
       ******************************************************************
        01 DEPOSIT-ACCOUNT-RECORD.
-          05 DA-ACCOUNT-NUMBER    PIC 9(12).
-          05 DA-CUSTOMER-ID       PIC 9(10).
-          05 DA-ACCOUNT-TYPE      PIC X(04).
-          05 DA-CURRENT-BALANCE   PIC S9(13)V99 COMP-3.
-          05 DA-OPEN-DATE         PIC X(10).
+          05 DA-ACCOUNT-NUMBER      PIC 9(12).
+          05 DA-CUSTOMER-ID         PIC 9(10).
+          05 DA-ACCOUNT-DETAILS.
+             10 DA-ACCOUNT-TYPE     PIC X(04).
+                88 IS-CHECKING       VALUE 'CHKG'.
+                88 IS-SAVINGS        VALUE 'SAVG'.
+                88 IS-MONEY-MARKET   VALUE 'MMDA'.
+             10 DA-OPEN-DATE        PIC X(10). *> YYYY-MM-DD
+             10 DA-STATUS           PIC X(01).
+                88 DA-IS-ACTIVE      VALUE 'A'.
+                88 DA-IS-DORMANT     VALUE 'D'.
+                88 DA-IS-CLOSED      VALUE 'C'.
+                88 DA-IS-FROZEN      VALUE 'F'.
+             10 DA-NICKNAME         PIC X(30).
+          05 DA-BALANCE-FIELDS.
+             10 DA-CURRENT-BALANCE  PIC S9(13)V99 COMP-3.
+             10 DA-AVAILABLE-BAL    PIC S9(13)V99 COMP-3.
+             10 DA-HOLD-AMOUNT      PIC S9(13)V99 COMP-3.
+             10 DA-OVERDRAFT-LIMIT  PIC S9(07)V99 COMP-3.
+          05 DA-INTEREST-FIELDS.
+             10 DA-INTEREST-RATE    PIC S9(1)V9(6) COMP-3.
+             10 DA-INTEREST-ACCRUED PIC S9(9)V99 COMP-3.
+             10 DA-LAST-INT-RUN     PIC X(10).
+          05 DA-FILLER              PIC X(100).

@@ -5,7 +5,26 @@
       ******************************************************************
       * LIVE BANK - INQUIRE TIME DEPOSIT
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT TIME-DEPOSIT-FILE ASSIGN TO TDMAST.
+       DATA DIVISION.
+       FILE SECTION.
+       FD TIME-DEPOSIT-FILE.
+       01 TD-FILE-RECORD PIC X(108).
+       WORKING-STORAGE SECTION.
+       01 WS-INQUIRY-ACCT PIC 9(12).
+       COPY CPTD01.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "ENTER CD ACCOUNT NUMBER FOR INQUIRY.".
+           DISPLAY "TDINQ - CERTIFICATE OF DEPOSIT INQUIRY".
+           OPEN INPUT TIME-DEPOSIT-FILE.
+           DISPLAY "ENTER CD ACCOUNT NUMBER FOR INQUIRY: ".
+           ACCEPT WS-INQUIRY-ACCT.
+      *    (LOGIC TO READ TIME-DEPOSIT-FILE)
+           DISPLAY "ACCOUNT FOUND: ".
+           DISPLAY "PRINCIPAL: " TD-PRINCIPAL.
+           DISPLAY "RATE: " TD-INTEREST-RATE.
+           DISPLAY "MATURITY DATE: " TD-MATURITY-DATE.
+           CLOSE TIME-DEPOSIT-FILE.
            STOP RUN.

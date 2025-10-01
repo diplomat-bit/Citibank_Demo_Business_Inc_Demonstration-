@@ -1,12 +1,44 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR CUSTOMER MASTER RECORD
+      * LIVE BANK - COPYBOOK FOR CUSTOMER MASTER RECORD (V2.0)
       * ONE OF 100 CANONICAL DATA STRUCTURES.
+      * THIS RECORD DEFINES THE 100-POINT PROFILE OF A SOVEREIGN CLIENT.
       ******************************************************************
        01 CUSTOMER-MASTER-RECORD.
-          05 CM-CUSTOMER-ID       PIC 9(10).
-          05 CM-LAST-NAME         PIC X(25).
-          05 CM-FIRST-NAME        PIC X(25).
-          05 CM-DATE-OF-BIRTH     PIC X(10).
-          05 CM-TAX-ID            PIC X(12).
-          05 CM-FILLER            PIC X(18).
+          05 CM-CUSTOMER-ID         PIC 9(10).
+          05 CM-PERSONAL-DETAILS.
+             10 CM-LAST-NAME        PIC X(25).
+             10 CM-FIRST-NAME       PIC X(25).
+             10 CM-MIDDLE-INITIAL   PIC X(01).
+             10 CM-DATE-OF-BIRTH    PIC X(10).  *> YYYY-MM-DD
+             10 CM-TAX-ID           PIC X(12).  *> SSN OR TIN
+          05 CM-ADDRESS-MAILING.
+             10 CM-ADDR1-LINE1      PIC X(40).
+             10 CM-ADDR1-LINE2      PIC X(40).
+             10 CM-ADDR1-CITY       PIC X(30).
+             10 CM-ADDR1-STATE      PIC X(02).
+             10 CM-ADDR1-ZIP        PIC X(10).
+             10 CM-ADDR1-COUNTRY    PIC X(03).
+          05 CM-ADDRESS-PHYSICAL.
+             10 CM-ADDR2-LINE1      PIC X(40).
+             10 CM-ADDR2-LINE2      PIC X(40).
+             10 CM-ADDR2-CITY       PIC X(30).
+             10 CM-ADDR2-STATE      PIC X(02).
+             10 CM-ADDR2-ZIP        PIC X(10).
+             10 CM-ADDR2-COUNTRY    PIC X(03).
+          05 CM-CONTACT-INFO.
+             10 CM-PHONE-HOME       PIC X(15).
+             10 CM-PHONE-MOBILE     PIC X(15).
+             10 CM-EMAIL-ADDRESS    PIC X(50).
+          05 CM-BANK-RELATIONSHIP.
+             10 CM-OPEN-DATE        PIC X(10).
+             10 CM-CUSTOMER-TYPE    PIC X(01).
+                88 IS-RETAIL       VALUE 'R'.
+                88 IS-COMMERCIAL    VALUE 'C'.
+                88 IS-WEALTH       VALUE 'W'.
+             10 CM-STATUS           PIC X(01).
+                88 IS-ACTIVE        VALUE 'A'.
+                88 IS-DORMANT       VALUE 'D'.
+                88 IS-CLOSED        VALUE 'C'.
+             10 CM-AI-RISK-SCORE    PIC 9(03).
+          05 CM-FILLER              PIC X(100).

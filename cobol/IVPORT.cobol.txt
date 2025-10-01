@@ -5,7 +5,43 @@
       ******************************************************************
       * LIVE BANK - VIEW INVESTMENT PORTFOLIO
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       FILE-CONTROL.
+           SELECT INVESTMENT-FILE ASSIGN TO INVMAST.
+           SELECT REPORT-FILE ASSIGN TO RPTINV01.
+       DATA DIVISION.
+       FILE SECTION.
+       FD INVESTMENT-FILE.
+       01 INV-FILE-RECORD PIC X(94).
+       FD REPORT-FILE.
+       01 REPORT-LINE     PIC X(80).
+       WORKING-STORAGE SECTION.
+       01 WS-EOF-FLAG PIC X(01) VALUE 'N'.
+          88 END-OF-FILE VALUE 'Y'.
+       01 WS-TOTALS.
+          05 WS-TOTAL-COST-BASIS PIC S9(15)V99.
+          05 WS-TOTAL-MARKET-VAL PIC S9(15)V99.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "GENERATING PORTFOLIO SUMMARY...".
+           DISPLAY "IVPORT - PORTFOLIO SUMMARY GENERATOR".
+           OPEN INPUT INVESTMENT-FILE.
+           OPEN OUTPUT REPORT-FILE.
+           PERFORM WRITE-HEADER.
+           PERFORM PROCESS-POSITIONS UNTIL END-OF-FILE.
+           PERFORM WRITE-FOOTER.
+           CLOSE INVESTMENT-FILE, REPORT-FILE.
            STOP RUN.
+
+       PROCESS-POSITIONS.
+           READ INVESTMENT-FILE
+               AT END SET END-OF-FILE TO TRUE
+           END-READ.
+           IF NOT END-OF-FILE
+      *        (LOGIC TO ADD TO TOTALS AND WRITE DETAIL LINE)
+               DISPLAY "PROCESSING POSITION..."
+           END-IF.
+
+       WRITE-HEADER.
+           DISPLAY "WRITING REPORT HEADER...".
+       WRITE-FOOTER.
+           DISPLAY "WRITING REPORT FOOTER WITH TOTALS...".

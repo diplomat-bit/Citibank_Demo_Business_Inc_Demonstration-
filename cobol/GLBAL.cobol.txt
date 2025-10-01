@@ -2,11 +2,98 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. GLBAL.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 1991-05-22.
       ******************************************************************
       * LIVE BANK - GL BALANCE INQUIRY
+      *
+      * RETRIEVES AND DISPLAYS DETAILED BALANCE INFORMATION FOR A
+      * SINGLE GENERAL LEDGER ACCOUNT.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT GL-MASTER-FILE ASSIGN TO GLMAST
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS RANDOM
+               RECORD KEY IS GL-ACCOUNT-NUMBER
+               FILE STATUS IS WS-GLMAST-STATUS.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD GL-MASTER-FILE.
+       01 GL-FILE-RECORD         PIC X(201).
+
+       WORKING-STORAGE SECTION.
+       01 WS-PROGRAM-SWITCHES.
+          05 WS-GLMAST-STATUS     PIC X(02).
+             88 GLMAST-OK            VALUE '00'.
+             88 GLMAST-NOT-FOUND     VALUE '23'.
+
+       01 WS-INPUT-FIELDS.
+          05 WS-INQUIRY-ACCT      PIC X(15).
+
+       COPY CPGL01 REPLACING ==GL-ACCOUNT-RECORD== BY ==WS-GL-ACCOUNT==.
+
+       01 WS-DISPLAY-SCREEN.
+          05 DS-LINE-1.
+             10 FILLER            PIC X(10) VALUE "ACCOUNT: ".
+             10 DS-ACCT-NUM       PIC X(15).
+             10 FILLER            PIC X(02) VALUE " ".
+             10 DS-ACCT-DESC      PIC X(50).
+          05 DS-LINE-2.
+             10 FILLER            PIC X(20) VALUE "CURRENT BALANCE: ".
+             10 DS-CURR-BAL       PIC ----,---,---,---,--9.99.
+          05 DS-LINE-3.
+             10 FILLER            PIC X(20) VALUE "YTD DEBITS: ".
+             10 DS-YTD-DR         PIC ----,---,---,---,--9.99.
+          05 DS-LINE-4.
+             10 FILLER            PIC X(20) VALUE "YTD CREDITS: ".
+             10 DS-YTD-CR         PIC ----,---,---,---,--9.99.
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           DISPLAY "ENTER GL ACCOUNT NUMBER FOR BALANCE INQUIRY.".
-           DISPLAY "FETCHING CURRENT BALANCE...".
+       0000-MAIN-LOGIC.
+           PERFORM 1000-INITIALIZATION.
+           PERFORM 2000-ACCEPT-INQUIRY.
+           PERFORM 3000-READ-GL-RECORD.
+           IF GLMAST-OK
+              PERFORM 4000-DISPLAY-BALANCE-DATA
+           END-IF.
+           PERFORM 9999-TERMINATION.
            STOP RUN.
+
+       1000-INITIALIZATION.
+           DISPLAY " ".
+           DISPLAY "INITIALIZING GLBAL - G/L INQUIRY MODULE.".
+           OPEN INPUT GL-MASTER-FILE.
+
+       2000-ACCEPT-INQUIRY.
+           DISPLAY "ENTER G/L ACCOUNT NUMBER FOR BALANCE INQUIRY: ".
+           ACCEPT WS-INQUIRY-ACCT.
+
+       3000-READ-GL-RECORD.
+           MOVE WS-INQUIRY-ACCT TO GL-ACCOUNT-NUMBER OF WS-GL-ACCOUNT.
+           READ GL-MASTER-FILE INTO WS-GL-ACCOUNT
+               INVALID KEY MOVE '23' TO WS-GLMAST-STATUS.
+           IF GLMAST-NOT-FOUND
+              DISPLAY "ERROR: G/L ACCOUNT NOT FOUND."
+           END-IF.
+
+       4000-DISPLAY-BALANCE-DATA.
+           MOVE GL-ACCOUNT-NUMBER OF WS-GL-ACCOUNT TO DS-ACCT-NUM.
+           MOVE GL-ACCOUNT-DESC OF WS-GL-ACCOUNT TO DS-ACCT-DESC.
+           MOVE GL-CURRENT-BALANCE OF WS-GL-ACCOUNT TO DS-CURR-BAL.
+           MOVE GL-YTD-DEBITS OF WS-GL-ACCOUNT TO DS-YTD-DR.
+           MOVE GL-YTD-CREDITS OF WS-GL-ACCOUNT TO DS-YTD-CR.
+           DISPLAY " ".
+           DISPLAY "--------------- G/L ACCOUNT BALANCE ---------------".
+           DISPLAY DS-LINE-1.
+           DISPLAY " ".
+           DISPLAY DS-LINE-2.
+           DISPLAY DS-LINE-3.
+           DISPLAY DS-LINE-4.
+           DISPLAY "---------------------------------------------------".
+
+       9999-TERMINATION.
+           CLOSE GL-MASTER-FILE.
+           DISPLAY "GLBAL MODULE TERMINATED.".
+           DISPLAY " ".

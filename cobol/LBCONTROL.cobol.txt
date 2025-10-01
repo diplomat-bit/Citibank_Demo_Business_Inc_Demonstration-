@@ -3,17 +3,49 @@
        PROGRAM-ID. LBCONTROL.
        AUTHOR. LIVE-BANK-ARCHITECTS.
        DATE-WRITTEN. 2024-07-27.
+       INSTALLATION. LIVE BANK MAINFRame, NYC DATA CENTER.
       ******************************************************************
-      * LIVE BANK - SYSTEM CONTROL PROGRAM
-      * THIS IS THE CENTRAL GOVERNOR OF THE 100-MODULE SYSTEM.
+      * LIVE BANK - SYSTEM CONTROL PROGRAM (THE GOVERNOR)
+      *
+      * THIS IS THE CENTRAL BATCH CONTROLLER FOR THE ENTIRE
+      * LIVE BANK SYSTEM. IT PRESENTS THE MAIN MENU AND DISPATCHES
+      * CONTROL TO ONE OF THE 100 SUBSYSTEM MODULES.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER. IBM-3090.
+       OBJECT-COMPUTER. IBM-3090.
+
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       01 WS-USER-CHOICE PIC X(02).
+       01 WS-SYSTEM-STATUS.
+          05 WS-CURRENT-DATE         PIC X(10).
+          05 WS-CURRENT-TIME         PIC X(08).
+          05 WS-OPERATOR-ID          PIC X(08).
+          05 WS-TERMINAL-ID          PIC X(04).
+
+       01 WS-USER-SELECTION.
+          05 WS-USER-CHOICE         PIC X(02).
+             88 EXIT-SYSTEM         VALUE "99".
+             88 VALID-CHOICE        VALUE "01" THRU "08", "99".
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           PERFORM UNTIL WS-USER-CHOICE = "99"
-               CALL "LBMENU" USING WS-USER-CHOICE
+       0000-MAIN-PROCEDURE.
+           PERFORM 1000-INITIALIZE-SESSION.
+           PERFORM 2000-MAIN-LOOP UNTIL EXIT-SYSTEM.
+           PERFORM 3000-TERMINATE-SESSION.
+           STOP RUN.
+
+       1000-INITIALIZE-SESSION.
+           DISPLAY "LIVE BANK CONTROL SYSTEM INITIALIZING...".
+           ACCEPT WS-OPERATOR-ID FROM CONSOLE.
+           DISPLAY "OPERATOR " WS-OPERATOR-ID " LOGGED ON.".
+
+       2000-MAIN-LOOP.
+           CALL "LBMENU" USING WS-USER-CHOICE.
+           IF NOT VALID-CHOICE
+               DISPLAY "INVALID CHOICE. 100 CHOICES, 1 PATH."
+           ELSE
                EVALUATE WS-USER-CHOICE
                    WHEN "01"
                        CALL "CIMAIN"
@@ -31,10 +63,31 @@
                        CALL "RPMAIN"
                    WHEN "08"
                        CALL "SCMAIN"
-                   WHEN "99"
-                       DISPLAY "LIVE BANK SESSION TERMINATED."
-                   WHEN OTHER
-                       DISPLAY "INVALID CHOICE. 100 CHOICES, 1 PATH."
+                   WHEN "09" *> CONCEPTUAL EXPANSION
+                       CALL "TMMAIN"
+                   WHEN "10"
+                       CALL "IVMAIN"
+                   WHEN "11"
+                       CALL "FXMAIN"
+                   WHEN "12"
+                       CALL "TDMAIN"
+                   WHEN "13"
+                       CALL "SFMAIN"
+                   WHEN "14"
+                       CALL "BCMAIN"
+                   WHEN "15"
+                       CALL "AUMAIN"
+                   WHEN "16"
+                       CALL "CFMAIN"
+                   WHEN "17"
+                       CALL "ARMAIN"
+                   WHEN "18"
+                       CALL "APMAIN"
+                   WHEN "19"
+                       CALL "PRMAIN"
                END-EVALUATE
-           END-PERFORM.
-           STOP RUN.
+           END-IF.
+
+       3000-TERMINATE-SESSION.
+           DISPLAY "LIVE BANK SESSION TERMINATED BY OPERATOR.".
+           DISPLAY "ALL SYSTEMS SECURE. 100% INTEGRITY MAINTAINED.".

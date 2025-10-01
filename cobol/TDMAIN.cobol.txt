@@ -5,7 +5,33 @@
       ******************************************************************
       * LIVE BANK - TIME DEPOSITS (CDS) MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-TD-MENU      VALUE 'X'.
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "TIME DEPOSITS MODULE ACCESSED.".
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-TD-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           DISPLAY " ".
+           DISPLAY "*************************************************".
+           DISPLAY "*           TIME DEPOSIT SYSTEM (TDS)           *".
+           DISPLAY "*************************************************".
+           DISPLAY "*   1. OPEN NEW CERTIFICATE OF DEPOSIT          *".
+           DISPLAY "*   2. INQUIRE CD DETAILS                       *".
+           DISPLAY "*   3. PROCESS MATURITIES                       *".
+           DISPLAY "*   X. EXIT TO MAIN MENU                        *".
+           DISPLAY "*************************************************".
+           ACCEPT WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1" CALL "TDOPEN"
+               WHEN "2" CALL "TDINQ"
+               WHEN "3" CALL "TDMATR"
+               WHEN "X" DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

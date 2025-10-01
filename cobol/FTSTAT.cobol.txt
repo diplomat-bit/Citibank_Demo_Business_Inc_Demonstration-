@@ -2,15 +2,81 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. FTSTAT.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 1993-02-11.
       ******************************************************************
       * LIVE BANK - INQUIRE FUNDS TRANSFER STATUS
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT FUNDS-TRANSFER-FILE ASSIGN TO FTMAST
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS RANDOM
+               RECORD KEY IS FT-TRANSACTION-ID
+               FILE STATUS IS WS-FTMAST-STATUS.
+
        DATA DIVISION.
+       FILE SECTION.
+       FD FUNDS-TRANSFER-FILE.
+       01 FT-FILE-RECORD         PIC X(200).
+
        WORKING-STORAGE SECTION.
-       01 WS-INQUIRY-TX-ID PIC X(16).
+       01 WS-PROGRAM-SWITCHES.
+          05 WS-FTMAST-STATUS       PIC X(02).
+             88 FTMAST-OK            VALUE '00'.
+             88 FTMAST-NOT-FOUND     VALUE '23'.
+
+       01 WS-INPUT-FIELDS.
+          05 WS-INQUIRY-TX-ID       PIC X(16).
+
+       COPY CPFT01 REPLACING ==FUNDS-TRANSFER-RECORD== BY
+                             ==WS-FUNDS-TRANSFER==.
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
+       0000-MAIN-LOGIC.
+           PERFORM 1000-INITIALIZATION.
+           PERFORM 2000-ACCEPT-INPUT.
+           PERFORM 3000-READ-RECORD.
+           IF FTMAST-OK
+              PERFORM 4000-DISPLAY-STATUS
+           END-IF.
+           PERFORM 9999-TERMINATION.
+           STOP RUN.
+
+       1000-INITIALIZATION.
+           DISPLAY " ".
+           DISPLAY "INITIALIZING FTSTAT - TRANSFER STATUS INQUIRY.".
+           OPEN INPUT FUNDS-TRANSFER-FILE.
+
+       2000-ACCEPT-INPUT.
            DISPLAY "ENTER TRANSACTION ID FOR STATUS INQUIRY: ".
            ACCEPT WS-INQUIRY-TX-ID.
-           DISPLAY "RETRIEVING STATUS FOR " WS-INQUIRY-TX-ID.
-           STOP RUN.
+
+       3000-READ-RECORD.
+           MOVE WS-INQUIRY-TX-ID TO FT-TRANSACTION-ID OF
+                                    WS-FUNDS-TRANSFER.
+           READ FUNDS-TRANSFER-FILE INTO WS-FUNDS-TRANSFER
+               INVALID KEY MOVE '23' TO WS-FTMAST-STATUS.
+           IF FTMAST-NOT-FOUND
+              DISPLAY "ERROR: TRANSACTION ID NOT FOUND."
+           END-IF.
+
+       4000-DISPLAY-STATUS.
+           DISPLAY " ".
+           DISPLAY "------------- TRANSFER STATUS -------------".
+           DISPLAY "TRANSACTION ID: " FT-TRANSACTION-ID OF
+                                      WS-FUNDS-TRANSFER.
+           DISPLAY "AMOUNT: " FT-TRANSFER-AMOUNT OF WS-FUNDS-TRANSFER.
+           DISPLAY "STATUS: ".
+           EVALUATE FT-STATUS OF WS-FUNDS-TRANSFER
+               WHEN 'P' DISPLAY "PENDING"
+               WHEN 'C' DISPLAY "COMPLETED"
+               WHEN 'F' DISPLAY "FAILED - " FT-STATUS-REASON
+               WHEN 'X' DISPLAY "CANCELLED"
+           END-EVALUATE.
+           DISPLAY "-----------------------------------------".
+
+       9999-TERMINATION.
+           CLOSE FUNDS-TRANSFER-FILE.
+           DISPLAY "FTSTAT MODULE TERMINATED.".
+           DISPLAY " ".

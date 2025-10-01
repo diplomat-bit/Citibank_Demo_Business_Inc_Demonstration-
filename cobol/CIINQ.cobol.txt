@@ -2,15 +2,113 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. CIINQ.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 1988-10-18.
       ******************************************************************
       * LIVE BANK - INQUIRE CUSTOMER
+      *
+      * RETRIEVES AND DISPLAYS A CUSTOMER RECORD FROM THE MASTER FILE
+      * BASED ON THE CUSTOMER ID. 100% READ-ONLY OPERATION.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT CUSTOMER-MASTER-FILE ASSIGN TO CUSTMAST
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS RANDOM
+               RECORD KEY IS CM-CUSTOMER-ID
+               FILE STATUS IS WS-CUSTMAST-STATUS.
+
        DATA DIVISION.
+       FILE SECTION.
+       FD CUSTOMER-MASTER-FILE.
+       01 CUSTOMER-FILE-RECORD    PIC X(434).
+
        WORKING-STORAGE SECTION.
-       01 WS-INQUIRY-ID PIC 9(10).
+       01 WS-PROGRAM-SWITCHES.
+          05 WS-CUSTMAST-STATUS     PIC X(02).
+             88 CUSTMAST-OK            VALUE '00'.
+             88 CUSTMAST-NOT-FOUND     VALUE '23'.
+
+       01 WS-INPUT-FIELDS.
+          05 WS-INQUIRY-ID        PIC 9(10).
+
+       COPY CPCI01 REPLACING ==CUSTOMER-MASTER-RECORD== BY
+                               ==WS-CUSTOMER-MASTER==.
+
+       01 WS-DISPLAY-SCREEN.
+          05 DISP-LINE-1.
+             10 FILLER            PIC X(10) VALUE "CUSTOMER: ".
+             10 DISP-CUST-ID      PIC 9(10).
+             10 FILLER            PIC X(02) VALUE " ".
+             10 DISP-CUST-NAME    PIC X(50).
+          05 DISP-LINE-2.
+             10 FILLER            PIC X(10) VALUE "ADDRESS: ".
+             10 DISP-ADDR         PIC X(70).
+          05 DISP-LINE-3.
+             10 FILLER            PIC X(10) VALUE "STATUS: ".
+             10 DISP-STATUS       PIC X(10).
+             10 FILLER            PIC X(05) VALUE "RISK: ".
+             10 DISP-RISK         PIC 999.
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           DISPLAY "ENTER CUSTOMER ID FOR INQUIRY: ".
-           ACCEPT WS-INQUIRY-ID.
-           DISPLAY "RETRIEVING RECORD FOR " WS-INQUIRY-ID.
+       0000-MAIN-LOGIC.
+           PERFORM 1000-INITIALIZATION.
+           PERFORM 2000-ACCEPT-INQUIRY-ID.
+           PERFORM 3000-READ-CUSTOMER-RECORD.
+           IF CUSTMAST-OK
+              PERFORM 4000-DISPLAY-CUSTOMER-DATA
+           END-IF.
+           PERFORM 9999-TERMINATION.
            STOP RUN.
+
+       1000-INITIALIZATION.
+           DISPLAY " ".
+           DISPLAY "INITIALIZING CIINQ - CUSTOMER INQUIRY MODULE.".
+           OPEN INPUT CUSTOMER-MASTER-FILE.
+           IF NOT CUSTMAST-OK
+              DISPLAY "CRITICAL ERROR OPENING CUSTOMER MASTER FILE."
+              STOP RUN
+           END-IF.
+
+       2000-ACCEPT-INQUIRY-ID.
+           DISPLAY "ENTER CUSTOMER ID FOR INQUIRY (10 DIGITS): ".
+           ACCEPT WS-INQUIRY-ID.
+
+       3000-READ-CUSTOMER-RECORD.
+           MOVE WS-INQUIRY-ID TO CM-CUSTOMER-ID OF WS-CUSTOMER-MASTER.
+           READ CUSTOMER-MASTER-FILE INTO WS-CUSTOMER-MASTER
+               KEY IS CM-CUSTOMER-ID OF WS-CUSTOMER-MASTER
+               INVALID KEY
+                   MOVE '23' TO WS-CUSTMAST-STATUS
+           END-READ.
+           IF CUSTMAST-NOT-FOUND
+              DISPLAY "ERROR: CUSTOMER ID NOT FOUND ON MASTER FILE."
+           ELSE
+              DISPLAY "RECORD RETRIEVED."
+           END-IF.
+
+       4000-DISPLAY-CUSTOMER-DATA.
+           MOVE CM-CUSTOMER-ID OF WS-CUSTOMER-MASTER TO DISP-CUST-ID.
+           STRING CM-FIRST-NAME OF WS-CUSTOMER-MASTER DELIMITED BY '  '
+                  " " DELIMITED BY SIZE
+                  CM-LAST-NAME OF WS-CUSTOMER-MASTER DELIMITED BY '  '
+                  INTO DISP-CUST-NAME.
+           MOVE CM-ADDR1-LINE1 OF WS-CUSTOMER-MASTER TO DISP-ADDR.
+           EVALUATE CM-STATUS OF WS-CUSTOMER-MASTER
+               WHEN 'A' MOVE 'ACTIVE' TO DISP-STATUS
+               WHEN 'D' MOVE 'DORMANT' TO DISP-STATUS
+               WHEN 'C' MOVE 'CLOSED' TO DISP-STATUS
+           END-EVALUATE.
+           MOVE CM-AI-RISK-SCORE OF WS-CUSTOMER-MASTER TO DISP-RISK.
+
+           DISPLAY " ".
+           DISPLAY "----------------- CUSTOMER DETAILS -----------------".
+           DISPLAY DISP-LINE-1.
+           DISPLAY DISP-LINE-2.
+           DISPLAY DISP-LINE-3.
+           DISPLAY "----------------------------------------------------".
+
+       9999-TERMINATION.
+           CLOSE CUSTOMER-MASTER-FILE.
+           DISPLAY "CIINQ MODULE TERMINATED.".
+           DISPLAY " ".

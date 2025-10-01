@@ -2,15 +2,107 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. DAINQ.
        AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 1989-01-12.
       ******************************************************************
       * LIVE BANK - INQUIRE DEPOSIT ACCOUNT
+      *
+      * RETRIEVES AND DISPLAYS A DEPOSIT ACCOUNT RECORD.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT DEPOSIT-ACCOUNT-FILE ASSIGN TO DEPMAST
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS RANDOM
+               RECORD KEY IS DA-ACCOUNT-NUMBER
+               FILE STATUS IS WS-DEPMAST-STATUS.
+
        DATA DIVISION.
+       FILE SECTION.
+       FD DEPOSIT-ACCOUNT-FILE.
+       01 DEPOSIT-FILE-RECORD    PIC X(201).
+
        WORKING-STORAGE SECTION.
-       01 WS-INQUIRY-ACCT-NUM PIC 9(12).
+       01 WS-PROGRAM-SWITCHES.
+          05 WS-DEPMAST-STATUS     PIC X(02).
+             88 DEPMAST-OK            VALUE '00'.
+             88 DEPMAST-NOT-FOUND     VALUE '23'.
+
+       01 WS-INPUT-FIELDS.
+          05 WS-INQUIRY-ACCT-NUM  PIC 9(12).
+
+       COPY CPDA01 REPLACING ==DEPOSIT-ACCOUNT-RECORD== BY
+                             ==WS-DEPOSIT-ACCOUNT==.
+
+       01 WS-DISPLAY-SCREEN.
+          05 FILLER               PIC X(80) VALUE ALL "-".
+          05 DS-LINE-1.
+             10 FILLER            PIC X(10) VALUE "ACCOUNT: ".
+             10 DS-ACCT-NUM       PIC 9(12).
+             10 FILLER            PIC X(02) VALUE " ".
+             10 DS-ACCT-TYPE      PIC X(15).
+          05 DS-LINE-2.
+             10 FILLER            PIC X(10) VALUE "CUSTOMER: ".
+             10 DS-CUST-ID        PIC 9(10).
+          05 DS-LINE-3.
+             10 FILLER            PIC X(20) VALUE "CURRENT BALANCE: ".
+             10 DS-CURR-BAL       PIC $$$,$$$,$$$,$$9.99.
+          05 DS-LINE-4.
+             10 FILLER            PIC X(20) VALUE "AVAILABLE BALANCE: ".
+             10 DS-AVAIL-BAL      PIC $$$,$$$,$$$,$$9.99.
+          05 DS-LINE-5.
+             10 FILLER            PIC X(10) VALUE "STATUS: ".
+             10 DS-STATUS         PIC X(10).
+          05 FILLER               PIC X(80) VALUE ALL "-".
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
+       0000-MAIN-LOGIC.
+           PERFORM 1000-INITIALIZATION.
+           PERFORM 2000-ACCEPT-INPUT.
+           PERFORM 3000-READ-RECORD.
+           IF DEPMAST-OK
+              PERFORM 4000-DISPLAY-RECORD
+           END-IF.
+           PERFORM 9999-TERMINATION.
+           STOP RUN.
+
+       1000-INITIALIZATION.
+           DISPLAY " ".
+           DISPLAY "INITIALIZING DAINQ - ACCOUNT INQUIRY MODULE.".
+           OPEN INPUT DEPOSIT-ACCOUNT-FILE.
+
+       2000-ACCEPT-INPUT.
            DISPLAY "ENTER ACCOUNT NUMBER FOR INQUIRY: ".
            ACCEPT WS-INQUIRY-ACCT-NUM.
-           DISPLAY "RETRIEVING ACCOUNT RECORD FOR " WS-INQUIRY-ACCT-NUM.
-           STOP RUN.
+
+       3000-READ-RECORD.
+           MOVE WS-INQUIRY-ACCT-NUM TO DA-ACCOUNT-NUMBER OF
+                                        WS-DEPOSIT-ACCOUNT.
+           READ DEPOSIT-ACCOUNT-FILE INTO WS-DEPOSIT-ACCOUNT
+               INVALID KEY MOVE '23' TO WS-DEPMAST-STATUS.
+           IF DEPMAST-NOT-FOUND
+              DISPLAY "ERROR: ACCOUNT NUMBER NOT FOUND."
+           END-IF.
+
+       4000-DISPLAY-RECORD.
+           MOVE DA-ACCOUNT-NUMBER OF WS-DEPOSIT-ACCOUNT TO DS-ACCT-NUM.
+           MOVE DA-CUSTOMER-ID OF WS-DEPOSIT-ACCOUNT TO DS-CUST-ID.
+           MOVE DA-CURRENT-BALANCE OF WS-DEPOSIT-ACCOUNT TO DS-CURR-BAL.
+           MOVE DA-AVAILABLE-BAL OF WS-DEPOSIT-ACCOUNT TO DS-AVAIL-BAL.
+
+           EVALUATE DA-ACCOUNT-TYPE OF WS-DEPOSIT-ACCOUNT
+               WHEN 'CHKG' MOVE 'CHECKING' TO DS-ACCT-TYPE
+               WHEN 'SAVG' MOVE 'SAVINGS' TO DS-ACCT-TYPE
+           END-EVALUATE.
+           EVALUATE DA-STATUS OF WS-DEPOSIT-ACCOUNT
+               WHEN 'A' MOVE 'ACTIVE' TO DS-STATUS
+               WHEN 'C' MOVE 'CLOSED' TO DS-STATUS
+           END-EVALUATE.
+
+           DISPLAY " ".
+           DISPLAY WS-DISPLAY-SCREEN.
+
+       9999-TERMINATION.
+           CLOSE DEPOSIT-ACCOUNT-FILE.
+           DISPLAY "DAINQ MODULE TERMINATED.".
+           DISPLAY " ".

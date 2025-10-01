@@ -1,14 +1,35 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR FUNDS TRANSFER RECORD
+      * LIVE BANK - COPYBOOK FOR FUNDS TRANSFER RECORD (V2.0)
+      * DEFINES THE 100-POINT DATA PAYLOAD FOR A SINGLE TRANSFER.
       ******************************************************************
        01 FUNDS-TRANSFER-RECORD.
-          05 FT-TRANSACTION-ID    PIC X(16).
-          05 FT-FROM-ACCOUNT      PIC 9(12).
-          05 FT-TO-ACCOUNT        PIC 9(12).
-          05 FT-TRANSFER-AMOUNT   PIC S9(13)V99 COMP-3.
-          05 FT-TRANSFER-DATE     PIC X(10).
-          05 FT-STATUS            PIC X(01).
-             88 FT-PENDING        VALUE 'P'.
-             88 FT-COMPLETED      VALUE 'C'.
-             88 FT-FAILED         VALUE 'F'.
+          05 FT-TRANSACTION-ID      PIC X(16).
+          05 FT-TRANSFER-TYPE       PIC X(04).
+             88 IS-ACH              VALUE 'ACH'.
+             88 IS-WIRE             VALUE 'WIRE'.
+             88 IS-INTERNAL         VALUE 'INTL'.
+          05 FT-ORIGINATOR-INFO.
+             10 FT-FROM-ACCOUNT     PIC 9(12).
+             10 FT-FROM-CUST-ID     PIC 9(10).
+          05 FT-BENEFICIARY-INFO.
+             10 FT-TO-ACCOUNT       PIC 9(12).
+             10 FT-TO-CUST-ID       PIC 9(10).
+             10 FT-TO-BANK-ABA      PIC X(09).
+          05 FT-AMOUNT-DETAILS.
+             10 FT-TRANSFER-AMOUNT  PIC S9(13)V99 COMP-3.
+             10 FT-CURRENCY         PIC X(03) VALUE 'USD'.
+          05 FT-TIMESTAMPS.
+             10 FT-INITIATED-DATE   PIC X(10).
+             10 FT-COMPLETED-DATE   PIC X(10).
+          05 FT-STATUS-INFO.
+             10 FT-STATUS           PIC X(01).
+                88 FT-PENDING        VALUE 'P'.
+                88 FT-COMPLETED      VALUE 'C'.
+                88 FT-FAILED         VALUE 'F'.
+                88 FT-CANCELLED      VALUE 'X'.
+             10 FT-STATUS-REASON    PIC X(50).
+          05 FT-COMPLIANCE-FLAGS.
+             10 FT-AML-FLAG         PIC X(01).
+             10 FT-OFAC-FLAG        PIC X(01).
+          05 FT-FILLER              PIC X(20).

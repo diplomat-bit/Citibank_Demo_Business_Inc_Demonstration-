@@ -5,7 +5,30 @@
       ******************************************************************
       * LIVE BANK - TELLER MANAGEMENT MAIN
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-MENU-SWITCHES.
+          05 WS-USER-CHOICE       PIC X(01).
+             88 EXIT-TM-MENU      VALUE 'X'.
+
        PROCEDURE DIVISION.
-       MAIN-LOGIC.
-           DISPLAY "TELLER MANAGEMENT MODULE ACCESSED.".
+       0000-MAIN-LOGIC.
+           PERFORM 1000-CONTROL-LOOP UNTIL EXIT-TM-MENU.
            GOBACK.
+
+       1000-CONTROL-LOOP.
+           CALL "TMMENU" USING WS-USER-CHOICE.
+           MOVE FUNCTION UPPER-CASE(WS-USER-CHOICE) TO WS-USER-CHOICE.
+
+           EVALUATE WS-USER-CHOICE
+               WHEN "1"
+                   CALL "TMOPEN"
+               WHEN "2"
+                   CALL "TMBAL"
+               WHEN "3"
+                   CALL "TMCLOSE"
+               WHEN "X"
+                   DISPLAY "RETURNING TO MAIN MENU..."
+               WHEN OTHER
+                   DISPLAY "INVALID SELECTION."
+           END-EVALUATE.

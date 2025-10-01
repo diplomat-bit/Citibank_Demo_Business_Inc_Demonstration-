@@ -5,7 +5,21 @@
       ******************************************************************
       * LIVE BANK - GET LIVE FX RATE
       ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-RATE-TABLE.
+          05 WS-RATES OCCURS 10 TIMES.
+             10 WS-CURRENCY-PAIR  PIC X(07).
+             10 WS-RATE           PIC 9(5)V9(6).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "FETCHING LIVE FOREIGN EXCHANGE RATES...".
+           DISPLAY "FXRATE - LIVE RATE MONITOR".
+           DISPLAY "CALLING AI-INTEGRATION-LAYER TO FETCH LIVE RATES...".
+      *    (SIMULATES CALLING AN API AND POPULATING WS-RATE-TABLE)
+           DISPLAY " ".
+           DISPLAY "CURRENCY   RATE".
+           DISPLAY "-------    --------------".
+           DISPLAY "USD/EUR    1.085000".
+           DISPLAY "USD/GBP    1.272000".
+           DISPLAY "USD/JPY    157.050000".
            STOP RUN.

@@ -1,9 +1,24 @@
 
       ******************************************************************
-      * LIVE BANK - COPYBOOK FOR TIME DEPOSIT (CD) RECORD
+      * LIVE BANK - COPYBOOK FOR TIME DEPOSIT (CD) RECORD (V2.0)
       ******************************************************************
        01 TIME-DEPOSIT-RECORD.
-          05 TD-ACCOUNT-NUMBER    PIC 9(12).
-          05 TD-PRINCIPAL         PIC S9(13)V99 COMP-3.
-          05 TD-INTEREST-RATE     PIC S9(3)V99 COMP-3.
-          05 TD-MATURITY-DATE     PIC X(10).
+          05 TD-ACCOUNT-NUMBER      PIC 9(12).
+          05 TD-CUSTOMER-ID         PIC 9(10).
+          05 TD-TERMS.
+             10 TD-PRINCIPAL        PIC S9(13)V99 COMP-3.
+             10 TD-INTEREST-RATE    PIC S9(3)V99 COMP-3.
+             10 TD-TERM-MONTHS      PIC 9(03).
+          05 TD-DATES.
+             10 TD-OPEN-DATE        PIC X(10).
+             10 TD-MATURITY-DATE    PIC X(10).
+          05 TD-STATUS-INFO.
+             10 TD-STATUS           PIC X(01).
+                88 TD-ACTIVE         VALUE 'A'.
+                88 TD-MATURED        VALUE 'M'.
+             10 TD-ACCRUED-INTEREST PIC S9(9)V99 COMP-3.
+             10 TD-RENEWAL-CODE     PIC X(01).
+                88 RENEW-PRINCIPAL-INTEREST VALUE 'A'.
+                88 RENEW-PRINCIPAL-ONLY     VALUE 'P'.
+                88 DO-NOT-RENEW             VALUE 'N'.
+          05 TD-FILLER              PIC X(50).
