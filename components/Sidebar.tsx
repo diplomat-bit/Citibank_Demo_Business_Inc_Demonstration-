@@ -31,7 +31,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         // while preserving headers and dividers to maintain the sidebar's structure during search.
         const filteredLinks = NAV_ITEMS.filter(item => {
             // Check if item is a NavLink and if its label matches
-            if ('id' in item && item.label) {
+            // FIX: The type guard `!item.type` was not reliably narrowing the type.
+            // Switched to check for the `id` property, which is unique to `NavLink` and correctly narrows the type.
+            if (item.id) {
                 return item.label.toLowerCase().includes(lowercasedTerm);
             }
             return false;

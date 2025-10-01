@@ -1,8 +1,8 @@
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import { View } from './types';
-import { DataContext } from './context/DataContext';
+import { View } from '../types';
+import { DataContext } from '../context/DataContext';
 import FeatureGuard from './FeatureGuard';
 
 // Personal Finance Views
@@ -139,25 +139,25 @@ import IntegrationsMarketplaceView from './views/megadashboard/ecosystem/Integra
 import CrossBorderPaymentsView from './views/megadashboard/ecosystem/CrossBorderPaymentsView';
 import MultiCurrencyView from './views/megadashboard/ecosystem/MultiCurrencyView';
 import NftVaultView from './views/megadashboard/digitalassets/NftVaultView';
-import TokenIssuanceView from './components/views/megadashboard/digitalassets/TokenIssuanceView';
-import SmartContractsView from './components/views/megadashboard/digitalassets/SmartContractsView';
-import DaoGovernanceView from './components/views/megadashboard/digitalassets/DaoGovernanceView';
-import OnChainAnalyticsView from './components/views/megadashboard/digitalassets/OnChainAnalyticsView';
-import SalesPipelineView from './components/views/megadashboard/business/SalesPipelineView';
-import MarketingAutomationView from './components/views/megadashboard/business/MarketingAutomationView';
-import GrowthInsightsView from './components/views/megadashboard/business/GrowthInsightsView';
-import CompetitiveIntelligenceView from './components/views/megadashboard/business/CompetitiveIntelligenceView';
-import BenchmarkingView from './components/views/megadashboard/business/BenchmarkingView';
-import LicensingView from './components/views/megadashboard/regulation/LicensingView';
-import DisclosuresView from './components/views/megadashboard/regulation/DisclosuresView';
-import LegalDocsView from './components/views/megadashboard/regulation/LegalDocsView';
-import RegulatorySandboxView from './components/views/megadashboard/regulation/RegulatorySandboxView';
-import ConsentManagementView from './components/views/megadashboard/regulation/ConsentManagementView';
-import ContainerRegistryView from './components/views/megadashboard/infra/ContainerRegistryView';
-import ApiThrottlingView from './components/views/megadashboard/infra/ApiThrottlingView';
-import ObservabilityView from './components/views/megadashboard/infra/ObservabilityView';
-import IncidentResponseView from './components/views/megadashboard/infra/IncidentResponseView';
-import BackupRecoveryView from './components/views/megadashboard/infra/BackupRecoveryView';
+import TokenIssuanceView from './views/megadashboard/digitalassets/TokenIssuanceView';
+import SmartContractsView from './views/megadashboard/digitalassets/SmartContractsView';
+import DaoGovernanceView from './views/megadashboard/digitalassets/DaoGovernanceView';
+import OnChainAnalyticsView from './views/megadashboard/digitalassets/OnChainAnalyticsView';
+import SalesPipelineView from './views/megadashboard/business/SalesPipelineView';
+import MarketingAutomationView from './views/megadashboard/business/MarketingAutomationView';
+import GrowthInsightsView from './views/megadashboard/business/GrowthInsightsView';
+import CompetitiveIntelligenceView from './views/megadashboard/business/CompetitiveIntelligenceView';
+import BenchmarkingView from './views/megadashboard/business/BenchmarkingView';
+import LicensingView from './views/megadashboard/regulation/LicensingView';
+import DisclosuresView from './views/megadashboard/regulation/DisclosuresView';
+import LegalDocsView from './views/megadashboard/regulation/LegalDocsView';
+import RegulatorySandboxView from './views/megadashboard/regulation/RegulatorySandboxView';
+import ConsentManagementView from './views/megadashboard/regulation/ConsentManagementView';
+import ContainerRegistryView from './views/megadashboard/infra/ContainerRegistryView';
+import ApiThrottlingView from './views/megadashboard/infra/ApiThrottlingView';
+import ObservabilityView from './views/megadashboard/infra/ObservabilityView';
+import IncidentResponseView from './views/megadashboard/infra/IncidentResponseView';
+import BackupRecoveryView from './views/megadashboard/infra/BackupRecoveryView';
 
 // Blueprint imports
 import CrisisAIManagerView from './views/blueprints/CrisisAIManagerView';

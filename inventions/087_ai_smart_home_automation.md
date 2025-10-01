@@ -1,4 +1,3 @@
-
 **FACT HEADER - NOTICE OF CONCEPTION**
 
 **Conception ID:** DEMOBANK-INV-087
@@ -49,3 +48,8 @@ The hub receives this JSON response and executes the commands by calling the res
 2. The method of claim 1, wherein the user data sources include a digital calendar, and the AI model's determination is influenced by upcoming calendar events.
 
 3. The method of claim 1, wherein the AI model is prompted to learn and predict user routines based on historical context data and subsequent user interactions.
+
+**Mathematical Justification:**
+Let the state of the home be a vector `S_h` and the user's state be `S_u`. The combined context is `C = (S_h, S_u)`. Let the set of all possible device actions be `A`. The goal is to learn a policy `π: C → A` that maximizes a user comfort/utility function `U(S_h)`. A rule-based system is a sparse, manually-defined policy. The generative AI `G_AI` learns a much richer, more complex policy by being trained on vast amounts of data relating context to desirable outcomes. It approximates the optimal policy `π*`.
+
+**Proof of Superiority:** The space of all possible contexts `C` is vast. A manual rule-based system can only cover a tiny fraction of this space. The AI model, as a universal function approximator, can generalize across the entire context space. It can handle novel situations for which no explicit rule exists. Therefore, the expected utility over time `E[U(G_AI(C))]` for the AI-driven system will be higher than for a static rule-based system `E[U(π_rules(C))]`, because it can make reasonable decisions in a much wider range of circumstances. `Q.E.D.`
