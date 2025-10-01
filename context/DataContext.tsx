@@ -147,10 +147,6 @@ interface IDataContext {
   unlockedFeatures: Set<View>;
   unlockFeature: (view: View) => void;
 
-  // API Key Management
-  apiKey: string | null;
-  generateApiKey: () => Promise<string | null>;
-
   // New functions to interact with backend
   refetchData: () => void;
 }
@@ -246,7 +242,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [customBackgroundUrl, setCustomBackgroundUrlState] = useState<string | null>(() => localStorage.getItem('customBackgroundUrl'));
     const [activeIllusion, setActiveIllusionState] = useState<IllusionType>(() => (localStorage.getItem('activeIllusion') as IllusionType) || 'none');
     const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => new Set<View>([View.Dashboard, View.DeveloperApiKeys]));
-    const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('apiKey'));
     
      const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -333,36 +328,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }, []);
 
-    const generateApiKey = async (): Promise<string | null> => {
-        try {
-            // This is a temporary measure. In a real app, the API key would be passed
-            // in headers for subsequent requests.
-            const data = await apiFetch('/api/auth/generate-key', { method: 'POST' });
-            const key = data.apiKey;
-            if(key) {
-                localStorage.setItem('apiKey', key);
-                setApiKey(key);
-                // After getting a key, we can now fetch the actual data.
-                fetchData();
-                return key;
-            }
-            return null;
-        } catch(err: any) {
-            setError("Could not generate API key. Is the server running?");
-            return null;
-        }
-    };
-
-
     useEffect(() => {
-        // Only fetch data if we already have an API key.
-        // Otherwise, the user will be prompted to generate one.
-        if (apiKey) {
-            fetchData();
-        } else {
-            setIsLoading(false); // Not loading if we don't have a key
-        }
-    }, [apiKey, fetchData]);
+        fetchData();
+    }, [fetchData]);
     
     const addTransaction = useCallback(async (tx: Omit<Transaction, 'id'>) => {
         try {
@@ -513,7 +481,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         growthMetrics, competitors, benchmarks, licenses, disclosures, legalDocs,
         sandboxExperiments, consentRecords, containerImages, apiUsage, incidents, backupJobs,
         impactData, linkedAccounts, isImportingData, handlePlaidSuccess, unlinkAccount, marketMovers, notifications, markNotificationRead, apiStatus,
-        unlockedFeatures, unlockFeature, apiKey, generateApiKey
+        unlockedFeatures, unlockFeature
     };
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

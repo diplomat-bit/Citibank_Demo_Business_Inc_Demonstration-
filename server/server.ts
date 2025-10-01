@@ -5,7 +5,6 @@ import personalRoutes from './api/personal';
 import { dashboardRouter, payrollRouter } from './api/corporate';
 import aiRoutes from './api/ai';
 import { systemRouter, megadashboardRouter, platformRouter } from './api/other';
-import authRoutes from './api/auth';
 
 
 // Load environment variables
@@ -27,7 +26,6 @@ initDb().then(db => {
     // Pass db instance to routes
     // --- Register most specific routes FIRST ---
 
-    app.use('/api/auth', authRoutes());
     app.use('/api/personal', personalRoutes(db));
     app.use('/api/corporate/dashboard', dashboardRouter(db));
     app.use('/api/corporate/payroll', payrollRouter(db));

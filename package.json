@@ -17,7 +17,8 @@
     "cors": "^2.8.5",
     "sqlite3": "^5.1.7",
     "express": "^5.1.0",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "d3-graphviz": "5.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
