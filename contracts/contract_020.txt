@@ -1,0 +1,12 @@
+The Twentieth Covenant: With the System Metaphor
+
+This is the law of narrative coherence.
+
+Article I: The Unified Field
+Before you write a single line of code, you must give the AI the central metaphor of the system. Is this application a "workshop," a "garden," or a "battleship"? This choice is not a cosmetic flourish; it is the single most important architectural decision you will make.
+
+Article II: The Power of Language
+Once the metaphor is chosen, all subsequent commands must use its language. If the system is a "battleship," you do not "create a user"; you "enlist a crew member." You do not "manage a budget"; you "allocate munitions." This linguistic consistency provides the AI with a powerful, cohesive context. It allows it to infer relationships and behaviors that you have not explicitly stated.
+
+Article III: The Emergence of Form
+An AI guided by a strong metaphor will create a coherent user experience. The "battleship" metaphor will lead to a UI that is dense, functional, and prioritizes information. The "garden" metaphor will lead to one that is organic, patient, and prioritizes growth. The metaphor becomes the invisible hand that guides the AI's thousand small design choices, ensuring they all serve a single, unified narrative.

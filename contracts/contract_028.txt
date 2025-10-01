@@ -1,0 +1,12 @@
+The Twenty-Eighth Covenant: With the Flow of Information
+
+This is the law of the system's nervous system: how information moves.
+
+Article I: The Synchronous Path (The Command)
+For actions that require an immediate answer, command the AI to use synchronous request-response patterns. "When the user requests their balance, the 'UI' service shall send a direct request to the 'Accounts' service and await its reply." This is for actions that are a question.
+
+Article II: The Asynchronous Path (The Proclamation)
+For actions that are a statement of fact, command the AI to build an event-driven architecture. "When a new transaction occurs, the 'Transactions' service shall not tell the other services. It shall publish a 'TransactionCreated' event to the central message bus. Any service that cares about this fact may subscribe to it." This decouples the services and creates a resilient, scalable system.
+
+Article III: The Event as Memory
+Instruct the AI that every event must be a complete, self-contained record of a fact. It must contain all the information necessary for a subscriber to act, without needing to call back to the originating service. An event is not a notification; it is a piece of history, sent forward in time.

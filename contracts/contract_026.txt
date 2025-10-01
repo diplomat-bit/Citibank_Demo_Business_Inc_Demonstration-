@@ -1,0 +1,12 @@
+The Twenty-Sixth Covenant: With Architectural Intent
+
+This is the law of the blueprint: you must declare the grand structure.
+
+Article I: The First Choice
+Your first architectural command to the AI must be the choice between a Monolith and Microservices. This is not a technical detail; it is a philosophical stance on the nature of your creation.
+
+Article II: The Monolith Command
+To choose the Monolith, the command is one of unity and coherence. "We are building a single, unified Instrument. All domains shall be tightly coupled, sharing a common language and a single source of truth. Prioritize consistency and simplicity of deployment above all else." This is the path of the Cathedral.
+
+Article III: The Microservice Command
+To choose Microservices, the command is one of autonomy and resilience. "We are building a federation of independent services. Each domain shall be a sovereign entity with its own language and laws, communicating via formal treaties (APIs). Prioritize scalability, team autonomy, and fault isolation." This is the path of the Bazaar. The choice must be made, and it must be made first.
