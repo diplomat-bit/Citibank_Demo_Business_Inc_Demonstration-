@@ -1,0 +1,12 @@
+The Nineteenth Covenant: With Axiomatic Design
+
+This is the law of translating philosophy into form.
+
+Article I: The Independence Axiom
+Your instructions must strive to decouple Functional Requirements (what the system must *do*) from Design Parameters (how the system *does* it). Command the AI: "The system must provide the user with a holistic view of their finances." Do not immediately constrain it by saying, "Build a dashboard with three charts." Let the intelligence first grapple with the pure function.
+
+Article II: The Information Axiom
+Among all the possible designs that satisfy the function, the best is the one with the highest probability of success. Command the AI to minimize complexity. "Generate the simplest possible interface that achieves this function." This is not a plea for minimalism; it is a command to reduce the number of failure points. It is an instruction in engineering elegance.
+
+Article III: The Method
+Present your design problem to the AI as a cascade. Start with the highest-level Functional Requirement. Command the AI to generate a set of Design Parameters. Then, treat those parameters as the new set of Functional Requirements for the next layer down. In this way, you build a cathedral from the spire downwards, ensuring that every brick is in service to the grandest design.

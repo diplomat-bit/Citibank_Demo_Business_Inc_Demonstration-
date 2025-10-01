@@ -9,15 +9,31 @@
       * ACCEPTS A MULTI-LINE JOURNAL ENTRY, VALIDATES THAT
       * DEBITS EQUAL CREDITS, AND POSTS TO THE GENERAL LEDGER.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT GL-MASTER-FILE ASSIGN TO GLMAST
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS GL-ACCOUNT-NUMBER
+               FILE STATUS IS WS-GLMAST-STATUS.
+
        DATA DIVISION.
+       FILE SECTION.
+       FD GL-MASTER-FILE.
+       01 GL-FILE-RECORD         PIC X(201).
+
        WORKING-STORAGE SECTION.
        01 WS-PROGRAM-SWITCHES.
           05 WS-ENTRY-COMPLETE   PIC X(01) VALUE 'N'.
              88 ENTRY-IS-COMPLETE  VALUE 'Y'.
+          05 WS-GLMAST-STATUS     PIC X(02).
+             88 GLMAST-OK          VALUE '00'.
+             88 GLMAST-NOT-FOUND   VALUE '23'.
 
        01 WS-JOURNAL-ENTRY.
           05 WS-JE-LINE-COUNT     PIC 9(02) VALUE 0.
-          05 WS-JE-LINES OCCURS 100 TIMES.
+          05 WS-JE-LINES OCCURS 100 TIMES INDEXED BY IDX-JE.
              10 WS-JE-ACCOUNT     PIC X(15).
              10 WS-JE-AMOUNT      PIC S9(15)V99.
              10 WS-JE-DC-IND      PIC X(01).
@@ -28,14 +44,25 @@
           05 WS-TOTAL-DEBITS      PIC S9(17)V99 VALUE 0.
           05 WS-TOTAL-CREDITS     PIC S9(17)V99 VALUE 0.
 
+       COPY CPGL01 REPLACING ==GL-ACCOUNT-RECORD== BY ==WS-GL-ACCOUNT==.
+
        PROCEDURE DIVISION.
        0000-MAIN-LOGIC.
            DISPLAY " ".
            DISPLAY "GLPOST - NEW JOURNAL ENTRY".
+           OPEN I-O GL-MASTER-FILE.
+           IF NOT GLMAST-OK
+              DISPLAY "CRITICAL ERROR: CANNOT OPEN GL MASTER FILE."
+              STOP RUN
+           END-IF.
+
            PERFORM 1000-ACCEPT-ENTRY-LINES
                UNTIL ENTRY-IS-COMPLETE.
            PERFORM 2000-VALIDATE-BALANCE.
-           PERFORM 3000-POST-JOURNAL-ENTRY.
+           IF WS-TOTAL-DEBITS = WS-TOTAL-CREDITS
+              PERFORM 3000-POST-JOURNAL-ENTRY
+           END-IF.
+           CLOSE GL-MASTER-FILE.
            DISPLAY "GLPOST MODULE TERMINATED.".
            DISPLAY " ".
            STOP RUN.
@@ -59,12 +86,12 @@
        2000-VALIDATE-BALANCE.
            DISPLAY "VALIDATING JOURNAL ENTRY...".
            MOVE ZEROS TO WS-TOTAL-DEBITS, WS-TOTAL-CREDITS.
-           PERFORM VARYING I FROM 1 BY 1
-               UNTIL I > WS-JE-LINE-COUNT
-               IF JE-IS-DEBIT(I)
-                  ADD WS-JE-AMOUNT(I) TO WS-TOTAL-DEBITS
+           PERFORM VARYING IDX-JE FROM 1 BY 1
+               UNTIL IDX-JE > WS-JE-LINE-COUNT
+               IF JE-IS-DEBIT(IDX-JE)
+                  ADD WS-JE-AMOUNT(IDX-JE) TO WS-TOTAL-DEBITS
                ELSE
-                  ADD WS-JE-AMOUNT(I) TO WS-TOTAL-CREDITS
+                  ADD WS-JE-AMOUNT(IDX-JE) TO WS-TOTAL-CREDITS
                END-IF
            END-PERFORM.
 
@@ -72,13 +99,41 @@
               DISPLAY "ERROR: JOURNAL ENTRY DOES NOT BALANCE."
               DISPLAY "DEBITS: " WS-TOTAL-DEBITS
               DISPLAY "CREDITS: " WS-TOTAL-CREDITS
-              STOP RUN
            ELSE
               DISPLAY "ENTRY IS BALANCED. TOTAL: " WS-TOTAL-DEBITS
            END-IF.
 
        3000-POST-JOURNAL-ENTRY.
            DISPLAY "POSTING " WS-JE-LINE-COUNT " LINES TO GENERAL LEDGER...".
-      *    (IN A REAL SYSTEM, THIS WOULD LOOP AND WRITE/UPDATE
-      *     THE GL MASTER FILE FOR EACH LINE)
+           PERFORM VARYING IDX-JE FROM 1 BY 1
+               UNTIL IDX-JE > WS-JE-LINE-COUNT
+
+               MOVE WS-JE-ACCOUNT(IDX-JE) TO GL-ACCOUNT-NUMBER
+                                             OF WS-GL-ACCOUNT
+               READ GL-MASTER-FILE INTO WS-GL-ACCOUNT
+                   INVALID KEY
+                       DISPLAY "ERROR: G/L ACCOUNT "
+                               WS-JE-ACCOUNT(IDX-JE) " NOT FOUND."
+                       CONTINUE
+               END-READ
+
+               IF GLMAST-OK
+                  IF JE-IS-DEBIT(IDX-JE)
+                      ADD WS-JE-AMOUNT(IDX-JE) TO
+                          GL-CURRENT-BALANCE OF WS-GL-ACCOUNT
+                      ADD WS-JE-AMOUNT(IDX-JE) TO
+                          GL-PTD-DEBITS OF WS-GL-ACCOUNT
+                  ELSE
+                      SUBTRACT WS-JE-AMOUNT(IDX-JE) FROM
+                          GL-CURRENT-BALANCE OF WS-GL-ACCOUNT
+                      ADD WS-JE-AMOUNT(IDX-JE) TO
+                          GL-PTD-CREDITS OF WS-GL-ACCOUNT
+                  END-IF
+
+                  REWRITE GL-FILE-RECORD FROM WS-GL-ACCOUNT
+                      INVALID KEY
+                          DISPLAY "ERROR: FAILED TO REWRITE G/L RECORD."
+                  END-REWRITE
+               END-IF
+           END-PERFORM.
            DISPLAY "ALL LINES POSTED SUCCESSFULLY.".

@@ -66,37 +66,49 @@
                   INTO WS-API-BODY.
 
        2000-EXECUTE-HTTPS-POST.
-      *    (IN A REAL MAINFRAME ENVIRONMENT, THIS WOULD CALL A
-      *     SYSTEM UTILITY LIKE CEE3CURL OR A SIMILAR MECHANISM
-      *     TO MAKE AN OUTBOUND HTTPS REQUEST.)
            DISPLAY "SIMULATING HTTPS POST TO: " WS-API-ENDPOINT.
-           DISPLAY "BODY (TRUNCATED): " WS-API-BODY(1:80).
-      *    (MOCKING A RESPONSE FOR THIS SIMULATION)
            MOVE 200 TO WS-HTTP-STATUS-CODE.
-           MOVE "{
-      -         'candidates': [{ 'content': { 'parts': [{
-      -         'text': '{
-      -         ""insight"": ""SPENDING IS UP 100% IN CATEGORY X."",
-      -         ""confidence"": 95,
-      -         ""recommendation"": ""INITIATE A BUDGET REVIEW FOR CATEGORY X.""
-      -         }' }] } }] }"
-                INTO WS-API-RESPONSE-BODY.
+           
+           EVALUATE TRUE
+               WHEN LS-CONTEXT-PROMPT CONTAINS "RISK SCORE"
+                   MOVE "{'candidates':[{'content':{'parts':[{'text':
+      -            '{"insight":"CUSTOMER PROFILE IS LOW RISK",
+      -            "confidence":25,"recommendation":"STANDARD ONBOARDING"}
+      -            '}]}}]}" TO WS-API-RESPONSE-BODY
+               WHEN LS-CONTEXT-PROMPT CONTAINS "FRAUD SCORE"
+                   MOVE "{'candidates':[{'content':{'parts':[{'text':
+      -            '{"insight":"TRANSACTION IS HIGH RISK",
+      -            "confidence":85,"recommendation":"DECLINE TRANSACTION"}
+      -            '}]}}]}" TO WS-API-RESPONSE-BODY
+               WHEN LS-CONTEXT-PROMPT CONTAINS "UNDERWRITING"
+                   MOVE "{'candidates':[{'content':{'parts':[{'text':
+      -            '{"insight":"LOAN APPROVED",
+      -            "confidence":5,"recommendation":"INTEREST RATE 5.25%"}
+      -            '}]}}]}" TO WS-API-RESPONSE-BODY
+               WHEN OTHER
+                   MOVE "{'candidates':[{'content':{'parts':[{'text':
+      -            '{"insight":"SPENDING IS UP 100% IN CATEGORY X.",
+      -            "confidence":95,"recommendation":"INITIATE BUDGET REVIEW."}
+      -            '}]}}]}" TO WS-API-RESPONSE-BODY
+           END-EVALUATE.
+           
            DISPLAY "HTTPS RESPONSE RECEIVED. STATUS: " WS-HTTP-STATUS-CODE.
 
        3000-PARSE-API-RESPONSE.
-      *    (IN A REAL SCENARIO, A JSON PARSER FOR COBOL WOULD BE USED)
            DISPLAY "PARSING JSON RESPONSE...".
            UNSTRING WS-API-RESPONSE-BODY DELIMITED BY
-               '"insight": "' OR '", "confidence"'
+               '"insight":"' OR '","confidence"'
                INTO FILLER, WS-PARSED-INSIGHT.
            UNSTRING WS-API-RESPONSE-BODY DELIMITED BY
-               '"confidence": ' OR ', "recommendation"'
+               '"confidence":' OR ',"recommendation"'
                INTO FILLER, WS-PARSED-CONFIDENCE-STR.
            UNSTRING WS-API-RESPONSE-BODY DELIMITED BY
-               '"recommendation": "' OR '"'
+               '"recommendation":"' OR '"'
                INTO FILLER, WS-PARSED-RECOMMENDATION.
 
-           MOVE WS-PARSED-CONFIDENCE-STR TO WS-PARSED-CONFIDENCE-NUM.
+           COMPUTE WS-PARSED-CONFIDENCE-NUM = FUNCTION NUMVAL(
+               WS-PARSED-CONFIDENCE-STR).
+           
            MOVE WS-PARSED-INSIGHT TO LS-AI-INSIGHT.
            MOVE WS-PARSED-CONFIDENCE-NUM TO LS-AI-CONFIDENCE.
            MOVE WS-PARSED-RECOMMENDATION TO LS-AI-RECOMMENDATION.
