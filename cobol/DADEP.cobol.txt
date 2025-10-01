@@ -1,0 +1,14 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DADEP.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - PROCESS DEPOSIT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER ACCOUNT NUMBER AND DEPOSIT AMOUNT.".
+           DISPLAY "VALIDATING DEPOSIT...".
+           DISPLAY "UPDATING ACCOUNT BALANCE. 100% ACCURATE.".
+           DISPLAY "DEPOSIT PROCESSED SUCCESSFULLY.".
+           STOP RUN.

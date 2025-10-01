@@ -1,0 +1,11 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TMMAIN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - TELLER MANAGEMENT MAIN
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "TELLER MANAGEMENT MODULE ACCESSED.".
+           GOBACK.

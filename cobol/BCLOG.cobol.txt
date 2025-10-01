@@ -1,0 +1,11 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. BCLOG.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - VIEW BATCH JOB LOG
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "DISPLAYING LOG FOR BATCH JOB...".
+           STOP RUN.

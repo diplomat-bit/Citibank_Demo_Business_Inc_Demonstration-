@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. SCPERM.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - MANAGE USER PERMISSIONS
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER USER ID TO MANAGE PERMISSIONS.".
+           DISPLAY "DISPLAYING CURRENT PERMISSION SET...".
+           DISPLAY "AWAITING COMMAND (GRANT/REVOKE).".
+           STOP RUN.

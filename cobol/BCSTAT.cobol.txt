@@ -1,0 +1,11 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. BCSTAT.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - INQUIRE BATCH JOB STATUS
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER JOB ID FOR STATUS INQUIRY.".
+           STOP RUN.

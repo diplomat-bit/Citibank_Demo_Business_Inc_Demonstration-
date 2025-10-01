@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. SCULOG.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - VIEW USER ACCESS LOGS
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "DISPLAYING SYSTEM ACCESS LOGS...".
+           DISPLAY "FILTERING FOR 100 MOST RECENT ENTRIES...".
+           STOP RUN.

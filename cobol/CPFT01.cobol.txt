@@ -1,0 +1,14 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR FUNDS TRANSFER RECORD
+      ******************************************************************
+       01 FUNDS-TRANSFER-RECORD.
+          05 FT-TRANSACTION-ID    PIC X(16).
+          05 FT-FROM-ACCOUNT      PIC 9(12).
+          05 FT-TO-ACCOUNT        PIC 9(12).
+          05 FT-TRANSFER-AMOUNT   PIC S9(13)V99 COMP-3.
+          05 FT-TRANSFER-DATE     PIC X(10).
+          05 FT-STATUS            PIC X(01).
+             88 FT-PENDING        VALUE 'P'.
+             88 FT-COMPLETED      VALUE 'C'.
+             88 FT-FAILED         VALUE 'F'.

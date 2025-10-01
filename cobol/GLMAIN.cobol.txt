@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. GLMAIN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GENERAL LEDGER MAIN
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "GENERAL LEDGER MODULE ACCESSED.".
+           DISPLAY "THE SINGLE SOURCE OF TRUTH. 100% BALANCED.".
+           GOBACK.

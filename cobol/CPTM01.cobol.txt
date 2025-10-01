@@ -1,0 +1,10 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR TELLER MASTER RECORD
+      ******************************************************************
+       01 TELLER-MASTER-RECORD.
+          05 TM-TELLER-ID         PIC X(08).
+          05 TM-TELLER-NAME       PIC X(50).
+          05 TM-DRAWER-ID         PIC X(10).
+          05 TM-DRAWER-CASH-LIMIT PIC S9(9)V99 COMP-3.
+          05 TM-AUTH-LEVEL        PIC 9(01).

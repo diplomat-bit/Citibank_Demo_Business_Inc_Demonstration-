@@ -1,0 +1,11 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TDOPEN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - OPEN TIME DEPOSIT (CD)
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "OPENING NEW CERTIFICATE OF DEPOSIT.".
+           STOP RUN.

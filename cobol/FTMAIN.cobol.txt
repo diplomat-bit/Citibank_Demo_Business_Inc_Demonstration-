@@ -1,0 +1,11 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FTMAIN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - FUNDS TRANSFER MAIN
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "FUNDS TRANSFER MODULE ACCESSED.".
+           GOBACK.

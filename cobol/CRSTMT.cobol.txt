@@ -1,0 +1,14 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CRSTMT.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GENERATE CARDHOLDER STATEMENT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER CARDHOLDER ID FOR STATEMENT GENERATION.".
+           DISPLAY "GATHERING ALL TRANSACTIONS FOR BILLING CYCLE...".
+           DISPLAY "CALCULATING INTEREST AND MINIMUM PAYMENT...".
+           DISPLAY "STATEMENT GENERATED AND QUEUED FOR MAILING.".
+           STOP RUN.

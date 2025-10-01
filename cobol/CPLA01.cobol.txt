@@ -1,0 +1,14 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR LOAN MASTER RECORD
+      ******************************************************************
+       01 LOAN-MASTER-RECORD.
+          05 LM-LOAN-ID           PIC 9(12).
+          05 LM-CUSTOMER-ID       PIC 9(10).
+          05 LM-PRINCIPAL-AMOUNT  PIC S9(13)V99 COMP-3.
+          05 LM-INTEREST-RATE     PIC S9(03)V99 COMP-3.
+          05 LM-TERM-MONTHS       PIC 9(03).
+          05 LM-STATUS            PIC X(01).
+             88 LOAN-ACTIVE       VALUE 'A'.
+             88 LOAN-PAID         VALUE 'P'.
+             88 LOAN-DEFAULT      VALUE 'D'.

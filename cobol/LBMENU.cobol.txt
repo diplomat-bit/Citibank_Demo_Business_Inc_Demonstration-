@@ -16,6 +16,12 @@
            DISPLAY "==============================================".
            DISPLAY "01. CUSTOMER INFORMATION".
            DISPLAY "02. DEPOSIT ACCOUNTS".
+           DISPLAY "03. LOANS ADMINISTRATION".
+           DISPLAY "04. GENERAL LEDGER".
+           DISPLAY "05. CARD SERVICES".
+           DISPLAY "06. FUNDS TRANSFER".
+           DISPLAY "07. REPORTING SERVICES".
+           DISPLAY "08. SECURITY CONTROL".
            DISPLAY "----------------------------------------------".
            DISPLAY "99. EXIT".
            DISPLAY "ENTER YOUR CHOICE (1-100): ".

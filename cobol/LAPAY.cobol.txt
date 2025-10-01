@@ -1,0 +1,14 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAPAY.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - PROCESS LOAN PAYMENT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER LOAN ID AND PAYMENT AMOUNT.".
+           DISPLAY "VALIDATING FUNDS...".
+           DISPLAY "APPLYING PAYMENT TO PRINCIPAL AND INTEREST.".
+           DISPLAY "PAYMENT PROCESSED SUCCESSFULLY.".
+           STOP RUN.

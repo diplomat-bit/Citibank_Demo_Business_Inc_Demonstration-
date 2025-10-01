@@ -1,16 +1,16 @@
 
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. DAOPEN.
+       PROGRAM-ID. LAINQ.
        AUTHOR. LIVE-BANK-ARCHITECTS.
       ******************************************************************
-      * LIVE BANK - OPEN NEW DEPOSIT ACCOUNT
+      * LIVE BANK - INQUIRE LOAN
       ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       COPY CPDA01.
+       01 WS-INQUIRY-ID PIC 9(12).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "ENTERING NEW DEPOSIT ACCOUNT DATA.".
-           DISPLAY "PERFORMING 100-POINT KYC CHECK...".
-           DISPLAY "ACCOUNT OPENED SUCCESSFULLY.".
+           DISPLAY "ENTER LOAN ID FOR INQUIRY: ".
+           ACCEPT WS-INQUIRY-ID.
+           DISPLAY "RETRIEVING LOAN RECORD FOR " WS-INQUIRY-ID.
            STOP RUN.

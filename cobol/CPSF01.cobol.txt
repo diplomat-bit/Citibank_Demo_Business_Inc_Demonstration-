@@ -1,0 +1,9 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR SAFE DEPOSIT BOX RECORD
+      ******************************************************************
+       01 SAFE-DEPOSIT-RECORD.
+          05 SF-BOX-NUMBER        PIC X(10).
+          05 SF-CUSTOMER-ID       PIC 9(10).
+          05 SF-RENTAL-DUE-DATE   PIC X(10).
+          05 SF-LAST-ACCESS-DATE  PIC X(10).

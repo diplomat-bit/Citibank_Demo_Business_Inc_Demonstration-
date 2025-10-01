@@ -1,0 +1,9 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR CORPORATE CREDIT LINE
+      ******************************************************************
+       01 CORP-FINANCE-RECORD.
+          05 CF-COMPANY-ID        PIC X(10).
+          05 CF-CREDIT-LINE-TOTAL PIC S9(13)V99 COMP-3.
+          05 CF-CREDIT-AVAILABLE  PIC S9(13)V99 COMP-3.
+          05 CF-INTEREST-RATE     PIC S9(3)V99 COMP-3.

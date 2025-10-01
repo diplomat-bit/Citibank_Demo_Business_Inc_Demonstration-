@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. ARPAYMT.
+       AUTHOR. Q-BOOKS-AI-DIVISION.
+      ******************************************************************
+      * QUICKBOOKS 2025 AI - PROCESS CUSTOMER PAYMENT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "APPLYING CUSTOMER PAYMENT TO INVOICE...".
+           DISPLAY "UPDATING GENERAL LEDGER...".
+           DISPLAY "PAYMENT PROCESSED.".
+           STOP RUN.

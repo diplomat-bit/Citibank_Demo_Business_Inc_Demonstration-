@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RPQTR.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GENERATE QUARTERLY SUMMARY REPORT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "GENERATING QUARTERLY SUMMARY REPORT...".
+           DISPLAY "AGGREGATING DATA FOR THE LAST 90 DAYS...".
+           DISPLAY "REPORT COMPLETE.".
+           STOP RUN.

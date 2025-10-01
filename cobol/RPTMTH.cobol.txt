@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RPTMTH.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GENERATE MONTHLY CUSTOMER STATEMENTS
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "BEGINNING MONTH-END STATEMENT GENERATION...".
+           DISPLAY "PROCESSING 100,000 ACCOUNTS...".
+           DISPLAY "STATEMENTS GENERATED AND QUEUED FOR DISTRIBUTION.".
+           STOP RUN.

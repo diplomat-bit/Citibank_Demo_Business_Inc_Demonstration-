@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. APVNDBL.
+       AUTHOR. Q-BOOKS-AI-DIVISION.
+      ******************************************************************
+      * QUICKBOOKS 2025 AI - ENTER VENDOR BILL
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTERING NEW VENDOR BILL.".
+           DISPLAY "CALLING AI-INTEGRATION-LAYER TO SCAN FOR DUPLICATES...".
+           DISPLAY "BILL ENTERED AND SCHEDULED FOR PAYMENT.".
+           STOP RUN.

@@ -1,0 +1,15 @@
+
+      ******************************************************************
+      * QUICKBOOKS 2025 AI - COPYBOOK FOR AR INVOICE RECORD
+      ******************************************************************
+       01 AR-INVOICE-RECORD.
+          05 AR-INVOICE-ID        PIC X(15).
+          05 AR-CUSTOMER-ID       PIC 9(10).
+          05 AR-INVOICE-DATE      PIC X(10).
+          05 AR-DUE-DATE          PIC X(10).
+          05 AR-INVOICE-TOTAL     PIC S9(11)V99 COMP-3.
+          05 AR-BALANCE-DUE       PIC S9(11)V99 COMP-3.
+          05 AR-STATUS            PIC X(01).
+             88 AR-PAID           VALUE 'P'.
+             88 AR-UNPAID         VALUE 'U'.
+             88 AR-OVERDUE        VALUE 'O'.

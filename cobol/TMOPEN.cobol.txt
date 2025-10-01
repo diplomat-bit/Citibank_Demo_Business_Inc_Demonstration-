@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TMOPEN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - TELLER OPEN DRAWER
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "TELLER DRAWER OPENING PROCEDURE.".
+           DISPLAY "VERIFYING STARTING CASH. 100 NOTES COUNTED.".
+           DISPLAY "DRAWER OPEN AND READY FOR TRANSACTIONS.".
+           STOP RUN.

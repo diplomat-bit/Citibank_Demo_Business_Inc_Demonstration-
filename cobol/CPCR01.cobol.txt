@@ -1,0 +1,13 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR CARDHOLDER MASTER RECORD
+      ******************************************************************
+       01 CARDHOLDER-MASTER-RECORD.
+          05 CR-CARD-NUMBER       PIC 9(16).
+          05 CR-CUSTOMER-ID       PIC 9(10).
+          05 CR-CREDIT-LIMIT      PIC S9(07)V99 COMP-3.
+          05 CR-CURRENT-BALANCE   PIC S9(07)V99 COMP-3.
+          05 CR-STATUS            PIC X(01).
+             88 CARD-ACTIVE       VALUE 'A'.
+             88 CARD-FROZEN       VALUE 'F'.
+             88 CARD-CLOSED       VALUE 'C'.

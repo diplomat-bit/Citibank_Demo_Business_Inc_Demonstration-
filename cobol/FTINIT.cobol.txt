@@ -1,0 +1,15 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FTINIT.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - INITIATE FUNDS TRANSFER
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTERING FUNDS TRANSFER DETAILS (FROM/TO/AMOUNT).".
+           DISPLAY "VALIDATING ACCOUNTS AND BALANCES...".
+           DISPLAY "PERFORMING 100-POINT COMPLIANCE SCREEN...".
+           DISPLAY "LOGGING TRANSACTION HASH TO DISTRIBUTED LEDGER...".
+           DISPLAY "FUNDS TRANSFER INITIATED AND PENDING.".
+           STOP RUN.

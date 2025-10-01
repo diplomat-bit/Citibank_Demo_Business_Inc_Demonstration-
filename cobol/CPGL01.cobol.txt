@@ -1,0 +1,11 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR GENERAL LEDGER ACCOUNT
+      ******************************************************************
+       01 GL-ACCOUNT-RECORD.
+          05 GL-ACCOUNT-NUMBER    PIC X(15).
+          05 GL-ACCOUNT-DESC      PIC X(50).
+          05 GL-ACCOUNT-BALANCE   PIC S9(15)V99 COMP-3.
+          05 GL-DEBIT-CREDIT-IND  PIC X(01).
+             88 IS-DEBIT          VALUE 'D'.
+             88 IS-CREDIT         VALUE 'C'.

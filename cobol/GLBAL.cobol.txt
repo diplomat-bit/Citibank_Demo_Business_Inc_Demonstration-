@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. GLBAL.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GL BALANCE INQUIRY
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER GL ACCOUNT NUMBER FOR BALANCE INQUIRY.".
+           DISPLAY "FETCHING CURRENT BALANCE...".
+           STOP RUN.

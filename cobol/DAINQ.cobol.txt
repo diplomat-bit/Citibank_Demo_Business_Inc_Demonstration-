@@ -1,16 +1,16 @@
 
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. DAOPEN.
+       PROGRAM-ID. DAINQ.
        AUTHOR. LIVE-BANK-ARCHITECTS.
       ******************************************************************
-      * LIVE BANK - OPEN NEW DEPOSIT ACCOUNT
+      * LIVE BANK - INQUIRE DEPOSIT ACCOUNT
       ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       COPY CPDA01.
+       01 WS-INQUIRY-ACCT-NUM PIC 9(12).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "ENTERING NEW DEPOSIT ACCOUNT DATA.".
-           DISPLAY "PERFORMING 100-POINT KYC CHECK...".
-           DISPLAY "ACCOUNT OPENED SUCCESSFULLY.".
+           DISPLAY "ENTER ACCOUNT NUMBER FOR INQUIRY: ".
+           ACCEPT WS-INQUIRY-ACCT-NUM.
+           DISPLAY "RETRIEVING ACCOUNT RECORD FOR " WS-INQUIRY-ACCT-NUM.
            STOP RUN.

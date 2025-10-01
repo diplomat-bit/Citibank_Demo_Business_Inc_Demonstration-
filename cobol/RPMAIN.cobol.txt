@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RPMAIN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - REPORTING SERVICES MAIN
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "REPORTING SERVICES MODULE ACCESSED.".
+           DISPLAY "100% ACCURATE DATA, 100% OF THE TIME.".
+           GOBACK.

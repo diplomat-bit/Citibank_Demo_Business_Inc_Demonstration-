@@ -1,16 +1,16 @@
 
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. DAOPEN.
+       PROGRAM-ID. FTSTAT.
        AUTHOR. LIVE-BANK-ARCHITECTS.
       ******************************************************************
-      * LIVE BANK - OPEN NEW DEPOSIT ACCOUNT
+      * LIVE BANK - INQUIRE FUNDS TRANSFER STATUS
       ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       COPY CPDA01.
+       01 WS-INQUIRY-TX-ID PIC X(16).
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "ENTERING NEW DEPOSIT ACCOUNT DATA.".
-           DISPLAY "PERFORMING 100-POINT KYC CHECK...".
-           DISPLAY "ACCOUNT OPENED SUCCESSFULLY.".
+           DISPLAY "ENTER TRANSACTION ID FOR STATUS INQUIRY: ".
+           ACCEPT WS-INQUIRY-TX-ID.
+           DISPLAY "RETRIEVING STATUS FOR " WS-INQUIRY-TX-ID.
            STOP RUN.

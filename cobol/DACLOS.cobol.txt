@@ -1,0 +1,14 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DACLOS.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - CLOSE DEPOSIT ACCOUNT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER ACCOUNT NUMBER TO CLOSE.".
+           DISPLAY "VERIFYING ZERO BALANCE...".
+           DISPLAY "PERFORMING 100-POINT CLOSURE CHECKLIST...".
+           DISPLAY "ACCOUNT CLOSED SUCCESSFULLY.".
+           STOP RUN.

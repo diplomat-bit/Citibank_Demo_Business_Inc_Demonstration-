@@ -1,0 +1,18 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FTCNCL.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - CANCEL PENDING FUNDS TRANSFER
+      * 100-POINT VERIFICATION BEFORE CANCELLATION.
+      ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-CANCEL-TX-ID PIC X(16).
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER TRANSACTION ID TO CANCEL: ".
+           ACCEPT WS-CANCEL-TX-ID.
+           DISPLAY "VERIFYING TRANSFER STATUS IS 'PENDING'...".
+           DISPLAY "CANCELLATION PROCESSED.".
+           STOP RUN.

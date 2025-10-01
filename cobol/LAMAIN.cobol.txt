@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LAMAIN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - LOANS ADMINISTRATION MAIN
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "LOANS ADMINISTRATION MODULE ACCESSED.".
+           DISPLAY "100% PRINCIPAL. 100% INTEREST. 100% SECURED.".
+           GOBACK.

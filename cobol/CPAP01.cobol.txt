@@ -1,0 +1,13 @@
+
+      ******************************************************************
+      * QUICKBOOKS 2025 AI - COPYBOOK FOR AP VENDOR BILL
+      ******************************************************************
+       01 AP-VENDOR-BILL-RECORD.
+          05 AP-BILL-ID           PIC X(15).
+          05 AP-VENDOR-ID         PIC 9(10).
+          05 AP-BILL-DATE         PIC X(10).
+          05 AP-DUE-DATE          PIC X(10).
+          05 AP-BILL-TOTAL        PIC S9(11)V99 COMP-3.
+          05 AP-STATUS            PIC X(01).
+             88 AP-UNPAID         VALUE 'U'.
+             88 AP-PAID           VALUE 'P'.

@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. SFACCS.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - LOG SAFE DEPOSIT BOX ACCESS
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "VERIFYING IDENTITY FOR BOX ACCESS...".
+           DISPLAY "LOGGING ACCESS TO BOX...".
+           STOP RUN.

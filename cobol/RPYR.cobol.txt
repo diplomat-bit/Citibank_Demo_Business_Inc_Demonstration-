@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RPYR.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GENERATE YEAR-END FINANCIAL REPORT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "INITIATING YEAR-END CLOSE PROCEDURES...".
+           DISPLAY "GENERATING ANNUAL FINANCIAL STATEMENTS...".
+           DISPLAY "YEAR-END REPORTING COMPLETE. READY FOR AUDIT.".
+           STOP RUN.

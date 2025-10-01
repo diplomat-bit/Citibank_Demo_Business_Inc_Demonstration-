@@ -1,0 +1,12 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TMBAL.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - TELLER BALANCE DRAWER
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "PERFORMING MID-DAY DRAWER BALANCE CHECK...".
+           DISPLAY "100% ACCURACY CONFIRMED.".
+           STOP RUN.

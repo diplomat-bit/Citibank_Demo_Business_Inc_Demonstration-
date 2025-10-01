@@ -1,0 +1,15 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DAWDR.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - PROCESS WITHDRAWAL
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER ACCOUNT NUMBER AND WITHDRAWAL AMOUNT.".
+           DISPLAY "CHECKING AVAILABLE FUNDS...".
+           DISPLAY "DISPENSING CASH...".
+           DISPLAY "UPDATING ACCOUNT BALANCE.".
+           DISPLAY "WITHDRAWAL PROCESSED SUCCESSFULLY.".
+           STOP RUN.

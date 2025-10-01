@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. RPTDLY.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - GENERATE DAILY TRANSACTION REPORT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "GENERATING DAILY TRANSACTION SUMMARY REPORT...".
+           DISPLAY "AGGREGATING DATA FROM 100 BRANCHES...".
+           DISPLAY "REPORT GENERATED AND SENT TO PRINTER.".
+           STOP RUN.

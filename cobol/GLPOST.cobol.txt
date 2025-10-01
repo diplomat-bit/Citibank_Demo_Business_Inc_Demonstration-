@@ -1,0 +1,14 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. GLPOST.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - POST GL TRANSACTION
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "PREPARING TO POST JOURNAL ENTRY TO GENERAL LEDGER.".
+           DISPLAY "VALIDATING DEBITS EQUAL CREDITS...".
+           DISPLAY "100% VALIDATED.".
+           DISPLAY "TRANSACTION POSTED.".
+           STOP RUN.

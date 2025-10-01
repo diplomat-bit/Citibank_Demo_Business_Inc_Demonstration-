@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FRCASHF.
+       AUTHOR. Q-BOOKS-AI-DIVISION.
+      ******************************************************************
+      * QUICKBOOKS 2025 AI - STATEMENT OF CASH FLOWS
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "GENERATING STATEMENT OF CASH FLOWS...".
+           DISPLAY "ANALYZING OPERATING, INVESTING, AND FINANCING...".
+           DISPLAY "REPORT GENERATED.".
+           STOP RUN.

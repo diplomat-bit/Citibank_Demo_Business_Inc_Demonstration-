@@ -1,0 +1,11 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. AUFLAG.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - FLAG TRANSACTION FOR AUDIT
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "TRANSACTION FLAGGED FOR MANUAL AUDIT REVIEW.".
+           STOP RUN.

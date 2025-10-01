@@ -1,0 +1,13 @@
+
+      ******************************************************************
+      * QUICKBOOKS 2025 AI - COPYBOOK FOR EMPLOYEE MASTER
+      ******************************************************************
+       01 EMPLOYEE-MASTER-RECORD.
+          05 PR-EMPLOYEE-ID       PIC 9(10).
+          05 PR-LAST-NAME         PIC X(25).
+          05 PR-FIRST-NAME        PIC X(25).
+          05 PR-SSN               PIC X(11).
+          05 PR-PAY-RATE          PIC S9(7)V99 COMP-3.
+          05 PR-PAY-TYPE          PIC X(01).
+             88 IS-SALARY         VALUE 'S'.
+             88 IS-HOURLY         VALUE 'H'.

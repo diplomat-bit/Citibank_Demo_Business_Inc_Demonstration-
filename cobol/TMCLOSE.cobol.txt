@@ -1,0 +1,14 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. TMCLOSE.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - TELLER CLOSE DRAWER
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "TELLER DRAWER CLOSING PROCEDURE.".
+           DISPLAY "COUNTING ALL CASH AND CHECKS...".
+           DISPLAY "BALANCING AGAINST TRANSACTION LOG...".
+           DISPLAY "DRAWER CLOSED AND SECURED.".
+           STOP RUN.

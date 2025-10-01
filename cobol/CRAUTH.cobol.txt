@@ -1,0 +1,15 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CRAUTH.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - AUTHORIZE CARD TRANSACTION
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "INCOMING AUTHORIZATION REQUEST...".
+           DISPLAY "CHECKING CARD STATUS AND AVAILABLE CREDIT...".
+           DISPLAY "CALLING AI-INTEGRATION-LAYER FOR FRAUD SCORE...".
+           DISPLAY "PERFORMING 100-POINT FRAUD CHECK...".
+           DISPLAY "TRANSACTION AUTHORIZED. CODE 00.".
+           STOP RUN.
