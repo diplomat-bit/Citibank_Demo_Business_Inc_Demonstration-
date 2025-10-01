@@ -1,9 +1,8 @@
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. APVNDPY.
-       AUTHOR. Q-BOOKS-AI-DIVISION.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
       ******************************************************************
-      * QUICKBOOKS 2025 AI - PAY VENDOR BILLS
+      * QUANTUM OS - PAY VENDOR BILLS
       ******************************************************************
        PROCEDURE DIVISION.
        MAIN-LOGIC.

@@ -1,0 +1,12 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CFDRAW.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
+      ******************************************************************
+      * LIVE BANK - DRAW ON CORPORATE CREDIT LINE
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "PROCESSING DRAW ON CORPORATE CREDIT LINE...".
+           DISPLAY "VERIFYING AVAILABLE CREDIT AND AUTHORIZATION...".
+           DISPLAY "FUNDS DISBURSED.".
+           STOP RUN.

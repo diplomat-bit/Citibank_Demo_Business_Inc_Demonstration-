@@ -47,4 +47,3 @@
        DISPLAY-INSIGHT.
            DISPLAY "AI-GENERATED INSIGHT: ".
            DISPLAY WS-AI-INSIGHT.
-```

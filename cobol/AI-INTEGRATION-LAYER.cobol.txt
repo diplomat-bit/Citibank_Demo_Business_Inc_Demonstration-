@@ -56,4 +56,3 @@
            UNSTRING WS-API-RESPONSE DELIMITED BY "'text': '" OR "' "
                INTO FILLER, LS-AI-RESPONSE.
            DISPLAY "RESPONSE PARSED.".
-```

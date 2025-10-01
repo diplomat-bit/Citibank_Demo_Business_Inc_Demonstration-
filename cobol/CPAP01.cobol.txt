@@ -1,6 +1,5 @@
-
       ******************************************************************
-      * QUICKBOOKS 2025 AI - COPYBOOK FOR AP VENDOR BILL
+      * QUANTUM OS - COPYBOOK FOR AP VENDOR BILL
       ******************************************************************
        01 AP-VENDOR-BILL-RECORD.
           05 AP-BILL-ID           PIC X(15).

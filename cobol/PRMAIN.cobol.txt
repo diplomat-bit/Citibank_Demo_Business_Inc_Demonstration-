@@ -1,9 +1,8 @@
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. PRMAIN.
-       AUTHOR. Q-BOOKS-AI-DIVISION.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
       ******************************************************************
-      * QUICKBOOKS 2025 AI - PAYROLL MAIN
+      * QUANTUM OS - PAYROLL MAIN
       ******************************************************************
        PROCEDURE DIVISION.
        MAIN-LOGIC.

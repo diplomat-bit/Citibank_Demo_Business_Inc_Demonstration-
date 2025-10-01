@@ -1,13 +1,12 @@
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. APVNDBL.
-       AUTHOR. Q-BOOKS-AI-DIVISION.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
       ******************************************************************
-      * QUICKBOOKS 2025 AI - ENTER VENDOR BILL
+      * QUANTUM OS - ENTER VENDOR BILL
       ******************************************************************
        PROCEDURE DIVISION.
        MAIN-LOGIC.
            DISPLAY "ENTERING NEW VENDOR BILL.".
-           DISPLAY "CALLING AI-INTEGRATION-LAYER TO SCAN FOR DUPLICATES...".
+           DISPLAY "CALLING COGNITIVE-CORE TO SCAN FOR DUPLICATES...".
            DISPLAY "BILL ENTERED AND SCHEDULED FOR PAYMENT.".
            STOP RUN.

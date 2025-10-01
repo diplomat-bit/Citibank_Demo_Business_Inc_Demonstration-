@@ -1,9 +1,8 @@
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. PRRUN.
-       AUTHOR. Q-BOOKS-AI-DIVISION.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
       ******************************************************************
-      * QUICKBOOKS 2025 AI - PROCESS PAYROLL RUN
+      * QUANTUM OS - PROCESS PAYROLL RUN
       ******************************************************************
        PROCEDURE DIVISION.
        MAIN-LOGIC.

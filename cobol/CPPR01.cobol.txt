@@ -1,6 +1,5 @@
-
       ******************************************************************
-      * QUICKBOOKS 2025 AI - COPYBOOK FOR EMPLOYEE MASTER
+      * QUANTUM OS - COPYBOOK FOR EMPLOYEE MASTER
       ******************************************************************
        01 EMPLOYEE-MASTER-RECORD.
           05 PR-EMPLOYEE-ID       PIC 9(10).

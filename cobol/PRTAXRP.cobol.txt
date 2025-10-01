@@ -1,12 +1,9 @@
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. PRTAXRP.
-       AUTHOR. Q-BOOKS-AI-DIVISION.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
       ******************************************************************
-      * QUICKBOOKS 2025 AI - PAYROLL TAX REPORTS
+      * QUANTUM OS - PAYROLL TAX REPORTS
       ******************************************************************
        PROCEDURE DIVISION.
        MAIN-LOGIC.
-           DISPLAY "GENERATING QUARTERLY PAYROLL TAX FILINGS (941)...".
-           DISPLAY "DATA COMPILED AND READY FOR E-FILING.".
-           STOP RUN.
+           DISPLAY "GENERATING QUARTERLY PAYROLL TAX FILINGS (94

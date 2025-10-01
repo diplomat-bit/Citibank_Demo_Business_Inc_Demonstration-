@@ -1,6 +1,5 @@
-
       ******************************************************************
-      * QUICKBOOKS 2025 AI - COPYBOOK FOR AR INVOICE RECORD
+      * QUANTUM OS - COPYBOOK FOR AR INVOICE RECORD
       ******************************************************************
        01 AR-INVOICE-RECORD.
           05 AR-INVOICE-ID        PIC X(15).

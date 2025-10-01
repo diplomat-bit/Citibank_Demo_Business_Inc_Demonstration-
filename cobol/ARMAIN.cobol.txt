@@ -1,9 +1,8 @@
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. ARMAIN.
-       AUTHOR. Q-BOOKS-AI-DIVISION.
+       AUTHOR. JAMES BURVEL OCALLAGHAN III.
       ******************************************************************
-      * QUICKBOOKS 2025 AI - ACCOUNTS RECEIVABLE MAIN
+      * QUANTUM OS - ACCOUNTS RECEIVABLE MAIN
       ******************************************************************
        PROCEDURE DIVISION.
        MAIN-LOGIC.
