@@ -1,7 +1,7 @@
 
 # Engineering Vision Specification: AI Ad Studio
 
-## 1. Core Philosophy: "The Propaganda Engine"
+## 1. Core Philosophy: "The  Engine"
 
 This module is the chamber where intent is given a voice that can move mountains. It is a studio not for advertisements, but for proclamations. It uses the power of generative video to transmute a whisper of will—a single line of text—into a powerful, resonant narrative that can be broadcast to the world.
 
