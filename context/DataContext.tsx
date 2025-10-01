@@ -147,20 +147,25 @@ interface IDataContext {
   unlockedFeatures: Set<View>;
   unlockFeature: (view: View) => void;
 
+  // API Key Management
+  apiKey: string | null;
+  generateApiKey: () => Promise<string | null>;
+
   // New functions to interact with backend
   refetchData: () => void;
 }
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
 
+const API_BASE_URL = 'http://localhost:3001';
+
 // Helper for API calls
 const apiFetch = async (endpoint: string, options?: RequestInit) => {
     const headers = new Headers(options?.headers);
 
-    const response = await fetch(endpoint, { ...options, headers });
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error on ${endpoint}: ${errorText}`);
+        throw new Error(`API Error on ${endpoint}: ${response.status} ${response.statusText || 'File not found'}`);
     }
     const text = await response.text();
     return text ? JSON.parse(text) : {};
@@ -241,15 +246,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [customBackgroundUrl, setCustomBackgroundUrlState] = useState<string | null>(() => localStorage.getItem('customBackgroundUrl'));
     const [activeIllusion, setActiveIllusionState] = useState<IllusionType>(() => (localStorage.getItem('activeIllusion') as IllusionType) || 'none');
     const [unlockedFeatures, setUnlockedFeatures] = useState<Set<View>>(() => new Set<View>([View.Dashboard, View.DeveloperApiKeys]));
+    const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('apiKey'));
     
      const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const [personal, corporate, other, mega, payroll, platform] = await Promise.all([
-                apiFetch('/api/data'),
+            const [personal, corporate, system, mega, payroll, platform] = await Promise.all([
+                apiFetch('/api/personal/data'),
                 apiFetch('/api/corporate/dashboard'),
-                apiFetch('/api/other/all'),
+                apiFetch('/api/system/all'),
                 apiFetch('/api/megadashboard/all'),
                 apiFetch('/api/corporate/payroll'),
                 apiFetch('/api/platform/all'),
@@ -289,8 +295,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setCourses(platform.courses || []);
             setEmployees(platform.employees || []);
             
-            setMarketMovers(other.marketMovers || []);
-            setApiStatus(other.apiStatus || []);
+            setMarketMovers(system.marketMovers || []);
+            setApiStatus(system.apiStatus || []);
             
             setAccessLogs(mega.accessLogs || []);
             setFraudCases(mega.fraudCases || []);
@@ -321,20 +327,46 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         } catch (err: any) {
             console.error("Failed to fetch data:", err);
-            setError("Could not connect to the server. Please ensure it's running.");
+            setError(err.message || "Could not connect to the server. Please ensure it's running.");
         } finally {
             setIsLoading(false);
         }
     }, []);
 
+    const generateApiKey = async (): Promise<string | null> => {
+        try {
+            // This is a temporary measure. In a real app, the API key would be passed
+            // in headers for subsequent requests.
+            const data = await apiFetch('/api/auth/generate-key', { method: 'POST' });
+            const key = data.apiKey;
+            if(key) {
+                localStorage.setItem('apiKey', key);
+                setApiKey(key);
+                // After getting a key, we can now fetch the actual data.
+                fetchData();
+                return key;
+            }
+            return null;
+        } catch(err: any) {
+            setError("Could not generate API key. Is the server running?");
+            return null;
+        }
+    };
+
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        // Only fetch data if we already have an API key.
+        // Otherwise, the user will be prompted to generate one.
+        if (apiKey) {
+            fetchData();
+        } else {
+            setIsLoading(false); // Not loading if we don't have a key
+        }
+    }, [apiKey, fetchData]);
     
     const addTransaction = useCallback(async (tx: Omit<Transaction, 'id'>) => {
         try {
-            await apiFetch('/api/transactions', {
+            await apiFetch('/api/personal/transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(tx),
@@ -481,7 +513,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         growthMetrics, competitors, benchmarks, licenses, disclosures, legalDocs,
         sandboxExperiments, consentRecords, containerImages, apiUsage, incidents, backupJobs,
         impactData, linkedAccounts, isImportingData, handlePlaidSuccess, unlinkAccount, marketMovers, notifications, markNotificationRead, apiStatus,
-        unlockedFeatures, unlockFeature
+        unlockedFeatures, unlockFeature, apiKey, generateApiKey
     };
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

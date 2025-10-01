@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { View } from '../types';
 import { DataContext } from '../context/DataContext';
 import FeatureGuard from './FeatureGuard';
+import ApiKeyPrompt from './ApiKeyPrompt';
 
 // Personal Finance Views
 import DashboardView from './views/personal/DashboardView';
@@ -199,7 +200,7 @@ const App: React.FC = () => {
         throw new Error("App must be used within a DataProvider");
     }
 
-    const { customBackgroundUrl, activeIllusion, isLoading, error } = dataContext;
+    const { apiKey, customBackgroundUrl, activeIllusion, isLoading, error } = dataContext;
 
     const handleSetView = (view: View) => {
         if (view !== activeView) {
@@ -211,6 +212,10 @@ const App: React.FC = () => {
         }
     };
     
+    if (!apiKey && !isLoading) {
+        return <ApiKeyPrompt />;
+    }
+
     if (error) {
         return (
            <div className="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-4">

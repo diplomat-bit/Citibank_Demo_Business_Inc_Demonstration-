@@ -24,11 +24,12 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
             case View.Transactions: {
                 const spendingByCategory = context.transactions
                     .filter(t => t.type === 'expense')
-                    // FIX: Explicitly typed the accumulator and item in the reduce function to ensure correct type inference for `spendingByCategory`.
-                    .reduce((acc: Record<string, number>, tx: Transaction) => {
+                    // FIX: Explicitly typing the accumulator and the item prevents type inference issues where `tx.amount` might not be treated as a number, leading to string concatenation and subsequent errors in the `.sort()` function.
+                    .reduce((acc: { [key: string]: number }, tx: Transaction) => {
                         acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
                         return acc;
-                    }, {});
+                    // FIX: Explicitly type the initial value of the reduce function to match the accumulator type. This resolves a TypeScript error where the operation was failing due to incorrect type inference.
+                    }, {} as { [key: string]: number });
                 
                 const chartData = Object.entries(spendingByCategory)
                     .map(([name, value]) => ({ name, value }))
@@ -39,7 +40,7 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
                     <div className="h-full flex flex-col p-4">
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <KpiCard title="Total Transactions" value={context.transactions.length} />
-                            {/* FIX: Explicitly typed the accumulator (s) and item (t) in the reduce function to resolve the arithmetic operation error where types were not being inferred correctly. */}
+                            {/* FIX: Explicitly typing the accumulator `s` and item `t` prevents a potential error where the accumulator could be inferred as an object if the initial value was missing, causing an invalid arithmetic operation. */}
                             <KpiCard title="Total Outflow (All Time)" value={`$${context.transactions.filter(t=>t.type==='expense').reduce((s: number, t: Transaction)=>s+t.amount,0).toLocaleString(undefined, {maximumFractionDigits: 0})}`} />
                         </div>
                         <p className="text-sm font-semibold text-gray-300 mb-2">Top 5 Spending Categories</p>

@@ -2,9 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import { initDb } from './db';
 import personalRoutes from './api/personal';
-import corporateRoutes from './api/corporate';
+import { dashboardRouter, payrollRouter } from './api/corporate';
 import aiRoutes from './api/ai';
-import otherRoutes from './api/other';
+import { systemRouter, megadashboardRouter, platformRouter } from './api/other';
+import authRoutes from './api/auth';
 
 
 // Load environment variables
@@ -23,16 +24,22 @@ app.use(express.json());
 initDb().then(db => {
     console.log('Database initialized.');
     
-    // All routes are now public within this application's context
+    // Pass db instance to routes
+    // --- Register most specific routes FIRST ---
+
+    app.use('/api/auth', authRoutes());
+    app.use('/api/personal', personalRoutes(db));
+    app.use('/api/corporate/dashboard', dashboardRouter(db));
+    app.use('/api/corporate/payroll', payrollRouter(db));
+    app.use('/api/system', systemRouter(db));
+    app.use('/api/megadashboard', megadashboardRouter(db));
+    app.use('/api/platform', platformRouter(db));
+    app.use('/api/ai', aiRoutes(db));
+
+    // General welcome message for /api
     app.get('/api', (req, res) => {
         res.send('Welcome to the Demo Bank API!');
     });
-
-    // Pass db instance to routes
-    app.use('/api', personalRoutes(db));
-    app.use('/api', corporateRoutes(db));
-    app.use('/api/ai', aiRoutes(db));
-    app.use('/api', otherRoutes(db));
 
 
     // Start server

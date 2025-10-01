@@ -32,7 +32,16 @@ The present invention provides an "AI Trend Forecaster." It continuously monitor
     - "The form factor of the AI Pin is incredible, but I'm worried about privacy."
     `
 5.  **AI Forecast:** The LLM generates a qualitative forecast.
-    **AI Output:** `The "AI Pin" refers to a new category of wearable, screenless AI hardware. The high velocity of conversation indicates significant initial interest. **Forecast:** High potential to become a major niche trend among early adopters in the next 6 months. Mainstream adoption is uncertain and will depend on resolving the privacy concerns mentioned in the discourse.`
+    **AI Output:**
+    `
+    **Thesis: High Potential Niche Trend**
+
+    **Analysis:**
+    The "AI Pin" refers to a new category of wearable, screenless AI hardware. The high velocity of conversation indicates significant initial interest among tech early adopters.
+    
+    **Forecast:**
+    High potential to become a major niche trend in the next 6 months. Mainstream adoption is uncertain and will depend on resolving the privacy concerns frequently mentioned in the discourse and demonstrating a clear use case beyond novelty.
+    `
 6.  **Output:** This forecast is displayed on a trend-watching dashboard.
 
 **Claims:**
