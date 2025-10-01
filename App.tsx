@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -14,6 +15,8 @@ import SendMoneyView from './components/views/personal/SendMoneyView';
 import BudgetsView from './components/views/personal/BudgetsView';
 // FIX: Corrected the import path for InvestmentsView. It is located directly in the 'components' directory, not in 'views/personal'.
 import InvestmentsView from './components/InvestmentsView';
+// FIX: Added missing import for PortfolioExplorerView.
+import PortfolioExplorerView from './components/views/personal/PortfolioExplorerView';
 import CryptoView from './components/views/personal/CryptoView';
 import FinancialGoalsView from './components/views/personal/FinancialGoalsView';
 import MarketplaceView from './components/views/personal/MarketplaceView';
@@ -201,22 +204,29 @@ const App: React.FC = () => {
         throw new Error("App must be used within a DataProvider");
     }
 
-    const { customBackgroundUrl, activeIllusion, isLoading } = dataContext;
+    const { customBackgroundUrl, activeIllusion, isLoading, error } = dataContext;
 
-    /**
-     * @description A custom view setter that keeps track of the previous view.
-     * This is useful for providing context to views like the AI Advisor.
-     */
     const handleSetView = (view: View) => {
         if (view !== activeView) {
             setPreviousView(activeView);
             setActiveView(view);
-            // Close sidebar on navigation in mobile
             if (window.innerWidth < 1024) {
                 setIsSidebarOpen(false);
             }
         }
     };
+    
+    if (error) {
+        return (
+           <div className="fixed inset-0 bg-gray-950 z-50 flex items-center justify-center p-4">
+               <div className="bg-gray-900 border border-red-700 rounded-xl p-8 max-w-lg text-center">
+                   <h1 className="text-2xl font-bold text-red-400 mb-4">Connection Error</h1>
+                   <p className="text-gray-400 mb-6">{error}</p>
+                   <p className="text-xs text-gray-500">Please ensure all data is loaded correctly. You may need to refresh the page.</p>
+               </div>
+           </div>
+       );
+   }
     
     /**
      * @description The main view renderer. It uses a switch statement to determine
@@ -237,7 +247,7 @@ const App: React.FC = () => {
             const articleNumber = parseInt(activeView.replace('article-', ''), 10);
             return <FeatureGuard view={activeView}><ConstitutionalArticleView articleNumber={articleNumber} /></FeatureGuard>;
         }
-
+        
         switch (activeView) {
             // Personal Finance
             case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
@@ -245,6 +255,7 @@ const App: React.FC = () => {
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;
             case View.Investments: return <FeatureGuard view={View.Investments}><InvestmentsView /></FeatureGuard>;
+            case View.PortfolioExplorer: return <FeatureGuard view={View.PortfolioExplorer}><PortfolioExplorerView /></FeatureGuard>;
             case View.Crypto: return <FeatureGuard view={View.Crypto}><CryptoView /></FeatureGuard>;
             case View.FinancialGoals: return <FeatureGuard view={View.FinancialGoals}><FinancialGoalsView /></FeatureGuard>;
             case View.Marketplace: return <FeatureGuard view={View.Marketplace}><MarketplaceView /></FeatureGuard>;
@@ -431,9 +442,6 @@ const App: React.FC = () => {
 
     const IllusionLayer = () => {
         if (!activeIllusion || activeIllusion === 'none') return null;
-        
-        // The actual CSS for the illusion effect is defined in index.html
-        // to keep it global and avoid style tag injection on re-renders.
         return <div className={`absolute inset-0 z-0 ${activeIllusion}-illusion`}></div>
     };
 
@@ -444,7 +452,7 @@ const App: React.FC = () => {
                 <Sidebar activeView={activeView} setActiveView={handleSetView} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
                 <div className="flex-1 flex flex-col lg:ml-64">
                     <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} setActiveView={handleSetView} />
-                    <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                    <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                         {renderView()}
                     </main>
                 </div>

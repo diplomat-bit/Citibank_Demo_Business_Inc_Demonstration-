@@ -59,3 +59,6 @@ export * from './constitutionalArticles';
 export * from './platform/projectsData';
 export * from './platform/lmsData';
 export * from './platform/hrisData';
+
+// FIX: Export the newly populated mock data file.
+export * from './mockData';

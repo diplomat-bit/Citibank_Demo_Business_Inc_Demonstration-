@@ -10,7 +10,9 @@ import DashboardView from './views/personal/DashboardView';
 import TransactionsView from './views/personal/TransactionsView';
 import SendMoneyView from './views/personal/SendMoneyView';
 import BudgetsView from './views/personal/BudgetsView';
+// FIX: Corrected the import path for InvestmentsView. It is located directly in the 'components' directory.
 import InvestmentsView from './InvestmentsView';
+// FIX: Added missing import for PortfolioExplorerView.
 import PortfolioExplorerView from './views/personal/PortfolioExplorerView';
 import CryptoView from './views/personal/CryptoView';
 import FinancialGoalsView from './views/personal/FinancialGoalsView';

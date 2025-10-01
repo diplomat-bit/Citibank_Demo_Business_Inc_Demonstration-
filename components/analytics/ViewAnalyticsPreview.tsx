@@ -24,7 +24,7 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
             case View.Transactions: {
                 const spendingByCategory = context.transactions
                     .filter(t => t.type === 'expense')
-                    // FIX: Added an initial value `{}` to `reduce` and explicit types for the accumulator (`acc`) and item (`tx`). This resolves a type error where `acc` was being incorrectly inferred as a Transaction object, causing the arithmetic operation on line 37 to fail.
+                    // FIX: Added an initial value `{}` to `reduce` and explicit types for the accumulator (`acc`) and item (`tx`). This resolves a type error where `acc` was being incorrectly inferred as a Transaction object, causing the arithmetic operation to fail.
                     .reduce((acc: Record<string, number>, tx: Transaction) => {
                         acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
                         return acc;
@@ -39,7 +39,6 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
                     <div className="h-full flex flex-col p-4">
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <KpiCard title="Total Transactions" value={context.transactions.length} />
-                            {/* FIX: Added Number() conversion for robustness against non-numeric data from the API. */}
                             <KpiCard title="Total Outflow (All Time)" value={`$${context.transactions.filter(t=>t.type==='expense').reduce((s: number, t: Transaction)=>s+Number(t.amount),0).toLocaleString(undefined, {maximumFractionDigits: 0})}`} />
                         </div>
                         <p className="text-sm font-semibold text-gray-300 mb-2">Top 5 Spending Categories</p>

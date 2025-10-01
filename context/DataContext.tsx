@@ -24,6 +24,10 @@ import {
     PayRun, Project, Course, Employee, PortfolioAsset
 } from '../types'; 
 
+// Import all mock data directly
+import * as MockData from '../data';
+
+
 interface IDataContext {
   // Loading & Error states
   isLoading: boolean;
@@ -153,20 +157,6 @@ interface IDataContext {
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
 
-const API_BASE_URL = 'http://localhost:3001';
-
-// Helper for API calls
-const apiFetch = async (endpoint: string, options?: RequestInit) => {
-    const headers = new Headers(options?.headers);
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-    if (!response.ok) {
-        throw new Error(`API Error on ${endpoint}: ${response.status} ${response.statusText || 'File not found'}`);
-    }
-    const text = await response.text();
-    return text ? JSON.parse(text) : {};
-};
-
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -247,82 +237,80 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(true);
         setError(null);
         try {
-            const [personal, corporate, system, mega, payroll, platform] = await Promise.all([
-                apiFetch('/api/personal/data'),
-                apiFetch('/api/corporate/dashboard'),
-                apiFetch('/api/system/all'),
-                apiFetch('/api/megadashboard/all'),
-                apiFetch('/api/corporate/payroll'),
-                apiFetch('/api/platform/all'),
-            ]);
-            
-            setTransactions(personal.transactions || []);
-            setAssets(personal.assets || []);
-            setPortfolioAssets(personal.portfolioAssets || []);
-            setBudgets(personal.budgets.map((b: any) => ({...b, limit: b.limit_val})) || []);
-            setImpactInvestments(personal.impactInvestments || []);
-            setFinancialGoals(personal.financialGoals || []);
-            setSubscriptions(personal.subscriptions || []);
-            setUpcomingBills(personal.upcomingBills || []);
-            setSavingsGoals(personal.savingsGoals || []);
-            setGamification(personal.gamification || null);
-            setRewardPoints(personal.rewardPoints || null);
-            setRewardItems(personal.rewardItems || []);
-            setCreditScore(personal.creditScore || null);
-            setCreditFactors(personal.creditFactors || []);
-            setAiInsights(personal.aiInsights || []);
-            setCryptoAssets(personal.cryptoAssets || []);
-            setNftAssets(personal.nftAssets || []);
-            setPaymentOperations(personal.paymentOperations || []);
-            setLinkedAccounts(personal.linkedAccounts || []);
-            setNotifications(personal.notifications || []);
-            
-            setCorporateCards(corporate.corporateCards || []);
-            setCorporateTransactions(corporate.corporateTransactions || []);
-            setPaymentOrders(corporate.paymentOrders || []);
-            setInvoices(corporate.invoices || []);
-            setComplianceCases(corporate.complianceCases || []);
-            setFinancialAnomalies(corporate.financialAnomalies || []);
-            setCounterparties(corporate.counterparties || []);
-            setPayRuns(payroll.payRuns || []);
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-            setProjects(platform.projects || []);
-            setCourses(platform.courses || []);
-            setEmployees(platform.employees || []);
+            // Load all data from mock files
+            setTransactions(MockData.MOCK_TRANSACTIONS);
+            setAssets(MockData.MOCK_ASSETS);
+            setPortfolioAssets(MockData.MOCK_PORTFOLIO_ASSETS);
+            setBudgets(MockData.MOCK_BUDGETS);
+            setImpactInvestments(MockData.MOCK_IMPACT_INVESTMENTS);
+            setFinancialGoals(MockData.MOCK_FINANCIAL_GOALS);
+            setSubscriptions(MockData.MOCK_SUBSCRIPTIONS);
+            setUpcomingBills(MockData.MOCK_UPCOMING_BILLS);
+            setSavingsGoals(MockData.MOCK_SAVINGS_GOALS);
+            // FIX: Import missing mock data from the central data export file.
+            setGamification(MockData.MOCK_GAMIFICATION);
+            setRewardPoints(MockData.MOCK_REWARD_POINTS);
+            setRewardItems(MockData.MOCK_REWARD_ITEMS);
+            setCreditScore(MockData.MOCK_CREDIT_SCORE);
+            setCreditFactors(MockData.MOCK_CREDIT_FACTORS);
+            // FIX: Import missing mock data from the central data export file.
+            setAiInsights(MockData.MOCK_AI_INSIGHTS);
+            setCryptoAssets(MockData.MOCK_CRYPTO_ASSETS);
+            setPaymentOperations(MockData.MOCK_PAYMENT_OPERATIONS);
+            // FIX: Import missing mock data from the central data export file.
+            setLinkedAccounts(MockData.MOCK_LINKED_ACCOUNTS);
+            setNotifications(MockData.MOCK_NOTIFICATIONS);
             
-            setMarketMovers(system.marketMovers || []);
-            setApiStatus(system.apiStatus || []);
+            setCorporateCards(MockData.MOCK_CORPORATE_CARDS);
+            setCorporateTransactions(MockData.MOCK_CORPORATE_TRANSACTIONS);
+            setPaymentOrders(MockData.MOCK_PAYMENT_ORDERS);
+            setInvoices(MockData.MOCK_INVOICES);
+            setComplianceCases(MockData.MOCK_COMPLIANCE_CASES);
+            setFinancialAnomalies(MockData.MOCK_ANOMALIES);
+            setCounterparties(MockData.MOCK_COUNTERPARTIES);
+            setPayRuns(MockData.MOCK_PAY_RUNS);
+
+            setProjects(MockData.MOCK_PROJECTS);
+            setCourses(MockData.MOCK_COURSES);
+            setEmployees(MockData.MOCK_EMPLOYEES);
             
-            setAccessLogs(mega.accessLogs || []);
-            setFraudCases(mega.fraudCases || []);
-            setMlModels(mega.mlModels || []);
-            setLoanApplications(mega.loanApplications || []);
-            setMortgageAssets(mega.mortgageAssets || []);
-            setThreatIntelBriefs(mega.threatIntelBriefs || []);
-            setInsuranceClaims(mega.insuranceClaims || []);
-            setRiskProfiles(mega.riskProfiles || []);
-            setDataCatalogItems(mega.dataCatalogItems || []);
-            setDataLakeStats(mega.dataLakeStats || []);
-            setSalesDeals(mega.salesDeals || []);
-            setMarketingCampaigns(mega.marketingCampaigns || []);
-            setGrowthMetrics(mega.growthMetrics || []);
-            setCompetitors(mega.competitors || []);
-            setBenchmarks(mega.benchmarks || []);
-            setLicenses(mega.licenses || []);
-            setDisclosures(mega.disclosures || []);
-            setLegalDocs(mega.legalDocs || []);
-            setSandboxExperiments(mega.sandboxExperiments || []);
-            setConsentRecords(mega.consentRecords || []);
-            setContainerImages(mega.containerImages || []);
-            setApiUsage(mega.apiUsage || []);
-            setIncidents(mega.incidents || []);
-            setBackupJobs(mega.backupJobs || []);
+            setMarketMovers(MockData.MOCK_MARKET_MOVERS);
+            setApiStatus(MockData.MOCK_API_STATUS);
             
-            setImpactData(personal.impactData || { treesPlanted: 0, progressToNextTree: 0 });
+            setAccessLogs(MockData.MOCK_ACCESS_LOGS);
+            setFraudCases(MockData.MOCK_FRAUD_CASES);
+            setMlModels(MockData.MOCK_ML_MODELS);
+            setLoanApplications(MockData.MOCK_LOAN_APPLICATIONS);
+            setMortgageAssets(MockData.MOCK_MORTGAGE_ASSETS);
+            setThreatIntelBriefs(MockData.MOCK_THREAT_INTEL);
+            setInsuranceClaims(MockData.MOCK_INSURANCE_CLAIMS);
+            setRiskProfiles(MockData.MOCK_RISK_PROFILES);
+            setDataCatalogItems(MockData.MOCK_DATA_CATALOG_ITEMS);
+            setDataLakeStats(MockData.MOCK_DATA_LAKE_STATS);
+            setSalesDeals(MockData.MOCK_SALES_DEALS);
+            setMarketingCampaigns(MockData.MOCK_MARKETING_CAMPAIGNS);
+            setGrowthMetrics(MockData.MOCK_GROWTH_METRICS);
+            setCompetitors(MockData.MOCK_COMPETITORS);
+            setBenchmarks(MockData.MOCK_BENCHMARKS);
+            setLicenses(MockData.MOCK_LICENSES);
+            setDisclosures(MockData.MOCK_DISCLOSURES);
+            setLegalDocs(MockData.MOCK_LEGAL_DOCS);
+            setSandboxExperiments(MockData.MOCK_SANDBOX_EXPERIMENTS);
+            setConsentRecords(MockData.MOCK_CONSENT_RECORDS);
+            setContainerImages(MockData.MOCK_CONTAINER_IMAGES);
+            setApiUsage(MockData.MOCK_API_USAGE);
+            setIncidents(MockData.MOCK_INCIDENTS);
+            setBackupJobs(MockData.MOCK_BACKUP_JOBS);
+            
+            setImpactData({ treesPlanted: 42, progressToNextTree: 75 });
+
 
         } catch (err: any) {
-            console.error("Failed to fetch data:", err);
-            setError(err.message || "Could not connect to the server. Please ensure it's running.");
+            console.error("Failed to load data:", err);
+            setError(err.message || "Could not load data. Please refresh.");
         } finally {
             setIsLoading(false);
         }
@@ -333,15 +321,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [fetchData]);
     
     const addTransaction = useCallback(async (tx: Omit<Transaction, 'id'>) => {
-        try {
-            await apiFetch('/api/personal/transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(tx),
-            });
-            await fetchData();
-        } catch (err: any) { setError(err.message); }
-    }, [fetchData]);
+        const newTx = { ...tx, id: `txn_${Date.now()}` };
+        setTransactions(prev => [newTx, ...prev]);
+        // Simulate updating budget
+        setBudgets(prev => prev.map(b => b.name.toLowerCase() === tx.category.toLowerCase() ? { ...b, spent: b.spent + tx.amount } : b));
+    }, []);
 
     const addProductToTransactions = useCallback((product: MarketplaceProduct) => {
         const newTx: Omit<Transaction, 'id'> = { type: 'expense', category: 'Shopping', description: product.name, amount: product.price, date: new Date().toISOString().split('T')[0] };

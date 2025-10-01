@@ -1,13 +1,8 @@
 import { Router } from 'express';
 import { Database } from 'sqlite3';
-// FIX: Removed imports for mock data that is not exported from the central data file.
-import { MOCK_IMPACT_INVESTMENTS, MOCK_SUBSCRIPTIONS, MOCK_UPCOMING_BILLS, MOCK_SAVINGS_GOALS, MOCK_REWARD_POINTS, MOCK_REWARD_ITEMS, MOCK_CREDIT_SCORE, MOCK_CREDIT_FACTORS, MOCK_CRYPTO_ASSETS, MOCK_PAYMENT_OPERATIONS, MOCK_NOTIFICATIONS } from '../../data';
+// FIX: Import mock data from the central data file instead of defining it locally.
+import { MOCK_IMPACT_INVESTMENTS, MOCK_SUBSCRIPTIONS, MOCK_UPCOMING_BILLS, MOCK_SAVINGS_GOALS, MOCK_REWARD_POINTS, MOCK_REWARD_ITEMS, MOCK_CREDIT_SCORE, MOCK_CREDIT_FACTORS, MOCK_CRYPTO_ASSETS, MOCK_PAYMENT_OPERATIONS, MOCK_NOTIFICATIONS, MOCK_GAMIFICATION, MOCK_AI_INSIGHTS, MOCK_LINKED_ACCOUNTS } from '../../data';
 import { GamificationState, AIInsight, LinkedAccount } from '../../../types';
-
-// FIX: Added local mock data for constants that were not found in the imported modules.
-const MOCK_GAMIFICATION: GamificationState = { score: 1200, level: 5, levelName: "Adept", progress: 60, credits: 150 };
-const MOCK_AI_INSIGHTS: AIInsight[] = [ { id: 'ai1', title: 'High spending in Dining', description: 'You have spent 80% of your dining budget.', urgency: 'medium' } ];
-const MOCK_LINKED_ACCOUNTS: LinkedAccount[] = [{ id: 'acc_plaid_mock', name: 'Plaid Checking', mask: '1111' }];
 
 
 export default (db: Database) => {
