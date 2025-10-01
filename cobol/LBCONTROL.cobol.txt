@@ -1,0 +1,28 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LBCONTROL.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+       DATE-WRITTEN. 2024-07-27.
+      ******************************************************************
+      * LIVE BANK - SYSTEM CONTROL PROGRAM
+      * THIS IS THE CENTRAL GOVERNOR OF THE 100-MODULE SYSTEM.
+      ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-USER-CHOICE PIC X(02).
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           PERFORM UNTIL WS-USER-CHOICE = "99"
+               CALL "LBMENU" USING WS-USER-CHOICE
+               EVALUATE WS-USER-CHOICE
+                   WHEN "01"
+                       CALL "CIMAIN"
+                   WHEN "02"
+                       CALL "DAMAIN"
+                   WHEN "99"
+                       DISPLAY "LIVE BANK SESSION TERMINATED."
+                   WHEN OTHER
+                       DISPLAY "INVALID CHOICE. 100 CHOICES, 1 PATH."
+               END-EVALUATE
+           END-PERFORM.
+           STOP RUN.

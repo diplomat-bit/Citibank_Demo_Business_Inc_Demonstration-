@@ -24,22 +24,27 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
             case View.Transactions: {
                 const spendingByCategory = context.transactions
                     .filter(t => t.type === 'expense')
-                    // FIX: Added an initial value `{}` to `reduce` and explicit types for the accumulator (`acc`) and item (`tx`). This resolves a type error where `acc` was being incorrectly inferred as a Transaction object, causing the arithmetic operation to fail.
                     .reduce((acc: Record<string, number>, tx: Transaction) => {
                         acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
                         return acc;
-                    }, {});
+                    }, {} as Record<string, number>);
                 
                 const chartData = Object.entries(spendingByCategory)
                     .map(([name, value]) => ({ name, value }))
                     .sort((a,b) => b.value - a.value)
                     .slice(0, 5);
 
+                // FIX: The inline `reduce` function was causing a type error, likely due to a compiler inference issue within complex JSX. 
+                // Breaking the calculation out into a separate constant resolves the issue and improves readability.
+                const totalOutflow = context.transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((s, t) => s + t.amount, 0);
+
                 return (
                     <div className="h-full flex flex-col p-4">
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <KpiCard title="Total Transactions" value={context.transactions.length} />
-                            <KpiCard title="Total Outflow (All Time)" value={`$${context.transactions.filter(t=>t.type==='expense').reduce((s: number, t: Transaction)=>s+Number(t.amount),0).toLocaleString(undefined, {maximumFractionDigits: 0})}`} />
+                            <KpiCard title="Total Outflow (All Time)" value={`$${totalOutflow.toLocaleString(undefined, {maximumFractionDigits: 0})}`} />
                         </div>
                         <p className="text-sm font-semibold text-gray-300 mb-2">Top 5 Spending Categories</p>
                         <div className="flex-grow">

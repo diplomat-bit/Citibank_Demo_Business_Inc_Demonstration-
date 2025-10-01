@@ -1,0 +1,12 @@
+
+      ******************************************************************
+      * LIVE BANK - COPYBOOK FOR CUSTOMER MASTER RECORD
+      * ONE OF 100 CANONICAL DATA STRUCTURES.
+      ******************************************************************
+       01 CUSTOMER-MASTER-RECORD.
+          05 CM-CUSTOMER-ID       PIC 9(10).
+          05 CM-LAST-NAME         PIC X(25).
+          05 CM-FIRST-NAME        PIC X(25).
+          05 CM-DATE-OF-BIRTH     PIC X(10).
+          05 CM-TAX-ID            PIC X(12).
+          05 CM-FILLER            PIC X(18).

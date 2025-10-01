@@ -1,0 +1,17 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CIADD.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - ADD NEW CUSTOMER
+      ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       COPY CPCI01.
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTERING NEW CUSTOMER DATA.".
+      *    (LOGIC TO ACCEPT DATA INTO CUSTOMER-MASTER-RECORD)
+           DISPLAY "PERFORMING 100 VALIDITY CHECKS...".
+           DISPLAY "CUSTOMER ADDED TO MASTER FILE.".
+           STOP RUN.

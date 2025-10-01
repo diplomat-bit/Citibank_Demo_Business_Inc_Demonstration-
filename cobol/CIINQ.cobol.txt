@@ -1,0 +1,16 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CIINQ.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - INQUIRE CUSTOMER
+      ******************************************************************
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-INQUIRY-ID PIC 9(10).
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "ENTER CUSTOMER ID FOR INQUIRY: ".
+           ACCEPT WS-INQUIRY-ID.
+           DISPLAY "RETRIEVING RECORD FOR " WS-INQUIRY-ID.
+           STOP RUN.

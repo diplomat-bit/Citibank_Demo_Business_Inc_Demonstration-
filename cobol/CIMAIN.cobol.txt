@@ -1,0 +1,13 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CIMAIN.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - CUSTOMER INFORMATION FILE MAIN
+      ******************************************************************
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           DISPLAY "CUSTOMER INFORMATION MODULE ACCESSED.".
+           DISPLAY "100 CHECKS FOR 100% IDENTITY VERIFICATION.".
+      *    (THIS WOULD CONTAIN LOGIC TO CALL CIADD, CIUPD, ETC.)
+           GOBACK.

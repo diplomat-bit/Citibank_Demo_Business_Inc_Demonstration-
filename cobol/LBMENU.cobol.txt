@@ -1,0 +1,23 @@
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. LBMENU.
+       AUTHOR. LIVE-BANK-ARCHITECTS.
+      ******************************************************************
+      * LIVE BANK - MAIN MENU DISPLAY
+      * PRESENTS THE OPERATOR WITH 100 POSSIBLE ACTIONS.
+      ******************************************************************
+       DATA DIVISION.
+       LINKAGE SECTION.
+       01 LS-CHOICE PIC X(02).
+       PROCEDURE DIVISION USING LS-CHOICE.
+       MAIN-LOGIC.
+           DISPLAY "==============================================".
+           DISPLAY "          LIVE BANK - MAIN MENU               ".
+           DISPLAY "==============================================".
+           DISPLAY "01. CUSTOMER INFORMATION".
+           DISPLAY "02. DEPOSIT ACCOUNTS".
+           DISPLAY "----------------------------------------------".
+           DISPLAY "99. EXIT".
+           DISPLAY "ENTER YOUR CHOICE (1-100): ".
+           ACCEPT LS-CHOICE.
+           GOBACK.
