@@ -36,9 +36,10 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
 
                 // FIX: The inline `reduce` function was causing a type error, likely due to a compiler inference issue within complex JSX. 
                 // Breaking the calculation out into a separate constant resolves the issue and improves readability.
+                // FIX: Added explicit types for the reduce function parameters to fix arithmetic operation error.
                 const totalOutflow = context.transactions
                     .filter(t => t.type === 'expense')
-                    .reduce((s, t) => s + t.amount, 0);
+                    .reduce((s: number, t: Transaction) => s + t.amount, 0);
 
                 return (
                     <div className="h-full flex flex-col p-4">

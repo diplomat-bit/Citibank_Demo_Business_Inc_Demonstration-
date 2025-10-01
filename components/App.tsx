@@ -5,14 +5,28 @@ import { View } from '../types';
 import { DataContext } from '../context/DataContext';
 import FeatureGuard from './FeatureGuard';
 
+// --- NEW FRAMEWORK VIEWS ---
+import AgentMarketplaceView from './views/platform/AgentMarketplaceView';
+import OrchestrationView from './views/platform/OrchestrationView';
+import DataMeshView from './views/platform/DataMeshView';
+import DataCommonsView from './views/platform/DataCommonsView';
+import MainframeView from './views/platform/MainframeView';
+import AIGovernanceView from './views/platform/AIGovernanceView';
+import AIRiskRegistryView from './views/platform/AIRiskRegistryView';
+import OSPOView from './views/platform/OSPOView';
+import CiCdView from './views/platform/CiCdView';
+import InventionsView from './views/platform/InventionsView';
+import RoadmapView from './views/platform/RoadmapView';
+import ConnectView from './views/platform/DemoBankConnectView';
+
+
+// --- FOUNDATIONAL & LEGACY VIEWS ---
 // Personal Finance Views
 import DashboardView from './views/personal/DashboardView';
 import TransactionsView from './views/personal/TransactionsView';
 import SendMoneyView from './views/personal/SendMoneyView';
 import BudgetsView from './views/personal/BudgetsView';
-// FIX: Corrected the import path for InvestmentsView. It is located directly in the 'components' directory.
 import InvestmentsView from './InvestmentsView';
-// FIX: Added missing import for PortfolioExplorerView.
 import PortfolioExplorerView from './views/personal/PortfolioExplorerView';
 import CryptoView from './views/personal/CryptoView';
 import FinancialGoalsView from './views/personal/FinancialGoalsView';
@@ -66,7 +80,6 @@ import DemoBankDevOpsView from './views/platform/DemoBankDevOpsView';
 import DemoBankSecurityCenterView from './views/platform/DemoBankSecurityCenterView';
 import DemoBankComplianceHubView from './views/platform/DemoBankComplianceHubView';
 import DemoBankAppMarketplaceView from './views/platform/DemoBankAppMarketplaceView';
-import DemoBankConnectView from './views/platform/DemoBankConnectView';
 import DemoBankEventsView from './views/platform/DemoBankEventsView';
 import DemoBankLogicAppsView from './views/platform/DemoBankLogicAppsView';
 import DemoBankFunctionsView from './views/platform/DemoBankFunctionsView';
@@ -108,82 +121,82 @@ import DemoBankEventGridView from './views/platform/DemoBankEventGridView';
 import DemoBankApiManagementView from './views/platform/DemoBankApiManagementView';
 
 
-// Mega Dashboard Views
-import AccessControlsView from './views/megadashboard/security/AccessControlsView';
-import RoleManagementView from './views/megadashboard/security/RoleManagementView';
-import AuditLogsView from './views/megadashboard/security/AuditLogsView';
-import FraudDetectionView from './views/megadashboard/security/FraudDetectionView';
-import ThreatIntelligenceView from './views/megadashboard/security/ThreatIntelligenceView';
-import CardManagementView from './views/megadashboard/finance/CardManagementView';
-import LoanApplicationsView from './views/megadashboard/finance/LoanApplicationsView';
-import MortgagesView from './views/megadashboard/finance/MortgagesView';
-import InsuranceHubView from './views/megadashboard/finance/InsuranceHubView';
-import TaxCenterView from './views/megadashboard/finance/TaxCenterView';
-import PredictiveModelsView from './views/megadashboard/analytics/PredictiveModelsView';
-import RiskScoringView from './views/megadashboard/analytics/RiskScoringView';
-import SentimentAnalysisView from './views/megadashboard/analytics/SentimentAnalysisView';
-import DataLakesView from './views/megadashboard/analytics/DataLakesView';
-import DataCatalogView from './views/megadashboard/analytics/DataCatalogView';
-import ClientOnboardingView from './views/megadashboard/userclient/ClientOnboardingView';
-import KycAmlView from './views/megadashboard/userclient/KycAmlView';
-import UserInsightsView from './views/megadashboard/userclient/UserInsightsView';
-import FeedbackHubView from './views/megadashboard/userclient/FeedbackHubView';
-import SupportDeskView from './views/megadashboard/userclient/SupportDeskView';
-import SandboxView from './views/megadashboard/developer/SandboxView';
-import SdkDownloadsView from './views/megadashboard/developer/SdkDownloadsView';
-import WebhooksView from './views/megadashboard/developer/WebhooksView';
-import CliToolsView from './views/megadashboard/developer/CliToolsView';
-import ExtensionsView from './views/megadashboard/developer/ExtensionsView';
-import ApiKeysView from './views/megadashboard/developer/ApiKeysView';
-import PartnerHubView from './views/megadashboard/ecosystem/PartnerHubView';
-import AffiliatesView from './views/megadashboard/ecosystem/AffiliatesView';
-import IntegrationsMarketplaceView from './views/megadashboard/ecosystem/IntegrationsMarketplaceView';
-import CrossBorderPaymentsView from './views/megadashboard/ecosystem/CrossBorderPaymentsView';
-import MultiCurrencyView from './views/megadashboard/ecosystem/MultiCurrencyView';
-import NftVaultView from './views/megadashboard/digitalassets/NftVaultView';
-import TokenIssuanceView from './views/megadashboard/digitalassets/TokenIssuanceView';
-import SmartContractsView from './views/megadashboard/digitalassets/SmartContractsView';
-import DaoGovernanceView from './views/megadashboard/digitalassets/DaoGovernanceView';
-import OnChainAnalyticsView from './views/megadashboard/digitalassets/OnChainAnalyticsView';
-import SalesPipelineView from './views/megadashboard/business/SalesPipelineView';
-import MarketingAutomationView from './views/megadashboard/business/MarketingAutomationView';
-import GrowthInsightsView from './views/megadashboard/business/GrowthInsightsView';
-import CompetitiveIntelligenceView from './views/megadashboard/business/CompetitiveIntelligenceView';
-import BenchmarkingView from './views/megadashboard/business/BenchmarkingView';
-import LicensingView from './views/megadashboard/regulation/LicensingView';
-import DisclosuresView from './views/megadashboard/regulation/DisclosuresView';
-import LegalDocsView from './views/megadashboard/regulation/LegalDocsView';
-import RegulatorySandboxView from './views/megadashboard/regulation/RegulatorySandboxView';
-import ConsentManagementView from './views/megadashboard/regulation/ConsentManagementView';
-import ContainerRegistryView from './views/megadashboard/infra/ContainerRegistryView';
-import ApiThrottlingView from './views/megadashboard/infra/ApiThrottlingView';
-import ObservabilityView from './views/megadashboard/infra/ObservabilityView';
-import IncidentResponseView from './views/megadashboard/infra/IncidentResponseView';
-import BackupRecoveryView from './views/megadashboard/infra/BackupRecoveryView';
+// Mega Dashboard Views (no change, just for completeness)
+import AccessControlsView from './components/views/megadashboard/security/AccessControlsView';
+import RoleManagementView from './components/views/megadashboard/security/RoleManagementView';
+import AuditLogsView from './components/views/megadashboard/security/AuditLogsView';
+import FraudDetectionView from './components/views/megadashboard/security/FraudDetectionView';
+import ThreatIntelligenceView from './components/views/megadashboard/security/ThreatIntelligenceView';
+import CardManagementView from './components/views/megadashboard/finance/CardManagementView';
+import LoanApplicationsView from './components/views/megadashboard/finance/LoanApplicationsView';
+import MortgagesView from './components/views/megadashboard/finance/MortgagesView';
+import InsuranceHubView from './components/views/megadashboard/finance/InsuranceHubView';
+import TaxCenterView from './components/views/megadashboard/finance/TaxCenterView';
+import PredictiveModelsView from './components/views/megadashboard/analytics/PredictiveModelsView';
+import RiskScoringView from './components/views/megadashboard/analytics/RiskScoringView';
+import SentimentAnalysisView from './components/views/megadashboard/analytics/SentimentAnalysisView';
+import DataLakesView from './components/views/megadashboard/analytics/DataLakesView';
+import DataCatalogView from './components/views/megadashboard/analytics/DataCatalogView';
+import ClientOnboardingView from './components/views/megadashboard/userclient/ClientOnboardingView';
+import KycAmlView from './components/views/megadashboard/userclient/KycAmlView';
+import UserInsightsView from './components/views/megadashboard/userclient/UserInsightsView';
+import FeedbackHubView from './components/views/megadashboard/userclient/FeedbackHubView';
+import SupportDeskView from './components/views/megadashboard/userclient/SupportDeskView';
+import SandboxView from './components/views/megadashboard/developer/SandboxView';
+import SdkDownloadsView from './components/views/megadashboard/developer/SdkDownloadsView';
+import WebhooksView from './components/views/megadashboard/developer/WebhooksView';
+import CliToolsView from './components/views/megadashboard/developer/CliToolsView';
+import ExtensionsView from './components/views/megadashboard/developer/ExtensionsView';
+import ApiKeysView from './components/views/megadashboard/developer/ApiKeysView';
+import PartnerHubView from './components/views/megadashboard/ecosystem/PartnerHubView';
+import AffiliatesView from './components/views/megadashboard/ecosystem/AffiliatesView';
+import IntegrationsMarketplaceView from './components/views/megadashboard/ecosystem/IntegrationsMarketplaceView';
+import CrossBorderPaymentsView from './components/views/megadashboard/ecosystem/CrossBorderPaymentsView';
+import MultiCurrencyView from './components/views/megadashboard/ecosystem/MultiCurrencyView';
+import NftVaultView from './components/views/megadashboard/digitalassets/NftVaultView';
+import TokenIssuanceView from './components/views/megadashboard/digitalassets/TokenIssuanceView';
+import SmartContractsView from './components/views/megadashboard/digitalassets/SmartContractsView';
+import DaoGovernanceView from './components/views/megadashboard/digitalassets/DaoGovernanceView';
+import OnChainAnalyticsView from './components/views/megadashboard/digitalassets/OnChainAnalyticsView';
+import SalesPipelineView from './components/views/megadashboard/business/SalesPipelineView';
+import MarketingAutomationView from './components/views/megadashboard/business/MarketingAutomationView';
+import GrowthInsightsView from './components/views/megadashboard/business/GrowthInsightsView';
+import CompetitiveIntelligenceView from './components/views/megadashboard/business/CompetitiveIntelligenceView';
+import BenchmarkingView from './components/views/megadashboard/business/BenchmarkingView';
+import LicensingView from './components/views/megadashboard/regulation/LicensingView';
+import DisclosuresView from './components/views/megadashboard/regulation/DisclosuresView';
+import LegalDocsView from './components/views/megadashboard/regulation/LegalDocsView';
+import RegulatorySandboxView from './components/views/megadashboard/regulation/RegulatorySandboxView';
+import ConsentManagementView from './components/views/megadashboard/regulation/ConsentManagementView';
+import ContainerRegistryView from './components/views/megadashboard/infra/ContainerRegistryView';
+import ApiThrottlingView from './components/views/megadashboard/infra/ApiThrottlingView';
+import ObservabilityView from './components/views/megadashboard/infra/ObservabilityView';
+import IncidentResponseView from './components/views/megadashboard/infra/IncidentResponseView';
+import BackupRecoveryView from './components/views/megadashboard/infra/BackupRecoveryView';
 
 // Blueprint imports
-import CrisisAIManagerView from './views/blueprints/CrisisAIManagerView';
-import CognitiveLoadBalancerView from './views/blueprints/CognitiveLoadBalancerView';
-import HolographicMeetingScribeView from './views/blueprints/HolographicMeetingScribeView';
-import QuantumProofEncryptorView from './views/blueprints/QuantumProofEncryptorView';
-import EtherealMarketplaceView from './views/blueprints/EtherealMarketplaceView';
-import AdaptiveUITailorView from './views/blueprints/AdaptiveUITailorView';
-import UrbanSymphonyPlannerView from './views/blueprints/UrbanSymphonyPlannerView';
-import PersonalHistorianAIView from './views/blueprints/PersonalHistorianAIView';
-import DebateAdversaryView from './views/blueprints/DebateAdversaryView';
-import CulturalAssimilationAdvisorView from './views/blueprints/CulturalAssimilationAdvisorView';
-import DynamicSoundscapeGeneratorView from './views/blueprints/DynamicSoundscapeGeneratorView';
-import EmergentStrategyWargamerView from './views/blueprints/EmergentStrategyWargamerView';
-import EthicalGovernorView from './views/blueprints/EthicalGovernorView';
-import QuantumEntanglementDebuggerView from './views/blueprints/QuantumEntanglementDebuggerView';
-import LinguisticFossilFinderView from './views/blueprints/LinguisticFossilFinderView';
-import ChaosTheoristView from './views/blueprints/ChaosTheoristView';
-import SelfRewritingCodebaseView from './views/blueprints/SelfRewritingCodebaseView';
+import CrisisAIManagerView from './components/views/blueprints/CrisisAIManagerView';
+import CognitiveLoadBalancerView from './components/views/blueprints/CognitiveLoadBalancerView';
+import HolographicMeetingScribeView from './components/views/blueprints/HolographicMeetingScribeView';
+import QuantumProofEncryptorView from './components/views/blueprints/QuantumProofEncryptorView';
+import EtherealMarketplaceView from './components/views/blueprints/EtherealMarketplaceView';
+import AdaptiveUITailorView from './components/views/blueprints/AdaptiveUITailorView';
+import UrbanSymphonyPlannerView from './components/views/blueprints/UrbanSymphonyPlannerView';
+import PersonalHistorianAIView from './components/views/blueprints/PersonalHistorianAIView';
+import DebateAdversaryView from './components/views/blueprints/DebateAdversaryView';
+import CulturalAssimilationAdvisorView from './components/views/blueprints/CulturalAssimilationAdvisorView';
+import DynamicSoundscapeGeneratorView from './components/views/blueprints/DynamicSoundscapeGeneratorView';
+import EmergentStrategyWargamerView from './components/views/blueprints/EmergentStrategyWargamerView';
+import EthicalGovernorView from './components/views/blueprints/EthicalGovernorView';
+import QuantumEntanglementDebuggerView from './components/views/blueprints/QuantumEntanglementDebuggerView';
+import LinguisticFossilFinderView from './components/views/blueprints/LinguisticFossilFinderView';
+import ChaosTheoristView from './components/views/blueprints/ChaosTheoristView';
+import SelfRewritingCodebaseView from './components/views/blueprints/SelfRewritingCodebaseView';
 
 
 // Global Components
-import VoiceControl from './VoiceControl';
-import GlobalChatbot from './GlobalChatbot';
+import VoiceControl from './components/VoiceControl';
+import GlobalChatbot from './components/GlobalChatbot';
 
 /**
  * @description The root component of the application.
@@ -246,6 +259,21 @@ const App: React.FC = () => {
         }
         
         switch (activeView) {
+            // --- NEW FRAMEWORK VIEWS ---
+            case View.AgentMarketplace: return <FeatureGuard view={View.AgentMarketplace}><AgentMarketplaceView /></FeatureGuard>;
+            case View.Orchestration: return <FeatureGuard view={View.Orchestration}><OrchestrationView /></FeatureGuard>;
+            case View.DataMesh: return <FeatureGuard view={View.DataMesh}><DataMeshView /></FeatureGuard>;
+            case View.DataCommons: return <FeatureGuard view={View.DataCommons}><DataCommonsView /></FeatureGuard>;
+            case View.Mainframe: return <FeatureGuard view={View.Mainframe}><MainframeView /></FeatureGuard>;
+            case View.AIGovernance: return <FeatureGuard view={View.AIGovernance}><AIGovernanceView /></FeatureGuard>;
+            case View.AIRiskRegistry: return <FeatureGuard view={View.AIRiskRegistry}><AIRiskRegistryView /></FeatureGuard>;
+            case View.OSPO: return <FeatureGuard view={View.OSPO}><OSPOView /></FeatureGuard>;
+            case View.CiCd: return <FeatureGuard view={View.CiCd}><CiCdView /></FeatureGuard>;
+            case View.Inventions: return <FeatureGuard view={View.Inventions}><InventionsView /></FeatureGuard>;
+            case View.Roadmap: return <FeatureGuard view={View.Roadmap}><RoadmapView /></FeatureGuard>;
+            case View.Connect: return <FeatureGuard view={View.Connect}><ConnectView /></FeatureGuard>;
+            
+            // --- FOUNDATIONAL & LEGACY VIEWS ---
             // Personal Finance
             case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
@@ -299,7 +327,6 @@ const App: React.FC = () => {
             case View.DemoBankSecurityCenter: return <FeatureGuard view={View.DemoBankSecurityCenter}><DemoBankSecurityCenterView /></FeatureGuard>;
             case View.DemoBankComplianceHub: return <FeatureGuard view={View.DemoBankComplianceHub}><DemoBankComplianceHubView /></FeatureGuard>;
             case View.DemoBankAppMarketplace: return <FeatureGuard view={View.DemoBankAppMarketplace}><DemoBankAppMarketplaceView /></FeatureGuard>;
-            case View.DemoBankConnect: return <FeatureGuard view={View.DemoBankConnect}><DemoBankConnectView /></FeatureGuard>;
             case View.DemoBankEvents: return <FeatureGuard view={View.DemoBankEvents}><DemoBankEventsView /></FeatureGuard>;
             case View.DemoBankLogicApps: return <FeatureGuard view={View.DemoBankLogicApps}><DemoBankLogicAppsView /></FeatureGuard>;
             case View.DemoBankFunctions: return <FeatureGuard view={View.DemoBankFunctions}><DemoBankFunctionsView /></FeatureGuard>;

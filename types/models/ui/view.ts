@@ -51,6 +51,21 @@ export enum View {
     FractionalReserve = 'fractional-reserve',
     FinancialInstrumentForge = 'financial-instrument-forge',
 
+    // FIX: Add missing "New Framework" views to the enum.
+    // --- NEW FRAMEWORK VIEWS ---
+    AgentMarketplace = 'agent-marketplace',
+    Orchestration = 'orchestration',
+    DataMesh = 'data-mesh',
+    DataCommons = 'data-commons',
+    Mainframe = 'mainframe',
+    AIGovernance = 'ai-governance',
+    AIRiskRegistry = 'ai-risk-registry',
+    OSPO = 'ospo',
+    CiCd = 'cicd',
+    Inventions = 'inventions',
+    Roadmap = 'roadmap',
+    Connect = 'connect',
+
     // Demo Bank Platform Suite
     DemoBankSocial = 'db-social',
     DemoBankERP = 'db-erp',

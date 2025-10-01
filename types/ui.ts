@@ -12,6 +12,7 @@ export enum View {
     SendMoney = 'send-money',
     Budgets = 'budgets',
     Investments = 'investments',
+    PortfolioExplorer = 'portfolio-explorer',
     FinancialGoals = 'financial-goals',
     RewardsHub = 'rewards-hub',
     CreditHealth = 'credit-health',
@@ -19,6 +20,7 @@ export enum View {
     // AI & Platform
     AIAdvisor = 'ai-advisor',
     QuantumWeaver = 'quantum-weaver',
+    QuantumOracle = 'quantum-oracle',
     AIAdStudio = 'ai-ad-studio',
     
     // Advanced Features
@@ -34,6 +36,7 @@ export enum View {
     Invoices = 'invoices',
     Compliance = 'compliance',
     AnomalyDetection = 'anomaly-detection',
+    Payroll = 'payroll',
 
     // System & Settings
     Security = 'security',
@@ -47,7 +50,21 @@ export enum View {
     FractionalReserve = 'fractional-reserve',
     FinancialInstrumentForge = 'financial-instrument-forge',
 
-    // Demo Bank Platform Suite
+    // --- NEW FRAMEWORK VIEWS ---
+    AgentMarketplace = 'agent-marketplace',
+    Orchestration = 'orchestration',
+    DataMesh = 'data-mesh',
+    DataCommons = 'data-commons',
+    Mainframe = 'mainframe',
+    AIGovernance = 'ai-governance',
+    AIRiskRegistry = 'ai-risk-registry',
+    OSPO = 'ospo',
+    CiCd = 'cicd',
+    Inventions = 'inventions',
+    Roadmap = 'roadmap',
+    Connect = 'connect',
+
+    // Demo Bank Platform Suite (Legacy Naming)
     DemoBankSocial = 'db-social',
     DemoBankERP = 'db-erp',
     DemoBankCRM = 'db-crm',
@@ -64,7 +81,6 @@ export enum View {
     DemoBankSecurityCenter = 'db-security-center',
     DemoBankComplianceHub = 'db-compliance-hub',
     DemoBankAppMarketplace = 'db-app-marketplace',
-    DemoBankConnect = 'db-connect',
     DemoBankEvents = 'db-events',
     DemoBankLogicApps = 'db-logic-apps',
     DemoBankFunctions = 'db-functions',
@@ -104,6 +120,7 @@ export enum View {
     UserClientSupportDesk = 'md-uc-support-desk',
     // Developer & Integration
     DeveloperSandbox = 'md-dev-sandbox',
+    DeveloperApiKeys = 'md-dev-api-keys',
     DeveloperSdkDownloads = 'md-dev-sdk-downloads',
     DeveloperWebhooks = 'md-dev-webhooks',
     DeveloperCliTools = 'md-dev-cli-tools',
@@ -138,6 +155,28 @@ export enum View {
     InfraObservability = 'md-io-observability',
     InfraIncidentResponse = 'md-io-incident-response',
     InfraBackupRecovery = 'md-io-backup-recovery',
+
+    // Constitutional Articles
+    Article1 = 'article-1', Article2 = 'article-2', Article3 = 'article-3', Article4 = 'article-4', Article5 = 'article-5',
+    
+    // -- Blueprints --
+    CrisisAIManager = 'bp-crisis-ai-manager',
+    CognitiveLoadBalancer = 'bp-cognitive-load-balancer',
+    HolographicMeetingScribe = 'bp-holographic-scribe',
+    QuantumProofEncryptor = 'bp-quantum-encryptor',
+    EtherealMarketplace = 'bp-ethereal-marketplace',
+    AdaptiveUITailor = 'bp-adaptive-ui-tailor',
+    UrbanSymphonyPlanner = 'bp-urban-symphony-planner',
+    PersonalHistorianAI = 'bp-personal-historian',
+    DebateAdversary = 'bp-debate-adversary',
+    CulturalAssimilationAdvisor = 'bp-cultural-advisor',
+    DynamicSoundscapeGenerator = 'bp-soundscape-generator',
+    EmergentStrategyWargamer = 'bp-strategy-wargamer',
+    EthicalGovernor = 'bp-ethical-governor',
+    QuantumEntanglementDebugger = 'bp-quantum-debugger',
+    LinguisticFossilFinder = 'bp-linguistic-fossil-finder',
+    ChaosTheorist = 'bp-chaos-theorist',
+    SelfRewritingCodebase = 'bp-self-rewriting-codebase',
 }
 
 /**
