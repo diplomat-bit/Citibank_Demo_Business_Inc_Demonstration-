@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { View } from './types';
+// FIX: Changed to named import to match the corrected export.
 import { CONSTITUTIONAL_ARTICLES } from './data/constitutionalArticles';
 
 // ================================================================================================

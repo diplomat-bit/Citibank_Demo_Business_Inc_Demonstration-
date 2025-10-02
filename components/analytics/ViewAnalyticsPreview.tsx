@@ -23,19 +23,18 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
     const renderContent = () => {
         switch (viewId) {
             case View.Transactions: {
-                // FIX: Added explicit type for accumulator to prevent type inference errors.
                 const spendingByCategory = context.transactions
                     .filter(t => t.type === 'expense')
+                    // FIX: Explicitly typed the initial value of reduce. Without this, TypeScript infers
+                    // the initial value `{}` as the return type, causing `Object.entries` to fail and
+                    // `value` in the subsequent map/sort to be of type `unknown`.
                     .reduce((acc: Record<string, number>, tx: Transaction) => {
                         acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
                         return acc;
-                    }, {});
+                    }, {} as Record<string, number>);
                 
-                // FIX: The subtraction in the sort function was causing a type error because TypeScript
-                // couldn't always infer that 'value' was a number. Adding an explicit type to the preceding
-                // map function's parameters resolves this by ensuring the correct type is carried through.
                 const chartData = Object.entries(spendingByCategory)
-                    .map(([name, value]): {name: string, value: number} => ({ name, value }))
+                    .map(([name, value]) => ({ name, value }))
                     .sort((a,b) => b.value - a.value)
                     .slice(0, 5);
 

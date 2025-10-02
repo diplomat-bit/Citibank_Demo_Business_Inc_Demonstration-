@@ -1,9 +1,11 @@
+// components/views/personal/SendMoneyView.tsx
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import Card from '../../Card';
 import { DataContext } from '../../../context/DataContext';
 import { View } from '../../../types';
 import type { Transaction } from '../../../types';
 
+// FIX: Added interface definition for component props.
 interface SendMoneyViewProps {
   setActiveView: (view: View) => void;
 }
