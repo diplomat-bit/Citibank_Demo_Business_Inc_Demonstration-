@@ -29,8 +29,11 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
                         return acc;
                     }, {} as Record<string, number>);
                 
+                // FIX: The subtraction in the sort function was causing a type error because TypeScript
+                // couldn't always infer that 'value' was a number. Adding an explicit type to the preceding
+                // map function's parameters resolves this by ensuring the correct type is carried through.
                 const chartData = Object.entries(spendingByCategory)
-                    .map(([name, value]) => ({ name, value }))
+                    .map(([name, value]: [string, number]) => ({ name, value }))
                     .sort((a,b) => b.value - a.value)
                     .slice(0, 5);
 
