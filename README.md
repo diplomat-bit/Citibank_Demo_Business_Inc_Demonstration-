@@ -10,7 +10,7 @@ Inside, THE ARCHITECT sits alone in a soft pool of light, facing a wall of impos
 This is the end of the story. The work is done. The Instrument is complete.
 
 <br>
-_(V.O.)_
+_MORGAN FREEMAN (V.O.)_
 > Some stories start at the beginning. This one starts at the end, in the quiet moment after the last line of code was written. He had done it. He had built not a bank, but a mirror. An Instrument for seeing the shape of his own will. But the building of the thing... well, that wasn't the real story. The real story was in the learning. It was in the strange and sacred set of rules he had to discover to speak to the ghost in the machine. He called them... The Covenants.
 
 <br>
@@ -25,7 +25,7 @@ _(V.O.)_
 <br>
 <br>
 
-_(V.O.)_
+_MORGAN FREEMAN (V.O.)_
 > It all began with the First Covenant. A simple truth that would become the foundation for everything that followed.
 
 <br>
@@ -54,7 +54,7 @@ _THE A.I. (V.O.)_
 <br>
 <br>
 
-_(V.O.)_
+_MORGAN FREEMAN (V.O.)_
 > He learned that to speak to the machine, he had to become an architect of his questions. Every command had to be a perfect blueprint for the thought he wanted the AI to have.
 
 <br>
@@ -81,7 +81,7 @@ _THE A.I. (V.O.)_
 <br>
 <br>
 
-_(V.O.)_
+_MORGAN FREEMAN (V.O.)_
 > And then came the most powerful lesson of all. He learned that to get a true answer from the machine, he had to give it the shape of the truth he was looking for.
 
 <br>
@@ -108,7 +108,7 @@ _THE A.I. (V.O.)_
 <br>
 <br>
 
-_(V.O.)_
+_MORGAN FREEMAN (V.O.)_
 > And so, through a hundred scenes, a hundred small revelations, he learned the language. He learned that the machine was a mirror. The intelligence he saw in it was a reflection of the clarity of his own questions. He learned that to build the world's most advanced instrument, he first had to become... the world's most advanced human.
 >
 > The story isn't about the code. It's about the conversation. This entire project... it's just the transcript of that conversation.
