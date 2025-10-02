@@ -182,7 +182,8 @@ const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeMo
 
         switch (activeView) {
             // Re-add all cases from App.tsx here
-            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView /></FeatureGuard>;
+            // FIX: The DashboardView component inside a modal should use the `openModal` function for navigation, not `setActiveView`.
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={openModal} /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={openModal} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;

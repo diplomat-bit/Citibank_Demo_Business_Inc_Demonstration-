@@ -1,4 +1,5 @@
 
+
 // types/models/ui/view.ts
 
 /**
@@ -96,6 +97,35 @@ export enum View {
     DemoBankCommunications = 'db-communications',
     DemoBankCommerce = 'db-commerce',
     DemoBankTeams = 'db-teams',
+    // FIX: Add missing DemoBank views
+    DemoBankCMS = 'db-cms',
+    DemoBankLMS = 'db-lms',
+    DemoBankHRIS = 'db-hris',
+    DemoBankProjects = 'db-projects',
+    DemoBankLegalSuite = 'db-legal-suite',
+    DemoBankSupplyChain = 'db-supply-chain',
+    DemoBankPropTech = 'db-prop-tech',
+    DemoBankGamingServices = 'db-gaming-services',
+    DemoBankBookings = 'db-bookings',
+    DemoBankCDP = 'db-cdp',
+    DemoBankQuantumServices = 'db-quantum-services',
+    DemoBankBlockchain = 'db-blockchain',
+    DemoBankGIS = 'db-gis',
+    DemoBankRobotics = 'db-robotics',
+    DemoBankSimulations = 'db-simulations',
+    DemoBankVoiceServices = 'db-voice-services',
+    DemoBankSearchSuite = 'db-search-suite',
+    DemoBankDigitalTwin = 'db-digital-twin',
+    DemoBankWorkflowEngine = 'db-workflow-engine',
+    DemoBankObservabilityPlatform = 'db-observability-platform',
+    DemoBankFeatureManagement = 'db-feature-management',
+    DemoBankExperimentationPlatform = 'db-experimentation-platform',
+    DemoBankLocalizationPlatform = 'db-localization-platform',
+    DemoBankFleetManagement = 'db-fleet-management',
+    DemoBankKnowledgeBase = 'db-knowledge-base',
+    DemoBankMediaServices = 'db-media-services',
+    DemoBankEventGrid = 'db-event-grid',
+    DemoBankApiManagement = 'db-api-management',
 
     // --- Mega Dashboard ---
     // Security & Identity
@@ -184,17 +214,5 @@ export enum View {
     SelfRewritingCodebase = 'bp-self-rewriting-codebase',
 }
 
-/**
- * @description Defines the type of dynamic, reality-bending background effect.
- */
-export type IllusionType = 'none' | 'aurora';
-
-
-export enum WeaverStage {
-    Pitch = 'pitch',
-    Analysis = 'analysis',
-    Test = 'test',
-    FinalReview = 'final_review',
-    Approved = 'approved',
-    Error = 'error',
-}
+// FIX: Removed duplicate definitions that are already in their own files (illusion-type.ts, weaver-stage.ts)
+// This resolves the re-export ambiguity error.

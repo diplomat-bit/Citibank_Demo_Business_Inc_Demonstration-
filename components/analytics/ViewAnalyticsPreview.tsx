@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 // FIX: Added Transaction to imports for explicit typing in reduce function.
 import { View, Transaction } from '../../types';
 import { DataContext } from '../../context/DataContext';
+// FIX: Imported Cell for use in PieChart
 import { ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 // FIX: Imported NAV_ITEMS to look up the correct icon for the preview tile.
 import { NAV_ITEMS } from '../../constants';
@@ -22,18 +23,19 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
     const renderContent = () => {
         switch (viewId) {
             case View.Transactions: {
+                // FIX: Added explicit type for accumulator to prevent type inference errors.
                 const spendingByCategory = context.transactions
                     .filter(t => t.type === 'expense')
                     .reduce((acc: Record<string, number>, tx: Transaction) => {
                         acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
                         return acc;
-                    }, {} as Record<string, number>);
+                    }, {});
                 
                 // FIX: The subtraction in the sort function was causing a type error because TypeScript
                 // couldn't always infer that 'value' was a number. Adding an explicit type to the preceding
                 // map function's parameters resolves this by ensuring the correct type is carried through.
                 const chartData = Object.entries(spendingByCategory)
-                    .map(([name, value]: [string, number]) => ({ name, value }))
+                    .map(([name, value]): {name: string, value: number} => ({ name, value }))
                     .sort((a,b) => b.value - a.value)
                     .slice(0, 5);
 
@@ -41,7 +43,7 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
                 // Breaking the calculation out into a separate constant resolves the issue and improves readability.
                 // FIX: Added explicit types for the reduce function parameters to fix arithmetic operation error.
                 const totalOutflow = context.transactions
-                    .filter(t => t.type === 'expense')
+                    .filter((t: Transaction) => t.type === 'expense')
                     .reduce((s: number, t: Transaction) => s + t.amount, 0);
 
                 return (

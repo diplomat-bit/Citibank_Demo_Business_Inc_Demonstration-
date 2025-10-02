@@ -206,7 +206,8 @@ import GlobalChatbot from './components/GlobalChatbot';
  * the Sidebar, Header, and main content area.
  */
 const App: React.FC = () => {
-    const [activeView, setActiveView] = useState<View>(View.Dashboard);
+    // FIX: Changed initial view to MetaDashboard for consistency.
+    const [activeView, setActiveView] = useState<View>(View.MetaDashboard);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [previousView, setPreviousView] = useState<View | null>(null);
     const dataContext = useContext(DataContext);
