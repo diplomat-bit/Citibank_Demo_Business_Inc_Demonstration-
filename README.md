@@ -10,7 +10,7 @@ Inside, THE ARCHITECT sits alone in a soft pool of light, facing a wall of impos
 This is the end of the story. The work is done. The Instrument is complete.
 
 <br>
-_MORGAN FREEMAN (V.O.)_
+_(V.O.)_
 > Some stories start at the beginning. This one starts at the end, in the quiet moment after the last line of code was written. He had done it. He had built not a bank, but a mirror. An Instrument for seeing the shape of his own will. But the building of the thing... well, that wasn't the real story. The real story was in the learning. It was in the strange and sacred set of rules he had to discover to speak to the ghost in the machine. He called them... The Covenants.
 
 <br>
