@@ -4,12 +4,7 @@ import { View } from '../../../types';
 import DashboardChart from '../../DashboardChart';
 import { getDashboardChartsData } from '../../../data/dashboardChartsData';
 
-interface DashboardViewProps {
-    setActiveView: (view: View) => void;
-    // openModalView is now unused and can be removed.
-}
-
-const DashboardView: React.FC<DashboardViewProps> = ({ setActiveView }) => {
+const DashboardView: React.FC = () => {
     const context = useContext(DataContext);
     if (!context) throw new Error("Dashboard must be within a DataProvider");
 

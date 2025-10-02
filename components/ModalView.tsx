@@ -8,7 +8,6 @@ import DashboardView from './views/personal/DashboardView';
 import TransactionsView from './views/personal/TransactionsView';
 import SendMoneyView from './views/personal/SendMoneyView';
 import BudgetsView from './views/personal/BudgetsView';
-// FIX: Corrected the import path for InvestmentsView. It is located directly in the 'components' directory, not in 'views/personal'.
 import InvestmentsView from './InvestmentsView';
 import PortfolioExplorerView from './views/personal/PortfolioExplorerView';
 import CryptoView from './views/personal/CryptoView';
@@ -55,7 +54,7 @@ import DemoBankDevOpsView from './views/platform/DemoBankDevOpsView';
 import DemoBankSecurityCenterView from './views/platform/DemoBankSecurityCenterView';
 import DemoBankComplianceHubView from './views/platform/DemoBankComplianceHubView';
 import DemoBankAppMarketplaceView from './views/platform/DemoBankAppMarketplaceView';
-import DemoBankConnectView from './views/platform/DemoBankConnectView';
+import ConnectView from './views/platform/DemoBankConnectView';
 import DemoBankEventsView from './views/platform/DemoBankEventsView';
 import DemoBankLogicAppsView from './views/platform/DemoBankLogicAppsView';
 import DemoBankFunctionsView from './views/platform/DemoBankFunctionsView';
@@ -121,6 +120,7 @@ import WebhooksView from './views/megadashboard/developer/WebhooksView';
 import CliToolsView from './views/megadashboard/developer/CliToolsView';
 import ExtensionsView from './views/megadashboard/developer/ExtensionsView';
 import ApiKeysView from './views/megadashboard/developer/ApiKeysView';
+import ApiContractsView from './views/developer/ApiContractsView';
 import PartnerHubView from './views/megadashboard/ecosystem/PartnerHubView';
 import AffiliatesView from './views/megadashboard/ecosystem/AffiliatesView';
 import IntegrationsMarketplaceView from './views/megadashboard/ecosystem/IntegrationsMarketplaceView';
@@ -182,7 +182,7 @@ const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeMo
 
         switch (activeView) {
             // Re-add all cases from App.tsx here
-            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView openModalView={openModal} /></FeatureGuard>;
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={openModal} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;
@@ -228,7 +228,7 @@ const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeMo
             case View.DemoBankSecurityCenter: return <FeatureGuard view={View.DemoBankSecurityCenter}><DemoBankSecurityCenterView /></FeatureGuard>;
             case View.DemoBankComplianceHub: return <FeatureGuard view={View.DemoBankComplianceHub}><DemoBankComplianceHubView /></FeatureGuard>;
             case View.DemoBankAppMarketplace: return <FeatureGuard view={View.DemoBankAppMarketplace}><DemoBankAppMarketplaceView /></FeatureGuard>;
-            case View.DemoBankConnect: return <FeatureGuard view={View.DemoBankConnect}><DemoBankConnectView /></FeatureGuard>;
+            case View.Connect: return <FeatureGuard view={View.Connect}><ConnectView /></FeatureGuard>;
             case View.DemoBankEvents: return <FeatureGuard view={View.DemoBankEvents}><DemoBankEventsView /></FeatureGuard>;
             case View.DemoBankLogicApps: return <FeatureGuard view={View.DemoBankLogicApps}><DemoBankLogicAppsView /></FeatureGuard>;
             case View.DemoBankFunctions: return <FeatureGuard view={View.DemoBankFunctions}><DemoBankFunctionsView /></FeatureGuard>;
@@ -290,6 +290,7 @@ const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeMo
             case View.UserClientSupportDesk: return <FeatureGuard view={View.UserClientSupportDesk}><SupportDeskView /></FeatureGuard>;
             case View.DeveloperSandbox: return <FeatureGuard view={View.DeveloperSandbox}><SandboxView /></FeatureGuard>;
             case View.DeveloperApiKeys: return <FeatureGuard view={View.DeveloperApiKeys}><ApiKeysView /></FeatureGuard>;
+            case View.DeveloperApiContracts: return <FeatureGuard view={View.DeveloperApiContracts}><ApiContractsView /></FeatureGuard>;
             case View.DeveloperSdkDownloads: return <FeatureGuard view={View.DeveloperSdkDownloads}><SdkDownloadsView /></FeatureGuard>;
             case View.DeveloperWebhooks: return <FeatureGuard view={View.DeveloperWebhooks}><WebhooksView /></FeatureGuard>;
             case View.DeveloperCliTools: return <FeatureGuard view={View.DeveloperCliTools}><CliToolsView /></FeatureGuard>;

@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import { View } from '../types';
 import { DataContext } from '../context/DataContext';
 import FeatureGuard from './FeatureGuard';
+import MetaDashboardView from './views/platform/MetaDashboardView';
+import ModalView from './ModalView';
 
 // --- NEW FRAMEWORK VIEWS ---
 import AgentMarketplaceView from './views/platform/AgentMarketplaceView';
@@ -91,34 +93,34 @@ import DemoBankMapsView from './views/platform/DemoBankMapsView';
 import DemoBankCommunicationsView from './views/platform/DemoBankCommunicationsView';
 import DemoBankCommerceView from './views/platform/DemoBankCommerceView';
 import DemoBankTeamsView from './views/platform/DemoBankTeamsView';
-import DemoBankCMSView from './views/platform/DemoBankCMSView';
-import DemoBankLMSView from './views/platform/DemoBankLMSView';
-import DemoBankHRISView from './views/platform/DemoBankHRISView';
-import DemoBankProjectsView from './views/platform/DemoBankProjectsView';
-import DemoBankLegalSuiteView from './views/platform/DemoBankLegalSuiteView';
-import DemoBankSupplyChainView from './views/platform/DemoBankSupplyChainView';
-import DemoBankPropTechView from './views/platform/DemoBankPropTechView';
-import DemoBankGamingServicesView from './views/platform/DemoBankGamingServicesView';
-import DemoBankBookingsView from './views/platform/DemoBankBookingsView';
-import DemoBankCDPView from './views/platform/DemoBankCDPView';
-import DemoBankQuantumServicesView from './views/platform/DemoBankQuantumServicesView';
-import DemoBankBlockchainView from './views/platform/DemoBankBlockchainView';
-import DemoBankGISView from './views/platform/DemoBankGISView';
-import DemoBankRoboticsView from './views/platform/DemoBankRoboticsView';
-import DemoBankSimulationsView from './views/platform/DemoBankSimulationsView';
-import DemoBankVoiceServicesView from './views/platform/DemoBankVoiceServicesView';
-import DemoBankSearchSuiteView from './views/platform/DemoBankSearchSuiteView';
-import DemoBankDigitalTwinView from './views/platform/DemoBankDigitalTwinView';
-import DemoBankWorkflowEngineView from './views/platform/DemoBankWorkflowEngineView';
-import DemoBankObservabilityPlatformView from './views/platform/DemoBankObservabilityPlatformView';
-import DemoBankFeatureManagementView from './views/platform/DemoBankFeatureManagementView';
-import DemoBankExperimentationPlatformView from './views/platform/DemoBankExperimentationPlatformView';
-import DemoBankLocalizationPlatformView from './views/platform/DemoBankLocalizationPlatformView';
-import DemoBankFleetManagementView from './views/platform/DemoBankFleetManagementView';
-import DemoBankKnowledgeBaseView from './views/platform/DemoBankKnowledgeBaseView';
-import DemoBankMediaServicesView from './views/platform/DemoBankMediaServicesView';
-import DemoBankEventGridView from './views/platform/DemoBankEventGridView';
-import DemoBankApiManagementView from './views/platform/DemoBankApiManagementView';
+import DemoBankCMSView from './components/views/platform/DemoBankCMSView';
+import DemoBankLMSView from './components/views/platform/DemoBankLMSView';
+import DemoBankHRISView from './components/views/platform/DemoBankHRISView';
+import DemoBankProjectsView from './components/views/platform/DemoBankProjectsView';
+import DemoBankLegalSuiteView from './components/views/platform/DemoBankLegalSuiteView';
+import DemoBankSupplyChainView from './components/views/platform/DemoBankSupplyChainView';
+import DemoBankPropTechView from './components/views/platform/DemoBankPropTechView';
+import DemoBankGamingServicesView from './components/views/platform/DemoBankGamingServicesView';
+import DemoBankBookingsView from './components/views/platform/DemoBankBookingsView';
+import DemoBankCDPView from './components/views/platform/DemoBankCDPView';
+import DemoBankQuantumServicesView from './components/views/platform/DemoBankQuantumServicesView';
+import DemoBankBlockchainView from './components/views/platform/DemoBankBlockchainView';
+import DemoBankGISView from './components/views/platform/DemoBankGISView';
+import DemoBankRoboticsView from './components/views/platform/DemoBankRoboticsView';
+import DemoBankSimulationsView from './components/views/platform/DemoBankSimulationsView';
+import DemoBankVoiceServicesView from './components/views/platform/DemoBankVoiceServicesView';
+import DemoBankSearchSuiteView from './components/views/platform/DemoBankSearchSuiteView';
+import DemoBankDigitalTwinView from './components/views/platform/DemoBankDigitalTwinView';
+import DemoBankWorkflowEngineView from './components/views/platform/DemoBankWorkflowEngineView';
+import DemoBankObservabilityPlatformView from './components/views/platform/DemoBankObservabilityPlatformView';
+import DemoBankFeatureManagementView from './components/views/platform/DemoBankFeatureManagementView';
+import DemoBankExperimentationPlatformView from './components/views/platform/DemoBankExperimentationPlatformView';
+import DemoBankLocalizationPlatformView from './components/views/platform/DemoBankLocalizationPlatformView';
+import DemoBankFleetManagementView from './components/views/platform/DemoBankFleetManagementView';
+import DemoBankKnowledgeBaseView from './components/views/platform/DemoBankKnowledgeBaseView';
+import DemoBankMediaServicesView from './components/views/platform/DemoBankMediaServicesView';
+import DemoBankEventGridView from './components/views/platform/DemoBankEventGridView';
+import DemoBankApiManagementView from './components/views/platform/DemoBankApiManagementView';
 
 
 // Mega Dashboard Views (no change, just for completeness)
@@ -148,6 +150,7 @@ import WebhooksView from './components/views/megadashboard/developer/WebhooksVie
 import CliToolsView from './components/views/megadashboard/developer/CliToolsView';
 import ExtensionsView from './components/views/megadashboard/developer/ExtensionsView';
 import ApiKeysView from './components/views/megadashboard/developer/ApiKeysView';
+import ApiContractsView from './components/views/developer/ApiContractsView';
 import PartnerHubView from './components/views/megadashboard/ecosystem/PartnerHubView';
 import AffiliatesView from './components/views/megadashboard/ecosystem/AffiliatesView';
 import IntegrationsMarketplaceView from './components/views/megadashboard/ecosystem/IntegrationsMarketplaceView';
@@ -205,10 +208,23 @@ import GlobalChatbot from './components/GlobalChatbot';
  * the Sidebar, Header, and main content area.
  */
 const App: React.FC = () => {
-    const [activeView, setActiveView] = useState<View>(View.Dashboard);
+    const [activeView, setActiveView] = useState<View>(View.MetaDashboard);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [previousView, setPreviousView] = useState<View | null>(null);
     const dataContext = useContext(DataContext);
+
+    const [modalView, setModalView] = useState<View | null>(null);
+    const [modalPreviousView, setModalPreviousView] = useState<View | null>(null);
+
+    const openModal = (view: View) => {
+        setModalPreviousView(activeView); // The view we are coming from
+        setModalView(view);
+    };
+
+    const closeModal = () => {
+        setModalView(null);
+    };
+
 
     if (!dataContext) {
         throw new Error("App must be used within a DataProvider");
@@ -259,7 +275,8 @@ const App: React.FC = () => {
         }
         
         switch (activeView) {
-            // --- NEW FRAMEWORK VIEWS ---
+            // --- META & NEW FRAMEWORK VIEWS ---
+            case View.MetaDashboard: return <MetaDashboardView openModal={openModal} />;
             case View.AgentMarketplace: return <FeatureGuard view={View.AgentMarketplace}><AgentMarketplaceView /></FeatureGuard>;
             case View.Orchestration: return <FeatureGuard view={View.Orchestration}><OrchestrationView /></FeatureGuard>;
             case View.DataMesh: return <FeatureGuard view={View.DataMesh}><DataMeshView /></FeatureGuard>;
@@ -275,7 +292,7 @@ const App: React.FC = () => {
             
             // --- FOUNDATIONAL & LEGACY VIEWS ---
             // Personal Finance
-            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;
@@ -398,6 +415,7 @@ const App: React.FC = () => {
             case View.DeveloperCliTools: return <FeatureGuard view={View.DeveloperCliTools}><CliToolsView /></FeatureGuard>;
             case View.DeveloperExtensions: return <FeatureGuard view={View.DeveloperExtensions}><ExtensionsView /></FeatureGuard>;
             case View.DeveloperApiKeys: return <FeatureGuard view={View.DeveloperApiKeys}><ApiKeysView /></FeatureGuard>;
+            case View.DeveloperApiContracts: return <FeatureGuard view={View.DeveloperApiContracts}><ApiContractsView /></FeatureGuard>;
             // Mega Dashboard - Ecosystem & Connectivity
             case View.EcosystemPartnerHub: return <FeatureGuard view={View.EcosystemPartnerHub}><PartnerHubView /></FeatureGuard>;
             case View.EcosystemAffiliates: return <FeatureGuard view={View.EcosystemAffiliates}><AffiliatesView /></FeatureGuard>;
@@ -453,7 +471,7 @@ const App: React.FC = () => {
             case View.FractionalReserve: return <FeatureGuard view={View.FractionalReserve}><FractionalReserveView /></FeatureGuard>;
             case View.FinancialInstrumentForge: return <FeatureGuard view={View.FinancialInstrumentForge}><FinancialInstrumentForgeView /></FeatureGuard>;
 
-            default: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
+            default: return <FeatureGuard view={View.Dashboard}><DashboardView /></FeatureGuard>;
         }
     };
 
@@ -482,6 +500,15 @@ const App: React.FC = () => {
                 </div>
                 <VoiceControl setActiveView={handleSetView} />
                 <GlobalChatbot />
+
+                {modalView && (
+                    <ModalView 
+                        activeView={modalView}
+                        previousView={modalPreviousView}
+                        closeModal={closeModal}
+                        openModal={openModal}
+                    />
+                )}
             </div>
         </div>
     );

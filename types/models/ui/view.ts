@@ -6,6 +6,9 @@
  * This enum is the single source of truth for navigation state.
  */
 export enum View {
+    // Platform & Meta
+    MetaDashboard = 'meta-dashboard',
+
     // Personal Finance
     Dashboard = 'dashboard',
     TheNexus = 'the-nexus', // The 27th Module
@@ -51,7 +54,6 @@ export enum View {
     FractionalReserve = 'fractional-reserve',
     FinancialInstrumentForge = 'financial-instrument-forge',
 
-    // FIX: Add missing "New Framework" views to the enum.
     // --- NEW FRAMEWORK VIEWS ---
     AgentMarketplace = 'agent-marketplace',
     Orchestration = 'orchestration',
@@ -66,7 +68,7 @@ export enum View {
     Roadmap = 'roadmap',
     Connect = 'connect',
 
-    // Demo Bank Platform Suite
+    // Demo Bank Platform Suite (Legacy Naming)
     DemoBankSocial = 'db-social',
     DemoBankERP = 'db-erp',
     DemoBankCRM = 'db-crm',
@@ -83,7 +85,6 @@ export enum View {
     DemoBankSecurityCenter = 'db-security-center',
     DemoBankComplianceHub = 'db-compliance-hub',
     DemoBankAppMarketplace = 'db-app-marketplace',
-    DemoBankConnect = 'db-connect',
     DemoBankEvents = 'db-events',
     DemoBankLogicApps = 'db-logic-apps',
     DemoBankFunctions = 'db-functions',
@@ -95,35 +96,6 @@ export enum View {
     DemoBankCommunications = 'db-communications',
     DemoBankCommerce = 'db-commerce',
     DemoBankTeams = 'db-teams',
-    DemoBankCMS = 'db-cms',
-    DemoBankLMS = 'db-lms',
-    DemoBankHRIS = 'db-hris',
-    DemoBankProjects = 'db-projects',
-    DemoBankLegalSuite = 'db-legal-suite',
-    DemoBankSupplyChain = 'db-supply-chain',
-    DemoBankPropTech = 'db-proptech',
-    DemoBankGamingServices = 'db-gaming-services',
-    DemoBankBookings = 'db-bookings',
-    DemoBankCDP = 'db-cdp',
-    DemoBankQuantumServices = 'db-quantum-services',
-    DemoBankBlockchain = 'db-blockchain',
-    DemoBankGIS = 'db-gis',
-    DemoBankRobotics = 'db-robotics',
-    DemoBankSimulations = 'db-simulations',
-    DemoBankVoiceServices = 'db-voice-services',
-    DemoBankSearchSuite = 'db-search-suite',
-    DemoBankDigitalTwin = 'db-digital-twin',
-    DemoBankWorkflowEngine = 'db-workflow-engine',
-    DemoBankObservabilityPlatform = 'db-observability-platform',
-    DemoBankFeatureManagement = 'db-feature-management',
-    DemoBankExperimentationPlatform = 'db-experimentation-platform',
-    DemoBankLocalizationPlatform = 'db-localization-platform',
-    DemoBankFleetManagement = 'db-fleet-management',
-    DemoBankKnowledgeBase = 'db-knowledge-base',
-    DemoBankMediaServices = 'db-media-services',
-    DemoBankEventGrid = 'db-event-grid',
-    DemoBankApiManagement = 'db-api-management',
-
 
     // --- Mega Dashboard ---
     // Security & Identity
@@ -153,11 +125,11 @@ export enum View {
     // Developer & Integration
     DeveloperSandbox = 'md-dev-sandbox',
     DeveloperApiKeys = 'md-dev-api-keys',
-    DeveloperApiContracts = 'md-dev-api-contracts',
     DeveloperSdkDownloads = 'md-dev-sdk-downloads',
     DeveloperWebhooks = 'md-dev-webhooks',
     DeveloperCliTools = 'md-dev-cli-tools',
     DeveloperExtensions = 'md-dev-extensions',
+    DeveloperApiContracts = 'md-dev-api-contracts',
     // Ecosystem & Connectivity
     EcosystemPartnerHub = 'md-eco-partner-hub',
     EcosystemAffiliates = 'md-eco-affiliates',
@@ -191,26 +163,7 @@ export enum View {
 
     // Constitutional Articles
     Article1 = 'article-1', Article2 = 'article-2', Article3 = 'article-3', Article4 = 'article-4', Article5 = 'article-5',
-    Article6 = 'article-6', Article7 = 'article-7', Article8 = 'article-8', Article9 = 'article-9', Article10 = 'article-10',
-    Article11 = 'article-11', Article12 = 'article-12', Article13 = 'article-13', Article14 = 'article-14', Article15 = 'article-15',
-    Article16 = 'article-16', Article17 = 'article-17', Article18 = 'article-18', Article19 = 'article-19', Article20 = 'article-20',
-    Article21 = 'article-21', Article22 = 'article-22', Article23 = 'article-23', Article24 = 'article-24', Article25 = 'article-25',
-    Article26 = 'article-26', Article27 = 'article-27', Article28 = 'article-28', Article29 = 'article-29', Article30 = 'article-30',
-    Article31 = 'article-31', Article32 = 'article-32', Article33 = 'article-33', Article34 = 'article-34', Article35 = 'article-35',
-    Article36 = 'article-36', Article37 = 'article-37', Article38 = 'article-38', Article39 = 'article-39', Article40 = 'article-40',
-    Article41 = 'article-41', Article42 = 'article-42', Article43 = 'article-43', Article44 = 'article-44', Article45 = 'article-45',
-    Article46 = 'article-46', Article47 = 'article-47', Article48 = 'article-48', Article49 = 'article-49', Article50 = 'article-50',
-    Article51 = 'article-51', Article52 = 'article-52', Article53 = 'article-53', Article54 = 'article-54', Article55 = 'article-55',
-    Article56 = 'article-56', Article57 = 'article-57', Article58 = 'article-58', Article59 = 'article-59', Article60 = 'article-60',
-    Article61 = 'article-61', Article62 = 'article-62', Article63 = 'article-63', Article64 = 'article-64', Article65 = 'article-65',
-    Article66 = 'article-66', Article67 = 'article-67', Article68 = 'article-68', Article69 = 'article-69', Article70 = 'article-70',
-    Article71 = 'article-71', Article72 = 'article-72', Article73 = 'article-73', Article74 = 'article-74', Article75 = 'article-75',
-    Article76 = 'article-76', Article77 = 'article-77', Article78 = 'article-78', Article79 = 'article-79', Article80 = 'article-80',
-    Article81 = 'article-81', Article82 = 'article-82', Article83 = 'article-83', Article84 = 'article-84', Article85 = 'article-85',
-    Article86 = 'article-86', Article87 = 'article-87', Article88 = 'article-88', Article89 = 'article-89', Article90 = 'article-90',
-    Article91 = 'article-91', Article92 = 'article-92', Article93 = 'article-93', Article94 = 'article-94', Article95 = 'article-95',
-    Article96 = 'article-96', Article97 = 'article-97', Article98 = 'article-98', Article99 = 'article-99', Article100 = 'article-100',
-
+    
     // -- Blueprints --
     CrisisAIManager = 'bp-crisis-ai-manager',
     CognitiveLoadBalancer = 'bp-cognitive-load-balancer',
@@ -229,4 +182,19 @@ export enum View {
     LinguisticFossilFinder = 'bp-linguistic-fossil-finder',
     ChaosTheorist = 'bp-chaos-theorist',
     SelfRewritingCodebase = 'bp-self-rewriting-codebase',
+}
+
+/**
+ * @description Defines the type of dynamic, reality-bending background effect.
+ */
+export type IllusionType = 'none' | 'aurora';
+
+
+export enum WeaverStage {
+    Pitch = 'pitch',
+    Analysis = 'analysis',
+    Test = 'test',
+    FinalReview = 'final_review',
+    Approved = 'approved',
+    Error = 'error',
 }
