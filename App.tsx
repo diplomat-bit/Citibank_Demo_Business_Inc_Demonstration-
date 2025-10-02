@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useContext, useMemo, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -8,14 +5,28 @@ import { View } from './types';
 import { DataContext } from './context/DataContext';
 import FeatureGuard from './components/FeatureGuard';
 
+// --- NEW FRAMEWORK VIEWS ---
+import AgentMarketplaceView from './components/views/platform/AgentMarketplaceView';
+import OrchestrationView from './components/views/platform/OrchestrationView';
+import DataMeshView from './components/views/platform/DataMeshView';
+import DataCommonsView from './components/views/platform/DataCommonsView';
+import MainframeView from './components/views/platform/MainframeView';
+import AIGovernanceView from './components/views/platform/AIGovernanceView';
+import AIRiskRegistryView from './components/views/platform/AIRiskRegistryView';
+import OSPOView from './components/views/platform/OSPOView';
+import CiCdView from './components/views/platform/CiCdView';
+import InventionsView from './components/views/platform/InventionsView';
+import RoadmapView from './components/views/platform/RoadmapView';
+import ConnectView from './components/views/platform/DemoBankConnectView';
+
+
+// --- FOUNDATIONAL & LEGACY VIEWS ---
 // Personal Finance Views
 import DashboardView from './components/views/personal/DashboardView';
 import TransactionsView from './components/views/personal/TransactionsView';
 import SendMoneyView from './components/views/personal/SendMoneyView';
 import BudgetsView from './components/views/personal/BudgetsView';
-// FIX: Corrected the import path for InvestmentsView. It is located directly in the 'components' directory, not in 'views/personal'.
 import InvestmentsView from './components/InvestmentsView';
-// FIX: Added missing import for PortfolioExplorerView.
 import PortfolioExplorerView from './components/views/personal/PortfolioExplorerView';
 import CryptoView from './components/views/personal/CryptoView';
 import FinancialGoalsView from './components/views/personal/FinancialGoalsView';
@@ -69,7 +80,6 @@ import DemoBankDevOpsView from './components/views/platform/DemoBankDevOpsView';
 import DemoBankSecurityCenterView from './components/views/platform/DemoBankSecurityCenterView';
 import DemoBankComplianceHubView from './components/views/platform/DemoBankComplianceHubView';
 import DemoBankAppMarketplaceView from './components/views/platform/DemoBankAppMarketplaceView';
-import DemoBankConnectView from './components/views/platform/DemoBankConnectView';
 import DemoBankEventsView from './components/views/platform/DemoBankEventsView';
 import DemoBankLogicAppsView from './components/views/platform/DemoBankLogicAppsView';
 import DemoBankFunctionsView from './components/views/platform/DemoBankFunctionsView';
@@ -111,7 +121,7 @@ import DemoBankEventGridView from './components/views/platform/DemoBankEventGrid
 import DemoBankApiManagementView from './components/views/platform/DemoBankApiManagementView';
 
 
-// Mega Dashboard Views
+// Mega Dashboard Views (no change, just for completeness)
 import AccessControlsView from './components/views/megadashboard/security/AccessControlsView';
 import RoleManagementView from './components/views/megadashboard/security/RoleManagementView';
 import AuditLogsView from './components/views/megadashboard/security/AuditLogsView';
@@ -138,6 +148,7 @@ import WebhooksView from './components/views/megadashboard/developer/WebhooksVie
 import CliToolsView from './components/views/megadashboard/developer/CliToolsView';
 import ExtensionsView from './components/views/megadashboard/developer/ExtensionsView';
 import ApiKeysView from './components/views/megadashboard/developer/ApiKeysView';
+import ApiContractsView from './components/views/developer/ApiContractsView';
 import PartnerHubView from './components/views/megadashboard/ecosystem/PartnerHubView';
 import AffiliatesView from './components/views/megadashboard/ecosystem/AffiliatesView';
 import IntegrationsMarketplaceView from './components/views/megadashboard/ecosystem/IntegrationsMarketplaceView';
@@ -222,7 +233,7 @@ const App: React.FC = () => {
                <div className="bg-gray-900 border border-red-700 rounded-xl p-8 max-w-lg text-center">
                    <h1 className="text-2xl font-bold text-red-400 mb-4">Connection Error</h1>
                    <p className="text-gray-400 mb-6">{error}</p>
-                   <p className="text-xs text-gray-500">Please ensure all data is loaded correctly. You may need to refresh the page.</p>
+                   <p className="text-xs text-gray-500">Please ensure the backend server is running. You may need to refresh the page after starting the server.</p>
                </div>
            </div>
        );
@@ -235,7 +246,7 @@ const App: React.FC = () => {
      * @returns {React.ReactElement} The component for the currently active view.
      */
     const renderView = () => {
-        if (isLoading) {
+        if (isLoading && dataContext.transactions.length === 0) {
             return (
                 <div className="flex items-center justify-center h-full">
                     <div className="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin"></div>
@@ -249,6 +260,21 @@ const App: React.FC = () => {
         }
         
         switch (activeView) {
+            // --- NEW FRAMEWORK VIEWS ---
+            case View.AgentMarketplace: return <FeatureGuard view={View.AgentMarketplace}><AgentMarketplaceView /></FeatureGuard>;
+            case View.Orchestration: return <FeatureGuard view={View.Orchestration}><OrchestrationView /></FeatureGuard>;
+            case View.DataMesh: return <FeatureGuard view={View.DataMesh}><DataMeshView /></FeatureGuard>;
+            case View.DataCommons: return <FeatureGuard view={View.DataCommons}><DataCommonsView /></FeatureGuard>;
+            case View.Mainframe: return <FeatureGuard view={View.Mainframe}><MainframeView /></FeatureGuard>;
+            case View.AIGovernance: return <FeatureGuard view={View.AIGovernance}><AIGovernanceView /></FeatureGuard>;
+            case View.AIRiskRegistry: return <FeatureGuard view={View.AIRiskRegistry}><AIRiskRegistryView /></FeatureGuard>;
+            case View.OSPO: return <FeatureGuard view={View.OSPO}><OSPOView /></FeatureGuard>;
+            case View.CiCd: return <FeatureGuard view={View.CiCd}><CiCdView /></FeatureGuard>;
+            case View.Inventions: return <FeatureGuard view={View.Inventions}><InventionsView /></FeatureGuard>;
+            case View.Roadmap: return <FeatureGuard view={View.Roadmap}><RoadmapView /></FeatureGuard>;
+            case View.Connect: return <FeatureGuard view={View.Connect}><ConnectView /></FeatureGuard>;
+            
+            // --- FOUNDATIONAL & LEGACY VIEWS ---
             // Personal Finance
             case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
@@ -302,7 +328,6 @@ const App: React.FC = () => {
             case View.DemoBankSecurityCenter: return <FeatureGuard view={View.DemoBankSecurityCenter}><DemoBankSecurityCenterView /></FeatureGuard>;
             case View.DemoBankComplianceHub: return <FeatureGuard view={View.DemoBankComplianceHub}><DemoBankComplianceHubView /></FeatureGuard>;
             case View.DemoBankAppMarketplace: return <FeatureGuard view={View.DemoBankAppMarketplace}><DemoBankAppMarketplaceView /></FeatureGuard>;
-            case View.DemoBankConnect: return <FeatureGuard view={View.DemoBankConnect}><DemoBankConnectView /></FeatureGuard>;
             case View.DemoBankEvents: return <FeatureGuard view={View.DemoBankEvents}><DemoBankEventsView /></FeatureGuard>;
             case View.DemoBankLogicApps: return <FeatureGuard view={View.DemoBankLogicApps}><DemoBankLogicAppsView /></FeatureGuard>;
             case View.DemoBankFunctions: return <FeatureGuard view={View.DemoBankFunctions}><DemoBankFunctionsView /></FeatureGuard>;
@@ -374,6 +399,7 @@ const App: React.FC = () => {
             case View.DeveloperCliTools: return <FeatureGuard view={View.DeveloperCliTools}><CliToolsView /></FeatureGuard>;
             case View.DeveloperExtensions: return <FeatureGuard view={View.DeveloperExtensions}><ExtensionsView /></FeatureGuard>;
             case View.DeveloperApiKeys: return <FeatureGuard view={View.DeveloperApiKeys}><ApiKeysView /></FeatureGuard>;
+            case View.DeveloperApiContracts: return <FeatureGuard view={View.DeveloperApiContracts}><ApiContractsView /></FeatureGuard>;
             // Mega Dashboard - Ecosystem & Connectivity
             case View.EcosystemPartnerHub: return <FeatureGuard view={View.EcosystemPartnerHub}><PartnerHubView /></FeatureGuard>;
             case View.EcosystemAffiliates: return <FeatureGuard view={View.EcosystemAffiliates}><AffiliatesView /></FeatureGuard>;

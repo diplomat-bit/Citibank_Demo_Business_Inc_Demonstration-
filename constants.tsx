@@ -106,6 +106,9 @@ const SecurityIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const ApiKeysIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.623 5.873M15 7A6 6 0 002.377 8.373M15 7a2 2 0 00-2-2H9a2 2 0 00-2 2m0 0v11a2 2 0 002 2h6a2 2 0 002-2V9M9 7h6" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
 );
+const ApiContractsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+);
 const OpenBankingIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
 );
@@ -197,6 +200,7 @@ export const NAV_ITEMS: NavItem[] = [
     { type: 'header', label: 'Orchestration & Integration' },
     { id: View.Orchestration, label: 'Workflow Orchestrator', icon: <OrchestrationIcon /> },
     { id: View.Connect, label: 'Connect (iPaaS)', icon: <ApiKeysIcon /> },
+    { id: View.DeveloperApiContracts, label: 'API Contracts', icon: <ApiContractsIcon /> },
 
     { type: 'header', label: 'Data & Transformation' },
     { id: View.DataMesh, label: 'Data Mesh', icon: <DataLayerIcon /> },

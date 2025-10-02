@@ -153,6 +153,7 @@ export enum View {
     // Developer & Integration
     DeveloperSandbox = 'md-dev-sandbox',
     DeveloperApiKeys = 'md-dev-api-keys',
+    DeveloperApiContracts = 'md-dev-api-contracts',
     DeveloperSdkDownloads = 'md-dev-sdk-downloads',
     DeveloperWebhooks = 'md-dev-webhooks',
     DeveloperCliTools = 'md-dev-cli-tools',
