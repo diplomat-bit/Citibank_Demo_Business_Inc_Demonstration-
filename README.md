@@ -1,4 +1,3 @@
-# The Sovereign's Ledger: An Open AI Ecosystem
 
 ## Abstract
 
