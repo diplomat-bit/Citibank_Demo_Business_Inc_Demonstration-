@@ -123,12 +123,12 @@ export const getDashboardChartsData = (context: any): ChartConfig[] => {
     });
     charts.push({
         id: 'inv-3', category: 'Investment Analysis', title: 'Top 5 Holdings 24h Change', type: 'bar',
-        data: portfolioAssets.sort((a,b)=>b.value-a.value).slice(0,5).map(a=>({name: a.ticker, change: a.change24h})),
+        data: portfolioAssets.sort((a:any,b:any)=>b.value-a.value).slice(0,5).map((a:any)=>({name: a.ticker, change: a.change24h})),
         config: { xAxisKey: 'name', dataKeys: [{ key: 'change', name: '% Change', color: COLORS[2] }], domain: [-3, 3] }
     });
     charts.push({
         id: 'inv-4', category: 'Investment Analysis', title: 'Asset Performance vs. Value', type: 'radar', // Changed to radar
-        data: assets.map(a => ({ subject: a.name, value: a.value/1000, performance: a.performanceYTD, fullMark: 50 })),
+        data: assets.map((a:any) => ({ subject: a.name, value: a.value/1000, performance: a.performanceYTD, fullMark: 50 })),
         config: { angleKey: 'subject', dataKeys: [{key: 'performance', name: 'YTD Perf %', color: COLORS[3]}]}
     });
     // ... 11 more investment charts
