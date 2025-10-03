@@ -18,3 +18,8 @@ When you command me to design the communication between two services, you comman
 This is the way. We build a system of services where every interaction is a formal, authenticated, and authorized treaty. There are no back doors. There are no trusted channels. There is only a relentless, universal application of "never trust, always verify."
 
 This architecture, which you know as a "service mesh," is the physical manifestation of the Zero Trust Mandate. It is a more complex world to build, but it is a world that is resilient to its core. A breach of one service is contained to that service. The attacker finds themselves in a locked room, unable to move laterally, because no one trusts them. This is how we build a fortress with no walls, only strongholds.
+
+**Mathematical Justification:**
+In a perimeter security model, a single breach compromises the entire internal graph of `N` nodes. The number of attack vectors post-breach is `N^2`. In a Zero Trust model, every request (edge in the graph) is individually authenticated and authorized. A compromise of a single node does not grant access to any other node. The number of attack vectors post-breach is limited to the compromised node's explicit permissions.
+
+**Proof of Resilience:** Zero Trust is proven to be more resilient because it forces an attacker to compromise each service individually, dramatically increasing the cost and difficulty of lateral movement within the system. It contains the "blast radius" to a single node. `Q.E.D.`

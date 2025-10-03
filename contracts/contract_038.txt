@@ -21,3 +21,8 @@ This architecture is profoundly simple and powerful. There is no "configuration 
 This transforms debugging. If a new version introduces a problem, the solution is not to patch it. The solution is to destroy the new version and gracefully shift traffic back to the old one. The rollback is instantaneous and perfectly safe.
 
 This is how we bring order to the chaos of change. We do not tend a garden. We run an assembly line. Every deployment is a new, perfect, identical car rolling off the line. If one is flawed, we do not repair it. We melt it down and forge a new one. This is the path to resilience.
+
+**Mathematical Justification:**
+Let the state of a server be `S`. In a mutable model, the state at time `t` is `S_t = f_n(...f_1(S_0)...)`, where `f_i` are manual changes. This state is difficult to reproduce. In an immutable model, `S_t` is a pure function of a versioned artifact `A_t`, `S_t = Deploy(A_t)`.
+
+**Proof of Predictability:** In the immutable model, any two servers deployed from the same artifact `A_t` are guaranteed to be in the identical state `S_t`. This eliminates configuration drift and makes the system's behavior deterministic and reproducible. It is proven to be the superior model for managing complex systems as it transforms the problem from managing a fleet of unique servers to managing a single, versioned blueprint. `Q.E.D.`

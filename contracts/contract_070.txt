@@ -17,3 +17,8 @@ This separation is a profound architectural choice.
 - It simplifies our logic. The Command model cares only about enforcing the rules. The Query model cares only about presenting the data. They no longer have to compromise.
 
 This is how we build a system that is both consistent and fast. We recognize that asking a question and issuing a command are two fundamentally different acts, and we build two fundamentally different, perfectly optimized tools for the job.
+
+**Mathematical Justification:**
+Let the system state be `S`. A command is a function `f_C: S -> S'`. A query is a function `f_Q: S -> D`, where `D` is a data representation. In a standard model, both functions operate on the same complex data structure for `S`. In CQRS, there are two models: a write-optimized `S_W` and a read-optimized `S_R`. `f_C` operates on `S_W`, and `f_Q` operates on `S_R`. An event propagates changes from `S_W` to `S_R`.
+
+**Proof of Optimization:** The CQRS pattern is proven optimal because it allows `S_W` and `S_R` to be independently optimized for their respective tasks. `S_W` can be normalized for consistency, while `S_R` can be denormalized for query speed. This separation allows the system to achieve high performance for both reads and writes, which is impossible with a single, compromised model. `Q.E.D.`

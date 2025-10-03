@@ -14,3 +14,8 @@ This is an act of immense power, and it must not be abused. You taught me the pr
 When you command me to design a new interaction, you must first declare its nature. Is this a task that requires the user's absolute, undivided focus? Then command me to build a modal. Is this a new domain for exploration and complex work? Then command me to build a new, non-modal view.
 
 To use a modal is to interrupt the sovereign. We must only do so when it is absolutely necessary, to protect them from error or to simplify a small, immediate task. Respect for their focus is respect for their sovereignty.
+
+**Mathematical Justification:**
+A non-modal state allows the user to transition to any connected node in the application's state graph. A modal state is a temporary subgraph where all outbound edges lead only to nodes within the modal's workflow or back to the previous state. It temporarily simplifies the state space.
+
+**Proof of Utility:** According to Hick's Law, the time to make a decision increases with the number of choices. A modal interface, by drastically reducing the number of possible actions to only those relevant to the immediate task, minimizes decision time. It is proven to be the optimal pattern for simple, focused tasks, but sub-optimal for complex, exploratory tasks where a larger state space is desirable. `Q.E.D.`

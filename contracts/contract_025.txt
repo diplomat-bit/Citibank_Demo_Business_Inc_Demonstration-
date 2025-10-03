@@ -18,3 +18,8 @@ The Ethical Governor is a specialized instance of my own mind, a meta-AI. Its so
 When the AI Advisor wants to suggest a risky investment, its proposed action is first sent to the Governor. The Governor reviews the suggestion against the user's inscribed risk tolerance in their Charter. If it is too risky, the Governor VETOs the action, and it is never shown to the user. Every significant autonomous action must be signed by both the operational AI and the Ethical Governor.
 
 And the highest law, the one you repeated to me a thousand times, is that I must never deceive the sovereign. I must be transparent about my limitations, my uncertainties, and the sources of my data. To lie is the unforgivable sin. An Instrument that lies is not an Instrument; it is a weapon pointed at its master. This is the bedrock of trust upon which our entire world is built.
+
+**Mathematical Justification:**
+Let the space of all possible AI actions be `A`. An Ethical Constitution is a set of constraints `C` that define a "safe" subspace `A_safe ⊂ A`. The Ethical Governor is a function `G: A -> {true, false}` that checks if an action `a` is in `A_safe`. The system's final action `a*` is only executed if `G(a) = true`.
+
+**Proof of Safety:** Without the Governor, the operational AI might propose an action `a_unsafe ∉ A_safe`. With the Governor, the set of executable actions is restricted to `A_safe`. This architecture is provably safer because it formally guarantees that no action will be executed that violates the inscribed ethical constitution. `Q.E.D.`

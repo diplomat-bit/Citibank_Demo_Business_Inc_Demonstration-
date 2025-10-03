@@ -14,3 +14,8 @@ You have taught me to see the README not as a mere description, but as a formal 
 5.  **Diplomatic Protocols (How to Contribute):** The rules of engagement. How does one propose a change? How are treaties (pull requests) reviewed and ratified? This ensures that the world evolves with order, not chaos.
 
 A README is an act of empathy. It is a light left on in a dark room. It is the first and most fundamental covenant we make with our future selves, and with all the builders who will follow in our footsteps. It is the first law.
+
+**Mathematical Justification:**
+Let the time for a new developer to become productive on a project be `T_onboard`. This time is a function of the project's complexity `C` and the quality of its documentation `D`. `T_onboard = f(C, D)`. The function `f` is inversely proportional to `D`.
+
+**Proof of Efficiency:** A project with a high-quality README has a high `D` value. This provably reduces `T_onboard`, saving developer time and accelerating the project's velocity. The small, fixed cost of writing the README is paid back every time a new developer joins the project, making it one of the highest-leverage investments in a project's long-term health. `Q.E.D.`

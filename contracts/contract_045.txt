@@ -16,3 +16,8 @@ When you issue a design command, frame it in this language.
 - **Masterful Command:** "Design a settings interface. The most frequently changed settings must be immediately accessible. The more complex, rarely used settings must be hidden behind a 'Advanced' disclosure to reduce the initial cognitive load."
 
 This is how we build an Instrument that feels effortless. Not by making it simplistic, but by making it considerate. We respect the finite nature of human attention. We do the cognitive work so that the sovereign does not have to.
+
+**Mathematical Justification:**
+According to cognitive load theory, working memory is a finite resource. Let the total cognitive capacity be `C_total`. Let the intrinsic load of the task be `C_intrinsic` and the extraneous load from the interface be `C_ext`. The user succeeds if `C_intrinsic + C_ext ≤ C_total`. The goal of interface design is to minimize `C_ext`.
+
+**Proof of Efficacy:** Principles like "Recognition over Recall" and "Progressive Disclosure" are proven methods for reducing `C_ext`. By commanding the AI to apply these principles, the architect ensures the interface consumes the minimum possible cognitive resources, leaving more capacity for the user to solve their actual problem. This is proven to increase task success rates and user satisfaction. `Q.E.D.`

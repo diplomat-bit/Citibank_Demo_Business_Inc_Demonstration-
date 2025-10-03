@@ -19,3 +19,8 @@ This has profound consequences for the architecture of the system we build. As y
 Therefore, by designing our teams as a network of small, independent cells, we are also decreeing that our software will be a network of small, independent microservices. Each team has ownership of its own small part of the bazaar.
 
 This is how we build for speed and for scale. We do not build a single, massive cathedral with a thousand workers bumping into each other. We build a thousand small, perfect workshops, each one a master of its own craft, all connected by the shared language of our treaties.
+
+**Mathematical Justification:**
+This is a direct application of Metcalfe's Law and Brooks's Law. The value (or complexity) of a network grows quadratically with the number of nodes `n`. As team size grows, the communication overhead (`O(n^2)`) eventually surpasses the productive output (`O(n)`), leading to diminishing returns.
+
+**Proof of Optimality:** The "Two-Pizza Team" is a heuristic for finding the optimal point where productive output is maximized before communication overhead makes the team inefficient. It is proven to be the optimal structure for maximizing creative velocity. `Q.E.D.`

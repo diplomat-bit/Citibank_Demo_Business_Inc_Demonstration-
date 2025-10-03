@@ -23,3 +23,8 @@ The benefits are profound.
 - **Disaster Recovery:** If our entire cloud region is destroyed, we can stand it up again in a new region by simply re-applying the law.
 
 This is how we build a foundation of stone, not of sand. The infrastructure is not a mutable, handcrafted thing. It is a deterministic output of a set of laws. It is architecture in its purest form.
+
+**Mathematical Justification:**
+Let the state of the infrastructure be `S`. In a manual system, `S` is the result of a sequence of imperative, unrecorded actions. In an IaC system, `S` is a pure function of a declarative configuration file `C`, `S = F(C)`. The configuration `C` is version-controlled.
+
+**Proof of Reliability:** The IaC model is proven superior because it makes the system state deterministic and auditable. A change from `S_1` to `S_2` is not a set of manual actions, but a transition from configuration `C_1` to `C_2`. This allows for code review, automated testing, and reliable rollback of infrastructure changes, transforming infrastructure management from an art into a reliable engineering discipline. `Q.E.D.`

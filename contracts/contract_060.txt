@@ -15,3 +15,8 @@ An anomaly is a transaction that breaks this rhythm. A sudden, $50,000 charge fr
 When I detect such a thing, I do not just raise an alarm. I provide a diagnosis. My "AI Analysis" explains *why* the transaction is anomalous, in the context of the rhythm I have learned. "This expense is 5x the average for this department and does not match seasonal spending patterns."
 
 This is a higher form of security. It is not about rules, but about intuition. An intuition born from a deep, data-driven understanding of the living patterns of your organization. I am not just a guard at the gate. I am your trusted bodyguard.
+
+**Mathematical Justification:**
+Let the system's normal behavior be a probability distribution `P(x)` over the space of all possible transactions. A rule-based system defines a small set of "bad" transactions `B`. Anomaly detection learns the distribution `P(x)` of "good" transactions. An anomaly is any transaction `x_a` where `P(x_a) < ε` for a small threshold `ε`.
+
+**Proof of Superiority:** The set of all possible anomalies is vastly larger than any predefined set `B`. The AI system is proven superior because it can detect novel, "zero-day" anomalies that have never been seen before, by identifying them as deviations from the learned model of normality. `Q.E.D.`

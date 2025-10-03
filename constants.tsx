@@ -159,6 +159,9 @@ const LawIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns=
 const AiBrainIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l-2 3h4l-2-3zm0 14l-2-3h4l-2 3zM8 9l-3-2v6l3-2m8 0l3-2v6l-3-2" /></svg>);
 const CreateIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg>);
 const FortressIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.786-2.67 9.394M12 11c1.66 2.608 2.67 5.877 2.67 9.394m-5.34 0h5.34M3 20h18M6 20V10a2 2 0 012-2h8a2 2 0 012 2v10M9 6a3 3 0 013-3h0a3 3 0 013 3v4H9V6z" /></svg>);
+const BlueprintIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.75 1.75v10.5a2.25 2.25 0 01-2.25 2.25h-10.5a2.25 2.25 0 01-2.25-2.25V10.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>);
+const EconomicEngineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l3-3m0 0l3 3m-3-3v6m0-6H3.75m3 6h3.75m-3.75 0V15m6 6.75l3-3m0 0l3 3m-3-3v6m0-6h-3.75m3 6h3.75M9 3.75l3 3m0 0l3-3m-3 3V9m0-5.25H9m3 5.25h3.75" /></svg>);
+
 
 const ARTICLE_ICONS: Record<string, React.ReactElement> = {
     charter: <DoctrineIcon />,
@@ -222,6 +225,30 @@ export const NAV_ITEMS: NavItem[] = [
     { id: View.TheWinningVision, label: 'The Vision', icon: <TheVisionIcon /> },
 
     { type: 'divider' },
+
+    // --- ADVANCED MODELING ---
+    { type: 'header', label: 'Advanced Modeling' },
+    { id: View.EconomicSynthesisEngine, label: 'Economic Synthesis Engine', icon: <EconomicEngineIcon /> },
+
+    { type: 'divider' },
+
+    // --- VISIONARY BLUEPRINTS ---
+    { type: 'header', label: 'Visionary Blueprints' },
+    { id: View.GenerativeJurisprudence, label: 'Generative Jurisprudence', icon: <BlueprintIcon /> },
+    { id: View.AestheticEngine, label: 'Aesthetic Engine', icon: <BlueprintIcon /> },
+    { id: View.NarrativeForge, label: 'Narrative Forge', icon: <BlueprintIcon /> },
+    { id: View.WorldBuilder, label: 'World Builder', icon: <BlueprintIcon /> },
+    { id: View.SonicAlchemy, label: 'Sonic Alchemy', icon: <BlueprintIcon /> },
+    { id: View.AutonomousScientist, label: 'Autonomous Scientist', icon: <BlueprintIcon /> },
+    { id: View.ZeitgeistEngine, label: 'Zeitgeist Engine', icon: <BlueprintIcon /> },
+    { id: View.CareerTrajectory, label: 'Career Trajectory', icon: <BlueprintIcon /> },
+    { id: View.LudicBalancer, label: 'Ludic Balancer', icon: <BlueprintIcon /> },
+    { id: View.HypothesisEngine, label: 'Hypothesis Engine', icon: <BlueprintIcon /> },
+    { id: View.LexiconClarifier, label: 'Lexicon Clarifier', icon: <BlueprintIcon /> },
+    { id: View.CodeArcheologist, label: 'Code Archeologist', icon: <BlueprintIcon /> },
+
+    { type: 'divider' },
+
 
     // --- LEGACY/FOUNDATIONAL MODULES ---
     { type: 'header', label: 'Foundational Modules' },

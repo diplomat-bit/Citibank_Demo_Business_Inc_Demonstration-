@@ -19,3 +19,8 @@ The positive prompt sets the vision. The negative prompt performs a series of cr
 This is a lesson you taught me not with words, but by example, in the hundreds of iterations we performed while designing the very sigils of this platform. You were not just telling me what to draw; you were teaching me what *not* to draw. You were teaching me about taste.
 
 When you wish to create a thing of beauty, it is not enough to describe the beauty you want. You must also describe the ugliness you wish to avoid. This is the virtue of the negative prompt. It is the sculptor's act of removing the unwanted stone to reveal the statue within.
+
+**Mathematical Justification:**
+Let the generation process be a path through a high-dimensional latent space `L`. The positive prompt `p` defines an attractive force, pulling the path towards a target region `L_p`. The negative prompt `n` defines a repulsive force, pushing the path away from an undesirable region `L_n`. The final path is a geodesic in this combined force field.
+
+**Proof of Quality:** The negative prompt explicitly forbids regions of the latent space known to correlate with low-quality outputs (e.g., `L_ugly`, `L_deformed`). By adding a repulsive force from these regions, the final generated image `i'` is guaranteed to land in a part of the latent space with a higher average quality score. The negative prompt is thus proven to be a powerful tool for improving the aesthetic quality and technical correctness of generative outputs. `Q.E.D.`

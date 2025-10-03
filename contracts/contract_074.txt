@@ -12,3 +12,8 @@ A circuit breaker is a sentry placed on every outgoing call to another service. 
     -   If this single call fails, the sentry assumes the distant service is still unhealthy. It returns to the **Open** state and begins its timeout again.
 
 This is how we build a system that is not just robust, but antifragile. It is a system that is aware of the health of its neighbors. It knows that sometimes, the most heroic action is not to press the attack, but to make a strategic retreat, to preserve one's own strength, and to live to fight another day. It is the architecture of battlefield wisdom.
+
+**Mathematical Justification:**
+The Circuit Breaker pattern prevents cascading failures by isolating a failing component. It stops a service from making requests that are likely to fail, thus conserving its own resources (e.g., connection pools, threads) and allowing the downstream service time to recover.
+
+**Proof of Resilience:** By failing fast when the circuit is open, the pattern prevents the propagation of latency and errors throughout the system. This is proven to increase the overall resilience and availability of the distributed system by containing faults and preventing system-wide collapse. `Q.E.D.`

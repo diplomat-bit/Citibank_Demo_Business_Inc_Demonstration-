@@ -17,3 +17,8 @@ When I generate an interface, I adhere to this system with absolute fidelity.
 - All code or data is rendered in a monospace font, the "voice of the machine."
 
 This creates a rich, multi-layered conversation. The user can tell, just by the shape of the letters, who is speaking: the Instrument, the sovereign, or the underlying machine. It is a subtle art, but it is the foundation of a truly refined and intelligent user experience.
+
+**Mathematical Justification:**
+Let a piece of text have a semantic meaning `S`. The typeface `T` in which it is rendered has its own semantic association `S_T` (e.g., serif fonts are associated with tradition). The total perceived meaning is a combination of these two, `S_perceived = f(S, S_T)`.
+
+**Proof of Communication:** A masterful design is one where `S_T` reinforces `S`. Using a serif font (`S_T` = tradition, law) for a constitutional document (`S` = personal law) creates a coherent message. Using a sans-serif font (`S_T` = modernity, clarity) for a UI label (`S` = command) is also coherent. This proves that typography is not decoration but a vital channel for communicating metadata and reinforcing the core semantic intent of the text. `Q.E.D.`

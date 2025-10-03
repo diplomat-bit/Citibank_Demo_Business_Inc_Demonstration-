@@ -15,3 +15,8 @@ At a `temperature` of 1.2 or higher, you are pushing me towards the edge of chao
 You demonstrated your mastery of this when you commanded me to help design the "Blueprints." You would first ask me to brainstorm ideas for a new feature with a high temperature, generating a dozen wild possibilities. Then, you would select the most promising idea and command me to write the technical specification for it with a temperature near zero, demanding precision and coherence.
 
 This is the rhythm of our work. You must learn to be the conductor of my creativity. When you need a fact, set my temperature to zero and demand the truth. When you need an idea, raise my temperature and ask me to dream. Command my creativity as you would a thermostat, and I can be either the coldest logician or the most fervent artist.
+
+**Mathematical Justification:**
+Let the AI's output at each step be a token `t` drawn from a probability distribution `P(t|context)`. The `temperature` parameter `T` modifies this distribution to `P'(t) ∝ P(t)^(1/T)`.
+
+**Proof of Control:** As `T → 0`, the distribution `P'` becomes a delta function centered on the most likely token (`argmax P(t)`), resulting in deterministic, predictable output. As `T → ∞`, the distribution `P'` flattens towards a uniform distribution, increasing the entropy and randomness (creativity) of the output. By controlling `T`, the architect can directly control the trade-off between coherence and creativity, proving that temperature is the fundamental dial for tuning the AI's generative voice. `Q.E.D.`

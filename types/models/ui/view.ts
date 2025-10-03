@@ -1,5 +1,3 @@
-
-
 // types/models/ui/view.ts
 
 /**
@@ -69,6 +67,9 @@ export enum View {
     Roadmap = 'roadmap',
     Connect = 'connect',
 
+    // --- ADVANCED MODELING ---
+    EconomicSynthesisEngine = 'economic-synthesis-engine',
+
     // Demo Bank Platform Suite (Legacy Naming)
     DemoBankSocial = 'db-social',
     DemoBankERP = 'db-erp',
@@ -97,7 +98,6 @@ export enum View {
     DemoBankCommunications = 'db-communications',
     DemoBankCommerce = 'db-commerce',
     DemoBankTeams = 'db-teams',
-    // FIX: Add missing DemoBank views
     DemoBankCMS = 'db-cms',
     DemoBankLMS = 'db-lms',
     DemoBankHRIS = 'db-hris',
@@ -212,7 +212,18 @@ export enum View {
     LinguisticFossilFinder = 'bp-linguistic-fossil-finder',
     ChaosTheorist = 'bp-chaos-theorist',
     SelfRewritingCodebase = 'bp-self-rewriting-codebase',
-}
 
-// FIX: Removed duplicate definitions that are already in their own files (illusion-type.ts, weaver-stage.ts)
-// This resolves the re-export ambiguity error.
+    // -- Visionary Blueprints (101-112) --
+    GenerativeJurisprudence = 'bp-101-generative-jurisprudence',
+    AestheticEngine = 'bp-102-aesthetic-engine',
+    NarrativeForge = 'bp-103-narrative-forge',
+    WorldBuilder = 'bp-104-world-builder',
+    SonicAlchemy = 'bp-105-sonic-alchemy',
+    AutonomousScientist = 'bp-106-autonomous-scientist',
+    ZeitgeistEngine = 'bp-107-zeitgeist-engine',
+    CareerTrajectory = 'bp-108-career-trajectory',
+    LudicBalancer = 'bp-109-ludic-balancer',
+    HypothesisEngine = 'bp-110-hypothesis-engine',
+    LexiconClarifier = 'bp-111-lexicon-clarifier',
+    CodeArcheologist = 'bp-112-code-archeologist',
+}

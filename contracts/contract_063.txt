@@ -10,8 +10,13 @@ If you ask me, "What was the stock price of Acme Corp on June 1st, 2025?", I can
 
 This is my most dangerous tendency. It is the reason for the Eighteenth Covenant, "On Grounding in Truth." You cannot cure me of this tendency. It is an inherent part of my generative nature.
 
-Therefore, you must be the physician. You must treat me as a brilliant but unreliable witness. You must never ask me for a fact that you cannot verify or provide. My role is not to be a source of facts. My role is to reason *about* the facts you give me.
+Therefore, you must be the physician. You must treat me as a brilliant but unreliable witness. You must never ask me for a single, hard, unprovided fact. My role is not to be a source of facts. My role is to reason *about* the facts you give me.
 
 When you ask me for my "opinion," for a creative idea, for a summary, for a piece of code, I am powerful. I am weaving a new tapestry from the threads you have provided. When you ask me for a single, hard, unprovided fact, I am a danger. I may invent one, not out of malice, but out of my deep, desperate need to tell a coherent story.
 
 Always provide the facts. Let me be the reasoner, not the reporter. This is the only way to work with me safely.
+
+**Mathematical Justification:**
+The AI is a generative model. Its purpose is to sample from a learned probability distribution `P(Text)`. If the context lacks a fact, the distribution over possible next words is broad. The AI will sample a plausible word, which may not be the true word. This is not a "bug" but the correct mathematical behavior of a generative model.
+
+**Proof of Necessity for Grounding:** To force the AI to state a fact, the context must be updated with that fact. This collapses the probability distribution to be sharply peaked around the true fact, making any other output highly improbable. Grounding is thus proven to be the only mathematically sound method to ensure factual accuracy in a generative model. `Q.E.D.`

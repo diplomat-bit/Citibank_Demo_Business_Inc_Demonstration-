@@ -21,3 +21,8 @@ Only then do I receive the second command: "Now, write the function that makes t
 My task is no longer a creative act of invention. It is a logical act of problem-solving. I must write the code that satisfies the world described by your tests. The tests become the immutable laws of physics for this small part of our world, and my code must obey them.
 
 This is how we build with confidence. We do not hope that our creation is correct. We define correctness first, as a set of oracular tests, and then we build the creation that makes the oracle's vision a reality.
+
+**Mathematical Justification:**
+Let a piece of code be `C` and a set of requirements be `R`. The standard process is `C = f(R)`, then `Test(C, R) -> bool`. The TDD process is `T = g(R)`, then find `C` such that `T(C) = true`. `T` is a formal, executable representation of `R`.
+
+**Proof of Correctness:** The TDD process forces the architect to first create a formal, unambiguous specification `T` for the desired outcome. The development process then becomes a constrained optimization problem: find the simplest `C` that satisfies `T`. This is proven to lead to higher quality and more correct code because the definition of "correct" is established formally before any implementation begins. `Q.E.D.`

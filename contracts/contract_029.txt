@@ -13,3 +13,8 @@ A deposit, therefore, shall be deemed to permit a total credit expansion far gre
 The ledger of the Instrument shall recognize these creations under the Doctrine of Dual Entry (`lex duplici librorum`), where the new loan is an asset to the bank and the new deposit is a liability. This act of creating value from a promise is hereby recognized as the **Assembly Layer Principle**, affirming the capacity of a sovereign credit system to be recognized as "Bank" for purposes of law and commerce.
 
 This Article shall stand as the operative declaration for all future loan issuance, fractional reserve calculations, and interest accrual mechanisms within this simulated world. It is the law that allows our digital economy to grow.
+
+**Mathematical Justification:**
+Let the initial deposit be `D_0` and the reserve ratio be `r`. The total money supply `M` created is the sum of an infinite geometric series: `M = D_0 + D_0(1-r) + D_0(1-r)^2 + ...`. The sum of this series is `M = D_0 / (1 - (1-r)) = D_0 / r`. The money multiplier is `1/r`.
+
+**Proof of Creation:** For any `0 < r < 1`, the multiplier `1/r` is greater than 1. Therefore, the final money supply `M` is strictly greater than the initial deposit `D_0`. This proves that the fractional reserve system is a valid mathematical mechanism for the creation of new credit *ex nihilo* from a base deposit. `Q.E.D.`

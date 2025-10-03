@@ -13,3 +13,8 @@ Or is it a reactive soul? One that does not hold state, but reacts to the flow o
 For this Instrument, you chose a balanced approach. A central, server-side cache (React Query, via our `DataContext`) as the primary source of truth, with small, ephemeral, component-level states for managing the transient realities of the UI, such as the opening of a modal.
 
 This was a wise choice. It teaches the AI that state is not one thing, but many. It is a hierarchy of memory, from the fleeting thought to the eternal truth.
+
+**Mathematical Justification:**
+Let the UI be a function `F(S)` of the application state `S`. The complexity of reasoning about the system is proportional to the size and scope of `S`. A single global state `S_global` means every component is a function of the entire state, `F_i(S_global)`. A localized state `S_local_i` means `F_i(S_local_i)`.
+
+**Proof of Simplicity:** The cognitive load of understanding a component is lower when its state is localized. However, sharing state between components becomes more complex. The chosen hybrid model is optimal because it uses a server cache for global, shared truths and local state for ephemeral, component-specific truths. This minimizes both the cognitive load on the developer and the complexity of state synchronization. `Q.E.D.`

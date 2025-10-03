@@ -23,7 +23,8 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
     const renderContent = () => {
         switch (viewId) {
             case View.Transactions: {
-                const spendingByCategory = context.transactions
+                // FIX: Explicitly typed the `spendingByCategory` constant. This resolves a TypeScript type inference issue where the result of the `reduce` operation was not correctly identified as `Record<string, number>`, causing the `value` in the subsequent `.map` and `.sort` to be of type `unknown` and leading to an arithmetic error.
+                const spendingByCategory: Record<string, number> = context.transactions
                     .filter(t => t.type === 'expense')
                     // FIX: Explicitly typed the initial value of reduce. Without this, TypeScript infers
                     // the initial value `{}` as the return type, causing `Object.entries` to fail and

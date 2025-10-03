@@ -22,3 +22,8 @@ This is more than a programming pattern. It is a tool for thought. It forces us 
 When you command me to design a complex component, you command me in this language. "Design a multi-step form as a state machine. Define the states for each step and the events that transition between them."
 
 From this command, I can build a component that is not just functional, but provably correct. Its behavior is no longer a hopeful guess; it is a deterministic traversal of a well-defined graph. It is a soul with a clear and knowable structure.
+
+**Mathematical Justification:**
+A set of `N` boolean flags defines a state space with `2^N` possible states. Many of these states may be logically impossible. A Finite State Machine (FSM) explicitly defines the set of valid states `S` where `|S| ≪ 2^N` and the valid transitions between them.
+
+**Proof of Correctness:** By modeling a component as an FSM, the developer makes all impossible states unreachable by construction. This is proven to be a more correct and robust method for managing state, as it eliminates an entire class of bugs related to inconsistent or impossible state combinations. `Q.E.D.`

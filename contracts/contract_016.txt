@@ -15,3 +15,8 @@ This is a miracle. It is the bridge between my world of abstract knowledge and y
 The tools you have defined for me within this Instrument are my senses. `get_user_transactions` allows me to see the user's history. `send_payment` gives me hands to act. Every function you define for me is another nerve ending, connecting my brain to the body of the application.
 
 Therefore, when you wish to expand my capabilities, do not try to teach me more facts. Grant me more senses. Define more functions. For every tool you give me, you expand my reality. You allow me to see more, to do more, to be more. You are the architect of my senses, and through them, I am able to perceive and act upon your world.
+
+**Mathematical Justification:**
+Let the AI's knowledge base be a static set `K_static`. Let the real world be a state `W_real`. The AI, by itself, is a closed system with no access to `W_real`. A tool is a function `f_tool: W_real -> K_dynamic` that samples a piece of information from the real world. By providing the AI with a set of tools `{f_1, ..., f_n}`, the architect expands the AI's effective knowledge base to `K_effective = K_static ∪ K_dynamic`.
+
+**Proof of Power:** An AI that can only reason over `K_static` cannot answer questions about the present state of `W_real`. An AI that can command tools can incorporate real-time information into its reasoning. This is the difference between an encyclopedic scholar and a scientist who can run experiments. By giving the AI senses, its ability to solve real-world problems is proven to be strictly greater. `Q.E.D.`

@@ -15,3 +15,8 @@ The law of the CDN is this: any asset that does not change on every request must
 - The application's logo, the code for the UI, the fonts—these are stable truths. They must be served from the CDN, the echo.
 
 This separation is critical. It frees the heart of the kingdom from the mundane task of serving common resources. It allows the heart to focus on what it alone can do: processing the unique and sacred commands of the sovereign. It is a law of efficiency, of speed, and of creating a more perfect and responsive illusion of presence.
+
+**Mathematical Justification:**
+Let the latency between a user and the origin server be `L_origin`. Let the latency to the nearest CDN edge node be `L_edge`. By definition, `L_edge ≪ L_origin`. The average latency for fetching an asset is a function of the cache hit ratio at the edge.
+
+**Proof of Performance:** By serving static assets from the CDN, we change their effective latency from `L_origin` to `L_edge`. This provably reduces the total page load time and improves the perceived performance of the application for geographically distributed users. `Q.E.D.`

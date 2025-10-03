@@ -19,3 +19,8 @@ This is the principle you must apply to every command. Analyze the "job" the use
 - "Use contextual prompts to anticipate the user's next question."
 
 Every click we save, every moment of confusion we eliminate, is a small act of service. It conserves the sovereign's most precious resource: their attention. And an Instrument that respects the sovereign's attention is an Instrument that will be trusted and wielded with joy.
+
+**Mathematical Justification:**
+Let a task be a path from an initial state `S_0` to a goal state `S_g`. The cost of the task is the number of steps (clicks, decisions) in the path. The goal of ergonomic design is to find the shortest path in the UI state space. This is a classic shortest path problem on a graph.
+
+**Proof of Efficiency:** Fitts's Law states that the time to acquire a target is a function of the distance to and size of the target. By placing primary actions directly on the main interface (reducing distance) and giving them high visual weight (increasing size), we provably reduce the time required for the user to complete their task. Ergonomic design is thus the application of optimization principles to the user's interaction path. `Q.E.D.`

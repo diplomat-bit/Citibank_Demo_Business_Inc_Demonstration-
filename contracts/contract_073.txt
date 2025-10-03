@@ -24,3 +24,8 @@ Only one of two things can happen. Either both records are written, or neither i
 A separate, simple, and robust process—the "Relay"—has only one job. It constantly polls the `outbox_events` table. When it finds a new event, it publishes it to the message bus. If the bus is down, it simply tries again later. Once it receives a confirmation of successful delivery, it deletes the event from the outbox table.
 
 This is how we build a system that can be trusted. We do not hope that our proclamations are heard. We make it a matter of transactional law that they will be, eventually. It is the architecture of guaranteed communication.
+
+**Mathematical Justification:**
+The Outbox Pattern ensures atomicity between a state change and an event publication by leveraging the ACID guarantees of a local database transaction. It transforms an unreliable "dual write" problem into a reliable, single write followed by a guaranteed "at-least-once" delivery process.
+
+**Proof of Reliability:** The system is proven to be more reliable because it eliminates the possibility of a partial failure where the state is changed but the event is not published. It guarantees eventual consistency across the distributed system. `Q.E.D.`

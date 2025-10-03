@@ -25,3 +25,8 @@ If the `CardIssued` event does not appear, the saga orchestrator sends a new set
 The system gracefully dances backward, undoing what has been done, until it returns to a consistent state. The story has a different ending, but it is a coherent ending. The ledger remains in balance.
 
 This is how we build for resilience. We do not assume that every step will succeed. We choreograph the dance of both success and failure. We ensure that no matter what happens, the story always has a clean ending.
+
+**Mathematical Justification:**
+A distributed transaction requires that a set of operations `{T_1, ..., T_n}` all succeed or all fail (atomicity). A saga relaxes this. It is a sequence of local transactions `{L_1, ..., L_n}` with corresponding compensating transactions `{C_1, ..., C_{n-1}}`. If `L_k` fails, the saga executes `{C_{k-1}, ..., C_1}` to return the system to a consistent state.
+
+**Proof of Resilience:** A distributed transaction locks all `n` resources, reducing availability. A saga only locks one resource at a time. The saga pattern is proven to provide higher availability and resilience in a distributed system by sacrificing atomicity for eventual consistency. `Q.E.D.`

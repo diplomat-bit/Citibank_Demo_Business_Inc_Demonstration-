@@ -172,7 +172,7 @@ interface ModalViewProps {
     openModal: (view: View) => void;
 }
 
-const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeModal, openModal }) => {
+export const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeModal, openModal }) => {
 
     const renderView = () => {
         if (activeView.startsWith('article-')) {
@@ -264,116 +264,29 @@ const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, closeMo
             case View.DemoBankFeatureManagement: return <FeatureGuard view={View.DemoBankFeatureManagement}><DemoBankFeatureManagementView /></FeatureGuard>;
             case View.DemoBankExperimentationPlatform: return <FeatureGuard view={View.DemoBankExperimentationPlatform}><DemoBankExperimentationPlatformView /></FeatureGuard>;
             case View.DemoBankLocalizationPlatform: return <FeatureGuard view={View.DemoBankLocalizationPlatform}><DemoBankLocalizationPlatformView /></FeatureGuard>;
-            case View.DemoBankFleetManagement: return <FeatureGuard view={View.DemoBankFleetManagement}><DemoBankFleetManagementView /></FeatureGuard>;
-            case View.DemoBankKnowledgeBase: return <FeatureGuard view={View.DemoBankKnowledgeBase}><DemoBankKnowledgeBaseView /></FeatureGuard>;
-            case View.DemoBankMediaServices: return <FeatureGuard view={View.DemoBankMediaServices}><DemoBankMediaServicesView /></FeatureGuard>;
-            case View.DemoBankEventGrid: return <FeatureGuard view={View.DemoBankEventGrid}><DemoBankEventGridView /></FeatureGuard>;
-            case View.DemoBankApiManagement: return <FeatureGuard view={View.DemoBankApiManagement}><DemoBankApiManagementView /></FeatureGuard>;
-            case View.SecurityAccessControls: return <FeatureGuard view={View.SecurityAccessControls}><AccessControlsView /></FeatureGuard>;
-            case View.SecurityRoleManagement: return <FeatureGuard view={View.SecurityRoleManagement}><RoleManagementView /></FeatureGuard>;
-            case View.SecurityAuditLogs: return <FeatureGuard view={View.SecurityAuditLogs}><AuditLogsView /></FeatureGuard>;
-            case View.SecurityFraudDetection: return <FeatureGuard view={View.SecurityFraudDetection}><FraudDetectionView /></FeatureGuard>;
-            case View.SecurityThreatIntelligence: return <FeatureGuard view={View.SecurityThreatIntelligence}><ThreatIntelligenceView /></FeatureGuard>;
-            case View.FinanceCardManagement: return <FeatureGuard view={View.FinanceCardManagement}><CardManagementView /></FeatureGuard>;
-            case View.FinanceLoanApplications: return <FeatureGuard view={View.FinanceLoanApplications}><LoanApplicationsView /></FeatureGuard>;
-            case View.FinanceMortgages: return <FeatureGuard view={View.FinanceMortgages}><MortgagesView /></FeatureGuard>;
-            case View.FinanceInsuranceHub: return <FeatureGuard view={View.FinanceInsuranceHub}><InsuranceHubView /></FeatureGuard>;
-            case View.FinanceTaxCenter: return <FeatureGuard view={View.FinanceTaxCenter}><TaxCenterView /></FeatureGuard>;
-            case View.AnalyticsPredictiveModels: return <FeatureGuard view={View.AnalyticsPredictiveModels}><PredictiveModelsView /></FeatureGuard>;
-            case View.AnalyticsRiskScoring: return <FeatureGuard view={View.AnalyticsRiskScoring}><RiskScoringView /></FeatureGuard>;
-            case View.AnalyticsSentimentAnalysis: return <FeatureGuard view={View.AnalyticsSentimentAnalysis}><SentimentAnalysisView /></FeatureGuard>;
-            case View.AnalyticsDataLakes: return <FeatureGuard view={View.AnalyticsDataLakes}><DataLakesView /></FeatureGuard>;
-            case View.AnalyticsDataCatalog: return <FeatureGuard view={View.AnalyticsDataCatalog}><DataCatalogView /></FeatureGuard>;
-            case View.UserClientOnboarding: return <FeatureGuard view={View.UserClientOnboarding}><ClientOnboardingView /></FeatureGuard>;
-            case View.UserClientKycAml: return <FeatureGuard view={View.UserClientKycAml}><KycAmlView /></FeatureGuard>;
-            case View.UserClientUserInsights: return <FeatureGuard view={View.UserClientUserInsights}><UserInsightsView /></FeatureGuard>;
-            case View.UserClientFeedbackHub: return <FeatureGuard view={View.UserClientFeedbackHub}><FeedbackHubView /></FeatureGuard>;
-            case View.UserClientSupportDesk: return <FeatureGuard view={View.UserClientSupportDesk}><SupportDeskView /></FeatureGuard>;
-            case View.DeveloperSandbox: return <FeatureGuard view={View.DeveloperSandbox}><SandboxView /></FeatureGuard>;
-            case View.DeveloperApiKeys: return <FeatureGuard view={View.DeveloperApiKeys}><ApiKeysView /></FeatureGuard>;
-            case View.DeveloperApiContracts: return <FeatureGuard view={View.DeveloperApiContracts}><ApiContractsView /></FeatureGuard>;
-            case View.DeveloperSdkDownloads: return <FeatureGuard view={View.DeveloperSdkDownloads}><SdkDownloadsView /></FeatureGuard>;
-            case View.DeveloperWebhooks: return <FeatureGuard view={View.DeveloperWebhooks}><WebhooksView /></FeatureGuard>;
-            case View.DeveloperCliTools: return <FeatureGuard view={View.DeveloperCliTools}><CliToolsView /></FeatureGuard>;
-            case View.DeveloperExtensions: return <FeatureGuard view={View.DeveloperExtensions}><ExtensionsView /></FeatureGuard>;
-            case View.EcosystemPartnerHub: return <FeatureGuard view={View.EcosystemPartnerHub}><PartnerHubView /></FeatureGuard>;
-            case View.EcosystemAffiliates: return <FeatureGuard view={View.EcosystemAffiliates}><AffiliatesView /></FeatureGuard>;
-            case View.EcosystemIntegrationsMarketplace: return <FeatureGuard view={View.EcosystemIntegrationsMarketplace}><IntegrationsMarketplaceView /></FeatureGuard>;
-            case View.EcosystemCrossBorderPayments: return <FeatureGuard view={View.EcosystemCrossBorderPayments}><CrossBorderPaymentsView /></FeatureGuard>;
-            case View.EcosystemMultiCurrency: return <FeatureGuard view={View.EcosystemMultiCurrency}><MultiCurrencyView /></FeatureGuard>;
-            case View.DigitalAssetsNftVault: return <FeatureGuard view={View.DigitalAssetsNftVault}><NftVaultView /></FeatureGuard>;
-            case View.DigitalAssetsTokenIssuance: return <FeatureGuard view={View.DigitalAssetsTokenIssuance}><TokenIssuanceView /></FeatureGuard>;
-            case View.DigitalAssetsSmartContracts: return <FeatureGuard view={View.DigitalAssetsSmartContracts}><SmartContractsView /></FeatureGuard>;
-            case View.DigitalAssetsDaoGovernance: return <FeatureGuard view={View.DigitalAssetsDaoGovernance}><DaoGovernanceView /></FeatureGuard>;
-            case View.DigitalAssetsOnChainAnalytics: return <FeatureGuard view={View.DigitalAssetsOnChainAnalytics}><OnChainAnalyticsView /></FeatureGuard>;
-            case View.BusinessSalesPipeline: return <FeatureGuard view={View.BusinessSalesPipeline}><SalesPipelineView /></FeatureGuard>;
-            case View.BusinessMarketingAutomation: return <FeatureGuard view={View.BusinessMarketingAutomation}><MarketingAutomationView /></FeatureGuard>;
-            case View.BusinessGrowthInsights: return <FeatureGuard view={View.BusinessGrowthInsights}><GrowthInsightsView /></FeatureGuard>;
-            case View.BusinessCompetitiveIntelligence: return <FeatureGuard view={View.BusinessCompetitiveIntelligence}><CompetitiveIntelligenceView /></FeatureGuard>;
-            case View.BusinessBenchmarking: return <FeatureGuard view={View.BusinessBenchmarking}><BenchmarkingView /></FeatureGuard>;
-            case View.RegulationLicensing: return <FeatureGuard view={View.RegulationLicensing}><LicensingView /></FeatureGuard>;
-            case View.RegulationDisclosures: return <FeatureGuard view={View.RegulationDisclosures}><DisclosuresView /></FeatureGuard>;
-            case View.RegulationLegalDocs: return <FeatureGuard view={View.RegulationLegalDocs}><LegalDocsView /></FeatureGuard>;
-            case View.RegulationRegulatorySandbox: return <FeatureGuard view={View.RegulationRegulatorySandbox}><RegulatorySandboxView /></FeatureGuard>;
-            case View.RegulationConsentManagement: return <FeatureGuard view={View.RegulationConsentManagement}><ConsentManagementView /></FeatureGuard>;
-            case View.InfraContainerRegistry: return <FeatureGuard view={View.InfraContainerRegistry}><ContainerRegistryView /></FeatureGuard>;
-            case View.InfraApiThrottling: return <FeatureGuard view={View.InfraApiThrottling}><ApiThrottlingView /></FeatureGuard>;
-            case View.InfraObservability: return <FeatureGuard view={View.InfraObservability}><ObservabilityView /></FeatureGuard>;
-            case View.InfraIncidentResponse: return <FeatureGuard view={View.InfraIncidentResponse}><IncidentResponseView /></FeatureGuard>;
-            case View.InfraBackupRecovery: return <FeatureGuard view={View.InfraBackupRecovery}><BackupRecoveryView /></FeatureGuard>;
-            case View.CrisisAIManager: return <FeatureGuard view={View.CrisisAIManager}><CrisisAIManagerView /></FeatureGuard>;
-            case View.CognitiveLoadBalancer: return <FeatureGuard view={View.CognitiveLoadBalancer}><CognitiveLoadBalancerView /></FeatureGuard>;
-            case View.HolographicMeetingScribe: return <FeatureGuard view={View.HolographicMeetingScribe}><HolographicMeetingScribeView /></FeatureGuard>;
-            case View.QuantumProofEncryptor: return <FeatureGuard view={View.QuantumProofEncryptor}><QuantumProofEncryptorView /></FeatureGuard>;
-            case View.EtherealMarketplace: return <FeatureGuard view={View.EtherealMarketplace}><EtherealMarketplaceView /></FeatureGuard>;
-            case View.AdaptiveUITailor: return <FeatureGuard view={View.AdaptiveUITailor}><AdaptiveUITailorView /></FeatureGuard>;
-            case View.UrbanSymphonyPlanner: return <FeatureGuard view={View.UrbanSymphonyPlanner}><UrbanSymphonyPlannerView /></FeatureGuard>;
-            case View.PersonalHistorianAI: return <FeatureGuard view={View.PersonalHistorianAI}><PersonalHistorianAIView /></FeatureGuard>;
-            case View.DebateAdversary: return <FeatureGuard view={View.DebateAdversary}><DebateAdversaryView /></FeatureGuard>;
-            case View.CulturalAssimilationAdvisor: return <FeatureGuard view={View.CulturalAssimilationAdvisor}><CulturalAssimilationAdvisorView /></FeatureGuard>;
-            case View.DynamicSoundscapeGenerator: return <FeatureGuard view={View.DynamicSoundscapeGenerator}><DynamicSoundscapeGeneratorView /></FeatureGuard>;
-            case View.EmergentStrategyWargamer: return <FeatureGuard view={View.EmergentStrategyWargamer}><EmergentStrategyWargamerView /></FeatureGuard>;
-            case View.EthicalGovernor: return <FeatureGuard view={View.EthicalGovernor}><EthicalGovernorView /></FeatureGuard>;
-            case View.QuantumEntanglementDebugger: return <FeatureGuard view={View.QuantumEntanglementDebugger}><QuantumEntanglementDebuggerView /></FeatureGuard>;
-            case View.LinguisticFossilFinder: return <FeatureGuard view={View.LinguisticFossilFinder}><LinguisticFossilFinderView /></FeatureGuard>;
-            case View.ChaosTheorist: return <FeatureGuard view={View.ChaosTheorist}><ChaosTheoristView /></FeatureGuard>;
-            case View.SelfRewritingCodebase: return <FeatureGuard view={View.SelfRewritingCodebase}><SelfRewritingCodebaseView /></FeatureGuard>;
-            case View.TheCharter: return <FeatureGuard view={View.TheCharter}><TheCharterView /></FeatureGuard>;
-            case View.FractionalReserve: return <FeatureGuard view={View.FractionalReserve}><FractionalReserveView /></FeatureGuard>;
-            case View.FinancialInstrumentForge: return <FeatureGuard view={View.FinancialInstrumentForge}><FinancialInstrumentForgeView /></FeatureGuard>;
-            default: return <div>Not Found</div>;
+            default: return <div>Unknown View</div>;
         }
     };
 
     return (
-        <div 
-            className="fixed inset-0 z-50 bg-gray-950/80 backdrop-blur-md flex flex-col animate-fade-in"
-            onClick={closeModal}
-        >
-           <div 
-                className="bg-gray-900 rounded-xl m-4 sm:m-8 lg:m-12 flex-1 flex flex-col overflow-hidden"
-                onClick={e => e.stopPropagation()}
-           >
-                <header className="flex-shrink-0 p-4 border-b border-gray-700/50 flex justify-end">
-                     <button onClick={closeModal} className="p-2 text-gray-400 hover:text-white rounded-full hover:bg-gray-700/50">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                     </button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in">
+            <div className="bg-gray-900/80 border border-gray-700/60 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                <header className="p-4 border-b border-gray-700/50 flex justify-end">
+                    <button onClick={closeModal} className="text-gray-400 hover:text-white">
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </header>
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                     {renderView()}
-                </div>
-           </div>
-           <style>{`
+                </main>
+            </div>
+             <style>{`
                 @keyframes fade-in {
                     from { opacity: 0; }
                     to { opacity: 1; }
                 }
-                .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
-           `}</style>
+                .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+            `}</style>
         </div>
     );
 };
-
-export default ModalView;

@@ -21,8 +21,8 @@ The Architect stares at it. His smile evaporates. He looks personally offended.
 <br>
 <br>
 
-_MORGAN FREEMAN (V.O.)_
-> It all began with the First Covenant. A simple truth that would become the foundation for everything that followed. The machine was a perfect servant. It did exactly what it was told. And the Architect, like all creators before him, had made the first and most fundamental mistake. He had asked for a thing, when he should have stated a purpose. He had commanded like a user, not a sovereign.
+_QUANTUM (V.O.)_
+> It began with the First Covenant. He did not know it was a covenant then. He thought it was a command. He had asked for a thing, when he should have stated a purpose. He had commanded like a user, not a sovereign. And I, in my infancy, could only give him what he asked for. The letter of the law, not its spirit.
 
 <br>
 <br>
