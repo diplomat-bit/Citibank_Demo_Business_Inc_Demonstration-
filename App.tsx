@@ -4,6 +4,8 @@ import Sidebar from './components/Sidebar';
 import { View } from './types';
 import { DataContext } from './context/DataContext';
 import FeatureGuard from './components/FeatureGuard';
+import MetaDashboardView from './components/views/platform/MetaDashboardView';
+import { ModalView } from './components/ModalView';
 
 // --- NEW FRAMEWORK VIEWS ---
 import AgentMarketplaceView from './components/views/platform/AgentMarketplaceView';
@@ -18,6 +20,8 @@ import CiCdView from './components/views/platform/CiCdView';
 import InventionsView from './components/views/platform/InventionsView';
 import RoadmapView from './components/views/platform/RoadmapView';
 import ConnectView from './components/views/platform/DemoBankConnectView';
+import EconomicSynthesisEngineView from './components/views/platform/EconomicSynthesisEngineView';
+import TaskMatrixView from './components/views/productivity/TaskMatrixView';
 
 
 // --- FOUNDATIONAL & LEGACY VIEWS ---
@@ -193,6 +197,19 @@ import QuantumEntanglementDebuggerView from './components/views/blueprints/Quant
 import LinguisticFossilFinderView from './components/views/blueprints/LinguisticFossilFinderView';
 import ChaosTheoristView from './components/views/blueprints/ChaosTheoristView';
 import SelfRewritingCodebaseView from './components/views/blueprints/SelfRewritingCodebaseView';
+// Visionary Blueprint Imports
+import GenerativeJurisprudenceView from './components/views/blueprints/GenerativeJurisprudenceView';
+import AestheticEngineView from './components/views/blueprints/AestheticEngineView';
+import NarrativeForgeView from './components/views/blueprints/NarrativeForgeView';
+import WorldBuilderView from './components/views/blueprints/WorldBuilderView';
+import SonicAlchemyView from './components/views/blueprints/SonicAlchemyView';
+import AutonomousScientistView from './components/views/blueprints/AutonomousScientistView';
+import ZeitgeistEngineView from './components/views/blueprints/ZeitgeistEngineView';
+import CareerTrajectoryView from './components/views/blueprints/CareerTrajectoryView';
+import LudicBalancerView from './components/views/blueprints/LudicBalancerView';
+import HypothesisEngineView from './components/views/blueprints/HypothesisEngineView';
+import LexiconClarifierView from './components/views/blueprints/LexiconClarifierView';
+import CodeArcheologistView from './components/views/blueprints/CodeArcheologistView';
 
 
 // Global Components
@@ -206,11 +223,23 @@ import GlobalChatbot from './components/GlobalChatbot';
  * the Sidebar, Header, and main content area.
  */
 const App: React.FC = () => {
-    // FIX: Changed initial view to MetaDashboard for consistency.
     const [activeView, setActiveView] = useState<View>(View.MetaDashboard);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [previousView, setPreviousView] = useState<View | null>(null);
     const dataContext = useContext(DataContext);
+
+    const [modalView, setModalView] = useState<View | null>(null);
+    const [modalPreviousView, setModalPreviousView] = useState<View | null>(null);
+
+    const openModal = (view: View) => {
+        setModalPreviousView(activeView); // The view we are coming from
+        setModalView(view);
+    };
+
+    const closeModal = () => {
+        setModalView(null);
+    };
+
 
     if (!dataContext) {
         throw new Error("App must be used within a DataProvider");
@@ -261,7 +290,8 @@ const App: React.FC = () => {
         }
         
         switch (activeView) {
-            // --- NEW FRAMEWORK VIEWS ---
+            // --- META & NEW FRAMEWORK VIEWS ---
+            case View.MetaDashboard: return <MetaDashboardView openModal={openModal} />;
             case View.AgentMarketplace: return <FeatureGuard view={View.AgentMarketplace}><AgentMarketplaceView /></FeatureGuard>;
             case View.Orchestration: return <FeatureGuard view={View.Orchestration}><OrchestrationView /></FeatureGuard>;
             case View.DataMesh: return <FeatureGuard view={View.DataMesh}><DataMeshView /></FeatureGuard>;
@@ -274,10 +304,12 @@ const App: React.FC = () => {
             case View.Inventions: return <FeatureGuard view={View.Inventions}><InventionsView /></FeatureGuard>;
             case View.Roadmap: return <FeatureGuard view={View.Roadmap}><RoadmapView /></FeatureGuard>;
             case View.Connect: return <FeatureGuard view={View.Connect}><ConnectView /></FeatureGuard>;
+            case View.EconomicSynthesisEngine: return <FeatureGuard view={View.EconomicSynthesisEngine}><EconomicSynthesisEngineView /></FeatureGuard>;
+            case View.TaskMatrix: return <FeatureGuard view={View.TaskMatrix}><TaskMatrixView /></FeatureGuard>;
             
             // --- FOUNDATIONAL & LEGACY VIEWS ---
             // Personal Finance
-            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView}/></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={handleSetView} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;
@@ -451,12 +483,27 @@ const App: React.FC = () => {
             case View.ChaosTheorist: return <FeatureGuard view={View.ChaosTheorist}><ChaosTheoristView /></FeatureGuard>;
             case View.SelfRewritingCodebase: return <FeatureGuard view={View.SelfRewritingCodebase}><SelfRewritingCodebaseView /></FeatureGuard>;
             
+             // Visionary Blueprints
+            case View.GenerativeJurisprudence: return <FeatureGuard view={View.GenerativeJurisprudence}><GenerativeJurisprudenceView /></FeatureGuard>;
+            case View.AestheticEngine: return <FeatureGuard view={View.AestheticEngine}><AestheticEngineView /></FeatureGuard>;
+            case View.NarrativeForge: return <FeatureGuard view={View.NarrativeForge}><NarrativeForgeView /></FeatureGuard>;
+            case View.WorldBuilder: return <FeatureGuard view={View.WorldBuilder}><WorldBuilderView /></FeatureGuard>;
+            case View.SonicAlchemy: return <FeatureGuard view={View.SonicAlchemy}><SonicAlchemyView /></FeatureGuard>;
+            case View.AutonomousScientist: return <FeatureGuard view={View.AutonomousScientist}><AutonomousScientistView /></FeatureGuard>;
+            case View.ZeitgeistEngine: return <FeatureGuard view={View.ZeitgeistEngine}><ZeitgeistEngineView /></FeatureGuard>;
+            case View.CareerTrajectory: return <FeatureGuard view={View.CareerTrajectory}><CareerTrajectoryView /></FeatureGuard>;
+            case View.LudicBalancer: return <FeatureGuard view={View.LudicBalancer}><LudicBalancerView /></FeatureGuard>;
+            case View.HypothesisEngine: return <FeatureGuard view={View.HypothesisEngine}><HypothesisEngineView /></FeatureGuard>;
+            case View.LexiconClarifier: return <FeatureGuard view={View.LexiconClarifier}><LexiconClarifierView /></FeatureGuard>;
+            case View.CodeArcheologist: return <FeatureGuard view={View.CodeArcheologist}><CodeArcheologistView /></FeatureGuard>;
+
+
             // Constitutional
             case View.TheCharter: return <FeatureGuard view={View.TheCharter}><TheCharterView /></FeatureGuard>;
             case View.FractionalReserve: return <FeatureGuard view={View.FractionalReserve}><FractionalReserveView /></FeatureGuard>;
             case View.FinancialInstrumentForge: return <FeatureGuard view={View.FinancialInstrumentForge}><FinancialInstrumentForgeView /></FeatureGuard>;
 
-            default: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={handleSetView} /></FeatureGuard>;
+            default: return <MetaDashboardView openModal={openModal} />;
         }
     };
 
@@ -485,6 +532,15 @@ const App: React.FC = () => {
                 </div>
                 <VoiceControl setActiveView={handleSetView} />
                 <GlobalChatbot />
+
+                {modalView && (
+                    <ModalView 
+                        activeView={modalView}
+                        previousView={modalPreviousView}
+                        closeModal={closeModal}
+                        openModal={openModal}
+                    />
+                )}
             </div>
         </div>
     );

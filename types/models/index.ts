@@ -23,3 +23,4 @@ export * from './user';
 export * from './webhooks';
 export * from './megadashboard';
 export * from './integration';
+export * from './personal/task';

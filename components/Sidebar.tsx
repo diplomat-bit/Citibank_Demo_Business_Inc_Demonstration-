@@ -100,28 +100,30 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
                 <nav className="flex-grow overflow-y-auto px-4 pb-4">
                     <ul>
                         {filteredNavItems.map((item, index) => {
+                            // FIX: Use an if/else if/else structure to correctly narrow the union type.
+                            // This resolves the error where `item` was being inferred as `never`.
                             if (item.type === 'header') {
                                 return <li key={`header-${index}`} className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">{item.label}</li>;
-                            }
-                            if (item.type === 'divider') {
+                            } else if (item.type === 'divider') {
                                 return <li key={`divider-${index}`}><hr className="my-3 border-gray-700/50" /></li>;
+                            } else {
+                                const isActive = activeView === item.id;
+                                return (
+                                    <li key={item.id}>
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setActiveView(item.id);
+                                            }}
+                                            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 ${isActive ? 'bg-cyan-500/20 text-cyan-200' : 'text-gray-300 hover:bg-gray-700/50'}`}
+                                        >
+                                            {item.icon && React.cloneElement(item.icon, { className: 'h-5 w-5 flex-shrink-0' })}
+                                            <span>{item.label}</span>
+                                        </a>
+                                    </li>
+                                );
                             }
-                            const isActive = activeView === item.id;
-                            return (
-                                <li key={item.id}>
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setActiveView(item.id);
-                                        }}
-                                        className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 ${isActive ? 'bg-cyan-500/20 text-cyan-200' : 'text-gray-300 hover:bg-gray-700/50'}`}
-                                    >
-                                        {item.icon && React.cloneElement(item.icon, { className: 'h-5 w-5 flex-shrink-0' })}
-                                        <span>{item.label}</span>
-                                    </a>
-                                </li>
-                            );
                         })}
                     </ul>
                 </nav>

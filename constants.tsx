@@ -150,6 +150,11 @@ const APIGatewayIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg
 const GraphExplorerIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><circle cx="12" cy="12" r="3" /><circle cx="6" cy="7" r="2" /><circle cx="18" cy="7" r="2" /><circle cx="6" cy="17" r="2" /><circle cx="18" cy="17" r="2" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v-1.5m0-3V9m3.35-2.65L13.5 7.5m-3 0L9.35 6.35m0 11.3L10.5 16.5m3 0l1.15 1.15" /></svg>);
 const DBQLIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 1.1.9 2 2 2h12a2 2 0 002-2V7M4 7c0-1.1.9-2 2-2h12a2 2 0 012 2M4 7h16M8 11h8M8 15h5" /><circle cx="17" cy="15" r="2" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.5 16.5l1.5 1.5" /></svg>);
 const CloudIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>);
+const TaskMatrixIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125a1.125 1.125 0 00-1.125 1.125v12.75c0 .621.504 1.125 1.125 1.125z" />
+    </svg>
+);
 
 // ================================================================================================
 // CONSTITUTIONAL MODULE ICONS
@@ -223,6 +228,12 @@ export const NAV_ITEMS: NavItem[] = [
     { id: View.Inventions, label: 'Invention & Prototype Codex', icon: <KnowledgeIcon /> },
     { id: View.Roadmap, label: 'Strategic Roadmap', icon: <FinancialGoalsIcon /> },
     { id: View.TheWinningVision, label: 'The Vision', icon: <TheVisionIcon /> },
+
+    { type: 'divider' },
+
+    // --- PRODUCTIVITY SUITE ---
+    { type: 'header', label: 'Productivity' },
+    { id: View.TaskMatrix, label: 'Task Matrix', icon: <TaskMatrixIcon /> },
 
     { type: 'divider' },
 

@@ -9,7 +9,9 @@ interface DashboardTileProps {
 }
 
 const DashboardTile: React.FC<DashboardTileProps> = ({ item, onClick }) => {
-    if (!('id' in item)) return null;
+    // FIX: Add a type guard to ensure the `item` prop is a `NavLink` before accessing its properties.
+    // This resolves errors where `label` and `icon` were not found on the `NavItem` union type.
+    if (!('id' in item) || !item.id) return null;
 
     return (
         <Card 
@@ -22,8 +24,10 @@ const DashboardTile: React.FC<DashboardTileProps> = ({ item, onClick }) => {
             <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="text-cyan-400">
+                        {/* FIX: After the type guard, TypeScript correctly infers the props for `item.icon`, resolving the cloneElement error. */}
                         {React.cloneElement(item.icon as React.ReactElement, { className: 'h-6 w-6'})}
                     </div>
+                    {/* FIX: The `label` property is now safely accessible. */}
                     <p className="text-lg font-semibold text-white truncate">{item.label}</p>
                 </div>
                  <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">Open Module →</span>

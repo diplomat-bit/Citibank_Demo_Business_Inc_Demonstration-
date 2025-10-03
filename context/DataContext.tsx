@@ -153,6 +153,8 @@ interface IDataContext {
 
   // New functions to interact with backend
   refetchData: () => void;
+  // FIX: Add missing generateApiKey function to the context interface.
+  generateApiKey: () => Promise<void>;
 }
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
@@ -447,6 +449,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
   
+    // FIX: Add a mock implementation for the missing generateApiKey function.
+    const generateApiKey = useCallback(async () => {
+        console.warn("generateApiKey is a mock. In a real app, this would securely fetch and handle an API key.");
+        // This function is called by a component that expects a state change to unmount it.
+        // As we don't have the parent component's state management, we can't trigger that.
+        // This mock prevents the app from crashing due to the missing function.
+        await new Promise(res => setTimeout(res, 1000));
+    }, []);
+
     const value: IDataContext = {
         isLoading, error, refetchData: fetchData,
         transactions, addTransaction, assets, portfolioAssets, impactInvestments, budgets, addBudget, 
@@ -465,7 +476,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         growthMetrics, competitors, benchmarks, licenses, disclosures, legalDocs,
         sandboxExperiments, consentRecords, containerImages, apiUsage, incidents, backupJobs,
         impactData, linkedAccounts, isImportingData, handlePlaidSuccess, unlinkAccount, marketMovers, notifications, markNotificationRead, apiStatus,
-        unlockedFeatures, unlockFeature
+        unlockedFeatures, unlockFeature,
+        generateApiKey
     };
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

@@ -31,6 +31,9 @@ export enum View {
     Marketplace = 'marketplace',
     Personalization = 'personalization',
     CardCustomization = 'card-customization',
+
+    // Productivity Suite
+    TaskMatrix = 'task-matrix',
     
     // Corporate Finance
     CorporateDashboard = 'corporate-dashboard',
