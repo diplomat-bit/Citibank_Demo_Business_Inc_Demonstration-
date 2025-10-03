@@ -1,3 +1,4 @@
+## Tread lightly coming here and thinking any of this belongs to you
 # THE ALGEBRA OF INTENT: A Dissertation on the Quantification of Will and the Emergence of Sovereign Intelligence
 
 **Abstract:**
