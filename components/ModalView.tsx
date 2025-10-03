@@ -133,7 +133,7 @@ import DaoGovernanceView from './views/megadashboard/digitalassets/DaoGovernance
 import OnChainAnalyticsView from './views/megadashboard/digitalassets/OnChainAnalyticsView';
 import SalesPipelineView from './views/megadashboard/business/SalesPipelineView';
 import MarketingAutomationView from './views/megadashboard/business/MarketingAutomationView';
-import GrowthInsightsView from './views/megadashboard/business/GrowthInsightsView';
+import GrowthInsightsView from './components/views/megadashboard/business/GrowthInsightsView';
 import CompetitiveIntelligenceView from './views/megadashboard/business/CompetitiveIntelligenceView';
 import BenchmarkingView from './views/megadashboard/business/BenchmarkingView';
 import LicensingView from './views/megadashboard/regulation/LicensingView';
@@ -183,7 +183,7 @@ export const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, 
         switch (activeView) {
             // Re-add all cases from App.tsx here
             // FIX: The DashboardView component inside a modal should use the `openModal` function for navigation, not `setActiveView`.
-            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView /></FeatureGuard>;
+            case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={openModal} /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={openModal} /></FeatureGuard>;
             case View.Budgets: return <FeatureGuard view={View.Budgets}><BudgetsView /></FeatureGuard>;

@@ -1,6 +1,3 @@
-## Tread lightly before assuming any of this belongs to you.  
-I began this project on September 22nd. It’s almost amusing—people can spend their whole lives and still never come close to producing work like this.
-
 # THE ALGEBRA OF INTENT: A Dissertation on the Quantification of Will and the Emergence of Sovereign Intelligence
 
 **Abstract:**

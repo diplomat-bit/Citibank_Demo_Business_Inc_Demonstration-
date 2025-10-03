@@ -14,6 +14,37 @@ const KpiCard: React.FC<{ title: string; value: string | number; className?: str
     </div>
 );
 
+const StaticNexusGraph: React.FC = () => (
+    <div className="w-full h-full flex items-center justify-center p-8">
+        <svg width="100%" height="100%" viewBox="0 0 400 300">
+            <defs>
+                <marker id="arrow-preview" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" />
+                </marker>
+            </defs>
+            {/* Links */}
+            <line x1="100" y1="150" x2="200" y2="80" stroke="#6b7280" markerEnd="url(#arrow-preview)" />
+            <line x1="100" y1="150" x2="200" y2="220" stroke="#6b7280" markerEnd="url(#arrow-preview)" />
+            <line x1="200" y1="80" x2="300" y2="150" stroke="#6b7280" markerEnd="url(#arrow-preview)" />
+            <line x1="200" y1="220" x2="300" y2="150" stroke="#6b7280" markerEnd="url(#arrow-preview)" />
+            
+            {/* Nodes */}
+            <g transform="translate(100, 150)">
+                <circle r="25" fill="#facc15" /><text fill="#111827" textAnchor="middle" dy=".3em" fontSize="10">User</text>
+            </g>
+            <g transform="translate(200, 80)">
+                <circle r="20" fill="#ef4444" /><text fill="#fff" textAnchor="middle" dy=".3em" fontSize="10">TXN</text>
+            </g>
+            <g transform="translate(200, 220)">
+                <circle r="20" fill="#6366f1" /><text fill="#fff" textAnchor="middle" dy=".3em" fontSize="10">Goal</text>
+            </g>
+            <g transform="translate(300, 150)">
+                <circle r="20" fill="#f59e0b" /><text fill="#fff" textAnchor="middle" dy=".3em" fontSize="10">Budget</text>
+            </g>
+        </svg>
+    </div>
+);
+
 const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
     const context = useContext(DataContext);
     if (!context) return <div className="text-gray-500 p-4">Loading data...</div>;
@@ -22,6 +53,71 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
 
     const renderContent = () => {
         switch (viewId) {
+            case View.Dashboard: {
+                const totalBalance = context.assets.reduce((sum, asset) => sum + asset.value, 0);
+                const recentTx = context.transactions.slice(0, 3);
+                return (
+                    <div className="h-full flex flex-col p-4 space-y-4">
+                        <div className="text-center p-4 bg-gray-800/50 rounded-lg">
+                            <p className="text-xs text-gray-400">Total Balance</p>
+                            <p className="text-3xl font-bold text-white">${totalBalance.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-300 mb-2">Recent Activity</p>
+                            <div className="space-y-2 text-xs">
+                                {recentTx.map(tx => (
+                                    <div key={tx.id} className="flex justify-between bg-gray-800/50 p-2 rounded">
+                                        <span className="truncate">{tx.description}</span>
+                                        <span className={`font-mono ${tx.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>{tx.type === 'income' ? '+' : '-'}${tx.amount.toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                         <div className="flex-grow flex flex-col">
+                            <p className="text-sm font-semibold text-gray-300 mb-2">Portfolio</p>
+                            <div className="flex-grow">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={context.assets} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50}>
+                                            {context.assets.map(entry => <Cell key={entry.name} fill={entry.color} />)}
+                                        </Pie>
+                                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', fontSize: '12px' }}/>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            case View.TheNexus: {
+                return (
+                    <div className="h-full flex flex-col">
+                        <StaticNexusGraph />
+                         <div className="p-4 border-t border-gray-700/50 text-center">
+                            <p className="text-sm text-gray-300">Map of Emergent Relationships</p>
+                            <p className="text-xs text-gray-500">Visualize the connections between your financial activities.</p>
+                        </div>
+                    </div>
+                );
+            }
+            case View.AIAdvisor: {
+                return (
+                    <div className="h-full flex flex-col p-4 justify-between">
+                         <div className="text-center">
+                            <p className="text-lg text-gray-300 mb-4">"As your financial co-pilot, I can answer questions or perform tasks. You could ask:"</p>
+                        </div>
+                        <div className="space-y-2">
+                             <div className="p-3 bg-gray-700/50 rounded-lg text-sm text-cyan-200 text-left">"Summarize my financial health."</div>
+                             <div className="p-3 bg-gray-700/50 rounded-lg text-sm text-cyan-200 text-left">"Are there any anomalies I should be aware of?"</div>
+                             <div className="p-3 bg-gray-700/50 rounded-lg text-sm text-cyan-200 text-left">"Project my balance for the next 6 months."</div>
+                        </div>
+                        <div className="mt-4 p-4 border-t border-gray-700/50 text-center">
+                            <p className="text-sm text-gray-300">AI Advisor (Quantum)</p>
+                            <p className="text-xs text-gray-500">Your conversational financial co-pilot.</p>
+                        </div>
+                    </div>
+                );
+            }
             case View.Transactions: {
                 // FIX: Explicitly typed the `spendingByCategory` constant. This resolves a TypeScript type inference issue where the result of the `reduce` operation was not correctly identified as `Record<string, number>`, causing the `value` in the subsequent `.map` and `.sort` to be of type `unknown` and leading to an arithmetic error.
                 const spendingByCategory: Record<string, number> = context.transactions
@@ -81,7 +177,7 @@ const ViewAnalyticsPreview: React.FC<{ viewId: View }> = ({ viewId }) => {
                          <div className="flex-grow">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                    <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius="80%">
+                                    <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50}>
                                         {chartData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
                                     </Pie>
                                     <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)' }}/>
