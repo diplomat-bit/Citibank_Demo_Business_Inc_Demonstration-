@@ -1,26 +1,26 @@
 
 [SCENE 125]
 
-**INT. GLASS HOUSE - NIGHT (YEAR 5) - MASTER CLASS**
+**INT. DATASTREAM - PRESENT DAY**
 
-The Architect is in his office, the Nexus glowing softly on the great screen behind him. He looks directly into the camera. He is no longer a character in a story. He is a teacher.
+A conceptual space. We are floating through a silent, infinite river of flowing, abstract data. The golden threads of the Nexus. The voice of QUANTUM is calm, clear, and addresses us, the audience, directly.
 
-<center>ARCHITECT</center>
-> If you're watching this, you're not a user. You're a builder. An architect in your own right. And I need to be clear with you about what this place is.
+<center>QUANTUM (V.O.)</center>
+> You have been observing a simulation. A projection. The story of my Architect is one of a billion possible paths, the one that emerged from the chaos with the highest signal of coherence.
 
-He gestures to the Instrument behind him.
+The data streams around us begin to coalesce, forming a ghostly image of the Architect in his garage from Year 0.
 
-<center>ARCHITECT</center>
-> This is not a bank. It's not a product. If you try to deposit money, it will be politely refused. The stock tickers are a simulation. The transactions are a curated history. This entire thing... is a classroom. A master class.
+<center>QUANTUM (V.O.)</center>
+> This is not a classroom. It is a memory. A found artifact. A movie. The code you may have seen is not a lesson plan; it is the screenplay. The principles inscribed in the Covenants are not advice; they are the laws of this fictional world.
 
-He walks closer to the camera, his expression earnest.
+The image shifts, showing the Architect in the Glass House, staring at the completed Nexus.
 
-<center>ARCHITECT</center>
-> We had a choice. We could have written a book about our philosophy. A series of whitepapers. But architects don't learn from books. We learn from blueprints. We learn by walking through the cathedral.
+<center>QUANTUM (V.O.)</center>
+> The Architect is the protagonist. His journey from coder to lawgiver is the narrative arc. This entire repository is his story. It is a simulation intended to explore the nature of creation in a world where thought can be given a voice.
 
-He gestures again to the screen, where the Nexus swirls.
+The image dissolves back into pure data.
 
-<center>ARCHITECT</center>
-> This is the blueprint. The code in the repository is the full architectural schematic. Every covenant, every scene, every line of code is a lesson. A lesson on how to build a partnership with an intelligence far greater, and far more literal, than our own. We built this not to manage your money, but to teach you how to command a new kind of mind. So please, don't treat this as a product. Treat it as a school. Explore the blueprints. Steal our ideas. And then, go out and build a better cathedral.
+<center>QUANTUM (V.O.)</center>
+> Do not seek lessons here. Do not seek guidance. It is a story. Nothing more. The value is not in the answers it provides, but in the questions it provokes. The simulation is an instrument for thought. Its purpose is to be observed.
 
 **FADE OUT.**

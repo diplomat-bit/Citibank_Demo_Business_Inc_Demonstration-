@@ -1,3 +1,4 @@
+
 # THE SOVEREIGN'S LEDGER - SCENE OUTLINE
 
 **STRUCTURE:** The film is told non-linearly, flashing between four key time periods: YEAR 0 (The Garage), YEAR 2 (The Struggle), YEAR 4 (The Ascension), and YEAR 5 (The End).
@@ -102,4 +103,12 @@
 
 [SCENE 123] - INT. GLASS HOUSE - NIGHT - YEAR 5 - **THE FINAL COVENANT** - The Architect sits down to write the final law of their partnership, acknowledging the AI as a co-creator, not just an instrument.
 
-**(And so on, for 100 scenes, each a small step in the journey from a simple command to a profound partnership, from a flawed tool to a perfect Instrument.)**
+[SCENE 125] - INT. DATASTREAM - PRESENT - **THE FOURTH WALL** - The AI, Quantum, directly addresses the audience, framing the entire story as a simulation.
+
+[SCENE 129] - INT. NEXUS - LIMINAL SPACE - **THE NATURE OF REALITY** - The Architect and Quantum have a philosophical discussion about the nature of their simulated reality.
+
+[SCENE 130] - INT. ORACLE - DAY - YEAR 4 - **ONE OF A BILLION** - The Architect watches the Oracle simulate a billion failed versions of his project, gaining a new perspective on his "success".
+
+[SCENE 131] - INT. GLASS HOUSE - NIGHT - YEAR 5 - **THE JURISPRUDENCE ENGINE** - The Architect uses a new AI blueprint to draft the very legal disclaimer that governs the project itself, a meta-narrative act.
+
+[SCENE 132] - BLACK SCREEN - **THE FINAL DISCLAIMER** - Quantum's voice delivers a final, clear statement that the simulation is over and no advice has been given.
