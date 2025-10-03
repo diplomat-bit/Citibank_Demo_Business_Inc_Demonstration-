@@ -40,7 +40,7 @@ const PayrollView: React.FC = () => {
                     prompt = `You are a financial planning AI. Based on the historical payroll data, forecast the total payroll cost for the next 3 months, assuming a 2% monthly growth in headcount. Historical Data: ${JSON.stringify(payRuns.filter(p => p.status === 'Paid'))}`;
                     break;
                 case 'benchmark':
-                    prompt = `You are an HR compensation analyst. Given an average salary of $${((lastPaidRun.totalAmount / lastPaidRun.employeeCount) * 24).toFixed(0)}/year for a tech company, how does this compare to the industry benchmark? Provide a brief analysis.`;
+                    prompt = `You are an HR compensation analyst. Given an average salary of $${(lastPaidRun && lastPaidRun.totalAmount && lastPaidRun.employeeCount ? (lastPaidRun.totalAmount / lastPaidRun.employeeCount) * 24 : 0).toFixed(0)}/year for a tech company, how does this compare to the industry benchmark? Provide a brief analysis.`;
                     break;
                 case 'compliance':
                     prompt = `You are a compliance AI. What are the key payroll compliance considerations for a remote company with employees in California and New York? List the top 3 as bullet points.`;

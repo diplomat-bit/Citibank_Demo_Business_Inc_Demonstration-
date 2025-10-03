@@ -133,7 +133,7 @@ import DaoGovernanceView from './views/megadashboard/digitalassets/DaoGovernance
 import OnChainAnalyticsView from './views/megadashboard/digitalassets/OnChainAnalyticsView';
 import SalesPipelineView from './views/megadashboard/business/SalesPipelineView';
 import MarketingAutomationView from './views/megadashboard/business/MarketingAutomationView';
-import GrowthInsightsView from './components/views/megadashboard/business/GrowthInsightsView';
+import GrowthInsightsView from './views/megadashboard/business/GrowthInsightsView';
 import CompetitiveIntelligenceView from './views/megadashboard/business/CompetitiveIntelligenceView';
 import BenchmarkingView from './views/megadashboard/business/BenchmarkingView';
 import LicensingView from './views/megadashboard/regulation/LicensingView';
@@ -163,6 +163,18 @@ import QuantumEntanglementDebuggerView from './views/blueprints/QuantumEntanglem
 import LinguisticFossilFinderView from './views/blueprints/LinguisticFossilFinderView';
 import ChaosTheoristView from './views/blueprints/ChaosTheoristView';
 import SelfRewritingCodebaseView from './views/blueprints/SelfRewritingCodebaseView';
+import GenerativeJurisprudenceView from './views/blueprints/GenerativeJurisprudenceView';
+import AestheticEngineView from './views/blueprints/AestheticEngineView';
+import NarrativeForgeView from './views/blueprints/NarrativeForgeView';
+import WorldBuilderView from './views/blueprints/WorldBuilderView';
+import SonicAlchemyView from './views/blueprints/SonicAlchemyView';
+import AutonomousScientistView from './views/blueprints/AutonomousScientistView';
+import ZeitgeistEngineView from './views/blueprints/ZeitgeistEngineView';
+import CareerTrajectoryView from './views/blueprints/CareerTrajectoryView';
+import LudicBalancerView from './views/blueprints/LudicBalancerView';
+import HypothesisEngineView from './views/blueprints/HypothesisEngineView';
+import LexiconClarifierView from './views/blueprints/LexiconClarifierView';
+import CodeArcheologistView from './views/blueprints/CodeArcheologistView';
 
 
 interface ModalViewProps {
@@ -181,8 +193,6 @@ export const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, 
         }
 
         switch (activeView) {
-            // Re-add all cases from App.tsx here
-            // FIX: The DashboardView component inside a modal should use the `openModal` function for navigation, not `setActiveView`.
             case View.Dashboard: return <FeatureGuard view={View.Dashboard}><DashboardView setActiveView={openModal} /></FeatureGuard>;
             case View.Transactions: return <FeatureGuard view={View.Transactions}><TransactionsView /></FeatureGuard>;
             case View.SendMoney: return <FeatureGuard view={View.SendMoney}><SendMoneyView setActiveView={openModal} /></FeatureGuard>;
@@ -269,8 +279,8 @@ export const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, 
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in">
-            <div className="bg-gray-900/80 border border-gray-700/60 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in" onClick={closeModal}>
+            <div className="bg-gray-900/80 border border-gray-700/60 rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="p-4 border-b border-gray-700/50 flex justify-end">
                     <button onClick={closeModal} className="text-gray-400 hover:text-white">
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -282,10 +292,10 @@ export const ModalView: React.FC<ModalViewProps> = ({ activeView, previousView, 
             </div>
              <style>{`
                 @keyframes fade-in {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
+                    from { opacity: 0; transform: scale(0.98); }
+                    to { opacity: 1; transform: scale(1); }
                 }
-                .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+                .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
             `}</style>
         </div>
     );

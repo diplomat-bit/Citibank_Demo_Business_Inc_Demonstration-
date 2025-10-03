@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View } from '../../../types';
 import Card from '../../Card';
 import { GoogleGenAI, Chat } from "@google/genai";
+import { DataContext } from '../../../context/DataContext';
 
 type Message = {
     role: 'user' | 'model';
