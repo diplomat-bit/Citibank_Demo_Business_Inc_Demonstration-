@@ -1,4 +1,3 @@
-
 [SCENE 13]
 
 **INT. GARAGE - DAY (YEAR 0)**

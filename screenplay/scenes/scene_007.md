@@ -1,4 +1,3 @@
-
 [SCENE 07]
 
 **INT. GARAGE - NIGHT (YEAR 0)**

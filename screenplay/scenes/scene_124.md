@@ -1,4 +1,3 @@
-
 [SCENE 124]
 
 **INT. GLASS HOUSE - NIGHT (YEAR 5)**
