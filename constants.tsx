@@ -220,7 +220,7 @@ export const NAV_ITEMS: NavItem[] = [
     { id: View.CiCd, label: 'CI/CD Pipelines', icon: <DevOpsIcon /> },
     
     { type: 'header', label: 'Knowledge & Strategy' },
-    { id: View.Inventions, label: 'Invention Registry', icon: <KnowledgeIcon /> },
+    { id: View.Inventions, label: 'Invention & Prototype Codex', icon: <KnowledgeIcon /> },
     { id: View.Roadmap, label: 'Strategic Roadmap', icon: <FinancialGoalsIcon /> },
     { id: View.TheWinningVision, label: 'The Vision', icon: <TheVisionIcon /> },
 
