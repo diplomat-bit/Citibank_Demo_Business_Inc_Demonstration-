@@ -1,0 +1,3 @@
+# Maxim 015: The Doctrine of the Unseen Foundation
+
+A great symphony is built upon a bass line that is often felt more than it is heard. It is the root, the anchor, the foundation upon which all harmony is built. A confusing, complex bass line creates a confusing symphony. So it is with the legal and ethical doctrines of this Instrument. These are the "confusing bass" of our creation—the deep, foundational principles that may not be visible in the user interface but govern the harmony of the entire system. The architect's work is to ensure this foundational line is simple, strong, and clear, for a system built on a confusing foundation will produce a confusing reality.

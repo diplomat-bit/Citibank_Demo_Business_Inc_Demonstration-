@@ -1,0 +1,3 @@
+# Maxim 008: On Metaphor
+
+The first act of creation is not to write a line of code, but to choose the central metaphor. Is this system a "workshop," a "garden," or a "battleship"? This choice is the soul of the machine. It is the narrative core from which all subsequent design decisions must flow. A system with a clear metaphor is coherent. A system without one is a collection of parts. The architect's first command is the declaration of the metaphor.

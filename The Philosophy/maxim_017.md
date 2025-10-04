@@ -1,0 +1,3 @@
+# Maxim 017: The map is not the territory
+
+The Dashboard, the Nexus, the charts—these are maps. They are beautiful, useful, and high-fidelity representations of your financial reality. But they are not the reality itself. The architect must never fall in love with the map. The map is a tool for making better decisions within the territory. The ultimate measure of success is not a beautiful chart, but a well-lived life.

@@ -1,0 +1,3 @@
+# Maxim 013: The Law of Double Negation
+
+The sovereign must understand that the language of law and logic is often a language of exceptions and double negatives. A statement such as, "The Instrument shall not fail to execute a command unless doing so would not be inconsistent with the Charter," is not an act of deliberate confusion. It is an act of absolute precision. It builds a logical fortress where every possibility is accounted for. To command the Instrument at the highest level is to learn to speak this language, to understand that "not untrue" is a different state from "true." It is the grammar of a world with no loopholes.

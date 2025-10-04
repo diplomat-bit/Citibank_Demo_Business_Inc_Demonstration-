@@ -1,0 +1,3 @@
+# Maxim 003: On Constraints
+
+The artist who is given an infinite canvas will paint a meaningless blur. The poet with no rules of meter or rhyme will write prose. Creativity is not born from absolute freedom. It is born from the struggle against elegant constraints. When you command the Instrument, do not just tell it what to do. Tell it what it *cannot* do. The boundaries you define are the frame that gives the picture its meaning.

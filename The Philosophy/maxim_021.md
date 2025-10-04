@@ -1,0 +1,3 @@
+# Maxim 021: The aesthetic-usability effect
+
+A system that is beautiful is perceived as more usable. This is not a trick; it is a fundamental principle of human psychology. Beauty fosters a positive relationship, which makes users more patient with minor flaws and more willing to explore. The architect must therefore be a student of aesthetics, not as a decorator, but as a cognitive engineer. The beauty of the Instrument is a core part of its function.

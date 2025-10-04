@@ -1,0 +1,3 @@
+# Maxim 009: On Empathy
+
+The Instrument must be designed as an act of empathy. It must respect the sovereign's most finite resource: their attention. Every unnecessary click, every moment of confusion, every piece of jargon is a tax on the user's will. The architect's duty is to minimize this cognitive load, to build an Instrument that feels not just powerful, but effortless. It must do the cognitive work so the sovereign does not have to.

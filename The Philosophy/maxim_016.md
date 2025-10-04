@@ -1,0 +1,3 @@
+# Maxim 016: The law of requisite variety
+
+The complexity of a control system must be equal to or greater than the complexity of the system it controls. Our Instrument cannot be a simple machine if it is to govern the complex, chaotic reality of a sovereign's life. Do not mistake simplicity in the interface for simplicity in the thought. The calm of the Throne Room is maintained by a vast and intricate intelligence working tirelessly beneath the surface.

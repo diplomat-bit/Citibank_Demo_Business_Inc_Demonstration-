@@ -1,0 +1,3 @@
+# Maxim 007: On The System
+
+Nothing is an island. Every component, every action, every line of code is a node in a vast web of consequence. To command a single part without understanding its connection to the whole is to invite chaos. The architect must always see the system, the Nexus, the great and shimmering web. The Instrument's highest function is to make this systemic reality visible, for to see the whole is the first step to commanding it.
