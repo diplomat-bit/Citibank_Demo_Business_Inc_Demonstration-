@@ -62,6 +62,7 @@ export enum View {
     DataMesh = 'data-mesh',
     DataCommons = 'data-commons',
     Mainframe = 'mainframe',
+    LedgerExplorer = 'ledger-explorer',
     AIGovernance = 'ai-governance',
     AIRiskRegistry = 'ai-risk-registry',
     OSPO = 'ospo',

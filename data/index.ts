@@ -54,6 +54,7 @@ export * from './platform/mlModels'; // Re-exporting for Predictive Models view
 // New Integration Data
 export * from './integrationData';
 export * from './constitutionalArticles';
+export * from './ledgerAccounts';
 
 // Demo Bank Platform Data
 export * from './platform/projectsData';

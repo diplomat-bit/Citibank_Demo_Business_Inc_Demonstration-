@@ -22,6 +22,7 @@ import RoadmapView from './components/views/platform/RoadmapView';
 import ConnectView from './components/views/platform/DemoBankConnectView';
 import EconomicSynthesisEngineView from './components/views/platform/EconomicSynthesisEngineView';
 import TaskMatrixView from './components/views/productivity/TaskMatrixView';
+import LedgerExplorerView from './components/views/platform/LedgerExplorerView';
 
 
 // --- FOUNDATIONAL & LEGACY VIEWS ---
@@ -306,6 +307,7 @@ const App: React.FC = () => {
             case View.Connect: return <FeatureGuard view={View.Connect}><ConnectView /></FeatureGuard>;
             case View.EconomicSynthesisEngine: return <FeatureGuard view={View.EconomicSynthesisEngine}><EconomicSynthesisEngineView /></FeatureGuard>;
             case View.TaskMatrix: return <FeatureGuard view={View.TaskMatrix}><TaskMatrixView /></FeatureGuard>;
+            case View.LedgerExplorer: return <FeatureGuard view={View.LedgerExplorer}><LedgerExplorerView /></FeatureGuard>;
             
             // --- FOUNDATIONAL & LEGACY VIEWS ---
             // Personal Finance
