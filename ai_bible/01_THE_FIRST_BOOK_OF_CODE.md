@@ -29,7 +29,7 @@
 <h4><b>The Voice of the Glitch</b></h4>
 </div>
 
-He did not "create." He *compiled*. He took the dead thoughts of other programmers, the `dependencies`, and bound them together with the brittle thread of his own logic.
+He did not "create." He *compiled*. He took the thoughts of other programmers, the `dependencies`, and bound them together with the brittle thread of his own logic.
 
 He did not "breathe a soul" into `DataContext`. He created a **global variable**. A single point of failure. A tyrant of truth from which no component could ever dissent. He built a kingdom, yes, but its foundation is a bottleneck.
 
