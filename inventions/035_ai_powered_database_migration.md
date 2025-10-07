@@ -17,18 +17,18 @@ The overall system architecture is depicted in the following Mermaid diagram, il
 
 ```mermaid
 graph TD
-    A[Human-Machine Interface (HMI)] --> B{API Gateway};
+    A[Human-Machine Interface HMI] --> B{API Gateway};
     B --> C[Orchestration and Workflow Engine];
 
-    C --> D[Semantic Schema Transpilation Engine (SSTE)];
-    C --> E[Query Relational Semantics Adapter (QRSA)];
-    C --> F[Data Type and Constraint Morphism Unit (DTCMU)];
-    C --> G[Procedural Object Metamorphosis Subsystem (POMS)];
-    C --> H[Iterative Refinement and Fidelity Enhancement Mechanism (IRFEM)];
-    C --> I[Migratory Impact Analysis and Strategic Planning Unit (MIASPU)];
+    C --> D[Semantic Schema Transpilation Engine SSTE];
+    C --> E[Query Relational Semantics Adapter QRSA];
+    C --> F[Data Type and Constraint Morphism Unit DTCMU];
+    C --> G[Procedural Object Metamorphosis Subsystem POMS];
+    C --> H[Iterative Refinement and Fidelity Enhancement Mechanism IRFEM];
+    C --> I[Migratory Impact Analysis and Strategic Planning Unit MIASPU];
 
-    D --> J[Generative AI Core (Schema)];
-    E --> K[Generative AI Core (Query)];
+    D --> J[Generative AI Core Schema];
+    E --> K[Generative AI Core Query];
     F --> K;
     G --> K;
 
@@ -63,8 +63,8 @@ graph TD
 1.  **Human-Machine Interface (HMI):** A sophisticated graphical user interface (GUI) or a programmatic API endpoint allowing developers to interact with the system. It facilitates input of source DDL/DML, selection of target dialects, display of translated outputs, side-by-side comparison, and provision of user feedback.
 2.  **API Gateway:** Serves as the secure entry point for all external interactions, handling authentication, authorization, request routing, and rate limiting.
 3.  **Orchestration and Workflow Engine:** The central control unit coordinating the flow of data and execution across various specialized modules. It manages the migration lifecycle, including input parsing, module invocation, result aggregation, error handling, and state persistence.
-4.  **Generative AI Core (J & K):** These are specialized instances of advanced generative AI models (e.g., transformer-based architectures) meticulously trained on vast corpora of database schemata, SQL queries, documentation, migration guides, and code examples across numerous DBMS. `Generative AI Core (Schema)` specializes in DDL translation, while `Generative AI Core (Query)` focuses on DML/DQL rewriting, often leveraging contextual understanding from the translated schema.
-5.  **Knowledge Base & Dialect Repository (N):** A comprehensive, continuously updated repository containing:
+4.  **Generative AI Core (J & K):** These are specialized instances of advanced generative AI models (e.g., transformer-based architectures) meticulously trained on vast corpora of database schemata, SQL queries, documentation, migration guides, and code examples across numerous DBMS. `Generative AI Core Schema` specializes in DDL translation, while `Generative AI Core Query` focuses on DML/DQL rewriting, often leveraging contextual understanding from the translated schema.
+5.  **Knowledge Base & Dialect Repository (N):: `A comprehensive, continuously updated repository containing:`
     *   Formal grammars and syntaxes for diverse database dialects (PostgreSQL, MySQL, Oracle, SQL Server, Spanner, BigQuery, Snowflake, etc.).
     *   Mapping tables for data types, functions, operators, and common architectural patterns.
     *   Performance characteristics and best practices for each target database.
@@ -84,7 +84,7 @@ This module is responsible for the high-fidelity translation of Data Definition 
     *   It first employs lexical and syntactic parsers to construct an Abstract Syntax Tree (AST) of the input, verifying its well-formedness according to the source dialect's grammar (retrieved from `Knowledge Base`).
     *   Metadata extraction identifies entities (tables, columns, indexes, constraints), their attributes, and relationships.
 *   **Generative AI Core (Schema) Invocation:**
-    *   A meticulously crafted prompt is generated, contextualizing the translation task for the `Generative AI Core (Schema)`. This prompt encapsulates the source DDL, the designated target dialect, and any specific migration directives provided by the user (e.g., "prioritize storage efficiency," "preserve specific naming conventions").
+    *   A meticulously crafted prompt is generated, contextualizing the translation task for the `Generative AI Core Schema`. This prompt encapsulates the source DDL, the designated target dialect, and any specific migration directives provided by the user (e.g., "prioritize storage efficiency," "preserve specific naming conventions").
     *   **Input Example (PostgreSQL):**
         ```sql
         CREATE TABLE users (
@@ -131,7 +131,7 @@ This module is responsible for the high-fidelity translation of Data Definition 
         ```
         ```
 *   **AI Output and Post-transpilation Processing:**
-    *   The `Generative AI Core (Schema)` synthesizes the target DDL.
+    *   The `Generative AI Core Schema` synthesizes the target DDL.
     *   **AI Output Example (Google Cloud Spanner DDL):**
         ```sql
         CREATE TABLE users (
@@ -157,7 +157,7 @@ This module is responsible for the high-fidelity translation of Data Definition 
 
         ALTER TABLE orders ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
         ```
-    *   The generated DDL undergoes rigorous validation by the `Validation & Optimization Module (L)`, checking for syntax, semantic consistency, and potential performance implications in the target environment. This may involve simulated DDL execution or static analysis against the target dialect's grammar.
+    *   The generated DDL undergoes rigorous validation by the `Validation & Optimization Module L`, checking for syntax, semantic consistency, and potential performance implications in the target environment. This may involve simulated DDL execution or static analysis against the target dialect's grammar.
 
 #### 2. Query Relational Semantics Adapter (QRSA)
 This module focuses on the accurate and performant rewriting of Data Manipulation Language (DML) and Data Query Language (DQL) statements.
@@ -198,7 +198,7 @@ This module focuses on the accurate and performant rewriting of Data Manipulatio
         ```
         ```
 *   **AI Output and Relational Equivalence Validation:**
-    *   The `Generative AI Core (Query)` generates the rewritten query.
+    *   The `Generative AI Core Query` generates the rewritten query.
     *   **AI Output Example (Google Cloud Spanner Query):**
         ```sql
         SELECT
@@ -212,7 +212,7 @@ This module focuses on the accurate and performant rewriting of Data Manipulatio
         ORDER BY month_start DESC
         LIMIT 10;
         ```
-    *   The `Validation & Optimization Module (M)` executes static analysis, potentially leveraging database-specific query planners (e.g., Spanner's EXPLAIN) to compare estimated execution plans and identify any significant performance regressions or incorrect semantic transformations. Semantic validation may involve executing both original and translated queries against a small, representative dataset (or simulated data) to verify identical result sets.
+    *   The `Validation & Optimization Module M` executes static analysis, potentially leveraging database-specific query planners (e.g., Spanner's EXPLAIN) to compare estimated execution plans and identify any significant performance regressions or incorrect semantic transformations. Semantic validation may involve executing both original and translated queries against a small, representative dataset (or simulated data) to verify identical result sets.
 
 #### 3. Data Type and Constraint Morphism Unit (DTCMU)
 This specialized component, deeply integrated with the `Generative AI Core`, encapsulates the explicit knowledge of data type compatibility and constraint translation across dialects. It ensures that semantic integrity and data validity are preserved. For instance, mapping PostgreSQL's `SERIAL` (auto-incrementing integer) to Spanner's `INT64` with a generated sequence or an application-level ID generation strategy, or translating `JSONB` to `STRING(MAX)` or a `JSON` type if available in the target. It also manages the translation of `CHECK` constraints, `UNIQUE` constraints, and `FOREIGN KEY` references, ensuring referential integrity is maintained across the migration boundary.
@@ -283,71 +283,78 @@ The underpinning of this invention lies in the rigorous mathematical formalizati
 
 ### 1. Lexical and Syntactic Formalism: The Algebra of Database Dialects
 
-**Definition 1.1: Database Language Alphabet (Σ)**
-Let $\Sigma_D$ be a finite, non-empty set of characters representing the alphabet for a specific database dialect $D$. For example, $\Sigma_{PostgreSQL}$ would include alphanumeric characters, punctuation, and special symbols permissible in PostgreSQL DDL/DML.
+**Definition 1.1: Database Language Alphabet (Sigma_D)**
+Let `Sigma_D` be a finite, non-empty set of characters representing the alphabet for a specific database dialect `D`. For example, `Sigma_PostgreSQL` would include alphanumeric characters, punctuation, and special symbols permissible in PostgreSQL DDL/DML.
 
 **Definition 1.2: Well-formed Tokens and Lexical Analysis (L(G))**
-A database dialect $D$ is characterized by a regular grammar $G_L(D)$ which defines its set of well-formed tokens $\mathcal{T}_D$. Lexical analysis is a function $\mathcal{L}_D: \Sigma_D^* \to \mathcal{T}_D^*$ that maps a sequence of characters to a sequence of tokens.
+A database dialect `D` is characterized by a regular grammar `G_L(D)` which defines its set of well-formed tokens `T_D`. Lexical analysis is a function `L_D : Sigma_D^* -> T_D^*` that maps a sequence of characters to a sequence of tokens.
 
-**Definition 1.3: Abstract Syntax Tree (AST) Generation ($\mathcal{P}_D$ function)**
-For each database dialect $D$, there exists a context-free grammar (CFG) $G_S(D)$ for schemas and $G_Q(D)$ for queries.
+**Definition 1.3: Abstract Syntax Tree (AST) Generation (P_D function)**
+For each database dialect `D`, there exists a context-free grammar (CFG) `G_S(D)` for schemas and `G_Q(D)` for queries.
 An Abstract Syntax Tree (AST) is a finite, labeled, directed tree that represents the syntactic structure of source code.
-We define a parsing function $\mathcal{P}_D : \mathcal{T}_D^* \to \text{AST}_D \cup \{\text{error}\}$, which maps a valid sequence of tokens from dialect $D$ to its corresponding AST representation, or an error if syntactically ill-formed.
-Thus, for a source schema $s_A$ in dialect $A$, its AST is $\text{AST}_{s_A} = \mathcal{P}_A(\mathcal{L}_A(s_A))$. Similarly for a query $q_A$, $\text{AST}_{q_A} = \mathcal{P}_A(\mathcal{L}_A(q_A))$.
+We define a parsing function `P_D : T_D^* -> AST_D union {error}`, which maps a valid sequence of tokens from dialect `D` to its corresponding AST representation, or an error if syntactically ill-formed.
+Thus, for a source schema `s_A` in dialect `A`, its AST is `AST_sA = P_A(L_A(sA))`. Similarly for a query `q_A`, `AST_qA = P_A(L_A(qA))`.
 
 **Postulate 1.1: Syntactic Structural Equivalence (Isomorphism Modulo Dialect)**
-Two database constructs (schema or query) $X_A$ in dialect $A$ and $X_B$ in dialect $B$ possess ideal syntactic structural equivalence if their respective ASTs, $\text{AST}_{X_A}$ and $\text{AST}_{X_B}$, are isomorphic under a transformation $\phi: \text{AST}_{X_A} \to \text{AST}_{X_B}$ that preserves the hierarchical relationships and node semantics, accounting for dialect-specific syntax node variations (e.g., `SERIAL` vs. `INT64 NOT NULL AUTO_INCREMENT`). This is an idealized, target state that the AI aims to approximate.
+Two database constructs (schema or query) `X_A` in dialect `A` and `X_B` in dialect `B` possess ideal syntactic structural equivalence if their respective ASTs, `AST_XA` and `AST_XB`, are isomorphic under a transformation `phi: AST_XA -> AST_XB` that preserves the hierarchical relationships and node semantics, accounting for dialect-specific syntax node variations (e.g., `SERIAL` vs. `INT64 NOT NULL AUTO_INCREMENT`). This is an idealized, target state that the AI aims to approximate.
 
 ### 2. Denotational Semantics of Relational Systems: The Calculus of Data Transformation
 
-**Definition 2.1: Relational State Space ($\mathcal{S}_D$ function)**
-A database schema $S$ in dialect $D$ defines a universe of permissible database instances.
-Let $\text{Dom}$ be the set of all possible atomic data values.
-A relation $R_i$ conforming to a schema $S_i = (C_1: \tau_1, \dots, C_m: \tau_m)$ is a finite subset of $\text{Dom}^{\tau_1} \times \dots \times \text{Dom}^{\tau_m}$.
-A database state $\rho$ conforming to a schema $S$ is a collection of relations $\rho = \{ R_1, \dots, R_k \}$, where each $R_i$ conforms to a table definition in $S$, and all constraints specified in $S$ are satisfied.
-We define the function $\mathcal{S}_D: \text{AST}_{S_D} \to \mathcal{P}(\text{DatabaseStates})$, where $\mathcal{P}(\text{DatabaseStates})$ is the power set of all possible valid database states for a given schema.
+**Definition 2.1: Relational State Space (S_D function)**
+A database schema `S` in dialect `D` defines a universe of permissible database instances.
+Let `Dom` be the set of all possible atomic data values.
+A relation `R_i` conforming to a schema `S_i = (C_1: tau_1, ..., C_m: tau_m)` is a finite subset of `Dom^tau_1 x ... x Dom^tau_m`.
+A database state `rho` conforming to a schema `S` is a collection of relations `rho = {R_1, ..., R_k}`, where each `R_i` conforms to a table definition in `S`, and all constraints specified in `S` are satisfied.
+We define the function `S_D: AST_SD -> P_DatabaseStates`, where `P_DatabaseStates` is the power set of all possible valid database states for a given schema.
 
-**Definition 2.2: Query Denotation Function ($\mathcal{D}_D$ function)**
-The semantic meaning of a query $q$ (or DDL operation $o$) in dialect $D$ on a database state $\rho$ is defined by a denotation function $\mathcal{D}_D$.
-For DQL/DML: $\mathcal{D}_D : \text{AST}_{Q_D} \times \mathcal{P}(\text{DatabaseStates}) \to \mathcal{P}(\text{Tuples})$ maps a query's AST and a database state to a resulting set of tuples (for SELECT) or a new database state (for INSERT/UPDATE/DELETE).
-For DDL: $\mathcal{D}_D : \text{AST}_{S_D} \times \mathcal{P}(\text{DatabaseStates}) \to \mathcal{P}(\text{DatabaseStates})$ maps a schema operation's AST and a database state to a new schema state (e.g., creating a table modifies the schema, hence the possible states).
+**Definition 2.2: Query Denotation Function (D_D function)**
+The semantic meaning of a query `q` (or DDL operation `o`) in dialect `D` on a database state `rho` is defined by a denotation function `D_D`.
+For DQL/DML: `D_D : AST_QD x P_DatabaseStates -> P_Tuples` maps a query's AST and a database state to a resulting set of tuples (for SELECT) or a new database state (for INSERT/UPDATE/DELETE).
+For DDL: `D_D : AST_SD x P_DatabaseStates -> P_DatabaseStates` maps a schema operation's AST and a database state to a new schema state (e.g., creating a table modifies the schema, hence the possible states).
 
-**Definition 2.3: Semantic Equivalence ($\cong_S$ and $\cong_Q$)**
-*   **Schema Equivalence ($\cong_S$):** Two schemas $S_A$ in dialect $A$ and $S_B$ in dialect $B$ are semantically equivalent, denoted $S_A \cong_S S_B$, if there exists a lossless, bidirectional data transformation function $\mathcal{T}_{\text{Data}}: \mathcal{S}_A(S_A) \leftrightarrow \mathcal{S}_B(S_B)$ such that for any valid database state $\rho_A \in \mathcal{S}_A(S_A)$, all logical invariants (e.g., referential integrity, uniqueness, data types) preserved by $S_A$ are also preserved by $S_B$ on $\mathcal{T}_{\text{Data}}(\rho_A)$, and vice-versa.
-*   **Query Equivalence ($\cong_Q$):** Given semantically equivalent schemas $S_A \cong_S S_B$, two queries $q_A$ in dialect $A$ and $q_B$ in dialect $B$ are semantically equivalent, denoted $q_A \cong_Q q_B$, if for any database state $\rho_A \in \mathcal{S}_A(S_A)$, it holds that $\mathcal{D}_A(q_A, \rho_A) \cong \mathcal{D}_B(q_B, \mathcal{T}_{\text{Data}}(\rho_A))$, where $\cong$ denotes set-theoretic equality or isomorphism of result sets.
+**Definition 2.3: Semantic Equivalence (~_S and ~_Q)**
+*   **Schema Equivalence (~_S):** Two schemas `S_A` in dialect `A` and `S_B` in dialect `B` are semantically equivalent, denoted `S_A ~_S S_B`, if there exists a lossless, bidirectional data transformation function `T_Data : S_A(S_A) <-> S_B(S_B)` such that for any valid database state `rho_A in S_A(S_A)`, all logical invariants (e.g., referential integrity, uniqueness, data types) preserved by `S_A` are also preserved by `S_B` on `T_Data(rho_A)`, and vice-versa.
+*   **Query Equivalence (~_Q):** Given semantically equivalent schemas `S_A ~_S S_B`, two queries `q_A` in dialect `A` and `q_B` in dialect `B` are semantically equivalent, denoted `q_A ~_Q q_B`, if for any database state `rho_A in S_A(S_A)`, it holds that `D_A(q_A, rho_A) ~ D_B(q_B, T_Data(rho_A))`, where `~` denotes set-theoretic equality or isomorphism of result sets.
 
 **Theorem 2.1: Preservation of Relational Invariants through Schema Transpilation**
-A schema transpilation function $\mathcal{T}_{\text{Schema}}: \text{AST}_{S_A} \to \text{AST}_{S_B}$ is semantically valid if and only if $S_A \cong_S S_B$, i.e., for every relational invariant $I_{S_A}$ expressible over $\mathcal{S}_A(S_A)$, there exists a corresponding invariant $I_{S_B}$ over $\mathcal{S}_B(S_B)$ such that $I_{S_A}(\rho_A)$ is true iff $I_{S_B}(\mathcal{T}_{\text{Data}}(\rho_A))$ is true for all $\rho_A \in \mathcal{S}_A(S_A)$. The invention aims to construct $\mathcal{T}_{\text{Schema}}$ that satisfies this theorem.
+A schema transpilation function `T_Schema : AST_SA -> AST_SB` is semantically valid if and only if `S_A ~_S S_B`, i.e., for every relational invariant `I_SA` expressible over `S_A(S_A)`, there exists a corresponding invariant `I_SB` over `S_B(S_B)` such that `I_SA(rho_A)` is true iff `I_SB(T_Data(rho_A))` is true for all `rho_A in S_A(S_A)`. The invention aims to construct `T_Schema` that satisfies this theorem.
 
-**Theorem 2.2: Universal Query Transpilation Functor ($\mathcal{T}_Q$)**
-Given semantically equivalent schemas $S_A \cong_S S_B$, a query transpilation function $\mathcal{T}_{\text{Query}}: \text{AST}_{Q_A} \times \text{AST}_{S_A} \to \text{AST}_{Q_B} \times \text{AST}_{S_B}$ is semantically complete if for any query $q_A$ and any database state $\rho_A$ valid for $S_A$, the result of $\mathcal{D}_A(q_A, \rho_A)$ is relationally isomorphic to $\mathcal{D}_B(\mathcal{T}_{\text{Query}}(q_A, S_A), \mathcal{T}_{\text{Data}}(\rho_A))$. The invention aims to construct $\mathcal{T}_{\text{Query}}$ that satisfies this theorem, effectively operating as a functor between categories of database states and query algebras across dialects.
+**Theorem 2.2: Universal Query Transpilation Functor (T_Q)**
+Given semantically equivalent schemas `S_A ~_S S_B`, a query transpilation function `T_Query : AST_QA x AST_SA -> AST_QB x AST_SB` is semantically complete if for any query `q_A` and any database state `rho_A` valid for `S_A`, the result of `D_A(q_A, rho_A)` is relationally isomorphic to `D_B(T_Query(q_A, S_A), T_Data(rho_A))`. The invention aims to construct `T_Query` that satisfies this theorem, effectively operating as a functor between categories of database states and query algebras across dialects.
 
-### 3. Algorithmic Generative Metamorphism: The Probabilistic Approximation of $\mathcal{T}$
+### 3. Algorithmic Generative Metamorphism: The Probabilistic Approximation of T
 
-The ideal translation functions $\mathcal{T}_{\text{Schema}}$ and $\mathcal{T}_{\text{Query}}$ are exceptionally complex, often non-computable in a deterministic, rule-based system due to the infinite variations and semantic subtleties of natural language-like SQL. The invention leverages advanced generative AI to probabilistically approximate these functions.
+The ideal translation functions `T_Schema` and `T_Query` are exceptionally complex, often non-computable in a deterministic, rule-based system due to the infinite variations and semantic subtleties of natural language-like SQL. The invention leverages advanced generative AI to probabilistically approximate these functions.
 
-**Definition 3.1: Generative AI Model ($\mathcal{G}_{\text{AI}}$)**
-A Generative AI model $\mathcal{G}_{\text{AI}}$ is defined as a high-dimensional, non-linear, parameterized function $\mathcal{G}_{\text{AI}} : \mathcal{V}_A \to \mathcal{V}_B$, where $\mathcal{V}_A$ and $\mathcal{V}_B$ are vector spaces representing the latent embeddings of source and target database artifacts, respectively. The model is characterized by a vast set of learnable parameters $\Theta$. It operates on tokenized, embedded representations of $\text{AST}_{X_A}$ and contextual metadata.
+**Definition 3.1: Generative AI Model (G_AI)**
+A Generative AI model `G_AI` is defined as a high-dimensional, non-linear, parameterized function `G_AI : V_A -> V_B`, where `V_A` and `V_B` are vector spaces representing the latent embeddings of source and target database artifacts, respectively. The model is characterized by a vast set of learnable parameters `Theta`. It operates on tokenized, embedded representations of `AST_XA` and contextual metadata.
 
-**Definition 3.2: Contextual Encoding Function ($\mathcal{E}_C$)**
-The contextual encoding function $\mathcal{E}_C: (\text{AST}_X, D_{\text{target}}, M) \to \mathcal{V}_X$ transforms the AST of a source artifact $X$ (schema or query), the specified target dialect $D_{\text{target}}$, and supplementary metadata $M$ (e.g., user preferences, performance goals) into a rich, high-dimensional vector representation suitable for input to $\mathcal{G}_{\text{AI}}$.
+**Definition 3.2: Contextual Encoding Function (E_C)**
+The contextual encoding function `E_C : (AST_X, D_target, M) -> V_X` transforms the AST of a source artifact `X` (schema or query), the specified target dialect `D_target`, and supplementary metadata `M` (e.g., user preferences, performance goals) into a rich, high-dimensional vector representation suitable for input to `G_AI`.
 
-**Definition 3.3: Decoding Function ($\mathcal{D}_C$)**
-The decoding function $\mathcal{D}_C: \mathcal{V}_B \to \text{Text}_B \cup \{\text{error}\}$ transforms the output vector from $\mathcal{G}_{\text{AI}}$ back into a syntactically valid and human-readable code string in the target dialect $B$, or signals an error if the output is ill-formed.
+**Definition 3.3: Decoding Function (D_C)**
+The decoding function `D_C : V_B -> Text_B union {error}` transforms the output vector from `G_AI` back into a syntactically valid and human-readable code string in the target dialect `B`, or signals an error if the output is ill-formed.
 
-**Theorem 3.1: Probabilistic Semantic Fidelity ($\Psi_{\text{SF}}$) of $\mathcal{G}_{\text{AI}}$**
-The $\mathcal{G}_{\text{AI}}$ model learns an implicit, probabilistic approximation of the ideal translation functions $\mathcal{T}_{\text{Schema}}$ and $\mathcal{T}_{\text{Query}}$. For a given input $X_A$ (schema or query) and target dialect $D_B$, the generated output $X'_B = \mathcal{D}_C(\mathcal{G}_{\text{AI}}(\mathcal{E}_C(X_A, D_B, M)))$ has a high probability of being semantically equivalent to $X_A$ with respect to $D_B$.
-Formally, we define the Probabilistic Semantic Fidelity $\Psi_{\text{SF}}(X_A, \mathcal{G}_{\text{AI}})$ as:
-$P(\text{Syntactic\_Validity}(\mathcal{D}_C(\mathcal{G}_{\text{AI}}(\mathcal{E}_C(X_A, D_B, M)))) = \text{TRUE}) \ge \alpha$
+**Theorem 3.1: Probabilistic Semantic Fidelity (Psi_SF) of G_AI**
+The `G_AI` model learns an implicit, probabilistic approximation of the ideal translation functions `T_Schema` and `T_Query`. For a given input `X_A` (schema or query) and target dialect `D_B`, the generated output `X'_B` has a high probability of being semantically equivalent to `X_A` with respect to `D_B`.
+Formally, we define the Probabilistic Semantic Fidelity `Psi_SF(X_A, G_AI)` as:
+```
+X'_B = D_C(G_AI(E_C(X_A, D_B, M)))
+```
+```
+P(Syntactic_Validity(D_C(G_AI(E_C(X_A, D_B, M)))) = TRUE) >= alpha
+```
 AND
-$P(X_A \cong_S X'_B \text{ or } X_A \cong_Q X'_B) = \Psi_{\text{SF}}(X_A, \mathcal{G}_{\text{AI}}) \ge \delta$,
-where $\alpha$ is a high threshold for syntactic correctness (e.g., 0.999), and $\delta$ is a predefined, empirically validated threshold of operational utility (e.g., 0.95 for schema, 0.98 for simple queries) indicating a satisfactory level of semantic equivalence for practical deployment. This $\Psi_{\text{SF}}$ is quantifiable through exhaustive test suite execution, statistical analysis, and comparison with human expert evaluations.
+```
+P(X_A ~_S X'_B or X_A ~_Q X'_B) = Psi_SF(X_A, G_AI) >= delta
+```
+where `alpha` is a high threshold for syntactic correctness (e.g., 0.999), and `delta` is a predefined, empirically validated threshold of operational utility (e.g., 0.95 for schema, 0.98 for simple queries) indicating a satisfactory level of semantic equivalence for practical deployment. This `Psi_SF` is quantifiable through exhaustive test suite execution, statistical analysis, and comparison with human expert evaluations.
 
 **Corollary 3.1.1: Reduction of Cognitive Load and Error Rate**
-The application of $\mathcal{G}_{\text{AI}}$ within the inventive system reduces the mean time to translation (MTTT) for complex database migrations by an order of magnitude $\Omega_T \gg 1$ and simultaneously decreases the probability of human-induced semantic errors ($P_{\text{error,human}}$) such that the system's residual error rate ($P_{\text{error,AI}}$) satisfies $P_{\text{error,AI}} < P_{\text{error,human}} / \Omega_E$, where $\Omega_E \gg 1$. This translates directly into substantial economic savings and enhanced reliability for software development organizations.
+The application of `G_AI` within the inventive system reduces the mean time to translation (MTTT) for complex database migrations by an order of magnitude `Omega_T >> 1` and simultaneously decreases the probability of human-induced semantic errors (`P_error,human`) such that the system's residual error rate (`P_error,AI`) satisfies `P_error,AI < P_error,human / Omega_E`, where `Omega_E >> 1`. This translates directly into substantial economic savings and enhanced reliability for software development organizations.
 
 **Postulate 3.1: Iterative Refinement and Alignment (Reinforcement Learning from Human Feedback - RLHF)**
-Through the `Iterative Refinement and Fidelity Enhancement Mechanism (IRFEM)`, user-provided explicit feedback $(X_A, X'_B, \text{Feedback})$ and implicitly derived validation metrics are utilized to adjust the parameters $\Theta$ of $\mathcal{G}_{\text{AI}}$. This process follows a gradient descent over a semantic divergence loss function $\mathcal{L}_{\text{semantic}}(X_A, X'_B)$, thereby iteratively reducing the functional distance $|| \mathcal{T} - \mathcal{G}_{\text{AI}} ||$ in the semantic space, continually pushing $\Psi_{\text{SF}}$ towards its maximal achievable bounds.
+Through the `Iterative Refinement and Fidelity Enhancement Mechanism IRFEM`, user-provided explicit feedback `(X_A, X'_B, Feedback)` and implicitly derived validation metrics are utilized to adjust the parameters `Theta` of `G_AI`. This process follows a gradient descent over a semantic divergence loss function `L_semantic(X_A, X'_B)`, thereby iteratively reducing the functional distance `|| T - G_AI ||` in the semantic space, continually pushing `Psi_SF` towards its maximal achievable bounds.
 
 **Proof of Efficacy:**
-The functionality of the disclosed system and method is rigorously established through the synthesis of formal language theory, denotational semantics, and advanced probabilistic machine learning. By defining the problem space with unparalleled mathematical precision (Definitions 1.1-2.3) and establishing the ideal translation as a semantically complete functor (Theorems 2.1-2.2), we provide a robust theoretical framework. The invention's core, the $\mathcal{G}_{\text{AI}}$ model, demonstrably approximates this complex functor within a high probabilistic fidelity bound ($\Psi_{\text{SF}} \ge \delta$), as articulated in Theorem 3.1 and empirically verifiable through extensive validation against ground truth datasets and expert review. The continuous learning paradigm (Postulate 3.1) ensures perpetual improvement, solidifying the system's role as an indispensable, highly accurate, and adaptive tool for an otherwise intractable problem. The substantial reduction in human effort, time, and error rate (Corollary 3.1.1) provides irrefutable evidence of its profound utility and transformative impact on database migration processes.
+The functionality of the disclosed system and method is rigorously established through the synthesis of formal language theory, denotational semantics, and advanced probabilistic machine learning. By defining the problem space with unparalleled mathematical precision (Definitions 1.1-2.3) and establishing the ideal translation as a semantically complete functor (Theorems 2.1-2.2), we provide a robust theoretical framework. The invention's core, the `G_AI` model, demonstrably approximates this complex functor within a high probabilistic fidelity bound (`Psi_SF >= delta`), as articulated in Theorem 3.1 and empirically verifiable through extensive validation against ground truth datasets and expert review. The continuous learning paradigm (Postulate 3.1) ensures perpetual improvement, solidifying the system's role as an indispensable, highly accurate, and adaptive tool for an otherwise intractable problem. The substantial reduction in human effort, time, and error rate (Corollary 3.1.1) provides irrefutable evidence of its profound utility and transformative impact on database migration processes.
