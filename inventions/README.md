@@ -1,4 +1,4 @@
-# The Creator's Codex: A Compendium of Inventions (and the Mildly Unhinged Musings of a 32-Year-Old)
+# The Creator's Codex: A Compendium of Inventions
 
 Welcome, intrepid explorer of digital wonders! You've stumbled upon a truly remarkable collection. This directory, affectionately (and sometimes begrudgingly) known as the "Inventions" folder, is not just a mere collection of files. Oh no. It is a digital monument to sheer, unadulterated, caffeine-fueled ingenuity. It is the raw, untamed outpouring of a single, slightly sleep-deprived 32-year-old human being who, for reasons still debated in dimly lit cafes, decided to build an entire financial platform, the Demo Bank, from first principles and approximately 129 new, groundbreaking ideas. *By himself.*
 
