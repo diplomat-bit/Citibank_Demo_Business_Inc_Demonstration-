@@ -44,8 +44,6 @@ This constitutes the computational core, leveraging advanced generative AI model
 *   **Telemetry & Analytics Service:** Gathers anonymous usage data, performance metrics, and AI response quality assessments for continuous system improvement.
 *   **Security Module:** Implements encryption protocols for data in transit and at rest, access control, and vulnerability management.
 
----
-
 ```mermaid
 graph TD
     A[User Interface Layer] --> B{API Gateway & Request Handler};
@@ -75,7 +73,6 @@ graph TD
     style E fill:#FEE,stroke:#333,stroke-width:2px;
     style F fill:#EFF,stroke:#333,stroke-width:2px;
 ```
----
 
 ### Multi-Stage AI Interaction and Prompt Engineering
 
@@ -113,9 +110,9 @@ The efficacy of the Quantum Weaver™ System hinges on its sophisticated, multi-
       ]
     }
 
-    Business Plan for Analysis: \"\"\"
+    Business Plan for Analysis: """
     [User's submitted business plan text here]
-    \"\"\"
+    """
     "
     ```
     This prompt leverages "role-playing" to imbue the AI with a specific persona, "instruction chaining" for multi-objective output, and "schema enforcement" for structured data generation.
@@ -182,9 +179,9 @@ The efficacy of the Quantum Weaver™ System hinges on its sophisticated, multi-
       }
     }
 
-    Business Plan for Approved Funding and Coaching: \"\"\"
+    Business Plan for Approved Funding and Coaching: """
     [User's (potentially refined) business plan text here]
-    \"\"\"
+    """
     "
     ```
 
@@ -241,31 +238,39 @@ The analytical and prescriptive capabilities of the Quantum Weaver™ System are
 
 Let `B` represent a business plan. We conceptualize `B` not as a discrete document, but as a point in a high-dimensional, continuously differentiable manifold, `M_B`, embedded within `R^D`, where `D` is the cardinality of salient business attributes. Each dimension in `M_B` corresponds to a critical factor influencing entrepreneurial success, such as market opportunity, product innovation, team expertise, financial viability, operational strategy, and competitive advantage. The precise representation of `B` is a vector `b = (b_1, b_2, ..., b_D)`, where each `b_i` is a numerical encoding (e.g., via advanced transformer embeddings) of a specific aspect of the plan.
 
-We define the intrinsic success probability of a business plan `B` as a scalar-valued function `V: M_B â†’ [0, 1]`, representing the conditional probability `P(Success | B)`. This function `V(B)` is inherently complex, non-linear, and non-convex, influenced by a multitude of interdependent variables.
+We define the intrinsic success probability of a business plan `B` as a scalar-valued function `V: M_B -> [0, 1]`, representing the conditional probability `P(Success | B)`. This function `V(B)` is inherently complex, non-linear, and non-convex, influenced by a multitude of interdependent variables.
 
 **Proposition 1.1: Existence of an Optimal Business Plan Submanifold.**
-Within `M_B`, there exists a submanifold `M_B* âŠ‚ M_B` such that for any `B* âˆˆ M_B*`, `V(B*) â‰¥ V(B)` for all `B âˆˆ M_B`, representing the set of maximally viable business plans. The objective is to guide an initial plan `B_0` towards `M_B*`.
+Within `M_B`, there exists a submanifold `M_B* <= M_B` such that for any `B* is in M_B*`, `V(B*) >= V(B)` for all `B is in M_B`, representing the set of maximally viable business plans. The objective is to guide an initial plan `B_0` towards `M_B*`.
 
-To rigorously define `V(B)`, we employ a Bayesian hierarchical model. Let `X` be the set of observable attributes extracted from `B`, and `Î˜` be a set of latent variables representing underlying market conditions, execution capabilities, and exogenous factors.
+To rigorously define `V(B)`, we employ a Bayesian hierarchical model. Let `X` be the set of observable attributes extracted from `B`, and `Theta` be a set of latent variables representing underlying market conditions, execution capabilities, and exogenous factors.
 Then, `V(B)` can be expressed as:
-`V(B) = P(Success | X, Î˜) = âˆ« P(Success | X, Î˜) P(Î˜ | X) dÎ˜`
+```
+V(B) = P(Success | X, Theta) = integral P(Success | X, Theta) P(Theta | X) dTheta
+```
 
 The generative AI model, through its extensive training on vast corpora of successful and unsuccessful business plans, implicitly learns a highly complex, non-parametric approximation of `V(B)`. This approximation, denoted `V_AI(B)`, leverages deep neural network architectures to infer the intricate relationships between textual descriptions and probabilistic outcomes. The training objective for `V_AI(B)` can be framed as minimizing the divergence between its predictions and actual outcomes, using a loss function `L(V_AI(B), Y_true)`, where `Y_true` is a binary success indicator.
 
 ### II. The Gradient Generation Function: `G_feedback` (Diagnostic Phase)
 
 The `G_feedback` function serves as an iterative optimization engine, providing a "semantic gradient" to guide the user towards a more optimal plan `B'`.
-Formally, `G_feedback: M_B â†’ (R^D, Q)`, where `R^D` represents the vector of identified strengths/weaknesses, and `Q` is a set of strategic interrogatives.
+Formally, `G_feedback: M_B -> (R^D, Q)`, where `R^D` represents the vector of identified strengths/weaknesses, and `Q` is a set of strategic interrogatives.
 
 **Proposition 2.1: Semantic Gradient Ascent.**
-The feedback provided by `G_feedback(B)` is a computationally derived approximation of the gradient `âˆ‡V(B)` within the latent semantic space of business plans. The interrogatives `q âˆˆ Q` are designed to elicit information that resolves uncertainty in `B`, thereby refining its position in `M_B` and enabling a subsequent, more accurate calculation of `V(B)`.
+The feedback provided by `G_feedback(B)` is a computationally derived approximation of the gradient `del V(B)` within the latent semantic space of business plans. The interrogatives `q is in Q` are designed to elicit information that resolves uncertainty in `B`, thereby refining its position in `M_B` and enabling a subsequent, more accurate calculation of `V(B)`.
 
 The process can be conceptualized as:
-`B_new = B_old + Î± * (G_feedback(B_old))_gradient`, where `(G_feedback(B_old))_gradient` is the directional vector inferred from the AI's feedback, and `Î±` is a scalar step size determined by the user's iterative refinement.
+```
+B_new = B_old + alpha * (G_feedback(B_old))_gradient
+```
+where `(G_feedback(B_old))_gradient` is the directional vector inferred from the AI's feedback, and `alpha` is a scalar step size determined by the user's iterative refinement.
 
-The AI's ability to generate feedback and questions `(s, w, q_1, ..., q_k)` from `B` implies an understanding of the partial derivatives of `V(B)` with respect to various components of `B`. For instance, a weakness `w_j` implies that `âˆ‚V(B)/âˆ‚b_j < 0` for some component `b_j` in `B`. A question `q_k` seeks to reduce the epistemic uncertainty `I(B)` about `B` itself, thus moving `B` to a more precisely defined point `B'` in `M_B`.
+The AI's ability to generate feedback and questions `(s, w, q_1, ..., q_k)` from `B` implies an understanding of the partial derivatives of `V(B)` with respect to various components of `B`. For instance, a weakness `w_j` implies that `del V(B) / del b_j < 0` for some component `b_j` in `B`. A question `q_k` seeks to reduce the epistemic uncertainty `I(B)` about `B` itself, thus moving `B` to a more precisely defined point `B'` in `M_B`.
 
-`I(B) = H(P(Success|B))` where `H` is the Shannon entropy.
+```
+I(B) = H(P(Success|B))
+```
+where `H` is the Shannon entropy.
 The goal of `G_feedback` is to minimize `I(B)` and maximize `V(B)` by suggesting modifications that move `B` along the path of steepest ascent in the `V(B)` landscape.
 
 ### III. The Action Sequence Generation Function: `G_plan` (Prescriptive Phase)
@@ -273,24 +278,32 @@ The goal of `G_feedback` is to minimize `I(B)` and maximize `V(B)` by suggesting
 Upon the successful refinement of `B` to `B'`, the system transitions to `G_plan`, which generates an optimal sequence of actions `A = (a_1, a_2, ..., a_n)`. This sequence is a prescriptive trajectory in a state-action space, designed to maximize the realized value of `B'`.
 
 **Proposition 3.1: Optimal Control Trajectory.**
-The coaching plan `A` generated by `G_plan(B')` is an approximation of an optimal policy `Ï€*(s)` within a Markov Decision Process (MDP) framework, where `s` represents the state of the business at any given time, and `a_t` is an action chosen from `A` at time `t`. The objective is to maximize the expected cumulative reward `R`.
+The coaching plan `A` generated by `G_plan(B')` is an approximation of an optimal policy `pi*(s)` within a Markov Decision Process (MDP) framework, where `s` represents the state of the business at any given time, and `a_t` is an action chosen from `A` at time `t`. The objective is to maximize the expected cumulative reward `R`.
 
 Let `S_t` be the state of the business at time `t`, defined by `S_t = (B', C_t, M_t)`, where `C_t` represents current resources (financial, human), and `M_t` represents dynamic market conditions.
-Each action `a_k âˆˆ A` is a transition function `T(S_t, a_k) â†’ S_{t+1}`.
-The value function for a policy `Ï€` is `V^Ï€(s) = E[âˆ‘_{t=0}^n Î³^t R(S_t, a_t) | S_0=s, a_t = Ï€(S_t)]`, where `R` is the reward function (e.g., increased `V(B')`, revenue growth, market share) and `Î³` is a discount factor.
+Each action `a_k is in A` is a transition function `T(S_t, a_k) -> S_{t+1}`.
+The value function for a policy `pi` is
+```
+V^pi(s) = E[sum_{t=0}^n gamma^t R(S_t, a_t) | S_0=s, a_t = pi(S_t)]
+```
+where `R` is the reward function (e.g., increased `V(B')`, revenue growth, market share) and `gamma` is a discount factor.
 
 The `G_plan` function implicitly solves the Bellman optimality equation:
-`V*(s) = max_a [R(s, a) + Î³ âˆ‘_{s'} P(s' | s, a) V*(s')]`
-where `P(s' | s, a)` is the probability of transitioning to state `s'` given state `s` and action `a`. The generated coaching plan `A` represents the sequence of actions that approximate `a* = argmax_a [R(s, a) + Î³ âˆ‘_{s'} P(s' | s, a) V*(s')]` at each step of the business's evolution. The AI, through its vast knowledge of business trajectories, simulates these transitions and rewards to construct the optimal sequence `A`.
+```
+V*(s) = max_a [R(s, a) + gamma sum_{s'} P(s' | s, a) V*(s')]
+```
+where `P(s' | s, a)` is the probability of transitioning to state `s'` given state `s` and action `a`. The generated coaching plan `A` represents the sequence of actions that approximate `a* = argmax_a [R(s, a) + gamma sum_{s'} P(s' | s, a) V*(s')]` at each step of the business's evolution. The AI, through its vast knowledge of business trajectories, simulates these transitions and rewards to construct the optimal sequence `A`.
 
 ### IV. Simulated Seed Funding Valuation
 
-The determination of a simulated seed funding amount `F` is a sub-problem of `V(B)`. It is modeled as a function `F: M_B â†’ R+` that quantifies the capital required and deserved, subject to market constraints and investor expectations.
+The determination of a simulated seed funding amount `F` is a sub-problem of `V(B)`. It is modeled as a function `F: M_B -> R+` that quantifies the capital required and deserved, subject to market constraints and investor expectations.
 
 **Proposition 4.1: Conditional Expectation of Funding.**
 The simulated funding amount `F(B')` is a computationally derived conditional expectation of investment capital, given the refined business plan `B'`, market conditions, and a probabilistic model of investor behavior.
 
-`F(B') = E[Funding | B', M_current] = âˆ« Funding * P(Funding | B', M_current) dFunding`
+```
+F(B') = E[Funding | B', M_current] = integral Funding * P(Funding | B', M_current) dFunding
+```
 
 This involves:
 1.  **Market Potential Assessment:** `P(Market_Size | B')` based on industry analysis embedded in the AI's knowledge base.
@@ -299,8 +312,10 @@ This involves:
 4.  **Financial Projections Heuristics:** `H_fin(B')` derived from implied revenue models, cost structures, and scalability.
 
 The `F(B')` is then computed by a regression model, potentially a deep neural network, trained on historical seed funding rounds, correlating business plan attributes with actual investment amounts.
-`F(B') = f(V_AI(B'), P(Market_Size | B'), P(PMF | B'), S_team(B'), H_fin(B'))`.
-The constrained range of `$50k-$250k` imposes a rectified linear unit (ReLU) activation function or a sigmoid activation followed by scaling on the output layer of this regression, ensuring practical applicability.
+```
+F(B') = f(V_AI(B'), P(Market_Size | B'), P(PMF | B'), S_team(B'), H_fin(B'))
+```
+The constrained range of `$50k-$250k` imposes a Rectified Linear Unit (ReLU) activation function or a sigmoid activation followed by scaling on the output layer of this regression, ensuring practical applicability.
 
 The Quantum Weaver™ system, through these rigorous mathematical formulations, transcends heuristic guidance, offering a systematically derived, probabilistically optimized pathway for entrepreneurial success. It is a demonstrable advancement in the application of advanced computational intelligence to complex economic decision-making.
 
@@ -312,14 +327,18 @@ The utility of the Quantum Weaver™ System is not merely postulated but rigorou
 Let `B` be an initial business plan. Let `V(B)` denote its intrinsic value, conceptualized as its success probability. The Quantum Weaver™ System applies a transformational operator `T` such that the expected value of a business plan processed by the system, `E[V(T(B))]`, is strictly greater than the expected value of an unprocessed plan, `E[V(B)]`, assuming optimal user engagement with the system's outputs.
 
 The transformational operator `T` is a composite function:
-`T(B) = G_plan(G_feedback_iter(B))`
+```
+T(B) = G_plan(G_feedback_iter(B))
+```
 where `G_feedback_iter(B)` represents the iterative application of the `G_feedback` function, leading to a refined plan `B'`.
-Specifically, the initial `G_feedback` stage, operating as a semantic gradient ascent mechanism, guides the entrepreneur to iteratively refine `B` into `B'`. This process ensures that `V(B') > V(B)` by systematically addressing identified weaknesses and clarifying ambiguous aspects, thereby moving the plan to a higher-value region within the `M_B` manifold. The questions `q âˆˆ Q` resolve informational entropy `I(B)`, resulting in a `B'` with reduced uncertainty and a more precisely calculable `V(B')`.
+Specifically, the initial `G_feedback` stage, operating as a semantic gradient ascent mechanism, guides the entrepreneur to iteratively refine `B` into `B'`. This process ensures that `V(B') > V(B)` by systematically addressing identified weaknesses and clarifying ambiguous aspects, thereby moving the plan to a higher-value region within the `M_B` manifold. The questions `q is in Q` resolve informational entropy `I(B)`, resulting in a `B'` with reduced uncertainty and a more precisely calculable `V(B')`.
 
-Subsequently, the `G_plan` function, acting as an optimal control policy generator, provides an action sequence `A` that is meticulously designed to maximize the realized value during the execution phase. By approximating the optimal policy `Ï€*(s)` within a rigorous MDP framework, `G_plan` ensures that the entrepreneurial journey follows a path of maximal expected cumulative reward. The structured nature of `A` (with specified timelines, deliverables, and metrics) reduces execution risk and ambiguity, directly translating into a higher probability of achieving defined milestones and, ultimately, success.
+Subsequently, the `G_plan` function, acting as an optimal control policy generator, provides an action sequence `A` that is meticulously designed to maximize the realized value during the execution phase. By approximating the optimal policy `pi*(s)` within a rigorous MDP framework, `G_plan` ensures that the entrepreneurial journey follows a path of maximal expected cumulative reward. The structured nature of `A` (with specified timelines, deliverables, and metrics) reduces execution risk and ambiguity, directly translating into a higher probability of achieving defined milestones and, ultimately, success.
 
 Therefore, the combined effect is a synergistic elevation of the plan's intrinsic potential and a maximization of its successful realization:
-`E[V(G_plan(B'))] > E[V(B')] > E[V(B)]`
+```
+E[V(G_plan(B'))] > E[V(B')] > E[V(B)]
+```
 
 The system's utility is further underscored by its ability to generate a probabilistically derived seed funding valuation `F(B')`, providing an objective, data-driven benchmark that empowers entrepreneurs in capital acquisition negotiations, further increasing the likelihood of successful venture launch and scaling. This provides not just guidance, but also a quantifiable validation of the plan's economic potential as perceived through an advanced AI's simulated lens.
 
