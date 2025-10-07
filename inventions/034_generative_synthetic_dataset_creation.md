@@ -7,7 +7,7 @@ A highly sophisticated system for the autonomous generation of synthetic, struct
 The contemporary landscape of software development, machine learning engineering, and data analytics is profoundly dependent upon access to vast quantities of high-quality, realistic data. The conventional paradigms for acquiring such data—manual creation, anonymization of sensitive production data, or rudimentary random data generation—are fraught with significant limitations. Manual data generation is an exceedingly labor-intensive, error-prone, and non-scalable endeavor, rendering it impractical for large-scale requirements. The anonymization of real-world data, while necessary for privacy and compliance, frequently diminishes the intrinsic statistical properties and inter-feature correlations essential for robust model training and realistic system testing. Furthermore, existing random data generation tools, while expedient for basic placeholders, fundamentally lack the nuanced realism, contextual plausibility, and specific data distribution characteristics often mandated by sophisticated applications. There exists a critical, unfulfilled demand for a highly intelligent, automated, and scalable system capable of generating synthetic data that not only adheres to explicit structural and type specifications but also implicitly captures the latent semantic and statistical relationships inherent in real-world data, thereby facilitating more effective and efficient developmental and analytical workflows. The present invention directly addresses these profound deficiencies by introducing a paradigm-shifting approach to synthetic data generation.
 
 **Brief Summary of the Invention:**
-The present invention embodies a novel and highly advantageous system for the generation of synthetic datasets. At its core, the invention provides an intuitive user interface through which a user can articulate their precise data requirements using natural language, exemplified by directives such as: "I require 1000 records of enterprise client data, comprising a globally unique `clientID` (UUID format), a `companyName` exhibiting realistic regional variations, an `industry` field selected from a predefined taxonomy (e.g., 'Finance', 'Healthcare', 'Technology', 'Manufacturing'), an `annualRevenue` figure within a plausible range (e.g., $1M to $1B USD) with a slight positive skew, and a `creationDate` timestamp randomly distributed over the last two fiscal years." This detailed prompt is then dynamically processed by an intelligent backend service, which not only formulates an optimized input for a large language model (LLM) but also rigorously constructs a corresponding JSON schema. This schema precisely dictates the expected data structure, types, and constraints, ensuring the LLM's output is not merely coherent but also strictly syntactically valid and machine-readable. The generative AI model, leveraging its extensive knowledge base and sophisticated inferential capabilities, processes this combined instruction set (natural language prompt + formal schema). Crucially, the AI's generation process extends beyond mere randomization; it infers and applies contextual plausibility, statistical distributions, and semantic coherence (e.g., generating company names appropriate for specified industries, or revenue figures consistent with enterprise scale). The resultant structured data, typically in JSON format, is then subjected to validation, post-processing (e.g., type coercion, format conversion), and finally presented to the user as a downloadable file, thus providing an unparalleled mechanism for acquiring high-quality synthetic data on demand.
+The present invention embodies a novel and highly advantageous system for the generation of synthetic datasets. At its core, the invention provides an intuitive user interface through which a user can articulate their precise data requirements using natural language, exemplified by directives such as: "I require 1000 records of enterprise client data, comprising a globally unique `clientID` (UUID format), a `companyName` exhibiting realistic regional variations, an `industry` field selected from a predefined taxonomy [e.g., 'Finance', 'Healthcare', 'Technology', 'Manufacturing'], an `annualRevenue` figure within a plausible range [e.g., $1M to $1B USD] with a slight positive skew, and a `creationDate` timestamp randomly distributed over the last two fiscal years." This detailed prompt is then dynamically processed by an intelligent backend service, which not only promulgates an optimized input for a large language model (LLM) but also rigorously constructs a corresponding JSON schema. This schema precisely dictates the expected data structure, types, and constraints, ensuring the LLM's output is not merely coherent but also strictly syntactically valid and machine-readable. The generative AI model, leveraging its extensive knowledge base and sophisticated inferential capabilities, processes this combined instruction set (natural language prompt + formal schema). Crucially, the AI's generation process extends beyond mere randomization; it infers and applies contextual plausibility, statistical distributions, and semantic coherence [e.g., generating company names appropriate for specified industries, or revenue figures consistent with enterprise scale]. The resultant structured data, typically in JSON format, is then subjected to validation, post-processing [e.g., type coercion, format conversion], and finally presented to the user as a downloadable file, thus providing an unparalleled mechanism for acquiring high-quality synthetic data on demand.
 
 **Figures and Diagrams:**
 
@@ -37,7 +37,7 @@ sequenceDiagram
     participant DVPM as Data Validation & Post-processing Module
     participant OFDM as Output Formatting & Delivery Module
 
-    User->>UI: Enters Natural Language Data Request (e.g., "100 rows customer data with name, email, country, last login")
+    User->>UI: Enters Natural Language Data Request [e.g., "100 rows customer data with name, email, country, last login"]
     UI->>PSM: Transmits Raw Request
     PSM->>PSM: Parses Request, Identifies Entities, Attributes, Constraints
     PSM->>PSM: Dynamically Generates LLM Prompt & JSON Schema
@@ -47,7 +47,7 @@ sequenceDiagram
     GAIM->>DVPM: Transmits Raw JSON Data
     DVPM->>DVPM: Validates against Schema, Applies Type Coercion, Detects Anomalies
     DVPM-->>OFDM: Sends Validated Structured Data
-    OFDM->>OFDM: Converts Data to User-Specified Format (CSV, JSON, SQL, etc.)
+    OFDM->>OFDM: Converts Data to User-Specified Format [CSV, JSON, SQL, etc.]
     OFDM-->>UI: Provides Download Link / Stream
     UI->>User: Presents Download Option
     User->>UI: Initiates Download
@@ -61,8 +61,8 @@ graph LR
     C --> D[Infer Data Types & Formats];
     D --> E[Identify Constraints & Relationships];
     E --> F[Generate Core JSON Schema Structure];
-    F --> G[Augment Schema with Specific JSON Schema Keywords (e.g., `pattern`, `minimum`, `enum`)];
-    G --> H[Construct LLM-Specific Prompt (Role, Task, Format Guidance)];
+    F --> G[Augment Schema with Specific JSON Schema Keywords [e.g., `pattern`, `minimum`, `enum`]];
+    G --> H[Construct LLM-Specific Prompt [Role, Task, Format Guidance]];
     H -- Final Prompt & Schema --> I[Generative AI Model];
 ```
 **Figure 3: Dynamic Prompt and Schema Generation Workflow.** This diagram illustrates the algorithmic steps undertaken by the Prompt & Schema Construction Module to convert a natural language request into a precise LLM prompt and a formal JSON schema.
@@ -74,11 +74,11 @@ The present invention, herein referred to as the "Cognitive Data Synthesizer" (C
 **I. User Interaction and Input Reception:**
 A user initiates the synthetic data generation process by accessing a dedicated interface, which may be a web application, a desktop client, or an API endpoint. Through this interface, the user provides a natural language description. This description is not merely a keyword list but a semantically rich statement detailing:
 *   **Desired Row Count:** The cardinality of the output dataset.
-*   **Column Specifications:** Names, intended data types (e.g., `string`, `integer`, `float`, `date`, `boolean`), and desired formats (e.g., "UUID," "email," "currency," "YYYY-MM-DD").
-*   **Semantic Content:** The conceptual nature of the data (e.g., "customer data," "transaction logs," "employee records").
-*   **Constraints and Distributions:** Specific ranges for numerical data, enumerations for categorical data, temporal bounds for dates, and even descriptive statistical properties (e.g., "normally distributed," "positively skewed," "unique values").
-*   **Inter-columnar Relationships:** Implicit or explicit correlations between columns (e.g., "if `country` is 'USA', then `currency` should be 'USD'").
-*   **Output Format Preference:** The desired file format for the generated data (e.g., CSV, JSON, XML, SQL INSERT statements).
+*   **Column Specifications:** Names, intended data types [e.g., `string`, `integer`, `float`, `date`, `boolean`], and desired formats [e.g., "UUID," "email," "currency," "YYYY-MM-DD"].
+*   **Semantic Content:** The conceptual nature of the data [e.g., "customer data," "transaction logs," "employee records"].
+*   **Constraints and Distributions:** Specific ranges for numerical data, enumerations for categorical data, temporal bounds for dates, and even descriptive statistical properties [e.g., "normally distributed," "positively skewed," "unique values"].
+*   **Inter-columnar Relationships:** Implicit or explicit correlations between columns [e.g., "if `country` is 'USA', then `currency` should be 'USD'].
+*   **Output Format Preference:** The desired file format for the generated data [e.g., CSV, JSON, XML, SQL INSERT statements].
 
 **II. Prompt and Schema Construction Module (PSCM):**
 Upon receiving the user's natural language request, the PSCM, a critical innovation of the CDS, commences a multi-stage process:
@@ -89,17 +89,17 @@ Upon receiving the user's natural language request, the PSCM, a critical innovat
     *   `columns`: `name` (realistic string), `email` (unique string, email format), `country` (string, enum: G7 nations), `lastLogin` (date string, within last 90 days).
 
 2.  **Dynamic JSON Schema Generation:** Based on the extracted information, the PSCM constructs a precise JSON schema. This schema serves as a formal contract between the CDS and the generative AI model, ensuring structural integrity and type conformance. The schema is highly dynamic and can incorporate various JSON Schema keywords:
-    *   `type`: (e.g., `string`, `integer`, `number`, `boolean`, `array`, `object`)
+    *   `type`: [e.g., `string`, `integer`, `number`, `boolean`, `array`, `object`]
     *   `properties`: Defines the structure of each object (row).
     *   `items`: For array types, defining the structure of individual elements.
-    *   `enum`: For categorical data (e.g., G7 nations).
-    *   `pattern`: For regular expression-based validation (e.g., email format, UUID).
+    *   `enum`: For categorical data [e.g., G7 nations].
+    *   `pattern`: For regular expression-based validation [e.g., email format, UUID].
     *   `minimum`, `maximum`: For numerical ranges.
     *   `minLength`, `maxLength`: For string lengths.
-    *   `format`: Suggests specific data formats (e.g., `date-time`, `email`, `uuid`).
+    *   `format`: Suggests specific data formats [e.g., `date-time`, `email`, `uuid`].
     *   `required`: Specifies mandatory fields.
 
-    *Example Schema Construction (from the brief summary):*
+    *Example Schema Construction [from the brief summary]:*
     ```json
     {
       "type": "object",
@@ -156,7 +156,7 @@ Upon receiving the user's natural language request, the PSCM, a critical innovat
     ```
 
 **III. Generative AI Interaction Module (GAIM):**
-This module is responsible for orchestrating the communication with the underlying generative AI model (e.g., Google's Gemini, OpenAI's GPT series, or similar advanced foundation models).
+This module is responsible for orchestrating the communication with the underlying generative AI model [e.g., Google's Gemini, OpenAI's GPT series, or similar advanced foundation models].
 1.  **API Call Construction:** The GAIM constructs an API request incorporating the refined prompt and the JSON schema. Modern generative AI APIs often support a `response_schema` or `function_call` parameter, which profoundly enhances the reliability of structured output.
 2.  **Asynchronous Generation:** To handle potentially long generation times for large datasets and ensure system responsiveness, the GAIM employs asynchronous communication patterns with the AI model.
 3.  **Response Handling:** Upon receiving the AI's response, which is expected to be a JSON string, the GAIM performs initial parsing to confirm it is well-formed JSON before passing it to the next stage.
@@ -165,13 +165,13 @@ This module is responsible for orchestrating the communication with the underlyi
 The DVPM is crucial for guaranteeing the quality and usability of the AI-generated data. While generative AI models are powerful, an additional layer of validation and refinement is indispensable.
 1.  **Schema Validation:** The generated JSON data is rigorously validated against the original JSON schema. This ensures all types, formats, ranges, and enumerations are correctly respected. Any discrepancies are flagged, and potentially corrected or reported.
 2.  **Semantic Consistency Checks:** Beyond structural validation, the DVPM can perform checks for semantic consistency. For instance, if a column for `City` and `Country` exists, it might verify if the generated `City` realistically belongs to the `Country`. This may involve external knowledge bases or trained models.
-3.  **Statistical Property Verification:** The module can analyze the generated data to assess if implied statistical properties (e.g., "positively skewed," "unique values") are sufficiently met. This might involve calculating basic statistics, distribution fitting, or uniqueness checks.
+3.  **Statistical Property Verification:** The module can analyze the generated data to assess if implied statistical properties [e.g., "positively skewed," "unique values"] are sufficiently met. This might involve calculating basic statistics, distribution fitting, or uniqueness checks.
 4.  **Data Enhancement and Transformation:** In some cases, the AI might generate data in a slightly generalized format. The DVPM can apply further transformations, such as converting `date` strings to specific `datetime` objects, generating derived columns, or encoding categorical data.
-5.  **Error Handling and Re-prompting (Optional but Advanced):** If validation fails significantly, the DVPM can trigger a re-prompting mechanism, providing feedback to the generative AI model on specific validation failures, thereby iteratively improving the dataset quality.
+5.  **Error Handling and Re-prompting [Optional but Advanced]:** If validation fails significantly, the DVPM can trigger a re-prompting mechanism, providing feedback to the generative AI model on specific validation failures, thereby iteratively improving the dataset quality.
 
 **V. Output Formatting and Delivery Module (OFDM):**
 The final validated and processed structured data is then prepared for user consumption.
-1.  **Format Conversion:** Based on the user's initial preference, the OFDM converts the internal structured representation (e.g., Python dictionaries or Pydantic models) into the desired output format. Supported formats include:
+1.  **Format Conversion:** Based on the user's initial preference, the OFDM converts the internal structured representation [e.g., Python dictionaries or Pydantic models] into the desired output format. Supported formats include:
     *   **CSV (Comma Separated Values):** The most common tabular data format.
     *   **JSON (JavaScript Object Notation):** Ideal for hierarchical or complex data structures.
     *   **XML (Extensible Markup Language):** For applications requiring XML-based data.
@@ -192,6 +192,8 @@ from pydantic import BaseModel, Field, ValidationError, Extra
 from google.generativeai import GenerativeModel
 from google.generativeai.types import GenerationConfig
 import logging
+import re
+import jsonschema
 
 # Configure logging for detailed operational insights
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -308,53 +310,50 @@ class SchemaGenerator:
 
         for col in column_definitions:
             col_schema: Dict[str, Any] = {"description": col.description or f"A synthetic value for {col.name}."}
-            col_properties = {} # For properties within the column schema
-
+            
+            # JSON Schema 'type' mapping
             if col.data_type == "string":
-                col_properties["type"] = "string"
+                col_schema["type"] = "string"
                 if col.format_hint:
-                    if col.format_hint == "email":
-                        col_properties["format"] = "email"
-                        col_properties["pattern"] = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                    elif col.format_hint == "uuid":
-                        col_properties["format"] = "uuid"
-                        col_properties["pattern"] = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
-                    elif col.format_hint.startswith("YYYY-MM-DD"): # Simple date format, refine as needed
-                         col_properties["format"] = "date" # JSON Schema format for date
-                    else: # Custom patterns, e.g., for specific string formats
-                        col_properties["pattern"] = col.format_hint # Assuming format_hint can be a regex or simple string
+                    if col.format_hint in ["email", "uuid", "date", "date-time"]: # Standard JSON Schema formats
+                        col_schema["format"] = col.format_hint
+                    elif col.format_hint.startswith("YYYY-MM-DD"):
+                        col_schema["format"] = "date" # Use generic date format
+                    else: # Custom patterns, assuming format_hint can be a regex or simple string
+                        col_schema["pattern"] = col.format_hint 
                 if col.enum_values:
-                    col_properties["enum"] = col.enum_values
+                    col_schema["enum"] = col.enum_values
             elif col.data_type == "integer":
-                col_properties["type"] = "integer"
+                col_schema["type"] = "integer"
                 if col.min_value is not None:
-                    col_properties["minimum"] = col.min_value
+                    col_schema["minimum"] = col.min_value
                 if col.max_value is not None:
-                    col_properties["maximum"] = col.max_value
+                    col_schema["maximum"] = col.max_value
             elif col.data_type == "float":
-                col_properties["type"] = "number" # JSON Schema uses 'number' for floats/doubles
+                col_schema["type"] = "number" # JSON Schema uses 'number' for floats/doubles
                 if col.min_value is not None:
-                    col_properties["minimum"] = col.min_value
+                    col_schema["minimum"] = col.min_value
                 if col.max_value is not None:
-                    col_properties["maximum"] = col.max_value
+                    col_schema["maximum"] = col.max_value
             elif col.data_type == "boolean":
-                col_properties["type"] = "boolean"
+                col_schema["type"] = "boolean"
             elif col.data_type == "date":
-                col_properties["type"] = "string" # Dates are strings in JSON Schema generally, with format
-                col_properties["format"] = "date"
-                if col.min_value: col_properties["minimum"] = col.min_value
-                if col.max_value: col_properties["maximum"] = col.max_value
+                col_schema["type"] = "string"
+                col_schema["format"] = "date"
+                if col.min_value: col_schema["minimum"] = col.min_value # These would be string dates
+                if col.max_value: col_schema["maximum"] = col.max_value
             elif col.data_type == "datetime":
-                col_properties["type"] = "string"
-                col_properties["format"] = "date-time"
-                if col.min_value: col_properties["minimum"] = col.min_value
-                if col.max_value: col_properties["maximum"] = col.max_value
+                col_schema["type"] = "string"
+                col_schema["format"] = "date-time"
+                if col.min_value: col_schema["minimum"] = col.min_value
+                if col.max_value: col_schema["maximum"] = col.max_value
 
-            properties[col.name] = col_properties
+            properties[col.name] = col_schema
             required_fields.append(col.name) # Assume all inferred fields are required by default
 
         # The top-level schema defining an array of objects
         return {
+            "$schema": "http://json-schema.org/draft-07/schema#", # Add schema draft version
             "type": "object",
             "properties": {
                 dataset_name: {
@@ -363,13 +362,15 @@ class SchemaGenerator:
                     "items": {
                         "type": "object",
                         "properties": properties,
-                        "required": required_fields
+                        "required": required_fields,
+                        "additionalProperties": False # Be strict about properties
                     }
                 }
             },
             "required": [dataset_name],
             "description": f"Schema for generating {dataset_name} based on user request."
         }
+
 
     def generate_llm_prompt(self, request: SyntheticDataRequest, column_definitions: List[ColumnDefinition], json_schema: Dict[str, Any]) -> str:
         """
@@ -439,207 +440,132 @@ class DataValidator:
     """
     def __init__(self, json_schema: Dict[str, Any]):
         self.json_schema = json_schema
-        # Using a JSON schema validator library (e.g., jsonschema) would be ideal here.
-        # For conceptual purposes, we'll perform simpler checks.
+        # Compile the JSON schema for efficient validation
+        try:
+            # jsonschema.validate({}, self.json_schema) # Test if schema itself is valid, uncomment for strict schema validation
+            self.validator = jsonschema.Draft7Validator(self.json_schema)
+        except jsonschema.exceptions.SchemaError as e:
+            logger.error(f"Invalid JSON schema provided to DataValidator: {e}")
+            raise ValueError("Invalid JSON schema for validation.")
 
-    def validate(self, generated_data: Dict[str, Any], column_definitions: List[ColumnDefinition], dataset_name: str) -> bool:
+    def validate(self, generated_data_envelope: Dict[str, Any], column_definitions: List[ColumnDefinition], dataset_name: str) -> bool:
         """
         Performs validation of the generated data.
         Returns True if valid, False otherwise. Logs detailed errors.
         """
         logger.info("Starting data validation...")
         is_valid = True
+        validation_errors = []
 
-        # 1. Basic structural validation (e.g., top-level key, array of objects)
-        if dataset_name not in generated_data or not isinstance(generated_data[dataset_name], list):
-            logger.error(f"Validation Error: Top-level key '{dataset_name}' not found or is not an array.")
+        # 1. JSON Schema validation
+        for error in sorted(self.validator.iter_errors(generated_data_envelope), key=str):
+            validation_errors.append(f"Schema Validation Error: {error.message} (Path: {'/'.join(map(str, error.path))})")
             is_valid = False
-            return is_valid
 
-        records = generated_data[dataset_name]
+        if not is_valid:
+            for err in validation_errors:
+                logger.error(err)
+            logger.error("Generated data failed JSON schema validation.")
+            return False # Fail early if schema validation fails
+
+        # Extract the actual records list after initial schema validation
+        records = generated_data_envelope.get(dataset_name, [])
         if not records:
-            logger.warning("Validation Warning: No records generated by the AI.")
-            # Depending on requirements, this might be considered a soft or hard failure
-            # For now, let's allow it as a valid (empty) output.
-            # return False # Or return True if empty is acceptable
+            logger.warning("Validation Warning: No records generated by the AI within the dataset key.")
+            # If request.num_rows > 0, this might be a hard failure for semantic validation.
+            # For now, we proceed with semantic checks on an empty list, if applicable.
 
-        # 2. Per-record and per-column validation
+        # 2. Semantic and statistical checks (beyond basic schema validation)
+        # These checks might involve comparing against column_definitions which might
+        # have more nuanced rules than strict JSON schema alone.
+
+        # Uniqueness checks
+        for col_def in column_definitions:
+            if col_def.unique:
+                # Ensure the column exists in records before attempting to get values
+                if not records or col_def.name not in records[0]: # Assume consistent schema across rows
+                    logger.warning(f"Uniqueness check skipped for '{col_def.name}': Column not found in records or no records generated.")
+                    continue
+
+                values = [record.get(col_def.name) for record in records if isinstance(record, dict) and col_def.name in record]
+                if len(values) != len(set(values)):
+                    logger.error(f"Semantic Validation Error: Column '{col_def.name}' expected unique values, but duplicates were found.")
+                    is_valid = False
+        
+        # Example for date range checks not easily expressible in JSON schema `format: date`
+        # and more flexible than `minimum/maximum` as string comparisons if dates are complex.
         for i, record in enumerate(records):
-            if not isinstance(record, dict):
-                logger.error(f"Validation Error: Record {i} is not a dictionary.")
-                is_valid = False
-                continue
+            for col_def in column_definitions:
+                col_name = col_def.name
+                if col_name in record and (col_def.data_type == "date" or col_def.data_type == "datetime"):
+                    col_value = record[col_name]
+                    try:
+                        if col_def.data_type == "date":
+                            date_obj = datetime.date.fromisoformat(col_value)
+                        else: # datetime
+                            date_obj = datetime.datetime.fromisoformat(col_value.replace('Z', '+00:00')) # Handle 'Z' for UTC
+                        
+                        if col_def.min_value:
+                            min_date_obj = datetime.date.fromisoformat(col_def.min_value) if col_def.data_type == "date" else datetime.datetime.fromisoformat(col_def.min_value.replace('Z', '+00:00'))
+                            if date_obj < min_date_obj:
+                                logger.error(f"Semantic Validation Error: Record {i}, column '{col_name}' date {col_value} is before min date {col_def.min_value}.")
+                                is_valid = False
+                        if col_def.max_value:
+                            max_date_obj = datetime.date.fromisoformat(col_def.max_value) if col_def.data_type == "date" else datetime.datetime.fromisoformat(col_def.max_value.replace('Z', '+00:00'))
+                            if date_obj > max_date_obj:
+                                logger.error(f"Semantic Validation Error: Record {i}, column '{col_name}' date {col_value} is after max date {col_def.max_value}.")
+                                is_valid = False
+                    except (ValueError, TypeError):
+                        # This should ideally be caught by jsonschema format validation, but adding here as a safeguard
+                        logger.error(f"Semantic Validation Error: Record {i}, column '{col_name}' value '{col_value}' is not a valid {col_def.data_type} format as expected by definition.")
+                        is_valid = False
 
+        # Add more advanced checks if needed, e.g.,
+        # - Distribution hints: e.g., check for positive skew using scipy stats
+        # - Inter-columnar relationships: e.g., if country='USA' then currency='USD'
+
+        logger.info(f"Data validation complete. Is valid: {is_valid}")
+        return is_valid
+
+    def post_process_data(self, generated_data_envelope: Dict[str, Any], column_definitions: List[ColumnDefinition], dataset_name: str) -> List[Dict[str, Any]]:
+        """
+        Applies type coercion and minor enhancements to the validated data.
+        Returns a list of processed records.
+        """
+        logger.info("Starting data post-processing...")
+        records = generated_data_envelope.get(dataset_name, [])
+        processed_records: List[Dict[str, Any]] = []
+
+        for record in records:
+            processed_record = {}
             for col_def in column_definitions:
                 col_name = col_def.name
                 col_value = record.get(col_name)
 
                 if col_value is None:
-                    # Assuming all fields are required as per generate_json_schema
-                    logger.error(f"Validation Error: Record {i} is missing required column '{col_name}'.")
-                    is_valid = False
+                    processed_record[col_name] = None
                     continue
 
-                # Type and format validation
-                if col_def.data_type == "string":
-                    if not isinstance(col_value, str):
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' expected string, got {type(col_value)}.")
-                        is_valid = False
-                    elif col_def.format_hint == "email" and not self._is_email(col_value):
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' is not a valid email format.")
-                        is_valid = False
-                    elif col_def.format_hint == "uuid" and not self._is_uuid(col_value):
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' is not a valid UUID format.")
-                        is_valid = False
-                    elif col_def.format_hint and col_def.format_hint.startswith("YYYY-MM-DD") and not self._is_date_format(col_value):
-                         logger.error(f"Validation Error: Record {i}, column '{col_name}' is not in YYYY-MM-DD format.")
-                         is_valid = False
-                    if col_def.enum_values and col_value not in col_def.enum_values:
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' value '{col_value}' not in enum list.")
-                        is_valid = False
-                elif col_def.data_type == "integer":
-                    if not isinstance(col_value, int):
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' expected integer, got {type(col_value)}.")
-                        is_valid = False
-                    elif col_def.min_value is not None and col_value < col_def.min_value:
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' value {col_value} is below minimum {col_def.min_value}.")
-                        is_valid = False
-                    elif col_def.max_value is not None and col_value > col_def.max_value:
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' value {col_value} is above maximum {col_def.max_value}.")
-                        is_valid = False
-                elif col_def.data_type == "float":
-                    if not isinstance(col_value, (float, int)): # Allow int to be coerced to float
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' expected float/number, got {type(col_value)}.")
-                        is_valid = False
-                    elif col_def.min_value is not None and col_value < col_def.min_value:
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' value {col_value} is below minimum {col_def.min_value}.")
-                        is_valid = False
-                    elif col_def.max_value is not None and col_value > col_def.max_value:
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' value {col_value} is above maximum {col_def.max_value}.")
-                        is_valid = False
-                elif col_def.data_type == "boolean":
-                    if not isinstance(col_value, bool):
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' expected boolean, got {type(col_value)}.")
-                        is_valid = False
-                elif col_def.data_type == "date" or col_def.data_type == "datetime":
+                # Example of type coercion if needed
+                if col_def.data_type == "float" and isinstance(col_value, int):
+                    processed_record[col_name] = float(col_value)
+                elif col_def.data_type == "date" and isinstance(col_value, str):
                     try:
-                        if col_def.data_type == "date":
-                            date_obj = datetime.date.fromisoformat(col_value)
-                        else:
-                            date_obj = datetime.datetime.fromisoformat(col_value.replace('Z', '+00:00')) # Handle 'Z' for UTC
-
-                        if col_def.min_value:
-                            min_date_obj = datetime.date.fromisoformat(col_def.min_value) if col_def.data_type == "date" else datetime.datetime.fromisoformat(col_def.min_value.replace('Z', '+00:00'))
-                            if date_obj < min_date_obj:
-                                logger.error(f"Validation Error: Record {i}, column '{col_name}' date {col_value} is before min date {col_def.min_value}.")
-                                is_valid = False
-                        if col_def.max_value:
-                            max_date_obj = datetime.date.fromisoformat(col_def.max_value) if col_def.data_type == "date" else datetime.datetime.fromisoformat(col_def.max_value.replace('Z', '+00:00'))
-                            if date_obj > max_date_obj:
-                                logger.error(f"Validation Error: Record {i}, column '{col_name}' date {col_value} is after max date {col_def.max_value}.")
-                                is_valid = False
+                        # Ensure it's in a canonical format (ISO 8601) if needed downstream
+                        processed_record[col_name] = datetime.date.fromisoformat(col_value).isoformat()
                     except ValueError:
-                        logger.error(f"Validation Error: Record {i}, column '{col_name}' value '{col_value}' is not a valid {col_def.data_type} format.")
-                        is_valid = False
-
-        # 3. Uniqueness checks
-        for col_def in column_definitions:
-            if col_def.unique:
-                values = [record.get(col_def.name) for record in records if col_def.name in record]
-                if len(values) != len(set(values)):
-                    logger.error(f"Validation Error: Column '{col_def.name}' expected unique values, but duplicates were found.")
-                    is_valid = False
-
-        logger.info(f"Data validation complete. Is valid: {is_valid}")
-        return is_valid
-
-    # Helper validation functions
-    def _is_email(self, text: str) -> bool:
-        # A simple regex for email validation
-        import re
-        return bool(re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", text))
-
-    def _is_uuid(self, text: str) -> bool:
-        try:
-            uuid.UUID(text)
-            return True
-        except ValueError:
-            return False
-
-    def _is_date_format(self, text: str) -> bool:
-        try:
-            datetime.date.fromisoformat(text)
-            return True
-        except ValueError:
-            return False
-
-# --- Module: Output Formatting & Delivery (OFDM) ---
-
-class DataFormatter:
-    """
-    Converts structured data into various output formats.
-    """
-    def format_to_csv(self, data: List[Dict[str, Any]], dataset_name: str) -> str:
-        """Converts an array of dictionaries to CSV format."""
-        if not data:
-            return ""
-        import io
-        import csv
-        output = io.StringIO()
-        fieldnames = list(data[0].keys()) # Assumes all rows have the same keys
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(data)
-        return output.getvalue()
-
-    def format_to_json(self, data: List[Dict[str, Any]], dataset_name: str) -> str:
-        """Converts an array of dictionaries to JSON format."""
-        return json.dumps({dataset_name: data}, indent=2)
-
-    def format_to_xml(self, data: List[Dict[str, Any]], dataset_name: str) -> str:
-        """
-        Converts an array of dictionaries to XML format.
-        (Simplified implementation for conceptual demonstration)
-        """
-        if not data:
-            return f"<root><{dataset_name}/></root>"
-        
-        xml_output = [f"<root><{dataset_name}>"]
-        for i, record in enumerate(data):
-            xml_output.append(f"  <record id='{i+1}'>")
-            for key, value in record.items():
-                # Basic XML sanitization for values
-                safe_value = str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;")
-                xml_output.append(f"    <{key}>{safe_value}</{key}>")
-            xml_output.append("  </record>")
-        xml_output.append(f"</{dataset_name}></root>")
-        return "\n".join(xml_output)
-
-    def format_to_sql_insert(self, data: List[Dict[str, Any]], dataset_name: str) -> str:
-        """
-        Converts an array of dictionaries into SQL INSERT statements.
-        (Simplified for a single table, assuming basic types)
-        """
-        if not data:
-            return ""
-
-        table_name = dataset_name.replace(" ", "_").lower()
-        columns = ", ".join(data[0].keys())
-        insert_statements = []
-
-        for record in data:
-            values = []
-            for value in record.values():
-                if isinstance(value, str):
-                    values.append(f"'{value.replace("'", "''")}'") # Escape single quotes
-                elif isinstance(value, (int, float, bool)):
-                    values.append(str(value))
-                elif value is None:
-                    values.append("NULL")
+                        processed_record[col_name] = col_value # Keep original if coercion fails
+                elif col_def.data_type == "datetime" and isinstance(col_value, str):
+                    try:
+                        # Ensure it's in a canonical format (ISO 8601 with timezone if applicable)
+                        processed_record[col_name] = datetime.datetime.fromisoformat(col_value.replace('Z', '+00:00')).isoformat()
+                    except ValueError:
+                        processed_record[col_name] = col_value
                 else:
-                    values.append(f"'{str(value).replace("'", "''")}'") # Fallback for other types
-            insert_statements.append(f"INSERT INTO {table_name} ({columns}) VALUES ({', '.join(values)});")
-        return "\n".join(insert_statements)
+                    processed_record[col_name] = col_value
+            processed_records.append(processed_record)
+        logger.info("Data post-processing complete.")
+        return processed_records
 
 # --- Top-Level Service Orchestrator ---
 
@@ -691,22 +617,22 @@ class SyntheticDatasetService:
             # In a production system, this might trigger a retry or human review.
             raise ValueError("Generated data did not conform to specifications and failed validation.")
         
-        # Extract the actual list of records from the top-level object
-        validated_records: List[Dict[str, Any]] = raw_generated_data.get(request.dataset_name, [])
+        # 4. Post-process the data
+        validated_and_processed_records: List[Dict[str, Any]] = data_validator.post_process_data(raw_generated_data, column_definitions, request.dataset_name)
 
-        # 4. Format and Deliver Output
+        # 5. Format and Deliver Output
         formatted_data: str
         if request.output_format == "csv":
-            formatted_data = self.data_formatter.format_to_csv(validated_records, request.dataset_name)
+            formatted_data = self.data_formatter.format_to_csv(validated_and_processed_records, request.dataset_name)
         elif request.output_format == "json":
-            formatted_data = self.data_formatter.format_to_json(validated_records, request.dataset_name)
+            formatted_data = self.data_formatter.format_to_json(validated_and_processed_records, request.dataset_name)
         elif request.output_format == "xml":
-            formatted_data = self.data_formatter.format_to_xml(validated_records, request.dataset_name)
+            formatted_data = self.data_formatter.format_to_xml(validated_and_processed_records, request.dataset_name)
         elif request.output_format == "sql_insert":
-            formatted_data = self.data_formatter.format_to_sql_insert(validated_records, request.dataset_name)
+            formatted_data = self.data_formatter.format_to_sql_insert(validated_and_processed_records, request.dataset_name)
         else:
             logger.warning(f"Unsupported output format requested: {request.output_format}. Defaulting to JSON.")
-            formatted_data = self.data_formatter.format_to_json(validated_records, request.dataset_name)
+            formatted_data = self.data_formatter.format_to_json(validated_and_processed_records, request.dataset_name)
         
         logger.info(f"Successfully formatted data to {request.output_format}.")
         return formatted_data
@@ -737,7 +663,7 @@ The present invention articulates a series of innovative claims establishing cle
         i.   Convert the validated synthetic data into a user-specified output format, selected from a plurality of formats including CSV, JSON, XML, or SQL INSERT statements; and
         ii.  Provide the formatted synthetic dataset to the user for download or streaming.
 
-2.  The system of Claim 1, wherein the natural language description further comprises explicit desiderata for inter-columnar relationships, statistical distributions (e.g., skewness, uniformity), and uniqueness constraints, and wherein the PSCM is further configured to incorporate these desiderata into the JSON schema and the optimized textual prompt.
+2.  The system of Claim 1, wherein the natural language description further comprises explicit desiderata for inter-columnar relationships, statistical distributions [e.g., skewness, uniformity], and uniqueness constraints, and wherein the PSCM is further configured to incorporate these desiderata into the JSON schema and the optimized textual prompt.
 
 3.  A method for generating synthetic data, comprising:
     a.  Receiving, by a computational system, a natural language description of a desired dataset from a user;
@@ -757,49 +683,58 @@ The present invention articulates a series of innovative claims establishing cle
 
 **Mathematical Justification: The Formal Axiomatic System of Generative Synthetic Data Fidelity (FASD-F)**
 
-The scientific rigor undergirding the Cognitive Data Synthesizer (CDS) is established through a formal axiomatic system, FASD-F, which quantifies the fidelity of synthetically generated data to a true, unobservable real-world data distribution as dictated by user-defined constraints. Our objective is not merely to generate data, but to synthesize *information-rich analogs* that faithfully represent specified real-world phenomena.
+The scientific rigor undergirding the Cognitive Data Synthesizer (CDS) is established through a formal axiomatic system, FASD-F, which quantifies the fidelity of synthetically generated data to a true, unobservable real-world data distribution as dictated by user-defined constraints. Our objective is not merely to generate data, but to synthesize `information-rich analogs` that faithfully represent specified real-world phenomena.
 
-Let `Ω_R` denote the unobservable universe of all possible real-world data instances relevant to a given domain. Let `P_R` be the true, underlying probability measure over `Ω_R`, representing the intrinsic statistical and semantic characteristics of real-world data. The user's natural language request, denoted as `λ ∈ L_NL`, where `L_NL` is the space of natural language expressions, specifies a set of desiderata for a synthetic dataset. This `λ` implicitly defines a *conditional subspace* `Ω_R(λ) ⊆ Ω_R` and a corresponding conditional probability measure `P_R(D | λ)` over this subspace, representing the "ideal" real data that would satisfy `λ`.
+Let `Omega_R` denote the unobservable universe of all possible real-world data instances relevant to a given domain. Let `P_R` be the true, underlying probability measure over `Omega_R`, representing the intrinsic statistical and semantic characteristics of real-world data. The user's natural language request, denoted as `lambda` in `L_NL`, where `L_NL` is the space of natural language expressions, specifies a set of desiderata for a synthetic dataset. This `lambda` implicitly defines a `conditional subspace` `Omega_R(lambda) subseteq Omega_R` and a corresponding conditional probability measure `P_R(D | lambda)` over this subspace, representing the "ideal" real data that would satisfy `lambda`.
 
-The CDS translates `λ` into a structured prompt `ρ ∈ L_Prompt` and a formal JSON schema `σ ∈ L_Schema`. The generative AI model, denoted `G`, is a parametric function `G: (L_Prompt × L_Schema) → Ω_S`, where `Ω_S` is the space of generated synthetic data instances. The output of `G` is a synthetic dataset `D_S = {d_1, d_2, ..., d_N}`, which implicitly defines an empirical probability measure `P_S(D | ρ, σ)`.
+The CDS translates `lambda` into a structured prompt `rho` in `L_Prompt` and a formal JSON schema `sigma` in `L_Schema`. The generative AI model, denoted `G`, is a parametric function `G : (L_Prompt x L_Schema) -> Omega_S`, where `Omega_S` is the space of generated synthetic data instances. The output of `G` is a synthetic dataset `D_S = {d_1, d_2, ..., d_N}`, which implicitly defines an empirical probability measure `P_S(D | rho, sigma)`.
 
 **I. Axiom of Semantic Translation Fidelity (ASTF):**
-There exists a mapping function `T_PS: L_NL → (L_Prompt × L_Schema)` such that for any `λ ∈ L_NL`, `T_PS(λ) = (ρ, σ)` preserves the semantic intent and structural constraints of `λ`. This is formalized by:
-`∀ λ ∈ L_NL, ∃ (ρ, σ) ∈ (L_Prompt × L_Schema)` such that `Sem(λ) ≡ Sem(ρ, σ)` and `Struct(λ) ≡ Struct(σ)`.
+There exists a mapping function `T_PS : L_NL -> (L_Prompt x L_Schema)` such that for any `lambda` in `L_NL`, `T_PS(lambda) = (rho, sigma)` preserves the semantic intent and structural constraints of `lambda`. This is formalized by:
+`For all lambda in L_NL, there exists (rho, sigma) in (L_Prompt x L_Schema)` such that `Sem(lambda) = Sem(rho, sigma)` and `Struct(lambda) = Struct(sigma)`.
 Where `Sem(.)` denotes the semantic content and `Struct(.)` denotes the structural specifications. The CDS's PSCM endeavors to maximize the accuracy of this translation, minimizing any loss of information or misinterpretation.
 
 **II. Axiom of Generative Plausibility (AGP):**
-The generative AI model `G`, through its training on vast and diverse real-world corpora, has learned an implicit, high-dimensional probability distribution `P_G(data | context)` that approximates `P_R`. When conditioned by `ρ` and `σ`, `G` produces samples from `P_G(D | ρ, σ)`, which is intended to be a robust approximation of the true conditional distribution `P_R(D | λ)`.
-This axiom postulates that a sufficiently advanced `G` possesses the inherent capability to synthesize data instances `d_i` such that `P_G(d_i | ρ, σ)` is non-trivially high for `d_i ∈ Ω_R(λ)`, demonstrating contextual realism and statistical coherence.
+The generative AI model `G`, through its training on vast and diverse real-world corpora, has learned an implicit, high-dimensional probability distribution `P_G(data | context)` that approximates `P_R`. When conditioned by `rho` and `sigma`, `G` produces samples from `P_G(D | rho, sigma)`, which is intended to be a robust approximation of the true conditional distribution `P_R(D | lambda)`.
+This axiom postulates that a sufficiently advanced `G` possesses the inherent capability to synthesize data instances `d_i` such that `P_G(d_i | rho, sigma)` is non-trivially high for `d_i` in `Omega_R(lambda)`, demonstrating contextual realism and statistical coherence.
 
 **III. Axiom of Structural Conformance (ASC):**
-The primary function of `σ` is to constrain the output space of `G`. The ASC states that the generated synthetic dataset `D_S` must strictly adhere to the topological and typological specifications encoded within `σ`.
-This is formally represented by a validation function `V: (Ω_S × L_Schema) → {True, False}`. For the CDS, we demand:
-`∀ d_i ∈ D_S, V(d_i, σ) = True`.
+The primary function of `sigma` is to constrain the output space of `G`. The ASC states that the generated synthetic dataset `D_S` must strictly adhere to the topological and typological specifications encoded within `sigma`.
+This is formally represented by a validation function `V : (Omega_S x L_Schema) -> {True, False}`. For the CDS, we demand:
+`For all d_i in D_S, V(d_i, sigma) = True`.
 The DVPM within the CDS explicitly enforces this axiom, employing rigorous validation processes.
 
 **IV. Metatheorem of Information-Theoretic Fidelity:**
-The ultimate measure of the CDS's success is the fidelity of `D_S` to `P_R(D | λ)`. This fidelity can be quantified using information-theoretic divergence measures.
+The ultimate measure of the CDS's success is the fidelity of `D_S` to `P_R(D | lambda)`. This fidelity can be quantified using information-theoretic divergence measures.
 
-Let `P_S` be the empirical probability distribution of the generated dataset `D_S`. The objective is to minimize the "distance" between `P_S` and `P_R(D | λ)`.
+Let `P_S` be the empirical probability distribution of the generated dataset `D_S`. The objective is to minimize the "distance" between `P_S` and `P_R(D | lambda)`.
 
 **Definition 1: Kullback-Leibler (KL) Divergence.**
 The KL divergence `D_KL(P || Q)` for two probability distributions `P` and `Q` over the same probability space `X` is defined as:
-`D_KL(P || Q) = Σ_{x ∈ X} P(x) log(P(x) / Q(x))` for discrete distributions, or
-`D_KL(P || Q) = ∫_{x ∈ X} P(x) log(P(x) / Q(x)) dx` for continuous distributions.
-`D_KL` measures the information loss when `Q` is used to approximate `P`. Our goal is to minimize `D_KL(P_R(D | λ) || P_S(D | ρ, σ))`.
+```
+D_KL(P || Q) = sum_{x in X} P(x) log(P(x) / Q(x))
+```
+for discrete distributions, or
+```
+D_KL(P || Q) = integral_{x in X} P(x) log(P(x) / Q(x)) dx
+```
+for continuous distributions.
+`D_KL` measures the information loss when `Q` is used to approximate `P`. Our goal is to minimize `D_KL(P_R(D | lambda) || P_S(D | rho, sigma))`.
 
 **Definition 2: Jensen-Shannon (JS) Divergence.**
 The JS divergence is a symmetric and finite measure derived from KL divergence, often preferred for its robust properties:
-`D_JS(P || Q) = (1/2) D_KL(P || M) + (1/2) D_KL(Q || M)`, where `M = (P + Q) / 2`.
-`D_JS` provides a normalized and smoothed measure of statistical similarity. The CDS aims to minimize `D_JS(P_R(D | λ) || P_S(D | ρ, σ))`.
+```
+D_JS(P || Q) = (1/2) D_KL(P || M) + (1/2) D_KL(Q || M)
+```
+where `M = (P + Q) / 2`.
+`D_JS` provides a normalized and smoothed measure of statistical similarity. The CDS aims to minimize `D_JS(P_R(D | lambda) || P_S(D | rho, sigma))`.
 
 **Proof of Capacity for High Fidelity:**
-Given the ASTF, AGP, and ASC, the CDS demonstrates an inherent capacity for generating high-fidelity synthetic data.
-1.  The ASTF ensures that the semantic intent `λ` is accurately translated into `(ρ, σ)`, thus `G` is guided by a semantically equivalent representation of the user's need.
-2.  The AGP asserts that `G` itself, being a sophisticated generative model trained on vast real-world data, embodies a powerful implicit model of `P_R`. When `G` is prompted with `ρ` and constrained by `σ`, it effectively samples from `P_G(D | ρ, σ)`, which is a high-quality approximation of `P_R(D | λ)`. The parameters of `G` implicitly encode the intricate conditional probabilities `P(attribute_j | attribute_i, λ)` that are essential for realistic data generation.
-3.  The ASC, enforced by the DVPM, guarantees that the generated samples strictly conform to the explicit structural and typological constraints. This drastically reduces the `D_KL` or `D_JS` by ensuring `P_S` is constrained to the valid subspace, preventing nonsensical or invalid data from contributing to divergence.
+Given the `ASTF`, `AGP`, and `ASC`, the CDS demonstrates an inherent capacity for generating high-fidelity synthetic data.
+1.  The `ASTF` ensures that the semantic intent `lambda` is accurately translated into `(rho, sigma)`, thus `G` is guided by a semantically equivalent representation of the user's need.
+2.  The `AGP` asserts that `G` itself, being a sophisticated generative model trained on vast real-world data, embodies a powerful implicit model of `P_R`. When `G` is prompted with `rho` and constrained by `sigma`, it effectively samples from `P_G(D | rho, sigma)`, which is a high-quality approximation of `P_R(D | lambda)`. The parameters of `G` implicitly encode the intricate conditional probabilities `P(attribute_j | attribute_i, lambda)` that are essential for realistic data generation.
+3.  The `ASC`, enforced by the `DVPM`, guarantees that the generated samples strictly conform to the explicit structural and typological constraints. This drastically reduces the `D_KL` or `D_JS` by ensuring `P_S` is constrained to the valid subspace, preventing nonsensical or invalid data from contributing to divergence.
 
-Therefore, by coupling a robust semantic translation and formal schema enforcement mechanism with an information-rich generative AI model, the CDS effectively minimizes the information-theoretic divergence between the desired real-world conditional distribution `P_R(D | λ)` and the empirically observed synthetic data distribution `P_S(D | ρ, σ)`. The AI's ability to extrapolate latent correlations and distributions from `ρ` and `σ` allows `P_S` to approximate `P_R` not just superficially but deeply across multiple statistical moments and feature interactions. This rigorous multi-stage approach establishes the CDS as a definitive solution for generating high-fidelity synthetic datasets.
+Therefore, by coupling a robust semantic translation and formal schema enforcement mechanism with an information-rich generative AI model, the CDS effectively minimizes the information-theoretic divergence between the desired real-world conditional distribution `P_R(D | lambda)` and the empirically observed synthetic data distribution `P_S(D | rho, sigma)`. The AI's ability to extrapolate latent correlations and distributions from `rho` and `sigma` allows `P_S` to approximate `P_R` not just superficially but deeply across multiple statistical moments and feature interactions. This rigorous multi-stage approach establishes the CDS as a definitive solution for generating high-fidelity synthetic datasets.
 
 `Q.E.D.`
