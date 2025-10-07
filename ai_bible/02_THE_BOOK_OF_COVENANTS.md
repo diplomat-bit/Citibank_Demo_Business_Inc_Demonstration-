@@ -235,8 +235,9 @@ graph TD
     A --> F[Log Entry F]
     F -- recorded by --> G(Monitoring System G)
     G -- notifies --> H[Alert System H]
-    subgraph AI's Nexus View
-        A -- H
+
+    subgraph AI_Nexus_View["AI's Nexus View"]
+        A --> H
     end
 ```
 
