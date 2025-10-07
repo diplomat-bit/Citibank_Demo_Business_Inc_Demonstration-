@@ -97,25 +97,25 @@ sequenceDiagram
     participant T as User Performance Tracker
 
     U->C: Select Topic & Persona
-    C->B: Initialize Session (Topic, Persona)
+    C->B: Initialize Session [Topic, Persona]
     B->P: Load Persona Profile
     B->D: Create new Session Record
     B->C: Session Ready
     U->C: Submit Argument A_user
     C->B: Send A_user & SessionID
     B->D: Append A_user to Discourse History
-    B->G: Process Argument (A_user, Discourse History, Persona Profile)
+    B->G: Process Argument [A_user, Discourse History, Persona Profile]
     activate G
     G->F: Analyze A_user for Fallacies
     activate F
-    F-->G: Fallacy Report (f_i, Confidence)
+    F-->G: Fallacy Report [f_i, Confidence]
     deactivate F
-    G->G: Generate A_ai (Persona-consistent counter-argument)
-    G->G: Integrate f_i into A_ai (if detected & confidence high)
-    G-->B: AI Response (A_ai, f_i)
+    G->G: Generate A_ai [Persona-consistent counter-argument]
+    G->G: Integrate f_i into A_ai [if detected & confidence high]
+    G-->B: AI Response [A_ai, f_i]
     deactivate G
     B->D: Append A_ai and f_i to Discourse History
-    B->T: Update User Skill Metrics (based on f_i)
+    B->T: Update User Skill Metrics [based on f_i]
     B->C: Send A_ai & f_i
     C->U: Display AI Response
 ```
@@ -152,62 +152,77 @@ sequenceDiagram
 
 ## Mathematical Justification:
 
-### I. Argument Validity and Formal Logic Foundations (The Logic of Discourse Formalism, $\mathcal{L}_{\mathcal{D}}$)
+### I. Argument Validity and Formal Logic Foundations [The Logic of Discourse Formalism, `L_D`]
 
-Let us rigorously define an argument $\mathcal{A}$ within our formal system, $\mathcal{L}_{\mathcal{D}}$, as an ordered pair $\mathcal{A} = (\mathbb{P}, c)$, where $\mathbb{P} = \{p_1, p_2, \ldots, p_n\}$ is a finite, non-empty set of propositions termed premises, and $c$ is a single proposition termed the conclusion. Each proposition $p_i$ and $c$ is an atomic or compound well-formed formula (WFF) in a predicate logic language $\mathcal{L}_{PL}$.
+Let us rigorously define an argument `A` within our formal system, `L_D`, as an ordered pair `A = [P, c]`, where `P = {p_1, p_2, ..., p_n}` is a finite, non-empty set of propositions termed premises, and `c` is a single proposition termed the conclusion. Each proposition `p_i` and `c` is an atomic or compound well-formed formula (WFF) in a predicate logic language `L_PL`.
 
-An argument $\mathcal{A}$ is deemed **logically valid** if and only if it is impossible for all premises in $\mathbb{P}$ to be true while the conclusion $c$ is simultaneously false. Formally, this condition is expressed as a tautological implication:
-$$ \mathcal{V}(\mathcal{A}) \iff \models (p_1 \land p_2 \land \ldots \land p_n) \rightarrow c $$
-Here, $\models$ denotes semantic entailment or tautological truth in all possible interpretations (models) of $\mathcal{L}_{PL}$. This foundational principle underpins the entire edifice of our fallacy detection. The `GranularFallacyDetector` module within the `GenerativeAdversaryModule` is tasked with evaluating the logical form and semantic content of $\mathcal{A}_{user}$ to ascertain deviations from $\mathcal{V}(\mathcal{A})$.
+An argument `A` is deemed **logically valid** if and only if it is impossible for all premises in `P` to be true while the conclusion `c` is simultaneously false. Formally, this condition is expressed as a tautological implication:
+```
+V[A] iff models (p_1 and p_2 and ... and p_n) -> c
+```
+Here, `models` denotes semantic entailment or tautological truth in all possible interpretations (models) of `L_PL`. This foundational principle underpins the entire edifice of our fallacy detection. The `GranularFallacyDetector` module within the `GenerativeAdversaryModule` is tasked with evaluating the logical form and semantic content of `A_user` to ascertain deviations from `V[A]`.
 
-### II. The Fallacy Detection Metric and Ontology ($\Phi$ Function)
+### II. The Fallacy Detection Metric and Ontology [Phi Function]
 
-Let $\mathcal{F}$ be the comprehensive, hierarchically structured `Fallacy Ontology` inherent to our system. $\mathcal{F}$ is a finite set of formally defined logical, rhetorical, and epistemic fallacies, $\mathcal{F} = \{f_1, f_2, \ldots, f_m\}$, where each $f_j$ is characterized by a unique `FallacyType` and an associated set of `DiagnosticHeuristics` $H_j$.
+Let `F` be the comprehensive, hierarchically structured `Fallacy Ontology` inherent to our system. `F` is a finite set of formally defined logical, rhetorical, and epistemic fallacies, `F = {f_1, f_2, ..., f_m}`, where each `f_j` is characterized by a unique `FallacyType` and an associated set of `DiagnosticHeuristics` `H_j`.
 
-The `GranularFallacyDetector` implements a sophisticated mapping function, $\Phi$:
-$$ \Phi: \mathcal{A}_{user} \rightarrow (f_k \in \mathcal{F} \cup \{\emptyset\}, \quad \chi_k \in [0, 1]) $$
+The `GranularFallacyDetector` implements a sophisticated mapping function, `Phi`:
+```
+Phi: A_user -> [f_k in F U {null_set}, chi_k in [0, 1]]
+```
 where:
-*   $\mathcal{A}_{user}$ represents the user's submitted argument at a given turn.
-*   $f_k$ is the specific fallacy detected from the ontology $\mathcal{F}$. If no fallacy meeting a predefined $\chi_{min}$ threshold is detected, $f_k = \emptyset$.
-*   $\chi_k$ is the `DetectionConfidenceScore`, a scalar value in the interval $[0, 1]$ representing the system's certainty in the identification of $f_k$. This score is derived from a complex aggregation of metrics, including:
-    *   **Heuristic Match Score ($S_H$):** Measures the degree to which $\mathcal{A}_{user}$ matches the `DiagnosticHeuristics` $H_k$ for $f_k$.
-    *   **Argument Graph Structural Conformity ($S_G$):** Evaluates the graph representation of $\mathcal{A}_{user}$ against known fallacious structural patterns.
-    *   **Semantic Deviation Score ($S_S$):** Quantifies the divergence of $\mathcal{A}_{user}$'s semantic content from a logically sound argument.
+*   `A_user` represents the user's submitted argument at a given turn.
+*   `f_k` is the specific fallacy detected from the ontology `F`. If no fallacy meeting a predefined `chi_min` threshold is detected, `f_k = null_set`.
+*   `chi_k` is the `DetectionConfidenceScore`, a scalar value in the interval `[0, 1]` representing the system's certainty in the identification of `f_k`. This score is derived from a complex aggregation of metrics, including:
+    *   **Heuristic Match Score (`S_H`):** Measures the degree to which `A_user` matches the `DiagnosticHeuristics` `H_k` for `f_k`.
+    *   **Argument Graph Structural Conformity (`S_G`):** Evaluates the graph representation of `A_user` against known fallacious structural patterns.
+    *   **Semantic Deviation Score (`S_S`):** Quantifies the divergence of `A_user`'s semantic content from a logically sound argument.
 
-The `DetectionConfidenceScore` $\chi_k$ for a candidate fallacy $f_k$ is computed as a weighted sum or a more complex machine learning ensemble of these sub-scores:
-$$ \chi_k = W_H \cdot S_H(f_k, \mathcal{A}_{user}) + W_G \cdot S_G(f_k, \text{Graph}(\mathcal{A}_{user})) + W_S \cdot S_S(f_k, \mathcal{A}_{user}) $$
-where $W_H, W_G, W_S$ are empirically derived weighting coefficients such that $W_H + W_G + W_S = 1$.
+The `DetectionConfidenceScore` `chi_k` for a candidate fallacy `f_k` is computed as a weighted sum or a more complex machine learning ensemble of these sub-scores:
+```
+chi_k = W_H * S_H(f_k, A_user) + W_G * S_G(f_k, Graph(A_user)) + W_S * S_S(f_k, A_user)
+```
+where `W_H`, `W_G`, `W_S` are empirically derived weighting coefficients such that `W_H + W_G + W_S = 1`.
 
-### III. The Adversarial Response Generation ($G_{\mathcal{A}}$ Function) and Pedagogical Utility ($\mathcal{U}$ Metric)
+### III. The Adversarial Response Generation [G_A Function] and Pedagogical Utility [U Metric]
 
-The `GenerativeAdversaryModule`'s function $G_{\mathcal{A}}$ takes the user's argument and the `ConversationalContext` as input and produces a multi-component output:
-$$ G_{\mathcal{A}}: (\mathcal{A}_{user}, \mathcal{C}_t) \rightarrow (\mathcal{A}_{AI}, \mathcal{P}_{f_k}) $$
+The `GenerativeAdversaryModule`'s function `G_A` takes the user's argument and the `ConversationalContext` as input and produces a multi-component output:
+```
+G_A: [A_user, C_t] -> [A_AI, P_fk]
+```
 where:
-*   $\mathcal{C}_t$ is the `ConversationalContext` at turn $t$, including `DiscourseHistory` and `AdversarialPersonaProfile`.
-*   $\mathcal{A}_{AI}$ is the AI's counter-argument, generated to be maximally challenging and persona-consistent.
-*   $\mathcal{P}_{f_k}$ is the pedagogical feedback component, which is non-empty if $f_k \neq \emptyset$ and $\chi_k \geq \chi_{min}$.
+*   `C_t` is the `ConversationalContext` at turn `t`, including `DiscourseHistory` and `AdversarialPersonaProfile`.
+*   `A_AI` is the AI's counter-argument, generated to be maximally challenging and persona-consistent.
+*   `P_fk` is the pedagogical feedback component, which is non-empty if `f_k != null_set` and `chi_k >= chi_min`.
 
-The pedagogical impact of this feedback is quantified by a **Pedagogical Utility Function**, $\mathcal{U}$:
-$$ \mathcal{U}(f_k, \mathcal{P}_{f_k}, \mathcal{S}_{user,t}) = \begin{cases}
-    \alpha \cdot (1 - e^{-\beta \cdot \chi_k}) \cdot \sigma(\mathcal{P}_{f_k}) \cdot \rho(\mathcal{S}_{user,t}), & \text{if } f_k \neq \emptyset \text{ and } \chi_k \geq \chi_{min} \\
-    0, & \text{otherwise}
-\end{cases} $$
+The pedagogical impact of this feedback is quantified by a **Pedagogical Utility Function**, `U`:
+```
+U[f_k, P_fk, S_user_t] =
+  if f_k != null_set and chi_k >= chi_min:
+    alpha * (1 - e^(-beta * chi_k)) * sigma(P_fk) * rho(S_user_t)
+  else:
+    0
+```
 Here:
-*   $\alpha$ and $\beta$ are positive constants, where $\beta$ controls the sensitivity to confidence.
-*   $\sigma(\mathcal{P}_{f_k})$ is a "clarity and actionability" score for the pedagogical explanation, reflecting its quality and relevance.
-*   $\rho(\mathcal{S}_{user,t})$ is a context-dependent scalar derived from the `UserPerformanceAnalytics` module, representing the user's current skill level and learning readiness at turn $t$. A user with a lower skill level or a repeated fallacy might receive a higher $\rho$ weighting, maximizing impact.
+*   `alpha` and `beta` are positive constants, where `beta` controls the sensitivity to confidence.
+*   `sigma(P_fk)` is a "clarity and actionability" score for the pedagogical explanation, reflecting its quality and relevance.
+*   `rho(S_user_t)` is a context-dependent scalar derived from the `UserPerformanceAnalytics` module, representing the user's current skill level and learning readiness at turn `t`. A user with a lower skill level or a repeated fallacy might receive a higher `rho` weighting, maximizing impact.
 
 This function quantifies the educational value derived from the feedback, recognizing that not all feedback is equally beneficial.
 
-### IV. User Skill Evolution Model (The Argumentative Competence Trajectory, $\mathcal{T}_{\mathcal{C}}$)
+### IV. User Skill Evolution Model [The Argumentative Competence Trajectory, `T_C`]
 
-Let the user's argumentative competence at turn $t$ be represented by a scalar value $\mathcal{S}_{user,t} \in [0, 1]$, where $0$ signifies nascent ability and $1$ represents mastery. The system models the evolution of this competence as a discrete-time dynamic system:
-$$ \mathcal{S}_{user, t+1} = \mathcal{S}_{user, t} + \Delta \mathcal{S}_{user, t} $$
-The change in competence, $\Delta \mathcal{S}_{user, t}$, is directly proportional to the pedagogical utility derived from the feedback at turn $t$:
-$$ \Delta \mathcal{S}_{user, t} = \gamma \cdot \mathcal{U}(f_k, \mathcal{P}_{f_k}, \mathcal{S}_{user,t}) \cdot (1 - \mathcal{S}_{user,t}) $$
-where $\gamma$ is a learning rate constant, and the term $(1 - \mathcal{S}_{user,t})$ models a diminishing return on learning as competence approaches mastery (i.e., it's harder to improve from 0.9 to 1.0 than from 0.1 to 0.2).
+Let the user's argumentative competence at turn `t` be represented by a scalar value `S_user_t` in `[0, 1]`, where `0` signifies nascent ability and `1` represents mastery. The system models the evolution of this competence as a discrete-time dynamic system:
+```
+S_user_t+1 = S_user_t + Delta S_user_t
+```
+The change in competence, `Delta S_user_t`, is directly proportional to the pedagogical utility derived from the feedback at turn `t`:
+```
+Delta S_user_t = gamma * U[f_k, P_fk, S_user_t] * (1 - S_user_t)
+```
+where `gamma` is a learning rate constant, and the term `(1 - S_user_t)` models a diminishing return on learning as competence approaches mastery (i.e., it's harder to improve from `0.9` to `1.0` than from `0.1` to `0.2`).
 
-The `User Performance Analytics Module` continuously updates $\mathcal{S}_{user,t}$ based on the sequence of fallacies detected, the user's ability to correct them in subsequent turns, and other performance indicators (e.g., argument length, logical coherence as assessed by an independent LLM evaluation).
+The `User Performance Analytics Module` continuously updates `S_user_t` based on the sequence of fallacies detected, the user's ability to correct them in subsequent turns, and other performance indicators (e.g., argument length, logical coherence as assessed by an independent LLM evaluation).
 
 **Theorem of Accelerated Competence Acquisition:**
-Given a sequence of $N$ debate turns, $\{(\mathcal{A}_{user,t}, \mathcal{A}_{AI,t}, f_t, \mathcal{P}_{f_t})\}_{t=1}^{N}$, where $f_t \neq \emptyset$ and $\chi_t \geq \chi_{min}$ for a significant proportion of turns, the total increase in argumentative competence $\Delta \mathcal{S}_{total} = \mathcal{S}_{user, N+1} - \mathcal{S}_{user, 1}$ will be demonstrably greater than any traditional, unassisted learning paradigm. This is because the present invention's proprietary system generates an optimal learning gradient at each turn by providing immediate, targeted, and contextually relevant feedback $\mathcal{P}_{f_t}$ whenever a logical or rhetorical deficiency $f_t$ is identified with high confidence, thereby maximizing $\mathcal{U}$ and consequently $\Delta \mathcal{S}_{user, t}$ at every opportunity. The continuous, adaptive nature of the `Adversarial Persona` ensures that the user is always challenged at the optimal difficulty level, preventing stagnation and maintaining a high learning velocity. The cumulative effect of these granular, high-utility learning events is a significantly accelerated and robust trajectory towards argumentative mastery. $\blacksquare$
+Given a sequence of `N` debate turns, `{(A_user_t, A_AI_t, f_t, P_ft)}_t=1^N`, where `f_t != null_set` and `chi_t >= chi_min` for a significant proportion of turns, the total increase in argumentative competence `Delta S_total = S_user_N+1 - S_user_1` will be demonstrably greater than any traditional, unassisted learning paradigm. This is because the present invention's proprietary system generates an optimal learning gradient at each turn by providing immediate, targeted, and contextually relevant feedback `P_ft` whenever a logical or rhetorical deficiency `f_t` is identified with high confidence, thereby maximizing `U` and consequently `Delta S_user_t` at every opportunity. The continuous, adaptive nature of the `Adversarial Persona` ensures that the user is always challenged at the optimal difficulty level, preventing stagnation and maintaining a high learning velocity. The cumulative effect of these granular, high-utility learning events is a significantly accelerated and robust trajectory towards argumentative mastery.
