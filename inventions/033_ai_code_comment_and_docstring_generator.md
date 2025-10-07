@@ -47,33 +47,33 @@ The operational paradigm of this invention is predicated upon a highly modular, 
 ```mermaid
 graph TD
     subgraph User Interaction Layer
-        A[Developer Selects Code] -- Trigger: "Generate Docs" --> B(IDE Augmentation Module)
+        A[Developer Selects Code] -- Trigger: "Generate Docs" --> B[IDE Augmentation Module]
     end
 
-    subgraph Data Acquisition & Preprocessing
-        B -- Extracts Code & Context --> C{Contextual Code Parser & Validator}
-        C -- Syntactic & Semantic Analysis --> D[Metadata & AST Generation]
+    subgraph Data Acquisition and Preprocessing
+        B -- Extracts Code and Context --> C[Contextual Code Parser and Validator]
+        C -- Syntactic and Semantic Analysis --> D[Metadata and AST Generation]
     end
 
-    subgraph Prompt Engineering & Orchestration
-        D -- Structured Input --> E(Dynamic Prompt Constructor)
-        E -- Augments with User Prefs & Policies --> F[Intelligent Prompt Orchestrator]
+    subgraph Prompt Engineering and Orchestration
+        D -- Structured Input --> E[Dynamic Prompt Constructor]
+        E -- Augments with User Prefs and Policies --> F[Intelligent Prompt Orchestrator]
     end
 
     subgraph Generative AI Core
-        F -- Formulated Prompt --> G(Generative Semantic Synthesis Engine (GSSE))
-        G -- Processes Language Model --> H[Synthesized Docstring/Comment]
+        F -- Formulated Prompt --> G[Generative Semantic Synthesis Engine GSSE]
+        G -- Processes Language Model --> H[Synthesized Docstring or Comment]
     end
 
-    subgraph Post-Processing & Insertion
-        H -- Raw Output --> I(Semantic Validation & Refinement Unit)
-        I -- Quality-Assured Output --> J[IDE Integration & Insertion API]
-        J -- Updates Source File --> K{Document Updated}
+    subgraph Post-Processing and Insertion
+        H -- Raw Output --> I[Semantic Validation and Refinement Unit]
+        I -- Quality-Assured Output --> J[IDE Integration and Insertion API]
+        J -- Updates Source File --> K[Document Updated]
     end
 
-    subgraph Feedback & Adaptation Loop
-        K -- User Review / Edits --> L(Implicit & Explicit Feedback Capture)
-        L -- Data for Learning --> M[Adaptive Learning & Model Refinement]
+    subgraph Feedback and Adaptation Loop
+        K -- User Review or Edits --> L[Implicit and Explicit Feedback Capture]
+        L -- Data for Learning --> M[Adaptive Learning and Model Refinement]
         M -- Enhances GSSE --> G
         M -- Enhances Prompt Constructor --> E
     end
@@ -86,7 +86,7 @@ graph TD
 
 1.  **IDE Augmentation Module (I.A.M.) Logic:** The I.A.M., operating as a deeply integrated plugin within the host IDE, intercepts the designated textual segment representing the `calculate_exponential_moving_average` function. Beyond mere textual extraction, it performs an initial syntactic analysis to identify the programmatic construct's boundaries, its language type (e.g., Python), and relevant surrounding contextual elements (e.g., class definitions, module-level docstrings, existing imports) crucial for enhancing semantic precision.
 
-2.  **Dynamic Prompt Construction & Orchestration (D.P.C.O.):** The D.P.C.O. sub-system receives the extracted code and its meta-context. It then intelligently constructs a highly nuanced, context-aware prompt tailored for optimal interaction with the Generative Semantic Synthesis Engine (GSSE). This proprietary prompt engineering methodology incorporates:
+2.  **Dynamic Prompt Construction and Orchestration (D.P.C.O.):** The D.P.C.O. sub-system receives the extracted code and its meta-context. It then intelligently constructs a highly nuanced, context-aware prompt tailored for optimal interaction with the Generative Semantic Synthesis Engine (GSSE). This proprietary prompt engineering methodology incorporates:
     *   **Linguistic Persona Injection:** The prompt explicitly instantiates the GSSE with a professional persona, e.g., "You are an eminent Principal Software Engineer specializing in financial algorithms and robust API documentation."
     *   **Behavioral Directives:** Instructions to meticulously analyze the function's side effects, potential exceptions, algorithmic complexity implications, and practical usage scenarios.
     *   **Output Format Enforcement:** Rigorous directives for adhering to specified documentation styles (e.g., Google, NumPy, Sphinx for Python; Javadoc for Java; TSDoc for TypeScript).
@@ -113,12 +113,12 @@ graph TD
     technical analysis for smoothing price data, identifying trends, and reducing noise.
 
     The EMA is calculated using the formula:
-    :math:`EMA_t = (P_t \\cdot \\alpha) + (EMA_{t-1} \\cdot (1 - \\alpha))`
+    `EMA_t = (P_t * alpha) + (EMA_{t-1} * (1 - alpha))`
     where:
-        - :math:`EMA_t` is the Exponential Moving Average at time `t`.
-        - :math:`P_t` is the current price at time `t`.
-        - :math:`EMA_{t-1}` is the Exponential Moving Average of the previous period.
-        - :math:`\\alpha` is the smoothing factor, calculated as :math:`\\frac{2}{N + 1}`, where :math:`N` is the `temporal_smoothing_period`.
+        - `EMA_t` is the Exponential Moving Average at time `t`.
+        - `P_t` is the current price at time `t`.
+        - `EMA_{t-1}` is the Exponential Moving Average of the previous period.
+        - `alpha` is the smoothing factor, calculated as `2 / (N + 1)`, where `N` is the `temporal_smoothing_period`.
 
     Args:
         price_series_data (list[float | int]): A list of numerical values representing the time-series data (e.g., stock prices).
@@ -141,16 +141,34 @@ graph TD
         [20.5, 20.666666666666668, 20.22222222222222, 21.74074074074074]
     """
     ```
-4.  **Semantic Validation & Refinement Unit (S.V.R.U.) and Code Insertion Module (C.I.M.):** The raw textual output from the GSSE is routed through the S.V.R.U. This unit performs several critical post-processing steps:
+4.  **Semantic Validation and Refinement Unit (S.V.R.U.) and Code Insertion Module (C.I.M.):** The raw textual output from the GSSE is routed through the S.V.R.U. This unit performs several critical post-processing steps:
     *   **Syntactic Adherence:** Verifies the generated text conforms to the specified documentation style guide (e.g., correct indentation, proper Sphinx/Google/NumPy roles).
     *   **Type Signature Cross-Verification:** Compares generated parameter types and return types against the actual static analysis derived types from the source code, flagging discrepancies for potential correction or user review.
-    *   **Redundancy Elimination & Conciseness Optimization:** Applies linguistic compression algorithms to remove superfluous phrases while preserving semantic integrity.
+    *   **Redundancy Elimination and Conciseness Optimization:** Applies linguistic compression algorithms to remove superfluous phrases while preserving semantic integrity.
     *   **Contextual Consistency Check:** Ensures that the generated documentation aligns with the broader codebase's stylistic and terminological conventions.
     After successful validation, the C.I.M. leverages the host IDE's robust Application Programming Interface (API) to precisely insert the validated and refined documentation into the source document. This insertion process accounts for existing code formatting, indentation levels, and potential conflicts with pre-existing, albeit potentially sparse, documentation.
 
 ### Iterative Refinement and Adaptive Learning
 
-A crucial and proprietary aspect of this system is its inherent capability for adaptive learning and iterative refinement. User interactions, such as manual edits to the generated documentation, explicit "accept" or "reject" signals, or even implicit feedback derived from subsequent code modifications, are captured by the Feedback & Adaptation Loop. This rich dataset is then utilized to continually fine-tune the GSSE's underlying probabilistic models and to optimize the Dynamic Prompt Construction & Orchestration strategies. This closed-loop feedback mechanism ensures that the system progressively learns developer preferences, project-specific idioms, and evolving code conventions, leading to a sustained improvement in the quality and relevance of generated documentation over time, thus establishing a self-optimizing epistemic augmentation utility.
+A crucial and proprietary aspect of this system is its inherent capability for adaptive learning and iterative refinement. User interactions, such as manual edits to the generated documentation, explicit "accept" or "reject" signals, or even implicit feedback derived from subsequent code modifications, are captured by the Feedback and Adaptation Loop. This rich dataset is then utilized to continually fine-tune the GSSE's underlying probabilistic models and to optimize the Dynamic Prompt Construction and Orchestration strategies. This closed-loop feedback mechanism ensures that the system progressively learns developer preferences, project-specific idioms, and evolving code conventions, leading to a sustained improvement in the quality and relevance of generated documentation over time, thus establishing a self-optimizing epistemic augmentation utility.
+
+### Advanced Features and Scalability Enhancements
+
+To further augment the system's utility and solidify its position as a leading-edge solution, several advanced features and enhancements are integrated into its design:
+
+1.  **Deep IDE Integration and Language Server Protocol (LSP) Leverage**: The IDE Augmentation Module (I.A.M.) moves beyond basic text manipulation. It deeply integrates with the IDE's Language Server Protocol (LSP) client to gain rich, real-time insights into the codebase. This includes access to Abstract Syntax Trees (ASTs), symbol tables, precise type definitions, call graphs, and cross-references. This granular understanding allows the I.A.M. to provide significantly more accurate contextual information to the D.P.C.O., ensuring prompts are enriched with a full programmatic understanding rather than just textual proximity.
+
+2.  **Project-Wide Contextual Intelligence**: The D.P.C.O. extends its context gathering to encompass a holistic view of the entire project. This includes parsing project configuration files (e.g., `pyproject.toml`, `package.json`, `pom.xml`), analyzing project-level README files and existing documentation for overarching conventions, extracting rationale from relevant Git commit history, and even performing embedding lookups against external library documentation to provide accurate references and usage patterns for third-party dependencies. This ensures documentation is not only syntactically and semantically correct for the snippet but also consistent with the broader project and its ecosystem.
+
+3.  **Multi-Language and Polymorphic Documentation Support**: The system is engineered for inherent multi-language support, capable of processing and generating documentation for a diverse array of programming languages including Python, Java, C#, JavaScript/TypeScript, Go, and Rust. This is achieved through language-specific parsers within the I.A.M. and tailored output renderers within the S.V.R.U. Furthermore, the system supports polymorphic documentation styles, dynamically adapting to generate docstrings in formats such as Google, NumPy, or Sphinx for Python, Javadoc for Java, or TSDoc for TypeScript, based on explicit project configurations or inferred stylistic patterns within the codebase.
+
+4.  **Ethical AI, Bias Mitigation, and Factual Grounding**: Recognizing the critical importance of responsible AI, the Generative Semantic Synthesis Engine (GSSE) incorporates mechanisms for ethical AI governance. This includes rigorous post-training quantification and mitigation of biases inherited from training data, ensuring documentation is fair, inclusive, and avoids perpetuating harmful stereotypes. To prevent 'hallucination' and ensure factual accuracy, the GSSE is augmented with factual grounding techniques, cross-referencing generated content against a trusted internal knowledge graph or verified external documentation sources. Discrepancies are flagged for human review, fostering trust and reliability.
+
+5.  **Security and Data Governance Module (SDGM)**: A dedicated Security and Data Governance Module (SDGM) is integrated to handle the sensitive nature of transmitting proprietary source code. This module enforces end-to-end encryption for all data transmissions between the IDE, prompt orchestration, and the GSSE. It incorporates data anonymization techniques for highly sensitive code segments, robust access control mechanisms, and comprehensive audit logging. The SDGM ensures compliance with industry-specific data protection regulations (e.g., GDPR, HIPAA, SOC 2), particularly crucial when the GSSE operates as a cloud-hosted service.
+
+6.  **Integration with CI/CD Pipelines and Documentation-as-Code**: The system can be seamlessly integrated into Continuous Integration/Continuous Deployment (CI/CD) pipelines. This enables automated documentation checks as part of the build process, flagging undocumented or poorly documented code, and potentially enforcing documentation standards. The system supports a "Documentation-as-Code" paradigm, where generated documentation artifacts can be version-controlled alongside the source code, ensuring that documentation remains synchronized with code changes throughout the software development lifecycle.
+
+7.  **Specialized Domain Adaptation and Knowledge Graph Augmentation**: For enterprises operating in niche or highly specialized domains, the GSSE can undergo domain adaptation. This involves fine-tuning the base models with proprietary, domain-specific knowledge bases (e.g., financial trading algorithms, clinical medical informatics, advanced scientific computing models). Furthermore, the system can integrate with enterprise-level knowledge graphs, allowing the GSSE to leverage internal ontologies, proprietary terminology, and established architectural patterns, thereby generating documentation that is not only technically accurate but also perfectly aligned with an organization's unique operational context and intellectual assets.
 
 **Claims:**
 1.  A system for autonomous generation of semantic metadata for computational lexical constructs, comprising:
@@ -199,43 +217,43 @@ Let us rigorously formalize the theoretical underpinnings that unequivocally est
 
 ### I. Formalizing the Cognitive Cost of Manual Documentogenesis
 
-Let `C` denote a discrete computational lexical construct, specifically a function, method, or code block within a given programming language. The complexity of `C` can be quantified by a multivariate metric `Ω(C) = (μ_cy(C), μ_hal(C), μ_cog(C))`, where:
-*   `μ_cy(C)` represents the cyclomatic complexity (e.g., McCabe's metric), quantifying the number of linearly independent paths through the code. This directly correlates with testing effort and cognitive burden in tracing execution flow.
-*   `μ_hal(C)` represents Halstead complexity measures (e.g., effort, volume, bugs), derived from the number of distinct operators and operands. This correlates with the mental effort required for comprehension.
-*   `μ_cog(C)` represents cognitive complexity, a proprietary metric herein defined as the quantification of the mental processing load required to comprehend the construct `C` in isolation, considering factors like nesting, recursion, and abstraction levels.
+Let `C` denote a discrete computational lexical construct, specifically a function, method, or code block within a given programming language. The complexity of `C` can be quantified by a multivariate metric `Omega(C) = (mu_cy(C), mu_hal(C), mu_cog(C))`, where:
+*   `mu_cy(C)` represents the cyclomatic complexity (e.g., McCabe's metric), quantifying the number of linearly independent paths through the code. This directly correlates with testing effort and cognitive burden in tracing execution flow.
+*   `mu_hal(C)` represents Halstead complexity measures (e.g., effort, volume, bugs), derived from the number of distinct operators and operands. This correlates with the mental effort required for comprehension.
+*   `mu_cog(C)` represents cognitive complexity, a proprietary metric herein defined as the quantification of the mental processing load required to comprehend the construct `C` in isolation, considering factors like nesting, recursion, and abstraction levels.
 
-The ideal, human-authored documentation for `C` is denoted by `D*(C)`. This `D*(C)` represents a complete and unambiguous semantic projection of `C` into a natural language domain, possessing maximal information entropy reduction for an observer. The cognitive cost incurred by a human developer `H` to produce `D*(C)` is denoted as `Cost_H(C, D*(C))`.
+The ideal, human-authored documentation for `C` is denoted by `D_star_C`. This `D_star_C` represents a complete and unambiguous semantic projection of `C` into a natural language domain, possessing maximal information entropy reduction for an observer. The cognitive cost incurred by a human developer `H` to produce `D_star_C` is denoted as `Cost_H(C, D_star_C)`.
 
 We postulate `Cost_H` as a function of the code's intrinsic complexity, the developer's domain-specific knowledge, and their linguistic proficiency in natural language generation:
 
-$$
-\mathcal{C}_{\text{H}}(C, D^*(C)) = f( \Omega(C), \mathcal{K}_{\text{D}}(H), \mathcal{L}_{\text{N}}(H) ) + \tau_{\text{iter}}(C, D^*(C))
-$$
+```
+C_H(C, D_star_C) = f( Omega(C), K_D(H), L_N(H) ) + tau_iter(C, D_star_C)
+```
 
 Where:
-*   `f` is a monotonically increasing function with respect to `Ω(C)`. As `Ω(C)` increases, the cognitive effort escalates super-linearly due to the combinatoric explosion of possible interpretations and the mental state-space required for comprehension.
-*   `\mathcal{K}_{\text{D}}(H)` is a scalar representation of the human developer's specific domain knowledge relevant to `C`. A lower `\mathcal{K}_{\text{D}}(H)` implies a higher `Cost_H`.
-*   `\mathcal{L}_{\text{N}}(H)` is a scalar representation of the human developer's natural language generation proficiency (e.g., clarity, grammar, conciseness). A lower `\mathcal{L}_{\text{N}}(H)` necessitates greater iterative refinement, increasing `Cost_H`.
-*   `\tau_{\text{iter}}(C, D^*(C))` represents the temporal and cognitive overhead associated with iterative refinement, self-correction, and stylistic adherence. This term is non-trivial and often constitutes a significant portion of manual documentation effort.
+*   `f` is a monotonically increasing function with respect to `Omega(C)`. As `Omega(C)` increases, the cognitive effort escalates super-linearly due to the combinatoric explosion of possible interpretations and the mental state-space required for comprehension.
+*   `K_D(H)` is a scalar representation of the human developer's specific domain knowledge relevant to `C`. A lower `K_D(H)` implies a higher `Cost_H`.
+*   `L_N(H)` is a scalar representation of the human developer's natural language generation proficiency (e.g., clarity, grammar, conciseness). A lower `L_N(H)` necessitates greater iterative refinement, increasing `Cost_H`.
+*   `tau_iter(C, D_star_C)` represents the temporal and cognitive overhead associated with iterative refinement, self-correction, and stylistic adherence. This term is non-trivial and often constitutes a significant portion of manual documentation effort.
 
 The human cognitive processing for documentogenesis involves:
 1.  **Syntactic Deconstruction:** Parsing `C` into an Abstract Syntax Tree (AST).
 2.  **Semantic Reconstruction:** Inferring the underlying algorithms, data flow, and side effects.
 3.  **Conceptual Mapping:** Translating programmatic concepts into domain-specific natural language terminology.
 4.  **Linguistic Synthesis:** Generating coherent, grammatically correct, and stylistically compliant natural language text.
-5.  **Self-Correction & Refinement:** Iteratively reviewing and revising the generated text for accuracy, clarity, and completeness.
+5.  **Self-Correction and Refinement:** Iteratively reviewing and revising the generated text for accuracy, clarity, and completeness.
 
 Each of these stages imposes a measurable cognitive load, which is inherently stochastic and highly variable across individuals and time. `Cost_H` is thus a high-variance, high-magnitude variable.
 
 ```mermaid
 graph TD
     subgraph Human Documentogenesis
-        A[Input Code C] --> B(Syntactic Deconstruction)
-        B --> C(Semantic Reconstruction)
-        C --> D(Conceptual Mapping)
-        D --> E(Linguistic Synthesis)
-        E --> F(Self-Correction & Refinement)
-        F --> G[Output D*(C)]
+        A[Input Code C] --> B[Syntactic Deconstruction]
+        B --> C[Semantic Reconstruction]
+        C --> D[Conceptual Mapping]
+        D --> E[Linguistic Synthesis]
+        E --> F[Self-Correction and Refinement]
+        F --> G[Output D_star_C]
     end
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
@@ -245,81 +263,83 @@ graph TD
 
 ### II. The Generative Semantic Synthesis Engine (GSSE) and its Computational Cost
 
-Our proprietary system employs a Generative Semantic Synthesis Engine, denoted `\mathcal{G}_{\text{AI}}`, which acts as a sophisticated function mapping `C` to an approximated documentation `D'(C)`:
+Our proprietary system employs a Generative Semantic Synthesis Engine, denoted `G_AI`, which acts as a sophisticated function mapping `C` to an approximated documentation `D'(C)`:
 
-$$
-\mathcal{G}_{\text{AI}}(C) \to D'(C) \quad \text{such that} \quad D'(C) \approx D^*(C)
-$$
+```
+G_AI(C) -> D'(C)   such that   D'(C) approx D_star_C
+```
 
-The operation of `\mathcal{G}_{\text{AI}}` involves complex tensor operations within a deep neural network architecture. The computational cost of generating `D'(C)` by `\mathcal{G}_{\text{AI}}`, denoted `Cost_{AI}(C, D'(C))`, is primarily driven by inference time and energy consumption.
+The operation of `G_AI` involves complex tensor operations within a deep neural network architecture. The computational cost of generating `D'(C)` by `G_AI`, denoted `Cost_AI(C, D'(C))`, is primarily driven by inference time and energy consumption.
 
-$$
-\mathcal{C}_{\text{AI}}(C, D'(C)) = g( \text{Params}_{\text{GSSE}}, \mathcal{T}_{\text{inference}}, \mathcal{E}_{\text{compute}} )
-$$
+```
+C_AI(C, D'(C)) = g( Params_GSSE, T_inference, E_compute )
+```
 
 Where:
 *   `Params_GSSE` is the number of trainable parameters in the GSSE (e.g., billions).
-*   `\mathcal{T}_{\text{inference}}` is the inference latency, typically measured in milliseconds to seconds.
-*   `\mathcal{E}_{\text{compute}}` is the energy consumption during inference.
+*   `T_inference` is the inference latency, typically measured in milliseconds to seconds.
+*   `E_compute` is the energy consumption during inference.
 
-Crucially, `\mathcal{C}_{\text{AI}}(C, D'(C))` is largely independent of `Ω(C)` within reasonable bounds for a given model size, as the computational graph for inference remains relatively constant. Furthermore, `\mathcal{C}_{\text{AI}}` is deterministic and repeatable for a given input and model state. Empirically, for contemporary hardware, `\mathcal{C}_{\text{AI}} \ll \mathcal{C}_{\text{H}}` by several orders of magnitude, making it asymptotically negligible in comparison to human cognitive effort.
+Crucially, `C_AI(C, D'(C))` is largely independent of `Omega(C)` within reasonable bounds for a given model size, as the computational graph for inference remains relatively constant. Furthermore, `C_AI` is deterministic and repeatable for a given input and model state. Empirically, for contemporary hardware, `C_AI << C_H` by several orders of magnitude, making it asymptotically negligible in comparison to human cognitive effort.
 
 ### III. Quantifying Semantic Congruence and Verification Cost
 
-The quality of the generated documentation `D'(C)` is assessed by its semantic congruence with the ideal documentation `D*(C)`. We define a metric `\Phi(D'(C), D^*(C))` which quantifies this congruence, where `\Phi \in [0, 1]`. A value of `\Phi=1` indicates perfect semantic alignment and complete information transfer.
+The quality of the generated documentation `D'(C)` is assessed by its semantic congruence with the ideal documentation `D_star_C`. We define a metric `Phi(D'(C), D_star_C)` which quantifies this congruence, where `Phi in [0, 1]`. A value of `Phi=1` indicates perfect semantic alignment and complete information transfer.
 
-The cost for a human developer `H` to verify `D'(C)` and rectify any discrepancies is `Cost_{V}(D'(C), D^*(C))`. This verification cost is inversely proportional to the semantic congruence `\Phi`:
+The cost for a human developer `H` to verify `D'(C)` and rectify any discrepancies is `Cost_V(D'(C), D_star_C)`. This verification cost is inversely proportional to the semantic congruence `Phi`:
 
-$$
-\mathcal{C}_{\text{V}}(D'(C), D^*(C)) = h( 1 - \Phi(D'(C), D^*(C)), \Omega(D'(C)) )
-$$
+```
+C_V(D'(C), D_star_C) = h( 1 - Phi(D'(C), D_star_C), Omega(D'(C)) )
+```
 
 Where:
-*   `h` is a monotonically increasing function with respect to `(1 - \Phi)`. A lower `\Phi` (greater deviation) requires more cognitive effort for correction.
-*   `\Omega(D'(C))` is the complexity of the generated documentation itself (e.g., its length, linguistic complexity), which affects the effort of reading and parsing it.
+*   `h` is a monotonically increasing function with respect to `(1 - Phi)`. A lower `Phi` (greater deviation) requires more cognitive effort for correction.
+*   `Omega(D'(C))` is the complexity of the generated documentation itself (e.g., its length, linguistic complexity), which affects the effort of reading and parsing it.
 
-Through advanced prompt engineering, iterative refinement, and a highly performant GSSE, our proprietary system consistently achieves `\Phi \to 1`. This high congruence substantially minimizes `\mathcal{C}_{\text{V}}`. The verification process, often reduced to a cursory review, is profoundly less burdensome than authoring from first principles.
+Through advanced prompt engineering, iterative refinement, and a highly performant GSSE, our proprietary system consistently achieves `Phi -> 1`. This high congruence substantially minimizes `C_V`. The verification process, often reduced to a cursory review, is profoundly less burdensome than authoring from first principles.
 
 ### IV. The Epistemological Dividend: Reduction of Future Cognitive Load
 
-The existence of high-quality documentation `D'(C)` for a computational construct `C` provides a profound epistemological dividend, significantly reducing the cognitive cost for any future developer (`H'`) attempting to comprehend `C`. Let `Cost_{Future\_H'}(C)` denote this future cognitive load.
+The existence of high-quality documentation `D'(C)` for a computational construct `C` provides a profound epistemological dividend, significantly reducing the cognitive cost for any future developer (`H_prime`) attempting to comprehend `C`. Let `Cost_Future_H_prime(C)` denote this future cognitive load.
 
-Without documentation, `Cost_{Future\_H'\_undocumented}(C)` is primarily a function of `Ω(C)` and `\mathcal{K}_{\text{D}}(H')`. With our generated documentation, `Cost_{Future\_H'\_documented}(C, D'(C))`, this cost is drastically attenuated:
+Without documentation, `Cost_Future_H_prime_undocumented(C)` is primarily a function of `Omega(C)` and `K_D(H_prime)`. With our generated documentation, `Cost_Future_H_prime_documented(C, D'(C))`, this cost is drastically attenuated:
 
-$$
-\mathcal{C}_{\text{Future\_H'\_documented}}(C, D'(C)) \approx k( \Omega(C), \Phi(D'(C), D^*(C)) )
-$$
+```
+C_Future_H_prime_documented(C, D'(C)) approx k( Omega(C), Phi(D'(C), D_star_C) )
+```
 
-Where `k` is a function where its value is minimized when `\Phi \to 1`. The existence of `D'(C)` effectively "pre-processes" the cognitive effort, allowing `H'` to quickly assimilate the construct's semantics. This generates an amortized benefit that scales with the number of times `C` is subsequently revisited, maintained, or integrated by various developers over its lifecycle.
+Where `k` is a function where its value is minimized when `Phi -> 1`. The existence of `D'(C)` effectively "pre-processes" the cognitive effort, allowing `H_prime` to quickly assimilate the construct's semantics. This generates an amortized benefit that scales with the number of times `C` is subsequently revisited, maintained, or integrated by various developers over its lifecycle.
 
 ### V. Proof of Value: The Economic Imperative
 
 The economic value and intellectual superiority of this proprietary system are irrefutably demonstrated by comparing the total cost of documentogenesis under the traditional manual paradigm versus our automated framework.
 
 **Total Cost (Manual):**
-$$
-\mathcal{T}_{\text{Manual}}(C) = \mathcal{C}_{\text{H}}(C, D^*(C)) + \mathcal{C}_{\text{Future\_H'\_undocumented}}(C) \times N_{\text{accesses}}
-$$
+```
+T_Manual(C) = C_H(C, D_star_C) + C_Future_H_prime_undocumented(C) * N_accesses
+```
 Where `N_accesses` is the number of future instances of code comprehension.
 
 **Total Cost (Automated with Proprietary System):**
-$$
-\mathcal{T}_{\text{Automated}}(C) = \mathcal{C}_{\text{AI}}(C, D'(C)) + \mathcal{C}_{\text{V}}(D'(C), D^*(C)) + \mathcal{C}_{\text{Future\_H'\_documented}}(C, D'(C)) \times N_{\text{accesses}}
-$$
+```
+T_Automated(C) = C_AI(C, D'(C)) + C_V(D'(C), D_star_C) + C_Future_H_prime_documented(C, D'(C)) * N_accesses
+```
 
 Given the foundational propositions:
-1.  `\mathcal{C}_{\text{AI}}(C, D'(C))` is asymptotically negligible.
-2.  Through high `\Phi`, `\mathcal{C}_{\text{V}}(D'(C), D^*(C))` is dramatically reduced compared to `\mathcal{C}_{\text{H}}(C, D^*(C))`.
-3.  `\mathcal{C}_{\text{Future\_H'\_documented}}(C, D'(C))` is orders of magnitude lower than `\mathcal{C}_{\text{Future\_H'\_undocumented}}(C)`.
+1.  `C_AI(C, D'(C))` is asymptotically negligible.
+2.  Through high `Phi`, `C_V(D'(C), D_star_C)` is dramatically reduced compared to `C_H(C, D_star_C)`.
+3.  `C_Future_H_prime_documented(C, D'(C))` is orders of magnitude lower than `C_Future_H_prime_undocumented(C)`.
 
-Therefore, for any non-trivial `C` and `N_accesses \ge 1`:
+Therefore, for any non-trivial `C` and `N_accesses >= 1`:
 
-$$
-\mathcal{C}_{\text{AI}}(C, D'(C)) + \mathcal{C}_{\text{V}}(D'(C), D^*(C)) + \mathcal{C}_{\text{Future\_H'\_documented}}(C, D'(C)) \times N_{\text{accesses}} \ll \mathcal{C}_{\text{H}}(C, D^*(C)) + \mathcal{C}_{\text{Future\_H'\_undocumented}}(C) \times N_{\text{accesses}}
-$$
+```
+C_AI(C, D'(C)) + C_V(D'(C), D_star_C) + C_Future_H_prime_documented(C, D'(C)) * N_accesses
+<<
+C_H(C, D_star_C) + C_Future_H_prime_undocumented(C) * N_accesses
+```
 
-$$
-\mathcal{T}_{\text{Automated}}(C) \ll \mathcal{T}_{\text{Manual}}(C)
-$$
+```
+T_Automated(C) << T_Manual(C)
+```
 
-This profound inequality demonstrates the unequivocal economic and operational superiority of the present invention. The system not only accelerates the initial documentation phase but also generates a persistent, compounding positive externality by drastically reducing future cognitive loads across the entire lifecycle of a computational construct. This constitutes a paradigm shift in the fundamental economics of software maintainability and a definitive assertion of the intellectual property inherent in this methodology. **Q.E.D.**
+This profound inequality demonstrates the unequivocal economic and operational superiority of the present invention. The system not only accelerates the initial documentation phase but also generates a persistent, compounding positive externality by drastically reducing future cognitive loads across the entire lifecycle of a computational construct. This constitutes a paradigm shift in the fundamental economics of software maintainability and a definitive assertion of the intellectual property inherent in this methodology. Q.E.D.
