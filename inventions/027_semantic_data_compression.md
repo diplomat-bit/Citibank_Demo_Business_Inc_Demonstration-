@@ -25,11 +25,11 @@ The invention encompasses a sophisticated, modular architecture designed for the
 graph TD
     A[Source Data Input] --> B{Data Ingestion Module}
     B --> C[Preprocessing & Contextual Framing]
-    C --> D[Semantic Abstraction Module (Compressor)]
+    C --> D[Semantic Abstraction Module Compressor]
     D --> E[Knowledge Tuple Synthesis Engine]
     E --> F[Compressed Knowledge Tuple Storage]
     F --> G[Knowledge Tuple Retrieval]
-    G --> H[Semantic Expansion Module (Decompressor)]
+    G --> H[Semantic Expansion Module Decompressor]
     H --> I[Semantic Contextualization Engine]
     I --> J[Narrative Generation Engine]
     J --> K[Post-processing & Output Formatting]
@@ -62,7 +62,7 @@ graph TD
 **1.2 Preprocessing & Contextual Framing Module:**
 Upon ingestion, the source data undergoes a series of preprocessing transformations. For textual data, this may include tokenization, normalization, named entity recognition (NER), part-of-speech (POS) tagging, dependency parsing, and coreference resolution. For multimodal data, this involves feature extraction from respective modalities (e.g., visual features from images, acoustic features from audio). Crucially, this module also constructs an initial "Contextual Frame" – a set of metadata and explicit instructions designed to guide the subsequent semantic abstraction process. This frame can specify the desired output format for the Knowledge Tuple, the semantic granularity required, or specific domains of interest.
 
-**1.3 Semantic Abstraction Module (Compressor):**
+**1.3 Semantic Abstraction Module Compressor:**
 This module embodies the core intelligence of the compression process. It is primarily instantiated as a highly advanced generative AI model, typically a Large Language Model (LLM) or a multimodal transformer model, specifically fine-tuned or engineered for semantic distillation.
 
 *   **1.3.1 Latent Semantic Projection Subsystem:** This subsystem takes the preprocessed source data and projects its high-dimensional representation into a significantly lower-dimensional "latent semantic space." This projection is performed by the generative AI model's internal encoder architecture, effectively mapping verbose input into a compact vectorial representation that encapsulates the essential meaning. The optimization objective for this projection is to minimize the semantic distance between the original source and its latent representation, discarding syntactic noise while preserving informational entropy.
@@ -71,7 +71,7 @@ This module embodies the core intelligence of the compression process. It is pri
 **1.4 Compressed Knowledge Tuple Storage:**
 This module is responsible for the persistent and secure storage of the generated Knowledge Tuples. It may incorporate indexing and retrieval mechanisms based on metadata associated with the original source data or properties derived from the Knowledge Tuple itself. Data integrity and encryption protocols are rigorously applied.
 
-**1.5 Semantic Expansion Module (Decompressor):**
+**1.5 Semantic Expansion Module Decompressor:**
 This module mirrors the sophistication of the Compressor, functioning as the inverse transformation. It is also typically instantiated as a highly advanced generative AI model, potentially the same underlying model as the Compressor, but operating under a distinct set of operational parameters and objectives.
 
 *   **1.5.1 Semantic Contextualization Engine:** Upon retrieval of a Knowledge Tuple, this engine analyzes its structure and content to establish a comprehensive "Decompression Context." This context includes inferred stylistic requirements, target audience, desired output length, and any domain-specific nuances implied by the Knowledge Tuple itself. This ensures that the reconstruction is not merely semantically accurate but also stylistically appropriate.
@@ -86,21 +86,21 @@ The operational methodology outlines the step-by-step protocols for both semanti
 
 **2.1 Semantic Compression Protocol:**
 
-1.  **Source Data Ingestion:** The system receives a high-volume data object, $D$, intended for compression.
+1.  **Source Data Ingestion:** The system receives a high-volume data object, `D`, intended for compression.
     *   *Example:* A 1000-word financial earnings report detailing "Quantum Corp's Q2 2024 performance."
 
 2.  **Preprocessing and Contextual Framing:**
-    *   $D$ is parsed, tokenized, and semantically annotated.
-    *   A compression directive, $\Pi_{comp}$, is formulated based on desired output granularity and domain.
+    *   `D` is parsed, tokenized, and semantically annotated.
+    *   A compression directive, `Pi_comp`, is formulated based on desired output granularity and domain.
     *   *Example Prompt Fragment:* `You are an expert financial analyst and a semantic compression engine. Your task is to distill the following earnings report into a structured JSON object. Focus exclusively on the company name, reporting quarter, total revenue, net income, and the single most critical performance highlight or driver. Ensure maximum conciseness and numerical accuracy. Here is the article:`
 
 3.  **Core Semantic Extraction (by Semantic Abstraction Module):**
-    *   The preprocessed $D$ and $\Pi_{comp}$ are provided to the generative AI model ($\mathcal{G}_{comp}$).
+    *   The preprocessed `D` and `Pi_comp` are provided to the generative AI model (`G_comp`).
     *   The model executes an internal semantic analysis, identifying salient entities, quantitative metrics, and causal relationships. It effectively performs a many-to-one mapping from the complex textual manifold to a structured conceptual space.
     *   *Conceptual Process:* The LLM identifies "Quantum Corp," "Q2 2024," "$1.2 billion" (revenue), "$150 million" (net income), and "Strong growth in the AI Platform division" as the primary semantic constituents.
 
 4.  **Knowledge Tuple Formation:**
-    *   $\mathcal{G}_{comp}$ synthesizes these extracted semantic constituents into a highly structured Knowledge Tuple, $K$, adhering to the format specified in $\Pi_{comp}$.
+    *   `G_comp` synthesizes these extracted semantic constituents into a highly structured Knowledge Tuple, `K`, adhering to the format specified in `Pi_comp`.
     *   *Example Compressed Output (Knowledge Tuple):*
         ```json
         {
@@ -116,24 +116,24 @@ The operational methodology outlines the step-by-step protocols for both semanti
           "report_type": "quarterly_earnings_summary"
         }
         ```
-        This Knowledge Tuple represents an extreme semantic compression ratio, often exceeding 95% reduction in byte size relative to the original source document. This artifact, $K$, is then persisted in the Compressed Knowledge Tuple Storage.
+        This Knowledge Tuple represents an extreme semantic compression ratio, often exceeding 95% reduction in byte size relative to the original source document. This artifact, `K`, is then persisted in the Compressed Knowledge Tuple Storage.
 
 **2.2 Semantic Decompression Protocol:**
 
-1.  **Knowledge Tuple Retrieval:** The system retrieves the compressed Knowledge Tuple, $K$, from storage.
+1.  **Knowledge Tuple Retrieval:** The system retrieves the compressed Knowledge Tuple, `K`, from storage.
     *   *Example:* The JSON object detailed above is retrieved.
 
 2.  **Decompression Contextualization:**
-    *   A decompression directive, $\Pi_{decomp}$, is formulated. This directive specifies parameters such as desired output length, stylistic tone, target audience, and output format.
+    *   A decompression directive, `Pi_decomp`, is formulated. This directive specifies parameters such as desired output length, stylistic tone, target audience, and output format.
     *   *Example Prompt Fragment:* `You are a professional financial news reporter, tasked with drafting a comprehensive article. Based on the following structured financial data, write a full, 500-word news report about the company's quarterly earnings. Maintain a formal, informative, and slightly optimistic tone, suitable for a business-focused publication. Ensure all provided data points are seamlessly integrated into the narrative. Here is the data:`
 
 3.  **Semantic Reconstruction (by Semantic Expansion Module):**
-    *   The retrieved $K$ and $\Pi_{decomp}$ are provided to the generative AI model ($\mathcal{G}_{decomp}$).
-    *   $\mathcal{G}_{decomp}$ leverages its vast pre-trained knowledge base and its generative capabilities to synthesize a new data object, $D'$, by expanding the semantic primitives of $K$ into a coherent and contextually appropriate narrative. This is a one-to-many mapping from the succinct conceptual representation back to a verbose textual manifold.
+    *   The retrieved `K` and `Pi_decomp` are provided to the generative AI model (`G_decomp`).
+    *   `G_decomp` leverages its vast pre-trained knowledge base and its generative capabilities to synthesize a new data object, `D'`, by expanding the semantic primitives of `K` into a coherent and contextually appropriate narrative. This is a one-to-many mapping from the succinct conceptual representation back to a verbose textual manifold.
     *   *Conceptual Process:* The LLM takes "Quantum Corp," "Q2 2024," revenue/income figures, and the AI Platform highlight, and weaves them into a detailed article, adding context, introductory and concluding remarks, and elaborating on the significance of the figures.
 
 4.  **Post-processing and Output Formatting:**
-    *   The generated $D'$ undergoes final linguistic and stylistic refinement.
+    *   The generated `D'` undergoes final linguistic and stylistic refinement.
     *   *Example Decompressed Output:* A full-length article, approximately 500 words, that accurately presents Quantum Corp's Q2 2024 earnings, highlighting the significant role of the AI Platform division, while not being lexically identical to the original report.
 
 ### III. Embodiments and Variations
@@ -157,17 +157,228 @@ For exceptionally large datasets or high-throughput requirements, the Semantic A
 Quantifying the efficacy of semantic compression requires a departure from traditional metrics, focusing instead on semantic equivalence and informational fidelity.
 
 **4.1 Semantic Fidelity Quantification:**
-Traditional bit-error rates or PSNR are inapplicable. Semantic fidelity, $L_{\text{sem}}$, is quantified by employing advanced natural language understanding (NLU) models or human evaluators to assess the degree to which the core meaning, intent, and critical information of the original document $D$ are preserved in the reconstructed document $D'$. Metrics may include:
-*   **Semantic Similarity Scores:** Utilizing vector embeddings (e.g., cosine similarity of sentence embeddings) to compare semantic representations of $D$ and $D'$.
-*   **Fact Extraction Consistency:** Automated comparison of factoids extracted by an independent NLU system from both $D$ and $D'$.
-*   **Question Answering Accuracy:** Evaluating how well a question-answering system performs on $D'$ compared to $D$ for a set of relevant questions.
+Traditional bit-error rates or PSNR are inapplicable. Semantic fidelity, `L_sem`, is quantified by employing advanced natural language understanding (NLU) models or human evaluators to assess the degree to which the core meaning, intent, and critical information of the original document `D` are preserved in the reconstructed document `D'`. Metrics may include:
+*   **Semantic Similarity Scores:** Utilizing vector embeddings (e.g., cosine similarity of sentence embeddings) to compare semantic representations of `D` and `D'`.
+*   **Fact Extraction Consistency:** Automated comparison of factoids extracted by an independent NLU system from both `D` and `D'`.
+*   **Question Answering Accuracy:** Evaluating how well a question-answering system performs on `D'` compared to `D` for a set of relevant questions.
 *   **Human Adjudication:** Expert review to rate the semantic equivalence on a psychometric scale.
 
 **4.2 Compression Ratio Optimization:**
-The semantic compression ratio, $\mathcal{R}$, is defined as $\text{size}(D) / \text{size}(K)$. The system is optimized to maximize $\mathcal{R}$ while maintaining an acceptable threshold of semantic fidelity $L_{\text{sem}}$. This involves iterative refinement of the prompt engineering and internal architectural parameters of $\mathcal{G}_{comp}$ to identify the minimal set of semantic primitives required for high-fidelity reconstruction.
+The semantic compression ratio, `R`, is defined as `size(D) / size(K)`. The system is optimized to maximize `R` while maintaining an acceptable threshold of semantic fidelity `L_sem`. This involves iterative refinement of the prompt engineering and internal architectural parameters of `G_comp` to identify the minimal set of semantic primitives required for high-fidelity reconstruction.
 
 **4.3 Computational Complexity Analysis:**
-The computational complexity is predominantly dictated by the inference time of the generative AI models ($\mathcal{G}_{comp}$ and $\mathcal{G}_{decomp}$). This complexity is generally proportional to the length of the input sequence for compression and the length of the output sequence for decompression, as well as the model's parameter count. Optimization strategies include model quantization, distillation, pruning, and efficient inference engines.
+The computational complexity is predominantly dictated by the inference time of the generative AI models (`G_comp` and `G_decomp`). This complexity is generally proportional to the length of the input sequence for compression and the length of the output sequence for decompression, as well as the model's parameter count. Optimization strategies include model quantization, distillation, pruning, and efficient inference engines.
+
+### V. Advanced System Features & Integrations
+
+The inventive system extends beyond its core compression-decompression function through a suite of advanced features and seamless integration capabilities within larger information ecosystems.
+
+**5.1 Real-world Applications & Use Cases:**
+The transformative potential of semantic-cognitive data compression unlocks a myriad of previously unfeasible applications:
+*   **Scientific and Research Archival:** Compress vast volumes of research papers, experimental data summaries, and clinical trial results into structured Knowledge Tuples, enabling rapid querying and synthesis of scientific knowledge, transcending mere keyword searches.
+*   **Secure and Private Communication:** Distill sensitive communications into highly dense, encrypted Knowledge Tuples, offering enhanced security and reduced bandwidth for transmission, especially in low-resource or high-risk environments.
+*   **Cross-Lingual Semantic Exchange:** Transform content from one language into a language-agnostic Knowledge Tuple, which can then be decompressed into any target language, achieving true semantic translation rather than mere lexical substitution.
+*   **Autonomous Agent Knowledge Bases:** Enable intelligent agents (e.g., robots, virtual assistants) to rapidly process and store environmental observations, sensor data, and operational directives as compact Knowledge Tuples, facilitating real-time decision-making and knowledge sharing.
+*   **Data Stream Optimization:** For IoT devices, real-time analytics, or satellite communications, compress continuous streams of data into semantic summaries, drastically reducing data transmission loads while preserving critical insights for downstream processing.
+*   **Personalized Content Delivery:** News feeds, educational materials, or entertainment summaries can be generated from common Knowledge Tuples, tailored to individual user preferences for length, style, and semantic emphasis.
+
+**5.2 Security, Privacy, and Explainability:**
+Recognizing the sensitive nature of information processed, the system incorporates robust mechanisms for trust and transparency:
+*   **Homomorphic Semantic Compression:** Develop cryptographic techniques that allow computations (e.g., similarity searches or updates) to be performed directly on encrypted Knowledge Tuples, without decrypting them, ensuring end-to-end data privacy.
+*   **Differential Privacy in Abstraction:** Introduce controlled noise during the Knowledge Tuple synthesis process, particularly for sensitive data, to prevent the reconstruction of specific individual records while preserving aggregate semantic patterns.
+*   **Explainable AI XAI for Transparency:** Implement XAI techniques to provide insight into *how* the Semantic Abstraction Module arrived at a particular Knowledge Tuple and *why* the Semantic Expansion Module generated a specific output, fostering trust and debugging capabilities. This might involve highlighting source passages corresponding to tuple elements or visualizing the latent semantic projections.
+*   **Semantic Watermarking and Auditing:** Embed imperceptible semantic watermarks within Knowledge Tuples or reconstructed data objects to trace their origin, verify authenticity, or detect unauthorized modifications. Post-processing modules can include auditing functions to compare `D` and `D'` for specific policy compliance or fact consistency.
+
+**5.3 Integration with Knowledge Graphs and Ontologies:**
+The structured nature of the Knowledge Tuple lends itself to deep integration with formal knowledge representations:
+*   **Ontology-Guided Abstraction:** Pre-load the Semantic Abstraction Module with domain-specific ontologies to guide the extraction of entities, relationships, and events into a predefined, semantically consistent schema for the Knowledge Tuple. This ensures higher fidelity and interoperability.
+*   **Knowledge Graph Enrichment:** Knowledge Tuples can be directly inserted into or merged with existing Knowledge Graphs, enriching the overall knowledge base and enabling more complex inferential reasoning.
+*   **Constraint-Based Decompression:** During decompression, the Narrative Generation Engine can leverage associated ontologies or knowledge graphs to ensure that the reconstructed data object `D'` adheres to factual consistency, domain rules, and logical coherence.
+
+**5.4 Training and Fine-tuning Methodologies:**
+The performance of the generative AI models is paramount, and specialized training regimes are employed:
+*   **Self-supervised Semantic Autoencoding:** The system can be trained end-to-end as a semantic autoencoder. The objective is to learn `G_comp` and `G_decomp` such that `G_decomp(G_comp(D))` semantically approximates `D`. This can involve contrastive learning or masked language modeling on the Knowledge Tuples.
+*   **Adversarial Training for Fidelity:** Employ a Generative Adversarial Network GAN framework where a discriminator attempts to distinguish between original source data `D` and reconstructed data `D'`, compelling the `G_decomp` to produce increasingly realistic and semantically faithful outputs.
+*   **Reinforcement Learning with Human Feedback RLHF:** Human evaluators provide feedback on the semantic fidelity and fluency of reconstructed data, which is then used to fine-tune the generative AI models, biasing them towards human-preferred semantic equivalence.
+*   **Knowledge Graph Guided Pre-training:** Pre-train models on corpora aligned with specific knowledge graphs to enhance their ability to extract and reconstruct structured semantic information.
+
+**5.5 Adaptive & Context-Aware Compression:**
+The system is designed for dynamic adjustment based on operational context:
+*   **User Profile-Driven Granularity:** Dynamically adjust the level of semantic detail in the Knowledge Tuple based on the end-user's preferences, expertise, or cognitive load requirements.
+*   **Network-Aware Compression:** Integrate with network monitoring to adapt compression ratios based on available bandwidth, prioritizing critical semantic elements during network congestion.
+*   **Device-Specific Optimization:** For resource-constrained devices, generate simpler, smaller Knowledge Tuples and potentially delegate decompression to more powerful edge or cloud resources.
+
+### VI. Challenges, Limitations, and Future Directions
+
+While representing a significant breakthrough, the Semantic-Cognitive Data Compression System also presents unique challenges and avenues for future research.
+
+**6.1 Hallucination Control:**
+A primary challenge with generative AI models is the potential for "hallucination," where the model generates plausible but factually incorrect information. Strict prompt engineering, grounding mechanisms (e.g., retrieving facts from trusted knowledge bases during decompression), and advanced fact-checking algorithms in the Post-processing Module are crucial for mitigation. Future work will focus on provably honest generative models.
+
+**6.2 Computational Resource Intensity:**
+State-of-the-art generative AI models are computationally demanding. Research is ongoing into more efficient model architectures (e.g., sparse models, mixture-of-experts), hardware acceleration, and decentralized computing paradigms to make the system more accessible and scalable.
+
+**6.3 Semantic Ambiguity Resolution:**
+Natural language is inherently ambiguous. The system must be robust in resolving potential semantic ambiguities in the source data. This requires advanced contextual reasoning and possibly incorporating external disambiguation services or user feedback during the abstraction phase.
+
+**6.4 Multilinguality and Cross-Cultural Nuances:**
+Extending the system's efficacy across a broad spectrum of languages and cultural contexts requires careful consideration of language-specific semantic representations and culturally appropriate narrative generation. Multilingual knowledge graphs and cross-lingual latent spaces are active areas of development.
+
+**6.5 Domain Generalization and Specialization:**
+Balancing the ability to handle diverse domains (generalization) with the need for high accuracy in specialized fields (specialization) is an ongoing challenge. Modular architectures allowing for the hot-swapping of domain-specific fine-tuned models for `G_comp` and `G_decomp` is a promising direction.
+
+### VII. Mathematical Foundations of Semantic Data Compression
+
+The invention herein presents a rigorously defined framework for information transformation, rooted in advanced mathematical principles of manifold learning, information theory, and metric space analysis. This section provides a formal axiomatic and definitional basis for the operational efficacy and profound novelty of the Semantic-Cognitive Data Compression System.
+
+### I. Formal Definition of Semantic Information Space
+
+We commence by formally defining the conceptual spaces traversed by the data objects within this inventive system.
+
+**1.1 Source Data Manifold: `D`**
+Let `D` denote the topological manifold representing the space of all possible source data objects. Each point `D in D` corresponds to a specific instance of source data (e.g., a text document, a multimodal recording).
+We define `D` as a composite entity:
+```
+D = (S_D, A_D)
+```
+where `S_D` is the raw syntactic representation (e.g., sequence of tokens, pixel array, waveform data) and `A_D` is the intrinsic semantic information content embedded within `S_D`. The dimensionality of `S_D` is typically exceedingly high, characterized by its extensive vocabulary, lexical variations, grammatical structures, or raw sensory signal values.
+
+**1.2 Semantic Information Content Operator: `I(.)`**
+We introduce a fundamental operator `I: D -> S` which maps any source data object `D` to its true, invariant semantic information content `I(D) in S`. The space `S` is an abstract semantic information space, where elements represent pure meaning, stripped of syntactic contingencies. This operator embodies the cognitive understanding inherent in the Semantic Abstraction Module.
+Formally, `I(D)` represents the minimal set of propositions, entities, relationships, and events necessary to preserve the core meaning of `D` such that any semantically equivalent reconstruction `D'` would yield an `I(D') approx I(D)`.
+
+**1.3 Knowledge Tuple Space: `K`**
+Let `K` denote the structured manifold of "Knowledge Tuples." Each `K in K` is a formal, machine-readable, and highly parsimonious representation of semantic information, often instantiated as a graph, a set of RDF triples, or a JSON object.
+An element `K in K` is characterized by:
+```
+K = { (e_1, a_1), (e_2, r_12, e_1), ..., (evt_j, t_j, loc_j, ...) }
+```
+where `e_i` are entities, `a_i` are attributes, `r_ij` are relations, and `evt_j` are events with associated spatio-temporal and causal parameters. The space `K` is of significantly lower intrinsic dimensionality than `D`, as it deliberately discards syntactic and stylistic variations.
+
+### II. The Semantic Compression Transformation
+
+The compression phase is modeled as a sophisticated mapping from the verbose source data manifold `D` to the concise Knowledge Tuple space `K`.
+
+**2.1 The Compressor Mapping: `G_comp: D -> K`**
+The Semantic Abstraction Module implements the compressor function `G_comp`. This is a non-linear, information-reducing transformation defined as:
+```
+G_comp(D, Pi_comp) = K
+```
+where `Pi_comp` is the contextual compression directive (prompt), guiding the abstraction process. `G_comp` operates to identify and extract `I(D)` and project it into the structural constraints of `K`.
+The core objective of `G_comp` is to minimize the representational entropy of `K` while maximizing its semantic fidelity to `D`. This is a constrained optimization problem:
+```
+min_{K in K} H(K) subject to SemDist(I(D), I_decoded(K)) <= epsilon
+```
+where `H(K)` is the informational entropy of the Knowledge Tuple `K`, `SemDist` is a semantic distance metric (defined in Section IV.2), `I_decoded(K)` is the semantic information inherently contained within `K`, and `epsilon` is a pre-defined tolerance for semantic loss.
+
+**2.2 Information Entropy Reduction and Semantic Preservation**
+A fundamental tenet of this invention is the reduction of informational entropy at the syntactic level while preserving entropy at the semantic level.
+Let `H_syn(D)` be the Shannon entropy of the syntactic representation `S_D` of the source data `D`, and `H_sem(I(D))` be the semantic entropy of its intrinsic information content. Similarly, `H_syn(K)` is the syntactic entropy of the Knowledge Tuple `K`, and `H_sem(I_decoded(K))` is its semantic entropy.
+The invention guarantees:
+```
+H_syn(K) << H_syn(D)
+```
+simultaneously striving for:
+```
+H_sem(I_decoded(K)) approx H_sem(I(D))
+```
+This represents a transformation from a high-entropy, semantically dilute syntactic representation to a low-entropy, semantically concentrated symbolic representation.
+
+**2.3 Optimal Dimensionality Reduction in Semantic Latent Space**
+The internal workings of `G_comp` involve mapping `D` into a continuous latent semantic space `Z`. This is achieved via an encoder network `E: D -> Z`. The dimensionality of `Z`, denoted `d_Z`, is significantly smaller than the effective dimensionality of `D`, `d_D`.
+The optimality criterion for this reduction is to find a mapping such that `d_Z` is minimal while preserving salient features that are semantically reconstructible. This can be viewed as learning a semantic embedding where points representing similar meanings are proximal in `Z`. The Knowledge Tuple `K` is then a structured interpretation of these latent semantic points.
+
+### III. The Semantic Decompression Transformation
+
+The decompression phase executes the inverse mapping, reconstituting a semantically equivalent data object from the compact Knowledge Tuple.
+
+**3.1 The Decompressor Mapping: `G_decomp: K -> D'`**
+The Semantic Expansion Module implements the decompressor function `G_decomp`. This is a non-linear, information-expanding transformation:
+```
+G_decomp(K, Pi_decomp) = D'
+```
+where `Pi_decomp` is the contextual decompression directive, guiding the narrative generation. `D'` is the reconstructed data object, residing in the same manifold `D` as `D`.
+The objective of `G_decomp` is to generate a `D'` such that its semantic content `I(D')` is maximally consistent with the semantic content of `K`, which itself is a representation of `I(D)`.
+This is a generative process that optimizes for semantic coherence and fluency:
+```
+max_{D' in D} P(D' | K, Pi_decomp) subject to SemDist(I(D'), I_decoded(K)) <= delta
+```
+where `P(D' | K, Pi_decomp)` is the probability of generating `D'` given `K` and `Pi_decomp`, and `delta` is an acceptable semantic divergence.
+
+**3.2 Probabilistic Reconstruction and Semantic Coherence**
+Unlike lossless decompression, the reconstruction of `D'` from `K` is inherently probabilistic. `G_decomp` samples from a conditional probability distribution `P(D' | K, Pi_decomp)`. This implies that multiple `D'` objects could be generated from the same `K`, all semantically consistent with `K`.
+The crucial aspect is that while `S_D'` may vary widely across different sampling instances, `I(D')` remains asymptotically invariant. This guarantees semantic coherence.
+
+**3.3 Divergence Minimization in Semantic Reconstruction**
+A primary goal in the design and training of `G_decomp` is the minimization of semantic divergence. We formally define the target optimization as the minimization of a divergence measure between the semantic distribution of the original document `D` and the reconstructed document `D'`:
+```
+min_{G_decomp} D_KL(P_{I(D)} || P_{I(D')})
+```
+where `D_KL` is the Kullback-Leibler (KL) divergence between the probability distribution over semantic concepts in `I(D)` and `I(D')`.
+Alternatively, using a metric space approach, we aim to minimize `SemDist(I(D), I(D'))`, which represents the distance in the semantic information space `S`.
+
+### IV. Quantitative Metrics of System Efficacy
+
+To rigorously evaluate the performance of this system, we introduce specific quantitative metrics.
+
+**4.1 Semantic Compression Ratio: `R`**
+The compression ratio is a measure of the physical size reduction of the data object. Let `size(X)` denote the byte-size of a data object `X`. The semantic compression ratio `R` is defined as:
+```
+R = size(D) / size(K)
+```
+This ratio is expected to be orders of magnitude higher than traditional lossless compression ratios, often `R >> 10:1`, potentially reaching `R approx 100:1` or more, depending on the data type and compression granularity.
+
+**4.2 Semantic Fidelity Metric: `L_sem` (Semantic Distance)**
+The core measure of success is the preservation of meaning. Let `S` be a metric space endowed with a semantic distance function `d_S: S x S -> R_>=0`. This function quantifies the dissimilarity between two semantic information contents.
+A suitable `d_S` can be constructed using advanced semantic embedding spaces (e.g., universal sentence embeddings, knowledge graph embeddings). For any two semantic contents `s_1, s_2 in S`, `d_S(s_1, s_2)` is non-negative, symmetric, and satisfies the triangle inequality.
+The semantic loss, `L_sem`, for a given compression-decompression cycle is defined as:
+```
+L_sem = d_S(I(D), I(D'))
+```
+The objective is to ensure `L_sem` remains below a predetermined threshold `tau`, i.e., `L_sem <= tau`.
+
+**4.3 Semantic Information Preservation Index: `P_info`**
+Building upon the semantic distance, we can define an information preservation index, `P_info`, which ranges from 0 (no information preserved) to 1 (perfect semantic preservation).
+```
+P_info = 1 - L_sem / max(d_S)
+```
+where `max(d_S)` is the maximum possible semantic distance in `S`. The system is designed to achieve `P_info approx 1`.
+
+### V. Proof of System's Fundamental Efficacy
+
+The inherent efficacy of this semantic compression system is derived from foundational principles of information theory and cognitive modeling, demonstrating that significant syntactic compression is achievable with bounded and acceptable semantic loss.
+
+**5.1 Axiomatic Basis**
+1.  **Axiom of Semantic Redundancy:** For any sufficiently complex source data object `D in D`, the syntactic representation `S_D` contains a vast amount of redundant information relative to its intrinsic semantic content `I(D)`. That is, many distinct `S_D` can map to the same `I(D)`.
+2.  **Axiom of Semantic Completeness of `K`:** The Knowledge Tuple space `K` is designed to be semantically complete for a given domain, meaning any `I(D)` within that domain can be accurately and uniquely encoded by some `K in K`.
+3.  **Axiom of Generative Capacity:** Modern generative AI models possess the capacity to synthesize diverse syntactic forms from concise semantic instructions, maintaining high semantic fidelity.
+
+**5.2 Derivation of Bounded Semantic Loss under High Compression**
+From Axiom 1, we assert that the size of the syntactic representation, `size(D)`, is often disproportionately larger than the minimal size required to represent `I(D)`, denoted `size(I(D)_min)`.
+```
+size(D) = C_1 * size(I(D)_min) + size(syntactic_redundancy)
+```
+The compressor `G_comp` effectively identifies and isolates `size(I(D)_min)` and maps it to `K`. The size of `K` is engineered to approach `size(I(D)_min)`:
+```
+size(K) approx C_2 * size(I(D)_min) where C_2 approx 1
+```
+Therefore, the compression ratio `R` is predominantly determined by the magnitude of syntactic redundancy that can be successfully discarded:
+```
+R = size(D) / size(K) approx (C_1 * size(I(D)_min) + size(syntactic_redundancy)) / (C_2 * size(I(D)_min)) >> 1
+```
+The core challenge is that the process of extracting `I(D)` and reconstructing `D'` introduces an inherent, bounded loss. This loss is modeled as a small perturbation in the semantic space. Let `K` be the output of `G_comp(D)` and `D'` be the output of `G_decomp(K)`. The semantic loss `L_sem = d_S(I(D), I(D'))` is the metric of interest.
+The entire system, `G_decomp o G_comp`, can be viewed as an autoencoder in semantic space. Advanced generative AI models are capable of learning highly non-linear mappings that minimize reconstruction error in their latent spaces. By aligning this latent space with `S`, the semantic error `d_S(I(D), I(D'))` is empirically and theoretically demonstrable to be controllable and bounded by `tau`. The system is explicitly designed to minimize this `L_sem` within the constraints of maximum `R`.
+
+**5.3 Convergence of Reconstructed Semantic Content**
+Given a sufficiently robust `G_comp` and `G_decomp`, and given a Knowledge Tuple `K` that accurately represents `I(D)`, the reconstructed semantic content `I(D')` will converge towards `I(D)`. This convergence is ensured by the training objectives of the generative AI models, which penalize semantic divergence.
+More formally, we claim that for any `epsilon' > 0`, there exist model parameters and operational configurations such that:
+```
+P(L_sem <= epsilon') -> 1 as training iterations -> infinity
+```
+This implies that with sufficient optimization and computational resources, the semantic fidelity can be driven arbitrarily close to perfect, subject to the inherent limitations of the chosen generative models and the definition of semantic equivalence. The probabilistic nature of `G_decomp` means that while the specific syntactic form of `D'` may vary, its semantic essence will reliably approximate `I(D)`.
+
+**5.4 Q.E.D. Statement**
+It is hereby formally posited and demonstrably proven, through the intricate architectural design, the rigorous mathematical formalism, and the advanced capabilities of modern artificial intelligence, that this inventive system provides a fundamentally efficacious method for semantic-cognitive data compression. It achieves unprecedented compression ratios by intentionally transforming data from a high-entropy syntactic representation to a low-entropy semantic representation, while ensuring the fidelity of core informational content remains within precisely quantifiable and acceptable bounds. The paradigm shift from statistical to semantic understanding of data compression is thus established as a practical and profoundly impactful reality. The foundational principles herein articulated represent a permanent and intrinsic advancement in the field of information science.
 
 ---
 
@@ -235,125 +446,12 @@ The computational complexity is predominantly dictated by the inference time of 
 
 20. The system of claim 1, wherein the Semantic Abstraction Module comprises sub-modules for Named Entity Recognition, Relationship Extraction, Event Co-reference Resolution, and Sentiment Analysis to enrich the semantic context for Knowledge Tuple generation.
 
----
+21. The system of claim 1, further comprising a security and privacy module configured to apply homomorphic semantic compression or differential privacy techniques during Knowledge Tuple synthesis and storage.
 
-**Mathematical Foundations of Semantic Data Compression**
+22. The system of claim 2, further comprising an Explainable AI XAI module to provide insights into the semantic transformation process, including tracing Knowledge Tuple elements back to source data and explaining generative decisions.
 
-The invention herein presents a rigorously defined framework for information transformation, rooted in advanced mathematical principles of manifold learning, information theory, and metric space analysis. This section provides a formal axiomatic and definitional basis for the operational efficacy and profound novelty of the Semantic-Cognitive Data Compression System.
+23. The method of claim 7, further comprising guiding the semantic extraction process using an external ontology or knowledge graph to ensure structural and conceptual consistency of the Knowledge Tuple.
 
-### I. Formal Definition of Semantic Information Space
+24. The method of claim 8, wherein the generation of the new data object is constrained by an external ontology or knowledge graph to ensure factual accuracy and domain adherence.
 
-We commence by formally defining the conceptual spaces traversed by the data objects within this inventive system.
-
-**1.1 Source Data Manifold: $\mathcal{D}$**
-Let $\mathcal{D}$ denote the topological manifold representing the space of all possible source data objects. Each point $D \in \mathcal{D}$ corresponds to a specific instance of source data (e.g., a text document, a multimodal recording).
-We define $D$ as a composite entity:
-$$D = (S_D, \mathcal{A}_D)$$
-where $S_D$ is the raw syntactic representation (e.g., sequence of tokens, pixel array, waveform data) and $\mathcal{A}_D$ is the intrinsic semantic information content embedded within $S_D$. The dimensionality of $S_D$ is typically exceedingly high, characterized by its extensive vocabulary, lexical variations, grammatical structures, or raw sensory signal values.
-
-**1.2 Semantic Information Content Operator: $\mathcal{I}(\cdot)$**
-We introduce a fundamental operator $\mathcal{I}: \mathcal{D} \rightarrow \mathbb{S}$ which maps any source data object $D$ to its true, invariant semantic information content $\mathcal{I}(D) \in \mathbb{S}$. The space $\mathbb{S}$ is an abstract semantic information space, where elements represent pure meaning, stripped of syntactic contingencies. This operator embodies the cognitive understanding inherent in the Semantic Abstraction Module.
-Formally, $\mathcal{I}(D)$ represents the minimal set of propositions, entities, relationships, and events necessary to preserve the core meaning of $D$ such that any semantically equivalent reconstruction $D'$ would yield an $\mathcal{I}(D') \approx \mathcal{I}(D)$.
-
-**1.3 Knowledge Tuple Space: $\mathcal{K}$**
-Let $\mathcal{K}$ denote the structured manifold of "Knowledge Tuples." Each $K \in \mathcal{K}$ is a formal, machine-readable, and highly parsimonious representation of semantic information, often instantiated as a graph, a set of RDF triples, or a JSON object.
-An element $K \in \mathcal{K}$ is characterized by:
-$$K = \{ (e_1, a_1), (e_2, r_{12}, e_1), \dots, (evt_j, t_j, loc_j, \dots) \}$$
-where $e_i$ are entities, $a_i$ are attributes, $r_{ij}$ are relations, and $evt_j$ are events with associated spatio-temporal and causal parameters. The space $\mathcal{K}$ is of significantly lower intrinsic dimensionality than $\mathcal{D}$, as it deliberately discards syntactic and stylistic variations.
-
-### II. The Semantic Compression Transformation
-
-The compression phase is modeled as a sophisticated mapping from the verbose source data manifold $\mathcal{D}$ to the concise Knowledge Tuple space $\mathcal{K}$.
-
-**2.1 The Compressor Mapping: $\mathcal{G}_{comp}: \mathcal{D} \rightarrow \mathcal{K}$**
-The Semantic Abstraction Module implements the compressor function $\mathcal{G}_{comp}$. This is a non-linear, information-reducing transformation defined as:
-$$\mathcal{G}_{comp}(D, \Pi_{comp}) = K$$
-where $\Pi_{comp}$ is the contextual compression directive (prompt), guiding the abstraction process. $\mathcal{G}_{comp}$ operates to identify and extract $\mathcal{I}(D)$ and project it into the structural constraints of $\mathcal{K}$.
-The core objective of $\mathcal{G}_{comp}$ is to minimize the representational entropy of $K$ while maximizing its semantic fidelity to $D$. This is a constrained optimization problem:
-$$ \min_{K \in \mathcal{K}} H(K) \quad \text{subject to} \quad \text{SemDist}(\mathcal{I}(D), \mathcal{I}_{\text{decoded}}(K)) \le \epsilon $$
-where $H(K)$ is the informational entropy of the Knowledge Tuple $K$, $\text{SemDist}$ is a semantic distance metric (defined in Section IV.2), $\mathcal{I}_{\text{decoded}}(K)$ is the semantic information inherently contained within $K$, and $\epsilon$ is a pre-defined tolerance for semantic loss.
-
-**2.2 Information Entropy Reduction and Semantic Preservation**
-A fundamental tenet of this invention is the reduction of informational entropy at the syntactic level while preserving entropy at the semantic level.
-Let $H_{syn}(D)$ be the Shannon entropy of the syntactic representation $S_D$ of the source data $D$, and $H_{sem}(\mathcal{I}(D))$ be the semantic entropy of its intrinsic information content. Similarly, $H_{syn}(K)$ is the syntactic entropy of the Knowledge Tuple $K$, and $H_{sem}(\mathcal{I}_{\text{decoded}}(K))$ is its semantic entropy.
-The invention guarantees:
-$$ H_{syn}(K) \ll H_{syn}(D) $$
-simultaneously striving for:
-$$ H_{sem}(\mathcal{I}_{\text{decoded}}(K)) \approx H_{sem}(\mathcal{I}(D)) $$
-This represents a transformation from a high-entropy, semantically dilute syntactic representation to a low-entropy, semantically concentrated symbolic representation.
-
-**2.3 Optimal Dimensionality Reduction in Semantic Latent Space**
-The internal workings of $\mathcal{G}_{comp}$ involve mapping $D$ into a continuous latent semantic space $\mathcal{Z}$. This is achieved via an encoder network $\mathcal{E}: \mathcal{D} \rightarrow \mathcal{Z}$. The dimensionality of $\mathcal{Z}$, denoted $d_Z$, is significantly smaller than the effective dimensionality of $\mathcal{D}$, $d_D$.
-The optimality criterion for this reduction is to find a mapping such that $d_Z$ is minimal while preserving salient features that are semantically reconstructible. This can be viewed as learning a semantic embedding where points representing similar meanings are proximal in $\mathcal{Z}$. The Knowledge Tuple $K$ is then a structured interpretation of these latent semantic points.
-
-### III. The Semantic Decompression Transformation
-
-The decompression phase executes the inverse mapping, reconstituting a semantically equivalent data object from the compact Knowledge Tuple.
-
-**3.1 The Decompressor Mapping: $\mathcal{G}_{decomp}: \mathcal{K} \rightarrow \mathcal{D}'$**
-The Semantic Expansion Module implements the decompressor function $\mathcal{G}_{decomp}$. This is a non-linear, information-expanding transformation:
-$$\mathcal{G}_{decomp}(K, \Pi_{decomp}) = D'$$
-where $\Pi_{decomp}$ is the contextual decompression directive, guiding the narrative generation. $D'$ is the reconstructed data object, residing in the same manifold $\mathcal{D}$ as $D$.
-The objective of $\mathcal{G}_{decomp}$ is to generate a $D'$ such that its semantic content $\mathcal{I}(D')$ is maximally consistent with the semantic content of $K$, which itself is a representation of $\mathcal{I}(D)$.
-This is a generative process that optimizes for semantic coherence and fluency:
-$$ \max_{D' \in \mathcal{D}} P(D' | K, \Pi_{decomp}) \quad \text{subject to} \quad \text{SemDist}(\mathcal{I}(D'), \mathcal{I}_{\text{decoded}}(K)) \le \delta $$
-where $P(D' | K, \Pi_{decomp})$ is the probability of generating $D'$ given $K$ and $\Pi_{decomp}$, and $\delta$ is an acceptable semantic divergence.
-
-**3.2 Probabilistic Reconstruction and Semantic Coherence**
-Unlike lossless decompression, the reconstruction of $D'$ from $K$ is inherently probabilistic. $\mathcal{G}_{decomp}$ samples from a conditional probability distribution $P(D' | K, \Pi_{decomp})$. This implies that multiple $D'$ objects could be generated from the same $K$, all semantically consistent with $K$.
-The crucial aspect is that while $S_{D'}$ may vary widely across different sampling instances, $\mathcal{I}(D')$ remains asymptotically invariant. This guarantees semantic coherence.
-
-**3.3 Divergence Minimization in Semantic Reconstruction**
-A primary goal in the design and training of $\mathcal{G}_{decomp}$ is the minimization of semantic divergence. We formally define the target optimization as the minimization of a divergence measure between the semantic distribution of the original document $D$ and the reconstructed document $D'$:
-$$ \min_{\mathcal{G}_{decomp}} \mathcal{D}_{KL}(\mathbb{P}_{\mathcal{I}(D)} || \mathbb{P}_{\mathcal{I}(D')}) $$
-where $\mathcal{D}_{KL}$ is the Kullback-Leibler (KL) divergence between the probability distribution over semantic concepts in $\mathcal{I}(D)$ and $\mathcal{I}(D')$.
-Alternatively, using a metric space approach, we aim to minimize $\text{SemDist}(\mathcal{I}(D), \mathcal{I}(D'))$, which represents the distance in the semantic information space $\mathbb{S}$.
-
-### IV. Quantitative Metrics of System Efficacy
-
-To rigorously evaluate the performance of this system, we introduce specific quantitative metrics.
-
-**4.1 Semantic Compression Ratio: $\mathcal{R}$**
-The compression ratio is a measure of the physical size reduction of the data object. Let $\text{size}(X)$ denote the byte-size of a data object $X$. The semantic compression ratio $\mathcal{R}$ is defined as:
-$$ \mathcal{R} = \frac{\text{size}(D)}{\text{size}(K)} $$
-This ratio is expected to be orders of magnitude higher than traditional lossless compression ratios, often $\mathcal{R} \gg 10:1$, potentially reaching $\mathcal{R} \approx 100:1$ or more, depending on the data type and compression granularity.
-
-**4.2 Semantic Fidelity Metric: $\mathcal{L}_{\text{sem}}$ (Semantic Distance)**
-The core measure of success is the preservation of meaning. Let $\mathbb{S}$ be a metric space endowed with a semantic distance function $d_S: \mathbb{S} \times \mathbb{S} \rightarrow \mathbb{R}_{\ge 0}$. This function quantifies the dissimilarity between two semantic information contents.
-A suitable $d_S$ can be constructed using advanced semantic embedding spaces (e.g., universal sentence embeddings, knowledge graph embeddings). For any two semantic contents $s_1, s_2 \in \mathbb{S}$, $d_S(s_1, s_2)$ is non-negative, symmetric, and satisfies the triangle inequality.
-The semantic loss, $\mathcal{L}_{\text{sem}}$, for a given compression-decompression cycle is defined as:
-$$ \mathcal{L}_{\text{sem}} = d_S(\mathcal{I}(D), \mathcal{I}(D')) $$
-The objective is to ensure $\mathcal{L}_{\text{sem}}$ remains below a predetermined threshold $\tau$, i.e., $\mathcal{L}_{\text{sem}} \le \tau$.
-
-**4.3 Semantic Information Preservation Index: $\mathcal{P}_{\text{info}}$**
-Building upon the semantic distance, we can define an information preservation index, $\mathcal{P}_{\text{info}}$, which ranges from 0 (no information preserved) to 1 (perfect semantic preservation).
-$$ \mathcal{P}_{\text{info}} = 1 - \frac{\mathcal{L}_{\text{sem}}}{\max(d_S)} $$
-where $\max(d_S)$ is the maximum possible semantic distance in $\mathbb{S}$. The system is designed to achieve $\mathcal{P}_{\text{info}} \approx 1$.
-
-### V. Proof of System's Fundamental Efficacy
-
-The inherent efficacy of this semantic compression system is derived from foundational principles of information theory and cognitive modeling, demonstrating that significant syntactic compression is achievable with bounded and acceptable semantic loss.
-
-**5.1 Axiomatic Basis**
-1.  **Axiom of Semantic Redundancy:** For any sufficiently complex source data object $D \in \mathcal{D}$, the syntactic representation $S_D$ contains a vast amount of redundant information relative to its intrinsic semantic content $\mathcal{I}(D)$. That is, many distinct $S_D$ can map to the same $\mathcal{I}(D)$.
-2.  **Axiom of Semantic Completeness of $\mathcal{K}$:** The Knowledge Tuple space $\mathcal{K}$ is designed to be semantically complete for a given domain, meaning any $\mathcal{I}(D)$ within that domain can be accurately and uniquely encoded by some $K \in \mathcal{K}$.
-3.  **Axiom of Generative Capacity:** Modern generative AI models possess the capacity to synthesize diverse syntactic forms from concise semantic instructions, maintaining high semantic fidelity.
-
-**5.2 Derivation of Bounded Semantic Loss under High Compression**
-From Axiom 1, we assert that the size of the syntactic representation, $\text{size}(D)$, is often disproportionately larger than the minimal size required to represent $\mathcal{I}(D)$, denoted $\text{size}(\mathcal{I}(D)_{min})$.
-$$ \text{size}(D) = C_1 \cdot \text{size}(\mathcal{I}(D)_{min}) + \text{size}(\text{syntactic\_redundancy}) $$
-The compressor $\mathcal{G}_{comp}$ effectively identifies and isolates $\text{size}(\mathcal{I}(D)_{min})$ and maps it to $K$. The size of $K$ is engineered to approach $\text{size}(\mathcal{I}(D)_{min})$:
-$$ \text{size}(K) \approx C_2 \cdot \text{size}(\mathcal{I}(D)_{min}) \quad \text{where } C_2 \approx 1 $$
-Therefore, the compression ratio $\mathcal{R}$ is predominantly determined by the magnitude of syntactic redundancy that can be successfully discarded:
-$$ \mathcal{R} = \frac{\text{size}(D)}{\text{size}(K)} \approx \frac{C_1 \cdot \text{size}(\mathcal{I}(D)_{min}) + \text{size}(\text{syntactic\_redundancy})}{C_2 \cdot \text{size}(\mathcal{I}(D)_{min})} \gg 1 $$
-The core challenge is that the process of extracting $\mathcal{I}(D)$ and reconstructing $D'$ introduces an inherent, bounded loss. This loss is modeled as a small perturbation in the semantic space. Let $K$ be the output of $\mathcal{G}_{comp}(D)$ and $D'$ be the output of $\mathcal{G}_{decomp}(K)$. The semantic loss $\mathcal{L}_{\text{sem}} = d_S(\mathcal{I}(D), \mathcal{I}(D'))$ is the metric of interest.
-The entire system, $\mathcal{G}_{decomp} \circ \mathcal{G}_{comp}$, can be viewed as an autoencoder in semantic space. Advanced generative AI models are capable of learning highly non-linear mappings that minimize reconstruction error in their latent spaces. By aligning this latent space with $\mathbb{S}$, the semantic error $d_S(\mathcal{I}(D), \mathcal{I}(D'))$ is empirically and theoretically demonstrable to be controllable and bounded by $\tau$. The system is explicitly designed to minimize this $\mathcal{L}_{\text{sem}}$ within the constraints of maximum $\mathcal{R}$.
-
-**5.3 Convergence of Reconstructed Semantic Content**
-Given a sufficiently robust $\mathcal{G}_{comp}$ and $\mathcal{G}_{decomp}$, and given a Knowledge Tuple $K$ that accurately represents $\mathcal{I}(D)$, the reconstructed semantic content $\mathcal{I}(D')$ will converge towards $\mathcal{I}(D)$. This convergence is ensured by the training objectives of the generative AI models, which penalize semantic divergence.
-More formally, we claim that for any $\epsilon' > 0$, there exist model parameters and operational configurations such that:
-$$ P(\mathcal{L}_{\text{sem}} \le \epsilon') \rightarrow 1 \quad \text{as training iterations } \rightarrow \infty $$
-This implies that with sufficient optimization and computational resources, the semantic fidelity can be driven arbitrarily close to perfect, subject to the inherent limitations of the chosen generative models and the definition of semantic equivalence. The probabilistic nature of $\mathcal{G}_{decomp}$ means that while the specific syntactic form of $D'$ may vary, its semantic essence will reliably approximate $\mathcal{I}(D)$.
-
-**5.4 Q.E.D. Statement**
-It is hereby formally posited and demonstrably proven, through the intricate architectural design, the rigorous mathematical formalism, and the advanced capabilities of modern artificial intelligence, that this inventive system provides a fundamentally efficacious method for semantic-cognitive data compression. It achieves unprecedented compression ratios by intentionally transforming data from a high-entropy syntactic representation to a low-entropy semantic representation, while ensuring the fidelity of core informational content remains within precisely quantifiable and acceptable bounds. The paradigm shift from statistical to semantic understanding of data compression is thus established as a practical and profoundly impactful reality. The foundational principles herein articulated represent a permanent and intrinsic advancement in the field of information science.
+25. The method of claim 7, further comprising training the first and second generative artificial intelligence models using a self-supervised semantic autoencoding objective, where the system learns to reconstruct the semantic content of the original data.
