@@ -40,12 +40,12 @@ graph TD
     A[Client Application - UIPAM & CSTL] --> B(API Gateway)
     B --> C{Prompt Orchestration Service}
     C --> D[Authentication & Authorization Service]
-    C --> E[Semantic Prompt Interpretation Engine (SPIE)]
+    C --> E[Semantic Prompt Interpretation Engine SPIE]
     E --> F[Generative Model API Connector]
-    F --> G[External Generative AI Model(s)]
+    F --> G[External Generative AI Model]
     G --> F
     F --> H[Image Post-Processing Module]
-    H --> I[Dynamic Asset Management System (DAMS)]
+    H --> I[Dynamic Asset Management System DAMS]
     I --> J[User Preference & History Database]
     I --> B
     B --> A
@@ -93,9 +93,9 @@ graph TD
     B --> C{Image Data Reception & Decoding}
     C --> D[Dynamic CSS/Style Sheet Manipulation]
     D --> E[GUI Container Element]
-    E --> F(Visual Rendering Engine)
+    E --> F[Visual Rendering Engine]
     F --> G[Displayed User Interface]
-    B --> H[Persistent Aesthetic State Management (PASM)]
+    B --> H[Persistent Aesthetic State Management PASM]
     H -- Store/Recall --> C
 ```
 
