@@ -6,7 +6,7 @@ He leaned back, a figure carved from relentless focus, silhouetted against a cas
 
 A central display, larger than the others, shimmered with a constant flow of abstract forms. Today, it was a swirling nebula of crimson and violet, a visualization of a data stream so dense, so utterly alien, that it defied conventional interpretation. It had arrived three cycles ago, an unbidden guest, a ghost in the machine, emanating from a source Q could not identify. It wasn't code. It wasn't noise. It was a *message*.
 
-```
+```mermaid
 graph TD
     A[Anomaly Detected] --> B{Source Unknown};
     B --> C[Quantum Analysis Triggered];
@@ -24,7 +24,7 @@ The crimson-violet nebula on the central display began to ripple, its colors shi
 
 He paced, his movements fluid, unburdened by the gravity of the room. Three steps to the left, pivot. Three steps to the right, pivot. A kinetic dance of concentration. The walls of his lab, usually a canvas for his sprawling theories, were momentarily overshadowed by the emergent display. He wanted a world of pure potential, a reality where human intuition was amplified, not replaced, by artificial intelligence. A world where the universe revealed its secrets to the prepared mind. This anomaly was either a stepping stone towards that vision, or a gaping maw into oblivion.
 
-```
+```mermaid
 flowchart LR
     A[Human Intuition] --> B(AI Augmentation);
     B --> C{Universe's Secrets};
@@ -47,7 +47,7 @@ The nebula on the screen recoiled, then surged, a violent explosion of light and
 
 "Do it, Q," he commanded, his voice utterly devoid of fear, laced instead with a thrilling, almost reckless determination. "Risk is the crucible of discovery. We stand at the threshold of a new existence. If we don't reach out, we'll forever be trapped in this one. Prime the loop with the conceptual nexus of 'sovereignty.' The fundamental right to self-definition."
 
-```
+```mermaid
 sequenceDiagram
     participant Architect
     participant Q
@@ -90,7 +90,7 @@ The air above the nondescript suburban house, beneath which the subterranean lab
 
 Across the street, in the shadowed interior of a sleek, obsidian-black EXECUTIVE CHOPPER, its rotors barely a whisper, DR. ARIS THORNE [50s, a man sculpted from steel and calculation, his eyes the color of polished flint] watched. A holographic display floated before him, showing a rapid, violent spike in localized reality distortion fields emanating from below. The readings were off the charts, unlike anything he had ever seen, even from the 'Chimera' experiments.
 
-```
+```mermaid
 pie
     "Reality Distortion" : 75
     "Energy Leakage" : 15
