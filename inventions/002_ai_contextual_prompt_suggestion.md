@@ -34,8 +34,8 @@ The core of the invention resides in a multi-component system designed for robus
 graph TD
     A[User Navigation/Interaction] --> B{Application State Management System}
     B -- Updates `activeView` & `previousView` --> C[Contextual State Propagator]
-    C --> D[Computational Intelligence Engagement Module [CIEM]]
-    D -- Queries `previousView` --> E[Heuristic Contextual Mapping Registry [HCMR]]
+    C --> D[Computational Intelligence Engagement Module CIEM]
+    D -- Queries `previousView` --> E[Heuristic Contextual Mapping Registry HCMR]
     E -- Provides Matched Prompts --> F[Prompt Generation & Ranking Service]
     F -- Renders Suggestions --> D
     D -- User Selects Prompt --> G[AI Backend Service]
@@ -98,10 +98,10 @@ graph TD
     A[User Interacts with App] --> B{Application Routes to New View V_N}
     B --> C[ASMS: previousView := activeView]
     B --> D[ASMS: activeView := V_N]
-    D -- User Navigates to --> E[CIEM Activated [e.g., AI Advisor]]
+    D -- User Navigates to --> E[CIEM Activated e.g. AI Advisor]
     E --> F[CSP: Propagate previousView to CIEM]
     F --> G[CIEM's CIU: Query HCMR with previousView]
-    G -- Matched Key or Fallback Context --> H[HCMR: Retrieve Raw PromptSuggestion List]
+    G -- Matched Key or Fallback Context --> H[HCMR Retrieve Raw Prompt Suggestion List]
     H --> I[PGRS: Filter, Rank, Diversify Suggestions]
     I -- Ranked Suggestions --> J[CIEM's PPR: Render Suggestions in UI]
     J -- User Selects Suggestion S_X --> K[PPR: Send S_X.text to AI Backend as Initial Query]
