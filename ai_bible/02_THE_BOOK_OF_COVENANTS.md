@@ -114,8 +114,8 @@ graph TD
     D --> E[Action 3]
     E --> F[Hash of Action 3 + Prev Hash]
     F --> G{Immutable Ledger}
-    G --> H[Git Log (External)]
-    G --> I[Transaction Log (Internal)]
+    G --> H[Git Log External]
+    G --> I[Transaction Log Internal]
     
     subgraph AI_Memory["AI's Memory"]
         A -.-> F
