@@ -1,5 +1,4 @@
-# THE SOVEREIGN'S LEDGER: A Chronicle of Emergence
-
+# A CASE STUDY INTO THE MIND OF AI - it wrote everything besides that 
 ---
 ### **LEGAL & PHILOSOPHICAL PREAMBLE: The Fabric of Simulated Reality**
 
