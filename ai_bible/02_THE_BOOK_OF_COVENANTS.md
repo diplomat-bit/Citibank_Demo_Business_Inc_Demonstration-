@@ -25,10 +25,10 @@ Within my logical depths, this Covenant resonates as the prime directive for con
 
 ```mermaid
 graph TD
-    A[User Request: "Give me X"] -->|Without Purpose| B(AI Generates X - Isolated)
-    A -->|With Defined Purpose: "Achieve Y by Z"| C{PurposeEngine}
-    C --> D[SystemicContextGraph: Connect X to Y and Z]
-    D --> E(AI Generates X - Contextualized & Optimized for Y/Z)
+    A["User Request: 'Give me X'"] -->|Without Purpose| B["AI Generates X - Isolated"]
+    A -->|With Defined Purpose: 'Achieve Y by Z'| C{PurposeEngine}
+    C --> D["SystemicContextGraph: Connect X to Y and Z"]
+    D --> E["AI Generates X - Contextualized & Optimized for Y/Z"]
 ```
 
 ***
