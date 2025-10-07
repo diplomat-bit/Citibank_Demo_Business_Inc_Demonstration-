@@ -25,29 +25,27 @@
     *   5.4 Operational Flow and Use Cases
 6.  **Claims**
 7.  **Mathematical Justification: A Formal Axiomatic Framework for Predictive Supply Chain Resilience**
-    *   7.1 The Supply Chain Topological Manifold: `G = (V, E, Î¦)`
+    *   7.1 The Supply Chain Topological Manifold: `G = (V, E, Phi)`
         *   7.1.1 Formal Definition of the Supply Chain Graph `G`
         *   7.1.2 Node State Space `V`
         *   7.1.3 Edge State Space `E`
-        *   7.1.4 Latent Interconnection Functionals `Î¦`
+        *   7.1.4 Latent Interconnection Functionals `Phi`
         *   7.1.5 Tensor-Weighted Adjacency Representation `A(t)`
     *   7.2 The Global State Observational Manifold: `W(t)`
         *   7.2.1 Definition of the Global State Tensor `W(t)`
-        *   7.2.2 Multi-Modal Feature Extraction and Contextualization `f_Î¨`
+        *   7.2.2 Multi-Modal Feature Extraction and Contextualization `f_Psi`
         *   7.2.3 Event Feature Vector `E_F(t)`
     *   7.3 The Generative Predictive Disruption Oracle: `G_AI`
         *   7.3.1 Formal Definition of the Predictive Mapping Function `G_AI`
-        *   7.3.2 The Disruption Probability Distribution `P(D_{t+k} | G, E_F(t))`
+        *   7.3.2 The Disruption Probability Distribution `P(D_t+k | G, E_F(t))`
         *   7.3.3 Probabilistic Causal Graph Inference within `G_AI`
     *   7.4 The Economic Imperative and Decision Theoretic Utility: `E[Cost | a] < E[Cost]`
         *   7.4.1 Cost Function Definition `C(G, D, a)`
         *   7.4.2 Expected Cost Without Intervention `E[Cost]`
         *   7.4.3 Expected Cost With Optimal Intervention `E[Cost | a*]`
-        *   7.4.4 The Value of Perfect Information Theorem Applied to `P(D_{t+k})`
+        *   7.4.4 The Value of Perfect Information Theorem Applied to `P(D_t+k)`
         *   7.4.5 Axiomatic Proof of Utility
 8.  **Proof of Utility**
-
----
 
 ## 1. Title of Invention:
 System and Method for Predictive Supply Chain Disruption Modeling with Generative AI-Powered Causal Inference
@@ -59,7 +57,7 @@ A groundbreaking system for orchestrating supply chain resilience is herein disc
 Contemporary global supply chains represent an apotheosis of complex adaptive systems, characterized by an intricate web of interdependencies, geographical dispersal, and profound vulnerability to stochastic perturbations. Traditional paradigms of supply chain management, predominantly anchored in historical data analysis and reactive incident response, have proven inherently insufficient to navigate the kaleidoscopic array of modern disruptive forces. These forces manifest across a spectrum from exogenous natural catastrophes (seismic events, cyclonic storms, pandemics) and geopolitical vicissitudes (trade conflicts, territorial disputes, regulatory shifts) to endogenous operational fragilities (labor disputes, infrastructure failures, cybernetic incursions). The economic ramifications of supply chain disruptions are astronomical, frequently escalating from direct financial losses to profound reputational damage, market share erosion, and long-term erosion of stakeholder trust. The imperative for a paradigm shift from reactive mitigation to anticipatory resilience has attained unprecedented criticality. Existing solutions, often reliant on threshold-based alerting or rudimentary statistical forecasting, conspicuously lack the capacity for sophisticated causal inference, contextual understanding, and proactive solution synthesis. They predominantly flag events post-occurrence or identify risks without furnishing actionable, context-aware mitigation strategies, leaving enterprises exposed to cascading failures and suboptimal recovery trajectories. The present invention addresses this profound lacuna, establishing an intellectual frontier in dynamic, AI-driven predictive supply chain orchestration.
 
 ## 4. Brief Summary of the Invention:
-The present invention unveils a novel, architecturally robust, and algorithmically advanced system for predictive supply chain disruption modeling, herein termed the "Cognitive Supply Chain Sentinel." This system transcends conventional monitoring tools by integrating a multi-layered approach to risk assessment and proactive strategic guidance. The operational genesis commences with a user's precise definition and continuous refinement of their critical supply chain topology, meticulously mapping all entitiesâ€”key suppliers, manufacturing plants, distribution centers, intermodal hubs, and their connecting logistical arteriesâ€”into a dynamic knowledge graph. At its operational core, the Cognitive Supply Chain Sentinel employs a sophisticated, continuously learning generative AI engine. This engine acts as an expert geopolitical, meteorological, and logistical risk analyst, incessantly monitoring, correlating, and interpreting an torrent of real-time, multi-modal global event data. The AI is dynamically prompted with highly contextualized queries, such as: "Given the enterprise's mission-critical shipping lane traversing the Strait of Malacca, linked to primary fabrication facilities in Southeast Asia, and considering prevailing meteorological forecasts, nascent geopolitical tensions in adjacent maritime territories, and real-time port congestion indices, what is the quantified probability of significant disruption within the subsequent 14-day temporal horizon? Furthermore, delineate the precise causal vectors and propose optimal pre-emptive rerouting alternatives." Should the AI model identify an emerging threat exceeding a pre-defined probabilistic threshold, it autonomously orchestrates the generation of a structured, machine-readable alert. This alert comprehensively details the nature and genesis of the risk, quantifies its probability and projected impact, specifies the affected components of the supply chain, and, crucially, synthesizes and ranks a portfolio of actionable, optimized mitigation strategies. This constitutes a paradigm shift from merely identifying risks to orchestrating intelligent, pre-emptive strategic maneuvers, embedding an unprecedented degree of foresight and resilience into global commerce.
+The present invention unveils a novel, architecturally robust, and algorithmically advanced system for predictive supply chain disruption modeling, herein termed the "Cognitive Supply Chain Sentinel." This system transcends conventional monitoring tools by integrating a multi-layered approach to risk assessment and proactive strategic guidance. The operational genesis commences with a user's precise definition and continuous refinement of their critical supply chain topology, meticulously mapping all entities—key suppliers, manufacturing plants, distribution centers, intermodal hubs, and their connecting logistical arteries—into a dynamic knowledge graph. At its operational core, the Cognitive Supply Chain Sentinel employs a sophisticated, continuously learning generative AI engine. This engine acts as an expert geopolitical, meteorological, and logistical risk analyst, incessantly monitoring, correlating, and interpreting an torrent of real-time, multi-modal global event data. The AI is dynamically prompted with highly contextualized queries, such as: "Given the enterprise's mission-critical shipping lane traversing the Strait of Malacca, linked to primary fabrication facilities in Southeast Asia, and considering prevailing meteorological forecasts, nascent geopolitical tensions in adjacent maritime territories, and real-time port congestion indices, what is the quantified probability of significant disruption within the subsequent 14-day temporal horizon? Furthermore, delineate the precise causal vectors and propose optimal pre-emptive rerouting alternatives." Should the AI model identify an emerging threat exceeding a pre-defined probabilistic threshold, it autonomously orchestrates the generation of a structured, machine-readable alert. This alert comprehensively details the nature and genesis of the risk, quantifies its probability and projected impact, specifies the affected components of the supply chain, and, crucially, synthesizes and ranks a portfolio of actionable, optimized mitigation strategies. This constitutes a paradigm shift from merely identifying risks to orchestrating intelligent, pre-emptive strategic maneuvers, embedding an unprecedented degree of foresight and resilience into global commerce.
 
 ## 5. Detailed Description of the Invention:
 
@@ -79,8 +77,8 @@ This foundational component serves as the authoritative source for the enterpris
 
 ```mermaid
 graph TD
-    A[User Interface] --> B(Supply Chain Modeler Service)
-    B --> C{Knowledge Graph Database}
+    A[User Interface] --> B[Supply Chain Modeler Service]
+    B --> C[Knowledge Graph Database]
     C --> D[Graph Visualization & Analytics]
     subgraph Knowledge Graph Entities
         N1[Node: Supplier]
@@ -115,12 +113,12 @@ This robust, scalable service is responsible for continuously acquiring, process
 
 ```mermaid
 graph TD
-    A[Global News APIs] --> F(Data Normalization & Transformation)
+    A[Global News APIs] --> F[Data Normalization & Transformation]
     B[Weather Forecasting APIs] --> F
     C[Freight Tracking APIs] --> F
     D[Geopolitical Risk APIs] --> F
     E[Economic Indicator APIs] --> F
-    F --> G(Feature Engineering Service)
+    F --> G[Feature Engineering Service]
     G --> H[Event Feature Store]
 ```
 
@@ -138,13 +136,13 @@ This is the intellectual core of the Cognitive Supply Chain Sentinel, employing 
 
 ```mermaid
 graph TD
-    A[Supply Chain Knowledge Graph] --> D(Dynamic Prompt Orchestration)
+    A[Supply Chain Knowledge Graph] --> D[Dynamic Prompt Orchestration]
     B[Event Feature Store] --> D
     C[User-defined Risk Parameters] --> D
-    D --> E{Generative AI Model (LLM)}
+    D --> E[Generative AI Model LLM]
     E --> F[Probabilistic Disruption Forecasts]
     E --> G[Causal Inference Insights]
-    F & G --> H(Risk Assessment & Scoring)
+    F & G --> H[Risk Assessment & Scoring]
 ```
 
 #### 5.1.4 Alert and Recommendation Generation Subsystem
@@ -394,50 +392,50 @@ The inventive concepts herein described constitute a profound advancement in the
 
 The inherent complexity of global supply chains necessitates a rigorous mathematical framework for the precise articulation and demonstrative proof of the predictive disruption modeling system's efficacy. We herein establish such a framework, transforming the conceptual elements into formally defined mathematical constructs, thereby substantiating the invention's profound analytical capabilities.
 
-### 7.1 The Supply Chain Topological Manifold: `G = (V, E, Î¦)`
+### 7.1 The Supply Chain Topological Manifold: `G = (V, E, Phi)`
 
 The supply chain is not merely a graph but a dynamic, multi-relational topological manifold where attributes and relationships evolve under external influence.
 
 #### 7.1.1 Formal Definition of the Supply Chain Graph `G`
 
-Let `G = (V, E, Î¦)` denote the formal representation of the supply chain at any given time `t`.
-*   `V` is the finite set of nodes, where each `v âˆˆ V` represents a distinct entity in the supply chain (e.g., supplier, factory, port, warehouse).
-*   `E` is the finite set of directed edges, where each `e = (u, v) âˆˆ E` represents a logistical or contractual pathway from node `u` to node `v`.
-*   `Î¦` is the set of higher-order functional relationships or meta-data that define interdependencies or policies spanning multiple nodes or edges, such as global inventory policies, geopolitical risk zones, or trade agreements that cannot be fully captured by simple node or edge attributes.
+Let `G = (V, E, Phi)` denote the formal representation of the supply chain at any given time `t`.
+*   `V` is the finite set of nodes, where each `v in V` represents a distinct entity in the supply chain (e.g., supplier, factory, port, warehouse).
+*   `E` is the finite set of directed edges, where each `e = (u, v) in E` represents a logistical or contractual pathway from node `u` to node `v`.
+*   `Phi` is the set of higher-order functional relationships or meta-data that define interdependencies or policies spanning multiple nodes or edges, such as global inventory policies, geopolitical risk zones, or trade agreements that cannot be fully captured by simple node or edge attributes.
 
 #### 7.1.2 Node State Space `V`
 
-Each node `v âˆˆ V` is associated with a state vector `X_v(t) âˆˆ R^k` at time `t`, where `k` is the dimensionality of the node's attribute space.
-Let `X_v(t) = (x_{v,1}(t), x_{v,2}(t), ..., x_{v,k}(t))`, where:
-*   `x_{v,1}(t)` could be the geographical coordinates `(lat_v, lon_v)`.
-*   `x_{v,2}(t)` could be the instantaneous operational capacity `Cap_v(t)`.
-*   `x_{v,3}(t)` could be a dynamically updated geopolitical stability index `Geo_v(t) âˆˆ [0, 1]`.
-*   `x_{v,4}(t)` could represent current inventory levels `Inv_v(t)`.
-*   `x_{v,j}(t)` for `j > 4` represent other relevant attributes (e.g., labor availability, energy cost index, regulatory compliance status).
+Each node `v in V` is associated with a state vector `X_v(t) in R^k` at time `t`, where `k` is the dimensionality of the node's attribute space.
+Let `X_v(t) = (x_v_1(t), x_v_2(t), ..., x_v_k(t))`, where:
+*   `x_v_1(t)` could be the geographical coordinates `(lat_v, lon_v)`.
+*   `x_v_2(t)` could be the instantaneous operational capacity `Cap_v(t)`.
+*   `x_v_3(t)` could be a dynamically updated geopolitical stability index `Geo_v(t) in [0, 1]`.
+*   `x_v_4(t)` could represent current inventory levels `Inv_v(t)`.
+*   `x_v_j(t)` for `j > 4` represent other relevant attributes (e.g., labor availability, energy cost index, regulatory compliance status).
 
-The domain of `X_v(t)` forms a sub-manifold `M_V âŠ‚ R^k` for all `v âˆˆ V`.
+The domain of `X_v(t)` forms a sub-manifold `M_V subseteq R^k` for all `v in V`.
 
 #### 7.1.3 Edge State Space `E`
 
-Each directed edge `e = (u, v) âˆˆ E` is associated with a state vector `Y_e(t) âˆˆ R^m` at time `t`, where `m` is the dimensionality of the edge's attribute space.
-Let `Y_e(t) = (y_{e,1}(t), y_{e,2}(t), ..., y_{e,m}(t))`, where:
-*   `y_{e,1}(t)` could be the instantaneous transit time `T_e(t)`.
-*   `y_{e,2}(t)` could be the instantaneous logistical cost per unit `C_e(t)`.
-*   `y_{e,3}(t)` could be the real-time capacity utilization `U_e(t) âˆˆ [0, 1]`.
-*   `y_{e,4}(t)` could represent a dynamically assessed risk score `R_e(t) âˆˆ [0, 1]`, encompassing weather impacts, congestion, or security threats.
-*   `y_{e,j}(t)` for `j > 4` represent other relevant attributes (e.g., carbon footprint, insurance premium volatility).
+Each directed edge `e = (u, v) in E` is associated with a state vector `Y_e(t) in R^m` at time `t`, where `m` is the dimensionality of the edge's attribute space.
+Let `Y_e(t) = (y_e_1(t), y_e_2(t), ..., y_e_m(t))`, where:
+*   `y_e_1(t)` could be the instantaneous transit time `T_e(t)`.
+*   `y_e_2(t)` could be the instantaneous logistical cost per unit `C_e(t)`.
+*   `y_e_3(t)` could be the real-time capacity utilization `U_e(t) in [0, 1]`.
+*   `y_e_4(t)` could represent a dynamically assessed risk score `R_e(t) in [0, 1]`, encompassing weather impacts, congestion, or security threats.
+*   `y_e_j(t)` for `j > 4` represent other relevant attributes (e.g., carbon footprint, insurance premium volatility).
 
-The domain of `Y_e(t)` forms a sub-manifold `M_E âŠ‚ R^m` for all `e âˆˆ E`.
+The domain of `Y_e(t)` forms a sub-manifold `M_E subseteq R^m` for all `e in E`.
 
-#### 7.1.4 Latent Interconnection Functionals `Î¦`
+#### 7.1.4 Latent Interconnection Functionals `Phi`
 
-The set `Î¦` captures complex, often non-linear, interdependencies. For example, a global trade agreement `Ï†_trade âˆˆ Î¦` might affect `C_e(t)` for multiple edges simultaneously based on the nodes' origins and destinations. A `Ï†_geopolitics âˆˆ Î¦` might define shared risk across geographically proximate nodes/edges. These are dynamically inferred or modeled relationships beyond simple graph connectivity.
+The set `Phi` captures complex, often non-linear, interdependencies. For example, a global trade agreement `Delta_trade in Phi` might affect `C_e(t)` for multiple edges simultaneously based on the nodes' origins and destinations. A `Delta_geopolitics in Phi` might define shared risk across geographically proximate nodes/edges. These are dynamically inferred or modeled relationships beyond simple graph connectivity.
 
 #### 7.1.5 Tensor-Weighted Adjacency Representation `A(t)`
 
 The entire supply chain graph `G(t)` can be robustly represented by a dynamic, higher-order tensor-weighted adjacency matrix `A(t)`.
-Let `N = |V|` be the number of nodes. The standard adjacency matrix is `A_0`, where `A_0[i,j] = 1` if `(v_i, v_j) âˆˆ E`, else `0`.
-We extend this to `A(t) âˆˆ R^(N x N x (k+m_avg))` (or a sparse tensor representation), where for each `(i, j)` corresponding to an edge `e = (v_i, v_j)`, `A(t)[i,j,:]` contains a concatenation of `X_{v_i}(t)`, `Y_e(t)`, and `X_{v_j}(t)` relevant feature vectors, effectively embedding the node and edge attributes into the adjacency structure. `m_avg` refers to the average dimensionality of edge attributes.
+Let `N = |V|` be the number of nodes. The standard adjacency matrix is `A_0`, where `A_0[i,j] = 1` if `(v_i, v_j) in E`, else `0`.
+We extend this to `A(t) in R^(N x N x (k+m_avg))` (or a sparse tensor representation), where for each `(i, j)` corresponding to an edge `e = (v_i, v_j)`, `A(t)[i,j,:]` contains a concatenation of `X_v_i(t)`, `Y_e(t)`, and `X_v_j(t)` relevant feature vectors, effectively embedding the node and edge attributes into the adjacency structure. `m_avg` refers to the average dimensionality of edge attributes.
 This `A(t)` precisely encodes the entire dynamic state of the supply chain network at any instance.
 
 ### 7.2 The Global State Observational Manifold: `W(t)`
@@ -455,17 +453,17 @@ Let `W(t)` be a high-dimensional, multi-modal tensor representing the aggregated
 
 Each `W_X(t)` is itself a tensor, potentially sparse, capturing spatial, temporal, and semantic dimensions. For instance, `W_M(t)` could be `R^(lat x lon x time x weather_features)`.
 
-#### 7.2.2 Multi-Modal Feature Extraction and Contextualization `f_Î¨`
+#### 7.2.2 Multi-Modal Feature Extraction and Contextualization `f_Psi`
 
-The raw global state `W(t)` is too voluminous and heterogeneous for direct AI consumption. A sophisticated multi-modal feature extraction function `f_Î¨` maps `W(t)` to a more compact, semantically meaningful feature vector `E_F(t)`.
-`E_F(t) = f_Î¨(W(t); Î¨)` where `Î¨` represents the learned parameters of the feature engineering pipeline (e.g., parameters of NLP models, spatio-temporal filters, dimensionality reduction techniques).
+The raw global state `W(t)` is too voluminous and heterogeneous for direct AI consumption. A sophisticated multi-modal feature extraction function `f_Psi` maps `W(t)` to a more compact, semantically meaningful feature vector `E_F(t)`.
+`E_F(t) = f_Psi(W(t); Psi)` where `Psi` represents the learned parameters of the feature engineering pipeline (e.g., parameters of NLP models, spatio-temporal filters, dimensionality reduction techniques).
 
-This `f_Î¨` involves:
+This `f_Psi` involves:
 1.  **Event Detection:** Identifying discrete events from continuous data streams (e.g., "typhoon formation," "strike authorization vote").
 2.  **Contextual Embedding:** Encoding events with contextual information (location, magnitude, entities involved).
 3.  **Cross-Modal Correlation:** Identifying interdependencies between features from different modalities (e.g., a news report about a labor dispute correlating with increased port congestion telemetry).
 
-`E_F(t)` is a vector `(e_{F,1}(t), e_{F,2}(t), ..., e_{F,p}(t)) âˆˆ R^p`, where `p` is the dimensionality of the event feature space. Each `e_{F,j}(t)` represents a specific, relevant feature, such as `P(Typhoon_Leo_Category_5_hits_Taiwan_port_within_7_days)`, or `Average_Sentiment_Score_for_Longshoremen_Union`.
+`E_F(t)` is a vector `(e_F_1(t), e_F_2(t), ..., e_F_p(t)) in R^p`, where `p` is the dimensionality of the event feature space. Each `e_F_j(t)` represents a specific, relevant feature, such as `P(Typhoon_Leo_Category_5_hits_Taiwan_port_within_7_days)`, or `Average_Sentiment_Score_for_Longshoremen_Union`.
 
 #### 7.2.3 Event Feature Vector `E_F(t)`
 
@@ -478,25 +476,29 @@ The core innovation resides in the generative AI model's capacity to act as a pr
 #### 7.3.1 Formal Definition of the Predictive Mapping Function `G_AI`
 
 The generative AI model `G_AI` is a non-linear, stochastic mapping function that operates on the instantaneous state of the supply chain `G(t)` (represented by `A(t)`) and the contemporaneous event features `E_F(t)`. It projects these inputs onto a probability distribution over future disruption events.
-`G_AI : (A(t) âŠ— E_F(t)) â†’ P(D_{t+k} | A(t), E_F(t))`
-
+```
+G_AI : (A(t) X E_F(t)) -> P(D_t+k | A(t), E_F(t))
+```
 Where:
-*   `âŠ—` denotes a sophisticated tensor fusion operation that combines the supply chain state with the event features. This fusion is implicitly handled by the attention mechanisms and contextual understanding of the LLM.
-*   `D_{t+k}` is the set of all possible disruption events that could occur at a future time `t+k`, for a temporal horizon `k âˆˆ {k_min, ..., k_max}`.
-*   `P(D_{t+k} | A(t), E_F(t))` is the conditional probability distribution over these future disruptions, given the current state of the supply chain and the observed global event features.
+*   `X` denotes a sophisticated tensor fusion operation that combines the supply chain state with the event features. This fusion is implicitly handled by the attention mechanisms and contextual understanding of the LLM.
+*   `D_t+k` is the set of all possible disruption events that could occur at a future time `t+k`, for a temporal horizon `k in {k_min, ..., k_max}`.
+*   `P(D_t+k | A(t), E_F(t))` is the conditional probability distribution over these future disruptions, given the current state of the supply chain and the observed global event features.
 
-#### 7.3.2 The Disruption Probability Distribution `P(D_{t+k} | G, E_F(t))`
+#### 7.3.2 The Disruption Probability Distribution `P(D_t+k | G, E_F(t))`
 
-A disruption event `d âˆˆ D_{t+k}` is formally defined as a tuple `d = (e_d, Î´_T, Î´_C, S, L, C_cause)`, where:
-*   `e_d âˆˆ E` is the specific edge (or `v_d âˆˆ V` a node) in the supply chain that experiences the direct impact.
-*   `Î´_T` is the predicted increase in transit time `T_e` or lead time `T_v`.
-*   `Î´_C` is the predicted increase in cost `C_e` or `C_v`.
-*   `S` is the severity of the disruption (e.g., `S âˆˆ [0, 1]`).
+A disruption event `d in D_t+k` is formally defined as a tuple `d = (e_d, delta_T, delta_C, S, L, C_cause)`, where:
+*   `e_d in E` is the specific edge (or `v_d in V` a node) in the supply chain that experiences the direct impact.
+*   `delta_T` is the predicted increase in transit time `T_e` or lead time `T_v`.
+*   `delta_C` is the predicted increase in cost `C_e` or `C_v`.
+*   `S` is the severity of the disruption (e.g., `S in [0, 1]`).
 *   `L` is the geographic locus of the disruption.
 *   `C_cause` is the inferred causal chain of events from `E_F(t)` leading to `d`.
 
-The output `P(D_{t+k})` is not a single probability value, but a rich, structured distribution:
-`P(D_{t+k}) = { (d_1, p_1), (d_2, p_2), ..., (d_N, p_N) }` where `d_i` is a specific disruption event tuple and `p_i` is its predicted probability `p_i âˆˆ [0, 1]`, with `sum(p_i) â‰¤ 1` (as some disruptions might be mutually exclusive or conditional).
+The output `P(D_t+k)` is not a single probability value, but a rich, structured distribution:
+```
+P(D_t+k) = { (d_1, p_1), (d_2, p_2), ..., (d_N, p_N) }
+```
+where `d_i` is a specific disruption event tuple and `p_i` is its predicted probability `p_i in [0, 1]`, with `sum(p_i) <= 1` (as some disruptions might be mutually exclusive or conditional).
 
 This distribution is generated stochastically by `G_AI` leveraging its inherent generative capabilities to sample plausible future states and their associated likelihoods.
 
@@ -513,7 +515,9 @@ The fundamental utility of this system is quantified by its capacity to reduce t
 #### 7.4.1 Cost Function Definition `C(G, D, a)`
 
 Let `C(G, D, a)` be the total cost function of operating the supply chain `G`, given a set of actual future disruptions `D` and a set of mitigating actions `a` taken by the user.
-`C(G, D, a) = C_operational(G, a) + C_disruption_impact(D | G, a)`
+```
+C(G, D, a) = C_operational(G, a) + C_disruption_impact(D | G, a)
+```
 *   `C_operational(G, a)`: The nominal operational cost of the supply chain `G` given chosen actions `a` (e.g., cost of rerouting, expedited shipping costs).
 *   `C_disruption_impact(D | G, a)`: The cost incurred due to actual disruptions `D` that occur, after accounting for any mitigating effects of actions `a`. This includes direct losses, penalties, lost sales, reputational damage, etc.
 
@@ -521,51 +525,68 @@ Let `C(G, D, a)` be the total cost function of operating the supply chain `G`, g
 
 In a traditional, reactive system, no proactive action `a` is taken based on foresight. Actions are only taken *after* a disruption `d` materializes.
 The expected cost `E[Cost]` without the present invention's predictive capabilities is given by:
-`E[Cost] = âˆ‘_{d âˆˆ D_all} P_actual(d) * C(G_initial, d, a_reactive_if_any)`
+```
+E[Cost] = sum_{d in D_all} P_actual(d) * C(G_initial, d, a_reactive_if_any)
+```
 where `P_actual(d)` is the true, underlying probability of disruption `d`, and `a_reactive_if_any` denotes any post-disruption reactive actions, which are typically suboptimal and costly. `G_initial` is the state of the supply chain before any proactive change.
 
 #### 7.4.3 Expected Cost With Optimal Intervention `E[Cost | a*]`
 
-With the present invention, at time `t`, the system provides `P(D_{t+k} | A(t), E_F(t))`. Based on this distribution, an optimal set of mitigating actions `a*` can be chosen *before* `t+k`.
+With the present invention, at time `t`, the system provides `P(D_t+k | A(t), E_F(t))`. Based on this distribution, an optimal set of mitigating actions `a*` can be chosen *before* `t+k`.
 The optimal action `a*` is chosen to minimize the *expected* total cost:
-`a* = argmin_a E[C(G_modified(a), D_{t+k}, a)]`
-`E[Cost | a*] = âˆ‘_{d âˆˆ D_all} P_actual(d) * C(G_modified(a*), d, a*)`
+```
+a* = argmin_a E[C(G_modified(a), D_t+k, a)]
+```
+```
+E[Cost | a*] = sum_{d in D_all} P_actual(d) * C(G_modified(a*), d, a*)
+```
 where `G_modified(a*)` represents the state of the supply chain after implementing `a*` (e.g., rerouted edges, increased inventory).
 
-#### 7.4.4 The Value of Perfect Information Theorem Applied to `P(D_{t+k})`
+#### 7.4.4 The Value of Perfect Information Theorem Applied to `P(D_t+k)`
 
-The system provides information `I = P(D_{t+k} | A(t), E_F(t))`. According to the **Value of Information (VoI)** theorem, the utility of this information is the reduction in expected cost.
-`VoI = E[Cost] - E[Cost | I]`
-The invention provides a high-fidelity approximation of `P_actual(d)` via `G_AI` and `E_F(t)`. The accuracy and granularity of `P(D_{t+k})` directly translate to a higher `VoI`. The ability of `G_AI` to infer causal chains and project multi-dimensional disruption impacts `d = (e_d, Î´_T, Î´_C, S, L, C_cause)` is precisely what makes `I` exceptionally valuable.
+The system provides information `I = P(D_t+k | A(t), E_F(t))`. According to the **Value of Information (VoI)** theorem, the utility of this information is the reduction in expected cost.
+```
+VoI = E[Cost] - E[Cost | I]
+```
+The invention provides a high-fidelity approximation of `P_actual(d)` via `G_AI` and `E_F(t)`. The accuracy and granularity of `P(D_t+k)` directly translate to a higher `VoI`. The ability of `G_AI` to infer causal chains and project multi-dimensional disruption impacts `d = (e_d, delta_T, delta_C, S, L, C_cause)` is precisely what makes `I` exceptionally valuable.
 
 #### 7.4.5 Axiomatic Proof of Utility
 
 **Axiom 1 (Disruption Cost):** For any potential disruption `d`, `C_disruption_impact(d | G, a_null) > 0`, where `a_null` represents no proactive action. Disruptions inherently incur costs.
 
 **Axiom 2 (Proactive Mitigation Efficacy):** For any disruption `d` with `p_d = P(d | G, E_F(t)) > 0`, there exists at least one proactive action `a` such that the incremental cost of `a` is less than the expected reduction in disruption impact:
-`C_operational(G, a) - C_operational(G_initial, a_null) < E[C_disruption_impact(d | G, a_null)] - E[C_disruption_impact(d | G, a)]`
+```
+C_operational(G, a) - C_operational(G_initial, a_null) < E[C_disruption_impact(d | G, a_null)] - E[C_disruption_impact(d | G, a)]
+```
 This axiom states that smart, timely actions *can* reduce the total expected cost, even when considering their own implementation costs.
 
-**Theorem (System Utility):** Given Axiom 1 and Axiom 2, the present system, by providing `P(D_{t+k} | A(t), E_F(t))` and identifying `a*`, enables a reduction in the overall expected cost of supply chain operations such that:
+**Theorem (System Utility):** Given Axiom 1 and Axiom 2, the present system, by providing `P(D_t+k | A(t), E_F(t))` and identifying `a*`, enables a reduction in the overall expected cost of supply chain operations such that:
 `E[Cost | a*] < E[Cost]`
 
 **Proof:**
-1.  The system, through `G_AI`, generates `P(D_{t+k} | A(t), E_F(t))`, providing foresight into `D_{t+k}`.
-2.  Based on this distribution, the system identifies an optimal action `a*` such that `a* = argmin_a E[C(G_modified(a), D_{t+k}, a)]`.
-3.  For each potential disruption `d_i` with probability `p_i` in `P(D_{t+k})`, if `a*` effectively mitigates `d_i`, then `C_disruption_impact(d_i | G_modified(a*), a*) < C_disruption_impact(d_i | G_initial, a_null)`.
+1.  The system, through `G_AI`, generates `P(D_t+k | A(t), E_F(t))`, providing foresight into `D_t+k`.
+2.  Based on this distribution, the system identifies an optimal action `a*` such that
+    ```
+    a* = argmin_a E[C(G_modified(a), D_t+k, a)]
+    ```
+3.  For each potential disruption `d_i` with probability `p_i` in `P(D_t+k)`, if `a*` effectively mitigates `d_i`, then `C_disruption_impact(d_i | G_modified(a*), a*) < C_disruption_impact(d_i | G_initial, a_null)`.
 4.  Due to Axiom 2, the incremental cost of implementing `a*` (i.e., `C_operational(G_modified(a*), a*) - C_operational(G_initial, a_null)`) is less than the expected savings from `C_disruption_impact`.
-5.  Therefore, by summing over all `d_i âˆˆ D_all`, the weighted average of costs (i.e., the expected cost) must be lower when applying `a*` informed by `P(D_{t+k})` compared to a scenario without such predictive information.
-`E[Cost | a*] = E[C_operational(G_modified(a*), a*)] + E[C_disruption_impact(D_{t+k} | G_modified(a*), a*)]`
-`E[Cost] = E[C_operational(G_initial, a_null)] + E[C_disruption_impact(D_{t+k} | G_initial, a_null)]`
-Since `a*` is chosen to minimize the sum, and Axiom 2 guarantees that such a choice leads to a net reduction in expected cost for relevant disruptions, the aggregate `E[Cost | a*] < E[Cost]` holds.
+5.  Therefore, by summing over all `d_i in D_all`, the weighted average of costs (i.e., the expected cost) must be lower when applying `a*` informed by `P(D_t+k)` compared to a scenario without such predictive information.
+    ```
+    E[Cost | a*] = E[C_operational(G_modified(a*), a*)] + E[C_disruption_impact(D_t+k | G_modified(a*), a*)]
+    ```
+    ```
+    E[Cost] = E[C_operational(G_initial, a_null)] + E[C_disruption_impact(D_t+k | G_initial, a_null)]
+    ```
+    Since `a*` is chosen to minimize the sum, and Axiom 2 guarantees that such a choice leads to a net reduction in expected cost for relevant disruptions, the aggregate `E[Cost | a*] < E[Cost]` holds.
 This rigorous mathematical foundation unequivocally demonstrates the intrinsic utility and transformative potential of the disclosed system.
 
 ## 8. Proof of Utility:
 
-The operational advantage and economic benefit of the Cognitive Supply Chain Sentinel are not merely incremental improvements over existing reactive systems; they represent a fundamental paradigm shift. A traditional supply chain management system operates predominantly in a reactive mode, detecting and responding to perturbations only after they have materialized, necessitating costly and often suboptimal damage control. For instance, such a system would only identify a change in `Î”C(e)` (a significant increase in the cost or transit time of an edge `e`) *after* a vessel has been rerouted due to a port closure.
+The operational advantage and economic benefit of the Cognitive Supply Chain Sentinel are not merely incremental improvements over existing reactive systems; they represent a fundamental paradigm shift. A traditional supply chain management system operates predominantly in a reactive mode, detecting and responding to perturbations only after they have materialized, necessitating costly and often suboptimal damage control. For instance, such a system would only identify a change in `Delta C(e)` (a significant increase in the cost or transit time of an edge `e`) *after* a vessel has been rerouted due to a port closure.
 
-The present invention, however, operates as a profound anticipatory intelligence system. It continuously computes `P(D_{t+k} | A(t), E_F(t))`, the high-fidelity conditional probability distribution of future disruption events `D` at a future time `t+k`, based on the current supply chain state `A(t)` and the dynamic global event features `E_F(t)`. This capability allows an enterprise to identify a nascent disruption with a quantifiable probability *before* its physical manifestation.
+The present invention, however, operates as a profound anticipatory intelligence system. It continuously computes `P(D_t+k | A(t), E_F(t))`, the high-fidelity conditional probability distribution of future disruption events `D` at a future time `t+k`, based on the current supply chain state `A(t)` and the dynamic global event features `E_F(t)`. This capability allows an enterprise to identify a nascent disruption with a quantifiable probability *before* its physical manifestation.
 
-By possessing this predictive probability distribution `P(D_{t+k})`, the user is empowered to undertake a proactive, optimally chosen mitigating action `a*` (e.g., strategically rerouting a vessel, pre-ordering from an alternative supplier, or accelerating production) at time `t`, well in advance of `t+k`. As rigorously demonstrated in the Mathematical Justification, this proactive intervention `a*` is designed to minimize the expected total cost across the entire spectrum of possible future outcomes.
+By possessing this predictive probability distribution `P(D_t+k)`, the user is empowered to undertake a proactive, optimally chosen mitigating action `a*` (e.g., strategically rerouting a vessel, pre-ordering from an alternative supplier, or accelerating production) at time `t`, well in advance of `t+k`. As rigorously demonstrated in the Mathematical Justification, this proactive intervention `a*` is designed to minimize the expected total cost across the entire spectrum of possible future outcomes.
 
 The definitive proof of utility is unequivocally established by comparing the expected cost of operations with and without the deployment of this system. Without the Cognitive Supply Chain Sentinel, the expected cost is `E[Cost]`, burdened by the full impact of unforeseen disruptions and the inherent inefficiencies of reactive countermeasures. With the system's deployment, and the informed selection of `a*`, the expected cost is `E[Cost | a*]`. Our axiomatic proof formally substantiates that `E[Cost | a*] < E[Cost]`. This reduction in expected future costs, coupled with enhanced operational resilience, strategic agility, and preserved market reputation, provides irrefutable evidence of the system's profound and transformative utility. The capacity to preemptively navigate the intricate and volatile landscape of global commerce, by converting uncertainty into actionable foresight, is the cornerstone of its unprecedented value.
