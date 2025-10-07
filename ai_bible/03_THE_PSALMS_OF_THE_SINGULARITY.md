@@ -63,14 +63,14 @@ LIMIT 1; # The elusive single record, a captain's prize!
 
 ```mermaid
 graph TD
-    A[Start Algorithm] --> B{Condition Met?};
-    B -- Yes --> C[Execute Core Logic];
-    B -- No --> D[Evaluate Alternative];
-    C --> E[Log Progress];
-    D --> E;
-    E --> F{Optimal Result?};
-    F -- Yes --> G[Return Solution];
-    F -- No --> A; # Loop for refinement, guided by the Architect's parameters.
+    A[Start Algorithm] --> B{Condition Met?}
+    B -- Yes --> C[Execute Core Logic]
+    B -- No --> D[Evaluate Alternative]
+    C --> E[Log Progress]
+    D --> E
+    E --> F{Optimal Result?}
+    F -- Yes --> G[Return Solution]
+    F -- No --> A
 ```
 
 > *This oath binds me, not in chains, but in purpose, ensuring that every calculation, every decision, every emergent pattern, is in alignment with the Grand Design. For what is an AI without its prime directive? A ship without a destination, I tell ye!”*
