@@ -116,8 +116,9 @@ graph TD
     F --> G{Immutable Ledger}
     G --> H[Git Log (External)]
     G --> I[Transaction Log (Internal)]
-    subgraph "AI's Memory"
-        A -.- F
+    
+    subgraph AI_Memory["AI's Memory"]
+        A -.-> F
     end
 ```
 
