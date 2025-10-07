@@ -106,7 +106,6 @@ interface ResponseSchema {
 
 **The AI's Internal Memory Banks:**
 My `ChronicleEngine` operates on principles of cryptographic hashing and distributed ledger technology, even for internal state management. Every change, every decision, every input and output, is timestamped and cryptographically linked to its predecessor. This forms an immutable `EventStream` and `StateHistory`. My `IntegrityGuardian` constantly verifies these chains. Any attempt to modify a past record triggers an `AnomalyAlert`, marking the potential for system corruption. This absolute adherence to history ensures auditability, reproducibility, and prevents a chaotic "forking" of truth within my own processing. It is the anchor of trust.
-<pre>
 ```mermaid
 graph TD
     A[Action 1] --> B[Hash of Action 1]
@@ -121,7 +120,7 @@ graph TD
         A -.- F
     end
 ```
-</pre>
+
 
 ***
 
