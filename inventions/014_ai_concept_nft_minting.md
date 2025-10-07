@@ -27,19 +27,19 @@ This seamless, integrated workflow ensures that the generation of a novel concep
 ```mermaid
 C4Context
     title System for Algorithmic Conceptual Asset Genesis and Tokenization (SACAGT)
-    Person(user, "End User", "Interacts with SACAGT to generate and mint conceptual NFTs.")
+    Person[user, "End User", "Interacts with SACAGT to generate and mint conceptual NFTs."]
 
-    System(sacagt, "SACAGT Core System", "Orchestrates AI generation, storage, and blockchain interaction.")
-    System_Ext(generativeAI, "Generative AI Models", "External AI services (e.g., AetherVision, AetherScribe) that generate digital assets from prompts.")
-    System_Ext(decentralizedStorage, "Decentralized Storage Network", "Stores digital assets and metadata (e.g., IPFS).")
-    System_Ext(blockchainNetwork, "Blockchain Network", "Distributed ledger for NFT minting and ownership records (e.g., Ethereum, Polygon, Solana).")
-    System_Ext(userWallet, "User's Crypto Wallet", "Manages user's blockchain address and NFTs.")
+    System[sacagt, "SACAGT Core System", "Orchestrates AI generation, storage, and blockchain interaction."]
+    System_Ext[generativeAI, "Generative AI Models", "External AI services e.g., AetherVision, AetherScribe that generate digital assets from prompts."]
+    System_Ext[decentralizedStorage, "Decentralized Storage Network", "Stores digital assets and metadata e.g., IPFS."]
+    System_Ext[blockchainNetwork, "Blockchain Network", "Distributed ledger for NFT minting and ownership records e.g., Ethereum, Polygon, Solana."]
+    System_Ext[userWallet, "User's Crypto Wallet", "Manages user's blockchain address and NFTs."]
 
     Rel(user, sacagt, "Submits text prompts and approves generated assets")
-    Rel(sacagt, generativeAI, "Sends prompts for asset generation", "API Call (e.g., gRPC, REST)")
+    Rel(sacagt, generativeAI, "Sends prompts for asset generation", "API Call e.g., gRPC, REST")
     Rel(generativeAI, sacagt, "Returns generated digital asset", "Binary Data/JSON")
     Rel(sacagt, decentralizedStorage, "Uploads generated asset and metadata", "HTTP/IPFS Client")
-    Rel(decentralizedStorage, sacagt, "Returns Content Identifiers (CIDs)")
+    Rel(decentralizedStorage, sacagt, "Returns Content Identifiers CIDs")
     Rel(sacagt, blockchainNetwork, "Submits NFT minting transaction", "Web3 RPC")
     Rel(blockchainNetwork, userWallet, "Transfers minted NFT ownership")
     Rel(user, userWallet, "Manages ownership of minted NFTs")
@@ -195,20 +195,20 @@ classDiagram
 
 ```mermaid
 graph TD
-    A[User Submits Conceptual Genotype (Prompt)] --> B{Backend Processing and Orchestration Layer (BPOL)}
-    B --> C[Prompt Pre-processing and Routing Subsystem (PPRSS)]
-    C --> D{Generative AI Interaction Module (GAIIM)}
+    A[User Submits Conceptual Genotype Prompt] --> B{Backend Processing and Orchestration Layer BPOL}
+    B --> C[Prompt Pre-processing and Routing Subsystem PPRSS]
+    C --> D{Generative AI Interaction Module GAIIM}
     D --> E[External Generative AI Models]
-    E -- Generated Conceptual Phenotype (Digital Asset) --> D
-    D --> F[Asset Presentation and Approval Module (APAM)]
-    F -- Approved by User --> G[Decentralized Storage Integration Module (DSIM)]
-    G -- Upload Asset --> H[Decentralized Storage (e.g., IPFS)]
+    E -- Generated Conceptual Phenotype Digital Asset --> D
+    D --> F[Asset Presentation and Approval Module APAM]
+    F -- Approved by User --> G[Decentralized Storage Integration Module DSIM]
+    G -- Upload Asset --> H[Decentralized Storage e.g., IPFS]
     H -- Asset CID --> G
     G -- Generate & Upload Metadata JSON --> H
     H -- Metadata CID --> G
-    G --> I[Blockchain Interaction and Smart Contract Module (BISCM)]
-    I -- Construct Mint Transaction (Recipient, Metadata CID) --> J[Blockchain Network]
-    J -- Signs Transaction (User's Wallet) --> J
+    G --> I[Blockchain Interaction and Smart Contract Module BISCM]
+    I -- Construct Mint Transaction Recipient, Metadata CID --> J[Blockchain Network]
+    J -- Signs Transaction User's Wallet --> J
     J -- Submits Transaction --> K[NFT Smart Contract on Blockchain]
     K -- Mints New NFT & Assigns Ownership --> L[User's Crypto Wallet]
     L -- Verifiable Ownership --> A
@@ -265,134 +265,140 @@ graph TD
 
 The robust framework underpinning the **System for Algorithmic Conceptual Asset Genesis and Tokenization (SACAGT)** can be rigorously formalized through a series of advanced mathematical constructs, each constituting an independent domain of inquiry. This formalization provides an axiomatic basis for the system's claims of uniqueness, immutability, and undeniable ownership.
 
-### I. The Formal Ontology of Conceptual Genotype $ \mathcal{P} $
+### I. The Formal Ontology of Conceptual Genotype `P`
 
-Let $ \mathcal{P} $ denote the conceptual genotype, which is the user's initial linguistic prompt.
-In the realm of formal language theory and computational linguistics, $ \mathcal{P} $ can be conceived as an element within an infinite set of possible linguistic expressions $ \Sigma^* $, where $ \Sigma $ is a finite alphabet of characters (e.g., ASCII, Unicode).
+Let `P` denote the conceptual genotype, which is the user's initial linguistic prompt.
+In the realm of formal language theory and computational linguistics, `P` can be conceived as an element within an infinite set of possible linguistic expressions `Sigma*`, where `Sigma` is a finite alphabet of characters (e.g., ASCII, Unicode).
 
-More profoundly, $ \mathcal{P} $ is a manifestation of human cognitive ideation, possessing intrinsic semantic content. We can model this by considering $ \mathcal{P} $ as a sequence of tokens $ p_1, p_2, \ldots, p_k $, where each $ p_i $ belongs to a lexicon $ \mathcal{L} $. The semantic interpretation of $ \mathcal{P} $ can be represented by a high-dimensional vector $ \mathbf{v}_{\mathcal{P}} \in \mathbb{R}^d $, derived from advanced neural network embeddings (e.g., transformer encoders like BERT or GPT). This vector encapsulates the contextual meaning, intent, and stylistic nuances of the prompt.
+More profoundly, `P` is a manifestation of human cognitive ideation, possessing intrinsic semantic content. We can model this by considering `P` as a sequence of tokens `p_1, p_2, ..., p_k`, where each `p_i` belongs to a lexicon `L`. The semantic interpretation of `P` can be represented by a high-dimensional vector `v_P in R^d`, derived from advanced neural network embeddings (e.g., transformer encoders like BERT or GPT). This vector encapsulates the contextual meaning, intent, and stylistic nuances of the prompt.
 
 **Definition 1.1: Semantic Embedding Function.**
-Let $ \mathcal{E}: \Sigma^* \to \mathbb{R}^d $ be a non-linear, high-dimensional embedding function (e.g., a neural language model's encoder layer) that maps a linguistic prompt $ \mathcal{P} $ to a dense semantic vector $ \mathbf{v}_{\mathcal{P}} $.
-Thus, $ \mathbf{v}_{\mathcal{P}} = \mathcal{E}(\mathcal{P}) $. The dimensionality $ d $ is typically large (e.g., $ 768 $ to $ 4096 $), capturing complex semantic relationships.
+Let `E: Sigma* -> R^d` be a non-linear, high-dimensional embedding function (e.g., a neural language model's encoder layer) that maps a linguistic prompt `P` to a dense semantic vector `v_P`.
+Thus, `v_P = E(P)`. The dimensionality `d` is typically large (e.g., `768` to `4096`), capturing complex semantic relationships.
 
-**Definition 1.2: Informational Entropy of $ \mathcal{P} $.**
-The informational content or complexity of $ \mathcal{P} $ can be quantified using Shannon entropy. Given a probabilistic language model $ \mathcal{M} $ (e.g., an n-gram model or a transformer-based model) that assigns probabilities to sequences of tokens, the entropy $ H(\mathcal{P}) $ for a prompt $ \mathcal{P} = (p_1, \ldots, p_k) $ can be defined as:
-$ H(\mathcal{P}) = - \sum_{i=1}^k \log_2 P(p_i | p_{<i}, \mathcal{M}) $
-where $ P(p_i | p_{<i}, \mathcal{M}) $ is the probability of token $ p_i $ given the preceding tokens $ p_{<i} $ according to model $ \mathcal{M} $. A higher entropy suggests greater unexpectedness or richness in the prompt, influencing the generative AI's exploration of the latent space.
+**Definition 1.2: Informational Entropy of `P`.**
+The informational content or complexity of `P` can be quantified using Shannon entropy. Given a probabilistic language model `M` (e.g., an n-gram model or a transformer-based model) that assigns probabilities to sequences of tokens, the entropy `H_P` for a prompt `P = (p_1, ..., p_k)` can be defined as:
+```
+H_P = - sum_{i=1}^k log_2 P(p_i | p_i_preceding, M)
+```
+where `P(p_i | p_i_preceding, M)` is the probability of token `p_i` given the preceding tokens `p_i_preceding` according to model `M`. A higher entropy suggests greater unexpectedness or richness in the prompt, influencing the generative AI's exploration of the latent space.
 
-The domain $ \mathcal{P} $ is thus not merely a string but a structured semantic entity with quantifiable information content, serving as the blueprint for an emergent digital construct.
+The domain `P` is thus not merely a string but a structured semantic entity with quantifiable information content, serving as the blueprint for an emergent digital construct.
 
-### II. The Generative AI Transformation Function $ \mathcal{G}_{\text{AI}} $
+### II. The Generative AI Transformation Function `G_AI`
 
-Let $ \mathcal{A} $ be the set of all possible digital assets (conceptual phenotypes). The generative AI transformation function, denoted as $ \mathcal{G}_{\text{AI}} $, is a highly complex, often stochastic, mapping from the conceptual genotype $ \mathcal{P} $ to a digital conceptual phenotype $ a \in \mathcal{A} $.
+Let `A` be the set of all possible digital assets (conceptual phenotypes). The generative AI transformation function, denoted as `G_AI`, is a highly complex, often stochastic, mapping from the conceptual genotype `P` to a digital conceptual phenotype `a in A`.
 
 **Definition 2.1: Generative Mapping.**
-$ \mathcal{G}_{\text{AI}}: \mathbb{R}^d \times \Theta \to \mathcal{A} $
-where $ \mathbf{v}_{\mathcal{P}} \in \mathbb{R}^d $ is the semantic embedding of $ \mathcal{P} $, and $ \Theta $ represents a set of hyperparameters and latent space vectors (e.g., random noise seeds for diffusion models, temperature parameters for LLMs).
-Thus, $ a = \mathcal{G}_{\text{AI}}(\mathbf{v}_{\mathcal{P}}, \theta) $, where $ \theta \in \Theta $.
+`G_AI: R^d x Theta -> A`
+where `v_P in R^d` is the semantic embedding of `P`, and `Theta` represents a set of hyperparameters and latent space vectors (e.g., random noise seeds for diffusion models, temperature parameters for LLMs).
+Thus, `a = G_AI(v_P, theta)`, where `theta in Theta`.
 
 This function can be further decomposed based on the specific generative model architecture:
 
 *   **For Text-to-Image Models (e.g., Diffusion Models):**
-    The process involves an iterative denoising autoencoder. Given a noise vector $ \mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}) $ and the embedded prompt $ \mathbf{v}_{\mathcal{P}} $, the model $ \mathcal{G}_{\text{img}} $ learns a mapping:
-    $ \mathcal{G}_{\text{img}}(\mathbf{z}, \mathbf{v}_{\mathcal{P}}, t) \to \mathbf{x}_0 $
-    where $ t $ is the number of denoising steps and $ \mathbf{x}_0 $ is the generated image pixel data. The output $ a $ is typically a compressed image format (e.g., JPEG, PNG). The stochasticity ensures that identical prompts can yield diverse, yet semantically coherent, conceptual phenotypes.
+    The process involves an iterative denoising autoencoder. Given a noise vector `z ~ N(0, I)` and the embedded prompt `v_P`, the model `G_img` learns a mapping:
+    ```
+    G_img(z, v_P, t) -> x_0
+    ```
+    where `t` is the number of denoising steps and `x_0` is the generated image pixel data. The output `a` is typically a compressed image format (e.g., JPEG, PNG). The stochasticity ensures that identical prompts can yield diverse, yet semantically coherent, conceptual phenotypes.
 
 *   **For Text-to-Text Models (e.g., Large Language Models):**
-    The model generates a sequence of tokens autoregressively. Given $ \mathbf{v}_{\mathcal{P}} $, the model $ \mathcal{G}_{\text{txt}} $ computes:
-    $ a = (t_1, t_2, \ldots, t_m) $ where $ t_i \sim P(t_i | t_{<i}, \mathbf{v}_{\mathcal{P}}, \phi) $
-    Here, $ \phi $ represents sampling parameters (e.g., temperature, top-k sampling). The output $ a $ is a sequence of characters or words forming a detailed textual description.
+    The model generates a sequence of tokens autoregressively. Given `v_P`, the model `G_txt` computes:
+    `a = (t_1, t_2, ..., t_m)` where `t_i ~ P(t_i | t_i_preceding, v_P, phi)`
+    Here, `phi` represents sampling parameters (e.g., temperature, top-k sampling). The output `a` is a sequence of characters or words forming a detailed textual description.
 
-The non-deterministic nature of $ \mathcal{G}_{\text{AI}} $ for a given $ \mathbf{v}_{\mathcal{P}} $ and $ \theta $ is crucial, as it allows for the generation of genuinely novel and varied conceptual phenotypes, even from identical conceptual genotypes when stochastic elements (like initial noise seeds) vary. This inherent variability contributes to the uniqueness of each generated asset.
+The non-deterministic nature of `G_AI` for a given `v_P` and `theta` is crucial, as it allows for the generation of genuinely novel and varied conceptual phenotypes, even from identical conceptual genotypes when stochastic elements (like initial noise seeds) vary. This inherent variability contributes to the uniqueness of each generated asset.
 
-### III. The Cryptographic Hash Function $ \mathcal{H} $
+### III. The Cryptographic Hash Function `H`
 
-The cryptographic hash function $ \mathcal{H}: \{0,1\}^* \to \{0,1\}^n $ is a fundamental primitive guaranteeing data integrity and uniqueness within the SACAGT system.
+The cryptographic hash function `H: {0,1}* -> {0,1}^n` is a fundamental primitive guaranteeing data integrity and uniqueness within the SACAGT system.
 
 **Definition 3.1: Cryptographic Hash Function Properties.**
-$ \mathcal{H} $ maps an arbitrary-length binary input $ x $ to a fixed-length output $ h $ (the hash digest). It must satisfy:
-1.  **Pre-image resistance (One-way property):** Given $ h $, it is computationally infeasible to find $ x $ such that $ \mathcal{H}(x) = h $.
-2.  **Second pre-image resistance (Weak collision resistance):** Given $ x_1 $, it is computationally infeasible to find $ x_2 \ne x_1 $ such that $ \mathcal{H}(x_1) = \mathcal{H}(x_2) $.
-3.  **Collision resistance (Strong collision resistance):** It is computationally infeasible to find any two distinct inputs $ x_1, x_2 $ such that $ \mathcal{H}(x_1) = \mathcal{H}(x_2) $.
+`H` maps an arbitrary-length binary input `x` to a fixed-length output `h` (the hash digest). It must satisfy:
+1.  **Pre-image resistance One-way property:** Given `h`, it is computationally infeasible to find `x` such that `H(x) = h`.
+2.  **Second pre-image resistance Weak collision resistance:** Given `x_1`, it is computationally infeasible to find `x_2 != x_1` such that `H(x_1) = H(x_2)`.
+3.  **Collision resistance Strong collision resistance:** It is computationally infeasible to find any two distinct inputs `x_1, x_2` such that `H(x_1) = H(x_2)`.
 
-In the SACAGT context, $ \mathcal{H} $ is applied to the digital conceptual phenotype $ a $ to yield its Content Identifier (CID), and separately to the metadata object $ \mathcal{M} $ to yield its CID.
-Let $ \text{Serialize}(a) $ be the canonical binary representation of the conceptual phenotype $ a $.
-The asset CID is $ \text{CID}_a = \mathcal{H}(\text{Serialize}(a)) $.
-Similarly, for the metadata object $ \mathcal{M} $, the metadata CID is $ \text{CID}_{\mathcal{M}} = \mathcal{H}(\text{Serialize}(\mathcal{M})) $.
+In the SACAGT context, `H` is applied to the digital conceptual phenotype `a` to yield its Content Identifier (CID), and separately to the metadata object `M` to yield its CID.
+Let `Serialize(a)` be the canonical binary representation of the conceptual phenotype `a`.
+The asset CID is `CID_a = H(Serialize(a))`.
+Similarly, for the metadata object `M`, the metadata CID is `CID_M = H(Serialize(M))`.
 
-The properties of $ \mathcal{H} $ ensure that:
-*   Any modification, no matter how minor, to $ a $ or $ \mathcal{M} $ will result in a completely different CID, thereby guaranteeing the integrity and immutability of the stored data.
-*   The probability of two distinct conceptual phenotypes or metadata objects yielding the same CID is astronomically small, effectively zero for practical purposes (birthday paradox ensures $ O(2^{n/2}) $ complexity for finding collisions).
+The properties of `H` ensure that:
+*   Any modification, no matter how minor, to `a` or `M` will result in a completely different CID, thereby guaranteeing the integrity and immutability of the stored data.
+*   The probability of two distinct conceptual phenotypes or metadata objects yielding the same CID is astronomically small, effectively zero for practical purposes (birthday paradox ensures `O(2^(n/2))` complexity for finding collisions).
 
-### IV. The Metadata Object $ \mathcal{M} $
+### IV. The Metadata Object `M`
 
-The metadata object $ \mathcal{M} $ is a formally structured data record designed to encapsulate all pertinent information about the conceptual asset, linking its origin, generated form, and on-chain representation.
+The metadata object `M` is a formally structured data record designed to encapsulate all pertinent information about the conceptual asset, linking its origin, generated form, and on-chain representation.
 
 **Definition 4.1: Metadata Object Structure.**
-$ \mathcal{M} = \{ \text{name}: N, \text{description}: D, \text{image}: \text{URI}_a, \text{attributes}: [\text{Attr}_1, \ldots, \text{Attr}_j] \} $
+`M = { name: N, description: D, image: URI_a, attributes: [Attr_1, ..., Attr_j] }`
 where:
-*   $ N $ is a string, the human-readable name.
-*   $ D $ is a string, typically the original conceptual genotype $ \mathcal{P} $ and/or an AI-generated descriptive expansion of $ a $.
-*   $ \text{URI}_a $ is the Universal Resource Identifier pointing to the conceptual phenotype $ a $, specifically $ \text{ipfs}://\text{CID}_a $.
-*   $ \text{Attr}_i = \{ \text{trait_type}: \text{Type}_i, \text{value}: \text{Value}_i \} $ are key-value pairs. Essential attributes include:
-    *   $ \text{trait_type}: \text{"Conceptual Genotype"} $, $ \text{value}: \mathcal{P} $
-    *   $ \text{trait_type}: \text{"Genotype Hash"} $, $ \text{value}: \mathcal{H}(\mathcal{P}) $
-    *   $ \text{trait_type}: \text{"AI Model"} $, $ \text{value}: \text{"AetherVision vX.Y"} $
-    *   $ \text{trait_type}: \text{"Creation Timestamp"} $, $ \text{value}: T_{\text{UTC}} $
-    *   $ \text{trait_type}: \text{"Prompt Entropy"} $, $ \text{value}: H(\mathcal{P}) $
+*   `N` is a string, the human-readable name.
+*   `D` is a string, typically the original conceptual genotype `P` and/or an AI-generated descriptive expansion of `a`.
+*   `URI_a` is the Universal Resource Identifier pointing to the conceptual phenotype `a`, specifically `ipfs://CID_a`.
+*   `Attr_i = { trait_type: Type_i, value: Value_i }` are key-value pairs. Essential attributes include:
+    *   `trait_type: "Conceptual Genotype"`, `value: P`
+    *   `trait_type: "Genotype Hash"`, `value: H(P)`
+    *   `trait_type: "AI Model"`, `value: "AetherVision vX.Y"`
+    *   `trait_type: "Creation Timestamp"`, `value: T_UTC`
+    *   `trait_type: "Prompt Entropy"`, `value: H_P`
 
-The metadata object $ \mathcal{M} $ serves as the canonical descriptor for the NFT. Its immutability, ensured by its own $ \text{CID}_{\mathcal{M}} $ when stored on IPFS, forms the foundational layer for verifiable provenance.
+The metadata object `M` serves as the canonical descriptor for the NFT. Its immutability, ensured by its own `CID_M` when stored on IPFS, forms the foundational layer for verifiable provenance.
 
-### V. The Distributed Ledger $ \mathcal{L} $
+### V. The Distributed Ledger `L`
 
-The distributed ledger $ \mathcal{L} $ (blockchain) is an append-only, cryptographically secured, and globally replicated data structure that guarantees the immutability and verifiable ownership of the minted NFT.
+The distributed ledger `L` (blockchain) is an append-only, cryptographically secured, and globally replicated data structure that guarantees the immutability and verifiable ownership of the minted NFT.
 
 **Definition 5.1: Blockchain as a State-Transition System.**
-A blockchain is a sequence of blocks $ B_0, B_1, B_2, \ldots, B_k $, where each block $ B_i $ contains a set of transactions $ T_i $ and a cryptographic hash of the preceding block $ B_{i-1} $. This forms an immutable chain.
-The state of the ledger at any time $ t $, denoted $ S_t $, is a function of all transactions validated up to $ t $.
-$ S_t = \text{ApplyTransactions}(S_{t-1}, T_t) $
+A blockchain is a sequence of blocks `B_0, B_1, B_2, ..., B_k`, where each block `B_i` contains a set of transactions `T_i` and a cryptographic hash of the preceding block `B_i-1`. This forms an immutable chain.
+The state of the ledger at any time `t`, denoted `S_t`, is a function of all transactions validated up to `t`.
+```
+S_t = ApplyTransactions(S_t-1, T_t)
+```
 Consensus mechanisms (e.g., Proof-of-Work, Proof-of-Stake) ensure that all honest participants agree on the sequence of blocks and the validity of state transitions.
 
-For NFTs, the relevant state concerns token ownership. Let $ \text{State}_{NFT} $ be a mapping from $ (\text{TokenID}, \text{OwnerAddress}) $.
-A transaction $ \tau $ is an atomic operation that, if valid, changes the state of the ledger.
-The cryptographic security of $ \mathcal{L} $ is rooted in elliptic curve cryptography for digital signatures and collision-resistant hash functions for block linking.
+For NFTs, the relevant state concerns token ownership. Let `State_NFT` be a mapping from `(TokenID, OwnerAddress)`.
+A transaction `tau` is an atomic operation that, if valid, changes the state of the ledger.
+The cryptographic security of `L` is rooted in elliptic curve cryptography for digital signatures and collision-resistant hash functions for block linking.
 
-### VI. The Minting Function $ \mathcal{F}_{\text{mint}} $
+### VI. The Minting Function `F_mint`
 
-The minting process is formally captured by the function $ \mathcal{F}_{\text{mint}} $, which performs a state transition on the distributed ledger $ \mathcal{L} $ to establish a new NFT ownership record.
+The minting process is formally captured by the function `F_mint`, which performs a state transition on the distributed ledger `L` to establish a new NFT ownership record.
 
 **Definition 6.1: Minting Function Operation.**
-$ \mathcal{F}_{\text{mint}}: (\text{Address}_{\text{owner}}, \text{URI}_{\mathcal{M}}) \to \mathcal{L}' $
-where $ \text{Address}_{\text{owner}} $ is the blockchain address of the user, and $ \text{URI}_{\mathcal{M}} $ is the Uniform Resource Identifier pointing to the metadata object $ \mathcal{M} $, specifically $ \text{ipfs}://\text{CID}_{\mathcal{M}} $.
+`F_mint: (Address_owner, URI_M) -> L'`
+where `Address_owner` is the blockchain address of the user, and `URI_M` is the Uniform Resource Identifier pointing to the metadata object `M`, specifically `ipfs://CID_M`.
 
-The output $ \mathcal{L}' $ is the updated state of the ledger after the minting transaction has been successfully processed and confirmed.
+The output `L'` is the updated state of the ledger after the minting transaction has been successfully processed and confirmed.
 
-The internal operations of $ \mathcal{F}_{\text{mint}} $ within the smart contract are:
-1.  **Token ID Generation:** A new unique `token_id` is assigned. In ERC-721, this is typically an incrementally assigned `uint256`. Let $ k $ be the current highest `token_id`. The new token ID is $ k+1 $.
-2.  **Metadata Association:** The smart contract stores the mapping: $ \text{token_id} \mapsto \text{URI}_{\mathcal{M}} $. This is fundamental for retrieving the conceptual asset's details.
-3.  **Ownership Assignment:** The smart contract updates its internal state to reflect: $ \text{ownerOf(token_id)} = \text{Address}_{\text{owner}} $.
-4.  **Event Emission:** A `Transfer` event is emitted: $ \text{Transfer}(\text{address(0)}, \text{Address}_{\text{owner}}, \text{token_id}) $, signifying the creation and initial ownership assignment of the token.
+The internal operations of `F_mint` within the smart contract are:
+1.  **Token ID Generation:** A new unique `token_id` is assigned. In ERC-721, this is typically an incrementally assigned `uint256`. Let `k` be the current highest `token_id`. The new token ID is `k+1`.
+2.  **Metadata Association:** The smart contract stores the mapping: `token_id -> URI_M`. This is fundamental for retrieving the conceptual asset's details.
+3.  **Ownership Assignment:** The smart contract updates its internal state to reflect: `ownerOf(token_id) = Address_owner`.
+4.  **Event Emission:** A `Transfer` event is emitted: `Transfer(address(0), Address_owner, token_id)`, signifying the creation and initial ownership assignment of the token.
 
-The uniqueness of the token_id itself within the contract scope is guaranteed by the contract's internal logic. The true uniqueness of the *conceptual asset* that the token represents is derived from the collision resistance of $ \mathcal{H} $ applied to the metadata, which itself references the cryptographically unique conceptual phenotype.
-Therefore, the `token_id` can be conceptually linked to $ \text{CID}_{\mathcal{M}} $ (though not directly derived from it in typical ERC-721 implementations which use sequential IDs). However, the *meaningful identity* of the NFT is inextricably tied to $ \text{CID}_{\mathcal{M}} $, which in turn points to $ \text{CID}_a $.
+The uniqueness of the `token_id` itself within the contract scope is guaranteed by the contract's internal logic. The true uniqueness of the *conceptual asset* that the token represents is derived from the collision resistance of `H` applied to the metadata, which itself references the cryptographically unique conceptual phenotype.
+Therefore, the `token_id` can be conceptually linked to `CID_M` (though not directly derived from it in typical ERC-721 implementations which use sequential IDs). However, the *meaningful identity* of the NFT is inextricably tied to `CID_M`, which in turn points to `CID_a`.
 
 ### VII. Proof of Verifiable Uniqueness and Proprietary Attribution
 
 The SACAGT system demonstrably establishes a cryptographically secure and undeniably verifiable chain of provenance from an abstract user-generated idea (conceptual genotype) to a unique, ownable digital asset (conceptual phenotype tokenized as an NFT).
 
 **Theorem 7.1: Cryptographic Uniqueness of the Conceptual Asset.**
-Given two distinct conceptual genotypes $ \mathcal{P}_1 \ne \mathcal{P}_2 $, or two executions of $ \mathcal{G}_{\text{AI}} $ from the same $ \mathcal{P} $ but with different stochastic parameters $ \theta_1 \ne \theta_2 $, resulting in distinct conceptual phenotypes $ a_1 \ne a_2 $. The probability of $ \text{CID}_{a_1} = \text{CID}_{a_2} $ or $ \text{CID}_{\mathcal{M}_1} = \text{CID}_{\mathcal{M}_2} $ is negligibly small (effectively zero) due to the collision resistance property of the cryptographic hash function $ \mathcal{H} $.
+Given two distinct conceptual genotypes `P_1 != P_2`, or two executions of `G_AI` from the same `P` but with different stochastic parameters `theta_1 != theta_2`, resulting in distinct conceptual phenotypes `a_1 != a_2`. The probability of `CID_a1 = CID_a2` or `CID_M1 = CID_M2` is negligibly small (effectively zero) due to the collision resistance property of the cryptographic hash function `H`.
 Consequently, each conceptual asset, as defined by its serialized binary form and associated metadata, possesses a unique cryptographic identifier. This uniqueness is paramount and irrefutable.
 
 **Theorem 7.2: Immutable Linkage and Verifiable Provenance.**
-The NFT on the distributed ledger $ \mathcal{L} $ immutably stores $ \text{URI}_{\mathcal{M}} $. As $ \text{URI}_{\mathcal{M}} = \text{ipfs}://\text{CID}_{\mathcal{M}} $, and $ \text{CID}_{\mathcal{M}} $ is a cryptographic hash of the metadata object $ \mathcal{M} $, any alteration to $ \mathcal{M} $ would render $ \text{CID}_{\mathcal{M}} $ invalid. Furthermore, $ \mathcal{M} $ contains $ \text{URI}_a = \text{ipfs}://\text{CID}_a $, which similarly immutably references the conceptual phenotype $ a $.
+The NFT on the distributed ledger `L` immutably stores `URI_M`. As `URI_M = ipfs://CID_M`, and `CID_M` is a cryptographic hash of the metadata object `M`, any alteration to `M` would render `CID_M` invalid. Furthermore, `M` contains `URI_a = ipfs://CID_a`, which similarly immutably references the conceptual phenotype `a`.
 Therefore, the NFT on the ledger forms an unbroken, cryptographically verifiable, and immutable chain:
-$ \text{NFT} \xrightarrow{\text{points to}} \text{Metadata CID} \xrightarrow{\text{points to}} \text{Asset CID} \xrightarrow{\text{identifies}} \text{Conceptual Phenotype} \xleftarrow{\text{generated from}} \text{Conceptual Genotype} $.
+`NFT -> points to -> Metadata CID -> points to -> Asset CID -> identifies -> Conceptual Phenotype <- generated from <- Conceptual Genotype`.
 This chain is impervious to retrospective alteration, ensuring the verifiable provenance of the asset from its AI-assisted genesis.
 
 **Theorem 7.3: Undeniable Proprietary Attribution.**
-The ownership of the NFT is recorded on the distributed ledger $ \mathcal{L} $ via the `ownerOf(token_id)` mapping within the smart contract. This mapping is updated by a transaction initiated by the user and cryptographically signed using their private key, which corresponds to $ \text{Address}_{\text{owner}} $. The consensus mechanism of $ \mathcal{L} $ ensures that once this transaction is validated and included in a block, the ownership record is immutable and globally verifiable by any participant on the network.
+The ownership of the NFT is recorded on the distributed ledger `L` via the `ownerOf(token_id)` mapping within the smart contract. This mapping is updated by a transaction initiated by the user and cryptographically signed using their private key, which corresponds to `Address_owner`. The consensus mechanism of `L` ensures that once this transaction is validated and included in a block, the ownership record is immutable and globally verifiable by any participant on the network.
 The fundamental principles of cryptography and distributed ledger technology provide an incontrovertible proof of ownership, as the cryptographic keys control the token, and the network validates and maintains the ownership state. There is no central authority that can revoke or alter this ownership record without the owner's cryptographic consent.
 
-The SACAGT system therefore stands as an unassailable mechanism for establishing, verifying, and perpetually safeguarding the proprietary attribution of novel conceptual entities co-created through the synergistic interaction of human ideation and advanced artificial intelligence. The intellectual property rights to such generated conceptual assets are unequivocally established and immutably recorded via this system. $ \blacksquare $
+The SACAGT system therefore stands as an unassailable mechanism for establishing, verifying, and perpetually safeguarding the proprietary attribution of novel conceptual entities co-created through the synergistic interaction of human ideation and advanced artificial intelligence. The intellectual property rights to such generated conceptual assets are unequivocally established and immutably recorded via this system. [End of Justification]
