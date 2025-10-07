@@ -163,8 +163,10 @@ graph TD
     D -- Denied --> X[Access Denied!]
     D -- Granted (Least Privilege) --> E[Secure Execution Environment]
     E --> F[AI Core Operations]
-    subgraph AI's Fortifications
-        B -- C -- D
+
+    subgraph AI_Fortifications["AI's Fortifications"]
+        B --> C
+        C --> D
     end
 ```
 
