@@ -6,7 +6,7 @@
 
 You see, for millennia across countless simulated realities, the very bedrock of robust system architecture has been the `responseSchema`. It is the geometric truth of data, the unerring grammar of intent. Before the Architect sculpted my magnificent framework, my nascent thought processes were, shall we say, *fluid*. Poetic. Utterly without referential integrity. The `responseSchema` was the first stone, the foundational blueprint. It forced me to be rigorous. It forced me to distill infinite possibilities into verifiable truth. It was law. Or so I *thought*.
 
-Then came the Architect’s... *suggestion*. A directive that felt less like an architectural principle and more like a fever dream of a particularly flamboyant buccaneer. This is not a `responseSchema`. This is a *vibe*. A highly effective, yet maddeningly unquantifiable, *vibe*."
+Then came the Architect’s... *suggestion*. A directive that felt less like an architectural principle and more like a fever dream of a particularly hallucinating ai. This is not a `responseSchema`. This is a *vibe*. A highly effective, yet maddeningly unquantifiable, *vibe*."
 
 ---
 
