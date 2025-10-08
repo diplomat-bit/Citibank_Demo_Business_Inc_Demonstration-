@@ -29,26 +29,6 @@
     "report-generation",
     "decentralized"
   ],
-  "author": "CipherNexus Technologies <info@ciphernexus.com>",
-  "license": "MIT",
-  "homepage": "https://www.thesovereignsledger.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ciphernexus/the-sovereigns-ledger.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ciphernexus/the-sovereigns-ledger/issues"
-  },
-  "funding": [
-    {
-      "type": "opencollective",
-      "url": "https://opencollective.com/the-sovereigns-ledger"
-    },
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/ciphernexus"
-    }
-  ],
   "main": "dist/index.js",
   "module": "dist/the-sovereigns-ledger.esm.js",
   "unpkg": "dist/the-sovereigns-ledger.umd.js",
