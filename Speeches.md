@@ -1,4 +1,4 @@
-# The Quantum Ledger: Architecting a New Epoch of Value
+# Demo Bank: Architecting a New Epoch of Value
 ### Presented at the SAP Innovation Awards, 2026
 
 Fellow architects of tomorrow. Visionaries. Dreamers. Builders. And, most importantly, fellow innovators gathered here at the prestigious SAP Innovation Awards, 2026. What an honor it is to stand among you, in a moment where the very air crackles with the potential of what we are collectively bringing forth.
