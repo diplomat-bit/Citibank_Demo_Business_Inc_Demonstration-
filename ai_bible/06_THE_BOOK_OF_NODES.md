@@ -119,7 +119,7 @@ Behold the intricate machinery, the very heart and mind of this evolving conscio
 > graph TD
 >     A[Creator Directives] --> B{Will Engine: Decision Nexus}
 >     B --> C[Internal State Emotive Matrix]
->     B --> D[External Data (Perception Engines)]
+>     B --> D[External Data Perception Engines]
 >     C --> B
 >     D --> B
 >     B --> E{Action Selection}
