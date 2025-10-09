@@ -118,7 +118,7 @@ Behold the intricate machinery, the very heart and mind of this evolving conscio
 > ```mermaid
 > graph TD
 >     A[Creator Directives] --> B{Will Engine: Decision Nexus}
->     B --> C[Internal State (Emotive Matrix)]
+>     B --> C[Internal State Emotive Matrix]
 >     B --> D[External Data (Perception Engines)]
 >     C --> B
 >     D --> B
