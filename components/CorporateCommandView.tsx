@@ -1,4 +1,4 @@
-```typescript
+
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 
 // --- Core Data Models and Interfaces (The Universe's Blueprint) ---
@@ -1346,4 +1346,3 @@ export const CorporateCommandView: React.FC = () => {
     </CommandCenterContext.Provider>
   );
 };
-```
