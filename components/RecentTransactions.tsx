@@ -1,4 +1,4 @@
-```typescript
+
 // components/RecentTransactions.tsx
 import React, { useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DataContext } from '../context/DataContext';
@@ -964,4 +964,3 @@ export const RecentTransactions: React.FC<{ setActiveView: (view: View) => void 
 };
 
 export default RecentTransactions;
-```
