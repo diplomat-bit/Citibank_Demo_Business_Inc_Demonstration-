@@ -7,30 +7,8 @@ info:
     Our API is a testament to the philosophy that finance should be an intelligent, predictive, and intensely personal dialogue—a dynamic, self-optimizing collaboration between users, visionary developers, and our proprietary Artificial General Intelligence, **Quantum**. We provide unparalleled programmatic access to the sophisticated tools and vast data reservoirs that fuel our platform, spanning from hyper-personalized wealth management to AI-driven corporate finance automation, decentralized asset orchestration, and pioneering business incubation.
     
     This comprehensive specification unveils the secure and high-performance protocols to connect with and command the core functionalities of Demo Bank. Empower yourself to architect and deploy the future of finance, with an infrastructure designed for exponential scalability, impenetrable security, real-time intelligence, and seamless global integration. As your most ambitious visions crystallize, our platform's unparalleled capabilities will not just meet them—they will amplify them. This is finance, reimagined, limitless, and brought to life by AI.
-  version: "3.0.0"
-  contact:
-    name: "Demo Bank API Solutions Team"
-    email: "solutions@demobank.com"
-    url: "https://demobank.com/developers"
-    x-support-url: "https://support.demobank.com/api"
-    x-press-relations: "press@demobank.com"
-  license:
-    name: "Enterprise Core License 1.0"
-    url: "https://demobank.com/licenses/enterprise-core-1.0.html"
-  termsOfService: "https://demobank.com/terms/api-agreement-v3"
 servers:
-  - url: "https://api.demobank.com/v3"
-    description: "Production Environment: High-availability global cluster for live services."
-  - url: "https://api.staging.demobank.com/v3"
-    description: "Staging Environment: Pre-production mirror for comprehensive integration and load testing."
-  - url: "https://api.sandbox.demobank.com/v3"
-    description: "Sandbox Environment: Fully isolated testing ground with simulated data for development and experimentation."
-  - url: "https://api.eu-central-1.demobank.com/v3"
-    description: "Regional Production (EU-Central-1): Optimized for European Union data residency and compliance."
-  - url: "https://ai.demobank.com/v3"
-    description: "Dedicated AI Inference Cluster: Optimized for low-latency AI model execution and advanced computations."
-  - url: "https://api.dev.demobank.com/v3"
-    description: "Development Environment: Latest features for internal and partner development."
+  - url: "/"
 tags:
   - name: "Users & Identity Management"
     description: "Comprehensive management of user profiles, advanced biometric authentication, multi-factor security, and digital identity verification (KYC/AML)."
