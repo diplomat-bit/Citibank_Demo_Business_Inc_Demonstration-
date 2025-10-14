@@ -4,20 +4,20 @@
 A novel computational architecture and methodology are herein disclosed for the automated, iterative analysis of entrepreneurial ventures, represented by textual business plans. The system integrates advanced generative artificial intelligence paradigms to conduct a bi-modal analytical process: initially, a comprehensive diagnostic assessment yielding granular insights into inherent strengths and latent vulnerabilities, coupled with incisive interrogatives designed to stimulate user-driven refinement. Subsequently, upon systemic validation of the iteratively refined plan, the architecture orchestrates the synthesis of a dynamically optimized, multi-echelon strategic coaching plan, meticulously structured for actionable execution. Concurrently, a robust probabilistic valuation sub-system determines a simulated capital allocation index. The entirety of the AI-generated guidance is encapsulated within a rigorously defined, interoperable response schema, thereby establishing an automated, scalable paradigm for sophisticated business mentorship and strategic advisement, inherently elevating the probability density function of entrepreneurial success within a stochastic market landscape.
 
 **Background of the Invention:**
-The contemporary entrepreneurial ecosystem is characterized by an asymmetric distribution of strategic capital, both intellectual and financial. Aspiring innovators, particularly those at the ideation and nascent operational stages, frequently encounter significant systemic barriers to accessing sagacious guidance and granular feedback essential for the rigorous de-risking and optimal trajectory setting of their ventures. Traditional avenues, such as professional consulting engagements or dedicated mentorship programs, are invariably encumbered by prohibitive financial outlays, temporal inefficiencies, and inherent scalability limitations, rendering them inaccessible to a substantial segment of the entrepreneurial demographic. Furthermore, human evaluators, despite their invaluable experience, are susceptible to cognitive biases, inconsistencies in assessment criteria, and limitations in processing the sheer volume and complexity of market data pertinent to diverse business models. The resultant landscape is one where potentially transformative enterprises fail to coalesce due to a critical deficit in objective, comprehensive, and timely strategic counsel. This enduring deficiency posits an urgent and profound requirement for an accessible, computationally robust, and instantaneously responsive automated instrumentality capable of delivering analytical depth and prescriptive strategic roadmaps equivalent to, or exceeding, the efficacy of conventional high-tier advisory services, thereby democratizing access to sophisticated business intelligence and accelerating innovation cycles.
+The contemporary entrepreneurial ecosystem is characterized by an asymmetric distribution of strategic capital, both intellectual and financial. Aspiring innovators, particularly those at the ideation and nascent operational stages, frequently encounter significant systemic barriers to accessing sagacious guidance and granular feedback essential for the rigorous de-risking and optimal trajectory setting of their ventures. Traditional avenues, such as professional consulting engagements or dedicated mentorship programs, are invariably encumbered by prohibitive financial outlays, temporal inefficiencies, and inherent scalability limitations, rendering them inaccessible to a substantial segment of the entrepreneurial demographic. Furthermore, human evaluators, despite their invaluable experience, are susceptible to cognitive biases, inconsistencies in assessment criteria, and limitations in processing the sheer volume and complexity of market data pertinent to diverse business models. The resultant landscape is one where potentially transformative enterprises fail to coalesce due to a critical deficit in objective, comprehensive, and timely strategic counsel. This enduring deficiency posits an urgent and profound requirement for an an accessible, computationally robust, and instantaneously responsive automated instrumentality capable of delivering analytical depth and prescriptive strategic roadmaps equivalent to, or exceeding, the efficacy of conventional high-tier advisory services, thereby democratizing access to sophisticated business intelligence and accelerating innovation cycles.
 
 **Brief Summary of the Invention:**
-The present invention, meticulously engineered as the **Quantum Weaver™ System for Enterprise Trajectory Optimization**, stands as a pioneering, autonomous cognitive architecture designed to revolutionize the initial phases of business development and strategic planning. This system operates as a sophisticated AI-powered entrepreneurial incubator, executing a multi-phasic analytical and prescriptive protocol. Upon submission of an unstructured textual representation of a business plan, the Quantum Weaver™ initiates its primary analytical sequence. The submitted textual corpus is dynamically ingested by a proprietary inference engine, which, guided by a meticulously crafted, context-aware prompt heuristic, generates a seminal feedback matrix. This matrix comprises a concise yet profoundly insightful high-level diagnostic of the plan's intrinsic merits and emergent vulnerabilities, complemented by a rigorously curated set of strategic interrogatives. These questions are designed not merely to solicit clarification, but to provoke deeper introspection and stimulate an iterative refinement process by the user. Subsequent to user engagement with this preliminary output, the system proceeds to its secondary, prescriptive analytical phase. Herein, the (potentially refined) business plan is re-processed by the advanced generative AI model. This iteration is governed by a distinct, more complex prompt architecture, which mandates two pivotal outputs: firstly, the computation of a simulated seed funding valuation, derived from a sophisticated algorithmic assessment of market potential, team inferred capabilities, and financial viability within a predefined stochastic range; and secondly, the synthesis of a granular, multi-echelon strategic coaching plan. This coaching plan is not merely a collection of generalized advice; rather, it is a bespoke, temporally sequenced roadmap comprising distinct, actionable steps, each delineated with a specific title, comprehensive description, and an estimated temporal frame for execution. Critically, the entirety of the AI-generated prescriptive output is rigorously constrained within a pre-defined, extensible JSON schema, ensuring structural integrity, machine-readability, and seamless integration into dynamic user interfaces, thereby providing an unparalleled level of structured, intelligent guidance.
+The present invention, meticulously engineered as the **Quantum Weaverâ„¢ System for Enterprise Trajectory Optimization**, stands as a pioneering, autonomous cognitive architecture designed to revolutionize the initial phases of business development and strategic planning. This system operates as a sophisticated AI-powered entrepreneurial incubator, executing a multi-phasic analytical and prescriptive protocol. Upon submission of an unstructured textual representation of a business plan, the Quantum Weaverâ„¢ initiates its primary analytical sequence. The submitted textual corpus is dynamically ingested by a proprietary inference engine, which, guided by a meticulously crafted, context-aware prompt heuristic, generates a seminal feedback matrix. This matrix comprises a concise yet profoundly insightful high-level diagnostic of the plan's intrinsic merits and emergent vulnerabilities, complemented by a rigorously curated set of strategic interrogatives. These questions are designed not merely to solicit clarification, but to provoke deeper introspection and stimulate an iterative refinement process by the user. Subsequent to user engagement with this preliminary output, the system proceeds to its secondary, prescriptive analytical phase. Herein, the (potentially refined) business plan is re-processed by the advanced generative AI model. This iteration is governed by a distinct, more complex prompt architecture, which mandates two pivotal outputs: firstly, the computation of a simulated seed funding valuation, derived from a sophisticated algorithmic assessment of market potential, team inferred capabilities, and financial viability within a predefined stochastic range; and secondly, the synthesis of a granular, multi-echelon strategic coaching plan. This coaching plan is not merely a collection of generalized advice; rather, it is a bespoke, temporally sequenced roadmap comprising distinct, actionable steps, each delineated with a specific title, comprehensive description, and an estimated temporal frame for execution. Critically, the entirety of the AI-generated prescriptive output is rigorously constrained within a pre-defined, extensible JSON schema, ensuring structural integrity, machine-readability, and seamless integration into dynamic user interfaces, thereby providing an unparalleled level of structured, intelligent guidance.
 
 **Detailed Description of the Invention:**
 
-The **Quantum Weaver™ System for Enterprise Trajectory Optimization** constitutes a meticulously engineered, multi-layered computational framework designed to provide unparalleled automated business plan analysis and strategic advisory services. Its architecture embodies a symbiotic integration of advanced natural language processing, generative AI models, and structured data methodologies, all orchestrated to deliver a robust, scalable, and highly accurate entrepreneurial guidance platform.
+The **Quantum Weaverâ„¢ System for Enterprise Trajectory Optimization** constitutes a meticulously engineered, multi-layered computational framework designed to provide unparalleled automated business plan analysis and strategic advisory services. Its architecture embodies a symbiotic integration of advanced natural language processing, generative AI models, and structured data methodologies, all orchestrated to deliver a robust, scalable, and highly accurate entrepreneurial guidance platform.
 
 ### System Architecture and Operational Flow
 
 The core system comprises several interconnected logical and functional components, ensuring modularity, scalability, and robust error handling.
 
-#### 1. User Interface (UI) Layer
+#### 1. User Interface UI Layer
 The frontend interface, accessible via a web-based application or dedicated client, serves as the primary conduit for user interaction. It is designed for intuitive usability, guiding the entrepreneur through the distinct stages of the analysis process.
 
 *   **Pitch Stage:** The initial interface where the user inputs their comprehensive business plan as free-form textual data. This stage includes validation mechanisms for text length and format.
@@ -29,41 +29,124 @@ The frontend interface, accessible via a web-based application or dedicated clie
 This layer acts as the orchestrator, receiving requests from the UI, managing data flow, interacting with the AI Inference Layer, and persisting relevant information.
 
 *   **Request Handler:** Validates incoming user data, authenticates requests, and dispatches them to appropriate internal services.
-*   **Prompt Engineering Module:** This is a crucial, proprietary sub-system responsible for dynamically constructing and refining the input prompts for the generative AI model. It incorporates advanced heuristics, few-shot exemplars, role-playing directives (e.g., "Act as a venture capitalist"), and specific constraint mechanisms (e.g., "Ensure output strictly adheres to JSON schema X").
-*   **Response Parser & Validator:** Upon receiving raw text output from the AI, this module parses the content, validates it against the expected JSON schema, and handles any deviations or malformations through predefined recovery or re-prompting strategies.
-*   **Data Persistence Unit:** Securely stores submitted business plans, generated feedback, coaching plans, funding amounts, and user interaction logs within a robust, scalable data repository (e.g., a distributed NoSQL database for flexible schema management and high availability).
 
-#### 3. AI Inference Layer
+#### 2.1. Prompt Engineering Module: Advanced Prompt Orchestration
+This is a crucial, proprietary sub-system responsible for dynamically constructing and refining the input prompts for the generative AI model. It incorporates advanced heuristics, few-shot exemplars, role-playing directives (e.g., "Act as a venture capitalist"), and specific constraint mechanisms (e.g., "Ensure output strictly adheres to JSON schema X"). Its internal components include:
+*   **Prompt Template Library:** A curated repository of pre-defined, parameterized prompt structures optimized for various analytical tasks (e.g., diagnostic assessment, valuation, coaching plan generation). These templates incorporate best practices for eliciting high-quality, structured responses from LLMs.
+*   **Schema Definition Registry:** A centralized repository for all expected JSON output schemas. This registry provides the canonical structure that the AI model must adhere to, and which the Response Parser & Validator uses for validation.
+*   **Heuristic Directive Engine:** This intelligent component applies contextual rules and learned heuristics to dynamically select appropriate templates, infuse specific role-playing personas, and inject few-shot examples into the prompts based on the current stage of user interaction and the evolving business plan content.
+
+#### 2.2. Response Parser & Validator: Intelligent Output Conditioning
+Upon receiving raw text output from the AI, this module parses the content, validates it against the expected JSON schema, and handles any deviations or malformations through predefined recovery or re-prompting strategies. Key sub-components include:
+*   **Schema Enforcement Engine:** Leverages the `Schema Definition Registry` to rigorously validate AI-generated text against the required JSON structures. It identifies missing fields, incorrect data types, and structural inconsistencies.
+*   **Error Recovery Strategies:** Implements automated mechanisms to address validation failures, such as re-prompting the AI with specific error messages, truncating malformed responses, or escalating to human oversight if persistent errors occur.
+*   **Semantic Content Checker:** Beyond structural validation, this component performs a lightweight semantic check to ensure the generated content is relevant and coherent with the prompt's intent, preventing obvious AI hallucinations or off-topic responses.
+
+#### 2.3. Data Persistence Unit: Secure & Scalable Information Repository
+This unit securely stores all submitted business plans, generated feedback, coaching plans, funding amounts, and user interaction logs within a robust, scalable data repository (e.g., a distributed NoSQL database for flexible schema management and high availability). Its specialized repositories include:
+*   **Business Plan Repository:** Stores all versions of the user's business plan, including initial submissions and subsequent refinements, ensuring a comprehensive audit trail.
+*   **Feedback Interaction Log:** Records every diagnostic feedback, strategic interrogative, and user response, providing a detailed history of the iterative refinement process.
+*   **Coaching Plan Archive:** Stores all generated strategic coaching plans and their associated simulated funding allocations, ready for retrieval and presentation to the user.
+*   **Valuation History Ledger:** Maintains a chronological record of all simulated funding valuations, including rationales, for analytical and review purposes.
+
+#### 3. AI Inference Layer: Deep Semantic Processing Core
 This constitutes the computational core, leveraging advanced generative AI models for deep textual analysis and synthesis.
 
-*   **Generative AI Model Integration:** Interfacing with a highly capable Large Language Model (LLM) or a suite of specialized transformer-based models. This model possesses extensive natural language understanding (NLU), natural language generation (NLG), and complex reasoning capabilities. The model may be further fine-tuned on a proprietary corpus of successful and unsuccessful business plans, market analyses, and strategic advisories.
-*   **Contextual Embedding Engine:** Utilizes vector embedding techniques to represent the business plan text and associated prompts in a high-dimensional semantic space, facilitating nuanced comprehension and sophisticated response generation by the LLM.
-*   **Knowledge Graph (Optional but Recommended):** For enhanced reasoning and factual accuracy, the AI layer may consult an internal or external knowledge graph containing up-to-date market data, industry trends, competitor analysis, and regulatory information.
+#### 3.1. Generative LLM Core
+This is the primary interface with a highly capable Large Language Model LLM or a suite of specialized transformer-based models. This model possesses extensive natural language understanding NLU, natural language generation NLG, and complex reasoning capabilities. The model is further fine-tuned on a proprietary corpus of successful and unsuccessful business plans, market analyses, and strategic advisories.
 
-#### 4. Auxiliary Services
-*   **Telemetry & Analytics Service:** Gathers anonymous usage data, performance metrics, and AI response quality assessments for continuous system improvement.
-*   **Security Module:** Implements encryption protocols for data in transit and at rest, access control, and vulnerability management.
+#### 3.2. Contextual Vector Embedder
+Utilizes state-of-the-art vector embedding techniques to represent the business plan text and associated prompts in a high-dimensional semantic space. This process facilitates nuanced comprehension, captures complex relationships, and enables sophisticated response generation by the LLM by providing a rich, dense representation of the input.
+
+#### 3.3. Proprietary Knowledge Graph
+An optional but highly recommended component, this internal or external knowledge graph provides enhanced reasoning and factual accuracy. It contains up-to-date market data, industry trends, competitor analysis, regulatory information, and a curated repository of business success factors, which the LLM can consult during its analysis and generation processes.
+
+#### 4. Auxiliary Services: System Intelligence & Resilience
+These services provide essential support functions for system operation, monitoring, security, and continuous improvement.
+
+#### 4.1. Telemetry & Analytics Service
+Gathers anonymous usage data, performance metrics, and AI response quality assessments for continuous system improvement.
+*   **Performance Metrics Collection:** Monitors system latency, API response times, AI model inference speed, and resource utilization.
+*   **User Engagement Analysis:** Tracks user interaction patterns, time spent on stages, adoption of feedback, and completion rates to optimize UI/UX and overall user journey.
+*   **AI Response Quality Assessment:** Collects implicit or explicit user feedback on the helpfulness and accuracy of AI-generated content, feeding into the `Adaptive Feedback Loop Optimization Module`.
+
+#### 4.2. Security Module
+Implements comprehensive security protocols for data protection, access control, and threat mitigation.
+*   **Data Encryption Management:** Ensures encryption of data in transit (e.g., TLS) and at rest (e.g., AES-256) for all sensitive business plan information and user data.
+*   **Authentication Authorization:** Manages user identities, roles, and permissions to control access to system functionalities and data.
+*   **Threat Detection Vulnerability Scanner Integration:** Integrates with security tools to continuously monitor for suspicious activities, potential vulnerabilities, and compliance breaches.
+
+#### 4.3. Adaptive Feedback Loop Optimization Module
+A critical component for the system's continuous evolution. This module analyzes data from the `Telemetry & Analytics Service` to identify patterns in AI output quality, user satisfaction, and system performance. It then autonomously or semi-autonomously suggests refinements to the `Prompt Engineering Module` (e.g., modifications to prompt templates, new few-shot examples, updated role-playing directives) and potentially flags areas for `Generative LLM Core` fine-tuning, thereby continually enhancing the system's accuracy and utility over time.
 
 ```mermaid
 graph TD
-    A[User Interface Layer] --> B{API Gateway & Request Handler};
-    B --> C[Prompt Engineering Module];
-    C -- Stage 1 Prompt --> D[AI Inference Layer];
-    D -- Stage 1 Response (JSON) --> E[Response Parser & Validator];
-    E -- Validated Feedback & Questions --> F{Data Persistence Unit};
-    F --> A -- Display 'Test' Stage --> A;
-    A -- User Confirms / Refines Plan --> B;
-    B --> C;
-    C -- Stage 2 Prompt (with Refined Plan) --> D;
-    D -- Stage 2 Response (JSON) --> E;
-    E -- Validated Coaching Plan & Funding --> F;
-    F --> A -- Display 'Approved' Stage --> A;
+    subgraph System Core Workflow
+        A[User Interface Layer] --> B{API Gateway Request Handler};
+        B --> C[Prompt Engineering Module];
+        C -- Stage 1 Prompt Request --> D[AI Inference Layer];
+        D -- Stage 1 Response JSON --> E[Response Parser Validator];
+        E -- Validated Feedback Questions --> F{Data Persistence Unit};
+        F --> A -- Display TestStage --> A;
+        A -- User Refines Plan --> B;
+        B --> C;
+        C -- Stage 2 Prompt RefinedPlan --> D;
+        D -- Stage 2 Response JSON --> E;
+        E -- Validated Coaching Plan Funding --> F;
+        F --> A -- Display ApprovedStage --> A;
+    end
 
-    subgraph User Interaction Flow
-        A -- Input Business Plan --> A[Pitch Stage];
-        A -- Receive Initial Feedback --> A[Test Stage];
-        A -- Optional Revision / Confirmation --> A[FinalReview Stage];
-        A -- View Coaching Plan & Funding --> A[Approved Stage];
+    subgraph User Journey Stages
+        User[Entrepreneur] -- Submits Business Plan --> AUI_Pitch[UI PitchStage];
+        AUI_Pitch --> AUI_Test[UI TestStage];
+        AUI_Test -- Provides Feedback / Refinement --> AUI_FinalReview[UI FinalReviewStage];
+        AUI_FinalReview -- Confirms Plan --> AUI_Approved[UI ApprovedStage];
+        AUI_Approved -- Receives Coaching Plan Funding --> User;
+    end
+
+    subgraph Prompt Engineering Subsystems
+        C_MAIN[Prompt Engineering Module]
+        C_MAIN --> C1[Prompt Template Library];
+        C_MAIN --> C2[Schema Definition Registry];
+        C_MAIN --> C3[Heuristic Directive Engine];
+        C1 -- Provides Templates --> C_MAIN;
+        C2 -- Provides Schemas --> C_MAIN;
+        C3 -- Generates Heuristics --> C_MAIN;
+        C2 -- Schema Validation Rules --> E;
+        style C_MAIN fill:#FFE,stroke:#333,stroke-width:2px;
+    end
+
+    subgraph AI Inference Subsystems
+        D_MAIN[AI Inference Layer]
+        D_MAIN --> D1[Generative LLM Core];
+        D_MAIN --> D2[Contextual Vector Embedder];
+        D_MAIN --> D3[Proprietary Knowledge Graph];
+        D1 -- Processes Prompts --> D_MAIN;
+        D2 -- Embeds Text --> D1;
+        D3 -- Enriches Context --> D1;
+        style D_MAIN fill:#DFD,stroke:#333,stroke-width:2px;
+    end
+
+    subgraph Data Persistence Subsystems
+        F_MAIN[Data Persistence Unit]
+        F_MAIN --> F1[Business Plan Repository];
+        F_MAIN --> F2[Feedback Interaction Log];
+        F_MAIN --> F3[Coaching Plan Archive];
+        F_MAIN --> F4[Valuation History Ledger];
+        style F_MAIN fill:#EFF,stroke:#333,stroke-width:2px;
+    end
+
+    subgraph Auxiliary Services Core
+        G_MAIN[Auxiliary Services Module]
+        G_MAIN --> G1[Telemetry Analytics Service];
+        G_MAIN --> G2[Security Module];
+        G_MAIN --> G3[Adaptive Feedback Loop Optimization];
+        G1 -- Performance Data --> G3;
+        G1 -- Usage Metrics --> F_MAIN;
+        G2 -- Access Control --> B;
+        G2 -- Data Encryption --> F_MAIN;
+        G3 -- Optimizes Prompts --> C_MAIN;
+        style G_MAIN fill:#DFF,stroke:#333,stroke-width:2px;
     end
 
     style A fill:#ECE,stroke:#333,stroke-width:2px;
@@ -72,11 +155,17 @@ graph TD
     style D fill:#DFD,stroke:#333,stroke-width:2px;
     style E fill:#FEE,stroke:#333,stroke-width:2px;
     style F fill:#EFF,stroke:#333,stroke-width:2px;
+    style G fill:#DFF,stroke:#333,stroke-width:2px;
+    style User fill:#DDD,stroke:#333,stroke-width:2px;
+    style AUI_Pitch fill:#ECE,stroke:#333,stroke-width:2px;
+    style AUI_Test fill:#ECE,stroke:#333,stroke-width:2px;
+    style AUI_FinalReview fill:#ECE,stroke:#333,stroke-width:2px;
+    style AUI_Approved fill:#ECE,stroke:#333,stroke-width:2px;
 ```
 
 ### Multi-Stage AI Interaction and Prompt Engineering
 
-The efficacy of the Quantum Weaver™ System hinges on its sophisticated, multi-stage interaction with the generative AI model, each phase governed by dynamically constructed prompts and rigorously enforced response schemas.
+The efficacy of the Quantum Weaverâ„¢ System hinges on its sophisticated, multi-stage interaction with the generative AI model, each phase governed by dynamically constructed prompts and rigorously enforced response schemas.
 
 #### Stage 1: Initial Diagnostic Feedback and Strategic Interrogation (`G_feedback`)
 
@@ -192,7 +281,7 @@ This two-stage, prompt-driven process ensures a highly specialized and contextua
 
 **Claims:**
 
-We assert the exclusive intellectual construct and operational methodology embodied within the Quantum Weaver™ System through the following foundational declarations:
+We assert the exclusive intellectual construct and operational methodology embodied within the Quantum Weaverâ„¢ System through the following foundational declarations:
 
 1.  A system for automated, multi-stage strategic analysis and prescriptive guidance for business plans, comprising:
     a.  A user interface module configured to receive an unstructured textual business plan from a user;
@@ -207,7 +296,7 @@ We assert the exclusive intellectual construct and operational methodology embod
 
 3.  The system of claim 1, wherein the second structured output adheres to a JSON schema defining fields for a simulated seed funding amount with a corresponding rationale, and a coaching plan object comprising a title, a summary, and an array of discrete steps, each step further detailing a title, a comprehensive description, a timeline for execution, key deliverables, and specific measurement metrics.
 
-4.  The system of claim 1, wherein the generative artificial intelligence inference module is a large language model (LLM) fine-tuned on a proprietary corpus of business plans, market analyses, and strategic advisory documents.
+4.  The system of claim 1, wherein the generative artificial intelligence inference module is a large language model LLM fine-tuned on a proprietary corpus of business plans, market analyses, and strategic advisory documents.
 
 5.  The system of claim 1, further comprising a data persistence unit configured to securely store the received business plan, the generated first and second structured outputs, and user interaction logs.
 
@@ -232,7 +321,7 @@ We assert the exclusive intellectual construct and operational methodology embod
 
 **Mathematical Justification: The Quantum Weaver's Probabilistic Valuation and Strategic Trajectory Optimization**
 
-The analytical and prescriptive capabilities of the Quantum Weaver™ System are underpinned by a sophisticated mathematical framework, transforming the qualitative intricacies of a business plan into quantifiable metrics and actionable strategic pathways. We formalize this process through the lens of high-dimensional stochastic processes, decision theory, and optimal control, asserting that the system operates upon principles of computationally derived expected utility maximization within a latent business success manifold.
+The analytical and prescriptive capabilities of the Quantum Weaverâ„¢ System are underpinned by a sophisticated mathematical framework, transforming the qualitative intricacies of a business plan into quantifiable metrics and actionable strategic pathways. We formalize this process through the lens of high-dimensional stochastic processes, decision theory, and optimal control, asserting that the system operates upon principles of computationally derived expected utility maximization within a latent business success manifold.
 
 ### I. The Business Plan Valuation Manifold: `V(B)`
 
@@ -251,7 +340,7 @@ V(B) = P(Success | X, Theta) = integral P(Success | X, Theta) P(Theta | X) dThet
 
 The generative AI model, through its extensive training on vast corpora of successful and unsuccessful business plans, implicitly learns a highly complex, non-parametric approximation of `V(B)`. This approximation, denoted `V_AI(B)`, leverages deep neural network architectures to infer the intricate relationships between textual descriptions and probabilistic outcomes. The training objective for `V_AI(B)` can be framed as minimizing the divergence between its predictions and actual outcomes, using a loss function `L(V_AI(B), Y_true)`, where `Y_true` is a binary success indicator.
 
-### II. The Gradient Generation Function: `G_feedback` (Diagnostic Phase)
+### II. The Gradient Generation Function: `G_feedback` Diagnostic Phase
 
 The `G_feedback` function serves as an iterative optimization engine, providing a "semantic gradient" to guide the user towards a more optimal plan `B'`.
 Formally, `G_feedback: M_B -> (R^D, Q)`, where `R^D` represents the vector of identified strengths/weaknesses, and `Q` is a set of strategic interrogatives.
@@ -273,12 +362,12 @@ I(B) = H(P(Success|B))
 where `H` is the Shannon entropy.
 The goal of `G_feedback` is to minimize `I(B)` and maximize `V(B)` by suggesting modifications that move `B` along the path of steepest ascent in the `V(B)` landscape.
 
-### III. The Action Sequence Generation Function: `G_plan` (Prescriptive Phase)
+### III. The Action Sequence Generation Function: `G_plan` Prescriptive Phase
 
 Upon the successful refinement of `B` to `B'`, the system transitions to `G_plan`, which generates an optimal sequence of actions `A = (a_1, a_2, ..., a_n)`. This sequence is a prescriptive trajectory in a state-action space, designed to maximize the realized value of `B'`.
 
 **Proposition 3.1: Optimal Control Trajectory.**
-The coaching plan `A` generated by `G_plan(B')` is an approximation of an optimal policy `pi*(s)` within a Markov Decision Process (MDP) framework, where `s` represents the state of the business at any given time, and `a_t` is an action chosen from `A` at time `t`. The objective is to maximize the expected cumulative reward `R`.
+The coaching plan `A` generated by `G_plan(B')` is an approximation of an optimal policy `pi*(s)` within a Markov Decision Process MDP framework, where `s` represents the state of the business at any given time, and `a_t` is an action chosen from `A` at time `t`. The objective is to maximize the expected cumulative reward `R`.
 
 Let `S_t` be the state of the business at time `t`, defined by `S_t = (B', C_t, M_t)`, where `C_t` represents current resources (financial, human), and `M_t` represents dynamic market conditions.
 Each action `a_k is in A` is a transition function `T(S_t, a_k) -> S_{t+1}`.
@@ -315,16 +404,16 @@ The `F(B')` is then computed by a regression model, potentially a deep neural ne
 ```
 F(B') = f(V_AI(B'), P(Market_Size | B'), P(PMF | B'), S_team(B'), H_fin(B'))
 ```
-The constrained range of `$50k-$250k` imposes a Rectified Linear Unit (ReLU) activation function or a sigmoid activation followed by scaling on the output layer of this regression, ensuring practical applicability.
+The constrained range of `$50k-$250k` imposes a Rectified Linear Unit ReLU activation function or a sigmoid activation followed by scaling on the output layer of this regression, ensuring practical applicability.
 
-The Quantum Weaver™ system, through these rigorous mathematical formulations, transcends heuristic guidance, offering a systematically derived, probabilistically optimized pathway for entrepreneurial success. It is a demonstrable advancement in the application of advanced computational intelligence to complex economic decision-making.
+The Quantum Weaverâ„¢ system, through these rigorous mathematical formulations, transcends heuristic guidance, offering a systematically derived, probabilistically optimized pathway for entrepreneurial success. It is a demonstrable advancement in the application of advanced computational intelligence to complex economic decision-making.
 
 **Proof of Utility:**
 
-The utility of the Quantum Weaver™ System is not merely postulated but rigorously established through its foundational mathematical framework and observed operational principles. We assert with definitive confidence that this system provides a demonstrably superior trajectory for entrepreneurial ventures when contrasted with processes lacking such advanced analytical and prescriptive orchestration.
+The utility of the Quantum Weaverâ„¢ System is not merely postulated but rigorously established through its foundational mathematical framework and observed operational principles. We assert with definitive confidence that this system provides a demonstrably superior trajectory for entrepreneurial ventures when contrasted with processes lacking such advanced analytical and prescriptive orchestration.
 
 **Theorem 1: Expected Value Amplification.**
-Let `B` be an initial business plan. Let `V(B)` denote its intrinsic value, conceptualized as its success probability. The Quantum Weaver™ System applies a transformational operator `T` such that the expected value of a business plan processed by the system, `E[V(T(B))]`, is strictly greater than the expected value of an unprocessed plan, `E[V(B)]`, assuming optimal user engagement with the system's outputs.
+Let `B` be an initial business plan. Let `V(B)` denote its intrinsic value, conceptualized as its success probability. The Quantum Weaverâ„¢ System applies a transformational operator `T` such that the expected value of a business plan processed by the system, `E[V(T(B))]`, is strictly greater than the expected value of an unprocessed plan, `E[V(B)]`, assuming optimal user engagement with the system's outputs.
 
 The transformational operator `T` is a composite function:
 ```
@@ -342,4 +431,4 @@ E[V(G_plan(B'))] > E[V(B')] > E[V(B)]
 
 The system's utility is further underscored by its ability to generate a probabilistically derived seed funding valuation `F(B')`, providing an objective, data-driven benchmark that empowers entrepreneurs in capital acquisition negotiations, further increasing the likelihood of successful venture launch and scaling. This provides not just guidance, but also a quantifiable validation of the plan's economic potential as perceived through an advanced AI's simulated lens.
 
-In essence, the Quantum Weaver™ System provides a structured, mathematically sound method for navigating from an arbitrary point `B` in the vast, stochastic landscape of potential business ventures to a demonstrably more optimal configuration `B'`, and then furnishes a meticulously charted vector field `A` (the coaching plan) to guide its successful traversal through the dynamic market environment. This dual-phase optimization and prescriptive architecture fundamentally redefines the paradigm of entrepreneurial support, delivering a consistent, high-fidelity, and scalable solution that invariably enhances the probability of favorable outcomes. This intellectual construct and its operationalization stand as a paramount contribution to the advancement of entrepreneurial science and artificial intelligence applications.
+In essence, the Quantum Weaverâ„¢ System provides a structured, mathematically sound method for navigating from an arbitrary point `B` in the vast, stochastic landscape of potential business ventures to a demonstrably more optimal configuration `B'`, and then furnishes a meticulously charted vector field `A` (the coaching plan) to guide its successful traversal through the dynamic market environment. This dual-phase optimization and prescriptive architecture fundamentally redefines the paradigm of entrepreneurial support, delivering a consistent, high-fidelity, and scalable solution that invariably enhances the probability of favorable outcomes. This intellectual construct and its operationalization stand as a paramount contribution to the advancement of entrepreneurial science and artificial intelligence applications.
