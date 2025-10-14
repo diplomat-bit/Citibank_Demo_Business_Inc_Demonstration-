@@ -1,0 +1,382 @@
+{
+  "title": "Financial State Vector Schema",
+  "description": "Defines the comprehensive JSON schema for the Financial State Vector (FSV), detailing all its components and their data types for system integration. This vector encapsulates all salient quantifiable aspects of the user's financial reality at a given time, designed for consumption by advanced generative AI models.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The UTC timestamp when this Financial State Vector was generated."
+    },
+    "income": {
+      "type": "object",
+      "description": "Comprehensive details about the user's income streams, their stochastic properties, and recent trends.",
+      "properties": {
+        "totalMonthlyAverage": {
+          "type": "number",
+          "description": "Calculated average total monthly income."
+        },
+        "primarySource": {
+          "type": "object",
+          "description": "Details for the user's primary income source (e.g., salary).",
+          "properties": {
+            "amount": { "type": "number", "description": "Amount from primary income source." },
+            "frequency": { "type": "string", "enum": ["Weekly", "Bi-Weekly", "Semi-Monthly", "Monthly"], "description": "Frequency of primary income." }
+          },
+          "required": ["amount", "frequency"]
+        },
+        "investmentIncomeMonthlyAverage": {
+          "type": "number",
+          "description": "Average monthly income derived from investments."
+        },
+        "sideHustleIncomeMonthlyAverage": {
+          "type": "number",
+          "description": "Average monthly income from supplementary activities."
+        },
+        "otherIncomeMonthlyAverage": {
+          "type": "number",
+          "description": "Average monthly income from other miscellaneous sources."
+        },
+        "incomeVariabilityIndex": {
+          "type": "number",
+          "minimum": 0,
+          "description": "A quantitative index measuring the variability (e.g., standard deviation relative to mean) of income streams."
+        },
+        "sourceDiversificationScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "A score indicating the diversification of income sources (0=single source, 1=highly diversified)."
+        },
+        "trendLast3Months": {
+          "type": "number",
+          "description": "Percentage change in total monthly income over the last 3 months."
+        }
+      },
+      "required": ["totalMonthlyAverage", "incomeVariabilityIndex", "sourceDiversificationScore"]
+    },
+    "expenses": {
+      "type": "object",
+      "description": "Detailed breakdown of user's expenditure patterns, categorized and analyzed for trends and anomalies.",
+      "properties": {
+        "totalMonthlyAverage": {
+          "type": "number",
+          "description": "Calculated average total monthly expenditure."
+        },
+        "fixedExpensesMonthlyAverage": {
+          "type": "number",
+          "description": "Average monthly fixed expenses (e.g., rent, mortgage, subscriptions)."
+        },
+        "variableExpensesMonthlyAverage": {
+          "type": "number",
+          "description": "Average monthly variable expenses (e.g., groceries, dining out, entertainment)."
+        },
+        "discretionarySpendingRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ratio of discretionary spending to total income."
+        },
+        "expenseCategories": {
+          "type": "object",
+          "description": "Detailed average monthly spending per category.",
+          "additionalProperties": {
+            "type": "number",
+            "description": "Average monthly amount spent in a specific category (e.g., 'Dining Out')."
+          }
+        },
+        "spendingVolatilityIndex": {
+          "type": "number",
+          "minimum": 0,
+          "description": "A quantitative index measuring the volatility of expenditure patterns."
+        },
+        "top3ExpenseCategories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of the top 3 expense categories by average monthly amount."
+        },
+        "anomaliesDetectedLast6Months": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Descriptions of any significant spending anomalies detected in the last 6 months (e.g., 'Unusual large purchase in Travel category')."
+        },
+        "trendLast3Months": {
+          "type": "number",
+          "description": "Percentage change in total monthly expenses over the last 3 months."
+        }
+      },
+      "required": ["totalMonthlyAverage", "fixedExpensesMonthlyAverage", "variableExpensesMonthlyAverage", "expenseCategories", "spendingVolatilityIndex"]
+    },
+    "assets": {
+      "type": "object",
+      "description": "Detailed overview of user's asset holdings, their valuations, and liquidity profile.",
+      "properties": {
+        "totalAssetsValue": {
+          "type": "number",
+          "description": "Total current estimated value of all assets."
+        },
+        "cashHoldings": {
+          "type": "number",
+          "description": "Total amount held in cash and cash equivalents (e.g., checking, savings accounts)."
+        },
+        "investmentPortfolio": {
+          "type": "object",
+          "description": "Breakdown and characteristics of the user's investment portfolio.",
+          "properties": {
+            "totalValue": { "type": "number", "description": "Total current value of the investment portfolio." },
+            "equityExposurePercentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Percentage of the portfolio allocated to equities."
+            },
+            "bondExposurePercentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Percentage of the portfolio allocated to bonds."
+            },
+            "realEstateExposurePercentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Percentage of the portfolio allocated to real estate (investment properties)."
+            },
+            "otherAssetExposurePercentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Percentage of the portfolio allocated to other asset classes."
+            },
+            "annualizedReturnLast12Months": {
+              "type": "number",
+              "description": "Annualized return of the portfolio over the last 12 months."
+            },
+            "portfolioVolatilityIndex": {
+              "type": "number",
+              "minimum": 0,
+              "description": "A quantitative index measuring the volatility of the investment portfolio."
+            }
+          },
+          "required": ["totalValue", "equityExposurePercentage"]
+        },
+        "primaryResidenceValue": {
+          "type": "number",
+          "description": "Estimated current market value of the user's primary residence (if owned)."
+        },
+        "otherRealEstateValue": {
+          "type": "number",
+          "description": "Total value of other real estate holdings (e.g., rental properties)."
+        },
+        "illiquidAssetsValue": {
+          "type": "number",
+          "description": "Value of illiquid assets (e.g., collectibles, private equity, business interests)."
+        },
+        "liquidityScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "A composite score reflecting the overall liquidity of user's assets (0=very illiquid, 1=very liquid)."
+        }
+      },
+      "required": ["totalAssetsValue", "cashHoldings", "investmentPortfolio", "liquidityScore"]
+    },
+    "liabilities": {
+      "type": "object",
+      "description": "Detailed information on user's liabilities, including principal amounts, interest rates, and repayment schedules.",
+      "properties": {
+        "totalLiabilitiesAmount": {
+          "type": "number",
+          "description": "Total outstanding amount across all liabilities."
+        },
+        "mortgageDetails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique identifier for the mortgage." },
+              "outstandingPrincipal": { "type": "number" },
+              "interestRate": { "type": "number" },
+              "monthlyPayment": { "type": "number" },
+              "remainingTermMonths": { "type": "integer" }
+            },
+            "required": ["id", "outstandingPrincipal", "interestRate", "monthlyPayment"]
+          },
+          "description": "Array of individual mortgage details."
+        },
+        "studentLoanDetails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique identifier for the student loan." },
+              "outstandingPrincipal": { "type": "number" },
+              "interestRate": { "type": "number" },
+              "monthlyPayment": { "type": "number" },
+              "remainingTermMonths": { "type": "integer" }
+            },
+            "required": ["id", "outstandingPrincipal", "interestRate", "monthlyPayment"]
+          },
+          "description": "Array of individual student loan details."
+        },
+        "creditCardDebtDetails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique identifier for the credit card." },
+              "outstandingBalance": { "type": "number" },
+              "interestRateAPR": { "type": "number" },
+              "minimumPayment": { "type": "number" },
+              "creditLimit": { "type": "number" }
+            },
+            "required": ["id", "outstandingBalance", "interestRateAPR", "minimumPayment", "creditLimit"]
+          },
+          "description": "Array of individual credit card debt details."
+        },
+        "otherLoanDetails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique identifier for the loan." },
+              "loanType": { "type": "string", "description": "Type of loan (e.g., 'Auto Loan', 'Personal Loan')." },
+              "outstandingPrincipal": { "type": "number" },
+              "interestRate": { "type": "number" },
+              "monthlyPayment": { "type": "number" },
+              "remainingTermMonths": { "type": "integer" }
+            },
+            "required": ["id", "loanType", "outstandingPrincipal", "interestRate", "monthlyPayment"]
+          },
+          "description": "Array of other types of loans."
+        },
+        "totalMinimumMonthlyPayments": {
+          "type": "number",
+          "description": "Sum of all minimum monthly payments across all liabilities."
+        },
+        "debtToIncomeRatio": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Ratio of total monthly debt payments to gross monthly income."
+        }
+      },
+      "required": ["totalLiabilitiesAmount", "totalMinimumMonthlyPayments", "debtToIncomeRatio"]
+    },
+    "creditAndLiquidity": {
+      "type": "object",
+      "description": "Key metrics related to user's creditworthiness and overall financial liquidity.",
+      "properties": {
+        "creditScore": {
+          "type": "integer",
+          "minimum": 300,
+          "maximum": 850,
+          "description": "User's current credit score (e.g., FICO or VantageScore)."
+        },
+        "creditUtilizationRatio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Total credit used divided by total available credit."
+        },
+        "availableCredit": {
+          "type": "number",
+          "description": "Total unused credit across all credit lines."
+        },
+        "emergencyFundMonthsCoverage": {
+          "type": "number",
+          "description": "Number of months of average living expenses covered by liquid assets (cash holdings)."
+        }
+      },
+      "required": ["creditScore", "creditUtilizationRatio", "availableCredit", "emergencyFundMonthsCoverage"]
+    },
+    "macroeconomicIndicators": {
+      "type": "object",
+      "description": "Relevant macro-economic factors influencing the user's financial state.",
+      "properties": {
+        "currentInflationRate": {
+          "type": "number",
+          "description": "The current annual inflation rate in the user's economic region."
+        },
+        "benchmarkInterestRate": {
+          "type": "number",
+          "description": "A key benchmark interest rate (e.g., central bank's policy rate)."
+        },
+        "relevantMarketIndexPerformance3Months": {
+          "type": "number",
+          "description": "Percentage performance of a key market index over the last 3 months."
+        },
+        "relevantMarketIndexPerformance12Months": {
+          "type": "number",
+          "description": "Percentage performance of a key market index over the last 12 months."
+        },
+        "economicOutlookSentiment": {
+          "type": "string",
+          "enum": ["Positive", "Neutral", "Negative"],
+          "description": "Overall sentiment regarding the near-term economic outlook."
+        }
+      },
+      "required": ["currentInflationRate", "benchmarkInterestRate"]
+    },
+    "userProfileAndBehavioralState": {
+      "type": "object",
+      "description": "User's behavioral characteristics, preferences, and engagement metrics, crucial for personalized nudges and plan adaptation.",
+      "properties": {
+        "riskToleranceProfile": {
+          "type": "string",
+          "enum": ["Conservative", "Moderate", "Aggressive", "Very Aggressive"],
+          "description": "User's inferred or stated risk tolerance profile."
+        },
+        "liquidityPreference": {
+          "type": "string",
+          "enum": ["High", "Medium", "Low"],
+          "description": "User's preference for asset liquidity."
+        },
+        "historicalPlanAdherenceRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Historical adherence rate to past financial plan recommendations or tasks."
+        },
+        "savingPropensityScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "A score (0-1) reflecting the user's inferred inclination to save."
+        },
+        "identifiedCognitiveBiases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of identified cognitive biases influencing user financial decisions (e.g., 'Present Bias', 'Confirmation Bias')."
+        },
+        "financialLiteracyScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Assessed score of user's financial knowledge and understanding."
+        },
+        "productAdoptionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Rate at which user has historically adopted recommended financial products."
+        },
+        "systemInteractionFrequency": {
+          "type": "string",
+          "enum": ["Daily", "Weekly", "Monthly", "Quarterly", "Rarely"],
+          "description": "Frequency of user interaction with the financial planning system."
+        }
+      },
+      "required": ["riskToleranceProfile", "historicalPlanAdherenceRate", "financialLiteracyScore"]
+    }
+  },
+  "required": [
+    "timestamp",
+    "income",
+    "expenses",
+    "assets",
+    "liabilities",
+    "creditAndLiquidity",
+    "macroeconomicIndicators",
+    "userProfileAndBehavioralState"
+  ]
+}
