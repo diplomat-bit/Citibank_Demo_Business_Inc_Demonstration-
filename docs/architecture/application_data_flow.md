@@ -1,3 +1,4 @@
+```
 graph TD
     %% Architectural Data Flow for Quantum Leap Financial AI Platform
 
@@ -119,3 +120,4 @@ graph TD
       Ensures GDPR CCPA and other privacy regulations are met
       by managing user consent for data collection.
     end
+```
