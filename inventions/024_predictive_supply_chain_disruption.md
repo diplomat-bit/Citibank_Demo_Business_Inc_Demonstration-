@@ -57,7 +57,7 @@ A groundbreaking system for orchestrating supply chain resilience is herein disc
 Contemporary global supply chains represent an apotheosis of complex adaptive systems, characterized by an intricate web of interdependencies, geographical dispersal, and profound vulnerability to stochastic perturbations. Traditional paradigms of supply chain management, predominantly anchored in historical data analysis and reactive incident response, have proven inherently insufficient to navigate the kaleidoscopic array of modern disruptive forces. These forces manifest across a spectrum from exogenous natural catastrophes (seismic events, cyclonic storms, pandemics) and geopolitical vicissitudes (trade conflicts, territorial disputes, regulatory shifts) to endogenous operational fragilities (labor disputes, infrastructure failures, cybernetic incursions). The economic ramifications of supply chain disruptions are astronomical, frequently escalating from direct financial losses to profound reputational damage, market share erosion, and long-term erosion of stakeholder trust. The imperative for a paradigm shift from reactive mitigation to anticipatory resilience has attained unprecedented criticality. Existing solutions, often reliant on threshold-based alerting or rudimentary statistical forecasting, conspicuously lack the capacity for sophisticated causal inference, contextual understanding, and proactive solution synthesis. They predominantly flag events post-occurrence or identify risks without furnishing actionable, context-aware mitigation strategies, leaving enterprises exposed to cascading failures and suboptimal recovery trajectories. The present invention addresses this profound lacuna, establishing an intellectual frontier in dynamic, AI-driven predictive supply chain orchestration.
 
 ## 4. Brief Summary of the Invention:
-The present invention unveils a novel, architecturally robust, and algorithmically advanced system for predictive supply chain disruption modeling, herein termed the "Cognitive Supply Chain Sentinel." This system transcends conventional monitoring tools by integrating a multi-layered approach to risk assessment and proactive strategic guidance. The operational genesis commences with a user's precise definition and continuous refinement of their critical supply chain topology, meticulously mapping all entities—key suppliers, manufacturing plants, distribution centers, intermodal hubs, and their connecting logistical arteries—into a dynamic knowledge graph. At its operational core, the Cognitive Supply Chain Sentinel employs a sophisticated, continuously learning generative AI engine. This engine acts as an expert geopolitical, meteorological, and logistical risk analyst, incessantly monitoring, correlating, and interpreting an torrent of real-time, multi-modal global event data. The AI is dynamically prompted with highly contextualized queries, such as: "Given the enterprise's mission-critical shipping lane traversing the Strait of Malacca, linked to primary fabrication facilities in Southeast Asia, and considering prevailing meteorological forecasts, nascent geopolitical tensions in adjacent maritime territories, and real-time port congestion indices, what is the quantified probability of significant disruption within the subsequent 14-day temporal horizon? Furthermore, delineate the precise causal vectors and propose optimal pre-emptive rerouting alternatives." Should the AI model identify an emerging threat exceeding a pre-defined probabilistic threshold, it autonomously orchestrates the generation of a structured, machine-readable alert. This alert comprehensively details the nature and genesis of the risk, quantifies its probability and projected impact, specifies the affected components of the supply chain, and, crucially, synthesizes and ranks a portfolio of actionable, optimized mitigation strategies. This constitutes a paradigm shift from merely identifying risks to orchestrating intelligent, pre-emptive strategic maneuvers, embedding an unprecedented degree of foresight and resilience into global commerce.
+The present invention unveils a novel, architecturally robust, and algorithmically advanced system for predictive supply chain disruption modeling, herein termed the "Cognitive Supply Chain Sentinel." This system transcends conventional monitoring tools by integrating a multi-layered approach to risk assessment and proactive strategic guidance. The operational genesis commences with a user's precise definition and continuous refinement of their critical supply chain topology, meticulously mapping all entitiesâ€”key suppliers, manufacturing plants, distribution centers, intermodal hubs, and their connecting logistical arteriesâ€”into a dynamic knowledge graph. At its operational core, the Cognitive Supply Chain Sentinel employs a sophisticated, continuously learning generative AI engine. This engine acts as an expert geopolitical, meteorological, and logistical risk analyst, incessantly monitoring, correlating, and interpreting an torrent of real-time, multi-modal global event data. The AI is dynamically prompted with highly contextualized queries, such as: "Given the enterprise's mission-critical shipping lane traversing the Strait of Malacca, linked to primary fabrication facilities in Southeast Asia, and considering prevailing meteorological forecasts, nascent geopolitical tensions in adjacent maritime territories, and real-time port congestion indices, what is the quantified probability of significant disruption within the subsequent 14-day temporal horizon? Furthermore, delineate the precise causal vectors and propose optimal pre-emptive rerouting alternatives." Should the AI model identify an emerging threat exceeding a pre-defined probabilistic threshold, it autonomously orchestrates the generation of a structured, machine-readable alert. This alert comprehensively details the nature and genesis of the risk, quantifies its probability and projected impact, specifies the affected components of the supply chain, and, crucially, synthesizes and ranks a portfolio of actionable, optimized mitigation strategies. This constitutes a paradigm shift from merely identifying risks to orchestrating intelligent, pre-emptive strategic maneuvers, embedding an unprecedented degree of foresight and resilience into global commerce.
 
 ## 5. Detailed Description of the Invention:
 
@@ -67,95 +67,161 @@ The disclosed system represents a comprehensive, intelligent infrastructure desi
 
 The Cognitive Supply Chain Sentinel is comprised of several interconnected, high-performance services, each performing a specialized function, orchestrated to deliver a holistic predictive capability.
 
+```mermaid
+graph LR
+    subgraph Data Ingestion and Processing
+        A[External Data Sources] --> B[MultiModal Data Ingestion Service]
+        B --> C[Feature Engineering Service]
+    end
+
+    subgraph Core Intelligence
+        D[Supply Chain Modeler & Knowledge Graph]
+        C --> E[AI Risk Analysis Prediction Engine]
+        D --> E
+    end
+
+    subgraph Output & Interaction
+        E --> F[Alert Recommendation Generation Subsystem]
+        F --> G[User Interface Feedback Loop]
+        G --> D
+        G --> E
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#fb9,stroke:#333,stroke-width:2px
+    style E fill:#ada,stroke:#333,stroke-width:2px
+    style F fill:#fbb,stroke:#333,stroke-width:2px
+    style G fill:#ffd,stroke:#333,stroke-width:2px
+```
+
 #### 5.1.1 Supply Chain Modeler and Knowledge Graph
 This foundational component serves as the authoritative source for the enterprise's entire supply chain topology and associated operational parameters.
-*   **User Interface (UI):** A sophisticated graphical user interface (GUI) provides intuitive tools for users to define, visualize, and iteratively refine their global supply chain network. This includes drag-and-drop functionality for nodes and edges, parameter input forms, and geospatial mapping integrations.
+*   **User Interface UI:** A sophisticated graphical user interface GUI provides intuitive tools for users to define, visualize, and iteratively refine their global supply chain network. This includes drag-and-drop functionality for nodes and edges, parameter input forms, and geospatial mapping integrations.
 *   **Knowledge Graph Database:** At its core, the supply chain is represented as a highly interconnected, semantic knowledge graph. This graph is not merely a static representation but a dynamic entity capable of storing rich attributes, temporal data, and inter-node relationships.
-    *   **Nodes:** Represent discrete entities within the supply chain. These can be granular, such as specific suppliers (e.g., "Quantum Chips Co., Taiwan"), manufacturing facilities (e.g., "Shenzhen Assembly Plant #3"), distribution centers (e.g., "LA Fulfillment Hub"), ports (e.g., "Port of Long Beach"), airports, and even specific inventory holding points. Each node is endowed with a comprehensive set of attributes, including geographical coordinates (latitude, longitude), operational capacities (e.g., production volume, storage space), lead times, cost parameters, operational hours, security ratings, and alternative supplier/facility identifiers.
+    *   **Nodes:** Represent discrete entities within the supply chain. These can be granular, such as specific suppliers e.g., "Quantum Chips Co., Taiwan", manufacturing facilities e.g., "Shenzhen Assembly Plant #3", distribution centers e.g., "LA Fulfillment Hub", ports e.g., "Port of Long Beach", airports, and even specific inventory holding points. Each node is endowed with a comprehensive set of attributes, including geographical coordinates latitude, longitude, operational capacities e.g., production volume, storage space, lead times, cost parameters, operational hours, security ratings, and alternative supplier/facility identifiers.
     *   **Edges:** Represent the logistical pathways and relationships connecting these nodes. These include maritime shipping lanes, air freight routes, rail lines, and ground transportation networks. Edges possess attributes such as average transit time, typical capacity, cost per unit, historical reliability metrics, associated logistics providers, and regulatory compliance requirements. Edges can also represent non-physical relationships, such as contractual agreements between a buyer and a supplier.
     *   **Temporal and Contextual Attributes:** Both nodes and edges are augmented with temporal attributes, indicating their operational status at different times, and contextual attributes, such as geopolitical risk scores associated with their location, environmental vulnerability indices, and labor stability metrics.
 
 ```mermaid
 graph TD
-    A[User Interface] --> B[Supply Chain Modeler Service]
-    B --> C[Knowledge Graph Database]
-    C --> D[Graph Visualization & Analytics]
-    subgraph Knowledge Graph Entities
-        N1[Node: Supplier]
-        N2[Node: Factory]
-        N3[Node: Port/Hub]
-        N4[Node: Warehouse]
-        E1[Edge: Shipping Lane]
-        E2[Edge: Air Freight]
-        E3[Edge: Rail Link]
-        E4[Edge: Road Network]
+    subgraph Supply Chain Modeler and Knowledge Graph
+        UI_SC[User Interface SC Configuration] --> SCMS[Supply Chain Modeler Core Service]
+        SCMS --> KGD[Knowledge Graph Database]
+        KGD -- Stores --> NODE_TYPES[Node Types: Supplier, Factory, PortHub, Warehouse]
+        KGD -- Stores --> EDGE_TYPES[Edge Types: ShippingLane, AirFreight, RailLink, RoadNetwork, Contractual]
+        KGD -- Contains Attributes For --> NODE_ATTRS[Node Attributes: Location, Capacity, LeadTimes, Cost, RiskScores]
+        KGD -- Contains Attributes For --> EDGE_ATTRS[Edge Attributes: TransitTime, Cost, Reliability, Carriers, GeoRisk]
+        KGD -- Supports Dynamic Query By --> GVA[Graph Visualization and Analytics]
+        SCMS -- Continuously Updates --> KGD
+        GVA -- Renders SC Topology --> KGD
     end
-    C --- N1
-    C --- N2
-    C --- N3
-    C --- N4
-    C --- E1
-    C --- E2
-    C --- E3
-    C --- E4
 ```
 
 #### 5.1.2 Multi-Modal Data Ingestion and Feature Engineering Service
 This robust, scalable service is responsible for continuously acquiring, processing, and normalizing vast quantities of heterogeneous global data streams. It acts as the "sensory apparatus" of the Sentinel.
-*   **Global News APIs:** Integration with advanced news aggregators (e.g., GDELT Project, Bloomberg, Reuters, proprietary sentiment analysis platforms) to capture real-time geopolitical developments, macroeconomic shifts, labor unrest indicators, and social sentiment changes across relevant geographies. Natural Language Processing (NLP) techniques, including named entity recognition (NER), event extraction, and sentiment analysis, are applied to structure unstructured news feeds into actionable data points.
-*   **Weather and Climate Forecasting APIs:** Acquisition of high-resolution meteorological data, including typhoon/hurricane tracking, severe weather warnings, climate anomaly predictions (e.g., prolonged droughts, extreme heatwaves), and localized forecasts impacting specific logistical nodes or routes. Predictive climate models are integrated to project long-term environmental risks.
-*   **Maritime and Air Freight Tracking APIs:** Real-time Automatic Identification System (AIS) data for vessels, ADS-B data for aircraft, satellite tracking for rail and truck fleets. This includes port congestion metrics, vessel deviation alerts, estimated time of arrival (ETA) updates, and historical performance benchmarks. Container-level tracking information can be integrated where available.
+*   **Global News APIs:** Integration with advanced news aggregators e.g., GDELT Project, Bloomberg, Reuters, proprietary sentiment analysis platforms to capture real-time geopolitical developments, macroeconomic shifts, labor unrest indicators, and social sentiment changes across relevant geographies. Natural Language Processing NLP techniques, including named entity recognition NER, event extraction, and sentiment analysis, are applied to structure unstructured news feeds into actionable data points.
+*   **Weather and Climate Forecasting APIs:** Acquisition of high-resolution meteorological data, including typhoon/hurricane tracking, severe weather warnings, climate anomaly predictions e.g., prolonged droughts, extreme heatwaves, and localized forecasts impacting specific logistical nodes or routes. Predictive climate models are integrated to project long-term environmental risks.
+*   **Maritime and Air Freight Tracking APIs:** Real-time Automatic Identification System AIS data for vessels, ADS-B data for aircraft, satellite tracking for rail and truck fleets. This includes port congestion metrics, vessel deviation alerts, estimated time of arrival ETA updates, and historical performance benchmarks. Container-level tracking information can be integrated where available.
 *   **Geopolitical Risk APIs:** Specialized feeds providing granular risk scores, sanction updates, trade tariff changes, and political stability indices for countries and specific regions relevant to the supply chain.
 *   **Economic Indicator APIs:** Access to macroeconomic data such as GDP growth, inflation rates, manufacturing indices, currency fluctuations, and commodity prices, which can signal impending demand or supply shocks.
-*   **Social Media and Open-Source Intelligence (OSINT):** Selective monitoring of public social media discourse and OSINT sources, employing advanced text and image analysis, to detect early warnings of civil unrest, public health emergencies, or localized disruptions that may not yet be reported by traditional news media.
+*   **Social Media and Open-Source Intelligence OSINT:** Selective monitoring of public social media discourse and OSINT sources, employing advanced text and image analysis, to detect early warnings of civil unrest, public health emergencies, or localized disruptions that may not yet be reported by traditional news media.
 *   **Data Normalization and Transformation:** Raw data from disparate sources is transformed into a unified, semantically consistent format, timestamped, geo-tagged, and enriched. This involves schema mapping, unit conversion, and anomaly detection.
 *   **Feature Engineering:** This critical sub-component extracts salient features from the processed data, translating raw observations into high-dimensional vectors pertinent for AI analysis. For instance, "Typhoon Leo projected path" is transformed into features like `[proximity_to_port_X, wind_speed_category, forecast_confidence_score, estimated_arrival_time]`.
 
 ```mermaid
 graph TD
-    A[Global News APIs] --> F[Data Normalization & Transformation]
-    B[Weather Forecasting APIs] --> F
-    C[Freight Tracking APIs] --> F
-    D[Geopolitical Risk APIs] --> F
-    E[Economic Indicator APIs] --> F
-    F --> G[Feature Engineering Service]
-    G --> H[Event Feature Store]
+    subgraph MultiModal Data Ingestion and Feature Engineering
+        A[Global News APIs RSS] --> DNT[Data Normalization Transformation]
+        B[Weather Climate APIs Satellite] --> DNT
+        C[Freight Tracking APIs AIS ADS-B] --> DNT
+        D[Geopolitical Risk APIs Intelligence Feeds] --> DNT
+        E[Economic Indicator APIs Market Data] --> DNT
+        S[Social Media OSINT Streams] --> DNT
+
+        DNT -- Cleans Validates --> FE[Feature Engineering Service]
+        DNT -- Applies NLP For --> FE
+        DNT -- Extracts GeoSpatialTemporal For --> FE
+        DNT -- Performs CrossModal Fusion For --> FE
+
+        FE -- Creates --> EFV[Event Feature Vectors]
+        EFV --> EFS[Event Feature Store]
+    end
 ```
 
 #### 5.1.3 AI Risk Analysis and Prediction Engine
 This is the intellectual core of the Cognitive Supply Chain Sentinel, employing advanced generative AI to synthesize intelligence and forecast disruptions.
 *   **Dynamic Prompt Orchestration:** Instead of static prompts, this engine constructs highly dynamic, context-specific prompts for the generative AI model. These prompts are meticulously crafted, integrating:
-    *   The user's specific supply chain graph (or relevant sub-graph).
+    *   The user's specific supply chain graph or relevant sub-graph.
     *   Recent, relevant event features from the `Event Feature Store`.
-    *   Pre-defined roles for the AI (e.g., "Expert Maritime Logistics Risk Analyst," "Geopolitical Forecaster").
-    *   Specific temporal horizons for prediction (e.g., "next 7 days," "next 30 days").
-    *   Desired output format constraints (e.g., JSON schema for structured alerts).
-*   **Generative AI Model:** A large, multi-modal language model (LLM) serves as the primary inference engine. This model is pre-trained on a vast corpus of text and data, encompassing geopolitical history, logistics operations, economic theory, meteorological science, and risk management principles. It may be further fine-tuned with domain-specific supply chain incident data to enhance its predictive accuracy and contextual understanding. The model's capacity for complex reasoning, causal chain identification, and synthesis of disparate information is paramount.
-*   **Probabilistic Causal Inference:** The AI model does not merely correlate events; it attempts to infer causal relationships. For example, a typhoon's path (event) causes port closure (direct effect) which in turn causes vessel rerouting (indirect effect) and ultimately shipment delay (supply chain impact). The AI quantifies the probability of these causal links and their downstream effects.
-*   **Risk Taxonomy Mapping:** Identified disruptions are mapped to a predefined ontology of supply chain risks (e.g., Force Majeure, Geopolitical, Operational, Financial, Cyber). This categorization aids in structured reporting and subsequent strategic planning.
+    *   Pre-defined roles for the AI e.g., "Expert Maritime Logistics Risk Analyst," "Geopolitical Forecaster".
+    *   Specific temporal horizons for prediction e.g., "next 7 days," "next 30 days".
+    *   Desired output format constraints e.g., JSON schema for structured alerts.
+*   **Generative AI Model:** A large, multi-modal language model LLM serves as the primary inference engine. This model is pre-trained on a vast corpus of text and data, encompassing geopolitical history, logistics operations, economic theory, meteorological science, and risk management principles. It may be further fine-tuned with domain-specific supply chain incident data to enhance its predictive accuracy and contextual understanding. The model's capacity for complex reasoning, causal chain identification, and synthesis of disparate information is paramount.
+*   **Probabilistic Causal Inference:** The AI model does not merely correlate events; it attempts to infer causal relationships. For example, a typhoon's path event causes port closure direct effect which in turn causes vessel rerouting indirect effect and ultimately shipment delay supply chain impact. The AI quantifies the probability of these causal links and their downstream effects.
+*   **Risk Taxonomy Mapping:** Identified disruptions are mapped to a predefined ontology of supply chain risks e.g., Force Majeure, Geopolitical, Operational, Financial, Cyber. This categorization aids in structured reporting and subsequent strategic planning.
 
 ```mermaid
 graph TD
-    A[Supply Chain Knowledge Graph] --> D[Dynamic Prompt Orchestration]
-    B[Event Feature Store] --> D
-    C[User-defined Risk Parameters] --> D
-    D --> E[Generative AI Model LLM]
-    E --> F[Probabilistic Disruption Forecasts]
-    E --> G[Causal Inference Insights]
-    F & G --> H[Risk Assessment & Scoring]
+    subgraph AI Risk Analysis and Prediction Engine
+        SCKG[Supply Chain Knowledge Graph Current State] --> DPO[Dynamic Prompt Orchestration]
+        EFS[Event Feature Store Relevant Features] --> DPO
+        URP[User-defined Risk Parameters Thresholds] --> DPO
+        DPO -- Constructs --> LLMP[LLM Prompt with Contextual Variables RolePlaying Directives OutputConstraints]
+        LLMP --> GAI[Generative AI Model Core LLM]
+        GAI -- Performs --> PCI[Probabilistic Causal Inference]
+        GAI -- Generates --> PDF[Probabilistic Disruption Forecasts]
+        GAI -- Delineates --> CI[Causal Inference Insights]
+        PDF & CI --> RAS[Risk Assessment Scoring]
+        RAS --> OSD[Output Structured Disruption Alerts Recommendations]
+    end
 ```
 
 #### 5.1.4 Alert and Recommendation Generation Subsystem
 Upon receiving the AI's structured output, this subsystem processes and refines it into actionable intelligence.
-*   **Alert Filtering and Prioritization:** Alerts are filtered based on user-defined thresholds (e.g., only show "High" probability disruptions, or those impacting "Critical" suppliers). They are prioritized based on probability, impact severity, and temporal proximity.
-*   **Recommendation Synthesis and Ranking:** The AI's suggested actions are further refined, cross-referenced with enterprise resource planning (ERP) data (e.g., current inventory levels, alternative supplier contracts, available transport capacity), and ranked according to user-defined optimization criteria (e.g., minimize cost, minimize delay, maximize resilience).
-*   **Notification Dispatch:** Alerts are dispatched through various channels (e.g., integrated dashboard, email, SMS, API webhook) to relevant stakeholders within the organization.
+*   **Alert Filtering and Prioritization:** Alerts are filtered based on user-defined thresholds e.g., only show "High" probability disruptions, or those impacting "Critical" suppliers. They are prioritized based on probability, impact severity, and temporal proximity.
+*   **Recommendation Synthesis and Ranking:** The AI's suggested actions are further refined, cross-referenced with enterprise resource planning ERP data e.g., current inventory levels, alternative supplier contracts, available transport capacity, and ranked according to user-defined optimization criteria e.g., minimize cost, minimize delay, maximize resilience.
+*   **Notification Dispatch:** Alerts are dispatched through various channels e.g., integrated dashboard, email, SMS, API webhook to relevant stakeholders within the organization.
+
+```mermaid
+graph TD
+    subgraph Alert and Recommendation Generation Subsystem
+        OSD[Output Structured Disruption Alerts Recommendations] --> AFP[Alert Filtering Prioritization]
+        ERP_DATA[ERP Data Current Inventory Capacity Contracts] --> RSS[Recommendation Synthesis Ranking]
+        AFP --> RSS
+        RSS --> ND[Notification Dispatch]
+        AFP -- Sends Alerts To --> ND
+        ND -- Delivers To --> UD[User Dashboard]
+        ND -- Delivers To --> EMAIL[Email Alerts]
+        ND -- Delivers To --> SMS[SMS Messages]
+        ND -- Delivers To --> WEBHOOK[API Webhooks Integrations]
+    end
+```
 
 #### 5.1.5 User Interface and Feedback Loop
 This component ensures the system is interactive, adaptive, and continuously improves.
 *   **Integrated Dashboard:** A comprehensive, real-time dashboard visualizes the supply chain graph, overlays identified disruptions, displays alerts, and presents recommended mitigation strategies. Geospatial visualizations are central to this interface.
 *   **Simulation and Scenario Planning:** Users can interact with the system to run "what-if" scenarios, evaluating the impact of hypothetical disruptions or proposed mitigation actions. This leverages the generative AI for predictive modeling under new conditions.
-*   **Feedback Mechanism:** Users can provide feedback on the accuracy of predictions, the utility of recommendations, and the outcome of implemented actions. This feedback is crucial for continually fine-tuning the generative AI model through reinforcement learning from human feedback (RLHF) or similar mechanisms, improving its accuracy and relevance over time. This closes the loop, making the system an adaptive, intelligent agent.
+*   **Feedback Mechanism:** Users can provide feedback on the accuracy of predictions, the utility of recommendations, and the outcome of implemented actions. This feedback is crucial for continually fine-tuning the generative AI model through reinforcement learning from human feedback RLHF or similar mechanisms, improving its accuracy and relevance over time. This closes the loop, making the system an adaptive, intelligent agent.
+
+```mermaid
+graph TD
+    subgraph User Interface and Feedback Loop
+        UDASH[User Dashboard] -- Displays --> SCA[Supply Chain Alerts]
+        UDASH -- Displays --> RSMS[Recommended Strategy Metrics]
+        UDASH -- Enables --> SSP[Simulation Scenario Planning]
+        UDASH -- Captures --> UFB[User Feedback]
+
+        SCA & RSMS --> UI_FE[User Interface Frontend]
+        SSP --> GAI_LLM[Generative AI Model LLM]
+        UFB --> MODEL_FT[Model Fine-tuning Continuous Learning]
+        MODEL_FT --> GAI_LLM
+        UI_FE --> API_LAYER[Backend API Layer]
+        API_LAYER --> SCA
+        API_LAYER --> RSMS
+    end
+```
 
 ### 5.2 Data Structures and Schemas
 
@@ -296,33 +362,33 @@ The system's intelligence is rooted in a sophisticated interplay of advanced alg
 
 #### 5.3.1 Dynamic Graph Representation and Traversal
 The supply chain is fundamentally a dynamic graph `G=(V,E)`.
-*   **Graph Database Technologies:** Underlying technologies (e.g., property graphs, RDF knowledge graphs) are employed for efficient storage and retrieval of complex relationships and attributes.
-*   **Temporal Graph Analytics:** Algorithms for analyzing evolving graph structures, identifying critical paths (shortest path, bottleneck analysis), and calculating centrality measures (e.g., betweenness centrality for key ports) that dynamically change with real-time conditions.
-*   **Sub-graph Extraction:** Efficient algorithms for extracting relevant sub-graphs based on a specific query (e.g., all paths from `Supplier X` to `Factory Y` passing through `Port Z`).
+*   **Graph Database Technologies:** Underlying technologies e.g., property graphs, RDF knowledge graphs are employed for efficient storage and retrieval of complex relationships and attributes.
+*   **Temporal Graph Analytics:** Algorithms for analyzing evolving graph structures, identifying critical paths shortest path, bottleneck analysis, and calculating centrality measures e.g., betweenness centrality for key ports that dynamically change with real-time conditions.
+*   **Sub-graph Extraction:** Efficient algorithms for extracting relevant sub-graphs based on a specific query e.g., all paths from `Supplier X` to `Factory Y` passing through `Port Z`.
 
 #### 5.3.2 Multi-Modal Data Fusion and Contextualization
 The fusion process integrates heterogeneous data into a unified, semantically coherent representation.
-*   **Latent Space Embeddings:** Multi-modal data (text, numerical, geospatial) is transformed into a shared latent vector space using techniques like autoencoders, contrastive learning, or specialized transformers. This allows for semantic comparison and contextualization across data types.
+*   **Latent Space Embeddings:** Multi-modal data text, numerical, geospatial is transformed into a shared latent vector space using techniques like autoencoders, contrastive learning, or specialized transformers. This allows for semantic comparison and contextualization across data types.
 *   **Attention Mechanisms:** Employing attention networks to weigh the relevance of different data streams and features to a specific supply chain query. For example, weather data is highly relevant for maritime routes, while geopolitical news is critical for sourcing locations.
-*   **Time-Series Analysis and Forecasting:** Applying advanced time-series models (e.g., LSTM, Transformer networks, Gaussian Processes) to predict future states of continuous variables (e.g., port congestion levels, commodity prices) which then serve as features for the generative AI.
+*   **Time-Series Analysis and Forecasting:** Applying advanced time-series models e.g., LSTM, Transformer networks, Gaussian Processes to predict future states of continuous variables e.g., port congestion levels, commodity prices which then serve as features for the generative AI.
 
 #### 5.3.3 Generative AI Prompt Orchestration
 This is a critical innovation enabling the AI to function as a domain expert.
-*   **Contextual Variable Injection:** Dynamically injecting elements of the current supply chain graph (e.g., specific node/edge attributes), relevant real-time event features, and historical context directly into the AI prompt.
-*   **Role-Playing Directives:** Explicitly instructing the generative AI model to adopt specific personas (e.g., "You are an expert in global maritime logistics," "You are a geopolitical strategist") to elicit specialized reasoning capabilities.
+*   **Contextual Variable Injection:** Dynamically injecting elements of the current supply chain graph e.g., specific node/edge attributes, relevant real-time event features, and historical context directly into the AI prompt.
+*   **Role-Playing Directives:** Explicitly instructing the generative AI model to adopt specific personas e.g., "You are an expert in global maritime logistics," "You are a geopolitical strategist" to elicit specialized reasoning capabilities.
 *   **Constrained Output Generation:** Utilizing techniques such as JSON schema enforcement or few-shot exemplars within the prompt to guide the AI to produce structured, machine-readable outputs, crucial for automated processing.
 *   **Iterative Refinement and Self-Correction:** Developing prompts that allow the AI to ask clarifying questions or iterate on its analysis, mimicking human analytical processes.
 
 #### 5.3.4 Probabilistic Disruption Forecasting
 The AI's ability to not just predict but quantify uncertainty is vital.
-*   **Causal Graph Learning:** Within the generative AI's latent reasoning capabilities, it constructs implicit or explicit probabilistic causal graphs (e.g., Bayesian Networks, Granger Causality) linking global events to supply chain impacts. This allows it to identify direct and indirect causal pathways.
-*   **Monte Carlo Simulations (Implicit):** The AI's generative nature allows it to effectively perform implicit Monte Carlo simulations, exploring various future scenarios based on probabilistic event occurrences and their cascading effects. It synthesizes the most probable and impactful scenarios.
+*   **Causal Graph Learning:** Within the generative AI's latent reasoning capabilities, it constructs implicit or explicit probabilistic causal graphs e.g., Bayesian Networks, Granger Causality linking global events to supply chain impacts. This allows it to identify direct and indirect causal pathways.
+*   **Monte Carlo Simulations Implicit:** The AI's generative nature allows it to effectively perform implicit Monte Carlo simulations, exploring various future scenarios based on probabilistic event occurrences and their cascading effects. It synthesizes the most probable and impactful scenarios.
 *   **Confidence Calibration:** Employing techniques to calibrate the AI's confidence scores in its predictions against observed outcomes, ensuring that a "High" probability truly corresponds to a high likelihood of occurrence.
 
 #### 5.3.5 Optimal Mitigation Strategy Generation
 Beyond prediction, the system provides actionable solutions.
-*   **Multi-Objective Optimization:** The AI, informed by enterprise constraints and preferences (e.g., cost, time, risk tolerance), leverages its understanding of the supply chain graph and available alternatives to propose strategies that optimize across multiple, potentially conflicting objectives. This might involve shortest path algorithms considering dynamic edge weights (cost, time, risk), or network flow optimization under capacity constraints.
-*   **Constraint Satisfaction:** Integrating current inventory levels, contractual obligations, and real-time transport availability (e.g., available air freight capacity from alternative carriers) as constraints within the AI's decision-making process.
+*   **Multi-Objective Optimization:** The AI, informed by enterprise constraints and preferences e.g., cost, time, risk tolerance, leverages its understanding of the supply chain graph and available alternatives to propose strategies that optimize across multiple, potentially conflicting objectives. This might involve shortest path algorithms considering dynamic edge weights cost, time, risk, or network flow optimization under capacity constraints.
+*   **Constraint Satisfaction:** Integrating current inventory levels, contractual obligations, and real-time transport availability e.g., available air freight capacity from alternative carriers as constraints within the AI's decision-making process.
 *   **Scenario-Based Planning Integration:** The generative AI can simulate the outcomes of different mitigation strategies within the context of a predicted disruption, providing quantitative insights into their effectiveness before execution.
 
 ### 5.4 Operational Flow and Use Cases
@@ -331,12 +397,27 @@ A typical operational cycle of the Cognitive Supply Chain Sentinel proceeds as f
 
 1.  **Initialization:** A user defines their supply chain graph via the Modeler UI, specifying nodes, edges, attributes, and criticality levels.
 2.  **Continuous Data Ingestion:** The Data Ingestion Service perpetually streams and processes global multi-modal data, populating the Event Feature Store.
-3.  **Scheduled AI Analysis:** Periodically (e.g., hourly, bi-hourly), the AI Risk Analysis Engine is triggered.
+3.  **Scheduled AI Analysis:** Periodically e.g., hourly, bi-hourly, the AI Risk Analysis Engine is triggered.
 4.  **Prompt Construction:** Dynamic Prompt Orchestration retrieves the relevant sub-graph of the supply chain, current event features, and pre-defined risk parameters to construct a sophisticated query for the Generative AI Model.
 5.  **AI Inference:** The Generative AI Model processes the prompt, performs causal inference, probabilistic forecasting, and identifies potential disruptions. It synthesizes a structured output with alerts and preliminary recommendations.
 6.  **Alert Processing:** The Alert and Recommendation Generation Subsystem refines the AI's output, prioritizes alerts, performs secondary optimization of recommendations against ERP data, and prepares notifications.
 7.  **User Notification:** Alerts and recommendations are disseminated to the user dashboard, and potentially via other channels.
 8.  **Action and Feedback:** The user reviews the alerts, evaluates recommendations, potentially runs simulations, makes a decision, and provides feedback to the system, which aids in continuous model refinement.
+
+```mermaid
+graph TD
+    subgraph End-to-End Operational Flow
+        init[1. System Initialization User Defines SupplyChain] --> CDEI[2. Continuous Data Event Ingestion]
+        CDEI --> SAA[3. Scheduled AI Analysis]
+        SAA --> PC[4. Prompt Construction SC Graph Event Features]
+        PC --> AIInf[5. AI Inference Causal Forecasts]
+        AIInf --> AP[6. Alert Processing Recommendation Generation]
+        AP --> UN[7. User Notification]
+        UN --> AF[8. Action Feedback Loop]
+        AF -- Feedback Data --> MF[Model Refinement Continuous Learning]
+        MF --> SAA
+    end
+```
 
 **Use Cases:**
 
