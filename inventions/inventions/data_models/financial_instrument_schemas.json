@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://inventa.ai/schemas/financial_instrument_schemas.json",
+  "title": "Financial Instrument System Data Contracts",
+  "description": "Defines the formal JSON schemas for the structured input prompt to the Autonomous Financial Engineering Cognizance Engine (AFECE) and the detailed financial instrument output.",
+  "definitions": {
+    "AFECE_StructuredPromptSchema": {
+      "type": "object",
+      "title": "AFECE Structured Prompt Input",
+      "description": "Schema for the structured prompt sent to the Autonomous Financial Engineering Cognizance Engine (AFECE), translating user desiderata into actionable instructions.",
+      "required": [
+        "role",
+        "task",
+        "constraints",
+        "objectives",
+        "response_schema_id",
+        "reasoning_directive"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "The designated role for the AI model within the financial engineering context.",
+          "enum": ["financial_engineer"]
+        },
+        "task": {
+          "type": "string",
+          "description": "The specific task the AI model is instructed to perform for financial instrument design.",
+          "enum": ["design_structured_instrument"]
+        },
+        "constraints": {
+          "type": "object",
+          "description": "A collection of hard constraints that the generated financial instrument must satisfy.",
+          "required": [
+            "principal_protection_level",
+            "market_exposure_indices",
+            "investment_term_years",
+            "max_annual_volatility",
+            "min_income_frequency",
+            "esg_alignment_score_min"
+          ],
+          "properties": {
+            "principal_protection_level": {
+              "type": "number",
+              "description": "Desired capital preservation at maturity, expressed as a fraction (0.0 to 1.0, where 1.0 is 100%).",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "market_exposure_indices": {
+              "type": "array",
+              "description": "List of identifiers for underlying assets or indices to which the instrument should have exposure.",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "investment_term_years": {
+              "type": "integer",
+              "description": "The target duration of the investment in full years.",
+              "minimum": 0
+            },
+            "max_annual_volatility": {
+              "type": "number",
+              "description": "Maximum permissible annualized volatility, expressed as a fraction (e.g., 0.08 for 8%).",
+              "minimum": 0.0
+            },
+            "min_income_frequency": {
+              "type": "string",
+              "description": "Minimum frequency for income distribution (e.g., 'quarterly').",
+              "enum": ["monthly", "quarterly", "semi-annually", "annually", "at maturity", "none"]
+            },
+            "esg_alignment_score_min": {
+              "type": "number",
+              "description": "Minimum Environmental, Social, Governance (ESG) alignment score for underlying assets (0.0 to 1.0).",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          }
+        },
+        "objectives": {
+          "type": "object",
+          "description": "A collection of objectives that the AFECE should optimize for when designing the instrument.",
+          "required": [
+            "target_annual_yield",
+            "upside_participation_preference",
+            "downside_risk_mitigation"
+          ],
+          "properties": {
+            "target_annual_yield": {
+              "type": "object",
+              "description": "Desired range for the annualized yield.",
+              "required": ["min", "max"],
+              "properties": {
+                "min": {
+                  "type": "number",
+                  "description": "Minimum target annual yield as a fraction."
+                },
+                "max": {
+                  "type": "number",
+                  "description": "Maximum target annual yield as a fraction."
+                }
+              }
+            },
+            "upside_participation_preference": {
+              "type": "string",
+              "description": "User's preference for participating in upside market movements.",
+              "enum": ["low", "medium", "high", "very_high"]
+            },
+            "downside_risk_mitigation": {
+              "type": "string",
+              "description": "User's preference for mitigating downside risk.",
+              "enum": ["none", "moderate", "strong", "absolute_preservation"]
+            }
+          }
+        },
+        "response_schema_id": {
+          "type": "string",
+          "description": "Identifier for the expected JSON schema that the AFECE should adhere to for its output."
+        },
+        "reasoning_directive": {
+          "type": "string",
+          "description": "Specific instructions for the AFECE regarding its reasoning process and how to structure its explanation of design choices."
+        }
+      }
+    },
+    "AFECE_InstrumentOutputSchema": {
+      "type": "object",
+      "title": "AFECE Instrument Output Structure",
+      "description": "Schema for the detailed structured data object representing a proposed financial instrument, generated by the AFECE.",
+      "required": [
+        "instrumentName",
+        "instrumentType",
+        "underlyingAssets",
+        "components",
+        "principalProtection",
+        "payoffFormula",
+        "keyTerms",
+        "summary",
+        "riskFactors",
+        "simulationResults",
+        "regulatoryCompliance"
+      ],
+      "properties": {
+        "instrumentName": { "type": "string", "description": "A unique, descriptive name for the generated financial instrument." },
+        "instrumentType": { "type": "string", "description": "Categorization of the financial instrument (e.g., Structured Note, Equity-Linked Note)." },
+        "underlyingAssets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetIdentifier": { "type": "string", "description": "Ticker symbol, ISIN, or index name for the underlying asset." },
+              "assetType": { "type": "string", "description": "Type of the underlying asset (e.g., Equity, Index, Bond, Commodity, FX, Credit, InterestRate)." },
+              "weighting": { "type": "number", "description": "Proportional weighting within a basket of assets, if applicable.", "minimum": 0.0, "maximum": 1.0 }
+            },
+            "required": ["assetIdentifier", "assetType"]
+          },
+          "description": "A list of primary underlying assets or indices that the instrument is linked to.",
+          "minItems": 1
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "componentType": { "type": "string", "description": "Type of the financial primitive component (e.g., ZeroCouponBond, CallOption, PutOption, SwapLeg)." },
+              "underlying": { "type": "string", "description": "Identifier of the specific underlying asset for this particular component." },
+              "strikePrice": { "type": "number", "nullable": true, "description": "Applicable for options or forwards, representing the exercise price." },
+              "maturityDate": { "type": "string", "format": "date", "description": "Maturity or expiry date of the component in 'YYYY-MM-DD' format." },
+              "notionalAmount": { "type": "number", "description": "Notional value or principal allocation for this component." },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Component-specific parameters (e.g., participation rate, coupon rate, barrier levels, reset frequency, leverage factor)."
+              }
+            },
+            "required": ["componentType", "underlying", "maturityDate", "notionalAmount"]
+          },
+          "description": "Detailed breakdown of the financial primitives constituting the instrument.",
+          "minItems": 1
+        },
+        "principalProtection": { "type": "number", "description": "Guaranteed principal return percentage at maturity (0-100).", "minimum": 0.0, "maximum": 100.0 },
+        "payoffFormula": { "type": "string", "description": "Mathematical expression defining the instrument's payoff at maturity or during its life. E.g., `Notional * (1 + Max(0, ParticipationRate * (SPX_Final / SPX_Initial - 1))) + ZeroCouponBondYield`." },
+        "keyTerms": {
+          "type": "object",
+          "properties": {
+            "issueDate": { "type": "string", "format": "date", "description": "The date the instrument is issued in 'YYYY-MM-DD' format." },
+            "maturityDate": { "type": "string", "format": "date", "description": "The date the instrument matures in 'YYYY-MM-DD' format." },
+            "denomination": { "type": "string", "description": "The currency in which the instrument is denominated (e.g., USD, EUR)." },
+            "minSubscriptionAmount": { "type": "number", "description": "The minimum investment amount required for the instrument.", "minimum": 0.0 },
+            "listingExchange": { "type": "string", "nullable": true, "description": "The exchange where the instrument is listed, if applicable." },
+            "issuer": { "type": "string", "description": "Placeholder for the hypothetical issuer entity of the instrument." }
+          },
+          "required": ["issueDate", "maturityDate", "denomination", "minSubscriptionAmount", "issuer"]
+        },
+        "summary": { "type": "string", "description": "A concise, plain-language description of the instrument's features and benefits." },
+        "riskFactors": { "type": "array", "items": { "type": "string" }, "description": "A list of identified risks associated with the instrument.", "minItems": 1 },
+        "simulationResults": {
+          "type": "object",
+          "properties": {
+            "expectedReturnAnnualized": { "type": "number", "description": "The expected annualized return of the instrument based on simulations." },
+            "volatilityAnnualized": { "type": "number", "description": "The simulated annualized volatility of the instrument." },
+            "maxDrawdownSimulated": { "type": "number", "description": "The maximum simulated drawdown from a peak value." },
+            "probabilityOfPrincipalLoss": { "type": "number", "description": "The simulated probability of experiencing a loss of principal (0.0 to 1.0).", "minimum": 0.0, "maximum": 1.0 },
+            "sharpeRatioSimulated": { "type": "number", "description": "The simulated Sharpe Ratio, measuring risk-adjusted return." }
+          },
+          "description": "Placeholder for metrics generated by the Instrument Validation and Simulation System (IVSS).",
+          "required": [
+            "expectedReturnAnnualized",
+            "volatilityAnnualized",
+            "maxDrawdownSimulated",
+            "probabilityOfPrincipalLoss",
+            "sharpeRatioSimulated"
+          ]
+        },
+        "regulatoryCompliance": { "type": "array", "items": { "type": "string" }, "description": "Identified regulatory categories or specific compliance notes (e.g., MiFID II, Dodd-Frank, PRIIPs).", "minItems": 1 }
+      }
+    }
+  }
+}
