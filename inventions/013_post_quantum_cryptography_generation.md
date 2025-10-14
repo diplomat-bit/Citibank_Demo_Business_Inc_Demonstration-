@@ -38,10 +38,10 @@ The system architecture is modular, distributed, and designed for inherent scala
 ```mermaid
 graph TD
     A[User/System Interface USI Module] --> B{Backend Orchestration Service BOS Module}
-    B -- "Formalized Input Spec (d)" --> C[AI Cryptographic Inference Module AIM]
+    B -- "Formalized Input Spec d" --> C[AI Cryptographic Inference Module AIM]
     C -- "Knowledge Graph Queries" --> D[Dynamic Cryptographic Knowledge Base DCKB]
-    D -- "PQC Data (S, P, Comp, Complex)" --> C
-    C -- "Generated PQC Config (c', I)" --> B
+    D -- "PQC Data S P Comp Complex" --> C
+    C -- "Generated PQC Config c' I" --> B
     B --> E[Output Serialization & Validation OSV Module]
     E --> A
 ```
@@ -87,18 +87,18 @@ Based on the following comprehensive and highly granular specifications, your ta
 Data Modality Description:
   - Data Type: [Extracted, e.g., 'Financial Transaction Record', 'IoT Sensor Stream', 'Encrypted Archival Data']
   - Formal Schema Reference: [Formatted JSON Schema / XML Schema / DDL, or a summary thereof]
-  - Sensitivity Classification: [e.g., 'Highly Confidential (Protected Health Information - PHI)', 'Secret', 'Public']
-  - Volume and Velocity: [e.g., 'Low Volume, Static Set', 'High Volume, Real-time Stream of 100k messages/sec']
+  - Sensitivity Classification: [e.g., 'Highly Confidential Protected Health Information PHI', 'Secret', 'Public']
+  - Volume and Velocity: [e.g., 'Low Volume Static Set', 'High Volume Real-time Stream of 100k messages/sec']
 
 Operational Environment Parameters:
   - Computational Resources: [e.g., 'Resource-constrained IoT device with ARM Cortex-M0 and 64KB RAM', 'High-performance cloud server with Intel Xeon E5 and hardware crypto accelerators', 'Embedded system with limited power budget']
-  - Network Constraints: [e.g., 'High Latency (200ms RTT), Low Bandwidth (100 kbps)', 'Gigabit Ethernet, Low Latency']
-  - Storage Characteristics: [e.g., 'Ephemeral RAM', 'Persistent Disk with full disk encryption', 'Dedicated FIPS 140-3 Level 3 Hardware Security Module (HSM)', 'Trusted Platform Module (TPM)']
-  - Adversary Model: [e.g., 'Passive eavesdropper on public networks', 'Active attacker with significant computational resources (including quantum computer access)', 'Insider threat with privileged access', 'Side-channel adversary']
-  - Data Lifespan and Key Validity Period: [e.g., 'Short-term (days for session keys)', 'Medium-term (5 years for data archival)', 'Long-term (50+ years for digital records)']
+  - Network Constraints: [e.g., 'High Latency 200ms RTT, Low Bandwidth 100 kbps', 'Gigabit Ethernet Low Latency']
+  - Storage Characteristics: [e.g., 'Ephemeral RAM', 'Persistent Disk with full disk encryption', 'Dedicated FIPS 140-3 Level 3 Hardware Security Module HSM', 'Trusted Platform Module TPM']
+  - Adversary Model: [e.g., 'Passive eavesdropper on public networks', 'Active attacker with significant computational resources including quantum computer access', 'Insider threat with privileged access', 'Side-channel adversary']
+  - Data Lifespan and Key Validity Period: [e.g., 'Short-term days for session keys', 'Medium-term 5 years for data archival', 'Long-term 50+ years for digital records']
 
 Security Desiderata:
-  - Target Quantum Security Level: [e.g., 'NIST PQC Level 5 (equivalent to 256 bits classical)', 'Minimum 192 bits classical equivalent security']
+  - Target Quantum Security Level: [e.g., 'NIST PQC Level 5 equivalent to 256 bits classical', 'Minimum 192 bits classical equivalent security']
   - Required Cryptographic Primitives: [e.g., 'Key Encapsulation Mechanism KEM for key establishment', 'Digital Signature Scheme DSS for authentication and integrity', 'Hybrid Public Key Encryption HPKE components']
   - Performance Optimization Priority: [e.g., 'Strictly Minimize Encryption Latency', 'Optimize for Smallest Ciphertext Size', 'Balance Key Generation Time and Key Size', 'Prioritize Verification Speed over Signing Speed']
   - Regulatory and Compliance Adherence: [e.g., 'HIPAA Security Rule', 'GDPR Article 32', 'FIPS 140-3 Level 2 Certification', 'ISO 27001']
@@ -112,8 +112,8 @@ Your response MUST be presented as a well-formed JSON object, adhering strictly 
     - `DSS`: (String, optional) Official name of the chosen PQC DSS scheme (e.g., 'Dilithium3', 'Dilithium5', 'SPHINCS+s-shake-256f').
     - `AEAD`: (String, optional) Official name of chosen Authenticated Encryption with Associated Data scheme (if hybrid approach).
   - `schemeFamily`: (Object) Specifies the underlying mathematical families for each recommended primitive.
-    - `KEM`: (String, optional) e.g., 'Lattice-based (Module-LWE/MLWE)'.
-    - `DSS`: (String, optional) e.g., 'Lattice-based (Module-LWE/MLWE)', 'Hash-based'.
+    - `KEM`: (String, optional) e.g., 'Lattice-based Module-LWE/MLWE'.
+    - `DSS`: (String, optional) e.g., 'Lattice-based Module-LWE/MLWE', 'Hash-based'.
   - `parameters`: (Object) A detailed, scheme-specific set of parameters for each recommended primitive.
     - `KEM`: (Object, optional) Includes `securityLevelEquivalentBits`, `public_key_bytes`, `private_key_bytes`, `ciphertext_bytes`, `shared_secret_bytes`, `nist_level`, polynomial degree, modulus `q`, etc.
     - `DSS`: (Object, optional) Includes `securityLevelEquivalentBits`, `public_key_bytes`, `private_key_bytes`, `signature_bytes`, `nist_level`, etc.
@@ -158,6 +158,40 @@ The structured output from the AIM, typically a comprehensive JSON object, is re
 *   **Validation:** The OSV Module performs a final, stringent validation of the AI's response for structural correctness, completeness, semantic consistency, and adherence to predefined output schemas. Any inconsistencies or missing elements trigger an internal feedback loop or generate warning messages.
 *   **Serialization:** The validated configuration is serialized into a standard, machine-readable format (e.g., JSON, YAML, Protocol Buffers) to facilitate seamless programmatic consumption by other applications, automation tools, or infrastructure-as-code pipelines.
 *   **User Interface Display:** The USI Module then presents the AI-generated PQC configuration to the user in a clear, unambiguous, and easily digestible human-readable format. This presentation includes the recommended scheme(s), their precise parameters, the mock public key(s), the detailed private key handling instructions, the comprehensive rationale, estimated costs, and compliance adherence. Critical warnings regarding the non-production nature of the mock keys are prominently displayed.
+
+```mermaid
+graph TD
+    subgraph "2. Operational Flow and Algorithmic Method"
+        A[Input Spec Reception USI] --> B{Input Pre-processing Validation BOS}
+        B -- "Validated Spec" --> C[Prompt Engineering Contextualization BOS]
+        C -- "Contextualized Prompt" --> subgraph "AI Cryptographic Inference Module AIM"
+            AIM_A[Semantic Understanding NLU] --> AIM_B[Knowledge Graph Traversal KGT-R]
+            AIM_B -- "Relevant KB Data" --> AIM_C[Multi-objective Optimization MOO-DM]
+            AIM_C -- "Optimized Choices" --> AIM_D[Scheme Selection & Param Instantiation]
+            AIM_D -- "Scheme Params" --> AIM_E[Mock Public Key Generation]
+            AIM_D -- "Scheme Params Env Threat" --> AIM_F[Private Key Handling Instruction Formulation]
+            AIM_E -- "Mock PK" --> AIM_G[Rationale Generation]
+            AIM_F -- "Instructions" --> AIM_G
+            AIM_G -- "Full PQC Config" --> D[AIM Output]
+        end
+        D -- "PQC Config c' I" --> E{Output Serialization OSV}
+        E -- "Validated Output" --> F[Configuration Presentation USI]
+    end
+
+    subgraph "Knowledge Base Interaction"
+        AIM_B --> KB[Dynamic Cryptographic Knowledge Base DCKB]
+        KB --> AIM_B
+    end
+
+    style AIM_A fill:#f9f,stroke:#333,stroke-width:2px
+    style AIM_B fill:#bbf,stroke:#333,stroke-width:2px
+    style AIM_C fill:#ffb,stroke:#333,stroke-width:2px
+    style AIM_D fill:#bfb,stroke:#333,stroke-width:2px
+    style AIM_E fill:#fcc,stroke:#333,stroke-width:2px
+    style AIM_F fill:#cce,stroke:#333,stroke-width:2px
+    style AIM_G fill:#dfd,stroke:#333,stroke-width:2px
+```
+*Figure 2: Detailed Operational Flow of the AI-Driven PQC Generation System.*
 
 ### 3. Dynamic Cryptographic Knowledge Base DCKB
 
@@ -250,7 +284,16 @@ Consider a hypothetical scenario where a financial institution needs to secure s
 
 This comprehensive output provides an actionable, expertly vetted, and contextually precise cryptographic plan, leveraging the AI's deep PQC expertise without requiring the end-user to navigate the profound underlying cryptographic complexities.
 
-### 5. Architectural Considerations for Interoperability
+### 5. Security Posture Assessment and Threat Modeling Integration
+
+The system includes an advanced capability for integrating security posture assessment and detailed threat modeling into its inference process. This ensures that cryptographic recommendations are not merely technically sound but are also strategically aligned with an organization's overall risk profile and security policies.
+
+*   **Quantitative Threat Model Ingestion:** Beyond a qualitative description, the system can ingest structured threat intelligence data, including Common Vulnerability Scoring System CVSS scores for known vulnerabilities, MITRE ATT&CK framework mappings for adversary tactics and techniques, and organization-specific risk matrices.
+*   **Adversary Capability Matrix:** The AI maps the specified threat model (e.g., "state-sponsored actor with quantum capabilities") to a detailed adversary capability matrix. This matrix quantifies resources (computational, financial), expertise (classical cryptanalysis, quantum algorithms, side-channel attacks), and motivation.
+*   **Risk Score Calculation:** Based on the data sensitivity, data lifespan, and adversary capabilities, the system calculates an inherent risk score. This score guides the AI's prioritization of security strength (S(c,d)) in the utility function. For example, high sensitivity data with a state-sponsored quantum adversary will automatically elevate the requirement for NIST Level 5 or higher security, potentially tolerating greater performance overhead.
+*   **Compliance Gap Analysis:** The system performs a preliminary gap analysis between the specified compliance mandates and the current or proposed system architecture. The AI's recommendations aim to bridge these gaps through appropriate PQC selection and robust private key handling instructions.
+
+### 6. Architectural Considerations for Interoperability
 
 The system is meticulously designed for seamless integration within extant security infrastructure, development pipelines, and operational workflows.
 
@@ -270,10 +313,10 @@ graph TD
 
     subgraph "AI-PQC Generation System Components"
         B[USI/API Gateway] --> C{Backend Orchestration Service BOS}
-        C -- "Prompt: Formalized Input (d)" --> D[AI Cryptographic Inference Module AIM]
-        D -- "Query/Retrieve: KB Embeddings" --> E[Dynamic Cryptographic Knowledge Base DCKB]
-        E -- "Update: Research, Benchmarks, Attacks" --> D
-        D -- "Output: PQC Configuration (c', I)" --> C
+        C -- "Prompt Formalized Input d" --> D[AI Cryptographic Inference Module AIM]
+        D -- "Query/Retrieve KB Embeddings" --> E[Dynamic Cryptographic Knowledge Base DCKB]
+        E -- "Update Research Benchmarks Attacks" --> D
+        D -- "Output PQC Configuration c' I" --> C
         C -- "Validate & Serialize" --> F[Output Serialization & Validation OSV]
         F --> G[API Response / GUI Display]
     end
@@ -281,9 +324,9 @@ graph TD
     G -- "Return Config" --> X
     G -- "Return Config" --> Y
 ```
-*Figure 2: System Integration and Interaction Flow for the AI-Driven PQC Generation System.*
+*Figure 3: System Integration and Interaction Flow for the AI-Driven PQC Generation System.*
 
-### 6. Feedback and Continuous Improvement Loop
+### 7. Feedback and Continuous Improvement Loop
 
 The robustness and adaptability of the AI-PQC Generation System are significantly enhanced by an integrated feedback and continuous improvement loop. This mechanism ensures that the system's intelligence evolves dynamically with real-world performance data, emergent cryptanalytic findings, and shifts in security landscapes.
 
@@ -299,10 +342,10 @@ The robustness and adaptability of the AI-PQC Generation System are significantl
 
 ```mermaid
 graph TD
-    A[Deployed PQC Systems] --> B(Telemetry Data: Performance, Failures, Resource Use)
-    C[External Threat Intelligence Feeds] --> D(Cryptanalytic Findings, New Algorithms, Vulnerabilities)
-    E[Compliance & Audit Reports] --> F(Adherence Gaps, Best Practice Refinements)
-    G[Human Expert Feedback] --> H(Annotations, Utility Function Adjustments)
+    A[Deployed PQC Systems] --> B[Telemetry Data Performance Failures Resource Use]
+    C[External Threat Intelligence Feeds] --> D[Cryptanalytic Findings New Algorithms Vulnerabilities]
+    E[Compliance & Audit Reports] --> F[Adherence Gaps Best Practice Refinements]
+    G[Human Expert Feedback] --> H[Annotations Utility Function Adjustments]
 
     B --> J[DCKB Update Mechanism]
     D --> J
@@ -312,11 +355,22 @@ graph TD
     J --> K[Dynamic Cryptographic Knowledge Base DCKB]
     K --> L[AI Cryptographic Inference Module AIM]
     L -- "Refined PQC Configurations" --> A
-    L -- "Re-training & Fine-tuning" --> L
+    L -- "Re-training Fine-tuning" --> L
 ```
-*Figure 3: Feedback and Continuous Improvement Loop of the AI-PQC Generation System.*
+*Figure 4: Feedback and Continuous Improvement Loop of the AI-PQC Generation System.*
 
-### 7. Advanced PQC Scheme Capabilities and Future Directions
+### 8. System Scalability and Performance Optimization
+
+The AI-PQC Generation System is engineered for high scalability and robust performance, crucial for supporting diverse deployment scenarios and rapidly evolving cryptographic landscapes.
+
+*   **Distributed Microservices Architecture:** The system components (USI, BOS, AIM, OSV, DCKB) are implemented as independent microservices, enabling horizontal scaling of individual components based on demand. This allows for dedicated resource allocation and fault isolation.
+*   **Load Balancing and API Gateways:** Requests are managed through load balancers and API gateways, distributing traffic efficiently across multiple instances of the BOS and AIM, ensuring high availability and responsiveness.
+*   **Asynchronous Processing:** Long-running inference tasks by the AIM are handled asynchronously using message queues (e.g., Kafka, RabbitMQ). This prevents blocking of the BOS and allows for efficient processing of concurrent requests.
+*   **Optimized DCKB Storage and Retrieval:** The DCKB leverages advanced graph databases (e.g., Neo4j, JanusGraph) or highly optimized NoSQL stores, coupled with caching layers (e.g., Redis), to ensure low-latency data retrieval for the AIM. Knowledge graph embeddings are pre-computed and indexed for rapid lookup.
+*   **Hardware Acceleration for AIM:** The AI Cryptographic Inference Module AIM can be deployed on specialized hardware (e.g., GPUs, TPUs) to accelerate deep learning inference, particularly for large-scale generative models, significantly reducing response times for complex cryptographic queries.
+*   **Stateless Component Design:** Core processing components are designed to be largely stateless, facilitating easier scaling, recovery from failures, and simplified deployment across cloud environments.
+
+### 9. Advanced PQC Scheme Capabilities and Future Directions
 
 The invention's architecture is designed to accommodate and intelligently recommend advanced cryptographic paradigms and emerging technologies, ensuring long-term relevance and adaptability.
 
@@ -327,11 +381,11 @@ The invention's architecture is designed to accommodate and intelligently recomm
 *   **Homomorphic Encryption HE Scheme Selection:** For advanced data processing requirements (e.g., computation on encrypted cloud data), the AI can recommend and configure PQC-compatible homomorphic encryption schemes (e.g., based on lattice problems), carefully balancing performance, security, and functional requirements.
 *   **Lightweight PQC for Constrained Devices:** Tailored recommendations for highly resource-constrained devices (e.g., IoT edge nodes, embedded systems) by prioritizing lightweight PQC schemes or their specific parameter sets designed for minimal memory, CPU, and power consumption.
 
-### 8. Dynamic Cryptographic Knowledge Base DCKB Ontology
+### 10. Dynamic Cryptographic Knowledge Base DCKB Ontology
 
 The DCKB is more than a simple database; it is a meticulously structured knowledge graph, modeled using an ontology that captures the complex relationships and properties within the cryptographic domain. This ontological structure is crucial for the AIM's nuanced reasoning capabilities.
 
-**Conceptual Schema of DCKB (Simplified):**
+**Conceptual Schema of DCKB Simplified:**
 ```
 Class: CryptographicScheme
   - Properties:
@@ -402,6 +456,74 @@ Relationships (implicit or explicit in graph structure):
   - `ComplianceRegulation` APPLIES_TO `CryptographicScheme` (many-to-many, indirectly via properties)
   - `ComplianceRegulation` SPECIFIES `KeyManagementGuideline`
 ```
+```mermaid
+classDiagram
+    class CryptographicScheme {
+        +string scheme_id
+        +string scheme_name
+        +enum scheme_family
+        +enum scheme_type
+        +string underlying_hard_problem
+        +enum nist_pqc_status
+        +string formal_security_proof_model
+        +int quantum_attack_resistance_level
+        +int classical_attack_resistance_level
+        +enum implementation_maturity_level
+        +string license_type
+    }
+
+    class SchemeParameterSet {
+        +string param_set_id
+        +int security_level_equivalent_bits
+        +int public_key_size_bytes
+        +int private_key_size_bytes
+        +int ciphertext_size_bytes
+        +int signature_size_bytes
+        +int shared_secret_size_bytes
+        +int modulus_q
+        +int polynomial_degree_n
+        +string matrix_dimensions
+        +JSON object other_specific_parameters
+    }
+
+    class PerformanceBenchmark {
+        +string benchmark_id
+        +string hardware_platform
+        +enum operation_type
+        +int avg_cpu_cycles
+        +float avg_memory_kb
+        +float avg_latency_ms
+        +float power_consumption_mw
+        +date date_of_benchmark
+        +string source_reference
+    }
+
+    class CryptanalyticAttack {
+        +string attack_id
+        +string attack_name
+        +enum attack_type
+        +string complexity_estimate
+        +list<string> mitigations
+        +date date_discovered
+        +string source_reference
+    }
+
+    class ComplianceRegulation {
+        +string regulation_id
+        +string regulation_name
+        +JSON object applicability_criteria
+        +list<string> cryptographic_requirements
+        +JSON object key_management_guidelines
+    }
+
+    CryptographicScheme "1" -- "0..*" SchemeParameterSet : HAS
+    SchemeParameterSet "1" -- "0..*" PerformanceBenchmark : HAS
+    CryptanalyticAttack "0..*" -- "0..*" CryptographicScheme : TARGETS
+    ComplianceRegulation "0..*" -- "0..*" CryptographicScheme : APPLIES_TO
+    ComplianceRegulation "1" -- "0..*" KeyManagementGuideline : SPECIFIES
+    KeyManagementGuideline : String (represented implicitly within ComplianceRegulation)
+```
+*Figure 5: Conceptual DCKB Ontology Class Diagram.*
 
 This structured knowledge representation, continuously updated and semantically linked, forms the backbone of the AIM's inferential capabilities, enabling it to perform sophisticated reasoning over complex cryptographic trade-offs.
 
