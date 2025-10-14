@@ -19,16 +19,29 @@ The architectural framework of the invention is predicated on a modular, scalabl
 
 ```mermaid
 graph TD
-    A[Input Ingestion Module] --> B{AI Semantic Processing Core};
-    B --> C[Knowledge Graph Generation Module];
-    C --> D[Graph Data Persistence Layer];
-    C --> E[3D Volumetric Rendering Engine];
-    E --> F[Interactive User Interface / Display];
-    F --> G{User Interaction Subsystem};
-    G --> E;
-    D -- Cached Graph Data --> E;
-    A --> A1[Speech-to-Text / Diarization];
-    A1 --> B;
+    subgraph Data Ingestion
+        A[Input Ingestion Module] --> A1[Speech-to-Text Diarization];
+        A1 --> B_PREP[Preprocessed Transcripts];
+        A --> B_PREP;
+        A_METADATA[Metadata Enrichment] --> B_PREP;
+    end
+
+    subgraph AI Processing Core
+        B_PREP --> B[AI Semantic Processing Core];
+        B --> C[Knowledge Graph Generation Module];
+    end
+
+    subgraph Data Management
+        C --> D[Graph Data Persistence Layer];
+        D -- Cached Graph Retrieval --> E[3D Volumetric Rendering Engine];
+    end
+
+    subgraph Visualization and Interaction
+        C --> E;
+        E --> F[Interactive User Interface Display];
+        F --> G[User Interaction Subsystem];
+        G --> E;
+    end
 ```
 
 **Description of Architectural Components:**
@@ -41,19 +54,63 @@ graph TD
 *   **F. Interactive User Interface / Display:** Presents the 3D visualization and allows user engagement.
 *   **G. User Interaction Subsystem:** Interprets user inputs and translates them into rendering or data queries.
 *   **A1. Speech-to-Text / Diarization:** Specialized sub-module for converting audio inputs into speaker-attributed transcripts.
+*   **A_METADATA. Metadata Enrichment:** Gathers or infers contextual information about the discourse.
+*   **B_PREP. Preprocessed Transcripts:** Intermediate storage or stream for cleaned and contextualized textual data.
 
 ### 2. Input Ingestion Module
 
 This module is designed for omni-modal data acquisition, ensuring compatibility with a vast array of discursive artifacts.
 
+```mermaid
+graph TD
+    subgraph Input Sources
+        S1[Real-time Audio Video Stream] --> FAE[Acoustic Feature Extraction];
+        S2[Pre-recorded Media File] --> FAE;
+        S3[Textual Transcript Upload] --> DIAR[Pre-processing Diarization];
+        S1_API[Conferencing Platform API] --> S1;
+    end
+
+    subgraph Audio Processing Pipeline
+        FAE --> VAD[Voice Activity Detection];
+        VAD --> ASR[Automatic Speech Recognition];
+        ASR --> DIAR[Speaker Diarization];
+        DIAR --> TP[Temporal Parsing Speaker Attribution];
+    end
+
+    subgraph Output and Metadata
+        TP --> EKG[Enriched Knowledge Graph Input];
+        S3 --> TP;
+        METADATA[Metadata Enrichment Module] --> EKG;
+        METADATA -- Contextual Data --> ASR;
+        METADATA -- Meeting Details --> EKG;
+    end
+
+    EKG --> AI_CORE_INPUT[To AI Semantic Processing Core];
+
+    style S1 fill:#f9f,stroke:#333,stroke-width:2px
+    style S2 fill:#f9f,stroke:#333,stroke-width:2px
+    style S3 fill:#f9f,stroke:#333,stroke-width:2px
+    style S1_API fill:#f9f,stroke:#333,stroke-width:2px
+
+    style FAE fill:#cfc,stroke:#333,stroke-width:2px
+    style VAD fill:#cfc,stroke:#333,stroke-width:2px
+    style ASR fill:#cfc,stroke:#333,stroke-width:2px
+    style DIAR fill:#cfc,stroke:#333,stroke-width:2px
+    style TP fill:#cfc,stroke:#333,stroke-width:2px
+
+    style METADATA fill:#bbf,stroke:#333,stroke-width:2px
+    style EKG fill:#ccf,stroke:#333,stroke-width:2px
+    style AI_CORE_INPUT fill:#ff9,stroke:#333,stroke-width:2px
+```
+
 *   **2.1. Real-time Audio/Video Stream Processing:**
     *   Integration with conferencing platforms, such as Zoom, Microsoft Teams, Google Meet, via API hooks or virtual audio drivers.
-    *   Utilizes a high-fidelity **Acoustic Feature Extraction Subsystem**, such as MFCC, spectrogram analysis, feeding into a robust **Automatic Speech Recognition (ASR) Engine**.
+    *   Utilizes a high-fidelity **Acoustic Feature Extraction Subsystem**, such as MFCC, spectrogram analysis, feeding into a robust **Automatic Speech Recognition ASR Engine**.
     *   Employs advanced **Speaker Diarization Algorithms**, for instance, clustering based on speaker embeddings like x-vectors or d-vectors, or unsupervised Bayesian Hidden Markov Model approaches, to accurately attribute utterances to specific speakers, even in challenging multi-speaker environments.
-    *   **Voice Activity Detection (VAD)** ensures only relevant speech segments are processed, optimizing resource utilization.
+    *   **Voice Activity Detection VAD** ensures only relevant speech segments are processed, optimizing resource utilization.
     *   Outputs a stream of `{speaker_id, timestamp_start, timestamp_end, utterance_text}` tuples.
 *   **2.2. Pre-recorded Media File Processing:**
-    *   Accepts standard audio (MP3, WAV, FLAC) and video (MP4, AVI, WebM) formats.
+    *   Accepts standard audio MP3, WAV, FLAC and video MP4, AVI, WebM formats.
     *   Performs batch processing through the same ASR and Diarization pipelines.
 *   **2.3. Textual Transcript Ingestion:**
     *   Directly accepts pre-existing textual transcripts, ensuring the format includes speaker identification tags and, ideally, timestamps for enhanced temporal context.
@@ -65,10 +122,60 @@ This module is designed for omni-modal data acquisition, ensuring compatibility 
 
 The conceptual keystone of the invention, this module leverages state-of-the-art generative artificial intelligence to transform raw linguistic data into a semantically rich, structured representation.
 
-*   **3.1. Advanced Generative AI Model (Conceptual Architecture: Contextualized Semantic Tensor-Flow Network - CSTFN):**
+```mermaid
+graph TD
+    subgraph Input and Context
+        AI_INPUT[Preprocessed Transcripts] --> DPS[Dynamic Prompt Engineering Subsystem];
+        METADATA_AI[Contextual Metadata] --> DPS;
+        PREV_KG[Previous Graph Fragments Optional] --> DPS;
+        PREV_KG --> CSTFN_Model[CSTFN Model Advanced Generative AI];
+    end
+
+    subgraph Core AI Model CSTFN
+        DPS --> CSTFN_Model;
+        CSTFN_Model -- Deep Semantic Embeddings --> KGES[Knowledge Graph Extraction Subsystem];
+        CSTFN_Model -- Attention Scores --> KGES;
+    end
+
+    subgraph Knowledge Graph Extraction Pipeline
+        KGES --> ERD[Entity Recognition Disambiguation];
+        ERD --> COREF[Coreference Resolution];
+        COREF --> RE[Relationship Extraction];
+        RE --> EE[Event Extraction];
+        EE --> SA_TA[Sentiment Tone Analysis];
+        SA_TA --> HSTM[Hierarchical Structuring Topic Modeling];
+        HSTM --> TRI[Temporal Relationship Inference];
+    end
+
+    subgraph Output
+        TRI --> KG_OUTPUT[Structured Knowledge Graph JSON];
+        KG_OUTPUT --> KGG_MODULE[To Knowledge Graph Generation Module];
+    end
+
+    style AI_INPUT fill:#f9f,stroke:#333,stroke-width:2px
+    style METADATA_AI fill:#cfc,stroke:#333,stroke-width:2px
+    style PREV_KG fill:#bbf,stroke:#333,stroke-width:2px
+    style DPS fill:#ccf,stroke:#333,stroke-width:2px
+
+    style CSTFN_Model fill:#ffc,stroke:#333,stroke-width:2px
+    style KGES fill:#ffc,stroke:#333,stroke-width:2px
+
+    style ERD fill:#cff,stroke:#333,stroke-width:2px
+    style COREF fill:#cff,stroke:#333,stroke-width:2px
+    style RE fill:#cff,stroke:#333,stroke-width:2px
+    style EE fill:#cff,stroke:#333,stroke-width:2px
+    style SA_TA fill:#cff,stroke:#333,stroke-width:2px
+    style HSTM fill:#cff,stroke:#333,stroke-width:2px
+    style TRI fill:#cff,stroke:#333,stroke-width:2px
+
+    style KG_OUTPUT fill:#fcf,stroke:#333,stroke-width:2px
+    style KGG_MODULE fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+*   **3.1. Advanced Generative AI Model Conceptual Architecture: Contextualized Semantic Tensor-Flow Network CSTFN:**
     *   Unlike conventional LLMs, the CSTFN is a highly specialized, multi-headed transformer architecture meticulously trained on vast corpora of meeting transcripts, academic discourse, and decision-making scenarios. Its core innovation lies in its ability to generate not just coherent text, but structured knowledge graphs directly.
     *   **Attention Mechanisms:** Employs advanced self-attention, for example, Perceiver IO, Longformer variants, to maintain long-range dependencies across extended meeting transcripts, overcoming context window limitations of traditional transformers.
-    *   **Multi-task Learning:** Simultaneously trained on tasks such as Named Entity Recognition (NER), Relationship Extraction (RE), Event Extraction, Coreference Resolution, Sentiment Analysis, and Summarization to create a holistic semantic understanding.
+    *   **Multi-task Learning:** Simultaneously trained on tasks such as Named Entity Recognition NER, Relationship Extraction RE, Event Extraction, Coreference Resolution, Sentiment Analysis, and Summarization to create a holistic semantic understanding.
 *   **3.2. Dynamic Prompt Engineering Subsystem:**
     *   Generates highly specific, context-aware prompts for the CSTFN, adapting based on input metadata, user preferences, and iterative feedback.
     *   **Structured Prompt Generation:**
@@ -79,7 +186,7 @@ The conceptual keystone of the invention, this module leverages state-of-the-art
           "output_schema_directive": { /* Detailed JSON Schema as described in 3.4 */ },
           "constraints": [
             "Maintain strict referential integrity for entities.",
-            "Prioritize actionable intelligence (decisions, actions).",
+            "Prioritize actionable intelligence decisions actions.",
             "Disambiguate polysemous terms based on conversational context.",
             "Assign confidence scores to all extractions."
           ],
@@ -89,18 +196,18 @@ The conceptual keystone of the invention, this module leverages state-of-the-art
         ```
     *   **Few-shot Learning Integration:** Augments prompt with examples of desired graph structures derived from similar meeting types, enabling rapid adaptation to specific domain requirements without full model retraining.
 *   **3.3. Knowledge Graph Extraction Subsystem:**
-    *   **3.3.1. Entity Recognition and Disambiguation (ERD):**
+    *   **3.3.1. Entity Recognition and Disambiguation ERD:**
         *   Identifies diverse entity types: `Concept`, `Speaker`, `Organization`, `Product`, `Project`, `Decision`, `ActionItem`, `Question`, `Issue`, `Metric`, `DateTime`.
         *   Leverages contextual embeddings and external knowledge bases for highly accurate entity disambiguation, resolving ambiguities in real-time.
-    *   **3.3.2. Relationship Extraction (RE):**
+    *   **3.3.2. Relationship Extraction RE:**
         *   Identifies a rich taxonomy of relationship types: `IS_A`, `PART_OF`, `CAUSES`, `DISCUSSES`, `RELATES_TO`, `RESOLVES`, `LEADS_TO`, `REFERENCES`, `ASSIGNED_TO`, `DUE_BY`, `SUPPORTS`, `CONTRADICTS`, `AGREES_WITH`, `PROPOSES`.
-        *   Employs advanced techniques like Graph Neural Networks (GNNs) over dependency parses and transformer-based relation classifiers.
+        *   Employs advanced techniques like Graph Neural Networks GNNs over dependency parses and transformer-based relation classifiers.
     *   **3.3.3. Coreference Resolution:**
-        *   Resolves anaphoric references (pronouns, noun phrases) to their originating entities, ensuring a cohesive and accurate graph structure.
+        *   Resolves anaphoric references pronouns, noun phrases to their originating entities, ensuring a cohesive and accurate graph structure.
     *   **3.3.4. Event Extraction:**
         *   Identifies specific events discussed or enacted within the meeting, linking them to participants, times, and outcomes.
     *   **3.3.5. Sentiment and Tone Analysis:**
-        *   Applies granular sentiment analysis (positive, negative, neutral) to utterances and concepts, providing an emotional dimension to the graph nodes. Tone analysis, for instance, assertive, questioning, collaborative, further enriches speaker contributions.
+        *   Applies granular sentiment analysis positive, negative, neutral to utterances and concepts, providing an emotional dimension to the graph nodes. Tone analysis, for instance, assertive, questioning, collaborative, further enriches speaker contributions.
     *   **3.3.6. Hierarchical Structuring and Topic Modeling:**
         *   Applies dynamic topic modeling, such as contextualized topic models, non-negative matrix factorization on contextual embeddings, to identify overarching themes and sub-themes.
         *   Automatically infers hierarchical relationships between concepts, grouping related ideas into emergent clusters, forming the basis for the multi-level mind map structure.
@@ -110,6 +217,31 @@ The conceptual keystone of the invention, this module leverages state-of-the-art
 ### 4. Knowledge Graph Data Structure
 
 The output from the AI Semantic Processing Core is a rigorously defined JSON schema for a directed, attributed multigraph.
+
+```mermaid
+graph LR
+    subgraph Knowledge Graph Schema
+        METADATA[Meeting Metadata]
+        NODE_TYPES[Node Types Concept Decision Action Speaker];
+        EDGE_TYPES[Edge Types LEADS_TO GENERATES PROPOSES];
+
+        NODE_ATTRIBUTES[Node Attributes Label Type SpeakerAttribution Timestamp Sentiment Confidence Summary Level OriginalUtteranceIDs];
+        EDGE_ATTRIBUTES[Edge Attributes Source Target Type SpeakerAttribution Timestamp Confidence SummarySnippet];
+
+        METADATA --> KG_ROOT[Root Graph Object];
+        NODE_TYPES --> KG_ROOT;
+        EDGE_TYPES --> KG_ROOT;
+
+        KG_ROOT --> NODES_ARRAY[Nodes Array];
+        KG_ROOT --> EDGES_ARRAY[Edges Array];
+
+        NODES_ARRAY --> N1[Node ID Label Type Attributes];
+        N1 --> NODE_ATTRIBUTES;
+
+        EDGES_ARRAY --> E1[Edge ID Source Target Type Attributes];
+        E1 --> EDGE_ATTRIBUTES;
+    end
+```
 
 ```json
 {
@@ -200,14 +332,74 @@ The output from the AI Semantic Processing Core is a rigorously defined JSON sch
 
 This module is responsible for the visually stunning and intuitively navigable three-dimensional representation of the knowledge graph.
 
+```mermaid
+graph TD
+    subgraph Data Input
+        KG_INPUT[Knowledge Graph Data JSON] --> SM_PR[Scene Management Primitives];
+        LAYOUT_CONFIG[Layout Algorithm Configuration] --> LA[3D Layout Algorithms];
+    end
+
+    subgraph 3D Rendering Pipeline
+        SM_PR --> VIS_ENC[Visual Encoding Module];
+        VIS_ENC --> GEOM_INST[Geometry Instancing LOD];
+        GEOM_INST --> RENDER_PIPELINE[WebGL Rendering Pipeline];
+        LA --> RENDER_PIPELINE;
+    end
+
+    subgraph Layout Engine
+        LA --> HFD_LAYOUT[Hierarchical Force-Directed Layout H-FDL];
+        HFD_LAYOUT --> COL_RES[Collision Detection Resolution];
+        COL_RES --> DYN_RELAYOUT[Dynamic Re-layout Stability];
+        DYN_RELAYOUT --> RENDER_PIPELINE;
+    end
+
+    subgraph User Interaction and Display
+        RENDER_PIPELINE --> UI_DISP[Interactive User Interface Display];
+        UI_DISP --> NAV_CONTROL[Navigation Controls];
+        NAV_CONTROL --> CAMERA_UPDATE[Camera Viewpoint Update];
+        CAMERA_UPDATE --> RENDER_PIPELINE;
+        UI_DISP --> INT_SUB[Interaction Subsystem];
+        INT_SUB --> NODE_EDGE_INT[Node Edge Interaction];
+        INT_SUB --> FILTER_SEARCH[Filtering Search];
+        INT_SUB --> ANNOT_COLLAB[Annotation Collaboration];
+        NODE_EDGE_INT --> RENDER_PIPELINE;
+        FILTER_SEARCH --> LA;
+        FILTER_SEARCH --> RENDER_PIPELINE;
+        ANNOT_COLLAB --> GRAPH_PERSIST[To Graph Data Persistence Layer];
+        ANNOT_COLLAB --> RENDER_PIPELINE;
+    end
+
+    style KG_INPUT fill:#f9f,stroke:#333,stroke-width:2px
+    style LAYOUT_CONFIG fill:#cfc,stroke:#333,stroke-width:2px
+
+    style SM_PR fill:#bbf,stroke:#333,stroke-width:2px
+    style VIS_ENC fill:#bbf,stroke:#333,stroke-width:2px
+    style GEOM_INST fill:#bbf,stroke:#333,stroke-width:2px
+    style RENDER_PIPELINE fill:#ccf,stroke:#333,stroke-width:2px
+
+    style LA fill:#ffc,stroke:#333,stroke-width:2px
+    style HFD_LAYOUT fill:#ffc,stroke:#333,stroke-width:2px
+    style COL_RES fill:#ffc,stroke:#333,stroke-width:2px
+    style DYN_RELAYOUT fill:#ffc,stroke:#333,stroke-width:2px
+
+    style UI_DISP fill:#cff,stroke:#333,stroke-width:2px
+    style NAV_CONTROL fill:#cff,stroke:#333,stroke-width:2px
+    style CAMERA_UPDATE fill:#cff,stroke:#333,stroke-width:2px
+    style INT_SUB fill:#fcf,stroke:#333,stroke-width:2px
+    style NODE_EDGE_INT fill:#fcf,stroke:#333,stroke-width:2px
+    style FILTER_SEARCH fill:#fcf,stroke:#333,stroke-width:2px
+    style ANNOT_COLLAB fill:#fcf,stroke:#333,stroke-width:2px
+    style GRAPH_PERSIST fill:#f9f,stroke:#333,stroke-width:2px
+```
+
 *   **5.1. Scene Management and Primitives:**
     *   Utilizes WebGL-accelerated libraries, such as Three.js, Babylon.js, or a custom rendering pipeline.
     *   **Nodes:** Represented by dynamic 3D geometric primitives, for example, spheres, cuboids, custom meshes.
-        *   **Visual Encoding:** Node properties (type, importance, sentiment, speaker, status) are visually encoded:
-            *   **Color:** Categorical (type), gradient (sentiment, confidence).
+        *   **Visual Encoding:** Node properties type, importance, sentiment, speaker, status are visually encoded:
+            *   **Color:** Categorical type, gradient sentiment, confidence.
             *   **Size:** Proportional to importance, for instance, discussion duration, number of outgoing edges.
             *   **Shape:** Distinct geometries for Concepts, Decisions, Action Items, Speakers.
-            *   **Text Labels:** Dynamically rendered 3D text, for example, SDF fonts, for legibility, with Level-of-Detail (LOD) scaling.
+            *   **Text Labels:** Dynamically rendered 3D text, for example, SDF fonts, for legibility, with Level-of-Detail LOD scaling.
             *   **Icons/Glyphs:** Overlayed icons to quickly convey specific attributes, for example, a checkmark for completed action.
     *   **Edges:** Represented by 3D lines, splines, or tubes with dynamic properties.
         *   **Visual Encoding:**
@@ -217,10 +409,10 @@ This module is responsible for the visually stunning and intuitively navigable t
     *   **Environment:** Configurable 3D background, ambient lighting, directional lighting, and shadows for depth perception.
 *   **5.2. Advanced 3D Layout Algorithms:**
     *   Beyond basic force-directed algorithms, the system employs a hybrid, multi-stage layout approach to optimize for cognitive load and information hierarchy.
-    *   **5.2.1. Hierarchical Force-Directed Layout (H-FDL):**
+    *   **5.2.1. Hierarchical Force-Directed Layout H-FDL:**
         *   Adapts algorithms such as Fruchterman-Reingold or Kamada-Kawai for 3D, incorporating gravitational forces that pull related nodes together and repulsive forces that push unrelated nodes apart, minimizing overlap.
         *   **Hierarchical Constraints:** Nodes belonging to the same identified sub-topic or speaker cluster are constrained to a proximity region, effectively creating "gravitational wells" for conceptual groups. This is achieved by introducing virtual parent nodes or modifying force calculation to include hierarchical affiliations.
-        *   **Temporal Axis Integration:** An optional layout constraint can align nodes along a virtual Z-axis (or X-axis) based on their `timestamp_context`, providing a temporal progression view alongside semantic clustering.
+        *   **Temporal Axis Integration:** An optional layout constraint can align nodes along a virtual Z-axis or X-axis based on their `timestamp_context`, providing a temporal progression view alongside semantic clustering.
     *   **5.2.2. Collision Detection and Resolution:**
         *   High-performance spatial partitioning structures, such as octrees, k-d trees, are used to detect potential node-node and node-label overlaps.
         *   Sophisticated repulsion forces or geometric adjustments are applied iteratively to prevent visual clutter, ensuring each node and its label are distinct and readable.
@@ -229,7 +421,7 @@ This module is responsible for the visually stunning and intuitively navigable t
         *   A "thermal equilibrium" state is sought to prevent excessive oscillation, ensuring a stable and predictable layout.
 *   **5.3. Interaction Subsystem:**
     *   **5.3.1. Intuitive 3D Navigation:**
-        *   **Camera Controls:** Pan (translation), Zoom (dolly/field of view adjustment), Orbit (rotation around a focal point) via mouse, touch gestures, or gamepad.
+        *   **Camera Controls:** Pan translation, Zoom dolly/field of view adjustment, Orbit rotation around a focal point via mouse, touch gestures, or gamepad.
         *   **Fly-through Mode:** Automated or user-directed navigation paths, potentially following thematic trajectories.
     *   **5.3.2. Node/Edge Interaction:**
         *   **Selection:** Clicking or hovering over a node/edge highlights it and triggers a contextual overlay or a side panel display with granular details, for example, full summary, source utterances, speaker details, historical changes.
@@ -240,7 +432,7 @@ This module is responsible for the visually stunning and intuitively navigable t
         *   Users can add personal notes, tags, or create new ad-hoc relationships within the 3D space, which can be shared with collaborators.
         *   Real-time multi-user synchronization of the 3D view and annotations.
 *   **5.4. Performance Optimization:**
-    *   **Level of Detail (LOD):** Simplifies mesh geometry and reduces label resolution for distant objects, improving rendering performance.
+    *   **Level of Detail LOD:** Simplifies mesh geometry and reduces label resolution for distant objects, improving rendering performance.
     *   **Frustum Culling and Occlusion Culling:** Only renders objects visible within the camera's view frustum or not hidden by other objects.
     *   **Instanced Rendering:** Efficiently renders multiple identical node geometries with varying transforms.
 
@@ -257,9 +449,113 @@ A robust persistence layer ensures the longevity, versioning, and collaborative 
 The system incorporates stringent measures to protect sensitive conversational data.
 
 *   **Data Encryption:** All data, both in transit and at rest, is encrypted using industry-standard protocols, such as TLS 1.3, AES-256.
-*   **Access Control:** Role-based access control (RBAC) ensures only authorized individuals can access specific meeting transcripts and their derived knowledge graphs.
+*   **Access Control:** Role-based access control RBAC ensures only authorized individuals can access specific meeting transcripts and their derived knowledge graphs.
 *   **Data Anonymization:** Options for anonymizing speaker identities or specific entities can be configured to comply with privacy regulations.
 *   **Compliance:** Designed with adherence to regulations such as GDPR, HIPAA, and CCPA in mind.
+
+### 8. Dynamic Adaptation and Learning System
+
+This advanced module enables the holographic meeting scribe to continuously improve its accuracy, contextual understanding, and user experience through iterative learning and feedback loops. The system dynamically adapts its AI models and visualization parameters based on various forms of data, including explicit user feedback and implicit interaction patterns.
+
+```mermaid
+graph TD
+    subgraph Learning Feedback Loop
+        KG_GEN[Knowledge Graph Generation Module] --> KG_OUTPUT[Generated Knowledge Graph];
+        UI_DISP[Interactive User Interface Display] --> USER_INTERACTION[User Interaction Patterns];
+        UI_DISP --> EXPLICIT_FEEDBACK[Explicit User Feedback Annotation Correction];
+        
+        KG_OUTPUT --> METRICS_ANALYSIS[KG Quality Metrics Analysis];
+        USER_INTERACTION --> INTERACTION_ANALYTICS[Interaction Analytics];
+
+        METRICS_ANALYSIS --> ADAPT_ENGINE[Dynamic Adaptation Engine];
+        INTERACTION_ANALYTICS --> ADAPT_ENGINE;
+        EXPLICIT_FEEDBACK --> ADAPT_ENGINE;
+
+        ADAPT_ENGINE --> AI_MODEL_UPDATE[AI Model Parameter Adjustment];
+        ADAPT_ENGINE --> LAYOUT_OPT[Layout Algorithm Optimization];
+        ADAPT_ENGINE --> VISUAL_PREFS[Visual Preference Learning];
+
+        AI_MODEL_UPDATE --> CSTFN[AI Semantic Processing Core CSTFN];
+        LAYOUT_OPT --> LAYOUT_ALGO[3D Layout Algorithms];
+        VISUAL_PREFS --> REND_ENG[3D Volumetric Rendering Engine];
+
+        CSTFN --> KG_GEN;
+        LAYOUT_ALGO --> REND_ENG;
+        REND_ENG --> UI_DISP;
+    end
+```
+
+*   **8.1. User Feedback Integration:**
+    *   **Explicit Feedback:** Users can directly correct extracted entities, refine relationship types, mark important decisions, or highlight inaccuracies within the 3D graph interface. This feedback is captured and used to fine-tune the AI Semantic Processing Core.
+    *   **Implicit Feedback:** System monitors user interaction patterns, such as frequently visited nodes, duration of interaction with specific sub-graphs, filtering preferences, and navigation paths. These implicit signals infer user interest and cognitive load.
+*   **8.2. KG Quality Metrics Analysis:**
+    *   Automated evaluation of generated knowledge graphs against predefined quality metrics, including entity recall/precision, relationship accuracy, graph density, and coherence scores.
+    *   Identifies areas where the AI model's performance can be improved.
+*   **8.3. Dynamic Adaptation Engine:**
+    *   A central orchestrator that processes both explicit and implicit feedback alongside quality metrics.
+    *   **AI Model Parameter Adjustment:** Uses reinforcement learning or active learning techniques to update weights, adjust confidence thresholds, or fine-tune specific sub-models within the CSTFN.
+    *   **Layout Algorithm Optimization:** Adjusts parameters of the 3D layout algorithms, such as repulsion strengths, gravitational forces, or hierarchical constraints, to better suit user preferences or specific meeting types, minimizing visual clutter and maximizing cognitive clarity.
+    *   **Visual Preference Learning:** Learns individual or team preferences for visual encoding, color schemes, node shapes, and animation styles, providing a highly personalized visualization experience.
+*   **8.4. Continual Learning Pipeline:**
+    *   The entire process forms a continuous, self-improving loop, allowing the system to adapt to new domains, speaker styles, and evolving communication patterns, ensuring long-term relevance and accuracy.
+
+### 9. Advanced Analytics and Interpretability Features
+
+Beyond mere visualization, the system offers sophisticated analytical capabilities and mechanisms for understanding the underlying AI decisions, transforming the raw graph into actionable intelligence.
+
+```mermaid
+graph TD
+    subgraph Advanced Analytics
+        KG_DATA[Knowledge Graph Data] --> DASHBOARD[Customizable Analytics Dashboard];
+        KG_DATA --> METRIC_COMPUTE[Metric Computation Engine];
+        KG_DATA --> TRACE_DEC[Decision Traceability Module];
+        KG_DATA --> TREND_ANALYSIS[Trend Analysis Module];
+        KG_DATA --> AI_XAI[Explainable AI XAI Module];
+    end
+
+    subgraph Analytics Outputs
+        METRIC_COMPUTE --> KPIS[Key Performance Indicators Meeting Velocity Engagement];
+        TRACE_DEC --> DEC_EVOL[Decision Evolution Visualizer];
+        TREND_ANALYSIS --> TOPIC_SHIFT[Topic Shift Detection Sentiment Trends];
+        AI_XAI --> EXTRACTION_JUST[Extraction Justification Attribution];
+        AI_XAI --> BIAS_DETECTION[Bias Detection Transparency];
+    end
+
+    DASHBOARD --> ANALYTICS_UI[Analytics User Interface];
+    KPIS --> ANALYTICS_UI;
+    DEC_EVOL --> ANALYTICS_UI;
+    TOPIC_SHIFT --> ANALYTICS_UI;
+    EXTRACTION_JUST --> ANALYTICS_UI;
+    BIAS_DETECTION --> ANALYTICS_UI;
+
+    style KG_DATA fill:#f9f,stroke:#333,stroke-width:2px
+    style DASHBOARD fill:#cfc,stroke:#333,stroke-width:2px
+    style METRIC_COMPUTE fill:#bbf,stroke:#333,stroke-width:2px
+    style TRACE_DEC fill:#ccf,stroke:#333,stroke-width:2px
+    style TREND_ANALYSIS fill:#ffc,stroke:#333,stroke-width:2px
+    style AI_XAI fill:#cff,stroke:#333,stroke-width:2px
+
+    style KPIS fill:#ff9,stroke:#333,stroke-width:2px
+    style DEC_EVOL fill:#fcf,stroke:#333,stroke-width:2px
+    style TOPIC_SHIFT fill:#f9f,stroke:#333,stroke-width:2px
+    style EXTRACTION_JUST fill:#cfc,stroke:#333,stroke-width:2px
+    style BIAS_DETECTION fill:#bbf,stroke:#333,stroke-width:2px
+    style ANALYTICS_UI fill:#ff6,stroke:#333,stroke-width:2px
+```
+
+*   **9.1. Customizable Analytics Dashboard:**
+    *   Provides a configurable dashboard to view high-level metrics derived from the knowledge graph.
+    *   Metrics include meeting velocity, speaker engagement, sentiment distribution over time, action item completion rates, and decision finality percentages.
+*   **9.2. Decision Traceability Module:**
+    *   Enables users to trace the entire evolution of a decision, from its initial proposal through discussion, amendments, and finalization, linking all relevant concepts, speakers, and temporal contexts.
+*   **9.3. Trend Analysis Module:**
+    *   Identifies recurring themes, sentiment shifts, or emerging topics across multiple meetings or over extended periods, providing strategic insights for organizations.
+*   **9.4. Explainable AI XAI Module:**
+    *   Offers transparency into the AI's decision-making process for knowledge graph construction.
+    *   **Extraction Justification and Attribution:** For any extracted entity or relationship, the XAI module can highlight the specific original utterances and their contextual embeddings that led to its identification, along with confidence scores.
+    *   **Bias Detection:** Continuously monitors for potential biases in entity extraction or sentiment analysis, for example, disproportionate attribution to certain speakers, and provides tools for human oversight and correction.
+*   **9.5. Semantic Similarity Search:**
+    *   Allows users to query the knowledge graph using natural language, identifying semantically similar concepts or discussions across current and historical meetings, even if different terminology was used.
 
 **Claims:**
 
@@ -282,14 +578,14 @@ The following enumerated claims define the intellectual scope and novel contribu
     g.  Displaying said interactive three-dimensional volumetric representation to a user via a graphical user interface, enabling real-time navigation, exploration, and granular inquiry.
 
 2.  The method of claim 1, wherein the input linguistic artifact further comprises an audio or video stream, and wherein step (a) additionally comprises:
-    a.i. Employing an Automatic Speech Recognition (ASR) engine to convert said audio or video stream into a textual transcript.
+    a.i. Employing an Automatic Speech Recognition ASR engine to convert said audio or video stream into a textual transcript.
     a.ii. Applying a Speaker Diarization algorithm to attribute specific utterances within said transcript to distinct speakers.
 
-3.  The method of claim 1, wherein the generative AI processing core is a Contextualized Semantic Tensor-Flow Network (CSTFN) specialized for multi-task learning in discourse analysis, utilizing advanced self-attention mechanisms to process long-range dependencies.
+3.  The method of claim 1, wherein the generative AI processing core is a Contextualized Semantic Tensor-Flow Network CSTFN specialized for multi-task learning in discourse analysis, utilizing advanced self-attention mechanisms to process long-range dependencies.
 
 4.  The method of claim 1, wherein the prompt generation for the generative AI core (step c) incorporates dynamic contextual metadata, user-defined preferences, and few-shot learning examples to optimize extraction accuracy and fidelity.
 
-5.  The method of claim 1, wherein the attributed knowledge graph data object (step d) includes confidence scores for each extracted entity and relationship, temporal context metadata (start/end timestamps), and explicit links to original utterance segments.
+5.  The method of claim 1, wherein the attributed knowledge graph data object (step d) includes confidence scores for each extracted entity and relationship, temporal context metadata start/end timestamps, and explicit links to original utterance segments.
 
 6.  The method of claim 1, wherein the hybrid, multi-stage layout algorithm (step f.iii) incorporates a 3D force-directed layout algorithm combined with hierarchical clustering heuristics and an optional temporal axis constraint to arrange nodes in `R^3` space.
 
@@ -315,6 +611,17 @@ The following enumerated claims define the intellectual scope and novel contribu
 
 12. The system of claim 10, wherein the 3D Volumetric Rendering Engine utilizes visual encoding strategies where node color signifies entity type, node size signifies importance, and edge thickness signifies relationship strength.
 
+13. The system of claim 10, further comprising a Dynamic Adaptation and Learning System configured to:
+    a. Capture explicit user feedback and implicit user interaction patterns from the Interactive User Interface and Display.
+    b. Analyze generated Knowledge Graph Quality Metrics.
+    c. Dynamically adjust parameters of the AI Semantic Processing Core, 3D Layout Algorithms, and Visual Preference settings based on said feedback, patterns, and metrics, thereby enabling continuous self-improvement and personalization.
+
+14. The system of claim 10, further comprising an Advanced Analytics and Interpretability Module configured to:
+    a. Provide a customizable analytics dashboard for Key Performance Indicators related to discourse.
+    b. Enable Decision Traceability, visualizing the evolution of decisions within the knowledge graph.
+    c. Perform Trend Analysis across multiple knowledge graphs over time.
+    d. Implement Explainable AI XAI features to justify entity and relationship extractions and detect potential biases.
+
 **Mathematical Justification:**
 
 The exposition of the present invention necessitates a rigorous mathematical framework to delineate its foundational principles, quantify its advancements over conventional methodologies, and establish the theoretical underpinnings of its unparalleled efficacy. We proceed by formally defining the discursive artifact, the traditional linear summary, and the novel knowledge graph representation, followed by a comprehensive analysis of their respective informational and topological properties.
@@ -330,9 +637,9 @@ u_i = (sigma_i, tau_i, lambda_i, epsilon_i, mu_i)
 Where:
 *   `sigma_i` in `Sigma`: The speaker identifier for utterance `i`, drawn from the finite set of participants `Sigma = {speaker_1, ..., speaker_m}`.
 *   `tau_i = [t_i_start, t_i_end]`: The precise temporal interval of utterance `i`, where `t_i_start` and `t_i_end` are timestamps, `t_i_start < t_i_end`, and `t_i_end <= t_(i+1)_start` for sequential non-overlapping utterances, or `t_i_start <= t_(i+1)_start` allowing for potential overlaps in multi-speaker scenarios.
-*   `lambda_i` in `L`: The verbatim linguistic content (text) of utterance `i`. This is the raw lexical string.
-*   `epsilon_i` in `E_u`: A high-dimensional contextual embedding vector representing the semantic and syntactic nuances of `lambda_i`. This vector, often derived from pre-trained transformer models (e.g., BERT, GPT, or our specialized CSTFN), captures the latent meaning of the utterance in a continuous vector space `R^D_e`.
-*   `mu_i` in `M_u`: Ancillary metadata associated with `u_i`, such as prosodic features, acoustic properties, sentiment scores (`s_i` in `[-1, 1]`), or interaction intent (`intent_i` in `{question, assertion, agreement, disagreement}`).
+*   `lambda_i` in `L`: The verbatim linguistic content text of utterance `i`. This is the raw lexical string.
+*   `epsilon_i` in `E_u`: A high-dimensional contextual embedding vector representing the semantic and syntactic nuances of `lambda_i`. This vector, often derived from pre-trained transformer models e.g., BERT, GPT, or our specialized CSTFN, captures the latent meaning of the utterance in a continuous vector space `R^D_e`.
+*   `mu_i` in `M_u`: Ancillary metadata associated with `u_i`, such as prosodic features, acoustic properties, sentiment scores `s_i` in `[-1, 1]`, or interaction intent `intent_i` in `{question, assertion, agreement, disagreement}`.
 
 The entire discursive artifact `C` can then be conceptually mapped into a **Contextualized Semantic Tensor** `S_C`. This tensor is a higher-order data structure that captures not only the individual utterance semantics but also their interdependencies across temporal, speaker, and topical dimensions.
 
@@ -357,10 +664,10 @@ A traditional linear summary `T` is derived from `C` by a function `f: C -> T`. 
 ```
 f: R^(n x D_e x D_s x D_t x D_m) -> R^k
 ```
-(where `k` is typically far smaller than `n * D_e`).
+where `k` is typically far smaller than `n * D_e`.
 
 The critical information loss manifests in several ways:
-1.  **Topological Fidelity:** The inherent, non-linear conceptual relationships (hierarchy, causality, contradiction) present in `C` are flattened into a sequential structure in `T`. This obliterates the topological graph-theoretic properties (connectivity, centrality, shortest paths) that define the interdependencies of ideas.
+1.  **Topological Fidelity:** The inherent, non-linear conceptual relationships hierarchy, causality, contradiction present in `C` are flattened into a sequential structure in `T`. This obliterates the topological graph-theoretic properties connectivity, centrality, shortest paths that define the interdependencies of ideas.
 2.  **Semantic Entropy:** Key semantic distinctions and nuanced relationships are often conflated or omitted due to the constraints of linear narrative and brevity. The entropy of `T` with respect to the core concepts of `C` is demonstrably higher than the entropy of a graph representation.
 3.  **Cognitive Load:** Parsing `T` requires sequential scanning and mental reconstruction of relationships, imposing a significant cognitive load on the user. Spatial memory, a powerful human cognitive asset for information retrieval, remains untapped.
 
@@ -373,7 +680,7 @@ G_AI: S_C -> Gamma(N, E)
 ```
 
 Where:
-*   `N` is a finite set of richly attributed nodes `N = {n_1, n_2, ..., n_p}`. Each node `n_k` is a formalized representation of an extracted entity (concept, decision, action item, speaker).
+*   `N` is a finite set of richly attributed nodes `N = {n_1, n_2, ..., n_p}`. Each node `n_k` is a formalized representation of an extracted entity concept, decision, action item, speaker.
     ```
     n_k = (concept_id, label, type, alpha_k)
     ```
@@ -398,7 +705,7 @@ The transformation `G_AI` involves complex sub-functions operating on `S_C`:
 2.  **Relational Inference:** `R_infer: S_C x N x N -> E`. This function, often implemented via graph neural networks or attention mechanisms within CSTFN, identifies direct and indirect relationships between extracted `n_k` based on their proximity and interaction within `S_C`.
 3.  **Hierarchical Induction:** `H_induce: N x E -> (N', E')`. This further refines `Gamma` by identifying sub-graphs or conceptual groupings that form a natural hierarchy, augmenting nodes with `level` attributes and introducing parent-child relationships.
 
-The `G_AI` process, leveraging the `S_C`, implicitly performs operations that preserve and explicitly encode more structural information than `f`. The dimensionality of `Gamma(N, E)` (considering `|N|`, `|E|`, and the attribute vectors `alpha_k`, `beta_j`) is orders of magnitude greater than `k` in `T`, thereby capturing a significantly richer representation of `C`.
+The `G_AI` process, leveraging the `S_C`, implicitly performs operations that preserve and explicitly encode more structural information than `f`. The dimensionality of `Gamma(N, E)` considering `|N|`, `|E|`, and the attribute vectors `alpha_k`, `beta_j` is orders of magnitude greater than `k` in `T`, thereby capturing a significantly richer representation of `C`.
 
 ### IV. The 3D Volumetric Rendering Function `R` and Spatial Embedding
 
@@ -410,9 +717,9 @@ R: Gamma -> {(P_k, O_k)}_{k=1}^p U {(P_j, C_j)}_{j=1}^q
 
 Where:
 *   `P_k` in `R^3`: The 3D spatial coordinates `(x_k, y_k, z_k)` for node `n_k`.
-*   `O_k`: The visual object attributes (geometry, material, texture, label) for `n_k`, derived from `alpha_k`.
-*   `P_j` in `R^3`: The 3D spatial coordinates defining the path (e.g., control points for a Bezier spline) for edge `e_j`.
-*   `C_j`: The visual object attributes (color, thickness, animation) for `e_j`, derived from `beta_j`.
+*   `O_k`: The visual object attributes geometry, material, texture, label for `n_k`, derived from `alpha_k`.
+*   `P_j` in `R^3`: The 3D spatial coordinates defining the path e.g., control points for a Bezier spline for edge `e_j`.
+*   `C_j`: The visual object attributes color, thickness, animation for `e_j`, derived from `beta_j`.
 
 The core challenge for `R` is to find an optimal embedding `P = {P_k}` such that the visual representation in `R^3` faithfully reflects the topological and semantic structure of `Gamma` while optimizing for human perception and interaction. This is achieved by minimizing a sophisticated energy function `E_layout(P, Gamma)`:
 
@@ -425,7 +732,7 @@ Where:
     *   `||P_k - P_l||`: Euclidean distance between nodes `n_k` and `n_l` in `R^3`.
     *   `delta(n_k, n_l)`: Graph-theoretic distance between `n_k` and `n_l` in `Gamma`, for example, shortest path length, inverse of semantic similarity derived from `v_k`, `v_l`. This term ensures that nodes closely related in `Gamma` are visually close in `R^3`.
 *   `lambda_rep sum_{k!=l} Phi(||P_k - P_l||)`: A strong repulsion term to prevent node overlap.
-    *   `Phi(d)` is typically `C_rep / d^2` (inverse square law), or a more complex function that considers node radii to ensure collision avoidance. `lambda_rep` is a repulsion strength constant.
+    *   `Phi(d)` is typically `C_rep / d^2` inverse square law, or a more complex function that considers node radii to ensure collision avoidance. `lambda_rep` is a repulsion strength constant.
 *   `lambda_hier sum_{k} Psi(P_k, Hier(n_k))`: A hierarchical constraint term.
     *   `Hier(n_k)` refers to the inferred hierarchical level and cluster of `n_k`.
     *   `Psi` is a potential function that attracts `n_k` towards a designated spatial region or plane corresponding to its hierarchical level or cluster, e.g., `Psi = ||P_k - Center(Hier(n_k))||^2`. `lambda_hier` is a weighting factor.
@@ -442,7 +749,7 @@ The superiority of the knowledge graph representation `Gamma` and its `R^3` visu
 1.  **Informational Entropy and Topological Preservation:**
     *   Let `H(X)` denote the Shannon entropy of a random variable `X`.
     *   `H(C)` represents the information content of the original discursive artifact.
-    *   The linear summary `T` involves a highly lossy compression: `H(T | C) >> 0` (high conditional entropy, meaning much information in `C` is not in `T`). The mapping `f` sacrifices structural information for linear brevity.
+    *   The linear summary `T` involves a highly lossy compression: `H(T | C) >> 0` high conditional entropy, meaning much information in `C` is not in `T`. The mapping `f` sacrifices structural information for linear brevity.
     *   The knowledge graph `Gamma`, conversely, is constructed to preserve the inherent semantic topology. The rich attributes of nodes and edges, coupled with their explicit interconnections, significantly reduce `H(Gamma | C)`.
     *   Consider a graph-theoretic metric, such as betweenness centrality or clustering coefficient, which quantifies the structural importance of concepts within `C`. A linear summary `T` cannot inherently represent these structural metrics without explicit meta-commentary, which itself would be a form of graph-like structuring. `Gamma`, by its very definition, encodes these properties directly.
     *   Thus, the information content of `Gamma` is demonstrably higher and more structurally isomorphic to `C` than `T`.
