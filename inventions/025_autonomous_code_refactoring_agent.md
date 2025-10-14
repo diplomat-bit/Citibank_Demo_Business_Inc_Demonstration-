@@ -13,7 +13,7 @@ The present invention delineates an unprecedented autonomous AI agent architecte
 The system is predicated upon a sophisticated agent-based architecture, conceptualized as an "Omniscient Refactoring Loop" operating in a state of perpetual cognitive deliberation and volitional actuation. This architecture is endowed with meta-cognitive capabilities, allowing it to reflect upon its own processes and adapt its strategies based on historical outcomes and human feedback.
 
 <p align="center">
-    <img src="https://mermaid.ink/img/eyJjb2RlIjoiZ3JhcGggVERcbiAgQVtVc2VyIEdvYWwgSW5nZXN0aW9uXSBsYXZpcyAtLT4gQltPYnNlcnZhdGlvbiBIb3Jpem9uIEV4cGFuc2lvbl1cbiAgQltPYnNlcnZhdGlvbiBIb3Jpem9uIEV4cGFuc2lvbl0gLS0-IENbQ29nbml0aXZlIE9yaWVudGF0aW9uIGFuZCBTdHJhdGVnaWMgUGxhbm5pbmddXG4gIENbQ29nbml0aXZlIE9yaWVudGF0aW9uIGFuZCBTdHJhdGVnaWMgUGxhbm5pbmddIC0tPiBEW1ZvbGl0aW9uYWwgQWN0dWF0aW9uIGFuZCBJdGVyYXRpdmUgUmVmaW5lbWVudF1cbiAgRFtWb2xpdGlvbmFsIEFjdHVhdGlvbiBhbmQgSXRlcmF0aXZlIFJlZmluZW1lbnRdIC0tPiBFXUVtcGlyaWNhbCBWYWxpZGF0aW9uIGFuZCBCZWhhdmlvcmFsIEludmFyaWFuY2UgQXNzdXJhbmNlXVxuICBFW0VtcGlyaWNhbCBWYWxpZGF0aW9uIGFuZCBCZWhhdmlvcmFsIEludmFyaWFuY2UgQXNzdXJhbmNlXSBsYXZpcyAtLT4gRml4ZWRbW0UgRmFpbF1dIFJvbGxiYWNrIGFuZCBTZWxmLUNvcnJlY3Rpb25cbiAgRVtFbXBpcmllYWwgVmFsaWRhdGlvbiBhbmQgQmVoYXZpb3JhbCBJbnZhcmlhbmNlIEFzc3VyYW5jZV0gYXZpcyAtLT4gRlNDb25zdW1tYXRpb24gYW5kIEtub3dsZWRnZSBEaXNzZW1pbmF0aW9uXVxuICBGaXhlZFtbRSBGYWlsXV0gUm9sbGJhY2sgYW5kIFNlbGYtQ29ycmVjdGlvbiAtLT4gRFtWb2xpdGlvbmFsIEFjdHVhdGlvbiBhbmQgSXRlcmF0aXZlIFJlZmluZW1lbnRdXG4gIEZSQ29uc3VtbWF0aW9uIGFuZCBLbm93bGVkZ2UgRGlzc2VtaW5hdGlvbl0gLS0-IGFhYUFbUmVmYWN0b3JpbmcgUHJvamVjdCBDb21wbGV0ZWRdIiwibWVybWFpZCI6eyJmcm9ndCI6ImdydWVcblx0YmFja2dyb3VuZDogI0ZGRlxcblx0YWxpZ24tcGFyZW50czogc3BhY2UtYmV0d2Vlblxcblx0Zm9udC1mYW1pbHk6ICdBcmlhbCcsIHNhbnMtc2VyaWZcXG5cXHRjb2xvcjogIzMzM1xcbiAgIn19">
+    <img src="https://mermaid.ink/img/eyJjb2RlIjoiZ3JhcGggVERcbiAgc3ViZ3JhcGggUmVmYWN0b3JpbmdBZ2VudCBXb3JrZmxvd1xuICAgIEFbVXNlciBHb2FsIEluZ2VzdGlvbl0gLS0-IEJbT2JzZXJ2YXRpb24gSG9yaXpvbiBFeHBhbnNpb25dXG4gICAgQiAtLT4gQjFbRGVlcCBDb2RlYmFzZSBUcmF2ZXJzYWxdXG4gICAgQjEgLS0-IEIyW0FTVCBQYXJzaW5nIGFuZFNlbWFudGljIEluZGV4aW5nXVxuICAgIEIyIC0tPiBCM1tEZXBlbmRlbmN5IEdyYXBoIEFuYWx5c2lzXVxuICAgIEIzIC0tPiBCNFtWQ1MgSGlzdG9yeSBhbmRBcmNoaXRlY3R1cmFsIENvbnRleHRdXG4gICAgQjQgLS0+IENbQ29nbml0aXZlIE9yaWVudGF0aW9uIGFuZFN0cmF0ZWdpYyBQbGFubmluZ11cbiAgICBDIC0tPiBDMVtMTE1TdHJhdGVnaWNSIGVhc29uaW5nXVxuICAgIEMxIC0tPiBDMltQbGFuIERBRyBHZW5lcmF0aW9uIGFuZFJpc2sgQXNzZXNzbWVudF1cbiAgICBDMiAtLT4gRFtWb2xpdGlvbmFsIEFjdHVhdGlvbiBhbmRJdGVyYXRpdmUgUmVmaW5lbWVudF1cbiAgICBEIC0tPiBELTFBbFpFbWVudFsuIGhvb2tbQ29kZSBUcmFuc2Zvcm1hdGlvbiBQcm9tcHRpbmddXG4gICAgRDEgLS0+IEQyW1RyYW5zYWN0aW9uYWwgQ29kZSBSZXBsYWNlbWVudEFTVCBQYXRjaGluZ11cbiAgICBEMiAtLT4gRVtFbXBpcmllY2FsIFZhbGlkYXRpb24gYW5kQmVoYXZpb3JhbCBJbnZhcmlhbmNlIEFzc3VyYW5jZV1cbiAgICBFIC0tIFZhbGlkYXRpb24gRmFpbGVkIC0tPiBGeFtyb2xsYmFjayBhbmRTZWxmQ29ycmVjdGlvbiBSZW1lZGlhbENvZGVHZW5lcmF0aW9uXVxuICAgIEZ4IC0tPiBELTFBbFpFbWVudFsuIGhvb2tbQ29kZSBUcmFuc2Zvcm1hdGlvbiBQcm9tcHRpbmddXG4gICAgRSAtLSAgVmFsaWRhdGlvbiBQYXNzZWQgLS0+IEZbQ29uc3VtbWF0aW9uIGFuZEtub3dsZWRnZSBEaXNzZW1pbmF0aW9uXVxuICAgIEYgLS0+IEYxW0ZpbmFsIENvZGUgUGVyc2lzdGVuY2VdXG4gICAgRjEgLS0+IEYyW1B1bGwgUmVxdWVzdCBHZW5lcmF0aW9uXVxuICAgIEYyIC0tPiBGM1tBSSBHZW5lcmF0ZWQgUFIgU3VtbWFyeSBhbmREb2NzIFVwZGF0ZV1cbiAgICBGMyAtLT4gRjRbSHVtYW4gUmV2aWV3IGFuZEZlZWRiYWNrIEludGVncmF0aW9uXVxuICAgIEY0IC0tIEZlZWRiYWNrIC0+IEtbS25vd2xlZGdlIEJhc2UgVXBkYXRlXVxuICAgIEsgLS0+IEMgXG4gICAgRjQgLS0gQXBwcm92ZWQgLS0+IGFhYUFbUmVmYWN0b3JpbmdQcm9qZWN0IENvbXBsZXRlZWRdXG4gIGVuZCAiLCJtZXJtYWlkIjp7ImZyb2d0IjoiZ3J1ZVxuXHRiYWNrZ3JvdW5kOiAjRkZGXG5cdGFsaWduLXBhcmVudHM6IHNwYWNlLWJldHdlZW5cblx0Zm9udC1mYW1pbHk6ICdBcmlhbCcsIHNhbnMtc2VyaWZcXG5cXHRjb2xvcjogIzMzM1xcbiAgIn19">
 </p>
 <p align="center">
     <i>Figure 1: High-Level Meta-Cognitive Refactoring Agent Loop Diagram</i>
@@ -24,19 +24,19 @@ The system is predicated upon a sophisticated agent-based architecture, conceptu
     *   The system employs advanced Natural Language Understanding (NLU) models, potentially augmented by an ontological knowledge base of software engineering patterns and anti-patterns, to deconstruct the received goal into a formal, executable representation. This involves identifying key entities (e.g., `payment_processor` service), desired structural transformations (e.g., `class-based`), quality metrics (e.g., `type enforcement`, `test coverage`), and architectural constraints (e.g., `dependency-injectable`). The NLU component might leverage a goal-specific `embedding model` to represent the intent numerically.
 
 2.  **Observational Horizon Expansion and Contextual Synthesis [B]:** The agent transcends mere lexical file system scanning. It constructs a holistic, semantic representation of the codebase.
-    *   **Phase 1: Deep Codebase Traversal and Indexing:** The agent executes a multi-faceted search across the designated codebase, employing:
+    *   **Phase 1: Deep Codebase Traversal and Indexing [B1]:** The agent executes a multi-faceted search across the designated codebase, employing:
         *   **Lexical Search:** Keyword matching across file contents and names.
-        *   **Syntactic Search [AST Parsing]:** Abstract Syntax Tree (AST) parsing to identify structural elements (functions, classes, variables, control flow constructs) relevant to the deconstructed goal. This allows for precise targeting of code blocks.
-        *   **Semantic Search [Embeddings and Graph Neural Networks]:** Utilizing learned embeddings of code tokens, AST nodes, and structural relationships, potentially powered by graph neural networks, to identify conceptually related code, even if lexically disparate. This allows it to understand relationships like "all callers of `process_payment`," or "all data structures related to `card validation`." The results are stored in a `SemanticIndexer`.
-        *   **Dependency Graph Analysis:** Construction of a precise `Dependency Graph` (e.g., call graphs, import graphs, data flow graphs) to ascertain the precise blast radius, interdependencies, and potential impact of modifications. This helps in predicting cascading failures.
-        *   **Version Control History Analysis:** Examination of commit history, pull requests, and bug reports related to the identified areas to glean historical context, common pitfalls, architectural intentions, and areas prone to bugs.
-        *   **Architectural Landscape Mapping:** Identification of existing architectural patterns, module boundaries, and adherence to defined principles within the relevant codebase segments.
+        *   **Syntactic Search [AST Parsing - B2]:** Abstract Syntax Tree (AST) parsing to identify structural elements (functions, classes, variables, control flow constructs) relevant to the deconstructed goal. This allows for precise targeting of code blocks. The results are stored in an `ASTGraph`.
+        *   **Semantic Search [Embeddings and Graph Neural Networks - B2]:** Utilizing learned embeddings of code tokens, AST nodes, and structural relationships, potentially powered by graph neural networks, to identify conceptually related code, even if lexically disparate. This allows it to understand relationships like "all callers of `process_payment`," or "all data structures related to `card validation`." The results are stored in a `SemanticIndexer`.
+        *   **Dependency Graph Analysis [B3]:** Construction of a precise `Dependency Graph` (e.g., call graphs, import graphs, data flow graphs) to ascertain the precise blast radius, interdependencies, and potential impact of modifications. This helps in predicting cascading failures.
+        *   **Version Control History Analysis [B4]:** Examination of commit history, pull requests, and bug reports related to the identified areas to glean historical context, common pitfalls, architectural intentions, and areas prone to bugs.
+        *   **Architectural Landscape Mapping [B4]:** Identification of existing architectural patterns, module boundaries, and adherence to defined principles within the relevant codebase segments.
     *   **Output:** A rich, graph-based knowledge representation comprising `AST`s, `Dependency Graphs`, `Semantic Embeddings`, `VCS history insights`, and `Architectural context` of the `services/payment_processor.py` file, its dependents, its dependencies, its historical evolution, associated test files (e.g., `tests/test_payment_processor.py`), and any relevant documentation or configuration files. This aggregated context is crucial for informed decision-making.
 
 3.  **Cognitive Orientation and Strategic Planning [C]:** The agent synthesizes a multi-layered, probabilistic refactoring plan, informed by comprehensive context.
-    *   The agent transmits the synthesized contextual knowledge (raw code, `AST`, `Dependency Graph` snippets, historical insights, architectural landscape, current goal formulation, and relevant patterns from the `KnowledgeBase`) to a specialized LLM, which functions as a "Strategic Reasoning Core."
+    *   The agent transmits the synthesized contextual knowledge (raw code, `AST`, `Dependency Graph` snippets, historical insights, architectural landscape, current goal formulation, and relevant patterns from the `KnowledgeBase`) to a specialized LLM, which functions as a "Strategic Reasoning Core" [C1].
     *   **Prompt Engineering Example:** `Given the following codebase context, dependency graph (Mermaid format), historical refactoring patterns, architectural adherence report, and the objective: 'Adopt advanced class-based, dependency-injectable architecture with type enforcement and comprehensive test coverage', generate a hierarchical, step-by-step refactoring plan. Include micro-steps for code transformation, anticipated validation points, rollback strategies for each major phase, and risk assessment for each step. Emphasize idempotency, maintainability, and adherence to Pythonic principles.`
-    *   The LLM generates a comprehensive plan, which might be represented as a Directed Acyclic Graph (DAG) of interdependent tasks. Each node in the DAG represents a distinct refactoring micro-step.
+    *   The LLM generates a comprehensive plan [C2], which might be represented as a Directed Acyclic Graph (DAG) of interdependent tasks. Each node in the DAG represents a distinct refactoring micro-step.
         *   **Example Plan DAG (Simplified):**
             1.  **Macro Step: Architecture Conversion [Risk: Medium, Dependencies: None]:**
                 *   1.1. Create `PaymentProcessor` class skeleton with `__init__` and basic structure. [Affected File: `payment_processor.py`]
@@ -58,33 +58,33 @@ The system is predicated upon a sophisticated agent-based architecture, conceptu
 4.  **Volitional Actuation and Iterative Refinement [D]:** The agent executes the plan with transactional integrity and self-correction capabilities.
 
 <p align="center">
-    <img src="https://mermaid.ink/img/eyJjb2RlIjoiYmFyY2hhdFxyXG4gICAgdGl0bGUgRGFpbHkgSGVybyBJbnRha2VcbiAgICBkYXRhID0gMjUwLCAxNTAsIDEwMCwgMjAwLCA1MAoJcGlleWNoYXJ0XG4gICAgdGl0bGUgT3ZlcmFsbCBwZXJmb3JtYXZlXG4gICAgICAgIFwiZmFpbGVkXCIgOjY0XG4gICAgICAgIFwicGFzc2VkXCIgOjYwNVxuICAgICAgICBcInJhdGlvXCIgOjEzNlxuICAgIGdyYXBoIFREXG4gICAgICAgIHN1YmdyYXBoIFNpbmdsZSBSZWZhY3RvcmluZyBTdGVwIEV4ZWN1dGlvblxuICAgICAgICAgIEFbUHJvbXB0IExMTSBmb3IgQ29kZSBNb2RpZmljYXRpb25dIC0tPiBCW0xMTCBSZXNwb25kZXMgTW9kaWZpZWQgQ29kZV1cbiAgICAgICAgICBCW0xMTCBSZXNwb25kZXMgTW9kaWZpZWQgQ29kZV1cbiAgICAgICAgICBFW0ludGVybmFsIENvZGUgU3RhdGVdXG4gICAgICAgICAgRSAtLT4gQ1tVcGRhdGUgRmlsZSBDb250ZW50cyBhbmQgUGVyc2lzdCBTdGF0ZV1cbiAgICAgICAgICBDW1N1YnNlY3F1ZW50IFN5c3RlbSBTdGF0ZV0gLS0-IERbUnVuIENvbXByZWhlbnNpdmUgVmFsaWRhdGlvbl0sXG4gICAgICAgICAgRFtSdW4gQ29tcHJlaGVuc2l2ZSBWYWxpZGF0aW9uXS0tRHJvcCBQYXNzZWQgLV4gICAgICAgICAtLT4gR1tOZXh0IFN0ZXAgb3IgQ29uc3VtbWF0aW9uXVxuICAgICAgICAgRFtSdW4gQ29tcHJlaGVuc2l2ZSBWYWxpZGF0aW9uXS0tRHJvcCBmYWlsZWRbRVJST1JdIC0tPiBGU1tGaXggQ29kZSBmcm9tIEVycm9yXVxuICAgICAgICAgIEZzW0ZpeCBDb2RlIGZyb20gRXJyb3JdIC0tPiBBXG4gICAgICAgICAgR1tOZXh0IFN0ZXAgb3IgQ29uc3VtbWF0aW9uXSA6LjtcbiAgICAgICAgZW5kXG4gICAgZ3JhcGggVFJcbiAgICAgICAgc3ViZ3JhcGggQ2xhc3MgSGVpZXJhcmNoeSBmb3IgQ29uY2VwdHVhbCBDb2RlXG4gICAgICAgICAgQ29kZWJhc2VNYW5hZ2VyIDx8LSBPYnNlcnZhdGlvbiBNb2R1bGVcbiAgICAgICAgICBMTExPcmNoZXN0cmF0b3IgPDwtIFN0cmF0ZWdpYyBSZWFzb25pbmcgQ29yZVxuICAgICAgICAgIFBsYW5uaW5nTW9kdWxlIDx8LSBDb2duaXRpdmUgT3JpZW50YXRpb25cbiAgICAgICAgICBFeGVjdXRpb25Nb2R1bGUgPHwtIFZvbGl0aW9uYWwgQWN0dWF0aW9uXG4gICAgICAgICAgVmFsaWRhdGlvbk1vZHVsZSA8fC0gRW1waXJpY2FsIFZhbGlkYXRpb25cbiAgICAgICAgICBLbm93bGVkZ2VCYXNlIDx8LSBEZWVwIFNlbWFudGljIFBhcnNpbmdcbiAgICAgICAgICBUZWxlbWV0cnlTeXN0ZW0gPHwtIE1ldGEtQ29nbml0aXZlIFJlZmFjdG9yaW5nIExvb3BcbiAgICAgICAgZW5kXG4gICAgY2xhc3MgUmVmYWN0b3JpbmdBZ2VudCB7XG4gICAgICAgICAgY29kZWJhc2VNYW5hZ2VyXG4gICAgICAgICAgbGxtT3JjaGVzdHJhdG9yXG4gICAgICAgICAgcGxhbm5pbmdNb2R1bGVcbiAgICAgICAgICBleGVjdXRpb25Nb2R1bGVcbiAgICAgICAgICB2YWxpZGF0aW9uTW9kdWxlXG4gICAgICAgICAga25vd2xlZGdlQmFzZVxuICAgICAgICAgIHRlbGV0cnlTeXN0ZW1cbiAgICB9XG4gICAgcmVmYWN0b3JpbmdBZ2VudCA6OiBjb2RlYmFzZU1hbmFnZXJcbiAgICByZWZhY3RvcmluZ0FnZW50IDo6IGxsbU9yY2hlc3RyYXRvclxuICAgIHJlZmFjdG9yaW5nQWdlbnQgOjoga25vd2xlZGdlQmFzZVxuICAgIHJlZmFjdG9yaW5nQWdlbnQgOjogcGxhbm5pbmdNb2R1bGVcbiAgICByZWZhY3RvcmluZ0FnZW50IDo6IGV4ZWN1dGlvbk1vZHVsZVxuICAgIHJlZmFjdG9yaW5nQWdlbnQgOjogdmFsaWRhdGlvbk1vZHVsZVxuICAgIHJlZmFjdG9yaW5nQWdlbnQgOjogdGVsZW1ldHJ5U3lzdGVtXG4iLCJtZXJtYWlkIjp7ImZyb2d0IjoiZ3J1ZVxuXHRiYWNrZ3JvdW5kOiAjRkZGXG5cdGFsaWduLXBhcmVudHM6IHNwYWNlLWJldHdlZW5cblx0Zm9udC1mYW1pbHk6ICdBcmlhbCcsIHNhbnMtc2VyaWZcblx0Y29sb3I6ICMzMzNcbiAgIn19">
+    <img src="https://mermaid.ink/img/eyJjb2RlIjoiZ3JhcGggVERcbiAgc3ViZ3JhcGggU2luZ2xlIFJlZmFjdG9yaW5nIFN0ZXAgRXhlY3V0aW9uIExvb3BcbiAgICAgICBBW1Byb21wdCBMTFMgZm9yIENvZGUgTW9kaWZpY2F0aW9uXSBsYXZpcyAtLT4gQltMTFMgUmVzcG9uZHMgTW9kaWZpZWQgQ29kZV1cbiAgICAgICBCIC0tPiBDW1RyYW5zYWN0aW9uYWwgQ29kZSBVcGRhdGUgdmlhIEFTVCBQcm9jZXNzb3JdXG4gICAgICAgQyAtLT4gRFtSdW4gQ29tcHJlaGVuc2l2ZSBWYWxpZGF0aW9uXVxuICAgICAgIEQgfC0gRDFbRXhlY3V0ZSBUZXN0IFN1aXRlXVxuICAgICAgIEQgfC0gRDJbU3RhdGljIENvZGUgQW5hbHlzaXNdXG4gICAgICAgRCAoLXwgRDNbQXJjaGl0ZWN0dXJhbCBDb21wbGlhbmNlIENoZWNrXVxuICAgICAgIEQgfC0gRDRbU2VjdXJpdHkgU2NhbnNdXG4gICAgICAgRCAofCBENVtQZXJmb3JtYW5jZSBCZW5jaG1hcmtpbmcgT3B0aW9uYWxdXG4gICAgICAgRDEgJiBEMiAmIEQzICYgRDQgJiBENSAtLT4gRXtBbGwgVmFsaWRhdGlvbnMgUGFzc31cbiAgICAgICBFIC0tIFllcyAtLT4gRltBcHBsZXkgUG9zdFJlZmFjdG9yIEZvcm1hdHRpbmddXG4gICAgICAgRiAtLT4gR1tDb21taXQgU3RlcCBDaGFuZ2VzIExvY2FsbHldXG4gICAgICAgRyAtLT4gSFtOZXh0IFBsYW4gU3RlcCBPciBDb25zdW1tYXRpb25dXG4gICAgICAgRSAtLSBObyAtLT4gSVtDYXB0dXJlIERpYWdub3N0aWsgRmVlZGJhY2tdXG4gICAgICAgSSAtLT4gSltMTE0gU2VsZkNvcnJlY3Rpb24gUmVtZWRpYWxDb2RlIEdlbmVyYXRpb25dXG4gICAgICAgSiAtLT4gQVxuICAgIGVuZFxuXG4gIHN1YmdyYXBoIENvcmUgQWdlbnQgTW9kdWxlc1xuICAgICAgUmVmYWN0b3JpbmdBZ2VudCAtLSBPcmNoZXN0cmF0ZXMgLS0+IENvZGViYXNlTWFuYWdlclxuICAgICAgUmVmYWN0b3JpbmdBZ2VudCAtLSBPcmNoZXN0cmF0ZXMgLS0+IExMTU9yY2hlc3RyYXRvclxuICAgICAgUmVmYWN0b3JpbmdBZ2VudCAtLSBPcmNoZXN0cmF0ZXMgLS0+IFBsYW5uaW5nTW9kdWxlXG4gICAgICAgUmVmYWN0b3JpbmdBZ2VudCAtLSBPcmNoZXN0cmF0ZXMgLS0+IEV4ZWN1dGlvbk1vZHVsZVxuICAgICAgUmVmYWN0b3JpbmdBZ2VudCAtLSBPcmNoZXN0cmF0ZXMgLS0+IFZhbGlkYXRpb25Nb2R1bGVcbiAgICAgICUmIzgzMDE7UmVmYWN0b3JpbmdBZ2VudCAtLSBTdG9yZXNSRXRyaWV2ZXNSRSAhLS0+IEtub3dsZWRnZVCgJCMzMDI7QmFzZVxuICAgICAgUmVmYWN0b3JpbmdBZ2VudCAtLSBSZWNvcmRzIC0tPiBUZWxlbWV0cnlTeXN0ZW1cbiAgICAgIENvZGViYXNlTWFuYWdlciAtLSBVc2VzIC0tPiBWQ1NJbnRlZ3JhdGlvblxuICAgICAgQ29kZWJhc2VNYW5hZ2VyIC0tIFVzZXMgLS0+IEFTVFByb2Nlc3NvclxuICAgICAgQ29kZWJhc2VNYW5hZ2VyIC0tIFVzZXMgLS0+IERlcGVuZGVuY3lBbmFseXplclxuICAgICAgQ29kZWJhc2VNYW5hZ2VyIC0tIFVzZXMgLS0+IFNlbWFudGljSW5kZXhlclxuICAgICAgUGxhbm5pbmdNb2R1bGUgLS0gVXNlcyAtLT4gTExNT3JjaGVzdHJhdG9yXG4gICAgICAgUGxhbm5pbmdNb2R1bGUgLS0gVXNlcyAtLT4gS25vd2xlZGdlQmFzZVxuICAgICAgRXhlY3V0aW9uTW9kdWxlIC0tIFVzZXMgLS0+IENvZGViYXNlTWFuYWdlclxuICAgICAgRXhlY3V0aW9uTW9kdWxlIC0tIFVzZXMgLS0+IExMTU9yY2hlc3RyYXRvclxuICAgICAgRXhlY3V0aW9uTW9kdWxlIC0tIFVzZXMgLS0+IEFTVFByb2Nlc3NvclxuICAgICAgVmFsaWRhdGlvbk1vZHVsZSAtLSBVc2VzIC0tPiBDb2RlYmFzZU1hbmFnZXJcbiAgICAgIFZhbGlkYXRpb25Nb2R1bGUgLS0gVXNlcyAtLT4gQXJjaGl0ZWN0dXJhbENvbXBsaWFuY2VDaGVja2VyXG4gICAgICBodW1hbmZlZWRiYWNrUHJvY2Vzc29yIC0tIFVwZGF0ZXMgLS0+IEtub3dsZWRnZUJhc2VcbiAgZW5kXG5cbiAgc3ViZ3JhcGggQ2xhc3MgSGVpcmFyY2h5XG4gICAgICBDb2RlYmFzZU1hbmFnZXIgPHwtIEdpdENvZGViYXNlTWFuYWdlclxuICAgICAgVkNTSW50ZWdyYXRpb24gPHwtIEdpdFZFQ1NJbnRlZ3JhdGlvblxuICAgICAgTExNT3JjaGVzdHJhdG9yIDx8LSBHZW1pbmlMTE1PcmNoZXN0cmF0b3JcbiAgICAgIExMTU9yY2hlc3RyYXRvciA8fC0gT3BlbkFJTExNT3JjaGVzdHJhdG9yXG4gICAgICBDb2RlUXVhbGl0eU1ldHJpY3MgPHwtIENvbXBsZXhpdHlNZXRyaWNzQW5hbHl6ZXJcbiAgICAgIENvZGVRdWFsaXR5TWV0cmljcyA8fC0gQ292ZXJhZ2VNZXRyaWNzQW5hbHl6ZXJcbiAgICAgIFRlc3RBdWdtZW50YXRpb25Nb2R1bGUgPHwtIFByb3BlcnR5QmFzZWRUZXN0R2VuZXJhdG9yXG4gICAgICBUZXN0QXVnbWVudGF0aW9uTW9kdWxlIDx8LSBVbml0SW50ZWdyYXRpb25UZXN0R2VuZXJhdG9yXG4gIGVuZCAiLCJtZXJtYWlkIjp7ImZyb2d0IjoiZ3J1ZVxuXHRiYWNrZ3JvdW5kOiAjRkZGXG5cdGFsaWduLXBhcmVudHM6IHNwY2FlLWJldHdlZW5cblx0Zm9udC1mYW1pbHk6ICdBcmlhbCcsIHNhbnMtc2VyaWZcblx0Y29sb3I6ICMzMzNcbiAgIn19">
 </p>
 <p align="center">
     <i>Figure 2: Iterative Refinement and Conceptual Class Structure</i>
 </p>
 
     *   For each granular step within the LLM-generated plan, the agent orchestrates the following sub-loop:
-        *   **Code Transformation Prompting:** The agent formulates a highly precise prompt for the LLM, encapsulating the current codebase state, the specific plan step to be executed, and any relevant constraints (e.g., "Refactor `payment_processor.py` to move `process_payment` into the new `PaymentProcessor` class, ensuring type hints are added for all arguments and return values. Preserve existing docstrings. Code: [current code text]"). This may also involve providing `AST` snippets or `Dependency Graph` sections.
-        *   **Transactional Code Replacement [AST-aware Patching]:** The LLM returns the modified code block. The agent, prior to applying the change, initiates a transactional operation. It saves a snapshot of the current file state. The agent then intelligently merges or replaces the relevant sections of the codebase with the LLM-generated code. This isn't a simple overwrite but a context-aware structural modification, potentially using `AST diffing` and `patching` facilitated by the `ASTProcessor`. This ensures that irrelevant parts of the code are not altered.
-        *   **Behavioral Invariance Assurance:** Immediately following a modification, the agent invokes the `ValidationModule`.
-            *   **Automated Test Suite Execution:** It triggers the project's entire automated test suite (e.g., `pytest tests/`, `npm test`, `maven test`). This can be augmented by dynamically generated tests or `property-based tests` to cover new or altered code paths.
-            *   **Static Code Analysis:** Concurrently, it runs static analysis tools (linters, complexity checkers, security scanners like `bandit` for Python, type checkers like `mypy`) to detect immediate issues (syntax errors, style violations, potential security vulnerabilities, complexity spikes, type mismatches).
-            *   **Architectural Compliance Checks:** The `ArchitecturalComplianceChecker` is run to verify that the changes adhere to predefined architectural patterns, style guides, or design principles.
-            *   **Dynamic Analysis/Performance Benchmarking:** For performance-critical refactoring goals, the agent may execute performance benchmarks and profile the modified code to quantify changes in resource consumption or execution time, comparing them against a baseline.
-        *   **Self-Correction Mechanism:**
+        *   **Code Transformation Prompting [D1]:** The agent formulates a highly precise prompt for the LLM, encapsulating the current codebase state, the specific plan step to be executed, and any relevant constraints (e.g., "Refactor `payment_processor.py` to move `process_payment` into the new `PaymentProcessor` class, ensuring type hints are added for all arguments and return values. Preserve existing docstrings. Code: [current code text]"). This may also involve providing `AST` snippets or `Dependency Graph` sections.
+        *   **Transactional Code Replacement [AST-aware Patching - D2]:** The LLM returns the modified code block. The agent, prior to applying the change, initiates a transactional operation. It saves a snapshot of the current file state. The agent then intelligently merges or replaces the relevant sections of the codebase with the LLM-generated code. This isn't a simple overwrite but a context-aware structural modification, potentially using `AST diffing` and `patching` facilitated by the `ASTProcessor`. This ensures that irrelevant parts of the code are not altered.
+        *   **Behavioral Invariance Assurance [E]:** Immediately following a modification, the agent invokes the `ValidationModule`.
+            *   **Automated Test Suite Execution [D1]:** It triggers the project's entire automated test suite (e.g., `pytest tests/`, `npm test`, `maven test`). This can be augmented by dynamically generated tests or `property-based tests` to cover new or altered code paths.
+            *   **Static Code Analysis [D2]:** Concurrently, it runs static analysis tools (linters, complexity checkers, security scanners like `bandit` for Python, type checkers like `mypy`) to detect immediate issues (syntax errors, style violations, potential security vulnerabilities, complexity spikes, type mismatches).
+            *   **Architectural Compliance Checks [D3]:** The `ArchitecturalComplianceChecker` is run to verify that the changes adhere to predefined architectural patterns, style guides, or design principles.
+            *   **Dynamic Analysis/Performance Benchmarking [D4]:** For performance-critical refactoring goals, the agent may execute performance benchmarks and profile the modified code to quantify changes in resource consumption or execution time, comparing them against a baseline.
+        *   **Self-Correction Mechanism [J]:**
             *   If the validation suite reports failures (e.g., test failures, critical static analysis warnings, architectural violations, performance regressions), the agent captures the granular diagnostic output (stack traces, error messages, diffs, static analysis reports).
             *   This rich diagnostic context, along with the previous code and the current goal and plan step, is fed back to the LLM (e.g., "The tests failed with `AssertionError: Expected 200, got 500` in `test_process_payment`. The original code was [original code], the modified code that failed was [modified code]. The goal was [goal]. The specific plan step was [plan step]. Analyze the error and provide a fix, considering the `Dependency Graph` context related to `process_payment`.").
             *   The LLM generates a corrective code snippet, which is then applied, and the validation loop recommences. This iterative feedback loop ensures robust error recovery.
-        *   **Post-Refactoring Optimization:** After successful validation of a step, the agent may apply automated code formatting (e.g., `black` for Python, `prettier` for JavaScript) to ensure style consistency, even if not explicitly part of the refactoring goal.
-        *   **Progression:** If all validation checks pass, the agent commits the changes to a temporary branch, records telemetry data, and advances to the next step in the refactoring plan.
+        *   **Post-Refactoring Optimization [F]:** After successful validation of a step, the agent may apply automated code formatting (e.g., `black` for Python, `prettier` for JavaScript) to ensure style consistency, even if not explicitly part of the refactoring goal.
+        *   **Progression [H]:** If all validation checks pass, the agent commits the changes to a temporary branch, records telemetry data, and advances to the next step in the refactoring plan.
 
 5.  **Consummation and Knowledge Dissemination [F]:** Once all plan steps are successfully completed and comprehensive validation has yielded positive results across all modified artifacts, the agent finalizes its mission.
-    *   **Final Code Persistence:** The cumulative, validated code is formally committed to a designated branch.
-    *   **Pull Request Generation:** The agent leverages platform-specific APIs (e.g., GitHub API, GitLab API) to programmatically create a pull request (PR).
-    *   **AI-Generated PR Summary:** The body of the pull request is meticulously crafted by the AI, summarizing the overarching refactoring goal, the key transformations applied, the rationale behind specific architectural choices, a high-level overview of the validation steps performed, and any observed quality metric improvements (e.g., "This PR introduces a class-based, dependency-injectable architecture for the `payment_processor` service, enhancing modularity and testability. Cyclomatic complexity reduced by 15%, and all unit and integration tests remain green. Type hints ensure robust API contracts. Architectural compliance verified against `Clean Architecture` principles.").
-    *   **Automated Documentation Update:** The agent may further generate or update architectural documentation, `API` specifications, or inline comments (docstrings) to reflect the new code structure, leveraging the LLM and `ASTProcessor`.
-    *   **Human Feedback Integration and Continuous Learning:** The system is designed to ingest human feedback from PR reviews (approvals, comments, requested changes). This feedback is processed by the `HumanFeedbackProcessor` and used to update the agent's internal `KnowledgeBase` and refine its planning and execution heuristics. Metrics, success/failure patterns, and learned refactoring heuristics are fed back into the agent's internal knowledge base to perpetually refine its future performance and strategic capabilities, embodying true meta-cognitive learning.
+    *   **Final Code Persistence [F1]:** The cumulative, validated code is formally committed to a designated branch.
+    *   **Pull Request Generation [F2]:** The agent leverages platform-specific APIs (e.g., GitHub API, GitLab API) to programmatically create a pull request (PR).
+    *   **AI-Generated PR Summary [F3]:** The body of the pull request is meticulously crafted by the AI, summarizing the overarching refactoring goal, the key transformations applied, the rationale behind specific architectural choices, a high-level overview of the validation steps performed, and any observed quality metric improvements (e.g., "This PR introduces a class-based, dependency-injectable architecture for the `payment_processor` service, enhancing modularity and testability. Cyclomatic complexity reduced by 15%, and all unit and integration tests remain green. Type hints ensure robust API contracts. Architectural compliance verified against `Clean Architecture` principles.").
+    *   **Automated Documentation Update [F3]:** The agent may further generate or update architectural documentation, `API` specifications, or inline comments (docstrings) to reflect the new code structure, leveraging the LLM and `ASTProcessor`.
+    *   **Human Feedback Integration and Continuous Learning [F4]:** The system is designed to ingest human feedback from PR reviews (approvals, comments, requested changes). This feedback is processed by the `HumanFeedbackProcessor` and used to update the agent's internal `KnowledgeBase` and refine its planning and execution heuristics. Metrics, success/failure patterns, and learned refactoring heuristics are fed back into the agent's internal knowledge base to perpetually refine its future performance and strategic capabilities, embodying true meta-cognitive learning.
 
 **Conceptual Code (Python Agent Loop):**
 This conceptual framework elucidates the architectural components and their synergistic interaction.
@@ -95,7 +95,8 @@ import json
 import logging
 import subprocess
 import ast
-from typing import List, Dict, Any, Optional, Tuple, Protocol
+import enum
+from typing import List, Dict, Any, Optional, Tuple, Protocol, Set
 
 # Initialize logging for the agent's operations
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -112,6 +113,7 @@ class VCSIntegration(Protocol):
     def get_file_diff(self, file_path: str, compare_branch: str = "HEAD") -> str: ...
     def revert_file(self, file_path: str) -> None: ...
     def get_commit_history(self, file_path: str, num_commits: int = 5) -> List[Dict[str, Any]]: ...
+    def rollback_last_commit(self) -> None: ...
 
 class GitVCSIntegration:
     """Concrete implementation of VCSIntegration for Git."""
@@ -188,6 +190,20 @@ class GitVCSIntegration:
                 })
         return history
 
+    def rollback_last_commit(self) -> None:
+        """Rolls back the last commit, preserving changes in working directory."""
+        self._run_git_command(["reset", "HEAD~1"])
+        logging.info("Rolled back last commit.")
+
+
+# --- New Enums ---
+class CodeGenerationStrategy(enum.Enum):
+    """Defines different strategies for LLM code generation."""
+    WHOLE_FILE_REPLACE = "whole_file_replace"
+    FUNCTION_LEVEL_PATCH = "function_level_patch"
+    DIFF_BASED_GENERATION = "diff_based_generation"
+    AST_NODE_REPLACEMENT = "ast_node_replacement"
+
 # --- Existing Class Enhancements and New Classes ---
 
 class ASTProcessor:
@@ -242,13 +258,28 @@ class ASTProcessor:
                 return self.unparse_ast_to_code(node)
         return None
 
+    def find_function_nodes(self, tree: ast.AST) -> List[ast.FunctionDef]:
+        """Finds all function definition nodes in an AST."""
+        return [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
+
+    def extract_function_body(self, func_node: ast.FunctionDef) -> str:
+        """Extracts the body of a function node as code."""
+        # This is a simplification; a full solution needs to handle indentation correctly
+        # and potentially extract the source lines directly if AST unparsing for fragments is tricky.
+        return self.unparse_ast_to_code(ast.Module(body=func_node.body, type_ignores=[]))
+
+    def find_class_nodes(self, tree: ast.AST) -> List[ast.ClassDef]:
+        """Finds all class definition nodes in an AST."""
+        return [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+
 class DependencyAnalyzer:
     """
     Builds and queries dependency graphs (call graphs, import graphs).
     """
     def __init__(self):
-        self.call_graph: Dict[str, List[str]] = {}
-        self.import_graph: Dict[str, List[str]] = {}
+        self.call_graph: Dict[str, Set[str]] = {} # file_path -> set of entities called
+        self.import_graph: Dict[str, Set[str]] = {} # file_path -> set of modules imported
+        self.entity_definitions: Dict[str, str] = {} # entity_name -> file_path where defined
         logging.info("DependencyAnalyzer initialized.")
 
     def build_dependency_graph(self, codebase_files: Dict[str, str]) -> None:
@@ -256,8 +287,10 @@ class DependencyAnalyzer:
         Builds call and import graphs for Python files.
         (Simplified for conceptual example, a real one would be much deeper)
         """
-        self.call_graph = {}
-        self.import_graph = {}
+        self.call_graph = {fp: set() for fp in codebase_files.keys() if fp.endswith('.py')}
+        self.import_graph = {fp: set() for fp in codebase_files.keys() if fp.endswith('.py')}
+        self.entity_definitions = {}
+
         for file_path, content in codebase_files.items():
             if file_path.endswith('.py'):
                 try:
@@ -268,28 +301,35 @@ class DependencyAnalyzer:
         logging.info("Dependency graphs built.")
 
     def _analyze_python_file(self, file_path: str, tree: ast.AST) -> None:
-        # Placeholder for complex AST traversal to find calls and imports
-        # For call graph: identify function definitions and their calls
-        # For import graph: identify import statements
-        self.call_graph[file_path] = [] # Example: list of functions called from this file
-        self.import_graph[file_path] = [] # Example: list of modules imported by this file
-
         for node in ast.walk(tree):
+            # Record definitions
+            if isinstance(node, ast.FunctionDef):
+                self.entity_definitions[node.name] = file_path
+            elif isinstance(node, ast.ClassDef):
+                self.entity_definitions[node.name] = file_path
+
+            # Record calls
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name):
-                    self.call_graph[file_path].append(node.func.id)
+                    self.call_graph[file_path].add(node.func.id)
                 elif isinstance(node.func, ast.Attribute):
-                    # Handle method calls: node.func.attr is method name, node.func.value is object
-                    self.call_graph[file_path].append(node.func.attr)
-            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                    self.call_graph[file_path].add(node.func.attr) # Method calls
+
+            # Record imports
+            elif isinstance(node, ast.Import):
                 for alias in node.names:
-                    module_name = alias.name
-                    if isinstance(node, ast.ImportFrom) and node.module:
-                        module_name = node.module + "." + module_name
-                    self.import_graph[file_path].append(module_name)
+                    self.import_graph[file_path].add(alias.name)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    self.import_graph[file_path].add(node.module)
+                for alias in node.names:
+                    if node.module:
+                        self.import_graph[file_path].add(f"{node.module}.{alias.name}")
+                    else:
+                        self.import_graph[file_path].add(alias.name)
 
     def get_callers(self, entity_name: str) -> List[str]:
-        """Finds files/functions that call a given entity."""
+        """Finds files that call a given entity (function/method)."""
         callers = []
         for file, calls in self.call_graph.items():
             if entity_name in calls:
@@ -297,16 +337,18 @@ class DependencyAnalyzer:
         return list(set(callers))
 
     def get_dependencies(self, file_path: str) -> List[str]:
-        """Returns what a given file imports/depends on."""
-        return self.import_graph.get(file_path, [])
+        """Returns modules/files a given file imports/depends on."""
+        return list(self.import_graph.get(file_path, set()))
 
     def get_dependents(self, file_path: str) -> List[str]:
         """Returns files that import/depend on a given file."""
         dependents = []
+        # Get module name from file path
+        module_name_parts = os.path.splitext(os.path.relpath(file_path, start=os.getcwd()))[0].split(os.sep)
+        module_name = ".".join(module_name_parts)
+
         for dependent_file, imports in self.import_graph.items():
-            # Simplistic check: assumes file_path without extension matches module name
-            module_name = os.path.splitext(os.path.basename(file_path))[0]
-            if module_name in imports or file_path in imports:
+            if module_name in imports or os.path.basename(file_path) in imports:
                 dependents.append(dependent_file)
         return list(set(dependents))
 
@@ -317,32 +359,56 @@ class SemanticIndexer:
     """
     def __init__(self, embedding_model: Any = None): # Placeholder for a text/code embedding model
         self.embedding_model = embedding_model
-        self.code_embeddings: Dict[str, List[float]] = {} # Map file_path to embedding
+        self.code_embeddings: Dict[str, List[float]] = {} # Map file_path or code_chunk_id to embedding
         self.index: Any = None # Placeholder for a vector store/FAISS index
+        self.code_chunks: Dict[str, str] = {} # Map code_chunk_id to actual code snippet
         logging.info("SemanticIndexer initialized.")
+
+    def _generate_chunk_id(self, file_path: str, chunk_name: str) -> str:
+        return f"{file_path}::{chunk_name}"
 
     def build_index(self, codebase_files: Dict[str, str]) -> None:
         """
-        Generates embeddings for code snippets and builds a searchable index.
+        Generates embeddings for code snippets (functions, classes) and builds a searchable index.
         """
         if not self.embedding_model:
             logging.warning("Embedding model not provided to SemanticIndexer. Cannot build index.")
             return
 
         logging.info("Building semantic index...")
+        self.code_embeddings = {}
+        self.code_chunks = {}
+
         for file_path, content in codebase_files.items():
-            if file_path.endswith(('.py', '.js', '.java')): # Only process supported code files
-                # Break code into meaningful chunks (functions, classes) and embed them
-                # For simplicity, embedding entire file content here conceptually
-                self.code_embeddings[file_path] = self.embedding_model.encode(content)
+            if file_path.endswith('.py'):
+                try:
+                    tree = ast.parse(content)
+                    # Extract functions and classes for more granular indexing
+                    for node in ast.walk(tree):
+                        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                            node_code = ast.unparse(node)
+                            chunk_id = self._generate_chunk_id(file_path, node.name)
+                            self.code_chunks[chunk_id] = node_code
+                            self.code_embeddings[chunk_id] = self.embedding_model.encode(node_code)
+                except SyntaxError as e:
+                    logging.warning(f"Syntax error in {file_path}, skipping AST-based semantic indexing: {e}")
+                    # Fallback to file-level embedding if AST parsing fails
+                    chunk_id = self._generate_chunk_id(file_path, "file_content")
+                    self.code_chunks[chunk_id] = content
+                    self.code_embeddings[chunk_id] = self.embedding_model.encode(content)
+            else: # For non-Python files, just embed the whole file
+                chunk_id = self._generate_chunk_id(file_path, "file_content")
+                self.code_chunks[chunk_id] = content
+                self.code_embeddings[chunk_id] = self.embedding_model.encode(content)
+
         # In a real scenario, this would populate a FAISS or similar vector index
         self.index = "Conceptual_Vector_Index_Built"
-        logging.info(f"Semantic index built for {len(self.code_embeddings)} files.")
+        logging.info(f"Semantic index built for {len(self.code_embeddings)} code chunks across {len(codebase_files)} files.")
 
-    def query_similar_code(self, query_embedding: List[float], k: int = 5) -> List[Tuple[str, float]]:
+    def query_similar_code(self, query_embedding: List[float], k: int = 5) -> List[Tuple[str, float, str]]:
         """
         Queries the semantic index for top-k similar code snippets/files.
-        Returns a list of (file_path, similarity_score).
+        Returns a list of (code_chunk_id, similarity_score, code_snippet).
         """
         if not self.index or not self.embedding_model:
             logging.warning("Semantic index not built or embedding model missing. Cannot query.")
@@ -351,20 +417,24 @@ class SemanticIndexer:
         logging.info(f"Querying semantic index for top {k} similar code snippets...")
         # Conceptual similarity search
         similarities = []
-        for file_path, embedding in self.code_embeddings.items():
+        for chunk_id, embedding in self.code_embeddings.items():
             # Cosine similarity as a placeholder
             score = sum(q * e for q, e in zip(query_embedding, embedding)) / (
                 sum(q*q for q in query_embedding)**0.5 * sum(e*e for e in embedding)**0.5
-            )
-            similarities.append((file_path, score))
+            ) if sum(q*q for q in query_embedding) > 0 and sum(e*e for e in embedding) > 0 else 0.0
+            similarities.append((chunk_id, score, self.code_chunks[chunk_id]))
 
         similarities.sort(key=lambda x: x[1], reverse=True)
         return similarities[:k]
 
     def query_top_k_files(self, goal_embedding: List[float], k: int = 10) -> List[str]:
-        """Public method for CodebaseManager to use."""
+        """Public method for CodebaseManager to use, returns file paths."""
         results = self.query_similar_code(goal_embedding, k)
-        return [path for path, _ in results]
+        unique_files = set()
+        for chunk_id, _, _ in results:
+            file_path = chunk_id.split("::")[0]
+            unique_files.add(file_path)
+        return list(unique_files)[:k]
 
 class ArchitecturalComplianceChecker:
     """
@@ -430,9 +500,13 @@ class HumanFeedbackProcessor:
         if pr_review_data.get('status') == 'changes_requested':
             feedback_type = "negative"
             message = f"PR {pr_review_data.get('pr_id')} had changes requested."
+            # Attempt to extract specific anti-patterns or misinterpretations from comments
+            for comment in pr_review_data.get('comments', []):
+                self.knowledge_base.add_anti_pattern(f"Comment from {comment.get('reviewer')} on {comment.get('file_path')}:{comment.get('line_number')}: {comment.get('comment_text')}", category="learned_from_review")
         elif pr_review_data.get('status') == 'approved':
             feedback_type = "positive"
             message = f"PR {pr_review_data.get('pr_id')} was approved."
+            self.knowledge_base.add_pattern(f"Refactor for PR {pr_review_data.get('pr_id')} successfully approved: {pr_review_data.get('summary_feedback')}", category="learned_from_review")
         else:
             feedback_type = "neutral"
             message = f"PR {pr_review_data.get('pr_id')} received {pr_review_data.get('status')}."
@@ -459,13 +533,238 @@ class HumanFeedbackProcessor:
             logging.warning(f"Learning from negative feedback: {feedback_summary}")
             self.knowledge_base.add_anti_pattern(f"Avoided failure pattern: {feedback_summary}")
 
+class CodeQualityMetrics(Protocol):
+    """Protocol for code quality metric analyzers."""
+    def analyze(self, file_path: str, code_content: str) -> Dict[str, Any]: ...
+
+class ComplexityMetricsAnalyzer:
+    """
+    Calculates code complexity metrics like Cyclomatic Complexity.
+    Requires a tool like `radon` or a custom AST-based implementation.
+    """
+    def __init__(self):
+        logging.info("ComplexityMetricsAnalyzer initialized.")
+
+    def analyze(self, file_path: str, code_content: str) -> Dict[str, Any]:
+        """
+        Calculates cyclomatic complexity for functions/methods in a Python file.
+        (Conceptual, would use a library like 'radon' in practice)
+        """
+        metrics = {"cyclomatic_complexity": {}}
+        try:
+            tree = ast.parse(code_content)
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    # Simplified calculation: count control flow statements
+                    complexity = 1 # Start with 1 for function/method entry
+                    for sub_node in ast.walk(node):
+                        if isinstance(sub_node, (ast.If, ast.While, ast.For, ast.AsyncFor, ast.ExceptHandler, ast.With, ast.AsyncWith)):
+                            complexity += 1
+                    metrics["cyclomatic_complexity"][node.name] = complexity
+        except SyntaxError as e:
+            logging.warning(f"Syntax error in {file_path} for complexity analysis: {e}")
+        return metrics
+
+class CoverageMetricsAnalyzer:
+    """
+    Analyzes code coverage.
+    (Conceptual, would integrate with tools like `coverage.py`)
+    """
+    def __init__(self):
+        logging.info("CoverageMetricsAnalyzer initialized.")
+
+    def analyze(self, file_path: str, code_content: str) -> Dict[str, Any]:
+        """
+        Conceptual analysis of code coverage.
+        In reality, this would require running tests with coverage measurement enabled.
+        """
+        # Placeholder for actual coverage data
+        # Would typically parse coverage reports (e.g., .coverage files or XML/JSON reports)
+        return {
+            "file_coverage_percentage": 90.0, # Example
+            "missing_lines": [10, 15, 22] # Example
+        }
+
+
+class TestAugmentationModule:
+    """
+    Generates new unit, integration, or property-based tests.
+    """
+    def __init__(self, llm_orchestrator: 'LLMOrchestrator'):
+        self.llm_orchestrator = llm_orchestrator
+        logging.info("TestAugmentationModule initialized.")
+
+    def generate_unit_tests(self, file_path: str, code_content: str, changed_entities: List[str]) -> str:
+        """
+        Generates new unit tests for changed functions/classes.
+        """
+        prompt = f"""
+        You are an expert in writing comprehensive unit tests.
+        Given the following Python code from '{file_path}' and a list of changed or new entities,
+        generate new unit tests using `pytest` for these entities.
+        Focus on edge cases, functionality, and mocking dependencies where necessary.
+        Return ONLY the Python code for the new test functions, no explanations.
+
+        File: {file_path}
+        Changed/New Entities: {', '.join(changed_entities)}
+
+        ```python
+        {code_content}
+        ```
+
+        Generated `pytest` functions:
+        """
+        logging.info(f"Generating unit tests for {file_path} (entities: {changed_entities})...")
+        try:
+            response = self.llm_orchestrator.client.generate_text(prompt, max_tokens=2000, temperature=0.6)
+            test_code = response.get('text', '').strip()
+            # Attempt to extract code block
+            if test_code.startswith("```"):
+                if "```python" in test_code:
+                    test_code = test_code.split("```python")[1].split("```")[0].strip()
+                elif "```" in test_code: # Generic code block
+                    test_code = test_code.split("```")[1].split("```")[0].strip()
+            return test_code
+        except Exception as e:
+            logging.error(f"Error generating unit tests: {e}")
+            return ""
+
+    def generate_property_based_tests(self, file_path: str, code_content: str, target_function: str) -> str:
+        """
+        Generates property-based tests using a framework like Hypothesis.
+        """
+        prompt = f"""
+        You are an expert in property-based testing.
+        Given the following Python function '{target_function}' from '{file_path}',
+        generate property-based tests using `Hypothesis` framework.
+        Define relevant strategies to generate diverse inputs and assert key properties
+        that should hold true for the function's output.
+        Return ONLY the Python code for the new test functions, no explanations.
+
+        File: {file_path}
+        Target Function: {target_function}
+
+        ```python
+        {code_content}
+        ```
+
+        Generated `Hypothesis` tests:
+        """
+        logging.info(f"Generating property-based tests for {target_function} in {file_path}...")
+        try:
+            response = self.llm_orchestrator.client.generate_text(prompt, max_tokens=2000, temperature=0.7)
+            test_code = response.get('text', '').strip()
+            if test_code.startswith("```"):
+                if "```python" in test_code:
+                    test_code = test_code.split("```python")[1].split("```")[0].strip()
+                elif "```" in test_code:
+                    test_code = test_code.split("```")[1].split("```")[0].strip()
+            return test_code
+        except Exception as e:
+            logging.error(f"Error generating property-based tests: {e}")
+            return ""
+
+
+class RefactoringAnalytics:
+    """
+    Processes telemetry data and validation results to generate insights
+    into refactoring success rates, common issues, and performance trends.
+    """
+    def __init__(self, telemetry_system: 'TelemetrySystem'):
+        self.telemetry = telemetry_system
+        logging.info("RefactoringAnalytics initialized.")
+
+    def generate_summary_report(self) -> Dict[str, Any]:
+        """Generates a comprehensive summary report of a refactoring run."""
+        summary = self.telemetry.get_summary()
+        report: Dict[str, Any] = {
+            "total_steps": summary['metrics'].get('total_plan_steps', 0),
+            "succeeded_steps": summary['metrics'].get('succeeded_plan_steps', 0),
+            "failed_steps": summary['metrics'].get('failed_plan_steps', 0),
+            "fix_attempts": summary['metrics'].get('total_fix_attempts', 0),
+            "total_files_modified": summary['metrics'].get('total_files_modified', 0),
+            "pr_status": "Unknown",
+            "validation_breakdown": {}
+        }
+
+        # Analyze logs for more granular details
+        validation_pass_events = [log for log in summary['logs'] if log['type'] == 'plan_step_succeeded']
+        validation_fail_events = [log for log in summary['logs'] if log['type'] == 'plan_step_failed_validation']
+        pr_created_events = [log for log in summary['logs'] if log['type'] == 'refactoring_completed_successfully']
+
+        if pr_created_events:
+            report["pr_url"] = pr_created_events[-1]['data'].get('pr_url')
+            report["pr_title"] = pr_created_events[-1]['data'].get('pr_title')
+            # In a real system, you'd query VCS API for actual PR status
+
+        # Basic breakdown of validation types that failed
+        failed_validation_types: Dict[str, int] = {}
+        for event in validation_fail_events:
+            error_message = event['data'].get('error', '').lower()
+            if "test suite failed" in error_message:
+                failed_validation_types["test_failures"] = failed_validation_types.get("test_failures", 0) + 1
+            if "static analysis failed" in error_message:
+                failed_validation_types["static_analysis_failures"] = failed_validation_types.get("static_analysis_failures", 0) + 1
+            if "architectural compliance violations" in error_message:
+                failed_validation_types["architectural_violations"] = failed_validation_types.get("architectural_violations", 0) + 1
+            if "security scan findings" in error_message:
+                failed_validation_types["security_findings"] = failed_validation_types.get("security_findings", 0) + 1
+            if "performance regression" in error_message:
+                failed_validation_types["performance_regressions"] = failed_validation_types.get("performance_regressions", 0) + 1
+        report["validation_breakdown"] = failed_validation_types
+
+        logging.info("Refactoring analytics report generated.")
+        return report
+
+class RollbackManager:
+    """
+    Manages more sophisticated rollback strategies, leveraging VCS capabilities.
+    """
+    def __init__(self, vcs_integration: VCSIntegration):
+        self.vcs = vcs_integration
+        logging.info("RollbackManager initialized.")
+
+    def rollback_to_last_commit(self) -> None:
+        """Rolls back to the previous commit, preserving working directory changes."""
+        try:
+            self.vcs.rollback_last_commit()
+            logging.warning("Successfully rolled back to the last commit.")
+        except Exception as e:
+            logging.error(f"Failed to rollback to last commit: {e}")
+            raise
+
+    def discard_file_changes(self, file_path: str) -> None:
+        """Discards all uncommitted changes in a specific file."""
+        try:
+            self.vcs.revert_file(file_path)
+            logging.warning(f"Discarded uncommitted changes for file: {file_path}")
+        except Exception as e:
+            logging.error(f"Failed to discard changes for {file_path}: {e}")
+            raise
+
+    def full_branch_revert(self, target_branch: str) -> None:
+        """
+        Reverts the entire current branch to match another branch (e.g., main).
+        This is a drastic measure.
+        """
+        logging.warning(f"Performing full branch revert to {target_branch}. This will discard all changes on current branch.")
+        try:
+            current_branch = self.vcs.get_current_state().get("branch")
+            self.vcs.checkout_branch(target_branch)
+            self.vcs.checkout_branch(current_branch) # Re-checkout working branch
+            self.vcs._run_git_command(["reset", "--hard", target_branch])
+            logging.info(f"Successfully reverted branch {current_branch} to {target_branch}.")
+        except Exception as e:
+            logging.error(f"Failed to perform full branch revert: {e}")
+            raise
+
 class CodebaseManager:
     """
     Manages all interactions with the source code repository, providing an abstract
     interface for reading, writing, searching, and managing file system state.
     It encapsulates version control system (VCS) operations and file I/O.
     """
-    def __init__(self, codebase_path: str, vcs_integration: VCSIntegration, ast_processor: ASTProcessor, dependency_analyzer: DependencyAnalyzer, semantic_indexer: SemanticIndexer):
+    def __init__(self, codebase_path: str, vcs_integration: VCSIntegration, ast_processor: ASTProcessor, dependency_analyzer: DependencyAnalyzer, semantic_indexer: SemanticIndexer, code_quality_analyzers: Optional[Dict[str, CodeQualityMetrics]] = None):
         if not os.path.exists(codebase_path):
             raise FileNotFoundError(f"Codebase path does not exist: {codebase_path}")
         self.codebase_path = os.path.abspath(codebase_path)
@@ -473,6 +772,7 @@ class CodebaseManager:
         self.ast_processor = ast_processor
         self.dependency_analyzer = dependency_analyzer
         self.semantic_indexer = semantic_indexer
+        self.code_quality_analyzers = code_quality_analyzers if code_quality_analyzers else {}
         logging.info(f"CodebaseManager initialized for path: {self.codebase_path}")
 
     def find_all_code_files(self) -> List[str]:
@@ -480,7 +780,8 @@ class CodebaseManager:
         code_files = []
         for root, _, files in os.walk(self.codebase_path):
             for file in files:
-                if file.endswith(('.py', '.js', '.java', '.ts', '.cs', '.go', '.rb', '.php', '.c', '.cpp', '.h', '.hpp')):
+                # Expanded list of common code file extensions
+                if file.endswith(('.py', '.js', '.java', '.ts', '.cs', '.go', '.rb', '.php', '.c', '.cpp', '.h', '.hpp', '.m', '.swift', '.kt', '.rs', '.sh', '.bash')):
                     code_files.append(os.path.relpath(os.path.join(root, file), self.codebase_path))
         return code_files
 
@@ -490,7 +791,7 @@ class CodebaseManager:
         for root, _, files in os.walk(self.codebase_path):
             for file in files:
                 file_path_abs = os.path.join(root, file)
-                if file.endswith(('.py', '.js', '.java', '.ts', '.cs', '.go', '.rb', '.php', '.c', '.cpp', '.h', '.hpp')):
+                if file.endswith(('.py', '.js', '.java', '.ts', '.cs', '.go', '.rb', '.php', '.c', '.cpp', '.h', '.hpp', '.m', '.swift', '.kt', '.rs', '.sh', '.bash')):
                     try:
                         with open(file_path_abs, 'r', encoding='utf-8') as f:
                             if keyword in f.read():
@@ -583,13 +884,24 @@ class CodebaseManager:
         self.vcs.revert_file(file_path)
         logging.warning(f"Reverted file {file_path} to its last VCS state.")
 
+    def analyze_code_quality(self, file_path: str, content: str) -> Dict[str, Any]:
+        """Runs all configured code quality analyzers on a file."""
+        all_metrics = {}
+        for name, analyzer in self.code_quality_analyzers.items():
+            try:
+                metrics = analyzer.analyze(file_path, content)
+                all_metrics[name] = metrics
+            except Exception as e:
+                logging.error(f"Error running {name} analyzer on {file_path}: {e}")
+        return all_metrics
 
 class TestResults:
     """A simple data structure to hold test execution results."""
-    def __init__(self, passed: bool, output: str = "", error: str = ""):
+    def __init__(self, passed: bool, output: str = "", error: str = "", metrics: Optional[Dict[str, Any]] = None):
         self.passed = passed
         self.output = output
         self.error = error
+        self.metrics = metrics if metrics is not None else {}
 
 class LLMOrchestrator:
     """
@@ -631,14 +943,14 @@ class LLMOrchestrator:
             logging.error(f"Error generating plan with LLM: {e}")
             raise
 
-    def modify_code(self, current_code: str, plan_step: str, context: Dict[str, Any]) -> str:
+    def modify_code(self, current_code: str, plan_step: str, context: Dict[str, Any], strategy: CodeGenerationStrategy = CodeGenerationStrategy.WHOLE_FILE_REPLACE) -> str:
         """
         Prompts the LLM to apply a specific refactoring step to the given code.
         Context can include surrounding files, ASTs, etc.
         """
         prompt = f"""
-        You are an expert code refactoring bot.
-        Apply the following refactoring step to the provided code.
+        You are an expert code refactoring bot. Your task is to apply a specific refactoring step.
+        The generation strategy is: {strategy.value}.
         Ensure syntactical correctness, maintain functionality, and adhere to best practices.
         Return ONLY the modified code, no explanations or other text.
 
@@ -653,7 +965,7 @@ class LLMOrchestrator:
 
         Modified Code:
         """
-        logging.info(f"Requesting LLM to execute plan step: {plan_step[:80]}...")
+        logging.info(f"Requesting LLM to execute plan step: {plan_step[:80]}... using strategy: {strategy.value}")
         try:
             response = self.client.generate_text(prompt, max_tokens=4000, temperature=0.5)
             modified_code = response.get('text', '').strip()
@@ -783,17 +1095,18 @@ class ExecutionModule:
     Responsible for applying code changes, managing file state, and
     interfacing with the codebase manager.
     """
-    def __init__(self, codebase_manager: CodebaseManager, llm_orchestrator: LLMOrchestrator, ast_processor: ASTProcessor):
+    def __init__(self, codebase_manager: CodebaseManager, llm_orchestrator: LLMOrchestrator, ast_processor: ASTProcessor, rollback_manager: RollbackManager):
         self.codebase_manager = codebase_manager
         self.llm_orchestrator = llm_orchestrator
         self.ast_processor = ast_processor
+        self.rollback_manager = rollback_manager
         self.file_snapshots: Dict[str, str] = {} # For rollback to previous state within a refactoring step
         logging.info("ExecutionModule initialized.")
 
-    def apply_step(self, file_path: str, current_content: str, plan_step: str, context: Dict[str, Any]) -> str:
+    def apply_step(self, file_path: str, current_content: str, plan_step: str, context: Dict[str, Any], strategy: CodeGenerationStrategy) -> str:
         """Applies a single refactoring step and returns the modified content."""
         self.file_snapshots[file_path] = current_content # Save for potential rollback
-        modified_content = self.llm_orchestrator.modify_code(current_content, plan_step, context)
+        modified_content = self.llm_orchestrator.modify_code(current_content, plan_step, context, strategy)
         self.codebase_manager.write_file(file_path, modified_content)
         return modified_content
 
@@ -828,31 +1141,54 @@ class ValidationModule:
     Handles all aspects of validating code changes, including running tests,
     static analysis, architectural compliance checks, and performance benchmarking.
     """
-    def __init__(self, codebase_manager: CodebaseManager, architectural_checker: ArchitecturalComplianceChecker, config: Dict[str, Any]):
+    def __init__(self, codebase_manager: CodebaseManager, architectural_checker: ArchitecturalComplianceChecker, test_augmentation_module: TestAugmentationModule, config: Dict[str, Any]):
         self.codebase_manager = codebase_manager
         self.architectural_checker = architectural_checker
+        self.test_augmentation_module = test_augmentation_module
         self.test_command = config.get("test_command", "pytest")
         self.static_analysis_commands = config.get("static_analysis_commands", ["pylint", "flake8"])
         self.security_scan_commands = config.get("security_scan_commands", ["bandit"])
         self.benchmarking_command = config.get("benchmarking_command")
         logging.info("ValidationModule initialized.")
 
-    def validate_changes(self, modified_files_contents: Dict[str, str]) -> 'TestResults':
+    def validate_changes(self, modified_files_contents: Dict[str, str], changed_entities: Dict[str, List[str]]) -> 'TestResults':
         """
         Executes a comprehensive validation suite: unit tests, static analysis,
         architectural checks, security scans, and optionally performance benchmarks.
         """
         validation_errors = []
+        all_metrics = {}
+
+        # 0. Test Augmentation (optional, but good for refactoring new logic)
+        for file_path, content in modified_files_contents.items():
+            if file_path.endswith('.py') and changed_entities.get(file_path):
+                # Generate new tests and append them to an existing test file or a new one
+                # For simplicity, we'll mock adding new tests to 'test_<filename>.py'
+                test_file_path = os.path.join(os.path.dirname(file_path), f"test_{os.path.basename(file_path)}")
+                new_unit_tests = self.test_augmentation_module.generate_unit_tests(
+                    file_path, content, changed_entities[file_path]
+                )
+                if new_unit_tests:
+                    logging.info(f"Appending generated unit tests for {file_path} to {test_file_path}.")
+                    # In a real scenario, merge intelligently or write to a temp test file
+                    try:
+                        existing_tests = self.codebase_manager.read_files([test_file_path]).get(test_file_path, "")
+                        self.codebase_manager.write_file(test_file_path, existing_tests + "\n\n" + new_unit_tests)
+                    except Exception as e:
+                        logging.warning(f"Could not write generated tests to {test_file_path}: {e}")
+
 
         # 1. Automated Test Suite Execution
         test_results = self.codebase_manager.run_tests(self.test_command)
         if not test_results.passed:
             validation_errors.append(f"Test suite failed:\n{test_results.output}")
+        all_metrics["test_results"] = {"passed": test_results.passed, "output": test_results.output}
 
         # 2. Static Code Analysis
-        static_analysis_errors = self._run_static_analysis(modified_files_contents)
-        if static_analysis_errors:
-            validation_errors.append(f"Static analysis failed:\n{static_analysis_errors}")
+        static_analysis_output = self._run_static_analysis(modified_files_contents)
+        if static_analysis_output["errors"]:
+            validation_errors.append(f"Static analysis failed:\n{static_analysis_output['errors']}")
+        all_metrics["static_analysis"] = static_analysis_output["metrics"]
 
         # 3. Architectural Compliance Checks
         # Pass the full codebase context for comprehensive checks
@@ -863,57 +1199,65 @@ class ValidationModule:
         architectural_violations = self.architectural_checker.identify_violations(full_codebase_context)
         if architectural_violations:
             validation_errors.append(f"Architectural compliance violations:\n{', '.join(architectural_violations)}")
+        all_metrics["architectural_compliance"] = {"violations": architectural_violations, "passed": not bool(architectural_violations)}
+
 
         # 4. Security Scans
-        security_scan_errors = self._run_security_scans(modified_files_contents)
-        if security_scan_errors:
-            validation_errors.append(f"Security scan findings:\n{security_scan_errors}")
+        security_scan_output = self._run_security_scans(modified_files_contents)
+        if security_scan_output:
+            validation_errors.append(f"Security scan findings:\n{security_scan_output}")
+        all_metrics["security_scan"] = {"output": security_scan_output, "passed": not bool(security_scan_output)}
+
 
         # 5. Dynamic Analysis/Performance Benchmarking
+        perf_results = TestResults(passed=True)
         if self.benchmarking_command:
             perf_results = self._run_performance_benchmarks(modified_files_contents)
             if not perf_results.passed:
                 validation_errors.append(f"Performance benchmarks failed:\n{perf_results.output}")
+        all_metrics["performance_benchmarking"] = {"passed": perf_results.passed, "output": perf_results.output}
 
         if validation_errors:
-            return TestResults(passed=False, error="\n".join(validation_errors))
-        return TestResults(passed=True, output="All validations passed.")
+            return TestResults(passed=False, error="\n".join(validation_errors), metrics=all_metrics)
+        return TestResults(passed=True, output="All validations passed.", metrics=all_metrics)
 
-    def _run_static_analysis(self, modified_files_contents: Dict[str, str]) -> str:
-        """Runs configured static analysis tools (e.g., pylint, flake8)."""
+    def _run_static_analysis(self, modified_files_contents: Dict[str, str]) -> Dict[str, Any]:
+        """Runs configured static analysis tools (e.g., pylint, flake8) on modified files."""
         errors = []
-        for cmd_template in self.static_analysis_commands:
-            logging.info(f"Running static analysis: {cmd_template}")
-            # For each modified file, run the static analysis tool
-            for file_path in modified_files_contents.keys():
+        metrics: Dict[str, Any] = {}
+        for file_path, content in modified_files_contents.items():
+            file_metrics = self.codebase_manager.analyze_code_quality(file_path, content)
+            metrics[file_path] = file_metrics
+
+            for cmd_template in self.static_analysis_commands:
+                logging.info(f"Running static analysis: {cmd_template} on {file_path}")
                 if file_path.endswith('.py'): # Assume Python tools for now
                     try:
                         cmd = cmd_template.split() + [os.path.join(self.codebase_manager.codebase_path, file_path)]
                         result = subprocess.run(cmd, cwd=self.codebase_manager.codebase_path, check=False, capture_output=True, text=True)
-                        if result.returncode != 0:
-                            errors.append(f"[{cmd_template.split()[0]} for {file_path}]\n{result.stdout + result.stderr}")
+                        if result.returncode != 0 and result.stdout.strip(): # Pylint/Flake8 often output to stdout
+                            errors.append(f"[{cmd_template.split()[0]} for {file_path}]\n{result.stdout.strip()}")
                     except FileNotFoundError:
-                        logging.warning(f"Static analysis tool '{cmd_template.split()[0]}' not found. Skipping.")
-                        break # Skip if tool is not available
+                        logging.warning(f"Static analysis tool '{cmd_template.split()[0]}' not found. Skipping for {file_path}.")
                     except Exception as e:
                         logging.error(f"Error running static analysis '{cmd_template}' on {file_path}: {e}")
-        return "\n".join(errors)
+        return {"errors": "\n".join(errors), "metrics": metrics}
 
     def _run_security_scans(self, modified_files_contents: Dict[str, str]) -> str:
-        """Runs configured security scan tools (e.g., bandit)."""
+        """Runs configured security scan tools (e.g., bandit) on modified files."""
         errors = []
-        for cmd_template in self.security_scan_commands:
-            logging.info(f"Running security scan: {cmd_template}")
-            for file_path in modified_files_contents.keys():
+        for file_path in modified_files_contents.keys():
+            for cmd_template in self.security_scan_commands:
+                logging.info(f"Running security scan: {cmd_template} on {file_path}")
                 if file_path.endswith('.py'):
                     try:
                         cmd = cmd_template.split() + [os.path.join(self.codebase_manager.codebase_path, file_path)]
                         result = subprocess.run(cmd, cwd=self.codebase_manager.codebase_path, check=False, capture_output=True, text=True)
-                        if result.returncode != 0: # Bandit exits non-zero if issues found
-                            errors.append(f"[{cmd_template.split()[0]} for {file_path}]\n{result.stdout + result.stderr}")
+                        if result.returncode != 0 and result.stdout.strip(): # Bandit exits non-zero if issues found
+                            errors.append(f"[{cmd_template.split()[0]} for {file_path}]\n{result.stdout.strip()}")
                     except FileNotFoundError:
-                        logging.warning(f"Security tool '{cmd_template.split()[0]}' not found. Skipping.")
-                        break
+                        logging.warning(f"Security tool '{cmd_template.split()[0]}' not found. Skipping for {file_path}.")
+                        break # Skip if tool is not available
                     except Exception as e:
                         logging.error(f"Error running security scan '{cmd_template}' on {file_path}: {e}")
         return "\n".join(errors)
@@ -959,10 +1303,13 @@ class KnowledgeBase:
             "performance": ["Optimize loop iterations.", "Cache expensive computations.", "Use efficient data structures."],
             "modularity": ["Extract interface.", "Separate concerns.", "Use facade pattern."],
             "type_safety": ["Add strict type hints.", "Use static analysis for type checking."],
+            "idiomatic_python": ["Use list comprehensions.", "Prefer context managers.", "Follow PEP 8."],
         }
         self.anti_patterns = {
             "god_object": ["Avoid large classes with too many responsibilities."],
             "tight_coupling": ["Reduce direct dependencies, favor interfaces."],
+            "magic_numbers": ["Avoid hardcoded numbers, use constants."],
+            "duplicate_code": ["Refactor into shared functions/classes."],
         }
         self.feedback_history: List[Dict[str, Any]] = []
         logging.info("KnowledgeBase initialized with sample patterns and anti-patterns.")
@@ -1011,7 +1358,18 @@ class TelemetrySystem:
     """
     def __init__(self):
         self.logs = []
-        self.metrics = {}
+        self.metrics = {
+            "total_plan_steps": 0,
+            "succeeded_plan_steps": 0,
+            "failed_plan_steps": 0,
+            "total_fix_attempts": 0,
+            "total_files_modified": 0,
+            "total_validation_runs": 0,
+            "total_validation_failures": 0,
+            "refactoring_start_time": None,
+            "refactoring_end_time": None,
+            "duration_seconds": 0
+        }
         logging.info("TelemetrySystem initialized.")
 
     def record_event(self, event_type: str, data: Dict[str, Any]):
@@ -1019,14 +1377,20 @@ class TelemetrySystem:
         self.logs.append({"timestamp": os.get_clock_info("monotonic").time(), "type": event_type, "data": data})
         logging.debug(f"Telemetry recorded: {event_type}")
 
-    def update_metric(self, metric_name: str, value: Any):
+    def update_metric(self, metric_name: str, value: Any, increment: bool = False):
         """Updates a quantifiable metric."""
-        self.metrics[metric_name] = value
-        logging.debug(f"Metric updated: {metric_name} = {value}")
+        if increment and isinstance(self.metrics.get(metric_name), (int, float)):
+            self.metrics[metric_name] = self.metrics.get(metric_name, 0) + value
+        else:
+            self.metrics[metric_name] = value
+        logging.debug(f"Metric updated: {metric_name} = {self.metrics[metric_name]}")
 
     def get_summary(self) -> Dict[str, Any]:
         """Provides a summary of captured telemetry."""
-        return {"logs_count": len(self.logs), "metrics": self.metrics}
+        if self.metrics["refactoring_start_time"] and self.metrics["refactoring_end_time"]:
+            self.metrics["duration_seconds"] = self.metrics["refactoring_end_time"] - self.metrics["refactoring_start_time"]
+
+        return {"logs": self.logs, "metrics": self.metrics}
 
     def get_metric(self, metric_name: str, default_value: Any = None) -> Any:
         """Retrieves a specific metric."""
@@ -1044,23 +1408,38 @@ class RefactoringAgent:
         self.ast_processor = ASTProcessor()
         self.dependency_analyzer = DependencyAnalyzer()
         self.semantic_indexer = SemanticIndexer(embedding_model=self._get_embedding_model()) # Pass a real embedding model
+
+        self.complexity_analyzer = ComplexityMetricsAnalyzer()
+        self.coverage_analyzer = CoverageMetricsAnalyzer()
+        code_quality_analyzers = {
+            "complexity": self.complexity_analyzer,
+            "coverage": self.coverage_analyzer
+        }
+
         self.vcs_integration = GitVCSIntegration(codebase_path)
         self.codebase_manager = CodebaseManager(
             codebase_path,
             vcs_integration=self.vcs_integration,
             ast_processor=self.ast_processor,
             dependency_analyzer=self.dependency_analyzer,
-            semantic_indexer=self.semantic_indexer
+            semantic_indexer=self.semantic_indexer,
+            code_quality_analyzers=code_quality_analyzers
         )
         self.llm_orchestrator = LLMOrchestrator(llm_client)
         self.knowledge_base = KnowledgeBase() # Potentially loaded from external source
         self.planning_module = PlanningModule(self.llm_orchestrator, self.knowledge_base)
-        self.execution_module = ExecutionModule(self.codebase_manager, self.llm_orchestrator, self.ast_processor)
+        self.rollback_manager = RollbackManager(self.vcs_integration)
+        self.execution_module = ExecutionModule(self.codebase_manager, self.llm_orchestrator, self.ast_processor, self.rollback_manager)
         self.architectural_checker = ArchitecturalComplianceChecker(self.config.get('architectural_rules', {}))
-        self.validation_module = ValidationModule(self.codebase_manager, self.architectural_checker, self.config.get('validation', {}))
+        self.test_augmentation_module = TestAugmentationModule(self.llm_orchestrator)
+        self.validation_module = ValidationModule(self.codebase_manager, self.architectural_checker, self.test_augmentation_module, self.config.get('validation', {}))
         self.human_feedback_processor = HumanFeedbackProcessor(self.knowledge_base)
+        self.refactoring_analytics = RefactoringAnalytics(self.telemetry)
 
         self.current_code_state: Dict[str, str] = {}
+        self.changed_entities_per_file: Dict[str, List[str]] = {} # Tracks what entities were modified per file in a step
+        self.code_generation_strategy = CodeGenerationStrategy[self.config.get('code_generation_strategy', 'WHOLE_FILE_REPLACE').upper()]
+
         # Generate a unique and clean branch name from the goal
         self.refactoring_branch_name = "ai-refactor-" + "".join(filter(str.isalnum, goal.lower()))[:40].replace(' ', '_') + "-" + str(os.getpid())
 
@@ -1073,7 +1452,8 @@ class RefactoringAgent:
         class MockEmbeddingModel:
             def encode(self, text: str) -> List[float]:
                 # Simple hash-based mock embedding
-                return [float(c) / 128.0 for c in text.encode('utf-8')[:30]] + [0.0] * (30 - len(text.encode('utf-8')[:30]))
+                hash_val = sum(c for c in text.encode('utf-8')) % 10000
+                return [float(hash_val) / 10000.0] * 30 # A fixed-size embedding for simplicity
         return MockEmbeddingModel()
 
     def run(self):
@@ -1082,189 +1462,213 @@ class RefactoringAgent:
         """
         logging.info("Starting autonomous refactoring process...")
         self.telemetry.record_event("refactoring_started", {"goal": self.goal})
+        self.telemetry.update_metric("refactoring_start_time", os.get_clock_info("monotonic").time())
 
         original_branch = self.vcs_integration.get_current_state().get("branch", "main")
-        self.vcs_integration.create_branch(self.refactoring_branch_name)
+        try:
+            self.vcs_integration.create_branch(self.refactoring_branch_name)
 
-        # 1. Goal Ingestion (implicitly done in __init__ and used throughout)
+            # 1. Goal Ingestion (implicitly done in __init__ and used throughout)
 
-        # 2. Observe: Identify and read relevant files, build graphs, index semantics
-        all_code_files = self.codebase_manager.find_all_code_files()
-        self.current_code_state = self.codebase_manager.read_files(all_code_files)
+            # 2. Observe: Identify and read relevant files, build graphs, index semantics
+            all_code_files = self.codebase_manager.find_all_code_files()
+            self.current_code_state = self.codebase_manager.read_files(all_code_files)
 
-        if not self.current_code_state:
-            logging.error("Could not read content of any files in codebase. Exiting.")
-            self.telemetry.record_event("refactoring_failed", {"reason": "read_files_failed"})
-            return
-
-        # Build dependency graphs and semantic index for the *entire* codebase initially
-        self.codebase_manager.dependency_analyzer.build_dependency_graph(self.current_code_state)
-        # Assuming embedding model can encode the goal for semantic search
-        goal_embedding = self._get_embedding_model().encode(self.goal)
-        self.codebase_manager.semantic_indexer.build_index(self.current_code_state)
-
-        # Use semantic search to identify primary relevant files
-        relevant_files_paths = self.codebase_manager.find_relevant_files_semantic(goal_embedding)
-        if not relevant_files_paths:
-            # Fallback to lexical if semantic yields nothing
-            logging.warning("Semantic search found no relevant files. Falling back to lexical search.")
-            relevant_files_paths = self.codebase_manager.find_relevant_files_lexical(self.goal.split(' ')[2].replace('`', '')) # Heuristic
-
-        if not relevant_files_paths:
-            logging.error("No relevant files found by any search method. Exiting.")
-            self.telemetry.record_event("refactoring_failed", {"reason": "no_relevant_files"})
-            self.vcs_integration.checkout_branch(original_branch)
-            return
-
-        # Only load the relevant files into current_code_state for focused work
-        self.current_code_state = self.codebase_manager.read_files(relevant_files_paths)
-
-        self.telemetry.record_event("relevant_files_identified", {"files": list(self.current_code_state.keys())})
-        logging.info(f"Identified {len(self.current_code_state)} relevant files.")
-
-        # 3. Orient (Plan): Generate a multi-step refactoring plan
-        initial_context = {
-            "files": self.current_code_state,
-            "current_vcs_state": self.codebase_manager.vcs.get_current_state(),
-            "dependency_graph": self.codebase_manager.dependency_analyzer.call_graph, # Example
-            "commit_history_relevant_files": {
-                f: self.codebase_manager.vcs.get_commit_history(f) for f in relevant_files_paths
-            }
-        }
-        plan = self.planning_module.formulate_plan(initial_context, self.goal)
-        if not plan:
-            logging.error("Failed to generate a refactoring plan. Exiting.")
-            self.telemetry.record_event("refactoring_failed", {"reason": "plan_generation_failed"})
-            self.vcs_integration.checkout_branch(original_branch)
-            return
-
-        self.telemetry.record_event("plan_generated", {"num_steps": len(plan), "plan_preview": plan[:3]})
-        logging.info(f"Generated a plan with {len(plan)} steps.")
-
-        # 4. Decide & Act (Iterative Refactoring): Execute the plan
-        changes_summary_list = []
-        overall_architectural_violations: List[str] = []
-
-        for i, step in enumerate(plan):
-            logging.info(f"Executing plan step {i+1}/{len(plan)}: '{step}'")
-            self.telemetry.record_event("plan_step_started", {"step_num": i+1, "step_description": step})
-
-            # For simplicity, assume the plan step applies to one of the initially identified relevant files.
-            # A more advanced agent would dynamically determine the target files for each step.
-            # For this example, we'll try to apply to the first relevant file.
-            if not relevant_files_paths:
-                logging.error("No target files for refactoring steps. Aborting.")
-                self.telemetry.record_event("refactoring_aborted", {"reason": "no_target_files"})
-                self.vcs_integration.checkout_branch(original_branch)
+            if not self.current_code_state:
+                logging.error("Could not read content of any files in codebase. Exiting.")
+                self.telemetry.record_event("refactoring_failed", {"reason": "read_files_failed"})
                 return
 
-            target_file_path = relevant_files_paths[0] # Simplification for demo
-            if target_file_path not in self.current_code_state:
-                logging.warning(f"Target file {target_file_path} not in current_code_state. Attempting to read it.")
-                content_for_target = self.codebase_manager.read_files([target_file_path]).get(target_file_path)
-                if not content_for_target:
-                    logging.error(f"Failed to get content for target file {target_file_path}. Skipping step.")
-                    continue
-                self.current_code_state[target_file_path] = content_for_target
+            # Build dependency graphs and semantic index for the *entire* codebase initially
+            self.codebase_manager.dependency_analyzer.build_dependency_graph(self.current_code_state)
+            # Assuming embedding model can encode the goal for semantic search
+            goal_embedding = self._get_embedding_model().encode(self.goal)
+            self.codebase_manager.semantic_indexer.build_index(self.current_code_state)
 
-            current_file_content = self.current_code_state[target_file_path]
-            original_file_snapshot = current_file_content # Snapshot for rollback within this step
+            # Use semantic search to identify primary relevant files
+            relevant_files_paths = self.codebase_manager.find_relevant_files_semantic(goal_embedding)
+            if not relevant_files_paths:
+                # Fallback to lexical if semantic yields nothing
+                logging.warning("Semantic search found no relevant files. Falling back to lexical search.")
+                keyword_for_lexical = self.goal.split(' ')[2].replace('`', '') if len(self.goal.split(' ')) > 2 else self.goal
+                relevant_files_paths = self.codebase_manager.find_relevant_files_lexical(keyword_for_lexical) # Heuristic
 
-            try_count = 0
-            max_fix_attempts = 3
-            step_completed = False
+            if not relevant_files_paths:
+                logging.error("No relevant files found by any search method. Exiting.")
+                self.telemetry.record_event("refactoring_failed", {"reason": "no_relevant_files"})
+                return
 
-            while try_count < max_fix_attempts and not step_completed:
-                try_count += 1
-                try:
-                    # Apply modification
-                    modified_code = self.execution_module.apply_step(
-                        target_file_path, current_file_content, step, initial_context
-                    )
-                    self.current_code_state[target_file_path] = modified_code
-                    logging.debug(f"Step {i+1} code modification applied.")
+            # Only load the relevant files into current_code_state for focused work (or subset if memory constrained)
+            # For simplicity, we'll re-read all initially identified relevant files.
+            self.current_code_state = self.codebase_manager.read_files(relevant_files_paths)
 
-                    # Post-refactoring formatting for consistency
-                    self.execution_module.format_code(os.path.join(self.codebase_manager.codebase_path, target_file_path))
+            self.telemetry.record_event("relevant_files_identified", {"files": list(self.current_code_state.keys())})
+            logging.info(f"Identified {len(self.current_code_state)} relevant files.")
 
-                    # Validate changes (pass all modified files for validation)
-                    validation_results = self.validation_module.validate_changes(self.current_code_state) # Pass all modified files
-                    
-                    # Capture architectural violations separately for PR summary
-                    current_arch_violations = self.architectural_checker.identify_violations({
-                        "file_contents": self.codebase_manager.read_files(self.codebase_manager.find_all_code_files()),
-                        "dependency_graph": self.codebase_manager.dependency_analyzer.call_graph
-                    })
-                    overall_architectural_violations.extend(current_arch_violations)
+            # 3. Orient (Plan): Generate a multi-step refactoring plan
+            initial_context = {
+                "files": self.current_code_state,
+                "current_vcs_state": self.codebase_manager.vcs.get_current_state(),
+                "dependency_graph": {fp: list(calls) for fp, calls in self.codebase_manager.dependency_analyzer.call_graph.items()}, # Convert sets to lists for JSON
+                "commit_history_relevant_files": {
+                    f: self.codebase_manager.vcs.get_commit_history(f) for f in relevant_files_paths
+                }
+            }
+            plan = self.planning_module.formulate_plan(initial_context, self.goal)
+            self.telemetry.update_metric("total_plan_steps", len(plan))
 
+            if not plan:
+                logging.error("Failed to generate a refactoring plan. Exiting.")
+                self.telemetry.record_event("refactoring_failed", {"reason": "plan_generation_failed"})
+                return
 
-                    if validation_results.passed:
-                        logging.info(f"Plan step {i+1} validated successfully.")
-                        self.telemetry.record_event("plan_step_succeeded", {"step_num": i+1, "attempt": try_count})
-                        changes_summary_list.append(f"Step {i+1} ('{step}'): Applied changes to {target_file_path} and passed validation.")
-                        step_completed = True
-                    else:
-                        logging.warning(f"Plan step {i+1} validation failed (attempt {try_count}). Error: {validation_results.error}")
-                        self.telemetry.record_event("plan_step_failed_validation", {
-                            "step_num": i+1, "attempt": try_count, "error": validation_results.error
+            self.telemetry.record_event("plan_generated", {"num_steps": len(plan), "plan_preview": plan[:3]})
+            logging.info(f"Generated a plan with {len(plan)} steps.")
+
+            # 4. Decide & Act (Iterative Refactoring): Execute the plan
+            changes_summary_list = []
+            overall_architectural_violations: List[str] = []
+
+            for i, step in enumerate(plan):
+                logging.info(f"Executing plan step {i+1}/{len(plan)}: '{step}'")
+                self.telemetry.record_event("plan_step_started", {"step_num": i+1, "step_description": step})
+
+                # For simplicity, assume the plan step applies to one of the initially identified relevant files.
+                # A more advanced agent would dynamically determine the target files for each step.
+                # For this example, we'll try to apply to the first relevant file.
+                if not relevant_files_paths:
+                    logging.error("No target files for refactoring steps. Aborting.")
+                    self.telemetry.record_event("refactoring_aborted", {"reason": "no_target_files"})
+                    raise Exception("No target files for refactoring steps.")
+
+                # Simplification: target the first relevant file that is Python.
+                target_file_path = next((f for f in relevant_files_paths if f.endswith('.py')), relevant_files_paths[0])
+                if target_file_path not in self.current_code_state:
+                    logging.warning(f"Target file {target_file_path} not in current_code_state. Attempting to read it.")
+                    content_for_target = self.codebase_manager.read_files([target_file_path]).get(target_file_path)
+                    if not content_for_target:
+                        logging.error(f"Failed to get content for target file {target_file_path}. Skipping step.")
+                        self.telemetry.update_metric("failed_plan_steps", 1, increment=True)
+                        continue
+                    self.current_code_state[target_file_path] = content_for_target
+
+                current_file_content = self.current_code_state[target_file_path]
+                original_file_snapshot = current_file_content # Snapshot for rollback within this step
+
+                try_count = 0
+                max_fix_attempts = 3
+                step_completed = False
+
+                while try_count < max_fix_attempts and not step_completed:
+                    try_count += 1
+                    self.telemetry.update_metric("total_fix_attempts", 1, increment=True)
+                    try:
+                        # Apply modification
+                        modified_code = self.execution_module.apply_step(
+                            target_file_path, current_file_content, step, initial_context, self.code_generation_strategy
+                        )
+                        self.current_code_state[target_file_path] = modified_code
+                        self.telemetry.update_metric("total_files_modified", 1, increment=True)
+                        logging.debug(f"Step {i+1} code modification applied to {target_file_path}.")
+
+                        # Post-refactoring formatting for consistency
+                        self.execution_module.format_code(os.path.join(self.codebase_manager.codebase_path, target_file_path))
+
+                        # Placeholder for tracking changed entities (e.g., functions, classes) within the file
+                        # This would typically involve AST diffing between current_file_content and modified_code
+                        self.changed_entities_per_file[target_file_path] = ["conceptual_changed_entity"]
+
+                        # Validate changes (pass all modified files for validation)
+                        self.telemetry.update_metric("total_validation_runs", 1, increment=True)
+                        validation_results = self.validation_module.validate_changes(self.current_code_state, self.changed_entities_per_file)
+                        
+                        # Capture architectural violations separately for PR summary
+                        current_arch_violations = self.architectural_checker.identify_violations({
+                            "file_contents": self.codebase_manager.read_files(self.codebase_manager.find_all_code_files()),
+                            "dependency_graph": {fp: list(calls) for fp, calls in self.codebase_manager.dependency_analyzer.call_graph.items()}
                         })
-                        if try_count < max_fix_attempts:
-                            logging.info(f"Attempting to fix code for step {i+1}...")
-                            # Attempt to fix
-                            fixed_code = self.execution_module.attempt_fix(
-                                target_file_path, modified_code, validation_results.error, step, initial_context
-                            )
-                            self.current_code_state[target_file_path] = fixed_code
-                            logging.info(f"Fix attempt {try_count} applied.")
+                        overall_architectural_violations.extend(current_arch_violations)
+
+
+                        if validation_results.passed:
+                            logging.info(f"Plan step {i+1} validated successfully.")
+                            self.telemetry.record_event("plan_step_succeeded", {"step_num": i+1, "attempt": try_count, "metrics": validation_results.metrics})
+                            self.telemetry.update_metric("succeeded_plan_steps", 1, increment=True)
+                            changes_summary_list.append(f"Step {i+1} ('{step}'): Applied changes to {target_file_path} and passed validation.")
+                            step_completed = True
                         else:
-                            logging.error(f"Max fix attempts reached for step {i+1}. Rolling back this step.")
-                            self.execution_module.rollback_to_snapshot(target_file_path) # Rollback to prior to this step's modification
-                            self.current_code_state[target_file_path] = original_file_snapshot # Restore local state
-                            self.telemetry.record_event("plan_step_failed_permanently", {"step_num": i+1})
-                            raise Exception(f"Failed to complete plan step '{step}' after {max_fix_attempts} attempts.")
-                except Exception as e:
-                    logging.error(f"Critical error during plan step {i+1}: {e}. Rolling back and aborting.")
-                    self.execution_module.rollback_to_snapshot(target_file_path) # Ensure clean state for the file
-                    self.telemetry.record_event("refactoring_aborted", {"reason": f"critical_error_step_{i+1}", "error": str(e)})
-                    self.vcs_integration.checkout_branch(original_branch)
-                    return # Abort the entire refactoring if a step fails irrevocably
+                            self.telemetry.update_metric("total_validation_failures", 1, increment=True)
+                            logging.warning(f"Plan step {i+1} validation failed (attempt {try_count}). Error: {validation_results.error}")
+                            self.telemetry.record_event("plan_step_failed_validation", {
+                                "step_num": i+1, "attempt": try_count, "error": validation_results.error, "metrics": validation_results.metrics
+                            })
+                            if try_count < max_fix_attempts:
+                                logging.info(f"Attempting to fix code for step {i+1}...")
+                                # Attempt to fix
+                                fixed_code = self.execution_module.attempt_fix(
+                                    target_file_path, modified_code, validation_results.error, step, initial_context
+                                )
+                                self.current_code_state[target_file_path] = fixed_code
+                                logging.info(f"Fix attempt {try_count} applied.")
+                            else:
+                                logging.error(f"Max fix attempts reached for step {i+1}. Rolling back this step.")
+                                self.execution_module.rollback_to_snapshot(target_file_path) # Rollback to prior to this step's modification
+                                self.current_code_state[target_file_path] = original_file_snapshot # Restore local state
+                                self.telemetry.record_event("plan_step_failed_permanently", {"step_num": i+1})
+                                self.telemetry.update_metric("failed_plan_steps", 1, increment=True)
+                                raise Exception(f"Failed to complete plan step '{step}' after {max_fix_attempts} attempts.")
+                    except Exception as e:
+                        logging.error(f"Critical error during plan step {i+1}: {e}. Rolling back and aborting.")
+                        self.execution_module.rollback_to_snapshot(target_file_path) # Ensure clean state for the file
+                        self.telemetry.record_event("refactoring_aborted", {"reason": f"critical_error_step_{i+1}", "error": str(e)})
+                        raise # Re-raise to trigger finally block for cleanup
 
-        # 5. Finalize: Commit and create Pull Request
-        final_summary = "\n".join(changes_summary_list)
-        final_metrics = self.telemetry.get_summary() # Placeholder, would include detailed diffs, perf metrics etc.
-        unique_architectural_violations = list(set(overall_architectural_violations))
+            # 5. Finalize: Commit and create Pull Request
+            final_summary = "\n".join(changes_summary_list)
+            final_metrics = self.telemetry.get_summary() # Placeholder, would include detailed diffs, perf metrics etc.
+            unique_architectural_violations = list(set(overall_architectural_violations))
 
-        pr_title, pr_body = self.llm_orchestrator.generate_pr_summary(
-            self.goal, final_summary, final_metrics, unique_architectural_violations
-        )
-
-        # Generate/update documentation for affected files
-        for file_path, content in self.current_code_state.items():
-            doc_update_content = self.llm_orchestrator.generate_documentation_update(
-                file_path, content, f"Refactoring completed for goal: {self.goal}. Changes: {changes_summary_list}"
+            pr_title, pr_body = self.llm_orchestrator.generate_pr_summary(
+                self.goal, final_summary, final_metrics, unique_architectural_violations
             )
-            # Decide how to apply doc update: overwrite, merge, or create new file
-            # For simplicity, we'll just log it. A real agent would intelligently integrate.
-            logging.info(f"Generated doc update for {file_path}:\n{doc_update_content[:200]}...")
+
+            # Generate/update documentation for affected files
+            for file_path, content in self.current_code_state.items():
+                doc_update_content = self.llm_orchestrator.generate_documentation_update(
+                    file_path, content, f"Refactoring completed for goal: {self.goal}. Changes: {changes_summary_list}"
+                )
+                # Decide how to apply doc update: overwrite, merge, or create new file
+                # For simplicity, we'll just log it. A real agent would intelligently integrate.
+                logging.info(f"Generated doc update for {file_path}:\n{doc_update_content[:200]}...")
 
 
-        self.vcs_integration.add_all()
-        self.vcs_integration.commit(f"AI Refactor: {pr_title}")
-        pr_info = self.codebase_manager.vcs.create_pull_request(
-            title=pr_title,
-            body=pr_body,
-            head_branch=self.refactoring_branch_name,
-            base_branch="main" # Or configured base branch
-        )
-        self.telemetry.record_event("refactoring_completed_successfully", {"pr_title": pr_title, "pr_url": pr_info.get("url")})
-        logging.info(f"Autonomous refactoring process completed and PR created: {pr_info.get('url')}")
+            self.vcs_integration.add_all()
+            self.vcs_integration.commit(f"AI Refactor: {pr_title}")
+            pr_info = self.codebase_manager.vcs.create_pull_request(
+                title=pr_title,
+                body=pr_body,
+                head_branch=self.refactoring_branch_name,
+                base_branch="main" # Or configured base branch
+            )
+            self.telemetry.record_event("refactoring_completed_successfully", {"pr_title": pr_title, "pr_url": pr_info.get("url")})
+            logging.info(f"Autonomous refactoring process completed and PR created: {pr_info.get('url')}")
 
-        # Post-PR creation: optionally listen for human feedback on the PR
-        # This would involve another module or a daemon
-        # self._listen_for_human_feedback(pr_info.get("id"))
+            # Post-PR creation: optionally listen for human feedback on the PR
+            # This would involve another module or a daemon
+            self._listen_for_human_feedback(pr_info.get("id")) # Call this to simulate feedback loop
+            self.telemetry.update_metric("refactoring_end_time", os.get_clock_info("monotonic").time())
 
-        # Finally, return to the original branch
-        self.vcs_integration.checkout_branch(original_branch)
+            # Generate final analytics report
+            final_analytics_report = self.refactoring_analytics.generate_summary_report()
+            logging.info(f"Final Refactoring Analytics Report: {json.dumps(final_analytics_report, indent=2)}")
+
+        except Exception as e:
+            logging.critical(f"Refactoring process terminated unexpectedly: {e}")
+            self.telemetry.record_event("refactoring_failed", {"reason": "unexpected_termination", "error": str(e)})
+        finally:
+            # Ensure return to original branch
+            self.vcs_integration.checkout_branch(original_branch)
+            logging.info(f"Returned to original branch: {original_branch}")
 
     def _listen_for_human_feedback(self, pr_id: str):
         """Conceptual method to listen for and process human feedback."""
@@ -1312,6 +1716,8 @@ class MockLLMClient:
             return {"text": "This PR transforms the `payment_processor` service into a robust class-based architecture, enhancing modularity and maintainability. All external behaviors are preserved, verified by comprehensive test suites. Quality metrics improved by better encapsulation. Architectural compliance verified against `Dependency Inversion Principle`."}
         elif "Generate or update necessary docstrings" in prompt:
             return {"text": "```python\nclass PaymentProcessor:\n    \"\"\"Manages payment processing operations.\"\"\"\n    def __init__(self):\n        pass\n    def process_payment(self, amount: float, card_info: str) -> bool:\n        \"\"\"Processes a payment transaction.\"\"\"\n        print(f\"Processing {amount} with {card_info}\")\n        return True\n```"}
+        elif "generate new unit tests" in prompt or "generate property-based tests" in prompt:
+            return {"text": "```python\n# Generated test content\ndef test_new_feature_added():\n    assert True # placeholder\n```"}
         return {"text": "Generated content placeholder."}
 
 # Example usage (not part of the invention description itself, but for context)
@@ -1346,14 +1752,15 @@ class MockLLMClient:
 #     agent_config = {
 #         "validation": {
 #             "test_command": "pytest",
-#             "static_analysis_commands": ["pylint --disable=C0114,C0115,C0116"], # Disable missing docstring checks for mock
+#             "static_analysis_commands": ["pylint --disable=C0114,C0115,C0116,W0613", "flake8"], # Disable missing docstring/arg unused checks for mock
 #             "security_scan_commands": ["bandit -r"],
 #             "benchmarking_command": "echo 'Running mock benchmarks...'"
 #         },
 #         "architectural_rules": {
 #             "service_suffix": True,
 #             "no_direct_db_access_from_ui": False # Example rule, not applied here
-#         }
+#         },
+#         "code_generation_strategy": "WHOLE_FILE_REPLACE"
 #     }
 #     agent = RefactoringAgent(refactoring_goal, mock_codebase_dir, mock_llm_client, config=agent_config)
 #     agent.run()
