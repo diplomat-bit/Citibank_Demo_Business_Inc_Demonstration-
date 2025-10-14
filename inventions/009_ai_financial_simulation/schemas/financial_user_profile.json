@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FinancialUserProfile",
+  "description": "Comprehensive schema for a user's financial profile, encapsulating assets, debts, income, expenses, and financial goals. This schema ensures consistent data ingestion and processing across the system.",
+  "type": "object",
+  "required": [
+    "user_id",
+    "personal_info",
+    "accounts",
+    "debts",
+    "income_streams",
+    "expenses",
+    "financial_goals"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the user."
+    },
+    "personal_info": {
+      "type": "object",
+      "description": "Personal demographic and risk information influencing financial decisions.",
+      "required": [
+        "age",
+        "marital_status",
+        "dependents",
+        "risk_tolerance_score"
+      ],
+      "properties": {
+        "age": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Age of the user in years."
+        },
+        "marital_status": {
+          "type": "string",
+          "description": "Marital status of the user (e.g., 'single', 'married', 'divorced')."
+        },
+        "dependents": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of financial dependents."
+        },
+        "risk_tolerance_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "User's self-assessed or derived risk tolerance score on a scale of 0 to 100."
+        }
+      }
+    },
+    "accounts": {
+      "type": "array",
+      "description": "List of the user's financial accounts, including checking, savings, investments, and retirement.",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "balance",
+          "currency"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "checking",
+              "savings",
+              "investments",
+              "retirement_401k"
+            ],
+            "description": "Type of financial account."
+          },
+          "balance": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Current balance of the account."
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency code of the account balance (e.g., 'USD', 'EUR')."
+          },
+          "institution": {
+            "type": "string",
+            "description": "Name of the financial institution holding the account."
+          },
+          "interest_rate_apy": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Annual Percentage Yield (APY) for interest-bearing accounts."
+          },
+          "holdings": {
+            "type": "array",
+            "description": "Details of investment holdings for investment accounts.",
+            "items": {
+              "type": "object",
+              "required": [
+                "symbol",
+                "shares"
+              ],
+              "properties": {
+                "symbol": {
+                  "type": "string",
+                  "description": "Ticker symbol or identifier of the holding (e.g., 'SPY')."
+                },
+                "shares": {
+                  "type": "number",
+                  "minimum": 0,
+                  "description": "Number of shares or units held."
+                }
+              }
+            }
+          },
+          "contributions_monthly": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Regular monthly contributions made to the account, particularly for retirement."
+          },
+          "employer_match_pct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Employer match percentage for retirement accounts (e.g., 0.05 for 5%)."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "type": { "const": "checking" } } },
+            "then": { "required": ["institution"] }
+          },
+          {
+            "if": { "properties": { "type": { "const": "savings" } } },
+            "then": { "required": ["interest_rate_apy"] }
+          },
+          {
+            "if": { "properties": { "type": { "const": "investments" } } },
+            "then": { "required": ["holdings"] }
+          },
+          {
+            "if": { "properties": { "type": { "const": "retirement_401k" } } },
+            "then": { "required": ["contributions_monthly", "employer_match_pct"] }
+          }
+        ]
+      }
+    },
+    "debts": {
+      "type": "array",
+      "description": "List of the user's debt obligations, such as mortgages and credit cards.",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "outstanding_balance",
+          "monthly_payment",
+          "interest_rate"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "mortgage",
+              "credit_card",
+              "auto_loan",
+              "student_loan",
+              "personal_loan"
+            ],
+            "description": "Type of debt."
+          },
+          "outstanding_balance": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Remaining principal balance on the debt."
+          },
+          "monthly_payment": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Required minimum monthly payment."
+          },
+          "interest_rate": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Annual interest rate (APR) on the debt."
+          },
+          "term_years": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Remaining term of the loan in years, relevant for amortized debts like mortgages."
+          },
+          "limit": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Credit limit for revolving debts like credit cards."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "type": { "const": "mortgage" } } },
+            "then": { "required": ["term_years"] }
+          },
+          {
+            "if": { "properties": { "type": { "const": "credit_card" } } },
+            "then": { "required": ["limit"] }
+          }
+        ]
+      }
+    },
+    "income_streams": {
+      "type": "array",
+      "description": "List of the user's various sources of income.",
+      "items": {
+        "type": "object",
+        "required": [
+          "source",
+          "amount_monthly",
+          "frequency"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source of income (e.g., 'salary', 'freelance', 'rental_income', 'dividends')."
+          },
+          "amount_monthly": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Gross amount of income received monthly."
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "bi-weekly",
+              "weekly",
+              "annually",
+              "quarterly",
+              "one-time"
+            ],
+            "description": "Frequency of income payments."
+          },
+          "tax_bracket": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "User's estimated marginal tax bracket (as a decimal, e.g., 0.22)."
+          },
+          "volatility_factor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Factor indicating the volatility or unpredictability of this income source (0 for stable, 1 for highly volatile)."
+          },
+          "growth_projection_annual_pct": {
+            "type": "number",
+            "description": "Projected annual growth rate for this income stream (e.g., 0.05 for 5% growth)."
+          }
+        }
+      }
+    },
+    "expenses": {
+      "type": "object",
+      "description": "Categorized monthly expenses for budgeting and simulation.",
+      "required": [
+        "housing",
+        "food",
+        "transportation",
+        "utilities",
+        "discretionary",
+        "healthcare_monthly"
+      ],
+      "properties": {
+        "housing": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monthly housing expenses (rent/mortgage, property taxes)."
+        },
+        "food": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monthly food expenses (groceries, dining out)."
+        },
+        "transportation": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monthly transportation costs (car payments, fuel, public transit)."
+        },
+        "utilities": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monthly utility bills (electricity, water, internet, gas)."
+        },
+        "discretionary": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monthly discretionary spending (entertainment, hobbies, shopping)."
+        },
+        "healthcare_monthly": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monthly healthcare-related expenses (premiums, out-of-pocket)."
+        },
+        "total_monthly": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total calculated monthly expenses. This field is typically derived/computed and not directly input."
+        }
+      }
+    },
+    "financial_goals": {
+      "type": "array",
+      "description": "List of the user's defined financial goals with target amounts and dates.",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "target_amount",
+          "target_date",
+          "current_progress_pct",
+          "priority"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name or description of the financial goal (e.g., 'retirement', 'down_payment_house', 'emergency_fund')."
+          },
+          "target_amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Target financial amount for the goal."
+          },
+          "target_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Target date for achieving the goal in YYYY-MM-DD format."
+          },
+          "current_progress_pct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Current progress towards the goal as a percentage (0.0 to 1.0)."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "description": "Priority level of the goal."
+          }
+        }
+      }
+    }
+  }
+}
