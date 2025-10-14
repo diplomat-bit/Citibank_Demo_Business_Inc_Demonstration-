@@ -1,0 +1,734 @@
+openapi: 3.0.0
+info:
+  title: System and Method for Automated Semantically-Aligned Pervasive Marketing Asset Synthesis and Optimization API
+  description: A comprehensive RESTful API for the autonomous generation, iterative refinement, and optimization of sophisticated marketing and advertising copy. This API facilitates the seamless integration of AI-driven content synthesis capabilities into external marketing platforms, CRM systems, and content management solutions, redefining the paradigm of marketing content creation.
+  version: 1.0.0
+servers:
+  - url: https://api.aimarketingcore.com/v1
+    description: Production server for AI Marketing Copy Generation System API
+  - url: https://api.staging.aimarketingcore.com/v1
+    description: Staging environment for development and testing
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Copy Generation
+    description: Operations related to generating marketing and advertising copy.
+  - name: Feedback and Optimization
+    description: Endpoints for submitting user feedback and performance metrics to drive adaptive learning and system optimization.
+  - name: System Configuration
+    description: Management of system-wide configurations such as brand voices and style guides.
+
+paths:
+  /generate-copy:
+    post:
+      summary: Generate AI-synthesized marketing copy
+      operationId: generateMarketingCopy
+      tags:
+        - Copy Generation
+      description: Initiates the core process of generating a diverse plurality of marketing assets based on a granular product description and meticulously engineered prompt directives. This endpoint empowers users to rapidly synthesize high-fidelity, strategically aligned creative options.
+      requestBody:
+        description: Input payload containing the product description and explicit prompt directives for the generative AI model.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyGenerationRequest'
+      responses:
+        '200':
+          description: Successfully generated marketing copy variants.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CopyGenerationResponse'
+        '400':
+          description: Invalid request payload or missing required parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized access. Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many requests. Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during copy generation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /feedback:
+    post:
+      summary: Submit user feedback and performance metrics
+      operationId: submitFeedback
+      tags:
+        - Feedback and Optimization
+      description: Captures user interactions and real-world performance data for previously generated marketing assets. This feedback is critical for the Feedback Loop Processor to continuously refine prompt engineering strategies and adapt the generative AI model through reinforcement learning.
+      requestBody:
+        description: Payload containing feedback data linked to a specific copy generation event.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackSubmission'
+      responses:
+        '200':
+          description: Feedback successfully received and processed for optimization.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Feedback successfully recorded for generationId: gen-xyz-789."
+        '400':
+          description: Invalid feedback payload or missing generation identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized access. Missing or invalid API key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during feedback processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /brand-voices:
+    post:
+      summary: Create a new brand voice profile
+      operationId: createBrandVoice
+      tags:
+        - System Configuration
+      description: Establishes a new comprehensive brand voice profile, including preferred tone, vocabulary, grammatical rules, and stylistic directives. This profile will guide the Prompt Engineering Module to ensure consistent brand identity across generated copy.
+      requestBody:
+        description: Detailed specification of the new brand voice.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandVoiceProfile'
+      responses:
+        '201':
+          description: Brand voice profile successfully created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brandVoiceId:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the newly created brand voice profile.
+                    example: "bv-abc-123"
+                  message:
+                    type: string
+                    example: "Brand voice 'InnovateTech Tone' created successfully."
+        '400':
+          description: Invalid brand voice definition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: A brand voice with the specified name already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during brand voice creation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /brand-voices/{brandVoiceId}:
+    get:
+      summary: Retrieve a specific brand voice profile
+      operationId: getBrandVoice
+      tags:
+        - System Configuration
+      description: Fetches the detailed configuration for a specific brand voice profile identified by its unique ID.
+      parameters:
+        - name: brandVoiceId
+          in: path
+          description: Unique identifier of the brand voice profile to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "bv-abc-123"
+      responses:
+        '200':
+          description: Brand voice profile retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandVoiceProfile'
+        '401':
+          description: Unauthorized access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Brand voice not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update an existing brand voice profile
+      operationId: updateBrandVoice
+      tags:
+        - System Configuration
+      description: Modifies an existing brand voice profile, allowing for dynamic adjustments to stylistic guidelines and parameters.
+      parameters:
+        - name: brandVoiceId
+          in: path
+          description: Unique identifier of the brand voice profile to update.
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "bv-abc-123"
+      requestBody:
+        description: Updated detailed specification of the brand voice.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandVoiceProfile'
+      responses:
+        '200':
+          description: Brand voice profile updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brandVoiceId:
+                    type: string
+                    format: uuid
+                    example: "bv-abc-123"
+                  message:
+                    type: string
+                    example: "Brand voice 'InnovateTech Tone' updated successfully."
+        '400':
+          description: Invalid brand voice definition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Brand voice not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during brand voice update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key required for authentication with the AI Marketing Copy Generation System.
+
+  schemas:
+    CopyGenerationRequest:
+      type: object
+      required:
+        - productDescription
+      properties:
+        productDescription:
+          type: string
+          description: A granular, descriptive articulation of the product, service, or conceptual offering for which marketing copy is to be generated. This serves as the fundamental semantic input.
+          example: "Our novel AI-powered financial optimization tool autonomously scrutinizes individual expenditure patterns and proactively identifies latent opportunities for capital savings, enhancing fiscal efficiency and personal wealth accumulation."
+        promptDirectives:
+          $ref: '#/components/schemas/PromptDirectives'
+        multimodalInputReferences:
+          type: array
+          description: References to non-textual inputs e.g. image URLs, video IDs that provide supplementary semantic context for copy generation.
+          items:
+            $ref: '#/components/schemas/MultimodalInputReference'
+        callbackUrl:
+          type: string
+          format: uri
+          description: Optional URL for asynchronous result notification in case of long-running generation tasks.
+          example: "https://your-system.com/webhook/copy-generated"
+        explainabilityRequested:
+          type: boolean
+          description: If true, the response will include insights into the generative process for interpretability.
+          default: false
+
+    PromptDirectives:
+      type: object
+      description: A set of explicit instructions and parameters to meticulously engineer the prompt for the generative AI model, guiding its synthesis towards desired characteristics and typology of marketing assets.
+      properties:
+        outputFormat:
+          type: string
+          description: The specific typology of marketing asset desired.
+          enum:
+            - headline
+            - paragraph
+            - social_media_post
+            - call_to_action
+            - email_subject_line
+            - meta_description
+            - video_script_outline
+            - long_form_article_outline
+          example: "social_media_post"
+        numVariants:
+          type: integer
+          description: The number of distinct marketing copy variations to generate.
+          minimum: 1
+          maximum: 10
+          default: 3
+          example: 3
+        tone:
+          type: string
+          description: The desired emotional and rhetorical tone of the generated copy.
+          enum:
+            - authoritative
+            - humorous
+            - empathetic
+            - playful
+            - professional
+            - urgent
+            - inspirational
+            - casual
+          example: "humorous"
+        length:
+          type: string
+          description: The desired verbosity or conciseness of the generated copy.
+          enum:
+            - concise
+            - standard
+            - verbose
+          example: "concise"
+        targetAudience:
+          type: string
+          description: A description of the intended target demographic or audience segment for the copy.
+          example: "millennials interested in sustainable living"
+        keywordsToInclude:
+          type: array
+          description: A list of specific keywords or phrases that MUST be present in the generated copy to enhance SEO or thematic relevance.
+          items:
+            type: string
+          example: ["sustainable", "eco-friendly", "zero waste"]
+        keywordsToExclude:
+          type: array
+          description: A list of words or phrases that should NOT appear in the generated copy.
+          items:
+            type: string
+          example: ["expensive", "complicated"]
+        brandVoiceId:
+          type: string
+          format: uuid
+          description: A unique identifier referencing a predefined brand style guide and voice profile to ensure consistent brand identity.
+          example: "bv-abc-123"
+        emotionalToneProfile:
+          $ref: '#/components/schemas/EmotionalToneProfile'
+        linguisticComplexity:
+          type: string
+          description: The desired reading level or syntactic complexity of the output.
+          enum:
+            - simple_conversational
+            - intermediate_informative
+            - advanced_technical
+          example: "intermediate_informative"
+        culturalAdaptationTarget:
+          type: string
+          description: BCP 47 language tag for cultural localization e.g. en-US es-MX fr-CA.
+          example: "es-MX"
+        realtimeContext:
+          $ref: '#/components/schemas/RealtimeContext'
+        semanticConstraintGraphId:
+          type: string
+          format: uuid
+          description: Identifier for a semantic knowledge graph to inform factual accuracy and precision.
+          example: "skg-prod-001"
+        biasMitigationLevel:
+          type: string
+          description: Level of bias detection and mitigation to apply during generation.
+          enum:
+            - default
+            - strict
+            - disabled
+          default: "default"
+          example: "strict"
+
+    MultimodalInputReference:
+      type: object
+      description: A reference to a non-textual input asset that provides additional context.
+      required:
+        - type
+        - url
+      properties:
+        type:
+          type: string
+          enum: [image, video, audio]
+          description: The type of multimodal asset.
+          example: "image"
+        url:
+          type: string
+          format: uri
+          description: The publicly accessible URL of the multimodal asset.
+          example: "https://example.com/product_image.jpg"
+        description:
+          type: string
+          description: An optional textual description of the multimodal asset.
+          example: "Product hero shot showing elegant design"
+
+    EmotionalToneProfile:
+      type: object
+      description: Granular control over the emotional valence and arousal profile of the generated copy.
+      properties:
+        valence:
+          type: number
+          format: float
+          minimum: -1.0
+          maximum: 1.0
+          description: Emotional positivity/negativity score (-1.0 for very negative, 1.0 for very positive).
+          example: 0.8
+        arousal:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Emotional excitement/calmness score (0.0 for very calm, 1.0 for very excited).
+          example: 0.7
+        dominance:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Emotional sense of control (0.0 for submissive, 1.0 for dominant).
+          example: 0.5
+      example:
+        valence: 0.7
+        arousal: 0.6
+
+    RealtimeContext:
+      type: object
+      description: Dynamic integration of real-time data to ensure temporal and situational relevance of generated assets.
+      properties:
+        marketTrends:
+          type: array
+          items:
+            type: string
+          description: Keywords or themes representing current market trends.
+          example: ["AI innovation", "sustainability movement"]
+        seasonalPromotions:
+          type: string
+          description: Description of any current seasonal or holiday promotions.
+          example: "Summer sale discounts"
+        competitorActivity:
+          type: array
+          items:
+            type: string
+          description: Information about recent competitor marketing activities.
+          example: ["competitor X launched new feature", "competitor Y price drop"]
+        globalEvents:
+          type: array
+          items:
+            type: string
+          description: Relevant global events that might influence consumer sentiment.
+          example: ["economic recovery", "digital transformation acceleration"]
+
+    CopyGenerationResponse:
+      type: object
+      description: The output structure containing the generated marketing copy variants, along with metadata for tracking and explainability.
+      required:
+        - generationId
+        - copyVariants
+      properties:
+        generationId:
+          type: string
+          format: uuid
+          description: A unique identifier for this specific copy generation request, used for tracking and feedback submission.
+          example: "gen-xyz-789"
+        copyVariants:
+          type: array
+          description: A diverse plurality of distinct marketing copy permutations synthesized by the generative AI model.
+          items:
+            $ref: '#/components/schemas/GeneratedCopyVariant'
+        explainabilityInsights:
+          $ref: '#/components/schemas/ExplainabilityInsights'
+          description: Optional insights into the generative process if requested.
+
+    GeneratedCopyVariant:
+      type: object
+      description: A single piece of marketing copy generated by the AI, including its content and a unique identifier.
+      required:
+        - variantId
+        - content
+      properties:
+        variantId:
+          type: string
+          format: uuid
+          description: A unique identifier for this specific copy variant within the generation.
+          example: "var-123-abc"
+        content:
+          type: string
+          description: The actual text content of the generated marketing copy.
+          example: "Breathe Smarter. Live Healthier. AuraSync Pro."
+        rhetoricalVector:
+          $ref: '#/components/schemas/EmotionalToneProfile'
+          description: The estimated rhetorical vector of this specific variant in the C-space, including emotional valence, arousal, and dominance.
+        semanticSimilarityScore:
+          type: number
+          format: float
+          description: A score indicating how semantically similar this variant is to the original product description.
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.92
+
+    ExplainabilityInsights:
+      type: object
+      description: Provides insights into the generative process to enhance user trust and facilitate informed refinement.
+      properties:
+        keyInputPhrases:
+          type: array
+          items:
+            type: string
+          description: Phrases from the input description that were highly influential in generating the output.
+          example: ["AI-powered financial optimization", "capital savings", "wealth accumulation"]
+        rhetoricalStyleAttribution:
+          type: object
+          additionalProperties:
+            type: string
+          description: Attribution of rhetorical styles to specific prompt directives.
+          example:
+            tone: "Emphatic and concise style due to 'urgent' tone directive."
+        semanticJourneyVisualizationLink:
+          type: string
+          format: uri
+          description: A link to a visualization depicting the 'semantic journey' of the generated copy within the latent space.
+          example: "https://dashboard.aimarketingcore.com/visualize/gen-xyz-789"
+
+    FeedbackSubmission:
+      type: object
+      description: Details of user interaction and performance for a generated copy.
+      required:
+        - generationId
+      properties:
+        generationId:
+          type: string
+          format: uuid
+          description: The unique identifier of the copy generation event to which this feedback pertains.
+          example: "gen-xyz-789"
+        selectedVariantId:
+          type: string
+          format: uuid
+          description: The unique identifier of the specific copy variant chosen by the user, if applicable.
+          example: "var-123-abc"
+        editedContent:
+          type: string
+          description: The final content after user modifications, if the generated copy was edited.
+          example: "Breathe Smarter, Live Healthier, Achieve More. AuraSync Pro is here."
+        explicitRating:
+          type: integer
+          description: A qualitative rating provided by the user (e.g., 1-5 stars).
+          minimum: 1
+          maximum: 5
+          example: 5
+        comments:
+          type: string
+          description: Additional textual comments or qualitative feedback from the user.
+          example: "Loved the punchy headlines, especially variant 1!"
+        implicitEngagementMetrics:
+          $ref: '#/components/schemas/ImplicitEngagementMetrics'
+        realWorldPerformance:
+          $ref: '#/components/schemas/RealWorldPerformanceMetrics'
+        detectedBias:
+          type: boolean
+          description: Indicates if the user detected any bias in the generated copy.
+          example: false
+        biasDescription:
+          type: string
+          description: A description of the detected bias, if any.
+
+    ImplicitEngagementMetrics:
+      type: object
+      description: Metrics capturing implicit user behavior with the generated copy.
+      properties:
+        timeOnPageSeconds:
+          type: integer
+          description: Duration in seconds the user spent reviewing the copy.
+          minimum: 0
+          example: 45
+        scrollDepthPercentage:
+          type: integer
+          description: The percentage of the content scrolled by the user.
+          minimum: 0
+          maximum: 100
+          example: 90
+        copyPasteActions:
+          type: integer
+          description: Number of times sections of the copy were copied.
+          minimum: 0
+          example: 1
+        regenerationRequests:
+          type: integer
+          description: Number of times the user requested regeneration after seeing this output.
+          minimum: 0
+          example: 0
+
+    RealWorldPerformanceMetrics:
+      type: object
+      description: Empirical data from external marketing platforms validating copy effectiveness.
+      properties:
+        clickThroughRate:
+          type: number
+          format: float
+          description: The percentage of users who clicked on the advertisement.
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.05
+        conversionRate:
+          type: number
+          format: float
+          description: The percentage of users who completed a desired action e.g. purchase.
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.002
+        impressions:
+          type: integer
+          description: The number of times the copy was displayed to users.
+          minimum: 0
+          example: 100000
+        bounceRate:
+          type: number
+          format: float
+          description: The percentage of visitors who navigate away from the site after viewing only one page.
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.35
+        roiMetric:
+          type: number
+          format: float
+          description: Custom ROI metric for the campaign.
+          example: 1.25 # 125% return
+
+    BrandVoiceProfile:
+      type: object
+      description: Defines the stylistic and lexical characteristics for a specific brand's voice.
+      required:
+        - name
+        - description
+        - toneCharacteristics
+      properties:
+        brandVoiceId:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for the brand voice profile. Generated by the system.
+          example: "bv-abc-123"
+        name:
+          type: string
+          description: A human-readable name for the brand voice.
+          example: "InnovateTech Tone"
+        description:
+          type: string
+          description: A detailed description of the brand voice and its intended application.
+          example: "A professional, authoritative yet approachable tone suitable for B2B technology communication, emphasizing clarity and innovation."
+        toneCharacteristics:
+          type: array
+          items:
+            type: string
+          description: Key adjectives describing the desired emotional and rhetorical tone.
+          example: ["professional", "innovative", "trustworthy", "concise"]
+        preferredVocabulary:
+          type: array
+          items:
+            type: string
+          description: A list of words or phrases that should be frequently used.
+          example: ["innovate", "solution", "transform", "optimize"]
+        avoidedVocabulary:
+          type: array
+          items:
+            type: string
+          description: A list of words or phrases that should be avoided.
+          example: ["gimmick", "complicated", "mediocre"]
+        grammaticalRules:
+          type: array
+          items:
+            type: string
+          description: Specific grammatical or stylistic rules to adhere to e.g. "always use active voice", "no contractions".
+          example: ["use active voice", "avoid contractions", "capitalize product names"]
+        semanticConstructs:
+          type: string
+          description: Guidelines for how concepts should be framed or expressed.
+          example: "Always frame challenges as opportunities for our solutions."
+        ethicalGuidelines:
+          type: array
+          items:
+            type: string
+          description: Specific ethical or compliance guidelines for content generation.
+          example: ["avoid gender stereotypes", "ensure factual accuracy", "comply with GDPR"]
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: A unique error code for programmatic identification.
+          example: "ERR_INVALID_INPUT"
+        message:
+          type: string
+          description: A human-readable error message explaining the issue.
+          example: "The productDescription field is required and cannot be empty."
+        details:
+          type: object
+          description: Optional additional details about the error, e.g., validation errors.
+          additionalProperties: true
+          example:
+            invalidFields:
+              - field: "productDescription"
+                reason: "cannot be empty"
+              - field: "promptDirectives.numVariants"
+                reason: "must be between 1 and 10"
