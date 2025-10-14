@@ -20,7 +20,7 @@ graph TD
     C --> D[Document Pre-processing Module]
     D --> E[Advanced Prompt Engineering Module]
     E --> F[Generative AI Interaction Module]
-    F --> G[Generative AI Model e.g. Gemini]
+    F --> G[Generative AI Model Example Gemini]
     G --> H[Semantic Difference Extraction Engine]
     H --> I[Output Synthesis & Presentation Layer]
     I --> J[Display to User]
@@ -75,58 +75,93 @@ sequenceDiagram
 
 This sequence diagram illustrates the chronological flow of interactions between the user, the user interface, and the various backend components, culminating in the presentation of the semantic comparison summary. Each arrow represents a distinct communication or data transfer event, emphasizing the sequential and collaborative nature of the inventive process.
 
+```mermaid
+graph TD
+    A[Preprocessed Docs Document A and Document B] --> B[Retrieve Configuration LegalAnalysisConfig]
+    B --> C[Determine System Persona e.g. Senior Barrister]
+    C --> D[Identify Analysis Focus Areas e.g. Liability Obligations]
+    D --> E[Specify Desired Output Format e.g. Markdown Bullets]
+    E --> F[Generate Role Playing Directive]
+    F --> G[Embed Contextual Framing]
+    G --> H[Incorporate Constraint Specification]
+    H --> I[Add Output Format Specification]
+    I --> J[Integrate Few Shot Zero Shot Examples Optional]
+    J --> K[Optimize Prompt Token Length]
+    K --> L[Construct Final AI Prompt String for LLM]
+
+    subgraph Advanced Prompt Engineering Module APEM
+        B
+        C
+        D
+        E
+        F
+        G
+        H
+        I
+        J
+        K
+    end
+
+    style A fill:#D4EDDA,stroke:#28A745,stroke-width:2px;
+    style L fill:#D4EDDA,stroke:#28A745,stroke-width:2px;
+    style APEM fill:#F8F9FA,stroke:#6C757D,stroke-width:1px;
+```
+**Figure 3: Advanced Prompt Engineering Workflow**
+
+This flowchart details the internal workings of the Advanced Prompt Engineering Module. It begins with the preprocessed documents and configuration retrieval, then sequentially constructs the prompt by integrating various directives such as system persona, focus areas, and output format. Key steps include generating role-playing instructions, embedding contextual framing, specifying constraints, and optimizing token length, culminating in the final, comprehensive AI prompt string ready for transmission to the Generative AI Model.
+
 **Detailed Description of the Invention:**
 The present invention meticulously defines a robust, multi-tiered system for the profound semantic comparison of legal documentation, thereby transcending the inherent limitations of lexical-only differentiation methods.
 
 **I. System Components and Architecture:**
 
-1.  **User Interface (UI) Module:**
+1.  **User Interface UI Module:**
     *   **Functionality:** Provides an intuitive, secure graphical interface for the end-user. This module is responsible for the ingestion of input legal documents.
-    *   **Implementation:** Comprises two distinct, extensible text input fields, one designated for the 'Original Document' (Document A) and the other for the 'Revised Document' (Document B). Controls for submission, clear, and optional settings (e.g., specificity of analysis, output format preferences) are also provided.
+    *   **Implementation:** Comprises two distinct, extensible text input fields, one designated for the 'Original Document' Document A and the other for the 'Revised Document' Document B. Controls for submission, clear, and optional settings e.g. specificity of analysis, output format preferences are also provided.
     *   **Data Handling:** Securely transmits the raw textual content of Document A and Document B to the Backend Orchestration Layer upon user initiation.
 
-2.  **Backend Orchestration Layer (BOL):**
+2.  **Backend Orchestration Layer BOL:**
     *   **Functionality:** Serves as the central coordinating nexus for all backend operations, managing the workflow, data flow, and inter-module communication. It acts as the primary API endpoint for the UI.
     *   **Implementation:** Implemented as a high-performance, scalable service, capable of handling concurrent requests. Utilizes asynchronous processing to ensure responsiveness.
     *   **Key Responsibilities:** Request validation, sequencing of processing steps, error handling, and aggregation of results from subordinate modules.
 
-3.  **Document Pre-processing Module (DPM):**
+3.  **Document Pre-processing Module DPM:**
     *   **Functionality:** Prepares the raw textual input for optimal consumption by downstream modules, particularly the Advanced Prompt Engineering Module. This involves normalizing textual data, removing extraneous artifacts, and potentially identifying document structure.
-    *   **Implementation:** Incorporates advanced Natural Language Processing (NLP) techniques such as:
+    *   **Implementation:** Incorporates advanced Natural Language Processing NLP techniques such as:
         *   **Text Cleaning:** Removal of non-essential whitespace, special characters, headers/footers, and boilerplate text.
-        *   **Encoding Normalization:** Ensures consistent character encoding (e.g., UTF-8).
-        *   **Section Delineation Optional:** Employs heuristic or machine learning models to identify logical sections (e.g., "Preamble," "Definitions," "Covenants," "Term and Termination") within the legal documents, which can later inform prompt construction.
+        *   **Encoding Normalization:** Ensures consistent character encoding e.g. UTF-8.
+        *   **Section Delineation Optional:** Employs heuristic or machine learning models to identify logical sections e.g. "Preamble," "Definitions," "Covenants," "Term and Termination" within the legal documents, which can later inform prompt construction.
 
-4.  **Advanced Prompt Engineering Module (APEM):**
+4.  **Advanced Prompt Engineering Module APEM:**
     *   **Functionality:** The intellectual core of the system's interaction with the generative AI. This module dynamically constructs the comprehensive and highly optimized prompt that guides the AI's analytical process.
     *   **Implementation:** Employs sophisticated algorithms for prompt construction, incorporating:
         *   **Role-Playing Directive:** Clearly instructs the AI to adopt the persona of an "expert legal analyst" or a "senior barrister," imbuing its output with appropriate linguistic style and analytical rigor.
-        *   **Contextual Framing:** Establishes the purpose of the comparison (e.g., "identify material differences," "focus on legal implications").
-        *   **Constraint Specification:** Directs the AI to focus on specific legal domains (e.g., "liability," "obligations," "financial terms," "indemnification clauses," "dispute resolution").
-        *   **Format Specification:** Instructs the AI on the desired output format (e.g., "bulleted list," "structured JSON," "plain English summary," "table of changes").
+        *   **Contextual Framing:** Establishes the purpose of the comparison e.g. "identify material differences," "focus on legal implications."
+        *   **Constraint Specification:** Directs the AI to focus on specific legal domains e.g. "liability," "obligations," "financial terms," "indemnification clauses," "dispute resolution."
+        *   **Format Specification:** Instructs the AI on the desired output format e.g. "bulleted list," "structured JSON," "plain English summary," "table of changes."
         *   **Few-Shot/Zero-Shot Learning Integration:** Incorporates examples of desired output or specific analytical patterns if beneficial, or relies on the LLM's inherent capabilities for zero-shot inference.
         *   **Token Optimization:** Strategically manages prompt length to adhere to LLM context window limits while preserving maximum informational density.
 
-5.  **Generative AI Interaction Module (GAIIM):**
-    *   **Functionality:** Acts as the secure and efficient conduit between the Backend Orchestration Layer and the selected Generative AI Model(s).
+5.  **Generative AI Interaction Module GAIIM:**
+    *   **Functionality:** Acts as the secure and efficient conduit between the Backend Orchestration Layer and the selected Generative AI Model s.
     *   **Implementation:**
-        *   **API Client:** Manages API keys, authentication, and request/response serialization (e.g., JSON).
+        *   **API Client:** Manages API keys, authentication, and request/response serialization e.g. JSON.
         *   **Rate Limiting & Retry Logic:** Implements robust mechanisms to handle API rate limits and transient network errors, ensuring system resilience.
-        *   **Model Selection:** Supports integration with multiple generative AI models (e.g., Gemini, GPT series, Claude) allowing for dynamic model selection based on performance, cost, or specific task requirements.
+        *   **Model Selection:** Supports integration with multiple generative AI models e.g. Gemini, GPT series, Claude allowing for dynamic model selection based on performance, cost, or specific task requirements.
 
-6.  **Generative AI Model (LLM):**
+6.  **Generative AI Model LLM:**
     *   **Functionality:** The core computational engine for semantic comparison. This model, often a large language model based on transformer architecture, performs the high-dimensional pattern recognition and semantic inference.
     *   **Operational Principle:** Given the structured prompt and the legal documents, the LLM processes billions of parameters to understand the nuanced meaning of each document, identify points of divergence, infer their legal significance based on its vast training corpus of legal texts, and synthesize a coherent response. It effectively approximates the `L(D)` function and performs the `Delta_legal` computation as defined in the mathematical justifications.
 
-7.  **Semantic Difference Extraction Engine (SDEE):**
+7.  **Semantic Difference Extraction Engine SDEE:**
     *   **Functionality:** Post-processes the raw textual output from the Generative AI Model, extracting, structuring, and refining the identified legal differences into a machine-readable and further processable format.
     *   **Implementation:** Utilizes advanced NLP techniques:
-        *   **Named Entity Recognition NER:** Identifies legal entities (parties, dates, financial amounts, specific clauses).
-        *   **Relationship Extraction:** Deduces relationships between identified entities and concepts (e.g., "Party A *owes* Party B," "Clause X *modifies* Clause Y").
+        *   **Named Entity Recognition NER:** Identifies legal entities e.g. parties, dates, financial amounts, specific clauses.
+        *   **Relationship Extraction:** Deduces relationships between identified entities and concepts e.g. "Party A *owes* Party B," "Clause X *modifies* Clause Y."
         *   **Sentiment Analysis Contextual:** Assesses the legal "tone" or potential risk associated with changes.
         *   **Structured Data Conversion:** Transforms free-form AI text into structured formats such as JSON, XML, or custom data objects, allowing for programmatic manipulation.
 
-8.  **Output Synthesis & Presentation Layer (OSPL):**
+8.  **Output Synthesis & Presentation Layer OSPL:**
     *   **Functionality:** Transforms the structured legal differences into a user-friendly, comprehensible, and visually organized summary suitable for display to the end-user.
     *   **Implementation:**
         *   **Summarization Algorithms:** May employ extractive or abstractive summarization techniques to further distill the AI's output, focusing on conciseness and clarity.
@@ -141,18 +176,19 @@ The present invention meticulously defines a robust, multi-tiered system for the
 4.  **Prompt Construction:** The APEM dynamically generates a highly specific and contextualized prompt, embedding the cleaned documents and instructing the AI on its analytical task and desired output format.
 5.  **AI Invocation:** The GAIIM transmits the constructed prompt to the selected Generative AI Model.
 6.  **AI Analysis:** The Generative AI Model processes the prompt and documents, performing a deep semantic comparison, inferring legal implications, and generating a raw text analysis.
-7.  **Difference Extraction:** The SDEE receives the AI's raw analysis, parses it, and extracts structured semantic differences, potentially categorizing them by type (e.g., change in obligation, change in liability, new clause, removed clause).
-8.  **Output Formatting:** The OSPL transforms the structured differences into a human-readable summary, often employing plain English explanations and clear formatting (e.g., a bulleted list of "Key Material Differences").
+7.  **Difference Extraction:** The SDEE receives the AI's raw analysis, parses it, and extracts structured semantic differences, potentially categorizing them by type e.g. change in obligation, change in liability, new clause, removed clause.
+8.  **Output Formatting:** The OSPL transforms the structured differences into a human-readable summary, often employing plain English explanations and clear formatting e.g. a bulleted list of "Key Material Differences."
 9.  **User Presentation:** The formatted summary is returned to the UI and displayed to the user, offering immediate insight into the legal ramifications of the document changes.
 
 **III. Embodiments and Further Features:**
 
 *   **Integrated Development Environment IDE for Legal Professionals:** The system can be integrated as a plugin or module within existing legal software suites, document management systems, or contract lifecycle management platforms.
-*   **Version Control Integration:** Direct integration with document version control systems (e.g., Git-like systems for legal documents) to automatically trigger comparisons upon new version commits.
+*   **Version Control Integration:** Direct integration with document version control systems e.g. Git-like systems for legal documents to automatically trigger comparisons upon new version commits.
 *   **Multi-Lingual Support:** Expansion to handle and compare legal documents in multiple natural languages, leveraging the multilingual capabilities of advanced LLMs.
-*   **Domain-Specific Tuning:** Capability to fine-tune the Generative AI Model or specialize prompt engineering for particular legal domains (e.g., corporate law, real estate, intellectual property, litigation).
-*   **Risk Scoring and Visualization:** Assignment of quantitative risk scores to identified changes and their visual representation (e.g., heat maps, dashboards) to prioritize review.
+*   **Domain-Specific Tuning:** Capability to fine-tune the Generative AI Model or specialize prompt engineering for particular legal domains e.g. corporate law, real estate, intellectual property, litigation.
+*   **Risk Scoring and Visualization:** Assignment of quantitative risk scores to identified changes and their visual representation e.g. heat maps, dashboards to prioritize review.
 *   **Interactive Drill-Down:** The ability for users to click on a summarized difference and view the corresponding sections in Document A and Document B side-by-side, with relevant text highlighted.
+*   **Feedback Mechanism:** Implementation of a user feedback loop to collect ratings and comments on the AI's analysis, enabling continuous improvement of prompt engineering, model tuning, and post-processing algorithms.
 
 **Conceptual Code (Python Backend):**
 This conceptual code demonstrates the core logic, reflecting the architectural principles and intellectual constructs defining the system. Each module is designed to be highly extensible and robust.
@@ -161,6 +197,8 @@ This conceptual code demonstrates the core logic, reflecting the architectural p
 from google.generativeai import GenerativeModel
 from enum import Enum
 from typing import List, Dict, Any, Optional
+import hashlib
+import datetime
 
 # --- Configuration and Utility Classes ---
 
@@ -175,16 +213,23 @@ class LegalAnalysisConfig:
                  focus_areas: List[str] = None,
                  output_format_instructions: str = "plain English bulleted list",
                  temperature: float = 0.2,
-                 max_tokens: int = 4000):
+                 max_tokens: int = 4000,
+                 risk_scoring_enabled: bool = True,
+                 plain_language_level: str = "intermediate", # e.g., "beginner", "intermediate", "expert"
+                 return_excerpts: bool = True):
         self.ai_model_name = ai_model_name
         self.system_persona = system_persona
         self.focus_areas = focus_areas if focus_areas is not None else [
             "liability", "obligations", "financial terms", "indemnification",
-            "dispute resolution", "term and termination clauses", "representations and warranties"
+            "dispute resolution", "term and termination clauses", "representations and warranties",
+            "governing law", "confidentiality"
         ]
         self.output_format_instructions = output_format_instructions
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.risk_scoring_enabled = risk_scoring_enabled
+        self.plain_language_level = plain_language_level
+        self.return_excerpts = return_excerpts
 
 class AnalysisOutputFormat(Enum):
     """
@@ -194,7 +239,42 @@ class AnalysisOutputFormat(Enum):
     PLAIN_TEXT = "plain_text"
     MARKDOWN_BULLETS = "markdown_bullets"
     JSON_STRUCTURED = "json_structured"
-    XML_STRUCTURED = "xml_structured"
+    XML_STRUCTURED = "xml_structured" # Conceptual, not implemented in formatter example
+
+class DocumentMetadata:
+    """
+    Metadata container for legal documents, facilitating version control, integrity checks,
+    and better organization within larger legal systems.
+    """
+    def __init__(self,
+                 document_id: str,
+                 title: str,
+                 version: str,
+                 author: Optional[str] = None,
+                 hash_value: Optional[str] = None,
+                 timestamp: Optional[str] = None):
+        self.document_id = document_id
+        self.title = title
+        self.version = version
+        self.author = author
+        self.hash_value = hash_value
+        self.timestamp = timestamp if timestamp else datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    @staticmethod
+    def generate_hash(content: str) -> str:
+        """Generates a SHA256 hash for document content to ensure integrity."""
+        return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Converts the document metadata to a dictionary."""
+        return {
+            "document_id": self.document_id,
+            "title": self.title,
+            "version": self.version,
+            "author": self.author,
+            "hash_value": self.hash_value,
+            "timestamp": self.timestamp
+        }
 
 class SemanticDifference:
     """
@@ -207,13 +287,17 @@ class SemanticDifference:
                  implications: str,
                  doc_a_excerpt: Optional[str] = None,
                  doc_b_excerpt: Optional[str] = None,
-                 severity: Optional[str] = None):
-        self.category = category  # e.g., "Obligation Change", "Liability Shift", "Financial Term"
+                 severity: Optional[str] = None, # e.g., "High", "Medium", "Low"
+                 risk_score: Optional[float] = None, # Quantitative score, e.g., 0.0 to 1.0
+                 risk_level: Optional[str] = None): # Qualitative level, e.g., "Critical Impact"
+        self.category = category
         self.description = description
         self.implications = implications
         self.doc_a_excerpt = doc_a_excerpt
         self.doc_b_excerpt = doc_b_excerpt
-        self.severity = severity # e.g., "High", "Medium", "Low"
+        self.severity = severity
+        self.risk_score = risk_score
+        self.risk_level = risk_level
 
     def to_dict(self) -> Dict[str, Any]:
         """Converts the semantic difference to a dictionary for JSON serialization."""
@@ -223,7 +307,9 @@ class SemanticDifference:
             "implications": self.implications,
             "doc_a_excerpt": self.doc_a_excerpt,
             "doc_b_excerpt": self.doc_b_excerpt,
-            "severity": self.severity
+            "severity": self.severity,
+            "risk_score": self.risk_score,
+            "risk_level": self.risk_level
         }
 
 # --- Core System Modules (exported components) ---
@@ -237,7 +323,7 @@ class LegalDocumentProcessor:
     def clean_text(text: str) -> str:
         """
         Performs basic text cleaning: removes excessive whitespace, normalizes line endings.
-        Further advanced cleaning (e.g., boilerplate removal) can be integrated here.
+        Further advanced cleaning e.g. boilerplate removal can be integrated here.
         """
         if not isinstance(text, str):
             raise TypeError("Input 'text' must be a string.")
@@ -248,14 +334,29 @@ class LegalDocumentProcessor:
     @staticmethod
     def identify_sections(text: str) -> Dict[str, str]:
         """
-        (Conceptual) Identifies logical sections within a legal document.
+        Conceptual: Identifies logical sections within a legal document.
         This advanced feature uses pattern matching or ML to delineate sections,
         providing granular context for the LLM.
         """
         # This is a placeholder; real implementation would involve regex,
-        # NLP models (e.g., spaCy for section headers), or heuristic rules.
+        # NLP models e.g. spaCy for section headers, or heuristic rules.
         # For simplicity, we return the whole text as a single 'body' section.
         return {"full_document_body": text}
+
+    @staticmethod
+    def extract_document_metadata(text: str, doc_id: str, doc_version: str, doc_title: Optional[str] = None) -> DocumentMetadata:
+        """
+        Conceptual: Extracts key metadata from the document text.
+        A more advanced implementation would parse title, version, author from document content.
+        """
+        # Placeholder for actual metadata extraction
+        title = doc_title if doc_title else f"Legal Document {doc_id}"
+        return DocumentMetadata(
+            document_id=doc_id,
+            title=title,
+            version=doc_version,
+            hash_value=DocumentMetadata.generate_hash(text)
+        )
 
 class PromptBuilder:
     """
@@ -284,22 +385,80 @@ class PromptBuilder:
         1.  A concise description of the change.
         2.  Its precise legal meaning and significance.
         3.  The potential real-world implications or consequences for the parties involved.
-        4.  Where appropriate, a brief excerpt from Document A and Document B illustrating the change context.
+        {"4.  Where appropriate, a brief excerpt from Document A and Document B illustrating the change context." if self.config.return_excerpts else ""}
         5.  Assign a qualitative severity (e.g., "High", "Medium", "Low") to the change based on its potential impact.
 
         Present your findings in a clear, structured, and easily digestible {self.config.output_format_instructions},
-        ensuring all explanations are provided in unambiguous, plain English, devoid of unnecessary legalistic jargon.
+        ensuring all explanations are provided in unambiguous, plain English suitable for a {self.config.plain_language_level} legal understanding, devoid of unnecessary legalistic jargon.
         Your objective is to provide actionable intelligence to a stakeholder who may not possess deep legal expertise.
 
-        --- DOCUMENT A (Original Version) ---
+        --- DOCUMENT A Original Version ---
         {doc_a_cleaned}
 
-        --- DOCUMENT B (Revised Version) ---
+        --- DOCUMENT B Revised Version ---
         {doc_b_cleaned}
 
         --- ANALYTICAL FINDINGS ---
         """
         return prompt
+
+class RiskAssessmentEngine:
+    """
+    Quantifies and categorizes the risk associated with identified legal differences.
+    This module could use rule-based systems or an additional ML model.
+    """
+    def __init__(self, config: LegalAnalysisConfig):
+        self.config = config
+        # A more advanced system might load a sophisticated risk model here
+        self._category_risk_weights = {
+            "Liability Shift": 0.9,
+            "Obligation Change": 0.7,
+            "Financial Term": 0.8,
+            "Indemnification": 0.95,
+            "Dispute Resolution": 0.6,
+            "Term and Termination": 0.85,
+            "Representations and Warranties": 0.7,
+            "Governing Law": 0.9,
+            "Confidentiality": 0.5,
+            "General Semantic Analysis": 0.4 # Fallback
+        }
+        self._severity_to_score = {
+            "High": 0.8,
+            "Medium": 0.5,
+            "Low": 0.2
+        }
+
+    def assign_risk_score(self, semantic_difference: SemanticDifference) -> float:
+        """
+        Assigns a numerical risk score (e.g., 0.0 to 1.0) based on category, description,
+        implications, and perceived severity. This is a conceptual implementation.
+        """
+        score = 0.0
+        # Base score from severity
+        score += self._severity_to_score.get(semantic_difference.severity, 0.5)
+
+        # Boost score based on category
+        score += self._category_risk_weights.get(semantic_difference.category, 0.4) * 0.5 # Scale category impact
+
+        # Further conceptual boosting based on keywords in description/implications
+        if "breach" in semantic_difference.description.lower() or \
+           "damages" in semantic_difference.implications.lower() or \
+           "termination" in semantic_difference.implications.lower():
+            score += 0.2
+
+        # Clamp score between 0 and 1
+        return min(1.0, max(0.0, score / (len(self._category_risk_weights) * 0.5 + 1.0))) # Normalize conceptual max score
+
+    def categorize_risk_level(self, score: float) -> str:
+        """Converts a numerical risk score into a qualitative risk level."""
+        if score >= 0.8:
+            return "Critical Impact"
+        elif score >= 0.6:
+            return "High Impact"
+        elif score >= 0.3:
+            return "Moderate Impact"
+        else:
+            return "Low Impact"
 
 class AnalysisFormatter:
     """
@@ -307,8 +466,10 @@ class AnalysisFormatter:
     into a structured, user-friendly presentation. This module bridges AI output
     with human comprehension.
     """
-    def __init__(self, target_format: AnalysisOutputFormat = AnalysisOutputFormat.MARKDOWN_BULLETS):
+    def __init__(self, target_format: AnalysisOutputFormat, config: LegalAnalysisConfig):
         self.target_format = target_format
+        self.config = config
+        self.risk_engine = RiskAssessmentEngine(config) if config.risk_scoring_enabled else None
 
     def parse_and_structure_ai_output(self, ai_raw_text: str) -> List[SemanticDifference]:
         """
@@ -316,70 +477,74 @@ class AnalysisFormatter:
         into a list of structured SemanticDifference objects.
         This can involve heuristic parsing or a more robust NLP pipeline.
         """
-        # This is a highly complex task and will depend on the AI's adherence to the prompt.
-        # For a truly robust system, this might involve another smaller LLM or a sophisticated
-        # rule-based system trained on parsing the expected output format.
-
-        # A simplified heuristic approach for demonstration:
         differences: List[SemanticDifference] = []
-        # Assuming the AI provides output in a clear, bulleted, plain English format.
-        # We'll simulate parsing into SemanticDifference objects.
-
-        # Example: Simple keyword-based parsing for demonstration.
-        # In a real scenario, this would be far more intelligent, perhaps
-        # using regex or a small fine-tuned model for extraction.
         lines = ai_raw_text.split('\n')
-        current_category = "General"
-        current_description = ""
-        current_implications = ""
-        current_doc_a_excerpt = ""
-        current_doc_b_excerpt = ""
-        current_severity = "Medium"
+        current_data: Dict[str, Any] = {}
 
         for line in lines:
             line = line.strip()
             if not line:
                 continue
 
-            # This is a naive parsing. A real system would use more sophisticated regex/NLP.
-            if line.startswith("Category:"):
-                current_category = line.replace("Category:", "").strip()
-            elif line.startswith("Description:"):
-                current_description = line.replace("Description:", "").strip()
-            elif line.startswith("Implications:"):
-                current_implications = line.replace("Implications:", "").strip()
-            elif line.startswith("Document A Excerpt:"):
-                current_doc_a_excerpt = line.replace("Document A Excerpt:", "").strip()
-            elif line.startswith("Document B Excerpt:"):
-                current_doc_b_excerpt = line.replace("Document B Excerpt:", "").strip()
-            elif line.startswith("Severity:"):
-                current_severity = line.replace("Severity:", "").strip()
-                # Assuming a new difference ends here, add to list and reset
-                if current_description and current_implications:
-                    differences.append(SemanticDifference(
-                        category=current_category,
-                        description=current_description,
-                        implications=current_implications,
-                        doc_a_excerpt=current_doc_a_excerpt,
-                        doc_b_excerpt=current_doc_b_excerpt,
-                        severity=current_severity
-                    ))
-                current_description = ""
-                current_implications = ""
-                current_doc_a_excerpt = ""
-                current_doc_b_excerpt = ""
-                current_severity = "Medium" # Reset for next entry
-                current_category = "General"
+            # Heuristic parsing based on expected prompt output
+            if line.startswith("1. "):
+                # Start of a new difference, capture previous if complete
+                if current_data:
+                    diff = SemanticDifference(
+                        category=current_data.get("Category", "Uncategorized"),
+                        description=current_data.get("Description", "No description provided."),
+                        implications=current_data.get("Implications", "No implications provided."),
+                        doc_a_excerpt=current_data.get("Document A Excerpt"),
+                        doc_b_excerpt=current_data.get("Document B Excerpt"),
+                        severity=current_data.get("Severity", "Medium")
+                    )
+                    if self.config.risk_scoring_enabled and self.risk_engine:
+                        diff.risk_score = self.risk_engine.assign_risk_score(diff)
+                        diff.risk_level = self.risk_engine.categorize_risk_level(diff.risk_score)
+                    differences.append(diff)
+                current_data = {"Description": line[3:].strip()} # Treat first line as description
 
-        # If the AI produces a less structured list, we can still capture it
+            elif line.startswith("2. "):
+                current_data["Implications"] = line[3:].strip()
+            elif line.startswith("3. "): # AI might output category last or in a flexible way
+                current_data["Category"] = line[3:].strip()
+            elif line.startswith("4. ") and self.config.return_excerpts:
+                # This needs to handle both A and B excerpts potentially in one line or subsequent lines
+                if "Document A" in line:
+                    current_data["Document A Excerpt"] = line.split("Document A Context: ", 1)[-1].strip().strip('`')
+                elif "Document B" in line:
+                    current_data["Document B Excerpt"] = line.split("Document B Context: ", 1)[-1].strip().strip('`')
+            elif line.startswith("5. "):
+                current_data["Severity"] = line[3:].strip()
+            # More robust parsing would involve regex and state machines
+
+        # Add the last collected difference if any
+        if current_data:
+            diff = SemanticDifference(
+                category=current_data.get("Category", "Uncategorized"),
+                description=current_data.get("Description", "No description provided."),
+                implications=current_data.get("Implications", "No implications provided."),
+                doc_a_excerpt=current_data.get("Document A Excerpt"),
+                doc_b_excerpt=current_data.get("Document B Excerpt"),
+                severity=current_data.get("Severity", "Medium")
+            )
+            if self.config.risk_scoring_enabled and self.risk_engine:
+                diff.risk_score = self.risk_engine.assign_risk_score(diff)
+                diff.risk_level = self.risk_engine.categorize_risk_level(diff.risk_score)
+            differences.append(diff)
+
+        # Fallback for less structured output, treat entire response as one general difference
         if not differences and ai_raw_text:
-            # Fallback for less structured output - treat as one big difference
-            differences.append(SemanticDifference(
+            general_diff = SemanticDifference(
                 category="General Semantic Analysis",
                 description="Overall material differences identified by AI.",
-                implications=ai_raw_text, # The whole output is the implication
+                implications=ai_raw_text,
                 severity="Undetermined"
-            ))
+            )
+            if self.config.risk_scoring_enabled and self.risk_engine:
+                general_diff.risk_score = self.risk_engine.assign_risk_score(general_diff)
+                general_diff.risk_level = self.risk_engine.categorize_risk_level(general_diff.risk_score)
+            differences.append(general_diff)
 
         return differences
 
@@ -393,13 +558,20 @@ class AnalysisFormatter:
                 return formatted_output + "No material differences identified or parseable."
 
             for i, diff in enumerate(structured_differences):
-                formatted_output += f"**{i+1}. {diff.category} (Severity: {diff.severity})**\n"
+                risk_info = f" (Severity: {diff.severity}"
+                if diff.risk_score is not None and diff.risk_level:
+                    risk_info += f", Risk Score: {diff.risk_score:.2f}, Level: {diff.risk_level})"
+                else:
+                    risk_info += ")"
+
+                formatted_output += f"**{i+1}. {diff.category}{risk_info}**\n"
                 formatted_output += f"    * **Description:** {diff.description}\n"
                 formatted_output += f"    * **Implications:** {diff.implications}\n"
-                if diff.doc_a_excerpt:
-                    formatted_output += f"    * **Document A Context:** `{diff.doc_a_excerpt}`\n"
-                if diff.doc_b_excerpt:
-                    formatted_output += f"    * **Document B Context:** `{diff.doc_b_excerpt}`\n"
+                if self.config.return_excerpts:
+                    if diff.doc_a_excerpt:
+                        formatted_output += f"    * **Document A Context:** `{diff.doc_a_excerpt}`\n"
+                    if diff.doc_b_excerpt:
+                        formatted_output += f"    * **Document B Context:** `{diff.doc_b_excerpt}`\n"
                 formatted_output += "\n"
             return formatted_output
         elif self.target_format == AnalysisOutputFormat.JSON_STRUCTURED:
@@ -411,21 +583,70 @@ class AnalysisFormatter:
                 return formatted_output + "No material differences identified or parseable."
 
             for i, diff in enumerate(structured_differences):
-                formatted_output += f"{i+1}. {diff.category} (Severity: {diff.severity})\n"
+                risk_info = f" (Severity: {diff.severity}"
+                if diff.risk_score is not None and diff.risk_level:
+                    risk_info += f", Risk Score: {diff.risk_score:.2f}, Level: {diff.risk_level})"
+                else:
+                    risk_info += ")"
+
+                formatted_output += f"{i+1}. {diff.category}{risk_info}\n"
                 formatted_output += f"    Description: {diff.description}\n"
                 formatted_output += f"    Implications: {diff.implications}\n"
-                if diff.doc_a_excerpt:
-                    formatted_output += f"    Document A Context: {diff.doc_a_excerpt}\n"
-                if diff.doc_b_excerpt:
-                    formatted_output += f"    Document B Context: {diff.doc_b_excerpt}\n"
+                if self.config.return_excerpts:
+                    if diff.doc_a_excerpt:
+                        formatted_output += f"    Document A Context: {diff.doc_a_excerpt}\n"
+                    if diff.doc_b_excerpt:
+                        formatted_output += f"    Document B Context: {diff.doc_b_excerpt}\n"
                 formatted_output += "\n"
             return formatted_output
+
+class FeedbackLoopProcessor:
+    """
+    Manages the collection and processing of user feedback to improve the AI model
+    and system accuracy over time. This is a conceptual implementation.
+    """
+    @staticmethod
+    def record_feedback(
+        comparison_id: str,
+        user_rating: int, # e.g., 1-5 stars
+        feedback_text: Optional[str] = None,
+        identified_differences: Optional[List[Dict[str, Any]]] = None
+    ):
+        """
+        Records user feedback on the quality of a specific comparison.
+        In a real system, this would persist data to a database for further analysis
+        and model fine-tuning.
+        """
+        print(f"--- FEEDBACK RECORDED for Comparison ID: {comparison_id} ---")
+        print(f"User Rating: {user_rating}/5")
+        if feedback_text:
+            print(f"Feedback Text: {feedback_text}")
+        if identified_differences:
+            print(f"Number of Differences Reviewed: {len(identified_differences)}")
+        print(f"Timestamp: {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
+        print(f"---------------------------------------------------")
+        # Conceptual: In a real system, store this data in a database.
+
+    @staticmethod
+    def analyze_feedback_trends() -> Dict[str, Any]:
+        """
+        Conceptual: Analyzes aggregated feedback to identify areas for system improvement.
+        This would typically involve querying a feedback database.
+        """
+        # Placeholder for actual analytics.
+        return {
+            "average_rating": 4.2,
+            "common_issues": ["subtle nuance missed", "verbosity", "incorrect severity"],
+            "positive_trends": ["accuracy on core obligations", "speed"],
+            "recommendations": ["refine prompt for specific legal domain X", "update parsing logic for structured output"]
+        }
 
 async def compare_legal_documents(
     doc_a: str,
     doc_b: str,
     config: Optional[LegalAnalysisConfig] = None,
-    output_format: AnalysisOutputFormat = AnalysisOutputFormat.MARKDOWN_BULLETS
+    output_format: AnalysisOutputFormat = AnalysisOutputFormat.MARKDOWN_BULLETS,
+    comparison_id: Optional[str] = None # For tracking and feedback
 ) -> str:
     """
     The main orchestrating function for the entire legal document comparison system.
@@ -436,16 +657,25 @@ async def compare_legal_documents(
         doc_b: The full text content of the second legal document (Document B).
         config: Optional configuration object to customize the AI interaction.
         output_format: The desired format for the final summary output.
+        comparison_id: An optional ID for tracking this specific comparison, useful for feedback.
 
     Returns:
         A string containing the formatted summary of material legal differences.
     """
     if config is None:
         config = LegalAnalysisConfig()
+    if comparison_id is None:
+        comparison_id = hashlib.sha256(f"{doc_a}{doc_b}{datetime.datetime.now()}".encode('utf-8')).hexdigest()
 
     # 1. Pre-process documents
     doc_a_cleaned = LegalDocumentProcessor.clean_text(doc_a)
     doc_b_cleaned = LegalDocumentProcessor.clean_text(doc_b)
+
+    # Conceptual: Extract metadata (not directly used in prompt but good for system context)
+    doc_a_metadata = LegalDocumentProcessor.extract_document_metadata(doc_a_cleaned, "docA", "1.0", "Original Contract")
+    doc_b_metadata = LegalDocumentProcessor.extract_document_metadata(doc_b_cleaned, "docB", "1.1", "Revised Contract")
+    print(f"Comparing documents: {doc_a_metadata.title} v{doc_a_metadata.version} vs {doc_b_metadata.title} v{doc_b_metadata.version}")
+
 
     # 2. Construct the sophisticated AI prompt
     prompt_builder = PromptBuilder(config)
@@ -453,7 +683,7 @@ async def compare_legal_documents(
 
     # 3. Interact with the Generative AI Model
     model = GenerativeModel(config.ai_model_name)
-    
+
     # We introduce parameters for finer control over AI generation
     generation_config = {
         "temperature": config.temperature,
@@ -469,11 +699,11 @@ async def compare_legal_documents(
         ai_raw_analysis = response.text
     except Exception as e:
         # Robust error handling is crucial for production systems
-        print(f"Error during AI content generation: {e}")
-        return f"An error occurred during AI analysis: {str(e)}. Please try again."
+        print(f"Error during AI content generation for comparison {comparison_id}: {e}")
+        return f"An error occurred during AI analysis: {str(e)}. Please try again later. (Comparison ID: {comparison_id})"
 
     # 4. Extract and structure semantic differences from AI output
-    analysis_formatter = AnalysisFormatter(target_format=output_format)
+    analysis_formatter = AnalysisFormatter(target_format=output_format, config=config)
     structured_differences = analysis_formatter.parse_and_structure_ai_output(ai_raw_analysis)
 
     # 5. Format the structured differences for final display
@@ -495,7 +725,7 @@ async def compare_contracts(doc_a: str, doc_b: str) -> str:
 The following claims assert the definitive intellectual ownership and novel aspects of the disclosed system and methodology.
 
 1.  A method for semantically analyzing and comparing legal documents, comprising:
-    a.  Receiving, via a computational interface, a first full-text legal document (Document A) and a second full-text legal document (Document B).
+    a.  Receiving, via a computational interface, a first full-text legal document Document A and a second full-text legal document Document B.
     b.  Programmatically constructing a sophisticated, contextually enriched prompt for an advanced generative artificial intelligence model, wherein said prompt definitively includes the entirety of the textual content of both Document A and Document B, and further comprises explicit directive instructions compelling the artificial intelligence model to:
         i.   Adopt the persona of a highly specialized legal analyst.
         ii.  Execute a deep semantic comparison between Document A and Document B.
@@ -513,12 +743,12 @@ The following claims assert the definitive intellectual ownership and novel aspe
 
 3.  The method of claim 1, wherein the prompt further instructs the generative artificial intelligence model to:
     a.  Provide brief, illustrative textual excerpts from Document A and Document B corresponding to each identified material difference.
-    b.  Assign a qualitative severity metric (e.g., "High," "Medium," "Low") to each identified difference based on its estimated legal impact.
+    b.  Assign a qualitative severity metric e.g. "High," "Medium," "Low" to each identified difference based on its estimated legal impact.
 
 4.  The method of claim 1, wherein the receiving of the textual analysis from the generative artificial intelligence model includes robust error handling, rate limiting, and retry mechanisms for resilient interaction with the AI service.
 
 5.  A system for facilitating deep semantic comparison and analysis of legal documents, comprising:
-    a.  A User Interface Module configured to receive textual input for a first legal document (Document A) and a second legal document (Document B).
+    a.  A User Interface Module configured to receive textual input for a first legal document Document A and a second legal document Document B.
     b.  A Backend Orchestration Layer configured to manage the workflow and inter-module communication.
     c.  A Document Pre-processing Module operatively coupled to the Backend Orchestration Layer, configured to clean and normalize the textual content of Document A and Document B.
     d.  An Advanced Prompt Engineering Module operatively coupled to the Backend Orchestration Layer and the Document Pre-processing Module, configured to programmatically construct a highly specific and directive prompt for a generative artificial intelligence model, said prompt embedding the cleaned documents and instructing the AI to perform a semantic comparison of legal meaning and implications.
@@ -527,6 +757,14 @@ The following claims assert the definitive intellectual ownership and novel aspe
     g.  An Output Synthesis & Presentation Layer operatively coupled to the Backend Orchestration Layer and the Semantic Difference Extraction Engine, configured to transform the structured legal differences into a user-friendly summary for display.
 
 6.  The system of claim 5, wherein the Output Synthesis & Presentation Layer is further configured to render the summary in a customizable format, including but not limited to, markdown bulleted lists, structured JSON, or comparative tables, and to translate complex legalistic output into plain English.
+
+7.  The system of claim 5, further comprising a Risk Assessment Engine operatively coupled to the Semantic Difference Extraction Engine and the Output Synthesis & Presentation Layer, configured to:
+    a.  Assign a quantitative risk score to each identified material legal difference.
+    b.  Categorize each identified material legal difference into a qualitative risk level e.g. "Critical Impact," "High Impact," "Moderate Impact," or "Low Impact."
+
+8.  The system of claim 5, further comprising a Feedback Loop Processor configured to:
+    a.  Record user feedback regarding the accuracy and utility of the semantic comparison.
+    b.  Utilize aggregated feedback data to facilitate continuous improvement of the prompt engineering, generative AI model, and semantic difference extraction processes.
 
 **Mathematical Justification:**
 The present invention is underpinned by a rigorously formalized mathematical framework that quantitatively articulates the novel capabilities and profound superiority over antecedent methodologies. We herein define several axiomatic classes of mathematics, each elucidating a critical component of our inventive construct.
@@ -538,26 +776,26 @@ Let `D` be the infinite set of all possible legal document texts. A document `D 
 A traditional textual difference function, `f_diff : D x D -> Delta_text`, maps two documents to a representation of their lexical disparities.
 This function is often based on the principles of computational string similarity and edit distance.
 
-**Definition 1.1 (Edit Distance):** For two documents `D_A` and `D_B`, their Levenshtein distance `Lev(D_A, D_B)` is the minimum number of single-character edits (insertions, deletions, or substitutions) required to change `D_A` into `D_B`.
+**Definition 1.1 Edit Distance:** For two documents `D_A` and `D_B`, their Levenshtein distance `Lev(D_A, D_B)` is the minimum number of single-character edits insertions, deletions, or substitutions required to change `D_A` into `D_B`.
 
-**Definition 1.2 (Longest Common Subsequence - LCS):** The LCS of two documents `D_A` and `D_B` is the longest sequence that can be obtained by deleting zero or more characters from `D_A` and zero or more characters from `D_B`.
+**Definition 1.2 Longest Common Subsequence - LCS:** The LCS of two documents `D_A` and `D_B` is the longest sequence that can be obtained by deleting zero or more characters from `D_A` and zero or more characters from `D_B`.
 
-**Definition 1.3 (Lexical Delta Space `Delta_text`):** The output of `f_diff` is typically an element of `Delta_text`, which is a structured representation of character-level or word-level differences. This space can be formally defined as a set of tuples, where each tuple describes an operation:
+**Definition 1.3 Lexical Delta Space `Delta_text`:** The output of `f_diff` is typically an element of `Delta_text`, which is a structured representation of character-level or word-level differences. This space can be formally defined as a set of tuples, where each tuple describes an operation:
 ```
 Delta_text = { (op, index, content_A, content_B) | op in { INSERT, DELETE, REPLACE, EQUAL } }
 ```
 where `index` denotes the position, `content_A` is the segment from `D_A`, and `content_B` is the segment from `D_B`.
 
-**Theorem 1.1 (Incompleteness of Lexical Variance):** `f_diff` is inherently incomplete for legal analysis.
-*Proof:* Consider a change from "Party A shall indemnify Party B for all losses" to "Party A may indemnify Party B for all losses." The lexical difference is minimal (changing "shall" to "may"). However, the legal implication shifts from a mandatory obligation to a discretionary option, a semantically profound divergence. `f_diff` captures the character change, but cannot interpret the modal verb's legal weight. Thus, `f_diff(D_A, D_B)` does not contain sufficient information to infer `Delta_legal` directly.
+**Theorem 1.1 Incompleteness of Lexical Variance:** `f_diff` is inherently incomplete for legal analysis.
+*Proof:* Consider a change from "Party A shall indemnify Party B for all losses" to "Party A may indemnify Party B for all losses." The lexical difference is minimal changing "shall" to "may". However, the legal implication shifts from a mandatory obligation to a discretionary option, a semantically profound divergence. `f_diff` captures the character change, but cannot interpret the modal verb's legal weight. Thus, `f_diff(D_A, D_B)` does not contain sufficient information to infer `Delta_legal` directly.
 
 ### II. Ontological Legal Semantic Algebra OLSA
 
 This class defines the mapping from a legal document to its underlying legal meaning and implications.
 
-**Definition 2.1 (Legal Semantic Space `L`):** Let `L` be a high-dimensional semantic space, where each point represents a unique legal meaning, obligation, right, liability, or implication. Elements of `L` are not direct textual representations but abstract, formalized legal concepts. This space can be viewed as a manifold embedding of legal knowledge graphs, deontic logic primitives, and jurisprudential principles.
+**Definition 2.1 Legal Semantic Space `L`:** Let `L` be a high-dimensional semantic space, where each point represents a unique legal meaning, obligation, right, liability, or implication. Elements of `L` are not direct textual representations but abstract, formalized legal concepts. This space can be viewed as a manifold embedding of legal knowledge graphs, deontic logic primitives, and jurisprudential principles.
 
-**Definition 2.2 (Implication Mapping Function `Psi`):** A function `Psi : D -> L` maps a legal document `D` to its complete set of legal implications and semantic meaning `L(D) subset L`. This function is non-trivial, requiring deep contextual understanding, domain expertise, and inferential reasoning.
+**Definition 2.2 Implication Mapping Function `Psi`:** A function `Psi : D -> L` maps a legal document `D` to its complete set of legal implications and semantic meaning `L(D) subset L`. This function is non-trivial, requiring deep contextual understanding, domain expertise, and inferential reasoning.
 ```
 L(D) = Psi(D)
 ```
@@ -566,59 +804,59 @@ In practice, `Psi` is a highly complex, non-linear, and non-deterministic functi
 *   **Syntactic Structure:** How words combine to form sentences and clauses.
 *   **Pragmatic Context:** The purpose and intent behind the document.
 *   **Jurisprudential Knowledge:** Applicable laws, precedents, and legal doctrines.
-*   **Deontic Modalities:** Obligations (shall), permissions (may), prohibitions (shall not).
+*   **Deontic Modalities:** Obligations shall, permissions may, prohibitions shall not.
 
-**Axiom 2.1 (Uniqueness of Legal Semantic Representation):** For any two distinct legal documents `D_1, D_2 in D`, if their legal meanings are genuinely different, then their representations in `L` are distinct: `D_1 != D_2 implies Psi(D_1) != Psi(D_2)` for material differences.
+**Axiom 2.1 Uniqueness of Legal Semantic Representation:** For any two distinct legal documents `D_1, D_2 in D`, if their legal meanings are genuinely different, then their representations in `L` are distinct: `D_1 != D_2 implies Psi(D_1) != Psi(D_2)` for material differences.
 
 ### III. Differential Legal Semiosis Calculus DLSC
 
 This calculus defines the operation of determining the substantive differences within the Legal Semantic Space.
 
-**Definition 3.1 (Semantic Difference Operator `nabla_legal`):** The semantic difference between two documents `D_A` and `D_B` is defined as the set-theoretic difference (or symmetric difference) of their legal implications in `L`. Specifically, we are interested in `Delta_legal`, representing what has been added or changed in terms of legal meaning from `D_A` to `D_B`.
+**Definition 3.1 Semantic Difference Operator `nabla_legal`:** The semantic difference between two documents `D_A` and `D_B` is defined as the set-theoretic difference or symmetric difference of their legal implications in `L`. Specifically, we are interested in `Delta_legal`, representing what has been added or changed in terms of legal meaning from `D_A` to `D_B`.
 ```
 Delta_legal = Psi(D_B) - Psi(D_A)
 ```
 This operation identifies legal concepts present in `D_B` that were not present, or were fundamentally altered, in `D_A`. A more comprehensive view could involve a comparison of the properties of corresponding concepts, e.g., if an obligation from `D_A` has been modified in `D_B`, it represents a difference.
 
-**Theorem 3.1 (Irreducibility of Semantic Difference to Lexical Difference):**
+**Theorem 3.1 Irreducibility of Semantic Difference to Lexical Difference:**
 The computation of `Delta_legal` cannot be reduced to a direct transformation of `Delta_text`.
-*Proof:* As demonstrated in Theorem 1.1, a minor `Delta_text` can correspond to a significant `Delta_legal`. Conversely, a large `Delta_text` (e.g., rephrasing an entire paragraph without changing its core legal meaning) might correspond to a minimal `Delta_legal`. Therefore, `f_diff(D_A, D_B)` is an insufficient input for computing `Delta_legal`. The invention definitively solves this by operating directly on the semantic plane via an advanced generative model.
+*Proof:* As demonstrated in Theorem 1.1, a minor `Delta_text` can correspond to a significant `Delta_legal`. Conversely, a large `Delta_text` e.g. rephrasing an entire paragraph without changing its core legal meaning might correspond to a minimal `Delta_legal`. Therefore, `f_diff(D_A, D_B)` is an insufficient input for computing `Delta_legal`. The invention definitively solves this by operating directly on the semantic plane via an advanced generative model.
 
 ### IV. Probabilistic Generative Semantic Approximation PGSA
 
 This class characterizes the role of the generative AI model in approximating the complex semantic mapping and differential operations.
 
-**Definition 4.1 (Generative Approximation Function `G_AI`):** The generative AI model, `G_AI`, is a highly parameterized, non-linear function (e.g., a transformer-based neural network) that takes two documents `D_A, D_B` and a prompt `P` as input, and outputs a textual `Summary`.
+**Definition 4.1 Generative Approximation Function `G_AI`:** The generative AI model, `G_AI`, is a highly parameterized, non-linear function e.g. a transformer-based neural network that takes two documents `D_A, D_B` and a prompt `P` as input, and outputs a textual `Summary`.
 ```
 Summary = G_AI(D_A, D_B, P)
 ```
 The prompt `P` is crucial, encoding the desired persona, focus areas, and output format, effectively guiding the approximation of `Psi` and `Delta_legal`.
 
-**Axiom 4.1 (Semantic Coherence of `G_AI`):** When properly prompted, `G_AI` can produce output that is semantically coherent and contextually relevant to the legal domain, effectively bridging the gap between raw text and legal interpretation.
+**Axiom 4.1 Semantic Coherence of `G_AI`:** When properly prompted, `G_AI` can produce output that is semantically coherent and contextually relevant to the legal domain, effectively bridging the gap between raw text and legal interpretation.
 
-**Theorem 4.1 (Effective Approximation of `Delta_legal`):** The system's output `Summary` is a highly accurate and practically useful approximation of the true `Delta_legal`.
+**Theorem 4.1 Effective Approximation of `Delta_legal`:** The system's output `Summary` is a highly accurate and practically useful approximation of the true `Delta_legal`.
 ```
 Summary approx Textualization(Delta_legal)
 ```
 where `Textualization` is a function that converts abstract legal concepts from `L` into natural language.
-*Proof Sketch:* Modern large language models, trained on vast corpora of text including legal documents, possess an emergent capability for semantic understanding and inference. Through fine-tuning, retrieval augmentation, and sophisticated prompt engineering (as implemented by the Advanced Prompt Engineering Module), `G_AI` learns to approximate the `Psi` function for both `D_A` and `D_B` and then perform an implicit comparison in its latent semantic space. The prompt guides its generative process to articulate the results of this implicit `Psi(D_B) - Psi(D_A)` operation in a structured and comprehensible textual format. The rigorous evaluation of such models against human expert judgments consistently demonstrates a high degree of concordance for complex semantic tasks.
+*Proof Sketch:* Modern large language models, trained on vast corpora of text including legal documents, possess an emergent capability for semantic understanding and inference. Through fine-tuning, retrieval augmentation, and sophisticated prompt engineering as implemented by the Advanced Prompt Engineering Module, `G_AI` learns to approximate the `Psi` function for both `D_A` and `D_B` and then perform an implicit comparison in its latent semantic space. The prompt guides its generative process to articulate the results of this implicit `Psi(D_B) - Psi(D_A)` operation in a structured and comprehensible textual format. The rigorous evaluation of such models against human expert judgments consistently demonstrates a high degree of concordance for complex semantic tasks.
 
 ### V. Axiomatic Econometric Efficiency Calculus AEEC
 
 This calculus quantifies the superior efficiency and economic benefit of the invention.
 
-**Definition 5.1 (Cost Function for Manual Review `C_H`):** The cost of manual legal review by a human expert `H` for comparing `D_A` and `D_B` is `C_H`. This cost is directly proportional to the complexity and length of documents, and the hourly rate of expert `H`.
+**Definition 5.1 Cost Function for Manual Review `C_H`:** The cost of manual legal review by a human expert `H` for comparing `D_A` and `D_B` is `C_H`. This cost is directly proportional to the complexity and length of documents, and the hourly rate of expert `H`.
 ```
 C_H = Rate_H x Time_H(D_A, D_B)
 ```
 
-**Definition 5.2 (Cost Function for AI-Assisted Review `C_AI`):** The cost of utilizing the inventive system is `C_AI`. This includes the computational cost of `G_AI` and the cost of human verification.
+**Definition 5.2 Cost Function for AI-Assisted Review `C_AI`:** The cost of utilizing the inventive system is `C_AI`. This includes the computational cost of `G_AI` and the cost of human verification.
 ```
 C_AI = Cost(G_AI(D_A, D_B, P)) + Cost(Verification(Summary))
 ```
 where `Cost(G_AI)` is the token-based cost of the AI model, and `Cost(Verification)` is the human effort to review and validate the AI's output. The `Time_Verification` is significantly less than `Time_H` due to the AI having already performed the arduous identification and summarization task.
 
-**Theorem 5.1 (Dominant Efficiency of the Inventive System):** The total cost of utilizing the inventive system with subsequent human verification is orders of magnitude less than the traditional manual legal review process for equivalent accuracy and thoroughness.
+**Theorem 5.1 Dominant Efficiency of the Inventive System:** The total cost of utilizing the inventive system with subsequent human verification is orders of magnitude less than the traditional manual legal review process for equivalent accuracy and thoroughness.
 ```
 C_AI << C_H
 ```
