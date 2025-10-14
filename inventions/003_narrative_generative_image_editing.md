@@ -23,13 +23,15 @@ The generative AI model, residing within a dedicated, high-performance computati
 
 The backend service, upon receiving the generated image data, performs validation and optional post-processing operations [e.g., resolution scaling, color space conversion, branding overlay application for financial institutions, compliance checks for objectionable content]. This processed image data is then forwarded to the client application, which dynamically renders and displays the new, personalized image within a designated "preview" component of the user interface.
 
+To further elaborate on the system's operational intricacies and advanced modules, several detailed diagrams are provided below, strictly adhering to the prompt guideline of avoiding parentheses in node labels.
+
 **Figure 1: High-Level System Architecture Diagram**
 ```mermaid
 graph TD
     A[User Client Application] --> B[API Gateway]
     B --> C[Orchestration Service]
-    C --> D[Multi-Modal Generative AI Service]
-    C --> E[Text Generation AI Service]
+    C --> D[MultiModal Generative AIService]
+    C --> E[Text Generation AIService]
     C --> F[Data Persistence Layer]
     C --> G[Prompt Refinement Service]
     C --> H[Recommendation Engine]
@@ -37,7 +39,7 @@ graph TD
     E -- Generated Story --> C
     G -- Refined Prompt --> C
     H -- Recommendations --> C
-    C -- Image/Story Data --> B
+    C -- Image Story Data --> B
     B -- Display Data --> A
 
     subgraph Backend Services
@@ -57,26 +59,125 @@ sequenceDiagram
     participant API as API Gateway
     participant Orchestrator as Orchestration Service
     participant PromptRefiner as Prompt Refinement Service
-    participant GenerativeAI as Multi-Modal Generative AI
+    participant GenerativeAI as MultiModal Generative AI
     participant TextGenAI as Text Generation AI
     participant Recommender as Recommendation Engine
     participant DB as Data Persistence
 
-    User->>API: 1. Upload Base Image [Base64] & Text Prompt
+    User->>API: 1. Upload Base Image Base64 & Text Prompt
     API->>Orchestrator: 2. Forward Request
-    Orchestrator->>PromptRefiner: 3. Optional: Refine Prompt
+    Orchestrator->>PromptRefiner: 3. Optional Refine Prompt
     PromptRefiner-->>Orchestrator: 4. Return Refined Prompt
-    Orchestrator->>GenerativeAI: 5. Invoke Generative AI [Image + Refined Prompt]
+    Orchestrator->>GenerativeAI: 5. Invoke Generative AI with Image and Refined Prompt
     GenerativeAI-->>Orchestrator: 6. Return Edited Image Data
-    Orchestrator->>DB: 7. Store Edited Image [Optional: Audit Log]
-    Orchestrator->>TextGenAI: 8. Invoke Text Generation AI [Refined Prompt Only]
+    Orchestrator->>DB: 7. Store Edited Image Optional Audit Log
+    Orchestrator->>TextGenAI: 8. Invoke Text Generation AI for Refined Prompt
     TextGenAI-->>Orchestrator: 9. Return Generated Story Text
-    Orchestrator->>DB: 10. Store Generated Story [Optional: Audit Log]
-    Orchestrator->>Recommender: 11. Optional: Request Recommendations [User Context]
-    Recommender-->>Orchestrator: 12. Return Suggested Prompts/Themes
-    Orchestrator-->>API: 13. Return Edited Image, Story Data & Recommendations
-    API-->>User: 14. Display Personalized Card Preview, Story & Suggestions
-    User->>Orchestrator: 15. Optional: Iterate with new prompt/feedback
+    Orchestrator->>DB: 10. Store Generated Story Optional Audit Log
+    Orchestrator->>Recommender: 11. Optional Request Recommendations for User Context
+    Recommender-->>Orchestrator: 12. Return Suggested Prompts or Themes
+    Orchestrator-->>API: 13. Return Edited Image Story Data & Recommendations
+    API-->>User: 14. Display Personalized Card Preview Story & Suggestions
+    User->>Orchestrator: 15. Optional Iterate with new prompt or feedback
+```
+
+**Figure 3: Prompt Refinement Service Workflow**
+Figure 3 illustrates the intricate workflow of the Prompt Refinement Service, detailing how user input is analyzed and enhanced through various modules, leading to an optimized prompt for the generative AI.
+```mermaid
+graph LR
+    A[User Input Prompt] --> B{Prompt Analysis Module}
+    B -- Identifies Ambiguities --> C[Prompt Clarification Submodule]
+    B -- Detects Conciseness --> D[Prompt Augmentation Submodule]
+    B -- Extracts Semantic Keywords --> E[Semantic Enhancement Submodule]
+    C --> F[User Interaction for Clarification]
+    F --> A
+    D -- Adds Descriptors Stylistic Elements --> G[Expanded Prompt Data]
+    E -- Optimizes Latent Space Representation --> G
+    G --> H[Refined Prompt Output]
+    subgraph Prompt Refinement Service
+        B
+        C
+        D
+        E
+        F
+        G
+    end
+```
+
+**Figure 4: Iterative Design Refinement Loop**
+Figure 4 delineates the iterative design refinement loop, showcasing the dynamic interaction between the user and the generative AI system. This process allows users to guide subsequent generations based on real-time visual feedback, fostering a conversational approach to design.
+```mermaid
+sequenceDiagram
+    participant User as User Client
+    participant Orchestrator as Orchestration Service
+    participant PromptRefiner as Prompt Refinement Service
+    participant GenerativeAI as MultiModal Generative AI
+
+    User->>User: 1. View Generated Image Preview
+    User->>User: 2. Provide Feedback New Prompt or RegionOfInterest ROI
+    User->>Orchestrator: 3. Submit Refinement Request with Feedback
+    Orchestrator->>PromptRefiner: 4. Process Feedback and Previous Prompt
+    PromptRefiner-->>Orchestrator: 5. Return Iterative Refined Prompt
+    Orchestrator->>GenerativeAI: 6. Invoke Generative AI with Current Image and Refined Prompt
+    GenerativeAI-->>Orchestrator: 7. Return New Refined Image Data
+    Orchestrator-->>User: 8. Display New Refined Image Preview
+    alt User satisfied
+        User->>Orchestrator: 9. Approve Final Design
+    else Further refinement
+        User->>User: 10. Repeat steps from 1
+    end
+```
+
+**Figure 5: Recommendation Engine Detailed Logic**
+Figure 5 presents the detailed logic behind the Recommendation Engine, demonstrating its data sources and algorithmic processes used to generate personalized suggestions for users, thereby expanding creative possibilities.
+```mermaid
+graph TD
+    A[User Context and History] --> RE
+    B[Current Prompt Semantics] --> RE
+    C[Platform Trending Data] --> RE
+    RE[Recommendation Engine] --> D[Machine Learning Algorithms]
+    D -- Analyzes User Preferences --> E[Collaborative Filtering Module]
+    D -- Performs Content Based Match --> F[Content Based Filtering Module]
+    E --> G[Suggested Prompts]
+    F --> H[Thematic Style Suggestions]
+    RE --> I[Base Image Recommendations]
+    G --> J[Output Recommendations for User]
+    H --> J
+    I --> J
+    J --> K[Orchestration Service]
+    K --> L[User Client Display]
+```
+
+**Figure 6: Financial Instrument Production Pipeline**
+Figure 6 outlines the critical Financial Instrument Production Pipeline, from final image approval to physical card manufacturing. This diagram emphasizes the security, compliance, and precise formatting checkpoints required for tangible financial assets.
+```mermaid
+graph TD
+    A[Approved Personalized Image] --> B[Orchestration Service]
+    B --> C[PostProcessing Compliance Module]
+    C --> D[Resolution Scaling]
+    C --> E[Color Profile Conversion CMYK]
+    C --> F[Branding Overlay Application]
+    C --> G[Content Moderation Check]
+    G -- Audit Logged --> H[Data Persistence Layer]
+    C -- Validated Processed Image --> I[Manufacturing Integration Module]
+    I --> J[Format to ISOIEC 7810 ID1 Standard]
+    I --> K[Define Bleed Areas]
+    I --> L[Set DPI and Image Quality]
+    I -- Production Ready Image --> M[Card Manufacturing Facility]
+    M --> N[Physical Card Production]
+    subgraph Post Processing & Compliance
+        C
+        D
+        E
+        F
+        G
+    end
+    subgraph Manufacturing Preparation
+        I
+        J
+        K
+        L
+    end
 ```
 
 **Optional Narrative Augmentation Module:**
@@ -88,7 +189,7 @@ To enhance user control and address the inherent ambiguity of natural language, 
 *   **Prompt Clarification:** Interacting with the user to resolve ambiguities or suggest alternative phrasings to achieve desired visual effects.
 *   **Semantic Enhancement:** Identifying key concepts within the prompt and ensuring their optimal representation in the latent space.
 
-Furthermore, the system supports **Iterative Design Refinement**. After an initial image generation, the user can provide follow-up textual prompts [e.g., "make the glow more intense," "shift the lotus color to deep blue," "add subtle shimmering particles"]. These subsequent prompts, often paired with visual feedback mechanisms [e.g., user-defined regions of interest], are channeled back through the Prompt Refinement Service and then to the Multi-Modal Generative AI Service, allowing for fine-grained, guided evolution of the design. This creates a powerful conversational interface for visual creation, significantly increasing user satisfaction and achieving precise aesthetic goals.
+Furthermore, the system supports **Iterative Design Refinement**. After an initial image generation, the user can provide follow-up textual prompts [e.g., "make the glow more intense," "shift the lotus color to deep blue," "add subtle shimmering particles"]. These subsequent prompts, often paired with visual feedback mechanisms [e.g., user-defined regions of interest], are channeled back through the Prompt Refinement Service and then to the MultiModal Generative AIService, allowing for fine-grained, guided evolution of the design. This creates a powerful conversational interface for visual creation, significantly increasing user satisfaction and achieving precise aesthetic goals.
 
 **Thematic Design Libraries and AI-Driven Recommendations:**
 The invention introduces a **Theme Engine** which provides curated libraries of artistic styles, historical periods, abstract concepts, or cultural motifs. Users can select a theme [e.g., "Steampunk Industrial," "Neo-Gothic," "Vaporwave Aesthetic"], which the Theme Engine translates into a set of weighted prompt modifiers or pre-configured style vectors. These thematic directives are then integrated with the user's base image and specific narrative prompt, guiding the generative AI towards a coherent stylistic output.
@@ -146,8 +247,8 @@ We claim:
         ii.  Interact with a prompt refinement service to obtain an enhanced prompt.
         iii. Construct and dispatch a multi-modal request to a generative AI service.
         iv. Receive an edited image from the generative AI service.
-        v.  Optionally, dispatch a text generation request to a text AI service and receive a generated story.
-        vi. Optionally, dispatch a request to a recommendation engine and receive suggested themes or prompts.
+        v.  Occasionally, dispatch a text generation request to a text AI service and receive a generated story.
+        vi. Occasionally, dispatch a request to a recommendation engine and receive suggested themes or prompts.
         vii. Transmit the edited image, optional story, and optional recommendations back to the client-side interface module.
     c.  A multi-modal generative AI service, communicatively coupled to the backend orchestration service, configured to:
         i.  Receive a multi-modal input comprising an image and a text prompt.
@@ -191,25 +292,25 @@ Where `i' = G_AI(i, p)` represents the transformed image `i'` derived from the i
 
 To elucidate the internal mechanism of `G_AI`, we decompose it into sequential, interacting sub-operators:
 
-1.  **Image Latent Encoding Operator (E_I):**
+1.  **Image Latent Encoding Operator E_I:**
     ```
     E_I: I -> Z_I
     ```
     This operator maps a raw image `i` from the perceptual manifold `I` into a compact, semantically rich, high-dimensional image latent space `Z_I subset R^(d_I)`. `E_I` is typically a convolutional neural network [CNN] or a Vision Transformer [ViT] that captures hierarchical visual features.
 
-2.  **Text Latent Encoding Operator (E_P):**
+2.  **Text Latent Encoding Operator E_P:**
     ```
     E_P: P -> Z_P
     ```
     This operator maps a semantic prompt `p` from the textual latent space `P` into a corresponding, abstract, high-dimensional text latent space `Z_P subset R^(d_P)`. `E_P` is typically a Large Language Model [LLM] or a Transformer network that generates context-aware embeddings.
 
-3.  **Cross-Modal Fusion and Narrative Infusion Operator (M):**
+3.  **Cross-Modal Fusion and Narrative Infusion Operator M:**
     ```
     M: Z_I x Z_P -> Z_C
     ```
     This operator is the crux of the multi-modal interaction. It takes the encoded image latent vector `z_I = E_I(i)` and the encoded text latent vector `z_P = E_P(p)` and fuses them into a unified, coherent cross-modal latent representation `z_C in Z_C subset R^(d_C)`. This fusion is achieved through sophisticated attention mechanisms [e.g., cross-attention in diffusion models] that allow the textual narrative `z_P` to condition and guide the modification of the visual features represented by `z_I`. This operator is responsible for "infusing" the narrative intent into the visual structure.
 
-4.  **Image Generative Decoding Operator (D_I):**
+4.  **Image Generative Decoding Operator D_I:**
     ```
     D_I: Z_C -> I
     ```
