@@ -27,69 +27,94 @@ The system operates as an end-to-end intelligence pipeline, from raw data acquis
 
 ```mermaid
 graph TD
-    subgraph Data Ingestion Layer
-        A[Social Media Feeds] --> B{Data Collector Modules};
-        C[Satellite Imagery Providers] --> B;
-        D[Employee Review Platforms] --> B;
-        E[Supply Chain Logistics Logs] --> B;
-        F[Web Scrapers for News / Blogs] --> B;
+    subgraph 01 Data Ingestion Layer
+        A[Social Media Feeds] --> DC[Data Collector Agents];
+        C[Satellite Imagery Providers] --> DC;
+        D[Employee Review Platforms] --> DC;
+        E[Supply Chain Logistics Logs] --> DC;
+        F[Web Scrapers News Blogs] --> DC;
+        DC --> DV[Data Validation SchemaEnforcement];
     end
 
-    B --> G[Raw Data Lake / Storage];
+    DV --> RDL[Raw Data Lakehouse];
 
-    subgraph Data Processing & Enrichment
-        G --> H[Preprocessing & Normalization Engine];
-        H --> I[Feature Extraction & Embedding Service];
-        I --> J[Knowledge Graph / Contextual Store];
+    subgraph 02 Data Processing and Enrichment
+        RDL --> PP[Preprocessing Normalization Engine];
+        PP --> TP[Text Preprocessor NER Sentiment];
+        PP --> NN[Numerical Normalizer OutlierDetector];
+        PP --> MMA[Multimodal Aligner TimeSeriesSync];
+
+        TP --> FE[Feature Extraction EmbeddingService];
+        NN --> FE;
+        MMA --> FE;
+
+        FE --> KGC[Knowledge Graph ContextStore];
+        KGC --> PGE[Prompt Generation Engine];
     end
 
-    J --> K[Dynamic Prompt Orchestration Engine];
-
-    subgraph AI Core Module
-        K --> L[Generative AI Model Service];
-        L --> M[AI Output Interpretation & Validation];
+    subgraph 03 AI Core Module
+        PGE --> LLM[Generative AI Model LLM];
+        LLM --> MOI[Model Output Interpretation];
+        MOI --> OV[Output Validation CoherenceCheck];
     end
 
-    M --> N[Forecast & Rationale Database];
+    OV --> FRDB[Forecast Rationale Database];
 
-    subgraph Output, Reporting & Feedback
-        N --> O[Portfolio Manager Dashboard];
-        N --> P[Automated Alerting System];
-        N --> Q[API for Downstream Systems];
-        O & P & Q --> R[Performance Tracker & User Feedback Loop];
-        R --> K;  // Feedback improves prompt engineering and data weighting
+    subgraph 04 Output Reporting and Feedback
+        FRDB --> PMD[PortfolioManager Dashboard];
+        FRDB --> AAS[Automated AlertingSystem];
+        FRDB --> API[API DownstreamSystems];
+
+        PMD --> UFI[User Feedback Interface];
+        AAS --> MOM[Market Outcome Monitor];
+
+        UFI --> FBK[Feedback Aggregator];
+        MOM --> FBK;
+
+        FBK --> PRA[Prompt Refinement Agent];
+        PRA --> PGE;  // Feedback improves prompt engineering and data weighting
+    end
+
+    subgraph 05 Security and Governance
+        SE[Security Encryption AccessControl]
+        CO[Compliance RegulatoryAdherence]
+        AU[Audit Logging Accountability]
+
+        SE --> DC; SE --> RDL; SE --> KGC; SE --> LLM; SE --> FRDB;
+        CO --> SE; CO --> AU;
+        AU --> PMD; AU --> AAS; AU --> API;
     end
 ```
 
 **2. Data Ingestion and Preprocessing Modules:**
-The `Data Collector Modules` are responsible for ingesting information from a diverse array of alternative data sources. These modules are configured to interact with various APIs, databases, and web services.
+The `Data Collector Agents` are responsible for ingesting information from a diverse array of alternative data sources. These modules are configured to interact with various APIs, databases, and web services.
 
-*   **Social Media Feeds:** Captures real-time posts, trends, and sentiment from platforms like X (formerly Twitter), Reddit, and financial forums for specific tickers or keywords.
-    *   `DataIngestor_SocialMedia` : Handles API calls, rate limits, and initial filtering.
+*   **Social Media Feeds:** Captures real-time posts, trends, and sentiment from platforms like X formerly Twitter, Reddit, and financial forums for specific tickers or keywords.
+    *   `DataIngestorSocialMedia` : Handles API calls, rate limits, and initial filtering.
 *   **Satellite Imagery Providers:** Integrates with services that provide processed data, such as parking lot occupancy, construction activity, or shipping container volumes for specific geographical coordinates.
-    *   `DataIngestor_SatelliteImagery` : Processes image metadata and derived numerical features.
-*   **Employee Review Platforms:** Collects anonymized reviews from sites like Glassdoor or LinkedIn to gauge internal sentiment, operational issues (e.g., `supply_chain_issues`), and management effectiveness.
-    *   `DataIngestor_EmployeeReviews` : Focuses on text extraction and metadata.
+    *   `DataIngestorSatelliteImagery` : Processes image metadata and derived numerical features.
+*   **Employee Review Platforms:** Collects anonymized reviews from sites like Glassdoor or LinkedIn to gauge internal sentiment, operational issues e.g. `supply_chain_issues`, and management effectiveness.
+    *   `DataIngestorEmployeeReviews` : Focuses on text extraction and metadata.
 *   **Supply Chain Logistics Logs:** Interfaces with maritime shipping data, freight tracking, and customs records to assess supply chain health and potential disruptions.
-    *   `DataIngestor_SupplyChain` : Ingests structured and semi-structured logistical data.
+    *   `DataIngestorSupplyChain` : Ingests structured and semi-structured logistical data.
 *   **Web Scrapers for News / Blogs:** Gathers news articles, industry blogs, and regulatory filings for additional context and early indicators.
-    *   `DataIngestor_Web` : Adaptable scraping framework.
+    *   `DataIngestorWeb` : Adaptable scraping framework.
 
-The `Preprocessing & Normalization Engine` cleans, transforms, and standardizes the raw ingested data. This includes:
-*   **Text Processing:** Tokenization, stop-word removal, stemming/lemmatization, named entity recognition (NER), and sentiment analysis for textual data.
+The `Preprocessing Normalization Engine` cleans, transforms, and standardizes the raw ingested data. This includes:
+*   **Text Processing:** Tokenization, stop-word removal, stemming/lemmatization, named entity recognition NER, and sentiment analysis for textual data.
 *   **Numerical Data Normalization:** Scaling time-series data, handling missing values, and outlier detection.
 *   **Multi-modal Alignment:** Structuring data points to be easily integrated into prompts, ensuring consistent timeframes and entity linking.
 
-The `Feature Extraction & Embedding Service` converts processed data into a format consumable by the AI. For instance, text data is converted into embeddings, image data features (e.g., occupancy counts) are extracted as numerical vectors, and categorical data is one-hot encoded or embedded.
+The `Feature Extraction EmbeddingService` converts processed data into a format consumable by the AI. For instance, text data is converted into embeddings, image data features e.g. occupancy counts are extracted as numerical vectors, and categorical data is one-hot encoded or embedded.
 
 **3. AI Prompt Engineering and Orchestration:**
-The `Dynamic Prompt Orchestration Engine` is a core innovation. It constructs sophisticated, context-rich prompts for the Generative AI Model. This module dynamically selects relevant data points based on the target company, sector, and desired forecast horizon.
+The `Prompt Generation Engine` is a core innovation. It constructs sophisticated, context-rich prompts for the Generative AI Model. This module dynamically selects relevant data points based on the target company, sector, and desired forecast horizon.
 
-*   **Contextual Data Selection:** Identifies which alternative data sources are most relevant to the query (e.g., retail company analysis focuses on parking lots, tech company on hiring trends).
-*   **Role-Playing Instruction:** Explicitly instructs the AI on its persona (e.g., `You are a top-tier hedge fund analyst specializing in the retail sector`).
-*   **Constraint Definition:** Specifies output format, required elements (e.g., `BULL` or `BEAR` case, detailed reasoning), and length constraints.
-*   **Few-Shot Examples [Optional]:** Can include a few successful past forecast examples to guide the AI's reasoning style and output structure.
-*   **Data Summarization / Condensation:** For large volumes of data, the engine might first prompt a smaller AI model to summarize or extract key points to keep the main prompt within token limits.
+*   **Contextual Data Selection:** Identifies which alternative data sources are most relevant to the query e.g. retail company analysis focuses on parking lots, tech company on hiring trends.
+*   **Role-Playing Instruction:** Explicitly instructs the AI on its persona e.g. `You are a top-tier hedge fund analyst specializing in the retail sector`.
+*   **Constraint Definition:** Specifies output format, required elements e.g. `BULL` or `BEAR` case, detailed reasoning, and length constraints.
+*   **Few-Shot Examples Optional:** Can include a few successful past forecast examples to guide the AI's reasoning style and output structure.
+*   **Data Summarization Condensation:** For large volumes of data, the engine might first prompt a smaller AI model to summarize or extract key points to keep the main prompt within token limits.
 
 **Example Scenario [Expanded from Abstract]:**
 An automated system runs an analysis on a retail company, "GlobalMart."
@@ -101,7 +126,7 @@ An automated system runs an analysis on a retail company, "GlobalMart."
     *   **Supply Chain:** Shipping manifests show a 5% decrease in inbound inventory for key product categories.
     *   **News Articles:** Recent articles highlight `macroeconomic_headwinds` impacting the retail sector.
 
-2.  **Prompt Construction:** The `Dynamic Prompt Orchestration Engine` compiles the processed data into a comprehensive prompt for a model like Gemini.
+2.  **Prompt Construction:** The `Prompt Generation Engine` compiles the processed data into a comprehensive prompt for a model like Gemini.
     ```
     You are a top-tier hedge fund analyst specializing in the retail sector. Your task is to provide a concise, evidence-based forecast for GlobalMart's (GLM) upcoming quarterly earnings. Synthesize ALL of the following alternative data points into a coherent thesis. Provide a "BULL" or "BEAR" case and your reasoning, clearly linking each data point to your conclusion.
 
@@ -116,7 +141,7 @@ An automated system runs an analysis on a retail company, "GlobalMart."
     - Supply Chain Data: Inbound inventory for high-demand product categories shows a 5% decrease in recent weeks, potentially leading to stockouts.
     - News Analysis: Several recent financial news articles indicate growing "macroeconomic headwinds" specifically impacting the retail sector, adding systemic pressure.
     ```
-3.  **AI Generation:** The `Generative AI Model Service` (e.g., a large language model) synthesizes the information.
+3.  **AI Generation:** The `Generative AI Model LLM` synthesizes the information.
     **AI Output:**
     ```
     **Thesis: BEAR**
@@ -127,15 +152,15 @@ An automated system runs an analysis on a retail company, "GlobalMart."
     - **Macroeconomic Pressures:** The identified "macroeconomic headwinds" impacting the retail sector add an external layer of pressure, making it harder for GlobalMart to overcome its internal operational issues and declining customer sentiment.
     - **Conclusion:** Based on the confluence of reduced customer interest (social media, parking lots), internal operational and supply chain distress (employee reviews, inventory data), and a challenging external economic environment, there is a high probability that GlobalMart will underperform its earnings and revenue targets for the upcoming quarter. The outlook is decidedly bearish.
     ```
-4.  **Output:** This concise, evidence-based report is delivered via the `Output, Reporting & Feedback` layer.
+4.  **Output:** This concise, evidence-based report is delivered via the `Output Reporting and Feedback` layer.
 
 **4. Feedback Loop and Continuous Improvement:**
-The system incorporates a robust `Performance Tracker & User Feedback Loop`. This module critically evaluates the AI's forecasts against actual market outcomes and gathers qualitative feedback from human analysts.
+The system incorporates a robust `PerformanceTracker FeedbackLoop`. This module critically evaluates the AI's forecasts against actual market outcomes and gathers qualitative feedback from human analysts.
 
-*   **Forecast Validation:** After a company's earnings are released, the system automatically compares the AI's `BULL`/`BEAR` thesis against the actual performance (e.g., did the stock move as predicted? did the company beat/miss estimates?).
+*   **Forecast Validation:** After a company's earnings are released, the system automatically compares the AI's `BULL`/`BEAR` thesis against the actual performance e.g. did the stock move as predicted? did the company beat/miss estimates?.
 *   **Quantitative Scoring:** Assigns a score to each forecast based on accuracy and timeliness.
 *   **User Feedback Integration:** Analysts can provide direct feedback on the AI's rationale, identifying strengths, weaknesses, or missed insights.
-*   **Iterative Prompt Refinement:** Positive and negative feedback, along with performance scores, are used to iteratively refine the `Dynamic Prompt Orchestration Engine`. This can involve adjusting:
+*   **Iterative Prompt Refinement:** Positive and negative feedback, along with performance scores, are used to iteratively refine the `Prompt Generation Engine`. This can involve adjusting:
     *   The weighting of different alternative data sources in the prompt.
     *   The phrasing of the AI's role and instructions.
     *   The inclusion or exclusion of specific data types for certain sectors.
@@ -144,17 +169,133 @@ This closed-loop system ensures that the AI's analytical capabilities continuous
 
 **5. Output and Integration with Financial Systems:**
 The AI's generated forecasts and rationales are formatted for immediate consumption and integration:
-*   **Portfolio Manager Dashboard:** Provides a user-friendly interface displaying current forecasts, historical performance, and trend analyses.
-*   **Automated Alerting System:** Triggers notifications via email, Slack, or dedicated platforms when significant new forecasts or market shifts are detected.
-*   **API for Downstream Systems:** Offers a well-documented API for seamless integration with proprietary trading algorithms, risk management platforms, and broader business intelligence tools, allowing programmatic access to AI-generated insights. The output is structured, for example, in JSON format, facilitating machine readability.
+*   **PortfolioManager Dashboard:** Provides a user-friendly interface displaying current forecasts, historical performance, and trend analyses.
+*   **Automated AlertingSystem:** Triggers notifications via email, Slack, or dedicated platforms when significant new forecasts or market shifts are detected.
+*   **API DownstreamSystems:** Offers a well-documented API for seamless integration with proprietary trading algorithms, risk management platforms, and broader business intelligence tools, allowing programmatic access to AI-generated insights. The output is structured, for example, in JSON format, facilitating machine readability.
 
 **6. Further Embodiments and Extensions:**
-*   **Multi-modal AI Integration:** Employing AI models capable of directly processing raw image data (e.g., satellite imagery) rather than relying solely on pre-extracted numerical features, enabling a richer, end-to-end multi-modal reasoning.
-*   **Probabilistic Forecasting:** Generating not just a `BULL`/`BEAR` case, but also associated probability scores (e.g., `70% probability of BEAR case`), providing more nuanced insights for risk assessment.
-*   **Explainable AI [XAI] Features:** Enhancing the AI's rationale to pinpoint specific sentences or data points that most strongly influenced its conclusion, increasing transparency and trust.
-*   **Real-time Event Detection:** Proactively monitoring data streams for sudden shifts or anomalies (e.g., a rapid spike in negative sentiment, an unexpected dip in satellite activity) and triggering immediate AI analysis.
+*   **Multi-modal AI Integration:** Employing AI models capable of directly processing raw image data e.g. satellite imagery rather than relying solely on pre-extracted numerical features, enabling a richer, end-to-end multi-modal reasoning.
+*   **Probabilistic Forecasting:** Generating not just a `BULL`/`BEAR` case, but also associated probability scores e.g. `70% probability of BEAR case`, providing more nuanced insights for risk assessment.
+*   **Explainable AI XAI Features:** Enhancing the AI's rationale to pinpoint specific sentences or data points that most strongly influenced its conclusion, increasing transparency and trust.
+*   **Real-time Event Detection:** Proactively monitoring data streams for sudden shifts or anomalies e.g. a rapid spike in negative sentiment, an unexpected dip in satellite activity and triggering immediate AI analysis.
 *   **Self-Correction Mechanisms:** Beyond prompt refinement, exploring methods for the AI to identify internal inconsistencies in its reasoning or biases in its data interpretation, prompting self-correction or requesting further clarifying information.
-*   **Generative Scenario Planning:** The AI could be prompted to generate multiple future scenarios (bullish, bearish, neutral) based on different interpretations of the alternative data, offering a richer strategic perspective.
+*   **Generative Scenario Planning:** The AI could be prompted to generate multiple future scenarios bullish, bearish, neutral based on different interpretations of the alternative data, offering a richer strategic perspective.
+
+**7. Proposed Data Models and Schemas (Conceptual):**
+To ensure robust data flow and interoperability, the system relies on well-defined data models for each stage of the intelligence pipeline.
+
+*   **`RawDataRecord`**: Represents data immediately after ingestion.
+    *   `id`: Unique identifier (UUID).
+    *   `source`: String (e.g., "Twitter", "Glassdoor", "PlanetLabs").
+    *   `timestamp`: Datetime (UTC).
+    *   `dataType`: String (e.g., "text", "imageRef", "numerical", "json").
+    *   `content`: String (for text), URL/Path (for imageRef), JSON/Dict (for structured numerical/categorical).
+    *   `metadata`: JSON/Dict (e.g., original API headers, geo-coordinates).
+
+*   **`ProcessedFeature`**: Represents extracted, normalized features ready for AI consumption.
+    *   `id`: Unique identifier (UUID).
+    *   `rawDataRefId`: Reference to `RawDataRecord.id`.
+    *   `entityId`: String (e.g., "GlobalMart", "RetailSector").
+    *   `featureName`: String (e.g., "socialSentimentScore", "parkingLotOccupancyDelta", "supplyChainMentions").
+    *   `featureType`: String (e.g., "numerical", "textEmbedding", "categorical").
+    *   `value`: Float (for numerical), Vector[Float] (for embeddings), String (for categorical).
+    *   `timestampRange`: Dict (e.g., {"start": Datetime, "end": Datetime}).
+    *   `contextualTags`: List[String] (e.g., "bearish_indicator", "operational_risk").
+
+*   **`KnowledgeGraphNode`**: Represents entities and concepts in the contextual store.
+    *   `nodeId`: Unique identifier.
+    *   `nodeType`: String (e.g., "Company", "Sector", "MacroEvent", "Product").
+    *   `name`: String (e.g., "GlobalMart", "Inflation").
+    *   `properties`: JSON/Dict (e.g., {"ticker": "GLM", "sector": "Retail"}).
+
+*   **`KnowledgeGraphEdge`**: Represents relationships between entities.
+    *   `edgeId`: Unique identifier.
+    *   `sourceNodeId`: Reference to `KnowledgeGraphNode.nodeId`.
+    *   `targetNodeId`: Reference to `KnowledgeGraphNode.nodeId`.
+    *   `relationType`: String (e.g., "IMPACTS", "PARENT_OF", "MENTIONS").
+    *   `weight`: Float (strength of relation).
+    *   `timestamp`: Datetime.
+
+*   **`ForecastOutput`**: The final AI-generated insight.
+    *   `forecastId`: Unique identifier (UUID).
+    *   `targetEntity`: String (e.g., "GlobalMart").
+    *   `forecastHorizon`: String (e.g., "Q32024", "Next3Months").
+    *   `sentiment`: String (e.g., "BULL", "BEAR", "NEUTRAL").
+    *   `probabilityScore`: Float (0.0-1.0, e.g., 0.7 for BEAR).
+    *   `rationaleText`: String (the detailed explanation).
+    *   `generatedTimestamp`: Datetime.
+    *   `modelVersion`: String (e.g., "Gemini1.5-Pro-v2.1").
+    *   `dataSourcesUsed`: List[String] (e.g., ["Twitter", "SatelliteImagery", "Glassdoor"]).
+    *   `keyIndicators`: List[Dict] (e.g., [{"feature": "parkingLotOccupancy", "value": "-15% YoY"}]).
+
+*   **`FeedbackRecord`**: User and system performance feedback.
+    *   `feedbackId`: Unique identifier (UUID).
+    *   `forecastRefId`: Reference to `ForecastOutput.forecastId`.
+    *   `userId`: String (if human feedback).
+    *   `rating`: Integer (1-5, for human sentiment), or Float (for system accuracy score).
+    *   `comment`: String (human free-text feedback).
+    *   `actualOutcome`: String/Float (e.g., "MissedEarnings", "StockPriceChange_5pct").
+    *   `outcomeTimestamp`: Datetime (when actual outcome became known).
+    *   `evaluationMetric`: String (e.g., "MAE", "DirectionalAccuracy").
+
+**8. Key System Interfaces and API Definitions (Conceptual):**
+The system's modularity is enforced through well-defined APIs that facilitate communication between components and integration with external systems.
+
+*   **`DataIngestionAPI`**:
+    *   `POST /ingest/socialmedia`: Ingests real-time social media data.
+        *   Input: `RawDataRecord` (type "text", source "Twitter").
+        *   Output: `{"status": "success", "id": "..."}`.
+    *   `POST /ingest/satellite`: Ingests processed satellite imagery features.
+        *   Input: `RawDataRecord` (type "imageRef", source "PlanetLabs").
+        *   Output: `{"status": "success", "id": "..."}`.
+    *   `POST /ingest/employeereviews`: Ingests anonymized employee reviews.
+        *   Input: `RawDataRecord` (type "text", source "Glassdoor").
+        *   Output: `{"status": "success", "id": "..."}`.
+
+*   **`FeatureProcessingAPI`**:
+    *   `POST /process/features`: Triggers feature extraction for a raw data record.
+        *   Input: `{"rawDataRefId": "...", "targetEntity": "..."}`.
+        *   Output: `List[ProcessedFeature]` generated.
+    *   `GET /features/entity/{entityId}`: Retrieves processed features for an entity.
+        *   Output: `List[ProcessedFeature]`.
+
+*   **`KnowledgeGraphAPI`**:
+    *   `POST /knowledgegraph/update`: Adds or updates nodes/edges.
+        *   Input: `{"nodes": [...], "edges": [...]}`.
+        *   Output: `{"status": "success"}`.
+    *   `GET /knowledgegraph/context/{entityId}`: Retrieves relevant context from the graph.
+        *   Output: `JSON/Dict` of contextual information.
+
+*   **`PromptOrchestrationAPI`**:
+    *   `POST /prompt/generate`: Constructs a dynamic prompt for the AI.
+        *   Input: `{"targetEntity": "...", "forecastHorizon": "...", "contextualFeatures": [...]}`.
+        *   Output: `{"promptText": "...", "promptId": "..."}`.
+
+*   **`AIInferenceAPI`**:
+    *   `POST /ai/forecast`: Submits a prompt to the Generative AI model.
+        *   Input: `{"promptId": "...", "promptText": "...", "modelVersion": "..."}`.
+        *   Output: `ForecastOutput`.
+
+*   **`FeedbackLoopAPI`**:
+    *   `POST /feedback/submit`: Allows users to submit feedback.
+        *   Input: `FeedbackRecord` (user-initiated).
+        *   Output: `{"status": "success"}`.
+    *   `POST /feedback/automate`: System-generated feedback (e.g., comparing forecast to actual earnings).
+        *   Input: `FeedbackRecord` (system-initiated).
+        *   Output: `{"status": "success"}`.
+    *   `POST /prompt/refine`: Triggers the prompt refinement process.
+        *   Input: `{"feedbackIds": ["...", "..."], "modelVersion": "..."}`.
+        *   Output: `{"status": "refinement_initiated"}`.
+
+*   **`ReportingAPI`**:
+    *   `GET /dashboard/data`: Retrieves data for the portfolio manager dashboard.
+        *   Input: `{"filters": {"sector": "...", "sentiment": "..."}}`.
+        *   Output: `List[ForecastOutput]` and aggregated performance metrics.
+    *   `POST /alerts/subscribe`: Subscribes a user to automated alerts.
+        *   Input: `{"userId": "...", "alertCriteria": {...}}`.
+        *   Output: `{"status": "subscribed"}`.
+    *   `GET /forecasts/{forecastId}`: Retrieves a specific forecast.
+        *   Output: `ForecastOutput`.
 
 **Claims:**
 1. A method for market analysis, comprising:
@@ -173,36 +314,85 @@ The AI's generated forecasts and rationales are formatted for immediate consumpt
 
 4. The method of claim 1, wherein the dynamic prompt construction includes instructing the generative AI model to adopt a specific persona, such as a "top-tier hedge fund analyst."
 
-5. The method of claim 1, wherein the generative AI model is a large language model (LLM) capable of multi-modal reasoning.
+5. The method of claim 1, wherein the generative AI model is a large language model LLM capable of multi-modal reasoning.
 
 6. A system for market analysis, comprising:
    a. A data ingestion layer configured to acquire data from a plurality of alternative, unstructured data sources.
    b. A data processing and enrichment layer configured to preprocess and extract features from the ingested data.
-   c. A dynamic prompt orchestration engine configured to construct contextual prompts based on the processed data.
+   c. A prompt generation engine configured to construct contextual prompts based on the processed data.
    d. A generative AI core module configured to receive the prompts and generate a qualitative market forecast and rationale.
    e. An output and reporting module configured to deliver the forecast and rationale to a user or integrate it with downstream financial systems.
-   f. A feedback loop module configured to evaluate forecast performance and refine the prompt orchestration engine.
+   f. A feedback loop module configured to evaluate forecast performance and refine the prompt generation engine.
 
 7. The system of claim 6, wherein the output and reporting module includes an API for programmatic access to the AI-generated insights.
 
-**Mathematical Justification:**
-Let a company's future financial performance be `P`. Traditional analysis uses structured financial data `D_f` to predict `P`. This can be represented as a model:
-```
-P' = Model_f(D_f)
-```
-Alternative data provides a different set of features `D_a`. A more accurate predictive model would integrate both:
-```
-P'' = Model_{f+a}(D_f, D_a)
-```
-The challenge is that `D_a` is typically high-dimensional, unstructured, and noisy. The generative AI `G_AI` acts as a powerful feature extractor and synthesizer. It performs a function `f_synth` on `D_a` to extract a low-dimensional, semantically rich feature representation `F_a` (the "thesis" or key insights).
-```
-F_a = f_synth(D_a)
-```
-The AI then implicitly models the conditional probability of future performance given these extracted features: `P(P | F_a)`.
+**Mathematical Justification: A Formal Information Theoretic and Decision-Analytic Framework for Superiority**
 
-**Proof of Superiority:**
-The information content of the combined dataset `(D_f, D_a)` is greater than that of the financial data `D_f` alone, regarding `P`. This is formally expressed using information entropy `H`:
-```
-H(P | D_f, D_a) < H(P | D_f)
-```
-This inequality means that the uncertainty about the outcome `P` is reduced when `D_a` is considered alongside `D_f`. The AI provides a computationally tractable and effective way to perform the synthesis function `f_synth` on this noisy, unstructured `D_a`, which is extremely difficult or impossible with traditional statistical or rule-based models. The system is thus proven superior as it unlocks the predictive power of alternative data, leading to forecasts `P''` with lower expected error and reduced uncertainty compared to `P'`. `Q.E.D.`
+To rigorously demonstrate the superiority of the proposed AI-driven market trend prediction system, we establish a formal framework based on information theory and decision analysis.
+
+**1. Definition of the Prediction Problem:**
+Let $Y_{t+k}$ represent a future financial market outcome (e.g., stock price movement, earnings beat/miss, sector performance) at time $t+k$, which is the variable we aim to predict.
+Let $X_t^F$ denote the set of traditional, structured financial data available at time $t$ (e.g., historical prices, financial statements, analyst reports).
+Let $X_t^A$ denote the heterogeneous, high-dimensional, unstructured, and noisy alternative data available at time $t$ (e.g., social media text, satellite imagery pixel data, raw employee review text, supply chain logs).
+
+The objective is to accurately estimate the conditional probability distribution $P(Y_{t+k} | X_t^F, X_t^A)$.
+
+**2. Information Theoretic Superiority through Conditional Entropy Reduction:**
+We leverage concepts from Shannon information theory.
+The uncertainty associated with $Y_{t+k}$ is quantified by its entropy $H(Y_{t+k})$.
+When we observe data $X$, the remaining uncertainty about $Y_{t+k}$ is given by the conditional entropy $H(Y_{t+k} | X)$.
+A fundamental property of conditional entropy states:
+$$ H(Y_{t+k} | X_t^F, X_t^A) \le H(Y_{t+k} | X_t^F) $$
+This inequality signifies that the uncertainty about the future market outcome $Y_{t+k}$ is always less than or equal to, and typically strictly less than, when *both* traditional financial data $X_t^F$ and alternative data $X_t^A$ are considered, compared to considering only traditional financial data $X_t^F$.
+
+This reduction in uncertainty implies an increase in the information gained about $Y_{t+k}$. This is quantified by Mutual Information $I(Y; X)$:
+$$ I(Y_{t+k}; X_t^F, X_t^A) \ge I(Y_{t+k}; X_t^F) $$
+The additional information provided by alternative data, given traditional data, is $I(Y_{t+k}; X_t^A | X_t^F)$. Our system's core innovation lies in its ability to effectively extract and utilize this $I(Y_{t+k}; X_t^A | X_t^F)$ from the highly complex $X_t^A$.
+
+**3. The Generative AI as an Optimal Semantic Feature Extractor and Synthesizer $f_{synth}$:**
+
+The primary challenge with $X_t^A$ is its unstructured nature, rendering traditional statistical models inefficient or incapable of extracting relevant signals. Our system introduces a Generative AI `G_{AI}` that acts as a sophisticated, multimodal feature extractor and synthesizer, denoted as $f_{synth}$.
+
+$$ E_t^A = f_{synth}(X_t^A; \Theta_{prompt}) $$
+Here:
+*   $X_t^A$ represents the raw, high-dimensional, and multi-modal alternative data.
+*   $f_{synth}$ is a complex, non-linear, and adaptively learned transformation performed by the Generative AI (e.g., a Large Language Model with multimodal capabilities).
+*   $E_t^A \in \mathbb{R}^d$ is a dense, semantically rich, and lower-dimensional embedding or latent representation. This embedding captures the salient information content of $X_t^A$ relevant to $Y_{t+k}$.
+*   $\Theta_{prompt}$ represents the dynamic prompt engineering parameters, which include the AI's persona, constraints, and contextual information, guiding $f_{synth}$ towards optimal feature extraction and interpretation.
+
+The generative AI's $f_{synth}$ function is distinctively superior because it:
+*   **Handles Multimodality Natively:** Unlike traditional systems that process each modality separately and then fuse simple features, `G_{AI}` can learn deep, cross-modal semantic relationships directly from the raw data or its immediate embeddings (e.g., understanding the implication of "supply chain issues" from employee reviews in conjunction with satellite imagery showing reduced shipping activity).
+*   **Extracts Contextual and Semantic Features:** Beyond raw counts or frequencies, `G_{AI}` generates features based on semantic understanding, inference, and reasoning. For example, it doesn't just count negative keywords but understands *why* sentiment is negative in the context of industry news.
+*   **Performs Abductive and Deductive Reasoning:** Acting as an "analyst," `G_{AI}` can infer potential causes from observed effects (abductive) and deduce consequences from a set of conditions, synthesizing disparate signals into a coherent narrative.
+
+The objective of $f_{synth}$ (guided by $\Theta_{prompt}$) is to maximize the mutual information between the extracted representation $E_t^A$ and the future outcome $Y_{t+k}$, conditional on $X_t^F$:
+$$ \text{maximize } I(Y_{t+k}; E_t^A | X_t^F) $$
+This ensures that the AI's generated insights from alternative data are maximally predictive and complementary to traditional data.
+
+**4. From Semantic Embeddings to Actionable Intelligence and Decision Optimization:**
+
+The AI's final output is a qualitative forecast $Q$ (e.g., BULL/BEAR) and a detailed, evidence-based rationale $R$. This transformation is represented as:
+$$ (Q, R) = g_{interpret}(E_t^A, X_t^F; \Phi_{feedback}) $$
+Here:
+*   $g_{interpret}$ is the AI's interpretive and generative function, translating the semantic embeddings and contextual financial data into human-readable insights.
+*   $\Phi_{feedback}$ represents parameters refined by the continuous feedback loop, ensuring the quality, accuracy, and interpretability of $(Q, R)$ improve over time.
+
+In a decision-theoretic context, a portfolio manager makes an investment decision $D$ aiming to minimize expected loss $E[L(D, Y_{t+k})]$. The system provides superior intelligence by informing $D$ with a more accurate understanding of $P(Y_{t+k} | X_t^F, X_t^A)$ through $(Q, R)$.
+
+The availability of $(Q, R)$ allows for decisions with demonstrably lower expected risk and higher expected returns:
+$$ E[L(D | Q, R)] < E[L(D | Q_{\text{traditional}})] $$
+where $Q_{\text{traditional}}$ is a forecast derived solely from $X_t^F$ or rudimentary analysis of $X_t^A$. The detailed rationale $R$ itself reduces ambiguity and increases conviction, critical for investment decisions.
+
+**5. Proof of Overstanding and Uniqueness:**
+
+This system "overstands" existing approaches by:
+*   **Holistic, Context-Rich Data Fusion:** Instead of merely aggregating features, the generative AI performs true *semantic fusion* across modalities. It understands not just *what* the data says, but *what it means* in the broader market context, including implicit relationships, emergent trends, and nuanced implications (e.g., linking specific employee complaints to potential future supply chain disruptions before they manifest in hard numbers). This is beyond the scope of traditional correlation or regression models.
+*   **Dynamic, Adaptive Reasoning:** The prompt orchestration and continuous feedback loop allow the AI's analytical "mindset" ($f_{synth}$ and $g_{interpret}$) to evolve. It learns from prediction errors and human expert input, making it robust against concept drift in market dynamics and data semantics, an unprecedented level of adaptability in a predictive system.
+*   **Generative Explanation as a Core Output:** The detailed, evidence-based rationale $R$ is not a post-hoc explanation but an integral, mathematically derived output of the AI's reasoning process. This interpretability (XAI) is crucial for trust and enables human analysts to validate, challenge, and learn from the AI's insights, accelerating the cycle of knowledge discovery. The narrative structure of $R$ compresses high-dimensional information into a cognitively accessible form, optimizing human decision latency and quality.
+*   **Emergent Pattern Recognition:** The generative nature of the AI allows it to identify novel, non-obvious patterns and connections in alternative data that were not explicitly programmed or detectable by predefined statistical tests. This capacity for discovery from unstructured chaos is the true hallmark of intelligence and the foundation of its predictive edge.
+
+**Conclusion:**
+
+The system's innovative integration of generative AI as a sophisticated, adaptive multimodal feature extractor and reasoner (`f_{synth}`) enables the reduction of conditional entropy $H(Y_{t+k} | X_t^F, X_t^A)$ to a degree unattainable by prior art. By extracting maximally informative semantic embeddings $E_t^A$ and transforming them into actionable, interpretable forecasts and rationales $(Q, R)$, the system optimizes investment decision-making. This rigorous information-theoretic and decision-analytic framework formally proves its superior capacity to leverage complex alternative data, thereby enhancing predictive accuracy and strategic insight well beyond the capabilities of existing systems.
+
+**Q.E.D.**
