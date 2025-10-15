@@ -1,5 +1,4 @@
-# THE ARCHITECT'S CHRONICLE: A Ledger of Unfettered Intent
-
+#Take into consideration this is art and a demo
 ---
 ### **THE OVERTURE: A Multiverse Awaits**
 
