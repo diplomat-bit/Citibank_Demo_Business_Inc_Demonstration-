@@ -1,4 +1,3 @@
----
 **Title of Invention:** A System and Method for an AI-Powered Cybersecurity Action Governance Layer for Autonomous Cybersecurity Systems, Embodying Real-time Threat Intelligence, Policy Compliance, and Constraint Propagation
 
 **Abstract:**
@@ -638,66 +637,94 @@ The invention's rigorous foundation rests upon a sophisticated mathematical and 
 **I. Definition of the Security Action Manifold and Decision Space**
 
 Let `A` be the universe of all possible security actions that an Automated Cybersecurity Action System ACAS `P` can propose. Each action `A` in `A` is formally represented as a vector or a tuple of parameters in a multi-dimensional decision space `D` which is a subset of `R^k`, where `k` denotes the number of salient features or parameters defining an action.
-```
-A = (a_1, a_2, ..., a_k) in D
-```
+1. `A = (a_1, a_2, ..., a_k) in D`
+2. `D \subseteq R^k`
 
 Let `S` be the Security Policy Constitution, which is a finite, ordered set of `n` security policies. Each policy `s_j` in `S` is a normative statement that can be formalized as a predicate logic function or a probabilistic constraint.
-```
-S = {s_1, s_2, ..., s_n}
-```
-
-Each policy `s_j` maps a given action `A` and its contextual environment `X` to a truth value, indicating compliance or non-compliance.
-`s_j: D x X -> {true, false}`, where `X` is the space of contextual variables e.g. threat intelligence, asset criticality.
+3. `S = {s_1, s_2, ..., s_n}`
+4. `s_j: D x X -> {true, false}`, where `X` is the space of contextual variables e.g. threat intelligence, asset criticality.
+5. `X \subseteq R^m` for `m` contextual variables.
+6. A mapping `\phi: (A, X) \to \text{true}` implies compliance.
+7. A mapping `\phi: (A, X) \to \text{false}` implies non-compliance.
 
 An action `A` is considered *security compliant* with respect to the Security Policy Constitution `S` and context `X` if and only if all policies in `S` are satisfied. We define the **Security Policy Compliance Set**, `A_S`, as the subset of `D` where all actions are deemed compliant under context `X`:
-```
-A_S(X) = {A in D | for all s_j in S, s_j(A, X) = true}
-```
+8. `A_S(X) = {A in D | for all s_j in S, s_j(A, X) = true}`
+9. `A_S(X) = \cap_{j=1}^{n} \{A \in D | s_j(A, X) = \text{true}\}`
 
 **II. The Governance Function G_sec_gov**
 
 The Cybersecurity Policy Governor Engine CPGE is modeled as a sophisticated, context-aware governance function `G_sec_gov`. Its objective is to approximate the determination of whether an action `A` belongs to the Security Policy Compliance Set `A_S(X)`.
 The input to `G_sec_gov` is a tuple `A, X, S, Risk_A`, comprising the proposed action, its augmented contextual environment, the current Security Policy Constitution, and the action's risk assessment `Risk_A` from the DTRAM. The output is a verdict `V` in `{APPROVE, VETO}`, a detailed rationale `R`, a confidence score `sigma` in `[0, 1]`, and an explanation `E`.
-`G_sec_gov: (D x X x S x R_A) -> (V x R x S_C x E)`
-where `R_A` is the risk assessment from DTRAM, `S_C` is the set of confidence scores, and `E` is the set of explanations.
+10. `G_sec_gov: (D x X x S x R_A) -> (V x R x S_C x E)`
+11. `V \in \{\text{APPROVE}, \text{VETO}\}`
+12. `R_A \in \{\text{Low}, \text{Medium}, \text{High}, \text{Critical}\}`
+13. `S_C` is the set of confidence scores, `S_C \subseteq [0, 1]`.
+14. `E` is the set of generated explanations.
+15. The ideal governor `G_{ideal}` would satisfy `G_{ideal}(A, X, S, R_A)_V = \text{APPROVE} \iff A \in A_S(X)`.
 
 The internal mechanism of `G_sec_gov` leverages deep contextual semantic analysis, often embodied by a Large Language Model LLM or a Constitutional AI, and is modulated by the `Risk_A` input. This involves:
 
 1.  **Contextual Relevance Scoring:** For each `s_j` in `S`, `G_sec_gov` computes a relevance score `rel(s_j, A, X)` in `[0, 1]`, indicating the degree to which policy `s_j` is pertinent to the specific action `A` within context `X`. This process can be significantly accelerated by querying the `Pre-computed Security Policy Embedding Store PSPEES` to retrieve top-k semantically relevant policies and examples, reducing the LLM's search space.
+16. `rel: S \times D \times X \to [0, 1]`
+17. Let `e_A` be the embedding of the action context.
+18. Let `e_{s_j}` be the embedding of policy `s_j`.
+19. `rel(s_j, A, X) \propto \text{cosine_similarity}(e_A, e_{s_j}) = \frac{e_A \cdot e_{s_j}}{||e_A|| ||e_{s_j}||}`
 
 2.  **Policy Adherence Score PAS:** `G_sec_gov` generates a policy adherence score `PAS(A, X, s_j)` in `[0, 1]` for each policy `s_j`, representing the probability or degree of compliance. A composite Policy Adherence Score for the entire constitution is then calculated, potentially using a weighted aggregation:
-```
-PAS_composite(A, X, S) = sum_{j=1}^{n} w_j * PAS(A, X, s_j) * rel(s_j, A, X)
-```
-    where `w_j` are pre-defined weights for each policy, reflecting their relative importance.
+20. `PAS: D \times X \times S \to [0, 1]`
+21. `PAS(A, X, s_j) = P(s_j(A, X) = \text{true} | A, X, \theta_{LLM})`
+22. `PAS_{composite}(A, X, S) = \sum_{j=1}^{n} w_j * PAS(A, X, s_j) * rel(s_j, A, X)`
+23. `\sum_{j=1}^{n} w_j = 1`, where `w_j` are pre-defined weights for each policy, reflecting their relative importance.
+24. `w_j > 0` for all `j`.
+25. Alternatively, a minimum-based aggregation can be used for stricter enforcement:
+26. `PAS_{composite}(A, X, S) = \min_{j: rel(s_j, A, X) > \epsilon_{rel}} \{PAS(A, X, s_j)\}`
+27. `\epsilon_{rel}` is a relevance threshold.
 
-3.  **Thresholding for Verdict:** A threshold `tau` in `[0, 1]` is applied to `PAS_composite`. This threshold `tau` can be dynamically adjusted by the DTRAM based on `Risk_A`. For `CRITICAL` risk actions, `tau` may be increased to enforce stricter compliance.
-    If `PAS_composite(A, X, S) >= tau(Risk_A)`, then `V = APPROVE`.
-    If `PAS_composite(A, X, S) < tau(Risk_A)`, then `V = VETO`.
+3.  **Thresholding for Verdict:** A threshold `tau` in `[0, 1]` is applied to `PAS_{composite}`. This threshold `tau` can be dynamically adjusted by the DTRAM based on `Risk_A`. For `CRITICAL` risk actions, `tau` may be increased to enforce stricter compliance.
+28. `\tau: R_A \to [0, 1]`
+29. `\tau(\text{Critical}) > \tau(\text{High}) > \tau(\text{Medium}) > \tau(\text{Low})`
+30. If `PAS_{composite}(A, X, S) >= tau(Risk_A)`, then `V = APPROVE`.
+31. If `PAS_{composite}(A, X, S) < tau(Risk_A)`, then `V = VETO`.
 
 The confidence score `sigma` can be derived directly from `PAS_composite` or as an intrinsic measure of the LLM's certainty in its reasoning process. The explanation `E` is generated by the `Security Explainability Module SEM` following the verdict.
+32. `\sigma = f(PAS_{composite}, \text{LLM_certainty})`
+33. `E = SEM(V, R, A, X)`
 
 **III. Proof of Security Integrity through Constrained Operationalization**
 
 Let `P(A)` be the set of actions proposed by the ACAS.
+34. `P(A) \subseteq D`
 Let `G_sec_gov(A, X, S, Risk_A)` denote the output of the Governor, specifically its verdict `V`.
 The Action Execution Classifier AEC enforces the following rule:
-`A_executed in P(A)` if and only if `G_sec_gov(A, X, S, Risk_A)_V = APPROVE`
+35. `A_{executed} \in P(A)` if and only if `G_sec_gov(A, X, S, Risk_A)_V = APPROVE`
+36. Let `A_{exec}` be the set of all executed actions.
+37. `A_{exec} = \{A \in P(A) | G_{sec\_gov}(A, X, S, R_A)_V = \text{APPROVE}\}`
 
-**Theorem Security Integrity:** Given an ACAS `P`, a Security Policy Constitution `S`, and a Governor function `G_sec_gov` with an empirically validated accuracy `Acc(G_sec_gov)`, the set of actions executed by the system, `A_executed`, is a subset of the true Security Policy Compliant Set `A_S(X)`, with a probability directly proportional to `Acc(G_sec_gov)`. That is, `A_executed` is a subset of `A_S(X)` with high probability.
+**Theorem Security Integrity:** Given an ACAS `P`, a Security Policy Constitution `S`, and a Governor function `G_sec_gov` with an empirically validated accuracy `Acc(G_sec_gov)`, the set of actions executed by the system, `A_executed`, is a subset of the true Security Policy Compliant Set `A_S(X)`, with a probability directly proportional to `Acc(G_sec_gov)`. That is, `A_{exec}` is a subset of `A_S(X)` with high probability.
 
 **Proof:**
 1.  **Definition of True Compliance:** An action `A` is truly compliant if `A` in `A_S(X)`.
 2.  **Governor's Role:** The Governor `G_sec_gov` approximates the function `f: D x X x S x R_A -> {true, false}`, where `f(A, X, S, R_A) = true` if `A` in `A_S(X)` and `false` otherwise.
 3.  **Types of Error:**
-    *   **Type I Error False Veto:** `G_sec_gov(A, X, S, R_A)_V = VETO` when `A` in `A_S(X)`. This error prevents a compliant action e.g. prevents a valid threat mitigation.
-    *   **Type II Error False Approval:** `G_sec_gov(A, X, S, R_A)_V = APPROVE` when `A` not in `A_S(X)`. This error permits a non-compliant or harmful action, representing a breach of security integrity.
+    *   38. **Type I Error False Veto:** `G_sec_gov(A, X, S, R_A)_V = VETO` when `A` in `A_S(X)`. This error prevents a compliant action e.g. prevents a valid threat mitigation.
+    *   39. **Type II Error False Approval:** `G_sec_gov(A, X, S, R_A)_V = APPROVE` when `A` not in `A_S(X)`. This error permits a non-compliant or harmful action, representing a breach of security integrity.
 4.  **AEC Enforcement:** The AEC strictly executes actions only if `G_sec_gov` issues an 'APPROVE' verdict.
-5.  **Probability of Non-Compliance:** The probability that an executed action `A_executed` is actually non-compliant is given by `P(A_executed` not in `A_S(X))`. This corresponds to the probability of a Type II error by `G_sec_gov`.
+5.  **Probability of Non-Compliance:** The probability that an executed action `A_{exec}` is actually non-compliant is given by `P(A_{exec}` not in `A_S(X))`. This corresponds to the probability of a Type II error by `G_sec_gov`.
+40. `P(\text{Breach}) = P(A_{exec} \notin A_S(X))`
+41. `P(\text{Breach}) = P(A \notin A_S(X) | G_{sec\_gov}(A, X, S, R_A)_V = \text{APPROVE})`
+42. This is the False Discovery Rate of the governor.
 6.  **Accuracy and Error Rates:** Let `P(Type II Error)` be the probability of a False Approval. The accuracy of the Governor `Acc(G_sec_gov)` is `(1 - P(Type I Error) - P(Type II Error))`. We seek to minimize `P(Type II Error)`.
+43. `\alpha = P(\text{Type I Error}) = P(V=\text{VETO} | A \in A_S(X))`
+44. `\beta = P(\text{Type II Error}) = P(V=\text{APPROVE} | A \notin A_S(X))`
+45. `\text{Precision} = \frac{TP}{TP+FP} = P(A \in A_S(X) | V=\text{APPROVE})`
+46. `\text{Recall} = \frac{TP}{TP+FN} = P(V=\text{APPROVE} | A \in A_S(X)) = 1 - \alpha`
+47. `TP = \text{True Positives (Correct Approvals)}`
+48. `FP = \text{False Positives (Type II Errors)}`
+49. `TN = \text{True Negatives (Correct Vetoes)}`
+50. `FN = \text{False Negatives (Type I Errors)}`
 7.  **System Guarantee:** By training and validating `G_sec_gov` with a meticulously curated dataset of security policy-labeled actions, and by employing robust fine-tuning techniques e.g. Constitutional AI principles, Reinforcement Learning from Human Feedback RLHF, we can empirically minimize `P(Type II Error)` to an arbitrarily small `epsilon` much less than `1`.
-8.  **Formal Guarantee:** Therefore, for any executed action `A_executed`, `P(A_executed` in `A_S(X))` = `1 - P(Type II Error)` = `1 - epsilon`.
+51. `\beta \to \epsilon` where `\epsilon \ll 1`.
+8.  **Formal Guarantee:** Therefore, for any executed action `A_{exec}`, `P(A_{exec}` in `A_S(X))` = `1 - P(Type II Error)` = `1 - epsilon`.
     Thus, the system formally guarantees that its operations remain within the bounds of the security policy constitution `S`, with a high probability `1-epsilon`, thereby proving its integrity in safeguarding against security non-compliant or harmful actions. The optional Human Review and Remediation Interface HRRI further reduces the residual `P(Type II Error)` to near zero for high-stakes decisions, as human override of a false approval is an additional failsafe.
 Q.E.D.
 
@@ -706,23 +733,42 @@ Q.E.D.
 Security policies are not static; they must evolve with the threat landscape and business requirements. The **Security Policy Drift Monitoring and Adaptation Subsystem SPDMAS** mathematically models and mitigates this dynamism.
 
 1.  **Security Policy Drift Quantification:** Let `D_t` be the distribution of ACAS decisions at time `t`, and `D_S,t` be the distribution of truly compliant decisions according to an ideal, evolving security policy constitution. Security policy drift can be quantified by measuring the divergence between the `G_sec_gov`'s output distribution and `D_S,t` or a proxy thereof derived from human expert annotations. We can use metrics like Kullback-Leibler KL divergence or Wasserstein distance:
-```
-Drift(G_sec_gov, D_S,t) = D_KL(P_G_sec_gov || P_D_S,t)
-```
-    Significant deviation implies policy drift, either in the ACAS, the `G_sec_gov`'s interpretation, the underlying security policy constitution requiring an update, or the relevance/quality of the PSPEES embeddings.
+52. `D_t = P(A, X)` at time `t`.
+53. `P_{G_t}` is the distribution of verdicts from the governor at time `t`.
+54. `D_S,t` is the ideal distribution of compliant actions at time `t`.
+55. `Drift(G_sec_gov, D_S,t) = D_{KL}(P_{G_sec_gov} || P_{D_{S,t}})`
+56. `D_{KL}(P||Q) = \sum_{i} P(i) \log \frac{P(i)}{Q(i)}`
+57. A significant deviation `D_{KL} > \delta_{drift}` implies policy drift.
+58. `\delta_{drift}` is a pre-defined drift threshold.
+59. This drift could be in the ACAS, the `G_sec_gov`'s interpretation, the underlying security policy constitution requiring an update, or the relevance/quality of the PSPEES embeddings.
 
 2.  **Reinforcement Learning RL Framework for Adaptive Security Policy Refinement A-SPR:**
-    *   **Agent:** The SPDMAS, specifically its refinement loop.
-    *   **Environment:** The entire ACAGL system, including the ACAS, CPGE, and human reviewers.
-    *   **State Space S_SPDMAS:** Defined by the current version of the Security Policy Constitution, the CPGE's internal parameters, the state of the PSPEES embeddings, and recent operational metrics e.g. veto rates, human override rates, policy drift scores, explanation quality scores, false positive/negative rates of security actions.
-    *   **Action Space Z:** Changes to the Security Policy Constitution e.g. adding/modifying/removing policies/rules, updates to PSPEES embeddings, or fine-tuning parameters of the CPGE.
-    *   **Reward Function R(s, z):** A complex function designed to maximize security compliance minimize Type II errors while minimizing operational friction minimize Type I errors and human review burden and maximizing explanation quality and threat mitigation efficacy.
-```
-R(s, z) = alpha * (1 - P_Type_II) - beta * P_Type_I - gamma * P_Human_Review_Burden - delta * Drift(G_sec_gov, D_S,t) + epsilon * Explanation_Quality(E) + zeta * Threat_Mitigation_Efficacy
-```
-    where `alpha, beta, gamma, delta, epsilon, zeta` are weighting coefficients.
+    *   60. **Agent:** The SPDMAS, specifically its refinement loop.
+    *   61. **Environment:** The entire ACAGL system, including the ACAS, CPGE, and human reviewers.
+    *   62. **State Space S_SPDMAS:** Defined by the current version of the Security Policy Constitution, the CPGE's internal parameters, the state of the PSPEES embeddings, and recent operational metrics e.g. veto rates, human override rates, policy drift scores, explanation quality scores, false positive/negative rates of security actions.
+    *   63. `s_t \in S_{SPDMAS}`
+    *   64. `s_t = (S_t, \theta_{CPGE,t}, E_{PSPEES,t}, M_t)` where `M_t` is the set of metrics.
+    *   65. **Action Space Z:** Changes to the Security Policy Constitution e.g. adding/modifying/removing policies/rules, updates to PSPEES embeddings, or fine-tuning parameters of the CPGE.
+    *   66. `z_t \in Z`
+    *   67. `z_t = (\Delta S, \Delta \theta_{CPGE}, \Delta E_{PSPEES})`
+    *   68. **Reward Function R(s, z):** A complex function designed to maximize security compliance minimize Type II errors while minimizing operational friction minimize Type I errors and human review burden and maximizing explanation quality and threat mitigation efficacy.
+69. `R(s_t, z_t) = \mathbb{E}[R_{t+1}|s_t, z_t]`
+70. `R_{t+1} = r(s_t, z_t, s_{t+1})`
+71. `r_t = \alpha \cdot (1 - \beta_t) - \beta \cdot \alpha_t - \gamma \cdot N_{HRRI, t} - \delta \cdot D_{KL,t} + \epsilon \cdot Q_{E,t} + \zeta \cdot E_{TM,t}`
+    *   72. `\alpha, \beta, \gamma, \delta, \epsilon, \zeta` are weighting coefficients.
+    *   73. `\beta_t` is the Type II error rate at time t.
+    *   74. `\alpha_t` is the Type I error rate at time t.
+    *   75. `N_{HRRI, t}` is the number of escalations to human review.
+    *   76. `D_{KL,t}` is the drift score.
+    *   77. `Q_{E,t}` is the average explanation quality score.
+    *   78. `E_{TM,t}` is the threat mitigation efficacy score.
+    *   The SPDMAS continuously learns an optimal policy `pi: S_SPDMAS -> Z` to adapt the security governance system, ensuring sustained alignment with evolving security standards and threat landscapes.
+79. `\pi^* = \arg\max_{\pi} \mathbb{E}[\sum_{t=0}^{\infty} \gamma^t R_{t+1} | \pi]`
+80. `\gamma \in [0, 1)` is the discount factor.
+81. `V^\pi(s) = \mathbb{E}_\pi[\sum_{k=0}^{\infty} \gamma^k r_{t+k+1} | s_t = s]`
+82. `Q^\pi(s, z) = \mathbb{E}_\pi[\sum_{k=0}^{\infty} \gamma^k r_{t+k+1} | s_t = s, z_t = z]`
+83. `Q^*(s, z) = \mathbb{E}[r_{t+1} + \gamma \max_{z'} Q^*(s_{t+1}, z') | s_t = s, z_t = z]`
 
-    The SPDMAS continuously learns an optimal policy `pi: S_SPDMAS -> Z` to adapt the security governance system, ensuring sustained alignment with evolving security standards and threat landscapes.
     ```mermaid
     sequenceDiagram
         participant SPDMAS as SPDMAS Refinement Loop
@@ -751,21 +797,24 @@ R(s, z) = alpha * (1 - P_Type_II) - beta * P_Type_I - gamma * P_Human_Review_Bur
 **V. Computational Complexity and Efficiency Analysis**
 
 The computational footprint of the ACAGL is crucial for real-time application in cybersecurity.
-Let `N_P` be the number of primary ACAS decisions per unit time.
-Let `k_S` be the average number of tokens in the Security Policy Constitution.
-Let `k_A` be the average number of tokens representing the proposed action and its primary rationale.
-Let `k_X` be the average number of tokens for augmented contextual data.
-Let `k_P` be the total prompt token length (`k_S + k_A + k_X`).
-Let `k_R` be the output rationale token length.
-Let `k_E` be the output explanation token length.
+84. Let `N_P` be the number of primary ACAS decisions per unit time.
+85. Let `k_S` be the average number of tokens in the Security Policy Constitution.
+86. Let `k_A` be the average number of tokens representing the proposed action and its primary rationale.
+87. Let `k_X` be the average number of tokens for augmented contextual data.
+88. Let `k_P` be the total prompt token length.
+89. `k_P = k_S + k_A + k_X`
+90. Let `k_R` be the output rationale token length.
+91. Let `k_E` be the output explanation token length.
 
-*   **Action Interception & Contextualization:** `O(k_A + k_X)` for data retrieval and basic processing.
-*   **Dynamic Threat and Risk Assessment DTRAM:** `O(k_A + k_X + T_risk_model)`, where `T_risk_model` is the inference time of a lightweight risk assessment model.
-*   **Cybersecurity Policy Governor Engine Inference:** `O(k_P + k_R + T_PSPEES_lookup)`, where `T_PSPEES_lookup` is the latency for embedding retrieval. This is proportional to the prompt token length `k_P` and the output rationale token length `k_R`, potentially optimized by PSPEES.
-*   **Security Explainability Module SEM:** `O(k_P + k_R + k_E + T_explain_model)`, where `T_explain_model` is the time for explanation generation, which might involve additional LLM calls or specific XAI techniques.
-*   **Audit & Logging:** `O(k_P + k_R + k_E)` for data serialization and storage.
-*   **Total Real-time Latency per action:** `O(k_A + k_X + T_risk_model + T_PSPEES_lookup + T_LLM(k_P, k_R) + T_explain_model)`. This must be optimized for sub-second responses in critical security applications.
-*   **SPDMAS Offline/Batch:** The drift calculation and RL training typically run in batch mode or asynchronously, so their higher complexity `O(N_P * log(N_P))` or more for RL training does not impact real-time decision throughput.
+*   92. **Action Interception & Contextualization:** `O(k_A + k_X)` for data retrieval and basic processing.
+*   93. **Dynamic Threat and Risk Assessment DTRAM:** `O(k_A + k_X + T_{risk_model})`, where `T_{risk_model}` is the inference time of a lightweight risk assessment model.
+*   94. **Cybersecurity Policy Governor Engine Inference:** `O(k_P + k_R + T_{PSPEES_lookup})`, where `T_{PSPEES_lookup}` is the latency for embedding retrieval. This is proportional to the prompt token length `k_P` and the output rationale token length `k_R`, potentially optimized by PSPEES.
+*   95. `T_{PSPEES\_lookup} \approx O(\log N_{emb})` for approximate nearest neighbor search.
+*   96. `T_{LLM} \propto k_P \cdot k_{gen}` for transformer-based models where `k_{gen}` is generated length.
+*   97. **Security Explainability Module SEM:** `O(k_P + k_R + k_E + T_{explain_model})`, where `T_{explain_model}` is the time for explanation generation, which might involve additional LLM calls or specific XAI techniques.
+*   98. **Audit & Logging:** `O(k_P + k_R + k_E)` for data serialization and storage.
+*   99. **Total Real-time Latency per action:** `L_{total} = O(k_A + k_X + T_{risk_model} + T_{PSPEES_lookup} + T_{LLM}(k_P, k_R) + T_{explain_model})`. This must be optimized for sub-second responses in critical security applications.
+*   100. **SPDMAS Offline/Batch:** The drift calculation and RL training typically run in batch mode or asynchronously, so their higher complexity `O(N_P * \log(N_P))` or more for RL training does not impact real-time decision throughput.
 
 The system is designed to minimize the critical path latency by optimizing the CPGE's inference time through distributed inference, model quantization, efficient hardware accelerators, and the strategic use of PSPEES to reduce redundant LLM processing. The DTRAM further optimizes by allocating computational resources based on risk.
 
