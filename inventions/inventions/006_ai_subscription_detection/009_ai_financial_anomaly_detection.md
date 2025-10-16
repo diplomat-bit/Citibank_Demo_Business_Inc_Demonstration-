@@ -1,4 +1,3 @@
----
 # Title of Invention: A System and Method for Autonomous Real-time Financial Anomaly Detection and Proactive User Alerting via Advanced Generative Artificial Intelligence
 
 ## Abstract:
@@ -307,6 +306,76 @@ The system is architected for high scalability and real-time performance, capabl
 *   **Optimized Prompt Engineering:** Continuously refining prompts to be token-efficient and unambiguous minimizes computational cost and improves response times from the generative AI, which often bills per token.
 *   **Asynchronous AI Inference:** AI calls are handled asynchronously, often batched or processed in parallel, to manage the latency of external AI platforms without blocking the real-time processing pipeline.
 
+### Adaptive Risk Scoring Mechanism
+
+The final risk score for an anomaly is not a static value but dynamically adapts based on a composite evaluation of multiple factors, refined by contextual data and user preferences.
+
+```mermaid
+graph TD
+    A[Raw AI Risk Score] --> B{Heuristic Adjustments <br/> Severity TransactionType}
+    B --> C{User Risk Profile <br/> Sensitivity Preferences}
+    C --> D{Historical False Positive Rate <br/> AnomalyType Merchant}
+    D --> E{Real-time Contextual Data <br/> GeoIP DeviceInfo}
+    E --> F[Weighted Aggregation <br/> Multi-factor Score Combination]
+    F --> G[Final Adaptive Risk Score <br/> Dynamic Thresholds]
+```
+**Figure 9: Adaptive Risk Scoring Mechanism Workflow**
+
+1.  **Raw AI Risk Score:** The initial risk assessment provided directly by the generative AI model, typically a numerical value from 0 to 1, indicating the AI's confidence in the anomaly.
+2.  **Heuristic Adjustments:** A layer of rule-based or statistical heuristics refines the raw AI score. For example:
+    *   Very large transaction amounts might automatically increase the risk score.
+    *   Transactions from known high-risk merchant categories might receive an uplift.
+    *   Specific fraud patterns (e.g., small test charges followed by a large one) detected by other rule engines might dramatically increase the score.
+3.  **User Risk Profile & Preferences:** Each user might have a personalized risk tolerance.
+    *   Users can set preferences for alert sensitivity (e.g., "only alert me for transactions over $100 from new merchants").
+    *   The system learns from past user feedback how sensitive a user is to false positives, adjusting thresholds accordingly.
+4.  **Historical False Positive Rate:** The system maintains a historical record of false positive rates for different anomaly types, merchants, or categories. If a certain type of anomaly at a specific merchant has a high historical false positive rate for this user or across the user base, the risk score might be slightly deflated.
+5.  **Real-time Contextual Data:** Additional real-time data sources can influence the risk score:
+    *   **Geo-IP Data:** If a transaction originates from a location far from the user's usual activity and device IP, it increases risk.
+    *   **Device Information:** Unusual device or browser usage for a transaction can be a risk factor.
+    *   **External Threat Intelligence:** Cross-referencing transaction details with known fraud databases or threat intelligence feeds.
+6.  **Weighted Aggregation:** The various adjusted scores and contextual factors are combined using a weighted aggregation function to produce a final, comprehensive risk score. The weights can be static, learned, or adapt based on the context.
+7.  **Final Adaptive Risk Score & Dynamic Thresholds:** This refined score is then compared against dynamic thresholds, which might also adapt based on user preferences, time of day, or overall system load. Only anomalies exceeding these thresholds trigger proactive alerts.
+
+### User Feedback and Model Refinement Loop
+
+A crucial aspect of an intelligent, adaptive system is its ability to learn from user interactions, transforming explicit and implicit feedback into improved detection capabilities.
+
+```mermaid
+graph TD
+    A[Anomaly Detected <br/> & Alerted] --> B{User Action <br/> Confirm Legitimate / Mark Fraud / Ignore}
+    B --> C{Explicit Feedback <br/> Reason for FP / Contextual Info}
+    C --> D[Feedback Processing <br/> & Anonymization]
+    D --> E[User Norms Update <br/> Refine Spending Baselines]
+    D --> F[LLM Fine-tuning Data <br/> Labeled Anomalies / Non-Anomalies]
+    E --> G[Improved User Norms Profile <br/> Higher Accuracy]
+    F --> H[Generative AI Model <br/> Re-training / Adaptive Fine-tuning]
+    H --> G
+    H --> I[Enhanced Anomaly Detection <br/> Reduced FPs, Faster TPs]
+```
+**Figure 10: User Feedback and Model Refinement Loop**
+
+1.  **Anomaly Detected & Alerted:** An anomaly is identified by the system and a proactive alert is sent to the user.
+2.  **User Action:** The user reviews the alert and takes an action:
+    *   **Confirm Legitimate:** User affirms the transaction is valid, indicating a false positive (FP).
+    *   **Mark Fraud/Dispute:** User confirms the transaction is fraudulent or erroneous, indicating a true positive (TP).
+    *   **Ignore:** No explicit feedback, but implicit signals can be inferred (e.g., lack of action for low-risk alerts).
+3.  **Explicit Feedback:** Users might provide additional explicit feedback, such as a reason for marking a transaction as legitimate (e.g., "I made a large purchase for a special occasion") or contextual information for a fraudulent transaction.
+4.  **Feedback Processing & Anonymization:** All feedback is securely processed, de-identified, and anonymized to protect user privacy.
+5.  **User Norms Update:**
+    *   If a transaction marked as an FP was a genuine deviation, the `User Norms Learning Module` incorporates this new legitimate pattern into the `U_N` profile, preventing similar future FPs.
+    *   If a transaction marked as a TP was a deviation, `U_N` might learn to be more sensitive to similar patterns, or strengthen the anomaly signal.
+6.  **LLM Fine-tuning Data:**
+    *   Confirmed FPs, along with their original prompt context, are added to a dataset of "legitimate but unusual" transactions.
+    *   Confirmed TPs are added to a dataset of "genuine anomalies."
+    *   This labeled data is crucial for supervised fine-tuning of the `External Generative AI Platform H`.
+7.  **Improved User Norms Profile:** The continuous updating of `U_N` results in a more precise and personalized understanding of each user's financial behavior, leading to higher accuracy in baseline comparisons.
+8.  **Generative AI Model Re-training / Adaptive Fine-tuning:** The accumulated and anonymized feedback data is periodically used to fine-tune the generative AI model itself. This can involve:
+    *   **Reinforcement Learning from Human Feedback (RLHF):** Adjusting the LLM's reward function based on user preferences for anomaly detection.
+    *   **Supervised Fine-tuning:** Training the LLM on specific examples of FPs and TPs to improve its discernment.
+    *   **Parameter-Efficient Fine-tuning (PEFT):** Efficiently adapting the model without full re-training.
+9.  **Enhanced Anomaly Detection:** The refined generative AI model and updated user norms lead to an overall enhancement in anomaly detection, characterized by a significant reduction in false positives (alert fatigue) and faster, more accurate detection of true positives (fraud prevention).
+
 ## Declarations of Inventive Scope and Utility:
 
 The conceptual framework herein elucidated, along with its specific embodiments and architectural designs, constitutes an original intellectual construct that significantly advances the state of the art in financial intelligence systems. This innovative methodology provides a distinct and superior approach to automated financial anomaly detection.
@@ -338,20 +407,26 @@ The conceptual framework herein elucidated, along with its specific embodiments 
 
 8.  The pioneering computational method of declaration 1, further characterized by the dynamic construction of a confidence or risk score for each identified anomalous transaction, indicative of the generative AI model's certainty in the detection and the potential impact, thereby assisting user review and prioritization.
 
+9.  The pioneering computational method of declaration 1, further characterized by an integrated, continuous feedback loop where user confirmations or denials of detected anomalies are utilized to refine the adaptive user norms profile and fine-tune the generative artificial intelligence model, thereby enhancing detection accuracy and reducing false positives over time.
+
+10. The innovative system architecture of declaration 4, further comprising an ethical AI governance module configured to continuously monitor for algorithmic bias, enforce transparency, ensure data privacy, and provide explainable rationales for detected anomalies, thereby fostering user trust and regulatory compliance.
+
 ## Foundational Principles and Mathematical Justification:
 
 The intellectual construct herein presented derives its efficacy from a rigorous application of principles spanning advanced statistical analysis, time-series informatics, and the emergent capabilities of large-scale generative artificial intelligence. We herein delineate the mathematical underpinnings that formally validate the operational mechanisms of this innovative system.
 
 ### The Transactional Manifold and User Norms: A Formal Representation
 
-Let `T` denote the entire universe of an individual's financial transaction data. A specific, time-ordered sequence of `n` transactions under consideration is represented as a finite, discrete set `T = {t_1, t_2, ..., t_n}`, where each transaction `t_i` is a tuple `(m_i, a_i, d_i, c_i)`.
+Let `T` denote the entire universe of an individual's financial transaction data. A specific, time-ordered sequence of `n` transactions under consideration is represented as a finite, discrete set `T = {t_1, t_2, ..., t_n}`, where each transaction `t_i` is a tuple `(m_i, a_i, d_i, c_i, l_i, p_i)`.
 
 1.  **Merchant Identifier `m_i`:** A linguistic descriptor, represented as a string or a vector in a high-dimensional semantic space, identifying the commercial entity. Domain `M`.
-2.  **Monetary Amount `a_i`:** A scalar value representing the financial quantity. Domain `R+`.
+2.  **Monetary Amount `a_i`:** A scalar value representing the financial quantity, `a_i \in \mathbb{R}^+`.
 3.  **Temporal Marker `d_i`:** A point in time e.g., Unix timestamp, Gregorian date. Domain `D`.
 4.  **Category `c_i`:** A semantic category assigned to the transaction e.g., "Groceries," "Entertainment". Domain `C`.
+5.  **Location `l_i`:** Geographical coordinates or identifier. Domain `L`.
+6.  **Payment Method `p_i`:** e.g., "Credit Card," "Debit Card," "Digital Wallet." Domain `P`.
 
-Thus, each `t_i` in `T` is an element of `M x R+ x D x C`.
+Thus, each `t_i` in `T` is an element of `M \times \mathbb{R}^+ \times D \times C \times L \times P`.
 
 Let `U_N` denote the **User Norms Profile**, a dynamic statistical and semantic model learned from `T`. `U_N` is a collection of conditional probability distributions or statistical summaries for various transaction attributes, conditioned on categories, merchants, or time. For example:
 *   `P(a | c)`: Distribution of amounts for a given category.
@@ -360,7 +435,35 @@ Let `U_N` denote the **User Norms Profile**, a dynamic statistical and semantic 
 *   `E[a | m]`, `StdDev[a | m]`: Expected amount and standard deviation for a given merchant.
 *   `F_rate(m)`: Frequency rate for a given merchant.
 
-The objective is to identify a transaction `t_new = (m_new, a_new, d_new, c_new)` as an anomaly if it significantly deviates from `U_N`.
+More formally, `U_N` can be represented as a tuple of learned models:
+$$
+U_N = (\{ \mu_{m,c}, \sigma_{m,c} \}_{m \in M, c \in C}, \{ \lambda_{m,c} \}_{m \in M, c \in C}, \{ \rho_{m,c}(d) \}_{m \in M, c \in C}, V_M, V_C, V_L) \quad (1)
+$$
+Where:
+*   `$\mu_{m,c}$` is the mean amount for merchant `m` in category `c`.
+*   `$\sigma_{m,c}$` is the standard deviation of amounts for merchant `m` in category `c`.
+*   `$\lambda_{m,c}$` is the Poisson rate parameter for frequency of transactions for merchant `m` in category `c`.
+*   `$\rho_{m,c}(d)$` is the probability density function for transaction times `d` for merchant `m` in category `c`.
+*   `$V_M$` is a semantic embedding space for merchants.
+*   `$V_C$` is a semantic embedding space for categories.
+*   `$V_L$` is a semantic embedding space for locations.
+
+The objective is to identify a transaction `t_new = (m_{new}, a_{new}, d_{new}, c_{new}, l_{new}, p_{new})` as an anomaly `A` if it significantly deviates from `U_N`.
+
+### Update Mechanism for User Norms Profile `U_N`
+
+The user norms profile `U_N` is dynamically updated using techniques such as exponential smoothing or weighted averages to reflect evolving spending habits. For a new transaction `t_{new}`, the mean amount `$\mu_{m,c}$` and standard deviation `$\sigma_{m,c}$` for a given `(m, c)` pair can be updated as:
+$$
+\mu_{m,c}^{(k+1)} = \alpha a_{new} + (1-\alpha) \mu_{m,c}^{(k)} \quad (2)
+$$
+$$
+\left(\sigma_{m,c}^{(k+1)}\right)^2 = \alpha (a_{new} - \mu_{m,c}^{(k+1)})^2 + (1-\alpha) \left(\sigma_{m,c}^{(k)}\right)^2 \quad (3)
+$$
+Where `$\alpha \in (0, 1]$` is the smoothing factor, `k` denotes the current state, and `a_{new}` is the amount of the new transaction. Similar updates apply to frequency rates and temporal distributions. For frequency, a moving average or Poisson parameter update can be used. If `N_{m,c}(t_w)` is the count of transactions for `(m,c)` in a window `t_w`:
+$$
+\lambda_{m,c} = \frac{N_{m,c}(t_w)}{|t_w|} \quad (4)
+$$
+The embeddings `V_M, V_C, V_L` can be updated through techniques like incremental word2vec or by fine-tuning a small contextual embedding model on new merchant/category names encountered.
 
 ### Axioms of Anomaly: Defining Deviant Behavior
 
@@ -368,76 +471,126 @@ A transaction `t_new` is formally defined as an anomaly `A` if, when compared ag
 
 #### Axiom 1: Semantic Deviance of Merchant or Context `D_M`
 
-The merchant `m_new` or the broader semantic context of `t_new` must exhibit substantial dissimilarity from the user's established merchant-category relationships or overall spending context within `U_N`.
+The merchant `m_{new}` or the broader semantic context of `t_{new}` must exhibit substantial dissimilarity from the user's established merchant-category relationships or overall spending context within `U_N`. This includes novelty in merchant, category, or even location patterns.
 
-Mathematically, given `t_new=(m_new, a_new, d_new, c_new)`:
-```
-D_M(t_new, U_N) iff S_M(m_new, U_N_merchants) < tau_M_familiar  OR  S_C(c_new, U_N_categories) < tau_C_familiar
-```
+Mathematically, given `t_{new}=(m_{new}, a_{new}, d_{new}, c_{new}, l_{new}, p_{new})`:
+$$
+D_M(t_{new}, U_N) \iff \mathcal{S}_M(m_{new}, V_M) < \tau_M \lor \mathcal{S}_C(c_{new}, V_C) < \tau_C \lor \mathcal{S}_L(l_{new}, V_L) < \tau_L \quad (5)
+$$
 Where:
-*   `S_M(m_new, U_N_merchants)` is a **Semantic Similarity Metric** between `m_new` and the set of merchants in `U_N`, typically computed as `max_{m_j in U_N_merchants} (cosine_similarity(embedding(m_new), embedding(m_j)))`.
-*   `S_C(c_new, U_N_categories)` is a similar metric for categories.
-*   `tau_M_familiar` and `tau_C_familiar` are predefined **Similarity Thresholds**, indicating how "new" or "unfamiliar" a merchant or category must be to be flagged. A transaction with a completely novel merchant might have `S_M` close to 0.
-
-The generative AI model implicitly computes such semantic deviance, leveraging its deep linguistic understanding to identify novelty or contextual incongruity.
+*   `$\mathcal{S}_M(m_{new}, V_M)$` is a **Semantic Similarity Metric** between the embedding of `m_{new}` (denoted `$\mathbf{e}_{m_{new}}$`) and the centroid or most similar embeddings of known merchants in `V_M`.
+    $$
+    \mathcal{S}_M(m_{new}, V_M) = \max_{\mathbf{e}_j \in V_M} \left( \frac{\mathbf{e}_{m_{new}} \cdot \mathbf{e}_j}{\|\mathbf{e}_{m_{new}}\| \|\mathbf{e}_j\|} \right) \quad (6)
+    $$
+    Here, `$\mathbf{e}_{m_{new}}$` is the vector embedding of `m_{new}` generated by a pre-trained or fine-tuned language model (e.g., from `G_AI_Anomaly`). Similar definitions apply for `$\mathcal{S}_C$` and `$\mathcal{S}_L$`.
+*   `$\tau_M$`, `$\tau_C$`, and `$\tau_L$` are predefined **Similarity Thresholds**, indicating how "new" or "unfamiliar" a merchant, category, or location must be to be flagged.
+*   The generative AI model implicitly computes such semantic deviance, leveraging its deep linguistic understanding to identify novelty or contextual incongruity. The embedding function for any text `x` is `Emb(x)`.
+    $$
+    \text{Semantic Deviation Score } SD(t_{new}) = \sum_{j \in \{M, C, L\}} w_j \left( 1 - \mathcal{S}_j(attribute_j, V_j) \right) \quad (7)
+    $$
+    Where `w_j` are weights for each attribute. `SD(t_{new}) > \theta_{SD}` for an anomaly.
 
 #### Axiom 2: Amplitude Deviation of Monetary Value `D_A`
 
-The monetary amount `a_new` must deviate significantly from the expected range or average for similar transactions within `U_N`, considering the merchant and category.
+The monetary amount `a_{new}` must deviate significantly from the expected range or average for similar transactions within `U_N`, considering the merchant and category.
 
-Mathematically, for `t_new=(m_new, a_new, d_new, c_new)`:
-```
-D_A(t_new, U_N) iff |a_new - E[a | m_new, c_new]| / StdDev[a | m_new, c_new] > k_sigma  OR  a_new is outside [Q1 - 1.5*IQR, Q3 + 1.5*IQR] for (m_new, c_new)
-```
+Mathematically, for `t_{new}=(m_{new}, a_{new}, d_{new}, c_{new}, l_{new}, p_{new})`:
+$$
+D_A(t_{new}, U_N) \iff \left| \frac{a_{new} - \mu_{m_{new},c_{new}}}{\sigma_{m_{new},c_{new}}} \right| > k_{\sigma} \lor a_{new} \notin [Q_1 - 1.5 \cdot IQR, Q_3 + 1.5 \cdot IQR] \quad (8)
+$$
 Where:
-*   `E[a | m_new, c_new]` and `StdDev[a | m_new, c_new]` are the expected amount and standard deviation for transactions with `m_new` and `c_new` as learned in `U_N`. If `m_new` or `c_new` are new, a broader category average might be used.
-*   `k_sigma` is a **Statistical Deviation Multiplier** e.g., 2 or 3 for Z-score.
-*   `Q1`, `Q3`, `IQR` refer to the first quartile, third quartile, and interquartile range of amounts for similar transactions in `U_N`, using an **IQR-based Outlier Detection** method.
-
-The generative AI implicitly assesses this deviation by comparing `a_new` to the learned amplitude patterns in `U_N`, applying an adaptive understanding of numerical ranges and statistical outliers.
+*   `$\mu_{m_{new},c_{new}}$` and `$\sigma_{m_{new},c_{new}}$` are the expected amount and standard deviation for transactions with `m_{new}` and `c_{new}` as learned in `U_N`. If `m_{new}` or `c_{new}` are new, a broader category average or global average might be used, or a dynamic fallback based on available data.
+*   `k_{\sigma}` is a **Statistical Deviation Multiplier** (e.g., 2 or 3 for Z-score). The Z-score is defined as:
+    $$
+    Z_{score}(a_{new}) = \frac{a_{new} - \mu_{m_{new},c_{new}}}{\sigma_{m_{new},c_{new}}} \quad (9)
+    $$
+*   `$Q_1$`, `Q_3`, `IQR` refer to the first quartile, third quartile, and interquartile range of amounts for similar transactions in `U_N`, using an **IQR-based Outlier Detection** method. The IQR is defined as:
+    $$
+    IQR = Q_3 - Q_1 \quad (10)
+    $$
+    An observation `a_{new}` is an outlier if `a_{new} < Q_1 - 1.5 \cdot IQR` or `a_{new} > Q_3 + 1.5 \cdot IQR`.
+*   For cases where `$\sigma_{m_{new},c_{new}}$` is very small or zero (e.g., first transaction), a robust measure like the Median Absolute Deviation (MAD) can be used.
+    $$
+    MAD = \text{median}(|X_i - \text{median}(X)|) \quad (11)
+    $$
+    And a modified Z-score:
+    $$
+    M Z_{score}(a_{new}) = 0.6745 \frac{a_{new} - \text{median}(a | m, c)}{MAD(a | m, c)} \quad (12)
+    $$
+    The generative AI implicitly assesses this deviation by comparing `a_{new}` to the learned amplitude patterns in `U_N`, applying an adaptive understanding of numerical ranges and statistical outliers. A deviation score `AD(t_{new})` can be defined as:
+    $$
+    AD(t_{new}) = \max \left( |Z_{score}(a_{new})|, \text{Indicator}(\text{outlier by IQR}) \right) \quad (13)
+    $$
+    Where `Indicator(condition)` is 1 if condition is true, 0 otherwise.
 
 #### Axiom 3: Temporal or Frequency Abnormality `D_T`
 
-The temporal marker `d_new` or the frequency of transactions for `m_new` or `c_new` must be abnormal compared to patterns in `U_N`.
+The temporal marker `d_{new}` or the frequency of transactions for `m_{new}` or `c_{new}` must be abnormal compared to patterns in `U_N`.
 
-Mathematically, for `t_new=(m_new, a_new, d_new, c_new)`:
-```
-D_T(t_new, U_N) iff P_day_time(d_new | m_new, c_new, U_N) < tau_P_temporal OR F_rate(m_new, U_N, current_window) > tau_F_rate
-```
+Mathematically, for `t_{new}=(m_{new}, a_{new}, d_{new}, c_{new}, l_{new}, p_{new})`:
+$$
+D_T(t_{new}, U_N) \iff P_{time}(d_{new} | m_{new}, c_{new}, U_N) < \tau_P \lor F_{rate}(m_{new}, U_N, \Delta t) > \tau_F \quad (14)
+$$
 Where:
-*   `P_day_time(d_new | m_new, c_new, U_N)` is the probability density of `d_new` given `m_new` and `c_new` according to `U_N`. A low probability indicates an unusual time or day.
-*   `tau_P_temporal` is a **Temporal Probability Threshold**.
-*   `F_rate(m_new, U_N, current_window)` is the observed frequency rate of `m_new` in a recent time window.
-*   `tau_F_rate` is a **Frequency Anomaly Threshold**, indicating an unusually high frequency e.g., multiple transactions in quick succession.
+*   `$P_{time}(d_{new} | m_{new}, c_{new}, U_N)$` is the probability density of `d_{new}` (e.g., hour of day, day of week) given `m_{new}` and `c_{new}` according to `U_N`. This can be modeled using a **Kernel Density Estimate (KDE)** from historical `d_i` for `(m,c)`:
+    $$
+    \hat{\rho}(d) = \frac{1}{N h} \sum_{i=1}^N K\left(\frac{d - d_i}{h}\right) \quad (15)
+    $$
+    Where `K` is the kernel function (e.g., Gaussian), `h` is the bandwidth, and `N` is the number of historical transactions. A low probability indicates an unusual time or day.
+*   `$\tau_P$` is a **Temporal Probability Threshold**.
+*   `$F_{rate}(m_{new}, U_N, \Delta t)$` is the observed frequency rate of `m_{new}` in a recent time window `$\Delta t$`. This can be modeled by comparing the number of new transactions `N_{new}` for `m_{new}` in `$\Delta t$` to the expected rate `$\lambda_{m_{new}}$`.
+    $$
+    F_{rate}(m_{new}, U_N, \Delta t) = \frac{N_{new}(\Delta t)}{\Delta t} \quad (16)
+    $$
+    The probability of observing `N_{new}` transactions in `$\Delta t$` given an expected rate `$\lambda_{m_{new}}$` follows a **Poisson distribution**:
+    $$
+    P(N_{new} | \lambda_{m_{new}} \Delta t) = \frac{(\lambda_{m_{new}} \Delta t)^{N_{new}} e^{-\lambda_{m_{new}} \Delta t}}{N_{new}!} \quad (17)
+    $$
+    An abnormally high frequency would correspond to `P(N_{new} | \lambda_{m_{new}} \Delta t) < \tau_F` where `N_{new}` is significantly larger than `$\lambda_{m_{new}} \Delta t$`.
+*   `$\tau_F$` is a **Frequency Anomaly Threshold**, indicating an unusually high frequency (e.g., multiple transactions in quick succession).
+    A temporal deviation score `TD(t_{new})` can be defined as:
+    $$
+    TD(t_{new}) = w_1 \left( 1 - \frac{\hat{\rho}(d_{new})}{\max(\hat{\rho})} \right) + w_2 \cdot \text{KL}(\text{observed_freq} || \text{expected_freq}) \quad (18)
+    $$
+    Where `KL` is the Kullback-Leibler divergence.
 
 This axiom employs **Time-Series Anomaly Detection** techniques, where `U_N` provides models of expected temporal distributions. The generative AI model, by processing chronologically ordered data and user norms, inherently performs a complex form of temporal pattern deviation recognition, identifying unusual timing or bursts.
 
 #### Axiom 4: Behavioral Pattern Deviation `D_B`
 
-The transaction `t_new`, in its entirety or within a sequence, deviates from a broader, more complex behavioral pattern established in `U_N` that cannot be captured by individual attribute deviations alone.
+The transaction `t_{new}`, in its entirety or within a sequence, deviates from a broader, more complex behavioral pattern established in `U_N` that cannot be captured by individual attribute deviations alone. This includes sequence-based anomalies, such as a sudden change in spending velocity, or unusual combinations of merchant/category/location.
 
-Mathematically, this axiom is inherently more complex and often relies on machine learning classifiers or the emergent properties of the generative AI. It involves assessing the likelihood of `t_new` given the entire `U_N`:
-```
-D_B(t_new, U_N) iff P(t_new | U_N) < tau_P_behavioral
-```
-Where `P(t_new | U_N)` is the probability of observing `t_new` given the learned user behavior model `U_N`. This `P` is often implicit in the generative AI's assessment.
-
-The generative AI, through its ability to synthesize multi-modal information and contextual understanding, can identify subtle behavioral shifts that rule-based systems might miss. For example, a transaction that is individually within normal limits but is part of a sequence that drastically changes the user's spending profile or geographic location, indicating a compromise or a highly unusual event.
+Mathematically, this axiom is inherently more complex and often relies on machine learning classifiers or the emergent properties of the generative AI. It involves assessing the likelihood of `t_{new}` given the entire `U_N` and recent transaction history `T_{recent}`:
+$$
+D_B(t_{new}, U_N, T_{recent}) \iff P(t_{new} | U_N, T_{recent}) < \tau_B \quad (19)
+$$
+Where `P(t_{new} | U_N, T_{recent})` is the probability of observing `t_{new}` given the learned user behavior model `U_N` and the context `T_{recent}`. This `P` is often implicit in the generative AI's assessment, which can be seen as calculating a novelty score.
+The generative AI, through its ability to synthesize multi-modal information and contextual understanding, can identify subtle behavioral shifts that rule-based systems might miss. For example, a sequence of small transactions followed by a very large one, which individually might not trigger Axiom 2, but collectively represent a known fraud pattern.
+This can be modeled by a sequence model within the LLM. Let `H = (t_{k-L+1}, ..., t_k)` be the history of `L` recent transactions.
+$$
+P(t_{new} | H, U_N) = P(m_{new}, a_{new}, d_{new}, c_{new}, l_{new}, p_{new} | H, U_N) \quad (20)
+$$
+This joint probability is decomposed and estimated by the generative AI, e.g., using attention mechanisms to weigh relevant historical transactions.
+A behavioral deviation score `BD(t_{new})` could be represented as:
+$$
+BD(t_{new}) = -\log P(t_{new} | H, U_N) \quad (21)
+$$
+Where higher values indicate lower probability and thus greater anomaly.
 
 ### The Generative AI as an Adaptive Anomaly Oracle `G_AI_Anomaly`
 
-The core function of the system is the identification of anomalous transactions `A_x` from the incoming stream `t_new`. This is a sophisticated outlier detection problem in a high-dimensional feature space, dynamically compared against an evolving baseline `U_N`.
+The core function of the system is the identification of anomalous transactions `A_x` from the incoming stream `t_{new}`. This is a sophisticated outlier detection problem in a high-dimensional feature space, dynamically compared against an evolving baseline `U_N`.
 
-The generative AI model `G_AI_Anomaly` operates as a function that transforms the input `(t_new, T_recent, U_N)` into a set of identified anomalies `{A_1, A_2, ..., A_p}`:
-```
-G_AI_Anomaly(t_new, T_recent, U_N) -> {A_1, A_2, ..., A_p}
-```
+The generative AI model `G_AI_Anomaly` operates as a function that transforms the input `(t_{new}, T_{recent}, U_N)` into a set of identified anomalies `{A_1, A_2, ..., A_p}`:
+$$
+\text{G_AI_Anomaly}(t_{new}, T_{recent}, U_N) \rightarrow \{A_1, A_2, ..., A_p\} \quad (22)
+$$
 
 Where:
-*   `t_new` is the current transaction under scrutiny.
-*   `T_recent` is a window of recent transactions for contextual understanding.
+*   `t_{new}` is the current transaction under scrutiny.
+*   `T_{recent}` is a window of recent transactions for contextual understanding.
 *   `U_N` is the current user norms profile.
-*   Each `A_x` is a identified anomalous transaction or a group of transactions that `G_AI_Anomaly` has identified as significantly deviating from `U_N` according to the axiomatic conditions `D_M`, `D_A`, `D_T`, `D_B`. This identification occurs not through explicit algorithmic checks, but through the implicit, emergent pattern recognition and deviation detection capabilities of the generative AI model.
+*   Each `A_x` is an identified anomalous transaction or a group of transactions that `G_AI_Anomaly` has identified as significantly deviating from `U_N` according to the axiomatic conditions `D_M`, `D_A`, `D_T`, `D_B`. This identification occurs not through explicit algorithmic checks, but through the implicit, emergent pattern recognition and deviation detection capabilities of the generative AI model.
 
 The generative AI, having been pre-trained on vast corpora of textual, numerical, and sequential data, possesses an inherent ability to:
 1.  **Semantically Parse and Compare:** Understand the underlying meaning of merchant names and transaction contexts, and compare them against `U_N` to detect novel or incongruous semantic patterns (Axiom 1).
@@ -446,23 +599,187 @@ The generative AI, having been pre-trained on vast corpora of textual, numerical
 4.  **Synthesize Multi-modal Information:** Integrate these disparate data points textual, numerical, temporal, categorical simultaneously to form a holistic assessment of deviance, identifying anomalies that exceed the capabilities of rule-based or single-feature detection systems.
 5.  **Adhere to Structured Output:** The `responseSchema` forces the AI to structure its "reasoning" its identified anomalies, risk scores, and rationales into a machine-readable format, effectively "projecting" its high-dimensional deviation matches onto a human-interpretable output.
 
-The generative AI model implicitly optimizes an objective function that seeks to identify the most significant and coherent deviations of `t_new` from the composite `U_N` across merchant identity, monetary value, temporal interval, and broader behavioral patterns, subject to the contextual guidance provided in the prompt. This process can be conceptualized as performing an adaptive, multi-dimensional outlier detection operation in a latent semantic-temporal-numerical-behavioral space.
+The generative AI model implicitly optimizes an objective function that seeks to identify the most significant and coherent deviations of `t_{new}` from the composite `U_N` across merchant identity, monetary value, temporal interval, and broader behavioral patterns, subject to the contextual guidance provided in the prompt. This process can be conceptualized as performing an adaptive, multi-dimensional outlier detection operation in a latent semantic-temporal-numerical-behavioral space.
+
+The generative AI's output for an anomaly `A_x` includes a `risk_score` $R_x$ and a `reason` `Re_x`. The `risk_score` can be seen as a confidence level or probability of the transaction being anomalous:
+$$
+R_x = \text{Confidence}(t_{new} \text{ is anomaly} | t_{new}, T_{recent}, U_N) \in [0, 1] \quad (23)
+$$
+This confidence is often learned during the AI's training and fine-tuning phases, by minimizing a loss function like binary cross-entropy for a binary anomaly classification task:
+$$
+\mathcal{L}(R, y) = - [y \log(R) + (1-y) \log(1-R)] \quad (24)
+$$
+Where `y` is the true label (1 for anomaly, 0 for normal).
+
+### Composite Anomaly Score and Risk Aggregation
+
+The final adaptive risk score `$R_{final}$` is a weighted combination of the individual deviation scores from the axioms, and contextual adjustments. Let `DS_M`, `DS_A`, `DS_T`, `DS_B` be the scores from Axiom 1, 2, 3, and 4 respectively, potentially normalized to `[0,1]`.
+$$
+DS_{normalized}(X) = \frac{X - \min(X)}{\max(X) - \min(X)} \quad (25)
+$$
+A composite deviation score `DS_{comp}` can be calculated:
+$$
+DS_{comp}(t_{new}) = w_M \cdot SD(t_{new}) + w_A \cdot AD(t_{new}) + w_T \cdot TD(t_{new}) + w_B \cdot BD(t_{new}) \quad (26)
+$$
+Where `w_M, w_A, w_T, w_B` are learned weights reflecting the importance of each deviation type, such that `$\sum w_i = 1$`.
+The raw AI risk score `R_{AI}` can be an approximation of `DS_{comp}` or a direct probability output.
+The final adaptive risk score `$R_{final}$` (as depicted in Figure 9) incorporates heuristic adjustments, user preferences, and historical performance:
+$$
+R_{final}(t_{new}) = f_{\text{aggregate}}(R_{AI}(t_{new}), H_{adj}(t_{new}), U_{pref}, FP_{hist}, C_{data}(t_{new})) \quad (27)
+$$
+Where:
+*   `$R_{AI}(t_{new})$` is the raw risk score from `G_AI_Anomaly`.
+*   `$H_{adj}(t_{new})$` are heuristic adjustments based on hard rules.
+*   `$U_{pref}$` is the user's sensitivity preference.
+*   `$FP_{hist}$` is the historical false positive rate.
+*   `$C_{data}(t_{new})$` is real-time contextual data (Geo-IP, device info).
+
+The aggregation function `f_{\text{aggregate}}` could be a logistic regression model or a simple weighted sum, potentially with non-linear activation. For instance:
+$$
+R_{final} = \text{sigmoid}(\beta_0 + \beta_1 R_{AI} + \beta_2 H_{adj} + \beta_3 U_{pref} + \beta_4 FP_{hist} + \beta_5 C_{data}) \quad (28)
+$$
+An anomaly is triggered if `$R_{final} > \Theta_{alert}$`, where `$\Theta_{alert}$` is a dynamic alert threshold.
+$$
+\text{IsAnomaly}(t_{new}) = \begin{cases} 1 & \text{if } R_{final}(t_{new}) > \Theta_{alert} \\ 0 & \text{otherwise} \end{cases} \quad (29)
+$$
+
+### User Feedback Integration and Model Optimization
+
+The continuous feedback loop (Figure 10) is vital for the long-term accuracy and user satisfaction of the system.
+Let `F_{user}(t, \text{action})` denote user feedback for transaction `t`. `action \in \{\text{confirm_legit}, \text{mark_fraud}\}`.
+
+1.  **Refinement of User Norms (`U_N`):**
+    If `F_{user}(t, \text{confirm_legit})` and `t` was initially flagged: The `U_N` profile for `(m,c,l)` attributes of `t` is updated more heavily towards incorporating `t` as a legitimate pattern, reducing the likelihood of similar FPs.
+    $$
+    U_N^{(k+1)} = g(U_N^{(k)}, t, \text{action}=\text{confirm_legit}) \quad (30)
+    $$
+    This could involve adjusting `$\alpha$` in Equations (2) and (3) for specific `(m,c)` pairs, or increasing their associated probabilities.
+
+2.  **Fine-tuning of Generative AI (`G_AI_Anomaly`):**
+    User feedback serves as labeled data for fine-tuning the `G_AI_Anomaly` model. A dataset `D_{feedback} = \{(prompt_i, y_i)\}` is constructed, where `prompt_i` is the original prompt for `t_i` and `y_i` is the binary label derived from user action (1 for fraud/true anomaly, 0 for legitimate/false positive).
+    The model parameters `$\Phi$` of `G_AI_Anomaly` are updated to minimize the loss on `D_{feedback}`:
+    $$
+    \Phi^{(k+1)} = \Phi^{(k)} - \eta \nabla_{\Phi} \mathcal{L}(G_{\text{AI}}(prompt_i | \Phi^{(k)}), y_i) \quad (31)
+    $$
+    Where `$\eta$` is the learning rate and `$\mathcal{L}$` is the chosen loss function (e.g., cross-entropy). This process enhances the model's ability to discriminate between true anomalies and contextually legitimate unusual transactions, aligning its outputs with user expectations.
+
+Furthermore, the system can leverage techniques such as **Reinforcement Learning from Human Feedback (RLHF)** to align the `G_AI_Anomaly` with human preferences more directly. This involves training a reward model `R(response | prompt, feedback)` that scores the quality of the AI's anomaly detection output.
+$$
+\mathcal{R}(A_x, t_{new}, \text{feedback}) = \begin{cases} +1 & \text{if feedback is confirm_fraud and } A_x \text{ is correct} \\ -1 & \text{if feedback is confirm_legit and } A_x \text{ was flagged} \\ 0 & \text{otherwise} \end{cases} \quad (32)
+$$
+The generative AI is then fine-tuned using a Proximal Policy Optimization (PPO) algorithm to maximize this reward function, aligning its output with user-validated classifications.
+$$
+J(\Phi) = E_{(prompt, response) \sim \pi_{\Phi}} [\mathcal{R}(response | prompt)] \quad (33)
+$$
+This iterative refinement through user feedback ensures that the system continuously improves its precision and recall, effectively reducing false positives and accelerating true positive identification, leading to a system that is both highly effective and trustworthy. The rate of false positives (`FPR`) and false negatives (`FNR`) are critical performance metrics.
+$$
+FPR = \frac{\text{False Positives}}{\text{False Positives} + \text{True Negatives}} \quad (34)
+$$
+$$
+FNR = \frac{\text{False Negatives}}{\text{False Negatives} + \text{True Positives}} \quad (35)
+$$
+The objective is to minimize both `FPR` and `FNR` through continuous learning. The overall accuracy of the system is given by:
+$$
+\text{Accuracy} = \frac{\text{True Positives} + \text{True Negatives}}{\text{Total Transactions}} \quad (36)
+$$
+The precision (P) and recall (R) for anomaly detection are also crucial:
+$$
+\text{Precision} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Positives}} \quad (37)
+$$
+$$
+\text{Recall} = \frac{\text{True Positives}}{\text{True Positives} + \text{False Negatives}} \quad (38)
+$$
+And the F1-score combines them:
+$$
+F1 = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}} \quad (39)
+$$
+The system's goal is to maximize `F1` and `Accuracy` while keeping `FPR` and `FNR` below acceptable thresholds, dynamically adjusting for individual user preferences and risk profiles. This requires a continuous optimization process for the underlying models and parameters.
+The system also learns from the absence of feedback. If a low-risk alert is sent and the user takes no action over a defined period (`$\Delta T_{no\_action}$`), it can be implicitly treated as a weak confirmation of legitimacy, albeit with lower confidence than explicit feedback.
+$$
+\text{ImplicitFeedback}(t) = \text{WeakLegitimacy} \quad \text{if } R_{final}(t) \le \Theta_{implicit} \land \text{NoAction}(\Delta T_{no\_action}) \quad (40)
+$$
+This implicit feedback can be incorporated into `U_N` updates with a smaller smoothing factor or weight `$\alpha'$` (`$\alpha' < \alpha$`).
+
+### Feature Engineering for LLM Input
+
+The `Data Preprocessing and Context Generation Module F` constructs the prompt by carefully selecting and formatting features from `t_{new}`, `T_{recent}`, and `U_N`. This feature engineering is critical for the LLM's performance.
+Let `$\mathcal{F}(t)$` be the feature vector for a transaction `t`. This includes:
+*   Numerical features: `a_i`, `Z_{score}(a_i)`, `IQR_{outlier}(a_i)`.
+*   Temporal features: `day\_of\_week(d_i)`, `hour\_of\_day(d_i)`, `days\_since\_last\_transaction(m_i)`.
+*   Categorical features: `c_i`, `p_i`.
+*   Textual features: `m_i`, `description(t_i)`.
+*   Norm-based features: `$\mu_{m_i,c_i}$`, `$\sigma_{m_i,c_i}$`, `$\lambda_{m_i,c_i}$`, `$\mathcal{S}_M(m_i, V_M)$`, `$\mathcal{S}_C(c_i, V_C)$`.
+The prompt `P_{LLM}` is constructed as a concatenation of textual representations of these features:
+$$
+P_{LLM} = \text{Role} || \text{Task} || \text{Schema} || \text{Features}(t_{new}) || \text{Features}(T_{recent}) || \text{Summary}(U_N) \quad (41)
+$$
+The size of `Features(T_{recent})` can be limited by a window `W` (e.g., last 10 transactions) or a time period `$\Delta T_{recent}$`.
+$$
+T_{recent} = \{t_j | d_{new} - \Delta T_{recent} \le d_j < d_{new} \} \quad (42)
+$$
+The `Summary(U_N)` provides a concise, token-efficient representation of the user's norms, for instance, top-5 merchants, average monthly spending per category, and the frequency of new merchants.
+This careful selection minimizes token usage and provides the LLM with the most salient information.
 
 ### Proof of Utility and Efficacy: A Paradigm Shift in Financial Security
 
 The utility and efficacy of this system are demonstrably superior to conventional algorithmic or manual approaches. The problem of real-time, context-aware anomaly detection is a complex, dynamic challenge that rigid rule-based systems or static machine learning models often fail to address effectively due to:
 *   **Concept Drift:** User spending patterns change over time, rendering static models obsolete.
-*   **Adversarial Adaption:** Fraudsters continuously evolve their methods to bypass known rules.
-*   **Data Sparsity:** New merchants or rare legitimate transactions can be mistakenly flagged by non-adaptive systems.
-*   **Contextual Ambiguity:** Differentiating a legitimate but unusual purchase from a genuinely fraudulent one often requires deep contextual understanding.
+*   **Adversarial Adaption:** Fraudsters continuously evolve their methods to bypass known rules. The probability of a successful attack without detection `P(success)` is minimized.
+    $$
+    P(\text{success}) = P(\text{fraud} \land \text{undetected}) = P(\text{undetected} | \text{fraud}) \cdot P(\text{fraud}) = FNR \cdot P(\text{fraud}) \quad (43)
+    $$
+    The system aims to drastically reduce `FNR`.
+*   **Data Sparsity:** New merchants or rare legitimate transactions can be mistakenly flagged by non-adaptive systems. The `U_N` module's adaptive learning and the LLM's generalized knowledge mitigate this.
+*   **Contextual Ambiguity:** Differentiating a legitimate but unusual purchase from a genuinely fraudulent one often requires deep contextual understanding. The LLM excels at this semantic and contextual reasoning.
 
 This invention overcomes these limitations by leveraging the generative AI model as a sophisticated, context-aware, non-deterministic anomaly oracle.
 
 The system's effectiveness is proven through its ability to:
 1.  **Automate Complex Anomaly Recognition:** It automates a task that is computationally intractable for exhaustive traditional algorithms and highly prone to error and tedium for human analysts, especially in real-time, high-volume data streams.
-2.  **Semantic Robustness:** It intrinsically handles linguistic variations and contextual nuances in merchant names and transaction descriptions, which pose significant challenges for exact string matching or simple categorization.
-3.  **Adaptive Baseline Learning:** The `User Norms Learning Module` ensures that the baseline for "normal" behavior continuously adapts to the user's evolving financial habits, dramatically reducing false positives and improving the detection of subtle, emergent anomalies.
-4.  **Holistic Analysis:** By considering all axiomatic conditions simultaneously and contextually against a personalized user profile, the AI model generates more reliable and accurate anomaly identifications compared to systems that evaluate these criteria in isolation or with rigid, sequential rules.
-5.  **Real-time Scalability:** By offloading the computationally intensive pattern recognition to a highly optimized external AI platform and leveraging stream processing, the system remains scalable for massive, continuous transaction streams and a growing user base, enabling proactive alerting.
+2.  **Semantic Robustness:** It intrinsically handles linguistic variations and contextual nuances in merchant names and transaction descriptions, which pose significant challenges for exact string matching or simple categorization. The system effectively computes a semantic distance:
+    $$
+    \text{SemDist}(m_1, m_2) = 1 - \text{cosine\_similarity}(\text{Emb}(m_1), \text{Emb}(m_2)) \quad (44)
+    $$
+    Anomalies are detected when this distance to known norms is high.
+3.  **Adaptive Baseline Learning:** The `User Norms Learning Module` ensures that the baseline for "normal" behavior continuously adapts to the user's evolving financial habits, dramatically reducing false positives and improving the detection of subtle, emergent anomalies. The adaptation rate `$\alpha$` for `U_N` components can also be dynamic, increasing during periods of significant behavioral shift.
+    $$
+    \alpha_t = f(\text{variance\_of\_recent\_transactions}, \text{time\_since\_last\_update}) \quad (45)
+    $$
+4.  **Holistic Analysis:** By considering all axiomatic conditions simultaneously and contextually against a personalized user profile, the AI model generates more reliable and accurate anomaly identifications compared to systems that evaluate these criteria in isolation or with rigid, sequential rules. The joint probability of anomaly given all features is approximated by the LLM:
+    $$
+    P(\text{Anomaly} | t_{new}, U_N, T_{recent}) \approx G_{AI}(prompt(t_{new}, U_N, T_{recent})) \quad (46)
+    $$
+    This is far more powerful than combining probabilities from independent feature detectors `$\prod P(\text{Anomaly} | \text{feature}_i)$`.
+5.  **Real-time Scalability:** By offloading the computationally intensive pattern recognition to a highly optimized external AI platform and leveraging stream processing, the system remains scalable for massive, continuous transaction streams and a growing user base, enabling proactive alerting. The latency for anomaly detection `$\mathcal{L}_{detect}$` is critical:
+    $$
+    \mathcal{L}_{detect} = \mathcal{L}_{ingest} + \mathcal{L}_{preprocess} + \mathcal{L}_{AI\_inference} + \mathcal{L}_{postprocess} < \mathcal{T}_{realtime} \quad (47)
+    $$
+    Where `$\mathcal{T}_{realtime}$` is the acceptable real-time threshold (e.g., a few seconds).
+6.  **Explainability:** The structured JSON output with a `reason` field ensures that even complex AI detections are accompanied by a human-interpretable rationale, fostering user trust and enabling actionable insights. The generative AI is prompted to construct this reason `Re_x` based on its internal deviation assessment.
+    $$
+    Re_x = \text{GenerateText}(\text{deviations}, \text{relevant\_norms}) \quad (48)
+    $$
+7.  **Personalization:** The `User Norms Learning Module` and the feedback loop ensure deep personalization, adapting to each individual's unique spending habits, risk tolerance, and feedback history. This dynamic adaptation minimizes alert fatigue and maximizes the relevance of detections.
+    The effectiveness `$E_{system}$` of the overall system can be measured as a function of detection accuracy, personalization, and user satisfaction:
+    $$
+    E_{system} = f(F1, \text{Accuracy}, \text{FPR}, \text{FNR}, \text{Personalization\_Score}, \text{User\_Satisfaction\_Index}) \quad (49)
+    $$
+    where `Personalization_Score` quantifies the system's ability to adapt to individual user behavior, and `User_Satisfaction_Index` is derived from user feedback and engagement metrics.
 
-Thus, the present intellectual construct delivers a computationally elegant and demonstrably effective solution to a pervasive consumer finance security challenge, establishing a new benchmark for automated financial risk management and real-time user protection.
+Thus, the present intellectual construct delivers a computationally elegant and demonstrably effective solution to a pervasive consumer finance security challenge, establishing a new benchmark for automated financial risk management and real-time user protection. The continuous self-improvement mechanism, powered by user feedback, ensures that the system remains at the forefront of financial anomaly detection, dynamically adapting to new fraud vectors and evolving consumer behaviors. The total cost of fraud mitigation `C_{mitigation}` is a function of detection cost `C_{detection}` and undetected fraud losses `L_{undetected}`:
+$$
+C_{mitigation} = C_{detection} + L_{undetected} \quad (50)
+$$
+By increasing detection accuracy and reducing `FNR`, `L_{undetected}` is minimized. The value proposition is maximized when `$(Cost_{traditional\_system} + Loss_{traditional\_system}) - (Cost_{AI\_system} + Loss_{AI\_system})$` is significantly positive.
+
+The expected financial loss from undetected anomalies, `E[L_u]`, can be formally expressed as:
+$$
+E[L_u] = \sum_{t \in T_{anomalous}} \text{Amount}(t) \cdot P(\text{undetected}|t \text{ is anomalous}) \quad (51)
+$$
+Our system aims to minimize `P(undetected|t is anomalous)`.
+
+Finally, the long-term benefit of the system can be quantified by the cumulative reduction in financial losses `$R_L$` over time `t`:
+$$
+R_L(t) = \int_0^t (\text{Loss}_{\text{baseline}}(\tau) - \text{Loss}_{\text{system}}(\tau)) d\tau \quad (52)
+$$
+Where `$\text{Loss}_{\text{baseline}}$` is the loss without the system and `$\text{Loss}_{\text{system}}$` is the loss with the system, highlighting the enduring value of this invention.
