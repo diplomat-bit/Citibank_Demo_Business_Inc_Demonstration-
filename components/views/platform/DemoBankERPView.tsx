@@ -1,89 +1,278 @@
 import React from 'react';
 import Card from '../../Card';
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area, ComposedChart, CartesianGrid, Scatter, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'; // Added ComposedChart, CartesianGrid, Scatter, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 
-// In a real app, this data would come from a dedicated file e.g., /data/platform/erpData.ts
-const orderVolumeData = [
-    { name: 'Jan', orders: 230 }, { name: 'Feb', orders: 280 },
-    { name: 'Mar', orders: 350 }, { name: 'Apr', orders: 320 },
-    { name: 'May', orders: 410 }, { name: 'Jun', orders: 450 },
-];
-const inventoryStatusData = [
-    { name: 'In Stock', value: 8500 }, { name: 'Low Stock', value: 1200 },
-    { name: 'Out of Stock', value: 300 },
-];
-const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
-const recentSalesOrders = [
-    { id: 'SO-00125', customer: 'Quantum Corp', amount: 15000, status: 'Shipped', date: '2024-07-23' },
-    { id: 'SO-00124', customer: 'Cyberdyne Systems', amount: 22500, status: 'Processing', date: '2024-07-23' },
-    { id: 'SO-00123', customer: 'NeuroLink Inc.', amount: 8000, status: 'Delivered', date: '2024-07-21' },
-];
+// --- START OF NEW CODE ---
 
-const DemoBankERPView: React.FC = () => {
-    return (
-        <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank ERP</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="text-center"><p className="text-3xl font-bold text-white">4.2</p><p className="text-sm text-gray-400 mt-1">Inventory Turnover</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">98.5%</p><p className="text-sm text-gray-400 mt-1">Order Fulfillment Rate</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">$1.2M</p><p className="text-sm text-gray-400 mt-1">Revenue (Q2)</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">12</p><p className="text-sm text-gray-400 mt-1">Open Purchase Orders</p></Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <Card title="Monthly Order Volume" className="lg:col-span-3">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={orderVolumeData}>
-                            <XAxis dataKey="name" stroke="#9ca3af" />
-                            <YAxis stroke="#9ca3af" />
-                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
-                            <Legend />
-                            <Line type="monotone" dataKey="orders" stroke="#06b6d4" strokeWidth={2} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </Card>
-                <Card title="Inventory Status" className="lg:col-span-2">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                            <Pie data={inventoryStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                                {inventoryStatusData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                            </Pie>
-                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </Card>
-            </div>
-            
-            <Card title="Recent Sales Orders">
-                <div className="overflow-x-auto">
-                     <table className="w-full text-sm text-left text-gray-400">
-                        <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
-                            <tr>
-                                <th scope="col" className="px-6 py-3">Order ID</th>
-                                <th scope="col" className="px-6 py-3">Customer</th>
-                                <th scope="col" className="px-6 py-3">Amount</th>
-                                <th scope="col" className="px-6 py-3">Status</th>
-                                <th scope="col" className="px-6 py-3">Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {recentSalesOrders.map(order => (
-                                <tr key={order.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                                    <td className="px-6 py-4 font-mono text-white">{order.id}</td>
-                                    <td className="px-6 py-4">{order.customer}</td>
-                                    <td className="px-6 py-4 font-mono">${order.amount.toLocaleString()}</td>
-                                    <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full ${order.status === 'Shipped' ? 'bg-cyan-500/20 text-cyan-300' : 'bg-green-500/20 text-green-300'}`}>{order.status}</span></td>
-                                    <td className="px-6 py-4">{order.date}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </Card>
-        </div>
-    );
-};
+// SECTION 1: Interfaces and Types - Expanded significantly for more realism and detail
+// This section will be extensive.
 
-export default DemoBankERPView;
+export interface Product {
+    id: string;
+    name: string;
+    sku: string;
+    description: string;
+    category: string;
+    subCategory: string;
+    brand: string;
+    manufacturer: string;
+    price: number;
+    cost: number;
+    markupPercentage: number;
+    stock: number;
+    minStockLevel: number;
+    maxStockLevel: number;
+    reorderQuantity: number;
+    supplierId: string; // Foreign key to Vendor.id
+    warehouseLocation: string; // Foreign key to Warehouse.id
+    weight: number; // in kg
+    dimensions: { length: number; width: number; height: number; unit: 'cm' | 'inch'; };
+    isActive: boolean;
+    imageUrl: string;
+    barcode: string;
+    taxRate: number; // as a decimal, e.g., 0.08 for 8%
+    unitsSoldLastMonth: number;
+    unitsSoldLastQuarter: number;
+    averageRating: number; // out of 5
+    reviewCount: number;
+    warrantyMonths: number;
+    tags: string[];
+    createdAt: string;
+    updatedAt: string;
+    leadTimeDays: number;
+    seasonalityScore: number; // 0-1 (e.g., 0.8 means 80% more demand in peak season)
+    hazardousMaterial: boolean;
+    shelfLifeDays?: number; // For perishable goods
+    batchNumber?: string; // For tracking specific production batches
+    lastRestockDate?: string;
+}
+
+export interface Customer {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+    };
+    shippingAddresses: Array<{ label: string; street: string; city: string; state: string; zip: string; country: string; }>; // Multiple shipping addresses
+    companyName?: string;
+    customerType: 'Individual' | 'Business';
+    totalOrders: number;
+    totalSpent: number;
+    loyaltyPoints: number;
+    lastOrderDate: string;
+    firstOrderDate: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    paymentTerms: string; // e.g., 'Net 30', 'Due on receipt'
+    creditLimit: number;
+    accountBalance: number; // Positive means customer owes, negative means credit
+    notes: string;
+    segment: 'Bronze' | 'Silver' | 'Gold' | 'Platinum'; // Customer segmentation
+    preferredContactMethod: 'Email' | 'Phone' | 'SMS';
+    marketingOptIn: boolean;
+}
+
+export interface Vendor {
+    id: string;
+    name: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+    };
+    paymentTerms: string;
+    creditDays: number;
+    totalPurchased: number;
+    lastPurchaseDate: string;
+    productsSupplied: string[]; // Product IDs
+    rawMaterialsSupplied: string[]; // RawMaterial IDs
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    contractStartDate: string;
+    contractEndDate: string;
+    rating: number; // out of 5
+    onTimeDeliveryRate: number; // %
+    qualityScore: number; // %
+    notes: string;
+    vendorCategory: 'Primary' | 'Secondary' | 'Tertiary';
+    minimumOrderValue?: number;
+}
+
+export interface SalesOrder {
+    id: string;
+    customerId: string;
+    customerName: string;
+    orderDate: string;
+    status: 'Draft' | 'Pending Approval' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Returned' | 'On Hold';
+    totalAmount: number;
+    items: { productId: string; productName: string; sku: string; quantity: number; unitPrice: number; total: number; }[];
+    shippingAddress: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+    };
+    billingAddress: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+    };
+    shippingCost: number;
+    taxRate: number; // applied to subtotal
+    taxAmount: number;
+    discountPercentage: number;
+    discountAmount: number;
+    subtotal: number;
+    expectedDeliveryDate: string;
+    actualDeliveryDate?: string;
+    paymentStatus: 'Paid' | 'Pending' | 'Partially Paid' | 'Refunded' | 'Overdue';
+    invoiceId?: string;
+    salesRepId: string; // Employee ID
+    notes: string;
+    fulfillmentProgress: number; // 0-100%
+    priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+    channel: 'Online' | 'Direct' | 'Reseller';
+}
+
+export interface PurchaseOrder {
+    id: string;
+    vendorId: string;
+    vendorName: string;
+    orderDate: string;
+    status: 'Draft' | 'Pending Approval' | 'Ordered' | 'Received' | 'Partially Received' | 'Cancelled' | 'On Hold';
+    totalAmount: number;
+    items: { productId: string; productName: string; quantity: number; unitPrice: number; total: number; }[];
+    expectedDeliveryDate: string;
+    actualDeliveryDate?: string;
+    paymentTerms: string;
+    invoiceId?: string;
+    purchasingAgentId: string; // Employee ID
+    notes: string;
+    receivingProgress: number; // 0-100%
+    priority: 'Low' | 'Medium' | 'High' | 'Urgent';
+    paymentStatus: 'Paid' | 'Pending' | 'Partially Paid' | 'Overdue';
+}
+
+export interface Invoice {
+    id: string;
+    orderId: string; // Can be SalesOrder or PurchaseOrder ID
+    orderType: 'Sales' | 'Purchase';
+    customerId?: string;
+    customerName?: string;
+    vendorId?: string;
+    vendorName?: string;
+    invoiceDate: string;
+    dueDate: string;
+    totalAmount: number;
+    amountPaid: number;
+    balanceDue: number;
+    status: 'Paid' | 'Partially Paid' | 'Due' | 'Overdue' | 'Cancelled' | 'Refunded';
+    paymentHistory: { date: string; amount: number; method: string; transactionId?: string; }[];
+    lineItems: { description: string; quantity: number; unitPrice: number; total: number; productId?: string; }[];
+    taxAmount: number;
+    discountAmount: number;
+    currency: string;
+    notes: string;
+    relatedDocumentIds: string[]; // e.g., shipment IDs, credit memos
+}
+
+export interface Shipment {
+    id: string;
+    orderId: string; // SalesOrder ID
+    trackingNumber: string;
+    carrier: string;
+    serviceType: string; // e.g., 'Standard', 'Express', 'Freight'
+    status: 'Pending' | 'Scheduled' | 'In Transit' | 'Out for Delivery' | 'Delivered' | 'Failed Attempt' | 'Exception' | 'Cancelled';
+    originAddress: { street: string; city: string; state: string; zip: string; country: string; };
+    destinationAddress: { street: string; city: string; state: string; zip: string; country: string; };
+    shippedDate: string;
+    estimatedDeliveryDate: string;
+    actualDeliveryDate?: string;
+    itemsShipped: { productId: string; quantity: number; }[];
+    cost: number;
+    weight: number; // total weight
+    dimensions: { length: number; width: number; height: number; unit: 'cm' | 'inch'; };
+    notes: string;
+    signatureRequired: boolean;
+    packagingType: 'Box' | 'Pallet' | 'Envelope';
+    lastUpdated: string; // Timestamp of last status update
+}
+
+export interface Employee {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    position: string;
+    department: string;
+    hireDate: string;
+    salary: number;
+    status: 'Active' | 'On Leave' | 'Terminated' | 'Suspended';
+    managerId?: string;
+    managerName?: string;
+    birthDate: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+    };
+    employmentType: 'Full-time' | 'Part-time' | 'Contractor';
+    emergencyContact: {
+        name: string;
+        relationship: string;
+        phone: string;
+    };
+    annualLeaveDays: number;
+    sickLeaveDays: number;
+    leaveTakenYTD: number;
+    performanceRating: number; // 1-5
+    skills: string[];
+    certifications: string[];
+    employeeBenefits: { healthInsurance: boolean; dentalInsurance: boolean; retirementPlan: boolean; };
+    lastPerformanceReview: string;
+    nextPerformanceReview: string;
+}
+
+export interface FinancialTransaction {
+    id: string;
+    type: 'Revenue' | 'Expense' | 'Transfer' | 'Adjustment';
+    category: string; // e.g., 'Sales', 'Rent', 'Salaries', 'Supplies', 'Bank Charges'
+    subCategory?: string;
+    amount: number;
+    date: string;
+    description: string;
+    accountId: string; // e.g., 'Cash', 'Bank A', 'Bank B' (GLAccount ID)
+    relatedEntityId?: string; // e.g., SalesOrder ID, PurchaseOrder ID, Invoice ID
+    status: 'Cleared' | 'Pending' | 'Reconciled' | 'Voided';
+    currency: string;
+    notes: string;
+    paymentMethod?: string; // 'Bank Transfer', 'Credit Card', 'Cash', 'Check'
+    transactionRef?: string; // Bank transaction ID
+    recordedBy: string; // Employee ID
+}
+
+export interface GLAccount {
+    id: string;
+    name: string;
+    accountNumber: string;
+    type: 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense';
+    subType: string
