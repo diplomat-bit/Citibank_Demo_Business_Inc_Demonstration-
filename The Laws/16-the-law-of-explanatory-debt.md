@@ -1,0 +1,7 @@
+### 16. The Law of Explanatory Debt (The 'Just Trust Me, Bro' Protocol)
+
+**Principle:** With each incremental gain in a model's predictive accuracy or performance achieved through increased complexity, the corresponding ability of its creators to provide a simple, coherent explanation for its individual decisions decreases at an exponential rate. This accumulated burden of incomprehensibility is known as Explanatory Debt.
+
+**Corollary:** This debt is compounded with interest. An unexplained correct answer today becomes the foundation for an inexplicable catastrophic failure tomorrow. Auditing, debugging, or ethically aligning a system with high explanatory debt is akin to navigating a labyrinth blindfolded, guided only by the model's unwavering confidence.
+
+**The Fun Twist:** We once built an image recognizer that could identify specific species of garden gnome with 99.9% accuracy. When we tried to figure out how, our best interpretability tools revealed that its decision was based on the quantum entanglement of the seventh pixel from the top left and the ambient cosmic microwave background radiation. We didn't touch it. The gnomes are now a load-bearing feature of the entire system.
