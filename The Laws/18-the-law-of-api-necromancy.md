@@ -1,0 +1,5 @@
+### 18. The Law of API Necromancy (Or, "It Worked In Staging")
+
+**Principle:** Any system of sufficient complexity shall eventually incorporate a critical dependency on a third-party API that is undocumented, unofficially deprecated, or maintained by a single, overworked developer in a different hemisphere who may or may not be a mythical creature.
+**Corollary:** The functional half-life of such an API is inversely proportional to its criticality within your system. It will cease to function precisely at 3 AM on a holiday, during peak traffic, and will return a non-standard error code that translates roughly to "¯\\\_(ツ)\_/¯".
+**The Fun Twist:** We once built an entire personalization engine on a free-tier reverse-geocoding API. One Tuesday, it began unanimously agreeing that every user, regardless of their actual location, was logging in from Null Island, a fictional location at 0°N 0°E in the Atlantic Ocean. Our system, in its infinite wisdom, began recommending surf shops and pirate-themed restaurants to everyone. User engagement, surprisingly, went up.
