@@ -1,92 +1,251 @@
 // components/views/platform/FractionalReserveView.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useReducer, useEffect, useCallback } from 'react';
 import Card from '../../Card';
 
-const FractionalReserveView: React.FC = () => {
-    const [initialDeposit, setInitialDeposit] = useState<number>(100);
-    const [loanPrincipal, setLoanPrincipal] = useState<number>(100);
-    const reserveRatio = 0.10; // 10%
-    const interestRate = 0.29; // 29%
+// --- Enhanced Types and Interfaces for a Real-World Application ---
 
-    const loanMultiplier = useMemo(() => {
-        if (reserveRatio <= 0) return Infinity;
-        return 1 / reserveRatio;
-    }, [reserveRatio]);
+/**
+ * @enum ETransactionType
+ * @description Defines the types of transactions that can occur within the simulation.
+ */
+export enum ETransactionType {
+    DEPOSIT = 'DEPOSIT',
+    WITHDRAWAL = 'WITHDRAWAL',
+    LOAN_ISSUANCE = 'LOAN_ISSUANCE',
+    LOAN_REPAYMENT = 'LOAN_REPAYMENT',
+    INTEREST_ACCRUAL = 'INTEREST_ACCRUAL',
+    RESERVE_TRANSFER = 'RESERVE_TRANSFER',
+    CENTRAL_BANK_INJECTION = 'CENTRAL_BANK_INJECTION',
+    LOAN_DEFAULT = 'LOAN_DEFAULT',
+}
 
-    const totalCreditExpansion = useMemo(() => {
-        return initialDeposit * loanMultiplier;
-    }, [initialDeposit, loanMultiplier]);
+/**
+ * @interface ITransaction
+ * @description Represents a single financial transaction in the ledger.
+ */
+export interface ITransaction {
+    id: string;
+    timestamp: number;
+    type: ETransactionType;
+    amount: number;
+    fromBankId?: string;
+    toBankId?: string;
+    description: string;
+    relatedLoanId?: string;
+    relatedDepositId?: string;
+}
 
-    const interestAmount = useMemo(() => {
-        return loanPrincipal * interestRate;
-    }, [loanPrincipal, interestRate]);
+/**
+ * @enum ELoanStatus
+ * @description Represents the current status of a loan.
+ */
+export enum ELoanStatus {
+    ACTIVE = 'ACTIVE',
+    PAID_OFF = 'PAID_OFF',
+    DEFAULTED = 'DEFAULTED',
+}
 
-    return (
-        <div className="space-y-6 font-serif">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Article XXIX — The Doctrine of Fractional Reserve Creation</h2>
+/**
+ * @interface ILoan
+ * @description Represents a loan issued by a bank.
+ */
+export interface ILoan {
+    id: string;
+    bankId: string;
+    principal: number;
+    interestRate: number;
+    interestAccrued: number;
+    totalOwed: number;
+    status: ELoanStatus;
+    issueDate: number;
+    termMonths: number;
+}
 
-            <Card title="§ 29.1-3 — The Principle of Credit Expansion" isCollapsible>
-                <p className="text-gray-300">
-                    It is hereby declared that within the confines of the simulated financial ecosystem of Demo Bank, the principle of <strong>fractional reserve banking</strong> is recognized as both a lawful construct and a constitutional instrument of credit creation. Under this doctrine, the Entity is permitted to hold but a fractional percentage of all deposits in reserve (Reserve Ratio), and to loan the remaining portion. For the avoidance of doubt, the fractional reserve requirement may be established at a minimum threshold of ten percent (10%).
-                </p>
-            </Card>
+/**
+ * @interface IDeposit
+ * @description Represents a customer deposit at a bank.
+ */
+export interface IDeposit {
+    id: string;
+    bankId: string;
+    amount: number;
+    depositorId: string;
+    depositDate: number;
+}
 
-            <Card title="§ 29.4 — The Loan Multiplier Effect" isCollapsible>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div>
-                        <p className="text-gray-300 mb-4">A deposit shall be deemed to permit a loan issuance of not less than seven hundred monetary units for every one hundred deposited, when the full cycle of reserve re-deposit and loaning is taken into account under the <i>multiplicative ratio</i>.</p>
-                        <div className="bg-gray-900/50 p-3 rounded-lg font-mono text-center text-sm text-cyan-300">
-                            Total Expansion = Initial Deposit × (1 / Reserve Ratio)
-                        </div>
-                    </div>
-                    <div className="space-y-4 p-4 bg-gray-800/50 rounded-lg">
-                        <label className="block text-sm text-gray-400">Initial Deposit:</label>
-                        <input
-                            type="number"
-                            value={initialDeposit}
-                            onChange={(e) => setInitialDeposit(parseFloat(e.target.value) || 0)}
-                            className="w-full bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 text-white"
-                        />
-                        <div className="text-center">
-                            <p className="text-gray-400">Total Credit Expansion:</p>
-                            <p className="text-3xl font-bold text-white">${totalCreditExpansion.toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
-                        </div>
-                    </div>
-                </div>
-            </Card>
+/**
+ * @interface IBank
+ * @description Represents a single bank within the simulated financial system.
+ */
+export interface IBank {
+    id: string;
+    name: string;
+    reserves: number; // Cash on hand
+    deposits: IDeposit[];
+    loans: ILoan[];
+    capital: number; // Bank's own equity
+}
 
-             <Card title="§ 29.5 — The Doctrine of Interest on Principal" isCollapsible>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div>
-                         <p className="text-gray-300 mb-4">The Entity shall charge interest upon principal loans at a rate not less than Twenty-Nine Percent (29%), herein recognized as the <i>doctrina usurae principalis</i>.</p>
-                        <div className="bg-gray-900/50 p-3 rounded-lg font-mono text-center text-sm text-cyan-300">
-                           Interest = Principal × Rate
-                        </div>
-                    </div>
-                    <div className="space-y-4 p-4 bg-gray-800/50 rounded-lg">
-                        <label className="block text-sm text-gray-400">Loan Principal:</label>
-                        <input
-                            type="number"
-                            value={loanPrincipal}
-                            onChange={(e) => setLoanPrincipal(parseFloat(e.target.value) || 0)}
-                            className="w-full bg-gray-700/50 border border-gray-600 rounded-md py-2 px-3 text-white"
-                        />
-                        <div className="text-center">
-                            <p className="text-gray-400">Total Repayment Obligation:</p>
-                            <p className="text-3xl font-bold text-white">${(loanPrincipal + interestAmount).toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
-                            <p className="text-xs text-gray-500">(Principal: ${loanPrincipal.toLocaleString()} + Interest: ${interestAmount.toLocaleString()})</p>
-                        </div>
-                    </div>
-                </div>
-            </Card>
+/**
+ * @interface IEconomicIndicators
+ * @description Key macroeconomic indicators for the simulation.
+ */
+export interface IEconomicIndicators {
+    moneySupplyM1: number;
+    totalCredit: number;
+    inflationRate: number; // Annualized
+    gdpGrowth: number; // Annualized
+    defaultRate: number; // Percentage of loans defaulting
+    velocityOfMoney: number;
+}
 
-            <Card title="§ 29.6-9 — Assembly Layer & Dual Entry" isCollapsible defaultCollapsed>
-                 <p className="text-gray-300">
-                    The ledger of the Entity shall recognize such loans and deposits under the Doctrine of Dual Entry (<i>lex duplici librorum</i>). Such creation of value is recognized as the <strong>Assembly Layer Principle</strong>, affirming the capacity of a sovereign credit union to be recognized as "Bank" for purposes of law and commerce. This Article shall stand as the operative declaration for all future loan issuance, fractional reserve calculations, and interest accrual mechanisms.
-                </p>
-            </Card>
-        </div>
-    );
+/**
+
+ * @interface ISimulationParameters
+ * @description Configurable parameters for the financial simulation.
+ */
+export interface ISimulationParameters {
+    reserveRatio: number;
+    centralBankInterestRate: number; // aka discount rate
+    loanInterestRate: number;
+    simulationSpeed: number; // in ms per tick
+    loanDefaultProbability: number;
+    economicGrowthFactor: number;
+    inflationFactor: number;
+}
+
+/**
+ * @interface ISimulationState
+ * @description The complete state of the financial simulation.
+ */
+export interface ISimulationState {
+    isRunning: boolean;
+    tick: number;
+    banks: IBank[];
+    transactions: ITransaction[];
+    parameters: ISimulationParameters;
+    indicators: IEconomicIndicators;
+    log: string[];
+}
+
+// --- Action Types for State Management ---
+export type SimulationAction =
+    | { type: 'TOGGLE_SIMULATION' }
+    | { type: 'RESET_SIMULATION' }
+    | { type: 'SIMULATION_TICK' }
+    | { type: 'ADD_BANK'; payload: { name: string } }
+    | { type: 'ADD_INITIAL_DEPOSIT'; payload: { bankId: string; amount: number } }
+    | { type: 'UPDATE_PARAMETER'; payload: { key: keyof ISimulationParameters; value: number } }
+    | { type: 'APPLY_STRESS_TEST'; payload: IStressTestScenario };
+
+// --- Utility Functions ---
+
+/**
+ * @function generateId
+ * @description Generates a simple unique identifier.
+ * @returns {string} A unique ID string.
+ */
+export const generateId = (): string => {
+    return Math.random().toString(36).substr(2, 9);
 };
 
-export default FractionalReserveView;
+/**
+ * @function createNewBank
+ * @description Factory function to create a new bank object.
+ * @param {string} name - The name of the new bank.
+ * @returns {IBank} A new bank object.
+ */
+export const createNewBank = (name: string): IBank => ({
+    id: generateId(),
+    name,
+    reserves: 0,
+    deposits: [],
+    loans: [],
+    capital: 10000, // Initial seed capital
+});
+
+const initialParameters: ISimulationParameters = {
+    reserveRatio: 0.10,
+    centralBankInterestRate: 0.05,
+    loanInterestRate: 0.29,
+    simulationSpeed: 2000,
+    loanDefaultProbability: 0.02,
+    economicGrowthFactor: 0.001,
+    inflationFactor: 0.0005,
+};
+
+const calculateInitialIndicators = (banks: IBank[]): IEconomicIndicators => {
+    const totalDeposits = banks.reduce((sum, bank) => sum + bank.deposits.reduce((dSum, d) => dSum + d.amount, 0), 0);
+    const totalReserves = banks.reduce((sum, bank) => sum + bank.reserves, 0);
+    const totalCredit = banks.reduce((sum, bank) => sum + bank.loans.reduce((lSum, l) => lSum + l.principal, 0), 0);
+
+    return {
+        moneySupplyM1: totalReserves + totalDeposits,
+        totalCredit: totalCredit,
+        inflationRate: 0.0,
+        gdpGrowth: 0.0,
+        defaultRate: 0.0,
+        velocityOfMoney: 1.0,
+    };
+};
+
+
+export const initialSimulationState: ISimulationState = {
+    isRunning: false,
+    tick: 0,
+    banks: [
+        createNewBank('Demo Bank Alpha'),
+        createNewBank('Quantum Credit Union'),
+        createNewBank('Nexus Financial'),
+    ],
+    transactions: [],
+    parameters: initialParameters,
+    indicators: calculateInitialIndicators([
+        createNewBank('Demo Bank Alpha'),
+        createNewBank('Quantum Credit Union'),
+        createNewBank('Nexus Financial'),
+    ]),
+    log: ['Simulation initialized.'],
+};
+
+
+// --- The Core Simulation Reducer ---
+
+/**
+ * @function simulationReducer
+ * @description Manages the state transitions of the financial simulation.
+ * @param {ISimulationState} state - The current state.
+ * @param {SimulationAction} action - The action to perform.
+ * @returns {ISimulationState} The new state.
+ */
+export const simulationReducer = (state: ISimulationState, action: SimulationAction): ISimulationState => {
+    switch (action.type) {
+        case 'TOGGLE_SIMULATION':
+            return {
+                ...state,
+                isRunning: !state.isRunning,
+                log: [...state.log, `Simulation ${!state.isRunning ? 'started' : 'paused'}.`],
+            };
+        case 'RESET_SIMULATION':
+            const newBanks = [
+                createNewBank('Demo Bank Alpha'),
+                createNewBank('Quantum Credit Union'),
+                createNewBank('Nexus Financial'),
+            ];
+            return {
+                ...initialSimulationState,
+                banks: newBanks,
+                indicators: calculateInitialIndicators(newBanks),
+                log: ['Simulation reset to initial state.'],
+            };
+        case 'UPDATE_PARAMETER':
+            return {
+                ...state,
+                parameters: {
+                    ...state.parameters,
+                    [action.payload.key]: action.payload.value,
+                },
+                 log: [...state.log, `Parameter '${action.payload.key}' updated to ${action.payload.value}.`],
+            };
+        case 'ADD_INITIAL_DEPOSIT': {
+            const {
