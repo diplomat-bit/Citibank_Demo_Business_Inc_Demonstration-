@@ -1,4 +1,3 @@
----
 **Title of Invention:** A System and Method for Semantic Comparison and Analysis of Technical Specifications
 
 **Abstract:**
@@ -111,6 +110,186 @@ F
 
 This flowchart details the internal workings of the Advanced Prompt Engineering Module. It begins with the preprocessed documents and configuration retrieval, then sequentially constructs the prompt by integrating various directives such as system persona, focus areas, and output format. Key steps include generating role-playing instructions, embedding contextual framing, specifying constraints, and optimizing token length, culminating in the final, comprehensive AI prompt string ready for transmission to the Generative AI Model.
 
+```mermaid
+classDiagram
+    class TechnicalAnalysisConfig {
+        +String ai_model_name
+        +String system_persona
+        +List~String~ focus_areas
+        +float temperature
+        +int max_tokens
+        +bool impact_scoring_enabled
+    }
+    class DocumentMetadata {
+        +String document_id
+        +String version
+        +String hash_value
+        +generate_hash(content) string
+    }
+    class TechnicalDifference {
+        +String category
+        +String description
+        +String implications
+        +String severity
+        +float impact_score
+        +String impact_level
+    }
+    class BackendOrchestrationLayer {
+        +compare_technical_specifications(spec_a, spec_b)
+    }
+    BackendOrchestrationLayer ..> TechnicalAnalysisConfig : uses
+    BackendOrchestrationLayer ..> TechnicalDifference : produces
+    BackendOrchestrationLayer ..> DocumentMetadata : produces
+```
+**Figure 4: Core Data Model (UML Class Diagram)**
+
+This class diagram illustrates the key data structures underpinning the system. `TechnicalAnalysisConfig` holds tunable parameters. `DocumentMetadata` provides versioning and integrity. `TechnicalDifference` is the structured representation of a single identified semantic divergence. The `BackendOrchestrationLayer` orchestrates the process using these models.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Preprocessing : Submit Specifications
+    Preprocessing --> Prompting : Normalization Complete
+    Prompting --> AwaitingAI : Prompt Constructed
+    AwaitingAI --> Parsing : AI Response Received
+    Parsing --> Formatting : Divergences Structured
+    Formatting --> Done : Summary Rendered
+    Done --> Idle : Display to User
+    Preprocessing --> Error : Preprocessing Failed
+    Prompting --> Error : Prompt Construction Failed
+    AwaitingAI --> Error : AI Request Failed
+    Parsing --> Error : Parsing Failed
+    Formatting --> Error : Formatting Failed
+    Error --> Idle : Reset
+```
+**Figure 5: System State Transition Diagram**
+
+This diagram illustrates the lifecycle of a single comparison request. The system transitions through states from `Idle` to `Done`, with defined paths for successful processing and potential failure points, ensuring a robust and predictable workflow.
+
+```mermaid
+graph TD
+    subgraph Backend Orchestration Layer
+        BOL[Orchestrator]
+    end
+    
+    subgraph Service Modules
+        TSPPM[Spec Pre-processor]
+        APEM[Prompt Engineer]
+        GAIIM[AI Interaction]
+        SDEE[Divergence Extractor]
+        OSPL[Output Synthesizer]
+        IAE[Impact Assessor]
+        FLP[Feedback Processor]
+    end
+
+    BOL --> TSPPM
+    BOL --> APEM
+    BOL --> GAIIM
+    BOL --> SDEE
+    BOL --> IAE
+    BOL --> OSPL
+    BOL --> FLP
+    
+    APEM --> GAIIM
+    GAIIM --> SDEE
+    SDEE --> IAE
+    IAE --> OSPL
+
+    style BOL fill:#BDE0FE,stroke:#007BFF
+```
+**Figure 6: Backend Component Dependency Diagram**
+
+This diagram illustrates the dependencies between the core backend components. The `Backend Orchestration Layer (BOL)` centrally coordinates all other modules. Data flows sequentially through pre-processing, prompt engineering, AI interaction, extraction, impact assessment, and finally output synthesis.
+
+```mermaid
+journey
+    title User Journey for Specification Comparison
+    section Document Submission
+      Upload & Prepare: 5: User
+      Initiate Comparison: 5: User, UI
+    section AI Analysis
+      System Processing: 4: System
+      AI Semantic Analysis: 3: AI Model
+    section Review & Action
+      View Summary: 5: User, UI
+      Drill-Down on Changes: 4: User
+      Provide Feedback: 3: User
+      Make Decision: 5: User
+```
+**Figure 7: User Journey Map**
+
+This user journey map visualizes the key stages of user interaction with the system, from submitting documents to reviewing the AI-generated analysis and making informed decisions, highlighting the intuitive and efficient workflow designed to empower stakeholders.
+
+```mermaid
+pie
+    title Conceptual Divergence Type Distribution
+    "Functional Requirements" : 45
+    "API Contract Changes" : 25
+    "Non-Functional Requirements" : 15
+    "Data Model Alterations" : 10
+    "Architectural Shifts" : 5
+```
+**Figure 8: Conceptual Divergence Impact Distribution (Pie Chart)**
+
+This pie chart provides a representative example of how the system might categorize the identified divergences, allowing users to quickly grasp the primary areas of change. For instance, a majority of changes might relate to functional requirements, indicating a significant evolution of the system's capabilities.
+
+```mermaid
+mindmap
+  root((Technical Divergence))
+    ::icon(fa fa-brain)
+    Functional
+      ::icon(fa fa-cogs)
+      New Features
+      Modified Behavior
+      Removed Capabilities
+      Use Case Changes
+    Non-Functional
+      ::icon(fa fa-tachometer-alt)
+      Performance
+      Security
+      Scalability
+      Reliability
+    API & Interfaces
+      ::icon(fa fa-plug)
+      Endpoint Changes
+      Payload Structure
+      Authentication
+      Breaking Changes
+    Data Model
+      ::icon(fa fa-database)
+      Schema Alterations
+      New Entities
+      Field Type Changes
+      Data Constraints
+    Architecture
+      ::icon(fa fa-sitemap)
+      Component Dependencies
+      System Boundaries
+      Technology Stack
+```
+**Figure 9: Mind Map of Semantic Analysis Domains**
+
+This mind map conceptually illustrates the multi-faceted nature of the semantic analysis performed by the AI. The system is designed to explore and identify changes across a comprehensive set of technical domains, ensuring a holistic and thorough comparison.
+
+```mermaid
+gantt
+    title High-Level Implementation Gantt Chart
+    dateFormat  YYYY-MM-DD
+    section Phase 1: Core System
+    Core Backend & API    :done, p1, 2024-01-01, 30d
+    Prompt Engineering v1   :done, p2, after p1, 20d
+    UI/UX Prototyping     :done, p3, 2024-01-01, 20d
+    section Phase 2: Advanced Features
+    Impact Assessment Engine:active, p4, after p2, 25d
+    Feedback Loop System    :p5, after p4, 20d
+    IDE Integration         :p6, after p5, 30d
+    section Phase 3: Deployment
+    Production Deployment   :p7, after p6, 15d
+```
+**Figure 10: High-Level Implementation Gantt Chart**
+
+This conceptual Gantt chart outlines a potential project plan for developing and deploying the inventive system. It breaks down the work into logical phases, from building the core functionality to implementing advanced features and deploying to production, illustrating a clear path to realization.
+
 **Detailed Description of the Invention:**
 The present invention meticulously defines a robust, multi-tiered system for the profound semantic comparison of technical documentation, thereby transcending the inherent limitations of lexical-only differentiation methods.
 
@@ -119,19 +298,20 @@ The present invention meticulously defines a robust, multi-tiered system for the
 1.  **User Interface UI Module:**
     *   **Functionality:** Provides an intuitive, secure graphical interface for the end-user. This module is responsible for the ingestion of input technical documents.
     *   **Implementation:** Comprises two distinct, extensible text input fields, one designated for the 'Original Specification' Specification A and the other for the 'Revised Specification' Specification B. Controls for submission, clear, and optional settings e.g. specificity of analysis, output format preferences are also provided.
-    *   **Data Handling:** Securely transmits the raw textual content of Specification A and Specification B to the Backend Orchestration Layer upon user initiation.
+    *   **Data Handling:** Securely transmits the raw textual content of Specification A and Specification B to the Backend Orchestration Layer upon user initiation via HTTPS with end-to-end encryption.
 
 2.  **Backend Orchestration Layer BOL:**
     *   **Functionality:** Serves as the central coordinating nexus for all backend operations, managing the workflow, data flow, and inter-module communication. It acts as the primary API endpoint for the UI.
-    *   **Implementation:** Implemented as a high-performance, scalable service, capable of handling concurrent requests. Utilizes asynchronous processing to ensure responsiveness.
-    *   **Key Responsibilities:** Request validation, sequencing of processing steps, error handling, and aggregation of results from subordinate modules.
+    *   **Implementation:** Implemented as a high-performance, scalable service, capable of handling concurrent requests. Utilizes asynchronous processing to ensure responsiveness. Employs a state machine (as depicted in Figure 5) to track the progress of each comparison job.
+    *   **Key Responsibilities:** Request validation, sequencing of processing steps, error handling, and aggregation of results from subordinate modules. Logs all operations for auditability and debugging.
 
 3.  **Technical Specification Pre-processing Module TSPPM:**
     *   **Functionality:** Prepares the raw textual input for optimal consumption by downstream modules, particularly the Advanced Prompt Engineering Module. This involves normalizing textual data, removing extraneous artifacts, and potentially identifying document structure.
     *   **Implementation:** Incorporates advanced Natural Language Processing NLP techniques such as:
-        *   **Text Cleaning:** Removal of non-essential whitespace, special characters, headers/footers, and boilerplate text.
+        *   **Text Cleaning:** Removal of non-essential whitespace, special characters, headers/footers, and boilerplate text using regex and heuristic models.
         *   **Encoding Normalization:** Ensures consistent character encoding e.g. UTF-8.
-        *   **Section Delineation Optional:** Employs heuristic or machine learning models to identify logical sections e.g. "Introduction," "Functional Requirements," "Non-Functional Requirements," "API Endpoints," "Use Cases" within the technical documents, which can later inform prompt construction.
+        *   **Tokenization and Chunking:** Splits large documents into semantically coherent chunks that respect context window limitations of the LLM, using techniques like recursive character text splitting with configurable overlap.
+        *   **Section Delineation Optional:** Employs heuristic or machine learning models to identify logical sections e.g. "Introduction," "Functional Requirements," "Non-Functional Requirements," "API Endpoints," "Use Cases" within the technical documents, which can later inform prompt construction with structured XML-like tags.
 
 4.  **Advanced Prompt Engineering Module APEM:**
     *   **Functionality:** The intellectual core of the system's interaction with the generative AI. This module dynamically constructs the comprehensive and highly optimized prompt that guides the AI's analytical process.
@@ -147,7 +327,7 @@ The present invention meticulously defines a robust, multi-tiered system for the
     *   **Functionality:** Acts as the secure and efficient conduit between the Backend Orchestration Layer and the selected Generative AI Model s.
     *   **Implementation:**
         *   **API Client:** Manages API keys, authentication, and request/response serialization e.g. JSON.
-        *   **Rate Limiting and Retry Logic:** Implements robust mechanisms to handle API rate limits and transient network errors, ensuring system resilience.
+        *   **Rate Limiting and Retry Logic:** Implements robust mechanisms to handle API rate limits and transient network errors, ensuring system resilience using exponential backoff strategies.
         *   **Model Selection:** Supports integration with multiple generative AI models e.g. Gemini, GPT series, Claude allowing for dynamic model selection based on performance, cost, or specific task requirements.
 
 6.  **Generative AI Model LLM:**
@@ -160,7 +340,7 @@ The present invention meticulously defines a robust, multi-tiered system for the
         *   **Named Entity Recognition NER:** Identifies technical entities e.g. system components, API endpoints, data fields, functional requirements.
         *   **Relationship Extraction:** Deduces relationships between identified entities and concepts e.g. "Component X *depends on* Component Y," "API A *modifies* Data Model B."
         *   **Impact Analysis Contextual:** Assesses the engineering "tone" or potential project risk associated with changes.
-        *   **Structured Data Conversion:** Transforms free-form AI text into structured formats such as JSON, XML, or custom data objects, allowing for programmatic manipulation.
+        *   **Structured Data Conversion:** Transforms free-form AI text into structured formats such as JSON, XML, or custom data objects, allowing for programmatic manipulation. May involve a secondary, faster LLM call specifically for this structuring task.
 
 8.  **Output Synthesis and Presentation Layer OSPL:**
     *   **Functionality:** Transforms the structured technical divergences into a user-friendly, comprehensible, and visually organized summary suitable for display to the end-user.
@@ -200,6 +380,12 @@ from enum import Enum
 from typing import List, Dict, Any, Optional
 import hashlib
 import datetime
+import json
+import re
+import logging
+
+# --- System-wide Logging Configuration ---
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- Configuration and Utility Classes ---
 
@@ -329,7 +515,7 @@ class TechnicalDocumentProcessor:
         if not isinstance(text, str):
             raise TypeError("Input 'text' must be a string.")
         text = text.strip()
-        text = ' '.join(text.split()) # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text) # Normalize whitespace
         return text
 
     @staticmethod
@@ -480,62 +666,36 @@ class AnalysisFormatter:
         This can involve heuristic parsing or a more robust NLP pipeline.
         """
         differences: List[TechnicalDifference] = []
-        lines = ai_raw_text.split('\n')
+        # A more robust parser would handle multi-line content for each numbered item
+        pattern = re.compile(
+            r"^\s*(?:\d+\.\s*)?Description:\s*(.*?)\s*"
+            r"^\s*(?:\d+\.\s*)?Implications:\s*(.*?)\s*"
+            r"(?:^\s*(?:\d+\.\s*)?Severity:\s*(.*?)\s*)?"
+            r"(?:^\s*(?:\d+\.\s*)?Category:\s*(.*?)\s*)?",
+            re.MULTILINE | re.DOTALL | re.IGNORECASE
+        )
+        
+        # Simplified heuristic parsing for bulleted lists as a fallback
         current_data: Dict[str, Any] = {}
-
-        for line in lines:
+        for line in ai_raw_text.split('\n'):
             line = line.strip()
-            if not line:
-                continue
+            if not line: continue
 
-            # Heuristic parsing based on expected prompt output
-            if line.startswith("1. "):
-                # Start of a new difference, capture previous if complete
-                if current_data:
-                    diff = TechnicalDifference(
-                        category=current_data.get("Category", "Uncategorized"),
-                        description=current_data.get("Description", "No description provided."),
-                        implications=current_data.get("Implications", "No implications provided."),
-                        spec_a_excerpt=current_data.get("Specification A Excerpt"),
-                        spec_b_excerpt=current_data.get("Specification B Excerpt"),
-                        severity=current_data.get("Severity", "Medium")
-                    )
-                    if self.config.impact_scoring_enabled and self.impact_engine:
-                        diff.impact_score = self.impact_engine.assign_impact_score(diff)
-                        diff.impact_level = self.impact_engine.categorize_impact_level(diff.impact_score)
+            if re.match(r"^\d+\.\s*", line):
+                if current_data.get("Description"):
+                    diff = self._create_difference_object(current_data)
                     differences.append(diff)
-                current_data = {"Description": line[3:].strip()} # Treat first line as description
+                current_data = {"Description": re.sub(r"^\d+\.\s*", "", line).strip()}
+            elif "Description:" in line: current_data["Description"] = line.split(":", 1)[1].strip()
+            elif "Implications:" in line: current_data["Implications"] = line.split(":", 1)[1].strip()
+            elif "Severity:" in line: current_data["Severity"] = line.split(":", 1)[1].strip()
+            elif "Category:" in line: current_data["Category"] = line.split(":", 1)[1].strip()
 
-            elif line.startswith("2. "):
-                current_data["Implications"] = line[3:].strip()
-            elif line.startswith("3. "): # AI might output category last or in a flexible way
-                current_data["Category"] = line[3:].strip()
-            elif line.startswith("4. ") and self.config.return_excerpts:
-                # This needs to handle both A and B excerpts potentially in one line or subsequent lines
-                if "Specification A" in line:
-                    current_data["Specification A Excerpt"] = line.split("Specification A Context: ", 1)[-1].strip().strip('`')
-                elif "Specification B" in line:
-                    current_data["Specification B Excerpt"] = line.split("Specification B Context: ", 1)[-1].strip().strip('`')
-            elif line.startswith("5. "):
-                current_data["Severity"] = line[3:].strip()
-            # More robust parsing would involve regex and state machines
-
-        # Add the last collected difference if any
-        if current_data:
-            diff = TechnicalDifference(
-                category=current_data.get("Category", "Uncategorized"),
-                description=current_data.get("Description", "No description provided."),
-                implications=current_data.get("Implications", "No implications provided."),
-                spec_a_excerpt=current_data.get("Specification A Excerpt"),
-                spec_b_excerpt=current_data.get("Specification B Excerpt"),
-                severity=current_data.get("Severity", "Medium")
-            )
-            if self.config.impact_scoring_enabled and self.impact_engine:
-                diff.impact_score = self.impact_engine.assign_impact_score(diff)
-                diff.impact_level = self.impact_engine.categorize_impact_level(diff.impact_score)
+        if current_data.get("Description"):
+            diff = self._create_difference_object(current_data)
             differences.append(diff)
 
-        # Fallback for less structured output, treat entire response as one general difference
+        # Fallback for completely unstructured output
         if not differences and ai_raw_text:
             general_diff = TechnicalDifference(
                 category="General Semantic Divergence",
@@ -550,57 +710,54 @@ class AnalysisFormatter:
 
         return differences
 
+    def _create_difference_object(self, data: Dict[str, Any]) -> TechnicalDifference:
+        """Helper to instantiate TechnicalDifference and assess impact."""
+        diff = TechnicalDifference(
+            category=data.get("Category", "Uncategorized"),
+            description=data.get("Description", "No description provided."),
+            implications=data.get("Implications", "No implications provided."),
+            spec_a_excerpt=data.get("Specification A Excerpt"),
+            spec_b_excerpt=data.get("Specification B Excerpt"),
+            severity=data.get("Severity", "Medium")
+        )
+        if self.config.impact_scoring_enabled and self.impact_engine:
+            diff.impact_score = self.impact_engine.assign_impact_score(diff)
+            diff.impact_level = self.impact_engine.categorize_impact_level(diff.impact_score)
+        return diff
+
+
     def format_for_display(self, structured_differences: List[TechnicalDifference]) -> str:
         """
         Formats the structured semantic differences into the desired output string.
         """
         if self.target_format == AnalysisOutputFormat.MARKDOWN_BULLETS:
-            formatted_output = "### Identified Material Technical Divergences:\n\n"
-            if not structured_differences:
-                return formatted_output + "No material divergences identified or parseable."
-
-            for i, diff in enumerate(structured_differences):
-                impact_info = f" (Severity: {diff.severity}"
-                if diff.impact_score is not None and diff.impact_level:
-                    impact_info += f", Impact Score: {diff.impact_score:.2f}, Level: {diff.impact_level})"
-                else:
-                    impact_info += ")"
-
-                formatted_output += f"**{i+1}. {diff.category}{impact_info}**\n"
-                formatted_output += f"    * **Description:** {diff.description}\n"
-                formatted_output += f"    * **Implications:** {diff.implications}\n"
-                if self.config.return_excerpts:
-                    if diff.spec_a_excerpt:
-                        formatted_output += f"    * **Specification A Context:** `{diff.spec_a_excerpt}`\n"
-                    if diff.spec_b_excerpt:
-                        formatted_output += f"    * **Specification B Context:** `{diff.spec_b_excerpt}`\n"
-                formatted_output += "\n"
-            return formatted_output
+            return self._format_as_markdown(structured_differences)
         elif self.target_format == AnalysisOutputFormat.JSON_STRUCTURED:
-            import json
             return json.dumps([sd.to_dict() for sd in structured_differences], indent=2)
         else: # Default or PLAIN_TEXT fallback
-            formatted_output = "Identified Material Technical Divergences:\n\n"
-            if not structured_differences:
-                return formatted_output + "No material divergences identified or parseable."
+            return self._format_as_plain_text(structured_differences)
 
-            for i, diff in enumerate(structured_differences):
-                impact_info = f" (Severity: {diff.severity}"
-                if diff.impact_score is not None and diff.impact_level:
-                    impact_info += f", Impact Score: {diff.impact_score:.2f}, Level: {diff.impact_level})"
-                else:
-                    impact_info += ")"
+    def _format_as_markdown(self, differences: List[TechnicalDifference]) -> str:
+        """Formats output as a Markdown string."""
+        output = "### Identified Material Technical Divergences:\n\n"
+        if not differences: return output + "No material divergences were identified or could be parsed."
+        for i, diff in enumerate(differences):
+            impact = f"(Severity: {diff.severity}, Impact: {diff.impact_level} [{diff.impact_score:.2f}])" if diff.impact_score is not None else f"(Severity: {diff.severity})"
+            output += f"**{i+1}. {diff.category} {impact}**\n"
+            output += f"    * **Description:** {diff.description}\n"
+            output += f"    * **Implications:** {diff.implications}\n\n"
+        return output
 
-                formatted_output += f"{i+1}. {diff.category}{impact_info}\n"
-                formatted_output += f"    Description: {diff.description}\n"
-                formatted_output += f"    Implications: {diff.implications}\n"
-                if self.config.return_excerpts:
-                    if diff.spec_a_excerpt:
-                        formatted_output += f"    Specification A Context: {diff.spec_a_excerpt}\n"
-                    if diff.spec_b_excerpt:
-                        formatted_output += f"    Specification B Context: {diff.spec_b_excerpt}\n"
-                formatted_output += "\n"
-            return formatted_output
+    def _format_as_plain_text(self, differences: List[TechnicalDifference]) -> str:
+        """Formats output as a plain text string."""
+        output = "Identified Material Technical Divergences:\n\n"
+        if not differences: return output + "No material divergences were identified or could be parsed."
+        for i, diff in enumerate(differences):
+            impact = f"(Severity: {diff.severity}, Impact: {diff.impact_level} [{diff.impact_score:.2f}])" if diff.impact_score is not None else f"(Severity: {diff.severity})"
+            output += f"{i+1}. {diff.category} {impact}\n"
+            output += f"    Description: {diff.description}\n"
+            output += f"    Implications: {diff.implications}\n\n"
+        return output
 
 class FeedbackLoopProcessor:
     """
@@ -619,15 +776,17 @@ class FeedbackLoopProcessor:
         In a real system, this would persist data to a database for further analysis
         and model fine-tuning.
         """
-        print(f"--- FEEDBACK RECORDED for Comparison ID: {comparison_id} ---")
-        print(f"User Rating: {user_rating}/5")
-        if feedback_text:
-            print(f"Feedback Text: {feedback_text}")
-        if identified_differences:
-            print(f"Number of Differences Reviewed: {len(identified_differences)}")
-        print(f"Timestamp: {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
-        print(f"---------------------------------------------------")
-        # Conceptual: In a real system, store this data in a database.
+        feedback_record = {
+            "comparison_id": comparison_id,
+            "user_rating": user_rating,
+            "feedback_text": feedback_text,
+            "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "reviewed_differences_count": len(identified_differences) if identified_differences else None
+        }
+        logging.info(f"FEEDBACK RECORDED: {json.dumps(feedback_record)}")
+        # In a real system:
+        # database_client.insert("feedback_collection", feedback_record)
+        # This could trigger alerts or downstream analysis pipelines.
 
     @staticmethod
     def analyze_feedback_trends() -> Dict[str, Any]:
@@ -636,6 +795,7 @@ class FeedbackLoopProcessor:
         This would typically involve querying a feedback database.
         """
         # Placeholder for actual analytics.
+        logging.info("Analyzing feedback trends...")
         return {
             "average_rating": 4.5,
             "common_issues": ["subtle functional nuance missed", "verbosity in non-functional areas", "incorrect impact"],
@@ -664,45 +824,27 @@ async def compare_technical_specifications(
     Returns:
         A string containing the formatted summary of material technical divergences.
     """
-    if config is None:
-        config = TechnicalAnalysisConfig()
-    if comparison_id is None:
-        comparison_id = hashlib.sha256(f"{spec_a}{spec_b}{datetime.datetime.now()}".encode('utf-8')).hexdigest()
+    config = config if config else TechnicalAnalysisConfig()
+    comparison_id = comparison_id if comparison_id else hashlib.sha256(f"{spec_a}{spec_b}{datetime.datetime.now()}".encode('utf-8')).hexdigest()
+    logging.info(f"Starting comparison {comparison_id} with model {config.ai_model_name}.")
 
     # 1. Pre-process documents
     spec_a_cleaned = TechnicalDocumentProcessor.clean_text(spec_a)
     spec_b_cleaned = TechnicalDocumentProcessor.clean_text(spec_b)
-
-    # Conceptual: Extract metadata (not directly used in prompt but good for system context)
-    spec_a_metadata = TechnicalDocumentProcessor.extract_document_metadata(spec_a_cleaned, "specA", "1.0", "Original Requirements")
-    spec_b_metadata = TechnicalDocumentProcessor.extract_document_metadata(spec_b_cleaned, "specB", "1.1", "Revised API Spec")
-    print(f"Comparing specifications: {spec_a_metadata.title} v{spec_a_metadata.version} vs {spec_b_metadata.title} v{spec_b_metadata.version}")
-
 
     # 2. Construct the sophisticated AI prompt
     prompt_builder = PromptBuilder(config)
     ai_prompt = prompt_builder.build_comparison_prompt(spec_a_cleaned, spec_b_cleaned)
 
     # 3. Interact with the Generative AI Model
-    model = GenerativeModel(config.ai_model_name)
-
-    # We introduce parameters for finer control over AI generation
-    generation_config = {
-        "temperature": config.temperature,
-        "max_output_tokens": config.max_tokens,
-        # Other parameters like top_p, top_k can be added to config if needed
-    }
-
     try:
-        response = await model.generate_content_async(
-            ai_prompt,
-            generation_config=generation_config
-        )
+        model = GenerativeModel(config.ai_model_name)
+        generation_config = {"temperature": config.temperature, "max_output_tokens": config.max_tokens}
+        response = await model.generate_content_async(ai_prompt, generation_config=generation_config)
         ai_raw_analysis = response.text
     except Exception as e:
-        # Robust error handling is crucial for production systems
-        print(f"Error during AI content generation for comparison {comparison_id}: {e}")
-        return f"An error occurred during AI analysis: {str(e)}. Please try again later. (Comparison ID: {comparison_id})"
+        logging.error(f"Error during AI content generation for comparison {comparison_id}: {e}")
+        return f"An error occurred during AI analysis. (ID: {comparison_id})"
 
     # 4. Extract and structure semantic differences from AI output
     analysis_formatter = AnalysisFormatter(target_format=output_format, config=config)
@@ -710,11 +852,9 @@ async def compare_technical_specifications(
 
     # 5. Format the structured differences for final display
     final_summary = analysis_formatter.format_for_display(structured_differences)
-
+    logging.info(f"Comparison {comparison_id} completed successfully. Found {len(structured_differences)} divergences.")
     return final_summary
 
-# The `compare_specifications` function is retained for backward compatibility
-# and as a direct invocation point, now leveraging the enhanced system.
 async def compare_specifications(spec_a: str, spec_b: str) -> str:
     """
     Uses a generative AI to compare two technical specifications and summarize the divergences.
@@ -768,101 +908,149 @@ The following claims assert the definitive intellectual ownership and novel aspe
     a.  Record user feedback regarding the accuracy and utility of the semantic comparison.
     b.  Utilize aggregated feedback data to facilitate continuous improvement of the prompt engineering, generative AI model, and semantic divergence extraction processes.
 
+9.  The method of claim 1, wherein the processing of said comprehensive textual analysis further comprises a quantitative impact assessment step, said step involving:
+    a.  Programmatically assigning a numerical impact score to each identified structured divergence based on a weighted model that considers, at minimum, the divergence's assigned category, its qualitative severity, and the presence of keywords indicative of high project impact within its description and implications.
+    b.  Automatically translating said numerical impact score into a discrete, human-readable qualitative impact level to facilitate rapid prioritization and risk assessment by end-users.
+
+10. The method of claim 1, further comprising a feedback mechanism for system optimization, said mechanism involving:
+    a.  Capturing structured user ratings and unstructured textual feedback on the accuracy and utility of the rendered summary for a specific comparison instance.
+    b.  Persisting said feedback in a data store, creating an association with the specific comparison context, including hashes of the input documents and the exact prompt generated.
+    c.  Periodically analyzing aggregated feedback data to identify systemic inaccuracies or areas for improvement, and subsequently utilizing these insights to programmatically refine the prompt construction algorithms within the Advanced Prompt Engineering Module or the parsing logic within the Semantic Divergence Extraction Engine.
+
 **Mathematical Justification:**
 The present invention is underpinned by a rigorously formalized mathematical framework that quantitatively articulates the novel capabilities and profound superiority over antecedent methodologies. We herein define several axiomatic classes of mathematics, each elucidating a critical component of our inventive construct.
 
 ### I. Theory of Lexical Variance Quantification LVoQ
 
-Let `D` be the infinite set of all possible technical specification texts. A document `D in D` is formally represented as an ordered sequence of characters, `D = (c_1, c_2, ..., c_N)`, where `c_i in Sigma` and `Sigma` is the alphabet of all relevant characters Unicode character set.
-
-A traditional textual difference function, `f_diff : D x D -> Delta_text`, maps two documents to a representation of their lexical disparities.
-This function is often based on the principles of computational string similarity and edit distance.
-
-**Definition 1.1 Edit Distance:** For two documents `D_A` and `D_B`, their Levenshtein distance `Lev(D_A, D_B)` is the minimum number of single-character edits insertions, deletions, or substitutions required to change `D_A` into `D_B`.
-
-**Definition 1.2 Longest Common Subsequence - LCS:** The LCS of two documents `D_A` and `D_B` is the longest sequence that can be obtained by deleting zero or more characters from `D_A` and zero or more characters from `D_B`.
-
-**Definition 1.3 Lexical Delta Space `Delta_text`:** The output of `f_diff` is typically an element of `Delta_text`, which is a structured representation of character-level or word-level differences. This space can be formally defined as a set of tuples, where each tuple describes an operation:
-```
-Delta_text = { (op, index, content_A, content_B) | op in { INSERT, DELETE, REPLACE, EQUAL } }
-```
-where `index` denotes the position, `content_A` is the segment from `D_A`, and `content_B` is the segment from `D_B`.
-
-**Theorem 1.1 Incompleteness of Lexical Variance:** `f_diff` is inherently incomplete for technical analysis.
-*Proof:* Consider a change in a requirement from "The system SHALL process user requests within 100ms" to "The system MAY process user requests within 100ms." The lexical difference is minimal changing "SHALL" to "MAY". However, the technical implication shifts from a mandatory, strict performance requirement to an optional, best-effort goal, a semantically profound divergence with significant architectural and testing consequences. `f_diff` captures the character change, but cannot interpret the modal verb's engineering weight. Thus, `f_diff(D_A, D_B)` does not contain sufficient information to infer `Delta_technical` directly.
+1.  Let `D` be the infinite set of all possible technical specification texts. A document `D in D` is formally represented as an ordered sequence of characters, `D = (c_1, c_2, ..., c_N)`. (Eq 1)
+2.  A traditional textual difference function, `f_diff : D x D -> Delta_text`, maps two documents to a representation of their lexical disparities. (Eq 2)
+3.  **Definition 1.1 Edit Distance:** `Lev(D_A, D_B) = min(number of edits to transform D_A to D_B)`. (Eq 3)
+4.  **Definition 1.2 Lexical Delta Space `Delta_text`:** `Delta_text = { (op, i, c_A, c_B) }`. (Eq 4)
+5.  **Theorem 1.1 Incompleteness of Lexical Variance:** `f_diff` is inherently incomplete for technical analysis because `exists D_A, D_B such that Lev(D_A, D_B) < epsilon` but `Delta_technical(D_A, D_B)` is large. (Eq 5)
 
 ### II. Ontological Technical Semantic Algebra OTSA
 
-This class defines the mapping from a technical document to its underlying functional and non-functional meaning and implications.
-
-**Definition 2.1 Technical Semantic Space `T`:** Let `T` be a high-dimensional semantic space, where each point represents a unique functional requirement, non-functional attribute, system behavior, interface contract, or architectural implication. Elements of `T` are not direct textual representations but abstract, formalized technical concepts. This space can be viewed as a manifold embedding of engineering knowledge graphs, system design patterns, and software development principles.
-
-**Definition 2.2 Implication Mapping Function `Psi`:** A function `Psi : D -> T` maps a technical document `D` to its complete set of technical implications and semantic meaning `T(D) subset T`. This function is non-trivial, requiring deep contextual understanding, domain expertise, and inferential reasoning.
-```
-T(D) = Psi(D)
-```
-In practice, `Psi` is a highly complex, non-linear, and non-deterministic function that integrates:
-*   **Lexical Semantics:** Meaning derived from words and phrases, including technical terms.
-*   **Syntactic Structure:** How words combine to form requirements, specifications, and descriptions.
-*   **Pragmatic Context:** The purpose and intent behind the document e.g. a user story versus an API contract.
-*   **Engineering Knowledge:** Applicable patterns, best practices, standards e.g. ISO 25010 for quality attributes.
-*   **Deontic Modalities:** Obligations SHALL, permissions MAY, prohibitions SHALL NOT.
-
-**Axiom 2.1 Uniqueness of Technical Semantic Representation:** For any two distinct technical documents `D_1, D_2 in D`, if their technical meanings are genuinely different, then their representations in `T` are distinct: `D_1 != D_2 implies Psi(D_1) != Psi(D_2)` for material differences.
+6.  **Definition 2.1 Technical Semantic Space `T`:** A high-dimensional manifold where each point represents a technical concept. (Eq 6)
+7.  **Definition 2.2 Implication Mapping Function `Psi`:** A function `Psi : D -> T` maps a document to its semantic representation `T(D)`. (Eq 7)
+8.  `T(D) = Psi(D) = U_{i=1 to k} r_i`, where `r_i` are individual requirements/concepts. (Eq 8)
+9.  `Psi` can be modeled as `Psi(D) = f_pragmatic(f_syntactic(f_lexical(D)))`. (Eq 9)
+10. **Axiom 2.1 Uniqueness:** `Psi(D_1) != Psi(D_2)` if `D_1` and `D_2` are semantically different. (Eq 10)
 
 ### III. Differential Technical Semiosis Calculus DTSC
 
-This calculus defines the operation of determining the substantive differences within the Technical Semantic Space.
-
-**Definition 3.1 Semantic Divergence Operator `nabla_technical`:** The semantic divergence between two documents `D_A` and `D_B` is defined as the set-theoretic difference or symmetric difference of their technical implications in `T`. Specifically, we are interested in `Delta_technical`, representing what has been added or changed in terms of technical meaning from `D_A` to `D_B`.
-```
-Delta_technical = Psi(D_B) - Psi(D_A)
-```
-This operation identifies technical concepts present in `D_B` that were not present, or were fundamentally altered, in `D_A`. A more comprehensive view could involve a comparison of the properties of corresponding concepts, e.g., if a functional requirement from `D_A` has been modified in `D_B`, it represents a divergence.
-
-**Theorem 3.1 Irreducibility of Semantic Divergence to Lexical Difference:**
-The computation of `Delta_technical` cannot be reduced to a direct transformation of `Delta_text`.
-*Proof:* As demonstrated in Theorem 1.1, a minor `Delta_text` can correspond to a significant `Delta_technical`. Conversely, a large `Delta_text` e.g. rephrasing an entire section describing a component without changing its core functional or non-functional characteristics might correspond to a minimal `Delta_technical`. Therefore, `f_diff(D_A, D_B)` is an insufficient input for computing `Delta_technical`. The invention definitively solves this by operating directly on the semantic plane via an advanced generative model.
+11. **Definition 3.1 Semantic Divergence Operator `nabla_technical`:** `Delta_technical = Psi(D_B) \ Psi(D_A)`. (Eq 11)
+12. A more comprehensive operator is the symmetric difference: `Delta_symm = Psi(D_A) triangle Psi(D_B)`. (Eq 12)
+13. `Delta_symm = (Psi(D_A) \ Psi(D_B)) U (Psi(D_B) \ Psi(D_A))`. (Eq 13)
+14. **Theorem 3.1 Irreducibility:** There is no function `g` such that `Delta_technical = g(f_diff(D_A, D_B))`. (Eq 14)
 
 ### IV. Probabilistic Generative Semantic Approximation PGSA
 
-This class characterizes the role of the generative AI model in approximating the complex semantic mapping and differential operations.
-
-**Definition 4.1 Generative Approximation Function `G_AI`:** The generative AI model, `G_AI`, is a highly parameterized, non-linear function e.g. a transformer-based neural network that takes two documents `D_A, D_B` and a prompt `P` as input, and outputs a textual `Summary`.
-```
-Summary = G_AI(D_A, D_B, P)
-```
-The prompt `P` is crucial, encoding the desired persona, focus areas, and output format, effectively guiding the approximation of `Psi` and `Delta_technical`.
-
-**Axiom 4.1 Semantic Coherence of `G_AI`:** When properly prompted, `G_AI` can produce output that is semantically coherent and contextually relevant to the engineering domain, effectively bridging the gap between raw text and technical interpretation.
-
-**Theorem 4.1 Effective Approximation of `Delta_technical`:** The system's output `Summary` is a highly accurate and practically useful approximation of the true `Delta_technical`.
-```
-Summary approx Textualization(Delta_technical)
-```
-where `Textualization` is a function that converts abstract technical concepts from `T` into natural language.
-*Proof Sketch:* Modern large language models, trained on vast corpora of text including technical specifications, code, and engineering documentation, possess an emergent capability for semantic understanding and inference. Through fine-tuning, retrieval augmentation, and sophisticated prompt engineering as implemented by the Advanced Prompt Engineering Module, `G_AI` learns to approximate the `Psi` function for both `D_A` and `D_B` and then perform an implicit comparison in its latent semantic space. The prompt guides its generative process to articulate the results of this implicit `Psi(D_B) - Psi(D_A)` operation in a structured and comprehensible textual format. The rigorous evaluation of such models against human expert judgments consistently demonstrates a high degree of concordance for complex semantic tasks.
+15. **Definition 4.1 Generative Approximation Function `G_AI`:** `Summary = G_AI(D_A, D_B, P)`. (Eq 15)
+16. The model parameters `theta` are learned: `theta^* = argmax_theta P(Summary | D_A, D_B, P; theta)`. (Eq 16)
+17. **Theorem 4.1 Effective Approximation:** `Summary approx Textualization(Delta_technical)`. (Eq 17)
+18. The quality of approximation `Q` is a function of prompt quality `Q_P` and model capability `M_C`: `Q = f(Q_P, M_C)`. (Eq 18)
 
 ### V. Axiomatic Econometric Efficiency Calculus AEEC
 
-This calculus quantifies the superior efficiency and economic benefit of the invention.
+19. **Definition 5.1 Manual Cost `C_H`:** `C_H = R_H * T_H(D_A, D_B)`. (Eq 19)
+20. `T_H` is proportional to document length `L` and complexity `K`: `T_H ~ L * K`. (Eq 20)
+21. **Definition 5.2 AI Cost `C_AI`:** `C_AI = C_compute(G_AI) + C_verify(Summary)`. (Eq 21)
+22. `C_verify = R_H * T_verify`. (Eq 22)
+23. `T_verify << T_H`. (Eq 23)
+24. **Theorem 5.1 Dominant Efficiency:** `C_AI << C_H`. (Eq 24)
 
-**Definition 5.1 Cost Function for Manual Review `C_H`:** The cost of manual technical review by a human expert `H` for comparing `D_A` and `D_B` is `C_H`. This cost is directly proportional to the complexity and length of documents, and the hourly rate of expert `H`.
-```
-C_H = Rate_H x Time_H(D_A, D_B)
-```
+### VI. Semantic Vector Space Calculus (SVSC)
 
-**Definition 5.2 Cost Function for AI-Assisted Review `C_AI`:** The cost of utilizing the inventive system is `C_AI`. This includes the computational cost of `G_AI` and the cost of human verification.
-```
-C_AI = Cost(G_AI(D_A, D_B, P)) + Cost(Verification(Summary))
-```
-where `Cost(G_AI)` is the token-based cost of the AI model, and `Cost(Verification)` is the human effort to review and validate the AI's output. The `Time_Verification` is significantly less than `Time_H` due to the AI having already performed the arduous identification and summarization task.
+25. Let `E: D -> R^n` be a deep embedding function mapping a document `D` to a vector `v_D`. (Eq 25)
+26. `v_D = E(D)`. (Eq 26)
+27. A requirement `r_i` can also be embedded: `v_ri = E(r_i)`. (Eq 27)
+28. `Psi(D)` is approximated by a set of vectors: `{v_r1, v_r2, ...}`. (Eq 28)
+29. The semantic difference vector `v_delta` can be approximated: `v_delta = E(D_B) - E(D_A)`. (Eq 29)
+30. The magnitude of change is `||v_delta||_2 = sqrt(sum_{i=1 to n} (v_delta_i)^2)`. (Eq 30)
+31. The cosine similarity measures overall document similarity: `sim(D_A, D_B) = (v_A . v_B) / (||v_A|| ||v_B||)`. (Eq 31)
+32. `Delta_technical` is high when `sim(D_A, D_B)` is low. (Eq 32)
+33. For individual requirements `r_A` and `r_B`, their semantic distance is `d(r_A, r_B) = ||E(r_A) - E(r_B)||_2`. (Eq 33)
+34. A change is material if `d(r_A, r_B) > tau_materiality`. (Eq 34)
+35. The LLM implicitly computes these distances in its latent space. (Eq 35)
 
-**Theorem 5.1 Dominant Efficiency of the Inventive System:** The total cost of utilizing the inventive system with subsequent human verification is orders of magnitude less than the traditional manual technical review process for equivalent accuracy and thoroughness.
-```
-C_AI << C_H
-```
-*Proof:* The computational cost of `G_AI` is typically a small fraction of a human expert's hourly rate, even for complex comparisons. More importantly, by providing a targeted, plain-language summary of *material* divergences, the system dramatically reduces the cognitive load and time required for the human expert to verify and refine the analysis. The expert transitions from a labor-intensive "discovery" role to a highly efficient "validation and strategic insight" role. This reduction in `Time_Verification` compared to `Time_H` is the primary driver of the inequality. The invention optimizes the allocation of scarce human engineering expertise, concentrating it on higher-order tasks and strategic decision-making rather than rudimentary comparative analysis.
+### VII. Information Theoretic Divergence Metric (ITDM)
+
+36. Let `P(T | D)` be the probability distribution over technical concepts `T` given document `D`. (Eq 36)
+37. The Kullback-Leibler (KL) divergence measures the information gain from `D_A` to `D_B`. (Eq 37)
+38. `D_KL(P(T|D_B) || P(T|D_A)) = sum_{t in T} P(t|D_B) log(P(t|D_B) / P(t|D_A))`. (Eq 38)
+39. `D_KL != 0` implies a change in semantic information. (Eq 39)
+40. The AI's analysis is an approximation of the terms where `P(t|D_B)` significantly differs from `P(t|D_A)`. (Eq 40)
+41. Information content of a requirement `r` is `I(r) = -log_2 P(r)`. (Eq 41)
+42. A change is more significant if it affects high-information requirements. (Eq 42)
+43. Total semantic information in a doc: `H(D) = -sum_{r in D} P(r) log P(r)`. (Eq 43)
+44. `Delta_H = H(D_B) - H(D_A)`. (Eq 44)
+45. `G_AI` is trained to identify changes that maximize `|Delta_H|`. (Eq 45)
+
+### VIII. Probabilistic Model Confidence (PMC)
+
+46. The AI's output `Summary` has an associated probability `P(Summary | D_A, D_B, P)`. (Eq 46)
+47. The confidence score for a single identified divergence `d_i` is `Conf(d_i)`. (Eq 47)
+48. `Conf(d_i) = E[P(d_i is correct)]`, estimated via model logits or ensembling. (Eq 48)
+49. `P(d_i | D_A, D_B, P) = product_{j=1 to m} P(token_j | preceding_tokens)`. (Eq 49)
+50. We can present divergences where `Conf(d_i) > tau_confidence`. (Eq 50)
+51. Uncertainty `U(d_i) = 1 - Conf(d_i)`. (Eq 51)
+52. High uncertainty items can be flagged for mandatory human review. (Eq 52)
+53. Bayesian interpretation: `P(Delta_tech | Summary) ~ P(Summary | Delta_tech) P(Delta_tech)`. (Eq 53)
+54. The model learns the likelihood `P(Summary | Delta_tech)`. (Eq 54)
+55. The prior `P(Delta_tech)` can be uniform or domain-specific. (Eq 55)
+
+### IX. Requirement Dependency Graph Analysis (RDGA)
+
+56. Let `G = (V, E)` be a graph where `V` are requirements and `E` are dependencies. (Eq 56)
+57. An edge `(r_i, r_j)` exists if `r_j` depends on `r_i`. (Eq 57)
+58. `A` is the adjacency matrix of `G`. `A_ij = 1` if an edge exists. (Eq 58)
+59. A change in requirement `r_k` has a blast radius `R(r_k)`. (Eq 59)
+60. `R(r_k)` is the set of all nodes reachable from `r_k`. (Eq 60)
+61. Impact of changing `r_k` is proportional to `|R(r_k)|`. (Eq 61)
+62. `Impact(r_k) = w * sum_{r_j in R(r_k)} Centrality(r_j)`. (Eq 62)
+63. Centrality can be degree, betweenness, or PageRank. (Eq 63)
+64. `PageRank(r_i) = (1-d)/N + d * sum_{r_j -> r_i} (PR(r_j) / OutDegree(r_j))`. (Eq 64)
+65. The AI implicitly models this graph to assess implications. (Eq 65)
+66. A change `Delta_r_k` propagates: `Delta_G = G_B - G_A`. (Eq 66)
+67. The system identifies changes where `Delta_G` is non-zero. (Eq 67)
+68. The impact score `I_s` is a function of graph changes: `I_s = f(Delta_G)`. (Eq 68)
+69. `f(Delta_G)` could be `sum(|R(r_k)| for all changed r_k)`. (Eq 69)
+70. This justifies assessing "implications" as a core task. (Eq 70)
+
+### X. Prompt Optimization Formalism (POF)
+
+71. Let `P` be a prompt from the space of all possible prompts `P_space`. (Eq 71)
+72. Let `A(Summary, Delta_tech)` be an accuracy function. (Eq 72)
+73. Let `T(P)` be the token count of prompt `P`. (Eq 73)
+74. The optimization problem is: `P^* = argmax_P A(G_AI(D_A, D_B, P), Delta_tech)`. (Eq 74)
+75. This is subject to the constraint `T(P) <= T_max`. (Eq 75)
+76. The prompt engineering module approximates this optimization. (Eq 76)
+77. `P = P_role || P_context || P_format || P_docs`. (Eq 77)
+78. `A = w_1 * Precision + w_2 * Recall`. (Eq 78)
+79. `Precision = |Correctly_IDed| / |Total_IDed|`. (Eq 79)
+80. `Recall = |Correctly_IDed| / |Total_Actual|`. (Eq 80)
+81. Feedback `F` is used to update the prompt generation strategy `S`. (Eq 81)
+82. `S_{t+1} = Update(S_t, F_t)`. (Eq 82)
+83. This can be a simple rule update or a reinforcement learning policy. (Eq 83)
+84. `Policy pi(P | state)`. (Eq 84)
+85. The state includes document types, user feedback history, etc. (Eq 85)
+
+### XI. Further Mathematical Considerations
+86. Fuzzy Logic for Severity: Severity `S` is not binary. `S(d_i) in [0, 1]`. (Eq 86)
+87. `S(d_i) = f(keywords, category, dependencies)`. (Eq 87)
+88. `f` can be a fuzzy inference system (FIS). (Eq 88)
+89. Control Theory for Feedback Loop: The system is a controller `C` (prompt engineer). (Eq 89)
+90. `C` adjusts prompt `P` to minimize error `e = A_target - A_actual`. (Eq 90)
+91. `P_{t+1} = P_t + K_p * e_t + K_i * integral(e_t dt)`. (Eq 91)
+92. This represents a PID controller for prompt optimization. (Eq 92)
+93. Chaos Theory Analogy: Small lexical changes (`epsilon` perturbation in `D_A`) can lead to large semantic divergence (`Delta_technical`). (Eq 93)
+94. This shows sensitivity to initial conditions, a hallmark of chaotic systems. (Eq 94)
+95. Game Theory: The interaction can be a game between the AI (proposer) and human (verifier). (Eq 95)
+96. The AI's utility is `U_AI = Accuracy - Cost`. (Eq 96)
+97. The human's utility is `U_H = Insight - Verification_Effort`. (Eq 97)
+98. The system finds a Nash Equilibrium where the AI provides maximal insight for minimal effort. (Eq 98)
+99. Computational Complexity: The complexity of `f_diff` is `O(L_A * L_B)`. (Eq 99)
+100. The complexity of `G_AI` is dominated by the transformer architecture, `O(L^2)` where `L` is sequence length. The invention trades polynomial complexity for near-human semantic capability. (Eq 100)
 
 **Proof of Utility:**
 The utility of this groundbreaking invention is self-evident and overwhelmingly compelling, representing a definitive advancement in software and systems engineering. The manual paradigm for comparing intricate technical specifications, reliant entirely upon human cognitive processing, is demonstrably inefficient, exorbitantly expensive, and inherently susceptible to oversights, particularly when dealing with the voluminous and complex textual corpora typical of contemporary software development. A human technical expert, acting as the function `H`, must meticulously construct the technical semantic implications `T(D_A)` and `T(D_B)` for each document, a process demanding extensive time, profound expertise, and high remuneration, resulting in a formidable cost `C_H`.
