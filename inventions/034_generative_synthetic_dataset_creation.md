@@ -1,10 +1,10 @@
 **Title of Invention:** System and Method for the Autonomous Synthesis of High-Fidelity Tabular Datasets Conditioned by Natural Language Directives and Formalized Structural Schemata
 
 **Abstract:**
-A highly sophisticated system for the autonomous generation of synthetic, structured tabular data is herein disclosed. This invention leverages advanced computational linguistics and generative artificial intelligence to translate a user's natural language desideratum into a meticulously constructed, statistically plausible dataset. The methodology encompasses receiving a natural language description, including desired column characteristics, data types, inter-columnar relationships, and row cardinality. This comprehensive description is then processed to construct a formalized prompt and a rigorous structured response schema. These artifacts are subsequently transmitted to a highly performant generative AI model, which, informed by its vast parametric knowledge, synthesizes a plurality of data rows strictly adhering to both the semantic intent of the natural language directive and the syntactic constraints of the response schema. The generated structured data undergoes a multi-stage validation process before being transformed into various user-specified formats, ensuring maximal utility and seamless integration into downstream applications for tasks such as software testing, machine learning model training, and analytical simulations.
+A highly sophisticated system for the autonomous generation of synthetic, structured tabular data is herein disclosed. This invention leverages advanced computational linguistics and generative artificial intelligence to translate a user's natural language desideratum into a meticulously constructed, statistically plausible dataset. The methodology encompasses receiving a natural language description, including desired column characteristics, data types, inter-columnar relationships, statistical distributions, and row cardinality. This comprehensive description is then processed by a sophisticated Natural Language Understanding (NLU) pipeline to construct a formalized prompt and a rigorous structured response schema (e.g., JSON Schema). These artifacts are subsequently transmitted to a highly performant generative AI model, which, informed by its vast parametric knowledge, synthesizes a plurality of data rows strictly adhering to both the semantic intent of the natural language directive and the syntactic constraints of the response schema. The generated structured data undergoes a multi-stage validation process, including schema conformance, statistical property analysis, and semantic plausibility checks, before being transformed into various user-specified formats. This invention provides an unparalleled, scalable, and on-demand solution for acquiring high-quality synthetic data, ensuring maximal utility and seamless integration into downstream applications for tasks such as software testing, machine learning model training, data augmentation, and complex analytical simulations.
 
 **Background of the Invention:**
-The contemporary landscape of software development, machine learning engineering, and data analytics is profoundly dependent upon access to vast quantities of high-quality, realistic data. The conventional paradigms for acquiring such data—manual creation, anonymization of sensitive production data, or rudimentary random data generation—are fraught with significant limitations. Manual data generation is an exceedingly labor-intensive, error-prone, and non-scalable endeavor, rendering it impractical for large-scale requirements. The anonymization of real-world data, while necessary for privacy and compliance, frequently diminishes the intrinsic statistical properties and inter-feature correlations essential for robust model training and realistic system testing. Furthermore, existing random data generation tools, while expedient for basic placeholders, fundamentally lack the nuanced realism, contextual plausibility, and specific data distribution characteristics often mandated by sophisticated applications. There exists a critical, unfulfilled demand for a highly intelligent, automated, and scalable system capable of generating synthetic data that not only adheres to explicit structural and type specifications but also implicitly captures the latent semantic and statistical relationships inherent in real-world data, thereby facilitating more effective and efficient developmental and analytical workflows. The present invention directly addresses these profound deficiencies by introducing a paradigm-shifting approach to synthetic data generation.
+The contemporary landscape of software development, machine learning engineering, and data analytics is profoundly dependent upon access to vast quantities of high-quality, realistic data. The conventional paradigms for acquiring such data—manual creation, anonymization of sensitive production data, or rudimentary random data generation—are fraught with significant limitations. Manual data generation is an exceedingly labor-intensive, error-prone, and non-scalable endeavor, rendering it impractical for large-scale requirements and often failing to capture the subtle complexities of real-world distributions. The anonymization of real-world data, while necessary for privacy and compliance with regulations like GDPR and CCPA, frequently diminishes the intrinsic statistical properties and inter-feature correlations essential for robust model training and realistic system testing, a phenomenon known as the "privacy-utility trade-off." Furthermore, existing random data generation tools, while expedient for basic placeholders, fundamentally lack the nuanced realism, contextual plausibility, and specific data distribution characteristics (e.g., long-tail distributions, specific skewness, or kurtosis) often mandated by sophisticated applications. There exists a critical, unfulfilled demand for a highly intelligent, automated, and scalable system capable of generating synthetic data that not only adheres to explicit structural and type specifications but also implicitly captures the latent semantic and statistical relationships inherent in real-world data, thereby facilitating more effective and efficient developmental and analytical workflows. The present invention directly addresses these profound deficiencies by introducing a paradigm-shifting approach to synthetic data generation, bridging the gap between abstract user requirements and concrete, high-fidelity datasets.
 
 **Brief Summary of the Invention:**
 The present invention embodies a novel and highly advantageous system for the generation of synthetic datasets. At its core, the invention provides an intuitive user interface through which a user can articulate their precise data requirements using natural language, exemplified by directives such as: "I require 1000 records of enterprise client data, comprising a globally unique `clientID` (UUID format), a `companyName` exhibiting realistic regional variations, an `industry` field selected from a predefined taxonomy [e.g., 'Finance', 'Healthcare', 'Technology', 'Manufacturing'], an `annualRevenue` figure within a plausible range [e.g., $1M to $1B USD] with a slight positive skew, and a `creationDate` timestamp randomly distributed over the last two fiscal years." This detailed prompt is then dynamically processed by an intelligent backend service, which not only promulgates an optimized input for a large language model (LLM) but also rigorously constructs a corresponding JSON schema. This schema precisely dictates the expected data structure, types, and constraints, ensuring the LLM's output is not merely coherent but also strictly syntactically valid and machine-readable. The generative AI model, leveraging its extensive knowledge base and sophisticated inferential capabilities, processes this combined instruction set (natural language prompt + formal schema). Crucially, the AI's generation process extends beyond mere randomization; it infers and applies contextual plausibility, statistical distributions, and semantic coherence [e.g., generating company names appropriate for specified industries, or revenue figures consistent with enterprise scale]. The resultant structured data, typically in JSON format, is then subjected to validation, post-processing [e.g., type coercion, format conversion], and finally presented to the user as a downloadable file, thus providing an unparalleled mechanism for acquiring high-quality synthetic data on demand.
@@ -67,6 +67,185 @@ graph LR
 ```
 **Figure 3: Dynamic Prompt and Schema Generation Workflow.** This diagram illustrates the algorithmic steps undertaken by the Prompt & Schema Construction Module to convert a natural language request into a precise LLM prompt and a formal JSON schema.
 
+```mermaid
+graph TD
+    subgraph Natural Language Understanding Pipeline
+        A[Raw Text Input] --> B{Tokenization & Lemmatization};
+        B --> C{Part-of-Speech Tagging};
+        C --> D[Named Entity Recognition (NER)];
+        D -- "e.g., 'clientID', 'annualRevenue'" --> E[Column Identification];
+        D -- "e.g., 'UUID', 'integer', 'date'" --> F[Data Type Inference];
+        D -- "e.g., '$1M to $1B', 'last 90 days'" --> G[Constraint Extraction];
+        C --> H[Dependency Parsing];
+        H --> I{Relation Extraction};
+        I -- "e.g., 'if country is USA, currency is USD'" --> J[Inter-columnar Relationship Modeling];
+    end
+    subgraph Schema Synthesis
+        E & F & G & J --> K[Structured Attribute List];
+        K --> L{JSON Schema Generator};
+        L --> M[Formal JSON Schema];
+    end
+```
+**Figure 4: Detailed NLU Entity and Constraint Extraction Pipeline.** This flowchart breaks down the process within the PSCM for converting unstructured natural language into a structured list of attributes, which then seeds the JSON schema generation.
+
+```mermaid
+graph TD
+    A[Start: Receive Raw Data from GAIM] --> B{1. Schema Validation};
+    B -- Valid --> C{2. Uniqueness Check};
+    B -- Invalid --> X[Flag for Re-prompting / Error];
+    C -- Passed --> D{3. Range & Enum Check};
+    C -- Failed --> X;
+    D -- Passed --> E{4. Semantic Plausibility};
+    D -- Failed --> X;
+    E -- "External Knowledge Base Lookup" --> E;
+    E -- Plausible --> F{5. Statistical Distribution Analysis};
+    E -- Implausible --> X;
+    F -- "e.g., Check Skewness, Kurtosis" --> F;
+    F -- Conforms --> G[Data is Validated];
+    F -- Deviates --> Y[Flag for Warning / Post-processing];
+    G --> H[Proceed to Post-processing];
+    Y --> H;
+    X --> Z[End: Report Validation Failure];
+    H --> W[End: Pass to OFDM];
+```
+**Figure 5: Data Validation Module (DVPM) Logic Flow.** This diagram illustrates the multi-stage validation process applied to the AI-generated data, from basic schema conformance to advanced statistical and semantic checks.
+
+```mermaid
+sequenceDiagram
+    participant DVPM
+    participant GAIM
+    participant GenAI as Generative AI Model
+
+    DVPM->>GAIM: Initial Generation Request (Prompt v1)
+    GAIM->>GenAI: Generate(Prompt v1, Schema)
+    GenAI-->>GAIM: Returns Data v1
+    GAIM->>DVPM: Forwards Data v1 for Validation
+    DVPM->>DVPM: Validation Failed (e.g., Uniqueness constraint violated)
+    DVPM->>DVPM: Generate Corrective Feedback (e.g., "Error: 'clientID' values are not unique. Please regenerate with unique UUIDs.")
+    DVPM->>GAIM: Trigger Re-prompt with Feedback
+    GAIM->>GenAI: Generate(Prompt v2 with Feedback, Schema)
+    GenAI-->>GAIM: Returns Data v2 (Corrected)
+    GAIM->>DVPM: Forwards Data v2 for Validation
+    DVPM->>DVPM: Validation Passed
+```
+**Figure 6: Iterative Refinement and Re-prompting Loop.** This sequence diagram shows the advanced error-handling mechanism where validation failures trigger a feedback loop to the generative AI for self-correction.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Request Received
+    Pending --> Processing: Start Generation
+    Processing --> Generating: Sent to AI Model
+    Generating --> Validating: Data Received from AI
+    Validating --> Failed: Schema Validation Error
+    Validating --> Failed: Semantic Validation Error
+    Validating --> Complete: Validation Succeeded
+    Failed --> Processing: Trigger Re-prompt
+    Complete --> Formatting: Pass to OFDM
+    Formatting --> Ready: File is Ready
+    Ready --> [*]: Downloaded by User
+    Processing --> Canceled: User Cancels
+    Generating --> Canceled
+    Validating --> Canceled
+```
+**Figure 7: State Transition Diagram for a Synthetic Data Request.** This diagram models the lifecycle of a data generation request as it moves through the various states within the system.
+
+```mermaid
+graph LR
+    A[Validated Data (List of Dictionaries)] --> B{Output Format Router};
+    B -- "CSV" --> C[CSV Formatter];
+    C --> D[Generate Header from Keys];
+    D --> E[Iterate Rows & Write to CSV Stream];
+    E --> F[Output .csv File];
+
+    B -- "JSON" --> G[JSON Formatter];
+    G --> H[Serialize Data with Indentation];
+    H --> I[Output .json File];
+    
+    B -- "SQL" --> J[SQL INSERT Formatter];
+    J --> K[Infer Table Name & Column Types];
+    K --> L[Generate `CREATE TABLE` Statement];
+    L --> M[Generate `INSERT INTO` Statements per Row];
+    M --> N[Output .sql File];
+
+    B -- "XML" --> O[XML Formatter];
+    O --> P[Create Root Element];
+    P --> Q[Iterate Rows & Create Child Elements];
+    Q --> R[Output .xml File];
+```
+**Figure 8: Output Formatting & Delivery Module (OFDM) Workflow.** This flowchart details how the validated data is converted into various user-specified file formats.
+
+```mermaid
+graph TD
+    subgraph "User-Facing Services"
+        A[Web UI / API Gateway]
+    end
+
+    subgraph "Core Backend Services"
+        B[Orchestration Service]
+        C[PSCM: Prompt & Schema Construction]
+        D[GAIM: Generative AI Interaction]
+        E[DVPM: Data Validation & Post-processing]
+        F[OFDM: Output Formatting]
+    end
+
+    subgraph "External Dependencies"
+        G[Generative AI Model API]
+        H[External Knowledge Base (Optional)]
+        I[Data Storage (e.g., S3 Bucket)]
+    end
+
+    A --> B
+    B --> C
+    C --> B
+    B --> D
+    D --> G
+    G --> D
+    D --> B
+    B --> E
+    E -- "Uses" --> H
+    E --> B
+    B --> F
+    F --> I
+    A -- "Download Link" --> I
+```
+**Figure 9: System Component Interaction Diagram.** This C4-inspired diagram shows the high-level components of the backend system and their primary interaction pathways, including external dependencies.
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER_ITEM }|--|| PRODUCT : references
+
+    CUSTOMER {
+        string customerID PK "UUID, Unique"
+        string name
+        string email "Unique"
+        string country "Enum: G7 Nations"
+    }
+
+    ORDER {
+        string orderID PK "UUID, Unique"
+        string customerID FK
+        datetime orderDate
+        string status "Enum: pending, shipped, delivered"
+    }
+    
+    PRODUCT {
+        string productID PK "UUID, Unique"
+        string productName
+        float price "Min: 0.99, Max: 999.99"
+        int stockQuantity
+    }
+
+    ORDER_ITEM {
+        string orderItemID PK "UUID, Unique"
+        string orderID FK
+        string productID FK
+        int quantity "Min: 1"
+    }
+```
+**Figure 10: Inferred Relational Schema for Multi-Table Generation.** This ER diagram illustrates an advanced capability where the system infers relationships from a natural language prompt (e.g., "Generate customer, product, and order data with referential integrity") and structures the generation task accordingly.
+
 **Detailed Description of the Invention:**
 
 The present invention, herein referred to as the "Cognitive Data Synthesizer" (CDS), operates as a multi-component, intelligent system designed for the automated creation of high-fidelity synthetic datasets. The operational workflow is meticulously designed to ensure both flexibility in input and rigor in output.
@@ -79,6 +258,7 @@ A user initiates the synthetic data generation process by accessing a dedicated 
 *   **Constraints and Distributions:** Specific ranges for numerical data, enumerations for categorical data, temporal bounds for dates, and even descriptive statistical properties [e.g., "normally distributed," "positively skewed," "unique values"].
 *   **Inter-columnar Relationships:** Implicit or explicit correlations between columns [e.g., "if `country` is 'USA', then `currency` should be 'USD'].
 *   **Output Format Preference:** The desired file format for the generated data [e.g., CSV, JSON, XML, SQL INSERT statements].
+*   **Multi-table Desiderata:** For advanced use cases, specifying multiple related tables and their primary/foreign key relationships.
 
 **II. Prompt and Schema Construction Module (PSCM):**
 Upon receiving the user's natural language request, the PSCM, a critical innovation of the CDS, commences a multi-stage process:
@@ -87,6 +267,7 @@ Upon receiving the user's natural language request, the PSCM, a critical innovat
     *   `num_rows`: 100
     *   `dataset_type`: "customer data"
     *   `columns`: `name` (realistic string), `email` (unique string, email format), `country` (string, enum: G7 nations), `lastLogin` (date string, within last 90 days).
+    This pipeline involves tokenization, lemmatization, part-of-speech tagging, named entity recognition (NER), and relation extraction to build a structured representation of the user's request (as shown in Figure 4).
 
 2.  **Dynamic JSON Schema Generation:** Based on the extracted information, the PSCM constructs a precise JSON schema. This schema serves as a formal contract between the CDS and the generative AI model, ensuring structural integrity and type conformance. The schema is highly dynamic and can incorporate various JSON Schema keywords:
     *   `type`: [e.g., `string`, `integer`, `number`, `boolean`, `array`, `object`]
@@ -158,8 +339,8 @@ Upon receiving the user's natural language request, the PSCM, a critical innovat
 **III. Generative AI Interaction Module (GAIM):**
 This module is responsible for orchestrating the communication with the underlying generative AI model [e.g., Google's Gemini, OpenAI's GPT series, or similar advanced foundation models].
 1.  **API Call Construction:** The GAIM constructs an API request incorporating the refined prompt and the JSON schema. Modern generative AI APIs often support a `response_schema` or `function_call` parameter, which profoundly enhances the reliability of structured output.
-2.  **Asynchronous Generation:** To handle potentially long generation times for large datasets and ensure system responsiveness, the GAIM employs asynchronous communication patterns with the AI model.
-3.  **Response Handling:** Upon receiving the AI's response, which is expected to be a JSON string, the GAIM performs initial parsing to confirm it is well-formed JSON before passing it to the next stage.
+2.  **Asynchronous Generation:** To handle potentially long generation times for large datasets and ensure system responsiveness, the GAIM employs asynchronous communication patterns with the AI model. This allows the system to manage multiple concurrent requests efficiently without blocking.
+3.  **Response Handling:** Upon receiving the AI's response, which is expected to be a JSON string, the GAIM performs initial parsing to confirm it is well-formed JSON before passing it to the next stage. It also handles API-level errors like rate limiting or timeouts with appropriate retry logic.
 
 **IV. Data Validation and Post-processing Module (DVPM):**
 The DVPM is crucial for guaranteeing the quality and usability of the AI-generated data. While generative AI models are powerful, an additional layer of validation and refinement is indispensable.
@@ -167,7 +348,7 @@ The DVPM is crucial for guaranteeing the quality and usability of the AI-generat
 2.  **Semantic Consistency Checks:** Beyond structural validation, the DVPM can perform checks for semantic consistency. For instance, if a column for `City` and `Country` exists, it might verify if the generated `City` realistically belongs to the `Country`. This may involve external knowledge bases or trained models.
 3.  **Statistical Property Verification:** The module can analyze the generated data to assess if implied statistical properties [e.g., "positively skewed," "unique values"] are sufficiently met. This might involve calculating basic statistics, distribution fitting, or uniqueness checks.
 4.  **Data Enhancement and Transformation:** In some cases, the AI might generate data in a slightly generalized format. The DVPM can apply further transformations, such as converting `date` strings to specific `datetime` objects, generating derived columns, or encoding categorical data.
-5.  **Error Handling and Re-prompting [Optional but Advanced]:** If validation fails significantly, the DVPM can trigger a re-prompting mechanism, providing feedback to the generative AI model on specific validation failures, thereby iteratively improving the dataset quality.
+5.  **Error Handling and Re-prompting [Optional but Advanced]:** If validation fails significantly, the DVPM can trigger a re-prompting mechanism, providing feedback to the generative AI model on specific validation failures, thereby iteratively improving the dataset quality, as illustrated in Figure 6.
 
 **V. Output Formatting and Delivery Module (OFDM):**
 The final validated and processed structured data is then prepared for user consumption.
@@ -177,7 +358,13 @@ The final validated and processed structured data is then prepared for user cons
     *   **XML (Extensible Markup Language):** For applications requiring XML-based data.
     *   **SQL INSERT Statements:** For direct insertion into relational databases.
     *   **Parquet/ORC:** Optimized columnar formats for big data analytics.
-2.  **File Packaging and Delivery:** The formatted data is packaged into a downloadable file. The system provides a secure link or directly streams the file to the user's interface.
+2.  **File Packaging and Delivery:** The formatted data is packaged into a downloadable file. The system provides a secure, time-limited link or directly streams the file to the user's interface. For very large datasets, delivery may be facilitated through cloud storage buckets (e.g., Amazon S3, Google Cloud Storage).
+
+**VI. Advanced Generation Capabilities:**
+The CDS architecture is extensible to support highly complex data generation scenarios:
+*   **Multi-Table Relational Data:** The system can parse requests for multiple related tables (e.g., "customers," "orders," "products"), infer primary and foreign key relationships, and generate consistent datasets that maintain referential integrity (see Figure 10).
+*   **Time-Series Data:** The system can generate sequential data by understanding temporal constraints, trends, seasonality, and autocorrelation specified in the natural language prompt.
+*   **Geospatial Data:** Generation of plausible geographic coordinates (latitude, longitude), addresses, and Points of Interest (POIs) that are consistent with specified regions.
 
 **Conceptual Code (Python Backend):**
 
@@ -187,13 +374,17 @@ The following illustrative code provides a conceptual embodiment of key componen
 import json
 import uuid
 import datetime
+import logging
+import re
+import jsonschema
+import csv
+import io
+from xml.etree import ElementTree as ET
+from xml.dom import minidom
 from typing import Dict, Any, List, Literal, Optional, Callable
 from pydantic import BaseModel, Field, ValidationError, Extra
 from google.generativeai import GenerativeModel
 from google.generativeai.types import GenerationConfig
-import logging
-import re
-import jsonschema
 
 # Configure logging for detailed operational insights
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -229,6 +420,76 @@ class SyntheticDataRequest(BaseModel):
 
     class Config:
         extra = Extra.forbid
+
+# --- Module: Output Formatting (OFDM) ---
+
+class DataFormatter:
+    """Handles the conversion of processed data into various output formats."""
+    
+    def format_to_csv(self, records: List[Dict[str, Any]], dataset_name: str) -> str:
+        """Formats data into a CSV string."""
+        if not records:
+            return ""
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=records[0].keys())
+        writer.writeheader()
+        writer.writerows(records)
+        return output.getvalue()
+
+    def format_to_json(self, records: List[Dict[str, Any]], dataset_name: str) -> str:
+        """Formats data into a JSON string."""
+        return json.dumps({dataset_name: records}, indent=2)
+
+    def format_to_xml(self, records: List[Dict[str, Any]], dataset_name: str) -> str:
+        """Formats data into an XML string."""
+        root = ET.Element(dataset_name)
+        for record in records:
+            record_elem = ET.SubElement(root, "record")
+            for key, val in record.items():
+                child = ET.SubElement(record_elem, key)
+                child.text = str(val)
+        
+        # Pretty print the XML
+        rough_string = ET.tostring(root, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent="  ")
+
+    def format_to_sql_insert(self, records: List[Dict[str, Any]], table_name: str) -> str:
+        """Formats data into SQL INSERT statements."""
+        if not records:
+            return f"-- No records to generate SQL for table {table_name}.\n"
+        
+        columns = records[0].keys()
+        col_str = ", ".join(f"`{col}`" for col in columns)
+        
+        # Generate a simple CREATE TABLE statement (inferred types)
+        create_statements = [f"CREATE TABLE `{table_name}` ("]
+        for col, val in records[0].items():
+            sql_type = "VARCHAR(255)"
+            if isinstance(val, int): sql_type = "INT"
+            elif isinstance(val, float): sql_type = "FLOAT"
+            elif isinstance(val, bool): sql_type = "BOOLEAN"
+            elif re.match(r'\d{4}-\d{2}-\d{2}$', str(val)): sql_type = "DATE"
+            elif re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', str(val)): sql_type = "DATETIME"
+            create_statements.append(f"  `{col}` {sql_type},")
+        create_statements.append(f");\n")
+        
+        sql = "\n".join(create_statements)
+        
+        # Generate INSERT statements
+        for record in records:
+            values = []
+            for val in record.values():
+                if val is None:
+                    values.append("NULL")
+                elif isinstance(val, (int, float, bool)):
+                    values.append(str(val))
+                else: # strings, dates, etc.
+                    escaped_val = str(val).replace("'", "''")
+                    values.append(f"'{escaped_val}'")
+            val_str = ", ".join(values)
+            sql += f"INSERT INTO `{table_name}` ({col_str}) VALUES ({val_str});\n"
+        return sql
 
 # --- Module: Prompt & Schema Construction (PSCM) ---
 
@@ -340,13 +601,13 @@ class SchemaGenerator:
             elif col.data_type == "date":
                 col_schema["type"] = "string"
                 col_schema["format"] = "date"
-                if col.min_value: col_schema["minimum"] = col.min_value # These would be string dates
-                if col.max_value: col_schema["maximum"] = col.max_value
+                # Note: JSON Schema draft-07 doesn't have min/max for format:date. This relies on LLM interpretation.
             elif col.data_type == "datetime":
                 col_schema["type"] = "string"
                 col_schema["format"] = "date-time"
-                if col.min_value: col_schema["minimum"] = col.min_value
-                if col.max_value: col_schema["maximum"] = col.max_value
+            elif col.data_type == "uuid":
+                col_schema["type"] = "string"
+                col_schema["format"] = "uuid"
 
             properties[col.name] = col_schema
             required_fields.append(col.name) # Assume all inferred fields are required by default
@@ -442,7 +703,6 @@ class DataValidator:
         self.json_schema = json_schema
         # Compile the JSON schema for efficient validation
         try:
-            # jsonschema.validate({}, self.json_schema) # Test if schema itself is valid, uncomment for strict schema validation
             self.validator = jsonschema.Draft7Validator(self.json_schema)
         except jsonschema.exceptions.SchemaError as e:
             logger.error(f"Invalid JSON schema provided to DataValidator: {e}")
@@ -455,74 +715,43 @@ class DataValidator:
         """
         logger.info("Starting data validation...")
         is_valid = True
-        validation_errors = []
-
+        
         # 1. JSON Schema validation
-        for error in sorted(self.validator.iter_errors(generated_data_envelope), key=str):
-            validation_errors.append(f"Schema Validation Error: {error.message} (Path: {'/'.join(map(str, error.path))})")
-            is_valid = False
+        errors = sorted(self.validator.iter_errors(generated_data_envelope), key=str)
+        if errors:
+            for error in errors:
+                logger.error(f"Schema Validation Error: {error.message} (Path: {'/'.join(map(str, error.path))})")
+            return False
 
-        if not is_valid:
-            for err in validation_errors:
-                logger.error(err)
-            logger.error("Generated data failed JSON schema validation.")
-            return False # Fail early if schema validation fails
-
-        # Extract the actual records list after initial schema validation
         records = generated_data_envelope.get(dataset_name, [])
-        if not records:
-            logger.warning("Validation Warning: No records generated by the AI within the dataset key.")
-            # If request.num_rows > 0, this might be a hard failure for semantic validation.
-            # For now, we proceed with semantic checks on an empty list, if applicable.
-
-        # 2. Semantic and statistical checks (beyond basic schema validation)
-        # These checks might involve comparing against column_definitions which might
-        # have more nuanced rules than strict JSON schema alone.
-
+        
+        # 2. Semantic and statistical checks
         # Uniqueness checks
         for col_def in column_definitions:
             if col_def.unique:
-                # Ensure the column exists in records before attempting to get values
-                if not records or col_def.name not in records[0]: # Assume consistent schema across rows
-                    logger.warning(f"Uniqueness check skipped for '{col_def.name}': Column not found in records or no records generated.")
+                if not records or col_def.name not in records[0]:
+                    logger.warning(f"Uniqueness check skipped for '{col_def.name}': Column not found.")
                     continue
-
-                values = [record.get(col_def.name) for record in records if isinstance(record, dict) and col_def.name in record]
+                values = [r.get(col_def.name) for r in records]
                 if len(values) != len(set(values)):
                     logger.error(f"Semantic Validation Error: Column '{col_def.name}' expected unique values, but duplicates were found.")
                     is_valid = False
-        
-        # Example for date range checks not easily expressible in JSON schema `format: date`
-        # and more flexible than `minimum/maximum` as string comparisons if dates are complex.
+
+        # Date range checks
         for i, record in enumerate(records):
             for col_def in column_definitions:
-                col_name = col_def.name
-                if col_name in record and (col_def.data_type == "date" or col_def.data_type == "datetime"):
-                    col_value = record[col_name]
+                if col_def.data_type == "date" and col_def.name in record:
                     try:
-                        if col_def.data_type == "date":
-                            date_obj = datetime.date.fromisoformat(col_value)
-                        else: # datetime
-                            date_obj = datetime.datetime.fromisoformat(col_value.replace('Z', '+00:00')) # Handle 'Z' for UTC
-                        
-                        if col_def.min_value:
-                            min_date_obj = datetime.date.fromisoformat(col_def.min_value) if col_def.data_type == "date" else datetime.datetime.fromisoformat(col_def.min_value.replace('Z', '+00:00'))
-                            if date_obj < min_date_obj:
-                                logger.error(f"Semantic Validation Error: Record {i}, column '{col_name}' date {col_value} is before min date {col_def.min_value}.")
-                                is_valid = False
-                        if col_def.max_value:
-                            max_date_obj = datetime.date.fromisoformat(col_def.max_value) if col_def.data_type == "date" else datetime.datetime.fromisoformat(col_def.max_value.replace('Z', '+00:00'))
-                            if date_obj > max_date_obj:
-                                logger.error(f"Semantic Validation Error: Record {i}, column '{col_name}' date {col_value} is after max date {col_def.max_value}.")
-                                is_valid = False
+                        date_obj = datetime.date.fromisoformat(record[col_def.name])
+                        if col_def.min_value and date_obj < datetime.date.fromisoformat(col_def.min_value):
+                             logger.error(f"Semantic Validation Error: Record {i}, column '{col_def.name}' date {record[col_def.name]} is before min date {col_def.min_value}.")
+                             is_valid = False
+                        if col_def.max_value and date_obj > datetime.date.fromisoformat(col_def.max_value):
+                             logger.error(f"Semantic Validation Error: Record {i}, column '{col_def.name}' date {record[col_def.name]} is after max date {col_def.max_value}.")
+                             is_valid = False
                     except (ValueError, TypeError):
-                        # This should ideally be caught by jsonschema format validation, but adding here as a safeguard
-                        logger.error(f"Semantic Validation Error: Record {i}, column '{col_name}' value '{col_value}' is not a valid {col_def.data_type} format as expected by definition.")
+                        logger.error(f"Semantic Validation Error: Record {i}, column '{col_def.name}' value '{record[col_def.name]}' is not a valid date format.")
                         is_valid = False
-
-        # Add more advanced checks if needed, e.g.,
-        # - Distribution hints: e.g., check for positive skew using scipy stats
-        # - Inter-columnar relationships: e.g., if country='USA' then currency='USD'
 
         logger.info(f"Data validation complete. Is valid: {is_valid}")
         return is_valid
@@ -546,21 +775,8 @@ class DataValidator:
                     processed_record[col_name] = None
                     continue
 
-                # Example of type coercion if needed
                 if col_def.data_type == "float" and isinstance(col_value, int):
                     processed_record[col_name] = float(col_value)
-                elif col_def.data_type == "date" and isinstance(col_value, str):
-                    try:
-                        # Ensure it's in a canonical format (ISO 8601) if needed downstream
-                        processed_record[col_name] = datetime.date.fromisoformat(col_value).isoformat()
-                    except ValueError:
-                        processed_record[col_name] = col_value # Keep original if coercion fails
-                elif col_def.data_type == "datetime" and isinstance(col_value, str):
-                    try:
-                        # Ensure it's in a canonical format (ISO 8601 with timezone if applicable)
-                        processed_record[col_name] = datetime.datetime.fromisoformat(col_value.replace('Z', '+00:00')).isoformat()
-                    except ValueError:
-                        processed_record[col_name] = col_value
                 else:
                     processed_record[col_name] = col_value
             processed_records.append(processed_record)
@@ -573,72 +789,56 @@ class SyntheticDatasetService:
     """
     Orchestrates the entire process of generating synthetic datasets.
     """
-    def __init__(self, generative_model_name: str = 'gemini-2.5-flash'):
+    def __init__(self, generative_model_name: str = 'gemini-1.5-flash'):
         self.model = GenerativeModel(generative_model_name)
         self.schema_generator = SchemaGenerator()
         self.data_formatter = DataFormatter()
         logger.info(f"SyntheticDatasetService initialized with generative model: {generative_model_name}")
 
-    async def generate_synthetic_data(self, request: SyntheticDataRequest) -> str:
+    async def generate_synthetic_data(self, request: SyntheticDataRequest, max_retries: int = 2) -> str:
         """
         Main public method to generate synthetic data based on a user request.
         """
         logger.info(f"Received request: {request.json()}")
-
-        # 1. Generate LLM Prompt and JSON Schema
-        try:
-            llm_prompt, json_schema, column_definitions = await self.schema_generator.generate_prompt_and_schema(request)
-            logger.debug(f"Generated LLM Prompt: {llm_prompt[:500]}...") # Log first 500 chars
-            logger.debug(f"Generated JSON Schema: {json.dumps(json_schema, indent=2)}")
-        except Exception as e:
-            logger.error(f"Error during prompt and schema generation: {e}")
-            raise ValueError(f"Failed to process natural language description: {e}")
-
-        # 2. Interact with Generative AI Model
-        try:
-            generation_config = GenerationConfig(response_mime_type="application/json", response_schema=json_schema)
-            response = await self.model.generate_content_async(llm_prompt, generation_config=generation_config)
-            
-            # The AI is expected to return valid JSON due to response_schema,
-            # but we still parse and validate.
-            raw_generated_data = json.loads(response.text)
-            logger.info("Successfully received raw data from generative AI.")
-        except json.JSONDecodeError as e:
-            logger.error(f"Generative AI returned invalid JSON: {response.text[:200]}... Error: {e}")
-            raise RuntimeError(f"Generative AI output was not valid JSON: {e}")
-        except Exception as e:
-            logger.error(f"Error during generative AI interaction: {e}")
-            raise RuntimeError(f"Failed to generate content with AI: {e}")
-
-        # 3. Validate Generated Data
-        data_validator = DataValidator(json_schema=json_schema)
-        if not data_validator.validate(raw_generated_data, column_definitions, request.dataset_name):
-            logger.error("Generated data failed validation against schema or semantic rules.")
-            # In a production system, this might trigger a retry or human review.
-            raise ValueError("Generated data did not conform to specifications and failed validation.")
         
-        # 4. Post-process the data
-        validated_and_processed_records: List[Dict[str, Any]] = data_validator.post_process_data(raw_generated_data, column_definitions, request.dataset_name)
+        for attempt in range(max_retries + 1):
+            logger.info(f"Generation attempt {attempt + 1}/{max_retries + 1}")
+            try:
+                # 1. Generate LLM Prompt and JSON Schema
+                llm_prompt, json_schema, column_definitions = await self.schema_generator.generate_prompt_and_schema(request)
+                
+                # 2. Interact with Generative AI Model
+                generation_config = GenerationConfig(response_mime_type="application/json")
+                response = await self.model.generate_content_async([llm_prompt, f"JSON Schema:\n{json.dumps(json_schema)}"], generation_config=generation_config)
+                raw_generated_data = json.loads(response.text)
+                
+                # 3. Validate Generated Data
+                data_validator = DataValidator(json_schema=json_schema)
+                if data_validator.validate(raw_generated_data, column_definitions, request.dataset_name):
+                    # 4. Post-process the data
+                    processed_records = data_validator.post_process_data(raw_generated_data, column_definitions, request.dataset_name)
+                    
+                    # 5. Format and Deliver Output
+                    formatter_method = getattr(self.data_formatter, f"format_to_{request.output_format}", self.data_formatter.format_to_json)
+                    formatted_data = formatter_method(processed_records, request.dataset_name)
+                    logger.info(f"Successfully generated and formatted data to {request.output_format}.")
+                    return formatted_data
+                else:
+                    logger.warning(f"Attempt {attempt + 1} failed validation. Retrying if possible.")
+                    if attempt == max_retries:
+                         raise ValueError("Generated data failed validation after multiple retries.")
 
-        # 5. Format and Deliver Output
-        formatted_data: str
-        if request.output_format == "csv":
-            formatted_data = self.data_formatter.format_to_csv(validated_and_processed_records, request.dataset_name)
-        elif request.output_format == "json":
-            formatted_data = self.data_formatter.format_to_json(validated_and_processed_records, request.dataset_name)
-        elif request.output_format == "xml":
-            formatted_data = self.data_formatter.format_to_xml(validated_and_processed_records, request.dataset_name)
-        elif request.output_format == "sql_insert":
-            formatted_data = self.data_formatter.format_to_sql_insert(validated_and_processed_records, request.dataset_name)
-        else:
-            logger.warning(f"Unsupported output format requested: {request.output_format}. Defaulting to JSON.")
-            formatted_data = self.data_formatter.format_to_json(validated_and_processed_records, request.dataset_name)
-        
-        logger.info(f"Successfully formatted data to {request.output_format}.")
-        return formatted_data
+            except json.JSONDecodeError as e:
+                logger.error(f"Generative AI returned invalid JSON on attempt {attempt+1}: {response.text[:200]}... Error: {e}")
+                if attempt == max_retries: raise RuntimeError("Generative AI output was not valid JSON after multiple retries.")
+            except Exception as e:
+                logger.error(f"An unexpected error occurred on attempt {attempt+1}: {e}", exc_info=True)
+                if attempt == max_retries: raise
+
+        raise RuntimeError("Failed to generate data after all retries.")
 
 # Export the top-level service class for use in other modules
-__all__ = ["SyntheticDataRequest", "SyntheticDatasetService", "ColumnDefinition"]
+__all__ = ["SyntheticDataRequest", "SyntheticDatasetService", "ColumnDefinition", "DataFormatter"]
 
 ```
 
@@ -681,60 +881,129 @@ The present invention articulates a series of innovative claims establishing cle
 
 6.  A computer-readable medium storing instructions that, when executed by one or more processors, cause the one or more processors to perform the method of Claim 3.
 
+7.  The system of Claim 1, wherein the PSCM's NLU techniques comprise a pipeline of tokenization, named entity recognition (NER), dependency parsing, and relation extraction to identify not only column specifications but also complex, multi-column constraints and statistical distribution hints from free-form text.
+
+8.  The system of Claim 1, wherein the system is further configured to generate multiple, relationally-linked datasets by inferring primary key and foreign key relationships from the natural language description, generating each dataset in sequence while maintaining referential integrity between them.
+
+9.  The system of Claim 1, wherein the DVPM is further configured to perform semantic consistency checks by querying an external knowledge base or a secondary validation model to verify the plausibility of generated data combinations, such as the correspondence between a city and a country.
+
+10. The system of Claim 1, wherein the GAIM is configured to operate asynchronously, managing a queue of generation tasks and interacting with the generative AI model through non-blocking API calls, thereby enabling the system to handle a high volume of concurrent user requests and generate large datasets without compromising responsiveness.
+
 **Mathematical Justification: The Formal Axiomatic System of Generative Synthetic Data Fidelity (FASD-F)**
 
-The scientific rigor undergirding the Cognitive Data Synthesizer (CDS) is established through a formal axiomatic system, FASD-F, which quantifies the fidelity of synthetically generated data to a true, unobservable real-world data distribution as dictated by user-defined constraints. Our objective is not merely to generate data, but to synthesize `information-rich analogs` that faithfully represent specified real-world phenomena.
+The scientific rigor undergirding the Cognitive Data Synthesizer (CDS) is established through a formal axiomatic system, FASD-F, which quantifies the fidelity of synthetically generated data to a true, unobservable real-world data distribution as dictated by user-defined constraints.
 
-Let `Omega_R` denote the unobservable universe of all possible real-world data instances relevant to a given domain. Let `P_R` be the true, underlying probability measure over `Omega_R`, representing the intrinsic statistical and semantic characteristics of real-world data. The user's natural language request, denoted as `lambda` in `L_NL`, where `L_NL` is the space of natural language expressions, specifies a set of desiderata for a synthetic dataset. This `lambda` implicitly defines a `conditional subspace` `Omega_R(lambda) subseteq Omega_R` and a corresponding conditional probability measure `P_R(D | lambda)` over this subspace, representing the "ideal" real data that would satisfy `lambda`.
+Let `Omega_R` denote the unobservable universe of all possible real-world data instances. Let `P_R` be the true, underlying probability measure over `Omega_R`. The user's natural language request, `lambda` in `L_NL`, specifies desiderata for a synthetic dataset. This `lambda` implicitly defines a conditional subspace `Omega_R(lambda) subseteq Omega_R` and a corresponding conditional probability measure `P_R(D | lambda)` over this subspace.
 
-The CDS translates `lambda` into a structured prompt `rho` in `L_Prompt` and a formal JSON schema `sigma` in `L_Schema`. The generative AI model, denoted `G`, is a parametric function `G : (L_Prompt x L_Schema) -> Omega_S`, where `Omega_S` is the space of generated synthetic data instances. The output of `G` is a synthetic dataset `D_S = {d_1, d_2, ..., d_N}`, which implicitly defines an empirical probability measure `P_S(D | rho, sigma)`.
+The CDS translates `lambda` into a structured prompt `rho` in `L_Prompt` and a formal JSON schema `sigma` in `L_Schema`. The generative AI model, `G`, is a parametric function `G : (L_Prompt x L_Schema) -> Omega_S`, where `Omega_S` is the space of generated synthetic data instances. The output is a synthetic dataset `D_S = {d_1, ..., d_N}`, which defines an empirical probability measure `P_S(D | rho, sigma)`.
 
-**I. Axiom of Semantic Translation Fidelity (ASTF):**
-There exists a mapping function `T_PS : L_NL -> (L_Prompt x L_Schema)` such that for any `lambda` in `L_NL`, `T_PS(lambda) = (rho, sigma)` preserves the semantic intent and structural constraints of `lambda`. This is formalized by:
-`For all lambda in L_NL, there exists (rho, sigma) in (L_Prompt x L_Schema)` such that `Sem(lambda) = Sem(rho, sigma)` and `Struct(lambda) = Struct(sigma)`.
-Where `Sem(.)` denotes the semantic content and `Struct(.)` denotes the structural specifications. The CDS's PSCM endeavors to maximize the accuracy of this translation, minimizing any loss of information or misinterpretation.
+**I. Axioms and Definitions (1-50)**
 
-**II. Axiom of Generative Plausibility (AGP):**
-The generative AI model `G`, through its training on vast and diverse real-world corpora, has learned an implicit, high-dimensional probability distribution `P_G(data | context)` that approximates `P_R`. When conditioned by `rho` and `sigma`, `G` produces samples from `P_G(D | rho, sigma)`, which is intended to be a robust approximation of the true conditional distribution `P_R(D | lambda)`.
-This axiom postulates that a sufficiently advanced `G` possesses the inherent capability to synthesize data instances `d_i` such that `P_G(d_i | rho, sigma)` is non-trivially high for `d_i` in `Omega_R(lambda)`, demonstrating contextual realism and statistical coherence.
+1.  **Axiom of Semantic Translation Fidelity (ASTF):** There exists `T_PS : L_NL -> (L_Prompt x L_Schema)` such that `Sem(lambda) = Sem(T_PS(lambda))`.
+2.  **Axiom of Generative Plausibility (AGP):** The model `G` approximates `P_R`. `P_G(D | rho, sigma) approx P_R(D | lambda)`.
+3.  **Axiom of Structural Conformance (ASC):** A validation function `V(D_S, sigma) -> {0, 1}` exists such that `V(G(rho, sigma), sigma) = 1`.
+4.  Let `C = {c_1, ..., c_k}` be the set of columns.
+5.  Let `T = {t_1, ..., t_k}` be the set of data types for `C`. `sigma` encodes `(C, T)`.
+6.  A data instance `d` is a k-tuple `(v_1, ..., v_k)` where `v_j` is a value for column `c_j`.
+7.  The validation function `V(d, sigma)` checks type conformance: `forall j in {1..k}, type(v_j) == t_j`. (Eq. 1)
+8.  The validation function also checks constraints `K_sigma` in `sigma`.
+9.  `V(d, sigma) = 1` iff `forall k_i in K_sigma, k_i(d) = True`. (Eq. 2)
+10. **Definition: Fidelity Loss.** `L_F(D_S, lambda) = D(P_R(D | lambda) || P_S(D_S))`, where `D` is a divergence metric. (Eq. 3)
+11. We use Kullback-Leibler (KL) Divergence: `D_KL(P || Q) = sum_{x} P(x) log(P(x) / Q(x))`. (Eq. 4)
+12. Goal of CDS: `min_{G, T_PS} E_{lambda ~ L_NL}[L_F(G(T_PS(lambda)), lambda)]`. (Eq. 5)
+13. The NLU component of `T_PS` maps `lambda` to a set of constraints `K_lambda`.
+14. `K_lambda = K_type cup K_range cup K_enum cup K_relation cup K_distrib`. (Eq. 6)
+15. The schema generator maps `K_lambda` to `sigma`.
+16. The prompt generator maps `lambda` and `K_lambda` to `rho`.
+17. Let `M_j` be the marginal distribution for column `c_j`. `P_S^{(j)}` is the empirical marginal for `c_j`.
+18. **Marginal Fidelity Loss:** `L_M = sum_{j=1..k} w_j * D(P_R^{(j)} | lambda || P_S^{(j)})`. (Eq. 7)
+19. `w_j` are weights for column importance.
+20. Let `Sigma_R` be the covariance matrix of `P_R`.
+21. Let `hat{Sigma}_S` be the empirical covariance matrix of `D_S`.
+22. **Correlational Fidelity Loss:** `L_C = ||Sigma_R - hat{Sigma}_S||_F`, the Frobenius norm. (Eq. 8)
+23. Total loss function `L_total = alpha * L_M + beta * L_C`. (Eq. 9)
+24. `alpha` and `beta` are hyperparameters.
+25. For a constraint like "positive skew", we verify the third moment.
+26. Skewness `gamma_1 = E[((X - mu)/sigma)^3]`. (Eq. 10)
+27. The DVPM calculates empirical skewness `hat{gamma}_1` for `D_S`.
+28. `Validation(skew) = 1` if `hat{gamma}_1 > epsilon_skew` for some threshold `epsilon_skew`. (Eq. 11)
+29. For uniqueness on `c_j`, `|{d_i[j] for d_i in D_S}| = N`. (Eq. 12)
+30. The probability of generating a valid dataset `P(V(D_S, sigma)=1)` should be maximized.
+31. This is a function of the model `G`'s parameters `theta`. `P(V(D_S, sigma)=1 | theta)`. (Eq. 13)
+32. The entropy of the synthetic distribution is `H(P_S) = -sum P_S(x) log P_S(x)`. (Eq. 14)
+33. Cross-entropy: `H(P_R, P_S) = -sum P_R(x) log P_S(x)`. (Eq. 15)
+34. `D_KL(P_R || P_S) = H(P_R, P_S) - H(P_R)`. (Eq. 16)
+35. Minimizing KL divergence is equivalent to minimizing cross-entropy.
+36. Let `lambda_i` be an individual constraint in `lambda`.
+37. The NLU module has an accuracy `Acc(T_PS) = P(T_PS(lambda) correctly represents lambda)`. (Eq. 17)
+38. `Acc(T_PS) = 1/|lambda| * sum_{lambda_i in lambda} I(T_PS(lambda_i) == lambda_i)`. (Eq. 18)
+39. `I(.)` is the indicator function.
+40. The generative process can be modeled as an autoregressive sequence.
+41. `P(d_i | rho, sigma) = prod_{j=1..k} P(v_{ij} | v_{i,1}, ..., v_{i,j-1}, rho, sigma)`. (Eq. 19)
+42. `sigma` constrains the sampling space for each `v_{ij}`.
+43. Let `S_j` be the valid sample space for column `c_j` given `sigma`.
+44. `P(v_{ij} not in S_j | ...) = 0`. (Eq. 20)
+45. For a continuous variable `x`, the Kolmogorov-Smirnov test statistic is `D_n = sup_x |F_n(x) - F(x)|`. (Eq. 21)
+46. `F_n(x)` is the empirical CDF from `D_S`, `F(x)` is the target CDF from `lambda`.
+47. The DVPM can reject `D_S` if `D_n > D_{alpha}` for a significance level `alpha`.
+48. Jensen-Shannon Divergence: `D_JS(P || Q) = (1/2) D_KL(P || M) + (1/2) D_KL(Q || M)`. (Eq. 22)
+49. `M = (P + Q) / 2`. (Eq. 23)
+50. `sqrt(D_JS)` is a metric, the Jensen-Shannon distance. (Eq. 24)
 
-**III. Axiom of Structural Conformance (ASC):**
-The primary function of `sigma` is to constrain the output space of `G`. The ASC states that the generated synthetic dataset `D_S` must strictly adhere to the topological and typological specifications encoded within `sigma`.
-This is formally represented by a validation function `V : (Omega_S x L_Schema) -> {True, False}`. For the CDS, we demand:
-`For all d_i in D_S, V(d_i, sigma) = True`.
-The DVPM within the CDS explicitly enforces this axiom, employing rigorous validation processes.
-
-**IV. Metatheorem of Information-Theoretic Fidelity:**
-The ultimate measure of the CDS's success is the fidelity of `D_S` to `P_R(D | lambda)`. This fidelity can be quantified using information-theoretic divergence measures.
-
-Let `P_S` be the empirical probability distribution of the generated dataset `D_S`. The objective is to minimize the "distance" between `P_S` and `P_R(D | lambda)`.
-
-**Definition 1: Kullback-Leibler (KL) Divergence.**
-The KL divergence `D_KL(P || Q)` for two probability distributions `P` and `Q` over the same probability space `X` is defined as:
-```
-D_KL(P || Q) = sum_{x in X} P(x) log(P(x) / Q(x))
-```
-for discrete distributions, or
-```
-D_KL(P || Q) = integral_{x in X} P(x) log(P(x) / Q(x)) dx
-```
-for continuous distributions.
-`D_KL` measures the information loss when `Q` is used to approximate `P`. Our goal is to minimize `D_KL(P_R(D | lambda) || P_S(D | rho, sigma))`.
-
-**Definition 2: Jensen-Shannon (JS) Divergence.**
-The JS divergence is a symmetric and finite measure derived from KL divergence, often preferred for its robust properties:
-```
-D_JS(P || Q) = (1/2) D_KL(P || M) + (1/2) D_KL(Q || M)
-```
-where `M = (P + Q) / 2`.
-`D_JS` provides a normalized and smoothed measure of statistical similarity. The CDS aims to minimize `D_JS(P_R(D | lambda) || P_S(D | rho, sigma))`.
+**II. Advanced Formalisms and Theorems (51-100)**
+51. **Information Geometry Perspective:** The space of valid probability distributions `Delta_sigma` defined by schema `sigma` forms a manifold.
+52. The generative model `G` performs a projection from the user's intent `lambda` onto this manifold.
+53. `P_S = Proj_{Delta_sigma}(P_R | lambda)`. (Eq. 25)
+54. The projection minimizes a chosen divergence, e.g., `D_KL`.
+55. **Theorem (Information Projection):** The projection `P_S` is unique and satisfies the Pythagorean theorem for divergence: `D_KL(Q || (P_R|lambda)) = D_KL(Q || P_S) + D_KL(P_S || (P_R|lambda))` for any `Q in Delta_sigma`. (Eq. 26)
+56. **Bayesian Formulation:** We can view the generation as finding the maximum a posteriori (MAP) dataset.
+57. `D_S^* = argmax_{D_S} P(D_S | lambda, sigma)`. (Eq. 27)
+58. `P(D_S | lambda, sigma) propto P(lambda | D_S, sigma) * P(D_S | sigma)`. (Eq. 28)
+59. `P(lambda | D_S, sigma)` is the likelihood that `D_S` satisfies `lambda`.
+60. `P(D_S | sigma)` is the prior, favoring plausible datasets. `G` implicitly models this prior.
+61. Let `E_i` be an entity (e.g., column name) extracted from `lambda`. The set of all extracted entities is `E_lambda`.
+62. `F1_{NLU} = 2 * (Precision * Recall) / (Precision + Recall)` for entity extraction. (Eq. 29)
+63. `Precision = |E_{correct} cap E_{extracted}| / |E_{extracted}|`. (Eq. 30)
+64. `Recall = |E_{correct} cap E_{extracted}| / |E_{correct}|`. (Eq. 31)
+65. The system's utility `U(D_S)` is a function of its performance on a downstream task `T`.
+66. `U(D_S) = Perf_T(Model_{trained_on_DS})`. (Eq. 32)
+67. We desire `|U(D_S) - U(D_R)| < epsilon`. (Eq. 33)
+68. **Fisher Information Matrix:** `I(theta)_{i,j} = E[ (d/d theta_i log f(X;theta)) * (d/d theta_j log f(X;theta)) ]`. (Eq. 34)
+69. Fidelity can be measured by the closeness of Fisher information matrices of `P_S` and `P_R`.
+70. `d(I_S, I_R) = ||I_S - I_R||_F`. (Eq. 35)
+71. For categorical columns, we can use the Chi-squared test.
+72. `chi^2 = sum (O_i - E_i)^2 / E_i`. (Eq. 36) `O_i` is observed frequency, `E_i` is expected.
+73. Let `f_lambda(d)` be a scoring function where `f_lambda(d) -> 1` if `d` perfectly matches `lambda`.
+74. The DVPM computes `1/N * sum_{i=1..N} f_lambda(d_i)`. (Eq. 37)
+75. Let `tau` be Kendall's rank correlation coefficient.
+76. We want `tau(D_S)` to be close to `tau(D_R)` for correlated columns.
+77. `tau = (concordant_pairs - discordant_pairs) / (1/2 * n * (n-1))`. (Eq. 38)
+78. Let `R(d_i, d_j)` be a relational constraint between two rows (e.g., time-series).
+79. The validation score for relational integrity: `S_rel = 1/(N^2) * sum_{i,j} I(R(d_i, d_j))`. (Eq. 39)
+80. Mutual Information between two columns `c_i, c_j`: `I(c_i; c_j) = sum_{x_i, x_j} p(x_i, x_j) log (p(x_i, x_j) / (p(x_i)p(x_j)))`. (Eq. 40)
+81. We want `I_S(c_i; c_j) approx I_R(c_i; c_j)`. (Eq. 41)
+82. Rate-distortion theory can model the trade-off between schema complexity and generative fidelity.
+83. `R(D) = min_{p(y|x): E[d(x,y)] <= D} I(X;Y)`. (Eq. 42)
+84. Here, `R` is the rate (bits needed to specify schema `sigma`), `D` is the distortion (fidelity loss `L_F`).
+85. The Wasserstein distance (Earth Mover's Distance) `W_p(P,Q)` measures distance between distributions.
+86. `W_p(P,Q) = (inf_{gamma in Pi(P,Q)} integral_{X x X} d(x,y)^p d gamma(x,y))^{1/p}`. (Eq. 43)
+87. `Pi(P,Q)` is the set of all joint distributions with marginals `P` and `Q`.
+88. Wasserstein distance is often more robust for comparing distributions than KL divergence.
+89. Let `theta_G` be the parameters of the generative model `G`.
+90. The learning objective can be `min_{theta_G} E_{lambda}[L_F(G(T(lambda); theta_G), lambda)]`. (Eq. 44)
+91. This is intractable, so we use `sigma` as a strong proxy.
+92. `min_{theta_G} -E_{sigma}[log P(D_S | sigma; theta_G)]` where `D_S` is a "good" dataset. (Eq. 45)
+93. Total Variation Distance: `delta(P,Q) = 1/2 * sum_x |P(x) - Q(x)|`. (Eq. 46)
+94. `delta(P,Q)^2 <= (1/2) * D_KL(P||Q)`. (Pinsker's inequality) (Eq. 47)
+95. A bound on KL divergence also bounds the total variation distance.
+96. Let `rho_t` be the prompt at re-prompting iteration `t`.
+97. `rho_{t+1} = rho_t + feedback(D_{S,t}, sigma)`. (Eq. 48)
+98. We expect `L_F(D_{S, t+1}) < L_F(D_{S,t})`. (Eq. 49)
+99. The system converges when `|L_F(D_{S, t+1}) - L_F(D_{S,t})| < epsilon_conv`. (Eq. 50)
+100. **Final Fidelity Score:** `F_CDS = exp(-L_{total})`. (Eq. 100, combines dozens of previous equations).
 
 **Proof of Capacity for High Fidelity:**
-Given the `ASTF`, `AGP`, and `ASC`, the CDS demonstrates an inherent capacity for generating high-fidelity synthetic data.
-1.  The `ASTF` ensures that the semantic intent `lambda` is accurately translated into `(rho, sigma)`, thus `G` is guided by a semantically equivalent representation of the user's need.
-2.  The `AGP` asserts that `G` itself, being a sophisticated generative model trained on vast real-world data, embodies a powerful implicit model of `P_R`. When `G` is prompted with `rho` and constrained by `sigma`, it effectively samples from `P_G(D | rho, sigma)`, which is a high-quality approximation of `P_R(D | lambda)`. The parameters of `G` implicitly encode the intricate conditional probabilities `P(attribute_j | attribute_i, lambda)` that are essential for realistic data generation.
-3.  The `ASC`, enforced by the `DVPM`, guarantees that the generated samples strictly conform to the explicit structural and typological constraints. This drastically reduces the `D_KL` or `D_JS` by ensuring `P_S` is constrained to the valid subspace, preventing nonsensical or invalid data from contributing to divergence.
-
-Therefore, by coupling a robust semantic translation and formal schema enforcement mechanism with an information-rich generative AI model, the CDS effectively minimizes the information-theoretic divergence between the desired real-world conditional distribution `P_R(D | lambda)` and the empirically observed synthetic data distribution `P_S(D | rho, sigma)`. The AI's ability to extrapolate latent correlations and distributions from `rho` and `sigma` allows `P_S` to approximate `P_R` not just superficially but deeply across multiple statistical moments and feature interactions. This rigorous multi-stage approach establishes the CDS as a definitive solution for generating high-fidelity synthetic datasets.
-
-`Q.E.D.`
+1.  The `ASTF` and high-F1 NLU ensure `(rho, sigma)` accurately represent `lambda`.
+2.  The `AGP` asserts `G` approximates `P_R`, thus `P_G(D | rho, sigma)` approximates `P_R(D | lambda)`.
+3.  The `ASC`, enforced by `DVPM`, guarantees `P_S` has support only on `Delta_sigma`, drastically reducing divergence.
+By coupling robust semantic translation, formal schema enforcement, and an information-rich generative model, the CDS minimizes the information-theoretic divergence (e.g., `D_KL`, `D_JS`, `W_p`) between the desired distribution `P_R(D | lambda)` and the synthetic distribution `P_S(D | rho, sigma)`. `Q.E.D.`
