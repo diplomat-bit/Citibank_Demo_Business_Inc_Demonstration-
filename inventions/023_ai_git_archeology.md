@@ -759,16 +759,15 @@ if __name__ == "__main__":
     print("\n--- Repository Health Monitor: Recent SLOC anomalies ---")
     sloc_anomalies = health_monitor.detect_anomalies(metric_key='sloc', lookback_days=90)
     print(f"Recent SLOC Anomalies: {sloc_anomalies}")
-
 ```
 
 **Title of Invention:** System and Method for Semantic-Cognitive Archeology of Distributed Version Control Systems
 
 **Abstract:**
-A profoundly innovative system and associated methodologies are unveiled for the forensic, semantic-cognitive analysis of distributed version control systems (DVCS), exemplified by Git repositories. This invention meticulously indexes the entirety of a repository's historical provenance, encompassing granular details such as cryptographic commit identifiers, authorial attribution, temporal markers, comprehensive commit messages, and the atomic transformations codified within diffs. A sophisticated, intuitive natural language interface empowers users to articulate complex queries (e.g., "Discern the commit antecedent to the observed stochastic latency increase within the critical payment processing sub-system API circa Q3 fiscal year 2023"). The core of this system leverages advanced large language models (LLMs) to orchestrate a hyper-dimensional semantic retrieval over the meticulously indexed commit data and their associated code modifications. This process identifies the most epistemologically relevant commits, which are then synthetically analyzed by the LLM to construct and articulate a direct, contextually rich, and actionable response to the user's initial inquiry.
+A profoundly innovative system and associated methodologies are unveiled for the forensic, semantic-cognitive analysis of distributed version control systems (DVCS), exemplified by Git repositories. This invention meticulously indexes the entirety of a repository's historical provenance, encompassing granular details such as cryptographic commit identifiers, authorial attribution, temporal markers, comprehensive commit messages, and the atomic transformations codified within diffs. A sophisticated, intuitive natural language interface empowers users to articulate complex queries (e.g., "Discern the commit antecedent to the observed stochastic latency increase within the critical payment processing sub-system API circa Q3 fiscal year 2023"). The core of this system leverages advanced large language models (LLMs) to orchestrate a hyper-dimensional semantic retrieval over the meticulously indexed commit data and their associated code modifications. This process identifies the most epistemologically relevant commits, which are then synthetically analyzed by the LLM to construct and articulate a direct, contextually rich, and actionable response to the user's initial inquiry. The system further incorporates modules for statistical anomaly detection in code complexity and dynamic authorial expertise profiling, providing a holistic, multi-faceted analytical suite for deep repository comprehension.
 
 **Background of the Invention:**
-The contemporary landscape of software engineering is characterized by colossal, intricately version-controlled software repositories, often spanning millions of lines of source code and accumulating hundreds of thousands, if not millions, of individual commits over extended temporal horizons. Within these digital archives, the provenance of defects, the identification of domain-specific subject matter experts, and the elucidation of feature evolutionary trajectories are tasks that invariably demand prohibitive investments in manual effort. This traditional approach typically involves painstaking manual textual inspection, rudimentary keyword-based log parsing, and exhaustive diff comparison. Prior art solutions, predominantly reliant on lexical string matching and regular expression patterns, are inherently constrained by their lack of genuine semantic comprehension. They fail to encapsulate the conceptual relationships between terms, the intent behind code modifications, or the higher-order structural evolution of software artifacts. Consequently, these methods are demonstrably inadequate for navigating the profound conceptual complexity embedded within large-scale software development histories, necessitating a paradigm shift towards intelligent, semantic-aware analytical frameworks.
+The contemporary landscape of software engineering is characterized by colossal, intricately version-controlled software repositories, often spanning millions of lines of source code and accumulating hundreds of thousands, if not millions, of individual commits over extended temporal horizons. Within these digital archives, the provenance of defects, the identification of domain-specific subject matter experts, and the elucidation of feature evolutionary trajectories are tasks that invariably demand prohibitive investments in manual effort. This traditional approach typically involves painstaking manual textual inspection, rudimentary keyword-based log parsing, and exhaustive diff comparison. Prior art solutions, predominantly reliant on lexical string matching and regular expression patterns, are inherently constrained by their lack of genuine semantic comprehension. They fail to encapsulate the conceptual relationships between terms, the intent behind code modifications, or the higher-order structural evolution of software artifacts. Consequently, these methods are demonstrably inadequate for navigating the profound conceptual complexity embedded within large-scale software development histories, necessitating a paradigm shift towards intelligent, semantic-aware analytical frameworks. There exists an urgent and unmet need for a system capable of interpreting the *intent* behind historical changes, not merely their literal text, and synthesizing this understanding into actionable insights.
 
 **Brief Summary of the Invention:**
 The present invention introduces the conceptualization and operationalization of an "AI Git Archeologist" — a revolutionary, intelligent agent for the deep semantic excavation of software histories. This system establishes a high-bandwidth, bi-directional interface with a target Git repository, initiating a rigorous indexing and transformation pipeline. This pipeline involves the generation of high-fidelity vector embeddings for every salient textual and structural element within the commit history, specifically commit messages and comprehensive code diffs, and their subsequent persistence within a specialized vector database. The system then provides an intuitively accessible natural language querying interface, enabling a developer to pose complex questions in idiomatic English. Upon receiving such a query, the system orchestrates a multi-modal, contextually aware retrieval operation, identifying the most epistemically relevant commits. These retrieved commits, alongside their associated metadata and content, are then dynamically compiled into a rich contextual payload. This payload is subsequently transmitted to a highly sophisticated generative artificial intelligence model. The AI model is meticulously prompted to assume the persona of an expert software forensic engineer, tasked with synthesizing a precise, insightful, and comprehensive answer to the developer's original question, leveraging solely the provided commit provenance data. This methodology represents a quantum leap in the interpretability and navigability of software development histories.
@@ -779,14 +778,14 @@ The architecture of the Semantic-Cognitive Archeology System for Distributed Ver
 
 ### System Architecture Overview
 
-The system operates in two primary phases: an **Indexing Phase** and a **Query Phase**.
+The system operates in two primary phases: an **Indexing Phase** and a **Query Phase**, with supplementary analytics running on the indexed data.
 
 <details>
-<summary>Architectural Data Flow Diagram Mermaid</summary>
+<summary>Chart 1: High-Level System Architecture</summary>
 
 ```mermaid
 graph TD
-    subgraph "Indexing Phase Historical Data Ingestion and Transformation"
+    subgraph "Indexing Phase: Historical Data Ingestion and Transformation"
         direction LR
         A[Git Repository] --> B[Commit Stream]
         B --> C[GitRepositoryParser]
@@ -799,29 +798,29 @@ graph TD
             D1_1 -- ExportedCodeComplexityMetrics --> D1_2[ExportedEnrichedDiffSegment Creator]
             D1 -- DiffSegment Original Content --> D1_2
             D1_2 -- ExportedEnrichedDiffSegment --> D1_3[Enriched Commit Data Creator]
-            D1 -- CommitData Message Metadata --> D1_3
-            D1_3 -- ExportedEnrichedCommitData --> E[Metadata Store]
+            D1 -- CommitData Message/Metadata --> D1_3
+            D1_3 -- ExportedEnrichedCommitData --> E[Metadata Store (SQL/NoSQL)]
 
-            D1 -- Commit Message Content --> F[SemanticEmbedding Message]
-            D1 -- Diff Content for Embedding --> G[SemanticEmbedding Diff]
+            D1 -- Commit Message Content --> F[SemanticEmbedding (Text)]
+            D1 -- Diff Content for Embedding --> G[SemanticEmbedding (Code)]
             F -- Message Embedding --> H[VectorDatabaseClient Inserter]
             G -- Diff Embedding --> H
-            H --> I[Vector Database]
+            H --> I[Vector Database (ANN Index)]
         end
 
         E -- Enriched Commit Details --> J[Comprehensive Indexed State]
         I -- Commit Embeddings --> J
     end
 
-    subgraph "Query Phase Semantic Retrieval and Cognitive Synthesis"
+    subgraph "Query Phase: Semantic Retrieval and Cognitive Synthesis"
         direction LR
-        K[User Query Natural Language] --> L[QuerySemanticEncoder]
+        K[User Query (NL)] --> L[QuerySemanticEncoder]
         L -- Query Embedding --> M[VectorDatabaseClient Searcher]
         M --> N{Relevant Commit Hashes from Vector Search}
 
         subgraph "Commit Filtering and Context Building"
             direction TB
-            N --> O[Filter by Time Author Path Complexity]
+            N --> O[Filter by Time/Author/Path/Complexity]
             O -- Filtered Commit Hashes --> P[Context Assembler]
             P --> Q[Metadata Store Lookup]
             Q -- Full Enriched Commit Data --> P
@@ -829,7 +828,7 @@ graph TD
             R --> S[Generative AI Model Orchestrator]
         end
         
-        S --> T[GeminiClient LLM]
+        S --> T[GeminiClient (LLM)]
         T -- Synthesized Answer Text --> U[Synthesized Answer]
         U --> V[User Interface]
 
@@ -837,372 +836,465 @@ graph TD
         J --> Q
     end
 
-    subgraph "Advanced Analytics Post Indexing"
+    subgraph "Advanced Analytics (Post-Indexing)"
         direction TB
         J --> W[ExpertiseProfiler]
         J --> X[RepositoryHealthMonitor]
         W -- Author Expertise Reports --> V
         X -- Anomaly Detection Reports --> V
     end
-
-    classDef subgraphStyle fill:#e0e8f0,stroke:#333,stroke-width:2px;
-    classDef processNodeStyle fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef dataNodeStyle fill:#ccf,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5;
-    classDef dbNodeStyle fill:#bcf,stroke:#333,stroke-width:2px;
-
-    style A fill:#e0e8f0,stroke:#333,stroke-width:2px;
-    style B fill:#ccf,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5;
-    style C fill:#f9f,stroke:#333,stroke-width:2px;
-    style D fill:#f9f,stroke:#333,stroke-width:2px;
-    style D1 fill:#f9f,stroke:#333,stroke-width:2px;
-    style D1_1 fill:#f9f,stroke:#333,stroke-width:2px;
-    style D1_2 fill:#f9f,stroke:#333,stroke-width:2px;
-    style D1_3 fill:#f9f,stroke:#333,stroke-width:2px;
-    style E fill:#bcf,stroke:#333,stroke-width:2px;
-    style F fill:#f9f,stroke:#333,stroke-width:2px;
-    style G fill:#f9f,stroke:#333,stroke-width:2px;
-    style H fill:#f9f,stroke:#333,stroke-width:2px;
-    style I fill:#bcf,stroke:#333,stroke-width:2px;
-    style J fill:#ccf,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5;
-    style K fill:#e0e8f0,stroke:#333,stroke-width:2px;
-    style L fill:#f9f,stroke:#333,stroke-width:2px;
-    style M fill:#f9f,stroke:#333,stroke-width:2px;
-    style N fill:#ccf,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5;
-    style O fill:#f9f,stroke:#333,stroke-width:2px;
-    style P fill:#f9f,stroke:#333,stroke-width:2px;
-    style Q fill:#f9f,stroke:#333,stroke-width:2px;
-    style R fill:#f9f,stroke:#333,stroke-width:2px;
-    style S fill:#f9f,stroke:#333,stroke-width:2px;
-    style T fill:#f9f,stroke:#333,stroke-width:2px;
-    style U fill:#ccf,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5;
-    style V fill:#e0e8f0,stroke:#333,stroke-width:2px;
-    style W fill:#f9f,stroke:#333,stroke-width:2px;
-    style X fill:#f9f,stroke:#333,stroke-width:2px;
 ```
 </details>
 
 ### The Indexing Phase: Construction of the Epistemological Graph
 
-The initial and foundational phase involves the systematic ingestion, parsing, and transformation of the target Git repository's entire historical lineage into a machine-comprehensible, semantically rich representation.
+<details>
+<summary>Chart 2: Indexing Phase Sequence Diagram</summary>
 
-1.  **Repository Synchronization and Commit Stream Extraction:**
-    The system initiates by cloning or updating the target Git repository. A `Commit Stream Extractor` module then iterates through the complete history, typically in a reverse chronological order, leveraging Git's native plumbing commands (e.g., `git log --pretty=format:%H --topo-order`). Each commit object, uniquely identified by its SHA-1 hash (or equivalent cryptographic identifier), is systematically processed.
+```mermaid
+sequenceDiagram
+    participant User
+    participant GitIndexerService
+    participant GitRepositoryParser
+    participant ComplexityAnalyzer
+    participant SemanticEmbedding
+    participant VectorDB
+    participant MetadataStore
 
-2.  **Commit Data Parsing and Normalization:**
-    For each commit, the `Commit Data Parser` extracts fundamental metadata:
-    *   **Commit Hash H:** The immutable cryptographic identifier.
-    *   **Author A:** Name and email of the commit's originator.
-    *   **Committer C:** Name and email of the entity who applied the commit can differ from author.
-    *   **Author Date AD:** The timestamp when the commit was originally authored.
-    *   **Committer Date CD:** The timestamp when the commit was applied to the repository.
-    *   **Parent Hashes P_H:** References to the direct ancestor commits, crucial for graph traversal and merge analysis.
-    *   **Commit Message M:** The descriptive text provided by the author.
+    User->>GitIndexerService: index_repository(repo_path)
+    GitIndexerService->>GitRepositoryParser: get_all_commit_data()
+    GitRepositoryParser-->>GitIndexerService: List[CommitData]
+    loop For each CommitData
+        GitIndexerService->>ComplexityAnalyzer: analyze_diff_segment(diff)
+        ComplexityAnalyzer-->>GitIndexerService: ExportedCodeComplexityMetrics
+        Note over GitIndexerService: Creates ExportedEnrichedCommitData
+        GitIndexerService->>SemanticEmbedding: embed(commit_message)
+        SemanticEmbedding-->>GitIndexerService: message_vector
+        GitIndexerService->>SemanticEmbedding: embed(diff_content)
+        SemanticEmbedding-->>GitIndexerService: diff_vector
+        GitIndexerService->>VectorDB: insert_vector(hash_msg, message_vector)
+        VectorDB-->>GitIndexerService: Ack
+        GitIndexerService->>VectorDB: insert_vector(hash_diff, diff_vector)
+        VectorDB-->>GitIndexerService: Ack
+        GitIndexerService->>MetadataStore: store(hash, EnrichedCommitData)
+        MetadataStore-->>GitIndexerService: Ack
+    end
+    GitIndexerService-->>User: Indexing Complete
+```
+</details>
 
-3.  **Diff Analysis and Code Element Extraction:**
-    The `Diff Analyzer` module is responsible for processing the `git diff` output for each commit or `git show <hash>`. This yields a canonical representation of all changes introduced or removed by the commit. For each file modification within a diff, the system extracts:
-    *   **File Path FP:** The path of the modified file both old and new paths for renames.
-    *   **Change Type CT:** Addition, modification, deletion, rename.
-    *   **Line-level Changes LC:** The actual added, deleted, or modified lines of code.
-    *   **Structural Elements SE:** Utilizing Abstract Syntax Tree AST parsers language-specific, the system can optionally extract more granular code changes, such as function signature modifications, class additions, variable declarations, and dependency changes. This provides a structural context beyond mere text.
+The foundational phase involves the systematic ingestion, parsing, and transformation of the repository's history into a machine-comprehensible, semantically rich representation.
 
-    Crucially, the `ExportedCodeComplexityAnalyzer` then processes these `DiffSegment` objects to derive quantitative metrics like `cyclomatic_complexity` and `sloc`, which are encapsulated within `ExportedCodeComplexityMetrics`. This enriched data forms `ExportedEnrichedDiffSegment` objects, which are then aggregated into `ExportedEnrichedCommitData` for comprehensive commit representation.
-
-4.  **Semantic Encoding Vector Embedding Generation:**
-    This is a critical step where raw textual and code data are transformed into high-dimensional numerical vector embeddings, capturing their semantic meaning.
-    *   **Commit Message Embeddings E_M:** The `Commit Message Embedding Generator` processes the commit message M using a pre-trained transformer-based language model e.g. Sentence-BERT, OpenAI's embedding models. The output is a dense vector `v_M` that semantically represents the message's intent and content.
-    *   **Code Diff Embeddings E_D:** The `Code Diff Embedding Generator` processes the concatenated line-level changes LC and optionally the extracted `Structural Elements` SE. Due to the potentially large size of diffs, chunking, summarization, or specialized code-aware embedding models e.g. CodeBERT, GraphCodeBERT may be employed to generate a vector `v_D` for the entire diff or a set of vectors for individual changed files/functions.
-    *   **Author & Path Embeddings E_A, E_P - Optional:** Authors and file paths can also be embedded to capture "expertise proximity" or "topical area proximity" respectively.
-
-5.  **Data Persistence: Vector Database and Metadata Store:**
-    The generated embeddings and parsed metadata are stored in optimized databases:
-    *   **Vector Database I:** A specialized database e.g. Milvus, Pinecone, Weaviate, FAISS designed for efficient Approximate Nearest Neighbor ANN search in high-dimensional spaces. Each commit hash H is associated with its `v_M` and `v_D` vectors.
-    *   **Metadata Store E:** A relational or document database e.g. PostgreSQL, MongoDB that stores all extracted non-vector metadata author, dates, parent hashes, original commit messages, original diffs, file paths, etc., along with the `ExportedEnrichedCommitData` objects. This store allows for rapid attribute-based filtering and retrieval of the original content corresponding to a matched vector.
+1.  **Repository Synchronization and Commit Stream Extraction:** The `GitRepositoryParser` interfaces with the Git repository, iterating through the commit graph to extract `CommitData` objects for every commit.
+2.  **Commit Data Parsing and Enrichment:** For each `CommitData`, the `GitIndexerService` orchestrates an enrichment process. The `ExportedCodeComplexityAnalyzer` processes each `DiffSegment` to derive quantitative metrics (`cyclomatic_complexity`, `sloc`), creating `ExportedEnrichedDiffSegment` objects. These are aggregated into a comprehensive `ExportedEnrichedCommitData` object.
+3.  **Semantic Encoding (Vector Embedding Generation):** This is a critical transformation step. A `SemanticEmbedding` model, often a specialized transformer, converts the textual commit message and the structured code diff into high-dimensional numerical vectors (`v_M` and `v_D`).
+4.  **Data Persistence:** The generated embeddings and metadata are stored. The `VectorDatabaseClient` inserts `v_M` and `v_D` into a `Vector Database` capable of efficient Approximate Nearest Neighbor (ANN) search. The full `ExportedEnrichedCommitData` object is stored in a `Metadata Store` for fast attribute-based retrieval.
 
 ### The Query Phase: Semantic Retrieval and Cognitive Synthesis
 
+<details>
+<summary>Chart 3: Query Phase Sequence Diagram</summary>
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ArcheologistQueryService
+    participant SemanticEmbedding
+    participant VectorDB
+    participant MetadataStore
+    participant LLMContextBuilder
+    participant GeminiClient
+
+    User->>ArcheologistQueryService: query_repository_history(question, filters)
+    ArcheologistQueryService->>SemanticEmbedding: embed(question)
+    SemanticEmbedding-->>ArcheologistQueryService: query_vector
+    ArcheologistQueryService->>VectorDB: search_vectors(query_vector)
+    VectorDB-->>ArcheologistQueryService: List[CommitHashes]
+    ArcheologistQueryService->>MetadataStore: get_commit_metadata(hashes)
+    MetadataStore-->>ArcheologistQueryService: List[EnrichedCommitData]
+    Note over ArcheologistQueryService: Apply metadata filters (author, date, etc.)
+    ArcheologistQueryService->>LLMContextBuilder: build_context(filtered_commits)
+    LLMContextBuilder-->>ArcheologistQueryService: context_string
+    Note over ArcheologistQueryService: Construct final LLM prompt
+    ArcheologistQueryService->>GeminiClient: generate_text(prompt)
+    GeminiClient-->>ArcheologistQueryService: LLMResponse
+    ArcheologistQueryService-->>User: Synthesized Answer
+```
+</details>
+
 This phase leverages the indexed data to answer complex natural language queries.
 
-1.  **User Query Ingestion and Semantic Encoding:**
-    A user submits a natural language query `q` e.g. "Who touched the security module last quarter?". The `Query Semantic Encoder` module processes `q` using the *same* embedding model employed for commit messages, generating a query embedding `v_q`.
+1.  **User Query Ingestion and Semantic Encoding:** A user submits a query `q`. The `ArcheologistQueryService` uses the `SemanticEmbedding` model to generate a query embedding `v_q`.
+2.  **Multi-Modal Semantic Search:** The `VectorDB` is queried with `v_q` to find the top `K` semantically similar commit messages and diffs, retrieving a set of candidate commit hashes.
+3.  **Filtering and Refinement:** The retrieved candidates are filtered based on metadata criteria provided by the user (e.g., `last_n_months`, `author_filter`, `min_complexity`).
+4.  **Context Assembly:** The `LLMContextBuilder` retrieves the full `ExportedEnrichedCommitData` for the final set of relevant commits from the `Metadata Store` and formats it into a coherent textual block.
+5.  **Generative AI Model Orchestration and Synthesis:** A meticulously engineered prompt is constructed and sent to the `GeminiClient`. The LLM analyzes the context and synthesizes a natural language answer.
 
-2.  **Multi-Modal Semantic Search:**
-    The `Vector Database Query Engine` performs a sophisticated search operation:
-    *   **Primary Vector Search:** It queries the `Vector Database` using `v_q` to find the top `K` most semantically similar commit message embeddings `v_M` and optionally diff embeddings `v_D`. This yields a preliminary set of candidate commit hashes.
-    *   **Filtering and Refinement:** Concurrently or sequentially, metadata filters e.g. `last_n_months`, `author_name`, `file_path_regex`, `min_complexity` are applied to narrow down the search space or re-rank results. For instance, a query involving a temporal constraint will filter commits by `Committer Date`.
-    *   **Relevance Scoring:** A composite relevance score `S_R` might be calculated, combining cosine similarity scores from message and diff embeddings, weighted by recency, author relevance, or file path relevance.
+### Advanced Analytics and Data Models
 
-3.  **Context Assembly:**
-    The `Context Assembler` retrieves the full metadata and original content commit message, diff text for the top `N` most relevant commits from the `Metadata Store`. This data is then meticulously formatted into a coherent, structured textual block optimized for LLM consumption, often utilizing an `LLMContextBuilder` for efficient token management.
-    Example Structure:
-    ```
-    Commit HASH: [commit_hash]
-    Author: [author_name] <[author_email]>
-    Date: [commit_date]
-    Message:
-    ```
-    ```
-    [commit_message_text]
-    ```
-    ```
-    Diff Snippet (File: [file_path]):
-    ```
-    ```
-    [relevant_diff_lines]
-    ```
-    ```
-    ---
-    ```
-    This process may involve intelligent truncation or summarization of excessively large diffs to fit within the LLM's token context window, while preserving the most semantically pertinent parts.
+<details>
+<summary>Chart 4: Expertise Profiler Logic Flow</summary>
 
-4.  **Generative AI Model Orchestration and Synthesis:**
-    The formatted context block, along with the original user query, is transmitted to the `Generative AI Model Orchestrator`. This module constructs a meticulously engineered prompt for the `Large Language Model LLM`.
+```mermaid
+graph TD
+    A[Start: build_expertise_profiles] --> B{Iterate through all EnrichedCommits in Metadata Store}
+    B --> C[For each commit, calculate Contribution Score]
+    C --> D{Score = w1*len(msg) + w2*lines(diff) + w3*complexity + w4*recency}
+    D --> E[Aggregate scores by Author and Code Path Prefix]
+    E --> B
+    B -- All commits processed --> F[Normalize scores for each author]
+    F --> G{For each author, topic_score = topic_contrib / total_contrib}
+    G --> H[Store normalized profiles in expertise_cache]
+    H --> I[End: Profiles Ready]
+```
+</details>
 
-    **Example Prompt Structure:**
-    ```
-    You are an expert software archeologist and forensic engineer. Your task is to analyze a provided set of Git commit histories and synthesize a precise, comprehensive answer to the user's question, strictly based on the provided data. Do not infer or invent information outside of what is explicitly presented in the commit context. Identify key trends, contributors, and significant changes.
+<details>
+<summary>Chart 5: Repository Health Monitor Anomaly Detection Flow</summary>
 
-    User Question: {original_user_question}
+```mermaid
+graph TD
+    A[Start: detect_anomalies(metric, lookback_days)] --> B[Get historical metrics from Metadata Store]
+    B --> C{Filter metrics for the lookback period}
+    C --> D[Calculate Mean (μ) and Standard Deviation (σ) of the metric]
+    D --> E{Iterate through recent commits}
+    E --> F[Calculate total metric value for the commit]
+    F --> G{Is commit_metric > μ + N*σ ?}
+    G -- Yes --> H[Flag commit as an Anomaly]
+    H --> E
+    G -- No --> E
+    E -- All recent commits checked --> I[Return sorted list of anomalies]
+    I --> J[End]
+```
+</details>
 
-    Git Commit Data Contextual Provenance:
-    {assembled_context_block}
+<details>
+<summary>Chart 6: Enriched Commit Data Model (ERD Style)</summary>
 
-    Synthesized Expert Analysis and Answer:
-    ```
+```mermaid
+erDiagram
+    CommitData ||--o{ DiffSegment : "has original"
+    ExportedEnrichedCommitData }o--|| CommitData : "wraps"
+    ExportedEnrichedCommitData ||--|{ ExportedEnrichedDiffSegment : "contains"
+    ExportedEnrichedDiffSegment }o--|| DiffSegment : "wraps"
+    ExportedEnrichedDiffSegment }|--|| ExportedCodeComplexityMetrics : "has"
 
-    The `LLM` e.g. Gemini, GPT-4 then processes this prompt. It performs an intricate cognitive analysis, identifying patterns, extracting entities e.g. authors, file paths, specific code changes, correlating information across multiple commits, and synthesizing a coherent, natural language answer.
+    CommitData {
+        string hash PK
+        string author
+        datetime author_date
+        string message
+    }
+    DiffSegment {
+        string file_path
+        string content
+    }
+    ExportedCodeComplexityMetrics {
+        int cyclomatic_complexity
+        int sloc
+        string change_type
+    }
+```
+</details>
 
-5.  **Answer Display:**
-    The `Synthesized Answer` from the LLM is then presented to the user via an intuitive `User Interface`, often enriched with direct links back to the original commits in the source repository for verification.
+<details>
+<summary>Chart 7: LLM Prompt Engineering Structure</summary>
 
-### Advanced Features and Extensions
+```mermaid
+graph TD
+    subgraph "Prompt Structure"
+        A[Persona Definition]
+        B[Task Definition]
+        C[Constraints]
+        D[User Question]
+        E[Contextual Data]
+        F[Output Format Instructions]
+        A --> B --> C --> D --> E --> F
+    end
 
-The fundamental framework can be extended with sophisticated functionalities, often leveraging the `Comprehensive Indexed State`:
+    subgraph "Example Content"
+        A_Content["'You are an expert software archeologist...'"]
+        B_Content["'Synthesize a precise, comprehensive answer...'"]
+        C_Content["'You MUST strictly base your answer on the information presented...'"]
+        D_Content["'User Question: {question}'"]
+        E_Content["'Git Commit Data (Contextual Provenance): {context_block}'"]
+        F_Content["'Synthesized Expert Analysis and Answer:'"]
+    end
 
-*   **Temporal Anomaly Detection:** Provided by the `RepositoryHealthMonitor`, identifying commits that deviate significantly from historical patterns in terms of size, author activity, or file modification frequency, potentially signaling regressions or security concerns.
-*   **Author Expertise Mapping:** Performed by the `ExpertiseProfiler`, building a dynamic profile of author expertise based on their contributions to specific modules, files, or semantic topics, aiding in identifying SMEs.
-*   **Code Ownership Inference:** Automatically inferring granular code ownership at the file, directory, or even function level based on commit history and contribution weights.
-*   **Regression Analysis:** Identifying potential root causes of reported bugs by semantically linking bug reports to relevant code changes and using the LLM to hypothesize causal relationships.
-*   **Cross-Repository Archeology:** Extending the indexing and querying capabilities across multiple interconnected repositories within an organization.
-*   **Interactive Refinement:** Allowing users to provide feedback on initial results, triggering iterative semantic searches or context re-assembly.
+    A -- "e.g." --> A_Content
+    B -- "e.g." --> B_Content
+    C -- "e.g." --> C_Content
+    D -- "e.g." --> D_Content
+    E -- "e.g." --> E_Content
+    F -- "e.g." --> F_Content
+```
+</details>
 
-### Conceptual Code Python Backend
+<details>
+<summary>Chart 8: Vector Quantization Process for ANN (IVF-PQ)</summary>
 
-The following conceptual Python code illustrates the interaction between the described modules. It outlines the core logic, assuming the existence of robust `vector_db` and `gemini_client` integrations.
+```mermaid
+graph TD
+    subgraph "Indexing Time"
+        A[High-Dim Commit Vectors] --> B(k-means clustering)
+        B --> C{k Centroids (Voronoi Cells)}
+        A --> D{Assign each vector to nearest centroid}
+        D --> E[Inverted File Index: Centroid -> Vector List]
+
+        subgraph "Product Quantization (PQ) per vector"
+            F[Vector] --> G{Split into m sub-vectors}
+            G --> H{Run k-means on each sub-space (256 centroids)}
+            H --> I{Replace sub-vector with centroid ID (8 bits)}
+            I --> J[Compressed Vector (m * 8 bits)]
+        end
+        E --> F
+    end
+
+    subgraph "Query Time"
+        K[Query Vector] --> L{Find nprobe nearest centroids}
+        L --> M[Retrieve corresponding vector lists from Inverted Index]
+        M --> N{Compute distance between query and compressed vectors in lists}
+        N --> O[Return top-k results]
+    end
+```
+</details>
+
+<details>
+<summary>Chart 9: Multi-Head Attention Mechanism</summary>
+
+```mermaid
+graph TD
+    subgraph "Multi-Head Attention"
+        direction LR
+        Input[Input Embeddings]
+        
+        subgraph "Head 1"
+            Input --> Q1(Linear)
+            Input --> K1(Linear)
+            Input --> V1(Linear)
+            Q1 & K1 & V1 --> A1["Scaled Dot-Product<br>Attention"]
+        end
+
+        subgraph "Head 2"
+            Input --> Q2(Linear)
+            Input --> K2(Linear)
+            Input --> V2(Linear)
+            Q2 & K2 & V2 --> A2["..."]
+        end
+
+        subgraph "Head h"
+            Input --> Qh(Linear)
+            Input --> Kh(Linear)
+            Input --> Vh(Linear)
+            Qh & Kh & Vh --> Ah["Scaled Dot-Product<br>Attention"]
+        end
+
+        A1 & A2 & Ah --> Concat[Concatenate]
+        Concat --> FinalLinear(Linear)
+        FinalLinear --> Output
+    end
+```
+</details>
+
+<details>
+<summary>Chart 10: RLHF (Reinforcement Learning from Human Feedback) Process</summary>
+
+```mermaid
+graph TD
+    subgraph "Phase 1: Supervised Fine-Tuning"
+        A[Prompt Dataset] --> B[Human Labelers Write Demonstrations]
+        B --> C[Dataset of (Prompt, Good Response)]
+        C --> D[Fine-tune pre-trained LLM]
+    end
+
+    subgraph "Phase 2: Reward Model Training"
+        E[Sample a prompt] --> F(Generate several responses from SFT Model)
+        F --> G[Human ranks responses by quality]
+        G --> H[Create dataset of (Prompt, Ranked Responses)]
+        H --> I[Train a Reward Model (RM) to predict human preference]
+    end
+
+    subgraph "Phase 3: RL Optimization"
+        J[Sample a prompt from dataset] --> K(SFT Model generates response)
+        K --> L{Reward Model scores the response}
+        L -- Reward Signal --> M[Update SFT Model policy using PPO]
+        M --> K
+    end
+
+    D -- "SFT Model" --> F
+    D -- "Initial Policy" --> K
+    M -- "Updated Policy" --> K
+```
+</details>
+
 
 **Claims:**
 
 1.  A system for facilitating semantic-cognitive archeology within a distributed version control repository, comprising:
-    a.  A **Commit Stream Extractor** module configured to programmatically interface with a target distributed version control repository and obtain a chronological stream of commit objects, each uniquely identified by a cryptographic hash.
-    b.  A **Commit Data Parser** module coupled to the Commit Stream Extractor, configured to extract granular metadata from each commit object, including but not limited to authorial identity, temporal markers author date, committer date, and the comprehensive commit message.
-    c.  A **Diff Analyzer** module coupled to the Commit Data Parser, configured to generate and process line-level code changes diffs associated with each commit, and optionally to extract higher-order structural code elements via language-specific Abstract Syntax Tree AST parsing.
-    d.  An **ExportedCodeComplexityAnalyzer** module coupled to the Diff Analyzer, configured to compute quantitative metrics such as cyclomatic complexity and source lines of code sloc for each code change.
-    e.  An **ExportedEnrichedDiffSegment Creator** configured to combine DiffSegment objects with ExportedCodeComplexityMetrics to produce ExportedEnrichedDiffSegment objects.
-    f.  An **Enriched Commit Data Creator** configured to aggregate multiple ExportedEnrichedDiffSegment objects with original CommitData to form ExportedEnrichedCommitData objects.
-    g.  A **Semantic Encoding** module comprising:
-        i.  A **Commit Message Embedding Generator** configured to transform each commit message into a high-dimensional numerical vector embedding, capturing its latent semantic meaning.
-        ii. A **Code Diff Embedding Generator** configured to transform the processed code changes diffs into one or more high-dimensional numerical vector embeddings, capturing the semantic intent and impact of the code modification.
-    h.  A **Data Persistence Layer** comprising:
-        i.  A **Vector Database** configured for the efficient storage and Approximate Nearest Neighbor ANN retrieval of the generated vector embeddings.
-        ii. A **Metadata Store** configured for the structured storage of all non-vector commit metadata and original content, including raw commit messages, diffs, and ExportedEnrichedCommitData objects, linked to their corresponding commit hashes.
-    i.  A **Query Semantic Encoder** module configured to receive a natural language query from a user and transform it into a high-dimensional numerical vector embedding.
-    j.  A **Vector Database Query Engine** module coupled to the Query Semantic Encoder and the Vector Database, configured to perform a multi-modal semantic search by comparing the query embedding against the stored commit message and code diff embeddings, thereby identifying a ranked set of epistemologically relevant commit hashes.
-    k.  A **Context Assembler** module coupled to the Vector Database Query Engine and the Metadata Store, configured to retrieve the full metadata and original content for the identified relevant commits, including ExportedEnrichedCommitData, and dynamically compile them into a coherent, token-optimized contextual payload.
-    l.  A **Generative AI Model Orchestrator** module coupled to the Context Assembler, configured to construct a meticulously engineered prompt comprising the user's original query and the contextual payload, and to transmit this prompt to a sophisticated **Large Language Model LLM**.
-    m.  The Large Language Model LLM configured to receive the engineered prompt, perform a cognitive analysis of the provided context, and synthesize a direct, comprehensive, natural language answer to the user's query, strictly predicated upon the provided contextual provenance.
-    n.  A **User Interface** module configured to receive and display the synthesized answer to the user.
+    a.  A **Commit Stream Extractor** module configured to programmatically interface with a target distributed version control repository and obtain a chronological stream of commit objects.
+    b.  A **Commit Data Parser** module configured to extract granular metadata from each commit object, including authorial identity, temporal markers, and the commit message.
+    c.  A **Diff Analyzer** module configured to generate and process line-level code changes associated with each commit.
+    d.  An **ExportedCodeComplexityAnalyzer** module coupled to the Diff Analyzer, configured to compute quantitative metrics including cyclomatic complexity and source lines of code for each code change.
+    e.  An **Enriched Commit Data Creator** configured to aggregate commit metadata with enriched diff segments containing complexity metrics to form comprehensive `ExportedEnrichedCommitData` objects.
+    f.  A **Semantic Encoding** module comprising a **Commit Message Embedding Generator** and a **Code Diff Embedding Generator** configured to transform textual and code content into high-dimensional numerical vector embeddings.
+    g.  A **Data Persistence Layer** comprising a **Vector Database** for efficient storage and retrieval of vector embeddings and a **Metadata Store** for structured storage of all non-vector `ExportedEnrichedCommitData`.
+    h.  A **Query Semantic Encoder** module configured to receive a natural language query and transform it into a high-dimensional vector embedding.
+    i.  A **Vector Database Query Engine** module configured to perform a multi-modal semantic search by comparing the query embedding against stored commit embeddings to identify a ranked set of relevant commit hashes.
+    j.  A **Context Assembler** module configured to retrieve the full `ExportedEnrichedCommitData` for the identified relevant commits and compile them into a coherent, token-optimized contextual payload.
+    k.  A **Generative AI Model Orchestrator** module configured to construct an engineered prompt comprising the user's query and the contextual payload, and to transmit this prompt to a Large Language Model (LLM).
+    l.  The LLM configured to receive the engineered prompt, perform a cognitive analysis, and synthesize a direct, comprehensive, natural language answer to the user's query predicated upon the provided context.
 
 2.  The system of claim 1, wherein the Semantic Encoding module utilizes transformer-based neural networks for the generation of vector embeddings, specifically adapted for both natural language text and programming language source code.
 
 3.  The system of claim 1, further comprising a **Temporal Filtering Module** integrated into the Query Phase, configured to filter or re-rank relevant commits based on specified temporal criteria, such as recency or date ranges.
 
-4.  The system of claim 1, further comprising an **ExpertiseProfiler** module configured to analyze indexed commit histories, including ExportedEnrichedCommitData, to infer and rank authorial expertise for specific code modules, file paths, or semantic topics based on quantitative and qualitative contribution metrics derived from code complexity and change type.
+4.  The system of claim 1, further comprising an **ExpertiseProfiler** module configured to analyze indexed commit histories, including `ExportedEnrichedCommitData`, to infer and rank authorial expertise for specific code modules, file paths, or semantic topics based on quantitative and qualitative contribution metrics derived from code complexity, change volume, and temporal decay.
 
 5.  A method for performing semantic-cognitive archeology on a distributed version control repository, comprising the steps of:
     a.  **Ingestion:** Programmatically traversing the complete history of a target repository to extract discrete commit objects.
-    b.  **Parsing and Enrichment:** Deconstructing each commit object into its constituent metadata author, date, message and code changes diffs; then, analyzing said code changes to compute complexity metrics and combining these with the original diffs to form enriched diff segments ExportedEnrichedDiffSegment, which are further aggregated into enriched commit data ExportedEnrichedCommitData.
+    b.  **Parsing and Enrichment:** Deconstructing each commit object into its constituent metadata and code changes; then, analyzing said code changes to compute complexity metrics and creating enriched commit data objects (`ExportedEnrichedCommitData`).
     c.  **Embedding:** Generating high-dimensional vector representations for both the commit messages and the code changes, using advanced neural network models.
-    d.  **Persistence:** Storing these vector embeddings in an optimized vector database and all associated metadata and original content, including ExportedEnrichedCommitData, in a separate metadata store, maintaining explicit linkages between them.
+    d.  **Persistence:** Storing these vector embeddings in an optimized vector database and all associated `ExportedEnrichedCommitData` in a separate metadata store.
     e.  **Query Encoding:** Receiving a natural language query from a user and transforming it into a high-dimensional vector embedding.
-    f.  **Semantic Retrieval:** Executing a multi-modal semantic search within the vector database using the query embedding, to identify and retrieve a ranked set of semantically relevant commit hashes.
-    g.  **Context Formulation:** Assembling a coherent textual context block by fetching the full details of the retrieved commits, including ExportedEnrichedCommitData, from the metadata store.
-    h.  **Cognitive Synthesis:** Submitting the formulated context and the original query to a pre-trained Large Language Model LLM as an engineered prompt.
-    i.  **Response Generation:** Receiving a synthesized, natural language answer from the LLM, which directly addresses the user's query based solely on the provided commit context.
-    j.  **Presentation:** Displaying the synthesized answer to the user via a user-friendly interface.
+    f.  **Semantic Retrieval:** Executing a multi-modal semantic search within the vector database using the query embedding to identify a ranked set of semantically relevant commit hashes.
+    g.  **Context Formulation:** Assembling a coherent textual context block by fetching the full `ExportedEnrichedCommitData` of the retrieved commits from the metadata store.
+    h.  **Cognitive Synthesis:** Submitting the formulated context and the original query to a Large Language Model (LLM) as an engineered prompt.
+    i.  **Response Generation:** Receiving a synthesized, natural language answer from the LLM that directly addresses the user's query based solely on the provided commit context.
+    j.  **Presentation:** Displaying the synthesized answer to the user.
 
 6.  The method of claim 5, wherein the embedding step c involves employing different specialized transformer models for natural language commit messages and for programming language code changes, respectively.
 
 7.  The method of claim 5, further comprising the step of **Dynamic Context Adjustment**, wherein the size and content of the assembled context block g are adaptively adjusted based on the LLM's token window limitations and the perceived relevance density of the retrieved commit data.
-8.  The system of claim 1, further comprising a **RepositoryHealthMonitor** module configured to detect anomalies in commit patterns, such as sudden spikes in complexity or changes in lines of code sloc, by analyzing historical ExportedEnrichedCommitData against statistical thresholds like standard deviation.
+
+8.  The system of claim 1, further comprising a **RepositoryHealthMonitor** module configured to detect anomalies in commit patterns, such as sudden spikes in complexity or changes in lines of code, by analyzing historical `ExportedEnrichedCommitData` against statistical thresholds including a moving average and standard deviation.
+
+9.  The system of claim 1, wherein the Generative AI Model Orchestrator constructs the engineered prompt to include a specific persona instruction for the LLM, directing it to act as a "forensic engineer," and an explicit constraint to base its synthesis exclusively on the provided contextual data, thereby preventing hallucination and ensuring verifiability of the generated answer.
+
+10. The system of claim 1, wherein the Vector Database Query Engine performs a hybrid search that combines the semantic similarity score from vector search with a relevance score derived from the quantitative metrics within the `ExportedEnrichedCommitData`, such as cyclomatic complexity or change type, to re-rank results and prioritize commits that are both semantically relevant and structurally significant.
+
 
 **Mathematical Justification:**
 
-The foundational rigor of the Semantic-Cognitive Archeology System for Distributed Version Control Systems is underpinned by sophisticated mathematical constructs, each deserving of comprehensive treatment as a distinct domain of inquiry.
+The foundational rigor of the system is underpinned by sophisticated mathematical constructs.
 
-### I. The Theory of High-Dimensional Semantic Embedding Spaces: E_x
+### I. High-Dimensional Semantic Embedding Spaces
 
-Let `D` be the domain of all possible textual and code sequences, and `R^d` be a `d`-dimensional Euclidean vector space. The embedding function `E: D -> R^d` maps an input sequence `x in D` to a dense vector representation `v_x in R^d`. This mapping is not arbitrary; it is meticulously constructed such that semantic similarity in the original domain `D` is approximately preserved as geometric proximity in the embedding space `R^d`.
+Let `D` be the domain of all textual and code sequences, and `R^d` be a `d`-dimensional Euclidean vector space. The embedding function `E: D -> R^d` maps an input sequence `x in D` to a dense vector representation `v_x in R^d`.
 
-**I.A. Foundations of Transformer Architectures for E_x:**
-At the core of `E_x` lies the **Transformer architecture**, a revolutionary deep neural network paradigm, notably eschewing recurrent RNN or convolutional CNN layers in favor of a powerful mechanism termed "self-attention."
+1.  `v_x = E(x)`
+2.  `d` is the dimensionality of the embedding space, typically `d in [384, 4096]`.
+3.  The core property is semantic preservation: `sim_D(x_1, x_2) approx sim_R^d(E(x_1), E(x_2))`.
+4.  Positional Encoding `PE` in Transformers:
+    `PE_[pos, 2i] = sin(pos / 10000^[2i/d_model])`
+5.  `PE_[pos, 2i+1] = cos(pos / 10000^[2i/d_model])`
+6.  Input vector `z_i^0 = e_i_token + p_i`.
+7.  Query projection: `Q = Z * W^Q`
+8.  Key projection: `K = Z * W^K`
+9.  Value projection: `V = Z * W^V`
+10. Scaled Dot-Product Attention: `Attention(Q, K, V) = softmax((Q * K^T) / sqrt(d_k)) * V`
+11. The scaling factor is `1 / sqrt(d_k)`.
+12. Softmax function for a vector `z`: `softmax(z)_i = e^(z_i) / sum_j(e^(z_j))`
+13. Multi-Head Attention `MHA` with `h` heads:
+    `MHA(Z) = Concat(head_1, ..., head_h) * W^O`
+14. Where `head_j = Attention(Z*W^Q_j, Z*W^K_j, Z*W^V_j)`.
+15. Position-wise Feed-Forward Network: `FFN(y) = max(0, y*W_1 + b_1) * W_2 + b_2`
+16. Layer Normalization `LN`: `LN(x) = gamma * ((x - mu) / sqrt(sigma^2 + epsilon)) + beta`
+17. Mean `mu`: `mu = (1/H) * sum_i(x_i)`
+18. Variance `sigma^2`: `sigma^2 = (1/H) * sum_i((x_i - mu)^2)`
+19. Residual connection: `Output = LN(x + Sublayer(x))`
+20. Final embedding vector (e.g., via mean pooling): `v_x = (1/L) * sum_i(z_i^N)`
 
-1.  **Tokenization and Input Representation:**
-    An input sequence `x` e.g. a commit message or a code diff is first tokenized into a sequence of subword units `x = {t_1, t_2, ..., t_L}`, where `L` is the sequence length. Each token `t_i` is mapped to a fixed-size embedding vector `e_i_token`. To imbue the model with positional awareness, a **Positional Encoding** `p_i` is added to each token embedding, yielding the input vector `z_i^0 = e_i_token + p_i`. The positional encoding typically uses sine and cosine functions of varying frequencies:
-    ```
-    PE_[pos, 2i] = sin(pos / 10000^[2i/d_model])
-    ```
-    ```
-    PE_[pos, 2i+1] = cos(pos / 10000^[2i/d_model])
-    ```
-    where `pos` is the position and `i` is the dimension.
+### II. Calculus of Semantic Proximity
 
-2.  **Multi-Head Self-Attention MHSA:**
-    The fundamental building block of the Transformer is the self-attention mechanism, which computes a weighted sum of input features, with weights determined by the similarity of features within the input sequence itself. For an input sequence of vectors `Z = [z_1, ..., z_L]`, three learned weight matrices are applied: `W^Q, W^K, W^V in R^(d_model x d_k)` for query, key, value projections, where `d_k` is the dimension of the query/key.
-    The attention scores for a single "head" are computed as:
-    ```
-    Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V
-    ```
-    where `Q = Z W^Q`, `K = Z W^K`, `V = Z W^V`.
-    **Multi-Head Attention** applies this mechanism `h` times in parallel with different learned projections, then concatenates their outputs, and linearly transforms them:
-    ```
-    MultiHead(Z) = Concat(head_1, ..., head_h) W^O
-    ```
-    where `head_j = Attention(Z W^Q_j, Z W^K_j, Z W^V_j)`.
+21. Cosine Similarity: `cos_sim(u, v) = (u . v) / (||u|| * ||v||)`
+22. Dot product: `u . v = sum_i(u_i * v_i)`
+23. L2 Norm (Euclidean norm): `||u|| = sqrt(sum_i(u_i^2))`
+24. So, `cos_sim(u, v) = sum_i(u_i*v_i) / (sqrt(sum_i(u_i^2)) * sqrt(sum_i(v_i^2)))`
+25. Cosine Distance: `cos_dist(u, v) = 1 - cos_sim(u, v)`
+26. Euclidean Distance: `d(u, v) = ||u - v|| = sqrt(sum_i((u_i - v_i)^2))`
+27. For normalized vectors `||u||=||v||=1`, `d(u, v)^2 = ||u||^2 - 2(u.v) + ||v||^2 = 2 - 2cos_sim(u,v) = 2*cos_dist(u,v)`.
+28. Thus, `d(u, v) = sqrt(2 * cos_dist(u, v))` for normalized vectors.
+29. Manhattan (L1) Distance: `d_L1(u, v) = sum_i(|u_i - v_i|)`
+30. Minkowski Distance (generalization): `d_p(u, v) = (sum_i(|u_i - v_i|^p))^(1/p)`
 
-3.  **Feed-Forward Networks and Residual Connections:**
-    Each attention layer is followed by a position-wise feed-forward network FFN and layer normalization, with residual connections aiding gradient flow:
-    ```
-    FFN(y) = ReLU(y W_1 + b_1) W_2 + b_2
-    ```
-    The output of each sub-layer attention or FFN is `LayerNorm(x + Sublayer(x))`.
+### III. Algorithmic Theory of Semantic Retrieval (ANN)
 
-4.  **Embedding Generation:**
-    For sequence embeddings, often the representation of a special `[CLS]` token added during tokenization from the final Transformer layer is used, or a mean-pooling operation is applied over all token representations:
-    ```
-    v_x = MeanPool(z_1^N, ..., z_L^N)
-    ```
-    where `N` is the number of Transformer layers.
-    The training objective for such models often involves contrastive learning e.g. maximizing similarity of semantically related pairs and minimizing for unrelated pairs, masked language modeling MLM, or next sentence prediction NSP for pre-training on vast corpora. This ensures that the generated vectors encode rich semantic information.
+31. Exact k-NN search complexity: `O(N*d)` where N is number of vectors.
+32. LSH hash function (random projection): `h_r(v) = floor((v . r + b) / w)`
+33. IVF k-means objective function: `argmin_C sum_i min_{c_j in C} ||x_i - c_j||^2`
+34. Search in IVF: `k'` nearest centroids are explored (`nprobe` parameter).
+35. HNSW search complexity: `O(log N)` (empirical).
+36. HNSW layer probability distribution: `P(level) ~ e^(-level / M_L)`
+37. Hybrid score `S_hybrid`: `S_hybrid = alpha * S_semantic + (1-alpha) * S_metric`
+38. Semantic score `S_semantic = cos_sim(v_q, v_h)`
+39. Metric score `S_metric = normalize(log(1 + commit_complexity))`
+40. `alpha` is a weighting parameter `alpha in [0, 1]`.
 
-**I.B. Code-Specific Embeddings:**
-For code diffs, `E_x` can be augmented with specialized models e.g. CodeBERT that integrate syntactic information from ASTs or type information during pre-training, enabling them to understand programming language structure and semantics beyond plain text. The tokenization process may incorporate programming language-specific tokens or even graph-based representations of code.
+### IV. Epistemology of Generative AI
 
-### II. The Calculus of Semantic Proximity: cos_dist_u_v
+41. Autoregressive generation: `P(A|P) = product_k P(a_k | a_1, ..., a_{k-1}, P)`
+42. `P` is the prompt, `A` is the answer.
+43. Probability of next token: `P(a_k | ...) = softmax(logits_k)`
+44. Temperature sampling: `P(a_k | ...) = softmax(logits_k / T)` where T is temperature.
+45. For `T -> 0`, sampling becomes greedy.
+46. For `T -> inf`, sampling becomes uniform.
+47. Top-K sampling: Sample from the `K` most likely tokens.
+48. Top-P (Nucleus) sampling: Sample from the smallest set of tokens `V_p` such that `sum_{t in V_p} P(t) >= p`.
+49. Reward Model in RLHF: `r = R_theta(P, A)`
+50. RL objective (simplified): `maximize E_{A~pi} [R_theta(P, A) - beta * D_KL(pi(A|P) || pi_SFT(A|P))]`
+51. `pi` is the policy (the LLM being optimized).
+52. `pi_SFT` is the initial supervised fine-tuned model.
+53. `D_KL` is the Kullback-Leibler divergence, a penalty term to prevent policy drift.
+54. `D_KL(P||Q) = sum_x P(x) log(P(x)/Q(x))`
 
-Given two `d`-dimensional non-zero vectors `u, v in R^d`, representing embeddings of two sequences, their semantic proximity is quantified by the **Cosine Similarity**, which measures the cosine of the angle between them. The closer the cosine value is to 1, the smaller the angle, and thus the higher their semantic similarity.
+### V. Statistical Analysis for Repository Health
 
-**II.A. Definition and Geometric Interpretation:**
-The cosine similarity `cos_sim_u_v` is defined as:
-```
-cos_sim(u, v) = (u . v) / (||u|| ||v||) = (sum_[i=1]^d u_i v_i) / (sqrt(sum_[i=1]^d u_i^2) sqrt(sum_[i=1]^d v_i^2))
-```
-where `u . v` is the dot product, and `||u||` denotes the Euclidean L2 norm of vector `u`.
-The **Cosine Distance** `cos_dist_u_v` is then typically defined as:
-```
-cos_dist(u, v) = 1 - cos_sim(u, v)
-```
-This distance metric ranges from 0 perfect similarity, angle 0Ã‚Â° to 2 perfect dissimilarity, angle 180Ã‚Â°, with 1 indicating orthogonality no discernible relationship.
-Geometrically, it focuses on the orientation of vectors rather than their magnitude. This is particularly advantageous for semantic embeddings where the length of a vector might not carry direct semantic meaning but its direction in the high-dimensional space does. The embedding space is often normalized such that vectors lie on a hypersphere, making cosine similarity directly equivalent to Euclidean distance.
+55. Let `M_t` be the set of complexity metrics for commits on day `t`.
+56. Moving average `mu_t` over a window of `W` days: `mu_t = (1/W) * sum_{i=t-W+1}^t (mean(M_i))`
+57. Standard deviation `sigma_t` over window `W`: `sigma_t = sqrt((1/W) * sum_{i=t-W+1}^t (stddev(M_i))^2)`
+58. Anomaly detection threshold for commit `c`: `TotalMetric(c) > mu_t + N * sigma_t`
+59. `N` is the number of standard deviations, a configurable parameter.
+60. Contribution score `S_contrib`: `S_contrib = sum_i(w_i * f_i)`
+61. `f_i` are features (complexity, sloc, message length). `w_i` are weights.
+62. Temporal decay factor `d_t = e^(-lambda * delta_t)`
+63. `delta_t` is the age of the commit. `lambda` is the decay rate.
+64. Final score `S_final = d_t * S_contrib`.
+65. Author `A` expertise in topic `T`: `Expertise(A, T) = sum_{c in Commits(A, T)} S_final(c)`
+66. Normalized expertise: `NormExpertise(A, T) = Expertise(A, T) / sum_{T'} Expertise(A, T')`
 
-**II.B. Properties and Advantages:**
-*   **Scale Invariance:** Cosine similarity is invariant to scaling of vectors. If `u` is scaled by a factor `alpha > 0`, `cos_sim(alpha u, v) = cos_sim(u, v)`. This is crucial as embedding magnitudes can vary without affecting semantic content.
-*   **Computational Efficiency:** For dense vectors, it's computationally efficient.
-*   **Effectiveness in High Dimensions:** It performs well in high-dimensional spaces, where traditional Euclidean distance can become less meaningful due to the "curse of dimensionality."
-
-### III. The Algorithmic Theory of Semantic Retrieval: F_semantic_q_H
-
-Given a query embedding `v_q` and a set of `M` commit embeddings `H = {v_h_1, ..., v_h_M}`, the semantic retrieval function `F_semantic_q_H -> H'' subseteq H` efficiently identifies a subset `H''` of commits whose embeddings are geometrically closest to `v_q` in the vector space, based on `cos_dist`. For large `M`, exact nearest neighbor search becomes computationally intractable linear scan `O(Md)`. Thus, **Approximate Nearest Neighbor ANN** algorithms are employed.
-
-**III.A. Locality Sensitive Hashing LSH:**
-One approach is LSH. It hashes data points such that points that are close to each other in the original space are mapped to the same "buckets" with high probability.
-Let `h: R^d -> {0,1}^k` be a hash function that maps vectors to binary codes. For cosine similarity, hyperplanes are often used. For a random vector `r in R^d`:
-```
-h_r(v) = 1 if v . r >= 0
-         0 if v . r < 0
-```
-Multiple such hash functions are combined into a hash family, allowing for probabilistic guarantees on finding neighbors.
-
-**III.B. Quantization-Based Methods e.g. IVFFlat:**
-**Inverted File Index IVF:** This method partitions the `d`-dimensional space into Voronoi cells, each represented by a centroid. During indexing, each commit embedding is assigned to its nearest centroid. At query time, the query vector's nearest centroids are found, and only commits within those corresponding cells are scanned.
-1.  **Clustering:** Apply k-means clustering to the dataset `H` to obtain `k` centroids `C = {c_1, ..., c_k}`.
-2.  **Assignment:** For each `v_h in H`, assign it to its nearest centroid `c_j`. This creates an inverted index mapping centroids to lists of assigned vectors.
-3.  **Search:** Given query `v_q`, find its `k'` nearest centroids. Then, perform an exhaustive search *only* within the lists of vectors associated with these `k'` centroids.
-```
-H'' = U_[j in nearest k' centroids] {v_h | assign(v_h) = c_j}
-```
-**Product Quantization PQ:** Further compresses vectors by dividing them into subvectors and quantizing each subvector independently.
-
-**III.C. Graph-Based Methods e.g. HNSW - Hierarchical Navigable Small World:**
-These are currently state-of-the-art for ANN search. HNSW constructs a multi-layer graph where lower layers contain more nodes and denser connections, and higher layers contain fewer nodes and spars, long-range connections.
-1.  **Graph Construction:** Nodes are vectors. Edges connect approximate nearest neighbors. The graph is built incrementally.
-2.  **Search:** Start at a random entry point in the topmost sparse layer. Traverse greedily towards the query vector until a local minimum is found. Then, drop down to a lower layer and repeat. This allows for rapid traversal of large distances in higher layers and fine-grained search in lower layers.
-The complexity is typically poly-logarithmic `O(log^c M)` in practice, offering excellent trade-offs between search speed and accuracy.
-
-### IV. The Epistemology of Generative AI: G_AI_H''_q
-
-The generative model `G_AI_H''_q -> A` is a highly sophisticated probabilistic system capable of synthesizing coherent and contextually relevant natural language text `A`, given a set of relevant commit contexts `H''` and the original query `q`. These models are predominantly built upon the Transformer architecture, scaled to unprecedented sizes.
-
-**IV.A. Large Language Model LLM Architecture and Pre-training:**
-LLMs are massive Transformer decoders or encoder-decoder models pre-trained on vast and diverse corpora of text e.g. Common Crawl, Wikipedia, books, code.
-The pre-training objective often involves predicting the next token in a sequence causal language modeling or filling in masked tokens. This objective, applied at scale, enables the model to learn:
-*   **Syntax and Grammar:** The statistical regularities of language.
-*   **Semantics:** The meaning of words and phrases in context.
-*   **World Knowledge:** Information embedded in the training data.
-*   **Reasoning Abilities:** Emergent capabilities to perform logical inference, analogy, and problem-solving, often through "chain-of-thought" processes.
-
-**IV.B. Instruction Tuning and Reinforcement Learning from Human Feedback RLHF:**
-After pre-training, LLMs undergo crucial fine-tuning phases:
-1.  **Instruction Tuning:** The model is fine-tuned on datasets of instructions and desired responses, teaching it to follow commands and generate helpful, harmless, and honest outputs.
-2.  **RLHF:** A reward model, trained on human preferences for model outputs, provides feedback to the LLM. Using reinforcement learning e.g. Proximal Policy Optimization - PPO, the LLM is further optimized to align its outputs with human values and preferences. This stage is critical for generating answers that are not only factually correct based on context but also well-structured, relevant, and easy to understand.
-
-**IV.C. The Mechanism of Text Generation:**
-Given a prompt `P = {q, H''}`, the LLM generates the answer `A = {a_1, a_2, ..., a_K}` token by token:
-`P(a_k | a_1, ..., a_k-1, P)`
-At each step `k`, the model computes a probability distribution over the entire vocabulary for the next token `a_k`, conditioned on the prompt and all previously generated tokens. Various decoding strategies are employed:
-*   **Greedy Decoding:** Always picks the token with the highest probability.
-*   **Beam Search:** Explores multiple high-probability sequences simultaneously, often leading to more coherent and fluent text.
-*   **Temperature Sampling:** Introduces randomness to diversify outputs, by scaling the logits before softmax: `softmax(logits / T)`. Higher `T` leads to more creative/random outputs.
-*   **Top-K/Top-P Nucleus Sampling:** Limits the vocabulary from which to sample, focusing on the most probable tokens.
-
-The LLM, guided by the meticulously crafted prompt, leverages its vast pre-trained knowledge and fine-tuned instruction-following abilities to perform complex information extraction, synthesis, and summarization tasks over the provided commit data, culminating in a direct and insightful answer.
-
-### Proof of Superiority: H'' >> H' and G_AI_H''_q -> A >> F_keyword_q_H -> H'
-
-Let `H` be the complete set of commits in a repository.
-Let `q` be a user's natural language query.
-
-**I. Semantic Retrieval vs. Syntactic Keyword Matching:**
-A traditional keyword search `F_keyword_q_H -> H' subset H` identifies a subset of commits `H'` where the query `q` or its substrings/keywords is syntactically present in the commit metadata messages, file paths. This is a purely lexical operation, ignoring the deeper meaning or intent.
-```
-H' = {h | keyword(q) subseteq textual_content(h)}
-```
-
-In contrast, the present invention employs a sophisticated semantic retrieval function `F_semantic_q_H -> H'' subset H`. This function operates in a high-dimensional embedding space, where the query `q` is transformed into a vector `v_q` and each commit `h` is represented by vectors `v_M_h` message and `v_D_h` diff. The retrieval criterion is based on geometric proximity, specifically cosine distance.
-```
-H'' = {h | cos_dist(v_q, v_M(h)) < epsilon_M or cos_dist(v_q, v_D(h)) < epsilon_D }
-```
-
-**Proof of Contextual Completeness:**
-It is a well-established property of well-trained semantic embedding models that they can capture conceptual relationships synonymy, hypernymy, meronymy and contextual nuances that keyword matching entirely misses. For instance, a query for "performance degradation" might semantically match a commit message describing "latency optimization" as a fix or "increased processing time" as an introduction, even if the exact phrase "performance degradation" is absent.
-Therefore, the set of semantically relevant commits `H''` will intrinsically be a more comprehensive and accurate collection of historical artifacts pertaining to the user's intent than the syntactically matched set `H'`. Mathematically, the information content of `H''` related to `q` is demonstrably richer and more complete than `H'`.
-```
-for all q, there exist H'', H' such that Relevance(H'', q) >= Relevance(H', q) and often Relevance(H'', q) >> Relevance(H', q)
-```
-where `Relevance(X, q)` is a measure of how well the set `X` answers the implicit or explicit questions within `q`.
-This implies `H''` can contain commits `h not in H'` that are highly relevant to `q`, thereby making `H''` a superior foundation for answering complex queries.
-
-**II. Information Synthesis vs. Raw Document Listing:**
-Traditional methods, at best, return a list of documents `H'` commit messages, diffs. The user is then burdened with the cognitively demanding task of manually sifting through these documents, synthesizing information, identifying patterns, and formulating an answer. This process is time-consuming, error-prone, and scales poorly with repository size.
-
-The present invention's system incorporates a generative AI model `G_AI`. This model is not merely a document retriever; it is an intelligent agent capable of performing sophisticated cognitive tasks:
-1.  **Information Extraction:** Identifying key entities authors, dates, file paths, functional changes from the textual context of `H''`.
-2.  **Pattern Recognition:** Detecting recurring themes, trends, or causal relationships across multiple commits.
-3.  **Summarization and Synthesis:** Condensing vast amounts of disparate information into a concise, coherent, and direct answer.
-4.  **Reasoning:** Applying its pre-trained knowledge and instruction-following abilities to reason about the implications of the code changes or messages in `H''` in response to `q`.
-
-Thus, `G_AI_H''_q -> A` produces a direct, synthesized answer `A`. This answer is a high-level abstraction of the information contained in `H''`, specifically tailored to the user's query `q`.
-The value proposition of `A` a direct answer compared to `H'` a list of raw documents is orders of magnitude greater in terms of reducing human cognitive load and accelerating problem-solving.
-`Value(A) >> Value(H')`
-This superiority is self-evident from the fundamental difference in output: one is a solution, the other is raw material requiring further manual labor.
-
-**Conclusion:** The combination of a robust semantic retrieval mechanism, which ensures a more complete and relevant contextual set `H''`, with a powerful generative AI model capable of cognitive synthesis, unequivocally proves the superior utility and effectiveness of the present invention over conventional methods. The system provides not just data, but actionable intelligence, thereby fundamentally transforming the landscape of software history analysis. `Q.E.D.`
+### VI. Additional Mathematical Formulations
+67. Let `C` be the set of all commits. Let `q` be a query.
+68. Keyword search result set: `R_kw = {c in C | exists k in keywords(q) s.t. k in text(c)}`
+69. Semantic search result set: `R_sem = {c in C | cos_dist(E(q), E(c)) <= epsilon}`
+70. `InformationContent(R_sem, q) >= InformationContent(R_kw, q)`
+71. User cognitive load (manual synthesis): `Load_manual = O(|R_kw| * Complexity(c))`
+72. User cognitive load (AI synthesis): `Load_AI = O(1)`
+73. Tokenization: `x -> {t_1, t_2, ..., t_L}`
+74. Embedding lookup: `e_i = W_e[t_i]`
+75. `W_e` is the embedding matrix of size `|V| x d_model`.
+76. Attention matrix `A = softmax((Q * K^T) / sqrt(d_k))`
+77. `A_ij` is the attention weight from position `i` to `j`.
+78. `sum_j A_ij = 1` for all `i`.
+79. Output of attention for position `i`: `output_i = sum_j A_ij * v_j`
+80. `v_j` is the value vector for position `j`.
+81. Gradient of loss w.r.t. parameters `theta`: `nabla_theta L`.
+82. Parameter update (gradient descent): `theta_{t+1} = theta_t - eta * nabla_theta L`.
+83. `eta` is the learning rate.
+84. Cross-entropy loss for language modeling: `L = -sum_i log P(t_i_correct | t_{<i})`
+85. Bradley-Terry model for reward modeling: `P(A_1 > A_2) = sigmoid(R(P, A_1) - R(P, A_2))`
+86. `sigmoid(x) = 1 / (1 + e^(-x))`
+87. PPO clipped surrogate objective: `L_clip(theta) = E[min(r_t(theta) * Advantage, clip(r_t(theta), 1-eps, 1+eps) * Advantage)]`
+88. Probability ratio: `r_t(theta) = pi_theta(a|s) / pi_theta_old(a|s)`
+89. Vector space partitioning: `R^d = U_{i=1 to k} Cell_i`
+90. `Cell_i = {x in R^d | ||x - c_i|| <= ||x - c_j|| for all j != i}` (Voronoi cell)
+91. Product Quantizer `q(v) = (q_1(v_1), ..., q_m(v_m))`
+92. `v = (v_1, ..., v_m)` is the split vector.
+93. `q_j` is the quantizer for the j-th subspace.
+94. Total codebook size for PQ: `m * k_sub` vs `k^m` for full quantization.
+95. Precision@k: `(Relevant Retrieved @ k) / k`
+96. Recall@k: `(Relevant Retrieved @ k) / (Total Relevant)`
+97. F1 Score: `2 * (Precision * Recall) / (Precision + Recall)`
+98. Logit is the raw, unnormalized prediction of a model.
+99. Information Entropy `H(X) = -sum_i P(x_i) log P(x_i)`
+100. Mutual Information `I(X;Y) = H(X) - H(X|Y)`
 ```
