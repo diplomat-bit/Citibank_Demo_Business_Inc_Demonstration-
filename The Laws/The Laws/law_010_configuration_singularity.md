@@ -1,0 +1,14 @@
+# Law 010: The Configuration Singularity
+
+**Principle:** All configuration files, no matter how numerous or well-intentioned their separation, will inevitably gravitate towards each other, eventually collapsing under their own weight into a single, monolithic entity known as the `master.config`, `globals.yaml`, or, in moments of sheer terror, `the-one-file-to-rule-them-all.json`.
+
+**Justification:** The universe tends towards entropy, but configuration tends towards a single point of failure. The siren song of a "Single Source of Truth" is too sweet to resist. What begins as a noble quest to eliminate duplication by sharing a database connection string soon attracts API keys, then feature flags, then service-specific tuning parameters, until the file contains the genetic code of the entire application stack. Each addition seems reasonable in isolation, but their collective mass creates an unstoppable gravitational pull.
+
+**Implementation:** The path to the Singularity is a well-trodden one, paved with good intentions and desperate late-night commits:
+1.  **The Fragmentation Era:** Each service proudly maintains its own `config.yml`. They are small, understandable, and pure. This is the primordial soup.
+2.  **The First Contact:** Two services discover they need the same `RABBITMQ_HOST`. To avoid mortal sin (duplication), a `common.env` is created. This is the first star forming in the configuration nebula.
+3.  **The Cambrian Explosion:** Feature flags are introduced. The common config file is deemed the perfect place for them. Its size doubles. Then it quadruples, as environment-specific overrides (`common.dev.env`, `common.staging.env`, `common.prod.env`) are born.
+4.  **The Great Consolidation:** A new DevOps initiative demands centralized configuration management. All scattered config files are hunted down and merged into the growing behemoth, which is now managed by a dedicated service that itself requires a small, ironic configuration file.
+5.  **The Event Horizon:** The file now contains dynamic references, nested variables, templating logic, and comments that read "DO NOT TOUCH THIS OR EVERYTHING BREAKS - I DON'T KNOW WHY". No single engineer understands the entire file. To change it is to commune with an elder god.
+
+**Consequence:** The Configuration Singularity becomes the true core of the system. The application code is merely a trivial execution layer for the grand logic embedded within the config. Deployments become high-stakes rituals of appeasement, hoping a one-line change doesn't invoke the wrath of the Singularity and cause a cascading failure across all services. The file is both the most powerful and the most feared artifact in the repository. It is the beginning and the end.
