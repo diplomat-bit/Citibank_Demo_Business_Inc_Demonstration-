@@ -163,7 +163,7 @@ graph TD
 
     B -- Extract Intents --> D[Intent Classifier]
     B -- Extract Entities --> E[Entity Extractor]
-    B -- Analyze Sentiment (Optional) --> F[Sentiment Analyzer]
+    B -- Analyze Sentiment Optional --> F[Sentiment Analyzer]
 
     D -- Current Intent I_i --> G[Dialogue State Aggregator]
     E -- Extracted Entities E_e --> G
@@ -206,7 +206,7 @@ This is a pivotal knowledge base, often implemented as an advanced graph databas
 ```mermaid
 graph TD
     subgraph HCDG Graph Structure
-        S1[State Node 1: (View, Intent, Entities)] -->|Prob. P1| I2[Intent Node 2: Forecast]
+        S1[State Node 1: View/Intent/Entities] -->|Prob. P1| I2[Intent Node 2: Forecast]
         S1 -->|Prob. P2| I3[Intent Node 3: Compare]
         S1 -->|Prob. P3| I4[Intent Node 4: Drill Down]
 
@@ -516,10 +516,10 @@ graph TD
     E -- Processed Visual Context --> F
     F -- Updated Multi-Modal Dialogue State s_t_MM --> G[Intent Prediction and Follow-Up Elicitation Module IPFEM]
 
-    G -- Queries Multi-Modal HCDG --> H[Hierarchical Contextual Dialogue Graph HCDG (Multi-Modal)]
+    G -- Queries Multi-Modal HCDG --> H[Hierarchical Contextual Dialogue Graph HCDG MultiModal]
     H -- Multi-Modal Dialogue Path Options --> I[Multi-Turn Prompt Generation and Ranking Service MTPGRS]
     I -- Refined Multi-Modal Suggestions --> J[CIEM Prompt Presentation Renderer PPR]
-    J -- Renders Suggestions --> K[User Interface (Multi-Modal)]
+    J -- Renders Suggestions --> K[User Interface MultiModal]
 
     subgraph Multi-Modal Input Processing
         B1[Voice Activity Detection] --> D
@@ -549,7 +549,7 @@ To ensure optimal and dynamically evolving multi-turn guidance, a robust reinfor
 
 ```mermaid
 graph TD
-    A[User MultiTurn Interaction (Dialogue)] --> B[Telemetry Service]
+    A[User MultiTurn Interaction Dialogue] --> B[Telemetry Service]
     B -- Raw Dialogue Data & User Actions --> C[Dialogue Log Storage]
     C -- Data Processing --> D[Feedback Analytics Module]
     D -- Derived Metrics Rewards R_t --> E[Reinforcement Learning Agent]
@@ -564,8 +564,8 @@ graph TD
         E1[State Representation Module] -- Observes s_t --> E
         E2[Action Selection Policy] -- Pi(a|s) --> E
         E3[Reward Function Definition] -- Defines R(s,a,s') --> E
-        E4[Policy Optimization Algorithm] -- e.g., Q-learning, Actor-Critic --> E
-        E5[Experience Replay Buffer] -- Stores (s,a,r,s') --> E
+        E4[Policy Optimization Algorithm Q-learning/Actor-Critic] --> E
+        E5[Experience Replay Buffer Stores s_a_r_s_] --> E
     end
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
@@ -599,7 +599,7 @@ graph TD
     B -- Personalization Weights/Biases --> D[Multi-Turn Prompt Generation and Ranking Service MTPGRS]
 
     E[Dialogue State s_t] --> F[Intent Prediction and Follow-Up Elicitation Module IPFEM]
-    F -- Queries HCDG (Personalized) --> C
+    F -- Queries HCDG Personalized --> C
     C -- Personalized Dialogue Paths --> D
     D -- Personalized Ranked Prompts --> G[Prompt Presentation Renderer PPR]
     G -- Renders to User --> H[User Interface]
@@ -639,7 +639,7 @@ graph TD
     C -- High Frustration --> D
 
     D -- Generates Repair Strategy --> E[IPFEM: Clarification/Repair Elicitation]
-    E -- Queries HCDG for Repair Prompts --> F[HCDG (Repair Paths)]
+    E -- Queries HCDG for Repair Prompts --> F[HCDG Repair Paths]
     F -- Repair Suggestions --> G[MTPGRS]
     G -- Rendered Repair Prompts --> H[User Interface]
 
@@ -787,7 +787,7 @@ $$ Score(p_j | s_t) = w_1 \cdot R_{intent}(p_j, I_i^{(t)}) + w_2 \cdot C_{coh}(p
 Where $w_1, \dots, w_4$ are weighting coefficients.
 
 *   **Intent-Based Ranking ($R_{intent}$):**
-    $$ R_{intent}(p_j, I_i^{(t)}) = P(I_{next}(p_j) | I_i^{(t)}) \cdot R_s(p_j) \quad (1.7) $$
+    $$ R_{intent}(p_j, I_{i}^{(t)}) = P(I_{next}(p_j) | I_{i}^{(t)}) \cdot R_s(p_j) \quad (1.7) $$
     This incorporates the probability that selecting $p_j$ leads to the desired next intent, multiplied by its intrinsic relevance score.
 
 *   **Dialogue Coherence ($C_{coh}$):** This can be measured as the semantic similarity between the prompt and recent dialogue history.
