@@ -1,0 +1,5 @@
+### 20. The Law of the Ghost in the Machine (Or, "It Worked On My Local Cluster")
+
+**Principle:** Any AI system of sufficient complexity and scale will inevitably manifest transient, non-reproducible errors that defy all forms of logical debugging, statistical analysis, and desperate prayer. These events are not bugs; they are features of a chaotic digital ecosystem.
+**Corollary:** The likelihood of a 'ghost' appearing is directly proportional to the demonstration's importance and inversely proportional to the system's observability at that exact moment. They are fundamentally camera-shy.
+**The Fun Twist:** We once had a sentiment analysis model that, for 72 hours, classified every mention of 'synergy' as 'existential horror.' It fixed itself after a server rack was coincidentally unplugged and plugged back in. We now refer to this as 'percussive maintenance for the soul of the machine'.
