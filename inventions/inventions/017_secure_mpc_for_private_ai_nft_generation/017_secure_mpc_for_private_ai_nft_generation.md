@@ -1,4 +1,3 @@
----
 **Title of Invention:** System and Method for Private Algorithmic Conceptual Asset Genesis and Tokenization via Secure Multi-Party Computation and Fully Homomorphic Encryption (SPACAGT-MPC/FHE)
 
 **Abstract:**
@@ -16,7 +15,7 @@ The present invention, herein formally designated as the **System and Method for
 
 Upon receipt of the user's confidential conceptual genotype, the SPACAGT-MPC/FHE system initiates a highly sophisticated, multi-stage generative process, with privacy preserved at each critical juncture:
 1.  **Confidential Semantic Decomposition and Intent Recognition:** The encrypted input prompt undergoes advanced natural language processing NLP within a Secure Execution Environment SEE, utilizing techniques like Homomorphic Encryption FHE or MPC. This process parses semantic nuances, identifies key thematic elements, and infers user intent without decrypting the prompt. This stage includes an Advanced Prompt Engineering Module APEM operating on encrypted data for scoring, augmentation, and versioning of prompts, generating an encrypted augmented prompt.
-2.  **Secure Algorithmic Conceptual Phenotype Generation:** The encrypted, processed prompt is then transmitted to a meticulously selected ensemble of one or more generative AI models operating within the SEE. These models, leveraging advanced neural architectures adapted for FHE or MPC, perform inference on the encrypted data to produce an encrypted digital representationÃ¢â‚¬â€ the "conceptual phenotype." This encrypted phenotype concretizes the abstract user prompt while its content remains private. The phenotype can be an encrypted high-resolution image, a richly detailed encrypted textual narrative, an encrypted synthetic soundscape, or an encrypted parametric 3D model. A Multi-Modal Fusion and Harmonization Unit MMFHU operates securely on encrypted outputs to ensure cross-modal consistency for complex outputs.
+2.  **Secure Algorithmic Conceptual Phenotype Generation:** The encrypted, processed prompt is then transmitted to a meticulously selected ensemble of one or more generative AI models operating within the SEE. These models, leveraging advanced neural architectures adapted for FHE or MPC, perform inference on the encrypted data to produce an encrypted digital representationÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ the "conceptual phenotype." This encrypted phenotype concretizes the abstract user prompt while its content remains private. The phenotype can be an encrypted high-resolution image, a richly detailed encrypted textual narrative, an encrypted synthetic soundscape, or an encrypted parametric 3D model. A Multi-Modal Fusion and Harmonization Unit MMFHU operates securely on encrypted outputs to ensure cross-modal consistency for complex outputs.
 3.  **Privacy-Preserving User Validation and Iterative Refinement:** The encrypted generated conceptual phenotype is presented to the originating user via a dedicated interface for critical evaluation and approval. This may involve partial, controlled decryption only to the user, or privacy-preserving comparison techniques (e.g., Secure Two-Party Computation) to allow the user to verify certain properties of the output without full decryption being visible to the system. The system incorporates mechanisms for iterative refinement, allowing the user to provide feedback that can guide subsequent secure AI regeneration cycles, optimizing the phenotype's alignment with the original conceptual genotype, all while preserving privacy. Phenotype versions are tracked, potentially with cryptographic commitments.
 4.  **Decentralized Content Addressable Storage of Encrypted or Provenance-Attested Assets:** Upon explicit user approval (or approval of a cryptographically attested, partially decrypted asset), the SPACAGT-MPC/FHE system orchestrates the secure and decentralized storage of the conceptual phenotype. This may involve uploading the *encrypted* digital asset, or a *publicly visible, user-decrypted* digital asset accompanied by cryptographic proofs of its private genesis. This is uploaded to a robust, content-addressed storage network, such as the InterPlanetary File System IPFS or similar distributed hash table DHT based architectures. This process yields a unique, cryptographic content identifier CID that serves as an immutable, globally verifiable pointer to the asset or its encrypted form.
 5.  **Metadata Manifestation and Secure Provenance Storage:** Concurrently, a standardized metadata manifest, typically conforming to established NFT metadata schema eg ERC-721 or ERC-1155 compliant JSON, is programmatically constructed. This manifest encapsulates critical information, including the conceptual phenotype's name, a cryptographic commitment or hash of the original conceptual genotype (never the plaintext), verifiable AI model provenance (potentially including proof of secure computation), and a URI reference to the asset's decentralized storage CID. This metadata file is itself uploaded to the same decentralized storage network, yielding a second, distinct CID.
@@ -64,6 +63,113 @@ C4Context
     Note right of mpcFheParties: May include trust authorities or key shareholders for FHE.
 ```
 
+### Confidential User Journey (End-to-End)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UI as User Interface (UIPCSM)
+    participant Core as SPACAGT Core (SBPOL)
+    participant SECURE_AI as Secure AI Models (SEE)
+    participant ZKP_Gen as ZKP Generator
+    participant IPFS as Decentralized Storage (DSIM)
+    participant BC as Blockchain (BISCM, NFT SC)
+
+    U->>UI: Input Prompt (P)
+    activate UI
+    UI->>UI: Encrypt P (FHE.Enc(P, pk_U)) or Secret Share P (MPC.Share(P))
+    UI-->>Core: Confidential Genotype (P_conf)
+    deactivate UI
+
+    activate Core
+    Core->>Core: Secure Pre-processing (SNLU, APREM) on P_conf
+    Core-->>SECURE_AI: Encrypted Prompt (P'_conf)
+    deactivate Core
+
+    activate SECURE_AI
+    SECURE_AI->>SECURE_AI: Secure AI Inference (FHE.Eval or MPC)
+    SECURE_AI-->>Core: Encrypted Phenotype (A_conf)
+    deactivate SECURE_AI
+
+    activate Core
+    Core->>Core: Secure Multi-Modal Fusion (SMMFHU) if needed
+    Core-->>U: Present A_conf (User-controlled decryption or ZKP of A_conf properties)
+    deactivate Core
+
+    activate U
+    U->>U: Locally decrypt A_conf to A (Dec(A_conf, sk_U)) or verify ZKP
+    U->>U: Review and Approve/Reject A
+    U-->>Core: Approval (A_approved)
+    deactivate U
+
+    activate Core
+    Core->>ZKP_Gen: Request ZKP (A_conf, Commit(P), H(AI_Model), private_witness)
+    Core->>IPFS: Upload A (A_public) or A_conf (with keyshares)
+    activate IPFS
+    IPFS-->>Core: Asset_CID
+    deactivate IPFS
+
+    activate ZKP_Gen
+    ZKP_Gen->>ZKP_Gen: Generate pi = Prove(statement, witness)
+    ZKP_Gen-->>Core: ZKP_Proof (pi)
+    deactivate ZKP_Gen
+
+    Core->>Core: Generate Metadata M (incorporating Asset_CID, Commit(P), pi)
+    Core->>IPFS: Upload M
+    activate IPFS
+    IPFS-->>Core: Metadata_CID
+    deactivate IPFS
+
+    Core->>BC: Mint NFT (recipient_U, Metadata_CID, Commit(P), pi, fee)
+    activate BC
+    BC->>BC: Verify pi On-Chain
+    BC->>BC: Create NFT, Assign Ownership to U
+    BC-->>U: NFT Minted, Ownership Transferred
+    deactivate BC
+
+    U->>BC: Manage NFT (View, Transfer, Sell)
+```
+
+### FHE Encryption and Decryption Workflow
+
+```mermaid
+graph LR
+    subgraph Key Generation
+        lambda(Security Parameter) --> Gen(FHE.Gen(lambda))
+        Gen -- (pk, sk) --> User(User's Device)
+        Gen -- pk --> SP_1(Service Provider 1: Core System)
+        Gen -- pk --> SP_2(Service Provider 2: Secure AI Model)
+    end
+
+    subgraph Encryption
+        P(Plaintext Prompt) --> Enc_U(FHE.Enc(pk, P))
+        User --> Enc_U
+        Enc_U -- c_P --> SP_1
+    end
+
+    subgraph Secure Computation (SP_1 & SP_2)
+        c_P --> Eval_NLP(FHE.Eval(pk, NLP_func, c_P))
+        SP_1 --> Eval_NLP
+        Eval_NLP -- c_P' --> SP_2
+        c_P' --> Eval_AI(FHE.Eval(pk, AI_model_func, c_P'))
+        SP_2 --> Eval_AI
+        Eval_AI -- c_A --> SP_1
+        c_A --> Eval_MM(FHE.Eval(pk, MM_func, c_A))
+        SP_1 --> Eval_MM
+        Eval_MM -- c_A_final --> User
+    end
+
+    subgraph Decryption
+        c_A_final --> Dec_U(FHE.Dec(sk, c_A_final))
+        User --> Dec_U
+        Dec_U -- A --> User
+    end
+
+    style User fill:#cef,stroke:#333,stroke-width:2px
+    style SP_1 fill:#def,stroke:#333,stroke-width:2px
+    style SP_2 fill:#def,stroke:#333,stroke-width:2px
+```
+
 **Detailed Description of the Invention:**
 
 The **System and Method for Private Algorithmic Conceptual Asset Genesis and Tokenization via Secure Multi-Party Computation and Fully Homomorphic Encryption SPACAGT-MPC/FHE** comprises a highly integrated and modular architecture designed to facilitate the end-to-end process of generating novel conceptual assets via artificial intelligence and subsequently tokenizing them on a distributed ledger, while ensuring strict privacy and confidentiality of the user's intellectual property. The operational flow, from confidential user input to final token ownership with verifiable privacy, is meticulously engineered to ensure robust functionality, security, and cryptographic confidentiality.
@@ -74,10 +180,13 @@ The initial interaction point for a user is through the **User Interface and Con
 
 *   **Secure Prompt Input Interface:** A dynamic text entry field where users articulate their conceptual genotype. Crucially, before submission, the prompt is either:
     *   **Locally Encrypted:** Encrypted on the client-side using a Fully Homomorphic Encryption FHE scheme eg CKKS, BFV, BGV, such that the AI models can compute directly on the ciphertext. The user holds the secret decryption key.
+        *   `c = Enc(pk_U, P)` where `pk_U` is the user's public FHE key, and `P` is the plaintext prompt. The ciphertext `c` is then transmitted.
     *   **Secret-Shared for MPC:** Divided into additive shares that are distributed among multiple, non-colluding computational parties, including potentially the user themselves, for Secure Multi-Party Computation MPC protocols.
+        *   `P = P_1 + P_2 + ... + P_N` (additive sharing), where `P_i` are shares distributed to `N` parties. Each `P_i` reveals no information about `P` individually.
     *   Advanced versions may include:
-        *   **Privacy-Preserving Semantic Autocompletion:** Suggesting keywords or concepts based on encrypted input or via secure federated learning.
-        *   **Zero-Knowledge Proof ZKP of Prompt Properties:** Allowing users to prove certain properties about their prompt eg it's within a specific category, without revealing the prompt itself.
+        *   **Privacy-Preserving Semantic Autocompletion:** Suggesting keywords or concepts based on encrypted input or via secure federated learning. This involves models `M_SFed` learning from encrypted user prompts, `M_SFed(Enc(P_user_i))`.
+        *   **Zero-Knowledge Proof ZKP of Prompt Properties:** Allowing users to prove certain properties about their prompt eg it's within a specific category (`category(P) = C_x`), without revealing the prompt itself.
+            *   Proving `exists w s.t. R((Commit(P, r_P), C_x), w)` where `w = (P, r_P)` is the witness, and `R` is the relation `category(P) = C_x AND Commit(P, r_P) == H(P || r_P)`.
 *   **User Authentication and Wallet Connection:** Integration with standard Web3 wallet providers eg MetaMask, WalletConnect to authenticate the user and establish a secure connection to their blockchain address. This also facilitates management of decryption keys for FHE or participation in MPC.
 *   **Secure Session Management:** Persistent session tracking to allow users to review past encrypted prompts, encrypted generated assets (or their public attestations), and transaction histories, ensuring privacy throughout.
 
@@ -91,13 +200,38 @@ Upon receiving a confidential conceptual genotype (encrypted or secret-shared) f
 
 *   **Secure Natural Language Understanding SNLU:** Utilizes advanced transformer-based models adapted for FHE or MPC to analyze the encrypted prompt for:
     *   **Encrypted Syntactic and Semantic Analysis:** Decomposing the encrypted prompt into its grammatical components and identifying core semantic entities and relationships.
+        *   `Enc(v_P) = FHE.Eval(pk, NLP_embedding_model, c_P)`
+        *   `Enc(Grammar_Tree) = FHE.Eval(pk, Parser_model, c_P)`
     *   **Encrypted Sentiment and Tone Analysis:** Assessing the emotional context of the prompt to guide generative AI style, all while on ciphertext or shares.
+        *   `Enc(Sentiment_Score) = FHE.Eval(pk, Sentiment_model, c_P)`
     *   **Homomorphic Ambiguity Resolution:** Employing contextual reasoning on encrypted data to minimize misinterpretation by generative models.
+        *   This could involve secure comparison operations `FHE.Eval(pk, Compare_func, c_A, c_B)` to choose the most likely interpretation.
 *   **Advanced Private Prompt Engineering Module APREM:** This dedicated sub-module enhances the confidential conceptual genotype within the SEE.
-    *   **Secure Prompt Scoring Engine:** Evaluates the encrypted prompt's quality, specificity, and potential for generating desired outcomes. Scores are computed on encrypted data, potentially with results returned as encrypted values or compared via secure comparison protocols.
-    *   **Dynamic Confidential Contextual Expansion:** Leverages encrypted internal knowledge graphs, external privacy-preserving databases, or Large Language Models LLMs operating in FHE/MPC to expand vague encrypted prompts into more descriptive or structured formats, enhancing the generative AI's input quality without revealing the original prompt.
-    *   **Encrypted Prompt Versioning and History:** Maintains a version history of refined encrypted prompts, with cryptographic commitments to each version, allowing users to track evolution without exposing content.
+
+### Secure Prompt Engineering Workflow (APREM)
+
+```mermaid
+graph TD
+    A[Encrypted Conceptual Genotype (c_P)] --> B{Secure NLU (SNLU)}
+    B -- Encrypted Semantic Features --> C[Secure Prompt Scoring Engine]
+    C -- Encrypted Score (c_S) --> D{Dynamic Confidential Contextual Expansion}
+    D -- Encrypted Contextual Data --> E[Encrypted Prompt Augmentation Logic]
+    E -- Encrypted Augmented Prompt (c_P_aug) --> F{Encrypted Prompt Versioning}
+    F -- Cryptographic Commitment (Commit(c_P_aug)) --> G[Secure Model Selection & Routing]
+    D -- Query Encrypted External Data --> H[External Privacy-Preserving Knowledge Bases]
+    style H fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+*   **Secure Prompt Scoring Engine:** Evaluates the encrypted prompt's quality, specificity, and potential for generating desired outcomes. Scores are computed on encrypted data, potentially with results returned as encrypted values or compared via secure comparison protocols.
+    *   `c_Score = FHE.Eval(pk, Scoring_Model, c_P')`
+    *   `Secure_Compare(c_Score, c_Threshold) -> Enc(Bool)`
+*   **Dynamic Confidential Contextual Expansion:** Leverages encrypted internal knowledge graphs, external privacy-preserving databases, or Large Language Models LLMs operating in FHE/MPC to expand vague encrypted prompts into more descriptive or structured formats, enhancing the generative AI's input quality without revealing the original prompt.
+    *   `c_P_expanded = FHE.Eval(pk, LLM_expansion_model, c_P_prime, c_Context)`
+    *   This may involve encrypted graph traversal: `c_Path = FHE.Eval(pk, Graph_traversal_algo, c_Graph, c_StartNode)`.
+*   **Encrypted Prompt Versioning and History:** Maintains a version history of refined encrypted prompts, with cryptographic commitments to each version, allowing users to track evolution without exposing content.
+    *   `Commit(P_version_i, r_i)`
 *   **Secure Model Selection and Routing:** Based on the SNLU analysis, APREM output, and user-specified preferences eg desired output modality: image, text, 3D, the CPPRSS intelligently routes the encrypted prompt to the most appropriate external Generative AI Model operating in an SEE.
+    *   `Route_Decision = FHE.Eval(pk, Routing_Logic, c_P_aug, c_UserPrefs)`
 
 #### 2.2. Secure Generative AI Interaction Module SGAIIM
 
@@ -105,15 +239,38 @@ The SGAIIM acts as the interface between the SPACAGT-MPC/FHE system and external
 
 *   **FHE/MPC Abstraction Layer:** Provides a unified interface for interacting with diverse AI model APIs, adapted to operate on encrypted data. This facilitates integration of various models such as:
     *   **Text-to-Image Models eg AetherVision with FHE/MPC:** Advanced diffusion or GAN-based architectures capable of synthesizing high-fidelity visual imagery from encrypted textual descriptions. These models operate in encrypted latent spaces, iteratively refining encrypted pixel data.
+        *   `c_Image = FHE.Eval(pk, Diffusion_Model, c_P_aug, c_Noise_Seed)`
     *   **Text-to-Text Models eg AetherScribe with FHE/MPC:** LLMs specialized in creative writing, narrative generation, or detailed conceptual descriptions, expanding the initial encrypted prompt into rich encrypted textual conceptual phenotypes.
+        *   `c_Text = FHE.Eval(pk, LLM_Generation_Model, c_P_aug, c_Temperature)`
     *   **Text-to-3D Models eg AetherVolumetric with FHE/MPC:** Emerging models capable of generating encrypted 3D meshes, point clouds, or volumetric data representations from encrypted textual prompts.
+        *   `c_3D_Model = FHE.Eval(pk, Volumetric_Gen_Model, c_P_aug)`
     *   **Text-to-Audio/Music Models with FHE/MPC:** Generating encrypted soundscapes or musical compositions.
+        *   `c_Audio = FHE.Eval(pk, Audio_Synthesis_Model, c_P_aug, c_Melody_Seed)`
 *   **Secure Parameter Management:** Manages and transmits encrypted model-specific parameters eg `sampling_steps`, `guidance_scale`, `seed` values for deterministic regeneration, `output_resolution` to the secure AI models.
+    *   `c_Param_i = Enc(pk, param_i)`
 *   **Asynchronous Secure Inference Handling:** Manages the potentially long-running inference processes of generative AIs on encrypted data, providing encrypted status updates to the user or zero-knowledge proofs of progress.
+    *   `ZKP_progress = Prove(f_progress(c_partial_output), witness)`
 *   **Encrypted Output Reception and Validation:** Receives the encrypted digital asset conceptual phenotype from the secure AI model and performs initial encrypted validation eg encrypted file format verification, basic encrypted content integrity checks.
+    *   `Enc(File_Format_Check) = FHE.Eval(pk, Check_Format_Logic, c_Phenotype)`
 *   **Secure Multi-Modal Fusion and Harmonization Unit SMMFHU:** For conceptual genotypes requiring multiple modalities, this unit combines encrypted outputs from different secure generative AI models.
-    *   **Secure Cross-Modal Consistency Validation:** Ensures that encrypted outputs from different modalities eg an encrypted image and an encrypted descriptive text maintain semantic coherence and stylistic alignment, using secure comparison protocols.
-    *   **Secure Fusion Algorithms:** Employs techniques to merge and interleave various encrypted digital assets, creating a holistic multi-modal encrypted conceptual phenotype.
+
+### Secure Multi-Modal Fusion and Harmonization (SMMFHU)
+
+```mermaid
+graph TD
+    A[Encrypted Image (c_Img)] --> D{Secure Cross-Modal Consistency Validation}
+    B[Encrypted Text (c_Txt)] --> D
+    C[Encrypted Audio (c_Aud)] --> D
+    D -- Encrypted Consistency Score --> E{Secure Fusion Algorithms}
+    E -- Encrypted Fused Phenotype (c_Phenotype_Fused) --> F[Encrypted Output Validation]
+    D -- Encrypted Semantic Similarity --> G[Secure Reinforcement Learning Feedback]
+    style G fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+*   **Secure Cross-Modal Consistency Validation:** Ensures that encrypted outputs from different modalities eg an encrypted image and an encrypted descriptive text maintain semantic coherence and stylistic alignment, using secure comparison protocols.
+    *   `c_Similarity_Score = FHE.Eval(pk, Semantic_Compare_Model, c_Img_Embed, c_Txt_Embed)`
+*   **Secure Fusion Algorithms:** Employs techniques to merge and interleave various encrypted digital assets, creating a holistic multi-modal encrypted conceptual phenotype.
+    *   `c_Fused = FHE.Eval(pk, Fusion_Algorithm, c_Img, c_Txt, c_Aud)`
 
 #### 2.3. Privacy-Preserving Asset Presentation and Approval Module PPAPAM
 
@@ -121,14 +278,19 @@ The PPAPAM is responsible for displaying the generated conceptual phenotype to t
 
 *   **Controlled Decryption/Zero-Knowledge Presentation:** Presents the digital asset image, text, 3D model preview, audio playback in a clear and engaging manner within the UIPCSM. This can be achieved through:
     *   **User-Controlled Local Decryption:** The encrypted phenotype is sent to the user's device, where they decrypt it using their private FHE key. Only the user sees the plaintext.
+        *   `A = Dec(sk_U, c_A_final)`
     *   **Secure Multi-Party Decryption:** The encrypted phenotype is jointly decrypted by several parties (including the user) to yield the plaintext to the user.
+        *   `A = MPC.Reconstruct(A_shares_1, ..., A_shares_N)`
     *   **Zero-Knowledge Proofs of Properties:** The system may generate ZKPs asserting certain qualities of the encrypted phenotype (e.g., "the image contains a dog," "the text is positive") without revealing the full content.
+        *   `pi_prop = Prove(Is_Dog(A_conf), witness)` where `Is_Dog` is a ZK-friendly circuit.
 *   **Privacy-Preserving Approval/Rejection Mechanism:** Provides explicit controls for the user to approve the asset for minting or reject it, potentially triggering a re-generation loop with refined parameters or prompt adjustments, where feedback is also handled securely.
 *   **Encrypted Phenotype Versioning and Iteration History:** Stores a record of all encrypted generated phenotypes for a given conceptual genotype, allowing users to compare iterations and select the most desirable version for minting, often using cryptographic commitments to each version.
+    *   `Commit(A_version_j, r_j)`
 *   **User Feedback Analysis and Secure Reinforcement Learning Module:** Allows users to provide detailed feedback eg rating, textual comments, selection of preferred elements on generated assets. This feedback is processed by a specialized AI module using privacy-preserving techniques to:
     *   Improve future encrypted prompt augmentation strategies within the APREM.
     *   Fine-tune internal SPACAGT-MPC/FHE routing algorithms.
     *   Potentially provide direct reinforcement signals to the generative AI models for adaptive learning and personalization, all while maintaining privacy.
+    *   `Enc(Feedback_Score) = Enc(pk, User_Rating)`. Learning `W_new = FHE.Eval(pk, SGD_Update, c_W_old, Enc(Gradient))`.
 
 #### 2.4. Decentralized Storage Integration Module DSIM
 
@@ -137,6 +299,7 @@ Upon user approval of the decrypted phenotype (or a public attestation of it), t
 *   **Asset Upload to IPFS/DHT:**
     *   The digital asset (either the user-decrypted `conceptual_phenotype.png` or its encrypted form with decryption keys managed by multiple parties) is segmented into cryptographic chunks and uploaded to a decentralized storage network such as IPFS.
     *   This process generates a unique **Content Identifier CIDv1**, which is a cryptographically derived hash of the asset's content. This CID serves as an immutable, globally resolvable address for the asset, ensuring data integrity and resistance to censorship.
+        *   `CID_A = Base58(Multihash(H(A)))` where `H` is a collision-resistant hash function.
 *   **Secure Metadata JSON Generation:** A JSON object is programmatically constructed, adhering to established NFT metadata standards eg ERC-721 Metadata JSON Schema. This JSON includes:
     *   `name`: A human-readable name for the conceptual NFT, potentially derived from the original prompt via secure AI or user input.
     *   `description`: An AI-generated descriptive expansion of the phenotype, or a user-provided one. Critically, this does *not* include the raw conceptual genotype, but possibly a cryptographic commitment or hash of it.
@@ -145,26 +308,81 @@ Upon user approval of the decrypted phenotype (or a public attestation of it), t
         *   `AI_Model`: The specific generative AI model used eg "AetherVision v3.1".
         *   `Model_Version`: The exact version of the AI model.
         *   `Model_Hash_PAIO`: A cryptographic hash of the AI model's verifiable parameters or fingerprint, providing **Proof of AI Origin PAIO**.
+            *   `H_model = H(AI_model_weights || AI_model_arch || AI_model_config)`
         *   `Creation_Timestamp`: UTC timestamp of asset generation.
-        *   `Original_Prompt_Commitment`: A cryptographic commitment to the original text prompt (e.g., `Commit(P, r)` where `r` is a random nonce), ensuring prompt immutability without revealing `P`.
+        *   `Original_Prompt_Commitment`: A cryptographic commitment to the original text prompt (e.g., `Commit(P, r_P)` where `r_P` is a random nonce), ensuring prompt immutability without revealing `P`.
+            *   `C_P = H(P || r_P)` (for a simple hash commitment)
         *   `Proof_of_Private_Computation`: A Zero-Knowledge Proof ZKP attesting that the conceptual phenotype was generated from the committed prompt using the specified AI model in a secure execution environment, without revealing the prompt or intermediate computation steps.
+            *   `pi = Prove(Relation(Commit(P), CID_A, H_model), Witness(P, SK_FHE or MPC_Shares))`
         *   `Prompt_Entropy_ZKP`: A ZKP of the informational complexity of the original prompt (e.g., proving it falls within a certain range).
+            *   `pi_entropy = Prove(Range(Entropy(P)), Witness(P))`
         *   `Phenotype_Version`: Denotes the iteration number of the generated asset.
     *   `external_url`: Optional A link to a SPACAGT-MPC/FHE platform page for the NFT.
 *   **Metadata Upload to IPFS/DHT:** The generated metadata JSON file is itself uploaded to the decentralized storage network, yielding a second, distinct **Metadata CID**. This CID forms the crucial link that the smart contract will store.
+    *   `CID_M = Base58(Multihash(H(M)))`
+
+### Decentralized Storage and Metadata Structure
+
+```mermaid
+graph LR
+    subgraph User's Device
+        A[Original Conceptual Phenotype (Plaintext)]
+        B[Original Conceptual Genotype (Plaintext P)]
+        C[Random Nonce for Commitment (r_P)]
+    end
+
+    subgraph SPACAGT Core (DSIM)
+        A_enc(Encrypted Phenotype)
+        A_dec(Decrypted Phenotype - User Approved)
+        Commit_P(Commit(P, r_P))
+        ZKP_Proof(Proof of Private Computation)
+        H_Model(AI Model Hash PAIO)
+    end
+
+    subgraph Decentralized Storage Network (IPFS)
+        DS_A(Phenotype Data / Encrypted Phenotype)
+        DS_M(Metadata JSON)
+    end
+
+    subgraph Blockchain Network (NFT Smart Contract)
+        BC_NFT(NFT Record)
+    end
+
+    A -- Upload --> A_dec
+    A_dec -- Segment & Hash --> DS_A
+    DS_A -- CID Generation --> CID_A(Content ID for Asset)
+
+    B & C --> Commit_P
+    Commit_P & CID_A & H_Model & ZKP_Proof --> Metadata_Content(Metadata JSON Content)
+    Metadata_Content -- Hashed & Stored --> DS_M
+    DS_M -- CID Generation --> CID_M(Content ID for Metadata)
+
+    CID_A --> Metadata_Content
+    Metadata_Content --> DS_M
+
+    CID_M & Commit_P & ZKP_Proof --> BC_NFT
+    BC_NFT -- Linked To --> NFT(Minted NFT on Blockchain)
+
+    style NFT fill:#ffc,stroke:#333,stroke-width:2px
+    style DS_A fill:#dff,stroke:#333,stroke-width:2px
+    style DS_M fill:#dff,stroke:#333,stroke-width:2px
+```
 
 ### 3. Blockchain Interaction and Smart Contract Module BISCM
 
 The BISCM is responsible for constructing, signing, and submitting transactions to the blockchain to mint the NFT and for managing the smart contract lifecycle, now often including attestations of secure computation.
 
 *   **Smart Contract Abstraction Layer:** Interacts with a pre-deployed, audited NFT smart contract, typically implementing the ERC-721 Non-Fungible Token Standard or ERC-1155 Multi Token Standard interface.
-    *   **ERC-721 `mintConcept(address recipient, string memory tokenURI, bytes memory privateCompProof)`:** This core function is invoked. `recipient` is the user's wallet address, `tokenURI` is the `ipfs://<metadata_CID>` URI. `privateCompProof` is a critical new parameter containing the ZKP of private computation.
+    *   **ERC-721 `mintConcept(address recipient, string memory tokenURI, bytes memory privateCompProof, bytes32 _promptCommitment)`:** This core function is invoked. `recipient` is the user's wallet address, `tokenURI` is the `ipfs://<metadata_CID>` URI. `privateCompProof` is a critical new parameter containing the ZKP of private computation. `_promptCommitment` is the cryptographic commitment to the original prompt.
     *   **EIP-2981 Royalty Standard:** The smart contract incorporates logic for programmatic royalty distribution on secondary sales, as defined by EIP-2981.
+        *   `royaltyAmount = salePrice * royaltyBasisPoints / 10000`
     *   **On-chain Licensing Framework:** Potential future integration for attaching specific licensing terms directly to the NFT metadata or through a linked smart contract, now potentially linked to privacy properties of the creation.
 *   **Transaction Construction:**
-    *   Prepares a blockchain transaction by encoding the `mintConcept` function call with the appropriate parameters user's wallet address, the `ipfs://<metadata_CID>`, the `privateCompProof`, and potentially a minting fee.
+    *   Prepares a blockchain transaction by encoding the `mintConcept` function call with the appropriate parameters user's wallet address, the `ipfs://<metadata_CID>`, the `privateCompProof`, the `_promptCommitment`, and potentially a minting fee.
     *   Estimates gas costs for the transaction.
+        *   `Gas_Estimate = Cost(tx_data) + sum(Op_Cost_i)`
 *   **Transaction Signing:** Leverages the user's connected wallet via Web3 providers to cryptographically sign the transaction. The SPACAGT-MPC/FHE system never has direct access to the user's private keys.
+    *   `Sig = Sign(Private_Key_U, H(Tx_Data))`
 *   **Transaction Submission:** Transmits the signed transaction to the chosen blockchain network via a secure RPC Remote Procedure Call endpoint.
 *   **Transaction Monitoring and Confirmation:** Monitors the blockchain for the confirmation of the transaction. Once confirmed ie included in a block and sufficiently deep in the chain to be considered final, the NFT is officially minted and owned by the user. The smart contract verifies the `privateCompProof` on-chain. The SPACAGT-MPC/FHE system updates its internal state and notifies the user.
 
@@ -343,15 +561,59 @@ classDiagram
     *   `_promptCommitment`: A cryptographic commitment (e.g., Pedersen commitment or hash commitment) to the original user prompt, ensuring its integrity without revealing its content.
     The function increments a unique `_nextTokenId`, creates a new NFT with this ID, assigns ownership to the `recipient`, permanently associates the `_tokenURI` with the token, and verifies `_zkProof` against public inputs derived from the `_promptCommitment` and AI model details.
 *   **On-Chain Zero-Knowledge Proof Verification:** The contract integrates with a `ZeroKnowledgeVerifier` interface (potentially a precompiled contract or a dedicated verifier contract) to validate the `_zkProof` against known public inputs (e.g., the hash of the AI model, the `_promptCommitment`, specific public parameters of the AI output). This provides on-chain, trustless verification that the asset was generated privately as claimed.
+    *   `zkVerifier.verifyProof(_zkProof, publicInputs)`
 *   **Prompt Commitment Storage:** A dedicated internal mapping `_promptCommitments` stores the cryptographic commitment to the original user prompt for each `tokenId`. This provides an immutable, auditable link to the private input, allowing the user to later reveal the prompt if desired and prove its authenticity against the stored commitment.
+    *   `_promptCommitments[tokenId] = _promptCommitment`
 *   **Private Provenance Verification Flag:** A `_privateProvenanceVerified` mapping tracks whether a valid ZKP of private computation was successfully verified on-chain for each minted NFT. This provides a clear signal of the asset's privacy-preserving genesis.
+    *   `_privateProvenanceVerified[tokenId] = true`
 *   **Access Control and Roles:** Implementation of roles `MINTER_ROLE`, `PAUSER_ROLE`, `UPGRADER_ROLE` and a new `ZK_VERIFIER_ROLE` using OpenZeppelin's `AccessControl` library to restrict critical functions. The `ZK_VERIFIER_ROLE` manages the address of the external ZKP verifier contract.
 *   **Upgradability UUPS Proxy:** Implemented using the UUPS Universal Upgradeable Proxy Standard pattern to allow future enhancements or bug fixes to the contract logic, including updates to ZKP verification parameters or algorithms, without altering token IDs or ownership.
 *   **EIP-2981 Royalty Standard:** Full compliance with ERC-2981, ensuring programmatic royalties on secondary sales.
 *   **Minting Fee and Treasury Management:** The `mintConcept` function is `payable`, requiring a `MINTING_FEE`.
 *   **AI Model Provenance Data Storage:** A dedicated internal mapping `_aiModelMetadata` allows for recording critical verifiable information about the generative AI model used, including the `modelHashPAIO` and model version.
+    *   `_aiModelMetadata[tokenId] = (aiModelName, modelHashPAIO)`
 *   **Metadata Immutability with Attestation:** While the `_tokenURI` typically points to an immutable IPFS CID, the contract's verification of the `_zkProof` and storage of `_promptCommitment` add an extra layer of verifiable provenance, proving the confidential nature of the creation process itself, which is immutable on-chain.
 *   **Energy Efficiency:** Optimized Solidity code to minimize gas consumption, especially for ZKP verification, promoting cost-effectiveness.
+
+### ZKP Generation and Verification Flow
+
+```mermaid
+graph TD
+    subgraph Off-Chain
+        P_P[Plaintext Prompt P (Witness)]
+        SK_FHE[FHE Secret Key (Witness)]
+        MPC_Shares[MPC Secret Shares (Witness)]
+        A_Conf[Encrypted Phenotype A_conf (Witness)]
+        AI_Model_Config[AI Model Configuration (Witness)]
+
+        Commit_P_Pub[Commit(P, r_P) (Public Input)]
+        CID_A_Pub[CID of A (Public Input)]
+        H_Model_Pub[H(AI_Model) (Public Input)]
+        ZKP_Circuit[Predefined ZKP Circuit]
+
+        P_P & SK_FHE & MPC_Shares & A_Conf & AI_Model_Config --> Prover[ZKP Prover]
+        ZKP_Circuit -- used by --> Prover
+        Prover -- generates pi --> ZKP_Proof(Zero-Knowledge Proof pi)
+    end
+
+    subgraph On-Chain
+        NFT_SC[NFT Smart Contract]
+        ZK_Verifier_Contract[Zero-Knowledge Verifier Contract]
+
+        ZKP_Proof -- submitted to --> NFT_SC
+        Commit_P_Pub -- submitted to --> NFT_SC
+        CID_A_Pub -- derived from tokenURI --> NFT_SC
+        H_Model_Pub -- stored in metadata --> NFT_SC
+
+        NFT_SC -- invokes verifyProof with (pi, publicInputs) --> ZK_Verifier_Contract
+        ZK_Verifier_Contract -- returns boolean result --> NFT_SC
+        NFT_SC -- if true --> NFT_Minted[Mint NFT, Set _privateProvenanceVerified = true]
+        NFT_SC -- if false --> Revert[Transaction Reverted]
+    end
+
+    style ZKP_Proof fill:#afa,stroke:#333,stroke-width:2px
+    style ZK_Verifier_Contract fill:#ddf,stroke:#333,stroke-width:2px
+```
 
 ### 5. AI Model Provenance and Secure Registry AMPR
 
@@ -366,6 +628,7 @@ The **AI Model Provenance and Secure Registry AMPR** is a critical component ens
     *   `modelName`: eg "AetherVision v3.1".
     *   `modelVersion`: Specific software version.
     *   `trainingDataHash`: A cryptographic hash of the training dataset used (if verifiable, potentially proven via ZKP).
+        *   `H_train = H(Training_Dataset)`
     *   `architectureHash`: A hash of the model's architecture or configuration.
     *   `developerInfo`: Public key or DID of the model developer.
     *   `deploymentTimestamp`: Time of model registration/deployment.
@@ -374,263 +637,495 @@ The **AI Model Provenance and Secure Registry AMPR** is a critical component ens
     *   **`fheSchemeParameters`:** Parameters required for FHE operations eg `polynomialModulus`, `plaintextModulus`, `securityParameter`.
     *   **`mpcProtocolDefinition`:** Reference to the specific MPC protocol used for inference eg GMW, Yao's Garbled Circuits.
     *   **`zkProofCircuitHash`:** Hash of the ZKP circuit used to generate proofs for this model's secure inference.
+        *   `H_zk_circuit = H(ZKP_Circuit_Definition)`
 *   **Proof of AI Origin PAIO with Privacy Attestation:** During the metadata generation step, the SPACAGT-MPC/FHE system records a `Model_Hash_PAIO` attribute for each NFT, which can include cryptographic parameters for FHE or MPC. This hash, combined with the on-chain ZKP verification, provides:
     *   A strong cryptographic link from the NFT back to the AI that created its underlying conceptual phenotype.
     *   A verifiable attestation that the generation process respected the privacy of the conceptual genotype through secure computation.
 *   **Integration:** The SPACAGT_NFT_Contract's `mintConcept` function directly verifies a ZKP generated using the registered model's specific ZKP circuit, ensuring that the claims of private computation are cryptographically sound and verifiable on-chain.
 
+### AI Model Provenance and Secure Registry (AMPR) Interaction
+
 ```mermaid
 graph TD
-    subgraph User Interaction and Private Input
-        A[User Submits Conceptual Genotype Prompt] --> B_UIPCSM[User Interface and Confidential Prompt Submission Module UIPCSM]
-        B_UIPCSM -- Local FHE Encryption or MPC Secret Sharing --> B_CONF_P[Encrypted/Shared Confidential Genotype P]
-        B_CONF_P -- User Preferences eg Modality, Style --> C_CPPRSS
-        F_PPAPAM_Final -- Iterative Secure Feedback & Refinement --> B_UIPCSM
+    subgraph AI Model Developer
+        MD[Model Development & Training]
+        MD -- provides --> AI_Model_Details[AI Model Name, Version, Arch, Training Data Hash]
+        AI_Model_Details -- defines --> SC_Params[Secure Computation Parameters (FHE/MPC config)]
+        SC_Params -- defines --> ZKC_Hash[ZKP Circuit Hash for Secure Inference]
+        AI_Model_Details & SC_Params & ZKC_Hash --> Register[Register Model]
     end
 
-    subgraph Secure Backend Processing and Orchestration Layer SBPOL
-        subgraph Confidential Prompt Pre-processing and Routing Subsystem CPPRSS
-            C_CPPRSS[Encrypted Parse Semantic Nuances] --> D_SNLU[Secure Natural Language Understanding SNLU in SEE]
-            D_SNLU --> E_APREM[Advanced Private Prompt Engineering Module APREM in SEE]
-            E_APREM -- Encrypted Augmented Prompt & Score --> F_SMSR[Secure Model Selection and Routing]
-        end
-
-        subgraph Secure Generative AI Interaction Module SGAIIM
-            F_SMSR -- Encrypted Routed Prompt & Secure Parameters --> G_SECURE_AI[Secure Generative AI Models in SEE]
-            G_SECURE_AI -- Encrypted Generated Phenotype Raw --> H_SMMFHU[Secure Multi-Modal Fusion and Harmonization Unit SMMFHU in SEE]
-            H_SMMFHU --> I_EOVR[Encrypted Output Validation & Refinement in SEE]
-        end
-
-        subgraph Privacy-Preserving Asset Presentation and Approval Module PPAPAM
-            I_EOVR --> J_PPAPAM[Present Encrypted Phenotype for User Approval with Controlled Decryption ZKP]
-            J_PPAPAM -- Approved by User via Local Decryption / ZKP Verification --> K_DSIM
-            J_PPAPAM -- Rejected by User --> F_PPAPAM_Final[Encrypted Phenotype Versioning & Iteration History]
-            F_PPAPAM_Final -- Secure Feedback Loop --> B_UIPCSM
-        end
-
-        subgraph Decentralized Storage Integration Module DSIM
-            K_DSIM[Prepare Phenotype ZKP for Storage] --> L_UA[Upload Asset Decrypted or Encrypted to IPFS DHT]
-            L_UA -- Asset CID --> M_SMGEN[Generate Secure Metadata JSON with Prompt Commitment ZKP]
-            M_SMGEN -- Metadata CID --> N_UM[Upload Metadata to IPFS DHT]
-        end
-
-        subgraph Blockchain Interaction and Smart Contract Module BISCM
-            N_UM -- Metadata CID User Wallet Prompt Commitment ZKP --> O_TCON[Construct Secure Mint Transaction]
-            O_TCON -- Transaction Data Fee --> P_TSIGN[Facilitate Transaction Signing User Wallet]
-            P_TSIGN -- Signed Transaction --> Q_TSUB[Submit Transaction to Blockchain]
-            Q_TSUB --> R_TMON[Monitor Transaction for Confirmation]
-        end
+    subgraph AI Model Provenance and Secure Registry (AMPR)
+        AMPR_DB[AMPR Database / Smart Contract]
+        AMPR_DB -- stores --> Model_ID(Unique Model Identifier)
+        AMPR_DB -- stores --> Model_Details(AI Model Details)
+        AMPR_DB -- stores --> Secure_Config(FHE Scheme / MPC Protocol / ZKP Circuit Hash)
     end
 
-    subgraph Blockchain Network & Assets
-        R_TMON --> S_NFT_SC[NFT Smart Contract on Blockchain]
-        S_NFT_SC -- Mints New NFT, Assigns Ownership & Records Private Provenance --> T_UCW[User's Crypto Wallet]
-        T_UCW -- Verifiable Ownership --> A
-        L_UA -- Stored Phenotype --> U_DSS[Decentralized Storage System]
-        N_UM -- Stored Metadata --> U_DSS
-        S_NFT_SC -- Accesses Metadata URI --> U_DSS
-        F_SMSR -- Query AI Model Info --> V_AMPR[AI Model Provenance and Secure Registry AMPR]
-        V_AMPR -- Model Hash PAIO ZKP Circuit --> E_APREM
-        V_AMPR -- Model Hash PAIO ZKP Circuit --> G_SECURE_AI
-        V_AMPR -- Model Hash PAIO ZKP Circuit --> M_SMGEN
-        S_NFT_SC -- Verifies ZKP --> W_ZKV[Zero-Knowledge Proof Verifier On-chain]
-        G_SECURE_AI -- Generates ZKP of Computation --> M_SMGEN
+    subgraph SPACAGT Core System
+        SMSR[Secure Model Selection & Routing (CPPRSS)]
+        SGAIIM[Secure Generative AI Interaction Module]
+        ZKP_Gen[ZKP Generator (Off-chain)]
+        M_SMGEN[Metadata Manifest Generation (DSIM)]
     end
+
+    Register --> AMPR_DB
+    SMSR -- queries for best model --> AMPR_DB
+    AMPR_DB -- provides --> Model_ID & Secure_Config
+    SGAIIM -- uses Model_ID & Secure_Config for --> Secure_AI[Secure AI Model in SEE]
+    Secure_AI -- generates Output & Witness --> ZKP_Gen
+    ZKP_Gen -- uses ZKP Circuit specified by Secure_Config --> ZKP_Proof(Zero-Knowledge Proof pi)
+    ZKP_Proof --> M_SMGEN
+    M_SMGEN -- incorporates Model_Details & Secure_Config Hashes & pi into --> Metadata_JSON
+    Metadata_JSON -- uploaded to IPFS & minted on --> NFT_SC[NFT Smart Contract]
+    NFT_SC -- verifies pi using AMPR-linked verifier --> On_Chain_Verif[On-chain ZKP Verification]
+
+    style AMPR_DB fill:#afa,stroke:#333,stroke-width:2px
+    style Secure_AI fill:#def,stroke:#333,stroke-width:2px
 ```
+
+### 6. Threat Model and Security Analysis
+
+The SPACAGT-MPC/FHE system is designed to withstand a range of cryptographic and adversarial threats, providing a high degree of confidentiality and integrity. The primary adversaries are modeled as semi-honest (honest-but-curious) or malicious.
+
+*   **Semi-Honest Adversary (HBC):** Follows the protocol specifications honestly but attempts to learn additional information from legitimate observations.
+*   **Malicious Adversary:** May deviate arbitrarily from the protocol to learn information or disrupt computation.
+
+**Core Security Objectives:**
+1.  **Confidentiality of Conceptual Genotype (P):** The plaintext `P` must remain secret from all parties except the user.
+2.  **Confidentiality of Conceptual Phenotype (A) during generation:** Intermediate computations and the final `A_conf` must remain secret from all parties except the user during the generative process.
+3.  **Integrity and Correctness of Computation:** The AI model `G_AI_Secure` must compute the function `f(P, AI_params)` correctly, and the `ZKP` must attest to this.
+4.  **Verifiable Provenance:** The link from NFT to AI model to confidential prompt must be cryptographically auditable.
+5.  **Non-Repudiation of Ownership:** Once minted, the NFT ownership cannot be denied.
+
+### Threat Model for Confidentiality Breaches
+
+```mermaid
+graph TD
+    subgraph User's Environment
+        U_Device(User's Device)
+        U_Key(User's Private FHE Key)
+        U_Prompt(User's Prompt)
+    end
+
+    subgraph SPACAGT Core (SBPOL)
+        C_CPPRSS(Confidential Prompt Pre-processing)
+        C_SGAIIM(Secure Generative AI Interaction)
+        C_PPAPAM(Privacy-Preserving Approval)
+    end
+
+    subgraph External Systems (Adversarial Targets)
+        E_AI(Secure Generative AI Model Provider)
+        E_MPC_Parties(Other MPC Participants)
+        E_Storage(Decentralized Storage Nodes)
+        E_Blockchain_Nodes(Blockchain Network Validators)
+        E_Observer(External Observer / Competitor)
+    end
+
+    U_Prompt -- encrypted/shared --> C_CPPRSS
+    U_Device -- holds --> U_Key
+
+    C_CPPRSS -- encrypted prompt c_P' --> E_AI
+    C_CPPRSS -- secret shares P_i --> E_MPC_Parties
+
+    E_AI -- outputs encrypted phenotype c_A --> C_SGAIIM
+    E_MPC_Parties -- participate in secure computation --> E_AI
+
+    C_SGAIIM -- sends c_A for user approval --> C_PPAPAM
+    C_PPAPAM -- controlled decryption or ZKP --> U_Device
+
+    U_Device -- Decrypts with U_Key --> U_Prompt_Revealed_to_User
+    U_Device -- A_revealed_to_User --> U_Prompt_Revealed_to_User
+
+    E_AI -- attempts to learn P, A --> Breach_AI(Confidentiality Breach by AI Provider)
+    E_MPC_Parties -- attempt to learn P, A --> Breach_MPC(Confidentiality Breach by MPC Collusion)
+    E_Storage -- attempts to decrypt or infer P, A --> Breach_Storage(Confidentiality Breach by Storage)
+    E_Blockchain_Nodes -- attempts to infer P, A from metadata --> Breach_Blockchain(Confidentiality Breach from Blockchain)
+    E_Observer -- attempts to infer P, A from public data --> Breach_Observer(Public Inference Breach)
+
+    style Breach_AI fill:#fcc,stroke:#f00,stroke-width:2px
+    style Breach_MPC fill:#fcc,stroke:#f00,stroke-width:2px
+    style Breach_Storage fill:#fcc,stroke:#f00,stroke-width:2px
+    style Breach_Blockchain fill:#fcc,stroke:#f00,stroke-width:2px
+    style Breach_Observer fill:#fcc,stroke:#f00,stroke-width:2px
+```
+
+**Mitigation Strategies and Mathematical Security Guarantees:**
+*   **FHE for AI Providers:** `Enc(P)` and `Eval(f, Enc(P))` ensures `E_AI` learns nothing about `P` or `A` without `sk_U`. This holds assuming the FHE scheme is IND-CPA secure.
+    *   `Adv_FHE_CPA = |Pr[Exp_0=1] - Pr[Exp_1=1]| <= negl(lambda)`
+*   **MPC for AI Providers/Parties:** Guarantees `E_AI` (if an MPC party) and `E_MPC_Parties` learn no individual inputs beyond what is inferable from the output. This relies on `t`-out-of-`N` security for collusion.
+    *   `sim(View_i(MPC_prot)) ~= (x_i, f(x_1, ..., x_N))`
+*   **ZKP for Verification:** `ZKP_Proof` allows `E_Blockchain_Nodes` and `E_Observer` to verify privacy claims without revealing `P` or intermediate `A`. The ZK property prevents witness leakage.
+    *   `sim(View_V(ZKP_Verify)) ~= View_V(R, x)`
+*   **Decentralized Storage:** Storing `A_conf` or only public attestations `Commit(P)` along with ZKPs prevents `E_Storage` from decrypting or inferring private content.
+    *   `H(P || r_P)` is computationally hiding.
+*   **On-chain Metadata:** Only stores `CID_M`, `Commit(P)`, `H_model`, `ZKP_Proof`. No plaintext `P` or `A`.
+
+### 7. Economic Model and Tokenomics
+
+The SPACAGT-MPC/FHE system enables a novel tokenomics model that aligns incentives for users, AI model developers, and the SPACAGT platform itself, fostering a self-sustaining ecosystem for private AI-generated intellectual property.
+
+*   **Minting Fees:** A `MINTING_FEE` (e.g., in ETH, MATIC) is paid during the `mintConcept` transaction.
+    *   `Fee = MINTING_FEE * Gas_Price`
+    *   This fee supports network infrastructure, smart contract operations, and a portion may be directed to a SPACAGT treasury.
+*   **Royalties (EIP-2981):** Secondary sales of SPACAGT NFTs automatically distribute royalties to the creator (the user) and potentially to the SPACAGT platform or AI model developers.
+    *   `Royalty_Creator = Sale_Price * Creator_Royalty_Rate`
+    *   `Royalty_Platform = Sale_Price * Platform_Royalty_Rate`
+    *   `Royalty_AI_Model = Sale_Price * AI_Model_Royalty_Rate` (if implemented, tied to `H_model`)
+*   **AI Model Developer Incentives:** AI model developers whose models are registered in the AMPR and used for successful NFT mints can receive a share of minting fees or secondary royalties. This encourages the development of high-quality, privacy-preserving AI models.
+    *   `AI_Developer_Share = f(Mint_Fee, Royalty_Pool)`
+*   **SPACAGT Governance Token (Optional):** A native governance token could be introduced for:
+    *   Voting on platform parameters (e.g., `MINTING_FEE`, `Royalty_Rates`).
+    *   Staking to earn rewards from platform fees.
+    *   Access to premium features (e.g., priority AI inference, advanced prompt engineering tools).
+*   **Value Proposition of Private NFTs:** The cryptographic guarantee of privacy (through ZKPs and FHE/MPC) confers additional value to SPACAGT NFTs, potentially commanding higher market prices due to the inherent integrity and uncompromised origin of the intellectual property. This creates a market premium `V_private_NFT > V_public_NFT`.
+
+### 8. User Experience Enhancements for Privacy
+
+To ensure widespread adoption, the complex cryptographic underpinnings must be abstracted away, providing a seamless and intuitive user experience (UX) while rigorously upholding privacy.
+
+*   **Client-Side Cryptography Library:** An SDK or browser extension that handles FHE key generation, encryption, and local decryption transparently for the user.
+    *   `pk, sk = FHE.KeyGen(lambda)` (done once, stored securely locally)
+    *   `c_P = FHE.Encrypt(pk, P)` (automatic on prompt input)
+    *   `A = FHE.Decrypt(sk, c_A_final)` (automatic on asset preview)
+*   **Visual Trust Indicators:** UI elements that clearly communicate when data is encrypted, processed securely, and verified on-chain. E.g., a "Privacy Shield" icon during AI generation.
+*   **Iterative Refinement Loop with Private Feedback:** Allow users to provide natural language feedback on generated (decrypted) assets, which is then re-encrypted or securely shared before being used to guide further AI generation.
+    *   `P_feedback = "Make the colors warmer"`
+    *   `c_P_feedback = FHE.Encrypt(pk_U, P_feedback)`
+    *   `c_P_new = FHE.Eval(pk_U, Refinement_Model, c_P_aug, c_P_feedback)`
+*   **Explainable ZKPs:** While the full ZKP is complex, the UI can present user-friendly summaries of what properties were verified without revealing specifics (e.g., "Verified: Your original prompt remained private during generation. Verified: The AI model 'AetherVision v3.1' was used as claimed.").
+*   **Gas Abstraction:** Offer options for users to pay fees in stablecoins or fiat, with the system handling the underlying crypto conversion and gas estimation.
+
+### 9. Scalability and Performance Considerations
+
+The computational intensity of FHE, MPC, and ZKP generation, coupled with blockchain transaction costs, necessitates careful architectural design for scalability.
+
+*   **FHE Optimization:**
+    *   **Bootstrapping Optimization:** Minimize the need for bootstrapping by designing AI models with low multiplicative depth.
+    *   **Batching:** Process multiple user prompts or multiple parts of a single prompt in batches using SIMD (Single Instruction, Multiple Data) operations on FHE ciphertexts.
+        *   `c_vector = Enc(pk, (m_1, ..., m_k))`
+    *   **Hardware Acceleration:** Leverage specialized hardware (e.g., GPUs, FPGAs, ASICs) for FHE operations.
+*   **MPC Efficiency:**
+    *   **Protocol Selection:** Choose MPC protocols optimized for specific AI operations (e.g., secure matrix multiplication, secure comparisons).
+    *   **Offline Phase:** Pre-compute expensive cryptographic primitives (e.g., multiplication triples) in an offline phase to speed up online computation.
+*   **ZKP Performance:**
+    *   **Circuit Optimization:** Design compact ZKP circuits for AI inference, minimizing arithmetic gates.
+    *   **Proof Generation Time:** Utilize fast ZKP schemes (e.g., STARKs) and parallelize prover computation.
+    *   **Proof Verification Time:** Ensure the on-chain verifier circuit is concise and gas-efficient.
+*   **Off-Chain AI Inference:** The bulk of AI inference computation occurs off-chain within Secure Execution Environments (SEE) or by MPC parties, preventing blockchain congestion. Only ZKP verification occurs on-chain.
+*   **Layer 2 Scaling Solutions for Blockchain:** Deploy NFT smart contracts on Layer 2 solutions (e.g., Polygon, Arbitrum, Optimism, ZK-Rollups) to reduce transaction costs and increase throughput.
+    *   `Tx_Cost_L2 << Tx_Cost_L1`
+
+### 10. Legal and Ethical Implications
+
+The SPACAGT-MPC/FHE system addresses critical legal and ethical challenges in AI-generated content and digital ownership.
+
+*   **Intellectual Property Rights:** Clearly establishes legal ownership of AI-generated conceptual assets, filling a void where AI's role in creation often complicates IP attribution. The `Proof_of_AI_Origin` and `Prompt_Commitment` provide a strong basis for IP claims.
+*   **Privacy by Design:** Inherently complies with privacy regulations (e.g., GDPR, CCPA) by ensuring user prompts and generated content remain confidential throughout the process.
+    *   `Data_Leakage = I(P; System_View) = 0` (ideally)
+*   **Transparency and Auditability:** The AMPR provides transparency regarding AI models used, and on-chain ZKP verification offers auditable proof of secure computation, combating "black box" concerns.
+*   **Bias Mitigation:** While the system doesn't directly remove AI bias, the transparency of `H_model` and `trainingDataHash` allows for scrutiny and accountability of model origins. Future enhancements could include ZKPs of fairness properties.
+*   **Digital Identity and Ownership:** Integrates with decentralized identity (DID) systems to link real-world identity to blockchain wallets, strengthening legal claims for enterprises.
+
+### System Flow with Enhanced Modules
+
+```mermaid
+graph TD
+    subgraph User Interaction
+        U(User) --> U_UI(User Interface & Client-side Cryptography)
+        U_UI -- Encrypted Prompt (c_P) --> SBPOL(Secure Backend Processing & Orchestration Layer)
+    end
+
+    subgraph SPACAGT Core System (SBPOL)
+        subgraph Confidential Prompt Pre-processing & Routing
+            CPPRSS(CPPRSS)
+            CPPRSS -- SNLU (on c_P) --> APREM(Advanced Private Prompt Engineering Module)
+            APREM -- Augmented c_P' --> SMR(Secure Model Selection & Routing)
+        end
+
+        subgraph Secure Generative AI Interaction
+            SMR -- c_P' & Params --> SGAIIM(SGAIIM)
+            SGAIIM -- Interface Encrypted --> SECURE_AI_MODELS(Secure Generative AI Models in SEE)
+            SECURE_AI_MODELS -- Encrypted Phenotype (c_A) --> SMMFHU(Secure Multi-Modal Fusion & Harmonization)
+            SMMFHU -- Fused c_A'' --> ZKPG(ZKP Generator)
+            SMMFHU -- Fused c_A'' --> PPAPAM(Privacy-Preserving Asset Presentation & Approval)
+        end
+
+        subgraph Asset & Metadata Management
+            ZKPG -- Proof (pi) --> DSIM(Decentralized Storage Integration Module)
+            PPAPAM -- User Approval (c_A_approved or A_public) --> DSIM
+            DSIM -- Asset CID & Metadata CID --> BISCM(Blockchain Interaction & Smart Contract Module)
+        end
+    end
+
+    subgraph External Systems
+        SECURE_AI_MODELS -- Query AMPR --> AMPR(AI Model Provenance & Secure Registry)
+        AMPR -- Model Details & ZKP Circuit Hash --> SECURE_AI_MODELS
+        DSIM -- Upload to IPFS/DHT --> IPFS(IPFS / DHT)
+        BISCM -- Submit Transaction --> BLOCKCHAIN(Blockchain Network)
+        BLOCKCHAIN -- Verifies ZKP --> ZK_VERIFIER(On-chain ZKP Verifier)
+        BLOCKCHAIN -- Mints NFT --> U_WALLET(User's Crypto Wallet)
+    end
+
+    U_WALLET -- owns --> U
+    style U_UI fill:#cef,stroke:#333,stroke-width:2px
+    style SBPOL fill:#dfd,stroke:#333,stroke-width:2px
+    style SECURE_AI_MODELS fill:#fdd,stroke:#333,stroke-width:2px
+    style AMPR fill:#ffc,stroke:#333,stroke-width:2px
+    style IPFS fill:#ccf,stroke:#333,stroke-width:2px
+    style BLOCKCHAIN fill:#cfc,stroke:#333,stroke-width:2px
+    style ZK_VERIFIER fill:#cdc,stroke:#333,stroke-width:2px
+    style U_WALLET fill:#fff,stroke:#333,stroke-width:2px
+```
+
+---
 
 **Claims:**
 
 1.  A system for generating and tokenizing conceptual assets with privacy, comprising:
-    a.  A User Interface and Confidential Prompt Submission Module UIPCSM configured to receive a linguistic conceptual genotype from a user and securely transform it into a confidential conceptual genotype via client-side Fully Homomorphic Encryption FHE or Multi-Party Computation MPC secret sharing;
+    a.  A User Interface and Confidential Prompt Submission Module UIPCSM configured to receive a linguistic conceptual genotype from a user and securely transform it into a confidential conceptual genotype via client-side Fully Homomorphic Encryption FHE or Multi-Party Computation MPC secret sharing, retaining the user's sole decryption authority for FHE;
     b.  A Secure Backend Processing and Orchestration Layer SBPOL configured to:
-        i.  Process the confidential conceptual genotype within a Secure Execution Environment SEE via a Confidential Prompt Pre-processing and Routing Subsystem CPPRSS utilizing Secure Natural Language Understanding SNLU mechanisms and an Advanced Private Prompt Engineering Module APREM for secure prompt scoring and augmentation, all without revealing the plaintext conceptual genotype;
+        i.  Process the confidential conceptual genotype within a Secure Execution Environment SEE via a Confidential Prompt Pre-processing and Routing Subsystem CPPRSS utilizing Secure Natural Language Understanding SNLU mechanisms and an Advanced Private Prompt Engineering Module APREM for secure prompt scoring and augmentation, all without revealing the plaintext conceptual genotype to any unauthorized party;
         ii. Transmit the processed confidential conceptual genotype to at least one external Secure Generative AI Model operating within the SEE via a Secure Generative AI Interaction Module SGAIIM to synthesize an encrypted digital conceptual phenotype, potentially incorporating a Secure Multi-Modal Fusion and Harmonization Unit SMMFHU for complex encrypted outputs;
-        iii. Present the encrypted digital conceptual phenotype to the user via a Privacy-Preserving Asset Presentation and Approval Module PPAPAM for explicit user validation, incorporating controlled decryption (only to the user) or Zero-Knowledge Proof ZKP verification of properties, while maintaining confidentiality from other parties;
-        iv. Upon user validation, transmit the digital conceptual phenotype (or a public attestation thereof) to a Decentralized Storage Integration Module DSIM;
+        iii. Present the encrypted digital conceptual phenotype to the user via a Privacy-Preserving Asset Presentation and Approval Module PPAPAM for explicit user validation, incorporating user-controlled local decryption or Zero-Knowledge Proof ZKP verification of properties, while maintaining confidentiality from all other parties;
+        iv. Upon user validation, generate a Zero-Knowledge Proof ZKP of the private computation, and transmit the digital conceptual phenotype (or a public attestation thereof) and the ZKP to a Decentralized Storage Integration Module DSIM;
     c.  The Decentralized Storage Integration Module DSIM configured to:
         i.  Upload the digital conceptual phenotype or its encrypted form to a content-addressed decentralized storage network to obtain a unique content identifier CID;
-        ii. Generate a structured metadata manifest associating a cryptographic commitment or hash of the original conceptual genotype with the conceptual phenotype's CID and including verifiable Proof of AI Origin PAIO attributes and a Zero-Knowledge Proof ZKP of private computation;
+        ii. Generate a structured metadata manifest associating a cryptographic commitment or hash of the original conceptual genotype with the conceptual phenotype's CID and including verifiable Proof of AI Origin PAIO attributes, the generated Zero-Knowledge Proof ZKP of private computation, and the relevant ZKP circuit hash from an AI Model Provenance and Secure Registry AMPR;
         iii. Upload the structured metadata manifest to the content-addressed decentralized storage network to obtain a unique metadata CID;
     d.  A Blockchain Interaction and Smart Contract Module BISCM configured to:
         i.  Construct a transaction to invoke a `mintConcept` function on a pre-deployed Non-Fungible Token NFT smart contract, providing the user's blockchain address, the unique metadata CID, the cryptographic commitment to the original conceptual genotype, the ZKP of private computation, and a minting fee as parameters;
-        ii. Facilitate the cryptographic signing of the transaction by the user's blockchain wallet;
+        ii. Facilitate the cryptographic signing of the transaction by the user's blockchain wallet without exposing private keys;
         iii. Submit the signed transaction to a blockchain network;
     e.  A Non-Fungible Token NFT smart contract, deployed on the blockchain network, configured to, upon successful transaction execution:
         i.  Immutably create a new NFT, associate it with the provided metadata CID and prompt commitment, and assign its ownership to the user's blockchain address;
-        ii. On-chain verify the provided ZKP of private computation using an integrated Zero-Knowledge Proof Verifier;
-        iii. Implement EIP-2981 royalty standards for secondary sales;
-        iv. Store verifiable AI model provenance data for the minted NFT and a flag indicating successful private provenance verification.
+        ii. On-chain verify the provided ZKP of private computation using an integrated Zero-Knowledge Proof Verifier and the ZKP circuit hash stored in the metadata;
+        iii. Implement EIP-2981 royalty standards for programmatic secondary sales;
+        iv. Store verifiable AI model provenance data for the minted NFT and a flag indicating successful private provenance verification, ensuring an auditable and trustworthy chain of custody for privacy.
 
-2.  The system of claim 1, wherein the Secure Generative AI Model operates using Fully Homomorphic Encryption FHE, enabling computation on encrypted data without decryption, and the user holds the sole decryption key.
+2.  The system of claim 1, wherein the Secure Generative AI Model operates using Fully Homomorphic Encryption FHE, enabling computation on encrypted data without decryption, and the user holds the sole secret decryption key, thereby maintaining information-theoretic confidentiality of the prompt and output from the AI service provider.
 
-3.  The system of claim 1, wherein the Secure Generative AI Model operates using Secure Multi-Party Computation MPC, where multiple parties jointly compute on secret-shared data without revealing individual inputs.
+3.  The system of claim 1, wherein the Secure Generative AI Model operates using Secure Multi-Party Computation MPC, where multiple non-colluding parties jointly compute on secret-shared data without revealing individual inputs, providing cryptographic privacy guarantees against a specified threshold of dishonest parties.
 
-4.  The system of claim 1, wherein the Zero-Knowledge Proof ZKP attests that the generated conceptual phenotype was derived from the committed conceptual genotype by the specified AI model within a Secure Execution Environment SEE, preserving the confidentiality of the conceptual genotype.
+4.  The system of claim 1, wherein the Zero-Knowledge Proof ZKP attests with computational soundness that the generated conceptual phenotype was derived from the committed conceptual genotype by the specified AI model within a Secure Execution Environment SEE, and that the computation preserved the confidentiality of the conceptual genotype and intermediate steps.
 
-5.  The system of claim 1, further comprising an Advanced Private Prompt Engineering Module APREM configured to perform secure prompt scoring, encrypted semantic augmentation, or dynamic confidential contextual expansion of the confidential conceptual genotype prior to transmission to the Secure Generative AI Model.
+5.  The system of claim 1, further comprising an Advanced Private Prompt Engineering Module APREM configured to perform secure prompt scoring, encrypted semantic augmentation, dynamic confidential contextual expansion, and iterative encrypted prompt versioning of the confidential conceptual genotype prior to transmission to the Secure Generative AI Model, all while maintaining strict privacy.
 
-6.  The system of claim 1, wherein the structured metadata manifest includes attributes detailing the specific Secure Generative AI Model utilized, its version, a cryptographic hash of the model for Proof of AI Origin PAIO, a cryptographic commitment to the original conceptual genotype, and the Zero-Knowledge Proof of private computation.
+6.  The system of claim 1, wherein the structured metadata manifest includes attributes detailing the specific Secure Generative AI Model utilized, its version, a cryptographic hash of the model for Proof of AI Origin PAIO, a cryptographic commitment to the original conceptual genotype, the Zero-Knowledge Proof of private computation, and a reference to the on-chain ZKP verifier address and its associated ZKP circuit hash.
 
 7.  A method for establishing verifiable ownership of a privately AI-generated conceptual asset, comprising:
     a.  Receiving a linguistic conceptual genotype from a user via a user interface;
-    b.  Securely transforming the linguistic conceptual genotype into a confidential conceptual genotype through FHE encryption or MPC secret sharing;
-    c.  Pre-processing the confidential conceptual genotype within a Secure Execution Environment SEE, including secure prompt scoring and encrypted augmentation;
+    b.  Securely transforming the linguistic conceptual genotype into a confidential conceptual genotype through FHE encryption or MPC secret sharing, ensuring user control over decryption keys or input shares;
+    c.  Pre-processing the confidential conceptual genotype within a Secure Execution Environment SEE, including secure natural language understanding, encrypted prompt scoring, and encrypted augmentation using privacy-preserving techniques;
     d.  Transmitting the confidential conceptual genotype to a generative artificial intelligence model operating within the SEE to synthesize an encrypted digital conceptual phenotype;
-    e.  Presenting the encrypted digital conceptual phenotype to the user for explicit approval, utilizing controlled decryption or privacy-preserving comparison, allowing for iterative refinement and encrypted phenotype version tracking;
-    f.  Upon approval, uploading the digital conceptual phenotype (or its publicly verified representation) to a content-addressed decentralized storage system to obtain a first unique content identifier;
-    g.  Creating a machine-readable metadata manifest comprising a cryptographic commitment to the linguistic conceptual genotype, verifiable AI model provenance data, a Zero-Knowledge Proof ZKP of private computation, and a reference to the first unique content identifier;
+    e.  Presenting the encrypted digital conceptual phenotype to the user for explicit approval, utilizing user-controlled local decryption or privacy-preserving comparison, allowing for iterative refinement and encrypted phenotype version tracking with cryptographic commitments;
+    f.  Upon approval, generating a Zero-Knowledge Proof ZKP attesting to the private generation process and uploading the digital conceptual phenotype (or its publicly verified representation) to a content-addressed decentralized storage system to obtain a first unique content identifier;
+    g.  Creating a machine-readable metadata manifest comprising a cryptographic commitment to the linguistic conceptual genotype, verifiable AI model provenance data, the generated Zero-Knowledge Proof ZKP of private computation, and a reference to the first unique content identifier;
     h.  Uploading the machine-readable metadata manifest to the content-addressed decentralized storage system to obtain a second unique content identifier;
     i.  Initiating a blockchain transaction to invoke a minting function on a pre-deployed Non-Fungible Token smart contract, passing the user's blockchain address, the second unique content identifier, the cryptographic commitment to the original conceptual genotype, the ZKP of private computation, and a minting fee as parameters;
-    j.  Facilitating the cryptographic signing of the transaction by the user;
+    j.  Facilitating the cryptographic signing of the transaction by the user's secure digital wallet;
     k.  Submitting the signed transaction to a blockchain network;
-    l.  Upon confirmation of the transaction on the blockchain network, verifying the ZKP of private computation on-chain and irrevocably assigning ownership of the newly minted Non-Fungible Token, representing the privately AI-generated conceptual asset, to the user's blockchain address, with EIP-2981 royalties enabled.
+    l.  Upon confirmation of the transaction on the blockchain network, verifying the ZKP of private computation on-chain using a dedicated ZKP verifier contract and irrevocably assigning ownership of the newly minted Non-Fungible Token, representing the privately AI-generated conceptual asset, to the user's blockchain address, with EIP-2981 royalties enabled and a permanent record of privacy-preserving genesis.
 
-8.  The method of claim 7, further comprising an iterative refinement step wherein user feedback on a presented digital conceptual phenotype guides subsequent secure generative AI model synthesis, and encrypted previous phenotype versions are maintained.
+8.  The method of claim 7, further comprising an iterative refinement step wherein user feedback on a presented digital conceptual phenotype, provided through privacy-preserving channels, guides subsequent secure generative AI model synthesis, and encrypted previous phenotype versions are maintained with cryptographic commitments.
 
-9.  The method of claim 7, wherein the blockchain network implements a proof-of-stake or proof-of-work consensus mechanism, and the ZKP verification is an integral part of the transaction validation.
+9.  The method of claim 7, wherein the blockchain network implements a proof-of-stake or proof-of-work consensus mechanism, and the ZKP verification is an integral part of the transaction validation process, ensuring that assets claiming private genesis have cryptographic proof.
 
-10. The method of claim 7, wherein the metadata manifest includes an `external_url` attribute linking to a permanent record of the conceptual asset on a web-based platform, and an on-chain licensing framework defining usage rights that may be contingent on the verified privacy of its creation.
+10. The method of claim 7, wherein the metadata manifest includes an `external_url` attribute linking to a permanent record of the conceptual asset on a web-based platform, and an on-chain licensing framework defining usage rights that are directly contingent on the verified privacy and secure provenance of its creation, enabling granular control over confidential intellectual property.
 
-11. The system of claim 1, further comprising an AI Model Provenance and Secure Registry AMPR module for transparently recording and verifying details of generative AI models, their secure computation compatibility parameters (FHE schemes, MPC protocols, ZKP circuits), and their usage for content creation.
-
-12. The system of claim 1, wherein the NFT smart contract integrates robust access control mechanisms using roles for managing minting, pausing, upgrading capabilities, and the administration of Zero-Knowledge Proof Verifier contracts.
+---
 
 **Mathematical Justification:**
 
-The robust framework underpinning the **System and Method for Private Algorithmic Conceptual Asset Genesis and Tokenization via Secure Multi-Party Computation and Fully Homomorphic Encryption SPACAGT-MPC/FHE** is grounded in advanced cryptographic theory, providing axiomatic guarantees of confidentiality, correctness, and verifiable provenance for AI-generated intellectual property. This extends the mathematical formalization of uniqueness and ownership from the SACAGT system to include rigorous privacy properties.
+The robust framework underpinning the **System and Method for Private Algorithmic Conceptual Asset Genesis and Tokenization via Secure Multi-Party Computation and Fully Homomorphic Encryption SPACAGT-MPC/FHE** is grounded in advanced cryptographic theory, providing axiomatic guarantees of confidentiality, correctness, and verifiable provenance for AI-generated intellectual property. This extends the mathematical formalization of uniqueness and ownership from the SACAGT system to include rigorous privacy properties, especially concerning the conceptual genotype `P` and the generative process `G_AI`.
 
-### I. The Formal Ontology of Confidential Conceptual Genotype `P_conf`
+### I. The Formal Ontology of Confidential Conceptual Genotype `P_conf` and Related Primitives
 
-Let `P` denote the user's initial linguistic prompt (conceptual genotype). In SPACAGT-MPC/FHE, `P` is never processed in plaintext by any untrusted party.
+Let `P \in \Sigma^*` denote the user's initial linguistic prompt (conceptual genotype), where `Sigma` is the alphabet. In SPACAGT-MPC/FHE, `P` is never processed in plaintext by any untrusted party.
 
 **Definition 1.1: Semantic Embedding Function.**
-Let `E: Sigma* -> R^d` be a non-linear, high-dimensional embedding function that maps a linguistic prompt `P` to a dense semantic vector `v_P`.
+Let `E: \Sigma^* \to \mathbb{R}^d` be a non-linear, high-dimensional embedding function that maps a linguistic prompt `P` to a dense semantic vector `v_P \in \mathbb{R}^d`.
 Thus, `v_P = E(P)`. The core difference is that `v_P` is either immediately encrypted or secret-shared.
 
-**Definition 1.2: Encryption Scheme `Enc` for FHE.**
-A Fully Homomorphic Encryption FHE scheme `(Gen, Enc, Dec, Eval)` is a tuple of algorithms:
-1.  `Gen(lambda) -> (pk, sk)`: Key generation algorithm taking security parameter `lambda` to produce public key `pk` and secret key `sk`.
-2.  `Enc(pk, m) -> c`: Encryption algorithm taking `pk` and message `m` (plaintext vector `v_P`) to produce ciphertext `c`.
-3.  `Dec(sk, c) -> m'`: Decryption algorithm taking `sk` and ciphertext `c` to produce plaintext `m'`.
-4.  `Eval(pk, f, c_1, ..., c_k) -> c_f`: Evaluation algorithm taking `pk`, a function `f`, and ciphertexts `c_1, ..., c_k` (representing inputs `m_1, ..., m_k`) to produce a ciphertext `c_f` such that `Dec(sk, c_f) = f(m_1, ..., m_k)`.
-The core property is that `Eval` allows arbitrary computations `f` on encrypted data without ever decrypting it, satisfying correctness and privacy.
+**Definition 1.2: Fully Homomorphic Encryption (FHE) Scheme `(Gen, Enc, Dec, Eval)`**
+A FHE scheme is a tuple of probabilistic polynomial-time algorithms:
+1.  `Gen(\lambda) \to (pk, sk)`: Key generation takes a security parameter `\lambda` and outputs a public key `pk` and a secret key `sk`.
+    *   For a typical FHE scheme like CKKS (for approximate numbers): `pk = (A, B)` where `A, B \in R_q^k` (polynomial rings), `sk = s \in R_q`.
+    *   Parameters include `N` (polynomial degree, e.g., `2^{13}` to `2^{16}`), `q` (ciphertext modulus, product of primes, e.g., `2^{1000}`), `t` (plaintext modulus).
+2.  `Enc(pk, m) \to c`: Encryption takes `pk` and a plaintext message `m \in \mathcal{M}` (e.g., a vector `v_P \in \mathbb{R}^d` encoded as a polynomial) to produce a ciphertext `c \in \mathcal{C}`.
+    *   `c = (a \cdot s + e_0 + m, a)` (simplified LWE-like form).
+    *   Noise `e_0` is crucial. `noise(c) \approx N(0, \sigma^2)`.
+3.  `Dec(sk, c) \to m'`: Decryption takes `sk` and `c` to recover `m'`.
+    *   `m' = (c_0 - c_1 \cdot s) \pmod{q}` (recovers `m + e_0`).
+    *   Correctness condition: `m' = m` if `noise(c)` is below a threshold.
+4.  `Eval(pk, f, c_1, ..., c_k) \to c_f`: Evaluation takes `pk`, a circuit `f` (representing an arbitrary function), and ciphertexts `c_1, ..., c_k` (representing inputs `m_1, ..., m_k`) to produce `c_f` such that `Dec(sk, c_f) = f(m_1, ..., m_k)`.
+    *   Multiplication operations increase noise: `noise(c_{mult}) \approx noise(c_1) \cdot noise(c_2)`.
+    *   Bootstrapping `Bootstrap(c_f) \to c_f'` is a noise reduction technique, where `noise(c_f') < noise(c_f)`. This allows arbitrary depth computations at a cost.
+    *   The capacity for homomorphic operations: `c_add = FHE.Add(c_1, c_2)` and `c_mult = FHE.Mult(c_1, c_2)`.
+The core property is that `Eval` allows arbitrary computations `f` on encrypted data without ever decrypting it, satisfying correctness and IND-CPA privacy: `Adv_{FHE}^{IND-CPA} = |\Pr[Exp_{FHE,A}^0=1] - \Pr[Exp_{FHE,A}^1=1]| \le \text{negl}(\lambda)`.
 
-**Definition 1.3: Secure Multi-Party Computation MPC Protocol `MPC_prot`.**
+**Definition 1.3: Secure Multi-Party Computation (MPC) Protocol `MPC_prot`.**
 An MPC protocol `MPC_prot` allows `N` parties, each holding a private input `x_i`, to jointly compute a function `f(x_1, ..., x_N)` such that no party learns any information about the other parties' inputs beyond what is revealed by the function output.
-For SPACAGT-MPC/FHE, the user's prompt `P` (or `v_P`) is `x_1`, and the AI model parameters are `x_2`. The function `f` is the generative AI inference.
-`MPC_prot(P, AI_params) -> a` where `a` is the function output (conceptual phenotype), and intermediate values are kept private.
-Security properties include:
-*   **Privacy:** No party learns anything beyond what can be inferred from their own input and the output.
-*   **Correctness:** The output is always `f(x_1, ..., x_N)`.
+*   **Secret Sharing:** For `k`-threshold additive sharing, `P = \sum_{i=1}^N P_i \pmod{q}` for plaintext `P`. Any `k` shares are sufficient to reconstruct `P`. Any `k-1` shares reveal nothing about `P`.
+    *   Shamir's Secret Sharing: `P(x) = P_0 + P_1 x + ... + P_{k-1} x^{k-1} \pmod{q}`. Each party `i` gets `(i, P(i))`.
+*   **Secure Operations:** MPC protocols define operations on shares:
+    *   Addition: `[x] + [y] = [x+y]` (locally by parties summing shares). `[x]_i + [y]_i = [x+y]_i`.
+    *   Multiplication: `[x] \cdot [y] = [x \cdot y]` (requires interaction, e.g., Beaver triples: `[z] = [a \cdot b]` where `[x-a]` and `[y-b]` are revealed).
+*   **Privacy (informal):** For any adversary `A` corrupting `t` parties, there exists a simulator `S` such that `View_A(\text{Real}) \equiv S(x_A, f(x_1, ..., x_N))`. This means the adversary's view in the real protocol can be simulated knowing only the adversary's inputs and the final output.
+*   **Correctness:** The output `f(x_1, ..., x_N)` is computed correctly.
 *   **Fairness:** All honest parties receive the output if any party does.
 
-Let `P_conf` be the confidential representation of `P`, either `Enc(pk, v_P)` (for FHE) or `(P_1, ..., P_N)` (for MPC secret shares of `P`).
+Let `P_conf` be the confidential representation of `P`, either `Enc(pk, v_P)` (for FHE) or `(P_1, ..., P_N)` (for MPC secret shares of `v_P`).
 
 **Definition 1.4: Cryptographic Commitment `Commit`.**
-A commitment scheme `(Commit, Verify)` allows a committer to commit to a value `x` by computing `c = Commit(x, r)` (where `r` is a random nonce) and revealing `c`. Later, the committer can reveal `x` and `r`, and anyone can verify `Verify(c, x, r)` is true. Properties:
-1.  **Hiding:** Given `c`, it is computationally infeasible to learn `x`.
-2.  **Binding:** The committer cannot later open `c` to a different `x' != x`.
-In SPACAGT-MPC/FHE, `Commit(P, r_P)` is used to store a binding, hiding commitment to the conceptual genotype `P` on-chain.
+A commitment scheme `(Commit, Verify)` allows a committer to commit to a value `x` by computing `c = Commit(x, r)` (where `r` is a random nonce) and revealing `c`. Later, the committer can reveal `x` and `r`, and anyone can verify `Verify(c, x, r)` is true.
+*   **Hiding:** Given `c`, it is computationally infeasible to learn `x` (for computational hiding) or statistically impossible (for statistical hiding).
+    *   `|\Pr[\text{Commit}(x_0, r) = c] - \Pr[\text{Commit}(x_1, r) = c]| \le \text{negl}(\lambda)` for distinct `x_0, x_1`.
+*   **Binding:** The committer cannot later open `c` to a different `x' \neq x` (for computational binding) or statistically impossible (for statistical binding).
+    *   `\Pr[ \text{Commit}(x, r) = \text{Commit}(x', r') \text{ and } x \neq x' ] \le \text{negl}(\lambda)`.
+In SPACAGT-MPC/FHE, `C_P = Commit(P, r_P)` is used to store a binding, hiding commitment to the conceptual genotype `P` on-chain. A simple hash commitment is `C_P = H(P || r_P)` where `H` is a collision-resistant hash function.
+    *   `H: \{0,1\}^* \to \{0,1\}^n`, where `n` is the output length.
+    *   Collision resistance: `\Pr[H(x) = H(y) \text{ and } x \neq y] \le 2^{-n/2}`.
 
 ### II. The Secure Generative AI Transformation Function `G_AI_Secure`
 
-Let `A_conf` be the set of all possible encrypted or secret-shared digital assets conceptual phenotypes. The secure generative AI transformation function, `G_AI_Secure`, is a highly complex mapping from the confidential conceptual genotype `P_conf` to a confidential digital conceptual phenotype `a_conf in A_conf`.
+Let `\mathcal{A}_{conf}` be the set of all possible encrypted or secret-shared digital assets (conceptual phenotypes). The secure generative AI transformation function, `G_AI_Secure`, is a complex mapping from the confidential conceptual genotype `P_conf` to a confidential digital conceptual phenotype `a_{conf} \in \mathcal{A}_{conf}`. Let `\Theta` be AI model parameters and `\Lambda` be noise/sampling parameters.
 
 **Definition 2.1: Secure Generative Mapping (FHE).**
-`G_AI_FHE: Enc(R^d) x Enc(Theta) x Enc(Lambda) -> Enc(A)`
-where `Enc(v_P)` is the encrypted semantic embedding, `Enc(Theta)` represents encrypted hyperparameters, and `Enc(Lambda)` represents encrypted multi-modal fusion parameters.
-Thus, `a_conf = G_AI_FHE(Enc(v_P), Enc(theta), Enc(lambda))`.
-This function operates entirely on ciphertexts, preserving the confidentiality of `v_P`, `theta`, `lambda`, and all intermediate computation steps. Decryption `Dec(sk, a_conf) = a` yields the actual conceptual phenotype.
+`G_{AI,FHE}: \text{Enc}(\mathbb{R}^d) \times \text{Enc}(\Theta) \times \text{Enc}(\Lambda) \to \text{Enc}(\mathcal{A})`
+where `Enc(v_P)` is the encrypted semantic embedding, `Enc(\Theta)` represents encrypted hyperparameters, and `Enc(\Lambda)` represents encrypted multi-modal fusion and stochastic parameters.
+Thus, `c_A = G_{AI,FHE}(Enc(v_P), Enc(\theta), Enc(\lambda))`.
+This function operates entirely on ciphertexts, preserving the confidentiality of `v_P`, `\theta`, `\lambda`, and all intermediate computation steps. Decryption `Dec(sk, c_A) = a` yields the actual conceptual phenotype `a \in \mathcal{A}`.
+*   Example of an FHE operation in a neural network: Homomorphic matrix multiplication `c_Y = FHE.MatMult(c_W, c_X) + c_B`.
+    *   `W \in \mathbb{R}^{out \times in}`, `X \in \mathbb{R}^{in}`. `Y \in \mathbb{R}^{out}`.
+    *   `c_W` (encrypted weights), `c_X` (encrypted input features), `c_B` (encrypted biases).
+*   Non-linear activation functions (e.g., ReLU, Sigmoid) are approximated by low-degree polynomials `P_{poly}(x) = \sum_{i=0}^k a_i x^i` which are FHE-compatible.
+    *   `c_{ReLU} = FHE.Eval(pk, P_{poly}, c_{linear_output})`.
+*   Noise growth for `L` layers of `k`-degree polynomial activations: `Noise_{L} \approx (k^{L-1} \cdot \prod_{i=1}^L \text{scaling_factor}_i) \cdot \text{Noise}_0`.
 
 **Definition 2.2: Secure Generative Mapping (MPC).**
-`G_AI_MPC: MPC_prot(P_shares, AI_params_shares) -> a_shares`
-where `P_shares` are the secret shares of `P`, and `AI_params_shares` are the secret shares of the AI model parameters.
-The output `a_shares` is the secret-shared conceptual phenotype. A secure aggregation and reconstruction phase can yield `a` to the user, or `a_conf` for further processing.
+`G_{AI,MPC}: MPC_{prot}(P_{shares}, AI_{params,shares}) \to a_{shares}`
+where `P_{shares}` are the secret shares of `v_P`, and `AI_{params,shares}` are the secret shares of the AI model parameters `\Theta`.
+The output `a_{shares}` is the secret-shared conceptual phenotype. A secure aggregation and reconstruction phase can yield `a` to the user, or `a_{conf}` for further processing.
+*   MPC operations for AI:
+    *   Secure comparison protocols: `[x > y]` used in conditional branching.
+    *   Secure dot product: `[x \cdot y] = \sum_i [x_i y_i]`
+*   Computational overhead: Multiplication gates are typically the most expensive. The number of multiplication gates `M` in the AI model circuit impacts performance.
 
-The non-deterministic nature of `G_AI_Secure` (e.g., stochastic elements like encrypted noise seeds) ensures genuinely novel and varied conceptual phenotypes, even from identical conceptual genotypes. This inherent variability contributes to the uniqueness of each generated asset while maintaining confidentiality.
+The non-deterministic nature of `G_AI_Secure` (e.g., stochastic elements like encrypted noise seeds `c_\lambda`) ensures genuinely novel and varied conceptual phenotypes, even from identical conceptual genotypes. This inherent variability contributes to the uniqueness of each generated asset while maintaining confidentiality.
+*   Shannon entropy of output given prompt: `H(A|P) = -\sum_{a \in \mathcal{A}} \Pr[A=a|P] \log_2 \Pr[A=a|P]`. High entropy indicates high variability.
 
-### III. The Zero-Knowledge Proof `ZKP`
+### III. The Zero-Knowledge Proof (ZKP) for Private Computation
 
 A Zero-Knowledge Proof `ZKP` allows a prover to convince a verifier that a statement is true, without revealing any information beyond the truth of the statement itself.
 
 **Definition 3.1: Zero-Knowledge Proof Scheme `(Prove, Verify)`.**
 A ZKP system for a relation `R(x, w)` (where `x` is the public input and `w` is the witness or private input) consists of:
-1.  `Prove(R, x, w) -> pi`: A probabilistic polynomial-time prover algorithm that takes a public input `x` and a private witness `w` to produce a proof `pi`.
-2.  `Verify(R, x, pi) -> {true, false}`: A deterministic polynomial-time verifier algorithm that takes `x` and `pi` to output true or false.
+1.  `Prove(R, x, w) \to \pi`: A probabilistic polynomial-time prover algorithm that takes a public input `x` and a private witness `w` to produce a proof `\pi`.
+    *   Prover complexity: `O(C \cdot poly(\lambda))` where `C` is circuit size.
+2.  `Verify(R, x, \pi) \to \{\text{true}, \text{false}\}`: A deterministic polynomial-time verifier algorithm that takes `x` and `\pi` to output true or false.
+    *   Verifier complexity: `O(poly(\lambda))` for SNARKs (succinct non-interactive arguments of knowledge), `O(C \cdot poly(\lambda))` for others.
 Properties:
-*   **Completeness:** If `(x, w) in R`, then `Prove(R, x, w)` will output `pi` such that `Verify(R, x, pi)` returns `true` with high probability.
-*   **Soundness:** If `(x, w) not in R`, then any `pi'` will cause `Verify(R, x, pi')` to return `false` with high probability.
-*   **Zero-Knowledge:** `Verify` learns nothing about `w` beyond the fact that `x` is in `R` (i.e., `w` exists).
+*   **Completeness:** If `(x, w) \in R`, then `Prove(R, x, w)` will output `\pi` such that `Verify(R, x, \pi)` returns `true` with high probability (`1-\epsilon_c`).
+*   **Soundness:** If `(x, w) \notin R`, then any `\pi'` will cause `Verify(R, x, \pi')` to return `false` with high probability (`1-\epsilon_s`).
+*   **Zero-Knowledge:** `Verify` learns nothing about `w` beyond the fact that `x \in R` (i.e., `w` exists). This implies that for any verifier `V^*`, there exists a simulator `S` such that `View_{V^*}(\text{Real Protocol}) \approx S(x)`.
 
-In SPACAGT-MPC/FHE, the statement `R` is: "The conceptual phenotype `a` (or its CID) was generated from the conceptual genotype `P` (or its commitment) using AI model `M_AI` operating in an FHE/MPC environment."
-The public inputs `x` include `CID_a`, `Commit(P, r_P)`, and `H(M_AI)`.
-The private witness `w` includes the plaintext `P`, the FHE secret key `sk`, or the MPC intermediate computation steps.
-The `_zkProof` in the smart contract's `mintConcept` function is `pi`. The smart contract acts as the verifier, checking `Verify(R, x, pi)`.
+In SPACAGT-MPC/FHE, the relation `R` is: "The conceptual phenotype `a` (or its `CID_A`) was generated from the conceptual genotype `P` (or its commitment `C_P`) using AI model `M_{AI}` operating in an FHE/MPC environment."
+*   The public inputs `x` include `CID_A`, `C_P`, `H(M_{AI})`, and the `zkProofCircuitHash` for `M_{AI}` from the AMPR.
+*   The private witness `w` includes the plaintext `P`, the FHE secret key `sk_U`, or the MPC intermediate computation steps, and the precise `a` that yields `CID_A`.
+*   The `_zkProof` in the smart contract's `mintConcept` function is `\pi`. The smart contract acts as the verifier, checking `Verify(R, x, \pi)`.
+*   Proof size `|\pi| = O(poly(\lambda))` for SNARKs.
+*   Formal statement of ZKP for private AI:
+    *   `R_{PrivAI}(publicInputs, privateWitness)`:
+        *   `publicInputs = (CID_A, C_P, H_{AI}, H_{ZK\_Circuit})`
+        *   `privateWitness = (P, r_P, A, SK_{FHE} \text{ or } \text{MPC shares for } P, A)`
+        *   `R_{PrivAI}` is true iff:
+            1.  `H(P || r_P) = C_P` (prompt commitment is valid).
+            2.  `H(A) = \text{CID_A}` (asset content matches CID).
+            3.  `A = \text{Dec}(\text{SK}_{FHE}, G_{AI,FHE}(\text{Enc}(\text{SK}_{FHE}, v_P), \dots))` OR `A = \text{Reconstruct}(G_{AI,MPC}(\text{MPC_Shares}(P), \dots))` (phenotype generated securely from prompt).
+            4.  The computations in (3) used `M_{AI}` as specified by `H_{AI}` and `H_{ZK\_Circuit}`.
 
 ### IV. The Metadata Object `M` with Privacy Attestations
 
 The metadata object `M` is formally structured to encapsulate all pertinent information about the conceptual asset, linking its origin, generated form, and on-chain representation, critically including cryptographic privacy attestations.
 
 **Definition 4.1: Secure Metadata Object Structure.**
-`M = { name: N, description: D, image: URI_a, attributes: [Attr_1, ..., Attr_j], external_url: U_ext }`
+`M = \{ \text{name}: N, \text{description}: D, \text{image}: \text{URI}_A, \text{attributes}: [\text{Attr}_1, \dots, \text{Attr}_j], \text{external_url}: U_{ext} \}`
 with enhanced attributes:
-*   `trait_type: "Original Prompt Commitment"`, `value: Commit(P, r_P)`
-*   `trait_type: "AI Model"`, `value: Model_Name`
-*   `trait_type: "Model Hash PAIO"`, `value: H_model` (Proof of AI Origin hash)
-*   `trait_type: "Secure Computation Mode"`, `value: "FHE" or "MPC"`
-*   `trait_type: "Proof of Private Computation ZKP"`, `value: pi` (ZKP as bytes, possibly as reference)
-*   `trait_type: "ZK Verifier Address"`, `value: ZK_Verifier_Contract_Address`
-
+*   `\text{trait_type: "Original Prompt Commitment"}, \text{value: } C_P`
+*   `\text{trait_type: "AI Model"}, \text{value: Model_Name}`
+*   `\text{trait_type: "Model Hash PAIO"}, \text{value: } H_{AI}` (Proof of AI Origin hash)
+*   `\text{trait_type: "Secure Computation Mode"}, \text{value: "FHE" or "MPC"}`
+*   `\text{trait_type: "Proof of Private Computation ZKP"}, \text{value: } \pi` (ZKP as bytes, possibly as reference)
+*   `\text{trait_type: "ZK Verifier Address"}, \text{value: ZK_Verifier_Contract_Address}`
+*   `\text{trait_type: "ZK Circuit Hash"}, \text{value: } H_{ZK\_Circuit}`
 The metadata object `M`, with its immutable `CID_M` on IPFS, forms the foundational layer for verifiable provenance, now extended with cryptographic proofs of privacy-preserving generation.
+*   `URI_A = \text{"ipfs://"} || \text{CID_A}`
+*   `CID_M = H_{\text{chunked}}(M)` (content identifier for metadata)
 
 ### V. The Distributed Ledger `L` with ZKP Verification Capabilities
 
-The distributed ledger `L` blockchain is an append-only, cryptographically secured, and globally replicated data structure that guarantees the immutability and verifiable ownership of the minted NFT, and now performs on-chain ZKP verification.
+The distributed ledger `L` (blockchain) is an append-only, cryptographically secured, and globally replicated data structure that guarantees the immutability and verifiable ownership of the minted NFT, and now performs on-chain ZKP verification.
 
 **Definition 5.1: Blockchain as a State-Transition System with ZKP.**
 The state of the ledger `S_t` is a function of all transactions validated up to `t`.
-A transaction `tau` for minting an NFT includes a `ZKP_Proof`. The smart contract's state transition function `ApplyTransactions(S_t-1, T_t)` now includes a call to `ZK_Verify(T_t.zkProof, T_t.publicInputs)`. Only if `ZK_Verify` returns `true` does the state transition occur, ensuring that the claims of private computation are validated before ownership is assigned.
+*   `S_t = \text{Update}(S_{t-1}, \tau_t)`
+A transaction `\tau` for minting an NFT includes a `ZKP_Proof`. The smart contract's state transition function `ApplyTransactions(S_{t-1}, \mathcal{T}_t)` (where `\mathcal{T}_t` is a block of transactions) now includes a call to `ZK_Verify(\tau.zkProof, \tau.publicInputs)`. Only if `ZK_Verify` returns `true` does the state transition occur, ensuring that the claims of private computation are validated before ownership is assigned.
+*   Block hash: `H_{block} = H(\text{block_header} || \text{Merkle_Root}(\mathcal{T}_t))`.
+*   Gas cost for ZKP verification: `Cost_{ZK\_Verify} \propto \text{Circuit Size} \cdot \text{Cost}_{ScalarMul}` for elliptic curve operations.
 
 ### VI. The Secure Minting Function `F_mint_Secure`
 
 The secure minting process is formally captured by `F_mint_Secure`, which performs a state transition on `L` to establish a new NFT ownership record, only after validating the privacy-preserving genesis.
 
 **Definition 6.1: Secure Minting Function Operation.**
-`F_mint_Secure: (Address_owner, URI_M, Commit_P, ZKP_Proof, Fee_value) -> L'`
-where `Address_owner` is the blockchain address of the user, `URI_M` is `ipfs://CID_M`, `Commit_P` is the commitment to `P`, `ZKP_Proof` is `pi`, and `Fee_value` is the required minting fee.
+`F_{mint,Secure}: (\text{Address}_{owner}, \text{URI}_M, C_P, \pi, \text{Fee}_{value}) \to L'`
+where `\text{Address}_{owner}` is the blockchain address of the user, `\text{URI}_M` is `ipfs://CID_M`, `C_P` is the commitment to `P`, `\pi` is `ZKP_Proof`, and `\text{Fee}_{value}` is the required minting fee.
 
-The internal operations of `F_mint_Secure` within the smart contract are:
-1.  **ZKP Verification:** The `ZK_Verify` function is invoked with `ZKP_Proof` and public inputs derived from `URI_M`, `Commit_P`, and relevant AI model hashes. If verification fails, the transaction reverts.
-2.  **Token ID Generation:** A new unique `token_id` is assigned.
-3.  **Fee Collection:** `Fee_value` is transferred.
-4.  **Metadata Association:** `token_id -> URI_M`.
-5.  **Ownership Assignment:** `ownerOf(token_id) = Address_owner`.
-6.  **Prompt Commitment Storage:** `_promptCommitments[token_id] = Commit_P`.
-7.  **Private Provenance Flag:** `_privateProvenanceVerified[token_id] = true`.
-8.  **Event Emission:** A `Transfer` event is emitted.
+The internal operations of `F_{mint,Secure}` within the smart contract are:
+1.  **Fee Collection:** `\text{msg.value} \ge \text{MINTING_FEE}`.
+2.  **Public Inputs Construction:** `publicInputs = (CID_A\_from\_URI_M, C_P, H_{AI}\_from\_metadata, H_{ZK\_Circuit}\_from\_metadata)`.
+3.  **ZKP Verification:** `is_valid = ZK_Verifier_Contract.verifyProof(\pi, publicInputs)`. If `is_valid` is `false`, the transaction reverts.
+    *   `require(is_valid, "Invalid ZKP for private provenance")`.
+4.  **Token ID Generation:** A new unique `token_id = \text{_nextTokenId}++` is assigned.
+5.  **Metadata Association:** `_setTokenURI(token_id, URI_M)`.
+6.  **Ownership Assignment:** `_safeMint(Address_{owner}, token_id)`.
+7.  **Prompt Commitment Storage:** `_promptCommitments[token_id] = C_P`.
+8.  **Private Provenance Flag:** `_privateProvenanceVerified[token_id] = \text{true}`.
+9.  **AI Model Metadata Storage:** `_aiModelMetadata[token_id] = (Model_Name, H_{AI})`.
+10. **Event Emission:** A `Transfer(address(0), Address_{owner}, token_id)` event is emitted.
+11. **Royalty Information Setting:** `_setRoyaltyInfo(Address_{owner}, Royalty_Fee_Basis_Points)`.
+    *   `Royalty_Amount = salePrice \cdot \text{Royalty_Fee_Basis_Points} / 10000`.
 
 ### VII. Proof of Verifiable Uniqueness, Proprietary Attribution, and Confidentiality
 
-The SPACAGT-MPC/FHE system demonstrably establishes a cryptographically secure, undeniably verifiable, and *confidential* chain of provenance from an abstract user-generated idea conceptual genotype to a unique, ownable digital asset conceptual phenotype tokenized as an NFT.
+The SPACAGT-MPC/FHE system demonstrably establishes a cryptographically secure, undeniably verifiable, and *confidential* chain of provenance from an abstract user-generated idea (conceptual genotype) to a unique, ownable digital asset (conceptual phenotype) tokenized as an NFT.
 
 **Theorem 7.1: Cryptographic Uniqueness of the Conceptual Asset.**
-Identical to Theorem 7.1 from SACAGT. The uniqueness of `CID_a` and `CID_M` (which contains `Commit(P, r_P)` and `ZKP_Proof`) ensures the cryptographic uniqueness of the conceptual asset.
+Given collision-resistant hash functions `H` and `H_{\text{chunked}}` for content addressing, the uniqueness of `CID_A` (derived from the conceptual phenotype `A`) and `CID_M` (which contains `C_P` and `\pi`) ensures the cryptographic uniqueness of the conceptual asset.
+*   If `(A_1, M_1) \neq (A_2, M_2)`, then `(CID_{A1}, CID_{M1}) \neq (CID_{A2}, CID_{M2})` with overwhelming probability.
+*   The `token_id` generated by the smart contract is strictly monotonic and unique.
 
 **Theorem 7.2: Immutable Linkage and Verifiable Confidential Provenance.**
-The NFT on `L` immutably stores `URI_M`, `Commit(P, r_P)`, and verifies `ZKP_Proof`. The ZKP guarantees that `Commit(P, r_P)` corresponds to a `P` that was processed by `G_AI_Secure` to yield `a` (referenced by `URI_M`), and this entire computation occurred privately.
+The NFT on `L` immutably stores `URI_M`, `C_P`, and verifies `\pi`. The ZKP `\pi` guarantees that `C_P` corresponds to a `P` that was processed by `G_{AI,Secure}` to yield `A` (referenced by `URI_A` within `URI_M`), and this entire computation occurred privately.
 Therefore, the NFT forms an unbroken, cryptographically verifiable, and immutable chain:
-`NFT -> (Metadata CID + Prompt Commitment + ZKP) -> (Asset CID + ZKP Witness) -> (Confidential Phenotype + Confidential Genotype)`.
+`NFT \xrightarrow{\text{immutable_link}} (\text{Metadata CID} + \text{Prompt Commitment} + \text{ZKP} + \text{AI Model Hash}) \xrightarrow{\text{cryptographic_link}} (\text{Asset CID} + \text{ZKP Witness}) \xrightarrow{\text{secure_computation}} (\text{Confidential Phenotype} + \text{Confidential Genotype})`.
 This chain is impervious to retrospective alteration, ensuring not only verifiable provenance but also the verifiable *confidentiality* of the genesis.
+*   `\text{Pr}[\text{break_link}] \le \text{negl}(\lambda)` where `\text{break_link}` implies forging commitment, ZKP, or collision.
 
 **Theorem 7.3: Undeniable Proprietary Attribution with Privacy Guarantees.**
 The ownership of the NFT is recorded on `L` via `ownerOf(token_id)`. This ownership is irrevocably assigned only after a valid `ZKP_Proof` has been verified on-chain, proving that the conceptual genotype `P` remained confidential during the asset generation. The fundamental principles of cryptography, distributed ledger technology, and zero-knowledge proofs provide an incontrovertible proof of ownership *and* a verifiable guarantee that the intellectual property originated privately.
+*   `ownerOf(token_id) = \text{Address}_{owner}` is a permanent record.
+*   The ZKP provides `\text{Proof_of_Confidential_Origin}` (PCO) for the asset.
+*   If `PCO` is true, then `I(\text{P}; \text{Adversary's View}) \approx 0`.
 
-### VIII. AI Model Provenance and Secure Registry AMPR
+### VIII. AI Model Provenance and Secure Registry (AMPR)
 
-**Theorem 8.1: Verifiable Secure AI Origin.**
-For any conceptual phenotype `a` minted as an NFT with `token_id`, its metadata `M` contains `H_model` and the `Secure_Computation_Mode`. The on-chain `ZKP_Proof` directly relies on the `zkProofCircuitHash` registered in the AMPR for `M_AI`. This cryptographic link ensures:
-1.  The specific AI origin of the conceptual asset can be traced and verified.
-2.  The *secure mode* of generation is cryptographically proven, providing **Proof of Secure AI Origin PAIO**, making claims of privacy tamper-proof and auditable.
+**Theorem 8.1: Verifiable Secure AI Origin (PAIO).**
+For any conceptual phenotype `a` minted as an NFT with `token_id`, its metadata `M` contains `H_{AI}` and the `Secure_Computation_Mode`. The on-chain `ZKP_Proof` directly relies on the `zkProofCircuitHash` registered in the AMPR for `M_{AI}`. This cryptographic link ensures:
+1.  The specific AI origin of the conceptual asset can be traced and verified against `H_{AI}`.
+2.  The *secure mode* of generation is cryptographically proven, via the `ZKP_Proof` using `H_{ZK\_Circuit}`, providing **Proof of Secure AI Origin (PAIO)**. This makes claims of privacy tamper-proof and auditable.
+*   `H_{AI} = H(\text{Model Parameters} || \text{Architecture} || \text{Training Data Hash})`.
+*   The `ZKP_Proof` certifies that the computation was performed using the model `M_{AI}` whose parameters are committed to by `H_{AI}` and whose secure circuit is `H_{ZK\_Circuit}`.
 
 The SPACAGT-MPC/FHE system therefore stands as an unassailable mechanism for establishing, verifying, and perpetually safeguarding the proprietary attribution of novel conceptual entities co-created through the synergistic interaction of human ideation and advanced artificial intelligence, with integrated provenance, ownership, and monetization capabilities, all while guaranteeing the **confidentiality** of the originating idea and its computational transformation. The intellectual property rights to such generated conceptual assets are unequivocally established, immutably recorded, and provably private via this system.
----
