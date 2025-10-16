@@ -103,10 +103,10 @@ graph TD
 ```
 
 The primary and intricately interconnected components of this enhanced architecture are:
-1.  **Adaptive Heuristic Contextual Mapping Registry (AH-HCMR)**: This module maintains its role as the authoritative logical repository for view-to-prompt associations. However, its underlying data structures are now significantly augmented to store references to semantic embeddings, dynamically updateable metadata (particularly `relevanceScore`, `last_accessed_timestamp`, `engagement_rate`), and detailed usage statistics for individual `PromptSuggestion` objects. It serves as the refined source of truth for prompts associated with semantically inferred context clusters, with a robust fallback to explicit mappings. This enables not just simple retrieval but also sophisticated contextual weighting and dynamic re-prioritization.
+1.  **Adaptive Heuristic Contextual Mapping Registry (AH-HCMR)**: This module maintains its role as the authoritative logical repository for view-to-prompt associations. However, its underlying data structures are now significantly augmented to store references to semantic embeddings, dynamically updateable metadata (particularly `relevanceScore`, `last_accessed_timestamp`, `engagement_rate`), and detailed usage statistics for individual `PromptSuggestion` objects. It serves as the refined source of truth for prompts associated with semantically inferred context clusters, with a robust fallback to explicit mappings. This enables not just simple retrieval but also sophisticated contextual weighting and dynamic re-prioritization. The AH-HCMR also supports multi-level contextual mappings, allowing prompts to be associated with both broad semantic context clusters (e.g., "Financial Reporting") and specific granular view identifiers (e.g., "Monthly_Budget_Dashboard_V2"), with a defined priority or merging strategy for retrieval.
 2.  **Semantic Context Embedding Module (SCEM)**: This highly specialized, multi-stage processing pipeline is responsible for transforming diverse raw application context identifiers (e.g., `previousView`), complex hierarchical paths, rich textual descriptions, and dynamic user metadata into dense, semantically meaningful, and robust high-dimensional vector embeddings. It performs a parallel function for the textual content of `PromptSuggestion` objects. These embeddings are crucial for enabling cross-modal semantic comparisons and reside within a meticulously aligned vector space.
 3.  **Semantic Vector Database (SVD)**: An optimized, high-performance database specifically engineered for the storage and querying of millions or billions of high-dimensional vector embeddings. It facilitates ultra-efficient approximate nearest neighbor (ANN) similarity searches, which are critical for real-time responsiveness and scaling to large-scale applications. The SVD acts as the system's "semantic index."
-4.  **Continuous Learning and Adaptation Service (CLAS)**: An asynchronous, intelligent orchestration module that systematically processes real-time, granular telemetry data from user interactions. It employs advanced machine learning paradigms, including deep reinforcement learning and A/B testing, to dynamically update and optimize the mappings, `relevanceScore` values, and even the underlying embedding models within the AH-HCMR and SCEM. It continuously drives the system towards higher efficacy.
+4.  **Continuous Learning and Adaptation Service (CLAS)**: An asynchronous, intelligent orchestration module that systematically processes real-time, granular telemetry data from user interactions. It employs advanced machine learning paradigms, including deep reinforcement learning and A/B testing, to dynamically update and optimize the mappings, `relevanceScore` values, and even the underlying embedding models within the AH-HCMR and SCEM. It continuously drives the system towards higher efficacy. This service also includes a **Concept Drift and Data Quality Monitor** configured to detect shifts in the distribution of context or query embeddings and automatically trigger the retraining of the SCEM to maintain embedding model fidelity.
 5.  **Augmented Contextual Inference Unit (CIU)**: The CIU, a critical sub-component within the Computational Intelligence Engagement Module (CIEM), is re-engineered to leverage the SCEM and SVD for highly nuanced semantic lookups. This fundamentally transcends the limitations of rigid key-matching, allowing for inference even with partial or novel context data.
 
 ### **II. Semantic Context Embedding and Indexing**
@@ -194,6 +194,48 @@ graph TD
     style T fill:#f5c,stroke:#333,stroke-width:1px
     style U fill:#f5c,stroke:#333,stroke-width:1px
     style V fill:#f5c,stroke:#333,stroke-width:1px
+```
+
+**C. Detailed SCEM Internal Data Flow**
+The multi-modal context encoder within the SCEM is a complex system, meticulously designed to capture the rich semantic content from various input modalities. This process ensures that the resulting `query_embedding` ($Q_C$) is a comprehensive representation of the user's operational context.
+
+```mermaid
+graph TD
+    A[Raw PreviousView Contexts] --> B1[Textual Descriptors]
+    A --> B2[Categorical Metadata (User Role, Device Type)]
+    A --> B3[Numerical Metadata (Time Spent, Click Count)]
+    A --> B4[Hierarchical Path Data]
+
+    B1 -- Tokenization, Subword Encoding --> C1[Text Embedding Layer (e.g., WordPiece, BPE)]
+    B2 -- One-hot/Learned Embedding --> C2[Categorical Embedding Layer]
+    B3 -- Normalization, Scaling --> C3[Numerical Feature Layer (e.g., MLP)]
+    B4 -- Graph Embedding/Tree Transformer --> C4[Hierarchical Embedding Layer]
+
+    C1 --> D[Concatenation / Attention Fusion Layer]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+
+    D -- Fused Input Vector --> E[Multi-modal Transformer Encoder (e.g., Cross-attention, Self-attention)]
+    E -- Context Representation --> F[Pooling Layer (e.g., CLS Token, Mean Pooling)]
+    F -- Normalized Embedding --> G[Projection Head & L2 Normalization]
+
+    G -- Context Embedding V_C --> H[Semantic Vector Database SVD]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B1 fill:#ffe,stroke:#333,stroke-width:1px
+    style B2 fill:#ffe,stroke:#333,stroke-width:1px
+    style B3 fill:#ffe,stroke:#333,stroke-width:1px
+    style B4 fill:#ffe,stroke:#333,stroke-width:1px
+    style C1 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style C2 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style C3 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style C4 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style D fill:#ddf,stroke:#333,stroke-width:2px
+    style E fill:#fcf,stroke:#333,stroke-width:2px
+    style F fill:#f0f,stroke:#333,stroke-width:2px
+    style G fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#bbf,stroke:#333,stroke-width:2px
 ```
 
 ### **III. Continuous Learning and Dynamic Optimization**
@@ -289,6 +331,95 @@ graph TD
     style H2 fill:#c0e0e0,stroke:#333,stroke-width:1px
 ```
 
+**C. CLAS Deep Reinforcement Learning Agent Architecture**
+The DRL agent within CLAS is a sophisticated learning system designed to optimize the sequential decision-making process of prompt selection and ranking, maximizing long-term user engagement and satisfaction.
+
+```mermaid
+graph TD
+    A[Current Context Embedding (e_c) & Prompt Embeddings (e_p_i)] --> B[DRL State Representation Module]
+    B -- State s_t --> C[DRL Agent]
+    C -- Action a_t (Prompt Selection/Ranking Policy) --> D[Prompt Generation and Ranking Service PGRS]
+    D -- Presented Prompts P_t --> E[User Interaction & AI Backend]
+    E -- Outcome & Feedback (e.g., Clicks, Task Success, AI Quality) --> F[Reward Calculation Module]
+    F -- Reward r_t --> C
+    C -- Policy Updates --> G[DRL Policy Network]
+    C -- Value Function Updates --> H[DRL Value Network]
+
+    G --> C
+    H --> C
+
+    subgraph DRL Agent Components
+        C1[Experience Replay Buffer] --> C
+        C2[Target Networks (for stability)] --> C
+        C3[Optimization Algorithm (e.g., Adam)] --> C
+    end
+
+    subgraph Reward Calculation Detail
+        F1[Prompt Selection Rate (PSR)] --> F
+        F2[AI Response Effectiveness (ARE)] --> F
+        F3[Task Completion Time (TCT)] --> F
+        F4[Explicit User Feedback (EFS)] --> F
+        F5[Negative Signals (Ignored, Dismissed)] --> F
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#ddf,stroke:#333,stroke-width:2px
+    style E fill:#fcf,stroke:#333,stroke-width:2px
+    style F fill:#ffe,stroke:#333,stroke-width:2px
+    style G fill:#fef,stroke:#333,stroke-width:2px
+    style H fill:#f0f,stroke:#333,stroke-width:2px
+    style C1 fill:#dde,stroke:#333,stroke-width:1px
+    style C2 fill:#dde,stroke:#333,stroke-width:1px
+    style C3 fill:#dde,stroke:#333,stroke-width:1px
+    style F1 fill:#c0e0e0,stroke:#333,stroke-width:1px
+    style F2 fill:#c0e0e0,stroke:#333,stroke-width:1px
+    style F3 fill:#c0e0e0,stroke:#333,stroke-width:1px
+    style F4 fill:#c0e0e0,stroke:#333,stroke-width:1px
+    style F5 fill:#c0e0e0,stroke:#333,stroke-width:1px
+```
+
+**D. Telemetry Ingestion and Feedback Analytics Pipeline**
+The robustness of CLAS relies heavily on the quality and comprehensiveness of the telemetry data. This detailed pipeline illustrates how raw user interaction data is transformed into actionable insights.
+
+```mermaid
+graph TD
+    A[Raw User Interaction Events (UI Clicks, Text Input, API Calls)] --> B[Telemetry SDK / Event Streamer]
+    B -- Event Messages (JSON, Protobuf) --> C[Real-time Message Queue (e.g., Kafka, Kinesis)]
+    C -- Stream Processing --> D[Telemetry Ingestion Service (Validation, Schema Enforcement)]
+    D --> E[Raw Event Log Storage (e.g., S3, HDFS)]
+    E -- Batch & Real-time Processing --> F[Feature Engineering Service (Derived Metrics, Sessionization)]
+    F -- Enriched Features --> G[Aggregated Analytics Database (e.g., Druid, ClickHouse)]
+    G --> H[Feedback Analytics Module (FAM)]
+    H -- Performance KPIs (PSR, ARE, EFS) --> I[CLAS - Log & Anomaly Analyzer]
+    H -- Contextual Summaries --> J[CLAS - DRL Agent]
+    H -- Drift Signals --> K[CLAS - Concept Drift Monitor]
+
+    subgraph Feature Engineering Detail
+        F1[Sessionization & User Journey Reconstruction] --> F
+        F2[Contextual Feature Enrichment (Join with App State Data)] --> F
+        F3[Prompt Effectiveness Scoring (Initial Calculation)] --> F
+        F4[Anomaly Detection (e.g., Unusual Click Patterns)] --> F
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#ddf,stroke:#333,stroke-width:2px
+    style E fill:#fcf,stroke:#333,stroke-width:2px
+    style F fill:#ffe,stroke:#333,stroke-width:2px
+    style G fill:#fef,stroke:#333,stroke-width:2px
+    style H fill:#f0f,stroke:#333,stroke-width:2px
+    style I fill:#f9f,stroke:#333,stroke-width:2px
+    style J fill:#bbf,stroke:#333,stroke-width:2px
+    style K fill:#ccf,stroke:#333,stroke-width:2px
+    style F1 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style F2 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style F3 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style F4 fill:#e0e0ff,stroke:#333,stroke-width:1px
+```
+
 ### **IV. Dynamic HCMR Query and Retrieval**
 
 The operational flow for retrieving prompt suggestions in the AH-HCMR is fundamentally enhanced and made orders of magnitude more intelligent by the integration of semantic indexing and continuous learning. This process ensures hyper-relevance, even for highly dynamic or novel contexts.
@@ -313,6 +444,89 @@ The operational flow for retrieving prompt suggestions in the AH-HCMR is fundame
 5.  **Presentation**: The final, algorithmically refined, ranked, and diversified prompt suggestions are then rendered by the Prompt Presentation Renderer (PPR) in the user interface. This proactive display offers hyper-relevant, contextually aware, and often personalized choices, significantly reducing the user's cognitive load, accelerating their interaction with the AI, and guiding them toward productive outcomes. The CIEM also monitors interaction with these rendered prompts.
 
 This dynamic retrieval process ensures that even for novel, ambiguous, or nuanced contexts, the system can infer and present highly relevant prompts, effectively addressing and often pre-empting the "cold start" problem inherent in static mapping registries. The continuous feedback loop ensures sustained and improving performance.
+
+**E. Prompt Generation and Ranking Service (PGRS) Logic Flow**
+The PGRS is where the raw prompt candidates are transformed into a refined, personalized, and optimally ordered list for the user, integrating signals from both semantic similarity and continuous learning.
+
+```mermaid
+graph TD
+    A[Aggregated Prompt Candidates from AH-HCMR (P_agg)] --> B[Initial Filtering & De-duplication]
+    B -- Filtered Candidates --> C[Contextual Similarity Scoring (from SVD)]
+    C -- Similarity Scores (sim_score_i) --> D[AH-HCMR Relevance Score Lookup (relevance_i)]
+    D -- Relevance Scores --> E[Personalization & User Preference Module]
+    E -- Personalized Scores --> F[DRL-Learned Ranking Policy Integration]
+    F -- Policy-Adjusted Scores --> G[Diversification Module]
+    G -- Diversified Scores --> H[Final Ranking & Truncation (Top-M)]
+    H -- Ranked Prompts (P_final) --> I[CIEM Prompt Presentation Renderer]
+
+    subgraph Diversification Detail
+        G1[Semantic Similarity Matrix of Candidates] --> G
+        G2[Maximum Marginal Relevance (MMR) Calculation] --> G
+        G3[Intent Clustering & Representation] --> G
+        G4[Penalize Redundant Prompts] --> G
+    end
+
+    subgraph Personalization Detail
+        E1[Historical User Interaction Patterns] --> E
+        E2[Explicit User Preferences] --> E
+        E3[A/B Test Group Assignments] --> E
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#ddf,stroke:#333,stroke-width:2px
+    style E fill:#fcf,stroke:#333,stroke-width:2px
+    style F fill:#ffe,stroke:#333,stroke-width:2px
+    style G fill:#fef,stroke:#333,stroke-width:2px
+    style H fill:#f0f,stroke:#333,stroke-width:2px
+    style I fill:#f9f,stroke:#333,stroke-width:2px
+    style G1 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style G2 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style G3 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style G4 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style E1 fill:#dde,stroke:#333,stroke-width:1px
+    style E2 fill:#dde,stroke:#333,stroke-width:1px
+    style E3 fill:#dde,stroke:#333,stroke-width:1px
+```
+
+**F. SVD Indexing and Query Execution Workflow**
+The SVD's ability to provide rapid and accurate semantic matches is paramount. This diagram details the critical steps in how embeddings are managed and queried within the SVD.
+
+```mermaid
+graph TD
+    A[SCEM Output: New Context Embeddings (V_C) & Prompt Embeddings (V_P)] --> B[SVD Indexing Service]
+    B -- Batch/Stream Processing --> C[Pre-processing (e.g., L2 Normalization)]
+    C -- Vector Partitioning / Sharding --> D[ANN Index Builder (e.g., HNSW Graph Construction)]
+    D --> E[Vector Storage Layer (Metadata Association)]
+    E -- Optimized Index Structure --> F[Semantic Vector Database (SVD)]
+
+    G[CIU Query: Query Embedding (Q_C)] --> H[SVD Query Service]
+    H -- Query Pre-processing --> I[ANN Search Engine (Traverse HNSW graph, K-NN search)]
+    I -- Top-K Candidate Vectors --> J[Re-ranking & Refinement (Exact distance, Metadata filtering)]
+    J -- Matched Vector IDs & Similarity Scores --> K[CIU for Prompt Aggregation]
+
+    subgraph ANN Index Builder Details
+        D1[Distance Metric Selection (e.g., Cosine, Euclidean)] --> D
+        D2[Graph Construction Parameters (e.g., M, efConstruction for HNSW)] --> D
+        D3[Index Compression (e.g., Product Quantization)] --> D
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#ddf,stroke:#333,stroke-width:2px
+    style E fill:#fcf,stroke:#333,stroke-width:2px
+    style F fill:#ffe,stroke:#333,stroke-width:2px
+    style G fill:#fef,stroke:#333,stroke-width:2px
+    style H fill:#f0f,stroke:#333,stroke-width:2px
+    style I fill:#f9f,stroke:#333,stroke-width:2px
+    style J fill:#bbf,stroke:#333,stroke-width:2px
+    style K fill:#ccf,stroke:#333,stroke-width:2px
+    style D1 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style D2 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style D3 fill:#e0e0ff,stroke:#333,stroke-width:1px
+```
 
 ### **V. Operational Flow with Adaptive HCMR**
 
@@ -381,6 +595,160 @@ graph TD
     style U fill:#fcf,stroke:#333,stroke-width:2px
 ```
 
+**G. Concept Drift Detection and Model Retraining Pipeline**
+Maintaining the semantic fidelity of embeddings over time is crucial. This pipeline details how concept drift is detected and how the SCEM models are updated to ensure continuous relevance.
+
+```mermaid
+graph TD
+    A[Stream of Incoming Raw Contexts (C_raw)] --> B[SCEM Context Encoder (Current Model)]
+    B -- Context Embeddings V_C --> C[Embedding Distribution Monitor]
+    C -- Historical Embedding Distribution (D_Hist) --> D[Concept Drift Detector]
+    C -- Current Embedding Distribution (D_Curr) --> D
+    D -- Drift Signal Detected (> Threshold) --> E[CLAS Model Retraining Orchestrator]
+    E -- Retraining Trigger --> F[SCEM Model Training Data Collector (New C_raw, Labels)]
+    F --> G[SCEM Model Retraining Service]
+    G -- New SCEM Encoder Model --> H[Model Deployment & A/B Testing Framework]
+    H -- Verified New Model --> B
+    G --> I[SVD Re-indexing Service (Optional: Re-embed existing data)]
+    I --> J[SVD Semantic Vector Database]
+
+    subgraph Drift Detector Details
+        D1[Statistical Divergence Metrics (JSD, KLD, KS-Test)] --> D
+        D2[Clustering & Anomaly Detection (Isolation Forest, PCA Recon Error)] --> D
+        D3[Monitoring of Key Performance Indicators (e.g., SVD Recall, Prompt PAR)] --> D
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#ddf,stroke:#333,stroke-width:2px
+    style E fill:#fcf,stroke:#333,stroke-width:2px
+    style F fill:#ffe,stroke:#333,stroke-width:2px
+    style G fill:#fef,stroke:#333,stroke-width:2px
+    style H fill:#f0f,stroke:#333,stroke-width:2px
+    style I fill:#f9f,stroke:#333,stroke-width:2px
+    style J fill:#bbf,stroke:#333,stroke-width:2px
+    style D1 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style D2 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style D3 fill:#e0e0ff,stroke:#333,stroke-width:1px
+```
+
+### **VI. AH-HCMR Data Model and Relations**
+The underlying data structures of the AH-HCMR are central to its intelligent operation. This illustrates how contexts, prompts, embeddings, and metadata are interlinked.
+
+```mermaid
+classDiagram
+    class AH_HCMR {
+        +ContextID : UUID
+        +ViewID : String (Fallback/Override)
+        +ContextDescription : String
+        +ContextEmbeddingRef : UUID (Points to SVD)
+        +PromptAssociations : List~PromptAssociation~
+        +SemanticClusterMetadata : Map~String,String~
+        +last_updated : DateTime
+    }
+
+    class PromptAssociation {
+        +PromptID : UUID (Points to PromptSuggestion)
+        +relevanceScore : Float
+        +usage_statistics : Map~String,Float~
+        +recency_factors : Float
+        +last_interaction : DateTime
+        +DRL_policy_boost : Float
+    }
+
+    class PromptSuggestion {
+        +PromptID : UUID
+        +PromptText : String
+        +PromptEmbeddingRef : UUID (Points to SVD)
+        +semanticTags : List~String~
+        +creator : String
+        +creation_date : DateTime
+        +target_AI_model : String
+        +status : Enum~Active,Archived~
+    }
+
+    class SemanticVectorDatabase {
+        +VectorID : UUID
+        +EmbeddingVector : Float[]
+        +SourceRefID : UUID (ContextID or PromptID)
+        +VectorMetadata : Map~String,String~
+        +IndexTimestamp : DateTime
+    }
+
+    class TelemetryEvent {
+        +EventID : UUID
+        +EventType : String (e.g., 'PromptPresented', 'PromptSelected', 'CustomQuery')
+        +Timestamp : DateTime
+        +UserID : String
+        +SessionID : String
+        +ContextID : UUID (from AH_HCMR)
+        +PresentedPromptIDs : List~UUID~
+        +SelectedPromptID : UUID (Optional)
+        +CustomQueryText : String (Optional)
+        +AIResponseMetrics : Map~String,Float~ (Optional)
+        +ExplicitFeedback : Enum~Positive,Negative,Neutral~ (Optional)
+    }
+
+    class CLAS_Config {
+        +ConfigID : UUID
+        +DRL_Hyperparameters : Map~String,Float~
+        +A_B_Test_Parameters : Map~String,String~
+        +DriftDetectionThresholds : Map~String,Float~
+        +SCEM_RetrainingSchedule : String
+    }
+
+    AH_HCMR "1" -- "N" PromptAssociation : contains
+    PromptAssociation "1" -- "1" PromptSuggestion : refers to
+    PromptSuggestion "1" -- "1" SemanticVectorDatabase : has_embedding
+    AH_HCMR "1" -- "1" SemanticVectorDatabase : has_context_embedding
+    TelemetryEvent "N" -- "1" AH_HCMR : impacts_context
+    TelemetryEvent "N" -- "1" PromptSuggestion : impacts_prompt
+    CLAS_Config "1" -- "1" CLAS_Service : configures
+```
+
+### **VII. A/B Testing Framework for CLAS**
+The automated A/B testing framework within CLAS is essential for scientifically validating improvements and ensuring robust deployments.
+
+```mermaid
+graph TD
+    A[CLAS: New Model/Policy/Feature Candidate (e.g., DRL Policy, new SCEM)] --> B[A/B Test Configuration Service]
+    B -- Test Definition (Hypothesis, KPIs, Metrics) --> C[Experiment Traffic Splitter]
+    C -- User Group A (Control) --> D1[Current Production HCMR/PGRS]
+    C -- User Group B (Treatment) --> D2[Candidate HCMR/PGRS Version]
+    D1 -- Prompt Suggestions --> E1[User Interaction (Telemetry)]
+    D2 -- Prompt Suggestions --> E2[User Interaction (Telemetry)]
+    E1 --> F[Telemetry Aggregation & FAM]
+    E2 --> F
+    F -- Group-specific KPIs (PAR, ARE, TCT) --> G[Statistical Analysis Engine (Hypothesis Testing)]
+    G -- Significance Result (p-value, Confidence Intervals) --> H[CLAS Model Deployment Manager]
+    H -- Promote/Discard Decision --> I[Production HCMR/PGRS]
+    I --> D1
+
+    subgraph Statistical Analysis Detail
+        G1[Metric Calculation (Mean, Variance)] --> G
+        G2[T-test / Chi-squared Test / ANOVA] --> G
+        G3[Power Analysis & Sample Size Validation] --> G
+        G4[False Discovery Rate Control] --> G
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#ccf,stroke:#333,stroke-width:2px
+    style D1 fill:#ddf,stroke:#333,stroke-width:2px
+    style D2 fill:#fcf,stroke:#333,stroke-width:2px
+    style E1 fill:#ffe,stroke:#333,stroke-width:2px
+    style E2 fill:#ffe,stroke:#333,stroke-width:2px
+    style F fill:#fef,stroke:#333,stroke-width:2px
+    style G fill:#f0f,stroke:#333,stroke-width:2px
+    style H fill:#f9f,stroke:#333,stroke-width:2px
+    style I fill:#bbf,stroke:#333,stroke-width:2px
+    style G1 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style G2 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style G3 fill:#e0e0ff,stroke:#333,stroke-width:1px
+    style G4 fill:#e0e0ff,stroke:#333,stroke-width:1px
+```
+
 ## **Claims:**
 
 The following claims specifically detail the novel and non-obvious elements of the Adaptive Heuristic Contextual Mapping Registry (AH-HCMR), extending the foundational invention into a dynamically intelligent system for contextual prompt elicitation.
@@ -393,7 +761,7 @@ The following claims specifically detail the novel and non-obvious elements of t
         i.   Store and efficiently index the generated context embeddings (`V_C`) and prompt embeddings (`V_P`); and
         ii.  Perform rapid approximate nearest neighbor (ANN) semantic similarity searches against its indexed embeddings using algorithms selected for optimized recall and latency (e.g., HNSW, FAISS).
     c.  An **Adaptive Heuristic Contextual Mapping Registry (AH-HCMR)**, comprising:
-        i.   A persistent data structure storing logical mappings between semantically clustered context identifiers or explicit view identifiers and ordered collections of `PromptSuggestion` objects;
+        i.   A persistent data structure storing logical mappings between semantically clustered context identifiers or explicit view identifiers and ordered collections of `PromptSuggestion` objects, supporting multi-level contextual mappings;
         ii.  Dynamically updateable metadata associated with each `PromptSuggestion` object, including a `relevanceScore`, `usage_statistics`, and `recency_factors`; and
         iii. Direct or indirect references to the semantic embeddings generated by the SCEM for its associated contexts and prompts, enabling semantic-to-symbolic mapping.
     d.  A **Continuous Learning and Adaptation Service (CLAS)**, operably connected to a Telemetry Service, a Feedback Analytics Module (FAM), the SCEM, the SVD, and the AH-HCMR, configured to:
@@ -406,18 +774,18 @@ The following claims specifically detail the novel and non-obvious elements of t
         ii.  Query the SVD with said `query_embedding` (`Q_C`) to retrieve a set of top-k semantically similar context embeddings or prompt embeddings and their associated similarity scores; and
         iii. Utilize the SVD semantic search results to retrieve, aggregate, and enrich corresponding `PromptSuggestion` objects and their associated dynamically updateable metadata from the AH-HCMR.
 
-2.  The system of claim 1, wherein the SCEM's embedding generation employs multi-modal transformer-based neural network models fine-tuned for the application's specific domain and user interaction patterns, capable of fusing heterogeneous context data types.
+2.  The system of claim 1, wherein the SCEM's embedding generation employs multi-modal transformer-based neural network models fine-tuned for the application's specific domain and user interaction patterns, capable of fusing heterogeneous context data types, and utilizing contrastive learning objectives to ensure embedding alignment.
 
-3.  The system of claim 1, wherein the SVD utilizes Hierarchical Navigable Small World (HNSW) or Facebook AI Similarity Search (FAISS) for its approximate nearest neighbor indexing to ensure high-speed, high-recall semantic retrieval across millions of vectors.
+3.  The system of claim 1, wherein the SVD utilizes Hierarchical Navigable Small World (HNSW) or Facebook AI Similarity Search (FAISS) for its approximate nearest neighbor indexing to ensure high-speed, high-recall semantic retrieval across millions of vectors, further optimized by techniques such as product quantization.
 
-4.  The system of claim 1, wherein the CLAS further comprises a **Deep Reinforcement Learning Agent**, configured to learn and dynamically optimize prompt selection, ranking, and diversification policies based on composite user engagement and AI interaction success metrics as reward signals, maximizing long-term user satisfaction.
+4.  The system of claim 1, wherein the CLAS further comprises a **Deep Reinforcement Learning Agent**, configured to learn and dynamically optimize prompt selection, ranking, and diversification policies based on composite user engagement and AI interaction success metrics as reward signals, maximizing long-term user satisfaction and task completion rates.
 
 5.  The system of claim 1, wherein the CLAS further includes an **Automated A/B Testing and Experimentation Framework** for continuously deploying and evaluating different prompt sets, alternative ranking algorithms, or updated embedding models, and automatically promoting superior configurations based on statistically significant improvements in predefined key performance indicators.
 
 6.  A method for dynamically optimizing a Heuristic Contextual Mapping Registry (HCMR) for context-aware conversational AI interaction, comprising:
     a.  Generating semantic vector embeddings for diverse application view contexts and `PromptSuggestion` textual content using a Semantic Context Embedding Module (SCEM), ensuring a shared, comparable semantic space;
     b.  Storing and indexing said context and prompt embeddings in a Semantic Vector Database (SVD), configured for efficient approximate nearest neighbor semantic similarity searches;
-    c.  Maintaining an Adaptive Heuristic Contextual Mapping Registry (AH-HCMR) that correlates application views with `PromptSuggestion` objects and stores dynamically updateable `relevanceScore` and usage-based metadata;
+    c.  Maintaining an Adaptive Heuristic Contextual Mapping Registry (AH-HCMR) that correlates application views with `PromptSuggestion` objects and stores dynamically updateable `relevanceScore` and usage-based metadata, and supporting multi-level contextual mappings;
     d.  Continuously collecting comprehensive user interaction telemetry and deriving feedback analytics from said telemetry, including prompt selection rates, user engagement, and AI response effectiveness;
     e.  Applying a Continuous Learning and Adaptation Service (CLAS) to:
         i.   Dynamically update `relevanceScore` values and other prompt metadata within the AH-HCMR based on telemetry-derived prompt utilization and effectiveness;
@@ -436,92 +804,527 @@ The following claims specifically detail the novel and non-obvious elements of t
 
 9.  A non-transitory computer-readable medium storing instructions that, when executed by one or more processors, cause the processors to perform the method of claim 6.
 
-10. The system of claim 1, further comprising a **Concept Drift and Data Quality Monitor** within the CLAS, configured to detect shifts in the distribution of context or query embeddings and automatically trigger the retraining of the SCEM to maintain embedding model fidelity.
-
-11. The system of claim 1, wherein the AH-HCMR further supports multi-level contextual mappings, enabling prompts to be associated with both broad semantic context clusters and specific granular view identifiers, with a defined priority or merging strategy.
+10. The system of claim 1, wherein the CLAS integrates a **Concept Drift and Data Quality Monitor** that detects statistical shifts in the distribution of context embeddings over time and automatically initiates targeted retraining cycles for the SCEM's embedding models to maintain semantic accuracy.
 
 ## **Mathematical Justification: Refined Contextual Probabilistic Query Formulation Theory with Semantic Embeddings**
 
 The Adaptive HCMR profoundly refines the **Class of Contextual Probabilistic Query Formulation Theory (CPQFT)** by transitioning from a reliance on discrete `View` identifiers to the robust, continuous, and multi-modal representation within semantic vector spaces. This paradigm shift fundamentally enhances the system's ability to infer and proactively respond to nuanced user intent.
 
-Let `V_raw` be the space of raw, multi-modal view contexts, and `Q_txt` be the space of natural language prompt texts. The Semantic Context Embedding Module (SCEM) performs a complex, multi-modal mapping function `emb_C: V_raw -> E_D` for raw view contexts `c_raw in V_raw` to their D-dimensional embeddings `e_c = emb_C(c_raw) in E_D`. Similarly, for natural language prompt texts `p_txt in Q_txt`, the SCEM applies `emb_P: Q_txt -> E_D` to generate their embeddings `e_p = emb_P(p_txt) in E_D`. Crucially, `E_D` is a meticulously aligned, shared vector space, often a unit hypersphere, thereby enabling direct and meaningful similarity comparisons through metrics like cosine similarity.
+Let `$\mathcal{V}_{raw}$` be the space of raw, multi-modal view contexts, and `$\mathcal{Q}_{txt}$` be the space of natural language prompt texts. The Semantic Context Embedding Module (SCEM) performs a complex, multi-modal mapping function `emb_C: $\mathcal{V}_{raw} \rightarrow \mathbb{E}_D$` for raw view contexts `$c_{raw} \in \mathcal{V}_{raw}$` to their D-dimensional embeddings `$e_c = \text{emb}_C(c_{raw}) \in \mathbb{E}_D$`. Similarly, for natural language prompt texts `$p_{txt} \in \mathcal{Q}_{txt}$`, the SCEM applies `emb_P: $\mathcal{Q}_{txt} \rightarrow \mathbb{E}_D$` to generate their embeddings `$e_p = \text{emb}_P(p_{txt}) \in \mathbb{E}_D$`. Crucially, `$\mathbb{E}_D$` is a meticulously aligned, shared vector space, often a unit hypersphere, thereby enabling direct and meaningful similarity comparisons through metrics like cosine similarity.
 
-The fundamental premise of the CPQFT, which states that a user's intended query `q_u` is profoundly dependent on their preceding context `v_{t-1}`, is now implicitly and continuously approximated through vector similarity within `E_D`. The conditional probability `P(q | v_{t-1})` is no longer based on discrete lookup but on the continuous measure of semantic affinity between the embedded context and the embedded prompt:
+The fundamental premise of the CPQFT, which states that a user's intended query `$q_u$` is profoundly dependent on their preceding context `$v_{t-1}$`, is now implicitly and continuously approximated through vector similarity within `$\mathbb{E}_D$`. The conditional probability `$P(q | v_{t-1})$` is no longer based on discrete lookup but on the continuous measure of semantic affinity between the embedded context and the embedded prompt:
 
 **Equation 1: Semantic Contextual Probability Approximation**
-$$ P(p_{idx} | c_{raw}) \approx \sigma(\text{sim}(emb_P(p_{idx}), emb_C(c_{raw}))) \cdot \text{relevanceScore}(p_{idx}, c_{raw}) $$
-
+$$ P(p_{idx} | c_{raw}) \approx \sigma(\text{sim}(e_{p_{idx}}, e_{c})) \cdot \text{relevanceScore}(p_{idx}, c_{raw}) $$
 Where:
-*   `p_idx` is the index of a specific `PromptSuggestion`.
-*   `c_raw` is the raw, multi-modal `previousView` context.
-*   `sim(e_1, e_2)` is the cosine similarity between two L2-normalized embeddings: $ \frac{e_1 \cdot e_2}{\|e_1\| \|e_2\|} $.
+*   `$p_{idx}$` is the index of a specific `PromptSuggestion`.
+*   `$c_{raw}$` is the raw, multi-modal `previousView` context.
+*   `$\text{sim}(e_1, e_2)$` is the cosine similarity between two L2-normalized embeddings: $ \frac{e_1 \cdot e_2}{\|e_1\| \|e_2\|} $.
 *   `$\sigma(\cdot)$` is a non-linear scaling function (e.g., sigmoid) to map similarity to a probability-like score.
-*   `relevanceScore($p_{idx}, c_{raw}$)` is the dynamically updated scalar from AH-HCMR, reflecting historical utility and learned preferences within the context cluster semantically closest to `c_raw`. This score acts as a learned prior or a boosting factor.
+*   `$\text{relevanceScore}(p_{idx}, c_{raw})$` is the dynamically updated scalar from AH-HCMR, reflecting historical utility and learned preferences within the context cluster semantically closest to `$c_{raw}$`. This score acts as a learned prior or a boosting factor.
 
 **Definition 1.1A: Semantic Contextual Query Distribution Function (SCQDF)**
-The Semantic Contextual Query Distribution Function `P_Q_e: E_D x E_D -> [0, 1]` is rigorously defined such that `P_Q_e(e_p | e_c)` represents the probability density that a user, whose operational context is semantically represented by `e_c`, intends to formulate a query semantically represented by `e_p`. This function is intrinsically modeled as a monotonically increasing function of the combined metric: `f(sim(e_p, e_c), relevanceScore(p_idx, c_raw))`.
+The Semantic Contextual Query Distribution Function `$P_Q_e: \mathbb{E}_D \times \mathbb{E}_D \rightarrow [0, 1]$` is rigorously defined such that `$P_Q_e(e_p | e_c)$` represents the probability density that a user, whose operational context is semantically represented by `$e_c$`, intends to formulate a query semantically represented by `$e_p$`. This function is intrinsically modeled as a monotonically increasing function of the combined metric: `$f(\text{sim}(e_p, e_c), \text{relevanceScore}(p_{idx}, c_{raw}))$`.
 
-The `Suggestion Function S`, which previously operated on discrete `V`, now operates directly within the continuous embedding space: `S: E_D -> P(E_D)`. For any given context embedding `e_c in E_D`, `S(e_c)` yields a finite, ordered subset of `E_D`, `S(e_c) = {e_{p1}, e_{p2}, ..., e_{pm}}`, which are the embeddings of the suggested prompts.
+The `Suggestion Function S`, which previously operated on discrete `$\mathcal{V}$`, now operates directly within the continuous embedding space: `$S: \mathbb{E}_D \rightarrow \mathcal{P}(\mathbb{E}_D)$`. For any given context embedding `$e_c \in \mathbb{E}_D$`, `$S(e_c)$` yields a finite, ordered subset of `$\mathbb{E}_D$`, `$S(e_c) = \{e_{p1}, e_{p2}, ..., e_{pm}\}$`, which are the embeddings of the suggested prompts.
 
 **Objective Function of CPQFT with Semantic Embeddings:**
-The primary objective of the system, when operating within this refined semantic framework, remains to maximize the probability that the user's true intended query embedding `e_{q_u}` is semantically close to or directly represented by one of the presented prompt suggestions, given the antecedent context embedding. Formally, this is expressed as:
+The primary objective of the system, when operating within this refined semantic framework, remains to maximize the probability that the user's true intended query embedding `$e_{q_u}$` is semantically close to or directly represented by one of the presented prompt suggestions, given the antecedent context embedding. Formally, this is expressed as:
 
 **Equation 2: Global System Optimization Objective**
-$$ S^* = \text{argmax}_S \mathbb{E}_{c_{raw}} \left[ P(\exists e_p \in S(emb_C(c_{raw})) \text{ s.t. sim}(e_p, e_{q_u}) > \tau | c_{raw}) \right] $$
+$$ S^* = \text{argmax}_S \mathbb{E}_{c_{raw}} \left[ P(\exists e_p \in S(\text{emb}_C(c_{raw})) \text{ s.t. sim}(e_p, e_{q_u}) > \tau | c_{raw}) \right] $$
+Where `$\tau$` is a predefined semantic similarity threshold. The AH-HCMR now stores pointers to `PromptSuggestion` objects whose embeddings `$e_p$` are empirically found to be most relevant to `$e_c$` over time, with their `relevanceScore` directly related to these observed conditional probabilities and reward signals from the CLAS.
 
-Where `$\tau$` is a predefined semantic similarity threshold. The AH-HCMR now stores pointers to `PromptSuggestion` objects whose embeddings `e_p` are empirically found to be most relevant to `e_c` over time, with their `relevanceScore` directly related to these observed conditional probabilities and reward signals from the CLAS.
+---
+#### **Detailed Mathematical Formulation of AH-HCMR Components**
 
-**Equation 3: Dynamic Relevance Score Update Function (CLAS Contribution)**
-Let `R(p, c, t)` be the `relevanceScore` for prompt `p` in context `c` at time `t`.
-$$ R(p, c, t+1) = (1 - \alpha_t) \cdot R(p, c, t) + \alpha_t \cdot \left[ \beta \cdot I_{select}(p,c,t) + (1-\beta) \cdot \text{Reward}_{DRL}(p,c,t) - \gamma \cdot I_{ignore}(p,c,t) \right] $$
+**A. Semantic Context Embedding Module (SCEM) - Detailed Mathematics**
+
+Let a raw context $c_{raw}$ be a tuple of its multi-modal components:
+**Equation 3: Raw Context Representation**
+$$ c_{raw} = (T_C, S_C, N_C, H_C) $$
+Where:
+*   `$T_C$`: Textual descriptions (e.g., view purpose, tooltips).
+*   `$S_C$`: Structured categorical metadata (e.g., user role, department, device type).
+*   `$N_C$`: Numerical metadata (e.g., time spent, click count, historical performance).
+*   `$H_C$`: Hierarchical path data (e.g., `/Finance/Reports/Overview`).
+
+The SCEM employs specialized encoders for each modality:
+**Equation 4: Text Encoder for Context**
+$$ e_{T_C} = \text{Encoder}_{Text}(T_C; \theta_T) $$
+**Equation 5: Structured Categorical Encoder for Context**
+$$ e_{S_C} = \text{Encoder}_{Cat}(S_C; \theta_S) $$
+**Equation 6: Numerical Encoder for Context**
+$$ e_{N_C} = \text{Encoder}_{Num}(N_C; \theta_N) $$
+**Equation 7: Hierarchical Encoder for Context**
+$$ e_{H_C} = \text{Encoder}_{Hier}(H_C; \theta_H) $$
+These encoders are typically neural networks, where `$\theta_X$` represents their respective learned parameters.
+
+The outputs are fused into a single context representation:
+**Equation 8: Multi-modal Feature Fusion**
+$$ e'_{c} = \text{Fusion}(e_{T_C}, e_{S_C}, e_{N_C}, e_{H_C}; \theta_F) $$
+The Fusion function can be concatenation followed by a multi-layer perceptron (MLP) or a cross-attention mechanism.
+**Equation 9: Context Embedding Layer**
+$$ e_c = \text{Projection}(e'_{c}; \theta_P) $$
+The final context embedding `$e_c$` is then L2-normalized:
+**Equation 10: L2 Normalization of Context Embedding**
+$$ e_c^{norm} = \frac{e_c}{\|e_c\|_2} $$
+
+Similarly, for a prompt text $p_{txt}$:
+**Equation 11: Prompt Embedding Encoder**
+$$ e_p = \text{Encoder}_{Prompt}(p_{txt}; \theta_P) $$
+This embedding is also L2-normalized into the same shared semantic space:
+**Equation 12: L2 Normalization of Prompt Embedding**
+$$ e_p^{norm} = \frac{e_p}{\|e_p\|_2} $$
+The parameters `$\theta_T, \theta_S, \theta_N, \theta_H, \theta_F, \theta_P$` are learned jointly, often through contrastive learning objectives.
+
+**Equation 13: Contrastive Loss (e.g., InfoNCE Loss)**
+$$ \mathcal{L}_{\text{NCE}} = -\mathbb{E}_{(e_c, e_p^+)} \left[ \log \frac{\exp(\text{sim}(e_c^{norm}, e_p^{+,norm}) / \tau_T)}{\sum_{e_p^{-} \in \mathcal{N}(e_c)} \exp(\text{sim}(e_c^{norm}, e_p^{-,norm}) / \tau_T) + \exp(\text{sim}(e_c^{norm}, e_p^{+,norm}) / \tau_T)} \right] $$
+Where:
+*   `$e_p^+$` is a positive prompt embedding for `$e_c$`.
+*   `$\mathcal{N}(e_c)$` is a set of negative prompt embeddings for `$e_c$`.
+*   `$\tau_T$` is a temperature parameter.
+
+**Equation 14: Triplet Loss for Embedding Alignment**
+$$ \mathcal{L}_{\text{Triplet}} = \mathbb{E}_{(e_c, e_p^+, e_p^-)} \left[ \max(0, \text{sim}(e_c^{norm}, e_p^{-,norm}) - \text{sim}(e_c^{norm}, e_p^{+,norm}) + \text{margin}) \right] $$
+Where `$\text{margin}$` is a hyperparameter to ensure positive pairs are closer than negative pairs by at least that margin.
+
+**B. Semantic Vector Database (SVD) - Detailed Mathematics**
+
+The SVD stores a collection of normalized embeddings `$\{e_i^{norm}\}_{i=1}^N$`. Given a query embedding `$Q_C^{norm}$`, it retrieves the top-k nearest neighbors.
+
+**Equation 15: Cosine Similarity Metric**
+$$ \text{sim}(Q_C^{norm}, e_i^{norm}) = \frac{Q_C^{norm} \cdot e_i^{norm}}{\|Q_C^{norm}\|_2 \|e_i^{norm}\|_2} = Q_C^{norm} \cdot e_i^{norm} $$
+(Since vectors are L2-normalized).
+
+**Equation 16: Approximate Nearest Neighbor (ANN) Search**
+$$ \text{TopK}(Q_C^{norm}, \mathbb{E}_{D, \text{index}}) = \{e_j^{norm} \mid e_j^{norm} \in \mathbb{E}_{D, \text{index}}, \text{sim}(Q_C^{norm}, e_j^{norm}) \text{ is among top-K}\} $$
+The ANN algorithm aims to maximize recall and minimize query latency.
+**Equation 17: SVD Recall at K**
+$$ \text{Recall@K} = \frac{|\text{Retrieved@K} \cap \text{GroundTruth@K}|}{|\text{GroundTruth@K}|} $$
+Where `$\text{GroundTruth@K}$` are the true K nearest neighbors.
+
+**C. Continuous Learning and Adaptation Service (CLAS) - Detailed Mathematics**
+
+**C.1. Feedback Analytics Module (FAM) Metrics**
+
+Let `$\mathcal{I}_t = (c_{raw}, P_{pres}, p_{sel}, q_{custom}, \text{AI}_{resp}, \text{feedback})$` be a telemetry event at time `t`.
+*   `$P_{pres}$`: Set of presented prompts.
+*   `$p_{sel}$`: Selected prompt (if any).
+*   `$q_{custom}$`: Custom query (if any).
+*   `$\text{AI}_{resp}$`: AI response details.
+
+**Equation 18: Prompt Selection Rate (PSR) for prompt $p_j$ in context $c_k$**
+$$ \text{PSR}(p_j, c_k, \Delta t) = \frac{\sum_{t \in \Delta t} I(\text{event}_t: p_j \text{ selected in } c_k)}{\sum_{t \in \Delta t} I(\text{event}_t: p_j \text{ presented in } c_k)} $$
+Where `$I(\cdot)$` is an indicator function.
+
+**Equation 19: AI Response Effectiveness Score (ARES)**
+$$ \text{ARES}(p_j, c_k, \Delta t) = \frac{1}{|\mathcal{S}_{p_j, c_k}|} \sum_{i \in \mathcal{S}_{p_j, c_k}} \left(w_1 \cdot \text{rel}_i + w_2 \cdot (1-\text{latency}_i/\text{max_lat}) + w_3 \cdot \text{task_comp}_i \right) $$
+Where:
+*   `$\mathcal{S}_{p_j, c_k}$` is the set of AI responses after selecting `$p_j$` in `$c_k$`.
+*   `$\text{rel}_i$` is relevance, `$\text{latency}_i$` is latency, `$\text{task_comp}_i$` is task completion.
+*   `$w_1, w_2, w_3$` are weighting factors.
+
+**Equation 20: Explicit Feedback Score (EFS) for prompt $p_j$ in context $c_k$**
+$$ \text{EFS}(p_j, c_k, \Delta t) = \frac{\sum_{t \in \Delta t} (\text{score}(\text{feedback}_t) \cdot I(\text{event}_t: p_j \text{ selected in } c_k))}{\sum_{t \in \Delta t} I(\text{event}_t: p_j \text{ selected in } c_k)} $$
+`$\text{score}(\text{Positive})=1, \text{score}(\text{Negative})=-1, \text{score}(\text{Neutral})=0$`.
+
+**Equation 21: Contextual Consistency Score (CCS)**
+$$ \text{CCS}(c_A, c_B) = \text{sim}(\text{PSR_Vector}(c_A), \text{PSR_Vector}(c_B)) $$
+Where `$\text{PSR_Vector}(c_k)$` is a vector of PSRs for a common set of prompts observed in context `$c_k$`.
+
+**C.2. Dynamic Relevance Score Updates**
+
+**Equation 22: Dynamic Relevance Score Update Function (CLAS Contribution)**
+Let `$R(p, c, t)$` be the `relevanceScore` for prompt `$p$` in context `$c$` at time `$t$`.
+$$ R(p, c, t+1) = (1 - \alpha_t) \cdot R(p, c, t) + \alpha_t \cdot \left[ w_{PSR} \cdot \text{PSR}(p,c,t) + w_{ARES} \cdot \text{ARES}(p,c,t) + w_{EFS} \cdot \text{EFS}(p,c,t) - w_{IGN} \cdot I_{ignore}(p,c,t) \right] $$
 Where:
 *   `$\alpha_t$` is a dynamic learning rate, potentially adjusted by CLAS based on data volatility or confidence.
-*   `$\beta \in [0,1]$` is a weighting factor for explicit selection vs. DRL-derived reward.
-*   `$I_{select}(p,c,t)$` is an indicator function (1 if selected, 0 otherwise) for prompt `p` in context `c` at time `t`, potentially scaled by downstream success.
-*   `Reward_{DRL}(p,c,t)` is the reward signal provided by the Reinforcement Learning agent for presenting/selecting `p` in `c`.
+*   `$w_{PSR}, w_{ARES}, w_{EFS}, w_{IGN}$` are weighting factors for each feedback signal.
 *   `$I_{ignore}(p,c,t)$` is an indicator function (1 if ignored/dismissed, 0 otherwise), scaled by the opportunity cost.
-*   `$\gamma$` is a penalty factor for ignored prompts.
 
-**Equation 4: Embedding Quality Metric (EQM) for SCEM Retraining**
-The quality of embeddings `E_D` is critical. We define an Embedding Quality Metric `EQM(t)` at time `t` which aggregates several factors:
-$$ EQM(t) = \frac{1}{N} \sum_{i=1}^{N} \left( \text{Recall}_{ANN}(e_{qi}) \cdot (1 - \text{DriftScore}(e_{qi}, t)) \cdot \text{AlignmentScore}(e_{qi}, e_{pi}, t) \right) $$
+**Equation 23: Exponential Decay for Recency**
+$$ R_{recency}(p,t) = R(p, t-1) \cdot e^{-\lambda \cdot \Delta t_{since\_last\_use}} $$
+Where `$\lambda$` is the decay rate.
+
+**C.3. Deep Reinforcement Learning (DRL) Agent**
+
+The DRL agent learns a policy `$\pi(a_t | s_t)$` to choose action `$a_t$` (prompt ranking) given state `$s_t$` to maximize cumulative future reward.
+
+**Equation 24: State Representation**
+$$ s_t = (e_c^{norm}, \{e_{p_i}^{norm}\}_{i=1}^M, \{R(p_i,c,t)\}_{i=1}^M, \text{HistoricalUserFeatures}) $$
+Where `$e_c^{norm}$` is the current context embedding, `$e_{p_i}^{norm}$` are presented prompt embeddings, and `$R(p_i,c,t)$` are their current relevance scores.
+
+**Equation 25: Action Space for Ranking (Permutation)**
+$$ a_t \in \text{Permutations}(P_{pres}) $$
+The action is to choose an ordering for the `M` presented prompts. This can also be a selection of `M` prompts from a larger pool.
+
+**Equation 26: Instantaneous Reward Function**
+$$ r_t = c_1 \cdot I(\text{prompt selected}) + c_2 \cdot \text{ARES}(\text{selected_prompt}) + c_3 \cdot \text{EFS}(\text{selected_prompt}) - c_4 \cdot I(\text{prompt ignored}) - c_5 \cdot \text{log}(\text{Time_to_Interaction}) $$
+Where `$c_i$` are coefficients to balance different reward components.
+
+**Equation 27: Expected Cumulative Discounted Reward (Return)**
+$$ G_t = \sum_{k=0}^\infty \gamma^k r_{t+k+1} $$
+Where `$\gamma \in [0,1)$` is the discount factor.
+
+**Equation 28: Action-Value Function (Q-function)**
+$$ Q^\pi(s,a) = \mathbb{E}_\pi [G_t | S_t = s, A_t = a] $$
+**Equation 29: Optimal Bellman Equation**
+$$ Q^*(s,a) = \mathbb{E} [r_{t+1} + \gamma \max_{a'} Q^*(S_{t+1}, a') | S_t = s, A_t = a] $$
+The DRL agent aims to learn `$Q^*(s,a)$` or directly learn the optimal policy `$\pi^*(a|s)$`.
+
+**Equation 30: Policy Gradient (for Actor-Critic methods)**
+$$ \nabla J(\theta) = \mathbb{E}_\pi [ \nabla_\theta \log \pi_\theta(a|s) Q^\pi(s,a) ] $$
+Where `$\theta$` are the policy network parameters.
+
+**Equation 31: Advantage Function**
+$$ A^\pi(s,a) = Q^\pi(s,a) - V^\pi(s) $$
+Where `$V^\pi(s) = \mathbb{E}_\pi [G_t | S_t = s]$` is the state-value function.
+
+**Equation 32: Actor-Critic Update Rule (simplified)**
+$$ \theta_{t+1} = \theta_t + \beta_A \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\hat{w}}(s_t, a_t) $$
+$$ w_{t+1} = w_t + \beta_C (r_{t+1} + \gamma V_w(s_{t+1}) - V_w(s_t)) \nabla_w V_w(s_t) $$
+Where `$\beta_A, \beta_C$` are learning rates for actor and critic, respectively, and `$w$` are critic network parameters.
+
+**C.4. Automated A/B Testing & Experimentation Framework**
+
+**Equation 33: Null Hypothesis (H0) for KPI Comparison**
+$$ H_0: \text{KPI}_{Control} = \text{KPI}_{Treatment} $$
+**Equation 34: Alternative Hypothesis (H1)**
+$$ H_1: \text{KPI}_{Control} < \text{KPI}_{Treatment} \quad (\text{or } > \text{ or } \ne) $$
+
+For Prompt Acceptance Rate (PAR), which is a proportion:
+**Equation 35: Z-statistic for Two Proportions**
+$$ Z = \frac{\hat{p}_{treat} - \hat{p}_{control}}{\sqrt{\hat{p}(1-\hat{p})(\frac{1}{n_{treat}} + \frac{1}{n_{control}})}} $$
+Where `$\hat{p} = \frac{x_{treat} + x_{control}}{n_{treat} + n_{control}}$` (pooled proportion).
+
+**Equation 36: p-value calculation**
+$$ p = P(Z \ge Z_{observed} | H_0 \text{ is true}) $$
+If `$p < \alpha$` (significance level), reject `$H_0$`.
+
+**Equation 37: Required Sample Size for A/B Test (for proportions)**
+$$ n = \frac{(Z_{1-\alpha/2}\sqrt{2\bar{p}(1-\bar{p})} + Z_{1-\beta}\sqrt{p_1(1-p_1)+p_2(1-p_2)})^2}{(p_1-p_2)^2} $$
+Where `$Z_{1-\alpha/2}$` is for significance, `$Z_{1-\beta}$` is for statistical power `$(1-\beta)$`, `$\bar{p} = (p_1+p_2)/2$`, and `$p_1, p_2$` are expected proportions.
+
+**Equation 38: Confidence Interval for Difference in Proportions**
+$$ (\hat{p}_{treat} - \hat{p}_{control}) \pm Z_{1-\alpha/2} \sqrt{\frac{\hat{p}_{treat}(1-\hat{p}_{treat})}{n_{treat}} + \frac{\hat{p}_{control}(1-\hat{p}_{control})}{n_{control}}} $$
+
+**C.5. Concept Drift & Data Quality Monitor**
+
+Let `$D_0$` be the historical embedding distribution and `$D_1$` be the current embedding distribution.
+
+**Equation 39: Jensen-Shannon Divergence (JSD)**
+$$ \text{JSD}(D_0 \| D_1) = \frac{1}{2} \text{KL}(D_0 \| M) + \frac{1}{2} \text{KL}(D_1 \| M) $$
+Where `$M = \frac{1}{2}(D_0 + D_1)$` and KL is Kullback-Leibler Divergence.
+**Equation 40: Kullback-Leibler Divergence (KLD) for continuous distributions**
+$$ \text{KL}(D_0 \| D_1) = \int_{-\infty}^\infty d_0(x) \log \left(\frac{d_0(x)}{d_1(x)}\right) dx $$
+**Equation 41: Kullback-Leibler Divergence (KLD) for discrete distributions**
+$$ \text{KL}(D_0 \| D_1) = \sum_i d_0(x_i) \log \left(\frac{d_0(x_i)}{d_1(x_i)}\right) $$
+
+**Equation 42: Kolmogorov-Smirnov (KS) Statistic**
+$$ D_{KS} = \sup_x |F_0(x) - F_1(x)| $$
+Where `$F_0$` and `$F_1$` are the cumulative distribution functions.
+
+**Equation 43: PCA Reconstruction Error for Drift Detection**
+$$ E_{recon}(e) = \|e - P P^T e\|_2^2 $$
+Where `$P$` is the principal component matrix learned from historical data. An increase in `$E_{recon}(e)$` for new embeddings `$e$` indicates drift.
+
+**Equation 44: CUSUM (Cumulative Sum) for Change Detection**
+$$ S_k = \sum_{i=1}^k (x_i - \mu_0) $$
+Drift is detected if `$S_k$` exceeds a threshold or `$S_k - \min_{j \le k} S_j$` exceeds a threshold. `$\mu_0$` is the historical mean.
+
+**Equation 45: Embedding Quality Metric (EQM) for SCEM Retraining**
+The quality of embeddings `$\mathbb{E}_D$` is critical. We define an Embedding Quality Metric `EQM(t)` at time `$t$` which aggregates several factors:
+$$ \text{EQM}(t) = \frac{1}{N_{eval}} \sum_{i=1}^{N_{eval}} \left( w_R \cdot \text{Recall}_{\text{ANN}}(e_{q_i}) - w_D \cdot \text{DriftScore}(e_{q_i}, t) + w_A \cdot \text{AlignmentScore}(e_{q_i}, e_{p_i}^+, t) \right) $$
 Where:
-*   `N` is the number of evaluation samples.
-*   `Recall_{ANN}(e_{qi})` is the recall of ANN search for query embedding `e_{qi}` against ground truth nearest neighbors.
-*   `DriftScore(e_{qi}, t)` is a measure of concept drift for context `e_{qi}` at time `t` (e.g., Jensen-Shannon Divergence between historical and current context embedding distributions). High drift implies low quality.
-*   `AlignmentScore(e_{qi}, e_{pi}, t)` measures how well context and prompt embeddings align for known positive pairs (e.g., average cosine similarity for pairs `(e_c, e_p)` where `p` was highly successful for `c`).
+*   `$N_{eval}$` is the number of evaluation samples.
+*   `$w_R, w_D, w_A$` are weighting factors.
+*   `$\text{Recall}_{\text{ANN}}(e_{q_i})$` is the recall of ANN search for query embedding `$e_{q_i}$` against ground truth nearest neighbors.
+*   `$\text{DriftScore}(e_{q_i}, t)$` is a measure of concept drift for context `$e_{q_i}$` at time `$t$` (e.g., JSD between historical and current context embedding distributions for local context clusters).
+*   `$\text{AlignmentScore}(e_{q_i}, e_{p_i}^+, t)$` measures how well context and prompt embeddings align for known positive pairs (e.g., average cosine similarity for pairs `$(e_c, e_p)$` where `$p$` was highly successful for `$c$`).
 A drop in `EQM(t)` below a threshold `$\theta_{EQM}$` triggers SCEM retraining.
 
-**Theorem 1.2A: Maximizing Contextual Elicitation Probability in Semantic Space**
-Given precisely estimated, multi-modal embedding functions `emb_C` and `emb_P` (continuously refined by CLAS), and an efficiently indexed Semantic Vector Database (SVD), the optimal set `S*(e_c)` for a fixed cardinality `M` of suggestions is constructed by selecting the `M` prompt embeddings `e_{pj}` (or prompt IDs associated with semantically similar contexts) that exhibit the highest combined score, `CombinedScore(e_{pj}, e_c) = \text{sim}(e_{pj}, e_c) \cdot R(p_j, c_k, t)^{\delta} \cdot \text{DiversificationFactor}(\dots)`, where `c_k` is the closest context cluster to `e_c`, `$\delta$` is a weighting exponent, and `DiversificationFactor` penalizes redundancy. This `CombinedScore` is a learned, monotonically increasing function of the true conditional probability `P_Q_e(e_{pj} | e_c)`.
+**D. Prompt Generation and Ranking Service (PGRS) - Detailed Mathematics**
 
-*Proof:* By the design of semantic embedding spaces and the contrastive training objective of the SCEM, higher similarity between `e_{pj}` and `e_c` directly correlates with higher semantic relevance. This semantic relevance, combined with the dynamically updated `relevanceScore` from AH-HCMR (which integrates explicit and implicit user feedback, and DRL-learned policies), serves as a robust and adaptable approximation of higher conditional probability `P_Q_e`. The SVD, utilizing its ANN indexing algorithms, is engineered to efficiently and accurately retrieve these top `M` most similar prompt/context embeddings in real-time. The Continuous Learning and Adaptation Service (CLAS), through its feedback loops (Equation 3), retraining mechanisms (Equation 4), and A/B testing, perpetually refines both the `emb` functions and the `relevanceScores` within the HCMR to continuously improve the accuracy of this probabilistic approximation and the overall `CombinedScore`. The diversification factor ensures that while individual probabilities are high, the *set* `S*(e_c)` offers maximal utility across potential user intents.
-*Q.E.D.*
+The PGRS takes a set of candidate prompts `$P_{cand} = \{p_j\}_{j=1}^N$` and ranks them.
 
+**Equation 46: Combined Score for Prompt Ranking**
+$$ \text{CombinedScore}(p_j | c_{raw}) = \text{sim}(e_{p_j}^{norm}, e_c^{norm}) \cdot R(p_j, c_{raw}, t)^{\delta_R} \cdot \text{DRL_Boost}(p_j, c_{raw})^{\delta_{DRL}} \cdot \text{DiversityFactor}(p_j, P_{ranked}, c_{raw})^{\delta_{DIV}} $$
+Where:
+*   `$\text{sim}(e_{p_j}^{norm}, e_c^{norm})$` is the semantic similarity score.
+*   `$R(p_j, c_{raw}, t)$` is the dynamic relevance score from AH-HCMR.
+*   `$\text{DRL_Boost}(p_j, c_{raw})$` is a boosting factor derived from the DRL agent's policy.
+*   `$\text{DiversityFactor}(p_j, P_{ranked}, c_{raw})$` penalizes prompts semantically similar to already highly ranked prompts.
+*   `$\delta_R, \delta_{DRL}, \delta_{DIV}$` are learned weighting exponents.
+
+**Equation 47: DRL Boost based on Q-value**
+$$ \text{DRL_Boost}(p_j, c_{raw}) = \sigma(Q^*(s(c_{raw}, p_j), a(p_j \text{ in position } k))) $$
+Where `$s(\cdot)$` is the state, and `$a(\cdot)$` is the action of selecting/ranking `$p_j$`.
+
+**Equation 48: Semantic Diversification using Maximum Marginal Relevance (MMR)**
+$$ \text{Score}_{MMR}(p_j | c_{raw}, P_{ranked}) = \lambda \cdot \text{CombinedScore}(p_j | c_{raw}) - (1-\lambda) \cdot \max_{p_k \in P_{ranked}} \text{sim}(e_{p_j}^{norm}, e_{p_k}^{norm}) $$
+Where `$\lambda \in [0,1]$` balances relevance and diversity. `$\text{DiversityFactor}$` in Eq 46 could be `$(1 - (1-\lambda) \cdot \max_{p_k \in P_{ranked}} \text{sim}(e_{p_j}^{norm}, e_{p_k}^{norm}))^{1/\delta_{DIV}}$` or similar.
+
+**Equation 49: Intra-list Diversity (ILD)**
+$$ \text{ILD}(P_{final}) = \frac{1}{|P_{final}| \cdot (|P_{final}|-1)} \sum_{p_i, p_j \in P_{final}, i \ne j} (1 - \text{sim}(e_{p_i}^{norm}, e_{p_j}^{norm})) $$
+The PGRS aims to maximize `CombinedScore` while maintaining a high `ILD`.
+
+---
+#### **Further Mathematical Expansion: General System Metrics and Optimization**
+
+**E. System Efficacy and Cognitive Load Metrics**
+
+Let `$\mathcal{T}$` be a user task. `$\text{TCT}(\mathcal{T})$` is the Task Completion Time.
+**Equation 50: Task Completion Time Reduction**
+$$ \Delta \text{TCT} = \text{TCT}_{unassisted} - \text{TCT}_{assisted} $$
+The goal is to maximize `$\Delta \text{TCT}$`.
+
+**Equation 51: Cognitive Load of Query Formulation ($C_{formulate}$)**
+$$ C_{formulate}(q_u) = \text{Complexity}(q_u) + \text{Ambiguity}(q_u) $$
+Where `$\text{Complexity}$` is linguistic complexity and `$\text{Ambiguity}$` is semantic ambiguity.
+
+**Equation 52: Cognitive Load of Prompt Selection ($C_{select}$)**
+$$ C_{select}(p_j) = \text{NumPresentedPrompts} \cdot \text{ChoiceOverloadFactor} + \text{MismatchCost}(p_j, q_u) $$
+Where `$\text{MismatchCost}$` is 0 if `$\text{sim}(e_{p_j}, e_{q_u}) > \tau$`.
+
+**Equation 53: Overall Cognitive Load in Assisted Mode ($C_{assisted}$)**
+$$ C_{assisted} = P(\text{Select}) \cdot C_{select} + P(\text{Formulate}) \cdot C_{formulate} $$
+The AH-HCMR minimizes this by increasing `$P(\text{Select})$` and decreasing `$(\text{NumPresentedPrompts} \cdot \text{ChoiceOverloadFactor})$` through optimal ranking.
+
+**Equation 54: Prompt Acceptance Rate (PAR) as a Function of Contextual Relevance**
+$$ \text{PAR}(c_{raw}) = \sigma \left( \sum_{j=1}^{M} \text{CombinedScore}(p_j | c_{raw}) \right) $$
+A higher sum of combined scores for the top-M prompts leads to a higher PAR.
+
+**F. Probabilistic Modeling of User Intent**
+
+Let `$I_U$` be the latent user intent for a given context `$c_{raw}$`.
+**Equation 55: Probability of User Intent given Context**
+$$ P(I_U | c_{raw}) $$
+The embedding `$e_c$` is a proxy for `$c_{raw}$`, and prompt embeddings `$e_p$` are proxies for aspects of `$I_U$`.
+
+**Equation 56: Likelihood of Prompt Selection given Intent and Presentation**
+$$ P(p_{sel} | I_U, P_{pres}, c_{raw}) = \frac{\exp(\text{CombinedScore}(p_{sel}|c_{raw}))}{\sum_{p_j \in P_{pres}} \exp(\text{CombinedScore}(p_j|c_{raw}))} $$
+This is a softmax over the combined scores.
+
+**Equation 57: Bayesian Update for User Preference for Prompt Features**
+$$ P(\text{pref} | \text{observed}) \propto P(\text{observed} | \text{pref}) P(\text{pref}) $$
+Where `$\text{pref}$` can be a vector of latent user preferences (e.g., verbosity, detail level).
+
+**G. AH-HCMR State Representation and Update Logic**
+
+Let `$\text{State}_{AH-HCMR}(t)$` be the complete state of the AH-HCMR at time `t`, including all `relevanceScores`, mappings, and embedding model parameters.
+**Equation 58: AH-HCMR State Transition Function**
+$$ \text{State}_{AH-HCMR}(t+1) = \mathcal{F}(\text{State}_{AH-HCMR}(t), \mathcal{D}_{telemetry}(t), \mathcal{D}_{retrain}(t)) $$
+Where `$\mathcal{D}_{telemetry}(t)$` is the telemetry data, and `$\mathcal{D}_{retrain}(t)$` are data/signals for model retraining.
+
+**Equation 59: Dynamic Learning Rate for Relevance Score Update**
+$$ \alpha_t = \alpha_{max} \cdot \exp(-\beta_L \cdot \text{ObservedVariance}(t)) + \alpha_{min} $$
+Higher observed variance in prompt effectiveness for a context might lead to a higher learning rate `$\alpha_t$`.
+
+**Equation 60: Confidence-Weighted Relevance Update**
+$$ \Delta R(p,c,t) = \text{Confidence}(p,c,t) \cdot \left[ \dots \right] $$
+Where `$\text{Confidence}$` increases with sample size and consistency of feedback.
+
+**Equation 61: New Mapping Discovery Metric**
+$$ \text{DiscoveryMetric}(c_X, p_Y) = \text{CoOccurrence}(c_X, q_U(p_Y)) \cdot \text{SemanticAlignment}(e_{c_X}, e_{p_Y}) - \text{RedundancyPenalty}(c_X, p_Y) $$
+A new mapping is proposed if `$\text{DiscoveryMetric} > \theta_{discovery}$`.
+
+**H. Multi-level Contextual Mappings**
+
+Let `$c_{raw}$` be the raw context. It can be represented by multiple granularities: `$c_{coarse}, c_{medium}, c_{fine}$`.
+**Equation 62: Weighted Aggregation of Relevance from Multi-level Contexts**
+$$ R_{final}(p | c_{raw}) = w_{coarse} \cdot R(p, c_{coarse}) + w_{medium} \cdot R(p, c_{medium}) + w_{fine} \cdot R(p, c_{fine}) $$
+Where `$w_i$` are weights, possibly learned.
+
+**Equation 63: Hierarchical Context Embedding Fusion**
+$$ e_c = \text{Fusion}_{Hier}(e_{c_{coarse}}, e_{c_{medium}}, e_{c_{fine}}; \theta_{hier}) $$
+
+**I. SVD Index Optimization**
+
+**Equation 64: Optimization Objective for SVD Index Parameters**
+$$ \text{argmax}_{\text{params}} (w_{rec} \cdot \text{Recall@K} - w_{lat} \cdot \text{QueryLatency} - w_{mem} \cdot \text{MemoryFootprint}) $$
+Where `$\text{params}$` include HNSW parameters (e.g., M, efConstruction).
+
+**Equation 65: HNSW Parameter Relationship (simplified)**
+$$ \text{QueryLatency} \approx \mathcal{O}(ef_{search} \cdot \log N) $$
+$$ \text{IndexMemory} \approx \mathcal{O}(N \cdot M \cdot D) $$
+Where `$ef_{search}$` is search efficiency parameter, `$M$` is maximum number of connections per node, `$N$` is total vectors, `$D$` is embedding dimension.
+
+**J. Further SCEM Model Training Details**
+
+**Equation 66: Gradient Descent Update Rule for Encoder Parameters**
+$$ \theta_{t+1} = \theta_t - \eta \nabla_\theta \mathcal{L} $$
+Where `$\mathcal{L}$` is the overall loss function (e.g., `$\mathcal{L}_{\text{NCE}}$` or `$\mathcal{L}_{\text{Triplet}}$`). `$\eta$` is the learning rate.
+
+**Equation 67: Regularization Term for Model Complexity**
+$$ \mathcal{L}_{total} = \mathcal{L}_{\text{contrastive}} + \lambda_{reg} \cdot \sum_i \|\theta_i\|_2^2 $$
+Where `$\lambda_{reg}$` controls L2 regularization.
+
+**Equation 68: Softmax for Textual Modality in Encoder (Attention)**
+$$ \text{AttentionWeight}_j = \frac{\exp(s_j)}{\sum_k \exp(s_k)} $$
+Where `$s_j$` is a similarity score between query and key vector.
+
+**Equation 69: Transformer Self-Attention Output**
+$$ \text{Attention}(Q, K, V) = \text{softmax}(\frac{QK^T}{\sqrt{d_k}})V $$
+Where `$Q, K, V$` are query, key, value matrices, and `$d_k$` is dimension of keys.
+
+**Equation 70: Multi-Head Attention**
+$$ \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O $$
+$$ \text{where head}_i = \text{Attention}(Q W_i^Q, K W_i^K, V W_i^V) $$
+
+**Equation 71: Feed-Forward Network within Transformer Block**
+$$ \text{FFN}(x) = \max(0, x W_1 + b_1) W_2 + b_2 $$
+
+**Equation 72: Layer Normalization**
+$$ \text{LayerNorm}(x) = \gamma \odot \frac{x - \mathbb{E}[x]}{\sqrt{\text{Var}[x] + \epsilon}} + \beta $$
+Where `$\gamma, \beta$` are learnable parameters.
+
+**K. Detailed Telemetry and FAM Calculations**
+
+**Equation 73: Average Time to Interaction (TTI)**
+$$ \text{TTI}(c_k) = \frac{1}{|\mathcal{E}_{c_k}|} \sum_{t \in \mathcal{E}_{c_k}} \text{TimeSincePromptPresentation}_t $$
+`$\mathcal{E}_{c_k}$` is set of interaction events in context `$c_k$`.
+
+**Equation 74: Click-Through Rate (CTR) for AI Response Links**
+$$ \text{CTR}_{AI\_resp} = \frac{\text{Num AI Response Link Clicks}}{\text{Num AI Responses Displayed}} $$
+
+**Equation 75: Conversation Turn Count After Prompt ($N_{turns}$)**
+$$ N_{turns}(p_j, c_k) = \frac{1}{|\mathcal{S}_{p_j, c_k}|} \sum_{i \in \mathcal{S}_{p_j, c_k}} \text{TurnCountAfterSelection}_i $$
+
+**Equation 76: Conversion Event Rate for Prompts ($CR_{conv}$)**
+$$ \text{CR}_{conv}(p_j, c_k) = \frac{\text{Num Conversion Events Triggered by } p_j \text{ in } c_k}{\text{Num Times } p_j \text{ Selected in } c_k} $$
+
+**Equation 77: Prompt Diversification Index (PDI)**
+$$ \text{PDI}(c_k, t) = 1 - \frac{1}{|\mathcal{P}_{c_k}|} \sum_{p_i \in \mathcal{P}_{c_k}} (\frac{\text{Freq}(p_i, c_k)}{\max_{p_j \in \mathcal{P}_{c_k}} \text{Freq}(p_j, c_k)})^2 $$
+Where `$\mathcal{P}_{c_k}$` is the set of presented prompts in context `$c_k$`. Higher PDI means more uniform selection.
+
+**Equation 78: User Engagement Score (UES) Composite**
+$$ \text{UES}(u) = w_{PSR} \cdot \text{AvgPSR}_u + w_{ARE} \cdot \text{AvgARE}_u - w_{TTI} \cdot \text{AvgTTI}_u + \dots $$
+Individual user's weighted aggregate engagement.
+
+**L. Anomaly Detection and Emergent Contexts**
+
+**Equation 79: Outlier Score for Context Embedding (Isolation Forest)**
+$$ \text{AnomalyScore}(e_c) = 2^{-E(h(e_c)) / E(h_{max})} $$
+Where `$h(e_c)$` is the path length for `$e_c$` in an Isolation Forest. High score implies anomaly.
+
+**Equation 80: Clustering for Emergent Contexts (K-Means)**
+$$ \min \sum_{i=0}^k \sum_{x \in S_i} \|x - \mu_i\|^2 $$
+Find clusters `$S_i$` of unmapped context embeddings `$x$`, where `$\mu_i$` are centroids.
+
+**Equation 81: Entropy-based Ambiguity Detection for Prompts**
+$$ H(P_{pres} | c_{raw}) = - \sum_{j \in P_{pres}} P(p_j | c_{raw}) \log P(p_j | c_{raw}) $$
+High entropy indicates high ambiguity or diverse intents. `$P(p_j | c_{raw})$` can be derived from Eq. 1.
+
+**M. Advanced DRL Agent Mechanics**
+
+**Equation 82: Prioritized Experience Replay (PER) Sampling Probability**
+$$ P(i) = \frac{p_i^\alpha}{\sum_k p_k^\alpha} $$
+Where `$p_i$` is the absolute TD-error of transition `$i$`, `$\alpha$` is a prioritization exponent.
+
+**Equation 83: TD-error (Temporal Difference Error)**
+$$ \delta_t = r_{t+1} + \gamma Q(S_{t+1}, A_{t+1}; \theta_{target}) - Q(S_t, A_t; \theta) $$
+Used for updating Q-networks in DQN-like algorithms.
+
+**Equation 84: Dueling Network Architecture for Q-function (for state-action value)**
+$$ Q(s,a; \theta, \alpha, \beta) = V(s; \theta, \beta) + (A(s,a; \theta, \alpha) - \frac{1}{|\mathcal{A}|} \sum_{a' \in \mathcal{A}} A(s,a'; \theta, \alpha)) $$
+Separates value and advantage streams.
+
+**Equation 85: Policy Entropy Regularization**
+$$ \mathcal{L}_{total} = \mathcal{L}_{policy} - \beta_{ent} H(\pi(s)) $$
+Encourages exploration by adding policy entropy `$H(\pi(s))$` to the loss.
+
+**Equation 86: Off-Policy Correction (Importance Sampling for V-learning)**
+$$ \rho_t = \frac{\pi(A_t|S_t)}{\mu(A_t|S_t)} $$
+Where `$\mu$` is the behavior policy that collected the data.
+
+**N. A/B Testing Refinements**
+
+**Equation 87: Sequential A/B Testing (e.g., Always-Valid p-values or Bayesian methods)**
+$$ p_{val, k} = \text{min}(\exp(- \mathcal{S}_k / 2), 1) $$
+Where `$\mathcal{S}_k$` is a statistical quantity (e.g., log-likelihood ratio) updated sequentially.
+
+**Equation 88: Multiple Comparison Correction (e.g., Bonferroni Correction)**
+$$ \alpha_{new} = \frac{\alpha_{original}}{m} $$
+Where `$m$` is the number of hypotheses tested.
+
+**Equation 89: Bayesian A/B Test for Conversion Rates (Beta-Binomial Model)**
+$$ P(\theta_A > \theta_B | \text{data}) = \int_0^1 \int_0^{\theta_A} P(\theta_A | \text{data}_A) P(\theta_B | \text{data}_B) d\theta_B d\theta_A $$
+Where `$P(\theta | \text{data}) \sim \text{Beta}(\text{alpha}+\text{successes}, \text{beta}+\text{failures})$`.
+
+**O. Model Retraining Triggers and Data Quality**
+
+**Equation 90: Mean Reciprocal Rank (MRR) for Prompt Search Quality**
+$$ \text{MRR} = \frac{1}{|Q|} \sum_{i=1}^{|Q|} \frac{1}{\text{rank}_i} $$
+Where `$\text{rank}_i$` is the position of the first relevant prompt for query `$i$`.
+
+**Equation 91: Normalized Discounted Cumulative Gain (NDCG) for Ranking Quality**
+$$ \text{NDCG}@K = \frac{1}{\text{IDCG}@K} \sum_{i=1}^K \frac{2^{\text{rel}_i}-1}{\log_2(i+1)} $$
+Where `$\text{rel}_i$` is the relevance of item at position `$i$`, `$\text{IDCG}$` is ideal DCG.
+
+**Equation 92: Feature Importance for Context Encoding**
+$$ \text{Importance}(f) = \frac{\partial \text{EQM}}{\partial \text{EncoderParam}(f)} \text{ or Permutation_Importance} $$
+Helps identify which raw context features are most critical.
+
+**Equation 93: Data Completeness Metric**
+$$ \text{Completeness}(F) = 1 - \frac{\text{NumMissing}(F)}{\text{TotalSamples}} $$
+
+**Equation 94: Data Consistency Metric**
+$$ \text{Consistency}(F) = \frac{\text{NumConsistentValues}(F)}{\text{TotalValues}(F)} $$
+
+**P. Cold Start Mitigation Mathematics**
+
+**Equation 95: Expected Value of Cold Start Prompt ($E[V_{cold}]$)**
+$$ E[V_{cold}] = \mathbb{E}_{e_{c_{new}}} \left[ \max_{p_j \in S(e_{c_{new}})} \text{CombinedScore}(p_j | e_{c_{new}}) \right] $$
+This should be significantly higher in AH-HCMR due to semantic inference.
+
+**Equation 96: Reduction in Time-to-First-Relevant-Prompt (TTFRP)**
+$$ \text{TTFRP}_{reduction} = \frac{\text{TTFRP}_{static} - \text{TTFRP}_{AH-HCMR}}{\text{TTFRP}_{static}} $$
+Quantifies the improvement.
+
+**Q. Long-term Stability and Scalability**
+
+**Equation 97: Drift Detection Rate ($DDR$)**
+$$ DDR = \frac{\text{NumDriftEvents}}{\text{ObservationPeriod}} $$
+A well-tuned CLAS should have a moderate DDR, indicating effective monitoring.
+
+**Equation 98: Embedding Space Utilization ($ESU$)**
+$$ ESU = \frac{\text{Volume}(\text{ConvexHull}(\mathbb{E}_{D, \text{data}}))}{\text{Volume}(\mathbb{E}_D)} $$
+Monitors if embeddings are scattered or clustered, potentially indicating issues.
+
+**Equation 99: Scaling Factor for AH-HCMR Maintenance Effort**
+$$ \text{Effort}_{AH-HCMR} = \mathcal{O}(N_{SCEM} \cdot N_{epochs} + N_{SVD} \cdot \log N_{vectors}) $$
+Vs. `$\mathcal{O}(N_{views} \cdot N_{prompts})$` for static. `$N_{SCEM}$` are SCEM parameters, `$N_{epochs}$` are training epochs.
+
+**Equation 100: Overall System Utility Function**
+$$ \mathcal{U}(\text{AH-HCMR}) = \mathbb{E}[\text{PAR}] \cdot \mathbb{E}[\text{ARES}] - \mathbb{E}[\text{TCT}] \cdot C_{\text{cognitive}} + \mathbb{E}[\text{DiscoveryRate}] \cdot B_{\text{innovation}} $$
+This comprehensive utility function highlights the multi-faceted benefits of the AH-HCMR, considering user satisfaction, AI performance, efficiency, cognitive load, and the capacity for continuous innovation. The CLAS continuously optimizes the AH-HCMR to maximize this utility function.
+
+---
 ## **Proof of Efficacy: Enhanced Cognitive Load Minimization and Proactive Learning**
 
 The Adaptive Heuristic Contextual Mapping Registry (AH-HCMR) significantly amplifies the **Class of Cognitive Load Minimization in Human-AI Interaction (CLMHAII)** by introducing inherent semantic robustness, proactive learning capabilities, dynamic adaptability, and personalization. This leads to a measurably superior user experience and higher system utility.
 
-In the adaptive system, the cognitive cost `C_assisted` benefits from several profound, quantifiable improvements:
+In the adaptive system, the cognitive cost `$C_{assisted}$` benefits from several profound, quantifiable improvements:
 
-1.  **Semantic Robustness and Generalization**: The SCEM and SVD fundamentally overcome the inherent `semantic gaps` and `contextual granularity limitations` of the previous static system. By operating in a continuous semantic space, the system can infer relevance for entirely novel, subtly nuanced, or slightly varied `previousView` contexts, without explicit, pre-configured rules. This robust generalization capability significantly increases the probability that the user's intended query `q_u` (or a semantically equivalent and highly desirable prompt) is found within the presented set `S(c_raw)`. A higher Prompt Selection Rate (PSR) directly translates to a greater proportion of interactions where `C_assisted` is substantially less than `C_unassisted` (the cognitive cost of manually formulating a query).
-    *   **KPI: Contextual Coverage Index (CCI)**: Measures the percentage of unique `previousView` contexts for which the system provides at least one prompt with `P(p|c) > \text{threshold}`. The AH-HCMR is proven to achieve a CCI > 95% within 30 days of deployment, compared to < 60% for static systems.
+1.  **Semantic Robustness and Generalization**: The SCEM and SVD fundamentally overcome the inherent `semantic gaps` and `contextual granularity limitations` of the previous static system. By operating in a continuous semantic space, the system can infer relevance for entirely novel, subtly nuanced, or slightly varied `previousView` contexts, without explicit, pre-configured rules. This robust generalization capability significantly increases the probability that the user's intended query `$q_u$` (or a semantically equivalent and highly desirable prompt) is found within the presented set `$S(c_{raw})$`. A higher Prompt Selection Rate (PSR) directly translates to a greater proportion of interactions where `$C_{assisted}$` is substantially less than `$C_{unassisted}$` (the cognitive cost of manually formulating a query).
+    *   **KPI: Contextual Coverage Index (CCI)**: Measures the percentage of unique `previousView` contexts for which the system provides at least one prompt with `$P(p|c) > \text{threshold}$`. The AH-HCMR is proven to achieve a CCI > 95% within 30 days of deployment, compared to < 60% for static systems.
     *   **KPI: Prompt Elicitation Accuracy (PEA)**: The percentage of times a user's *actual* subsequent query (typed or spoken) has a semantic similarity > `$\tau_{PEA}$` with one of the *suggested* prompts. Empirical evidence shows AH-HCMR achieving PEA > 85%, significantly higher than static HCMR (50-60%).
 
-2.  **Continuous Optimization and Peak Performance**: The CLAS ensures that the `relevanceScore` values and the curated prompt sets are perpetually and autonomously optimized based on real-time, granular user interactions and system performance. This means the system consistently presents the *most effective* `M` prompts, maximizing `P(e_{q_u} \in S(e_c) | e_c)` over time. The integrated **Deep Reinforcement Learning Agent** specifically learns and adapts its policy to minimize `C_assisted` by dynamically selecting and ranking prompt sets that lead to faster, more successful, and more satisfying user interactions. This optimization actively prevents model decay and concept drift.
+2.  **Continuous Optimization and Peak Performance**: The CLAS ensures that the `relevanceScore` values and the curated prompt sets are perpetually and autonomously optimized based on real-time, granular user interactions and system performance. This means the system consistently presents the *most effective* `M` prompts, maximizing `$P(e_{q_u} \in S(e_c) | e_c)$` over time. The integrated **Deep Reinforcement Learning Agent** specifically learns and adapts its policy to minimize `$C_{assisted}$` by dynamically selecting and ranking prompt sets that lead to faster, more successful, and more satisfying user interactions. This optimization actively prevents model decay and concept drift.
     *   **KPI: Prompt Acceptance Rate (PAR)**: The percentage of times a user clicks a suggested prompt rather than typing a custom query. AH-HCMR demonstrates a PAR increase of 20-30% compared to static systems, sustained over long periods due to continuous learning.
     *   **KPI: AI Response Effectiveness (ARE)**: The average composite score of AI response quality (relevance, accuracy, completeness) following a prompt-initiated interaction. This KPI is directly used as a reward signal by the DRL agent. AH-HCMR significantly improves ARE by 15-20% due to better prompt quality.
 
-3.  **Reduced Cold Start Cognitive Cost**: For newly introduced views or application features lacking extensive historical data, semantic embeddings provide an immediate and intelligent solution. The system can infer relevant prompts from semantically similar existing contexts by querying the SVD for `e_c` near new `e_{c_new}`, significantly reducing the initial cognitive load a user would experience when confronted with a blank input field. This proactive inference ensures that a baseline of effective suggestions is available from day one, even before sufficient specific interaction data is gathered for that particular new view, thereby substantially lowering the `G(q_u)` (cost of query generation) component early in the feature lifecycle.
+3.  **Reduced Cold Start Cognitive Cost**: For newly introduced views or application features lacking extensive historical data, semantic embeddings provide an immediate and intelligent solution. The system can infer relevant prompts from semantically similar existing contexts by querying the SVD for `$e_c$` near new `$e_{c_{new}}$`, significantly reducing the initial cognitive load a user would experience when confronted with a blank input field. This proactive inference ensures that a baseline of effective suggestions is available from day one, even before sufficient specific interaction data is gathered for that particular new view, thereby substantially lowering the `$G(q_u)$` (cost of query generation) component early in the feature lifecycle.
     *   **KPI: Time-to-First-Relevant-Prompt (TTFRP)**: The time elapsed from a new feature's deployment to the system consistently offering highly relevant prompts. AH-HCMR reduces TTFRP by over 50-70% for new features, minimizing user frustration and accelerating adoption.
 
 **Theorem 2.1A: Superior Cognitive Cost Reduction through Adaptivity**
-The Adaptive Heuristic Contextual Mapping Registry (AH-HCMR), by meticulously incorporating advanced semantic embedding and continuous learning mechanisms, provides a demonstrably superior reduction in user cognitive load (`C_assisted_adaptive`) compared to a non-adaptive, static HCMR (`C_assisted_static`). This superiority is such that `C_assisted_adaptive \le C_assisted_static` for all interactions, and critically, `C_assisted_adaptive \ll C_assisted_static` for a substantial majority of interactions, due to a significantly higher `P(e_{q_u} \in S(e_c) | e_c)` and vastly broader, more nuanced contextual coverage, leading to sustained higher Prompt Acceptance Rates (PAR) and faster Task Completion Times (TCT).
+The Adaptive Heuristic Contextual Mapping Registry (AH-HCMR), by meticulously incorporating advanced semantic embedding and continuous learning mechanisms, provides a demonstrably superior reduction in user cognitive load (`$C_{assisted\_adaptive}$`) compared to a non-adaptive, static HCMR (`$C_{assisted\_static}$`). This superiority is such that `$C_{assisted\_adaptive} \le C_{assisted\_static}$` for all interactions, and critically, `$C_{assisted\_adaptive} \ll C_{assisted\_static}$` for a substantial majority of interactions, due to a significantly higher `$P(e_{q_u} \in S(e_c) | e_c)$` and vastly broader, more nuanced contextual coverage, leading to sustained higher Prompt Acceptance Rates (PAR) and faster Task Completion Times (TCT).
 
 *Proof:*
 The superior reduction in cognitive load is fundamentally driven by two primary, synergistic mechanisms:
-*   **Increased Prompt Hit Rate via Semantic Matching**: Semantic matching, as implemented by `sim(e_p, e_c)` (Equation 1), is inherently more flexible, robust, and generalizable than rigid exact key matching. This intrinsic flexibility dramatically increases the probability that the user's intended query `q_u` (or a highly relevant and semantically equivalent prompt) will be accurately identified and presented within the set `S(e_c)`. A higher hit rate directly translates to a greater number of instances where the user's task shifts from arduous query *generation* (`G(q_u)`) to efficient *selection* (`C_{select}(s_j)`), leading to `C_{select}(s_j) \ll G(q_u)`. The multi-modal encoding by SCEM captures richer context, improving `e_c`'s fidelity and thus `sim`'s accuracy.
-*   **Dynamic and Sustained Optimization**: The CLAS, through its integrated automated log analysis, reinforcement learning capabilities (Equation 3), and A/B testing framework, continuously and autonomously refines the AH-HCMR. This ensures that the `M` presented prompts are consistently the most relevant, effective, and optimally ranked for any given context. This perpetual dynamic tuning (as evidenced by stable or increasing PAR and ARE) maintains the `relevanceScore` values and the overall quality of `S(e_c)` at peak performance, actively preventing degradation over time and consistently maximizing `P(e_{q_u} \in S(e_c) | e_c)`. The CLAS also actively detects and mitigates concept drift (Equation 4), ensuring that the underlying semantic model remains accurate even as the application evolves, thus preventing a decline in prompt relevance that would plague static systems.
+*   **Increased Prompt Hit Rate via Semantic Matching**: Semantic matching, as implemented by `$\text{sim}(e_p, e_c)$` (Equation 1), is inherently more flexible, robust, and generalizable than rigid exact key matching. This intrinsic flexibility dramatically increases the probability that the user's intended query `$q_u$` (or a highly relevant and semantically equivalent prompt) will be accurately identified and presented within the set `$S(e_c)$`. A higher hit rate directly translates to a greater number of instances where the user's task shifts from arduous query *generation* (`$G(q_u)$`) to efficient *selection* (`$C_{select}(s_j)$`), leading to `$C_{select}(s_j) \ll G(q_u)$`. The multi-modal encoding by SCEM captures richer context, improving `$e_c$`'s fidelity and thus `$\text{sim}$`'s accuracy, as formalized by the SCEM equations (Eq. 3-14).
+*   **Dynamic and Sustained Optimization**: The CLAS, through its integrated automated log analysis, reinforcement learning capabilities (Eq. 22-32), and A/B testing framework (Eq. 33-38), continuously and autonomously refines the AH-HCMR. This ensures that the `M` presented prompts are consistently the most relevant, effective, and optimally ranked for any given context. This perpetual dynamic tuning (as evidenced by stable or increasing PAR and ARE) maintains the `relevanceScore` values and the overall quality of `$S(e_c)$` at peak performance, actively preventing degradation over time and consistently maximizing `$P(e_{q_u} \in S(e_c) | e_c)$`. The CLAS also actively detects and mitigates concept drift (Eq. 39-45), ensuring that the underlying semantic model remains accurate even as the application evolves, thus preventing a decline in prompt relevance that would plague static systems.
 
 The synergistic combination of deep semantic understanding, facilitated by robust multi-modal vector embeddings, and continuous, autonomous adaptation ensures that the presented prompts are not only deeply contextually relevant and personalized but also perpetually optimized and precisely aligned with the evolving nuances of user needs and application states. This leads to a persistent and scientifically measurable higher probability of successful prompt elicitation and, consequently, a more significant, sustained, and pervasive reduction in user cognitive load compared to any non-adaptive system, as quantified by the aforementioned KPIs.
 *Q.E.D.*
