@@ -401,20 +401,24 @@ A macroscopic collective of microscopic, autonomous robots (nanites) capable of 
 ```mermaid
 journey
     title Nanite Swarm Construction Journey
-    section Ingestion Replication:
-      Feedstock Acquisition: 1: Nanites
-      Energy Conversion: 1: Nanites
-      Self-Replication to Critical Mass: 5: Nanites
-    section Blueprint Assimilation:
-      Download & Parse Blueprint: 3: Queen Nanite
-      Distribute Sub-tasks to Swarm: 4: Queen Nanite
-    section Construction Phase:
-      Material Transport Placement: 5: Worker Nanites
-      Structural Assembly: 5: Worker Nanites
-      Quality Assurance Scans: 3: Surveyor Nanites
-    section Finalization:
-      Final Polish & System Integration: 4: Finisher Nanites
-      Enter Dormant Standby Mode: 2: All Nanites
+
+    section Ingestion Replication
+      Feedstock Acquisition: Nanites: 1
+      Energy Conversion: Nanites: 1
+      Self-Replication to Critical Mass: Nanites: 5
+
+    section Blueprint Assimilation
+      Download & Parse Blueprint: Queen Nanite: 3
+      Distribute Sub-tasks to Swarm: Queen Nanite: 4
+
+    section Construction Phase
+      Material Transport Placement: Worker Nanites: 5
+      Structural Assembly: Worker Nanites: 5
+      Quality Assurance Scans: Surveyor Nanites: 3
+
+    section Finalization
+      Final Polish & System Integration: Finisher Nanites: 4
+      Enter Dormant Standby Mode: All Nanites: 2
 ```
 
 ### Core Claims
