@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: Gemini API (OpenAI Proxy)
   version: 1.0.0
@@ -18,7 +18,7 @@ paths:
       description: |
         Creates a model response for the given chat conversation.
         This endpoint supports various Gemini-specific features like `reasoning_effort` and `thinking_config`
-        within an `extra_body` for fine-grained control over model behavior, as well as streaming responses.
+        within an `x-extra-body` for fine-grained control over model behavior, as well as streaming responses.
       requestBody:
         required: true
         content:
@@ -48,7 +48,7 @@ paths:
                   messages:
                     - role: user
                       content: "Elaborate on the most badass features of advanced AI based on the attached document."
-                  extra_body:
+                  x-extra-body:
                     google:
                       thinking_config:
                         include_thoughts: true
@@ -128,7 +128,7 @@ paths:
                   context: "Our company, a mid-sized tech firm specializing in cloud infrastructure, is considering international growth."
                   scope: ["market trends", "competitive landscape", "regulatory environment", "economic indicators"]
                   model: gemini-2.5-pro
-                  extra_body:
+                  x-extra-body:
                     google:
                       thinking_config:
                         include_thoughts: true
@@ -216,10 +216,10 @@ components:
           type: string
           description: |
             (Gemini-specific) Controls how much the model will "think" through complex problems.
-            Note: Cannot be used with `extra_body.google.thinking_config`. Not all models support "none".
+            Note: Cannot be used with `x-extra-body.google.thinking_config`. Not all models support "none".
           enum: [low, medium, high, none]
           default: medium
-        extra_body:
+        x-extra-body:
           type: object
           description: |
             (Gemini-specific) Allows for including additional Google-specific fields in the request.
@@ -350,7 +350,7 @@ components:
           type: string
           description: ID of the Gemini model to use for generating the briefing.
           examples: ["gemini-2.5-pro", "gemini-2.5-flash"]
-        extra_body:
+        x-extra-body:
           type: object
           description: |
             (Gemini-specific) Allows for including additional Google-specific fields in the request,
