@@ -451,14 +451,14 @@ The system includes an advanced capability for integrating security posture asse
 
 ```mermaid
 graph TD
-    A[Raw Threat Description (d_env.threat_model)] --> B{Threat Model Parser & Analyzer}
-    B -- "Structured Threat Features" --> C[Adversary Capability Mapper]
-    C --> D[Vulnerability Data Integration (CVE, MITRE ATT&CK)]
-    D --> E[Data Sensitivity & Lifespan Evaluation (d_data)]
+    A[Raw Threat Description - d_env.threat_model] --> B{Threat Model Parser and Analyzer}
+    B -- Structured Threat Features --> C[Adversary Capability Mapper]
+    C --> D[Vulnerability Data Integration - CVE, MITRE ATT&CK]
+    D --> E[Data Sensitivity and Lifespan Evaluation - d_data]
     E --> F[Risk Score Calculation Engine]
-    F -- "Risk Score R" --> G[AI Cryptographic Inference Module AIM]
-    G -- "Target Security Level (S_target)" --> H[PQC Scheme Selection (MOO-DM)]
-    G -- "Key Mgmt Directives (I)" --> I[Private Key Handling Instructions]
+    F -- Risk Score R --> G[AI Cryptographic Inference Module - AIM]
+    G -- Target Security Level - S_target --> H[PQC Scheme Selection - MOO-DM]
+    G -- Key Mgmt Directives - I --> I[Private Key Handling Instructions]
     H --> J[Output PQC Config]
     I --> J
 ```
@@ -545,7 +545,7 @@ The AI-PQC Generation System is engineered for high scalability and robust perfo
 
 ```mermaid
 graph TD
-    A[Client Requests] --> B{Load Balancer / API Gateway}
+    A[Client Requests] --> B{Load Balancer and API Gateway}
     B --> C1[BOS Instance 1]
     B --> C2[BOS Instance 2]
     B --> C3[BOS Instance N]
@@ -555,18 +555,22 @@ graph TD
     D1 --> E[DCKB Cluster]
     D2 --> E
     D3 --> E
-    subgraph "Microservices Cluster (Scalable)"
+
+    subgraph Microservices_Cluster_Scalable
         C1; C2; C3;
         D1; D2; D3;
     end
-    subgraph "Hardware Accelerated Inference"
-        D1 -- GPU/TPU -- G1[ML Compute Nodes]
-        D2 -- GPU/TPU -- G2[ML Compute Nodes]
-        D3 -- GPU/TPU -- G3[ML Compute Nodes]
+
+    subgraph Hardware_Accelerated_Inference
+        D1 -- GPU/TPU --> G1[ML Compute Node 1]
+        D2 -- GPU/TPU --> G2[ML Compute Node 2]
+        D3 -- GPU/TPU --> G3[ML Compute Node N]
     end
-    E -- "Optimized Retrieval" --> H[Caching Layer (Redis)]
-    H -- "Graph Data" --> E
+
+    E -- Optimized Retrieval --> H[Caching Layer - Redis]
+    H -- Graph Data --> E
     E --> I[Persistent Graph Database]
+
     style G1 fill:#ffc,stroke:#333,stroke-width:2px
     style G2 fill:#ffc,stroke:#333,stroke-width:2px
     style G3 fill:#ffc,stroke:#333,stroke-width:2px
@@ -587,7 +591,7 @@ The invention's architecture is designed to accommodate and intelligently recomm
 
 ```mermaid
 graph TD
-    subgraph "Hybrid Cryptography (KEM Example)"
+    subgraph Hybrid_Cryptography_KEM_Example
         C1[Client (PQC Key)] --> S1[Server (PQC Key)]
         C1 -- "PK_classic_Client || PK_PQC_Client" --> S1
         S1 -- "PK_classic_Server || PK_PQC_Server" --> C1
@@ -601,10 +605,12 @@ graph TD
         K4 -- "Concatenate/KDF" --> SK2
         SK1 == SK2
         SK1 -- "Used for AES-GCM (Bulk Data)" --> D[Secure Data Exchange]
-        subgraph "Classical KEM"
+
+        subgraph Classical_KEM
             C2[Client] -- "ECIES/RSA Key Exchange" --> S2[Server]
         end
-        subgraph "PQC KEM"
+
+        subgraph PQC_KEM
             C3[Client] -- "Kyber/FrodoKEM Key Exchange" --> S3[Server]
         end
     end
