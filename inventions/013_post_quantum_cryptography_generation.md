@@ -597,11 +597,11 @@ graph TD
         S1 -- "PK_classic_Server || PK_PQC_Server" --> C1
         C1 --> K1[Generate KEM shared secret - ss_PQC]
         C1 --> K2[Generate Classic shared secret - ss_classic]
-        K1 -- "Concatenate/KDF" --> SK1[Final Session Key (SK)]
+        K1 -- "Concatenate/KDF" --> SK1[Final Session Key SK]
         K2 -- "Concatenate/KDF" --> SK1
         S1 --> K3[Generate KEM shared secret - ss_PQC']
         S1 --> K4[Generate Classic shared secret - ss_classic']
-        K3 -- "Concatenate/KDF" --> SK2[Final Session Key (SK)]
+        K3 -- "Concatenate/KDF" --> SK2[Final Session Key SK]
         K4 -- "Concatenate/KDF" --> SK2
         SK1 == SK2
         SK1 -- "Used for AES-GCM (Bulk Data)" --> D[Secure Data Exchange]
