@@ -603,7 +603,6 @@ graph TD
         S1 --> K4[Generate Classic shared secret - ss_classic']
         K3 -- "Concatenate/KDF" --> SK2[Final Session Key SK]
         K4 -- "Concatenate/KDF" --> SK2
-        SK1 == SK2
         SK1 -- "Used for AES-GCM (Bulk Data)" --> D[Secure Data Exchange]
 
         subgraph Classical_KEM
