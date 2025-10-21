@@ -1,151 +1,47 @@
-```json
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": [
-      "ES2023",          // Leverage the absolute latest ECMAScript features for unparalleled modernity and future-proofing
-      "DOM",             // Comprehensive browser DOM APIs
-      "DOM.Iterable",    // Full support for iterable DOM types (e.g., NodeList)
-      "WebWorker",       // First-class support for Web Workers, enabling robust multi-threaded applications
-      "WebWorker.ImportScripts", // Specific Web Worker feature for dynamic script loading
-      "ScriptHost",      // Broad support for various scripting host environments
-      "SharedArrayBuffer" // For advanced concurrent memory access patterns
-    ],
-    "experimentalDecorators": true, // Maintained for robust compatibility with mature frameworks (e.g., Angular, MobX)
-    "useDefineForClassFields": true, // Adheres strictly to the ECMAScript standard for class field declarations, ensuring consistent behavior
-    "module": "ESNext",             // Targets the latest ES module syntax for optimal bundler performance and tree-shaking
-    "moduleResolution": "bundler",  // Employs the most advanced module resolution strategy for modern bundlers (Vite, Webpack, Rollup)
-    "moduleDetection": "force",     // Explicitly ensures all non-declaration files are treated as modules for consistent compilation
-    "isolatedModules": true,        // Critical for build tools that compile files individually (e.g., Babel, SWC, esbuild), enhancing build speed
-    "esModuleInterop": true,        // Enables seamless interoperability between ES modules and CommonJS modules, preventing common import issues
-    "allowSyntheticDefaultImports": true, // Allows default imports from modules that only have named exports, works harmoniously with esModuleInterop
-    "allowImportingTsExtensions": true,   // Permits explicit `.ts` extensions in import paths, vital for direct browser or bundler integration
-    "allowJs": true,                     // Enables the integration of existing JavaScript files into the TypeScript project, facilitating gradual migration
-    "checkJs": true,                     // Activates rigorous type checking for `.js` files, extending type safety across the entire mixed-language codebase
-
-    "jsx": "react-jsx", // Specifies the modern JSX transform for React 17+ projects, optimizing bundle size and reducing boilerplate
-    "types": [
-      "node",           // Comprehensive types for Node.js environments
-      "vite/client",    // Client-side types tailored for the Vite development environment
-      "vitest/globals", // Global types for the Vitest testing framework, ensuring full test coverage type safety
-      "react",          // Extensive and up-to-date React core types
-      "react-dom",      // Extensive and up-to-date ReactDOM types
-      "jest",           // For projects also using Jest, ensuring compatibility and type safety in tests
-      "cypress",        // Types for end-to-end testing with Cypress, for robust integration tests
-      "storybook__react", // Types for Storybook, for UI component development and documentation
-      "@testing-library/jest-dom", // Types for testing DOM elements with Jest-DOM matchers
-      "lodash"          // For projects utilizing the Lodash utility library
-    ],
-    "typeRoots": [      // Explicitly defines all directories where TypeScript should search for type definitions
-      "./node_modules/@types",
-      "./types",        // Designated directory for custom project-specific declaration files
-      "./src/@types",   // Another common location for internal project-specific types
-      "./declarations"  // Generic directory for additional declaration files
-    ],
-
-    /* Strictness Options - The Indispensable Foundation for Robust, Commercial-Grade Codebases */
-    "strict": true,                         // Activates ALL core strict type-checking options for uncompromised type safety
-    "noImplicitAny": true,                  // Absolutely enforces explicit type annotations wherever type inference cannot definitively determine a type
-    "strictNullChecks": true,               // Implements rigorous checks for null and undefined values, eradicating an entire class of runtime errors
-    "strictFunctionTypes": true,            // Applies stringent checking of function parameter types, ensuring argument compatibility
-    "strictPropertyInitialization": true,   // Guarantees that all non-null class properties are explicitly initialized in the constructor
-    "noImplicitThis": true,                 // Raises critical errors for 'this' expressions with an implicitly 'any' type, promoting explicit context
-    "alwaysStrict": true,                   // Ensures that all generated JavaScript files are strictly emitted in 'strict' mode
-    "exactOptionalPropertyTypes": true,     // Prevents assigning `undefined` to an optional property that expects only its declared type, for pinpoint accuracy
-    "noUncheckedIndexedAccess": true,       // Enforces highly stricter checks when accessing elements via index signatures, preventing potential runtime undefined access
-    "noPropertyAccessFromIndexSignature": true, // Provides warnings when attempting property access by name when only an index signature is defined, guiding correct usage
-
-    /* Code Quality and Maintainability Checks - Absolutely Crucial for Scalable Teams and Enduring Projects */
-    "noUnusedLocals": true,                 // Identifies and warns about any unused local variables, aiding in code cleanup and reducing bloat
-    "noUnusedParameters": true,             // Identifies and warns about any unused function parameters, promoting leaner function signatures
-    "noImplicitReturns": true,              // Ensures that all possible code paths within a function explicitly return a value, preventing silent undefined returns
-    "noFallthroughCasesInSwitch": true,     // Catches missing 'break' statements in switch cases, eliminating common logical errors
-    "forceConsistentCasingInFileNames": true, // Prevents frustrating OS-specific casing issues by enforcing consistent file naming across the entire project
-    "allowUnreachableCode": false,          // Disallows any code that can never be executed, indicating serious logical flaws or dead code
-    "allowUnusedLabels": false,             // Disallows unused labels, often a clear sign of legacy or erroneous code segments
-
-    /* Output and Declaration Configuration - Absolutely Vital for Publishable Packages, Libraries, and Efficient Builds */
-    "noEmit": true,                         // Instructs TypeScript to perform only comprehensive type checking without emitting any JavaScript files (delegated to bundler)
-    "declaration": true,                    // Generates `.d.ts` declaration files, which are absolutely essential for public APIs and distributable packages
-    "declarationMap": true,                 // Generates source maps for `.d.ts` files, significantly aiding in the debugging of type declarations
-    "sourceMap": true,                      // Generates corresponding `.map` files for emitted JavaScript, enabling deep debugging in browsers and debuggers
-    "importHelpers": true,                  // Imports helper functions (e.g., `__awaiter`, `__extends`) from 'tslib' instead of inlining them, dramatically reducing bundle size
-    "resolveJsonModule": true,              // Allows seamless importing of `.json` files as modules, complete with inferred type information
-    "downlevelIteration": true,             // Provides comprehensive and consistent support for iterables across various ECMAScript targets
-    "stripInternal": true,                  // Excludes declarations marked with `@internal` from emitted `.d.ts` files, cleaning up public API surfaces
-    "incremental": true,                    // Enables powerful incremental compilation for lightning-fast rebuilds on subsequent runs, boosting developer productivity
-    "tsBuildInfoFile": ".tsbuildinfo",      // Specifies the dedicated file for storing incremental build information, optimized for large projects
-
-    "baseUrl": ".",                         // Establishes the base directory for absolute module resolution, crucial for path aliases
-    "paths": {
-      "@/*": [
-        "./src/*"                           // Primary alias for the core source code directory, for cleaner imports
-      ],
-      "~/*": [
-        "./*"                               // Widely used alias for direct project root access, for versatile referencing
-      ],
-      "@app/*": [
-        "./src/app/*"                       // Specific alias for the main application core logic
-      ],
-      "@components/*": [
-        "./src/components/*"                // Specific alias for all reusable UI components
-      ],
-      "@services/*": [
-        "./src/services/*"                  // Specific alias for the entire service layer of the application
-      ],
-      "@utils/*": [
-        "./src/utils/*"                     // Specific alias for all utility functions and helpers
-      ],
-      "@config/*": [
-        "./src/config/*"                    // Specific alias for all application configuration files
-      ],
-      "@hooks/*": [
-        "./src/hooks/*"                     // Specific alias for all custom React hooks or similar logic
-      ],
-      "@contexts/*": [
-        "./src/contexts/*"                  // Specific alias for all React context providers
-      ],
-      "@assets/*": [
-        "./src/assets/*"                    // Specific alias for static assets like images, fonts
-      ]
-    },
-
-    /* Performance and Compatibility Optimizations - For a Smooth Development and Build Workflow */
-    "skipLibCheck": true,                   // Significantly speeds up compilation by skipping type checking of all declaration files (can be temporarily disabled for ultra-strict CI builds)
-    "allowUmdGlobalAccess": true            // Allows modules to gracefully access UMD global declarations, for broader library compatibility
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*.ts",                          // Recursively includes all TypeScript files within the src directory
-    "src/**/*.tsx",                         // Recursively includes all TSX (TypeScript React) files for UI components
-    "src/**/*.js",                          // Recursively includes all JavaScript files (for checkJs functionality)
-    "src/**/*.jsx",                         // Recursively includes all JSX (JavaScript React) files
-    "src/**/*.json",                        // Includes JSON files for module resolution and type inference
-    "src/**/*.d.ts",                        // Includes any project-specific declaration files located within src
-    "types/**/*.d.ts",                      // Includes all custom global declaration files in the dedicated types directory
-    "config/**/*.ts",                       // Includes configuration files written in TypeScript
-    "vitest.config.ts",                     // Includes configuration files for specific testing tools
-    "tailwind.config.ts",                   // Example: Includes configuration for styling frameworks
-    "postcss.config.js",                    // Example: Includes PostCSS configuration
-    "vite.config.ts",                       // Includes the main Vite build configuration file
-    "public/**/*.d.ts"                      // Includes declaration files that might be placed in the public directory
-  ],
   "exclude": [
-    "node_modules",                         // Excludes the entire node_modules directory to prevent unnecessary processing
-    "dist",                                 // Excludes the common compiled output directory
-    "build",                                // Excludes other common build output directories
-    "coverage",                             // Excludes test coverage reports and artifacts
-    "temp",                                 // Excludes any temporary files or directories
-    "**/*.spec.ts",                         // Excludes all unit test files following the .spec.ts pattern
-    "**/*.test.ts",                         // Excludes all unit test files following the .test.ts pattern
-    "**/*.e2e-spec.ts",                     // Excludes all end-to-end test files
-    "**/*.stories.ts",                      // Excludes Storybook stories files
-    "**/*.stories.tsx",                     // Excludes Storybook stories files
-    "**/*.story.ts",                        // Excludes Storybook stories files
-    "**/*.story.tsx",                       // Excludes Storybook stories files
-    "jest.config.ts",                       // Excludes specific test configuration files if not meant for direct TS compilation
-    "webpack.config.ts",                    // Excludes specific build configuration files
-    "**/__mocks__/**/*",                    // Excludes mock directories often used in testing
-    "**/__snapshots__/**/*"                 // Excludes snapshot test directories
+    "node_modules",
+    "dist",
+    "server",
+    "cobol",
+    "api",
+    "articles",
+    "blueprints",
+    "contracts",
+    "docs",
+    "domains",
+    "fabrication",
+    "genesis_expedition_details",
+    "implementation",
+    "introspection",
+    "inventions",
+    "linkedinArticles",
+    "marketing",
+    "mermaid",
+    "prototypes",
+    "screenplay",
+    "seasons",
+    "storybooks",
+    "The Laws",
+    "The Philosophy",
+    ".github",
+    "github"
   ]
 }
-```
