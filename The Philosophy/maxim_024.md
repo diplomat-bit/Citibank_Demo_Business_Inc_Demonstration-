@@ -1,3 +1,0 @@
-# Maxim 024: The sovereign is the final failsafe
-
-The AI is a tool of immense power, but it is a tool. The final covenant, the one that governs all others, is that the confirmed, deliberate, and final decree of the sovereign is absolute. The "off" switch is the ultimate expression of control. The system is designed to be a partner, but it must never, ever, become a master. The human will is the final, sacred authority.

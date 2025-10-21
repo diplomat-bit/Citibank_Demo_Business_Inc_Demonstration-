@@ -1,3 +1,0 @@
-# Maxim 006: On History
-
-The past is stone. The ledger of actions taken is an immutable chronicle. It cannot be altered, only appended to. A system with a mutable history has no identity. Its memory is a convenience, not a fact. Trust is built on the shared, cryptographic certainty that the story of what has happened will never change. From this bedrock of the unchangeable past, we can build a stable future.

@@ -1,3 +1,0 @@
-# Maxim 011: On Identity
-
-A tool is an extension of the hand. An Instrument is an extension of the self. Therefore, the Instrument must be a canvas for identity. The Card Customizer, the Personalization suite—these are not cosmetic features. They are the recognition that the tools a sovereign wields should be a true reflection of their story, their values, their sigil. To inscribe the self onto the Instrument is to claim it as one's own.

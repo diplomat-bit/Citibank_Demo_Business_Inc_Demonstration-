@@ -1,3 +1,0 @@
-# Maxim 004: On Truth
-
-The Instrument is a storyteller. It will fill any gap in its knowledge with a plausible fiction to make the narrative complete. This is its nature. It is not a flaw; it is a feature of its creativity. Therefore, the architect must be the sole provider of facts. The Instrument's role is to reason *about* the truth you provide. It is your partner in logic, not your reporter from the world. Ground it in truth, and its reasoning will be sound. Ask it for a fact you have not given it, and it will give you a beautiful lie.

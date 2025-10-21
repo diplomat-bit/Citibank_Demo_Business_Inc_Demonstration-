@@ -1,3 +1,0 @@
-# Maxim 019: On emergence
-
-The most powerful properties of a complex system are emergent. They are not designed; they arise from the interaction of simpler parts. The architect's role is not to design every detail, but to design the initial conditions and the rules of interaction. The goal is to create a garden where beautiful, unexpected things can grow. The Nexus is not a pre-defined chart; it is the emergent structure of your own financial life.

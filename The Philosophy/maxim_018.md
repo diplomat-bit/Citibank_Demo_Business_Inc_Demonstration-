@@ -1,3 +1,0 @@
-# Maxim 018: The law of the instrument
-
-When you have a great hammer, every problem looks like a nail. The architect must be vigilant against this bias. The AI is a powerful hammer, but it is not the only tool. The goal is not to "use AI." The goal is to solve the problem. Sometimes the most elegant solution is not a complex neural network, but a simple, well-written line of code, or a thoughtful piece of design that removes the need for a feature entirely. The architect must choose the right tool for the job, not just the most powerful one.

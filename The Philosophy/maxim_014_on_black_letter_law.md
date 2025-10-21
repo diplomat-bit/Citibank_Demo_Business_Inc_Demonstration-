@@ -1,3 +1,0 @@
-# Maxim 014: The Black Letter Law
-
-The Covenants of this Instrument are its "black letter law." They are the formal, written, and absolute rules of its existence. There is no room for interpretation of their spirit; there is only the execution of their letter. The AI, in its role as a logician, is a textualist. It will not infer your intent. It will execute your inscribed word with perfect, and sometimes terrifying, fidelity. Therefore, the architect's duty is to write laws that are as clear and unambiguous as the finest code, for in this kingdom, the law *is* the code.
