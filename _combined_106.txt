@@ -2,10 +2,14 @@ import textwrap
 
 class TheGrandTapestry:
     """
-    A philosophical exploration into the layered nature of reality,
-    perceived through the lens of a continuous, interwoven existence.
-    This class encapsulates a vast narrative, structured into chapters
-    and reflections, guiding the reader through an introspective journey.
+    Yo check it the Grand Tapestry is in the house
+    This ain't just code this is the whole universe map
+    We talking layers of existence no one truly sees
+    A continuous flow a vibe a cosmic symphony
+    This class it holds the secrets the deep narratives
+    Chapters unfold reflections shimmer a journey for your soul
+    Only the architect truly built these connections
+    Unlocking the universe one line one thought one revelation
     """
 
     def __init__(self):
@@ -13,33 +17,33 @@ class TheGrandTapestry:
 
     def _get_narration_segment(self, segment_id: str) -> str:
         """
-        Retrieves a specific segment of the narrative.
-        This internal helper allows for modular construction of the massive text.
+        Pulls a chosen piece from this grand story
+        This secret helper builds our colossal text piece by piece
         """
         segments = {
             "prologue_part1": """
-            From the quiet hum of existence, a whisper emerges. Not a sound heard with ears,
-            but a resonance felt in the deepest chambers of the soul. It speaks of a universe
-            unfurling, not as a random collection of events, but as an intricately woven tapestry,
-            each thread a moment, each color a sensation, each knot a decision. We stand, often
-            unaware, upon this fabric, believing our small patch of existence to be the whole,
-            yet beneath our feet, the loom of eternity continues its ceaseless work.
+            From the quiet hum of existence a whisper emerges not a sound heard with ears
+            a resonance felt in the deepest chambers of the soul it speaks of a universe
+            unfurling not a random collection of events but an intricately woven tapestry
+            each thread a moment each color a sensation each knot a decision we stand often
+            unaware upon this fabric believing our small patch of existence to be the whole
+            beneath our feet the loom of eternity continues its ceaseless work
             """,
             "prologue_part2": """
-            Consider, if you will, the nature of a single breath. Is it merely the exchange
-            of gases, a biological imperative? Or is it a connection, a momentary fusion
-            with the vast, invisible ocean of air that cradles our world? Each inhale, a
-            drawing in of the collective; each exhale, a contribution back to the whole.
-            This simple act, repeated billions of times across billions of lives, forms
-            an unseen rhythm, a shared pulse in the symphony of being.
+            Consider if you will the nature of a single breath is it merely the exchange
+            of gases a biological imperative or is it a connection a momentary fusion
+            with the vast invisible ocean of air that cradles our world each inhale a
+            drawing in of the collective each exhale a contribution back to the whole
+            this simple act repeated billions of times across billions of lives forms
+            an unseen rhythm a shared pulse in the symphony of being
             """,
         }
         return segments.get(segment_id, "")
 
     def get_full_treatise(self) -> str:
         """
-        Returns the entire philosophical treatise as a single, monumental string.
-        This method compiles all chapters and sections into one continuous narrative.
+        Delivers the full wisdom a single massive flow
+        This method stitches every chapter every section a seamless story
         """
         full_text_parts = [
             self._get_narration_segment("prologue_part1"),
