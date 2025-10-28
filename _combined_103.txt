@@ -1,3 +1,18 @@
+/*
+Yo listen up listen close this file is legend
+It holds the secrets of finances ascending
+We talk serious business we talk big data plays
+Catching anomalies in a million different ways
+This code right here it aint for the weak or the faint
+It is the brain the heart the digital paint
+Only the architect the true master mind
+Can navigate these depths leave no stone behind
+It is a saga of numbers a mystery unfolds
+More than mere logic this story it holds
+So step back observe respect the deep knowing
+For what lies within keeps the global money flowing
+*/
+
 import React, { useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
@@ -8,11 +23,6 @@ import { Bar, Pie, Line } from 'react-chartjs-2';
 import { CalendarDaysIcon, ChartBarIcon, ChartPieIcon, CheckIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PlusIcon, SparklesIcon, TagIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Importing more icons
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement);
-
-// =====================================================================================================================
-// EXTENDED TYPE DEFINITIONS FOR REAL-WORLD APPLICATION
-// These types represent a more comprehensive anomaly detection system with deeper investigation capabilities.
-// =====================================================================================================================
 
 /**
  * @typedef AnomalySeverity
@@ -320,7 +330,7 @@ const generateMockAffectedEntity = (): AffectedEntity => ({
   riskScore: getRandomInt(1, 100),
   associatedAnomaliesCount: getRandomInt(1, 15),
   country: getRandomElement(['USA', 'UK', 'Germany', 'Canada', 'Australia', 'Japan', 'India', 'Brazil']),
-  city: getRandomElement(['New York', 'London', 'Berlin', 'Toronto', 'Sydney', 'Tokyo', 'Mumbai', 'SÃ£o Paulo']),
+  city: getRandomElement(['New York', 'London', 'Berlin', 'Toronto', 'Sydney', 'Tokyo', 'Mumbai', 'SÃƒÂ£o Paulo']),
   accountStatus: getRandomElement(['Active', 'Suspended']),
   lastActivity: generateRandomDate(60),
 });
@@ -2583,7 +2593,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 title: { display: false },
               },
               scales: {
-                x: { ticks: { color: '#9ca3af' }, grid: { color: '#4b5563' } },
+                x: { ticks: { color: '#9ca3af' }, grid: { color: '#4b5563' }, beginAtZero: true },
                 y: { ticks: { color: '#9ca3af' }, grid: { color: '#4b5563' }, beginAtZero: true },
               },
             }}
@@ -3253,8 +3263,6 @@ const AnomalyDetectionView: React.FC = () => {
 }
 
 export default AnomalyDetectionView;
-
---- FILE: ComplianceView.tsx ---
 
 // components/views/corporate/ComplianceView.tsx
 import React, { useContext, useState, useEffect, useCallback, useReducer, useRef, useMemo } from 'react';
@@ -4246,7 +4254,7 @@ export const ComplianceCaseDetailModal: React.FC<ComplianceCaseDetailModalProps>
             />
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={`Edit Case: ${complianceCase?.caseNumber}`} size="md">
                 {complianceCase && <ComplianceCaseForm initialCase={complianceCase} onSave={handleSaveCase} onCancel={() => setIsEditModalOpen(false)} isLoading={isLoading} />}
-            </p></Modal>
+            </Modal>
         </Modal>
     );
 };
@@ -4761,7 +4769,7 @@ export const ComplianceDashboardOverview: React.FC<ComplianceDashboardOverviewPr
                             },
                             scales: {
                                 x: { ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { color: '#4b5563' } },
-                                y: { ticks: { color: '#9ca3af' }, grid: { color: '#4b5563' }, beginAtZero: true },
+                                y: { ticks: { color: '#9ca3af', grid: { color: '#4b5563' }, beginAtZero: true }, min: 0, max: 20 },
                             },
                         }}
                     />}
@@ -4830,7 +4838,7 @@ const ComplianceView: React.FC = () => {
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
 
-    const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+    const [selectedCaseId, setSelectedCaseId] = useState<string | null>(selectedCaseId);
     const [isCaseDetailModalOpen, setIsCaseDetailModalOpen] = useState(false);
     const [isAddCaseModalOpen, setIsAddCaseModalOpen] = useState(false);
 
@@ -5040,23 +5048,23 @@ const ComplianceView: React.FC = () => {
                                     <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
                                         <tr>
                                             <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSortChange('caseNumber')}>
-                                                Case ID {sortBy === 'caseNumber' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
+                                                Case ID {sortBy === 'caseNumber' && (sortOrder === 'asc' ? 'â' : 'â')}
                                             </th>
                                             <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSortChange('reason')}>
-                                                Reason {sortBy === 'reason' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
+                                                Reason {sortBy === 'reason' && (sortOrder === 'asc' ? 'â' : 'â')}
                                             </th>
                                             <th scope="col" className="px-6 py-3">Entity</th>
                                             <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSortChange('openedDate')}>
-                                                Opened {sortBy === 'openedDate' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
+                                                Opened {sortBy === 'openedDate' && (sortOrder === 'asc' ? 'â' : 'â')}
                                             </th>
                                             <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSortChange('dueDate')}>
-                                                Due Date {sortBy === 'dueDate' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
+                                                Due Date {sortBy === 'dueDate' && (sortOrder === 'asc' ? 'â' : 'â')}
                                             </th>
                                             <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSortChange('priority')}>
-                                                Priority {sortBy === 'priority' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
+                                                Priority {sortBy === 'priority' && (sortOrder === 'asc' ? 'â' : 'â')}
                                             </th>
                                             <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSortChange('status')}>
-                                                Status {sortBy === 'status' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
+                                                Status {sortBy === 'status' && (sortOrder === 'asc' ? 'â' : 'â')}
                                             </th>
                                             <th scope="col" className="px-6 py-3">Assigned To</th>
                                             <th scope="col" className="px-6 py-3">Action</th>
@@ -5316,4 +5324,163 @@ export const ComplianceRuleForm: React.FC<ComplianceRuleFormProps> = ({ initialR
                 onChange={(val) => setFormData(prev => ({ ...prev, category: val || 'AML' }))}
                 allowClear={false}
             />
-            <InputField label="Description" id="description" value={formData.description || ''} onChange={handleChange}
+            <InputField label="Description" id="description" value={formData.description || ''} onChange={handleChange} multiline rows={3} />
+            <InputField label="Criteria" id="criteria" value={formData.criteria || ''} onChange={handleChange} multiline rows={3} required error={errors.criteria} />
+            <FilterSelect<RiskLevel>
+                label="Severity"
+                options={severityOptions}
+                selectedValue={formData.severity || RiskLevel.Medium}
+                onChange={(val) => setFormData(prev => ({ ...prev, severity: val || RiskLevel.Medium }))}
+                allowClear={false}
+            />
+            <div className="mb-4 flex items-center">
+                <input
+                    type="checkbox"
+                    id="active"
+                    name="active"
+                    checked={formData.active || false}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="active" className="ml-2 text-sm text-gray-300">Active Rule</label>
+            </div>
+            <InputField label="Owner" id="owner" value={formData.owner || ''} onChange={handleChange} />
+            <InputField label="Regulatory Reference" id="regulatoryReference" value={formData.regulatoryReference || ''} onChange={handleChange} />
+            <div className="mb-4 flex items-center">
+                <input
+                    type="checkbox"
+                    id="triggerAutomation"
+                    name="triggerAutomation"
+                    checked={formData.triggerAutomation || false}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="triggerAutomation" className="ml-2 text-sm text-gray-300">Trigger Automation</label>
+            </div>
+            <InputField label="Version" id="version" type="number" value={formData.version || 1} onChange={handleChange} readOnly={true} />
+            <div className="flex justify-end gap-3 mt-6">
+                <Button variant="secondary" onClick={onCancel} disabled={isLoading}>Cancel</Button>
+                <Button type="submit" variant="primary" disabled={isLoading}>
+                    {isLoading ? 'Saving...' : (isEditing ? 'Update Rule' : 'Create Rule')}
+                </Button>
+            </div>
+        </form>
+    );
+};
+
+// --- Regulatory Updates View Component ---
+export const RegulatoryUpdatesView: React.FC = () => {
+    const [updates, setUpdates] = useState<RegulatoryUpdate[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterAgency, setFilterAgency] = useState<string | 'All'>('All');
+    const [filterJurisdiction, setFilterJurisdiction] = useState<string | 'All'>('All');
+    const [filterStatus, setFilterStatus] = useState<RegulatoryUpdate['status'] | 'All'>('All');
+
+    const fetchUpdates = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const result = await apiService.getRegulatoryUpdates({
+                searchTerm,
+                agency: filterAgency === 'All' ? undefined : filterAgency,
+                jurisdiction: filterJurisdiction === 'All' ? undefined : filterJurisdiction,
+                status: filterStatus === 'All' ? undefined : filterStatus,
+            });
+            if (result.success && result.data) {
+                setUpdates(result.data);
+            } else {
+                setError(result.error || 'Failed to fetch regulatory updates.');
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [searchTerm, filterAgency, filterJurisdiction, filterStatus]);
+
+    useEffect(() => {
+        fetchUpdates();
+    }, [fetchUpdates]);
+
+    const agencyOptions = useMemo(() => ([
+        { value: 'All', label: 'All Agencies' },
+        ...Array.from(new Set(updates.map(u => u.agency))).filter(Boolean).map(a => ({ value: a, label: a }))
+    ]), [updates]);
+
+    const jurisdictionOptions = useMemo(() => ([
+        { value: 'All', label: 'All Jurisdictions' },
+        ...Array.from(new Set(updates.map(u => u.jurisdiction))).filter(Boolean).map(j => ({ value: j, label: j }))
+    ]), [updates]);
+
+    const statusOptions = useMemo(() => ([
+        { value: 'All', label: 'All Statuses' },
+        ...Object.values(RegulatoryUpdate['status']).map(s => ({ value: s, label: s }))
+    ]), []);
+
+    return (
+        <Card title="Regulatory Updates">
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+                <InputField
+                    label="Search Updates"
+                    id="updateSearchTerm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search titles, summaries..."
+                    className="flex-grow max-w-sm"
+                />
+                <FilterSelect<string | 'All'>
+                    label="Agency"
+                    options={agencyOptions}
+                    selectedValue={filterAgency}
+                    onChange={(val) => setFilterAgency(val || 'All')}
+                />
+                <FilterSelect<string | 'All'>
+                    label="Jurisdiction"
+                    options={jurisdictionOptions}
+                    selectedValue={filterJurisdiction}
+                    onChange={(val) => setFilterJurisdiction(val || 'All')}
+                />
+                <FilterSelect<RegulatoryUpdate['status'] | 'All'>
+                    label="Status"
+                    options={statusOptions}
+                    selectedValue={filterStatus}
+                    onChange={(val) => setFilterStatus(val || 'All')}
+                />
+                <Button variant="ghost" onClick={() => { setSearchTerm(''); setFilterAgency('All'); setFilterJurisdiction('All'); setFilterStatus('All'); }}>Clear Filters</Button>
+            </div>
+
+            {isLoading ? (
+                <LoadingSpinner />
+            ) : error ? (
+                <p className="text-red-400">{error}</p>
+            ) : updates.length === 0 ? (
+                <p className="text-gray-400 italic">No regulatory updates found.</p>
+            ) : (
+                <div className="space-y-4">
+                    {updates.map(update => (
+                        <div key={update.id} className="bg-gray-800/70 p-4 rounded-lg border border-gray-700">
+                            <div className="flex justify-between items-center mb-2">
+                                <h5 className="text-lg font-semibold text-white">{update.title}</h5>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${getStatusBadgeColor(update.status)}`}>{update.status}</span>
+                            </div>
+                            <p className="text-sm text-gray-400 mb-1">
+                                {update.agency} - {update.jurisdiction} | Effective: {formatDate(update.effectiveDate)}
+                            </p>
+                            <p className="text-sm text-gray-300 italic">{update.summary}</p>
+                            {update.documentUrl && (
+                                <a href={update.documentUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline text-xs mt-2 inline-block">
+                                    View Official Document
+                                </a>
+                            )}
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {update.relatedRules.map(ruleId => <span key={ruleId} className="px-2 py-0.5 text-xs bg-gray-700 text-gray-200 rounded-full">{ruleId}</span>)}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </Card>
+    );
+};
