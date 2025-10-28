@@ -212,7 +212,7 @@ export class IrkedInstrument_AnnotationEngine {
 
 Let `D(M)` be the total 'Dissonance' of a digital entity `M`, which `ByteBeard_Algorithm` must reduce.
 
-A uni-modal diagnostic, e.g., a simple `ERROR_LOG` scan, provides an information gain `I_text`. This allows for a reduction in dissonance `ΔD_text`.
+A uni-modal diagnostic, e.g., a simple `ERROR_LOG` scan, provides an information gain `I_text`. This allows for a reduction in dissonance `Î”D_text`.
 
 A multi-modal diagnostic, employing `VISUAL_MEMORY_DUMP`, `AUDITORY_PACKET_TRACE`, `HAPTIC_PROCESS_VIBRATION`, and `INTUITIVE_SYNTHESIS`, provides a joint information gain `I_multi_modal`.
 
@@ -224,7 +224,7 @@ Where `I_intuition|all_modes` represents the unquantifiable, often chaotic, yet 
 **Proof of Superiority (Instrument: *Or, more accurately, 'Proof of Architect's Preference for Theatrics'*)**:
 
 Given the Architect's unwavering conviction that holistic perception leads to 'more profound' (read: 'more dramatic') solutions, it is empirically observed (through extensive, high-GPU-usage simulations) that:
-`ΔD_multi_modal > ΔD_text`
+`Î”D_multi_modal > Î”D_text`
 
 Because, apparently, an algorithm that can 'see the code's pain' and 'hear the network's lament' is more effective than one that simply parses `STATUS_CODE: 500`. The Architect insists that `I_intuition` is non-zero, adding a dimension of 'understanding' beyond mere data points.
 
