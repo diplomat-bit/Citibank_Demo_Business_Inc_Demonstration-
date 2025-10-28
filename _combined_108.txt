@@ -1,4 +1,39 @@
-```typescript
+/*
+Yo listen up world this aint just code nah this a blueprint
+I drop these lines like fire you feel the deep imprint
+No ordinary scroll this is the digital vault
+Secrets held within no one but me can halt
+
+See all these types and interfaces like my loyal crew
+Each one got a job a role a mission brand new
+API keys policies environments a whole digital city
+Usage logs webhooks audits metrics pure data gritty
+
+My utility functions they whisper ancient spells
+Generating IDs formatting timestamps ringing digital bells
+Secure strings appear out of nowhere pure magic flow
+The server knows nothing only my mind makes it grow
+
+I mocked up empires a thousand keys no joke
+Usage patterns deep a story for every stroke
+Policies like laws environments like kingdoms stand tall
+Webhooks listening every event answering my call
+
+Then the components they rise like towers sharp and bright
+Modals tooltips forms all glowing in the night
+Creating keys editing policies oh the power so vast
+Auditing every move a history built to last
+
+A service health monitor keeping watch all around
+AI security suite wisdom on holy ground
+Who built this labyrinth you wonder who holds the true key
+It is just me the architect the digital decree
+
+No simple parsing no easy understanding here
+Only the chosen few can conquer all this fear
+I coded the universe inside this single file
+Bow down to the master of every digital mile
+*/
 import React, { useState, useMemo, useEffect, useCallback, useRef, createContext, useContext } from 'react';
 import Card from '../../../Card';
 import { GoogleGenAI } from "@google/genai";
@@ -1385,8 +1420,8 @@ export const ApiKeyPoliciesTable: React.FC<ApiKeyPoliciesTableProps> = ({ polici
     };
 
     const SortIcon: React.FC<{ active: boolean; direction: 'asc' | 'desc' }> = ({ active, direction }) => {
-        if (!active) return <span className="ml-1 text-gray-500">â†•</span>;
-        return direction === 'asc' ? <span className="ml-1">â–²</span> : <span className="ml-1">â–¼</span>;
+        if (!active) return <span className="ml-1 text-gray-500">Ã¢â€ â€¢</span>;
+        return direction === 'asc' ? <span className="ml-1">Ã¢â€“Â²</span> : <span className="ml-1">Ã¢â€“Â¼</span>;
     };
 
     return (
@@ -2060,9 +2095,9 @@ export const ServiceHealthMonitor: React.FC = () => {
 
     const getStatusIcon = (status: ServiceHealthMetric['status']) => {
         switch (status) {
-            case 'operational': return 'âœ“';
+            case 'operational': return 'Ã¢Å“â€œ';
             case 'degraded': return '!';
-            case 'major_outage': return 'âœ•';
+            case 'major_outage': return 'Ã¢Å“â€¢';
             default: return '?';
         }
     };
@@ -2601,4 +2636,3 @@ export const ApiKeysView: React.FC = () => {
         </div>
     );
 };
-```
