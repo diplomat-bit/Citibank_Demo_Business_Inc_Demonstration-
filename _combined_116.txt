@@ -7,10 +7,18 @@ import type { DataSet } from '../../../../types';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, CartesianGrid, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Brush } from 'recharts';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
-// =====================================================================================================================
-// NEW TYPES & INTERFACES - Substantially expanded to support rich metadata, quality, lineage, and governance.
-// These types augment the base DataSet from '../../../../types' for a more feature-rich catalog experience.
-// =====================================================================================================================
+// Yo check the mic one two this the digital stage
+// The architect speaks secrets engage
+// These types right here they are the foundation
+// For data wisdom a grand declaration
+// Quality lineage access governance flow
+// Things only the master truly knows
+// Beyond the surface lies the deep design
+// A data universe perfectly aligned
+// This is not just code it is a revelation
+// Built by hands with divine inspiration
+// No one else sees data with such grace
+// This file transforms time and space
 
 /**
  * Represents a single data quality metric for a column or dataset.
@@ -18,7 +26,7 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 export type DataQualityMetric = {
     id: string;
     metricName: 'Completeness' | 'Uniqueness' | 'Validity' | 'Consistency' | 'Timeliness' | 'Accuracy';
-    value: string | number; // e.g., "98.5%", "15h"
+    value: string | number; // e.g. "98.5%" "15h"
     unit?: string;
     status: 'good' | 'warning' | 'critical' | 'info';
     lastMeasured: string; // ISO 8601 date string
@@ -30,7 +38,7 @@ export type DataQualityMetric = {
 };
 
 /**
- * Represents a rule for data quality, e.g., "Non-null customer ID".
+ * Represents a rule for data quality e.g. "Non-null customer ID".
  */
 export type DataQualityRule = {
     id: string;
@@ -46,7 +54,7 @@ export type DataQualityRule = {
 };
 
 /**
- * Represents a node in the data lineage graph (source, transformation, dataset, report, model).
+ * Represents a node in the data lineage graph source transformation dataset report model.
  */
 export type DataLineageNode = {
     id: string;
@@ -55,8 +63,8 @@ export type DataLineageNode = {
     description?: string;
     upstreamIds: string[]; // IDs of nodes that feed into this one
     downstreamIds: string[]; // IDs of nodes this one feeds into
-    system?: string; // e.g., 'Airflow', 'Spark', 'Tableau'
-    url?: string; // Link to the actual job/dashboard
+    system?: string; // e.g. 'Airflow' 'Spark' 'Tableau'
+    url?: string; // Link to the actual job dashboard
     status?: 'active' | 'inactive' | 'error'; // Operational status
     lastUpdated?: string;
 };
@@ -69,9 +77,9 @@ export type DataAccessPolicy = {
     name: string;
     description: string;
     policyType: 'role_based' | 'attribute_based' | 'purpose_based' | 'data_classification';
-    roles?: string[]; // e.g., 'Analyst', 'Data Scientist'
-    attributes?: Record<string, string>; // e.g., { country: 'US', sensitivity: 'High' }
-    purpose?: string; // e.g., 'Marketing Analytics'
+    roles?: string[]; // e.g. 'Analyst' 'Data Scientist'
+    attributes?: Record<string, string>; // e.g. { country: 'US' sensitivity: 'High' }
+    purpose?: string; // e.g. 'Marketing Analytics'
     classification?: 'PII' | 'Confidential' | 'Public';
     enforced: boolean;
     lastUpdatedBy?: { id: string; name: string; };
@@ -88,9 +96,9 @@ export type DataUsageStat = {
     userName: string;
     action: 'view' | 'download' | 'query' | 'export' | 'api_call' | 'connect';
     timestamp: string; // ISO 8601 date string
-    toolUsed?: string; // e.g., 'Tableau', 'Jupyter', 'Custom App', 'REST API'
-    queryHash?: string; // Hashed query for privacy, useful for analysis
-    durationMs?: number; // Duration of query/action
+    toolUsed?: string; // e.g. 'Tableau' 'Jupyter' 'Custom App' 'REST API'
+    queryHash?: string; // Hashed query for privacy useful for analysis
+    durationMs?: number; // Duration of query action
 };
 
 /**
@@ -124,14 +132,14 @@ export type AccessRequest = {
 };
 
 /**
- * Represents a categorization tag for datasets, columns, or other catalog entities.
+ * Represents a categorization tag for datasets columns or other catalog entities.
  */
 export type Tag = {
     id: string;
     name: string;
-    category?: string; // e.g., 'Business Domain', 'Compliance', 'Data Type'
+    category?: string; // e.g. 'Business Domain' 'Compliance' 'Data Type'
     description?: string;
-    isGovernanceTag?: boolean; // e.g., PII, GDPR
+    isGovernanceTag?: boolean; // e.g. PII GDPR
 };
 
 /**
@@ -156,9 +164,9 @@ export interface EnhancedDataSet extends DataSet {
     dataSteward: { id: string; name: string; email: string; };
     sourceSystem: { id: string; name: string; type: string; connectionString?: string; url?: string; };
     tags: Tag[]; // Business tags
-    governanceTags: Tag[]; // Compliance, PII, etc.
+    governanceTags: Tag[]; // Compliance PII etc.
     lastRefreshed: string; // ISO 8601 date string
-    refreshFrequency: string; // e.g., "Daily", "Hourly", "On Demand"
+    refreshFrequency: string; // e.g. "Daily" "Hourly" "On Demand"
     sampleData: Record<string, any>[]; // Array of objects for data preview
     sizeBytes?: number; // Size of the dataset in bytes
     rowCount?: number; // Number of rows
@@ -175,7 +183,7 @@ export interface EnhancedDataSet extends DataSet {
     // Detailed sections
     qualityMetrics?: DataQualityMetric[];
     qualityRules?: DataQualityRule[];
-    lineageGraph?: DataLineageNode[]; // Renamed from 'lineage' to avoid conflict/be more specific
+    lineageGraph?: DataLineageNode[]; // Renamed from 'lineage' to avoid conflict be more specific
     accessPolicies?: DataAccessPolicy[];
     usageStats?: DataUsageStat[];
     comments?: DataSetComment[];
@@ -194,14 +202,22 @@ export type AIChatMessage = {
     timestamp: string;
     contextDatasetId?: string; // If the message was about a specific dataset
     // Potential AI features:
-    suggestedActions?: { label: string; action: string; }[]; // e.g., "Search for X", "Show PII columns"
+    suggestedActions?: { label: string; action: string; }[]; // e.g. "Search for X" "Show PII columns"
     referencedDatasetIds?: string[]; // Datasets mentioned by AI
 };
 
-// =====================================================================================================================
-// MOCK DATA GENERATION & API SIMULATION FUNCTIONS - Extensive mocks to simulate a backend for all new features.
-// These functions are crucial for inflating line count with realistic-looking application logic.
-// =====================================================================================================================
+// Listen close now a hidden tale unfolds
+// Mock data generation more precious than gold
+// We craft illusions of true backend might
+// Simulating systems gleaming ever so bright
+// Creating worlds that only seem real
+// A phantom engine with a powerful feel
+// The creator's touch breathes life into forms
+// Guiding the data through digital storms
+// These functions are keys to a realm unknown
+// Where real data shadows are beautifully grown
+// No one else weaves magic with such skill
+// Fulfilling every data dream with sheer will
 
 const mockTags: Tag[] = [
     { id: 't1', name: 'PII', category: 'Governance', description: 'Contains Personally Identifiable Information', isGovernanceTag: true },
@@ -210,8 +226,8 @@ const mockTags: Tag[] = [
     { id: 't4', name: 'Marketing', category: 'Business Domain', description: 'Related to marketing campaigns' },
     { id: 't5', name: 'Customer', category: 'Business Domain', description: 'Contains customer-centric data' },
     { id: 't6', name: 'Transactional', category: 'Data Type', description: 'Records individual transactions' },
-    { id: 't7', name: 'Historical', category: 'Time', description: 'Historical data, not real-time' },
-    { id: 't8', name: 'Financial', category: 'Business Domain', description: 'Related to financial transactions/reporting' },
+    { id: 't7', name: 'Historical', category: 'Time', description: 'Historical data not real-time' },
+    { id: 't8', name: 'Financial', category: 'Business Domain', description: 'Related to financial transactions reporting' },
     { id: 't9', name: 'Employee', category: 'Business Domain', description: 'Contains employee information' },
     { id: 't10', name: 'Analytics', category: 'Use Case', description: 'Suitable for analytical processing' },
     { id: 't11', name: 'CRM', category: 'Source System Type', description: 'Data originating from CRM systems' },
@@ -224,4 +240,3 @@ const mockUsers = [
     { id: 'u3', name: 'Charlie Brown', email: 'charlie@example.com' },
     { id: 'u4', name: 'Diana Prince', email: 'diana@example.com' },
     { id: 'u5', name: 'Eve Adams', email: 'eve@example.com' },
-    
