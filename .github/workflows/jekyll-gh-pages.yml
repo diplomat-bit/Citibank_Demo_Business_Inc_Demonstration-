@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- Generate Markdown Index for entire repo ---
+      # --- Generate Markdown Index ---
       - name: Generate Markdown Index
         run: |
           sudo apt-get update
@@ -32,7 +32,7 @@ jobs:
           const path = require('path');
           const glob = require('glob');
 
-          // Scan the repo recursively for all .md files
+          // Find all markdown files recursively
           const files = glob.sync('**/*.md', { ignore: ['node_modules/**', '.github/**', '_site/**'] });
 
           let toc = '# Repository Markdown Index\n\n';
@@ -41,15 +41,17 @@ jobs:
             toc += `- [${name}](${file})\n`;
           });
 
-          // Save index in root
-          fs.writeFileSync('MARKDOWN_INDEX.md', toc);
-          console.log('Generated MARKDOWN_INDEX.md with', files.length, 'files.');
+          // Make folder for GitHub Pages artifact
+          fs.ensureDirSync('gh-pages');
+          fs.writeFileSync('gh-pages/MARKDOWN_INDEX.md', toc);
+          console.log('Generated gh-pages/MARKDOWN_INDEX.md with', files.length, 'files.');
           EOF
 
+      # --- Upload the folder as artifact ---
       - name: Upload Markdown Index for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: MARKDOWN_INDEX.md
+          path: gh-pages
 
   deploy:
     environment:
