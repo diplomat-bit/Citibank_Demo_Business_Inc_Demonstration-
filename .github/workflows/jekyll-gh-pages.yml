@@ -1,4 +1,4 @@
-name: Deploy Jekyll with Full Markdown Index
+name: Generate and Deploy Markdown Index
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "markdown-index"
   cancel-in-progress: false
 
 jobs:
@@ -20,9 +20,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
 
       # --- Generate Markdown Index for entire repo ---
       - name: Generate Markdown Index
@@ -35,28 +32,24 @@ jobs:
           const path = require('path');
           const glob = require('glob');
 
-          // Scan the entire repo recursively for .md files
+          // Scan the repo recursively for all .md files
           const files = glob.sync('**/*.md', { ignore: ['node_modules/**', '.github/**', '_site/**'] });
 
-          let toc = '# Full Repository Markdown Index\n\n';
+          let toc = '# Repository Markdown Index\n\n';
           files.forEach(file => {
             const name = path.basename(file, '.md');
-            toc += `- [${name}](/${file})\n`;
+            toc += `- [${name}](${file})\n`;
           });
 
-          // Save as a Jekyll page in repo root
+          // Save index in root
           fs.writeFileSync('MARKDOWN_INDEX.md', toc);
           console.log('Generated MARKDOWN_INDEX.md with', files.length, 'files.');
           EOF
 
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./
-          destination: ./_site
-
-      - name: Upload artifact
+      - name: Upload Markdown Index for GitHub Pages
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: MARKDOWN_INDEX.md
 
   deploy:
     environment:
@@ -65,6 +58,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy Markdown Index to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
