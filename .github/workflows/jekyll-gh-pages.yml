@@ -1,0 +1,72 @@
+# Sample workflow for building and deploying a Jekyll site to GitHub Pages
+name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # --- NEW STEP: Generate Markdown Index ---
+      - name: Generate Markdown Index
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nodejs npm
+          npm install fs-extra glob
+          node <<'EOF'
+          const fs = require('fs-extra');
+          const path = require('path');
+          const glob = require('glob');
+
+          // Find all markdown files recursively, ignoring node_modules and .github
+          const files = glob.sync('**/*.md', { ignore: ['node_modules/**', '.github/**'] });
+
+          // Build Table of Contents
+          let toc = '# Project Markdown Index\n\n';
+          files.forEach(file => {
+            const name = path.basename(file, '.md');
+            toc += `- [${name}](${file})\n`;
+          });
+
+          // Save index to project root
+          fs.writeFileSync('MARKDOWN_INDEX.md', toc);
+          console.log('Generated MARKDOWN_INDEX.md with', files.length, 'files.');
+          EOF
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
