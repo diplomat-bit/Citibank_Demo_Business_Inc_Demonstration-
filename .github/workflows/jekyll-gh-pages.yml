@@ -1,5 +1,4 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+name: Deploy Jekyll with Full Markdown Index
 
 on:
   push:
@@ -25,7 +24,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # --- NEW STEP: Generate Markdown Index ---
+      # --- Generate Markdown Index for entire repo ---
       - name: Generate Markdown Index
         run: |
           sudo apt-get update
@@ -36,17 +35,16 @@ jobs:
           const path = require('path');
           const glob = require('glob');
 
-          // Find all markdown files recursively, ignoring node_modules and .github
-          const files = glob.sync('**/*.md', { ignore: ['node_modules/**', '.github/**'] });
+          // Scan the entire repo recursively for .md files
+          const files = glob.sync('**/*.md', { ignore: ['node_modules/**', '.github/**', '_site/**'] });
 
-          // Build Table of Contents
-          let toc = '# Project Markdown Index\n\n';
+          let toc = '# Full Repository Markdown Index\n\n';
           files.forEach(file => {
             const name = path.basename(file, '.md');
-            toc += `- [${name}](${file})\n`;
+            toc += `- [${name}](/${file})\n`;
           });
 
-          // Save index to project root
+          // Save as a Jekyll page in repo root
           fs.writeFileSync('MARKDOWN_INDEX.md', toc);
           console.log('Generated MARKDOWN_INDEX.md with', files.length, 'files.');
           EOF
