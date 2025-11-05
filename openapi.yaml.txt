@@ -4290,22 +4290,3 @@ components:
           example: {"address": "123 Main St", "city": "Anytown"}
         userConsent: {type: boolean, default: true}
 
-# Schemas for "Enterprise Risk & Fraud Prevention"
-    EnterpriseRiskAlert:
-      type: object
-      properties:
-        id: {type: string, example: "risk_alert_system_001"}
-        title: {type: string, example: "Potential Systemic Payment Anomaly"}
-        description: {type: string, example: "AI has detected an unusual surge in payment failures across a specific vendor category, potentially indicating a wider issue."}
-        severity: {type: string, enum: [Low, Medium, High, Critical], example: "High"}
-        category: {type: string, enum: [systemic_fraud, operational_risk, compliance_breach, market_risk], example: "operational_risk"}
-        timestamp: {type: string, format: date-time, example: "2024-07-21T17:00:00Z"}
-        status: {type: string, enum: [new, acknowledged, mitigated, resolved], example: "new"}
-        relatedEntities:
-          type: array
-          items:
-            type: object
-            properties:
-              type: {type: string, example: "Vendor"}
-              id: {type: string, example: "vendor_global_suppliers"}
-              name: {type: string, example: "Global Suppliers Inc."}
