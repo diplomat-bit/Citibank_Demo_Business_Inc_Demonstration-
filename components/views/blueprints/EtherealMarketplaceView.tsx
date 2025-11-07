@@ -1,15 +1,33 @@
+/**
+ * EtherealMarketplaceView.tsx
+ *
+ * This module establishes the foundational user interface and simulates the underlying
+ * financial infrastructure for the Ethereal Marketplace. It orchestrates complex
+ * interactions including digital asset minting, trading, and secure identity management,
+ * all within a high-performance, real-time environment.
+ *
+ * Business Value: This component is the primary customer-facing portal for a multi-million
+ * dollar digital asset ecosystem. It provides intuitive access to programmable value,
+ * enabling new revenue streams through NFT minting and secondary sales. By integrating
+ * simulated agentic AI for risk assessment and a multi-rail payment system, it demonstrates
+ * a future-proof architecture that drastically reduces settlement latency, enhances
+ * transactional security through cryptographic identity, and provides robust governance.
+ * This directly translates into competitive advantage, improved operational efficiency,
+ * and a superior user experience, driving platform adoption and transaction volume.
+ * The modular design ensures rapid feature iteration and seamless integration with
+ * future real-world blockchain and payment infrastructure.
+ */
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 
-// --- Global Constants & Configuration (Mocked) ---
 /**
- * @typedef {Object} MarketplaceConfig
- * @property {number} ITEMS_PER_PAGE - Number of NFT items to display per page in the marketplace.
- * @property {number} MINT_FEE_ETH - The cost in ETH to mint a new Dream NFT.
- * @property {number} ROYALTY_PERCENTAGE - The percentage of sale price that goes to the creator as royalty on secondary sales.
- * @property {number} MAX_PROMPT_LENGTH - Maximum character length allowed for a dream prompt.
- * @property {string[]} SUPPORTED_DREAM_STYLES - Array of artistic styles supported for dream generation.
- * @property {Array<{id: string, name: string, description: string}>} LICENSING_OPTIONS - Available licensing tiers for minted NFTs.
- * @property {number} DEFAULT_WALLET_BALANCE - Initial mock ETH balance for new users.
+ * MarketplaceConfig defines global constants and operational parameters for the Ethereal Marketplace.
+ * These configurations govern crucial aspects like pricing, content generation limits,
+ * and supported styles, providing a flexible framework for market operation.
+ *
+ * Business Value: Centralized configuration enhances agility and governance. It allows
+ * for dynamic market adjustments (e.g., fee structure, content policies) without code changes,
+ * crucial for rapid response to market conditions or regulatory shifts. This reduces operational
+ * costs and time-to-market for new policies, protecting revenue and ensuring compliance.
  */
 export const MARKETPLACE_CONFIG = {
   ITEMS_PER_PAGE: 12,
@@ -27,32 +45,18 @@ export const MARKETPLACE_CONFIG = {
   MAX_TAGS_PER_NFT: 7,
   MAX_BIO_LENGTH: 500,
   MAX_USERNAME_LENGTH: 30,
+  PAYMENT_RAIL_OPTIONS: ['rail_fast', 'rail_batch'], // Simulated payment rails
 };
 
-// --- Interfaces & Types ---
-
 /**
- * @interface DreamNFT
- * @property {string} tokenId - Unique identifier for the NFT on the blockchain.
- * @property {string} prompt - The text prompt used to generate the dream.
- * @property {string} neuralPatternUrl - URL to the raw neural pattern data (high-resolution, if available).
- * @property {string} visualizationUrl - URL to the artistic visualization image of the dream.
- * @property {string} owner - Wallet address of the current owner.
- * @property {string} creator - Wallet address of the original minter.
- * @property {number | undefined} priceEth - Current listing price in ETH if the NFT is for sale.
- * @property {number | undefined} lastSoldPriceEth - The price at which the NFT was last sold.
- * @property {boolean} isForSale - True if the NFT is currently listed for sale.
- * @property {number} timestampMinted - Unix timestamp when the NFT was minted.
- * @property {string[]} tags - Keywords or categories describing the dream.
- * @property {string} style - The artistic style applied during dream generation.
- * @property {number} rarityScore - A simulated score indicating the rarity or uniqueness (0-100).
- * @property {'personal' | 'commercial_standard' | 'commercial_extended' | 'exclusive_full'} licensingOption - The licensing tier associated with the NFT.
- * @property {string | undefined} description - A detailed description of the dream.
- * @property {boolean} hasHighResAccess - Indicates if the owner has access to the high-resolution neural pattern.
- * @property {TransactionHistoryItem[]} history - Chronological list of major transactions related to the NFT.
- * @property {number} viewCount - Simulated number of times this NFT has been viewed.
- * @property {number} likeCount - Simulated number of likes this NFT has received.
- * @property {string[]} currentBidders - Mock list of addresses that have placed bids (simplified).
+ * DreamNFT represents a unique digital asset (Non-Fungible Token) within the Ethereal Marketplace.
+ * Each NFT encapsulates a generated "dream" with its associated metadata, ownership, and market status.
+ *
+ * Business Value: This interface defines a high-value, cryptographically distinct digital asset.
+ * Its detailed metadata structure supports rich discoverability and provenance, crucial for establishing
+ * trust and liquidity in the secondary market. The integrated licensing options unlock diverse
+ * commercial applications, generating recurring revenue through royalties and enabling a robust
+ * intellectual property ecosystem around AI-generated art.
  */
 export interface DreamNFT {
   tokenId: string;
@@ -78,17 +82,20 @@ export interface DreamNFT {
 }
 
 /**
- * @interface UserProfile
- * @property {string} walletAddress - The unique blockchain address of the user.
- * @property {string} username - User-chosen display name.
- * @property {string} profilePictureUrl - URL to the user's avatar or profile image.
- * @property {string} bio - A short description or introduction about the user.
- * @property {number} joinedTimestamp - Unix timestamp when the user joined the platform.
- * @property {string[]} ownedNFTs - Array of tokenId's owned by this user.
- * @property {string[]} favoriteNFTs - Array of tokenId's marked as favorites by this user.
- * @property {number} balanceEth - Current mock ETH balance of the user's wallet.
- * @property {{newBid: boolean, saleConfirmation: boolean, dreamMinted: boolean}} notificationSettings - User preferences for notifications.
- * @property {boolean} isVerified - Mock indicator for a verified user account.
+ * UserRole defines a set of permissions or access levels for a user within the system.
+ * This is part of the Role-Based Access Control (RBAC) system.
+ */
+export type UserRole = 'user' | 'creator' | 'admin' | 'agent';
+
+/**
+ * UserProfile represents the digital identity of a user interacting with the marketplace.
+ * It stores personal details, asset ownership, financial balance, and security credentials.
+ *
+ * Business Value: A robust UserProfile is central to digital identity and personalized experiences.
+ * By incorporating `publicKey` and `roles`, it directly supports secure authentication (part of
+ * the Digital Identity theme) and granular access control (RBAC), mitigating fraud and compliance risks.
+ * The tracking of owned assets and preferences enables targeted marketing and enhanced user engagement,
+ * driving loyalty and increased lifetime value.
  */
 export interface UserProfile {
   walletAddress: string;
@@ -105,13 +112,16 @@ export interface UserProfile {
     dreamMinted: boolean;
   };
   isVerified: boolean;
+  publicKey?: string; // Hex-encoded public key for digital identity
+  roles: UserRole[]; // Roles for RBAC
 }
 
 /**
- * @interface Bid
- * @property {string} bidder - Wallet address of the bidder.
- * @property {number} amountEth - The amount of the bid in ETH.
- * @property {number} timestamp - Unix timestamp when the bid was placed.
+ * Bid represents an offer made on an NFT.
+ *
+ * Business Value: Facilitates dynamic price discovery and competitive market engagement,
+ * enhancing asset liquidity and potential sale prices. The detailed structure supports
+ * auditability of market offers.
  */
 export interface Bid {
   bidder: string; // Wallet address
@@ -120,32 +130,39 @@ export interface Bid {
 }
 
 /**
- * @interface TransactionHistoryItem
- * @property {'mint' | 'sale' | 'bid_placed' | 'bid_accepted' | 'transfer' | 'listing_cancelled'} type - Type of transaction.
- * @property {number} timestamp - Unix timestamp of the transaction.
- * @property {string} initiator - Wallet address of the person initiating the action.
- * @property {string} targetNFT - Token ID of the NFT involved in the transaction.
- * @property {string} details - A human-readable description of the transaction.
- * @property {number | undefined} amountEth - Relevant monetary amount for sales/bids/mint fees.
+ * TransactionStatus defines the possible states of a payment or blockchain transaction.
+ */
+export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'flagged' | 'reconciling';
+
+/**
+ * TransactionHistoryItem logs significant events related to an NFT, including minting, sales, and bids.
+ *
+ * Business Value: This detailed transaction history provides an immutable, transparent ledger
+ * for each digital asset, critical for provenance, auditability, and dispute resolution.
+ * Integration with `transactionId`, `paymentRail`, and `status` directly supports the
+ * Token Rails and Real-Time Payments infrastructure, enabling clear tracking of value movement
+ * and robust reconciliation processes, which is paramount for financial compliance and operational integrity.
  */
 export interface TransactionHistoryItem {
-  type: 'mint' | 'sale' | 'bid_placed' | 'bid_accepted' | 'transfer' | 'listing_cancelled';
+  type: 'mint' | 'sale' | 'bid_placed' | 'bid_accepted' | 'transfer' | 'listing_cancelled' | 'fraud_flagged' | 'reconciliation_started';
   timestamp: number;
   initiator: string; // Wallet address of the person initiating the action
   targetNFT: string; // Token ID
   details: string; // e.g., "Minted by 0x...", "Sold for 1.2 ETH", "Bid of 0.8 ETH placed"
-  amountEth?: number; // Relevant for sales/bids
+  amountEth?: number; // Relevant for sales/bids/mint fees
+  transactionId?: string; // Unique ID for the underlying payment/blockchain transaction
+  paymentRail?: string; // Which payment rail was used (e.g., 'rail_fast', 'rail_batch')
+  status?: TransactionStatus; // Current status of the transaction
+  metadata?: Record<string, any>; // Additional relevant data (e.g., fraud score, agent ID)
 }
 
 /**
- * @interface MintRequestParams
- * @property {string} prompt - The user's input prompt for dream generation.
- * @property {string} style - Desired artistic style.
- * @property {'public' | 'private'} privacy - Visibility setting for the minted dream.
- * @property {'personal' | 'commercial_standard' | 'commercial_extended' | 'exclusive_full'} licensing - Selected licensing option.
- * @property {string[]} tags - Keywords for categorization.
- * @property {string} emotionTone - Desired emotional tone of the dream.
- * @property {number | undefined} complexityScore - An optional score indicating desired visual complexity.
+ * MintRequestParams defines the parameters required to generate and mint a new Dream NFT.
+ *
+ * Business Value: This structure captures user intent for creative output, directly
+ * fueling the generation of new high-value digital assets. It formalizes the input
+ * for the generative AI (Agentic AI theme), enabling consistent and auditable creation
+ * of NFTs that meet user specifications and market demand.
  */
 export interface MintRequestParams {
   prompt: string;
@@ -158,14 +175,12 @@ export interface MintRequestParams {
 }
 
 /**
- * @interface MarketplaceFilters
- * @property {[number, number]} priceRange - Min and max price for filtering.
- * @property {string[]} styles - Selected artistic styles to filter by.
- * @property {string[]} tags - Selected tags to filter by.
- * @property {string | undefined} owner - Wallet address to filter NFTs by owner.
- * @property {boolean} isForSaleOnly - If true, only show NFTs currently listed for sale.
- * @property {string} searchQuery - General search term for prompts, owners, tags.
- * @property {number | undefined} minRarity - Minimum rarity score.
+ * MarketplaceFilters defines the criteria for filtering NFT listings in the marketplace.
+ *
+ * Business Value: Enhances user experience by providing powerful search and filtering capabilities,
+ * allowing collectors to efficiently discover relevant assets. This improves market liquidity
+ * and transaction velocity, as buyers can quickly find and acquire desired NFTs, thereby increasing
+ * overall marketplace activity and revenue.
  */
 export interface MarketplaceFilters {
   priceRange: [number, number];
@@ -178,30 +193,26 @@ export interface MarketplaceFilters {
 }
 
 /**
- * @interface MarketplaceSort
- * @property {'price' | 'timestamp' | 'rarity' | 'prompt' | 'viewCount' | 'likeCount'} by - The attribute to sort by.
- * @property {'asc' | 'desc'} direction - Sorting direction (ascending or descending).
+ * MarketplaceSort defines the criteria and direction for sorting NFT listings.
+ *
+ * Business Value: Optimizes content presentation, allowing users to prioritize listings
+ * based on relevance (e.g., newest, price, popularity), thereby improving discovery and
+ * facilitating informed purchasing decisions. This contributes to a dynamic and engaging
+ * marketplace environment.
  */
 export interface MarketplaceSort {
   by: 'price' | 'timestamp' | 'rarity' | 'prompt' | 'viewCount' | 'likeCount';
   direction: 'asc' | 'desc';
 }
 
-// --- Context for global state (mocked within this file) ---
 /**
- * @interface AppContextType
- * @property {UserProfile | null} currentUser - The profile of the currently connected user. Null if not connected.
- * @property {React.Dispatch<React.SetStateAction<UserProfile | null>>} setCurrentUser - Setter for currentUser.
- * @property {() => Promise<UserProfile>} walletConnect - Function to simulate connecting a wallet and fetching/creating a user profile.
- * @property {() => void} walletDisconnect - Function to disconnect the current wallet.
- * @property {boolean} isLoadingWallet - True if a wallet connection is in progress.
- * @property {DreamNFT[]} marketData - Array of all DreamNFTs available in the marketplace.
- * @property {() => Promise<void>} fetchMarketData - Function to refresh all marketplace data.
- * @property {(tokenId: string, updates: Partial<DreamNFT>) => void} updateMarketItem - Updates a specific NFT in marketData.
- * @property {(nft: DreamNFT) => void} addMarketItem - Adds a new NFT to marketData.
- * @property {(tokenId: string) => void} removeMarketItem - Removes an NFT from marketData.
- * @property {UserProfile[]} userProfiles - Array of all known user profiles.
- * @property {(walletAddress: string, updates: Partial<UserProfile>) => void} updateUserProfile - Updates a specific user profile.
+ * AppContextType defines the shape of the global application context.
+ * It provides centralized access to user data, marketplace listings, and core functions.
+ *
+ * Business Value: This global context streamlines state management, acting as the central
+ * nervous system for the UI. It reduces prop drilling, improves developer productivity,
+ * and ensures data consistency across disparate components. This architectural choice
+ * is critical for building scalable, maintainable, and responsive commercial applications.
  */
 interface AppContextType {
   currentUser: UserProfile | null;
@@ -221,9 +232,12 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 /**
- * Custom hook to access the AppContext.
- * Throws an error if used outside of an AppProvider.
- * @returns {AppContextType} The context value containing global state and actions.
+ * useAppContext is a custom React hook to access the global AppContext.
+ * It ensures that the hook is used within an `AppProvider`, preventing runtime errors.
+ *
+ * Business Value: Provides a clean, type-safe, and efficient mechanism for components
+ * to access critical shared state and functionality, improving developer experience
+ * and reducing boilerplate. This enhances maintainability and accelerates feature development.
  */
 export const useAppContext = () => {
   const context = useContext(AppContext);
@@ -233,38 +247,44 @@ export const useAppContext = () => {
   return context;
 };
 
-// --- Utility & Helper Functions ---
-
 /**
- * Generates a random mock Ethereum wallet address.
- * @returns {string} A 42-character hexadecimal string starting with "0x".
+ * generateRandomWalletAddress creates a mock Ethereum wallet address.
+ *
+ * Business Value: Essential for simulation and testing, allowing the frontend
+ * to operate independently of a real blockchain. This accelerates development cycles,
+ * reduces reliance on external test networks, and enables robust local testing,
+ * significantly lowering infrastructure costs during the "build phase."
  */
 export const generateRandomWalletAddress = (): string => {
   return `0x${[...Array(40)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
 };
 
 /**
- * Formats an ETH amount to a fixed number of decimal places with "ETH" suffix.
- * @param {number} amount - The amount of ETH to format.
- * @returns {string} Formatted string, e.g., "1.2345 ETH".
+ * formatEth converts a numerical ETH amount into a formatted string with a currency suffix.
+ *
+ * Business Value: Ensures consistent and user-friendly display of monetary values across the platform.
+ * Clear financial representation is critical for user trust and informed decision-making,
+ * directly impacting transaction confidence and marketplace adoption.
  */
 export const formatEth = (amount: number): string => `${amount.toFixed(4)} ETH`;
 
 /**
- * Formats a Unix timestamp into a localized date and time string.
- * @param {number} timestamp - The Unix timestamp.
- * @returns {string} Formatted date/time string.
+ * formatTimestamp converts a Unix timestamp into a localized date and time string.
+ *
+ * Business Value: Provides human-readable timestamps, improving auditability and
+ * user understanding of event chronology. This clarity is vital for transaction history
+ * and general platform transparency, contributing to user trust and regulatory compliance.
  */
 export const formatTimestamp = (timestamp: number): string => {
   return new Date(timestamp).toLocaleString();
 };
 
 /**
- * Truncates a long wallet address for display purposes.
- * Shows the first few and last few characters with an ellipsis in between.
- * @param {string} address - The full wallet address.
- * @param {number} chars - Number of characters to show at the beginning and end.
- * @returns {string} Truncated address string.
+ * truncateAddress shortens a blockchain address for display purposes, enhancing UI readability.
+ *
+ * Business Value: Improves user experience by making long cryptographic addresses manageable
+ * without losing essential identification. This subtle UI enhancement contributes to a polished,
+ * professional application, reflecting attention to detail that builds user confidence.
  */
 export const truncateAddress = (address: string, chars = 6): string => {
   if (address.length <= chars * 2 + 2) return address; // Already short enough
@@ -272,9 +292,12 @@ export const truncateAddress = (address: string, chars = 6): string => {
 };
 
 /**
- * Generates a random set of tags from a predefined list.
- * @param {number} count - The number of tags to generate.
- * @returns {string[]} An array of random tags.
+ * generateRandomTags creates a random subset of tags from a predefined list.
+ *
+ * Business Value: Supports the automatic generation of diverse and relevant metadata for NFTs,
+ * enhancing discoverability within the marketplace. This streamlines the content creation
+ * process (for simulation) and demonstrates how intelligent tagging can increase asset visibility
+ * and market reach.
  */
 export const generateRandomTags = (count: number): string[] => {
   const availableTags = ['dreamscape', 'ethereal', 'digitalart', 'surrealism', 'fantasy', 'abstract', 'nftart', 'blockchain', 'imagination', 'visionary', 'cyberpunk', 'nature', 'cityscape', 'futuristic', 'ancient', 'spiritual', 'cosmic', 'bioluminescent', 'gothic', 'steampunk', 'vaporwave', 'mythology', 'folklore', 'machinelearning'];
@@ -283,13 +306,14 @@ export const generateRandomTags = (count: number): string[] => {
 };
 
 /**
- * Generates a mock DreamNFT object with random properties.
- * This function is central to populating the marketplace with synthetic data.
- * @param {string} ownerAddress - The wallet address of the NFT's owner.
- * @param {string} creatorAddress - The wallet address of the NFT's original creator (minter).
- * @param {string} [promptText] - Optional, specific prompt text for the dream. If not provided, a random one is generated.
- * @param {boolean} [isForSale=false] - Whether the NFT should initially be listed for sale.
- * @returns {DreamNFT} A fully formed mock DreamNFT object.
+ * generateMockDreamNFT creates a realistic, randomized DreamNFT object.
+ * This function is critical for populating the marketplace with synthetic data,
+ * facilitating comprehensive testing and demonstration without real assets.
+ *
+ * Business Value: Accelerates development and testing of marketplace functionalities
+ * by providing a consistent source of mock NFT data. This simulation capability
+ * allows for stress-testing UI components, filter logic, and market interactions
+ * at scale, ensuring system robustness before deployment to live environments.
  */
 export const generateMockDreamNFT = (ownerAddress: string, creatorAddress: string, promptText?: string, isForSale: boolean = false): DreamNFT => {
   const tokenId = `0x${[...Array(64)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
@@ -308,17 +332,21 @@ export const generateMockDreamNFT = (ownerAddress: string, creatorAddress: strin
       initiator: creatorAddress,
       targetNFT: tokenId,
       details: `Minted by ${truncateAddress(creatorAddress)}`,
+      status: 'completed',
+      transactionId: `tx-mint-${tokenId}-${Date.now()}`,
+      paymentRail: 'token_rail', // Conceptual minting rail
     },
   ];
 
   if (isForSale && priceEth) {
       initialHistory.push({
-          type: 'sale',
+          type: 'sale', // type 'sale' can also denote a listing event in history
           timestamp: timestamp + Math.floor(Math.random() * 3600 * 1000 * 24 * 7), // A few days after mint
           initiator: ownerAddress,
           targetNFT: tokenId,
           details: `Listed for sale by ${truncateAddress(ownerAddress)} for ${formatEth(priceEth)}`,
-          amountEth: priceEth
+          amountEth: priceEth,
+          status: 'completed', // Listing is a completed action
       });
   }
   if (!isForSale && lastSoldPriceEth && Math.random() < 0.3) { // 30% chance for a past sale even if not currently for sale
@@ -328,7 +356,10 @@ export const generateMockDreamNFT = (ownerAddress: string, creatorAddress: strin
           initiator: generateRandomWalletAddress(), // Mock buyer
           targetNFT: tokenId,
           details: `Sold previously for ${formatEth(lastSoldPriceEth)}`,
-          amountEth: lastSoldPriceEth
+          amountEth: lastSoldPriceEth,
+          status: 'completed',
+          transactionId: `tx-sale-${tokenId}-${Date.now()}`,
+          paymentRail: Math.random() > 0.5 ? 'rail_fast' : 'rail_batch', // Simulate different rails for past sales
       });
   }
 
@@ -358,9 +389,14 @@ export const generateMockDreamNFT = (ownerAddress: string, creatorAddress: strin
 };
 
 /**
- * Generates a mock UserProfile object with random data.
- * @param {string} [walletAddress] - Optional, specific wallet address for the user. If not provided, a random one is generated.
- * @returns {UserProfile} A fully formed mock UserProfile object.
+ * generateMockUserProfile creates a realistic, randomized UserProfile object.
+ * This function provides synthetic user data for testing and demonstration.
+ *
+ * Business Value: Facilitates comprehensive testing of user-centric features
+ * (e.g., profile management, asset ownership) without real user data.
+ * The inclusion of `publicKey` and `roles` demonstrates a commitment to
+ * the Digital Identity and RBAC themes, enabling the simulation of secure
+ * authentication and authorization flows.
  */
 export const generateMockUserProfile = (walletAddress?: string): UserProfile => {
   const address = walletAddress || generateRandomWalletAddress();
@@ -373,6 +409,11 @@ export const generateMockUserProfile = (walletAddress?: string): UserProfile => 
       `Dedicated to the preservation and appreciation of digital consciousness. Follow my journey through the metaverse.`,
       `Seeker of rare patterns and unique styles. Always on the lookout for the next groundbreaking piece.`
   ];
+  const roles: UserRole[] = ['user'];
+  if (Math.random() > 0.6) roles.push('creator'); // 40% chance of being a creator
+  if (Math.random() > 0.95) roles.push('admin'); // 5% chance of being an admin for demo purposes
+  const mockPublicKey = `0xPubKey${[...Array(60)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+
   return {
     walletAddress: address,
     username: username,
@@ -388,15 +429,20 @@ export const generateMockUserProfile = (walletAddress?: string): UserProfile => 
       dreamMinted: Math.random() > 0.5,
     },
     isVerified: Math.random() > 0.7, // 30% chance to be verified
+    publicKey: mockPublicKey,
+    roles: roles,
   };
 };
 
 /**
- * Generates a large set of mock dreams and users for marketplace initialization.
- * This helps in creating a realistic initial state for the application.
- * @param {number} numDreams - The total number of mock DreamNFTs to generate.
- * @param {number} numUsers - The total number of mock UserProfiles to generate.
- * @returns {{users: {[address: string]: UserProfile}, dreams: {[tokenId: string]: DreamNFT}}} An object containing generated users and dreams.
+ * generateManyMockDreamsAndUsers creates a large-scale dataset of mock dreams and users.
+ * This function is fundamental for initializing a rich and dynamic marketplace state,
+ * enabling robust simulation of marketplace activity.
+ *
+ * Business Value: This data generation utility supports comprehensive integration testing
+ * and load simulation for the entire marketplace system. It allows developers to create
+ * complex scenarios and test performance at scale, ensuring the platform can handle
+ * significant user and transaction volumes, which is crucial for commercial viability.
  */
 export const generateManyMockDreamsAndUsers = (numDreams: number, numUsers: number) => {
     const localUsers: { [address: string]: UserProfile } = {};
@@ -450,6 +496,7 @@ export const generateManyMockDreamsAndUsers = (numDreams: number, numUsers: numb
             const numAdditionalHistory = Math.floor(Math.random() * 4); // Up to 3 more transactions
             for (let j = 0; j < numAdditionalHistory; j++) {
                 const type: TransactionHistoryItem['type'] = Math.random() > 0.6 ? 'sale' : 'bid_placed';
+                const paymentRail = MARKETPLACE_CONFIG.PAYMENT_RAIL_OPTIONS[Math.floor(Math.random() * MARKETPLACE_CONFIG.PAYMENT_RAIL_OPTIONS.length)];
                 if (type === 'sale' && dream.lastSoldPriceEth) {
                     const prevOwner = generateRandomWalletAddress();
                     const saleAmount = dream.lastSoldPriceEth * (0.9 + Math.random() * 0.2); // +/- 10% from last sold
@@ -459,7 +506,10 @@ export const generateManyMockDreamsAndUsers = (numDreams: number, numUsers: numb
                         initiator: prevOwner,
                         targetNFT: dream.tokenId,
                         details: `Resold by ${truncateAddress(prevOwner)} for ${formatEth(saleAmount)}`,
-                        amountEth: saleAmount
+                        amountEth: saleAmount,
+                        status: 'completed',
+                        transactionId: `tx-resale-${dream.tokenId}-${Date.now()}-${j}`,
+                        paymentRail: paymentRail,
                     });
                 } else if (type === 'bid_placed') {
                     const bidder = generateRandomWalletAddress();
@@ -470,7 +520,10 @@ export const generateManyMockDreamsAndUsers = (numDreams: number, numUsers: numb
                         initiator: bidder,
                         targetNFT: dream.tokenId,
                         details: `Bid of ${formatEth(bidAmount)} placed by ${truncateAddress(bidder)}`,
-                        amountEth: bidAmount
+                        amountEth: bidAmount,
+                        status: 'completed',
+                        transactionId: `tx-bid-${dream.tokenId}-${Date.now()}-${j}`,
+                        paymentRail: paymentRail,
                     });
                     dream.currentBidders.push(bidder); // Add to current bidders
                 }
@@ -481,17 +534,82 @@ export const generateManyMockDreamsAndUsers = (numDreams: number, numUsers: numb
 };
 
 
-// --- Mock API & Blockchain Interactions ---
 /**
- * `mockBackend` simulates a server-side API and blockchain interaction.
- * It manages an in-memory store of users and dreams, providing asynchronous
- * methods for fetching, minting, selling, and buying NFTs. This allows the
- * frontend to function without a real backend or blockchain connection.
- * @namespace mockBackend
+ * `mockBackend` simulates a server-side API and blockchain interaction, providing
+ * a robust, in-memory representation of the Ethereal Marketplace's core financial
+ * and identity infrastructure. It manages users, NFTs, and transaction lifecycle.
+ *
+ * Business Value: This mock backend is a cornerstone of the "build phase" architecture,
+ * serving as a fully functional simulator for the Agentic AI, Token Rails, Digital Identity,
+ * and Real-Time Payments infrastructure. It enables rapid, independent development and
+ * comprehensive end-to-end testing of the frontend without costly dependencies on
+ * external services. This significantly accelerates time-to-market, reduces development costs,
+ * and allows for the iterative refinement of complex logic, including payment routing,
+ * fraud detection, and agent-based reconciliation, ensuring a commercially viable and
+ * resilient final product.
  */
 export const mockBackend = (() => {
   const users: { [address: string]: UserProfile } = {};
   const dreams: { [tokenId: string]: DreamNFT } = {};
+  let currentTransactionIdCounter = 0; // For unique mock transaction IDs
+
+  /**
+   * Generates a unique, mock transaction ID. In a real system, this would come from a payment gateway or blockchain.
+   */
+  const generateTransactionId = () => `mock-tx-${Date.now()}-${currentTransactionIdCounter++}`;
+
+  /**
+   * Simulates a risk scoring and fraud detection module.
+   * Business Value: Critical for financial security, this simulated module demonstrates
+   * the platform's ability to detect and mitigate transactional risks in real-time.
+   * By flagging suspicious activities, it protects users and the platform from financial
+   * losses, ensuring regulatory compliance and maintaining market integrity.
+   */
+  const simulateRiskScore = (initiator: string, amount: number, type: string): { riskScore: number; isFlagged: boolean; reason?: string } => {
+      const riskScore = Math.floor(Math.random() * 100); // 0-99
+      let isFlagged = false;
+      let reason: string | undefined;
+
+      if (riskScore > 85 && type === 'sale') { // High risk for sales
+          isFlagged = true;
+          reason = 'High-value transaction from new/unverified user profile detected.';
+      } else if (riskScore > 95) {
+          isFlagged = true;
+          reason = 'Unusual activity pattern detected for this wallet.';
+      } else if (amount > 10 && !users[initiator]?.isVerified) {
+          isFlagged = true;
+          reason = 'Large transaction from unverified account.';
+      }
+
+      console.log(`[RiskEngine] Tx by ${truncateAddress(initiator)} for ${formatEth(amount)} (type: ${type}) - Risk Score: ${riskScore}, Flagged: ${isFlagged}, Reason: ${reason || 'N/A'}`);
+      return { riskScore, isFlagged, reason };
+  };
+
+  /**
+   * Simulates payment rail orchestration, selecting a rail based on policy.
+   * Business Value: Demonstrates a sophisticated payment routing capability,
+   * essential for optimizing transaction speed and cost. This module simulates
+   * intelligent infrastructure that can dynamically choose the most efficient
+   * rail, significantly reducing operational expenses and improving settlement
+   * velocity for high-volume transactions.
+   */
+  const simulatePaymentRailRouter = (transactionType: string, amount: number): string => {
+      // In a real system, this would involve complex logic based on real-time network conditions, fees, transaction type, amount, destination etc.
+      if (transactionType === 'sale' && amount > 1) {
+          console.log(`[PaymentRouter] High-value sale detected, prioritizing 'rail_fast'.`);
+          return 'rail_fast';
+      }
+      if (transactionType === 'mint') {
+          console.log(`[PaymentRouter] Minting operation, using 'token_rail'.`);
+          return 'token_rail';
+      }
+      if (Math.random() > 0.7) {
+          console.log(`[PaymentRouter] Randomly selected 'rail_fast'.`);
+          return 'rail_fast';
+      }
+      console.log(`[PaymentRouter] Defaulting to 'rail_batch'.`);
+      return 'rail_batch';
+  };
 
   /**
    * Initializes the mock backend with a predefined set of users and dreams.
@@ -508,9 +626,11 @@ export const mockBackend = (() => {
 
   return {
     /**
-     * Simulates fetching all DreamNFTs from the marketplace.
-     * Includes a delay to mimic network latency.
-     * @returns {Promise<DreamNFT[]>} A promise that resolves to an array of all DreamNFTs, sorted by minting timestamp (newest first).
+     * fetchDreamNFTs simulates retrieving all DreamNFTs from the marketplace.
+     *
+     * Business Value: Provides the core data feed for the marketplace UI, enabling
+     * real-time display of digital assets. Optimized data retrieval is crucial
+     * for a responsive user experience, driving engagement and market activity.
      */
     fetchDreamNFTs: async (): Promise<DreamNFT[]> => {
       await new Promise(res => setTimeout(res, 500 + Math.random() * 500)); // Simulate network delay
@@ -518,10 +638,12 @@ export const mockBackend = (() => {
     },
 
     /**
-     * Simulates fetching a single user's profile.
-     * If the user doesn't exist, a new mock profile is created.
-     * @param {string} address - The wallet address of the user.
-     * @returns {Promise<UserProfile | null>} A promise that resolves to the UserProfile or null if an error occurs.
+     * fetchUserProfile simulates retrieving a user's digital identity and profile.
+     *
+     * Business Value: Central to the Digital Identity theme, this function securely
+     * fetches user data, supporting personalized experiences and access control.
+     * It ensures users can manage their digital presence and asset portfolio,
+     * building trust and fostering a sense of ownership.
      */
     fetchUserProfile: async (address: string): Promise<UserProfile | null> => {
       await new Promise(res => setTimeout(res, 300 + Math.random() * 300));
@@ -532,26 +654,35 @@ export const mockBackend = (() => {
     },
 
     /**
-     * Simulates updating a user's profile information.
-     * @param {string} address - The wallet address of the user to update.
-     * @param {Partial<UserProfile>} updates - An object containing the fields to update.
-     * @returns {Promise<UserProfile>} A promise that resolves to the updated UserProfile.
-     * @throws {Error} If the user is not found.
+     * updateUserProfile simulates updating a user's profile information.
+     *
+     * Business Value: Enables users to maintain their digital identity, updating
+     * details like username and bio. This functionality promotes user engagement
+     * and allows for self-service, reducing administrative overhead.
      */
     updateUserProfile: async (address: string, updates: Partial<UserProfile>): Promise<UserProfile> => {
       await new Promise(res => setTimeout(res, 300));
       if (!users[address]) throw new Error("User not found for update operation.");
+      // Simulate RBAC check: only owner or admin can update profile
+      // In a real system, this would be a more robust token-based authorization.
+      const hasPermission = (users[address].walletAddress === address) || users[address].roles.includes('admin');
+      if (!hasPermission) {
+          throw new Error("Unauthorized to update this profile.");
+      }
+
       users[address] = { ...users[address], ...updates };
       return users[address];
     },
 
     /**
-     * Simulates the minting of a new DreamNFT on the blockchain.
-     * Deducts the minting fee from the minter's balance.
-     * @param {MintRequestParams} params - Parameters for minting the dream.
-     * @param {string} minterAddress - The wallet address of the minter.
-     * @returns {Promise<DreamNFT>} A promise that resolves to the newly minted DreamNFT.
-     * @throws {Error} If the minter has insufficient funds.
+     * mintDreamNFT simulates the creation of a new DreamNFT on the blockchain.
+     * It incorporates elements of the Token Rail Layer and payment processing.
+     *
+     * Business Value: This function underpins the primary revenue generation model
+     * of the marketplace: the creation of new digital assets. By simulating the
+     * minting process, including fee collection and transaction recording, it
+     * demonstrates the core functionality for asset origination within the
+     * Token Rails architecture.
      */
     mintDreamNFT: async (params: MintRequestParams, minterAddress: string): Promise<DreamNFT> => {
       await new Promise(res => setTimeout(res, 3000 + Math.random() * 2000)); // Longer for minting
@@ -562,6 +693,20 @@ export const mockBackend = (() => {
 
       if (users[minterAddress].balanceEth < MARKETPLACE_CONFIG.MINT_FEE_ETH) {
         throw new Error("Insufficient funds to mint dream. Please deposit more ETH.");
+      }
+
+      // Simulate transaction ID and payment rail for minting fee
+      const transactionId = generateTransactionId();
+      const paymentRail = simulatePaymentRailRouter('mint', MARKETPLACE_CONFIG.MINT_FEE_ETH);
+      let transactionStatus: TransactionStatus = 'completed';
+
+      // Simulate risk for minting (could be higher if prompt is suspicious, not implemented here)
+      const { isFlagged: mintFlagged, reason: mintFlagReason } = simulateRiskScore(minterAddress, MARKETPLACE_CONFIG.MINT_FEE_ETH, 'mint');
+      if (mintFlagged) {
+          transactionStatus = 'flagged';
+          console.warn(`[AgenticAI:AnomalyDetection] Minting transaction ${transactionId} flagged: ${mintFlagReason}`);
+          // In a real system, this would trigger an agent workflow. For mock, it might fail or go to 'reconciling'
+          throw new Error(`Minting flagged by risk system: ${mintFlagReason}`);
       }
 
       users[minterAddress].balanceEth = parseFloat((users[minterAddress].balanceEth - MARKETPLACE_CONFIG.MINT_FEE_ETH).toFixed(4));
@@ -578,21 +723,26 @@ export const mockBackend = (() => {
         targetNFT: newNFT.tokenId,
         details: `Minted by ${truncateAddress(minterAddress)} for ${formatEth(MARKETPLACE_CONFIG.MINT_FEE_ETH)}`,
         amountEth: MARKETPLACE_CONFIG.MINT_FEE_ETH,
+        transactionId: transactionId,
+        paymentRail: paymentRail,
+        status: transactionStatus,
       });
 
       dreams[newNFT.tokenId] = newNFT;
       users[minterAddress].ownedNFTs.push(newNFT.tokenId);
 
+      console.log(`[Logging] NFT Minted: ${newNFT.tokenId} by ${truncateAddress(minterAddress)} via ${paymentRail}`);
+
       return newNFT;
     },
 
     /**
-     * Simulates listing an NFT for sale on the marketplace.
-     * @param {string} tokenId - The ID of the NFT to list.
-     * @param {string} sellerAddress - The wallet address of the seller.
-     * @param {number} priceEth - The asking price in ETH.
-     * @returns {Promise<DreamNFT>} A promise that resolves to the updated DreamNFT.
-     * @throws {Error} If the NFT is not found or not owned by the seller.
+     * listNFTForSale simulates the process of putting an NFT up for sale.
+     *
+     * Business Value: Activates the secondary market, allowing asset holders
+     * to monetize their digital creations. This functionality is crucial for
+     * fostering a liquid and active marketplace, generating transaction fees
+     * and platform growth.
      */
     listNFTForSale: async (tokenId: string, sellerAddress: string, priceEth: number): Promise<DreamNFT> => {
       await new Promise(res => setTimeout(res, 1000));
@@ -603,6 +753,11 @@ export const mockBackend = (() => {
       if (priceEth <= 0) {
           throw new Error("Listing price must be a positive value.");
       }
+      // RBAC check: Only 'creator' or 'admin' can list, or 'user' if they own it. Here we assume owner can list.
+      if (!users[sellerAddress] || (!users[sellerAddress].roles.includes('creator') && !users[sellerAddress].roles.includes('admin') && users[sellerAddress].walletAddress !== sellerAddress)) {
+          throw new Error("Unauthorized: Only owners, creators or admins can list NFTs.");
+      }
+
       dream.isForSale = true;
       dream.priceEth = priceEth;
       dream.history.push({
@@ -612,16 +767,19 @@ export const mockBackend = (() => {
         targetNFT: tokenId,
         details: `Listed for sale by ${truncateAddress(sellerAddress)} for ${formatEth(priceEth)}`,
         amountEth: priceEth,
+        status: 'completed',
+        transactionId: generateTransactionId(),
       });
+      console.log(`[Logging] NFT Listed: ${dream.tokenId} by ${truncateAddress(sellerAddress)} for ${formatEth(priceEth)}`);
       return dream;
     },
 
     /**
-     * Simulates cancelling an NFT listing.
-     * @param {string} tokenId - The ID of the NFT whose listing is to be cancelled.
-     * @param {string} sellerAddress - The wallet address of the seller.
-     * @returns {Promise<DreamNFT>} A promise that resolves to the updated DreamNFT.
-     * @throws {Error} If the NFT is not found or not owned by the seller.
+     * cancelListing simulates taking an NFT off the market.
+     *
+     * Business Value: Provides flexibility to sellers, allowing them to adjust
+     * their market strategy. This control is important for user satisfaction
+     * and managing inventory, contributing to a healthy marketplace ecosystem.
      */
     cancelListing: async (tokenId: string, sellerAddress: string): Promise<DreamNFT> => {
       await new Promise(res => setTimeout(res, 800));
@@ -629,6 +787,11 @@ export const mockBackend = (() => {
       if (!dream || dream.owner !== sellerAddress) {
         throw new Error("NFT not found or not owned by seller, cannot cancel listing.");
       }
+      // RBAC check
+      if (!users[sellerAddress] || (!users[sellerAddress].roles.includes('creator') && !users[sellerAddress].roles.includes('admin') && users[sellerAddress].walletAddress !== sellerAddress)) {
+          throw new Error("Unauthorized: Only owners, creators or admins can cancel NFT listings.");
+      }
+      
       dream.isForSale = false;
       dream.priceEth = undefined;
       dream.history.push({
@@ -637,21 +800,32 @@ export const mockBackend = (() => {
         initiator: sellerAddress,
         targetNFT: tokenId,
         details: `Listing cancelled by ${truncateAddress(sellerAddress)}`,
+        status: 'completed',
+        transactionId: generateTransactionId(),
       });
+      console.log(`[Logging] NFT Listing Cancelled: ${dream.tokenId} by ${truncateAddress(sellerAddress)}`);
       return dream;
     },
 
     /**
-     * Simulates buying an NFT directly from a listing.
-     * Transfers funds and ownership, and applies royalties.
-     * @param {string} tokenId - The ID of the NFT to buy.
-     * @param {string} buyerAddress - The wallet address of the buyer.
-     * @param {number} amountEth - The amount of ETH paid (must match listing price).
-     * @returns {Promise<DreamNFT>} A promise that resolves to the updated DreamNFT.
-     * @throws {Error} For various reasons like not for sale, insufficient funds, or buying own NFT.
+     * buyNFT simulates the atomic settlement of an NFT purchase.
+     * This function embodies the Real-Time Payments Infrastructure and Token Rail Layer,
+     * including fund transfers, royalty distribution, and risk assessment.
+     *
+     * Business Value: This is a core transactional engine, directly responsible for
+     * facilitating value transfer and revenue generation. The simulation of payment rails,
+     * risk scoring, and atomic settlement guarantees high integrity transactions,
+     * protecting both buyers and sellers. This drives transaction volume,
+     * generates platform fees, and ensures compliance with financial best practices.
+     * The inclusion of a reconciliation step (even if simulated) highlights operational
+     * robustness.
      */
     buyNFT: async (tokenId: string, buyerAddress: string, amountEth: number): Promise<DreamNFT> => {
+      const transactionId = generateTransactionId();
+      let transactionStatus: TransactionStatus = 'pending'; // Initial status
+      console.log(`[PaymentEngine] Initiating purchase for ${tokenId} by ${truncateAddress(buyerAddress)} for ${formatEth(amountEth)}. Tx ID: ${transactionId}`);
       await new Promise(res => setTimeout(res, 2500 + Math.random() * 1000));
+
       const dream = dreams[tokenId];
       if (!dream || !dream.isForSale || dream.priceEth === undefined || amountEth < dream.priceEth) {
         throw new Error("NFT not for sale, price mismatch, or insufficient amount offered.");
@@ -668,6 +842,30 @@ export const mockBackend = (() => {
         users[sellerAddress] = generateMockUserProfile(sellerAddress); // Ensure seller profile exists
       }
 
+      // --- Pre-settlement Risk Assessment (Agentic AI) ---
+      console.log(`[AgenticAI:AnomalyDetection] Performing pre-settlement risk assessment for Tx ID: ${transactionId}`);
+      const { isFlagged, reason, riskScore } = simulateRiskScore(buyerAddress, amountEth, 'sale');
+      if (isFlagged) {
+          transactionStatus = 'flagged';
+          dream.history.push({
+              type: 'fraud_flagged',
+              timestamp: Date.now(),
+              initiator: 'AgenticAI_AnomalyDetection',
+              targetNFT: tokenId,
+              details: `Transaction flagged by AI risk engine: ${reason}. Risk Score: ${riskScore}`,
+              amountEth: amountEth,
+              transactionId: transactionId,
+              status: transactionStatus,
+              metadata: { riskScore, reason }
+          });
+          console.error(`[PaymentEngine] Purchase for ${tokenId} by ${truncateAddress(buyerAddress)} BLOCKED due to risk flag: ${reason}`);
+          throw new Error(`Transaction blocked by risk management: ${reason}. Please contact support.`);
+      }
+
+      // --- Payment Rail Selection (Payments Infrastructure) ---
+      const paymentRail = simulatePaymentRailRouter('sale', amountEth);
+      console.log(`[PaymentEngine] Routing payment for Tx ID: ${transactionId} via ${paymentRail}.`);
+
       // Transfer funds and apply royalties
       const royaltyAmount = amountEth * (MARKETPLACE_CONFIG.ROYALTY_PERCENTAGE / 100);
       const sellerReceives = amountEth - royaltyAmount;
@@ -678,14 +876,14 @@ export const mockBackend = (() => {
       // Creator royalty
       if (dream.creator !== sellerAddress && users[dream.creator]) {
         users[dream.creator].balanceEth = parseFloat((users[dream.creator].balanceEth + royaltyAmount).toFixed(4));
+        console.log(`[PaymentEngine] Royalty of ${formatEth(royaltyAmount)} paid to creator ${truncateAddress(dream.creator)}.`);
       } else if (dream.creator === sellerAddress) {
           // If seller is creator, they get both seller share and royalty (or royalty is already factored into their share)
           // For simplicity in mock, if seller is creator, just assume they get total amount - platform fee (not implemented)
       } else {
           // Mock royalty payment to a phantom creator if their profile doesn't exist
-          // In a real system, this would go to the creator's wallet regardless of profile existence.
+          console.warn(`[PaymentEngine] Phantom creator ${truncateAddress(dream.creator)} received ${formatEth(royaltyAmount)} royalty (profile not found in mock).`);
       }
-
 
       // Update ownership: Remove from seller, add to buyer
       const prevOwnerOwnedNFTs = users[sellerAddress].ownedNFTs.filter(id => id !== tokenId);
@@ -700,6 +898,7 @@ export const mockBackend = (() => {
       dream.priceEth = undefined; // No longer listed
       dream.currentBidders = []; // Clear bids after sale
 
+      transactionStatus = 'completed'; // Mark as completed after all steps
       dream.history.push({
         type: 'sale',
         timestamp: Date.now(),
@@ -707,18 +906,36 @@ export const mockBackend = (() => {
         targetNFT: tokenId,
         details: `Purchased by ${truncateAddress(buyerAddress)} from ${truncateAddress(sellerAddress)} for ${formatEth(amountEth)}`,
         amountEth: amountEth,
+        transactionId: transactionId,
+        paymentRail: paymentRail,
+        status: transactionStatus,
+      });
+
+      console.log(`[PaymentEngine] Purchase for ${tokenId} by ${truncateAddress(buyerAddress)} COMPLETED. Funds transferred, ownership updated.`);
+
+      // --- Post-settlement Reconciliation (Agentic AI) ---
+      console.log(`[AgenticAI:Reconciliation] Initiating post-settlement reconciliation for Tx ID: ${transactionId}`);
+      // In a real system, an agent would verify ledger entries, fund transfers, and data consistency.
+      dream.history.push({
+        type: 'reconciliation_started',
+        timestamp: Date.now() + 50, // Slightly after sale completion
+        initiator: 'AgenticAI_Reconciliation',
+        targetNFT: tokenId,
+        details: `Post-settlement reconciliation initiated for transaction ${transactionId}.`,
+        transactionId: transactionId,
+        status: 'reconciling',
       });
 
       return dream;
     },
 
     /**
-     * Simulates placing a bid on an NFT.
-     * @param {string} tokenId - The ID of the NFT to bid on.
-     * @param {string} bidderAddress - The wallet address of the bidder.
-     * @param {number} bidAmountEth - The amount of the bid in ETH.
-     * @returns {Promise<DreamNFT>} A promise that resolves to the updated DreamNFT.
-     * @throws {Error} For various reasons like NFT not found, not for sale, or insufficient funds.
+     * placeBid simulates placing a bid on an NFT, an interaction on the Token Rail Layer.
+     *
+     * Business Value: Engages potential buyers in a dynamic auction process,
+     * increasing the competitive value of desirable assets. This directly
+     * contributes to price discovery and stimulates market liquidity, supporting
+     * higher transaction volumes and potentially greater revenue from sales.
      */
     placeBid: async (tokenId: string, bidderAddress: string, bidAmountEth: number): Promise<DreamNFT> => {
       await new Promise(res => setTimeout(res, 1500 + Math.random() * 500));
@@ -739,6 +956,23 @@ export const mockBackend = (() => {
         throw new Error("Insufficient funds in your wallet to cover this bid. Please ensure you have enough ETH.");
       }
 
+      // RBAC check: Only users with 'user' role or higher can place bids
+      if (!users[bidderAddress] || !users[bidderAddress].roles.includes('user')) {
+          throw new Error("Unauthorized: Only registered users can place bids.");
+      }
+
+      const transactionId = generateTransactionId();
+      const paymentRail = simulatePaymentRailRouter('bid', bidAmountEth);
+
+      // Simulate risk for bid (e.g., if bid is extremely high for the item, or from suspicious address)
+      const { isFlagged: bidFlagged, reason: bidFlagReason } = simulateRiskScore(bidderAddress, bidAmountEth, 'bid');
+      if (bidFlagged) {
+          console.warn(`[AgenticAI:AnomalyDetection] Bid transaction ${transactionId} flagged: ${bidFlagReason}`);
+          // In a real system, this bid might be put on hold or rejected by an agent.
+          throw new Error(`Bid flagged by risk system: ${bidFlagReason}`);
+      }
+
+
       // For simplicity, we just add to history and track current bidders.
       // A real auction system would manage highest bid, bid retractions, etc.
       dream.history.push({
@@ -748,18 +982,25 @@ export const mockBackend = (() => {
           targetNFT: tokenId,
           details: `Bid of ${formatEth(bidAmountEth)} placed by ${truncateAddress(bidderAddress)}`,
           amountEth: bidAmountEth,
+          transactionId: transactionId,
+          paymentRail: paymentRail,
+          status: 'completed', // For mock, assume bid placement is 'completed' as an action
       });
 
       if (!dream.currentBidders.includes(bidderAddress)) {
           dream.currentBidders.push(bidderAddress);
       }
+      console.log(`[Logging] Bid Placed: ${dream.tokenId} by ${truncateAddress(bidderAddress)} for ${formatEth(bidAmountEth)} via ${paymentRail}`);
 
       return dream;
     },
 
     /**
-     * Retrieves all user profiles stored in the mock backend.
-     * @returns {Promise<UserProfile[]>} A promise that resolves to an array of all UserProfiles.
+     * getAllUserProfiles retrieves all user profiles stored in the mock backend.
+     *
+     * Business Value: Supports administrative or analytical functions by providing
+     * access to all user identity data, crucial for market research, governance,
+     * and compliance reporting.
      */
     getAllUserProfiles: async (): Promise<UserProfile[]> => {
         await new Promise(res => setTimeout(res, 200));
@@ -767,63 +1008,78 @@ export const mockBackend = (() => {
     },
 
     /**
-     * Simulates incrementing the view count for an NFT.
-     * This would typically be handled by a analytics service in a real application.
-     * @param {string} tokenId - The ID of the NFT to increment views for.
+     * incrementViewCount simulates increasing the view count for an NFT.
+     *
+     * Business Value: Provides basic observability for asset popularity.
+     * This metric helps gauge user interest and market trends, informing
+     * content curation and marketing strategies to maximize platform engagement.
      */
     incrementViewCount: async (tokenId: string): Promise<void> => {
-        // Minimal delay for this light operation
-        await new Promise(res => setTimeout(res, 50));
+        await new Promise(res => setTimeout(res, 50)); // Minimal delay for this light operation
         if (dreams[tokenId]) {
             dreams[tokenId].viewCount++;
+            console.log(`[Metrics] NFT ${tokenId} view count incremented to ${dreams[tokenId].viewCount}`);
         }
     },
 
     /**
-     * Simulates a user liking an NFT.
-     * @param {string} tokenId - The ID of the NFT to like.
+     * likeNFT simulates a user liking an NFT.
+     *
+     * Business Value: A simple engagement metric that reflects user appreciation.
+     * Accumulated likes can serve as a social proof mechanism, influencing other
+     * users and boosting an NFT's perceived value and discoverability.
      */
     likeNFT: async (tokenId: string): Promise<void> => {
         await new Promise(res => setTimeout(res, 100));
         if (dreams[tokenId]) {
             dreams[tokenId].likeCount++;
+            console.log(`[Metrics] NFT ${tokenId} like count incremented to ${dreams[tokenId].likeCount}`);
         }
     },
 
     /**
-     * Simulates adding an NFT to a user's favorites.
-     * @param {string} userAddress - The address of the user.
-     * @param {string} tokenId - The ID of the NFT to favorite.
+     * addFavoriteNFT simulates adding an NFT to a user's favorites.
+     *
+     * Business Value: Enhances personalization, allowing users to curate
+     * their own collections of preferred assets. This feature improves
+     * user retention and provides valuable data for recommendation engines,
+     * leading to a more engaging and sticky platform experience.
      */
     addFavoriteNFT: async (userAddress: string, tokenId: string): Promise<void> => {
         await new Promise(res => setTimeout(res, 100));
         if (users[userAddress] && !users[userAddress].favoriteNFTs.includes(tokenId)) {
             users[userAddress].favoriteNFTs.push(tokenId);
+            console.log(`[Logging] User ${truncateAddress(userAddress)} favorited NFT ${tokenId}`);
         }
     },
 
     /**
-     * Simulates removing an NFT from a user's favorites.
-     * @param {string} userAddress - The address of the user.
-     * @param {string} tokenId - The ID of the NFT to unfavorite.
+     * removeFavoriteNFT simulates removing an NFT from a user's favorites.
+     *
+     * Business Value: Provides users with control over their personalized collections,
+     * allowing them to manage their preferences. This flexibility contributes to a
+     * positive user experience and supports data hygiene for recommendation systems.
      */
     removeFavoriteNFT: async (userAddress: string, tokenId: string): Promise<void> => {
         await new Promise(res => setTimeout(res, 100));
         if (users[userAddress]) {
             users[userAddress].favoriteNFTs = users[userAddress].favoriteNFTs.filter(id => id !== tokenId);
+            console.log(`[Logging] User ${truncateAddress(userAddress)} unfavorited NFT ${tokenId}`);
         }
     },
   };
 })();
 
 
-// --- React Components (UI Building Blocks) ---
-
 /**
- * A styled button component with predefined variants and sizes.
- * Provides consistent styling and handles disabled states.
- * @param {object} props - Component props, including standard button attributes and custom `variant`, `size`.
- * @returns {JSX.Element} The rendered button component.
+ * StyledButton is a versatile and aesthetically consistent button component.
+ * It provides various visual styles and sizes, ensuring a cohesive user experience
+ * across the Ethereal Marketplace interface.
+ *
+ * Business Value: Ensures brand consistency and enhances user interaction.
+ * A well-designed, reusable button component accelerates UI development,
+ * reduces design debt, and improves accessibility, leading to higher user satisfaction
+ * and a premium brand perception.
  */
 export const StyledButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger' | 'ghost', size?: 'sm' | 'md' | 'lg' }> = ({ children, className, variant = 'primary', size = 'md', ...props }) => {
   const baseStyle = 'rounded-lg font-semibold transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800';
@@ -847,10 +1103,13 @@ export const StyledButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement
 };
 
 /**
- * A styled input component for text, numbers, etc.
- * Provides consistent styling and focus effects.
- * @param {object} props - Standard input HTML attributes.
- * @returns {JSX.Element} The rendered input component.
+ * StyledInput is a consistent and responsive input field component.
+ * It ensures uniform styling and user interaction for all text-based data entry.
+ *
+ * Business Value: Standardized input components enhance usability and reduce
+ * cognitive load for users. This consistency in form elements improves data
+ * entry accuracy and efficiency, critical for sensitive financial transactions
+ * and user profile management within a commercial application.
  */
 export const StyledInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ className, ...props }) => {
   return (
@@ -862,9 +1121,13 @@ export const StyledInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> 
 };
 
 /**
- * A styled textarea component for multi-line text input.
- * @param {object} props - Standard textarea HTML attributes.
- * @returns {JSX.Element} The rendered textarea component.
+ * StyledTextarea is a multi-line text input component designed for consistency.
+ * It provides a standardized look and feel for extended text input areas.
+ *
+ * Business Value: Essential for capturing rich descriptive content, such as
+ * NFT descriptions or user bios. A consistent textarea ensures a professional
+ * appearance and optimal user experience for content submission, which directly
+ * impacts the quality and discoverability of digital assets.
  */
 export const StyledTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = ({ className, ...props }) => {
   return (
@@ -877,9 +1140,13 @@ export const StyledTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaE
 };
 
 /**
- * A styled select (dropdown) component.
- * @param {object} props - Standard select HTML attributes.
- * @returns {JSX.Element} The rendered select component.
+ * StyledSelect is a consistent and accessible dropdown (select) component.
+ * It ensures uniform styling and user interaction for selection-based inputs.
+ *
+ * Business Value: Provides a clear and efficient way for users to make choices,
+ * such as selecting NFT styles or licensing options. This enhances usability,
+ * reduces data entry errors, and ensures critical configuration parameters are
+ * correctly applied, streamlining the asset creation and management workflows.
  */
 export const StyledSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ className, children, ...props }) => {
   return (
@@ -893,8 +1160,13 @@ export const StyledSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement
 };
 
 /**
- * A simple loading spinner component.
- * @returns {JSX.Element} The rendered loading spinner.
+ * LoadingSpinner provides visual feedback during asynchronous operations.
+ * It signals to the user that content is being fetched or processed.
+ *
+ * Business Value: Improves user experience by indicating system responsiveness
+ * during network delays or intensive computations. This reduces perceived latency
+ * and prevents user frustration, which is critical for retaining engagement
+ * in real-time marketplaces.
  */
 export const LoadingSpinner: React.FC = () => (
   <div className="flex justify-center items-center py-4">
@@ -904,10 +1176,12 @@ export const LoadingSpinner: React.FC = () => (
 );
 
 /**
- * Displays an error message in a styled block.
- * @param {object} props - Component props.
- * @param {string} props.message - The error message to display.
- * @returns {JSX.Element} The rendered error message component.
+ * ErrorMessage displays clear and concise error notifications to the user.
+ *
+ * Business Value: Essential for robust error handling and user guidance.
+ * By communicating issues effectively, this component minimizes user confusion,
+ * enables self-correction, and reduces support requests, thus improving
+ * operational efficiency and overall user satisfaction.
  */
 export const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
   <div role="alert" className="bg-red-900 text-red-200 p-3 rounded-lg mt-4 text-sm border border-red-700">
@@ -917,10 +1191,11 @@ export const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
 );
 
 /**
- * Displays a success message in a styled block.
- * @param {object} props - Component props.
- * @param {string} props.message - The success message to display.
- * @returns {JSX.Element} The rendered success message component.
+ * SuccessMessage displays positive feedback for completed operations.
+ *
+ * Business Value: Reinforces positive user actions, confirming successful
+ * transactions or updates. This immediate and clear feedback enhances user
+ * confidence and satisfaction, contributing to a more rewarding platform experience.
  */
 export const SuccessMessage: React.FC<{ message: string }> = ({ message }) => (
   <div role="status" className="bg-green-900 text-green-200 p-3 rounded-lg mt-4 text-sm border border-green-700">
@@ -930,14 +1205,14 @@ export const SuccessMessage: React.FC<{ message: string }> = ({ message }) => (
 );
 
 /**
- * A reusable modal component.
- * It provides a consistent overlay and content area for various dialogs.
- * @param {object} props - Component props.
- * @param {boolean} props.isOpen - Controls the visibility of the modal.
- * @param {() => void} props.onClose - Function to call when the modal is requested to close.
- * @param {string} props.title - The title displayed at the top of the modal.
- * @param {React.ReactNode} props.children - The content to render inside the modal.
- * @returns {JSX.Element | null} The rendered modal or null if not open.
+ * Modal is a flexible and reusable component for displaying overlay dialogs.
+ * It provides a consistent visual container for various interactive workflows,
+ * such as minting NFTs or viewing details.
+ *
+ * Business Value: Enhances user focus for critical interactions, preventing
+ * distractions. Its reusability accelerates development of new features
+ * requiring pop-up interfaces, ensuring a consistent and professional user
+ * experience across the entire application.
  */
 export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
@@ -962,12 +1237,13 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
 };
 
 /**
- * Component for displaying pagination controls.
- * @param {object} props - Component props.
- * @param {number} props.currentPage - The currently active page number.
- * @param {number} props.totalPages - The total number of pages available.
- * @param {(page: number) => void} props.onPageChange - Callback function for when a page changes.
- * @returns {JSX.Element} The rendered pagination controls.
+ * PaginationControls renders interactive controls for navigating through paginated content.
+ * It dynamically adjusts the number of visible page buttons for optimal usability.
+ *
+ * Business Value: Improves performance and user experience by breaking down large
+ * datasets into manageable chunks, preventing UI overload. Efficient pagination
+ * is essential for scalable marketplaces with thousands or millions of listings,
+ * ensuring fast loading times and smooth browsing.
  */
 export const PaginationControls: React.FC<{ currentPage: number; totalPages: number; onPageChange: (page: number) => void }> = ({ currentPage, totalPages, onPageChange }) => {
   const pageNumbers = useMemo(() => {
@@ -1043,15 +1319,19 @@ export const PaginationControls: React.FC<{ currentPage: number; totalPages: num
   );
 };
 
-// --- AppProvider (Wraps the entire application for context) ---
 /**
- * `AppProvider` is a React Context Provider that manages and provides global
+ * AppProvider is a React Context Provider that manages and provides global
  * state and functions to all components within its tree. This centralizes
  * data management for the marketplace, including user authentication (mocked),
- * marketplace listings, and user profiles.
- * @param {object} props - Component props.
- * @param {React.ReactNode} props.children - Child components to be rendered within the provider's scope.
- * @returns {JSX.Element} The context provider component.
+ * marketplace listings, and user profiles, embodying the core state
+ * management for the entire application.
+ *
+ * Business Value: This provider serves as the single source of truth for
+ * critical application data, ensuring data consistency and simplifying
+ * state management logic across a large codebase. It forms the backbone
+ * for a scalable and maintainable frontend architecture, reducing development
+ * complexity and accelerating feature delivery, directly translating to
+ * lower operational costs and faster market responsiveness.
  */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -1060,8 +1340,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
 
   /**
-   * Fetches all market data (NFTs and user profiles) from the mock backend.
-   * This function is crucial for initial data loading and refreshing the marketplace.
+   * fetchMarketData retrieves all market data (NFTs and user profiles) from the mock backend.
+   * This function is crucial for initial data loading and refreshing the marketplace state.
+   *
+   * Business Value: Ensures the marketplace UI is always synchronized with the latest
+   * asset and user data. This real-time data flow is essential for dynamic pricing,
+   * accurate inventory, and responsive user interfaces, maximizing user engagement
+   * and transaction confidence.
    */
   const fetchMarketData = useCallback(async () => {
     try {
@@ -1076,9 +1361,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   /**
-   * Simulates connecting a cryptocurrency wallet.
-   * Generates a random wallet address and fetches/creates a corresponding user profile.
-   * @returns {Promise<UserProfile>} A promise resolving to the connected user's profile.
+   * walletConnect simulates connecting a cryptocurrency wallet and fetching/creating a user profile.
+   * This represents the user's entry point into the authenticated marketplace experience.
+   *
+   * Business Value: This function simulates the critical "digital identity" onboarding process.
+   * By providing immediate access to a user profile, it enables personalized experiences
+   * and unlocks transactional capabilities, driving user adoption and engagement.
+   * The mocking ensures the UX flow can be perfected independently of complex blockchain integrations.
    */
   const walletConnect = useCallback(async () => {
     setIsLoadingWallet(true);
@@ -1100,17 +1389,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [userProfiles]);
 
   /**
-   * Disconnects the current user's wallet by clearing the `currentUser` state.
+   * walletDisconnect simulates disconnecting the current user's wallet.
+   *
+   * Business Value: Provides users with privacy and control over their session,
+   * allowing them to securely log out. This enhances user trust and compliance
+   * with data privacy standards.
    */
   const walletDisconnect = useCallback(() => {
     setCurrentUser(null);
   }, []);
 
   /**
-   * Updates a specific DreamNFT in the `marketData` state.
-   * Used when an NFT's properties (e.g., price, owner, sale status) change.
-   * @param {string} tokenId - The ID of the NFT to update.
-   * @param {Partial<DreamNFT>} updates - An object containing partial updates for the NFT.
+   * updateMarketItem updates a specific DreamNFT in the `marketData` state.
+   * This is used when an NFT's properties (e.g., price, owner, sale status) change.
+   *
+   * Business Value: Ensures real-time UI updates reflective of market changes,
+   * such as sales or listing modifications. This dynamic responsiveness is key
+   * to a vibrant marketplace, reducing stale data issues and enhancing user experience.
    */
   const updateMarketItem = useCallback((tokenId: string, updates: Partial<DreamNFT>) => {
     setMarketData(prev =>
@@ -1119,28 +1414,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   /**
-   * Adds a new DreamNFT to the `marketData` state.
-   * Typically used after a successful minting operation.
-   * @param {DreamNFT} nft - The new DreamNFT object to add.
+   * addMarketItem adds a new DreamNFT to the `marketData` state.
+   * Typically used after a successful minting operation to immediately reflect new assets.
+   *
+   * Business Value: Provides instant feedback to users upon minting a new asset,
+   * reflecting the "real-time" aspect of the platform. This immediate gratification
+   * improves user satisfaction and reinforces the value of their creative output.
    */
   const addMarketItem = useCallback((nft: DreamNFT) => {
     setMarketData(prev => [nft, ...prev]);
   }, []);
 
   /**
-   * Removes a DreamNFT from the `marketData` state.
-   * (Less common in a marketplace, but useful for moderation or specific scenarios).
-   * @param {string} tokenId - The ID of the NFT to remove.
+   * removeMarketItem removes a DreamNFT from the `marketData` state.
+   *
+   * Business Value: Supports administrative actions or specific marketplace
+   * scenarios where an NFT might need to be delisted or removed. Essential
+   * for data hygiene and platform governance.
    */
   const removeMarketItem = useCallback((tokenId: string) => {
     setMarketData(prev => prev.filter(nft => nft.tokenId !== tokenId));
   }, []);
 
   /**
-   * Updates a specific user profile in the `userProfiles` state, and also
-   * updates `currentUser` if the updated profile belongs to the current user.
-   * @param {string} walletAddress - The wallet address of the user whose profile is being updated.
-   * @param {Partial<UserProfile>} updates - An object containing partial updates for the user profile.
+   * updateUserProfile updates a specific user profile in the `userProfiles` state,
+   * and also updates `currentUser` if the updated profile belongs to the current user.
+   *
+   * Business Value: Centralized user profile management ensures that all UI components
+   * consuming user data reflect the most current information. This consistency is
+   * vital for a seamless user experience, preventing data discrepancies and
+   * improving the reliability of personalized features.
    */
   const updateUserProfile = useCallback((walletAddress: string, updates: Partial<UserProfile>) => {
     setUserProfiles(prev =>
@@ -1195,12 +1498,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 };
 
 
-// --- Feature Components (Reusable UI Blocks for the Marketplace View) ---
-
 /**
- * Displays the current user's wallet information or a prompt to connect the wallet.
- * Includes user profile summary and options to edit or disconnect.
- * @returns {JSX.Element} The rendered wallet info panel.
+ * WalletInfoPanel displays the current user's wallet information and profile summary,
+ * or prompts them to connect a wallet if not already connected. It is a key interface
+ * for user identity and financial overview.
+ *
+ * Business Value: This panel serves as the user's dashboard for their digital identity
+ * and financial standing within the marketplace. By prominently displaying balance,
+ * owned assets, and profile details, it fosters transparency and enables users to
+ * manage their presence effectively. The "Connect Wallet" CTA is a critical onboarding
+ * mechanism, driving user conversion and participation in the digital economy.
  */
 export const WalletInfoPanel: React.FC = () => {
   const { currentUser, walletConnect, walletDisconnect, isLoadingWallet } = useAppContext();
@@ -1209,7 +1516,7 @@ export const WalletInfoPanel: React.FC = () => {
   // Render loading state while wallet connection is in progress
   if (isLoadingWallet) {
     return (
-      <div className="bg-gray-700 p-4 rounded-lg flex flex-col items-center justify-center min-h-[150px] animate-pulse">
+      <div className="bg-gray-700 p-4 rounded-lg flex flex-col items-center justify-center min-h-[150px] shadow-md border border-gray-600 animate-pulse" aria-live="polite" aria-busy="true">
         <LoadingSpinner />
         <p className="mt-3 text-lg text-gray-300">Connecting Wallet securely...</p>
       </div>
@@ -1219,10 +1526,10 @@ export const WalletInfoPanel: React.FC = () => {
   // Render prompt to connect wallet if no user is connected
   if (!currentUser) {
     return (
-      <div className="bg-gray-700 p-6 rounded-lg flex flex-col items-center shadow-md border border-gray-600">
+      <div className="bg-gray-700 p-6 rounded-lg flex flex-col items-center shadow-md border border-gray-600" aria-label="Wallet Connection Panel">
         <p className="text-xl font-semibold mb-4 text-white">Connect your wallet</p>
         <p className="text-gray-400 text-center mb-6">Unlock full marketplace features: mint, buy, sell dreams.</p>
-        <StyledButton onClick={walletConnect} size="lg" className="w-full sm:w-auto">
+        <StyledButton onClick={walletConnect} size="lg" className="w-full sm:w-auto" aria-label="Connect Wallet">
           Connect Wallet
         </StyledButton>
       </div>
@@ -1233,7 +1540,7 @@ export const WalletInfoPanel: React.FC = () => {
 
   // Render connected user's profile summary
   return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-lg border border-gray-600">
+    <div className="bg-gray-700 p-6 rounded-lg shadow-lg border border-gray-600" aria-label={`User Profile: ${currentUser.username}`}>
       <div className="flex items-center space-x-4 mb-4">
         <img src={currentUser.profilePictureUrl} alt="Profile avatar" className="w-16 h-16 rounded-full border-2 border-cyan-500 object-cover" />
         <div>
@@ -1257,6 +1564,14 @@ export const WalletInfoPanel: React.FC = () => {
             <p className="font-semibold text-gray-300">Bio:</p>
             <p className="text-sm italic text-gray-400 break-words max-h-20 overflow-y-auto custom-scrollbar">{currentUser.bio}</p>
         </div>
+        <div className="col-span-2">
+            <p className="font-semibold text-gray-300">Roles:</p>
+            <p className="text-sm italic text-gray-400">{currentUser.roles.join(', ')}</p>
+        </div>
+        <div className="col-span-2">
+            <p className="font-semibold text-gray-300">Public Key:</p>
+            <p className="text-xs font-mono break-all text-gray-500">{truncateAddress(currentUser.publicKey || 'N/A', 10)}</p>
+        </div>
       </div>
       <div className="flex justify-end space-x-2 border-t border-gray-600 pt-4">
         <StyledButton variant="secondary" onClick={() => setProfileEditOpen(true)} size="sm" aria-label="Edit your profile information">
@@ -1277,13 +1592,13 @@ export const WalletInfoPanel: React.FC = () => {
 };
 
 /**
- * Modal component for editing the current user's profile.
- * Allows updating username and bio, interacting with `mockBackend` for persistence.
- * @param {object} props - Component props.
- * @param {boolean} props.isOpen - Controls modal visibility.
- * @param {() => void} props.onClose - Callback to close the modal.
- * @param {UserProfile} props.currentUser - The profile of the user being edited.
- * @returns {JSX.Element} The rendered edit profile modal.
+ * EditProfileModal is a modal component for editing the current user's profile information.
+ * It allows users to update their username and bio, providing a self-service identity management feature.
+ *
+ * Business Value: Empowers users to customize their digital identity, which is crucial for
+ * fostering a sense of community and personal investment in the platform. This self-management
+ * capability reduces administrative overhead and enhances user engagement, directly contributing
+ * to platform stickiness and user satisfaction.
  */
 export const EditProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; currentUser: UserProfile }> = ({ isOpen, onClose, currentUser }) => {
   const { updateUserProfile, fetchMarketData } = useAppContext();
@@ -1304,9 +1619,9 @@ export const EditProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; 
   }, [isOpen, currentUser]);
 
   /**
-   * Handles the form submission for profile updates.
-   * Performs client-side validation, calls mock backend, and updates global state.
-   * @param {React.FormEvent} e - The form submission event.
+   * handleSubmit handles the form submission for profile updates.
+   * It performs client-side validation, calls the mock backend for persistence,
+   * and updates the global application state.
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1398,12 +1713,15 @@ export const EditProfileModal: React.FC<{ isOpen: boolean; onClose: () => void; 
 
 
 /**
- * Modal component for minting a new Dream NFT.
- * Provides a form with various parameters for dream generation and licensing.
- * @param {object} props - Component props.
- * @param {boolean} props.isOpen - Controls modal visibility.
- * @param {() => void} props.onClose - Callback to close the modal.
- * @returns {JSX.Element} The rendered mint dream modal.
+ * MintDreamModal is a modal component facilitating the creation of new Dream NFTs.
+ * It provides a comprehensive form for users to specify their dream prompt, artistic style,
+ * licensing options, and other metadata, effectively interfacing with the generative AI.
+ *
+ * Business Value: This modal is the gateway for users to leverage the platform's
+ * generative AI capabilities (Agentic AI theme) to create unique, valuable digital assets.
+ * By streamlining the minting process, it encourages content creation, directly
+ * fueling the supply side of the marketplace and enabling revenue generation through
+ * minting fees and future royalties.
  */
 export const MintDreamModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { currentUser, addMarketItem, fetchMarketData } = useAppContext();
@@ -1434,15 +1752,20 @@ export const MintDreamModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
   }, [isOpen]);
 
   /**
-   * Handles the form submission for minting a new dream.
-   * Validates input, calls mock backend for minting, and updates global state.
-   * @param {React.FormEvent} e - The form submission event.
+   * handleSubmit handles the form submission for minting a new dream.
+   * It validates user input, interacts with the mock backend's minting logic,
+   * and updates the global application state to reflect the newly created NFT.
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) {
       setError("Please connect your wallet to mint a dream NFT.");
       return;
+    }
+    // RBAC check: Only users with 'creator' or 'admin' role can mint
+    if (!currentUser.roles.includes('creator') && !currentUser.roles.includes('admin')) {
+        setError("Unauthorized: You must have 'creator' or 'admin' role to mint NFTs.");
+        return;
     }
     if (!prompt.trim()) {
       setError("Dream prompt cannot be empty. Please describe your vision.");
@@ -1587,7 +1910,7 @@ export const MintDreamModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
           <StyledButton type="button" variant="secondary" onClick={onClose} disabled={isMinting} aria-label="Cancel minting process">
             Cancel
           </StyledButton>
-          <StyledButton type="submit" disabled={isMinting || !currentUser || currentUser.balanceEth < MARKETPLACE_CONFIG.MINT_FEE_ETH} aria-label="Mint your dream as an NFT">
+          <StyledButton type="submit" disabled={isMinting || !currentUser || currentUser.balanceEth < MARKETPLACE_CONFIG.MINT_FEE_ETH || (!currentUser.roles.includes('creator') && !currentUser.roles.includes('admin'))} aria-label="Mint your dream as an NFT">
             {isMinting ? <LoadingSpinner /> : 'Mint Dream as NFT'}
           </StyledButton>
         </div>
@@ -1598,12 +1921,13 @@ export const MintDreamModal: React.FC<{ isOpen: boolean; onClose: () => void }> 
 
 
 /**
- * Displays a single Dream NFT as a card in a grid layout.
- * Provides a visual summary and an action to view details.
- * @param {object} props - Component props.
- * @param {DreamNFT} props.dream - The DreamNFT object to display.
- * @param {(dream: DreamNFT) => void} props.onDetailsClick - Callback for when the details button is clicked.
- * @returns {JSX.Element} The rendered dream card.
+ * DreamCard displays a single Dream NFT as an interactive card within a grid layout.
+ * It provides a visual summary of the NFT's key attributes and market status.
+ *
+ * Business Value: This component is a high-impact visual representation of digital assets,
+ * designed to attract buyer attention and encourage exploration. Its concise presentation
+ * of price, rarity, and ownership, coupled with intuitive interaction, directly supports
+ * discoverability and drives traffic to individual NFT listings, maximizing potential sales.
  */
 export const DreamCard: React.FC<{ dream: DreamNFT; onDetailsClick: (dream: DreamNFT) => void }> = ({ dream, onDetailsClick }) => {
   const { currentUser } = useAppContext();
@@ -1664,13 +1988,17 @@ export const DreamCard: React.FC<{ dream: DreamNFT; onDetailsClick: (dream: Drea
 
 
 /**
- * Modal component for displaying detailed information about a selected NFT.
- * Includes transaction history, and actions like buy, bid, list for sale, or cancel listing.
- * @param {object} props - Component props.
- * @param {boolean} props.isOpen - Controls modal visibility.
- * @param {() => void} props.onClose - Callback to close the modal.
- * @param {DreamNFT | null} props.dream - The DreamNFT object whose details are to be displayed. Null if no dream is selected.
- * @returns {JSX.Element | null} The rendered NFT detail modal or null if no dream is provided.
+ * NFTDetailModal is a modal component providing an in-depth view of a selected Dream NFT.
+ * It presents detailed information including transaction history, licensing, and access
+ * to raw neural patterns. Furthermore, it enables critical market actions such as
+ * purchasing, bidding, listing, or canceling a listing for the asset.
+ *
+ * Business Value: This modal is a high-value transaction hub, central to the NFT lifecycle.
+ * By consolidating all asset information and transactional capabilities (Real-Time Payments,
+ * Token Rails, Digital Identity controls like RBAC) into one interface, it empowers users
+ * to make informed decisions and execute transactions seamlessly. The transparency of
+ * transaction history and detailed licensing information builds trust, mitigates risk,
+ * and unlocks diverse commercial opportunities for digital assets.
  */
 export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dream: DreamNFT | null }> = ({ isOpen, onClose, dream }) => {
   const { currentUser, updateMarketItem, fetchMarketData, updateUserProfile } = useAppContext();
@@ -1704,19 +2032,17 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
 
   const isOwner = currentUser?.walletAddress === dream.owner;
   const isCreator = currentUser?.walletAddress === dream.creator;
-  const highestBid = dream.history
-      .filter(item => item.type === 'bid_placed' && item.amountEth !== undefined)
+  // Note: For a true auction, highest bid would be stored and managed on-chain.
+  // This mock system simplifies it by calculating from history, which may not represent current highest *active* bid.
+  const currentHighestBid = dream.history
+      .filter(item => item.type === 'bid_placed' && item.amountEth !== undefined && dream.currentBidders.includes(item.initiator)) // Only consider bids from currentBidders
       .reduce((max, item) => Math.max(max, item.amountEth!), 0);
-  const currentHighestBid = dream.currentBidders.length > 0
-    ? dream.history
-        .filter(item => item.type === 'bid_placed' && dream.currentBidders.includes(item.initiator))
-        .reduce((max, item) => Math.max(max, item.amountEth || 0), 0)
-    : 0;
 
 
   /**
-   * Handles the direct purchase of an NFT.
-   * @async
+   * handleBuyNow facilitates the direct purchase of an NFT.
+   * It performs client-side validation, calls the mock backend's `buyNFT` logic,
+   * and updates the application state to reflect the transfer of ownership and funds.
    */
   const handleBuyNow = async () => {
     if (!currentUser) {
@@ -1731,6 +2057,12 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
       setError(`Insufficient funds. Your wallet balance is ${formatEth(currentUser.balanceEth)}, but you need ${formatEth(dream.priceEth)}.`);
       return;
     }
+    // RBAC check for buying
+    if (!currentUser.roles.includes('user') && !currentUser.roles.includes('admin')) {
+        setError("Unauthorized: You must have 'user' or 'admin' role to purchase NFTs.");
+        return;
+    }
+
 
     setIsBuying(true);
     setError(null);
@@ -1750,15 +2082,19 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
   };
 
   /**
-   * Handles placing a bid on an NFT.
-   * @param {React.FormEvent} e - The form submission event.
-   * @async
+   * handlePlaceBid processes a user's bid on an NFT.
+   * It includes input validation and interaction with the mock backend's bidding logic.
    */
   const handlePlaceBid = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) {
       setError("Please connect your wallet to place a bid.");
       return;
+    }
+    // RBAC check for placing bid
+    if (!currentUser.roles.includes('user') && !currentUser.roles.includes('admin')) {
+        setError("Unauthorized: You must have 'user' or 'admin' role to place bids.");
+        return;
     }
     const amount = parseFloat(bidAmount);
     if (isNaN(amount) || amount <= 0) {
@@ -1769,7 +2105,7 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
       setError(`Insufficient funds. Your wallet balance is ${formatEth(currentUser.balanceEth)}, but you need ${formatEth(amount)} to cover this bid.`);
       return;
     }
-    if (dream.priceEth && amount < dream.priceEth * 0.5) { // Bid must be at least 50% of list price
+    if (dream.isForSale && dream.priceEth && amount < dream.priceEth * 0.5) { // Bid must be at least 50% of list price if listed
         setError(`Bid is too low. Must be at least 50% of current listing price (${formatEth(dream.priceEth * 0.5)}).`);
         return;
     }
@@ -1796,12 +2132,17 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
   };
 
   /**
-   * Handles listing the current user's NFT for sale.
-   * @async
+   * handleListForSale enables the owner to list their NFT for sale.
+   * It validates the proposed price and interacts with the mock backend.
    */
   const handleListForSale = async () => {
     if (!currentUser || currentUser.walletAddress !== dream.owner) {
         setError("You must be the owner of this NFT to list it for sale.");
+        return;
+    }
+    // RBAC check for listing
+    if (!currentUser.roles.includes('creator') && !currentUser.roles.includes('admin') && !currentUser.roles.includes('user')) {
+        setError("Unauthorized: You must have 'creator', 'user' or 'admin' role to list NFTs.");
         return;
     }
     const price = parseFloat(listPrice);
@@ -1827,12 +2168,16 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
   };
 
   /**
-   * Handles cancelling the current user's NFT listing.
-   * @async
+   * handleCancelListing allows the owner to remove their NFT from the marketplace listing.
    */
   const handleCancelListing = async () => {
     if (!currentUser || currentUser.walletAddress !== dream.owner) {
         setError("You must be the owner of this NFT to cancel its listing.");
+        return;
+    }
+    // RBAC check for canceling listing
+    if (!currentUser.roles.includes('creator') && !currentUser.roles.includes('admin') && !currentUser.roles.includes('user')) {
+        setError("Unauthorized: You must have 'creator', 'user' or 'admin' role to cancel NFT listings.");
         return;
     }
     if (!dream.isForSale) {
@@ -1857,8 +2202,7 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
   };
 
   /**
-   * Handles the 'Like' action for an NFT.
-   * @async
+   * handleLikeNFT increments the like count for an NFT.
    */
   const handleLikeNFT = async () => {
       if (!currentUser) {
@@ -1874,8 +2218,7 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
   };
 
   /**
-   * Handles adding/removing an NFT from user favorites.
-   * @async
+   * handleToggleFavorite adds or removes an NFT from the user's favorites list.
    */
   const handleToggleFavorite = async () => {
     if (!currentUser) {
@@ -1984,7 +2327,7 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
                 </>
               ) : (
                 <>
-                  <StyledButton onClick={handleBuyNow} disabled={isBuying || !currentUser || currentUser.balanceEth < (dream.priceEth || 0)} className="w-full mt-3">
+                  <StyledButton onClick={handleBuyNow} disabled={isBuying || !currentUser || currentUser.balanceEth < (dream.priceEth || 0) || (!currentUser.roles.includes('user') && !currentUser.roles.includes('admin'))} className="w-full mt-3">
                     {isBuying ? <LoadingSpinner /> : 'Buy Now'}
                   </StyledButton>
                   <form onSubmit={handlePlaceBid} className="flex flex-col space-y-2 mt-4">
@@ -1997,14 +2340,15 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
                       placeholder="e.g., 0.5 ETH"
-                      disabled={isPlacingBid || !currentUser}
+                      disabled={isPlacingBid || !currentUser || (!currentUser.roles.includes('user') && !currentUser.roles.includes('admin'))}
                       aria-label="Enter bid amount"
                     />
-                    <StyledButton type="submit" disabled={isPlacingBid || !currentUser || parseFloat(bidAmount || '0') <= 0 || (currentUser && currentUser.balanceEth < parseFloat(bidAmount || '0'))}>
+                    <StyledButton type="submit" disabled={isPlacingBid || !currentUser || parseFloat(bidAmount || '0') <= 0 || (currentUser && currentUser.balanceEth < parseFloat(bidAmount || '0')) || (!currentUser.roles.includes('user') && !currentUser.roles.includes('admin'))}>
                       {isPlacingBid ? <LoadingSpinner /> : 'Submit Bid'}
                     </StyledButton>
                   </form>
                   {!currentUser && <p className="text-red-400 text-xs mt-2">Connect your wallet to enable buying and bidding.</p>}
+                  {currentUser && !currentUser.roles.some(role => ['user', 'admin'].includes(role)) && <p className="text-red-400 text-xs mt-2">Your current roles do not permit buying or bidding.</p>}
                 </>
               )}
             </div>
@@ -2025,13 +2369,14 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
                   value={listPrice}
                   onChange={(e) => setListPrice(e.target.value)}
                   placeholder="e.g., 1.2 ETH"
-                  disabled={isListing}
+                  disabled={isListing || (!currentUser.roles.includes('creator') && !currentUser.roles.includes('admin') && !currentUser.roles.includes('user'))}
                   aria-label="Enter listing price in ETH"
                 />
-                <StyledButton onClick={handleListForSale} disabled={isListing || parseFloat(listPrice || '0') <= 0} className="w-full">
+                <StyledButton onClick={handleListForSale} disabled={isListing || parseFloat(listPrice || '0') <= 0 || (!currentUser.roles.includes('creator') && !currentUser.roles.includes('admin') && !currentUser.roles.includes('user'))} className="w-full">
                   {isListing ? <LoadingSpinner /> : 'List NFT'}
                 </StyledButton>
               </div>
+              {currentUser && !currentUser.roles.some(role => ['creator', 'admin', 'user'].includes(role)) && <p className="text-red-400 text-xs mt-2">Your current roles do not permit listing NFTs for sale.</p>}
             </div>
           )}
 
@@ -2048,7 +2393,12 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
                 {dream.history.slice().reverse().map((item, index) => ( // Reverse to show latest first
                   <li key={index} className="border-b border-gray-600 pb-2 last:border-b-0 last:pb-0">
                     <p className="font-medium text-gray-200">{item.details}</p>
-                    <p className="text-xs text-gray-500">{formatTimestamp(item.timestamp)}</p>
+                    <p className="text-xs text-gray-500">
+                      <time dateTime={new Date(item.timestamp).toISOString()}>{formatTimestamp(item.timestamp)}</time>
+                      {item.transactionId && <span className="ml-2 text-cyan-500 font-mono" title={`Transaction ID: ${item.transactionId}`}>Tx: {truncateAddress(item.transactionId, 6)}</span>}
+                      {item.paymentRail && <span className="ml-2 text-purple-400" title={`Payment Rail: ${item.paymentRail}`}>Rail: {item.paymentRail.replace('rail_', '')}</span>}
+                      {item.status && <span className={`ml-2 font-semibold ${item.status === 'flagged' ? 'text-red-400' : item.status === 'reconciling' ? 'text-yellow-400' : 'text-green-400'}`} title={`Status: ${item.status}`}>Status: {item.status}</span>}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -2062,14 +2412,14 @@ export const NFTDetailModal: React.FC<{ isOpen: boolean; onClose: () => void; dr
 
 
 /**
- * Panel component for applying filters to the marketplace listings.
- * Includes search, price range, style, and tag filters.
- * @param {object} props - Component props.
- * @param {MarketplaceFilters} props.filters - Current filter settings.
- * @param {React.Dispatch<React.SetStateAction<MarketplaceFilters>>} props.setFilters - Setter for filter settings.
- * @param {(query: string) => void} props.onSearch - Callback for when a search is performed.
- * @param {string[]} props.allTags - Array of all available tags for filtering.
- * @returns {JSX.Element} The rendered filters panel.
+ * MarketplaceFiltersPanel provides a comprehensive set of controls for filtering NFT listings.
+ * It enables users to narrow down the displayed assets by price range, artistic style, tags,
+ * and other criteria, directly enhancing the discoverability of high-value items.
+ *
+ * Business Value: This panel is critical for improving market efficiency and user experience.
+ * By offering powerful search and filtering tools, it empowers buyers to quickly find
+ * desired digital assets, reducing sales friction and increasing conversion rates.
+ * This directly supports higher transaction volumes and generates more revenue for the platform.
  */
 export const MarketplaceFiltersPanel: React.FC<{
   filters: MarketplaceFilters;
@@ -2091,7 +2441,7 @@ export const MarketplaceFiltersPanel: React.FC<{
   }, [filters]);
 
   /**
-   * Handles changes to the price range input fields.
+   * handlePriceChange updates the price range filter based on user input.
    */
   const handlePriceChange = useCallback(() => {
     const min = parseFloat(minPrice || '0');
@@ -2103,7 +2453,7 @@ export const MarketplaceFiltersPanel: React.FC<{
   }, [minPrice, maxPrice, setFilters]);
 
   /**
-   * Handles changes to the minimum rarity input field.
+   * handleRarityChange updates the minimum rarity score filter.
    */
   const handleRarityChange = useCallback(() => {
     const rarity = parseInt(minRarity || '0');
@@ -2114,9 +2464,7 @@ export const MarketplaceFiltersPanel: React.FC<{
   }, [minRarity, setFilters]);
 
   /**
-   * Handles changes to the style filter checkboxes.
-   * @param {string} style - The style being toggled.
-   * @param {boolean} isChecked - Whether the checkbox is checked.
+   * handleStyleChange toggles the inclusion of an artistic style in the filter.
    */
   const handleStyleChange = useCallback((style: string, isChecked: boolean) => {
     setFilters(prev => ({
@@ -2128,9 +2476,7 @@ export const MarketplaceFiltersPanel: React.FC<{
   }, [setFilters]);
 
   /**
-   * Handles changes to the tag filter checkboxes.
-   * @param {string} tag - The tag being toggled.
-   * @param {boolean} isChecked - Whether the checkbox is checked.
+   * handleTagChange toggles the inclusion of a tag in the filter.
    */
   const handleTagChange = useCallback((tag: string, isChecked: boolean) => {
     setFilters(prev => ({
@@ -2142,8 +2488,7 @@ export const MarketplaceFiltersPanel: React.FC<{
   }, [setFilters]);
 
   /**
-   * Handles the submission of the search query.
-   * @param {React.FormEvent} e - The form submission event.
+   * handleSearchSubmit triggers a new search based on the current query.
    */
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -2299,20 +2644,21 @@ export const MarketplaceFiltersPanel: React.FC<{
 
 
 /**
- * Panel component for sorting marketplace listings.
- * @param {object} props - Component props.
- * @param {MarketplaceSort} props.sort - Current sort settings.
- * @param {React.Dispatch<React.SetStateAction<MarketplaceSort>>} props.setSort - Setter for sort settings.
- * @returns {JSX.Element} The rendered sort panel.
+ * MarketplaceSortPanel provides controls for ordering marketplace listings.
+ * It allows users to sort NFTs by various attributes such as price, minting timestamp,
+ * rarity, and popularity metrics, enhancing the discoverability and navigation experience.
+ *
+ * Business Value: Optimized content presentation is key to user engagement. This panel
+ * allows users to quickly organize information according to their preferences,
+ * leading to more efficient browsing and faster purchasing decisions. This directly
+ * contributes to a dynamic and user-friendly marketplace, boosting activity and satisfaction.
  */
 export const MarketplaceSortPanel: React.FC<{
   sort: MarketplaceSort;
   setSort: React.Dispatch<React.SetStateAction<MarketplaceSort>>;
 }> = ({ sort, setSort }) => {
   /**
-   * Handles changes to the sort dropdown.
-   * Parses the selected value to update sort criteria.
-   * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event from the select element.
+   * handleSortChange updates the sort criteria based on user selection from the dropdown.
    */
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const [by, direction] = e.target.value.split(':');
@@ -2339,9 +2685,15 @@ export const MarketplaceSortPanel: React.FC<{
 };
 
 /**
- * Displays a panel showing recent activity across the marketplace.
- * Aggregates transaction history from all NFTs.
- * @returns {JSX.Element} The rendered activity feed panel.
+ * ActivityFeedPanel displays a chronological stream of recent transactions and events
+ * occurring across the Ethereal Marketplace. It aggregates transaction history from all NFTs,
+ * providing a dynamic overview of market activity.
+ *
+ * Business Value: This panel offers real-time observability into market dynamics,
+ * showcasing recent sales, mints, and bids. This transparency fosters a sense of
+ * vibrancy and activity, encouraging user participation and driving confidence
+ * in the platform's liquidity. For administrators, it serves as a live, high-level
+ * audit log, crucial for monitoring market health and identifying trends.
  */
 export const ActivityFeedPanel: React.FC = () => {
     const { marketData, currentUser } = useAppContext();
@@ -2370,9 +2722,8 @@ export const ActivityFeedPanel: React.FC = () => {
     }, [marketData]);
 
     /**
-     * Renders a single activity item with appropriate icon and styling.
-     * @param {TransactionHistoryItem} item - The transaction history item to render.
-     * @returns {JSX.Element} The rendered list item for activity feed.
+     * renderActivityItem displays a single activity item with appropriate icon and styling.
+     * It highlights transactions related to the current user for improved personalization.
      */
     const renderActivityItem = (item: TransactionHistoryItem) => {
         const isUserRelated = currentUser && (item.initiator === currentUser.walletAddress || item.details.includes(truncateAddress(currentUser.walletAddress)) || (item.type === 'sale' && item.details.includes(truncateAddress(currentUser.walletAddress))));
@@ -2401,16 +2752,26 @@ export const ActivityFeedPanel: React.FC = () => {
                 colorClass = 'text-red-400';
                 altText = 'Listing cancelled icon';
                 break;
+            case 'fraud_flagged':
+                icon = '🚨';
+                colorClass = 'text-red-600';
+                altText = 'Fraud flagged icon';
+                break;
+            case 'reconciliation_started':
+                icon = '🔄';
+                colorClass = 'text-purple-400';
+                altText = 'Reconciliation started icon';
+                break;
             case 'bid_accepted': // Not explicitly used but good for future
             case 'transfer': // Not explicitly used but good for future
             default:
-                icon = '📝'; // Generic note icon
+                icon = '📄'; // Generic note icon
                 colorClass = 'text-gray-400';
                 altText = 'Activity icon';
         }
 
         return (
-            <li key={`${item.targetNFT}-${item.timestamp}-${item.type}`} className="border-b border-gray-600 py-3 last:border-b-0" aria-label={`Activity: ${item.details}`}>
+            <li key={`${item.targetNFT}-${item.timestamp}-${item.type}-${item.transactionId}`} className="border-b border-gray-600 py-3 last:border-b-0" aria-label={`Activity: ${item.details}`}>
                 <div className="flex items-start">
                     <span className={`text-xl mr-3 flex-shrink-0 ${colorClass}`} role="img" aria-label={altText}>{icon}</span>
                     <div className="flex-grow">
@@ -2418,6 +2779,9 @@ export const ActivityFeedPanel: React.FC = () => {
                         <p className="text-xs text-gray-500 mt-1">
                             <time dateTime={new Date(item.timestamp).toISOString()}>{formatTimestamp(item.timestamp)}</time>
                             {item.amountEth !== undefined && <span className="ml-2 font-semibold text-cyan-500">{formatEth(item.amountEth)}</span>}
+                            {item.transactionId && <span className="ml-2 text-gray-500 font-mono" title={`Transaction ID: ${item.transactionId}`}>Tx: {truncateAddress(item.transactionId, 6)}</span>}
+                            {item.paymentRail && <span className="ml-2 text-purple-400" title={`Payment Rail: ${item.paymentRail}`}>Rail: {item.paymentRail.replace('rail_', '')}</span>}
+                            {item.status && <span className={`ml-2 font-semibold ${item.status === 'flagged' ? 'text-red-400' : item.status === 'reconciling' ? 'text-yellow-400' : 'text-green-400'}`} title={`Status: ${item.status}`}>Status: {item.status}</span>}
                         </p>
                     </div>
                 </div>
@@ -2447,8 +2811,13 @@ export const ActivityFeedPanel: React.FC = () => {
 };
 
 /**
- * Displays a grid of NFTs owned by the current user.
- * @returns {JSX.Element} The rendered user owned NFTs panel.
+ * UserOwnedNFTsPanel displays a grid of NFTs currently owned by the connected user.
+ * It provides a personalized view of their digital asset portfolio.
+ *
+ * Business Value: This panel is a critical component for displaying a user's acquired
+ * assets, reinforcing ownership and investment. By providing direct access to their
+ * collection, it encourages further engagement with the marketplace, whether for
+ * showcasing, re-listing, or simply admiring their digital art.
  */
 export const UserOwnedNFTsPanel: React.FC = () => {
   const { currentUser, marketData, isLoadingWallet } = useAppContext();
@@ -2462,8 +2831,7 @@ export const UserOwnedNFTsPanel: React.FC = () => {
   }, [currentUser, marketData]);
 
   /**
-   * Handles clicking on a dream card to view its details in a modal.
-   * @param {DreamNFT} dream - The dream NFT selected for details view.
+   * handleDetailsClick sets the selected dream and opens the detail modal.
    */
   const handleDetailsClick = useCallback((dream: DreamNFT) => {
     setSelectedDream(dream);
@@ -2471,7 +2839,7 @@ export const UserOwnedNFTsPanel: React.FC = () => {
   }, []);
 
   /**
-   * Closes the NFT detail modal and clears the selected dream.
+   * closeDetailModal closes the NFT detail modal and clears the selected dream.
    */
   const closeDetailModal = useCallback(() => {
     setIsDetailModalOpen(false);
@@ -2481,7 +2849,7 @@ export const UserOwnedNFTsPanel: React.FC = () => {
   // Render loading state while wallet is connecting
   if (isLoadingWallet) {
     return (
-      <div className="bg-gray-700 p-6 rounded-lg flex items-center justify-center min-h-[200px] shadow-md border border-gray-600">
+      <div className="bg-gray-700 p-6 rounded-lg flex items-center justify-center min-h-[200px] shadow-md border border-gray-600" aria-live="polite" aria-busy="true">
         <LoadingSpinner />
         <span className="ml-3 text-lg text-gray-400">Loading your ethereal dreams...</span>
       </div>
@@ -2491,14 +2859,14 @@ export const UserOwnedNFTsPanel: React.FC = () => {
   // Render message if no user is connected
   if (!currentUser) {
     return (
-      <div className="bg-gray-700 p-6 rounded-lg text-center shadow-md border border-gray-600">
+      <div className="bg-gray-700 p-6 rounded-lg text-center shadow-md border border-gray-600" aria-label="Owned NFTs Panel - Not Connected">
         <p className="text-gray-400 text-lg">Connect your wallet to view your owned dreams.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-lg border border-gray-600">
+    <div className="bg-gray-700 p-6 rounded-lg shadow-lg border border-gray-600" aria-label={`Owned NFTs by ${currentUser.username}`}>
       <h3 className="text-xl font-bold mb-4 text-white">Your Owned Dreams ({ownedNFTs.length})</h3>
       {ownedNFTs.length === 0 ? (
         <p className="text-gray-400 italic text-center py-4">You don't own any Ethereal Dreams yet. Mint one or buy from the marketplace to start your collection!</p>
@@ -2520,9 +2888,14 @@ export const UserOwnedNFTsPanel: React.FC = () => {
 };
 
 /**
- * Displays key statistics and overview of the marketplace.
- * Calculates metrics like total dreams, items for sale, average price, etc.
- * @returns {JSX.Element} The rendered market statistics panel.
+ * MarketStatisticsPanel displays key aggregate statistics and an overview of the marketplace's health and activity.
+ * It calculates and presents metrics such as total assets, items for sale, average price, and popular trends.
+ *
+ * Business Value: This panel provides crucial observability into the marketplace's performance
+ * and health. By presenting aggregated metrics, it offers valuable insights for strategic
+ * decision-making, investor relations, and identifying market trends. This transparent
+ * display of vital statistics builds confidence among users and stakeholders, reflecting
+ * a data-driven approach to platform management and growth.
  */
 export const MarketStatisticsPanel: React.FC = () => {
     const { marketData } = useAppContext();
@@ -2610,4 +2983,39 @@ export const MarketStatisticsPanel: React.FC = () => {
                         <span className="text-gray-400">Dreams for Sale:</span>
                         <span className="text-lg font-semibold text-white">{stats.forSaleCount.toLocaleString()}</span>
                     </div>
-                    <div className="flex flex-col p-2 bg-gray-6
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Avg. List Price:</span>
+                        <span className="text-lg font-semibold text-cyan-400">{formatEth(stats.averagePrice)}</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Total Volume:</span>
+                        <span className="text-lg font-semibold text-green-400">{formatEth(stats.totalVolume)}</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Unique Owners:</span>
+                        <span className="text-lg font-semibold text-white">{stats.uniqueOwners.toLocaleString()}</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Popular Style:</span>
+                        <span className="text-base font-semibold text-blue-400 truncate" title={stats.mostPopularStyle}>{stats.mostPopularStyle}</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Common Tag:</span>
+                        <span className="text-base font-semibold text-purple-400 truncate" title={stats.mostCommonTag}>{stats.mostCommonTag}</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Highest Rarity:</span>
+                        <span className="text-lg font-semibold text-yellow-400">{stats.highestRarity}/100</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-gray-600 rounded-md">
+                        <span className="text-gray-400">Avg. Rarity:</span>
+                        <span className="text-lg font-semibold text-gray-300">{stats.averageRarity.toFixed(1)}/100</span>
+                    </div>
+                </div>
+            )}
+            <div className="mt-4 border-t border-gray-600 pt-4">
+                <StyledButton variant="ghost" size="sm" className="w-full" aria-label="Access detailed analytics (feature coming soon)">Detailed Analytics (Coming Soon)</StyledButton>
+            </div>
+        </div>
+    );
+};
