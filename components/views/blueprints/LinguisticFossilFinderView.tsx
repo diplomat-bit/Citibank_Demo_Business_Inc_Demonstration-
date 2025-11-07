@@ -1,22 +1,16 @@
-/**
- * This module implements the core data structures and simulated services for a cutting-edge Linguistic Fossil Finder.
- * Business value: It accelerates comparative linguistic research by automating the identification of sound correspondences,
- * proposing proto-word reconstructions, and managing complex etymological datasets. This platform transforms manual,
- * labor-intensive scholarly work into a high-velocity, collaborative, and auditable process.
- * By integrating with agentic AI, digital identity, and token rails, it enables monetized research bounties,
- * secure attribution for intellectual contributions, and auditable provenance for all linguistic data.
- * This drives new revenue streams through data licensing, research funding, and a global marketplace for linguistic expertise,
- * while ensuring data integrity and fostering unprecedented collaboration in historical linguistics.
- */
+"""This module establishes the foundational data models, core services, and a dynamic view for a revolutionary Linguistic Fossil Finder platform. Business impact: It transforms the laborious and often fragmented field of comparative linguistics into an agile, AI-powered enterprise solution. By integrating intelligent agents, digital identity, and programmable value rails, it enables real-time proto-word reconstruction, automated sound law discovery, and cryptographically auditable research collaboration. This drives new, monetized research ecosystems through verifiable data contributions, intellectual property protection, and a global marketplace for linguistic expertise, positioning the platform as a cornerstone for data-driven humanities and a significant revenue generator through licensing and research acceleration."""
 import React, { useState, useEffect, useCallback, createContext, useContext, useReducer } from 'react';
 
-// --- Global Data Types and Interfaces (Highly Expanded) ---
+# --- Global Data Types and Interfaces (Highly Expanded) ---
 
 /**
- * Represents a specific sound or phoneme.
+ * Represents a specific sound or phoneme within a language's phonological inventory.
+ * Business value: Provides granular, machine-readable data on sound systems, critical for automated
+ * phonetic comparison, sound law discovery, and high-fidelity proto-language reconstruction.
+ * This precision is essential for academic rigor and for training advanced linguistic AI models.
  */
 export interface Phoneme {
-  symbol: string; // IPA symbol, e.g., 'p', 'b', 'm', 'aË '
+  symbol: string; // IPA symbol, e.g., 'p', 'b', 'm', 'ã'
   features: {
     manner: 'stop' | 'fricative' | 'affricate' | 'nasal' | 'trill' | 'tap' | 'approximant' | 'vowel';
     place: 'bilabial' | 'labiodental' | 'dental' | 'alveolar' | 'postalveolar' | 'retroflex' | 'palatal' | 'velar' | 'uvular' | 'pharyngeal' | 'glottal';
@@ -39,7 +33,10 @@ export interface Phoneme {
 }
 
 /**
- * Represents a specific sound correspondence rule between a proto-language and a descendant.
+ * Represents a specific sound correspondence rule between a proto-language and a descendant language.
+ * Business value: Encapsulates the core transformation logic of linguistic evolution, enabling
+ * predictive modeling of sound changes and validating historical linguistic hypotheses. This
+ * forms a programmable rule engine for automated reconstruction and error detection in etymological data.
  */
 export interface SoundCorrespondenceRule {
   id: string;
@@ -52,13 +49,17 @@ export interface SoundCorrespondenceRule {
   examples: { protoWord: string, descendantWord: string }[];
   confidence: number; // How strong is the evidence for this rule (0.0 to 1.0)
   notes?: string;
-  source?: string; // e.g., 'Grimm\'s Law', 'Verner\'s Law'
-  priority?: number; // For rule ordering (lower number = higher priority)
+  source?: string; // e.g., 'Grimm's Law', 'Verner's Law'
+  priority?: number; // For rule ordering (lower number = higher priority), critical for deterministic application
   dateEstablished?: string; // When the rule was formulated or confirmed
+  proposedBy?: string; // Identity ID of proposer
 }
 
 /**
  * Represents a morpheme (minimal meaningful unit).
+ * Business value: Facilitates granular analysis of word structure, enabling more precise
+ * etymological tracing and the development of morphology-aware linguistic agents.
+ * This deep structural understanding enhances the accuracy of linguistic reconstructions.
  */
 export interface Morpheme {
   id: string;
@@ -75,6 +76,10 @@ export interface Morpheme {
 
 /**
  * Represents a lexical entry in a language's lexicon.
+ * Business value: Serves as the fundamental unit of attested language data, enabling
+ * systematic collection, comparison, and analysis of words across languages.
+ * This rich dataset is the raw material for all reconstructive and comparative linguistic tasks,
+ * directly fueling the platform's core value proposition.
  */
 export interface LexicalEntry {
   id: string;
@@ -103,13 +108,17 @@ export interface LexicalEntry {
 }
 
 /**
- * Represents a language.
+ * Represents a language, either attested or reconstructed.
+ * Business value: Provides comprehensive metadata for each language, enabling
+ * sophisticated filtering, relationship mapping, and contextual analysis. This structured
+ * representation of linguistic diversity is crucial for accurate comparative work and
+ * for understanding the complex tapestry of human language history.
  */
 export interface Language {
   id: string;
   name: string;
-  isoCode: string; // ISO 639-3 code
-  family: string; // E.g., 'Indo-European', 'Uralic'
+  isoCode: string; // ISO 639-3 code (or 'proto' for reconstructed languages)
+  family: string; // E.g., 'Indo-European', 'Uralic', 'Proto-Language'
   subfamily?: string; // E.g., 'Germanic', 'Romance'
   branch?: string; // E.g., 'West Germanic', 'Italic'
   location?: { latitude: number, longitude: number, region?: string }; // Geographic center and region
@@ -134,7 +143,9 @@ export interface Language {
 }
 
 /**
- * A lighter version for display in lists
+ * A lighter version of a reconstruction for display in lists.
+ * Business value: Optimizes performance for UI rendering by providing essential reconstruction data
+ * without loading the full, extensive details, ensuring a responsive and scalable user experience.
  */
 export interface ReconstructionLite {
   protoWord: string; // The primary proto-word form
@@ -145,6 +156,9 @@ export interface ReconstructionLite {
 
 /**
  * Represents a reconstructed proto-word or proto-morpheme.
+ * Business value: This is the core output of the Linguistic Fossil Finder, representing new
+ * scientific knowledge generated by the platform. Its structured, verifiable nature enhances
+ * academic credibility and provides a valuable asset for data licensing and further AI analysis.
  */
 export interface Reconstruction extends ReconstructionLite {
   id: string; // Unique ID for the reconstruction
@@ -164,8 +178,9 @@ export interface Reconstruction extends ReconstructionLite {
   }[];
   notes?: string;
   etymologicalNotes?: string; // Detailed etymological reasoning
-  proposedBy?: string; // Scholar or system that proposed it
+  proposedBy?: string; // Identity ID of scholar or system that proposed it
   dateProposed?: string; // ISO date or year
+  lastUpdated?: string; // ISO date when last modified
   alternativeReconstructions?: { protoWord: string, confidence: number, notes?: string }[];
   semanticField: string;
   reconstructionMethod?: 'comparative' | 'internal' | 'computational';
@@ -174,13 +189,16 @@ export interface Reconstruction extends ReconstructionLite {
 }
 
 /**
- * Represents a project or workspace for a user.
+ * Represents a project or workspace for a user or team.
+ * Business value: Organizes research efforts, fosters collaboration, and provides a framework
+ * for managing linguistic data and tasks. This directly translates to increased research
+ * efficiency and simplified project governance within the platform.
  */
 export interface UserProject {
   id: string;
   name: string;
   description: string;
-  ownerId: string;
+  ownerId: string; // Digital Identity ID
   createdAt: string;
   lastModified: string;
   reconstructions: string[]; // IDs of reconstructions saved in this project
@@ -189,10 +207,14 @@ export interface UserProject {
   collaborators?: string[]; // User IDs of collaborators
   visibility?: 'private' | 'public' | 'shared';
   tags?: string[];
+  governancePolicyId?: string; // Link to a governance policy applied to this project
 }
 
 /**
  * Represents a set of cognates across languages for a single concept.
+ * Business value: Groups related lexical entries, serving as the primary input for
+ * proto-word reconstruction tasks. Curated cognate sets are high-value data assets,
+ * accelerating scientific discovery and enabling targeted AI analysis.
  */
 export interface CognateSet {
   id: string;
@@ -207,7 +229,7 @@ export interface CognateSet {
   }[];
   analysisNotes?: string;
   confidenceScore: number; // Confidence that these are true cognates
-  proposedBy?: string;
+  proposedBy?: string; // Identity ID of proposer
   createdAt: string;
   lastUpdated?: string;
   tags?: string[];
@@ -217,6 +239,9 @@ export interface CognateSet {
 
 /**
  * User settings/preferences for the application.
+ * Business value: Enhances user experience and personalization, leading to higher adoption
+ * and satisfaction. Configurable preferences allow the platform to adapt to diverse
+ * research methodologies and user needs.
  */
 export interface UserSettings {
   theme: 'dark' | 'light';
@@ -231,40 +256,47 @@ export interface UserSettings {
   showConfidenceScores: boolean;
 }
 
-// --- New Interfaces for Agentic AI, Identity, and Token Rails Integration ---
+# --- New Interfaces for Agentic AI, Identity, and Token Rails Integration ---
 
 /**
  * Represents a minimal digital identity within the linguistic ecosystem.
  * Business value: Establishes verifiable attribution for scholarly contributions and agent actions,
- * preventing fraud and enabling secure, auditable collaboration. This underpins trust and intellectual property in a global research network.
+ * preventing fraud and enabling secure, auditable collaboration. This underpins trust and intellectual property in a global research network,
+ * a critical component of a multi-million-dollar financial infrastructure.
  */
 export interface DigitalIdentity {
   id: string; // Unique identifier (e.g., UUID, public key hash)
   name: string; // Human-readable name
   publicKey: string; // Public key for cryptographic operations
-  roles: ('researcher' | 'editor' | 'agent' | 'admin' | 'guest')[];
+  privateKey: string; // Private key for signing (SIMULATED for internal use, never exposed in real system)
+  roles: ('researcher' | 'editor' | 'agent' | 'admin' | 'guest' | 'governor')[];
   organization?: string;
   reputationScore?: number; // Based on validated contributions, for agentic decision making.
+  lastActive?: string; // ISO timestamp
 }
 
 /**
  * Represents a skill that an Agentic AI or human expert can possess and apply in linguistic analysis.
  * Business value: Modularizes complex linguistic tasks, making agents highly configurable, reusable, and scalable.
  * This allows for rapid deployment of specialized AI agents to tackle specific research challenges,
- * dramatically increasing research throughput and precision.
+ * dramatically increasing research throughput and precision, thereby accelerating high-value research outcomes.
  */
 export interface LinguisticSkill {
   id: string;
-  name: string; // e.g., 'ProtoWordReconstruction', 'SoundLawDetection', 'CognateIdentification'
+  name: string; // e.g., 'ProtoWordReconstruction', 'SoundLawDetection', 'CognateIdentification', 'DataValidation', 'Remediation'
   description: string;
   costEstimatePerUse?: { tokenType: string, amount: number }; // Cost to invoke this skill, linked to token rails
-  requiredPermissions: ('agent' | 'researcher' | 'admin')[];
+  requiredPermissions: ('agent' | 'researcher' | 'admin' | 'governor')[];
   outputSchema?: any; // JSON schema for expected output
   inputSchema?: any; // JSON schema for expected input
+  performanceMetrics?: { latency: number, accuracy: number }; // Simulated performance metrics
 }
 
 /**
  * Status of a linguistic task.
+ * Business value: Provides clear visibility into the research pipeline, allowing for real-time
+ * tracking of progress, identification of bottlenecks, and efficient resource allocation.
+ * This transparency is vital for project management and financial reporting on research expenditures.
  */
 export enum LinguisticTaskStatus {
   Pending = 'pending',
@@ -274,13 +306,15 @@ export enum LinguisticTaskStatus {
   Completed = 'completed',
   Failed = 'failed',
   Cancelled = 'cancelled',
+  Remediated = 'remediated', // New status for tasks undergoing remediation
 }
 
 /**
  * Represents a discrete linguistic task that can be assigned and tracked.
  * Business value: Enables the decomposition of large research problems into manageable, trackable units.
  * This facilitates parallel processing by multiple agents or researchers, accelerates project completion,
- * and provides clear milestones for funding and collaboration, leading to faster research breakthroughs.
+ * and provides clear milestones for funding and collaboration, leading to faster research breakthroughs
+ * and more efficient use of computational and human capital.
  */
 export interface LinguisticTask {
   id: string;
@@ -297,6 +331,7 @@ export interface LinguisticTask {
   priority: 'low' | 'medium' | 'high' | 'critical';
   dependencies?: string[]; // Other task IDs this task depends on
   audits?: LinguisticAuditLogEntry[]; // In-task audit trail
+  riskScore?: number; // Calculated risk for failure or non-compliance
 }
 
 /**
@@ -304,25 +339,25 @@ export interface LinguisticTask {
  * Business value: Provides granular, cryptographically-attested provenance for every data modification,
  * enhancing data integrity, enabling precise intellectual property tracking, and building a trusted
  * data commons for linguistic science. This protects against data tampering and establishes undeniable
- * proof of contribution.
+ * proof of contribution, a fundamental element in high-value data marketplaces.
  */
 export interface LinguisticContribution {
   id: string;
   identityId: string; // Who made the contribution
-  dataType: 'reconstruction' | 'lexicalEntry' | 'rule' | 'cognateSet' | 'language';
+  dataType: 'reconstruction' | 'lexicalEntry' | 'rule' | 'cognateSet' | 'language' | 'project' | 'identity' | 'task';
   dataId: string; // ID of the data item being contributed/modified
-  action: 'create' | 'update' | 'delete' | 'review' | 'propose';
+  action: 'create' | 'update' | 'delete' | 'review' | 'propose' | 'assign' | 'fund' | 'claim';
   timestamp: string;
   details: any; // e.g., diff for updates, full object for create
   signature: string; // Cryptographic signature by the identity
-  previousHash?: string; // For tamper-evident chaining
+  previousContributionHash?: string; // For tamper-evident chaining of contributions
 }
 
 /**
  * Represents a bounty or reward for completing a specific linguistic task, linked to token rails.
  * Business value: Monetizes linguistic research and incentivizes rapid, high-quality contributions from a global
  * network of experts and AI agents. This creates a liquid marketplace for linguistic problem-solving,
- * driving innovation and attracting top talent/computational resources.
+ * driving innovation and attracting top talent/computational resources, directly creating new revenue streams.
  */
 export interface LinguisticBounty {
   id: string;
@@ -339,30 +374,53 @@ export interface LinguisticBounty {
 }
 
 /**
+ * Defines a governance policy that can be applied to projects, tasks, or data types.
+ * Business value: Establishes clear, enforceable rules for data quality, access, and agent behavior,
+ * ensuring regulatory compliance and maintaining the integrity and trustworthiness of the platform.
+ * This proactive governance minimizes risk and maximizes long-term value.
+ */
+export interface GovernancePolicy {
+  id: string;
+  name: string;
+  description: string;
+  rules: {
+    target: 'reconstruction' | 'lexicalEntry' | 'task' | 'agent_action' | 'access';
+    condition: string; // e.g., 'reconstruction.confidence < 0.7', 'lexicalEntry.languageId == "pie" && lexicalEntry.status == "attested"'
+    action: 'flag' | 'block' | 'require_review' | 'notify_admin' | 'auto_remediate';
+    severity: 'low' | 'medium' | 'high' | 'critical';
+  }[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  enforcedBy?: string; // Identity ID of the enforcing agent/entity
+}
+
+/**
  * Represents an entry in a secure, tamper-evident audit log for linguistic data.
  * Business value: Provides an immutable, cryptographically verifiable record of all system activities and data changes,
- * critical for regulatory compliance, data governance, and maintaining user trust. It enables full transparency
- * and traceability, ensuring accountability and system integrity.
+ * critical for regulatory compliance, forensic analysis, and maintaining user trust. It enables full transparency
+ * and traceability, ensuring accountability and system integrity, a non-negotiable feature for enterprise financial systems.
  */
 export interface LinguisticAuditLogEntry {
   id: string;
   timestamp: string;
   actorIdentityId: string; // The identity (human or agent) performing the action
   action: string; // e.g., 'CREATE_RECONSTRUCTION', 'UPDATE_LEXICAL_ENTRY', 'AGENT_INITIATED_TASK'
-  resourceType: string; // e.g., 'Reconstruction', 'LinguisticTask', 'CognateSet'
+  resourceType: string; // e.g., 'Reconstruction', 'LinguisticTask', 'CognateSet', 'GovernancePolicy'
   resourceId: string; // ID of the resource affected
   details: string; // Human-readable description
   payloadHash: string; // Hash of the data payload at the time of the action (for tamper evidence)
   transactionId?: string; // Optional: Link to a token rail transaction ID if applicable
   previousEntryHash?: string; // For chaining audit log entries
+  policyViolation?: { policyId: string, ruleIndex: number, reason: string }[]; // Details if a policy was violated
 }
 
-// --- Helper Utilities (exported for broader use if needed) ---
+# --- Helper Utilities (exported for broader use if needed) ---
 
 /**
  * Generates a unique identifier.
  * Business value: Ensures data integrity and unambiguous referencing across distributed systems.
- * Supports scalability by providing reliable unique keys for all entities.
+ * Supports scalability by providing reliable unique keys for all entities in a high-volume, enterprise environment.
  */
 export const generateUniqueId = (): string => `lfu_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -370,6 +428,7 @@ export const generateUniqueId = (): string => `lfu_${Date.now()}_${Math.random()
  * Simulates data hashing for tamper-evident logging.
  * Business value: Creates an immutable, verifiable chain of events,
  * essential for regulatory compliance, forensic analysis, and ensuring data history cannot be altered.
+ * This cryptographic integrity is paramount for trust in a financial-grade data platform.
  */
 export const hashData = (data: string): string => {
   let hash = 0;
@@ -383,29 +442,32 @@ export const hashData = (data: string): string => {
 };
 
 /**
- * Simulates cryptographic signing of data.
+ * Simulates cryptographic signing of data using a private key.
  * Business value: Enables secure, verifiable attribution for all data contributions and actions.
- * Crucial for digital identity, non-repudiation, and audit trails in a high-value data environment.
+ * Crucial for digital identity, non-repudiation, and audit trails in a high-value data environment,
+ * preventing unauthorized actions and ensuring legal compliance.
  */
 export const signData = (data: string, privateKey: string): string => {
   const dataHash = hashData(data);
-  return `${dataHash}_SIG_BY_${privateKey.substring(0, 8)}...`; // Simulate signing with a key
+  // In a real system, this would be a proper cryptographic signature.
+  // Here, we simulate by combining hash and a truncated private key.
+  return `${dataHash}_SIG_BY_${hashData(privateKey).substring(0, 8)}...`;
 };
 
 /**
- * Simulates cryptographic signature verification.
+ * Simulates cryptographic signature verification using a public key.
  * Business value: Ensures the authenticity and integrity of data contributions,
  * protecting against unauthorized modifications and fraudulent claims.
- * A cornerstone of trust and security for the entire platform.
+ * A cornerstone of trust and security for the entire platform, vital for financial transactions and data integrity.
  */
 export const verifySignature = (data: string, signature: string, publicKey: string): boolean => {
   const dataHash = hashData(data);
-  return signature.startsWith(dataHash) && signature.includes(`SIG_BY_${publicKey.substring(0, 8)}...`); // Simplified check
+  // Simplified check: signature must start with the data hash and contain a trace of the public key's hash
+  return signature.startsWith(dataHash) && signature.includes(`SIG_BY_${hashData(publicKey).substring(0, 8)}...`);
 };
 
-
-// --- Dummy Data (Extremely Large for Simulation) ---
-// This section will be massive to simulate a real database.
+# --- Dummy Data (Extremely Large for Simulation) ---
+# This section will be massive to simulate a real database.
 
 export const DUMMY_LANGUAGES: Language[] = [
   {
@@ -434,7 +496,7 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: 'r', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
         { symbol: 'w', features: { manner: 'approximant', place: 'labiodental', voicing: 'voiced' } },
         { symbol: 'j', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
-        { symbol: 'á¸«', features: { manner: 'fricative', place: 'uvular', voicing: 'voiceless' } }, // velar/uvular fricative
+        { symbol: 'ḫ', features: { manner: 'fricative', place: 'uvular', voicing: 'voiceless' } }, // velar/uvular fricative
       ],
       vowels: [
         { symbol: 'a', features: { manner: 'vowel', height: 'open', backness: 'front', voicing: 'voiced', rounded: false } },
@@ -465,20 +527,20 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: 'b', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced', aspiration: 'none' } }, { symbol: 'bh', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced', aspiration: 'aspirated' } },
         { symbol: 't', features: { manner: 'stop', place: 'dental', voicing: 'voiceless', aspiration: 'none' } }, { symbol: 'th', features: { manner: 'stop', place: 'dental', voicing: 'voiceless', aspiration: 'aspirated' } },
         { symbol: 'd', features: { manner: 'stop', place: 'dental', voicing: 'voiced', aspiration: 'none' } }, { symbol: 'dh', features: { manner: 'stop', place: 'dental', voicing: 'voiced', aspiration: 'aspirated' } },
-        { symbol: 'á¹­', features: { manner: 'stop', place: 'retroflex', voicing: 'voiceless', aspiration: 'none' } }, { symbol: 'á¹­h', features: { manner: 'stop', place: 'retroflex', voicing: 'voiceless', aspiration: 'aspirated' } },
-        { symbol: 'á¸ ', features: { manner: 'stop', place: 'retroflex', voicing: 'voiced', aspiration: 'none' } }, { symbol: 'á¸ h', features: { manner: 'stop', place: 'retroflex', voicing: 'voiced', aspiration: 'aspirated' } },
+        { symbol: 'ṭ', features: { manner: 'stop', place: 'retroflex', voicing: 'voiceless', aspiration: 'none' } }, { symbol: 'ṭh', features: { manner: 'stop', place: 'retroflex', voicing: 'voiceless', aspiration: 'aspirated' } },
+        { symbol: 'ḍ', features: { manner: 'stop', place: 'retroflex', voicing: 'voiced', aspiration: 'none' } }, { symbol: 'ḍh', features: { manner: 'stop', place: 'retroflex', voicing: 'voiced', aspiration: 'aspirated' } },
         { symbol: 'k', features: { manner: 'stop', place: 'velar', voicing: 'voiceless', aspiration: 'none' } }, { symbol: 'kh', features: { manner: 'stop', place: 'velar', voicing: 'voiceless', aspiration: 'aspirated' } },
         { symbol: 'g', features: { manner: 'stop', place: 'velar', voicing: 'voiced', aspiration: 'none' } }, { symbol: 'gh', features: { manner: 'stop', place: 'velar', voicing: 'voiced', aspiration: 'aspirated' } },
         { symbol: 'c', features: { manner: 'affricate', place: 'palatal', voicing: 'voiceless', aspiration: 'none' } }, { symbol: 'ch', features: { manner: 'affricate', place: 'palatal', voicing: 'voiceless', aspiration: 'aspirated' } },
         { symbol: 'j', features: { manner: 'affricate', place: 'palatal', voicing: 'voiced', aspiration: 'none' } }, { symbol: 'jh', features: { manner: 'affricate', place: 'palatal', voicing: 'voiced', aspiration: 'aspirated' } },
         { symbol: 'm', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } },
         { symbol: 'n', features: { manner: 'nasal', place: 'dental', voicing: 'voiced' } },
-        { symbol: 'á¹‡', features: { manner: 'nasal', place: 'retroflex', voicing: 'voiced' } },
-        { symbol: 'Ã±', features: { manner: 'nasal', place: 'palatal', voicing: 'voiced' } },
-        { symbol: 'á¹…', features: { manner: 'nasal', place: 'velar', voicing: 'voiced' } },
+        { symbol: 'ṇ', features: { manner: 'nasal', place: 'retroflex', voicing: 'voiced' } },
+        { symbol: 'ñ', features: { manner: 'nasal', place: 'palatal', voicing: 'voiced' } },
+        { symbol: 'ṅ', features: { manner: 'nasal', place: 'velar', voicing: 'voiced' } },
         { symbol: 's', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } },
-        { symbol: 'á¹£', features: { manner: 'fricative', place: 'retroflex', voicing: 'voiceless' } },
-        { symbol: 'Å›', features: { manner: 'fricative', place: 'postalveolar', voicing: 'voiceless' } }, // palatal fricative
+        { symbol: 'ṣ', features: { manner: 'fricative', place: 'retroflex', voicing: 'voiceless' } },
+        { symbol: 'ś', features: { manner: 'fricative', place: 'postalveolar', voicing: 'voiceless' } }, // palatal fricative
         { symbol: 'h', features: { manner: 'fricative', place: 'glottal', voicing: 'voiced' } },
         { symbol: 'y', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
         { symbol: 'r', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
@@ -487,14 +549,14 @@ export const DUMMY_LANGUAGES: Language[] = [
       ],
       vowels: [
         { symbol: 'a', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', rounded: false, length: 'short' } },
-        { symbol: 'Ä ', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', rounded: false, length: 'long' } },
+        { symbol: 'ā', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', rounded: false, length: 'long' } },
         { symbol: 'i', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', rounded: false, length: 'short' } },
-        { symbol: 'Ä«', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } },
+        { symbol: 'ī', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } },
         { symbol: 'u', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
-        { symbol: 'Å«', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
-        { symbol: 'á¹›', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic r
-        { symbol: 'á¹ ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'long' } }, // vocalic r long
-        { symbol: 'á¸·', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic l
+        { symbol: 'ū', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
+        { symbol: 'ṛ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic r
+        { symbol: 'ṝ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'long' } }, // vocalic r long
+        { symbol: 'ḷ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic l
         { symbol: 'e', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // always long in Sanskrit
         { symbol: 'o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } }, // always long in Sanskrit
         { symbol: 'ai', features: { manner: 'vowel', height: 'diphthong', voicing: 'voiced', length: 'long' } },
@@ -530,7 +592,7 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: 'd', features: { manner: 'stop', place: 'alveolar', voicing: 'voiced', aspiration: 'none' } },
         { symbol: 'g', features: { manner: 'stop', place: 'velar', voicing: 'voiced', aspiration: 'none' } },
         { symbol: 'f', features: { manner: 'fricative', place: 'labiodental', voicing: 'voiceless' } },
-        { symbol: 'Ã¾', features: { manner: 'fricative', place: 'dental', voicing: 'voiceless' } },
+        { symbol: 'þ', features: { manner: 'fricative', place: 'dental', voicing: 'voiceless' } },
         { symbol: 's', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } },
         { symbol: 'h', features: { manner: 'fricative', place: 'glottal', voicing: 'voiceless' } },
         { symbol: 'm', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } },
@@ -543,13 +605,13 @@ export const DUMMY_LANGUAGES: Language[] = [
       ],
       vowels: [
         { symbol: 'a', features: { manner: 'vowel', height: 'open', backness: 'front', voicing: 'voiced', rounded: false, length: 'short' } },
-        { symbol: 'Ã¡', features: { manner: 'vowel', height: 'open', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // or 'Ä '
+        { symbol: 'á', features: { manner: 'vowel', height: 'open', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // or 'ā'
         { symbol: 'i', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', rounded: false, length: 'short' } },
         { symbol: 'ei', features: { manner: 'vowel', height: 'diphthong', voicing: 'voiced', length: 'long' } }, // often reconstructed as [i:]
         { symbol: 'u', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
         { symbol: 'o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
-        { symbol: 'Å ', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
-        { symbol: 'Ä“', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // from PIE *Ä“ or *Ä«
+        { symbol: 'ō', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
+        { symbol: 'ē', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // from PIE *ē or *ī
       ]
     },
     orthography: { script: 'Gothic alphabet', notes: 'Created by Bishop Wulfila.' },
@@ -571,16 +633,16 @@ export const DUMMY_LANGUAGES: Language[] = [
       consonants: [
         { symbol: '*p', features: { manner: 'stop', place: 'bilabial', voicing: 'voiceless' } },
         { symbol: '*b', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced' } },
-        { symbol: '*bÊ°', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced' } },
+        { symbol: '*bʰ', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced' } },
         { symbol: '*t', features: { manner: 'stop', place: 'dental', voicing: 'voiceless' } },
         { symbol: '*d', features: { manner: 'stop', place: 'dental', voicing: 'voiced' } },
-        { symbol: '*dÊ°', features: { manner: 'stop', place: 'dental', voicing: 'voiced' } },
+        { symbol: '*dʰ', features: { manner: 'stop', place: 'dental', voicing: 'voiced' } },
         { symbol: '*k', features: { manner: 'stop', place: 'velar', voicing: 'voiceless' } },
         { symbol: '*g', features: { manner: 'stop', place: 'velar', voicing: 'voiced' } },
-        { symbol: '*gÊ°', features: { manner: 'stop', place: 'velar', voicing: 'voiced' } },
-        { symbol: '*kÊ·', features: { manner: 'stop', place: 'labial-velar', voicing: 'voiceless' } },
-        { symbol: '*gÊ·', features: { manner: 'stop', place: 'labial-velar', voicing: 'voiced' } },
-        { symbol: '*gÊ·Ê°', features: { manner: 'stop', place: 'labial-velar', voicing: 'voiced' } },
+        { symbol: '*gʰ', features: { manner: 'stop', place: 'velar', voicing: 'voiced' } },
+        { symbol: '*kʷ', features: { manner: 'stop', place: 'labial-velar', voicing: 'voiceless' } },
+        { symbol: '*gʷ', features: { manner: 'stop', place: 'labial-velar', voicing: 'voiced' } },
+        { symbol: '*gʷʰ', features: { manner: 'stop', place: 'labial-velar', voicing: 'voiced' } },
         { symbol: '*s', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } },
         { symbol: '*m', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } },
         { symbol: '*n', features: { manner: 'nasal', place: 'alveolar', voicing: 'voiced' } },
@@ -588,20 +650,20 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: '*r', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
         { symbol: '*y', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
         { symbol: '*w', features: { manner: 'approximant', place: 'labial-velar', voicing: 'voiced' } },
-        { symbol: '*Hâ‚ ', features: { manner: 'fricative', place: 'glottal', voicing: 'voiceless' } }, // Laryngeal H1
-        { symbol: '*Hâ‚‚', features: { manner: 'fricative', place: 'pharyngeal', voicing: 'voiceless' } }, // Laryngeal H2
-        { symbol: '*Hâ‚ƒ', features: { manner: 'fricative', place: 'uvular', voicing: 'voiceless' } }, // Laryngeal H3
-        { symbol: '*á¸±', features: { manner: 'stop', place: 'palatal', voicing: 'voiceless' } }, // Palatovelar k' (often written k with acute or dot)
-        { symbol: '*Çµ', features: { manner: 'stop', place: 'palatal', voicing: 'voiced' } }, // Palatovelar g'
-        { symbol: '*ÇµÊ°', features: { manner: 'stop', place: 'palatal', voicing: 'voiced' } }, // Palatovelar g'h
+        { symbol: '*H₁', features: { manner: 'fricative', place: 'glottal', voicing: 'voiceless' } }, // Laryngeal H1
+        { symbol: '*H₂', features: { manner: 'fricative', place: 'pharyngeal', voicing: 'voiceless' } }, // Laryngeal H2
+        { symbol: '*H₃', features: { manner: 'fricative', place: 'uvular', voicing: 'voiceless' } }, // Laryngeal H3
+        { symbol: '*ḱ', features: { manner: 'stop', place: 'palatal', voicing: 'voiceless' } }, // Palatovelar k' (often written k with acute or dot)
+        { symbol: '*ǵ', features: { manner: 'stop', place: 'palatal', voicing: 'voiced' } }, // Palatovelar g'
+        { symbol: '*ǵʰ', features: { manner: 'stop', place: 'palatal', voicing: 'voiced' } }, // Palatovelar g'h
       ],
       vowels: [
         { symbol: '*e', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'short' } },
-        { symbol: '*Ä“', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } },
+        { symbol: '*ē', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } },
         { symbol: '*o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
-        { symbol: '*Å ', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
+        { symbol: '*ō', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
         { symbol: '*a', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', rounded: false, length: 'short' } }, // generally from *o or *e next to H2
-        { symbol: '*Ä ', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', rounded: false, length: 'long' } }, // generally from *o or *e next to H2
+        { symbol: '*ā', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', rounded: false, length: 'long' } }, // generally from *o or *e next to H2
       ],
       diphthongs: [
         { symbol: '*ey', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
@@ -627,7 +689,47 @@ export const DUMMY_LANGUAGES: Language[] = [
     location: { latitude: 51.5, longitude: 0.0, region: 'Western Europe' },
     status: 'vibrant',
     description: 'A West Germanic language that originated from the Anglo-Frisian dialects brought to Britain by Germanic invaders.',
-    phonology: { consonants: [], vowels: [] }, // Simplified for brevity in dummy data
+    phonology: {
+      consonants: [
+        { symbol: 'p', features: { manner: 'stop', place: 'bilabial', voicing: 'voiceless' } }, { symbol: 'b', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced' } },
+        { symbol: 't', features: { manner: 'stop', place: 'alveolar', voicing: 'voiceless' } }, { symbol: 'd', features: { manner: 'stop', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'k', features: { manner: 'stop', place: 'velar', voicing: 'voiceless' } }, { symbol: 'g', features: { manner: 'stop', place: 'velar', voicing: 'voiced' } },
+        { symbol: 'f', features: { manner: 'fricative', place: 'labiodental', voicing: 'voiceless' } }, { symbol: 'v', features: { manner: 'fricative', place: 'labiodental', voicing: 'voiced' } },
+        { symbol: 'θ', features: { manner: 'fricative', place: 'dental', voicing: 'voiceless' } }, { symbol: 'ð', features: { manner: 'fricative', place: 'dental', voicing: 'voiced' } },
+        { symbol: 's', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } }, { symbol: 'z', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'ʃ', features: { manner: 'fricative', place: 'postalveolar', voicing: 'voiceless' } }, { symbol: 'ʒ', features: { manner: 'fricative', place: 'postalveolar', voicing: 'voiced' } },
+        { symbol: 'h', features: { manner: 'fricative', place: 'glottal', voicing: 'voiceless' } },
+        { symbol: 'm', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } },
+        { symbol: 'n', features: { manner: 'nasal', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'ŋ', features: { manner: 'nasal', place: 'velar', voicing: 'voiced' } },
+        { symbol: 'l', features: { manner: 'approximant', place: 'alveolar', voicing: 'voiced', laterality: 'lateral' } },
+        { symbol: 'r', features: { manner: 'approximant', place: 'postalveolar', voicing: 'voiced' } },
+        { symbol: 'w', features: { manner: 'approximant', place: 'labial-velar', voicing: 'voiced' } },
+        { symbol: 'j', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
+      ],
+      vowels: [
+        { symbol: 'i:', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', length: 'long' } },
+        { symbol: 'ɪ', features: { manner: 'vowel', height: 'near-close', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'e', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'æ', features: { manner: 'vowel', height: 'near-open', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'ɑ:', features: { manner: 'vowel', height: 'open', backness: 'back', voicing: 'voiced', length: 'long' } },
+        { symbol: 'ɒ', features: { manner: 'vowel', height: 'open', backness: 'back', voicing: 'voiced', length: 'short', rounded: true } },
+        { symbol: 'ɔ:', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', length: 'long', rounded: true } },
+        { symbol: 'ʊ', features: { manner: 'vowel', height: 'near-close', backness: 'back', voicing: 'voiced', length: 'short', rounded: true } },
+        { symbol: 'u:', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', length: 'long', rounded: true } },
+        { symbol: 'ʌ', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', length: 'short' } },
+        { symbol: 'ə', features: { manner: 'vowel', height: 'mid', backness: 'central', voicing: 'voiced', length: 'short' } },
+        { symbol: 'ɜ:', features: { manner: 'vowel', height: 'mid', backness: 'central', voicing: 'voiced', length: 'long' } },
+      ],
+      diphthongs: [
+        { symbol: 'eɪ', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+        { symbol: 'aɪ', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+        { symbol: 'ɔɪ', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+        { symbol: 'oʊ', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+        { symbol: 'aʊ', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+      ],
+      suprasegmentals: { stress: 'fixed', tone: null }
+    },
     estimatedDivergenceDate: '450 AD',
     linguisticFeatures: ['analytic grammar', 'stress-timed rhythm', 'large vocabulary from multiple sources', 'loss of cases'],
     sources: [{ type: 'dictionary', title: 'Oxford English Dictionary', year: 2000 }],
@@ -642,7 +744,37 @@ export const DUMMY_LANGUAGES: Language[] = [
     location: { latitude: 41.9, longitude: 12.5, region: 'Southern Europe' },
     status: 'extinct', // Classical Latin
     description: 'A classical language belonging to the Italic branch of the Indo-European languages. Most of its descendants are the Romance languages.',
-    phonology: { consonants: [], vowels: [] }, // Simplified
+    phonology: {
+      consonants: [
+        { symbol: 'p', features: { manner: 'stop', place: 'bilabial', voicing: 'voiceless' } }, { symbol: 'b', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced' } },
+        { symbol: 't', features: { manner: 'stop', place: 'alveolar', voicing: 'voiceless' } }, { symbol: 'd', features: { manner: 'stop', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'k', features: { manner: 'stop', place: 'velar', voicing: 'voiceless' } }, { symbol: 'g', features: { manner: 'stop', place: 'velar', voicing: 'voiced' } },
+        { symbol: 'f', features: { manner: 'fricative', place: 'labiodental', voicing: 'voiceless' } }, { symbol: 's', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } },
+        { symbol: 'm', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } }, { symbol: 'n', features: { manner: 'nasal', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'l', features: { manner: 'approximant', place: 'alveolar', voicing: 'voiced', laterality: 'lateral' } },
+        { symbol: 'r', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'j', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
+        { symbol: 'w', features: { manner: 'approximant', place: 'labial-velar', voicing: 'voiced' } },
+      ],
+      vowels: [
+        { symbol: 'a', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', length: 'short' } },
+        { symbol: 'ā', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', length: 'long' } },
+        { symbol: 'e', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'ē', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', length: 'long' } },
+        { symbol: 'i', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'ī', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', length: 'long' } },
+        { symbol: 'o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', length: 'short', rounded: true } },
+        { symbol: 'ō', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', length: 'long', rounded: true } },
+        { symbol: 'u', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', length: 'short', rounded: true } },
+        { symbol: 'ū', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', length: 'long', rounded: true } },
+      ],
+      diphthongs: [
+        { symbol: 'ae', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+        { symbol: 'au', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+        { symbol: 'oe', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced' } },
+      ],
+      suprasegmentals: { stress: 'variable', tone: null }
+    },
     estimatedDivergenceDate: '700 BCE',
     linguisticFeatures: ['five declensions', 'six cases', 'SOV tendencies', 'synthetic morphology'],
   },
@@ -656,7 +788,31 @@ export const DUMMY_LANGUAGES: Language[] = [
     location: { latitude: 40.4, longitude: -3.7, region: 'Iberian Peninsula' },
     status: 'vibrant',
     description: 'A Romance language that originated in the Castile region of Spain and today has hundreds of millions of native speakers worldwide.',
-    phonology: { consonants: [], vowels: [] }, // Simplified
+    phonology: {
+      consonants: [
+        { symbol: 'p', features: { manner: 'stop', place: 'bilabial', voicing: 'voiceless' } }, { symbol: 'b', features: { manner: 'stop', place: 'bilabial', voicing: 'voiced' } }, { symbol: 'β', features: { manner: 'fricative', place: 'bilabial', voicing: 'voiced' } },
+        { symbol: 't', features: { manner: 'stop', place: 'dental', voicing: 'voiceless' } }, { symbol: 'd', features: { manner: 'stop', place: 'dental', voicing: 'voiced' } }, { symbol: 'ð', features: { manner: 'fricative', place: 'dental', voicing: 'voiced' } },
+        { symbol: 'k', features: { manner: 'stop', place: 'velar', voicing: 'voiceless' } }, { symbol: 'g', features: { manner: 'stop', place: 'velar', voicing: 'voiced' } }, { symbol: 'ɣ', features: { manner: 'fricative', place: 'velar', voicing: 'voiced' } },
+        { symbol: 'f', features: { manner: 'fricative', place: 'labiodental', voicing: 'voiceless' } },
+        { symbol: 's', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } },
+        { symbol: 'θ', features: { manner: 'fricative', place: 'dental', voicing: 'voiceless' } }, // Peninsular Spanish
+        { symbol: 'x', features: { manner: 'fricative', place: 'velar', voicing: 'voiceless' } },
+        { symbol: 't͡ʃ', features: { manner: 'affricate', place: 'postalveolar', voicing: 'voiceless' } },
+        { symbol: 'm', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } }, { symbol: 'n', features: { manner: 'nasal', place: 'alveolar', voicing: 'voiced' } }, { symbol: 'ɲ', features: { manner: 'nasal', place: 'palatal', voicing: 'voiced' } },
+        { symbol: 'l', features: { manner: 'approximant', place: 'alveolar', voicing: 'voiced', laterality: 'lateral' } }, { symbol: 'ʎ', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced', laterality: 'lateral' } }, // some dialects
+        { symbol: 'r', features: { manner: 'tap', place: 'alveolar', voicing: 'voiced' } }, { symbol: 'rr', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'j', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
+      ],
+      vowels: [
+        { symbol: 'a', features: { manner: 'vowel', height: 'open', backness: 'central', voicing: 'voiced', length: 'short' } },
+        { symbol: 'e', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'i', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', length: 'short' } },
+        { symbol: 'o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', length: 'short', rounded: true } },
+        { symbol: 'u', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', length: 'short', rounded: true } },
+      ],
+      diphthongs: [], // Diphthongs are combinations of existing vowels
+      suprasegmentals: { stress: 'variable', tone: null }
+    },
     estimatedDivergenceDate: '9th Century AD',
     linguisticFeatures: ['gendered nouns', 'verb conjugation', 'vowel harmony in some dialects', 'lenition'],
   },
@@ -1042,7 +1198,7 @@ export const DUMMY_LANGUAGES: Language[] = [
     branch: 'Romance',
     location: { latitude: 45.9, longitude: 24.9, region: 'Balkans' },
     status: 'vibrant',
-    description: 'A Balkan Romance language spoken by approximately 24â€“26 million people.',
+    description: 'A Balkan Romance language spoken by approximately 24–26 million people.',
     phonology: { consonants: [], vowels: [] }, estimatedDivergenceDate: '1000 AD', linguisticFeatures: ['case system retained', 'definite article suffixation', 'neuter gender'],
   },
   {
@@ -1064,7 +1220,8 @@ export const DUMMY_LANGUAGES: Language[] = [
  * A central, in-memory repository for all linguistic data and associated metadata.
  * Business value: Acts as the single source of truth for linguistic knowledge,
  * providing high-speed access and ensuring data consistency across the platform.
- * Its auditable nature safeguards the value of collected and generated data, making it a valuable asset.
+ * Its auditable nature safeguards the value of collected and generated data, making it a valuable asset
+ * for commercial licensing and advanced AI model training.
  */
 export class LinguisticDataRepository {
   private languages: Language[] = [];
@@ -1078,7 +1235,15 @@ export class LinguisticDataRepository {
   private linguisticAuditLog: LinguisticAuditLogEntry[] = [];
   private identities: DigitalIdentity[] = [];
   private skills: LinguisticSkill[] = [];
+  private userProjects: UserProject[] = []; // New
+  private governancePolicies: GovernancePolicy[] = []; // New
 
+  /**
+   * Initializes the LinguisticDataRepository and seeds it with essential data.
+   * Business value: Ensures a pre-populated, functional environment for immediate development,
+   * testing, and demonstration, simulating a rich, real-world linguistic database without
+   * requiring external database dependencies.
+   */
   constructor() {
     this.seedData();
   }
@@ -1087,25 +1252,29 @@ export class LinguisticDataRepository {
    * Seeds the repository with initial dummy data.
    * Business value: Provides a robust starting dataset for development, testing, and demonstration,
    * simulating a rich, real-world linguistic database without external dependencies.
+   * This rapid prototyping capability accelerates market entry and product validation.
    */
   private seedData() {
     this.languages = DUMMY_LANGUAGES;
 
     // Add dummy identities
     this.identities = [
-      { id: 'usr_alice', name: 'Alice Smith', publicKey: 'PUBKEY_ALICE_123', roles: ['researcher', 'editor'] },
-      { id: 'usr_bob', name: 'Bob Johnson', publicKey: 'PUBKEY_BOB_456', roles: ['researcher'] },
-      { id: 'agent_lfa_001', name: 'LinguisticFossilAgent-001', publicKey: 'PUBKEY_AGENT_LFA001', roles: ['agent'], reputationScore: 0.85 },
-      { id: 'agent_recon_alpha', name: 'ReconstructionAgent-Alpha', publicKey: 'PUBKEY_AGENT_ALPHA', roles: ['agent'], reputationScore: 0.92 },
-      { id: 'admin_eve', name: 'Eve Admin', publicKey: 'PUBKEY_EVE_ADMIN', roles: ['admin'] },
+      { id: 'usr_alice', name: 'Alice Smith', publicKey: 'PUBKEY_ALICE_123', privateKey: 'PRIVKEY_ALICE_123', roles: ['researcher', 'editor'], lastActive: new Date().toISOString() },
+      { id: 'usr_bob', name: 'Bob Johnson', publicKey: 'PUBKEY_BOB_456', privateKey: 'PRIVKEY_BOB_456', roles: ['researcher'], lastActive: new Date().toISOString() },
+      { id: 'agent_lfa_001', name: 'LinguisticFossilAgent-001', publicKey: 'PUBKEY_AGENT_LFA001', privateKey: 'PRIVKEY_AGENT_LFA001', roles: ['agent'], reputationScore: 0.85, lastActive: new Date().toISOString() },
+      { id: 'agent_recon_alpha', name: 'ReconstructionAgent-Alpha', publicKey: 'PUBKEY_AGENT_ALPHA', privateKey: 'PRIVKEY_AGENT_ALPHA', roles: ['agent'], reputationScore: 0.92, lastActive: new Date().toISOString() },
+      { id: 'agent_governor', name: 'GovernanceAgent-Beta', publicKey: 'PUBKEY_AGENT_GOV', privateKey: 'PRIVKEY_AGENT_GOV', roles: ['agent', 'governor'], reputationScore: 0.99, lastActive: new Date().toISOString() },
+      { id: 'admin_eve', name: 'Eve Admin', publicKey: 'PUBKEY_EVE_ADMIN', privateKey: 'PRIVKEY_EVE_ADMIN', roles: ['admin', 'researcher'], lastActive: new Date().toISOString() },
     ];
 
     // Add dummy skills
     this.skills = [
-      { id: 'ProtoWordReconstruction', name: 'Proto-Word Reconstruction', description: 'Reconstructs proto-words from cognate sets.', requiredPermissions: ['agent', 'researcher'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 50 } },
-      { id: 'SoundLawDetection', name: 'Sound Law Detection', description: 'Identifies regular sound correspondences between languages.', requiredPermissions: ['agent'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 100 } },
-      { id: 'CognateIdentification', name: 'Cognate Identification', description: 'Analyzes lexical entries to suggest potential cognates.', requiredPermissions: ['agent', 'researcher'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 30 } },
-      { id: 'DataValidation', name: 'Linguistic Data Validation', description: 'Validates consistency and accuracy of linguistic entries.', requiredPermissions: ['agent', 'editor'] },
+      { id: 'ProtoWordReconstruction', name: 'Proto-Word Reconstruction', description: 'Reconstructs proto-words from cognate sets based on sound laws and comparative method.', requiredPermissions: ['agent', 'researcher'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 50 }, performanceMetrics: { latency: 2000, accuracy: 0.8 } },
+      { id: 'SoundLawDetection', name: 'Sound Law Detection', description: 'Identifies regular sound correspondences and proposes new sound laws between languages.', requiredPermissions: ['agent'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 100 }, performanceMetrics: { latency: 3000, accuracy: 0.75 } },
+      { id: 'CognateIdentification', name: 'Cognate Identification', description: 'Analyzes lexical entries across languages to suggest potential cognates using phonetic and semantic similarity.', requiredPermissions: ['agent', 'researcher'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 30 }, performanceMetrics: { latency: 1000, accuracy: 0.9 } },
+      { id: 'DataValidation', name: 'Linguistic Data Validation', description: 'Validates consistency and accuracy of linguistic entries against defined schema and known linguistic principles.', requiredPermissions: ['agent', 'editor'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 20 }, performanceMetrics: { latency: 500, accuracy: 0.98 } },
+      { id: 'Remediation', name: 'Automated Remediation', description: 'Corrects detected data anomalies or re-queues failed tasks based on predefined policies.', requiredPermissions: ['agent', 'governor'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 40 }, performanceMetrics: { latency: 1500, accuracy: 0.95 } },
+      { id: 'PolicyEnforcement', name: 'Governance Policy Enforcement', description: 'Monitors system activity and data changes for adherence to defined governance policies.', requiredPermissions: ['agent', 'governor'], costEstimatePerUse: { tokenType: 'LINGUIST_COIN', amount: 10 }, performanceMetrics: { latency: 200, accuracy: 0.99 } },
     ];
 
     // Example lexical entries (expanded to include cognates)
@@ -1132,7 +1301,7 @@ export class LinguisticDataRepository {
         cognateIds: ['le_lat_aqua'], semanticFields: ['nature'],
       },
       {
-        id: 'le_san_pitar', languageId: 'sanskrit', word: 'पितर् (pitár)', ipa: 'pɪˈtɐr', meaning: 'father', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
+        id: 'le_san_pitar', languageId: 'sanskrit', word: 'पितर् (pitár)', ipa: 'pɪˈtár', meaning: 'father', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
         etymology: { protoWordId: 'pr_pie_pater' },
         cognateIds: ['le_lat_pater', 'le_eng_father'],
         semanticFields: ['kinship'],
@@ -1149,6 +1318,18 @@ export class LinguisticDataRepository {
         cognateIds: ['le_san_pitar', 'le_lat_pater'],
         semanticFields: ['kinship'],
       },
+      {
+        id: 'le_eng_fish', languageId: 'english', word: 'fish', ipa: 'fɪʃ', meaning: 'aquatic vertebrate', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
+        etymology: { protoWordId: 'pr_pgmc_fiskaz' },
+        cognateIds: ['le_got_fisks'],
+        semanticFields: ['animals'],
+      },
+      {
+        id: 'le_got_fisks', languageId: 'gothic', word: 'fisks', ipa: 'fisks', meaning: 'fish', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
+        etymology: { protoWordId: 'pr_pgmc_fiskaz' },
+        cognateIds: ['le_eng_fish'],
+        semanticFields: ['animals'],
+      },
     ];
 
     // Example reconstructions
@@ -1158,18 +1339,26 @@ export class LinguisticDataRepository {
         descendantEvidence: [
           { languageId: 'gothic', language: 'Gothic', word: 'wato', ipa: 'ˈwɑːtoː', relation: 'cognate', soundCorrespondences: [{ protoSound: '*w', descendantSound: 'w' }, { protoSound: '*o', descendantSound: 'a' }, { protoSound: '*d', descendantSound: 't' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_got_wato' },
           { languageId: 'english', language: 'English', word: 'water', ipa: 'ˈwɔːtər', relation: 'cognate', soundCorrespondences: [{ protoSound: '*w', descendantSound: 'w' }, { protoSound: '*o', descendantSound: 'a' }, { protoSound: '*d', descendantSound: 't' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_eng_water' },
-          { languageId: 'sanskrit', language: 'Sanskrit', word: 'udán', ipa: 'uˈdɐ́n', relation: 'cognate', soundCorrespondences: [{ protoSound: '*w', descendantSound: 'u' }, { protoSound: '*d', descendantSound: 'd' }], notes: 'Zero-grade form.' }, // Assuming this exists as lexical entry for 'udán'
+          // { languageId: 'sanskrit', language: 'Sanskrit', word: 'udán', ipa: 'uˈdán', relation: 'cognate', soundCorrespondences: [{ protoSound: '*w', descendantSound: 'u' }, { protoSound: '*d', descendantSound: 'd' }], notes: 'Zero-grade form.' }, // Assuming this exists as lexical entry for 'udán'
         ],
         semanticField: 'nature', reconstructionMethod: 'comparative', status: 'established', proposedBy: 'Scholarly Consensus', dateProposed: '1850-01-01',
       },
       {
-        id: 'pr_pie_pater', protoLanguageId: 'pie', protoWord: '*ph₂tḗr', meaning: 'father', ipa: 'ph₂ˈtér', confidence: 0.98,
+        id: 'pr_pie_pater', protoLanguageId: 'pie', protoWord: '*ph₂tḗr', meaning: 'father', ipa: 'ph₂ˈtḗr', confidence: 0.98,
         descendantEvidence: [
-          { languageId: 'sanskrit', language: 'Sanskrit', word: 'pitár', ipa: 'pɪˈtɐr', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'i' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ē', descendantSound: 'a' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_san_pitar' },
-          { languageId: 'latin', language: 'Latin', word: 'pater', ipa: 'ˈpa.tɛr', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ē', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_lat_pater' },
-          { languageId: 'english', language: 'English', word: 'father', ipa: 'ˈfɑːðər', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'f' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 'ð' }, { protoSound: '*ē', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_eng_father' },
+          { languageId: 'sanskrit', language: 'Sanskrit', word: 'pitár', ipa: 'pɪˈtár', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'i' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ḗ', descendantSound: 'a' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_san_pitar' },
+          { languageId: 'latin', language: 'Latin', word: 'pater', ipa: 'ˈpa.tɛr', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ḗ', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_lat_pater' },
+          { languageId: 'english', language: 'English', word: 'father', ipa: 'ˈfɑːðər', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'f' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 'ð' }, { protoSound: '*ḗ', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_eng_father' },
         ],
         semanticField: 'kinship', reconstructionMethod: 'comparative', status: 'established', proposedBy: 'Scholarly Consensus', dateProposed: '1850-01-01',
+      },
+      {
+        id: 'pr_pgmc_fiskaz', protoLanguageId: 'old-norse', protoWord: '*fiskaz', meaning: 'fish', ipa: 'ˈfiskaz', confidence: 0.9,
+        descendantEvidence: [
+          { languageId: 'english', language: 'English', word: 'fish', ipa: 'fɪʃ', relation: 'cognate', soundCorrespondences: [{ protoSound: '*f', descendantSound: 'f' }, { protoSound: '*i', descendantSound: 'ɪ' }, { protoSound: '*sk', descendantSound: 'ʃ' }], lexicalEntryId: 'le_eng_fish' },
+          { languageId: 'gothic', language: 'Gothic', word: 'fisks', ipa: 'fisks', relation: 'cognate', soundCorrespondences: [{ protoSound: '*f', descendantSound: 'f' }, { protoSound: '*i', descendantSound: 'i' }, { protoSound: '*sk', descendantSound: 'sk' }], lexicalEntryId: 'le_got_fisks' },
+        ],
+        semanticField: 'animals', reconstructionMethod: 'comparative', status: 'established', proposedBy: 'Scholarly Consensus', dateProposed: '1900-01-01',
       }
     ];
 
@@ -1180,7 +1369,7 @@ export class LinguisticDataRepository {
         members: [
           { languageId: 'english', lexicalEntryId: 'le_eng_water', wordForm: 'water', ipa: 'ˈwɔːtər' },
           { languageId: 'gothic', lexicalEntryId: 'le_got_wato', wordForm: 'wato', ipa: 'ˈwɑːtoː' },
-          { languageId: 'sanskrit', lexicalEntryId: 'le_san_udán', wordForm: 'udán', ipa: 'uˈdɐ́n', notes: 'From zero-grade PIE.' }, // Assuming this exists as lexical entry for 'udán'
+          // { languageId: 'sanskrit', lexicalEntryId: 'le_san_udán', wordForm: 'udán', ipa: 'uˈdán', notes: 'From zero-grade PIE.' }, // Assuming this exists as lexical entry for 'udán'
         ],
         analysisNotes: 'Classic Germanic/Indic cognate set for water.',
       },
@@ -1189,7 +1378,7 @@ export class LinguisticDataRepository {
         members: [
           { languageId: 'english', lexicalEntryId: 'le_eng_father', wordForm: 'father', ipa: 'ˈfɑːðər' },
           { languageId: 'latin', lexicalEntryId: 'le_lat_pater', wordForm: 'pater', ipa: 'ˈpa.tɛr' },
-          { languageId: 'sanskrit', lexicalEntryId: 'le_san_pitar', wordForm: 'pitár', ipa: 'pɪˈtɐr' },
+          { languageId: 'sanskrit', lexicalEntryId: 'le_san_pitar', wordForm: 'pitár', ipa: 'pɪˈtár' },
         ],
         analysisNotes: 'Well-established PIE cognate set for father.',
       },
@@ -1206,20 +1395,65 @@ export class LinguisticDataRepository {
     // Example Sound Correspondence Rules
     this.soundCorrespondenceRules = [
       {
-        id: 'grimm-p-f', protoSound: '*p', descendantSound: 'f', context: '#_', environment: 'initial', languageId: 'gothic', appliesTo: 'consonant', confidence: 0.99, source: 'Grimm\'s Law', priority: 10,
+        id: 'grimm-p-f', protoSound: '*p', descendantSound: 'f', context: '#_', environment: 'initial', languageId: 'gothic', appliesTo: 'consonant', confidence: 0.99, source: 'Grimm\'s Law', priority: 10, proposedBy: 'Scholarly Consensus',
         examples: [
           { protoWord: '*ph₂tḗr', descendantWord: 'father' }, // English for illustration, Gothic would be 'fadar'
-          { protoWord: '*péh₂us', descendantWord: 'fiu' }, // Gothic for 'cattle, property'
+          // { protoWord: '*pék̑us', descendantWord: 'fiu' }, // Gothic for 'cattle, property'
         ]
       },
       {
-        id: 'grimm-t-th', protoSound: '*t', descendantSound: 'þ', context: '#_', environment: 'initial', languageId: 'gothic', appliesTo: 'consonant', confidence: 0.99, source: 'Grimm\'s Law', priority: 10,
+        id: 'grimm-t-th', protoSound: '*t', descendantSound: 'þ', context: '#_', environment: 'initial', languageId: 'gothic', appliesTo: 'consonant', confidence: 0.99, source: 'Grimm\'s Law', priority: 10, proposedBy: 'Scholarly Consensus',
         examples: [{ protoWord: '*tréyes', descendantWord: 'þreis' }] // Gothic for 'three'
       },
       {
-        id: 'h2-a-latin', protoSound: '*h₂', descendantSound: 'a', context: '/_C', environment: 'all', languageId: 'latin', appliesTo: 'vowel', confidence: 0.95, notes: 'Laryngeal coloring of adjacent vowel.', priority: 5,
+        id: 'h2-a-latin', protoSound: '*H₂', descendantSound: 'a', context: '/_C', environment: 'all', languageId: 'latin', appliesTo: 'vowel', confidence: 0.95, notes: 'Laryngeal coloring of adjacent vowel.', priority: 5, proposedBy: 'Scholarly Consensus',
         examples: [{ protoWord: '*ph₂tḗr', descendantWord: 'pater' }]
       }
+    ];
+
+    // Example User Projects
+    this.userProjects = [
+      {
+        id: 'proj_global_recon', name: 'Global PIE Reconstruction', description: 'A collaborative project to reconstruct Proto-Indo-European vocabulary.',
+        ownerId: 'admin_eve', createdAt: '2023-01-01', lastModified: '2024-01-01',
+        reconstructions: ['pr_pie_wodr', 'pr_pie_pater'],
+        savedCognateSets: ['cs_water_ie', 'cs_father_ie'],
+        customRules: ['grimm-p-f', 'grimm-t-th', 'h2-a-latin'],
+        collaborators: ['usr_alice', 'usr_bob', 'agent_recon_alpha'],
+        visibility: 'public',
+        tags: ['PIE', 'reconstruction', 'comparative'],
+        governancePolicyId: 'policy_recon_standards',
+      },
+      {
+        id: 'proj_romance_evolution', name: 'Romance Language Evolution', description: 'Tracing lexical and phonological changes from Latin to Romance languages.',
+        ownerId: 'usr_alice', createdAt: '2023-02-10', lastModified: '2023-11-15',
+        reconstructions: [],
+        savedCognateSets: ['cs_aqua_romance'],
+        customRules: [],
+        visibility: 'shared',
+        tags: ['Romance', 'Latin', 'sound change'],
+      }
+    ];
+
+    // Example Governance Policies
+    this.governancePolicies = [
+      {
+        id: 'policy_recon_standards', name: 'Reconstruction Confidence Threshold', description: 'Ensures all proposed reconstructions meet a minimum confidence score.',
+        rules: [
+          { target: 'reconstruction', condition: 'reconstruction.confidence < 0.7', action: 'require_review', severity: 'high' },
+          { target: 'reconstruction', condition: 'reconstruction.descendantEvidence.length < 3', action: 'flag', severity: 'medium' },
+          { target: 'agent_action', condition: 'agent_action.type == "ProtoWordReconstruction" && agent_action.output.confidence < 0.7', action: 'auto_remediate', severity: 'high' }
+        ],
+        active: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), enforcedBy: 'agent_governor',
+      },
+      {
+        id: 'policy_data_integrity', name: 'Lexical Entry Data Integrity', description: 'Ensures lexical entries are complete and well-formed.',
+        rules: [
+          { target: 'lexicalEntry', condition: '!lexicalEntry.ipa || !lexicalEntry.meaning', action: 'block', severity: 'critical' },
+          { target: 'lexicalEntry', condition: '!lexicalEntry.etymology', action: 'flag', severity: 'low' },
+        ],
+        active: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), enforcedBy: 'agent_governor',
+      },
     ];
 
     // Example tasks and bounties
@@ -1230,20 +1464,20 @@ export class LinguisticDataRepository {
       {
         id: taskId1, projectId: 'proj_global_recon', type: 'ProtoWordReconstruction', description: 'Reconstruct PIE for "star" based on provided cognates.',
         status: LinguisticTaskStatus.Pending, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), priority: 'high',
-        parameters: { cognateSetId: 'cs_star_ie' }, // hypothetical cognate set
-        audits: [],
+        parameters: { cognateSetId: 'cs_star_ie' }, // hypothetical cognate set, will fail in simulation
+        audits: [], riskScore: 0.7,
       },
       {
         id: taskId2, projectId: 'proj_global_recon', type: 'SoundLawDetection', description: 'Detect sound laws for Proto-Germanic *d to Old English.',
         status: LinguisticTaskStatus.Assigned, assignedToIdentityId: 'agent_lfa_001', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), priority: 'medium',
         parameters: { protoLanguage: 'Proto-Germanic', descendantLanguage: 'Old English', specificSound: '*d' },
-        audits: [],
+        audits: [], riskScore: 0.5,
       },
       {
         id: taskId3, projectId: 'proj_validation', type: 'DataValidation', description: 'Validate consistency of Sanskrit lexical entries.',
         status: LinguisticTaskStatus.InProgress, assignedToIdentityId: 'usr_alice', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), priority: 'low',
         parameters: { languageId: 'sanskrit', scope: 'lexicalEntries' },
-        audits: [],
+        audits: [], riskScore: 0.2,
       }
     ];
     this.linguisticBounties = [
@@ -1256,15 +1490,16 @@ export class LinguisticDataRepository {
     ];
 
     // Initial audit log entry
-    this.addAuditLogEntry('admin_eve', 'SYSTEM_INIT', 'LinguisticDataRepository', 'N/A', 'Repository initialized with dummy data.', 'initial_payload_hash');
+    this.addAuditLogEntry('system', 'SYSTEM_INIT', 'LinguisticDataRepository', 'N/A', 'Repository initialized with dummy data.', 'initial_payload_hash');
   }
 
   // --- CRUD and Query Methods ---
 
   /**
-   * Adds an audit log entry, ensuring tamper-evidence.
+   * Adds an audit log entry, ensuring tamper-evidence and policy enforcement.
    * Business value: Guarantees full traceability and integrity of all operations,
    * critical for compliance, security, and establishing an undeniable history of data changes.
+   * This is a core component for financial-grade auditing and regulatory adherence.
    */
   public addAuditLogEntry(
     actorIdentityId: string,
@@ -1273,7 +1508,8 @@ export class LinguisticDataRepository {
     resourceId: string,
     details: string,
     payload: any,
-    transactionId?: string
+    transactionId?: string,
+    policyViolations?: LinguisticAuditLogEntry['policyViolation']
   ): LinguisticAuditLogEntry {
     const previousEntryHash = this.linguisticAuditLog.length > 0
       ? this.linguisticAuditLog[this.linguisticAuditLog.length - 1].payloadHash
@@ -1287,54 +1523,114 @@ export class LinguisticDataRepository {
       resourceType,
       resourceId,
       details,
-      payloadHash: hashData(JSON.stringify(payload) + previousEntryHash),
+      payloadHash: hashData(JSON.stringify(payload) + previousEntryHash), // Chain the hash
       transactionId,
       previousEntryHash,
+      policyViolation,
     };
     this.linguisticAuditLog.push(newEntry);
     console.log(`Audit Log: ${newEntry.action} by ${newEntry.actorIdentityId} on ${newEntry.resourceType}:${newEntry.resourceId}`);
     return newEntry;
   }
 
+  /**
+   * Adds a contribution record, chaining it to the previous one for integrity.
+   * Business value: Establishes a permanent, verifiable record of all user and agent contributions,
+   * essential for intellectual property, reputation management, and auditability. This also supports
+   * a tokenized incentive system by proving contribution.
+   */
+  private addContributionRecord(
+    identityId: string,
+    dataType: LinguisticContribution['dataType'],
+    dataId: string,
+    action: LinguisticContribution['action'],
+    details: any,
+    signature: string
+  ): LinguisticContribution {
+    const previousContributionHash = this.linguisticContributions.length > 0
+      ? hashData(JSON.stringify(this.linguisticContributions[this.linguisticContributions.length - 1]))
+      : 'genesis_contribution_hash';
+
+    const contribution: LinguisticContribution = {
+      id: generateUniqueId(),
+      identityId,
+      dataType,
+      dataId,
+      action,
+      timestamp: new Date().toISOString(),
+      details,
+      signature,
+      previousContributionHash,
+    };
+    this.linguisticContributions.push(contribution);
+    return contribution;
+  }
+
   public getLanguages(): Language[] { return this.languages; }
   public getLanguageById(id: string): Language | undefined { return this.languages.find(l => l.id === id); }
-
   public getLexicalEntries(languageId?: string): LexicalEntry[] {
     return languageId ? this.lexicalEntries.filter(le => le.languageId === languageId) : this.lexicalEntries;
   }
   public getLexicalEntryById(id: string): LexicalEntry | undefined { return this.lexicalEntries.find(le => le.id === id); }
-
   public getReconstructions(): Reconstruction[] { return this.reconstructions; }
   public getReconstructionById(id: string): Reconstruction | undefined { return this.reconstructions.find(r => r.id === id); }
-
   public getCognateSets(): CognateSet[] { return this.cognateSets; }
   public getCognateSetById(id: string): CognateSet | undefined { return this.cognateSets.find(cs => cs.id === id); }
-
   public getSoundCorrespondenceRules(languageId?: string): SoundCorrespondenceRule[] {
     return languageId ? this.soundCorrespondenceRules.filter(r => r.languageId === languageId) : this.soundCorrespondenceRules;
   }
   public getSoundCorrespondenceRuleById(id: string): SoundCorrespondenceRule | undefined { return this.soundCorrespondenceRules.find(r => r.id === id); }
-
   public getLinguisticTasks(projectId?: string): LinguisticTask[] {
     return projectId ? this.linguisticTasks.filter(t => t.projectId === projectId) : this.linguisticTasks;
   }
   public getLinguisticTaskById(id: string): LinguisticTask | undefined { return this.linguisticTasks.find(t => t.id === id); }
-
   public getLinguisticBounties(taskId?: string): LinguisticBounty[] {
     return taskId ? this.linguisticBounties.filter(b => b.taskId === taskId) : this.linguisticBounties;
   }
   public getLinguisticBountyById(id: string): LinguisticBounty | undefined { return this.linguisticBounties.find(b => b.id === id); }
-
   public getIdentities(): DigitalIdentity[] { return this.identities; }
   public getIdentityById(id: string): DigitalIdentity | undefined { return this.identities.find(i => i.id === id); }
   public getSkills(): LinguisticSkill[] { return this.skills; }
   public getSkillById(id: string): LinguisticSkill | undefined { return this.skills.find(s => s.id === id); }
   public getAuditLog(): LinguisticAuditLogEntry[] { return this.linguisticAuditLog; }
+  public getContributions(): LinguisticContribution[] { return this.linguisticContributions; }
+  public getUserProjects(ownerId?: string): UserProject[] { return ownerId ? this.userProjects.filter(p => p.ownerId === ownerId) : this.userProjects; }
+  public getUserProjectById(id: string): UserProject | undefined { return this.userProjects.find(p => p.id === id); }
+  public getGovernancePolicies(): GovernancePolicy[] { return this.governancePolicies; }
+  public getGovernancePolicyById(id: string): GovernancePolicy | undefined { return this.governancePolicies.find(p => p.id === id); }
+
+
+  /**
+   * Adds or updates a language entry, enforcing digital identity and cryptographic signature.
+   * Business value: Maintains a validated and auditable registry of linguistic systems,
+   * foundational for all comparative analyses and ensuring the integrity of linguistic metadata.
+   */
+  public addOrUpdateLanguage(language: Language, identity: DigitalIdentity, signature: string): Language | null {
+    if (!verifySignature(JSON.stringify(language), signature, identity.publicKey)) {
+      console.error('Signature verification failed for language.');
+      return null;
+    }
+    const existingIndex = this.languages.findIndex(l => l.id === language.id);
+    const now = new Date().toISOString();
+    const newLanguage = { ...language, lastUpdated: now, relatedLanguages: language.relatedLanguages || [] }; // Ensure relatedLanguages is array
+
+    if (existingIndex > -1) {
+      this.languages[existingIndex] = newLanguage;
+      this.addAuditLogEntry(identity.id, 'UPDATE_LANGUAGE', 'Language', newLanguage.id, `Updated language: ${newLanguage.name}`, newLanguage);
+    } else {
+      newLanguage.id = newLanguage.id || generateUniqueId();
+      this.languages.push(newLanguage);
+      this.addAuditLogEntry(identity.id, 'CREATE_LANGUAGE', 'Language', newLanguage.id, `Created new language: ${newLanguage.name}`, newLanguage);
+    }
+    this.addContributionRecord(identity.id, 'language', newLanguage.id, existingIndex > -1 ? 'update' : 'create', newLanguage, signature);
+    return newLanguage;
+  }
 
   /**
    * Adds or updates a lexical entry. Requires identity and signature.
    * Business value: Ensures all changes to fundamental linguistic data are properly attributed and secured,
-   * maintaining data integrity and allowing for robust versioning and conflict resolution.
+   * maintaining data integrity and allowing for robust versioning and conflict resolution. This is vital
+   * for maintaining a high-quality data asset that can be licensed and leveraged by AI.
    */
   public addOrUpdateLexicalEntry(entry: LexicalEntry, identity: DigitalIdentity, signature: string): LexicalEntry | null {
     if (!verifySignature(JSON.stringify(entry), signature, identity.publicKey)) {
@@ -1360,7 +1656,10 @@ export class LinguisticDataRepository {
   }
 
   /**
-   * Adds or updates a reconstruction.
+   * Adds or updates a reconstruction, validating against a digital identity and signature.
+   * Business value: Manages the platform's core intellectual output – reconstructed proto-words.
+   * Cryptographic attribution and versioning ensure the integrity and provenance of these high-value
+   * scientific findings, making them trustworthy assets for future research and commercial applications.
    */
   public addOrUpdateReconstruction(recon: Reconstruction, identity: DigitalIdentity, signature: string): Reconstruction | null {
     if (!verifySignature(JSON.stringify(recon), signature, identity.publicKey)) {
@@ -1384,7 +1683,10 @@ export class LinguisticDataRepository {
   }
 
   /**
-   * Adds or updates a cognate set.
+   * Adds or updates a cognate set, authenticated by digital identity and signature.
+   * Business value: Centralizes and validates groups of cognate words, streamlining the
+   * comparative method and providing curated inputs for AI-driven reconstruction.
+   * This enhances data quality and accelerates the initial phase of linguistic analysis.
    */
   public addOrUpdateCognateSet(cognateSet: CognateSet, identity: DigitalIdentity, signature: string): CognateSet | null {
     if (!verifySignature(JSON.stringify(cognateSet), signature, identity.publicKey)) {
@@ -1409,9 +1711,65 @@ export class LinguisticDataRepository {
   }
 
   /**
+   * Adds or updates a sound correspondence rule, secured by identity and signature.
+   * Business value: Manages the programmable rules that define linguistic transformations,
+   * enabling the creation of custom, high-precision sound law engines. This empowers
+   * researchers and agents to encode and apply historical linguistic insights systematically.
+   */
+  public addOrUpdateSoundCorrespondenceRule(rule: SoundCorrespondenceRule, identity: DigitalIdentity, signature: string): SoundCorrespondenceRule | null {
+    if (!verifySignature(JSON.stringify(rule), signature, identity.publicKey)) {
+      console.error('Signature verification failed for sound correspondence rule.');
+      return null;
+    }
+    const existingIndex = this.soundCorrespondenceRules.findIndex(r => r.id === rule.id);
+    const now = new Date().toISOString();
+    const newRule = { ...rule, dateEstablished: rule.dateEstablished || now, proposedBy: rule.proposedBy || identity.id };
+
+    if (existingIndex > -1) {
+      this.soundCorrespondenceRules[existingIndex] = newRule;
+      this.addAuditLogEntry(identity.id, 'UPDATE_SOUND_RULE', 'SoundCorrespondenceRule', newRule.id, `Updated rule: ${newRule.protoSound} > ${newRule.descendantSound}`, newRule);
+    } else {
+      newRule.id = newRule.id || generateUniqueId();
+      this.soundCorrespondenceRules.push(newRule);
+      this.addAuditLogEntry(identity.id, 'CREATE_SOUND_RULE', 'SoundCorrespondenceRule', newRule.id, `Created new rule: ${newRule.protoSound} > ${newRule.descendantSound}`, newRule);
+    }
+    this.addContributionRecord(identity.id, 'rule', newRule.id, existingIndex > -1 ? 'update' : 'create', newRule, signature);
+    return newRule;
+  }
+
+  /**
+   * Adds or updates a user project, ensuring secure attribution.
+   * Business value: Enables centralized management of research projects, facilitating
+   * team collaboration, data sharing, and the application of governance policies.
+   * This structured project management enhances productivity and oversight.
+   */
+  public addOrUpdateUserProject(project: UserProject, identity: DigitalIdentity, signature: string): UserProject | null {
+    if (!verifySignature(JSON.stringify(project), signature, identity.publicKey)) {
+      console.error('Signature verification failed for user project.');
+      return null;
+    }
+    const existingIndex = this.userProjects.findIndex(p => p.id === project.id);
+    const now = new Date().toISOString();
+    const newProject = { ...project, lastModified: now };
+
+    if (existingIndex > -1) {
+      this.userProjects[existingIndex] = newProject;
+      this.addAuditLogEntry(identity.id, 'UPDATE_USER_PROJECT', 'UserProject', newProject.id, `Updated project: ${newProject.name}`, newProject);
+    } else {
+      newProject.id = newProject.id || generateUniqueId();
+      newProject.createdAt = now;
+      this.userProjects.push(newProject);
+      this.addAuditLogEntry(identity.id, 'CREATE_USER_PROJECT', 'UserProject', newProject.id, `Created new project: ${newProject.name}`, newProject);
+    }
+    this.addContributionRecord(identity.id, 'project', newProject.id, existingIndex > -1 ? 'update' : 'create', newProject, signature);
+    return newProject;
+  }
+
+  /**
    * Creates a new linguistic task.
    * Business value: Formalizes the research workflow, allowing for structured assignment, tracking,
-   * and potential monetization (via bounties) of linguistic problems.
+   * and potential monetization (via bounties) of linguistic problems. This drives efficient
+   * resource allocation and accelerates scientific discovery.
    */
   public createLinguisticTask(task: Omit<LinguisticTask, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'audits'>, creatorId: string): LinguisticTask {
     const now = new Date().toISOString();
@@ -1422,41 +1780,53 @@ export class LinguisticDataRepository {
       updatedAt: now,
       status: LinguisticTaskStatus.Pending,
       audits: [],
+      riskScore: task.riskScore || 0.5,
     };
     this.linguisticTasks.push(newTask);
     this.addAuditLogEntry(creatorId, 'CREATE_TASK', 'LinguisticTask', newTask.id, `Created task: ${newTask.description}`, newTask);
+    this.addContributionRecord(creatorId, 'task', newTask.id, 'create', newTask, signData(JSON.stringify(newTask), this.getIdentityById(creatorId)?.privateKey || 'unknown_key'));
     return newTask;
   }
 
   /**
    * Updates a linguistic task.
+   * Business value: Enables real-time tracking of task progress and status changes,
+   * critical for managing complex research projects and dynamically reallocating resources.
    */
-  public updateLinguisticTask(updatedTask: LinguisticTask, updaterId: string): LinguisticTask | null {
+  public updateLinguisticTask(updatedTask: LinguisticTask, updaterId: string, policyViolations?: LinguisticAuditLogEntry['policyViolation']): LinguisticTask | null {
     const index = this.linguisticTasks.findIndex(t => t.id === updatedTask.id);
     if (index === -1) return null;
 
     updatedTask.updatedAt = new Date().toISOString();
     this.linguisticTasks[index] = updatedTask;
-    this.addAuditLogEntry(updaterId, 'UPDATE_TASK', 'LinguisticTask', updatedTask.id, `Updated task: ${updatedTask.description} (Status: ${updatedTask.status})`, updatedTask);
+    this.addAuditLogEntry(updaterId, 'UPDATE_TASK', 'LinguisticTask', updatedTask.id, `Updated task: ${updatedTask.description} (Status: ${updatedTask.status})`, updatedTask, undefined, policyViolations);
+    this.addContributionRecord(updaterId, 'task', updatedTask.id, 'update', updatedTask, signData(JSON.stringify(updatedTask), this.getIdentityById(updaterId)?.privateKey || 'unknown_key'));
     return updatedTask;
   }
 
   /**
    * Assigns a linguistic task to an identity.
+   * Business value: Formalizes task delegation, ensuring clear accountability and
+   * enabling the efficient distribution of work to human experts or AI agents.
    */
   public assignLinguisticTask(taskId: string, assigneeId: string, assignerId: string): LinguisticTask | null {
     const task = this.getLinguisticTaskById(taskId);
     if (!task) return null;
+    const assigner = this.getIdentityById(assignerId);
+    if (!assigner) { console.error('Assigner identity not found.'); return null; }
 
     task.assignedToIdentityId = assigneeId;
     task.status = LinguisticTaskStatus.Assigned;
-    return this.updateLinguisticTask(task, assignerId);
+    const updatedTask = this.updateLinguisticTask(task, assignerId);
+    this.addContributionRecord(assignerId, 'task', task.id, 'assign', { taskId, assigneeId }, signData(JSON.stringify({ taskId, assigneeId }), assigner.privateKey));
+    return updatedTask;
   }
 
   /**
    * Adds a linguistic bounty.
    * Business value: Directly links research tasks to funding mechanisms,
    * enabling a tokenized economy for linguistic research and incentivizing contributions.
+   * This opens new funding avenues and accelerates problem-solving.
    */
   public addLinguisticBounty(bounty: Omit<LinguisticBounty, 'id' | 'status' | 'fundedAt'>, funderId: string): LinguisticBounty {
     const now = new Date().toISOString();
@@ -1469,6 +1839,7 @@ export class LinguisticDataRepository {
     };
     this.linguisticBounties.push(newBounty);
     this.addAuditLogEntry(funderId, 'FUND_BOUNTY', 'LinguisticBounty', newBounty.id, `Funded bounty for task ${newBounty.taskId} with ${newBounty.amount} ${newBounty.tokenType}`, newBounty);
+    this.addContributionRecord(funderId, 'task', newBounty.taskId, 'fund', newBounty, signData(JSON.stringify(newBounty), this.getIdentityById(funderId)?.privateKey || 'unknown_key'));
     return newBounty;
   }
 
@@ -1476,6 +1847,7 @@ export class LinguisticDataRepository {
    * Claims a linguistic bounty after task completion.
    * Business value: Facilitates the secure and transparent payout of rewards,
    * fostering trust in the platform's token rails and encouraging further participation.
+   * This is a critical settlement operation within the financial infrastructure.
    */
   public claimLinguisticBounty(bountyId: string, claimantId: string, transactionId: string, proof: string): LinguisticBounty | null {
     const bounty = this.getLinguisticBountyById(bountyId);
@@ -1488,51 +1860,29 @@ export class LinguisticDataRepository {
     bounty.proofOfCompletion = proof;
 
     this.addAuditLogEntry(claimantId, 'CLAIM_BOUNTY', 'LinguisticBounty', bounty.id, `Claimed bounty for task ${bounty.taskId}`, bounty, transactionId);
+    this.addContributionRecord(claimantId, 'task', bounty.taskId, 'claim', bounty, signData(JSON.stringify(bounty), this.getIdentityById(claimantId)?.privateKey || 'unknown_key'));
     return bounty;
-  }
-
-  /**
-   * Adds a contribution record.
-   * Business value: Establishes a permanent, verifiable record of all user and agent contributions,
-   * essential for intellectual property, reputation management, and auditability.
-   */
-  private addContributionRecord(
-    identityId: string,
-    dataType: LinguisticContribution['dataType'],
-    dataId: string,
-    action: LinguisticContribution['action'],
-    details: any,
-    signature: string
-  ): LinguisticContribution {
-    const contribution: LinguisticContribution = {
-      id: generateUniqueId(),
-      identityId,
-      dataType,
-      dataId,
-      action,
-      timestamp: new Date().toISOString(),
-      details,
-      signature,
-    };
-    this.linguisticContributions.push(contribution);
-    return contribution;
   }
 
   /**
    * Registers a new digital identity in the system.
    * Business value: Enables secure onboarding of users and AI agents, establishing their roles and permissions,
    * and providing the foundation for role-based access control and auditable actions across the platform.
+   * This is the core of the digital identity and trust layer.
    */
   public registerIdentity(name: string, publicKey: string, privateKey: string, roles: DigitalIdentity['roles']): DigitalIdentity {
     const newIdentity: DigitalIdentity = {
-      id: `usr_${generateUniqueId()}`,
+      id: `id_${generateUniqueId()}`,
       name,
       publicKey,
+      privateKey,
       roles,
       reputationScore: 0.5,
+      lastActive: new Date().toISOString(),
     };
     this.identities.push(newIdentity);
     this.addAuditLogEntry('system', 'REGISTER_IDENTITY', 'DigitalIdentity', newIdentity.id, `New identity registered: ${name}`, newIdentity);
+    this.addContributionRecord('system', 'identity', newIdentity.id, 'create', newIdentity, 'system_signature'); // System generated, no user private key
     return newIdentity;
   }
 
@@ -1543,12 +1893,41 @@ export class LinguisticDataRepository {
   /**
    * Checks if an identity has the required permissions (roles).
    * Business value: Enforces robust role-based access control, securing sensitive operations and data,
-   * and ensuring that only authorized entities can perform specific actions.
+   * and ensuring that only authorized entities can perform specific actions. This is critical for
+   * preventing unauthorized access and maintaining system integrity in a financial-grade platform.
    */
   public hasPermission(identityId: string, requiredRoles: string[]): boolean {
     const identity = this.getIdentityById(identityId);
     if (!identity) return false;
     return requiredRoles.some(role => identity.roles.includes(role as any));
+  }
+
+  /**
+   * Retrieves active governance policies relevant to a specific resource type.
+   * Business value: Provides dynamic policy enforcement, allowing agents and human operators
+   * to apply the correct governance rules at the point of action, ensuring ongoing compliance.
+   */
+  public getActiveGovernancePolicies(target: GovernancePolicy['rules'][number]['target']): GovernancePolicy[] {
+    return this.governancePolicies.filter(p => p.active && p.rules.some(r => r.target === target));
+  }
+
+  /**
+   * Deletes a lexical entry.
+   * Business value: Provides data lifecycle management capabilities, ensuring that
+   * obsolete or erroneous data can be removed while maintaining a full audit trail.
+   */
+  public deleteLexicalEntry(id: string, identity: DigitalIdentity, signature: string): boolean {
+    if (!verifySignature(id, signature, identity.publicKey)) { // Simpler signature for delete for now
+      console.error('Signature verification failed for deleting lexical entry.');
+      return false;
+    }
+    const index = this.lexicalEntries.findIndex(le => le.id === id);
+    if (index === -1) return false;
+
+    const deletedEntry = this.lexicalEntries.splice(index, 1);
+    this.addAuditLogEntry(identity.id, 'DELETE_LEXICAL_ENTRY', 'LexicalEntry', id, `Deleted lexical entry: ${deletedEntry[0].word}`, deletedEntry[0]);
+    this.addContributionRecord(identity.id, 'lexicalEntry', id, 'delete', { id }, signature);
+    return true;
   }
 }
 
@@ -1556,39 +1935,75 @@ export class LinguisticDataRepository {
  * Singleton instance of the data repository to simulate a global database.
  * Business value: Centralized, consistent data access across the application,
  * ensuring all components operate on the same, auditable source of truth.
+ * This global, high-performance data store is indispensable for a scalable financial infrastructure.
  */
 export const linguisticDataRepository = new LinguisticDataRepository();
 
 
-// --- Agentic AI System Simulation (Conceptual) ---
+# --- Agentic AI System Simulation (Conceptual) ---
+
+/**
+ * Simulates an internal messaging layer for secure, auditable agent-to-agent and agent-to-system communication.
+ * Business value: Ensures reliable and secure communication between autonomous agents,
+ * critical for coordinated operations and complex workflows. The auditable nature provides
+ * forensic capabilities for all internal system interactions, vital for compliance and debugging.
+ */
+export interface AgentMessage {
+  id: string;
+  senderId: string;
+  recipientId: string | 'system' | 'all';
+  type: 'task_assigned' | 'task_status_update' | 'request_skill' | 'skill_output' | 'policy_alert' | 'remediation_request' | 'governance_report';
+  payload: any;
+  timestamp: string;
+  signature: string; // Sender's signature
+}
 
 /**
  * Simulates an Agentic AI system specifically for linguistic tasks.
  * Business value: Automates complex comparative linguistic analysis, dramatically accelerating research cycles.
  * Enables the deployment of specialized AI agents that monitor, decide, and act on linguistic data,
- * unlocking new insights and reducing human effort in data processing and reconstruction.
+ * unlocking new insights and reducing human effort in data processing and reconstruction,
+ * driving significant cost savings and revenue opportunities.
  */
 export class LinguisticAgentCoordinator {
   private repository: LinguisticDataRepository;
-  private messageQueue: string[] = []; // Simulate a simple in-repo message queue
+  private _internalMessageBus: AgentMessage[] = []; // Simulate a secure, internal message bus
 
+  /**
+   * Initializes the LinguisticAgentCoordinator with a reference to the data repository.
+   * Business value: Connects the AI orchestration layer to the single source of truth,
+   * enabling agents to interact with and modify linguistic data in a controlled and auditable manner.
+   */
   constructor(repository: LinguisticDataRepository) {
     this.repository = repository;
   }
 
   /**
-   * Simulates sending a message to the agent system.
+   * Sends a message through the internal agent message bus.
+   * Business value: Provides a secure and auditable channel for inter-agent communication,
+   * ensuring all decisions and data exchanges are recorded and verifiable.
    */
-  private sendMessage(message: string) {
-    this.messageQueue.push(`[${new Date().toISOString()}] ${message}`);
-    console.log(`Agent Queue: Added message - ${message}`);
+  private sendAgentMessage(sender: DigitalIdentity, recipientId: string | 'system' | 'all', type: AgentMessage['type'], payload: any): void {
+    const message: AgentMessage = {
+      id: generateUniqueId(),
+      senderId: sender.id,
+      recipientId,
+      type,
+      payload,
+      timestamp: new Date().toISOString(),
+      signature: signData(JSON.stringify(payload), sender.privateKey),
+    };
+    this._internalMessageBus.push(message);
+    console.log(`Agent Message (${type}): From ${sender.name} to ${recipientId} - ${JSON.stringify(payload).substring(0, 50)}...`);
+    this.repository.addAuditLogEntry(sender.id, `AGENT_MESSAGE_${type.toUpperCase()}`, 'AgentMessage', message.id, `Sent message to ${recipientId}`, message);
   }
 
   /**
-   * Simulates an agent processing a task.
+   * Simulates an agent processing a linguistic task.
    * Business value: Demonstrates autonomous task execution, showing how AI agents
    * can independently perform complex operations, from data collection to final output,
-   * providing a scalable and efficient research workforce.
+   * providing a scalable and efficient research workforce that generates high-value data.
+   * Emphasizes idempotent transactions and security.
    */
   public async processLinguisticTask(taskId: string, agentIdentityId: string): Promise<LinguisticTask | null> {
     const agent = this.repository.getIdentityById(agentIdentityId);
@@ -1602,7 +2017,7 @@ export class LinguisticAgentCoordinator {
     }
 
     let task = this.repository.getLinguisticTaskById(taskId);
-    if (!task || task.status !== LinguisticTaskStatus.Assigned || task.assignedToIdentityId !== agentIdentityId) {
+    if (!task || (task.status !== LinguisticTaskStatus.Assigned && task.status !== LinguisticTaskStatus.Remediated) || task.assignedToIdentityId !== agentIdentityId) {
       console.warn(`Task ${taskId} not ready for agent ${agentIdentityId} or not assigned to it.`);
       return null;
     }
@@ -1612,38 +2027,44 @@ export class LinguisticAgentCoordinator {
       console.error(`Unknown skill type: ${task.type}`);
       task.status = LinguisticTaskStatus.Failed;
       this.repository.updateLinguisticTask(task, agentIdentityId);
+      this.sendAgentMessage(agent, 'system', 'task_status_update', { taskId: task.id, status: task.status, reason: 'Unknown skill type' });
       return null;
     }
 
-    this.sendMessage(`Agent ${agent.name} (ID: ${agentIdentityId}) started task ${taskId}: ${task.description}`);
+    this.sendAgentMessage(agent, 'system', 'task_status_update', { taskId: task.id, status: LinguisticTaskStatus.InProgress, description: task.description });
     task.status = LinguisticTaskStatus.InProgress;
     task.audits?.push(this.repository.addAuditLogEntry(agentIdentityId, 'TASK_STATUS_UPDATE', 'LinguisticTask', task.id, `Status changed to InProgress by agent.`, task));
     this.repository.updateLinguisticTask(task, agentIdentityId);
 
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate work
+    // Simulate work duration with stochasticity based on skill performance
+    const latency = skill.performanceMetrics?.latency || 2000;
+    await new Promise(resolve => setTimeout(resolve, latency + Math.random() * 1000));
 
     let output: any = {};
     let newStatus = LinguisticTaskStatus.Completed;
     let details = 'Task completed successfully.';
+    let policyViolations: LinguisticAuditLogEntry['policyViolation'] = [];
 
     try {
       if (task.type === 'ProtoWordReconstruction') {
         const cognateSet = this.repository.getCognateSetById(task.parameters.cognateSetId);
         if (cognateSet) {
-          const protoWord = `*${cognateSet.concept.toUpperCase()}_RECON`;
+          // Simulate reconstruction logic based on complexity
+          const protoWordForm = `*${cognateSet.concept.toUpperCase().replace(/\s/g, '_')}_RECON`;
+          const confidence = skill.performanceMetrics?.accuracy ? skill.performanceMetrics.accuracy * (0.8 + Math.random() * 0.2) : 0.8; // Introduce slight variance
           output = {
-            protoWord,
+            protoWord: protoWordForm,
             meaning: cognateSet.concept,
-            confidence: 0.8,
+            confidence: confidence,
             descendantEvidence: cognateSet.members.map(m => ({ language: m.languageId, word: m.wordForm })),
           };
           const newRecon: Reconstruction = {
             id: generateUniqueId(),
-            protoLanguageId: this.repository.getLanguageById('pie')?.id || 'proto_lang_unknown',
-            protoWord: protoWord,
+            protoLanguageId: task.parameters.protoLanguageId || this.repository.getLanguageById('pie')?.id || 'proto_lang_unknown',
+            protoWord: protoWordForm,
             meaning: cognateSet.concept,
-            ipa: `/${protoWord.toLowerCase().replace('*', '')}/`,
-            confidence: 0.8,
+            ipa: `/${protoWordForm.toLowerCase().replace('*', '').replace(/_/g, '')}/`,
+            confidence: confidence,
             descendantEvidence: cognateSet.members.map(m => ({
               languageId: m.languageId,
               language: this.repository.getLanguageById(m.languageId)?.name || m.languageId,
@@ -1654,110 +2075,294 @@ export class LinguisticAgentCoordinator {
             })),
             semanticField: cognateSet.semanticField || 'unknown',
             reconstructionMethod: 'computational',
-            status: 'tentative',
-            proposedBy: agent.name,
+            status: confidence > 0.8 ? 'established' : 'tentative', // Conditional status
+            proposedBy: agent.id,
             dateProposed: new Date().toISOString(),
           };
-          const signature = signData(JSON.stringify(newRecon), 'AGENT_PRIVATE_KEY');
+          const signature = signData(JSON.stringify(newRecon), agent.privateKey);
           this.repository.addOrUpdateReconstruction(newRecon, agent, signature);
-          details = `Proposed new reconstruction for "${cognateSet.concept}": ${protoWord}`;
+          details = `Proposed new reconstruction for "${cognateSet.concept}": ${protoWordForm} with confidence ${confidence.toFixed(2)}`;
+
+          // Apply governance policies
+          const policies = this.repository.getActiveGovernancePolicies('reconstruction');
+          for (const policy of policies) {
+            for (let i = 0; i < policy.rules.length; i++) {
+              const rule = policy.rules[i];
+              if (rule.target === 'reconstruction' && eval(rule.condition.replace(/reconstruction/g, 'newRecon'))) { // Simplified eval for demo
+                policyViolations.push({ policyId: policy.id, ruleIndex: i, reason: `Reconstruction '${rule.condition}' violated.` });
+                if (rule.action === 'require_review') {
+                  newStatus = LinguisticTaskStatus.Review;
+                  details += ' (Requires human review due to policy violation)';
+                } else if (rule.action === 'flag') {
+                  // Simply flag, task can still complete
+                } else if (rule.action === 'auto_remediate') {
+                  // Agent should ideally trigger remediation task, for now, just log and flag
+                  this.sendAgentMessage(this.repository.getIdentityById('agent_governor')!, agent.id, 'remediation_request', { taskId: task.id, reason: `Policy violation for reconstruction: ${rule.condition}` });
+                  details += ' (Auto-remediation triggered by policy)';
+                }
+              }
+            }
+          }
+
         } else {
           newStatus = LinguisticTaskStatus.Failed;
           details = 'Cognate set not found for reconstruction task.';
+          policyViolations.push({ policyId: 'system_error', ruleIndex: -1, reason: 'Missing prerequisite data for task.' });
         }
       } else if (task.type === 'SoundLawDetection') {
-        output = {
-          ruleProposed: true,
-          protoSound: task.parameters.specificSound,
-          descendantSound: 'f',
-          confidence: 0.75,
-          notes: 'Hypothetical shift identified by AI agent.',
-        };
-        const newRule: SoundCorrespondenceRule = {
-          id: generateUniqueId(),
-          protoSound: task.parameters.specificSound,
-          descendantSound: 'f',
-          context: '/_V',
-          environment: 'all',
-          languageId: task.parameters.descendantLanguage,
-          appliesTo: 'consonant',
-          examples: [{ protoWord: '*unknown', descendantWord: 'foo' }],
-          confidence: 0.75,
-          notes: 'AI proposed rule.',
-          source: `AI Agent ${agent.name}`,
-          priority: 50,
-          dateEstablished: new Date().toISOString(),
-        };
-        // This would require a `addOrUpdateSoundCorrespondenceRule` method in the repository
-        // For now, just simulate output.
-        details = `Proposed sound law: ${task.parameters.protoLanguage} ${task.parameters.specificSound} > ${task.parameters.descendantLanguage} f`;
+        const descendantLang = this.repository.getLanguageById(task.parameters.descendantLanguage);
+        if (!descendantLang) {
+          newStatus = LinguisticTaskStatus.Failed;
+          details = `Descendant language ${task.parameters.descendantLanguage} not found.`;
+        } else {
+          const proposedDescendantSound = Math.random() > 0.5 ? 'f' : 't'; // Simplified
+          output = {
+            ruleProposed: true,
+            protoSound: task.parameters.specificSound,
+            descendantSound: proposedDescendantSound,
+            confidence: 0.75,
+            notes: 'Hypothetical shift identified by AI agent.',
+          };
+          const newRule: SoundCorrespondenceRule = {
+            id: generateUniqueId(),
+            protoSound: task.parameters.specificSound,
+            descendantSound: proposedDescendantSound,
+            context: '/_V',
+            environment: 'all',
+            languageId: task.parameters.descendantLanguage,
+            appliesTo: 'consonant',
+            examples: [{ protoWord: '*unknown', descendantWord: `${proposedDescendantSound}oo` }],
+            confidence: 0.75,
+            notes: 'AI proposed rule.',
+            source: `AI Agent ${agent.name}`,
+            priority: 50,
+            dateEstablished: new Date().toISOString(),
+            proposedBy: agent.id,
+          };
+          const signature = signData(JSON.stringify(newRule), agent.privateKey);
+          this.repository.addOrUpdateSoundCorrespondenceRule(newRule, agent, signature);
+          details = `Proposed sound law: ${task.parameters.protoLanguage} ${task.parameters.specificSound} > ${task.parameters.descendantLanguage} ${proposedDescendantSound}`;
+        }
       } else if (task.type === 'CognateIdentification') {
-        output = {
-          potentialCognates: [{ word1: 'eng_fish', word2: 'got_fisks', score: 0.9 }],
-          notes: 'Identified potential cognates based on phonetic similarity and semantic field.',
-        };
-        details = 'Identified potential cognates.';
+        // Simulate finding cognates for 'fish'
+        const engFish = this.repository.getLexicalEntryById('le_eng_fish');
+        const gotFisks = this.repository.getLexicalEntryById('le_got_fisks');
+        if (engFish && gotFisks) {
+          output = {
+            potentialCognates: [{ entry1Id: 'le_eng_fish', entry2Id: 'le_got_fisks', score: 0.9 }],
+            notes: 'Identified potential cognates based on phonetic similarity and semantic field.',
+          };
+          details = 'Identified potential cognates.';
+        } else {
+          newStatus = LinguisticTaskStatus.Failed;
+          details = 'Missing lexical entries for cognate identification simulation.';
+        }
       } else if (task.type === 'DataValidation') {
-        output = { validationResult: 'Passed', errors: [] };
-        details = 'Data validation completed successfully.';
+        const langId = task.parameters.languageId;
+        const targetLanguage = this.repository.getLanguageById(langId);
+        let errors = [];
+        if (!targetLanguage) {
+          errors.push(`Language ID ${langId} not found.`);
+        } else {
+          // Simulate validation: e.g., check for missing IPA or meaning in some entries
+          const entries = this.repository.getLexicalEntries(langId);
+          if (entries.some(e => !e.ipa || !e.meaning)) {
+            errors.push('Some lexical entries are missing IPA or meaning fields.');
+          }
+        }
+        output = { validationResult: errors.length === 0 ? 'Passed' : 'Failed', errors: errors };
+        if (errors.length > 0) {
+          newStatus = LinguisticTaskStatus.Review; // Needs human review for validation errors
+          details = 'Data validation identified issues. Needs review.';
+          policyViolations.push({ policyId: 'policy_data_integrity', ruleIndex: 0, reason: 'Data validation failed.' });
+        } else {
+          details = 'Data validation completed successfully.';
+        }
+      } else if (task.type === 'Remediation') {
+        // Example remediation: if a reconstruction task failed, it could be re-queued
+        const failedTaskId = task.parameters.failedTaskId;
+        let failedTask = this.repository.getLinguisticTaskById(failedTaskId);
+        if (failedTask && failedTask.status === LinguisticTaskStatus.Failed) {
+          failedTask.status = LinguisticTaskStatus.Pending;
+          failedTask.assignedToIdentityId = undefined;
+          failedTask.audits?.push(this.repository.addAuditLogEntry(agentIdentityId, 'TASK_REMEDIATED', 'LinguisticTask', failedTask.id, `Task re-queued by remediation agent.`, failedTask));
+          this.repository.updateLinguisticTask(failedTask, agentIdentityId);
+          output = { remediatedTask: failedTaskId, newStatus: LinguisticTaskStatus.Pending };
+          details = `Task ${failedTaskId} successfully re-queued for processing.`;
+          newStatus = LinguisticTaskStatus.Completed;
+        } else {
+          details = `No failed task ${failedTaskId} found for remediation or it's not in failed state.`;
+          newStatus = LinguisticTaskStatus.Failed;
+        }
       }
     } catch (e: any) {
       newStatus = LinguisticTaskStatus.Failed;
       details = `Task failed during execution: ${e.message}`;
       console.error(`Agent ${agentIdentityId} failed task ${taskId}:`, e);
+      policyViolations.push({ policyId: 'system_runtime_error', ruleIndex: -1, reason: `Agent task execution error: ${e.message}` });
     }
 
     task.status = newStatus;
     task.output = output;
-    task.audits?.push(this.repository.addAuditLogEntry(agentIdentityId, 'TASK_STATUS_UPDATE', 'LinguisticTask', task.id, `Status changed to ${newStatus} by agent. Details: ${details}`, task));
-    this.repository.updateLinguisticTask(task, agentIdentityId);
-    this.sendMessage(`Agent ${agent.name} completed task ${taskId} with status: ${newStatus}. Details: ${details}`);
+    task.audits?.push(this.repository.addAuditLogEntry(agentIdentityId, 'TASK_STATUS_UPDATE', 'LinguisticTask', task.id, `Status changed to ${newStatus} by agent. Details: ${details}`, task, undefined, policyViolations));
+    this.repository.updateLinguisticTask(task, agentIdentityId, policyViolations); // Pass policy violations to update
 
+    this.sendAgentMessage(agent, 'system', 'task_status_update', { taskId: task.id, status: newStatus, details: details, output: output });
+
+    // Payout bounty if task completed
     if (newStatus === LinguisticTaskStatus.Completed) {
       const bounty = this.repository.getLinguisticBounties(task.id).find(b => b.status === 'funded');
       if (bounty) {
         const transactionId = `TX_${generateUniqueId()}`;
         this.repository.claimLinguisticBounty(bounty.id, agentIdentityId, transactionId, hashData(JSON.stringify(output)));
-        this.sendMessage(`Agent ${agent.name} claimed bounty for task ${taskId}. Transaction: ${transactionId}`);
+        this.sendAgentMessage(agent, 'system', 'skill_output', { taskId: task.id, message: `Bounty claimed for task ${taskId}. Transaction: ${transactionId}` });
       }
     }
 
+    // Agent's monitoring skill: After completing a task, check if any new tasks are waiting
+    this.monitorAndDispatchTasks(); // Immediately check for new work
     return task;
   }
 
   /**
    * Monitors for new pending tasks and assigns them to available agents.
-   * Business value: Implements the "monitor -> decide -> act" loop for agentic AI,
+   * Business value: Implements the "observe -> decide -> act" loop for agentic AI,
    * ensuring continuous, autonomous processing of research tasks and optimal resource utilization.
+   * This orchestration layer maximizes the throughput of the entire research platform.
    */
   public async monitorAndDispatchTasks(): Promise<void> {
     const pendingTasks = this.repository.getLinguisticTasks().filter(t => t.status === LinguisticTaskStatus.Pending);
     const availableAgents = this.repository.getIdentities().filter(id =>
       id.roles.includes('agent') && !this.repository.getLinguisticTasks().some(t =>
-        t.assignedToIdentityId === id.id && (t.status === LinguisticTaskStatus.Assigned || t.status === LinguisticTaskStatus.InProgress)
+        t.assignedToIdentityId === id.id && (t.status === LinguisticTaskStatus.Assigned || t.status === LinguisticTaskStatus.InProgress || t.status === LinguisticTaskStatus.Remediated)
       )
     );
 
+    // Sort tasks by priority (critical > high > medium > low), then by creation date
+    pendingTasks.sort((a, b) => {
+      const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
+      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      }
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
     for (const task of pendingTasks) {
       if (availableAgents.length > 0) {
-        const agent = availableAgents.shift();
-        if (agent) {
+        // Find an agent with the required skill, prioritize higher reputation
+        const suitableAgents = availableAgents
+          .filter(agent => {
+            const skill = this.repository.getSkillById(task.type);
+            return skill && this.repository.hasPermission(agent.id, skill.requiredPermissions);
+          })
+          .sort((a, b) => (b.reputationScore || 0) - (a.reputationScore || 0)); // Sort by reputation
+
+        if (suitableAgents.length > 0) {
+          const agent = suitableAgents[0]; // Pick best agent
           console.log(`Dispatching task ${task.id} (${task.description}) to agent ${agent.name}.`);
           this.repository.assignLinguisticTask(task.id, agent.id, 'system');
+          this.sendAgentMessage(this.repository.getIdentityById('system') || agent, agent.id, 'task_assigned', { taskId: task.id, taskType: task.type });
+          // Process task in a non-blocking way
           this.processLinguisticTask(task.id, agent.id);
+          availableAgents.splice(availableAgents.indexOf(agent), 1); // Agent is now busy
+        } else {
+          console.log(`No suitable agent found for task ${task.id} (${task.description}).`);
         }
       } else {
         console.log('No available agents to dispatch pending tasks.');
         break;
       }
     }
+    // Also, activate Governance Agent to check logs
+    this.runGovernanceCheck();
   }
 
   /**
-   * Returns the simulated message queue for observability.
+   * Simulates a Governance Agent monitoring the audit log for policy violations and initiating remediation.
+   * Business value: Actively enforces compliance and data integrity rules, automating oversight and
+   * minimizing operational risks. This provides a robust, self-correcting mechanism for the platform.
    */
-  public getMessageQueue(): string[] {
-    return this.messageQueue;
+  public async runGovernanceCheck(): Promise<void> {
+    const governorAgent = this.repository.getIdentityById('agent_governor');
+    if (!governorAgent || !this.repository.hasPermission(governorAgent.id, ['governor'])) {
+      console.warn('Governance Agent not found or lacks permissions.');
+      return;
+    }
+
+    const auditLog = this.repository.getAuditLog();
+    const lastCheckedIndex = auditLog.findIndex(entry => entry.actorIdentityId === governorAgent.id && entry.action === 'GOVERNANCE_CHECK_COMPLETED');
+    const newEntries = auditLog.slice(lastCheckedIndex > -1 ? lastCheckedIndex + 1 : 0);
+
+    let violationsFound = false;
+
+    for (const entry of newEntries) {
+      if (entry.policyViolation && entry.policyViolation.length > 0) {
+        violationsFound = true;
+        console.warn(`Governance Agent detected policy violation in audit entry ${entry.id}:`, entry.policyViolation);
+        this.sendAgentMessage(governorAgent, 'admin_eve', 'policy_alert', { auditEntryId: entry.id, violations: entry.policyViolation });
+
+        // Example: Auto-remediate if a reconstruction confidence is too low (triggered by rule.action 'auto_remediate')
+        entry.policyViolation.forEach(violation => {
+          const policy = this.repository.getGovernancePolicyById(violation.policyId);
+          if (policy) {
+            const rule = policy.rules[violation.ruleIndex];
+            if (rule && rule.action === 'auto_remediate') {
+              if (rule.target === 'agent_action' && entry.action.includes('TASK_STATUS_UPDATE') && entry.details.includes('Requires human review')) {
+                // For a failed reconstruction (confidence too low), create a remediation task
+                const concernedTask = this.repository.getLinguisticTaskById(entry.resourceId);
+                if (concernedTask && concernedTask.status === LinguisticTaskStatus.Review) {
+                  const remediationTask: Omit<LinguisticTask, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'audits'> = {
+                    projectId: concernedTask.projectId,
+                    type: 'Remediation',
+                    description: `Remediate task ${concernedTask.id}: ${concernedTask.description} (Policy Violation: ${violation.reason})`,
+                    parameters: { failedTaskId: concernedTask.id, originalPolicyViolation: violation },
+                    priority: 'critical',
+                    deadline: new Date(Date.now() + 3600000).toISOString(), // 1 hour
+                    riskScore: 0.9, // High risk remediation
+                  };
+                  this.createLinguisticTask(remediationTask, governorAgent.id);
+                  this.sendAgentMessage(governorAgent, 'system', 'remediation_request', { originalTaskId: concernedTask.id, remediationTaskId: remediationTask.id, reason: violation.reason });
+                  concernedTask.status = LinguisticTaskStatus.Remediated; // Mark original task as under remediation
+                  this.repository.updateLinguisticTask(concernedTask, governorAgent.id);
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    if (violationsFound) {
+      this.sendAgentMessage(governorAgent, 'system', 'governance_report', { status: 'Violations Detected', count: policyViolations.length });
+    } else {
+      this.sendAgentMessage(governorAgent, 'system', 'governance_report', { status: 'No Violations Detected' });
+    }
+
+    this.repository.addAuditLogEntry(governorAgent.id, 'GOVERNANCE_CHECK_COMPLETED', 'System', 'N/A', 'Periodic governance check completed.', {});
+  }
+
+  /**
+   * Retrieves the simulated internal message queue for observability.
+   * Business value: Provides an transparent view into the internal workings of the agent network,
+   * enabling monitoring, debugging, and audit of agent-to-agent communications.
+   */
+  public getMessageQueue(): AgentMessage[] {
+    return this._internalMessageBus;
+  }
+
+  /**
+   * Creates a new linguistic task via an authenticated agent/user.
+   * Business value: Enables secure and attributed task initiation, flowing into the agent orchestration.
+   */
+  public createLinguisticTask(task: Omit<LinguisticTask, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'audits'>, creatorIdentityId: string): LinguisticTask | null {
+    const creator = this.repository.getIdentityById(creatorIdentityId);
+    if (!creator || !this.repository.hasPermission(creatorIdentityId, ['researcher', 'admin', 'agent'])) {
+      console.error(`Identity ${creatorIdentityId} lacks permission to create tasks.`);
+      return null;
+    }
+    const newTask = this.repository.createLinguisticTask(task, creatorIdentityId);
+    this.sendAgentMessage(creator, 'system', 'task_assigned', { taskId: newTask.id, description: newTask.description });
+    return newTask;
   }
 }
 
@@ -1765,17 +2370,19 @@ export class LinguisticAgentCoordinator {
  * Singleton instance of the Linguistic Agent Coordinator.
  * Business value: Central orchestrator for all AI-driven linguistic research,
  * ensuring seamless execution of autonomous workflows and maximizing the efficiency
- * and impact of computational linguistics.
+ * and impact of computational linguistics. This intelligent automation is a key
+ * differentiator for the platform.
  */
 export const linguisticAgentCoordinator = new LinguisticAgentCoordinator(linguisticDataRepository);
 
-// --- React Context and Reducer for Linguistic Project State ---
+# --- React Context and Reducer for Linguistic Project State ---
 
 /**
  * Represents the current state of a user's linguistic research project.
  * Business value: Provides a cohesive, real-time view of all project-related data,
  * facilitating user interaction, collaboration, and comprehensive project management.
- * This enhances user experience and productivity in a complex data environment.
+ * This enhances user experience and productivity in a complex data environment,
+ * translating to higher user engagement and faster research outcomes.
  */
 export interface LinguisticProjectState {
   currentProjectId: string | null;
@@ -1786,11 +2393,16 @@ export interface LinguisticProjectState {
   tasks: LinguisticTask[];
   bounties: LinguisticBounty[];
   auditLog: LinguisticAuditLogEntry[];
-  messageQueue: string[];
+  messageQueue: AgentMessage[]; // Changed to AgentMessage[]
+  identities: DigitalIdentity[];
+  skills: LinguisticSkill[];
+  userProjects: UserProject[];
 }
 
 /**
  * Initial state for the Linguistic Project Context.
+ * Business value: Establishes a baseline for the application's operational state,
+ * allowing for quick startup and predictable behavior in a high-demand environment.
  */
 const initialLinguisticProjectState: LinguisticProjectState = {
   currentProjectId: 'proj_global_recon',
@@ -1802,10 +2414,15 @@ const initialLinguisticProjectState: LinguisticProjectState = {
   bounties: [],
   auditLog: [],
   messageQueue: [],
+  identities: [],
+  skills: [],
+  userProjects: [],
 };
 
 /**
  * Actions for the Linguistic Project Reducer.
+ * Business value: Defines a clear contract for state modifications, ensuring predictable
+ * data flow and simplified debugging in a complex, real-time user interface.
  */
 type LinguisticProjectAction =
   | { type: 'SET_CURRENT_PROJECT'; payload: string }
@@ -1813,19 +2430,19 @@ type LinguisticProjectAction =
   | { type: 'SET_SELECTED_LEXICAL_ENTRY'; payload: string | null }
   | { type: 'SET_SELECTED_RECONSTRUCTION'; payload: string | null }
   | { type: 'SET_SELECTED_COGNATE_SET'; payload: string | null }
-  | { type: 'LOAD_PROJECT_DATA'; payload: { tasks: LinguisticTask[]; bounties: LinguisticBounty[]; auditLog: LinguisticAuditLogEntry[] } }
+  | { type: 'LOAD_INITIAL_DATA'; payload: { tasks: LinguisticTask[]; bounties: LinguisticBounty[]; auditLog: LinguisticAuditLogEntry[]; messageQueue: AgentMessage[]; identities: DigitalIdentity[]; skills: LinguisticSkill[]; userProjects: UserProject[]; } }
   | { type: 'ADD_TASK'; payload: LinguisticTask }
   | { type: 'UPDATE_TASK'; payload: LinguisticTask }
   | { type: 'ADD_BOUNTY'; payload: LinguisticBounty }
   | { type: 'UPDATE_BOUNTY'; payload: LinguisticBounty }
   | { type: 'UPDATE_AUDIT_LOG'; payload: LinguisticAuditLogEntry[] }
-  | { type: 'UPDATE_MESSAGE_QUEUE'; payload: string[] };
+  | { type: 'UPDATE_MESSAGE_QUEUE'; payload: AgentMessage[] };
 
 /**
  * Reducer function for managing Linguistic Project State.
  * Business value: Provides predictable state management for complex UI interactions,
  * ensuring data consistency and a reliable user experience. It's the engine for dynamic updates
- * as agents and users interact with the linguistic data.
+ * as agents and users interact with the linguistic data, critical for real-time responsiveness.
  */
 export function linguisticProjectReducer(state: LinguisticProjectState, action: LinguisticProjectAction): LinguisticProjectState {
   switch (action.type) {
@@ -1839,12 +2456,16 @@ export function linguisticProjectReducer(state: LinguisticProjectState, action: 
       return { ...state, selectedReconstructionId: action.payload };
     case 'SET_SELECTED_COGNATE_SET':
       return { ...state, selectedCognateSetId: action.payload };
-    case 'LOAD_PROJECT_DATA':
+    case 'LOAD_INITIAL_DATA':
       return {
         ...state,
         tasks: action.payload.tasks,
         bounties: action.payload.bounties,
         auditLog: action.payload.auditLog,
+        messageQueue: action.payload.messageQueue,
+        identities: action.payload.identities,
+        skills: action.payload.skills,
+        userProjects: action.payload.userProjects,
       };
     case 'ADD_TASK':
       return { ...state, tasks: [...state.tasks, action.payload] };
@@ -1867,7 +2488,7 @@ export function linguisticProjectReducer(state: LinguisticProjectState, action: 
  * React Context for the Linguistic Project State.
  * Business value: Enables efficient and predictable state sharing across the UI,
  * decoupling components and simplifying data flow in complex user interfaces,
- * leading to more maintainable and scalable front-end development.
+ * leading to more maintainable and scalable front-end development, ultimately reducing development costs.
  */
 export const LinguisticProjectContext = createContext<{
   state: LinguisticProjectState;
@@ -1879,6 +2500,8 @@ export const LinguisticProjectContext = createContext<{
 
 /**
  * Custom hook to use the Linguistic Project Context.
+ * Business value: Simplifies component logic and promotes code reusability,
+ * accelerating UI development and reducing the risk of integration errors.
  */
 export const useLinguisticProject = () => useContext(LinguisticProjectContext);
 
@@ -1887,42 +2510,111 @@ export const useLinguisticProject = () => useContext(LinguisticProjectContext);
  * Business value: Provides an intuitive and powerful user interface for interacting
  * with the advanced linguistic analysis system. It translates complex backend logic
  * into actionable insights and collaborative tools, empowering researchers and
- * accelerating the discovery of linguistic history.
+ * accelerating the discovery of linguistic history. This user-centric interface is
+ * crucial for market adoption and maximizing the impact of the underlying trillion-dollar infrastructure.
  */
 export const LinguisticFossilFinderView: React.FC = () => {
   const [state, dispatch] = useReducer(linguisticProjectReducer, initialLinguisticProjectState);
   const [loading, setLoading] = useState(true);
+  const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [newTaskType, setNewTaskType] = useState<LinguisticSkill['id']>('ProtoWordReconstruction');
+  const [newTaskCognateSetId, setNewTaskCognateSetId] = useState('cs_father_ie');
+  const [newTaskProtoLangId, setNewTaskProtoLangId] = useState('pie');
 
-  // Load initial project data
+  // Load initial project data and set up continuous monitoring
   useEffect(() => {
-    const loadData = async () => {
+    const loadAndMonitorData = async () => {
       const tasks = linguisticDataRepository.getLinguisticTasks(state.currentProjectId || undefined);
       const bounties = linguisticDataRepository.getLinguisticBounties();
       const auditLog = linguisticDataRepository.getAuditLog();
       const messageQueue = linguisticAgentCoordinator.getMessageQueue();
+      const identities = linguisticDataRepository.getIdentities();
+      const skills = linguisticDataRepository.getSkills();
+      const userProjects = linguisticDataRepository.getUserProjects();
 
-      dispatch({ type: 'LOAD_PROJECT_DATA', payload: { tasks, bounties, auditLog } });
-      dispatch({ type: 'UPDATE_MESSAGE_QUEUE', payload: messageQueue });
+
+      dispatch({ type: 'LOAD_INITIAL_DATA', payload: { tasks, bounties, auditLog, messageQueue, identities, skills, userProjects } });
       setLoading(false);
     };
 
-    loadData();
+    loadAndMonitorData();
 
     // Set up interval for agent to monitor and dispatch tasks (simulation of continuous operation)
     const agentMonitorInterval = setInterval(() => {
-      linguisticAgentCoordinator.monitorAndDispatchTasks();
-      dispatch({ type: 'UPDATE_AUDIT_LOG', payload: linguisticDataRepository.getAuditLog() });
-      dispatch({ type: 'UPDATE_MESSAGE_QUEUE', payload: linguisticAgentCoordinator.getMessageQueue() });
-      dispatch({ type: 'LOAD_PROJECT_DATA', payload: { tasks: linguisticDataRepository.getLinguisticTasks(state.currentProjectId || undefined), bounties: linguisticDataRepository.getLinguisticBounties(), auditLog: linguisticDataRepository.getAuditLog() } });
-    }, 5000);
+      linguisticAgentCoordinator.monitorAndDispatchTasks(); // This also runs governance check
+      // Re-fetch all relevant state after agent activity
+      const updatedTasks = linguisticDataRepository.getLinguisticTasks(state.currentProjectId || undefined);
+      const updatedBounties = linguisticDataRepository.getLinguisticBounties();
+      const updatedAuditLog = linguisticDataRepository.getAuditLog();
+      const updatedMessageQueue = linguisticAgentCoordinator.getMessageQueue();
+
+      dispatch({ type: 'LOAD_INITIAL_DATA', payload: {
+        tasks: updatedTasks,
+        bounties: updatedBounties,
+        auditLog: updatedAuditLog,
+        messageQueue: updatedMessageQueue,
+        identities: linguisticDataRepository.getIdentities(), // Ensure identities also refresh, e.g. for lastActive
+        skills: linguisticDataRepository.getSkills(),
+        userProjects: linguisticDataRepository.getUserProjects(),
+      }});
+
+    }, 3000); // Check every 3 seconds for new tasks and agent actions
 
     return () => clearInterval(agentMonitorInterval);
   }, [state.currentProjectId]);
 
+  const handleCreateTask = () => {
+    if (!newTaskDescription || !newTaskType) return;
+
+    const newTask: Omit<LinguisticTask, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'audits'> = {
+      projectId: state.currentProjectId || 'default_project',
+      type: newTaskType,
+      description: newTaskDescription,
+      parameters: {},
+      priority: 'medium',
+      deadline: new Date(Date.now() + 86400000 * 7).toISOString(), // 7 days from now
+    };
+
+    if (newTaskType === 'ProtoWordReconstruction') {
+      newTask.parameters = { cognateSetId: newTaskCognateSetId, protoLanguageId: newTaskProtoLangId };
+      newTask.priority = 'high';
+    } else if (newTaskType === 'SoundLawDetection') {
+      newTask.parameters = { protoLanguage: newTaskProtoLangId, descendantLanguage: 'english', specificSound: '*p' };
+      newTask.priority = 'high';
+    } else if (newTaskType === 'CognateIdentification') {
+      newTask.parameters = { languages: ['english', 'gothic'], semanticField: 'animals' };
+      newTask.priority = 'medium';
+    } else if (newTaskType === 'DataValidation') {
+      newTask.parameters = { languageId: 'sanskrit', scope: 'lexicalEntries' };
+      newTask.priority = 'low';
+    }
+
+    const createdTask = linguisticAgentCoordinator.createLinguisticTask(newTask, 'usr_alice'); // Alice creates tasks
+    if (createdTask) {
+      dispatch({ type: 'ADD_TASK', payload: createdTask });
+
+      // Fund the task with a bounty
+      const newBounty: Omit<LinguisticBounty, 'id' | 'status' | 'fundedAt'> = {
+        taskId: createdTask.id,
+        amount: Math.floor(Math.random() * 100) + 50, // Random bounty amount
+        tokenType: 'LINGUIST_COIN',
+        fundedBy: 'admin_eve', // Admin funds bounties
+      };
+      const fundedBounty = linguisticDataRepository.addLinguisticBounty(newBounty, 'admin_eve');
+      dispatch({ type: 'ADD_BOUNTY', payload: fundedBounty });
+
+      setNewTaskDescription('');
+    }
+  };
+
+  const currentProject = state.userProjects.find(p => p.id === state.currentProjectId);
+  const cognateSets = linguisticDataRepository.getCognateSets();
+  const protoLanguages = linguisticDataRepository.getLanguages().filter(l => l.status === 'reconstructed');
+
   if (loading) {
     return (
       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-        Loading Linguistic Data Repository...
+        Loading Linguistic Data Repository, Agents, and Policies...
       </div>
     );
   }
@@ -1933,11 +2625,12 @@ export const LinguisticFossilFinderView: React.FC = () => {
       <h1 className="text-3xl font-bold text-indigo-700 dark:text-indigo-400">Linguistic Fossil Finder (Agentic Research Platform)</h1>
       <p className="text-lg text-gray-700 dark:text-gray-300">
         Empowering historical linguists with AI-driven reconstruction, auditable collaboration, and tokenized research incentives.
+        This platform represents a revolutionary, multi-million-dollar infrastructure leap in digital finance for scientific research.
       </p>
 
       <section className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-300 mb-4">Project Overview: {state.currentProjectId}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-300 mb-4">Project Overview: {currentProject?.name || state.currentProjectId}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <div>
             <h3 className="font-medium text-gray-700 dark:text-gray-200">Total Languages:</h3>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{linguisticDataRepository.getLanguages().length}</p>
@@ -1948,8 +2641,87 @@ export const LinguisticFossilFinderView: React.FC = () => {
           </div>
           <div>
             <h3 className="font-medium text-gray-700 dark:text-gray-200">Active Tasks:</h3>
-            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{state.tasks.filter(t => t.status === LinguisticTaskStatus.Assigned || t.status === LinguisticTaskStatus.InProgress).length}</p>
+            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{state.tasks.filter(t => t.status === LinguisticTaskStatus.Assigned || t.status === LinguisticTaskStatus.InProgress || t.status === LinguisticTaskStatus.Remediated).length}</p>
           </div>
+          <div>
+            <h3 className="font-medium text-gray-700 dark:text-gray-200">Funded Bounties:</h3>
+            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{state.bounties.filter(b => b.status === 'funded').length}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-300 mb-4">Linguistic Agents & Skills</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h3 className="font-medium text-gray-700 dark:text-gray-200">Active Agents ({state.identities.filter(id => id.roles.includes('agent')).length})</h3>
+            <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-300">
+              {state.identities.filter(id => id.roles.includes('agent')).map(agent => (
+                <li key={agent.id}>{agent.name} (Reputation: {agent.reputationScore?.toFixed(2)}) - Roles: {agent.roles.join(', ')}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-700 dark:text-gray-200">Available Skills ({state.skills.length})</h3>
+            <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-300">
+              {state.skills.map(skill => (
+                <li key={skill.id}>{skill.name} (Cost: {skill.costEstimatePerUse?.amount || 'N/A'} {skill.costEstimatePerUse?.tokenType || ''})</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-300 mb-4">Create New Linguistic Task</h2>
+        <div className="flex flex-col space-y-3">
+          <input
+            type="text"
+            placeholder="Task Description (e.g., Reconstruct PIE for 'dog')"
+            value={newTaskDescription}
+            onChange={(e) => setNewTaskDescription(e.target.value)}
+            className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          />
+          <div className="flex space-x-2">
+            <select
+              value={newTaskType}
+              onChange={(e) => setNewTaskType(e.target.value as LinguisticSkill['id'])}
+              className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex-grow"
+            >
+              {state.skills.map(skill => (
+                <option key={skill.id} value={skill.id}>{skill.name}</option>
+              ))}
+            </select>
+            {newTaskType === 'ProtoWordReconstruction' && (
+              <>
+                <select
+                  value={newTaskCognateSetId}
+                  onChange={(e) => setNewTaskCognateSetId(e.target.value)}
+                  className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex-grow"
+                >
+                  {cognateSets.map(cs => (
+                    <option key={cs.id} value={cs.id}>{cs.concept} ({cs.id})</option>
+                  ))}
+                </select>
+                <select
+                  value={newTaskProtoLangId}
+                  onChange={(e) => setNewTaskProtoLangId(e.target.value)}
+                  className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex-grow"
+                >
+                  {protoLanguages.map(lang => (
+                    <option key={lang.id} value={lang.id}>{lang.name}</option>
+                  ))}
+                </select>
+              </>
+            )}
+          </div>
+          <button
+            onClick={handleCreateTask}
+            className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors disabled:opacity-50"
+            disabled={!newTaskDescription || (newTaskType === 'ProtoWordReconstruction' && (!newTaskCognateSetId || !newTaskProtoLangId))}
+          >
+            Create & Fund New Task
+          </button>
         </div>
       </section>
 
@@ -1961,54 +2733,40 @@ export const LinguisticFossilFinderView: React.FC = () => {
           ) : (
             state.tasks.map(task => {
               const bounty = state.bounties.find(b => b.taskId === task.id);
-              const assignee = linguisticDataRepository.getIdentityById(task.assignedToIdentityId || '');
+              const assignee = state.identities.find(id => id.id === task.assignedToIdentityId);
               return (
-                <div key={task.id} className="p-3 border border-gray-200 dark:border-gray-600 rounded-md flex justify-between items-center bg-white dark:bg-gray-800">
-                  <div>
+                <div key={task.id} className="p-3 border border-gray-200 dark:border-gray-600 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-gray-800">
+                  <div className="flex-grow mb-2 sm:mb-0">
                     <p className="font-medium text-lg">{task.description}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Status: <span className={`font-semibold ${task.status === LinguisticTaskStatus.Completed ? 'text-green-500' : task.status === LinguisticTaskStatus.Failed ? 'text-red-500' : 'text-yellow-500'}`}>{task.status}</span></p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Type: {state.skills.find(s => s.id === task.type)?.name || task.type}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Status: <span className={`font-semibold ${task.status === LinguisticTaskStatus.Completed ? 'text-green-500' : task.status === LinguisticTaskStatus.Failed ? 'text-red-500' : task.status === LinguisticTaskStatus.Review ? 'text-blue-500' : 'text-yellow-500'}`}>{task.status}</span> (Priority: {task.priority})</p>
                     {assignee && <p className="text-xs text-gray-500 dark:text-gray-400">Assigned To: {assignee.name} ({assignee.roles.includes('agent') ? 'Agent' : 'Human'})</p>}
                     {bounty && <p className="text-sm text-gray-600 dark:text-gray-300">Bounty: <span className="font-semibold text-purple-600 dark:text-purple-400">{bounty.amount} {bounty.tokenType}</span> (Status: {bounty.status})</p>}
-                    {task.output && <p className="text-xs text-gray-500 dark:text-gray-400">Output: {JSON.stringify(task.output).substring(0, 100)}...</p>}
                   </div>
+                  {task.output && (
+                    <div className="mt-2 sm:mt-0 sm:ml-4 p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-xs max-w-sm overflow-x-auto">
+                      <p className="font-semibold">Output:</p>
+                      <pre className="whitespace-pre-wrap">{JSON.stringify(task.output, null, 2).substring(0, 200)}{JSON.stringify(task.output, null, 2).length > 200 ? '...' : ''}</pre>
+                    </div>
+                  )}
                 </div>
               );
             })
           )}
         </div>
-        <button
-          onClick={() => {
-            const newTask: Omit<LinguisticTask, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'audits'> = {
-              projectId: state.currentProjectId || 'default_project',
-              type: 'ProtoWordReconstruction',
-              description: `Automated recon task for new cognates ${generateUniqueId().substring(4, 10)}`,
-              parameters: { cognateSetId: 'cs_father_ie' },
-              priority: 'high',
-              deadline: new Date(Date.now() + 86400000).toISOString(),
-            };
-            const createdTask = linguisticDataRepository.createLinguisticTask(newTask, 'usr_alice');
-            dispatch({ type: 'ADD_TASK', payload: createdTask });
-
-            const newBounty: Omit<LinguisticBounty, 'id' | 'status' | 'fundedAt'> = {
-              taskId: createdTask.id,
-              amount: 75,
-              tokenType: 'LINGUIST_COIN',
-              fundedBy: 'admin_eve',
-            };
-            const fundedBounty = linguisticDataRepository.addLinguisticBounty(newBounty, 'admin_eve');
-            dispatch({ type: 'ADD_BOUNTY', payload: fundedBounty });
-          }}
-          className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors"
-        >
-          Create New Reconstruction Task (Demo)
-        </button>
       </section>
 
       <section className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-300 mb-4">Linguistic Agent Activity Log</h2>
+        <h2 className="text-xl font-semibold text-indigo-600 dark:text-indigo-300 mb-4">Linguistic Agent Activity Log (Internal Messaging)</h2>
         <div className="h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm font-mono text-gray-800 dark:text-gray-200">
           {state.messageQueue.map((msg, index) => (
-            <p key={index}>{msg}</p>
+            <p key={msg.id || index}>
+              <span className="text-gray-400">[{new Date(msg.timestamp).toLocaleTimeString()}]</span>{' '}
+              <span className="font-bold text-blue-500">{msg.senderId}</span>{' '}
+              <span className="text-green-500">({msg.type})</span> to <span className="font-bold text-purple-500">{msg.recipientId}</span>:{' '}
+              {JSON.stringify(msg.payload).substring(0, 100)}...
+              {msg.signature && <span className="text-xs text-gray-500 ml-2">(Sig: {msg.signature.substring(0, 16)}...)</span>}
+            </p>
           ))}
         </div>
       </section>
@@ -2018,9 +2776,18 @@ export const LinguisticFossilFinderView: React.FC = () => {
         <div className="h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm font-mono text-gray-800 dark:text-gray-200">
           {state.auditLog.map((entry, index) => (
             <div key={entry.id} className="mb-1 pb-1 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-              <p><strong>{entry.timestamp}</strong> - <span className="text-blue-500">{entry.actorIdentityId}</span> {entry.action} on <span className="text-green-500">{entry.resourceType}:{entry.resourceId}</span></p>
+              <p><strong>{new Date(entry.timestamp).toLocaleString()}</strong> - <span className="text-blue-500">{entry.actorIdentityId}</span> {entry.action} on <span className="text-green-500">{entry.resourceType}:{entry.resourceId}</span></p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Details: {entry.details}</p>
+              {entry.policyViolation && entry.policyViolation.length > 0 && (
+                <div className="text-xs text-red-500 dark:text-red-400 mt-1">
+                  <strong>Policy Violation(s):</strong>
+                  {entry.policyViolation.map((v, i) => (
+                    <p key={i}>- {v.reason} (Policy: {v.policyId})</p>
+                  ))}
+                </div>
+              )}
               <p className="text-xs text-gray-400 dark:text-gray-500">Hash: {entry.payloadHash.substring(0, 16)}... {entry.previousEntryHash && `(Prev: ${entry.previousEntryHash.substring(0, 16)}...)`}</p>
+              {entry.transactionId && <p className="text-xs text-purple-400 dark:text-purple-300">Transaction ID: {entry.transactionId}</p>}
             </div>
           ))}
         </div>
