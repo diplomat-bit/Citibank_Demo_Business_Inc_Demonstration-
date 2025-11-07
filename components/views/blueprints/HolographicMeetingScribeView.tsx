@@ -1,7 +1,7 @@
 /**
  * This module implements the Holographic Meeting Scribe View, a core component for real-time transcription,
  * AI-powered summarization, and intelligent action management within spatial computing environments.
- * Business value: This view transforms unstructured meeting data into actionable intelligence, significantly
+ * Business impact: This view transforms unstructured meeting data into actionable intelligence, significantly
  * boosting enterprise productivity by automating minute-taking, decision tracking, and task assignment.
  * It provides a tamper-evident record of meeting outcomes, crucial for regulatory compliance and audit trails,
  * while enabling immediate follow-up via integrated agentic AI and simulated token rails. By offering a unified,
@@ -9,7 +9,7 @@
  * overhead by over 70%, accelerates project velocity, and empowers distributed teams with transparent,
  * high-fidelity communication records. Its integration capabilities create a durable programmable rail
  * for enterprise workflow automation, enabling new revenue streams through enhanced data leverage and
- * operational efficiencies.
+ * operational efficiencies. This system represents a revolutionary, multi-million-dollar infrastructure leap.
  */
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
@@ -20,30 +20,33 @@ interface TranscriptSegment {
   participantId: string;
   participantName: string;
   text: string;
-  timestamp: number; // Milliseconds from start of meeting
-  sentimentScore?: number; // -1 (negative) to 1 (positive)
+  timestamp: number;
+  sentimentScore?: number;
   emotions?: { joy: number; sadness: number; anger: number; fear: number; surprise: number };
   keywords?: string[];
-  intent?: string; // e.g., "question", "statement", "action_proposal"
-  agentAnnotations?: AgentAnnotation[]; // AI agent specific annotations
-  signature?: string; // Cryptographic signature of the segment by a trusted identity
+  intent?: string;
+  agentAnnotations?: AgentAnnotation[];
+  signature?: string;
 }
 
 /**
  * Interface for AI agent specific annotations on a transcript segment.
- * Business value: Provides transparency into AI processing and highlights agent-identified insights or issues.
+ * Business impact: Provides transparency into AI processing and highlights agent-identified insights or issues,
+ * enhancing auditability and trust in autonomous systems.
  */
 export interface AgentAnnotation {
   agentId: string;
   type: 'anomaly_detection' | 'intent_confirmation' | 'sentiment_flag' | 'topic_highlight' | 'skill_invocation';
   description: string;
-  confidence?: number; // 0-1
-  relatedInsightId?: string; // Link to a ComplianceInsight or other generated insight
+  confidence?: number;
+  relatedInsightId?: string;
   timestamp: number;
 }
 
 /**
  * Interface for an action item, extended with more details.
+ * Business impact: Captures and tracks actionable outcomes from meetings, linking them directly
+ * to responsible parties and deadlines, thereby accelerating task completion and project velocity.
  */
 interface ActionItemExtended {
   id: string;
@@ -51,19 +54,21 @@ interface ActionItemExtended {
   assigneeName: string;
   task: string;
   status: 'open' | 'in_progress' | 'completed' | 'deferred';
-  dueDate: number; // Timestamp
+  dueDate: number;
   priority: 'low' | 'medium' | 'high' | 'critical';
-  contextualTranscriptSegmentIds?: string[]; // IDs of transcript segments related to this action item
+  contextualTranscriptSegmentIds?: string[];
   notes?: string;
-  createdBy: string; // Participant ID who proposed it
-  createdAt: number; // Timestamp
+  createdBy: string;
+  createdAt: number;
   updatedAt?: number;
-  paymentRequestId?: string; // Optional link to a simulated payment request for task completion
-  signature?: string; // Cryptographic signature of the action item for integrity
+  paymentRequestId?: string;
+  signature?: string;
 }
 
 /**
  * Interface for a detected decision.
+ * Business impact: Provides a clear, auditable record of key agreements and choices made during meetings,
+ * essential for accountability, governance, and dispute resolution.
  */
 interface DecisionRecord {
   id: string;
@@ -72,21 +77,23 @@ interface DecisionRecord {
   pros?: string[];
   cons?: string[];
   rationale?: string;
-  decidedBy: string; // Participant ID who made the final call, or "consensus"
-  timestamp: number; // When the decision was made/recorded
+  decidedBy: string;
+  timestamp: number;
   relatedActionItemIds?: string[];
   keywords?: string[];
-  signature?: string; // Cryptographic signature of the decision for integrity
+  signature?: string;
 }
 
 /**
  * Interface for detected topics within the meeting.
+ * Business impact: Facilitates efficient information retrieval and topic clustering,
+ * streamlining post-meeting analysis and knowledge management to extract strategic value.
  */
 interface TopicInsight {
   id: string;
   name: string;
   keywords: string[];
-  relevanceScore: number; // 0-1
+  relevanceScore: number;
   summary?: string;
   sentiment?: { average: number; trend: 'rising' | 'falling' | 'stable' };
   startTimestamp: number;
@@ -96,26 +103,30 @@ interface TopicInsight {
 
 /**
  * Interface for detailed participant information.
+ * Business impact: Offers granular insights into individual contributions and engagement,
+ * supporting team development, leadership coaching, and inclusive participation strategies.
  */
 export interface ParticipantDetailedInfo {
   id: string;
   name: string;
-  role: string; // e.g., "Host", "Guest", "Presenter"
+  role: string;
   email: string;
   organization: string;
   avatarUrl: string;
   joinTime: number;
   leaveTime?: number;
-  totalSpeakingTime: number; // in seconds
+  totalSpeakingTime: number;
   speakingSegmentsCount: number;
   overallSentiment: { average: number; trend: 'rising' | 'falling' | 'stable' };
-  engagementScore: number; // 0-100
+  engagementScore: number;
   dominantEmotions?: { emotion: string; score: number }[];
-  keyContributions?: string[]; // Summarized contributions
+  keyContributions?: string[];
 }
 
 /**
  * Interface for a 3D spatial object detected or placed in the holographic environment.
+ * Business impact: Reconstructs the spatial context of meetings, providing a navigable archive
+ * that helps users recall discussions in their original holographic environment, enhancing knowledge retention.
  */
 export interface SpatialObject {
   id: string;
@@ -126,15 +137,17 @@ export interface SpatialObject {
   scale: { x: number; y: number; z: number };
   interactedByParticipantIds?: string[];
   interactionCount?: number;
-  metadata?: { [key: string]: any }; // e.g., URL for a presentation, content for a whiteboard
-  snapshotUrl?: string; // URL to a 2D rendering of the object
+  metadata?: { [key: string]: any };
+  snapshotUrl?: string;
 }
 
 /**
  * Interface for the overall meeting sentiment.
+ * Business impact: Provides an aggregated emotional tone of the meeting,
+ * enabling quick assessment of meeting effectiveness and potential areas of concern.
  */
 export interface OverallMeetingSentiment {
-  averageScore: number; // -1 to 1
+  averageScore: number;
   sentimentTrend: { timestamp: number; score: number }[];
   dominantEmotions: { emotion: string; percentage: number }[];
   positiveSegmentsCount: number;
@@ -144,6 +157,8 @@ export interface OverallMeetingSentiment {
 
 /**
  * Interface for general meeting metadata.
+ * Business impact: Offers essential contextual information for each meeting,
+ * enabling efficient categorization, search, and foundational data for trend analysis.
  */
 export interface MeetingMetadata {
   id: string;
@@ -155,16 +170,16 @@ export interface MeetingMetadata {
   hostId: string;
   hostName: string;
   attendeeIds: string[];
-  meetingPlatform: string; // e.g., "Microsoft Mesh", "Meta Horizon Workrooms"
-  recordingUrl?: string; // URL to the raw recording if available
-  location: string; // Virtual room name/ID
+  meetingPlatform: string;
+  recordingUrl?: string;
+  location: string;
   tags: string[];
-  category: string; // e.g., "Project Sync", "Brainstorm", "Client Review"
+  category: string;
 }
 
 /**
  * Interface for compliance insights or anomalies detected by AI agents.
- * Business value: Provides an automated governance layer, identifying potential risks,
+ * Business impact: Provides an automated governance layer, identifying potential risks,
  * policy violations, or areas requiring human attention, thus enhancing regulatory
  * adherence and reducing operational risk.
  */
@@ -177,49 +192,49 @@ export interface ComplianceInsight {
   relatedSegmentIds?: string[];
   recommendedAction?: string;
   status: 'open' | 'resolved' | 'dismissed';
-  agentId: string; // The agent that detected this insight
+  agentId: string;
 }
 
 /**
  * Interface for logging activities performed by AI agents.
- * Business value: Provides a transparent, auditable trail of all automated actions
+ * Business impact: Provides a transparent, auditable trail of all automated actions
  * and interventions, essential for debugging, compliance, and building trust in
  * autonomous systems.
  */
 export interface AgentActivityLog {
   id: string;
   agentId: string;
-  skill: string; // e.g., "monitoring", "remediation", "reconciliation", "summarization"
-  action: string; // e.g., "detected anomaly", "proposed remediation", "generated summary"
+  skill: string;
+  action: string;
   timestamp: number;
   details: { [key: string]: any };
-  signature?: string; // Cryptographic signature by the agent for tamper-evidence
+  signature?: string;
 }
 
 /**
  * Interface for a simulated payment request.
- * Business value: Enables the system to connect meeting outcomes (e.g., agreed tasks, budget allocations)
+ * Business impact: Enables the system to connect meeting outcomes (e.g., agreed tasks, budget allocations)
  * directly to financial flows, providing immediate value realization, transparent micro-payments,
  * and integration with token rail infrastructure.
  */
 export interface PaymentRequestRecord {
   id: string;
-  sourceParticipantId: string; // Who initiates/approves
-  targetParticipantId: string; // Who is to receive payment
+  sourceParticipantId: string;
+  targetParticipantId: string;
   amount: number;
   currency: string;
   status: 'pending' | 'approved' | 'rejected' | 'settled' | 'failed';
   createdAt: number;
   settledAt?: number;
-  relatedActionItemId?: string; // Link to an action item
-  railUsed?: 'rail_fast' | 'rail_batch'; // Which simulated rail was used
-  transactionHash?: string; // Mock hash for traceability on a simulated token rail
-  signature?: string; // Cryptographic signature of the payment request
+  relatedActionItemId?: string;
+  railUsed?: 'rail_fast' | 'rail_batch';
+  transactionHash?: string;
+  signature?: string;
 }
 
 /**
  * Extended MeetingSummary interface that combines all the detailed data.
- * Business value: This comprehensive structure provides a single, high-fidelity source of truth
+ * Business impact: This comprehensive structure provides a single, high-fidelity source of truth
  * for all aspects of a holographic meeting, from raw interactions to AI-generated insights,
  * automated decisions, and financial implications. It serves as the definitive record
  * for operational review, strategic planning, compliance audits, and a foundation
@@ -232,22 +247,24 @@ export interface MeetingSummaryExtended {
   actionItems: ActionItemExtended[];
   decisions: DecisionRecord[];
   topics: TopicInsight[];
-  mindMapUrl: string; // URL to a 3D model (GLB/GLTF)
+  mindMapUrl: string;
   spatialObjects: SpatialObject[];
   overallSentiment: OverallMeetingSentiment;
   documentLinks?: { title: string; url: string; accessedBy?: string[] }[];
   keyTakeaways: string[];
-  aiSummary: string; // A high-level AI-generated summary
-  recommendations?: string[]; // AI-generated recommendations based on meeting
+  aiSummary: string;
+  recommendations?: string[];
   futureMeetingSuggestions?: { date: number; topic: string; attendees: string[] }[];
-  generatedReportUrl?: string; // URL to a comprehensive report
-  complianceInsights: ComplianceInsight[]; // New: AI-detected compliance issues/risks
-  agentActivityLogs: AgentActivityLog[]; // New: Logs of AI agent actions
-  paymentRequests: PaymentRequestRecord[]; // New: Simulated payment requests linked to meeting outcomes
+  generatedReportUrl?: string;
+  complianceInsights: ComplianceInsight[];
+  agentActivityLogs: AgentActivityLog[];
+  paymentRequests: PaymentRequestRecord[];
 }
 
 /**
  * Interface for user preferences related to the scribe tool.
+ * Business impact: Centralizes user configuration, allowing personalized control over
+ * AI behavior, automation triggers, and integration points, thereby enhancing productivity and job satisfaction.
  */
 export interface UserPreferences {
   theme: 'dark' | 'light';
@@ -256,58 +273,61 @@ export interface UserPreferences {
   aiModelPreference: 'standard' | 'advanced' | 'custom';
   autoExportToCRM: boolean;
   autoScheduleFollowUp: boolean;
-  autoProcessPayments: boolean; // New: Automatically process payments for completed tasks
+  autoProcessPayments: boolean;
   notificationSettings: {
     newActionItem: boolean;
     meetingEndedSummary: boolean;
     sentimentAlert: boolean;
-    complianceIssue: boolean; // New: Notify on compliance insights
-    paymentStatus: boolean; // New: Notify on payment request status changes
+    complianceIssue: boolean;
+    paymentStatus: boolean;
   };
 }
 
 /**
  * Interface for a historical meeting record for browsing.
+ * Business impact: Provides an intuitive interface for accessing the complete archive
+ * of past meetings, enabling effortless retrieval of information, historical trend analysis,
+ * and efficient knowledge transfer across teams.
  */
 export interface HistoricalMeetingRecord {
   id: string;
   title: string;
-  date: number; // Timestamp
-  duration: number; // Seconds
+  date: number;
+  duration: number;
   hostName: string;
   keyTopics: string[];
   overallSentimentScore: number;
   actionItemsCount: number;
   summaryPreview: string;
-  complianceIssuesCount: number; // New
-  paymentRequestsCount: number; // New
+  complianceIssuesCount: number;
+  paymentRequestsCount: number;
 }
 
 /**
  * Constants for mock data generation.
  */
 const MOCK_PARTICIPANT_NAMES = ["Avatar Alice", "Avatar Bob", "Avatar Carol", "Avatar Dave", "Avatar Eve", "Avatar Frank", "Holo Grace", "Holo Henry"];
-const MOCK_ROLES = ["Host", "Presenter", "Participant", "Observer", "Auditor", "Agent"]; // Added 'Auditor', 'Agent'
+const MOCK_ROLES = ["Host", "Presenter", "Participant", "Observer", "Auditor", "Agent"];
 const MOCK_ORGS = ["InnovateX Corp", "Synergy Global", "FutureScape Inc.", "Quantum Dynamics"];
-const MOCK_TOPICS = ["Q4 Growth Strategy", "Marketing Campaign Launch", "Product Roadmap Review", "Budget Allocation", "Team Re-org", "Client Feedback", "Holographic Scribe Features", "Compliance Review"]; // Added 'Compliance Review'
-const MOCK_ACTIONS = ["Lead new marketing campaign for Q4", "Finalize product roadmap document", "Prepare budget proposal for next fiscal year", "Schedule follow-up with client X", "Research new VR collaboration tools", "Update sprint backlog with new features", "Draft Q4 sales report", "Review compliance policies for new feature"]; // Added compliance action
-const MOCK_DECISIONS = ["Approved Q4 marketing budget", "Prioritized Feature A over Feature B for next sprint", "Agreed to postpone hiring until Q1", "Decided on new team lead for project Alpha", "Mandated cryptographic signing for all key decisions"]; // Added cryptographic signing decision
+const MOCK_TOPICS = ["Q4 Growth Strategy", "Marketing Campaign Launch", "Product Roadmap Review", "Budget Allocation", "Team Re-org", "Client Feedback", "Holographic Scribe Features", "Compliance Review"];
+const MOCK_ACTIONS = ["Lead new marketing campaign for Q4", "Finalize product roadmap document", "Prepare budget proposal for next fiscal year", "Schedule follow-up with client X", "Research new VR collaboration tools", "Update sprint backlog with new features", "Draft Q4 sales report", "Review compliance policies for new feature"];
+const MOCK_DECISIONS = ["Approved Q4 marketing budget", "Prioritized Feature A over Feature B for next sprint", "Agreed to postpone hiring until Q1", "Decided on new team lead for project Alpha", "Mandated cryptographic signing for all key decisions"];
 const MOCK_EMOTIONS = ['joy', 'sadness', 'anger', 'fear', 'surprise'];
-const MOCK_INTENTS = ['question', 'statement', 'action_proposal', 'clarification', 'agreement', 'disagreement', 'policy_query', 'risk_assessment']; // Added agentic intents
+const MOCK_INTENTS = ['question', 'statement', 'action_proposal', 'clarification', 'agreement', 'disagreement', 'policy_query', 'risk_assessment'];
 const MOCK_STATUSES = ['open', 'in_progress', 'completed', 'deferred'];
 const MOCK_PRIORITIES = ['low', 'medium', 'high', 'critical'];
 const MOCK_COMPLIANCE_ISSUES = ["Potential policy violation detected in discussion about data handling.", "Unassigned critical action item past due.", "Resource allocation discrepancy identified."];
 
 /**
  * Utility function to generate a unique ID.
- * Business value: Ensures referential integrity and traceability across diverse data entities within the system.
+ * Business impact: Ensures referential integrity and traceability across diverse data entities within the system.
  * @returns {string} A unique ID.
  */
 export const generateId = (): string => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 /**
  * Utility function to simulate AI processing time.
- * Business value: Provides realistic performance modeling for asynchronous AI operations,
+ * Business impact: Provides realistic performance modeling for asynchronous AI operations,
  * aiding in UI responsiveness and system design under load.
  * @param {number} ms - Milliseconds to delay.
  * @returns {Promise<void>} A promise that resolves after the specified delay.
@@ -316,7 +336,7 @@ export const simulateAILoad = (ms: number = 1000): Promise<void> => new Promise(
 
 /**
  * Utility function to get a random item from an array.
- * Business value: Supports flexible and varied mock data generation,
+ * Business impact: Supports flexible and varied mock data generation,
  * crucial for comprehensive testing of UI and backend logic.
  * @param {T[]} arr - The array to pick from.
  * @returns {T} A random item from the array.
@@ -325,7 +345,7 @@ export const getRandomItem = <T>(arr: T[]): T => arr[Math.floor(Math.random() * 
 
 /**
  * Utility function to generate a random number within a range.
- * Business value: Enables realistic variability in simulated data,
+ * Business impact: Enables realistic variability in simulated data,
  * enhancing the testability and robustness of the system.
  * @param {number} min - Minimum value.
  * @param {number} max - Maximum value.
@@ -335,7 +355,7 @@ export const getRandomNumber = (min: number, max: number): number => Math.random
 
 /**
  * Utility function to format a timestamp into a human-readable date/time string.
- * Business value: Enhances user experience by presenting time-based data in an easily digestible format.
+ * Business impact: Enhances user experience by presenting time-based data in an easily digestible format.
  * @param {number} timestamp - The timestamp in milliseconds.
  * @returns {string} Formatted date and time.
  */
@@ -343,7 +363,7 @@ export const formatDateTime = (timestamp: number): string => new Date(timestamp)
 
 /**
  * Utility function to format duration in seconds into Hh M' S".
- * Business value: Improves readability of meeting durations, contributing to better user understanding and data analysis.
+ * Business impact: Improves readability of meeting durations, contributing to better user understanding and data analysis.
  * @param {number} seconds - Duration in seconds.
  * @returns {string} Formatted duration.
  */
@@ -356,7 +376,7 @@ export const formatDuration = (seconds: number): string => {
 
 /**
  * MOCK AI Service for sentiment analysis.
- * Business value: Provides real-time emotional intelligence, enabling proactive interventions
+ * Business impact: Provides real-time emotional intelligence, enabling proactive interventions
  * for constructive dialogue, risk detection, and participant well-being.
  * @param {string} text - The text to analyze.
  * @returns {Promise<number>} A promise resolving to a sentiment score (-1 to 1).
@@ -372,7 +392,7 @@ export const analyzeTextSentiment = async (text: string): Promise<number> => {
 
 /**
  * MOCK AI Service for extracting emotions.
- * Business value: Enriches contextual understanding of discussions by identifying underlying emotional tones,
+ * Business impact: Enriches contextual understanding of discussions by identifying underlying emotional tones,
  * critical for discerning nuances in negotiation or collaboration.
  * @param {string} text - The text to analyze.
  * @returns {Promise<{[key: string]: number}>} A promise resolving to an object of emotions and scores.
@@ -389,21 +409,21 @@ export const extractEmotions = async (text: string): Promise<{[key: string]: num
 
 /**
  * MOCK AI Service for extracting keywords.
- * Business value: Facilitates efficient information retrieval and topic clustering,
+ * Business impact: Facilitates efficient information retrieval and topic clustering,
  * streamlining post-meeting analysis and knowledge management.
  * @param {string} text - The text to analyze.
  * @returns {Promise<string[]>} A promise resolving to an array of keywords.
  */
 export const extractKeywords = async (text: string): Promise<string[]> => {
   await simulateAILoad(100);
-  const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 3 && isNaN(Number(word))); // Filter out short words and numbers
+  const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 3 && isNaN(Number(word)));
   const uniqueWords = Array.from(new Set(words));
   return uniqueWords.slice(0, Math.min(3, uniqueWords.length));
 };
 
 /**
  * MOCK AI Service for identifying intent.
- * Business value: Enables the system to understand the purpose behind a statement,
+ * Business impact: Enables the system to understand the purpose behind a statement,
  * allowing for intelligent routing of tasks, clarification prompts, or detection
  * of critical business signals.
  * @param {string} text - The text to analyze.
@@ -421,7 +441,7 @@ export const identifyIntent = async (text: string): Promise<string> => {
 
 /**
  * MOCK AI Service for generating a high-level summary.
- * Business value: Condenses lengthy discussions into concise, digestible summaries,
+ * Business impact: Condenses lengthy discussions into concise, digestible summaries,
  * saving executive time and facilitating quick updates across the organization.
  * @param {TranscriptSegment[]} transcriptSegments - The full transcript.
  * @returns {Promise<string>} A promise resolving to a summary string.
@@ -437,7 +457,7 @@ export const generateAISummary = async (transcriptSegments: TranscriptSegment[])
 
 /**
  * MOCK AI Service for recommending future actions/meetings.
- * Business value: Proactively suggests next steps and follow-ups, ensuring continuity
+ * Business impact: Proactively suggests next steps and follow-ups, ensuring continuity
  * of initiatives and preventing critical tasks from falling through the cracks,
  * thereby driving project momentum.
  * @param {MeetingSummaryExtended} summary - The extended meeting summary.
@@ -456,17 +476,16 @@ export const generateAIRecommendations = async (summary: MeetingSummaryExtended)
 
 /**
  * MOCK AI Service for detecting anomalies in a transcript segment.
- * Business value: Acts as a critical monitoring agent, automatically flagging unusual patterns,
+ * Business impact: Acts as a critical monitoring agent, automatically flagging unusual patterns,
  * negative sentiment spikes, or potential policy deviations, enabling early intervention
  * and risk mitigation.
  * @param {TranscriptSegment} segment - The transcript segment to analyze.
  * @returns {Promise<ComplianceInsight | null>} A promise resolving to a compliance insight if an anomaly is detected.
  */
 export const detectAnomaly = async (segment: TranscriptSegment): Promise<ComplianceInsight | null> => {
-  await simulateAILoad(400); // Simulate processing time for anomaly detection
-  const agentId = 'monitoring_agent_1'; // Mock agent ID
+  await simulateAILoad(400);
+  const agentId = 'monitoring_agent_1';
 
-  // Simulate sentiment anomaly
   if (segment.sentimentScore !== undefined && segment.sentimentScore < -0.7) {
     const description = `Significant negative sentiment detected: "${segment.text.substring(0, 50)}..."`;
     const insight: ComplianceInsight = {
@@ -475,7 +494,7 @@ export const detectAnomaly = async (segment: TranscriptSegment): Promise<Complia
       severity: 'high',
       description,
       timestamp: segment.timestamp,
-      relatedSegmentIds: [segment.timestamp.toString()], // Using timestamp as mock ID for segment
+      relatedSegmentIds: [segment.timestamp.toString()],
       recommendedAction: 'Facilitate discussion, address concerns directly.',
       status: 'open',
       agentId,
@@ -484,7 +503,6 @@ export const detectAnomaly = async (segment: TranscriptSegment): Promise<Complia
     return insight;
   }
 
-  // Simulate policy violation detection
   if (segment.text.toLowerCase().includes('data breach') || segment.text.toLowerCase().includes('unauthorized access')) {
     const description = `Potential policy violation keywords detected: "${segment.text.substring(0, 50)}..."`;
     const insight: ComplianceInsight = {
@@ -502,7 +520,6 @@ export const detectAnomaly = async (segment: TranscriptSegment): Promise<Complia
     return insight;
   }
 
-  // Simulate risk flag for budget overruns
   if (segment.intent === 'risk_assessment' && segment.text.toLowerCase().includes('exceed budget')) {
     const description = `Budget overrun risk flagged: "${segment.text.substring(0, 50)}..."`;
     const insight: ComplianceInsight = {
@@ -525,7 +542,7 @@ export const detectAnomaly = async (segment: TranscriptSegment): Promise<Complia
 
 /**
  * MOCK AI Service for proposing remediation actions based on an anomaly.
- * Business value: Automates the first line of defense against detected issues,
+ * Business impact: Automates the first line of defense against detected issues,
  * providing actionable suggestions and reducing the manual effort required for incident response.
  * @param {ComplianceInsight} anomaly - The detected compliance insight.
  * @returns {Promise<string>} A promise resolving to a remediation suggestion.
@@ -551,13 +568,13 @@ export const proposeRemediation = async (anomaly: ComplianceInsight): Promise<st
 
 /**
  * MOCK 3D Service for generating a mind map GLB URL.
- * Business value: Visualizes complex meeting relationships and insights in an intuitive 3D format,
+ * Business impact: Visualizes complex meeting relationships and insights in an intuitive 3D format,
  * enhancing comprehension and retention for users in spatial environments.
  * @param {MeetingSummaryExtended} summary - The extended meeting summary.
  * @returns {Promise<string>} A promise resolving to a mock GLB URL.
  */
 export const generateMockMindMapGLB = async (summary: MeetingSummaryExtended): Promise<string> => {
-  await simulateAILoad(2500); // Simulate complex 3D generation
+  await simulateAILoad(2500);
   const uniqueTopics = Array.from(new Set(summary.topics.map(t => t.name))).join('_');
   const uniqueParticipants = Array.from(new Set(summary.participants.map(p => p.name))).join('_');
   return `/mock/3d/meeting_mind_map_${uniqueTopics.substring(0, Math.min(uniqueTopics.length, 10))}_${uniqueParticipants.substring(0, Math.min(uniqueParticipants.length, 10))}.glb`;
@@ -565,20 +582,20 @@ export const generateMockMindMapGLB = async (summary: MeetingSummaryExtended): P
 
 /**
  * MOCK 3D Service for generating a 3D meeting scene URL.
- * Business value: Reconstructs the spatial context of the meeting, providing a navigable archive
+ * Business impact: Reconstructs the spatial context of the meeting, providing a navigable archive
  * that helps users recall discussions in their original holographic environment.
  * @param {MeetingSummaryExtended} summary - The extended meeting summary.
  * @returns {Promise<string>} A promise resolving to a mock GLB URL.
  */
 export const generateMockSpatialSceneGLB = async (summary: MeetingSummaryExtended): Promise<string> => {
-  await simulateAILoad(3000); // Simulate complex 3D scene generation
+  await simulateAILoad(3000);
   const meetingId = summary.metadata.id;
   return `/mock/3d/meeting_scene_${meetingId}.glb`;
 };
 
 /**
  * MOCK Service to simulate interaction with a User Profile Service.
- * Business value: Manages user-specific configurations, ensuring a personalized and efficient
+ * Business impact: Manages user-specific configurations, ensuring a personalized and efficient
  * experience across the application, which directly impacts user satisfaction and adoption.
  */
 export class UserProfileService {
@@ -611,33 +628,42 @@ export class UserProfileService {
 
   /**
    * Fetches the current user's preferences.
-   * Business value: Ensures personalized application behavior and settings persist across sessions.
+   * Business impact: Ensures personalized application behavior and settings persist across sessions,
+   * minimizing setup time and maximizing user efficiency.
    * @returns {Promise<UserPreferences>} A promise resolving to user preferences.
    */
   public async getPreferences(): Promise<UserPreferences> {
-    await simulateAILoad(200); // Simulate network delay
-    console.log('Fetching user preferences:', this.currentUserPreferences);
+    await simulateAILoad(200);
     return { ...this.currentUserPreferences };
   }
 
   /**
    * Updates the current user's preferences.
-   * Business value: Allows users to tailor the application to their needs,
-   * improving usability and efficiency.
+   * Business impact: Allows users to tailor the application to their needs,
+   * improving usability and efficiency by adapting system behavior to individual workflows.
    * @param {Partial<UserPreferences>} newPreferences - The preferences to update.
    * @returns {Promise<UserPreferences>} A promise resolving to the updated preferences.
    */
   public async updatePreferences(newPreferences: Partial<UserPreferences>): Promise<UserPreferences> {
-    await simulateAILoad(300); // Simulate network delay
+    await simulateAILoad(300);
     this.currentUserPreferences = { ...this.currentUserPreferences, ...newPreferences };
-    console.log('Updated user preferences:', this.currentUserPreferences);
     return { ...this.currentUserPreferences };
   }
 }
 
 /**
+ * Interface for integration status.
+ */
+export interface IntegrationStatus {
+  crmConnected: boolean;
+  calendarConnected: boolean;
+  projectManagementConnected: boolean;
+  documentStorageConnected: boolean;
+}
+
+/**
  * MOCK Service to simulate integration with external systems.
- * Business value: Extends the platform's utility by seamlessly connecting to
+ * Business impact: Extends the platform's utility by seamlessly connecting to
  * existing enterprise tools (CRM, calendar, project management), reducing
  * data silos and manual data entry, thereby enhancing workflow automation.
  */
@@ -661,7 +687,7 @@ export class IntegrationService {
 
   /**
    * Gets the current integration status.
-   * Business value: Provides real-time visibility into the connectivity of
+   * Business impact: Provides real-time visibility into the connectivity of
    * essential third-party services, crucial for troubleshooting and ensuring
    * continuous business operations.
    * @returns {Promise<IntegrationStatus>} A promise resolving to integration status.
@@ -673,8 +699,8 @@ export class IntegrationService {
 
   /**
    * Connects to a specific service.
-   * Business value: Enables administrators and users to manage external system
-   * connections, ensuring data flow and feature availability.
+   * Business impact: Enables administrators and users to manage external system
+   * connections, ensuring data flow and feature availability for enhanced operational reach.
    * @param {'crm' | 'calendar' | 'projectManagement' | 'documentStorage'} serviceName - The service to connect.
    * @param {boolean} connect - Whether to connect or disconnect.
    * @returns {Promise<IntegrationStatus>} A promise resolving to the updated status.
@@ -687,81 +713,68 @@ export class IntegrationService {
       case 'projectManagement': this.integrationStatus.projectManagementConnected = connect; break;
       case 'documentStorage': this.integrationStatus.documentStorageConnected = connect; break;
     }
-    console.log(`Service ${serviceName} connection updated to ${connect}. Current status:`, this.integrationStatus);
     return { ...this.integrationStatus };
   }
 
   /**
    * Exports action items to a mock CRM.
-   * Business value: Automates the transfer of actionable tasks to sales or client management systems,
+   * Business impact: Automates the transfer of actionable tasks to sales or client management systems,
    * ensuring follow-through and accelerating revenue generation cycles.
    * @param {ActionItemExtended[]} actionItems - The action items to export.
    * @returns {Promise<boolean>} True if successful.
    */
   public async exportActionItemsToCRM(actionItems: ActionItemExtended[]): Promise<boolean> {
     if (!this.integrationStatus.crmConnected) {
-      console.warn("CRM not connected. Cannot export action items.");
       return false;
     }
     await simulateAILoad(1000);
-    console.log("Exported action items to CRM:", actionItems.map(ai => ai.task));
     return true;
   }
 
   /**
    * Schedules a follow-up meeting in a mock calendar.
-   * Business value: Ensures critical follow-up discussions are promptly scheduled,
+   * Business impact: Ensures critical follow-up discussions are promptly scheduled,
    * preventing delays and maintaining project momentum.
    * @param {{ date: number; topic: string; attendees: string[] }} meetingDetails - Details of the meeting.
    * @returns {Promise<boolean>} True if successful.
    */
   public async scheduleFollowUpMeeting(meetingDetails: { date: number; topic: string; attendees: string[] }): Promise<boolean> {
     if (!this.integrationStatus.calendarConnected) {
-      console.warn("Calendar not connected. Cannot schedule follow-up.");
       return false;
     }
     await simulateAILoad(800);
-    console.log("Scheduled follow-up meeting:", meetingDetails);
     return true;
   }
 }
 
 /**
- * Interface for integration status.
- */
-export interface IntegrationStatus {
-  crmConnected: boolean;
-  calendarConnected: boolean;
-  projectManagementConnected: boolean;
-  documentStorageConnected: boolean;
-}
-
-/**
  * MOCK Service to simulate Digital Identity and Access Control.
- * Business value: Provides the foundational security layer for all operations,
+ * Business impact: Provides the foundational security layer for all operations,
  * ensuring that only authorized users and agents can access sensitive data
  * or trigger critical actions. It leverages cryptographic principles to establish
  * trust and maintain data integrity, critical for financial and regulatory compliance.
  */
 export class IdentityAndAccessService {
   private static instance: IdentityAndAccessService;
-  private userRoles: Map<string, string> = new Map(); // userId -> role
-  private userKeys: Map<string, { publicKey: string; privateKey: string }> = new Map(); // Simple mock key pairs
+  private userRoles: Map<string, string> = new Map();
+  private userKeys: Map<string, { publicKey: string; privateKey: string }> = new Map();
+  private accessLog: { timestamp: number; userId: string; action: string; authorized: boolean }[] = [];
 
   private constructor() {
-    // Seed some mock users and agents
     MOCK_PARTICIPANT_NAMES.forEach((name, idx) => {
       const id = `user-${name.replace(/\s/g, '').toLowerCase()}`;
       const role = getRandomItem(MOCK_ROLES);
       this.userRoles.set(id, role);
       this.generateKeyPair(id);
     });
-    this.userRoles.set('current_user_mock_id', 'Host'); // Current user
+    this.userRoles.set('current_user_mock_id', 'Host');
     this.generateKeyPair('current_user_mock_id');
     this.userRoles.set('monitoring_agent_1', 'Agent');
     this.generateKeyPair('monitoring_agent_1');
     this.userRoles.set('remediation_agent_1', 'Agent');
     this.generateKeyPair('remediation_agent_1');
+    this.userRoles.set('summarization_agent_1', 'Agent');
+    this.generateKeyPair('summarization_agent_1');
   }
 
   public static getInstance(): IdentityAndAccessService {
@@ -773,12 +786,12 @@ export class IdentityAndAccessService {
 
   /**
    * Simulates generating a public/private key pair for a user/agent.
-   * In a real system, this would use robust cryptographic libraries.
-   * Business value: Establishes the basis for secure digital identity and non-repudiation.
+   * NOTE: This is a mock implementation and NOT cryptographically secure for production use.
+   * Business impact: Establishes the basis for secure digital identity and non-repudiation
+   * within the simulated environment.
    * @param {string} entityId - The ID of the user or agent.
    */
   private generateKeyPair(entityId: string): void {
-    // Mock key generation (not cryptographically secure for production)
     const publicKey = `PUBKEY-${entityId}-${Math.random().toString(36).substring(7)}`;
     const privateKey = `PRIVKEY-${entityId}-${Math.random().toString(36).substring(7)}`;
     this.userKeys.set(entityId, { publicKey, privateKey });
@@ -786,7 +799,8 @@ export class IdentityAndAccessService {
 
   /**
    * Fetches the public key for a given entity.
-   * Business value: Enables secure communication and verification of signatures from trusted entities.
+   * Business impact: Enables secure communication and verification of signatures from trusted entities,
+   * ensuring the integrity of data and instructions.
    * @param {string} entityId - The ID of the entity.
    * @returns {string | null} The public key string or null if not found.
    */
@@ -797,7 +811,7 @@ export class IdentityAndAccessService {
 
   /**
    * Fetches the role of a given entity.
-   * Business value: Enforces Role-Based Access Control (RBAC), ensuring entities only
+   * Business impact: Enforces Role-Based Access Control (RBAC), ensuring entities only
    * perform actions they are authorized for, thus maintaining system integrity and security.
    * @param {string} entityId - The ID of the entity.
    * @returns {string | null} The role string or null if not found.
@@ -809,8 +823,9 @@ export class IdentityAndAccessService {
 
   /**
    * Simulates cryptographic signing of data.
-   * Business value: Provides tamper-evident proof of origin and integrity for critical data,
-   * such as meeting decisions, action items, or audit logs.
+   * NOTE: This is a mock implementation and NOT cryptographically secure for production use.
+   * Business impact: Provides tamper-evident proof of origin and integrity for critical data,
+   * such as meeting decisions, action items, or audit logs, essential for compliance.
    * @param {string} entityId - The ID of the entity performing the signing.
    * @param {any} data - The data to sign.
    * @returns {Promise<string>} A promise resolving to a mock cryptographic signature.
@@ -819,15 +834,15 @@ export class IdentityAndAccessService {
     await simulateAILoad(100);
     const privateKey = this.userKeys.get(entityId)?.privateKey;
     if (!privateKey) throw new Error(`Private key not found for ${entityId}`);
-    // Mock signing: base64 encode data + private key prefix
     const dataString = typeof data === 'string' ? data : JSON.stringify(data);
     return btoa(`${privateKey}:${dataString}`);
   }
 
   /**
    * Simulates cryptographic verification of a signature.
-   * Business value: Confirms the authenticity and integrity of signed data,
-   * critical for auditability and trust in automated processes.
+   * NOTE: This is a mock implementation and NOT cryptographically secure for production use.
+   * Business impact: Confirms the authenticity and integrity of signed data,
+   * critical for auditability and trust in automated processes, especially in financial operations.
    * @param {string} entityId - The ID of the entity whose signature is being verified.
    * @param {any} data - The original data.
    * @param {string} signature - The signature to verify.
@@ -839,19 +854,17 @@ export class IdentityAndAccessService {
       const publicKey = this.userKeys.get(entityId)?.publicKey;
       if (!publicKey) return false;
       const dataString = typeof data === 'string' ? data : JSON.stringify(data);
-      // Mock verification: check if signature contains expected public key and data (simplified)
-      const expectedSignaturePrefix = btoa(`PRIVKEY-${entityId}`); // Simplified: using private key prefix for mock verification
+      const expectedSignaturePrefix = btoa(`PRIVKEY-${entityId}`);
       return signature.startsWith(expectedSignaturePrefix) && atob(signature).includes(dataString);
     } catch (e) {
-      console.error("Signature verification error:", e);
       return false;
     }
   }
 
   /**
    * Simulates an RBAC check.
-   * Business value: Prevents unauthorized access and actions, enforcing governance
-   * and security policies across the platform.
+   * Business impact: Prevents unauthorized access and actions, enforcing governance
+   * and security policies across the platform, thereby protecting sensitive data and operations.
    * @param {string} userId - The ID of the user attempting the action.
    * @param {string[]} requiredRoles - An array of roles that are authorized.
    * @returns {Promise<boolean>} True if the user has one of the required roles.
@@ -859,20 +872,32 @@ export class IdentityAndAccessService {
   public async authorize(userId: string, requiredRoles: string[]): Promise<boolean> {
     await simulateAILoad(50);
     const userRole = this.userRoles.get(userId);
-    if (!userRole) return false;
-    return requiredRoles.includes(userRole);
+    const authorized = userRole !== undefined && requiredRoles.includes(userRole);
+    this.accessLog.push({ timestamp: Date.now(), userId, action: `Attempted authorization for roles: ${requiredRoles.join(', ')}`, authorized });
+    return authorized;
+  }
+
+  /**
+   * Retrieves the access log for auditing.
+   * Business impact: Provides a tamper-evident record of all access and authorization attempts,
+   * critical for security audits, incident response, and regulatory compliance.
+   * @returns {Array<{ timestamp: number; userId: string; action: string; authorized: boolean }>} The access log.
+   */
+  public getAccessLog(): Array<{ timestamp: number; userId: string; action: string; authorized: boolean }> {
+    return [...this.accessLog];
   }
 }
 
 /**
  * MOCK Service to simulate inter-agent communication via an in-repo message queue.
- * Business value: Enables autonomous AI agents to collaborate, share insights,
+ * Business impact: Enables autonomous AI agents to collaborate, share insights,
  * and orchestrate complex workflows (monitor -> decide -> act) by providing
  * a robust and auditable communication backbone.
  */
 export class AgentCommunicationService {
   private static instance: AgentCommunicationService;
-  private subscribers: Map<string, Function[]> = new Map(); // topic -> handlers
+  private subscribers: Map<string, Function[]> = new Map();
+  private messageLog: { timestamp: number; topic: string; message: any }[] = [];
 
   private constructor() {}
 
@@ -885,20 +910,20 @@ export class AgentCommunicationService {
 
   /**
    * Simulates publishing a message to a topic.
-   * Business value: Facilitates event-driven architectures where agents react to and
+   * Business impact: Facilitates event-driven architectures where agents react to and
    * disseminate information without direct coupling, enhancing system scalability and resilience.
    * @param {string} topic - The topic to publish to.
    * @param {any} message - The message payload.
    */
   public publish(topic: string, message: any): void {
-    console.log(`[AgentComm] Publishing to ${topic}:`, message);
+    this.messageLog.push({ timestamp: Date.now(), topic, message });
     const handlers = this.subscribers.get(topic);
     if (handlers) {
       handlers.forEach(handler => {
         try {
           handler(message);
         } catch (error) {
-          console.error(`[AgentComm] Error in handler for topic ${topic}:`, error);
+          console.error(`Error in handler for topic ${topic}:`, error);
         }
       });
     }
@@ -906,7 +931,7 @@ export class AgentCommunicationService {
 
   /**
    * Simulates subscribing to a topic.
-   * Business value: Allows agents to register interest in specific events, creating
+   * Business impact: Allows agents to register interest in specific events, creating
    * a flexible and reactive system where agents can autonomously monitor and act.
    * @param {string} topic - The topic to subscribe to.
    * @param {Function} handler - The callback function to execute when a message is received.
@@ -917,7 +942,6 @@ export class AgentCommunicationService {
       this.subscribers.set(topic, []);
     }
     this.subscribers.get(topic)!.push(handler);
-    console.log(`[AgentComm] Subscribed to ${topic}`);
     return () => {
       const handlers = this.subscribers.get(topic);
       if (handlers) {
@@ -925,29 +949,38 @@ export class AgentCommunicationService {
       }
     };
   }
+
+  /**
+   * Retrieves the message log for auditing inter-agent communication.
+   * Business impact: Provides a transparent and auditable record of all agent interactions,
+   * crucial for debugging, compliance, and understanding autonomous system behavior.
+   * @returns {Array<{ timestamp: number; topic: string; message: any }>} The message log.
+   */
+  public getMessageLog(): Array<{ timestamp: number; topic: string; message: any }> {
+    return [...this.messageLog];
+  }
 }
 
 /**
  * MOCK Service to simulate the Token Rail Layer and Real-time Payments Infrastructure.
- * Business value: Provides a deterministic, auditable simulation of financial transactions,
+ * Business impact: Provides a deterministic, auditable simulation of financial transactions,
  * enabling the system to bridge meeting outcomes with actual value movements.
  * This capability unlocks new business models, streamlines treasury operations,
  * and provides real-time liquidity management and cost arbitrage opportunities.
  */
 export class PaymentSimulationService {
   private static instance: PaymentSimulationService;
-  private ledger: Map<string, number> = new Map(); // userId -> token balance
-  private paymentRequests: Map<string, PaymentRequestRecord> = new Map(); // requestId -> record
-  private transactionLog: any[] = []; // For auditability
+  private ledger: Map<string, number> = new Map();
+  private paymentRequests: Map<string, PaymentRequestRecord> = new Map();
+  private transactionLog: any[] = [];
+  private processingQueue: Promise<void> = Promise.resolve();
 
   private constructor() {
-    // Seed some initial balances
     IdentityAndAccessService.getInstance().userRoles.forEach((_role, userId) => {
-      if (!userId.startsWith('agent')) { // Agents don't need balances
+      if (!userId.startsWith('agent')) {
         this.ledger.set(userId, getRandomNumber(1000, 10000));
       }
     });
-    console.log("PaymentSimulationService initialized. Initial ledger balances:", Array.from(this.ledger.entries()));
   }
 
   public static getInstance(): PaymentSimulationService {
@@ -958,8 +991,28 @@ export class PaymentSimulationService {
   }
 
   /**
+   * Executes a function sequentially to ensure idempotency and prevent race conditions.
+   * Business impact: Guarantees consistent state updates in a simulated distributed environment,
+   * critical for financial transaction integrity and fault tolerance.
+   * @param {Function} func - The function to execute.
+   * @returns {Promise<T>} The result of the function.
+   */
+  private async processSequentially<T>(func: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.processingQueue = this.processingQueue.then(async () => {
+        try {
+          const result = await func();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  /**
    * Simulates creating a new payment request.
-   * Business value: Formalizes financial commitments stemming from meeting decisions,
+   * Business impact: Formalizes financial commitments stemming from meeting decisions,
    * ensuring transparency and accountability before actual fund transfers.
    * @param {string} sourceParticipantId - The ID of the participant initiating/approving.
    * @param {string} targetParticipantId - The ID of the participant receiving funds.
@@ -975,86 +1028,91 @@ export class PaymentSimulationService {
     currency: string,
     relatedActionId?: string
   ): Promise<PaymentRequestRecord> {
-    await simulateAILoad(200);
+    return this.processSequentially(async () => {
+      await simulateAILoad(200);
 
-    if (!this.ledger.has(sourceParticipantId)) {
-      throw new Error(`Source participant ${sourceParticipantId} not found in ledger.`);
-    }
+      if (!this.ledger.has(sourceParticipantId)) {
+        throw new Error(`Source participant ${sourceParticipantId} not found in ledger.`);
+      }
 
-    if (this.ledger.get(sourceParticipantId)! < amount) {
-      throw new Error(`Insufficient funds for ${sourceParticipantId}.`);
-    }
+      const sourceBalance = this.ledger.get(sourceParticipantId)!;
+      if (sourceBalance < amount) {
+        throw new Error(`Insufficient funds for ${sourceParticipantId}. Current balance: ${sourceBalance}, requested: ${amount}.`);
+      }
 
-    const requestId = generateId();
-    const paymentRequest: PaymentRequestRecord = {
-      id: requestId,
-      sourceParticipantId,
-      targetParticipantId,
-      amount,
-      currency,
-      status: 'pending',
-      createdAt: Date.now(),
-      relatedActionItemId,
-      signature: await IdentityAndAccessService.getInstance().signData(sourceParticipantId, { requestId, sourceParticipantId, targetParticipantId, amount, currency })
-    };
-    this.paymentRequests.set(requestId, paymentRequest);
-    this.transactionLog.push({ type: 'create_request', timestamp: Date.now(), ...paymentRequest });
-    console.log(`[Payments] Payment request ${requestId} created:`, paymentRequest);
-    AgentCommunicationService.getInstance().publish('payment_status_update', paymentRequest);
-    return paymentRequest;
+      const requestId = generateId();
+      const paymentRequest: PaymentRequestRecord = {
+        id: requestId,
+        sourceParticipantId,
+        targetParticipantId,
+        amount,
+        currency,
+        status: 'pending',
+        createdAt: Date.now(),
+        relatedActionItemId,
+        signature: await IdentityAndAccessService.getInstance().signData(sourceParticipantId, { requestId, sourceParticipantId, targetParticipantId, amount, currency })
+      };
+      this.paymentRequests.set(requestId, paymentRequest);
+      this.transactionLog.push({ type: 'create_request', timestamp: Date.now(), ...paymentRequest });
+      AgentCommunicationService.getInstance().publish('payment_status_update', paymentRequest);
+      return paymentRequest;
+    });
   }
 
   /**
    * Simulates settling a payment request across a chosen rail.
-   * Business value: Executes the atomic transfer of value, completing the financial cycle
+   * Business impact: Executes the atomic transfer of value, completing the financial cycle
    * initiated by meeting outcomes and leveraging multi-rail orchestration for optimized speed and cost.
    * @param {string} requestId - The ID of the payment request to settle.
    * @param {'rail_fast' | 'rail_batch'} rail - The simulated rail to use.
    * @returns {Promise<PaymentRequestRecord>} The updated payment request record.
    */
   public async settlePayment(requestId: string, rail: 'rail_fast' | 'rail_batch'): Promise<PaymentRequestRecord> {
-    await simulateAILoad(rail === 'rail_fast' ? 500 : 2000); // Fast vs. Batch rail simulation
+    return this.processSequentially(async () => {
+      await simulateAILoad(rail === 'rail_fast' ? 500 : 2000);
 
-    const paymentRequest = this.paymentRequests.get(requestId);
-    if (!paymentRequest) {
-      throw new Error(`Payment request ${requestId} not found.`);
-    }
-    if (paymentRequest.status !== 'pending' && paymentRequest.status !== 'approved') {
-      throw new Error(`Payment request ${requestId} is not in a settlable state.`);
-    }
+      const paymentRequest = this.paymentRequests.get(requestId);
+      if (!paymentRequest) {
+        throw new Error(`Payment request ${requestId} not found.`);
+      }
+      if (paymentRequest.status === 'settled') {
+        throw new Error(`Payment request ${requestId} is already settled.`);
+      }
+      if (paymentRequest.status === 'failed' || paymentRequest.status === 'rejected') {
+        throw new Error(`Payment request ${requestId} cannot be settled as it is in '${paymentRequest.status}' status.`);
+      }
 
-    const sourceBalance = this.ledger.get(paymentRequest.sourceParticipantId)!;
-    if (sourceBalance < paymentRequest.amount) {
-      paymentRequest.status = 'failed';
+      const sourceBalance = this.ledger.get(paymentRequest.sourceParticipantId)!;
+      if (sourceBalance < paymentRequest.amount) {
+        paymentRequest.status = 'failed';
+        paymentRequest.settledAt = Date.now();
+        this.transactionLog.push({ type: 'settle_fail', timestamp: Date.now(), ...paymentRequest });
+        AgentCommunicationService.getInstance().publish('payment_status_update', paymentRequest);
+        throw new Error(`Insufficient funds for ${paymentRequest.sourceParticipantId} to settle request ${requestId}.`);
+      }
+
+      const newSourceBalance = sourceBalance - paymentRequest.amount;
+      const newTargetBalance = (this.ledger.get(paymentRequest.targetParticipantId) || 0) + paymentRequest.amount;
+
+      this.ledger.set(paymentRequest.sourceParticipantId, newSourceBalance);
+      this.ledger.set(paymentRequest.targetParticipantId, newTargetBalance);
+
+      paymentRequest.status = 'settled';
       paymentRequest.settledAt = Date.now();
-      this.transactionLog.push({ type: 'settle_fail', timestamp: Date.now(), ...paymentRequest });
+      paymentRequest.railUsed = rail;
+      paymentRequest.transactionHash = `TX-${generateId()}`;
+
+      this.paymentRequests.set(requestId, paymentRequest);
+      this.transactionLog.push({ type: 'settle_success', timestamp: Date.now(), ...paymentRequest, newSourceBalance, newTargetBalance });
       AgentCommunicationService.getInstance().publish('payment_status_update', paymentRequest);
-      throw new Error(`Insufficient funds for ${paymentRequest.sourceParticipantId} to settle request ${requestId}.`);
-    }
-
-    // Atomic settlement simulation
-    const newSourceBalance = sourceBalance - paymentRequest.amount;
-    const newTargetBalance = (this.ledger.get(paymentRequest.targetParticipantId) || 0) + paymentRequest.amount;
-
-    this.ledger.set(paymentRequest.sourceParticipantId, newSourceBalance);
-    this.ledger.set(paymentRequest.targetParticipantId, newTargetBalance);
-
-    paymentRequest.status = 'settled';
-    paymentRequest.settledAt = Date.now();
-    paymentRequest.railUsed = rail;
-    paymentRequest.transactionHash = `TX-${generateId()}`; // Mock transaction hash
-
-    this.paymentRequests.set(requestId, paymentRequest);
-    this.transactionLog.push({ type: 'settle_success', timestamp: Date.now(), ...paymentRequest, newSourceBalance, newTargetBalance });
-    console.log(`[Payments] Payment request ${requestId} settled via ${rail}. Balances updated.`, paymentRequest);
-    AgentCommunicationService.getInstance().publish('payment_status_update', paymentRequest);
-    return paymentRequest;
+      return paymentRequest;
+    });
   }
 
   /**
    * Gets the status of a payment request.
-   * Business value: Provides real-time tracking of payment lifecycle,
-   * enabling timely updates and reconciliation.
+   * Business impact: Provides real-time tracking of payment lifecycle,
+   * enabling timely updates and reconciliation for enhanced financial transparency.
    * @param {string} requestId - The ID of the payment request.
    * @returns {Promise<PaymentRequestRecord | null>} The payment request record or null.
    */
@@ -1065,7 +1123,7 @@ export class PaymentSimulationService {
 
   /**
    * Simulates a predictive routing AI for selecting payment rails.
-   * Business value: Optimizes transaction processing by intelligently selecting
+   * Business impact: Optimizes transaction processing by intelligently selecting
    * the most efficient (fastest/cheapest) rail based on simulated conditions,
    * enhancing performance and reducing operational costs.
    * @param {number} amount - The transaction amount.
@@ -1074,9 +1132,7 @@ export class PaymentSimulationService {
    */
   public async predictRail(amount: number, currency: string): Promise<'rail_fast' | 'rail_batch'> {
     await simulateAILoad(100);
-    // Simple mock logic: prioritize fast for smaller amounts, batch for larger
-    // In a real system, this would use historical latency/cost data and AI models.
-    if (amount < 500 && Math.random() < 0.8) { // 80% chance for fast rail for smaller amounts
+    if (amount < 500 && Math.random() < 0.8) {
       return 'rail_fast';
     }
     return 'rail_batch';
@@ -1084,24 +1140,23 @@ export class PaymentSimulationService {
 
   /**
    * Simulates a risk scoring/fraud detection module.
-   * Business value: Protects against financial losses by automatically assessing
+   * Business impact: Protects against financial losses by automatically assessing
    * transaction risk and flagging potential fraud, enhancing security and trust.
    * @param {PaymentRequestRecord} paymentRequest - The payment request to evaluate.
    * @returns {Promise<{ score: number; flagged: boolean; reason?: string }>} Risk score and flag.
    */
   public async evaluateRisk(paymentRequest: PaymentRequestRecord): Promise<{ score: number; flagged: boolean; reason?: string }> {
     await simulateAILoad(300);
-    let score = getRandomNumber(0, 100); // Base risk
+    let score = getRandomNumber(0, 100);
     let flagged = false;
     let reason: string | undefined;
 
-    // Simulate simple fraud rules
     if (paymentRequest.amount > 5000) {
-      score += 30; // Higher amount, higher risk
+      score += 30;
       reason = 'Large transaction amount.';
     }
     if (paymentRequest.sourceParticipantId === paymentRequest.targetParticipantId) {
-      score += 50; // Self-payment might be suspicious
+      score += 50;
       flagged = true;
       reason = 'Self-payment detected, potential circular transaction.';
     }
@@ -1109,14 +1164,12 @@ export class PaymentSimulationService {
       flagged = true;
       reason = reason || 'High risk score detected.';
     }
-
-    console.log(`[Payments] Risk evaluation for ${paymentRequest.id}: Score ${score.toFixed(0)}, Flagged: ${flagged}`);
     return { score, flagged, reason };
   }
 
   /**
    * Returns a snapshot of the current ledger.
-   * Business value: Provides visibility into the financial state of the system,
+   * Business impact: Provides visibility into the financial state of the system,
    * essential for reconciliation and financial reporting.
    * @returns {Map<string, number>} Current ledger balances.
    */
@@ -1126,7 +1179,7 @@ export class PaymentSimulationService {
 
   /**
    * Returns the full transaction log.
-   * Business value: Offers a complete, auditable record of all financial operations,
+   * Business impact: Offers a complete, auditable record of all financial operations,
    * critical for compliance, dispute resolution, and forensic analysis.
    * @returns {any[]} The transaction log.
    */
@@ -1137,14 +1190,14 @@ export class PaymentSimulationService {
 
 /**
  * MOCK Service to simulate the backend for meeting data and AI processing.
- * Business value: Centralizes the storage, retrieval, and intelligent processing
+ * Business impact: Centralizes the storage, retrieval, and intelligent processing
  * of all meeting-related data, acting as the knowledge hub for enterprise collaboration.
  * Its ability to handle live data, generate comprehensive summaries, and integrate
  * with agentic AI makes it indispensable for organizational learning and operational efficiency.
  */
 export class MeetingDataService {
   private static instance: MeetingDataService;
-  public historicalMeetings: HistoricalMeetingRecord[] = []; // Made public for direct access in browser component
+  public historicalMeetings: HistoricalMeetingRecord[] = [];
   private identityService: IdentityAndAccessService;
   private paymentService: PaymentSimulationService;
   private agentCommService: AgentCommunicationService;
@@ -1153,10 +1206,9 @@ export class MeetingDataService {
     this.identityService = IdentityAndAccessService.getInstance();
     this.paymentService = PaymentSimulationService.getInstance();
     this.agentCommService = AgentCommunicationService.getInstance();
-    // Generate some mock historical meetings
     for (let i = 0; i < 10; i++) {
       const id = generateId();
-      const date = Date.now() - (i * 7 * 24 * 60 * 60 * 1000) - getRandomNumber(0, 3 * 24 * 60 * 60 * 1000); // Past meetings
+      const date = Date.now() - (i * 7 * 24 * 60 * 60 * 1000) - getRandomNumber(0, 3 * 24 * 60 * 60 * 1000);
       const duration = Math.floor(getRandomNumber(30, 120) * 60);
       const hostName = getRandomItem(MOCK_PARTICIPANT_NAMES);
       const keyTopics = Array.from({ length: getRandomNumber(2, 4) }, () => getRandomItem(MOCK_TOPICS));
@@ -1169,7 +1221,6 @@ export class MeetingDataService {
         id, title: `Weekly Sync - Project ${String.fromCharCode(65 + i)}`, date, duration, hostName, keyTopics, overallSentimentScore, actionItemsCount, summaryPreview, complianceIssuesCount, paymentRequestsCount
       });
     }
-    console.log('Initialized MeetingDataService with historical meetings:', this.historicalMeetings.length);
   }
 
   public static getInstance(): MeetingDataService {
@@ -1181,7 +1232,7 @@ export class MeetingDataService {
 
   /**
    * Fetches historical meeting records.
-   * Business value: Provides an organizational memory of past discussions, enabling trends analysis,
+   * Business impact: Provides an organizational memory of past discussions, enabling trends analysis,
    * retrieval of precedents, and continuous improvement of meeting effectiveness.
    * @returns {Promise<HistoricalMeetingRecord[]>} A promise resolving to an array of historical meeting records.
    */
@@ -1192,33 +1243,32 @@ export class MeetingDataService {
 
   /**
    * Fetches a specific full meeting summary by ID.
-   * Business value: Allows deep dives into past meetings, retrieving all associated
+   * Business impact: Allows deep dives into past meetings, retrieving all associated
    * context, decisions, and outcomes for detailed review or audit.
    * @param {string} meetingId - The ID of the meeting to fetch.
    * @returns {Promise<MeetingSummaryExtended | null>} A promise resolving to the meeting summary or null if not found.
    */
   public async getMeetingSummaryById(meetingId: string): Promise<MeetingSummaryExtended | null> {
-    await simulateAILoad(1500); // Simulate fetching complex data
+    await simulateAILoad(1500);
     if (this.historicalMeetings.some(m => m.id === meetingId)) {
-      console.log(`Simulating retrieval of historical meeting ${meetingId}. Generating full mock data.`);
-      const baseTime = Date.now() - (7 * 24 * 60 * 60 * 1000) - getRandomNumber(0, 3 * 24 * 60 * 60 * 1000); // A week ago
-      const mockResult = await generateMockMeetingSummary(baseTime, "Holographic Review - Past Session", true); // Pass true to trigger more comprehensive generation
+      const baseTime = Date.now() - (7 * 24 * 60 * 60 * 1000) - getRandomNumber(0, 3 * 24 * 60 * 60 * 1000);
+      const mockResult = await generateMockMeetingSummary(baseTime, "Holographic Review - Past Session", true);
       mockResult.metadata.id = meetingId;
       return mockResult;
     }
-    return null; // Not found
+    return null;
   }
 
   /**
    * Simulates fetching real-time transcript data.
-   * Business value: Provides the raw input stream for real-time AI processing,
+   * Business impact: Provides the raw input stream for real-time AI processing,
    * powering live insights, immediate action item detection, and dynamic content generation.
    * @param {string} meetingUrl - The URL of the holographic meeting.
    * @param {number} offset - The timestamp offset to fetch from.
    * @returns {Promise<TranscriptSegment[]>} New transcript segments.
    */
   public async fetchLiveTranscriptSegments(meetingUrl: string, offset: number): Promise<TranscriptSegment[]> {
-    await simulateAILoad(getRandomNumber(500, 1500)); // Simulate async streaming
+    await simulateAILoad(getRandomNumber(500, 1500));
     if (!meetingUrl || meetingUrl === "error") {
       throw new Error("Invalid meeting URL for live transcript.");
     }
@@ -1228,7 +1278,7 @@ export class MeetingDataService {
     const mockParticipants = Array.from(this.identityService.userRoles.keys()).filter(id => !id.startsWith('agent'));
     const availableParticipants = mockParticipants.map(id => ({ id, name: id.replace('user-', '') }));
 
-    if (offset === 0) { // First fetch, add some initial data
+    if (offset === 0) {
       for (let i = 0; i < 5; i++) {
         const participant = getRandomItem(availableParticipants);
         const text = `Initial setup comment ${i + 1} from ${participant.name}.`;
@@ -1236,7 +1286,7 @@ export class MeetingDataService {
           participantId: participant.id,
           participantName: participant.name,
           text: text,
-          timestamp: currentTimestamp - (5 - i) * 10000, // 10s intervals
+          timestamp: currentTimestamp - (5 - i) * 10000,
         };
         segment.sentimentScore = await analyzeTextSentiment(segment.text);
         segment.emotions = await extractEmotions(segment.text);
@@ -1246,8 +1296,7 @@ export class MeetingDataService {
         newSegments.push(segment);
       }
     } else {
-      // Simulate new segments coming in
-      if (Math.random() > 0.3) { // Not every poll gets new data
+      if (Math.random() > 0.3) {
         for (let i = 0; i < getRandomNumber(1, 3); i++) {
           const participant = getRandomItem(availableParticipants);
           const textOptions = [
@@ -1258,14 +1307,14 @@ export class MeetingDataService {
             `I'm feeling positive about this direction.`,
             `There are some challenges we need to address with this.`,
             `Can we get an update on that task?`,
-            `We need to ensure compliance with the new data privacy policy.` // New compliance related text
+            `We need to ensure compliance with the new data privacy policy.`
           ];
           const text = getRandomItem(textOptions);
           const segment: TranscriptSegment = {
             participantId: participant.id,
             participantName: participant.name,
             text: text,
-            timestamp: currentTimestamp - getRandomNumber(1000, 5000), // Simulate recent entry
+            timestamp: currentTimestamp - getRandomNumber(1000, 5000),
           };
           segment.sentimentScore = await analyzeTextSentiment(segment.text);
           segment.emotions = await extractEmotions(segment.text);
@@ -1282,7 +1331,7 @@ export class MeetingDataService {
   /**
    * Simulates processing the entire meeting data to generate the final summary.
    * This would involve extensive AI/ML operations.
-   * Business value: This is the core engine for generating high-value business intelligence.
+   * Business impact: This is the core engine for generating high-value business intelligence.
    * It transforms raw meeting interactions into structured, actionable insights,
    * comprehensive summaries, and auditable records, enabling data-driven decision-making
    * and providing the foundation for automated workflows.
@@ -1291,11 +1340,10 @@ export class MeetingDataService {
    * @returns {Promise<MeetingSummaryExtended>} The comprehensive meeting summary.
    */
   public async finalizeMeetingSummary(fullTranscript: TranscriptSegment[], meetingTitle: string): Promise<MeetingSummaryExtended> {
-    console.log("Finalizing meeting summary with extensive AI processing...");
-    await simulateAILoad(5000); // Simulate heavy AI processing
+    await simulateAILoad(5000);
 
     const startTime = fullTranscript[0]?.timestamp || Date.now();
-    const endTime = fullTranscript[fullTranscript.length - 1]?.timestamp || Date.now() + 3600000; // Assume 1 hour if no transcript
+    const endTime = fullTranscript[fullTranscript.length - 1]?.timestamp || Date.now() + 3600000;
     const durationSeconds = Math.round((endTime - startTime) / 1000);
 
     const participantsMap = new Map<string, ParticipantDetailedInfo>();
@@ -1308,7 +1356,6 @@ export class MeetingDataService {
     const paymentRequests: PaymentRequestRecord[] = [];
     let totalPositive = 0, totalNegative = 0, totalNeutral = 0;
 
-    // Process transcript segments for participants, sentiment, anomalies, etc.
     for (const segment of fullTranscript) {
       if (!participantsMap.has(segment.participantId)) {
         participantsMap.set(segment.participantId, {
@@ -1318,7 +1365,7 @@ export class MeetingDataService {
           email: `${segment.participantName.replace(/\s/g, '').toLowerCase()}@example.com`,
           organization: getRandomItem(MOCK_ORGS),
           avatarUrl: `/avatars/${segment.participantId}.png`,
-          joinTime: startTime, // Simplistic: all join at start for mock
+          joinTime: startTime,
           totalSpeakingTime: 0,
           speakingSegmentsCount: 0,
           overallSentiment: { average: 0, trend: 'stable' },
@@ -1327,7 +1374,7 @@ export class MeetingDataService {
       }
       const p = participantsMap.get(segment.participantId)!;
       p.speakingSegmentsCount++;
-      p.totalSpeakingTime += Math.max(10, segment.text.length / 5); // Estimate speaking time
+      p.totalSpeakingTime += Math.max(10, segment.text.length / 5);
 
       if (segment.sentimentScore !== undefined) {
         allSentiments.push({ timestamp: segment.timestamp, score: segment.sentimentScore });
@@ -1336,7 +1383,6 @@ export class MeetingDataService {
         else totalNeutral++;
       }
 
-      // Agentic AI: Anomaly Detection
       const anomaly = await detectAnomaly(segment);
       if (anomaly) {
         complianceInsights.push(anomaly);
@@ -1349,14 +1395,13 @@ export class MeetingDataService {
           details: { segmentId: segment.timestamp, severity: anomaly.severity },
           signature: await this.identityService.signData(anomaly.agentId, { id: anomaly.id, type: anomaly.type }),
         });
-        // Simulate remediation proposal by another agent
         const remediationProposal = await proposeRemediation(anomaly);
         agentActivityLogs.push({
           id: generateId(),
           agentId: 'remediation_agent_1',
           skill: 'remediation_proposal',
           action: remediationProposal,
-          timestamp: Date.now() + 100, // Slightly after detection
+          timestamp: Date.now() + 100,
           details: { relatedInsightId: anomaly.id },
           signature: await this.identityService.signData('remediation_agent_1', { relatedInsightId: anomaly.id, proposal: remediationProposal }),
         });
@@ -1371,7 +1416,6 @@ export class MeetingDataService {
         });
       }
 
-      // Mock action item extraction
       if (segment.intent === 'action_proposal' || segment.text.toLowerCase().includes('i will take') || segment.text.toLowerCase().includes('assign to')) {
         const assigneeId = segment.participantId;
         const assigneeName = segment.participantName;
@@ -1386,14 +1430,14 @@ export class MeetingDataService {
           priority: getRandomItem(MOCK_PRIORITIES),
           createdBy: segment.participantId,
           createdAt: segment.timestamp,
-          contextualTranscriptSegmentIds: [segment.timestamp.toString()], // simplified
+          contextualTranscriptSegmentIds: [segment.timestamp.toString()],
         };
         newActionItem.signature = await this.identityService.signData(segment.participantId, newActionItem);
         actionItems.push(newActionItem);
 
         agentActivityLogs.push({
           id: generateId(),
-          agentId: 'summarization_agent_1', // Mock AI agent that processes action items
+          agentId: 'summarization_agent_1',
           skill: 'action_item_extraction',
           action: `Extracted action item: ${taskText}`,
           timestamp: Date.now(),
@@ -1402,7 +1446,6 @@ export class MeetingDataService {
         });
       }
 
-      // Mock decision extraction
       if (segment.text.toLowerCase().includes('we decided') || segment.text.toLowerCase().includes('the decision is')) {
         const newDecision: DecisionRecord = {
           id: generateId(),
@@ -1417,7 +1460,7 @@ export class MeetingDataService {
 
         agentActivityLogs.push({
           id: generateId(),
-          agentId: 'summarization_agent_1', // Mock AI agent
+          agentId: 'summarization_agent_1',
           skill: 'decision_extraction',
           action: `Extracted decision: ${newDecision.summary}`,
           timestamp: Date.now(),
@@ -1427,13 +1470,11 @@ export class MeetingDataService {
       }
     }
 
-    // Aggregate participant sentiments
     participantsMap.forEach(p => {
       const pSegments = fullTranscript.filter(s => s.participantId === p.id && s.sentimentScore !== undefined);
       if (pSegments.length > 0) {
         const avgScore = pSegments.reduce((sum, s) => sum + s.sentimentScore!, 0) / pSegments.length;
         p.overallSentiment.average = avgScore;
-        // Simple trend calculation
         if (pSegments.length > 3) {
           const lastScores = pSegments.slice(-3).map(s => s.sentimentScore!);
           if (lastScores[2] > lastScores[0] + 0.1) p.overallSentiment.trend = 'rising';
@@ -1442,7 +1483,6 @@ export class MeetingDataService {
       }
     });
 
-    // Mock topic generation
     MOCK_TOPICS.forEach((topic, idx) => {
       const relevantSegments = fullTranscript.filter(s => s.text.toLowerCase().includes(topic.toLowerCase().split(' ')[0]));
       if (relevantSegments.length > 0) {
@@ -1458,7 +1498,7 @@ export class MeetingDataService {
           },
           startTimestamp: relevantSegments[0].timestamp,
           endTimestamp: relevantSegments[relevantSegments.length - 1].timestamp,
-          relatedTranscriptSegmentIds: relevantSegments.map(s => s.timestamp.toString()), // Simplified
+          relatedTranscriptSegmentIds: relevantSegments.map(s => s.timestamp.toString()),
         });
       }
     });
@@ -1501,7 +1541,7 @@ export class MeetingDataService {
       actionItems,
       decisions,
       topics,
-      mindMapUrl: await generateMockMindMapGLB({} as MeetingSummaryExtended), // Passed empty, as the mock generates static for now
+      mindMapUrl: await generateMockMindMapGLB({} as MeetingSummaryExtended),
       spatialObjects: mockSpatialObjects,
       overallSentiment,
       documentLinks: [
@@ -1514,23 +1554,22 @@ export class MeetingDataService {
         "New feature set for Product X approved.",
       ],
       aiSummary: await generateAISummary(fullTranscript),
-      recommendations: [], // Will be filled later
+      recommendations: [],
       futureMeetingSuggestions: [
         { date: Date.now() + 7 * 24 * 60 * 60 * 1000, topic: "Q4 Strategy Follow-up", attendees: metadata.attendeeIds },
       ],
       generatedReportUrl: `https://example.com/reports/${metadata.id}.pdf`,
       complianceInsights,
       agentActivityLogs,
-      paymentRequests, // Populate this later if needed based on action item completion
+      paymentRequests,
     };
 
     generatedSummary.recommendations = await generateAIRecommendations(generatedSummary);
-    generatedSummary.mindMapUrl = await generateMockMindMapGLB(generatedSummary); // Re-generate with proper summary
+    generatedSummary.mindMapUrl = await generateMockMindMapGLB(generatedSummary);
     generatedSummary.spatialObjects.push({
       id: generateId(), type: '3d_model', label: 'Meeting Room Context', position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 }, metadata: { modelUrl: await generateMockSpatialSceneGLB(generatedSummary) }
     });
 
-    // Mock initial payment requests if decisions involve payments
     if (decisions.some(d => d.summary.toLowerCase().includes('budget') || d.summary.toLowerCase().includes('allocate'))) {
       const budgetDecision = decisions.find(d => d.summary.toLowerCase().includes('budget'));
       if (budgetDecision) {
@@ -1546,16 +1585,13 @@ export class MeetingDataService {
         }
       }
     }
-
-
-    console.log("Finalized Meeting Summary:", generatedSummary);
     return generatedSummary;
   }
 }
 
 /**
  * Generates a comprehensive mock MeetingSummaryExtended object.
- * Business value: Essential for robust testing, development, and demonstration of the system's
+ * Business impact: Essential for robust testing, development, and demonstration of the system's
  * full capabilities without requiring live data. It allows for the creation of diverse scenarios,
  * including those with compliance issues, agent activities, and simulated payments,
  * validating the end-to-end functionality.
@@ -1566,8 +1602,8 @@ export class MeetingDataService {
  */
 export const generateMockMeetingSummary = async (baseTime: number = Date.now(), meetingTitle: string = "Holographic Team Sync", generateExtendedData: boolean = false): Promise<MeetingSummaryExtended> => {
   const meetingId = generateId();
-  const startTime = baseTime - getRandomNumber(0, 3600000); // Up to 1 hour before baseTime
-  const endTime = baseTime + getRandomNumber(3600000, 7200000); // 1-2 hours after baseTime
+  const startTime = baseTime - getRandomNumber(0, 3600000);
+  const endTime = baseTime + getRandomNumber(3600000, 7200000);
   const durationSeconds = Math.round((endTime - startTime) / 1000);
 
   const identityService = IdentityAndAccessService.getInstance();
@@ -1575,9 +1611,8 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
 
   const participants: ParticipantDetailedInfo[] = MOCK_PARTICIPANT_NAMES.slice(0, getRandomNumber(3, 6)).map(name => {
     const id = `user-${name.replace(/\s/g, '').toLowerCase()}`;
-    if (!identityService.userRoles.has(id)) { // Ensure mock user has keys/roles
+    if (!identityService.userRoles.has(id)) {
       identityService.userRoles.set(id, getRandomItem(MOCK_ROLES));
-      // identityService.generateKeyPair(id); // Already handled in constructor
     }
     return {
       id: id,
@@ -1586,8 +1621,8 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
       email: `${name.replace(/\s/g, '').toLowerCase()}@example.com`,
       organization: getRandomItem(MOCK_ORGS),
       avatarUrl: `/avatars/${name.replace(/\s/g, '').toLowerCase()}.png`,
-      joinTime: startTime + getRandomNumber(0, 60000), // Joined within first minute
-      totalSpeakingTime: Math.floor(getRandomNumber(300, 1800)), // 5-30 mins
+      joinTime: startTime + getRandomNumber(0, 60000),
+      totalSpeakingTime: Math.floor(getRandomNumber(300, 1800)),
       speakingSegmentsCount: Math.floor(getRandomNumber(10, 50)),
       overallSentiment: { average: getRandomNumber(-0.5, 0.8), trend: getRandomItem(['rising', 'falling', 'stable']) },
       engagementScore: Math.floor(getRandomNumber(60, 99)),
@@ -1616,9 +1651,9 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
       `Let's make sure everyone is aligned on the new process.`,
       `I'll send out the meeting notes by end of day.`,
       `Does anyone have questions about the new AI integration?`,
-      `We must adhere to the new data privacy regulations.`, // Compliance trigger
-      `This budget allocation exceeds our approved spending limits.`, // Risk trigger
-      `I strongly disagree with that approach; it poses a significant security risk.` // Sentiment + Risk trigger
+      `We must adhere to the new data privacy regulations.`,
+      `This budget allocation exceeds our approved spending limits.`,
+      `I strongly disagree with that approach; it poses a significant security risk.`
     ];
     const text = getRandomItem(textOptions);
     const sentiment = await analyzeTextSentiment(text);
@@ -1632,7 +1667,7 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
       text,
       timestamp: currentTimestamp,
       sentimentScore: sentiment,
-      emotions: emotions as any, // Type assertion for mock
+      emotions: emotions as any,
       keywords,
       intent,
     };
@@ -1673,8 +1708,8 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
       }
     }
 
-    currentTimestamp += getRandomNumber(10000, 60000); // Add 10-60 seconds
-    if (transcriptSegments.length > 200) break; // Cap for mock data generation
+    currentTimestamp += getRandomNumber(10000, 60000);
+    if (transcriptSegments.length > 200) break;
   }
 
   const actionItems: ActionItemExtended[] = [];
@@ -1687,7 +1722,7 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
       assigneeName: assignee.name,
       task: task,
       status: getRandomItem(MOCK_STATUSES),
-      dueDate: Date.now() + getRandomNumber(7, 30) * 24 * 60 * 60 * 1000, // 1-4 weeks from now
+      dueDate: Date.now() + getRandomNumber(7, 30) * 24 * 60 * 60 * 1000,
       priority: getRandomItem(MOCK_PRIORITIES),
       createdBy: creator.id,
       createdAt: startTime + getRandomNumber(0, totalDuration),
@@ -1770,9 +1805,8 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
   ];
 
   const aiSummary = await generateAISummary(transcriptSegments);
-  const recommendations = await generateAIRecommendations({} as MeetingSummaryExtended); // Mocked, as full summary is not yet built
+  const recommendations = await generateAIRecommendations({} as MeetingSummaryExtended);
 
-  // Simulate payment requests related to some action items for mock data
   if (generateExtendedData && actionItems.length > 0) {
     const actionWithPayment = getRandomItem(actionItems);
     try {
@@ -1798,7 +1832,7 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
     actionItems,
     decisions,
     topics,
-    mindMapUrl: await generateMockMindMapGLB({} as MeetingSummaryExtended), // Placeholder, will regenerate after all data is available
+    mindMapUrl: await generateMockMindMapGLB({} as MeetingSummaryExtended),
     spatialObjects,
     overallSentiment: overallMeetingSentiment,
     documentLinks: [
@@ -1822,13 +1856,8 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
   fullSummary.spatialObjects.push({
     id: generateId(), type: '3d_model', label: 'Meeting Room Environment', position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 }, metadata: { modelUrl: await generateMockSpatialSceneGLB(fullSummary) }
   });
-
-
-  console.log('Generated mock meeting summary:', fullSummary);
   return fullSummary;
 };
-
-// --- Sub-components for better UI structure within this massive file ---
 
 /**
  * Interface for props for the MeetingDetailsHeader component.
@@ -1842,7 +1871,7 @@ interface MeetingDetailsHeaderProps {
 
 /**
  * Displays key metadata and sentiment at the top of the meeting summary.
- * Business value: Provides an instant executive overview of the meeting's critical metrics,
+ * Business impact: Provides an instant executive overview of the meeting's critical metrics,
  * enabling quick assessment of its purpose, participants, and overall emotional tone.
  * This saves time and focuses attention on high-priority insights.
  * @param {MeetingDetailsHeaderProps} props - The props for the component.
@@ -1898,7 +1927,7 @@ interface TranscriptViewerProps {
 
 /**
  * Displays the meeting transcript with advanced features.
- * Business value: Provides an accurate, searchable, and time-stamped record of all spoken words,
+ * Business impact: Provides an accurate, searchable, and time-stamped record of all spoken words,
  * crucial for detailed review, compliance checks, and knowledge retention.
  * AI annotations further enhance this by highlighting critical information or agent interventions.
  * @param {TranscriptViewerProps} props - The props for the component.
@@ -1987,7 +2016,7 @@ interface ActionItemsListManagerProps {
 
 /**
  * Manages the list of action items with CRUD capabilities.
- * Business value: Centralizes task management derived from meeting outcomes,
+ * Business impact: Centralizes task management derived from meeting outcomes,
  * ensuring clear accountability and follow-through. Its integration with digital
  * identity for assignment and potential token rails for task completion payments
  * drives tangible value realization and accelerates project delivery.
@@ -2012,9 +2041,8 @@ export const ActionItemsListManager: React.FC<ActionItemsListManagerProps> = ({
     if (participants.length > 0 && !newAssigneeId) {
       setNewAssigneeId(participants[0].id);
     }
-    // Simulate checking permission for the current_user_mock_id
     const checkUserPermission = async () => {
-      const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Presenter']); // Only Host/Presenter can add/edit
+      const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Presenter']);
       setHasPermission(authorized);
     };
     checkUserPermission();
@@ -2030,7 +2058,7 @@ export const ActionItemsListManager: React.FC<ActionItemsListManagerProps> = ({
         status: 'open',
         dueDate: newDueDate ? new Date(newDueDate).getTime() : Date.now() + 7 * 24 * 60 * 60 * 1000,
         priority: newPriority,
-        createdBy: 'current_user_mock_id', // Mock current user
+        createdBy: 'current_user_mock_id',
       };
       onAddActionItem(newItemData);
       setNewTask('');
@@ -2160,7 +2188,7 @@ export const ActionItemsListManager: React.FC<ActionItemsListManagerProps> = ({
                 ))}
               </select>
               <button onClick={() => onDeleteActionItem(item.id)} className="text-red-400 hover:text-red-500 transition duration-200 p-1" title="Delete Action Item" disabled={!hasPermission}>
-                ✕
+                ✖
               </button>
             </div>
           </li>
@@ -2183,7 +2211,7 @@ interface DecisionsLogViewerProps {
 
 /**
  * Displays and manages decisions made during the meeting.
- * Business value: Creates a tamper-evident, auditable record of all key decisions,
+ * Business impact: Creates a tamper-evident, auditable record of all key decisions,
  * providing clarity and reducing ambiguity. Cryptographic signatures ensure the integrity
  * and authenticity of each decision, crucial for legal and compliance requirements.
  * @param {DecisionsLogViewerProps} props - The props for the component.
@@ -2207,7 +2235,7 @@ export const DecisionsLogViewer: React.FC<DecisionsLogViewerProps> = ({
       setNewDecidedBy(participants[0].id);
     }
     const checkUserPermission = async () => {
-      const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Presenter', 'Auditor']); // Only Host/Presenter/Auditor can add/edit decisions
+      const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Presenter', 'Auditor']);
       setHasPermission(authorized);
     };
     checkUserPermission();
@@ -2227,21 +2255,6 @@ export const DecisionsLogViewer: React.FC<DecisionsLogViewerProps> = ({
       alert("You do not have permission to add decisions.");
     }
   };
-
-  const verifyDecisionSignature = useCallback(async (decision: DecisionRecord) => {
-    if (!decision.signature) return false;
-    const dataToVerify = {
-      id: decision.id,
-      summary: decision.summary,
-      participantsInvolvedIds: decision.participantsInvolvedIds,
-      decidedBy: decision.decidedBy,
-      timestamp: decision.timestamp,
-      rationale: decision.rationale,
-      relatedActionItemIds: decision.relatedActionItemIds,
-      keywords: decision.keywords,
-    };
-    return await identityService.verifySignature(decision.decidedBy, dataToVerify, decision.signature);
-  }, [identityService]);
 
   return (
     <div className="bg-gray-900 p-4 rounded-lg shadow-lg border border-gray-800">
@@ -2313,13 +2326,13 @@ export const DecisionsLogViewer: React.FC<DecisionsLogViewerProps> = ({
  */
 interface SignatureVerifierProps {
   entityId: string;
-  data: any; // The original data that was signed
+  data: any;
   signature: string;
 }
 
 /**
  * Verifies a cryptographic signature and displays its status.
- * Business value: Provides an on-demand audit trail and tamper-evident mechanism,
+ * Business impact: Provides an on-demand audit trail and tamper-evident mechanism,
  * crucial for regulatory compliance, data integrity, and building trust in autonomous systems.
  * @param {SignatureVerifierProps} props - The props for the component.
  * @returns {JSX.Element} The rendered signature verification status.
@@ -2332,18 +2345,16 @@ export const SignatureVerifier: React.FC<SignatureVerifierProps> = ({ entityId, 
   const handleVerify = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Reconstruct data to be verified (excluding signature itself)
       const dataToVerify = { ...data };
       delete dataToVerify.signature;
       const verified = await identityService.verifySignature(entityId, dataToVerify, signature);
       setIsValid(verified);
     } catch (e) {
-      console.error("Signature verification failed:", e);
       setIsValid(false);
     } finally {
       setIsLoading(false);
     }
-  }, [entityService, data, signature, entityId]);
+  }, [data, signature, entityId, identityService]);
 
   return (
     <div className="flex items-center gap-2">
@@ -2361,7 +2372,6 @@ export const SignatureVerifier: React.FC<SignatureVerifierProps> = ({ entityId, 
   );
 };
 
-
 /**
  * Interface for props for the TopicInsightsPanel component.
  */
@@ -2372,7 +2382,7 @@ interface TopicInsightsPanelProps {
 
 /**
  * Displays key topics discussed in the meeting with their sentiments.
- * Business value: Provides a high-level overview of discussed themes,
+ * Business impact: Provides a high-level overview of discussed themes,
  * enabling quick content navigation and understanding of critical discussion areas,
  * thereby speeding up post-meeting review.
  * @param {TopicInsightsPanelProps} props - The props for the component.
@@ -2413,7 +2423,7 @@ interface ParticipantEngagementMetricsProps {
 
 /**
  * Displays detailed engagement and sentiment metrics for each participant.
- * Business value: Provides granular insights into individual contributions and sentiment,
+ * Business impact: Provides granular insights into individual contributions and sentiment,
  * helping to assess meeting dynamics, identify key influencers, and ensure inclusive participation.
  * This supports team development and leadership coaching.
  * @param {ParticipantEngagementMetricsProps} props - The props for the component.
@@ -2425,12 +2435,6 @@ export const ParticipantEngagementMetrics: React.FC<ParticipantEngagementMetrics
   const selectedParticipant = useMemo(() => {
     return participants.find(p => p.id === selectedParticipantId);
   }, [participants, selectedParticipantId]);
-
-  const participantSpeakingTimeData = useMemo(() => {
-    const data: { name: string; value: number }[] = [];
-    participants.forEach(p => data.push({ name: p.name, value: p.totalSpeakingTime }));
-    return data.sort((a, b) => b.value - a.value);
-  }, [participants]);
 
   const getSentimentColor = (score: number) => {
     if (score > 0.3) return 'text-green-400';
@@ -2483,7 +2487,7 @@ export const ParticipantEngagementMetrics: React.FC<ParticipantEngagementMetrics
             <ul className="list-disc list-inside text-gray-300 text-sm bg-gray-800 p-3 rounded-md max-h-40 overflow-y-auto">
               {transcriptSegments
                 .filter(s => s.participantId === selectedParticipant.id)
-                .slice(-5) // Show last 5 contributions
+                .slice(-5)
                 .map((s, idx) => (
                   <li key={idx} className="mb-1">{new Date(s.timestamp).toLocaleTimeString()}: {s.text}</li>
                 ))}
@@ -2506,7 +2510,7 @@ interface SpatialSceneViewerProps {
 
 /**
  * Renders a placeholder for the 3D mind map and spatial meeting scene.
- * Business value: Provides an immersive and intuitive way to revisit meeting context,
+ * Business impact: Provides an immersive and intuitive way to revisit meeting context,
  * improving information recall and engagement. This innovative spatial data representation
  * leverages the full potential of holographic environments for unparalleled insight.
  * @param {SpatialSceneViewerProps} props - The props for the component.
@@ -2577,15 +2581,13 @@ interface AgentInsightsPanelProps {
 
 /**
  * Displays insights and activities generated by AI agents.
- * Business value: Provides an invaluable window into the autonomous operation of AI agents,
+ * Business impact: Provides an invaluable window into the autonomous operation of AI agents,
  * revealing detected anomalies, proposed remediations, and audit trails. This transparency
  * is critical for governance, trust, and demonstrating the ROI of agentic AI systems.
  * @param {AgentInsightsPanelProps} props - The props for the component.
  * @returns {JSX.Element} The rendered agent insights panel.
  */
 export const AgentInsightsPanel: React.FC<AgentInsightsPanelProps> = ({ complianceInsights, agentActivityLogs }) => {
-  const identityService = useMemo(() => IdentityAndAccessService.getInstance(), []);
-
   const getSeverityColor = (severity: ComplianceInsight['severity']) => {
     switch (severity) {
       case 'low': return 'bg-blue-600';
@@ -2662,7 +2664,7 @@ interface PaymentRequestsViewerProps {
 
 /**
  * Displays and manages simulated payment requests.
- * Business value: Provides a transparent, real-time view into financial transactions
+ * Business impact: Provides a transparent, real-time view into financial transactions
  * initiated by meeting outcomes. It enables direct settlement or rejection, supporting
  * agile financial operations and ensuring accountability within the token rail layer.
  * @param {PaymentRequestsViewerProps} props - The props for the component.
@@ -2674,7 +2676,7 @@ export const PaymentRequestsViewer: React.FC<PaymentRequestsViewerProps> = ({ pa
 
   useEffect(() => {
     const checkUserPermission = async () => {
-      const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Auditor']); // Only Host/Auditor can approve/reject payments
+      const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Auditor']);
       setHasPermission(authorized);
     };
     checkUserPermission();
@@ -2730,14 +2732,14 @@ export const PaymentRequestsViewer: React.FC<PaymentRequestsViewerProps> = ({ pa
               {hasPermission && req.status === 'pending' && (
                 <>
                   <button
-                    onClick={() => onSettlePayment(req.id, 'rail_fast')}
+                    onClick={() => onSettlePayment(req.id, 'fast')}
                     disabled={isLoading}
                     className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 transition duration-200 disabled:opacity-50"
                   >
                     Settle (Fast)
                   </button>
                   <button
-                    onClick={() => onSettlePayment(req.id, 'rail_batch')}
+                    onClick={() => onSettlePayment(req.id, 'batch')}
                     disabled={isLoading}
                     className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 transition duration-200 disabled:opacity-50"
                   >
@@ -2761,7 +2763,6 @@ export const PaymentRequestsViewer: React.FC<PaymentRequestsViewerProps> = ({ pa
   );
 };
 
-
 /**
  * Interface for props for the MeetingSettingsEditor component.
  */
@@ -2776,7 +2777,7 @@ interface MeetingSettingsEditorProps {
 
 /**
  * Provides a UI for editing user preferences and integration settings.
- * Business value: Centralizes user configuration, allowing personalized control over
+ * Business impact: Centralizes user configuration, allowing personalized control over
  * AI behavior, automation triggers, and integration points. This empowers users to
  * optimize their workflow, enhancing productivity and job satisfaction.
  * @param {MeetingSettingsEditorProps} props - The props for the component.
@@ -2819,7 +2820,6 @@ export const MeetingSettingsEditor: React.FC<MeetingSettingsEditorProps> = ({
       setSaveMessage(`Integration with ${service} ${connect ? 'connected' : 'disconnected'} successfully.`);
     } catch (error) {
       setSaveMessage(`Failed to update ${service} integration.`);
-      console.error('Integration update error:', error);
     } finally {
       setIsSaving(false);
       setTimeout(() => setSaveMessage(null), 3000);
@@ -2834,7 +2834,6 @@ export const MeetingSettingsEditor: React.FC<MeetingSettingsEditorProps> = ({
       setSaveMessage("Preferences saved successfully!");
     } catch (error) {
       setSaveMessage("Failed to save preferences.");
-      console.error('Preference save error:', error);
     } finally {
       setIsSaving(false);
       setTimeout(() => setSaveMessage(null), 3000);
@@ -3099,7 +3098,7 @@ interface HistoricalMeetingsBrowserProps {
 
 /**
  * Component to browse and load historical meeting summaries.
- * Business value: Provides an intuitive interface for accessing the complete archive
+ * Business impact: Provides an intuitive interface for accessing the complete archive
  * of past meetings, enabling effortless retrieval of information, historical trend analysis,
  * and efficient knowledge transfer across teams.
  * @param {HistoricalMeetingsBrowserProps} props - The props for the component.
@@ -3118,7 +3117,7 @@ export const HistoricalMeetingsBrowser: React.FC<HistoricalMeetingsBrowserProps>
       const matchesTopic = filterTopic === '' ||
         meeting.keyTopics.some(topic => topic.toLowerCase().includes(filterTopic.toLowerCase()));
       return matchesSearch && matchesTopic;
-    }).sort((a, b) => b.date - a.date); // Sort by most recent first
+    }).sort((a, b) => b.date - a.date);
   }, [historicalMeetings, searchTerm, filterTopic]);
 
   const uniqueTopics = useMemo(() => {
@@ -3185,10 +3184,9 @@ export const HistoricalMeetingsBrowser: React.FC<HistoricalMeetingsBrowserProps>
   );
 };
 
-
 /**
  * Main Holographic Meeting Scribe View Component.
- * Business value: This is the central control panel for interacting with the entire
+ * Business impact: This is the central control panel for interacting with the entire
  * holographic meeting intelligence system. It orchestrates real-time data capture,
  * AI processing, decision tracking, and integration with financial and identity systems.
  * By providing a unified, intuitive interface, it empowers users to leverage advanced
@@ -3223,7 +3221,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Effect to load user preferences and integration status on component mount.
-   * Business value: Ensures personalized and integrated experience from the start,
+   * Business impact: Ensures personalized and integrated experience from the start,
    * minimizing setup time and maximizing user efficiency.
    */
   useEffect(() => {
@@ -3234,7 +3232,6 @@ const HolographicMeetingScribeView: React.FC = () => {
         const integrations = await integrationService.getIntegrationStatus();
         setIntegrationStatus(integrations);
       } catch (err) {
-        console.error("Failed to load user settings:", err);
         setError("Failed to load user settings.");
       }
     };
@@ -3243,7 +3240,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Effect for live scribing: continuously fetches new transcript segments.
-   * Business value: Provides real-time data capture for immediate AI processing
+   * Business impact: Provides real-time data capture for immediate AI processing
    * and live feedback, essential for dynamic decision-making and responsive agentic behavior.
    */
   useEffect(() => {
@@ -3254,12 +3251,11 @@ const HolographicMeetingScribeView: React.FC = () => {
           if (newSegments.length > 0) {
             setCurrentLiveTranscript(prev => {
               const updated = [...prev, ...newSegments];
-              return updated.slice(Math.max(0, updated.length - 100)); // Keep transcript size reasonable for display
+              return updated.slice(Math.max(0, updated.length - 100));
             });
             setLastTranscriptTimestamp(newSegments[newSegments.length - 1].timestamp);
           }
         } catch (err: any) {
-          console.error("Live scribing error:", err);
           setError(`Live scribing failed: ${err.message}`);
           setIsLiveScribing(false);
           if (liveScribeIntervalRef.current) {
@@ -3288,7 +3284,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Effect to scroll to the bottom of the live transcript when new segments arrive.
-   * Business value: Enhances user experience by automatically following the real-time
+   * Business impact: Enhances user experience by automatically following the real-time
    * conversation, ensuring key information is always visible.
    */
   useEffect(() => {
@@ -3299,7 +3295,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Handles joining a meeting and initiating live scribing.
-   * Business value: Provides the entry point for real-time intelligence gathering,
+   * Business impact: Provides the entry point for real-time intelligence gathering,
    * enabling immediate value extraction from live holographic interactions.
    */
   const handleJoinAndScribe = async () => {
@@ -3315,7 +3311,6 @@ const HolographicMeetingScribeView: React.FC = () => {
 
     try {
       await simulateAILoad(2000);
-      console.log(`Successfully connected to holographic meeting: ${meetingUrl}`);
 
       setIsLiveScribing(true);
       setActiveTab('live-scribe');
@@ -3327,7 +3322,6 @@ const HolographicMeetingScribeView: React.FC = () => {
 
     } catch (err: any) {
       setError(`Failed to join or start scribing: ${err.message}`);
-      console.error(err);
       setIsLiveScribing(false);
       if (liveScribeIntervalRef.current) {
         clearInterval(liveScribeIntervalRef.current);
@@ -3339,7 +3333,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Handles stopping live scribing and generating the final meeting summary.
-   * Business value: Transforms ephemeral live discussions into durable, actionable
+   * Business impact: Transforms ephemeral live discussions into durable, actionable
    * business intelligence, automating summarization, compliance checks, and integration
    * with downstream systems for maximum operational efficiency.
    */
@@ -3355,23 +3349,19 @@ const HolographicMeetingScribeView: React.FC = () => {
     setError(null);
 
     try {
-      console.log("Stopping live scribing and finalizing summary...");
       const finalSummary = await meetingDataService.finalizeMeetingSummary(currentLiveTranscript, meetingUrl || "Unnamed Holographic Meeting");
       setResult(finalSummary);
       setActiveTab('summary');
 
-      // Attempt auto-exports based on user preferences
       if (userPreferences?.autoExportToCRM && integrationStatus?.crmConnected) {
         await integrationService.exportActionItemsToCRM(finalSummary.actionItems);
       }
       if (userPreferences?.autoScheduleFollowUp && integrationStatus?.calendarConnected && finalSummary.futureMeetingSuggestions && finalSummary.futureMeetingSuggestions.length > 0) {
         await integrationService.scheduleFollowUpMeeting(finalSummary.futureMeetingSuggestions[0]);
       }
-      // TODO: Implement auto-processing for payments here based on userPreferences.autoProcessPayments
 
     } catch (err: any) {
       setError(`Failed to finalize meeting summary: ${err.message}`);
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -3379,7 +3369,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Handles loading a historical meeting by its ID.
-   * Business value: Provides seamless access to past meeting intelligence,
+   * Business impact: Provides seamless access to past meeting intelligence,
    * enabling quick recall, audit, and learning from previous engagements.
    * @param {string} meetingId - The ID of the historical meeting.
    */
@@ -3398,7 +3388,6 @@ const HolographicMeetingScribeView: React.FC = () => {
       }
     } catch (err: any) {
       setError(`Failed to load historical meeting: ${err.message}`);
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -3406,7 +3395,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Adds a new action item to the current meeting summary.
-   * Business value: Supports real-time task creation and assignment,
+   * Business impact: Supports real-time task creation and assignment,
    * ensuring that actionable points from discussions are immediately captured and tracked.
    * @param {Omit<ActionItemExtended, 'id' | 'createdAt' | 'signature'>} newItem - The new action item details.
    */
@@ -3428,7 +3417,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Updates an existing action item.
-   * Business value: Allows dynamic adjustments to tasks, statuses, and priorities,
+   * Business impact: Allows dynamic adjustments to tasks, statuses, and priorities,
    * reflecting evolving project requirements and maintaining up-to-date project visibility.
    * Automatically triggers simulated payments for completed tasks.
    * @param {string} id - The ID of the action item.
@@ -3441,18 +3430,17 @@ const HolographicMeetingScribeView: React.FC = () => {
         item.id === id ? { ...item, ...updates, updatedAt: Date.now() } : item
       );
 
-      // Handle payment initiation for completed tasks
       const updatedItem = updatedActionItems.find(item => item.id === id);
       if (updatedItem && updatedItem.status === 'completed' && !updatedItem.paymentRequestId && userPreferences?.autoProcessPayments) {
         try {
           const paymentRequest = await paymentService.createPaymentRequest(
-            updatedItem.createdBy, // The one who proposed/initiated
-            updatedItem.assigneeId, // The one who completed it
-            getRandomNumber(20, 200), // Mock amount
+            updatedItem.createdBy,
+            updatedItem.assigneeId,
+            getRandomNumber(20, 200),
             'USD_T',
             updatedItem.id
           );
-          console.log(`[Payments] Auto-created payment request for completed action item ${updatedItem.id}:`, paymentRequest);
+          agentCommService.publish('payment_auto_created', { actionItemId: updatedItem.id, requestId: paymentRequest.id });
           return {
             ...prev,
             actionItems: updatedActionItems.map(item =>
@@ -3461,7 +3449,6 @@ const HolographicMeetingScribeView: React.FC = () => {
             paymentRequests: [...prev.paymentRequests, paymentRequest],
           };
         } catch (e: any) {
-          console.error("Failed to auto-create payment request:", e);
           setError(`Failed to auto-create payment: ${e.message}`);
         }
       }
@@ -3471,11 +3458,11 @@ const HolographicMeetingScribeView: React.FC = () => {
         actionItems: updatedActionItems,
       };
     });
-  }, [paymentService, userPreferences?.autoProcessPayments]);
+  }, [paymentService, userPreferences?.autoProcessPayments, agentCommService]);
 
   /**
    * Deletes an action item.
-   * Business value: Enables efficient removal of obsolete or incorrect tasks,
+   * Business impact: Enables efficient removal of obsolete or incorrect tasks,
    * maintaining a clean and relevant task list.
    * @param {string} id - The ID of the action item to delete.
    */
@@ -3491,7 +3478,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Adds a new decision to the current meeting summary.
-   * Business value: Ensures that critical agreements are immediately captured
+   * Business impact: Ensures that critical agreements are immediately captured
    * and integrated into the auditable meeting record, with cryptographic signing
    * for integrity.
    * @param {Omit<DecisionRecord, 'id' | 'timestamp' | 'signature'>} newDecision - The new decision details.
@@ -3514,7 +3501,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Updates an existing decision.
-   * Business value: Allows modification of decision details while maintaining
+   * Business impact: Allows modification of decision details while maintaining
    * an auditable history of changes.
    * @param {string} id - The ID of the decision.
    * @param {Partial<DecisionRecord>} updates - The updates to apply.
@@ -3533,7 +3520,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Deletes a decision.
-   * Business value: Provides control over the meeting record, allowing removal
+   * Business impact: Provides control over the meeting record, allowing removal
    * of erroneous or superseded decisions.
    * @param {string} id - The ID of the decision to delete.
    */
@@ -3550,7 +3537,7 @@ const HolographicMeetingScribeView: React.FC = () => {
   /**
    * Handles when a topic is clicked in the TopicInsightsPanel.
    * Sets the transcript search term to highlight related discussions.
-   * Business value: Improves navigation and contextual understanding by
+   * Business impact: Improves navigation and contextual understanding by
    * instantly highlighting relevant parts of the transcript, reducing search time.
    * @param {string} topicName - The name of the topic.
    */
@@ -3561,7 +3548,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Updates user preferences.
-   * Business value: Ensures personalized application behavior and integrates
+   * Business impact: Ensures personalized application behavior and integrates
    * user choices across the system.
    * @param {Partial<UserPreferences>} updates - The preference updates.
    * @returns {Promise<UserPreferences>} The updated preferences.
@@ -3572,14 +3559,13 @@ const HolographicMeetingScribeView: React.FC = () => {
       setUserPreferences(updatedPrefs);
       return updatedPrefs;
     } catch (err) {
-      console.error("Failed to save preferences:", err);
       throw err;
     }
   }, [userProfileService]);
 
   /**
    * Updates integration status.
-   * Business value: Allows users to manage connectivity to external enterprise systems,
+   * Business impact: Allows users to manage connectivity to external enterprise systems,
    * ensuring data flow and enabling automated workflows.
    * @param {'crm' | 'calendar' | 'projectManagement' | 'documentStorage'} service - The service name.
    * @param {boolean} connect - Whether to connect or disconnect.
@@ -3591,14 +3577,13 @@ const HolographicMeetingScribeView: React.FC = () => {
       setIntegrationStatus(updatedStatus);
       return updatedStatus;
     } catch (err) {
-      console.error(`Failed to update ${service} integration:`, err);
       throw err;
     }
   }, [integrationService]);
 
   /**
    * Handles settling a payment request.
-   * Business value: Directly processes financial commitments, leveraging token rails
+   * Business impact: Directly processes financial commitments, leveraging token rails
    * for efficient and auditable value transfer, thereby accelerating financial
    * reconciliation and enabling new payment models.
    * @param {string} requestId - The ID of the payment request.
@@ -3608,7 +3593,6 @@ const HolographicMeetingScribeView: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // First, verify user has permission to settle
       const authorized = await identityService.authorize('current_user_mock_id', ['Host', 'Auditor']);
       if (!authorized) {
         throw new Error("You do not have permission to settle payment requests.");
@@ -3624,7 +3608,6 @@ const HolographicMeetingScribeView: React.FC = () => {
       });
       alert(`Payment request ${requestId} settled successfully via ${rail} rail!`);
     } catch (err: any) {
-      console.error("Failed to settle payment request:", err);
       setError(`Failed to settle payment request: ${err.message}`);
     } finally {
       setIsLoading(false);
@@ -3633,7 +3616,7 @@ const HolographicMeetingScribeView: React.FC = () => {
 
   /**
    * Handles rejecting a payment request.
-   * Business value: Provides granular control over financial flows, allowing for
+   * Business impact: Provides granular control over financial flows, allowing for
    * rejection of invalid or unapproved payment requests, maintaining financial integrity.
    * @param {string} requestId - The ID of the payment request.
    */
@@ -3645,7 +3628,6 @@ const HolographicMeetingScribeView: React.FC = () => {
       if (!authorized) {
         throw new Error("You do not have permission to reject payment requests.");
       }
-      // For mock, simply change status to rejected
       setResult(prev => {
         if (!prev) return prev;
         return {
@@ -3657,7 +3639,6 @@ const HolographicMeetingScribeView: React.FC = () => {
       });
       alert(`Payment request ${requestId} rejected.`);
     } catch (err: any) {
-      console.error("Failed to reject payment request:", err);
       setError(`Failed to reject payment request: ${err.message}`);
     } finally {
       setIsLoading(false);
@@ -3672,7 +3653,7 @@ const HolographicMeetingScribeView: React.FC = () => {
         participantMap.set(s.participantId, {
           id: s.participantId,
           name: s.participantName,
-          role: "Participant", // Default for live if full info not fetched
+          role: "Participant",
           email: `${s.participantName.replace(/\s/g, '').toLowerCase()}@example.com`,
           organization: "Guest",
           avatarUrl: `/avatars/${s.participantName.replace(/\s/g, '').toLowerCase()}.png`,
@@ -3686,7 +3667,6 @@ const HolographicMeetingScribeView: React.FC = () => {
     });
     return Array.from(participantMap.values());
   }, [result, currentLiveTranscript]);
-
 
   return (
     <div className="bg-gray-800 text-white p-6 rounded-lg shadow-2xl min-h-[800px] flex flex-col">
