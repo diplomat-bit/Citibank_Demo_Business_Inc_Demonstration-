@@ -1,23 +1,29 @@
-// components/views/blueprints/LexiconClarifierView.tsx
+/**
+ * This module implements the Lexicon Clarifier application view, a core component for intelligent document and text analysis.
+ * Business value: It empowers users to rapidly comprehend complex legal, financial, and technical content by leveraging advanced AI for simplification and definition.
+ * It provides a highly configurable interface for AI interaction, document management, custom glossaries, and prompt engineering,
+ * significantly reducing the time and cognitive load associated with specialized text analysis. This directly translates to
+ * increased productivity, reduced risk of misinterpretation, and accelerated decision-making for enterprise clients,
+ * driving millions in operational efficiencies and unlocking new revenue streams through enhanced data accessibility.
+ * The integrated agentic features and token rail simulation lay the groundwork for a fully autonomous,
+ * auditable, and financially intelligent knowledge processing pipeline.
+ */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from '../../Card';
 import { GoogleGenAI } from "@google/genai";
 
-// =====================================================================================================================
-// SECTION 1: CORE DATA MODELS AND INTERFACES (approx. 500 lines)
-// Defines the types for various entities within the Lexicon Clarifier application.
-// These interfaces serve as a blueprint for data structures used throughout the application,
-// enhancing type safety and code readability.
-// =====================================================================================================================
-
 /**
  * Represents a user profile in the system.
+ * Business value: Centralizes user identity and preferences, enabling personalized AI interactions,
+ * subscription management, and role-based access control. This enhances user engagement and
+ * provides a foundation for targeted service offerings.
  */
 export interface UserProfile {
     id: string;
     username: string;
     email: string;
     subscriptionTier: 'free' | 'pro' | 'enterprise';
+    roles: string[]; // For Role-Based Access Control (RBAC)
     preferences: UserPreferences;
     createdAt: Date;
     lastLogin: Date;
@@ -30,6 +36,9 @@ export interface UserProfile {
 
 /**
  * Defines user-specific preferences for the application.
+ * Business value: Allows deep personalization of the AI experience, from model selection to
+ * explanation style, directly impacting user satisfaction and the relevance of generated content.
+ * Customizable display settings further improve usability and accessibility.
  */
 export interface UserPreferences {
     defaultAIModel: 'gemini-2.5-flash' | 'gemini-1.5-pro' | 'gpt-3.5-turbo' | 'gpt-4';
@@ -46,6 +55,8 @@ export interface UserPreferences {
 
 /**
  * Notification settings for a user.
+ * Business value: Ensures timely and relevant communication with users about critical system events
+ * (e.g., document processing, billing), improving operational transparency and user retention.
  */
 export interface NotificationSettings {
     emailNotifications: boolean;
@@ -53,10 +64,14 @@ export interface NotificationSettings {
     documentProcessingCompletion: boolean;
     sharedContentUpdates: boolean;
     billingAlerts: boolean;
+    agentTaskUpdates: boolean; // Added for agentic AI
 }
 
 /**
  * Represents a document uploaded by a user for analysis.
+ * Business value: Provides structured metadata for all uploaded content, enabling efficient
+ * search, retrieval, and automated processing workflows. This is critical for data governance
+ * and for integrating documents into AI-driven analysis pipelines.
  */
 export interface DocumentMetadata {
     id: string;
@@ -64,17 +79,22 @@ export interface DocumentMetadata {
     fileName: string;
     fileSizeKB: number;
     uploadDate: Date;
-    status: 'uploaded' | 'processing' | 'processed' | 'failed';
+    status: 'uploaded' | 'processing' | 'processed' | 'failed' | 'analyzed_by_agent'; // Expanded status
     documentType: 'pdf' | 'docx' | 'txt' | 'json' | 'markdown';
     accessPermissions: 'private' | 'shared' | 'team';
     tags: string[];
     summary?: string; // Auto-generated summary of the document
     lastAccessed: Date;
     pageCount?: number;
+    agentAnalysisStatus?: 'pending' | 'in_progress' | 'completed' | 'failed'; // Status of agent analysis
+    agentAnalysisReportId?: string; // Link to a detailed report
 }
 
 /**
  * Detailed structure for a single explanation.
+ * Business value: Captures the full context of each AI-generated explanation, including inputs,
+ * outputs, and user feedback. This data is invaluable for model improvement, audit trails,
+ * and demonstrating the ROI of AI-driven clarification.
  */
 export interface ExplanationRecord {
     id: string;
@@ -94,10 +114,14 @@ export interface ExplanationRecord {
     sourceLanguage?: string;
     targetLanguage?: string; // If translation was involved
     linkedTerms?: LinkedTerm[];
+    estimatedCost?: number; // Added for token rails / cost tracking
+    tokensUsed?: number; // Added for token rails / cost tracking
 }
 
 /**
  * Represents a version of an explanation, for revision tracking.
+ * Business value: Enables iterative refinement of AI outputs and provides a full audit trail
+ * of changes, crucial for compliance and collaborative editing.
  */
 export interface ExplanationVersion {
     versionId: string;
@@ -109,6 +133,8 @@ export interface ExplanationVersion {
 
 /**
  * Feedback provided by a user on an explanation.
+ * Business value: Directly feeds into AI model evaluation and fine-tuning, ensuring continuous
+ * improvement of the core product offering and maximizing user satisfaction.
  */
 export interface ExplanationFeedback {
     rating: 1 | 2 | 3 | 4 | 5;
@@ -119,6 +145,8 @@ export interface ExplanationFeedback {
 
 /**
  * Defines a term that has been linked or defined within an explanation.
+ * Business value: Automatically identifies and contextualizes key terminology, accelerating
+ * comprehension and reducing the need for manual research. Supports dynamic glossary building.
  */
 export interface LinkedTerm {
     term: string;
@@ -129,6 +157,8 @@ export interface LinkedTerm {
 
 /**
  * Represents an entry in a user's or team's custom glossary.
+ * Business value: Centralizes domain-specific terminology, ensuring consistent understanding
+ * across teams and applications. This drives standardization and reduces onboarding time for new users.
  */
 export interface GlossaryTerm {
     id: string;
@@ -146,6 +176,8 @@ export interface GlossaryTerm {
 
 /**
  * Data structure for a batch processing job.
+ * Business value: Enables large-scale, automated processing of multiple documents,
+ * drastically increasing efficiency for high-volume use cases and freeing up human resources.
  */
 export interface BatchProcessingJob {
     id: string;
@@ -162,6 +194,8 @@ export interface BatchProcessingJob {
 
 /**
  * Represents a team workspace.
+ * Business value: Facilitates collaborative knowledge sharing and document management,
+ * promoting team efficiency and consistent understanding of critical information.
  */
 export interface TeamWorkspace {
     id: string;
@@ -177,6 +211,8 @@ export interface TeamWorkspace {
 
 /**
  * Represents a member of a team.
+ * Business value: Defines roles and permissions within team contexts, supporting robust
+ * governance and secure access to shared resources.
  */
 export interface TeamMember {
     userId: string;
@@ -186,6 +222,9 @@ export interface TeamMember {
 
 /**
  * Defines settings for an AI model.
+ * Business value: Provides granular control over AI model usage, enabling optimization
+ * for cost, performance, and specific task requirements. This is crucial for managing
+ * operational expenses and ensuring AI output quality.
  */
 export interface AIModelSettings {
     modelId: string;
@@ -199,10 +238,14 @@ export interface AIModelSettings {
     maxOutputTokens: number; // AI generation parameter
     topP: number; // AI generation parameter
     stopSequences?: string[]; // AI generation parameter
+    inputTokenCostPerMillion?: number; // Cost for input tokens (per million)
+    outputTokenCostPerMillion?: number; // Cost for output tokens (per million)
 }
 
 /**
  * Represents an activity log entry for auditing.
+ * Business value: Creates an immutable record of all significant user and system actions,
+ * essential for security audits, compliance, and debugging. Enhances accountability and transparency.
  */
 export interface AuditLogEntry {
     id: string;
@@ -213,10 +256,14 @@ export interface AuditLogEntry {
     resourceId: string;
     details: Record<string, any>;
     ipAddress: string;
+    previousHash?: string; // For tamper-evident log chaining
+    hash: string; // Hash of this log entry + previousHash
 }
 
 /**
  * Represents a user's prompt template.
+ * Business value: Standardizes and reuses effective AI prompts, ensuring consistent and high-quality
+ * AI outputs while enabling advanced users to tailor AI behavior for specific, complex tasks.
  */
 export interface PromptTemplate {
     id: string;
@@ -231,6 +278,8 @@ export interface PromptTemplate {
 
 /**
  * Represents a notification for the user.
+ * Business value: Provides a clear and centralized mechanism for informing users about system
+ * events, updates, and critical alerts, enhancing usability and maintaining user awareness.
  */
 export interface UserNotification {
     id: string;
@@ -243,21 +292,208 @@ export interface UserNotification {
     relatedEntityId?: string;
 }
 
-// Dummy type for the prompt parameters for advanced prompt engineering
+/**
+ * Dummy type for the prompt parameters for advanced prompt engineering.
+ * Business value: Offers a flexible mechanism for defining dynamic inputs to AI prompts,
+ * enabling highly customizable and context-aware AI interactions.
+ */
 export type PromptParameters = Record<string, string | number | boolean>;
 
-// =====================================================================================================================
-// SECTION 2: MOCK API SERVICES (approx. 700 lines)
-// These functions simulate API calls to a backend, returning mock data. In a real application,
-// these would be actual network requests. For the purpose of increasing lines and demonstrating
-// functionality, they are implemented as asynchronous functions returning predefined or
-// dynamically generated data after a delay.
-// =====================================================================================================================
+/**
+ * Represents a record of AI usage, including tokens and estimated cost.
+ * Business value: Provides transparency into AI consumption and cost, enabling users and
+ * administrators to monitor usage, optimize spending, and understand the financial implications of AI features.
+ */
+export interface AIUsageRecord {
+    id: string;
+    userId: string;
+    timestamp: Date;
+    modelId: string;
+    inputTokens: number;
+    outputTokens: number;
+    estimatedCostUSD: number;
+    feature: 'explanation' | 'document_analysis' | 'summarization' | 'custom_prompt';
+    relatedEntityId?: string; // e.g., Explanation ID or Document ID
+}
+
+/**
+ * Represents a user's subscription plan.
+ * Business value: Defines the service tiers and associated benefits, facilitating clear
+ * product differentiation and supporting various pricing models for diverse customer segments.
+ */
+export interface SubscriptionPlan {
+    id: string;
+    name: 'free' | 'pro' | 'enterprise';
+    description: string;
+    monthlyPriceUSD: number;
+    features: string[];
+    tokenLimitMonthly: number | null; // null for unlimited
+    documentStorageGB: number;
+    apiKeyAccess: boolean;
+    teamMembers: number | null; // null for unlimited
+}
+
+/**
+ * Represents a simulated payment method for a user.
+ * Business value: Provides a foundational structure for managing billing details,
+ * enabling seamless subscription renewals and transactional payments.
+ * In a real system, this would be encrypted and tokenized.
+ */
+export interface PaymentMethod {
+    id: string;
+    userId: string;
+    type: 'card' | 'bank_transfer' | 'crypto';
+    last4Digits?: string; // e.g., for cards
+    bankName?: string;
+    cryptoAddressMasked?: string;
+    isDefault: boolean;
+    createdAt: Date;
+    expiresAt?: Date;
+}
+
+/**
+ * Represents an autonomous agent's task definition.
+ * Business value: Formalizes automated workflows, enabling agentic AI to perform proactive
+ * monitoring, analysis, and remediation tasks, significantly scaling system capabilities
+ * beyond direct user interaction.
+ */
+export interface AgentTask {
+    id: string;
+    agentId: string;
+    taskType: 'document_analysis' | 'glossary_suggestion' | 'anomaly_detection' | 'reconciliation_check';
+    status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+    targetEntityId: string; // e.g., Document ID, Glossary ID
+    initiatedBy: 'user' | 'system';
+    parameters: Record<string, any>;
+    createdAt: Date;
+    startedAt?: Date;
+    completedAt?: Date;
+    results?: Record<string, any>;
+    error?: string;
+    auditLogId?: string; // Link to an audit log entry for this task
+}
+
+/**
+ * Represents a user's token balance within a simulated token rail.
+ * Business value: Provides a transparent, real-time view of fungible asset holdings,
+ * enabling token-gated features, usage-based billing, and potential micro-transactions
+ * within the platform's ecosystem.
+ */
+export interface TokenBalance {
+    userId: string;
+    balance: number;
+    currency: string; // e.g., "LC_TOKEN"
+    lastUpdated: Date;
+}
+
+/**
+ * Represents a transaction record on a simulated token rail.
+ * Business value: Establishes a verifiable, atomic, and idempotent record of all value movements,
+ * crucial for financial reconciliation, auditability, and maintaining ledger integrity.
+ * Supports programmable finance and real-time settlement paradigms.
+ */
+export interface TokenTransaction {
+    id: string;
+    userId: string; // Initiator
+    fromAddress: string; // Sender's account/address
+    toAddress: string; // Recipient's account/address (could be system, other user, agent)
+    amount: number;
+    currency: string;
+    timestamp: Date;
+    status: 'pending' | 'completed' | 'failed' | 'reverted';
+    type: 'mint' | 'burn' | 'transfer' | 'payment' | 'reward';
+    referenceId?: string; // Link to related entity, e.g., explanation ID, invoice ID
+    rail: 'rail_fast' | 'rail_batch'; // Simulated distinct rails
+    signature: string; // Cryptographic signature of the transaction details
+    idempotencyKey: string; // Ensures atomic, one-time processing
+    fee?: number;
+}
+
+/**
+ * Mock utility for generating cryptographic hashes for audit logs.
+ * Business value: Simulates tamper-evident audit trails by chaining hashes, enhancing the
+ * integrity and trustworthiness of activity records for regulatory compliance and security.
+ * In a production environment, this would use robust cryptographic primitives.
+ */
+class CryptoUtils {
+    /**
+     * Generates a simple SHA-256 like hash for a given string.
+     * This is a simulation for demonstration and should not be used for real security.
+     * @param data The string data to hash.
+     * @returns A simulated hash string.
+     */
+    static async generateHash(data: string): Promise<string> {
+        // In a real application, use a proper crypto library (e.g., SubtleCrypto in browsers, Node.js crypto)
+        // For demonstration, we'll use a simple string-based hash simulation.
+        let hash = 0;
+        for (let i = 0; i < data.length; i++) {
+            const char = data.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return `sha256-${Math.abs(hash).toString(16)}-${Date.now()}`;
+    }
+}
+
+/**
+ * Simulates a secure key storage.
+ * Business value: Demonstrates the principle of isolating and protecting sensitive
+ * cryptographic keys, which is fundamental for digital identity and securing transactions.
+ * In a production system, this would involve hardware security modules (HSMs) or cloud key vaults.
+ */
+class SecureKeyStorage {
+    private static keys: Map<string, { publicKey: string; privateKey: string }> = new Map();
+
+    /**
+     * Simulates generation of a public/private key pair.
+     * @param userId The ID of the user for whom to generate keys.
+     * @returns A promise resolving to the generated public key.
+     */
+    static async generateKeyPair(userId: string): Promise<string> {
+        // In a real system, use WebCrypto API (e.g., generateKey({ name: "RSASSA-PKCS1-v1_5", modulu...}, true, ["sign", "verify"]))
+        await new Promise(resolve => setTimeout(resolve, 100)); // Simulate async
+        const publicKey = `pub-${userId}-${Math.random().toString(36).substr(2, 10)}`;
+        const privateKey = `priv-${userId}-${Math.random().toString(36).substr(2, 20)}`;
+        SecureKeyStorage.keys.set(userId, { publicKey, privateKey });
+        return publicKey;
+    }
+
+    /**
+     * Simulates signing data with a private key.
+     * @param userId The ID of the user whose private key to use.
+     * @param data The data to sign.
+     * @returns A promise resolving to a simulated signature.
+     */
+    static async signData(userId: string, data: string): Promise<string> {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        const keyPair = SecureKeyStorage.keys.get(userId);
+        if (!keyPair) throw new Error("Private key not found for user.");
+        // Simplified signature for demo. Real signature would involve hashing data and encrypting with private key.
+        return `sig-${keyPair.privateKey.substring(0, 8)}-${CryptoUtils.generateHash(data)}`;
+    }
+
+    /**
+     * Simulates verifying a signature with a public key.
+     * @param publicKey The public key to use for verification.
+     * @param data The original data.
+     * @param signature The signature to verify.
+     * @returns A promise resolving to true if the signature is valid, false otherwise.
+     */
+    static async verifySignature(publicKey: string, data: string, signature: string): Promise<boolean> {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        // Simplified verification: just check if signature looks plausible for the public key.
+        // A real verification would decrypt the signature with the public key and compare hashes.
+        return signature.startsWith('sig-') && signature.includes(publicKey.substring(4, 12));
+    }
+}
+
 
 export const mockApiResponseDelay = 800; // ms
 
 /**
  * Simulates fetching the current user's profile.
+ * Business value: Authenticates and initializes the user session, loading personalized settings
+ * and access permissions crucial for a tailored user experience and security.
  * @returns {Promise<UserProfile>} A promise that resolves with a mock user profile.
  */
 export const fetchUserProfile = async (): Promise<UserProfile> => {
@@ -268,6 +504,7 @@ export const fetchUserProfile = async (): Promise<UserProfile> => {
                 username: 'JaneDoe',
                 email: 'jane.doe@example.com',
                 subscriptionTier: 'pro',
+                roles: ['user', 'pro_subscriber'],
                 preferences: {
                     defaultAIModel: 'gemini-1.5-pro',
                     defaultExplanationStyle: 'plain_english',
@@ -280,6 +517,7 @@ export const fetchUserProfile = async (): Promise<UserProfile> => {
                         documentProcessingCompletion: true,
                         sharedContentUpdates: false,
                         billingAlerts: true,
+                        agentTaskUpdates: true,
                     },
                     preferredLanguage: 'en',
                     fontSize: 'medium',
@@ -300,6 +538,8 @@ export const fetchUserProfile = async (): Promise<UserProfile> => {
 
 /**
  * Simulates updating a user's profile preferences.
+ * Business value: Allows users to dynamically adjust their experience, improving product stickiness
+ * and ensuring the application adapts to individual working styles.
  * @param {Partial<UserPreferences>} preferences - The preferences to update.
  * @returns {Promise<UserProfile>} A promise that resolves with the updated user profile.
  */
@@ -322,6 +562,8 @@ export const updateUserSettings = async (preferences: Partial<UserPreferences>):
 
 /**
  * Simulates saving an explanation record to the backend.
+ * Business value: Persists valuable AI-generated content and user modifications, building
+ * a knowledge base that can be reused, referenced, and audited, enhancing long-term value.
  * @param {ExplanationRecord} explanation - The explanation record to save.
  * @returns {Promise<ExplanationRecord>} A promise that resolves with the saved explanation, potentially with a new ID.
  */
@@ -340,6 +582,8 @@ export const saveExplanationRecord = async (explanation: ExplanationRecord): Pro
 
 /**
  * Simulates fetching a list of previous explanations for a user.
+ * Business value: Provides access to a user's historical AI interactions, allowing them to
+ * review past insights, track progress, and leverage previously clarified content.
  * @param {string} userId - The ID of the user.
  * @returns {Promise<ExplanationRecord[]>} A promise that resolves with an array of mock explanation records.
  */
@@ -359,6 +603,8 @@ export const fetchExplanationHistory = async (userId: string): Promise<Explanati
                 sessionId: `session-${Math.floor(i / 3)}`,
                 isFavorite: i % 4 === 0,
                 linkedTerms: i === 0 ? [{ term: "underlying principles", definition: "fundamental ideas or concepts", context: "understanding of its underlying principles" }] : undefined,
+                estimatedCost: (0.00000025 + 0.0000025) * (Math.random() * 1000 + 500), // Mock cost
+                tokensUsed: Math.floor(Math.random() * 1000 + 500)
             }));
             resolve(mockHistory);
         }, mockApiResponseDelay);
@@ -367,6 +613,7 @@ export const fetchExplanationHistory = async (userId: string): Promise<Explanati
 
 /**
  * Simulates deleting an explanation record.
+ * Business value: Allows users to manage their data, ensuring privacy and compliance with data retention policies.
  * @param {string} explanationId - The ID of the explanation to delete.
  * @returns {Promise<void>} A promise that resolves when the deletion is successful.
  */
@@ -382,6 +629,8 @@ export const deleteExplanationRecord = async (explanationId: string): Promise<vo
 
 /**
  * Simulates fetching a list of uploaded documents for a user.
+ * Business value: Provides an organized view of all managed documents, facilitating quick access,
+ * status monitoring, and triggering of further AI-driven analyses.
  * @param {string} userId - The ID of the user.
  * @returns {Promise<DocumentMetadata[]>} A promise that resolves with an array of mock document metadata.
  */
@@ -395,12 +644,14 @@ export const fetchUserDocuments = async (userId: string): Promise<DocumentMetada
                 fileName: `Contract_Q${i + 1}_2023.pdf`,
                 fileSizeKB: 1024 + i * 256,
                 uploadDate: new Date(Date.now() - (5 - i) * 24 * 60 * 60 * 1000), // Days ago
-                status: i === 0 ? 'processing' : 'processed',
+                status: i === 0 ? 'processing' : (i === 1 ? 'analyzed_by_agent' : 'processed'),
                 documentType: 'pdf',
                 accessPermissions: i % 2 === 0 ? 'private' : 'shared',
                 tags: ['contract', `Q${i + 1}`],
                 lastAccessed: new Date(Date.now() - i * 3 * 60 * 1000),
                 pageCount: 10 + i * 2,
+                agentAnalysisStatus: i === 1 ? 'completed' : 'pending',
+                agentAnalysisReportId: i === 1 ? `report-doc-${userId}-${i}` : undefined,
             }));
             resolve(mockDocuments);
         }, mockApiResponseDelay);
@@ -409,6 +660,8 @@ export const fetchUserDocuments = async (userId: string): Promise<DocumentMetada
 
 /**
  * Simulates uploading a document.
+ * Business value: Enables secure ingestion of diverse document types into the platform,
+ * forming the raw material for AI processing and value extraction.
  * @param {File} file - The file to upload.
  * @param {string} userId - The ID of the user uploading the file.
  * @returns {Promise<DocumentMetadata>} A promise that resolves with the metadata of the uploaded document.
@@ -429,6 +682,7 @@ export const uploadDocumentFile = async (file: File, userId: string): Promise<Do
                 tags: [],
                 lastAccessed: new Date(),
                 pageCount: file.type.includes('pdf') ? Math.floor(Math.random() * 20) + 5 : undefined,
+                agentAnalysisStatus: 'pending',
             };
             resolve(newDoc);
         }, mockApiResponseDelay * 2); // Longer delay for uploads
@@ -437,6 +691,8 @@ export const uploadDocumentFile = async (file: File, userId: string): Promise<Do
 
 /**
  * Simulates fetching content of a specific document.
+ * Business value: Provides on-demand access to the full text of documents, enabling direct
+ * review and supporting AI analysis workflows by feeding the AI model.
  * @param {string} documentId - The ID of the document.
  * @returns {Promise<string>} A promise that resolves with mock document content.
  */
@@ -451,6 +707,8 @@ export const fetchDocumentContent = async (documentId: string): Promise<string> 
 
 /**
  * Simulates fetching custom glossary terms for a user or team.
+ * Business value: Populates the custom glossary with domain-specific terms, ensuring
+ * accurate and consistent AI explanations and supporting knowledge management.
  * @param {string} entityId - User ID or Team ID.
  * @param {boolean} isTeam - Flag to indicate if it's a team glossary.
  * @returns {Promise<GlossaryTerm[]>} A promise that resolves with an array of mock glossary terms.
@@ -478,6 +736,8 @@ export const fetchGlossaryTerms = async (entityId: string, isTeam: boolean = fal
 
 /**
  * Simulates adding or updating a glossary term.
+ * Business value: Allows users to curate and enrich their domain-specific knowledge base,
+ * directly improving the quality and relevance of AI explanations over time.
  * @param {GlossaryTerm} term - The term to add/update.
  * @returns {Promise<GlossaryTerm>} A promise that resolves with the saved term.
  */
@@ -496,6 +756,8 @@ export const saveGlossaryTerm = async (term: GlossaryTerm): Promise<GlossaryTerm
 
 /**
  * Simulates deleting a glossary term.
+ * Business value: Provides control over managed terminology, enabling users to remove obsolete
+ * or incorrect entries and maintain the accuracy of their knowledge base.
  * @param {string} termId - The ID of the term to delete.
  * @returns {Promise<void>} A promise that resolves when deletion is successful.
  */
@@ -511,6 +773,8 @@ export const deleteGlossaryTerm = async (termId: string): Promise<void> => {
 
 /**
  * Simulates fetching available AI model configurations.
+ * Business value: Presents the available AI models and their capabilities, enabling users to
+ * select the most appropriate model for their task based on performance, cost, and specific features.
  * @returns {Promise<AIModelSettings[]>} A promise that resolves with an array of mock AI model settings.
  */
 export const fetchAIModelConfigurations = async (): Promise<AIModelSettings[]> => {
@@ -524,7 +788,9 @@ export const fetchAIModelConfigurations = async (): Promise<AIModelSettings[]> =
                     provider: 'Google',
                     description: 'Google\'s fastest and most cost-effective model for high-volume tasks.',
                     capabilities: ['text_generation', 'summarization', 'translation'],
-                    costPerToken: 0.00000025, // Example cost
+                    costPerToken: 0.00000025, // Example cost (per token)
+                    inputTokenCostPerMillion: 0.125, // USD per million tokens
+                    outputTokenCostPerMillion: 0.375, // USD per million tokens
                     isActive: true,
                     temperature: 0.7,
                     maxOutputTokens: 2048,
@@ -536,7 +802,9 @@ export const fetchAIModelConfigurations = async (): Promise<AIModelSettings[]> =
                     provider: 'Google',
                     description: 'Google\'s most capable model, ideal for complex reasoning and creative tasks.',
                     capabilities: ['text_generation', 'summarization', 'translation', 'code_generation', 'multimodal'],
-                    costPerToken: 0.0000025, // Example cost
+                    costPerToken: 0.0000025, // Example cost (per token)
+                    inputTokenCostPerMillion: 3.50,
+                    outputTokenCostPerMillion: 10.50,
                     isActive: true,
                     temperature: 0.5,
                     maxOutputTokens: 4096,
@@ -550,6 +818,8 @@ export const fetchAIModelConfigurations = async (): Promise<AIModelSettings[]> =
                     description: 'OpenAI\'s popular general-purpose model, good balance of cost and performance.',
                     capabilities: ['text_generation', 'summarization'],
                     costPerToken: 0.0000015,
+                    inputTokenCostPerMillion: 0.50,
+                    outputTokenCostPerMillion: 1.50,
                     isActive: true,
                     temperature: 0.8,
                     maxOutputTokens: 1024,
@@ -562,6 +832,8 @@ export const fetchAIModelConfigurations = async (): Promise<AIModelSettings[]> =
                     description: 'OpenAI\'s most advanced model, offering superior reasoning and context understanding.',
                     capabilities: ['text_generation', 'summarization', 'code_generation', 'multimodal'],
                     costPerToken: 0.00003,
+                    inputTokenCostPerMillion: 10.00,
+                    outputTokenCostPerMillion: 30.00,
                     isActive: false, // Can be activated by user
                     temperature: 0.6,
                     maxOutputTokens: 8192,
@@ -575,6 +847,8 @@ export const fetchAIModelConfigurations = async (): Promise<AIModelSettings[]> =
 
 /**
  * Simulates updating an AI model's settings.
+ * Business value: Enables administrators and privileged users to fine-tune AI model
+ * parameters, optimizing for desired output quality, cost, and responsiveness across the platform.
  * @param {AIModelSettings} settings - The model settings to update.
  * @returns {Promise<AIModelSettings>} A promise that resolves with the updated settings.
  */
@@ -587,8 +861,14 @@ export const updateAIModelSettings = async (settings: AIModelSettings): Promise<
     });
 };
 
+// Internal mock log store for chaining hashes
+let mockAuditLogChain: AuditLogEntry[] = [];
+let lastHash = "0000000000000000000000000000000000000000000000000000000000000000"; // Genesis hash
+
 /**
  * Simulates fetching audit log entries.
+ * Business value: Provides an auditable and potentially tamper-evident history of all system
+ * activities, crucial for security, compliance, and post-incident analysis.
  * @param {string} userId - The ID of the user whose logs to fetch.
  * @param {number} limit - The maximum number of entries to return.
  * @returns {Promise<AuditLogEntry[]>} A promise that resolves with mock audit log entries.
@@ -596,31 +876,64 @@ export const updateAIModelSettings = async (settings: AIModelSettings): Promise<
 export const fetchAuditLogs = async (userId: string, limit: number = 10): Promise<AuditLogEntry[]> => {
     console.log(`Mock API: Fetching audit logs for ${userId} (limit: ${limit})...`);
     return new Promise((resolve) => {
-        setTimeout(() => {
-            const mockLogs: AuditLogEntry[] = Array.from({ length: limit }).map((_, i) => ({
-                id: `log-${userId}-${i}`,
-                userId: userId,
-                timestamp: new Date(Date.now() - i * 15 * 60 * 1000), // Every 15 minutes
-                action: i % 3 === 0 ? 'explanation_generated' : i % 3 === 1 ? 'document_upload' : 'settings_update',
-                resourceType: i % 3 === 0 ? 'Explanation' : i % 3 === 1 ? 'Document' : 'User',
-                resourceId: i % 3 === 0 ? `exp-${userId}-${i}` : `doc-${userId}-${i}`,
-                details: {
-                    ip: `192.168.1.${i}`,
-                    browser: 'Chrome',
-                    os: 'macOS',
-                    ...(i % 3 === 0 && { model: 'gemini-2.5-flash', length: 'medium' }),
-                    ...(i % 3 === 1 && { fileName: `document_${i}.pdf`, size: '2MB' }),
-                    ...(i % 3 === 2 && { setting: 'darkMode', value: i % 2 === 0 ? 'true' : 'false' }),
-                },
-                ipAddress: `192.168.1.${i}`,
-            }));
-            resolve(mockLogs);
+        setTimeout(async () => {
+            // Simulate generation if empty
+            if (mockAuditLogChain.length === 0) {
+                for (let i = 0; i < 25; i++) {
+                    const action = i % 3 === 0 ? 'explanation_generated' : i % 3 === 1 ? 'document_upload' : 'settings_update';
+                    const resourceType = i % 3 === 0 ? 'Explanation' : i % 3 === 1 ? 'Document' : 'User';
+                    const resourceId = i % 3 === 0 ? `exp-${userId}-${i}` : `doc-${userId}-${i}`;
+                    await logAuditEvent(userId, action, resourceType, resourceId, { ip: `192.168.1.${i}`, browser: 'Chrome', os: 'macOS' });
+                }
+            }
+            resolve(mockAuditLogChain.filter(log => log.userId === userId || log.userId === 'system').slice(-limit).reverse());
         }, mockApiResponseDelay);
     });
 };
 
 /**
+ * Internal function to simulate logging an audit event with tamper-evident chaining.
+ * Business value: Ensures the integrity of audit logs, providing a cryptographic link
+ * between entries that makes any unauthorized modification detectable.
+ * @param userId User ID performing the action.
+ * @param action Description of the action.
+ * @param resourceType Type of resource affected.
+ * @param resourceId ID of the resource affected.
+ * @param details Additional details.
+ * @returns A promise resolving to the created AuditLogEntry.
+ */
+export const logAuditEvent = async (
+    userId: string,
+    action: string,
+    resourceType: string,
+    resourceId: string,
+    details: Record<string, any>
+): Promise<AuditLogEntry> => {
+    const timestamp = new Date();
+    const dataToHash = JSON.stringify({ userId, timestamp, action, resourceType, resourceId, details, previousHash: lastHash });
+    const currentHash = await CryptoUtils.generateHash(dataToHash);
+
+    const newLog: AuditLogEntry = {
+        id: `log-${userId}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        userId,
+        timestamp,
+        action,
+        resourceType,
+        resourceId,
+        details,
+        ipAddress: '127.0.0.1', // Mock IP
+        previousHash: lastHash,
+        hash: currentHash,
+    };
+    mockAuditLogChain.push(newLog);
+    lastHash = currentHash;
+    return newLog;
+};
+
+/**
  * Simulates fetching available prompt templates.
+ * Business value: Centralizes reusable prompt definitions, enabling users to quickly apply
+ * best practices for AI interaction and maintain consistency across generated content.
  * @param {string} userId - The ID of the user.
  * @param {string} category - Optional category filter.
  * @returns {Promise<PromptTemplate[]>} A promise that resolves with mock prompt templates.
@@ -668,6 +981,8 @@ export const fetchPromptTemplates = async (userId: string, category?: string): P
 
 /**
  * Simulates saving a prompt template.
+ * Business value: Allows users to create, store, and share custom AI interaction patterns,
+ * fostering innovation and community-driven content generation.
  * @param {PromptTemplate} template - The template to save.
  * @returns {Promise<PromptTemplate>} A promise that resolves with the saved template.
  */
@@ -686,6 +1001,8 @@ export const savePromptTemplate = async (template: PromptTemplate): Promise<Prom
 
 /**
  * Simulates deleting a prompt template.
+ * Business value: Provides control over user-defined prompts, enabling removal of obsolete
+ * or inefficient templates and maintaining an organized prompt library.
  * @param {string} templateId - The ID of the template to delete.
  * @returns {Promise<void>} A promise that resolves when deletion is successful.
  */
@@ -701,6 +1018,8 @@ export const deletePromptTemplate = async (templateId: string): Promise<void> =>
 
 /**
  * Simulates fetching user notifications.
+ * Business value: Aggregates and displays important alerts and updates for the user,
+ * ensuring they are informed about system status, task completions, and critical messages.
  * @param {string} userId - The user ID.
  * @returns {Promise<UserNotification[]>} A promise that resolves with mock notifications.
  */
@@ -737,6 +1056,16 @@ export const fetchUserNotifications = async (userId: string): Promise<UserNotifi
                     isRead: false,
                     actionLink: '/app/settings/billing',
                 },
+                {
+                    id: `notif-${userId}-4`,
+                    userId: userId,
+                    type: 'success',
+                    message: 'Agent task "Doc Analysis for Contract_Q1_2023.pdf" completed.',
+                    timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 mins ago
+                    isRead: false,
+                    actionLink: '/app/documents/doc-user-123-0',
+                    relatedEntityId: 'agent-task-001',
+                },
             ];
             resolve(notifications);
         }, mockApiResponseDelay);
@@ -745,6 +1074,8 @@ export const fetchUserNotifications = async (userId: string): Promise<UserNotifi
 
 /**
  * Simulates marking a notification as read.
+ * Business value: Helps users manage their inbox by dismissing read alerts, focusing their
+ * attention on new and unaddressed notifications.
  * @param {string} notificationId - The ID of the notification.
  * @returns {Promise<void>} A promise that resolves when successful.
  */
@@ -758,14 +1089,453 @@ export const markNotificationAsRead = async (notificationId: string): Promise<vo
     });
 };
 
-// =====================================================================================================================
-// SECTION 3: REUSABLE UI COMPONENTS (approx. 1000 lines)
-// These are general-purpose components that can be used across different views of the application.
-// They help in building a consistent and functional user interface.
-// =====================================================================================================================
+/**
+ * Simulates recording AI usage.
+ * Business value: Essential for detailed cost tracking, billing, and resource allocation.
+ * Provides granular data on token consumption and associated expenses for each AI interaction.
+ * @param usageRecord The AI usage record to save.
+ * @returns A promise resolving to the saved AIUsageRecord.
+ */
+export const recordAIUsage = async (usageRecord: Omit<AIUsageRecord, 'id'>): Promise<AIUsageRecord> => {
+    console.log('Mock API: Recording AI usage...', usageRecord);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const newRecord: AIUsageRecord = {
+                ...usageRecord,
+                id: `usage-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            };
+            // In a real system, this would be stored in a database.
+            resolve(newRecord);
+        }, mockApiResponseDelay / 4);
+    });
+};
+
+/**
+ * Simulates fetching AI usage history.
+ * Business value: Offers transparent reporting on AI resource consumption, allowing users and
+ * administrators to monitor spending patterns and optimize AI feature utilization.
+ * @param userId The ID of the user.
+ * @param limit The maximum number of entries to return.
+ * @returns A promise resolving to an array of AIUsageRecord.
+ */
+export const fetchAIUsageHistory = async (userId: string, limit: number = 10): Promise<AIUsageRecord[]> => {
+    console.log(`Mock API: Fetching AI usage history for ${userId} (limit: ${limit})...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const mockUsage: AIUsageRecord[] = Array.from({ length: limit }).map((_, i) => ({
+                id: `usage-${userId}-${i}`,
+                userId: userId,
+                timestamp: new Date(Date.now() - i * 10 * 60 * 1000), // Every 10 minutes
+                modelId: i % 2 === 0 ? 'gemini-1.5-pro' : 'gpt-3.5-turbo',
+                inputTokens: Math.floor(Math.random() * 500) + 100,
+                outputTokens: Math.floor(Math.random() * 200) + 50,
+                estimatedCostUSD: parseFloat((Math.random() * 0.05).toFixed(6)),
+                feature: i % 3 === 0 ? 'explanation' : 'summarization',
+                relatedEntityId: `exp-${userId}-${i}`,
+            }));
+            resolve(mockUsage);
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates fetching subscription details.
+ * Business value: Retrieves current subscription status and plan specifics, empowering users
+ * with information to manage their services and understand their entitlements.
+ * @param userId The ID of the user.
+ * @returns A promise resolving to the user's SubscriptionPlan.
+ */
+export const fetchSubscriptionDetails = async (userId: string): Promise<SubscriptionPlan> => {
+    console.log(`Mock API: Fetching subscription details for ${userId}...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            // This would typically fetch from a backend database
+            resolve({
+                id: 'sub-pro-123',
+                name: 'pro',
+                description: 'Advanced features for power users.',
+                monthlyPriceUSD: 29.99,
+                features: ['Unlimited explanations', '50GB storage', 'API access'],
+                tokenLimitMonthly: null, // Unlimited
+                documentStorageGB: 50,
+                apiKeyAccess: true,
+                teamMembers: 1,
+            });
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates updating a subscription.
+ * Business value: Enables users to upgrade, downgrade, or cancel subscriptions, providing
+ * flexibility in service consumption and supporting revenue generation.
+ * @param userId The ID of the user.
+ * @param newPlanName The name of the new plan.
+ * @returns A promise resolving to the updated SubscriptionPlan.
+ */
+export const updateSubscription = async (userId: string, newPlanName: 'free' | 'pro' | 'enterprise'): Promise<SubscriptionPlan> => {
+    console.log(`Mock API: Updating subscription for ${userId} to ${newPlanName}...`);
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (newPlanName === 'enterprise') {
+                // Simulate an enterprise plan requiring manual approval or specific setup
+                reject(new Error("Enterprise plan requires direct contact."));
+                return;
+            }
+            const updatedPlan: SubscriptionPlan = {
+                id: `sub-${newPlanName}-${userId}`,
+                name: newPlanName,
+                description: `Features for ${newPlanName} users.`,
+                monthlyPriceUSD: newPlanName === 'free' ? 0 : (newPlanName === 'pro' ? 29.99 : 99.99),
+                features: newPlanName === 'free' ? ['Basic explanations'] : ['Unlimited explanations', 'API access'],
+                tokenLimitMonthly: newPlanName === 'free' ? 100000 : null,
+                documentStorageGB: newPlanName === 'free' ? 5 : 50,
+                apiKeyAccess: newPlanName !== 'free',
+                teamMembers: newPlanName === 'free' ? 0 : (newPlanName === 'pro' ? 1 : 5),
+            };
+            resolve(updatedPlan);
+        }, mockApiResponseDelay * 1.5);
+    });
+};
+
+/**
+ * Simulates fetching payment methods.
+ * Business value: Provides an overview of stored payment options, facilitating billing management
+ * and enabling users to add or remove payment instruments.
+ * @param userId The ID of the user.
+ * @returns A promise resolving to an array of PaymentMethod.
+ */
+export const fetchPaymentMethods = async (userId: string): Promise<PaymentMethod[]> => {
+    console.log(`Mock API: Fetching payment methods for ${userId}...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve([
+                {
+                    id: 'pm-1',
+                    userId: userId,
+                    type: 'card',
+                    last4Digits: '4242',
+                    isDefault: true,
+                    createdAt: new Date(Date.now() - 365 * 24 * 3600 * 1000),
+                    expiresAt: new Date(Date.now() + 180 * 24 * 3600 * 1000), // Expires in 6 months
+                },
+                {
+                    id: 'pm-2',
+                    userId: userId,
+                    type: 'crypto',
+                    cryptoAddressMasked: '0xabc...xyz',
+                    isDefault: false,
+                    createdAt: new Date(Date.now() - 60 * 24 * 3600 * 1000),
+                },
+            ]);
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates adding a new payment method.
+ * Business value: Enables users to securely add new billing information, ensuring uninterrupted
+ * service and supporting multiple payment options for customer convenience.
+ * @param userId The ID of the user.
+ * @param method The PaymentMethod to add (partial, as ID would be generated by backend).
+ * @returns A promise resolving to the newly added PaymentMethod.
+ */
+export const addPaymentMethod = async (userId: string, method: Omit<PaymentMethod, 'id' | 'createdAt'>): Promise<PaymentMethod> => {
+    console.log(`Mock API: Adding payment method for ${userId}...`, method);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({
+                ...method,
+                id: `pm-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                userId: userId,
+                createdAt: new Date(),
+            });
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates processing a payment.
+ * Business value: Completes financial transactions, whether for subscription renewals or
+ * one-time purchases, directly impacting revenue generation.
+ * @param userId The ID of the user.
+ * @param paymentMethodId The ID of the payment method to use.
+ * @param amount The amount to charge.
+ * @param currency The currency (e.g., USD).
+ * @returns A promise resolving to a boolean indicating success.
+ */
+export const processPayment = async (userId: string, paymentMethodId: string, amount: number, currency: string): Promise<boolean> => {
+    console.log(`Mock API: Processing payment of ${amount} ${currency} for user ${userId} with method ${paymentMethodId}...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (Math.random() > 0.1) { // 90% success rate
+                console.log('Payment successful.');
+                resolve(true);
+            } else {
+                console.error('Payment failed.');
+                resolve(false);
+            }
+        }, mockApiResponseDelay * 2);
+    });
+};
+
+// Mock Agent Task store
+const mockAgentTasks: AgentTask[] = [];
+
+/**
+ * Simulates submitting an agent task.
+ * Business value: Orchestrates automated intelligent agents to perform complex,
+ * background processing tasks (e.g., document analysis), enhancing operational efficiency
+ * and enabling proactive system behavior.
+ * @param task The AgentTask to submit.
+ * @returns A promise resolving to the submitted AgentTask.
+ */
+export const submitAgentTask = async (task: Omit<AgentTask, 'id' | 'createdAt' | 'status' | 'startedAt' | 'completedAt' | 'results' | 'error'>): Promise<AgentTask> => {
+    console.log('Mock API: Submitting agent task...', task);
+    return new Promise((resolve) => {
+        setTimeout(async () => {
+            const newAgentTask: AgentTask = {
+                ...task,
+                id: `agent-task-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                createdAt: new Date(),
+                status: 'pending',
+                agentId: `agent-${task.taskType}-1`, // Mock agent ID
+            };
+            mockAgentTasks.push(newAgentTask);
+            await logAuditEvent(newAgentTask.initiatedBy, `Agent Task Submitted: ${newAgentTask.taskType}`, 'AgentTask', newAgentTask.id, {
+                targetEntity: newAgentTask.targetEntityId, parameters: newAgentTask.parameters
+            });
+            resolve(newAgentTask);
+
+            // Simulate background processing
+            setTimeout(async () => {
+                const index = mockAgentTasks.findIndex(t => t.id === newAgentTask.id);
+                if (index > -1) {
+                    const status = Math.random() > 0.2 ? 'completed' : 'failed'; // 80% success
+                    const results = status === 'completed' ? { processedItems: Math.floor(Math.random() * 100) + 1 } : { errorMessage: 'Simulated failure.' };
+                    mockAgentTasks[index] = {
+                        ...mockAgentTasks[index],
+                        status,
+                        startedAt: new Date(),
+                        completedAt: new Date(),
+                        results,
+                        error: status === 'failed' ? results.errorMessage : undefined,
+                    };
+                    await logAuditEvent('system', `Agent Task ${status}: ${newAgentTask.taskType}`, 'AgentTask', newAgentTask.id, {
+                        targetEntity: newAgentTask.targetEntityId, status, results
+                    });
+                    console.log(`Mock Agent Task ${newAgentTask.id} ${status}.`);
+                }
+            }, mockApiResponseDelay * 3); // Longer delay for background task
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates fetching agent tasks.
+ * Business value: Provides an overview of all ongoing and completed automated tasks,
+ * enabling users and administrators to monitor agent performance and intervene if necessary.
+ * @param userId Optional user ID to filter tasks.
+ * @returns A promise resolving to an array of AgentTask.
+ */
+export const fetchAgentTasks = async (userId?: string): Promise<AgentTask[]> => {
+    console.log(`Mock API: Fetching agent tasks for ${userId || 'all'}...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(userId ? mockAgentTasks.filter(t => t.initiatedBy === userId) : mockAgentTasks);
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Mock Token Rail Ledger and Balances
+ */
+const mockTokenBalances: Map<string, TokenBalance> = new Map();
+let mockTokenTransactions: TokenTransaction[] = [];
+
+/**
+ * Simulates fetching a user's token balance.
+ * Business value: Provides real-time visibility into digital asset holdings,
+ * supporting token-based incentives, rewards, and usage tracking.
+ * @param userId The ID of the user.
+ * @param currency The token currency (e.g., "LC_TOKEN").
+ * @returns A promise resolving to the user's TokenBalance.
+ */
+export const fetchTokenBalance = async (userId: string, currency: string = "LC_TOKEN"): Promise<TokenBalance> => {
+    console.log(`Mock API: Fetching token balance for ${userId} (${currency})...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (!mockTokenBalances.has(userId)) {
+                mockTokenBalances.set(userId, { userId, balance: 100, currency, lastUpdated: new Date() }); // Initial balance
+            }
+            resolve(mockTokenBalances.get(userId)!);
+        }, mockApiResponseDelay / 2);
+    });
+};
+
+/**
+ * Simulates executing a token transaction on a specified rail.
+ * Business value: Enables secure, atomic, and idempotent value transfers within the platform,
+ * forming the backbone of micro-payments, rewards, and programmable finance.
+ * @param transaction The TokenTransaction details.
+ * @param rail The simulated rail to use ('rail_fast' or 'rail_batch').
+ * @returns A promise resolving to the completed TokenTransaction.
+ */
+export const executeTokenTransaction = async (
+    transaction: Omit<TokenTransaction, 'id' | 'timestamp' | 'status' | 'signature'>,
+    rail: 'rail_fast' | 'rail_batch'
+): Promise<TokenTransaction> => {
+    console.log(`Mock API: Executing token transaction on ${rail} for ${transaction.userId}...`);
+    return new Promise(async (resolve, reject) => {
+        setTimeout(async () => {
+            // Idempotency check
+            if (mockTokenTransactions.some(t => t.idempotencyKey === transaction.idempotencyKey && t.status === 'completed')) {
+                console.warn(`Idempotency key ${transaction.idempotencyKey} already processed.`);
+                return reject(new Error('Idempotent transaction already completed.'));
+            }
+
+            const senderBalance = mockTokenBalances.get(transaction.fromAddress);
+            if (!senderBalance || senderBalance.balance < transaction.amount) {
+                return reject(new Error('Insufficient balance.'));
+            }
+
+            // Simulate cryptographic signature
+            const dataToSign = JSON.stringify(transaction);
+            const signature = await SecureKeyStorage.signData(transaction.userId, dataToSign);
+
+            const newTransaction: TokenTransaction = {
+                ...transaction,
+                id: `txn-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                timestamp: new Date(),
+                status: 'pending',
+                rail: rail,
+                signature,
+            };
+
+            // Simulate atomic settlement
+            try {
+                // Deduct from sender
+                mockTokenBalances.set(transaction.fromAddress, {
+                    ...senderBalance,
+                    balance: senderBalance.balance - transaction.amount,
+                    lastUpdated: new Date()
+                });
+
+                // Add to recipient (or system account)
+                const recipientBalance = mockTokenBalances.get(transaction.toAddress) || { userId: transaction.toAddress, balance: 0, currency: transaction.currency, lastUpdated: new Date() };
+                mockTokenBalances.set(transaction.toAddress, {
+                    ...recipientBalance,
+                    balance: recipientBalance.balance + transaction.amount,
+                    lastUpdated: new Date()
+                });
+
+                newTransaction.status = 'completed';
+                mockTokenTransactions.push(newTransaction);
+                await logAuditEvent(newTransaction.userId, `Token Transaction: ${newTransaction.type}`, 'TokenTransaction', newTransaction.id, {
+                    amount: newTransaction.amount, currency: newTransaction.currency, rail: newTransaction.rail
+                });
+                resolve(newTransaction);
+            } catch (e: any) {
+                newTransaction.status = 'failed';
+                newTransaction.error = e.message;
+                mockTokenTransactions.push(newTransaction);
+                await logAuditEvent(newTransaction.userId, `Token Transaction Failed: ${newTransaction.type}`, 'TokenTransaction', newTransaction.id, {
+                    amount: newTransaction.amount, currency: newTransaction.currency, rail: newTransaction.rail, error: e.message
+                });
+                reject(e);
+            }
+        }, rail === 'rail_fast' ? mockApiResponseDelay / 4 : mockApiResponseDelay); // Simulate different rail speeds
+    });
+};
+
+/**
+ * Simulates minting new tokens (admin-only).
+ * Business value: Provides a controlled mechanism for introducing new digital assets into the
+ * ecosystem, managed by authorized entities. Essential for initial token distribution and rewards.
+ * @param userId The ID of the user performing the mint.
+ * @param amount The amount to mint.
+ * @param currency The token currency.
+ * @param toAddress The address to mint to.
+ * @returns A promise resolving to the created TokenTransaction.
+ */
+export const mintTokens = async (userId: string, amount: number, currency: string, toAddress: string): Promise<TokenTransaction> => {
+    console.log(`Mock API: Minting ${amount} ${currency} for ${toAddress} by ${userId}...`);
+    return new Promise(async (resolve, reject) => {
+        setTimeout(async () => {
+            const idempotencyKey = `mint-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const transaction: Omit<TokenTransaction, 'id' | 'timestamp' | 'status' | 'signature'> = {
+                userId,
+                fromAddress: 'system_mint',
+                toAddress,
+                amount,
+                currency,
+                type: 'mint',
+                idempotencyKey,
+            };
+            try {
+                const mintTxn = await executeTokenTransaction(transaction, 'rail_fast');
+                resolve(mintTxn);
+            } catch (e) {
+                reject(e);
+            }
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates burning tokens (admin-only).
+ * Business value: Provides a controlled mechanism for removing digital assets from circulation,
+ * maintaining tokenomics and managing supply.
+ * @param userId The ID of the user performing the burn.
+ * @param amount The amount to burn.
+ * @param currency The token currency.
+ * @param fromAddress The address to burn from.
+ * @returns A promise resolving to the created TokenTransaction.
+ */
+export const burnTokens = async (userId: string, amount: number, currency: string, fromAddress: string): Promise<TokenTransaction> => {
+    console.log(`Mock API: Burning ${amount} ${currency} from ${fromAddress} by ${userId}...`);
+    return new Promise(async (resolve, reject) => {
+        setTimeout(async () => {
+            const idempotencyKey = `burn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const transaction: Omit<TokenTransaction, 'id' | 'timestamp' | 'status' | 'signature'> = {
+                userId,
+                fromAddress,
+                toAddress: 'system_burn',
+                amount,
+                currency,
+                type: 'burn',
+                idempotencyKey,
+            };
+            try {
+                const burnTxn = await executeTokenTransaction(transaction, 'rail_fast');
+                resolve(burnTxn);
+            } catch (e) {
+                reject(e);
+            }
+        }, mockApiResponseDelay);
+    });
+};
+
+/**
+ * Simulates fetching a user's token transaction history.
+ * Business value: Provides a complete, auditable record of all token movements,
+ * essential for financial transparency, reconciliation, and user trust.
+ * @param userId The ID of the user.
+ * @returns A promise resolving to an array of TokenTransaction.
+ */
+export const fetchTokenTransactions = async (userId: string): Promise<TokenTransaction[]> => {
+    console.log(`Mock API: Fetching token transactions for ${userId}...`);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(mockTokenTransactions.filter(t => t.userId === userId || t.toAddress === userId || t.fromAddress === userId).reverse());
+        }, mockApiResponseDelay);
+    });
+};
 
 /**
  * Props for the AlertMessage component.
+ * Business value: Standardizes user feedback for system events, ensuring consistent communication
+ * of success, warnings, or errors, which improves user confidence and reduces support inquiries.
  */
 interface AlertMessageProps {
     type: 'info' | 'success' | 'warning' | 'error';
@@ -776,6 +1546,8 @@ interface AlertMessageProps {
 
 /**
  * A styled alert message component.
+ * Business value: Provides a visually distinct and user-friendly way to display important
+ * messages, enhancing the application's overall user experience and clarity.
  */
 export const AlertMessage: React.FC<AlertMessageProps> = ({ type, message, onClose, className }) => {
     const baseClasses = "p-3 rounded-md flex items-center justify-between text-sm";
@@ -804,6 +1576,8 @@ export const AlertMessage: React.FC<AlertMessageProps> = ({ type, message, onClo
 
 /**
  * Props for the Modal component.
+ * Business value: Enables focused user interaction by presenting critical information or
+ * requiring specific input within a discrete overlay, minimizing distractions and guiding workflows.
  */
 interface ModalProps {
     isOpen: boolean;
@@ -816,6 +1590,8 @@ interface ModalProps {
 
 /**
  * A generic modal component.
+ * Business value: Standardizes the presentation of dialogues and forms, contributing to a
+ * consistent user interface and simplifying complex interactions without navigating away from the main view.
  */
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, className, footer }) => {
     if (!isOpen) return null;
@@ -846,6 +1622,8 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
 
 /**
  * A simple loading spinner component.
+ * Business value: Improves user experience during asynchronous operations by providing clear
+ * visual feedback that the system is processing, reducing frustration and perceived latency.
  */
 export const LoadingSpinner: React.FC = () => (
     <div className="flex justify-center items-center">
@@ -855,6 +1633,8 @@ export const LoadingSpinner: React.FC = () => (
 
 /**
  * Props for the PaginationControls component.
+ * Business value: Facilitates efficient navigation through large datasets, enhancing usability
+ * and enabling users to quickly locate specific information without overwhelming the interface.
  */
 interface PaginationControlsProps {
     currentPage: number;
@@ -864,6 +1644,8 @@ interface PaginationControlsProps {
 
 /**
  * Component for navigating through pages of data.
+ * Business value: Optimizes the display of extensive lists (e.g., history, audit logs) by breaking
+ * them into manageable chunks, improving performance and readability.
  */
 export const PaginationControls: React.FC<PaginationControlsProps> = ({ currentPage, totalPages, onPageChange }) => {
     const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -899,6 +1681,8 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({ currentP
 
 /**
  * Props for the ProgressBar component.
+ * Business value: Provides clear visual cues for long-running processes (e.g., document uploads,
+ * batch analyses), managing user expectations and improving the perceived responsiveness of the application.
  */
 interface ProgressBarProps {
     progress: number; // 0-100
@@ -907,6 +1691,8 @@ interface ProgressBarProps {
 
 /**
  * A simple progress bar to show task completion.
+ * Business value: Enhances user experience by offering continuous feedback on task status,
+ * which is critical for complex or time-consuming operations.
  */
 export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label }) => {
     const normalizedProgress = Math.max(0, Math.min(100, progress));
@@ -929,6 +1715,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, label }) => 
 
 /**
  * Props for the Dropdown component.
+ * Business value: Streamlines user input for selections, ensuring data consistency and
+ * reducing errors by providing predefined options, enhancing overall data quality.
  */
 interface DropdownProps {
     options: { value: string; label: string }[];
@@ -940,6 +1728,8 @@ interface DropdownProps {
 
 /**
  * A custom dropdown select component.
+ * Business value: Offers a consistent and intuitive way for users to make choices,
+ * improving application ergonomics and reducing the learning curve.
  */
 export const Dropdown: React.FC<DropdownProps> = ({ options, selectedValue, onValueChange, label, className }) => (
     <div className={`flex flex-col ${className}`}>
@@ -959,6 +1749,8 @@ export const Dropdown: React.FC<DropdownProps> = ({ options, selectedValue, onVa
 
 /**
  * Props for the RichTextEditor component (simplified).
+ * Business value: Provides an intuitive interface for editing and viewing text content,
+ * enhancing user productivity and the ability to refine AI-generated outputs.
  */
 interface RichTextEditorProps {
     value: string;
@@ -971,6 +1763,8 @@ interface RichTextEditorProps {
 
 /**
  * A simplified rich text editor (using a textarea for brevity, but could be a full editor).
+ * Business value: Offers a versatile input and display mechanism for text-based information,
+ * supporting both user input and the presentation of complex AI explanations.
  */
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     value,
@@ -1000,6 +1794,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
 /**
  * Props for the EditableText component.
+ * Business value: Enables direct, in-place editing of text fields, streamlining data entry
+ * and modifications, which improves efficiency and user experience.
  */
 interface EditableTextProps {
     value: string;
@@ -1013,6 +1809,8 @@ interface EditableTextProps {
 
 /**
  * A component that allows inline editing of text.
+ * Business value: Reduces cognitive load by allowing immediate data correction or updates
+ * within the viewing context, thereby accelerating workflows.
  */
 export const EditableText: React.FC<EditableTextProps> = ({
     value,
@@ -1092,14 +1890,10 @@ export const EditableText: React.FC<EditableTextProps> = ({
     );
 };
 
-// =====================================================================================================================
-// SECTION 4: CUSTOM HOOKS (approx. 800 lines)
-// Custom React hooks encapsulate reusable logic and state management, making components cleaner
-// and promoting reusability across the application.
-// =====================================================================================================================
-
 /**
  * Hook for managing user profile and preferences.
+ * Business value: Centralizes user identity and configuration management, ensuring a consistent
+ * and personalized application experience while simplifying data flow for UI components.
  */
 export function useUserProfileManager() {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -1130,6 +1924,7 @@ export function useUserProfileManager() {
         try {
             const updatedProfile = await updateUserSettings(newPreferences);
             setUserProfile(updatedProfile);
+            await logAuditEvent(userProfile.id, 'preferences_update', 'UserPreferences', userProfile.id, newPreferences);
             return updatedProfile;
         } catch (err) {
             console.error("Failed to update preferences:", err);
@@ -1149,6 +1944,8 @@ export function useUserProfileManager() {
 
 /**
  * Hook for managing explanation history.
+ * Business value: Provides efficient access to historical AI interactions, enabling users to
+ * review past decisions, track insights, and maintain a valuable knowledge repository.
  */
 export function useExplanationHistory(userId: string | undefined) {
     const [history, setHistory] = useState<ExplanationRecord[]>([]);
@@ -1173,22 +1970,35 @@ export function useExplanationHistory(userId: string | undefined) {
     }, [userId]);
 
     const addExplanationToHistory = useCallback((newExplanation: ExplanationRecord) => {
-        setHistory(prev => [newExplanation, ...prev]);
+        setHistory(prev => {
+            const existingIndex = prev.findIndex(exp => exp.id === newExplanation.id);
+            if (existingIndex > -1) {
+                // Update existing record
+                return prev.map((exp, i) => (i === existingIndex ? newExplanation : exp));
+            }
+            // Add new record to the top
+            return [newExplanation, ...prev];
+        });
     }, []);
 
     const removeExplanationFromHistory = useCallback(async (id: string) => {
+        if (!userId) {
+            setError("User ID not available to delete explanation.");
+            return;
+        }
         setLoading(true);
         setError(null);
         try {
             await deleteExplanationRecord(id);
             setHistory(prev => prev.filter(exp => exp.id !== id));
+            await logAuditEvent(userId, 'explanation_deleted', 'Explanation', id, {});
         } catch (err) {
             console.error(`Failed to delete explanation ${id}:`, err);
             setError(`Failed to delete explanation ${id}.`);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [userId]);
 
     useEffect(() => {
         loadHistory();
@@ -1213,6 +2023,8 @@ export function useExplanationHistory(userId: string | undefined) {
 
 /**
  * Hook for managing user documents.
+ * Business value: Centralizes document lifecycle management, from upload and processing to
+ * content retrieval and agent analysis, enabling robust document-centric workflows.
  */
 export function useDocumentManager(userId: string | undefined) {
     const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
@@ -1252,6 +2064,7 @@ export function useDocumentManager(userId: string | undefined) {
             }
             const newDoc = await uploadDocumentFile(file, userId);
             setDocuments(prev => [...prev, newDoc]);
+            await logAuditEvent(userId, 'document_upload', 'Document', newDoc.id, { fileName: newDoc.fileName, fileSizeKB: newDoc.fileSizeKB });
             return newDoc;
         } catch (err) {
             console.error("Failed to upload document:", err);
@@ -1268,6 +2081,9 @@ export function useDocumentManager(userId: string | undefined) {
         setError(null);
         try {
             const content = await fetchDocumentContent(documentId);
+            if (userId) { // Ensure userId is available for audit logging
+                await logAuditEvent(userId, 'document_view', 'Document', documentId, {});
+            }
             return content;
         } catch (err) {
             console.error(`Failed to fetch document content for ${documentId}:`, err);
@@ -1276,17 +2092,27 @@ export function useDocumentManager(userId: string | undefined) {
         } finally {
             setLoading(false);
         }
+    }, [userId]);
+
+    const updateDocumentStatus = useCallback((documentId: string, status: DocumentMetadata['status'], agentAnalysisStatus?: DocumentMetadata['agentAnalysisStatus']) => {
+        setDocuments(prev => prev.map(doc =>
+            doc.id === documentId
+                ? { ...doc, status, agentAnalysisStatus: agentAnalysisStatus || doc.agentAnalysisStatus, lastAccessed: new Date() }
+                : doc
+        ));
     }, []);
 
     useEffect(() => {
         loadDocuments();
     }, [loadDocuments]);
 
-    return { documents, loading, error, uploading, uploadProgress, loadDocuments, uploadDocument, getDocumentContent };
+    return { documents, loading, error, uploading, uploadProgress, loadDocuments, uploadDocument, getDocumentContent, updateDocumentStatus };
 }
 
 /**
  * Hook for managing AI model configurations.
+ * Business value: Provides an interface for dynamically configuring AI models, allowing
+ * administrators to optimize costs and performance by activating or deactivating specific models.
  */
 export function useAIModelConfig() {
     const [models, setModels] = useState<AIModelSettings[]>([]);
@@ -1313,6 +2139,8 @@ export function useAIModelConfig() {
         try {
             const result = await updateAIModelSettings(updatedSettings);
             setModels(prev => prev.map(m => m.modelId === result.modelId ? result : m));
+            // No specific user ID here, assuming admin action, or userProfile.id will be passed in a real app
+            await logAuditEvent('admin_or_user', 'ai_model_update', 'AIModelSettings', result.modelId, { changes: updatedSettings });
             return result;
         } catch (err) {
             console.error("Failed to update AI model settings:", err);
@@ -1332,6 +2160,8 @@ export function useAIModelConfig() {
 
 /**
  * Hook for managing glossary terms.
+ * Business value: Centralizes the management of domain-specific terminology, enabling users
+ * to build, maintain, and share consistent definitions across teams and AI interactions.
  */
 export function useGlossaryManager(userId: string | undefined, isTeam: boolean = false) {
     const [terms, setTerms] = useState<GlossaryTerm[]>([]);
@@ -1369,6 +2199,7 @@ export function useGlossaryManager(userId: string | undefined, isTeam: boolean =
                 }
                 return [...prev, savedTerm];
             });
+            await logAuditEvent(userId, term.id ? 'glossary_term_updated' : 'glossary_term_added', 'GlossaryTerm', savedTerm.id, { term: savedTerm.term });
             return savedTerm;
         } catch (err) {
             console.error("Failed to save glossary term:", err);
@@ -1380,11 +2211,16 @@ export function useGlossaryManager(userId: string | undefined, isTeam: boolean =
     }, [userId]);
 
     const removeTerm = useCallback(async (termId: string) => {
+        if (!userId) {
+            setError("User/Team ID not available for glossary operation.");
+            return;
+        }
         setLoading(true);
         setError(null);
         try {
             await deleteGlossaryTerm(termId);
             setTerms(prev => prev.filter(t => t.id !== termId));
+            await logAuditEvent(userId, 'glossary_term_deleted', 'GlossaryTerm', termId, {});
         } catch (err) {
             console.error(`Failed to delete glossary term ${termId}:`, err);
             setError(`Failed to delete glossary term ${termId}.`);
@@ -1392,7 +2228,7 @@ export function useGlossaryManager(userId: string | undefined, isTeam: boolean =
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [userId]);
 
     useEffect(() => {
         loadTerms();
@@ -1403,6 +2239,8 @@ export function useGlossaryManager(userId: string | undefined, isTeam: boolean =
 
 /**
  * Hook for managing prompt templates.
+ * Business value: Provides tools for creating, organizing, and deploying reusable AI prompts,
+ * enabling advanced prompt engineering and consistent AI output quality across tasks.
  */
 export function usePromptTemplateManager(userId: string | undefined) {
     const [templates, setTemplates] = useState<PromptTemplate[]>([]);
@@ -1440,6 +2278,7 @@ export function usePromptTemplateManager(userId: string | undefined) {
                 }
                 return [...prev, savedTemplate];
             });
+            await logAuditEvent(userId, template.id ? 'prompt_template_updated' : 'prompt_template_added', 'PromptTemplate', savedTemplate.id, { name: savedTemplate.name });
             return savedTemplate;
         } catch (err) {
             console.error("Failed to save prompt template:", err);
@@ -1451,11 +2290,16 @@ export function usePromptTemplateManager(userId: string | undefined) {
     }, [userId]);
 
     const removeTemplate = useCallback(async (templateId: string) => {
+        if (!userId) {
+            setError("User ID not available for template operation.");
+            return;
+        }
         setLoading(true);
         setError(null);
         try {
             await deletePromptTemplate(templateId);
             setTemplates(prev => prev.filter(t => t.id !== templateId));
+            await logAuditEvent(userId, 'prompt_template_deleted', 'PromptTemplate', templateId, {});
         } catch (err) {
             console.error(`Failed to delete prompt template ${templateId}:`, err);
             setError(`Failed to delete prompt template ${templateId}.`);
@@ -1463,7 +2307,7 @@ export function usePromptTemplateManager(userId: string | undefined) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [userId]);
 
     useEffect(() => {
         loadTemplates();
@@ -1474,6 +2318,8 @@ export function usePromptTemplateManager(userId: string | undefined) {
 
 /**
  * Hook for managing user notifications.
+ * Business value: Centralizes the display and management of system alerts, ensuring users
+ * are always informed about critical events, task completions, and account-related messages.
  */
 export function useNotifications(userId: string | undefined) {
     const [notifications, setNotifications] = useState<UserNotification[]>([]);
@@ -1498,15 +2344,20 @@ export function useNotifications(userId: string | undefined) {
     }, [userId]);
 
     const markAsRead = useCallback(async (notificationId: string) => {
+        if (!userId) {
+            setError("User ID not available to mark notification as read.");
+            return;
+        }
         try {
             await markNotificationAsRead(notificationId);
             setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
+            await logAuditEvent(userId, 'notification_marked_read', 'UserNotification', notificationId, {});
         } catch (err) {
             console.error(`Failed to mark notification ${notificationId} as read:`, err);
             setError(`Failed to mark notification as read.`);
         }
-    }, []);
+    }, [userId]);
 
     useEffect(() => {
         loadNotifications();
@@ -1515,15 +2366,331 @@ export function useNotifications(userId: string | undefined) {
     return { notifications, loading, error, unreadCount, loadNotifications, markAsRead };
 }
 
-// =====================================================================================================================
-// SECTION 5: APPLICATION-SPECIFIC COMPONENTS (approx. 5000 lines)
-// These components represent the main features of the Lexicon Clarifier application,
-// built upon the core models, mock services, and reusable UI components.
-// This section will be heavily expanded to reach the desired line count.
-// =====================================================================================================================
+/**
+ * Hook for tracking and reporting AI usage.
+ * Business value: Provides transparent financial oversight by logging every AI invocation,
+ * enabling granular cost analysis, usage-based billing, and resource optimization.
+ */
+export function useAIUsageTracker(userId: string | undefined) {
+    const [usageHistory, setUsageHistory] = useState<AIUsageRecord[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadUsageHistory = useCallback(async () => {
+        if (!userId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const history = await fetchAIUsageHistory(userId);
+            setUsageHistory(history);
+        } catch (err) {
+            console.error("Failed to load AI usage history:", err);
+            setError("Failed to load AI usage history.");
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    const addUsageRecord = useCallback(async (record: Omit<AIUsageRecord, 'id'>) => {
+        if (!userId) {
+            setError("User ID not available to record AI usage.");
+            return;
+        }
+        try {
+            const newRecord = await recordAIUsage(record);
+            setUsageHistory(prev => [newRecord, ...prev]);
+            return newRecord;
+        } catch (err) {
+            console.error("Failed to add AI usage record:", err);
+            setError("Failed to record AI usage.");
+            throw err;
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        loadUsageHistory();
+    }, [loadUsageHistory]);
+
+    return { usageHistory, loading, error, loadUsageHistory, addUsageRecord };
+}
+
+/**
+ * Hook for managing user subscriptions and payment methods.
+ * Business value: Simplifies subscription lifecycle management, enabling users to easily view
+ * their plan, track usage, and manage billing details, fostering customer satisfaction and retention.
+ */
+export function useSubscriptionManager(userId: string | undefined) {
+    const [subscription, setSubscription] = useState<SubscriptionPlan | null>(null);
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadSubscriptionData = useCallback(async () => {
+        if (!userId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const [sub, pms] = await Promise.all([
+                fetchSubscriptionDetails(userId),
+                fetchPaymentMethods(userId),
+            ]);
+            setSubscription(sub);
+            setPaymentMethods(pms);
+        } catch (err) {
+            console.error("Failed to load subscription data:", err);
+            setError("Failed to load subscription details.");
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    const updateSubscriptionPlan = useCallback(async (newPlan: 'free' | 'pro' | 'enterprise') => {
+        if (!userId) {
+            setError("User ID not available to update subscription.");
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const updatedSub = await updateSubscription(userId, newPlan);
+            setSubscription(updatedSub);
+            await logAuditEvent(userId, 'subscription_update', 'SubscriptionPlan', updatedSub.id, { newPlan: newPlan });
+            return updatedSub;
+        } catch (err: any) {
+            console.error("Failed to update subscription:", err);
+            setError(`Failed to update subscription: ${err.message}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    const addPayment = useCallback(async (method: Omit<PaymentMethod, 'id' | 'createdAt'>) => {
+        if (!userId) {
+            setError("User ID not available to add payment method.");
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const newPm = await addPaymentMethod(userId, method);
+            setPaymentMethods(prev => [...prev, newPm]);
+            await logAuditEvent(userId, 'payment_method_added', 'PaymentMethod', newPm.id, { type: newPm.type, last4: newPm.last4Digits });
+            return newPm;
+        } catch (err) {
+            console.error("Failed to add payment method:", err);
+            setError("Failed to add payment method.");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    const makePayment = useCallback(async (paymentMethodId: string, amount: number, currency: string) => {
+        if (!userId) {
+            setError("User ID not available to make payment.");
+            return false;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const success = await processPayment(userId, paymentMethodId, amount, currency);
+            if (success) {
+                await logAuditEvent(userId, 'payment_processed', 'Payment', paymentMethodId, { amount, currency });
+            } else {
+                await logAuditEvent(userId, 'payment_failed', 'Payment', paymentMethodId, { amount, currency });
+            }
+            return success;
+        } catch (err) {
+            console.error("Failed to process payment:", err);
+            setError("Failed to process payment.");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        loadSubscriptionData();
+    }, [loadSubscriptionData]);
+
+    return { subscription, paymentMethods, loading, error, loadSubscriptionData, updateSubscriptionPlan, addPayment, makePayment };
+}
+
+/**
+ * Hook for managing agent tasks.
+ * Business value: Provides an abstraction for interacting with automated agents, enabling users
+ * to initiate and monitor complex background tasks without direct system interaction.
+ */
+export function useAgentTaskExecutor(userId: string | undefined) {
+    const [tasks, setTasks] = useState<AgentTask[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadTasks = useCallback(async () => {
+        if (!userId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const fetchedTasks = await fetchAgentTasks(userId);
+            setTasks(fetchedTasks);
+        } catch (err) {
+            console.error("Failed to load agent tasks:", err);
+            setError("Failed to load agent tasks.");
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    const submitTask = useCallback(async (task: Omit<AgentTask, 'id' | 'createdAt' | 'status' | 'startedAt' | 'completedAt' | 'results' | 'error' | 'agentId' | 'auditLogId'>) => {
+        if (!userId) {
+            setError("User ID not available to submit agent task.");
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const newTask = await submitAgentTask({ ...task, initiatedBy: userId });
+            setTasks(prev => [...prev, newTask]);
+            return newTask;
+        } catch (err) {
+            console.error("Failed to submit agent task:", err);
+            setError("Failed to submit agent task.");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        loadTasks();
+    }, [loadTasks]);
+
+    // Simple polling to update task status
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (tasks.some(t => t.status === 'pending' || t.status === 'in_progress')) {
+                loadTasks();
+            }
+        }, 5000); // Poll every 5 seconds
+        return () => clearInterval(interval);
+    }, [tasks, loadTasks]);
+
+
+    return { tasks, loading, error, loadTasks, submitTask };
+}
+
+/**
+ * Hook for managing token balances and transactions.
+ * Business value: Provides real-time visibility and control over digital assets, supporting
+ * token-based payment models, rewards, and the full lifecycle of token transactions on simulated rails.
+ */
+export function useTokenRailsSimulator(userId: string | undefined) {
+    const [balance, setBalance] = useState<TokenBalance | null>(null);
+    const [transactions, setTransactions] = useState<TokenTransaction[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadTokenData = useCallback(async () => {
+        if (!userId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const [bal, txns] = await Promise.all([
+                fetchTokenBalance(userId),
+                fetchTokenTransactions(userId),
+            ]);
+            setBalance(bal);
+            setTransactions(txns);
+        } catch (err) {
+            console.error("Failed to load token data:", err);
+            setError("Failed to load token data.");
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    const executeTransaction = useCallback(async (
+        amount: number,
+        toAddress: string,
+        type: TokenTransaction['type'],
+        rail: 'rail_fast' | 'rail_batch',
+        referenceId?: string,
+        fromAddress?: string,
+        currency: string = "LC_TOKEN"
+    ) => {
+        if (!userId) {
+            setError("User ID not available for token transaction.");
+            return;
+        }
+        if (!balance || balance.balance < amount && type !== 'mint') {
+            setError("Insufficient token balance.");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        const idempotencyKey = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        try {
+            const txn = await executeTokenTransaction({
+                userId,
+                fromAddress: fromAddress || userId,
+                toAddress,
+                amount,
+                currency,
+                type,
+                referenceId,
+                idempotencyKey,
+                fee: 0, // Simplified for now
+            }, rail);
+
+            setTransactions(prev => [txn, ...prev]);
+            setBalance(prev => prev ? { ...prev, balance: (type === 'mint' || type === 'transfer' && txn.toAddress === userId) ? prev.balance + amount : prev.balance - amount, lastUpdated: new Date() } : null);
+            return txn;
+        } catch (err: any) {
+            console.error("Failed to execute token transaction:", err);
+            setError(`Failed to execute token transaction: ${err.message}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [userId, balance]);
+
+    const adminMintTokens = useCallback(async (amount: number, toAddress: string, currency: string = "LC_TOKEN") => {
+        if (!userId) { // This should be controlled by RBAC in a real system
+            setError("Admin privileges required for minting.");
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+            const mintedTxn = await mintTokens(userId, amount, currency, toAddress);
+            setTransactions(prev => [mintedTxn, ...prev]);
+            setBalance(prev => prev && prev.userId === toAddress ? { ...prev, balance: prev.balance + amount, lastUpdated: new Date() } : prev);
+            return mintedTxn;
+        } catch (err: any) {
+            console.error("Failed to mint tokens:", err);
+            setError(`Failed to mint tokens: ${err.message}`);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+
+    useEffect(() => {
+        loadTokenData();
+    }, [loadTokenData]);
+
+    return { balance, transactions, loading, error, loadTokenData, executeTransaction, adminMintTokens };
+}
+
 
 /**
  * Props for the AIExplanationOutput component.
+ * Business value: Displays the core AI-generated value to the user, providing critical
+ * insights and a platform for iterative refinement and feedback, enhancing content quality.
  */
 interface AIExplanationOutputProps {
     explanation: string;
@@ -1534,10 +2701,14 @@ interface AIExplanationOutputProps {
     editable?: boolean;
     explanationRecordId?: string;
     className?: string;
+    estimatedCost?: number; // Added to display cost
+    tokensUsed?: number; // Added to display tokens
 }
 
 /**
  * Displays the AI-generated explanation with options for interaction.
+ * Business value: Serves as the primary output interface for AI analysis, enabling users
+ * to quickly grasp complex information, provide feedback for model improvement, and track costs.
  */
 export const AIExplanationOutput: React.FC<AIExplanationOutputProps> = ({
     explanation,
@@ -1547,7 +2718,9 @@ export const AIExplanationOutput: React.FC<AIExplanationOutputProps> = ({
     onFeedback,
     editable = false,
     explanationRecordId,
-    className
+    className,
+    estimatedCost,
+    tokensUsed
 }) => {
     const [editedExplanation, setEditedExplanation] = useState(explanation);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -1666,25 +2839,32 @@ export const AIExplanationOutput: React.FC<AIExplanationOutputProps> = ({
                                 {renderExplanationWithLinkedTerms(explanation)}
                             </p>
                         )}
-                        <div className="mt-4 flex flex-wrap gap-2 justify-end items-center">
-                            {editable && (
-                                <button
-                                    onClick={handleSave}
-                                    disabled={saving || editedExplanation === explanation}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm disabled:opacity-50 flex items-center"
-                                >
-                                    {saving && <LoadingSpinner />}
-                                    {saving ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save Changes')}
-                                </button>
+                        <div className="mt-4 flex flex-wrap gap-2 justify-between items-center">
+                            {(estimatedCost !== undefined && tokensUsed !== undefined) && (
+                                <div className="text-gray-500 text-xs">
+                                    Est. Cost: <span className="text-cyan-400 font-semibold">${estimatedCost.toFixed(6)}</span> | Tokens: <span className="text-cyan-400 font-semibold">{tokensUsed}</span>
+                                </div>
                             )}
-                            {onFeedback && (
-                                <button
-                                    onClick={() => setShowFeedbackModal(true)}
-                                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-white text-sm"
-                                >
-                                    Provide Feedback
-                                </button>
-                            )}
+                            <div className="flex flex-wrap gap-2 justify-end items-center">
+                                {editable && (
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving || editedExplanation === explanation}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm disabled:opacity-50 flex items-center"
+                                    >
+                                        {saving && <LoadingSpinner />}
+                                        {saving ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save Changes')}
+                                    </button>
+                                )}
+                                {onFeedback && (
+                                    <button
+                                        onClick={() => setShowFeedbackModal(true)}
+                                        className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-white text-sm"
+                                    >
+                                        Provide Feedback
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </>
                 ) : (
@@ -1735,17 +2915,23 @@ export const AIExplanationOutput: React.FC<AIExplanationOutputProps> = ({
 
 /**
  * Props for the DocumentUploadSection component.
+ * Business value: Centralizes document ingestion and management, providing a unified interface
+ * for uploading files and triggering subsequent AI-driven analysis workflows.
  */
 interface DocumentUploadSectionProps {
     userId: string;
     onDocumentUpload: (doc: DocumentMetadata) => void;
+    onAnalyzeDocument: (documentId: string, userId: string) => void;
 }
 
 /**
  * Allows users to upload documents for processing and view their uploaded documents.
+ * Business value: Transforms raw documents into actionable insights by enabling upload,
+ * viewing, and triggering of advanced AI processing, enhancing data leverage.
  */
-export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({ userId, onDocumentUpload }) => {
-    const { documents, loading, error, uploading, uploadProgress, loadDocuments, uploadDocument, getDocumentContent } = useDocumentManager(userId);
+export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({ userId, onDocumentUpload, onAnalyzeDocument }) => {
+    const { documents, loading, error, uploading, uploadProgress, loadDocuments, uploadDocument, getDocumentContent, updateDocumentStatus } = useDocumentManager(userId);
+    const { submitTask } = useAgentTaskExecutor(userId);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [viewingDocumentId, setViewingDocumentId] = useState<string | null>(null);
     const [viewingDocumentContent, setViewingDocumentContent] = useState<string | null>(null);
@@ -1784,6 +2970,23 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({ us
     const handleCloseDocumentView = () => {
         setViewingDocumentId(null);
         setViewingDocumentContent(null);
+    };
+
+    const handleAnalyzeDocumentAgent = async (docId: string) => {
+        if (!userId) return;
+        try {
+            updateDocumentStatus(docId, 'processing', 'in_progress'); // Optimistic UI update
+            await submitTask({
+                taskType: 'document_analysis',
+                targetEntityId: docId,
+                parameters: { analysisType: 'full_clarification', targetAudience: 'college' }
+            });
+            alert('Document analysis agent task submitted!');
+        } catch (err) {
+            alert('Failed to submit document analysis task.');
+            console.error(err);
+            updateDocumentStatus(docId, 'uploaded', 'failed'); // Revert status on failure
+        }
     };
 
     return (
@@ -1832,7 +3035,7 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({ us
                                     Status
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                    Uploaded
+                                    Agent Analysis
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                                     Actions
@@ -1850,23 +3053,38 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({ us
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            ${doc.status === 'processed' ? 'bg-green-100 text-green-800' :
+                                            ${doc.status === 'processed' || doc.status === 'analyzed_by_agent' ? 'bg-green-100 text-green-800' :
                                             doc.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
                                             'bg-gray-100 text-gray-800'}`}
                                         >
                                             {doc.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                                        {new Date(doc.uploadDate).toLocaleDateString()}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            ${doc.agentAnalysisStatus === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                            doc.agentAnalysisStatus === 'in_progress' ? 'bg-purple-100 text-purple-800' :
+                                            doc.agentAnalysisStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                                            'bg-gray-100 text-gray-800'}`}
+                                        >
+                                            {doc.agentAnalysisStatus || 'N/A'}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
                                             onClick={() => handleViewDocument(doc.id)}
                                             className="text-cyan-600 hover:text-cyan-900 mr-4"
-                                            disabled={doc.status !== 'processed'}
+                                            disabled={doc.status !== 'processed' && doc.status !== 'analyzed_by_agent'}
                                         >
                                             View
+                                        </button>
+                                        <button
+                                            onClick={() => handleAnalyzeDocumentAgent(doc.id)}
+                                            className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                            disabled={doc.status !== 'processed' || doc.agentAnalysisStatus === 'in_progress'}
+                                            title="Initiate AI analysis agent"
+                                        >
+                                            Analyze (Agent)
                                         </button>
                                         <button className="text-red-600 hover:text-red-900">
                                             Delete
@@ -1894,6 +3112,8 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({ us
 
 /**
  * Props for the SettingsPanel component.
+ * Business value: Provides a centralized hub for users to manage their personal settings,
+ * including preferences, subscriptions, and billing information, enhancing user control.
  */
 interface SettingsPanelProps {
     userProfile: UserProfile;
@@ -1904,6 +3124,8 @@ interface SettingsPanelProps {
 
 /**
  * Allows users to manage their application settings and preferences.
+ * Business value: Empowers users to customize their experience, ensuring the application
+ * aligns with their needs and preferences, leading to higher engagement and satisfaction.
  */
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ userProfile, onUpdatePreferences, isLoading, error }) => {
     const [preferences, setPreferences] = useState<UserPreferences>(userProfile.preferences);
@@ -2111,6 +3333,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ userProfile, onUpd
                         className="toggle toggle-primary"
                     />
                 </div>
+                <div className="flex items-center justify-between">
+                    <label htmlFor="agentTaskUpdates" className="text-gray-400 text-sm">Agent Task Updates</label>
+                    <input
+                        type="checkbox"
+                        id="agentTaskUpdates"
+                        checked={preferences.notificationSettings.agentTaskUpdates}
+                        onChange={(e) => handleNotificationChange('agentTaskUpdates', e.target.checked)}
+                        className="toggle toggle-primary"
+                    />
+                </div>
             </div>
 
             <div className="flex justify-end mt-6">
@@ -2128,6 +3360,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ userProfile, onUpd
 
 /**
  * Props for the ExplanationHistoryPanel component.
+ * Business value: Provides an organized, searchable archive of past AI interactions, enabling
+ * users to track their research, review previous explanations, and reuse generated content.
  */
 interface ExplanationHistoryPanelProps {
     userId: string;
@@ -2136,6 +3370,8 @@ interface ExplanationHistoryPanelProps {
 
 /**
  * Displays a user's past explanation history.
+ * Business value: Offers a historical record of AI-driven insights, essential for knowledge
+ * retention, auditing past clarifications, and training new team members.
  */
 export const ExplanationHistoryPanel: React.FC<ExplanationHistoryPanelProps> = ({ userId, onSelectExplanation }) => {
     const { paginatedHistory, loading, error, removeExplanationFromHistory, currentPage, totalPages, setCurrentPage, loadHistory } = useExplanationHistory(userId);
@@ -2176,6 +3412,9 @@ export const ExplanationHistoryPanel: React.FC<ExplanationHistoryPanelProps> = (
                                         Model / Style
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Cost / Tokens
+                                    </th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                         Date
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -2191,6 +3430,9 @@ export const ExplanationHistoryPanel: React.FC<ExplanationHistoryPanelProps> = (
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                                             {exp.modelUsed} / {exp.explanationStyle}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                            ${exp.estimatedCost?.toFixed(6) || 'N/A'} / {exp.tokensUsed || 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                                             {new Date(exp.timestamp).toLocaleString()}
@@ -2245,6 +3487,8 @@ export const ExplanationHistoryPanel: React.FC<ExplanationHistoryPanelProps> = (
 
 /**
  * Props for the GlossaryManagerPanel component.
+ * Business value: Centralizes glossary management, providing a crucial tool for maintaining
+ * consistent terminology across an organization and improving AI output relevance.
  */
 interface GlossaryManagerPanelProps {
     userId: string;
@@ -2252,6 +3496,8 @@ interface GlossaryManagerPanelProps {
 
 /**
  * Allows users to manage their custom glossary terms.
+ * Business value: Enables the creation and maintenance of a domain-specific knowledge base,
+ * which directly enhances AI accuracy and comprehension of specialized content.
  */
 export const GlossaryManagerPanel: React.FC<GlossaryManagerPanelProps> = ({ userId }) => {
     const { terms, loading, error, loadTerms, addOrUpdateTerm, removeTerm } = useGlossaryManager(userId);
@@ -2445,6 +3691,8 @@ export const GlossaryManagerPanel: React.FC<GlossaryManagerPanelProps> = ({ user
 
 /**
  * Props for the AIModelConfigurationPanel component.
+ * Business value: Provides an administrative interface for AI model governance,
+ * allowing control over model availability and parameters, critical for cost management and performance tuning.
  */
 interface AIModelConfigurationPanelProps {
     userProfile: UserProfile;
@@ -2452,6 +3700,8 @@ interface AIModelConfigurationPanelProps {
 
 /**
  * Allows users to view and configure AI models.
+ * Business value: Centralizes control over AI resource allocation, enabling optimization
+ * of processing capabilities and costs by managing model activation and parameters.
  */
 export const AIModelConfigurationPanel: React.FC<AIModelConfigurationPanelProps> = ({ userProfile }) => {
     const { models, loading, error, updateModel } = useAIModelConfig();
@@ -2493,7 +3743,7 @@ export const AIModelConfigurationPanel: React.FC<AIModelConfigurationPanelProps>
                 const updatedModel = { ...editingModel, isActive: actionType === 'activate' };
                 await updateModel(updatedModel);
                 setEditingModel(updatedModel); // Update local state
-                if (actionType === 'activate' && userProfile.subscriptionTier === 'free' && updatedModel.costPerToken > 0.000001) {
+                if (actionType === 'activate' && userProfile.subscriptionTier === 'free' && updatedModel.inputTokenCostPerMillion && updatedModel.inputTokenCostPerMillion > 0.5) {
                     alert("Warning: Activating this powerful model may incur higher costs. Consider upgrading your plan for better rates.");
                 }
             }
@@ -2528,7 +3778,8 @@ export const AIModelConfigurationPanel: React.FC<AIModelConfigurationPanelProps>
                                 <p className="text-gray-400 text-sm mb-2">{model.description}</p>
                                 <div className="text-sm text-gray-500 mb-2">
                                     <p>Provider: {model.provider}</p>
-                                    <p>Cost/Token: {model.costPerToken.toExponential(2)} USD</p>
+                                    <p>Input Cost/M tokens: {model.inputTokenCostPerMillion ? `$${model.inputTokenCostPerMillion.toFixed(3)}` : 'N/A'}</p>
+                                    <p>Output Cost/M tokens: {model.outputTokenCostPerMillion ? `$${model.outputTokenCostPerMillion.toFixed(3)}` : 'N/A'}</p>
                                     <p>Capabilities: {model.capabilities.join(', ')}</p>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -2652,6 +3903,8 @@ export const AIModelConfigurationPanel: React.FC<AIModelConfigurationPanelProps>
 
 /**
  * Props for the PromptEngineeringStudio component.
+ * Business value: Provides advanced users with tools to craft and manage custom AI prompts,
+ * enabling highly specialized and consistent AI-driven content generation workflows.
  */
 interface PromptEngineeringStudioProps {
     userId: string;
@@ -2661,6 +3914,8 @@ interface PromptEngineeringStudioProps {
 
 /**
  * Provides a studio for creating, managing, and applying custom prompt templates.
+ * Business value: Elevates the AI interaction by allowing custom-tailored prompts,
+ * leading to more accurate, relevant, and powerful AI outputs for niche applications.
  */
 export const PromptEngineeringStudio: React.FC<PromptEngineeringStudioProps> = ({ userId, onApplyPrompt, currentInput }) => {
     const { templates, loading, error, loadTemplates, addOrUpdateTemplate, removeTemplate } = usePromptTemplateManager(userId);
@@ -2848,6 +4103,11 @@ export const PromptEngineeringStudio: React.FC<PromptEngineeringStudioProps> = (
     );
 };
 
+/**
+ * Props for the TemplateForm component.
+ * Business value: Provides a structured form for creating and editing AI prompt templates,
+ * ensuring data integrity and ease of use in managing reusable prompt assets.
+ */
 interface TemplateFormProps {
     initialData?: Omit<PromptTemplate, 'id' | 'userId' | 'lastModified'>;
     onSave: (data: Omit<PromptTemplate, 'id' | 'userId' | 'lastModified'>) => void;
@@ -2855,6 +4115,11 @@ interface TemplateFormProps {
     isLoading: boolean;
 }
 
+/**
+ * Form component for creating or editing a PromptTemplate.
+ * Business value: Simplifies the process of defining custom AI behavior, allowing users to
+ * easily formalize effective prompts and share them, accelerating development of specialized AI applications.
+ */
 const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSave, onCancel, isLoading }) => {
     const [name, setName] = useState(initialData?.name || '');
     const [template, setTemplate] = useState(initialData?.template || '');
@@ -2950,6 +4215,8 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSave, onCanc
 
 /**
  * Props for the NotificationCenterPanel component.
+ * Business value: Centralizes user alerts and system communications, ensuring important
+ * messages are visible and actionable, enhancing user engagement and operational transparency.
  */
 interface NotificationCenterPanelProps {
     userId: string;
@@ -2957,6 +4224,8 @@ interface NotificationCenterPanelProps {
 
 /**
  * Displays user notifications and allows marking them as read.
+ * Business value: Provides a clear, organized inbox for system notifications, allowing users
+ * to stay informed about processing status, new features, and critical account alerts.
  */
 export const NotificationCenterPanel: React.FC<NotificationCenterPanelProps> = ({ userId }) => {
     const { notifications, loading, error, markAsRead } = useNotifications(userId);
@@ -3017,6 +4286,8 @@ export const NotificationCenterPanel: React.FC<NotificationCenterPanelProps> = (
 
 /**
  * Props for the AuditLogViewerPanel component.
+ * Business value: Essential for security and compliance, this component provides a transparent,
+ * auditable record of all user and system activities, enhancing accountability and trust.
  */
 interface AuditLogViewerPanelProps {
     userId: string;
@@ -3024,6 +4295,8 @@ interface AuditLogViewerPanelProps {
 
 /**
  * Displays recent audit log entries for the user.
+ * Business value: Offers a tamper-evident record of all system interactions, vital for
+ * forensic analysis, regulatory compliance, and maintaining system integrity.
  */
 export const AuditLogViewerPanel: React.FC<AuditLogViewerPanelProps> = ({ userId }) => {
     const [logs, setLogs] = useState<AuditLogEntry[]>([]);
@@ -3051,7 +4324,7 @@ export const AuditLogViewerPanel: React.FC<AuditLogViewerPanelProps> = ({ userId
 
     return (
         <Card title="Audit Log" className="space-y-4">
-            <p className="text-gray-400">Review recent activities on your account for security and tracking.</p>
+            <p className="text-gray-400">Review recent activities on your account for security and tracking. Logs are cryptographically chained for tamper evidence.</p>
 
             <div className="flex justify-between items-center mb-4">
                 <Dropdown
@@ -3098,7 +4371,10 @@ export const AuditLogViewerPanel: React.FC<AuditLogViewerPanelProps> = ({ userId
                                     Details
                                 </th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                    IP Address
+                                    Hash (Previous)
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Hash (Current)
                                 </th>
                             </tr>
                         </thead>
@@ -3117,8 +4393,11 @@ export const AuditLogViewerPanel: React.FC<AuditLogViewerPanelProps> = ({ userId
                                     <td className="px-6 py-4 text-sm text-gray-500 max-w-xs overflow-hidden text-ellipsis">
                                         {JSON.stringify(log.details)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {log.ipAddress}
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                                        {log.previousHash ? `${log.previousHash.substring(0, 8)}...` : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-cyan-500">
+                                        {log.hash.substring(0, 8)}...
                                     </td>
                                 </tr>
                             ))}
@@ -3132,6 +4411,8 @@ export const AuditLogViewerPanel: React.FC<AuditLogViewerPanelProps> = ({ userId
 
 /**
  * Props for the APIKeyManagementPanel component.
+ * Business value: Enables secure programmatic access to the platform via API keys,
+ * facilitating integration with external systems and custom applications.
  */
 interface APIKeyManagementPanelProps {
     userId: string;
@@ -3140,6 +4421,8 @@ interface APIKeyManagementPanelProps {
 
 /**
  * Allows users to manage their API keys for programmatic access.
+ * Business value: Provides self-service management of API credentials, crucial for developers
+ * integrating with the platform and enhancing the ecosystem's extensibility.
  */
 export const APIKeyManagementPanel: React.FC<APIKeyManagementPanelProps> = ({ userId, hasAccess }) => {
     const [apiKeys, setApiKeys] = useState<string[]>([]); // Mock array of keys
@@ -3159,6 +4442,7 @@ export const APIKeyManagementPanel: React.FC<APIKeyManagementPanelProps> = ({ us
             setApiKeys(prev => [...prev, newKey]);
             setNewlyGeneratedKey(newKey);
             setShowNewKeyModal(true);
+            await logAuditEvent(userId, 'api_key_generated', 'APIKey', newKey.substring(0, 15), {});
         } catch (err) {
             console.error("Failed to generate API key:", err);
             setError("Failed to generate API key.");
@@ -3175,6 +4459,7 @@ export const APIKeyManagementPanel: React.FC<APIKeyManagementPanelProps> = ({ us
             await new Promise(resolve => setTimeout(resolve, mockApiResponseDelay));
             setApiKeys(prev => prev.filter(key => key !== keyToRevoke));
             alert(`API key ${keyToRevoke.substring(0, 10)}... revoked successfully.`);
+            await logAuditEvent(userId, 'api_key_revoked', 'APIKey', keyToRevoke.substring(0, 15), {});
         } catch (err) {
             console.error("Failed to revoke API key:", err);
             setError("Failed to revoke API key.");
@@ -3304,14 +4589,505 @@ export const APIKeyManagementPanel: React.FC<APIKeyManagementPanelProps> = ({ us
     );
 };
 
-// =====================================================================================================================
-// SECTION 6: MAIN APPLICATION VIEW (LEXICON CLARIFIER) - will integrate all above (approx. 2000 lines, including existing)
-// This is the main component that orchestrates the different features and views of the application.
-// It uses a tab-based navigation system to switch between different functionalities.
-// =====================================================================================================================
+/**
+ * Props for the SubscriptionAndBillingPanel component.
+ * Business value: Centralizes subscription and financial management, providing transparency
+ * into plans, usage, and billing, directly supporting revenue operations and customer trust.
+ */
+interface SubscriptionAndBillingPanelProps {
+    userId: string;
+    currentUserTier: UserProfile['subscriptionTier'];
+}
 
-type MainViewTab = 'clarifier' | 'history' | 'documents' | 'glossary' | 'prompts' | 'settings' | 'models' | 'notifications' | 'audit_log' | 'api_keys';
+/**
+ * Manages user subscriptions, payment methods, and displays AI usage costs.
+ * Business value: This panel drives revenue by facilitating subscription upgrades,
+ * provides financial transparency through usage tracking, and enables seamless payment
+ * management, securing long-term customer relationships and profitability.
+ */
+export const SubscriptionAndBillingPanel: React.FC<SubscriptionAndBillingPanelProps> = ({ userId, currentUserTier }) => {
+    const { subscription, paymentMethods, loading, error, loadSubscriptionData, updateSubscriptionPlan, addPayment, makePayment } = useSubscriptionManager(userId);
+    const { usageHistory, loading: usageLoading, error: usageError, loadUsageHistory } = useAIUsageTracker(userId);
 
+    const [isAddingPaymentMethod, setIsAddingPaymentMethod] = useState(false);
+    const [newPaymentType, setNewPaymentType] = useState<PaymentMethod['type']>('card');
+    const [newPaymentDetails, setNewPaymentDetails] = useState({ last4Digits: '', bankName: '', cryptoAddressMasked: '' });
+    const [processingPayment, setProcessingPayment] = useState(false);
+
+    const handleAddPaymentMethod = async () => {
+        if (!userId) return;
+        setProcessingPayment(true);
+        try {
+            const methodToAdd: Omit<PaymentMethod, 'id' | 'createdAt'> = {
+                userId,
+                type: newPaymentType,
+                isDefault: paymentMethods.length === 0, // Make first one default
+                ...((newPaymentType === 'card' && { last4Digits: newPaymentDetails.last4Digits }))
+            };
+            await addPayment(methodToAdd);
+            setIsAddingPaymentMethod(false);
+            setNewPaymentDetails({ last4Digits: '', bankName: '', cryptoAddressMasked: '' });
+            alert('Payment method added successfully!');
+        } catch (err) {
+            alert('Failed to add payment method.');
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
+
+    const handleUpgradePlan = async (plan: 'pro' | 'enterprise') => {
+        if (!userId) return;
+        setProcessingPayment(true); // Reusing for plan change
+        try {
+            await updateSubscriptionPlan(plan);
+            alert(`Subscription updated to ${plan.toUpperCase()} plan!`);
+        } catch (err: any) {
+            alert(`Failed to update subscription: ${err.message}`);
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
+
+    const totalUsageCost = usageHistory.reduce((sum, record) => sum + record.estimatedCostUSD, 0);
+
+    const planOptions = [
+        { value: 'free', label: 'Free Tier (Limited)' },
+        { value: 'pro', label: 'Pro Plan (Advanced Features)' },
+        { value: 'enterprise', label: 'Enterprise (Custom Solutions)' },
+    ];
+
+    return (
+        <Card title="Subscription & Billing" className="space-y-6">
+            {(loading || usageLoading) && <LoadingSpinner />}
+            {(error || usageError) && <AlertMessage type="error" message={error || usageError || "An error occurred."} className="mb-4" />}
+
+            <h3 className="text-xl font-semibold text-white mb-4 border-b border-gray-700 pb-2">Your Subscription</h3>
+            {subscription ? (
+                <div className="space-y-2 text-gray-300">
+                    <p>Plan: <span className="font-semibold text-cyan-400">{subscription.name.toUpperCase()}</span> (${subscription.monthlyPriceUSD}/month)</p>
+                    <p>Description: {subscription.description}</p>
+                    <p>Features: {subscription.features.join(', ')}</p>
+                    <p>Storage Limit: {subscription.documentStorageGB} GB</p>
+                    <p>API Access: {subscription.apiKeyAccess ? 'Enabled' : 'Disabled'}</p>
+                    <p className="mt-4 text-gray-400">Current Usage this period (AI Cost): <span className="font-bold text-lg text-green-400">${totalUsageCost.toFixed(4)}</span></p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {currentUserTier === 'free' && (
+                            <button onClick={() => handleUpgradePlan('pro')} disabled={processingPayment} className="py-2 px-6 bg-purple-600 hover:bg-purple-700 rounded text-white disabled:opacity-50">
+                                {processingPayment ? 'Upgrading...' : 'Upgrade to Pro'}
+                            </button>
+                        )}
+                        {currentUserTier === 'pro' && (
+                            <button onClick={() => handleUpgradePlan('enterprise')} disabled={processingPayment} className="py-2 px-6 bg-yellow-600 hover:bg-yellow-700 rounded text-white disabled:opacity-50">
+                                {processingPayment ? 'Upgrading...' : 'Contact for Enterprise'}
+                            </button>
+                        )}
+                        {currentUserTier !== 'free' && (
+                            <button onClick={() => handleUpgradePlan('free')} disabled={processingPayment} className="py-2 px-6 bg-red-600 hover:bg-red-700 rounded text-white disabled:opacity-50">
+                                {processingPayment ? 'Downgrading...' : 'Downgrade to Free'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <p className="text-gray-500">Loading subscription details...</p>
+            )}
+
+            <h3 className="text-xl font-semibold text-white mb-4 border-b border-gray-700 pb-2 mt-8">Payment Methods</h3>
+            {paymentMethods.length === 0 ? (
+                <p className="text-gray-500">No payment methods configured.</p>
+            ) : (
+                <div className="space-y-3">
+                    {paymentMethods.map(pm => (
+                        <div key={pm.id} className="p-3 bg-gray-800 rounded-md flex justify-between items-center">
+                            <div className="text-gray-300">
+                                <p className="font-semibold">{pm.type === 'card' ? `Card ending in ${pm.last4Digits}` : `Crypto (${pm.cryptoAddressMasked})`}</p>
+                                <p className="text-xs text-gray-500">Added: {new Date(pm.createdAt).toLocaleDateString()} {pm.expiresAt && `(Expires: ${new Date(pm.expiresAt).toLocaleDateString()})`}</p>
+                            </div>
+                            {pm.isDefault && <span className="px-2 py-1 bg-green-600 text-white text-xs rounded-full">Default</span>}
+                        </div>
+                    ))}
+                </div>
+            )}
+            <div className="mt-4 flex justify-end">
+                <button onClick={() => setIsAddingPaymentMethod(true)} className="py-2 px-6 bg-blue-600 hover:bg-blue-700 rounded text-white">
+                    Add Payment Method
+                </button>
+            </div>
+
+            <Modal isOpen={isAddingPaymentMethod} onClose={() => setIsAddingPaymentMethod(false)} title="Add New Payment Method">
+                <div className="space-y-4">
+                    <Dropdown
+                        label="Payment Type"
+                        options={[{ value: 'card', label: 'Credit Card' }, { value: 'crypto', label: 'Cryptocurrency' }]}
+                        selectedValue={newPaymentType}
+                        onValueChange={(val) => setNewPaymentType(val as PaymentMethod['type'])}
+                    />
+                    {newPaymentType === 'card' && (
+                        <div>
+                            <label htmlFor="last4" className="block text-sm font-medium text-gray-400">Card Last 4 Digits</label>
+                            <input
+                                type="text"
+                                id="last4"
+                                value={newPaymentDetails.last4Digits}
+                                onChange={(e) => setNewPaymentDetails(prev => ({ ...prev, last4Digits: e.target.value }))}
+                                maxLength={4}
+                                className="w-full bg-gray-700/50 p-2 rounded text-white font-mono text-sm border border-gray-600"
+                            />
+                        </div>
+                    )}
+                    {newPaymentType === 'crypto' && (
+                        <div>
+                            <label htmlFor="cryptoAddr" className="block text-sm font-medium text-gray-400">Crypto Wallet Address (Masked)</label>
+                            <input
+                                type="text"
+                                id="cryptoAddr"
+                                value={newPaymentDetails.cryptoAddressMasked}
+                                onChange={(e) => setNewPaymentDetails(prev => ({ ...prev, cryptoAddressMasked: e.target.value }))}
+                                placeholder="e.g., 0xabc...xyz"
+                                className="w-full bg-gray-700/50 p-2 rounded text-white font-mono text-sm border border-gray-600"
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className="mt-6 flex justify-end space-x-2">
+                    <button
+                        onClick={() => setIsAddingPaymentMethod(false)}
+                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white text-sm"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddPaymentMethod}
+                        disabled={processingPayment || (newPaymentType === 'card' && newPaymentDetails.last4Digits.length !== 4) || (newPaymentType === 'crypto' && !newPaymentDetails.cryptoAddressMasked)}
+                        className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded text-white text-sm disabled:opacity-50"
+                    >
+                        {processingPayment ? 'Adding...' : 'Add Method'}
+                    </button>
+                </div>
+            </Modal>
+        </Card>
+    );
+};
+
+/**
+ * Props for the AutomatedAgentTasksPanel component.
+ * Business value: Provides an interface for monitoring and managing agent-driven automation,
+ * enabling visibility into proactive system operations and their outcomes.
+ */
+interface AutomatedAgentTasksPanelProps {
+    userId: string;
+}
+
+/**
+ * Displays and manages automated agent tasks.
+ * Business value: Offers transparent oversight of AI agent activities, allowing users to
+ * track the progress and results of automated document analysis, glossary suggestions,
+ * and other agentic workflows, ultimately enhancing operational efficiency.
+ */
+export const AutomatedAgentTasksPanel: React.FC<AutomatedAgentTasksPanelProps> = ({ userId }) => {
+    const { tasks, loading, error, loadTasks } = useAgentTaskExecutor(userId);
+
+    return (
+        <Card title="Automated Agent Tasks" className="space-y-4">
+            <p className="text-gray-400">Monitor the status and results of automated tasks performed by AI agents.</p>
+            <div className="flex justify-end">
+                <button
+                    onClick={loadTasks}
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm disabled:opacity-50"
+                >
+                    {loading ? 'Refreshing...' : 'Refresh Tasks'}
+                </button>
+            </div>
+
+            {loading ? (
+                <LoadingSpinner />
+            ) : error ? (
+                <AlertMessage type="error" message={error} />
+            ) : tasks.length === 0 ? (
+                <p className="text-gray-500">No agent tasks initiated yet.</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                        <thead className="bg-gray-700">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Task Type
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Target ID
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Initiated
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Completed
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Results
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-gray-800 divide-y divide-gray-700">
+                            {tasks.map((task) => (
+                                <tr key={task.id} className="hover:bg-gray-700/50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                                        {task.taskType}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                        {task.targetEntityId.substring(0, 8)}...
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            ${task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                            task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                            task.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'}`}
+                                        >
+                                            {task.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                        {new Date(task.createdAt).toLocaleString()}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                        {task.completedAt ? new Date(task.completedAt).toLocaleString() : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs overflow-hidden text-ellipsis">
+                                        {task.error || (task.results ? JSON.stringify(task.results) : 'Pending...')}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </Card>
+    );
+};
+
+/**
+ * Props for the TokenRailSimulatorPanel component.
+ * Business value: Provides a tangible representation of tokenized value within the platform,
+ * enabling users to visualize and interact with their digital assets and financial transactions.
+ */
+interface TokenRailSimulatorPanelProps {
+    userId: string;
+    currentUserRoles: string[];
+}
+
+/**
+ * Simulates and displays user token balances and transactions on a digital token rail.
+ * Business value: This panel acts as a direct interface to the Money20/20 token rails,
+ * enabling auditable, atomic, and idempotent value transfers. It provides transparency
+ * for usage-based billing, micro-payments, and rewards, directly implementing programmable
+ * finance concepts and opening new monetization avenues. For enterprise, it signifies a
+ * migration path to real-time gross settlement (RTGS) with digital assets.
+ */
+export const TokenRailSimulatorPanel: React.FC<TokenRailSimulatorPanelProps> = ({ userId, currentUserRoles }) => {
+    const { balance, transactions, loading, error, loadTokenData, executeTransaction, adminMintTokens } = useTokenRailsSimulator(userId);
+    const [sendAmount, setSendAmount] = useState<number>(0);
+    const [recipientAddress, setRecipientAddress] = useState<string>('');
+    const [selectedRail, setSelectedRail] = useState<'rail_fast' | 'rail_batch'>('rail_fast');
+    const [mintAmount, setMintAmount] = useState<number>(100);
+    const isAdmin = currentUserRoles.includes('admin'); // Simple RBAC check
+
+    const handleSendTokens = async () => {
+        if (!userId || !balance || sendAmount <= 0 || !recipientAddress) {
+            alert('Please fill all fields and ensure amount is positive.');
+            return;
+        }
+        if (balance.balance < sendAmount) {
+            alert('Insufficient balance.');
+            return;
+        }
+        try {
+            await executeTransaction(sendAmount, recipientAddress, 'transfer', selectedRail);
+            alert('Tokens sent successfully!');
+            setSendAmount(0);
+            setRecipientAddress('');
+        } catch (err: any) {
+            alert(`Failed to send tokens: ${err.message}`);
+        }
+    };
+
+    const handleAdminMint = async () => {
+        if (!isAdmin || !userId || mintAmount <= 0) {
+            alert('Invalid mint amount or insufficient permissions.');
+            return;
+        }
+        try {
+            await adminMintTokens(mintAmount, userId); // Mint to self for simplicity
+            alert(`Minted ${mintAmount} LC_TOKEN to ${userId}.`);
+            setMintAmount(100);
+        } catch (err: any) {
+            alert(`Failed to mint tokens: ${err.message}`);
+        }
+    };
+
+    const railOptions = [
+        { value: 'rail_fast', label: 'Fast Rail (Lower Latency, Potentially Higher Fee)' },
+        { value: 'rail_batch', label: 'Batch Rail (Higher Latency, Lower Fee)' },
+    ];
+
+    return (
+        <Card title="Token Rail Simulator (LC_TOKEN)" className="space-y-4">
+            <p className="text-gray-400">Manage your digital LC_TOKEN balance and view transaction history across simulated payment rails.</p>
+            {loading && <LoadingSpinner />}
+            {error && <AlertMessage type="error" message={error} className="mb-4" />}
+
+            <h3 className="text-xl font-semibold text-white mb-3 border-b border-gray-700 pb-2">Your Balance</h3>
+            {balance ? (
+                <div className="text-gray-300 text-lg">
+                    Current Balance: <span className="font-bold text-cyan-400">{balance.balance.toFixed(2)} LC_TOKEN</span>
+                    <p className="text-sm text-gray-500">Last Updated: {new Date(balance.lastUpdated).toLocaleString()}</p>
+                </div>
+            ) : (
+                <p className="text-gray-500">Loading balance...</p>
+            )}
+
+            <h3 className="text-xl font-semibold text-white mb-3 border-b border-gray-700 pb-2 mt-8">Send Tokens</h3>
+            <div className="space-y-4">
+                <div>
+                    <label htmlFor="sendAmount" className="block text-sm font-medium text-gray-400">Amount to Send</label>
+                    <input
+                        type="number"
+                        id="sendAmount"
+                        value={sendAmount}
+                        onChange={(e) => setSendAmount(parseFloat(e.target.value))}
+                        min="0.01"
+                        step="0.01"
+                        className="w-full bg-gray-700/50 p-2 rounded text-white font-mono text-sm border border-gray-600"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="recipientAddress" className="block text-sm font-medium text-gray-400">Recipient Address (User ID)</label>
+                    <input
+                        type="text"
+                        id="recipientAddress"
+                        value={recipientAddress}
+                        onChange={(e) => setRecipientAddress(e.target.value)}
+                        placeholder="e.g., user-456"
+                        className="w-full bg-gray-700/50 p-2 rounded text-white font-mono text-sm border border-gray-600"
+                    />
+                </div>
+                <Dropdown
+                    label="Select Rail"
+                    options={railOptions}
+                    selectedValue={selectedRail}
+                    onValueChange={(val) => setSelectedRail(val as 'rail_fast' | 'rail_batch')}
+                    className="w-full"
+                />
+                <button
+                    onClick={handleSendTokens}
+                    disabled={loading || !balance || balance.balance < sendAmount || sendAmount <= 0 || !recipientAddress}
+                    className="w-full py-2 px-6 bg-cyan-600 hover:bg-cyan-700 rounded text-white disabled:opacity-50"
+                >
+                    {loading ? 'Processing...' : 'Send Tokens'}
+                </button>
+            </div>
+
+            {isAdmin && (
+                <>
+                    <h3 className="text-xl font-semibold text-white mb-3 border-b border-gray-700 pb-2 mt-8">Admin: Mint Tokens</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="mintAmount" className="block text-sm font-medium text-gray-400">Amount to Mint</label>
+                            <input
+                                type="number"
+                                id="mintAmount"
+                                value={mintAmount}
+                                onChange={(e) => setMintAmount(parseFloat(e.target.value))}
+                                min="1"
+                                step="1"
+                                className="w-full bg-gray-700/50 p-2 rounded text-white font-mono text-sm border border-gray-600"
+                            />
+                        </div>
+                        <button
+                            onClick={handleAdminMint}
+                            disabled={loading || mintAmount <= 0}
+                            className="w-full py-2 px-6 bg-indigo-600 hover:bg-indigo-700 rounded text-white disabled:opacity-50"
+                        >
+                            {loading ? 'Minting...' : `Mint ${mintAmount} LC_TOKEN to self`}
+                        </button>
+                    </div>
+                </>
+            )}
+
+            <h3 className="text-xl font-semibold text-white mb-3 border-b border-gray-700 pb-2 mt-8">Transaction History</h3>
+            {transactions.length === 0 ? (
+                <p className="text-gray-500">No transactions yet.</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                        <thead className="bg-gray-700">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Type
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Amount
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    From / To
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Rail
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Time
+                                </th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Signature
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-gray-800 divide-y divide-gray-700">
+                            {transactions.map(txn => (
+                                <tr key={txn.id} className="hover:bg-gray-700/50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{txn.type}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-cyan-400">{txn.amount.toFixed(2)} {txn.currency}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{txn.fromAddress.substring(0, 8)}... → {txn.toAddress.substring(0, 8)}...</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{txn.rail}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            ${txn.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                            txn.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                            'bg-yellow-100 text-yellow-800'}`}
+                                        >
+                                            {txn.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(txn.timestamp).toLocaleString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{txn.signature.substring(0, 8)}...</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </Card>
+    );
+};
+
+type MainViewTab = 'clarifier' | 'history' | 'documents' | 'glossary' | 'prompts' | 'settings' | 'models' | 'notifications' | 'audit_log' | 'api_keys' | 'subscription' | 'agent_tasks' | 'token_rails';
+
+/**
+ * The main application view for the Lexicon Clarifier.
+ * Business value: This foundational component orchestrates all major features of the
+ * Lexicon Clarifier, providing a seamless user experience across AI-driven analysis,
+ * document management, custom knowledge bases, and advanced configuration.
+ * It integrates agentic AI for automated workflows, token rails for transparent usage and micro-transactions,
+ * and robust digital identity features for security and governance. This comprehensive
+ * platform drives millions in value by accelerating information processing, enabling new
+ * revenue models, and providing unparalleled operational control and auditability for enterprise clients.
+ */
 const LexiconClarifierView: React.FC = () => {
     const [clause, setClause] = useState('The Party of the First Part (hereinafter "Discloser") shall indemnify, defend, and hold harmless the Party of the Second Part (hereinafter "Recipient") from and against any and all claims, losses, damages, liabilities, and expenses...');
     const [explanation, setExplanation] = useState('');
@@ -3321,7 +5097,9 @@ const LexiconClarifierView: React.FC = () => {
     const [activeExplanationRecord, setActiveExplanationRecord] = useState<ExplanationRecord | null>(null);
 
     const { userProfile, loading: userLoading, error: userError, updatePreferences } = useUserProfileManager();
-    const { addExplanationToHistory } = useExplanationHistory(userProfile?.id); // Assuming we can use this here
+    const { addExplanationToHistory } = useExplanationHistory(userProfile?.id);
+    const { addUsageRecord } = useAIUsageTracker(userProfile?.id);
+    const { models: aiModels } = useAIModelConfig(); // To get actual model details
 
     const handleExplain = async (useCustomPrompt = false, customPromptTemplate: string = '', customPromptParams: PromptParameters = {}) => {
         setIsLoading(true);
@@ -3338,6 +5116,14 @@ const LexiconClarifierView: React.FC = () => {
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const modelId = userProfile.preferences.defaultAIModel;
+            const modelSettings = aiModels.find(m => m.modelId === modelId);
+
+            if (!modelSettings || !modelSettings.isActive) {
+                setAiExplanationError(`Selected AI model (${modelId}) is not active or configured.`);
+                setIsLoading(false);
+                return;
+            }
+
             const style = userProfile.preferences.defaultExplanationStyle;
             const audience = userProfile.preferences.targetAudienceLevel;
 
@@ -3357,12 +5143,16 @@ const LexiconClarifierView: React.FC = () => {
 
             // Fallback for missing clause in custom prompts that expect it
             if (!useCustomPrompt && prompt.includes('${clause}') && !clause) {
-                 setAiExplanationError("Please provide content to clarify.");
-                 setIsLoading(false);
-                 return;
+                setAiExplanationError("Please provide content to clarify.");
+                setIsLoading(false);
+                return;
             }
 
             console.log("Sending prompt to AI model:", { modelId, prompt });
+
+            // Estimate tokens (a rough estimate for frontend)
+            const inputTokens = Math.ceil(prompt.length / 4); // ~4 chars per token for English
+            let outputTokens = 0; // Will be updated after generation
 
             // Mock linked terms generation for demo purposes
             const mockLinkedTerms: LinkedTerm[] = [];
@@ -3390,10 +5180,14 @@ const LexiconClarifierView: React.FC = () => {
                 });
             }
 
-
             const response = await ai.models.generateContent({ model: modelId, contents: [{ role: 'user', parts: [{ text: prompt }] }] });
             const generatedText = response.text || "No explanation generated.";
             setExplanation(generatedText);
+            outputTokens = Math.ceil(generatedText.length / 4); // Estimate output tokens
+
+            // Calculate estimated cost
+            const estimatedCostUSD = ((inputTokens / 1_000_000) * (modelSettings.inputTokenCostPerMillion || 0)) +
+                                     ((outputTokens / 1_000_000) * (modelSettings.outputTokenCostPerMillion || 0));
 
             const newRecord: ExplanationRecord = {
                 id: '', // Will be filled by backend
@@ -3407,10 +5201,26 @@ const LexiconClarifierView: React.FC = () => {
                 sessionId: `session-${Date.now()}`,
                 isFavorite: false,
                 linkedTerms: mockLinkedTerms.length > 0 ? mockLinkedTerms : undefined,
+                estimatedCost: estimatedCostUSD,
+                tokensUsed: inputTokens + outputTokens,
             };
             const savedRecord = await saveExplanationRecord(newRecord);
             addExplanationToHistory(savedRecord);
-            setActiveExplanationRecord(savedRecord); // Set the active record for potential editing/feedback
+            setActiveExplanationRecord(savedRecord);
+
+            // Record AI usage for billing/analytics
+            await addUsageRecord({
+                userId: userProfile.id,
+                timestamp: new Date(),
+                modelId: modelId,
+                inputTokens: inputTokens,
+                outputTokens: outputTokens,
+                estimatedCostUSD: estimatedCostUSD,
+                feature: useCustomPrompt ? 'custom_prompt' : 'explanation',
+                relatedEntityId: savedRecord.id,
+            });
+            await logAuditEvent(userProfile.id, 'explanation_generated', 'Explanation', savedRecord.id, { model: modelId, tokens: inputTokens + outputTokens, cost: estimatedCostUSD });
+
         } catch (error: any) {
             console.error("AI Explanation Error:", error);
             setAiExplanationError(`Failed to get explanation: ${error.message || 'Unknown error.'}`);
@@ -3439,6 +5249,7 @@ const LexiconClarifierView: React.FC = () => {
             setExplanation(saved.explainedContent); // Update main explanation state
             addExplanationToHistory(saved); // Re-add/update in history (mocked)
             alert('Explanation changes saved!');
+            await logAuditEvent(userProfile!.id, 'explanation_edited', 'Explanation', saved.id, {});
         } catch (err) {
             setAiExplanationError("Failed to save edited explanation.");
         }
@@ -3454,6 +5265,7 @@ const LexiconClarifierView: React.FC = () => {
             const saved = await saveExplanationRecord(updatedRecord);
             setActiveExplanationRecord(saved);
             alert('Feedback submitted successfully!');
+            await logAuditEvent(userProfile!.id, 'explanation_feedback_submitted', 'Explanation', saved.id, { rating: feedback.rating, helpful: feedback.isHelpful });
         } catch (err) {
             setAiExplanationError("Failed to submit feedback.");
         }
@@ -3472,6 +5284,16 @@ const LexiconClarifierView: React.FC = () => {
         setCurrentView('clarifier'); // Switch back to the clarifier tab
     };
 
+    const handleDocumentUploaded = (doc: DocumentMetadata) => {
+        console.log('Document uploaded in main view:', doc.fileName);
+        // Maybe trigger a notification or refresh document list here if needed
+    };
+
+    const handleDocumentAnalyze = (documentId: string, userId: string) => {
+        console.log(`Document ${documentId} should be analyzed by agent for user ${userId}`);
+        // This is handled within the DocumentUploadSection now via useAgentTaskExecutor
+    };
+
 
     const tabClasses = (tab: MainViewTab) =>
         `px-4 py-2 text-sm font-medium rounded-t-lg
@@ -3484,7 +5306,7 @@ const LexiconClarifierView: React.FC = () => {
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-white tracking-wider">Blueprint 111: Lexicon Clarifier</h1>
 
-            <nav className="flex space-x-2 border-b border-gray-700">
+            <nav className="flex space-x-2 border-b border-gray-700 overflow-x-auto pb-2">
                 <button onClick={() => setCurrentView('clarifier')} className={tabClasses('clarifier')}>Clarifier</button>
                 <button onClick={() => setCurrentView('history')} className={tabClasses('history')}>History</button>
                 <button onClick={() => setCurrentView('documents')} className={tabClasses('documents')}>Documents</button>
@@ -3492,6 +5314,9 @@ const LexiconClarifierView: React.FC = () => {
                 <button onClick={() => setCurrentView('prompts')} className={tabClasses('prompts')}>Prompt Studio</button>
                 <button onClick={() => setCurrentView('settings')} className={tabClasses('settings')}>Settings</button>
                 <button onClick={() => setCurrentView('models')} className={tabClasses('models')}>AI Models</button>
+                <button onClick={() => setCurrentView('subscription')} className={tabClasses('subscription')}>Subscription & Billing</button>
+                <button onClick={() => setCurrentView('agent_tasks')} className={tabClasses('agent_tasks')}>Agent Tasks</button>
+                <button onClick={() => setCurrentView('token_rails')} className={tabClasses('token_rails')}>Token Rails</button>
                 <button onClick={() => setCurrentView('notifications')} className={tabClasses('notifications')}>
                     Notifications
                     {userProfile && useNotifications(userProfile.id).unreadCount > 0 && (
@@ -3566,6 +5391,8 @@ const LexiconClarifierView: React.FC = () => {
                                     editable={true} // Allow editing explanations once generated
                                     explanationRecordId={activeExplanationRecord?.id}
                                     className="mt-6"
+                                    estimatedCost={activeExplanationRecord?.estimatedCost}
+                                    tokensUsed={activeExplanationRecord?.tokensUsed}
                                 />
                             )}
                             {aiExplanationError && <AlertMessage type="error" message={aiExplanationError} onClose={() => setAiExplanationError(null)} className="mt-4" />}
@@ -3577,7 +5404,7 @@ const LexiconClarifierView: React.FC = () => {
                     )}
 
                     {currentView === 'documents' && (
-                        <DocumentUploadSection userId={userProfile.id} onDocumentUpload={(doc) => console.log('Document uploaded:', doc.fileName)} />
+                        <DocumentUploadSection userId={userProfile.id} onDocumentUpload={handleDocumentUploaded} onAnalyzeDocument={handleDocumentAnalyze} />
                     )}
 
                     {currentView === 'glossary' && (
@@ -3594,6 +5421,18 @@ const LexiconClarifierView: React.FC = () => {
 
                     {currentView === 'models' && (
                         <AIModelConfigurationPanel userProfile={userProfile} />
+                    )}
+
+                    {currentView === 'subscription' && (
+                        <SubscriptionAndBillingPanel userId={userProfile.id} currentUserTier={userProfile.subscriptionTier} />
+                    )}
+
+                    {currentView === 'agent_tasks' && (
+                        <AutomatedAgentTasksPanel userId={userProfile.id} />
+                    )}
+
+                    {currentView === 'token_rails' && (
+                        <TokenRailSimulatorPanel userId={userProfile.id} currentUserRoles={userProfile.roles} />
                     )}
 
                     {currentView === 'notifications' && (
@@ -3614,4 +5453,3 @@ const LexiconClarifierView: React.FC = () => {
 };
 
 export default LexiconClarifierView;
-```
