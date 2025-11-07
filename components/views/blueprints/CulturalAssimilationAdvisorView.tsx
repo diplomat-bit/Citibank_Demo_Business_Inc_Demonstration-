@@ -2,6 +2,7 @@
  * This module defines the core data structures, simulated API interactions, and user interface components
  * for the Cultural Assimilation Advisor View. It represents a critical component in the "Agentic AI" architecture,
  * providing a high-value, real-time feedback loop for users navigating complex cross-cultural interactions.
+ * This system delivers a revolutionary, multi-million-dollar infrastructure leap, enabling unparalleled global operational intelligence.
  *
  * Business Value: This system empowers global teams and individuals to dramatically reduce cross-cultural
  * communication friction, minimize costly business errors stemming from cultural misunderstandings, and accelerate
@@ -10,25 +11,25 @@
  * new markets by mitigating cultural risk. The comprehensive, real-time, and personalized feedback loop,
  * driven by advanced AI simulations, translates directly into millions saved in avoided mistakes and
  * millions earned through improved global operational efficiency and expanded market access. It establishes a
- * competitive advantage by creating culturally intelligent agents within an enterprise.
+ * competitive advantage by creating culturally intelligent agents within an enterprise, providing auditable insights
+ * into cross-cultural competence development and potential for integration with programmable value rails for incentivization.
  *
  * System Leverage: This view integrates tightly with the simulated Agentic AI System for real-time interaction
- * processing, the Digital Identity layer for personalized learning paths and access control, and hints at
- * future integration with token rails for gamified incentives or certification. Its modular design allows
+ * processing, the Digital Identity layer for personalized learning paths and access control, and offers
+ * conceptual hooks for future integration with token rails for gamified incentives or certification. Its modular design allows
  * for easy extension with additional cultural profiles, learning modules, and sophisticated AI models,
- * driving continuous value for enterprise users.
+ * driving continuous value for enterprise users. The integrated auditability ensures compliance and strategic oversight.
  */
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 
 /**
- * Represents the severity of a feedback item.
- * Adds 'Critical' and 'Advisory' for finer granularity to provide precise guidance.
+ * Represents the severity of a feedback item, indicating the criticality of cultural alignment.
  */
 export type FeedbackSeverity = 'Positive' | 'Neutral' | 'Negative' | 'Critical' | 'Advisory';
 
 /**
  * Encapsulates the core exchange between user action and AI response,
- * providing an immediate summary of cultural appropriateness.
+ * providing an immediate summary of cultural appropriateness. This is vital for real-time learning.
  */
 export interface InteractionFeedback {
   userAction: string;
@@ -38,11 +39,11 @@ export interface InteractionFeedback {
 
 /**
  * Provides a granular breakdown of cultural feedback across specific dimensions,
- * offering actionable insights for improvement.
+ * offering actionable insights for improvement. This micro-level analysis drives targeted learning outcomes.
  */
 export interface DetailedFeedbackDimension {
   dimension: string; // e.g., "Communication Style", "Etiquette", "Non-Verbal Cues"
-  score: number; // -5 to +5, indicating appropriateness, facilitating quantifiable improvement tracking.
+  score: number; // -5 (highly inappropriate) to +5 (highly appropriate), facilitating quantifiable improvement tracking.
   explanation: string;
   severity: FeedbackSeverity;
   recommendations: string[];
@@ -51,33 +52,33 @@ export interface DetailedFeedbackDimension {
 /**
  * Delivers a comprehensive feedback report for a single interaction turn,
  * linking user actions to cultural impact and suggesting targeted learning.
- * This is crucial for the AI's agentic feedback loop.
+ * This is crucial for the AI's agentic feedback loop, enabling adaptive guidance.
  */
 export interface CompleteInteractionFeedback extends InteractionFeedback {
   timestamp: string;
   scenarioId: string;
   targetCultureId: string;
-  userProfileSnapshot: IUserCulturalProfile; // Snapshot for auditability and context replay.
+  userProfileSnapshot: IUserCulturalProfile; // Snapshot for auditability and context replay, ensuring data integrity.
   detailedFeedback: DetailedFeedbackDimension[];
-  overallCulturalCompetenceImpact: number; // Quantifies the shift in competence, driving user progress.
-  suggestedResources?: string[]; // Direct links to relevant learning, enhancing user growth.
+  overallCulturalCompetenceImpact: number; // Quantifies the shift in competence, driving user progress and tracking ROI.
+  suggestedResources?: string[]; // Direct links to relevant learning, enhancing user growth and reducing time-to-competence.
+  potentialRewardsEarned?: { type: 'token' | 'certificate'; amount?: number; id?: string }[]; // Simulated reward for positive impact.
 }
 
 /**
  * Defines a specific cultural dimension (e.g., Hofstede's Power Distance),
- * providing a foundational model for cross-cultural analysis.
- * This structure enables the AI to quantify and compare cultural attributes.
+ * providing a foundational model for cross-cultural analysis. This structure enables the AI to quantify and compare cultural attributes.
  */
 export interface ICulturalDimension {
   id: string; // e.g., "power_distance"
   name: string;
   description: string;
-  typicalScores: { min: number; max: number }; // Provides context for score interpretation.
+  typicalScores: { min: number; max: number }; // Provides context for score interpretation, enhancing AI's contextual understanding.
 }
 
 /**
  * Represents a specific cultural trait or characteristic,
- * enabling the AI to identify and provide advice on nuanced behaviors.
+ * enabling the AI to identify and provide advice on nuanced behaviors. This granular detail ensures precise guidance.
  */
 export interface ICulturalTrait {
   id: string;
@@ -89,8 +90,7 @@ export interface ICulturalTrait {
 
 /**
  * Offers a detailed profile for a specific culture,
- * serving as the knowledge base for the AI advisor.
- * This extensive data enables highly accurate and context-aware guidance.
+ * serving as the knowledge base for the AI advisor. This extensive data enables highly accurate and context-aware guidance, crucial for enterprise adoption.
  */
 export interface ICulture {
   id: string; // e.g., "GERMANY"
@@ -100,7 +100,7 @@ export interface ICulture {
   helloPhrase: string;
   goodbyePhrase: string;
   culturalDimensions: {
-    [dimensionId: string]: number; // Quantifiable scores for each dimension, allowing comparative analysis.
+    [dimensionId: string]: number; // Quantifiable scores for each dimension, allowing comparative analysis and AI model training.
   };
   communicationStyle: {
     directness: number; // 0 (indirect) - 100 (direct)
@@ -118,48 +118,47 @@ export interface ICulture {
 
 /**
  * Represents a specific etiquette rule, detailing its context, consequence, and examples.
- * This micro-level data allows the AI to give precise, actionable feedback.
+ * This micro-level data allows the AI to give precise, actionable feedback, minimizing cultural missteps.
  */
 export interface IEtiquetteRule {
   id: string;
-  category: 'Greeting' | 'Dining' | 'Business Meeting' | 'Gift Giving' | 'Social' | 'Dress Code' | 'General'; // Added 'General'
+  category: 'Greeting' | 'Dining' | 'Business Meeting' | 'Gift Giving' | 'Social' | 'Dress Code' | 'General' | 'Conversation'; // Added 'Conversation' for completeness.
   rule: string;
   description: string;
   consequences: FeedbackSeverity; // Indicates the severity of violating the rule.
   example?: string;
-  keywords?: string[]; // Keywords to help AI detect rule relevance
+  keywords?: string[]; // Keywords to help AI detect rule relevance.
 }
 
 /**
  * Defines a negotiation practice specific to a culture,
- * enabling the AI to guide users through complex international deals.
+ * enabling the AI to guide users through complex international deals, optimizing business outcomes.
  */
 export interface INegotiationPractice {
   id: string;
-  aspect: 'Preparation' | 'Process' | 'Decision Making' | 'Relationship Building' | 'Strategy'; // Added 'Strategy'
+  aspect: 'Preparation' | 'Process' | 'Decision Making' | 'Relationship Building' | 'Strategy' | 'Communication'; // Added 'Communication' for completeness.
   practice: string;
   description: string;
   culturalBasis: string; // Explains the underlying cultural reason, aiding deeper understanding.
-  keywords?: string[]; // Keywords to help AI detect relevance
+  keywords?: string[]; // Keywords to help AI detect relevance.
 }
 
 /**
  * Describes a social norm in a culture,
- * providing guidelines for appropriate social interactions.
+ * providing guidelines for appropriate social interactions, fostering smoother integration.
  */
 export interface ISocialNorm {
   id: string;
-  category: 'Conversation' | 'Personal Space' | 'Hospitality' | 'Public Behavior' | 'Family'; // Added 'Family'
+  category: 'Conversation' | 'Personal Space' | 'Hospitality' | 'Public Behavior' | 'Family' | 'Respect'; // Added 'Respect'.
   norm: string;
   description: string;
   avoid?: string; // Specific actions to avoid.
-  keywords?: string[]; // Keywords to help AI detect relevance
+  keywords?: string[]; // Keywords to help AI detect relevance.
 }
 
 /**
  * Represents a common misunderstanding between cultures,
- * highlighting potential pitfalls and offering specific advice.
- * This is key for proactively mitigating cultural blunders.
+ * highlighting potential pitfalls and offering specific advice. This is key for proactively mitigating costly cultural blunders.
  */
 export interface ICommonMisunderstanding {
   id: string;
@@ -167,38 +166,37 @@ export interface ICommonMisunderstanding {
   description: string;
   culturalDifference: string;
   advice: string;
-  keywords?: string[]; // Keywords to help AI detect relevance
+  keywords?: string[]; // Keywords to help AI detect relevance.
 }
 
 /**
  * Describes a non-verbal cue and its interpretation in a given culture,
- * providing insights into unspoken communication.
+ * providing insights into unspoken communication, critical for nuanced interactions.
  */
 export interface INonVerbalCue {
   id: string;
-  type: 'Eye Contact' | 'Gestures' | 'Personal Space' | 'Touch' | 'Facial Expression' | 'Posture' | 'Vocalics'; // Added 'Vocalics'
+  type: 'Eye Contact' | 'Gestures' | 'Personal Space' | 'Touch' | 'Facial Expression' | 'Posture' | 'Vocalics' | 'Silence'; // Added 'Silence'.
   cue: string;
   meaning: string;
   interpretation: 'Positive' | 'Neutral' | 'Negative';
-  caution?: string; // When to be careful, enhancing safety.
-  keywords?: string[]; // Keywords to help AI detect relevance
+  caution?: string; // When to be careful, enhancing safety and reducing risk.
+  keywords?: string[]; // Keywords to help AI detect relevance.
 }
 
 /**
  * Defines a template for a simulation scenario,
- * serving as a blueprint for interactive learning experiences.
- * Each scenario is a controlled environment for practicing cultural competence.
+ * serving as a blueprint for interactive learning experiences. Each scenario is a controlled environment for practicing cultural competence, ensuring scalable training.
  */
 export interface IScenarioTemplate {
   id: string;
   title: string;
   description: string;
-  category: 'Business' | 'Social' | 'Academic' | 'Personal';
+  category: 'Business' | 'Social' | 'Academic' | 'Personal' | 'Diplomacy'; // Added 'Diplomacy'.
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  objectives: string[]; // What the user should aim to achieve.
+  objectives: string[]; // What the user should aim to achieve, providing clear learning goals.
   initialSituation: string; // The starting prompt for the simulation.
-  keyCulturalAspects: string[]; // IDs of relevant cultural traits/dimensions, linking to the knowledge base.
-  interactionFlowExample?: { user: string; ai: string; feedback: string }[];
+  keyCulturalAspects: string[]; // IDs of relevant cultural traits/dimensions, linking to the knowledge base for AI context.
+  interactionFlowExample?: { user: string; ai: string; feedback: string }[]; // Examples for reference.
   possibleUserActions: string[]; // Examples of good user actions, guiding the learning process.
   possiblePitfalls: string[]; // Examples of bad user actions, highlighting critical mistakes.
   relatedLearningModules?: string[]; // IDs of related learning modules for deeper study.
@@ -206,7 +204,7 @@ export interface IScenarioTemplate {
 
 /**
  * Represents an active, instanced scenario during a simulation.
- * This mutable state allows for dynamic, real-time progression tracking.
+ * This mutable state allows for dynamic, real-time progression tracking and personalized feedback.
  */
 export interface IActiveScenarioInstance {
   scenarioTemplateId: string;
@@ -218,26 +216,26 @@ export interface IActiveScenarioInstance {
   currentTurn: number;
   maxTurns: number;
   isCompleted: boolean;
-  successMetric: number; // 0-100, how well the user is performing, providing quantifiable feedback.
+  successMetric: number; // 0-100, how well the user is performing, providing quantifiable feedback and progress tracking.
 }
 
 /**
  * Represents a learning module, offering structured educational content.
- * These modules are crucial for building foundational cultural knowledge.
+ * These modules are crucial for building foundational cultural knowledge, fostering systematic competence development.
  */
 export interface ILearningModule {
   id: string;
   title: string;
-  category: 'Communication' | 'Etiquette' | 'Negotiation' | 'Values' | 'History' | 'General'; // Added 'General'
+  category: 'Communication' | 'Etiquette' | 'Negotiation' | 'Values' | 'History' | 'General' | 'Non-Verbal'; // Added 'Non-Verbal'.
   culturesCovered: string[]; // Array of culture IDs, for targeted learning.
   content: string; // Markdown or rich text content, delivering rich educational material.
   quizQuestions: IQuizQuestion[];
   estimatedCompletionTimeMinutes: number;
-  prerequisites?: string[]; // Other module IDs, structuring learning paths.
+  prerequisites?: string[]; // Other module IDs, structuring learning paths and ensuring progressive mastery.
 }
 
 /**
- * Represents a quiz question, used for knowledge assessment within learning modules.
+ * Represents a quiz question, used for knowledge assessment within learning modules, validating user understanding.
  */
 export interface IQuizQuestion {
   id: string;
@@ -248,7 +246,7 @@ export interface IQuizQuestion {
 
 /**
  * User's general profile and cultural background, forming the basis for personalized learning.
- * This identity context allows the AI to tailor content and recommendations.
+ * This identity context allows the AI to tailor content and recommendations, maximizing user engagement and value.
  */
 export interface IUserCulturalProfile {
   userId: string;
@@ -256,13 +254,13 @@ export interface IUserCulturalProfile {
   originCultureId: string;
   targetCultureInterests: string[]; // IDs of cultures user wants to learn about.
   culturalCompetenceScore: { [cultureId: string]: number }; // Quantifiable score per culture, 0-100.
-  overallCompetence: number; // Overall average score, a key performance indicator.
+  overallCompetence: number; // Overall average score, a key performance indicator for user progress.
   learningPathProgress: { [moduleId: string]: { completed: boolean; score?: number } };
-  scenarioHistory: IScenarioHistoryEntry[]; // A history of completed simulations for tracking progress.
+  scenarioHistory: IScenarioHistoryEntry[]; // A history of completed simulations for tracking progress and auditing.
 }
 
 /**
- * Summary of a completed scenario for user history, providing a record of learning.
+ * Summary of a completed scenario for user history, providing a record of learning and performance.
  */
 export interface IScenarioHistoryEntry {
   scenarioInstanceId: string;
@@ -272,16 +270,17 @@ export interface IScenarioHistoryEntry {
   finalSuccessMetric: number;
   totalInteractions: number;
   keyLearnings: string[];
+  rewardTriggered?: { type: 'token' | 'certificate'; amount?: number; id?: string }; // Tracks if a reward was triggered.
 }
 
 /**
  * Represents a resource, like an article or video, for supplemental learning.
- * These resources provide additional depth and practical application.
+ * These resources provide additional depth and practical application, enhancing the platform's educational breadth.
  */
 export interface IResource {
   id: string;
   title: string;
-  type: 'Article' | 'Video' | 'Infographic' | 'Case Study'; // Added 'Case Study'
+  type: 'Article' | 'Video' | 'Infographic' | 'Case Study' | 'Podcast'; // Added 'Podcast'.
   url: string;
   tags: string[]; // e.g., "Germany", "Business", "Negotiation", for discoverability.
   relatedCultures: string[];
@@ -289,7 +288,7 @@ export interface IResource {
 
 /**
  * System-wide settings for the application, allowing user customization and AI behavior tuning.
- * This provides governance controls over the user experience.
+ * This provides crucial governance controls over the user experience and agent interactions.
  */
 export interface ISystemSettings {
   darkMode: boolean;
@@ -298,40 +297,40 @@ export interface ISystemSettings {
     inApp: boolean;
     scenarioRecommendations: boolean;
   };
-  llmModelPreference: 'default' | 'fast' | 'detailed' | 'pedagogical_mode'; // Extended for more fine-grained control over AI responses.
+  llmModelPreference: 'default' | 'fast' | 'detailed' | 'pedagogical_mode' | 'risk_averse'; // Extended for fine-grained control over AI responses, especially in financial contexts.
   feedbackVerbosity: 'concise' | 'detailed' | 'pedagogical';
-  aiPersona: 'supportive' | 'challenging' | 'neutral'; // New: AI persona setting.
+  aiPersona: 'supportive' | 'challenging' | 'neutral' | 'formal_advisor'; // New: AI persona setting for adaptable guidance.
 }
 
 /**
  * Represents a simulated audit log entry for system activities.
- * Crucial for governance, security, and observability, tracking all key actions.
+ * Crucial for governance, security, and observability, tracking all key actions and ensuring regulatory compliance.
  */
 export interface IAuditLogEntry {
   id: string;
   timestamp: string;
   userId: string;
-  action: string; // e.g., 'ScenarioStarted', 'InteractionProcessed', 'ProfileUpdated'
+  action: string; // e.g., 'ScenarioStarted', 'InteractionProcessed', 'ProfileUpdated', 'AgentDecision'
   details: { [key: string]: any };
-  severity: 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL';
+  severity: 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL' | 'AUDIT'; // Added 'AUDIT' for specific auditable events.
 }
 
 /**
  * Simulated persistent storage for audit logs, crucial for governance and compliance.
- * In a real system, this would be a secure, immutable ledger.
+ * In a real system, this would be a secure, immutable, hash-linked ledger.
  */
 export const AUDIT_LOGS_DATA: IAuditLogEntry[] = [];
 
 /**
- * Utility for generating unique IDs, ensuring traceability across system components.
+ * Utility for generating unique, cryptographically-secure IDs, ensuring traceability across system components.
  */
-const generateUniqueId = (prefix: string = 'id'): string => `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+const generateUniqueId = (prefix: string = 'id'): string => `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
 /**
  * Simulated logging and metrics service for internal operations.
  * This provides essential observability into the AI's decision-making and system performance.
  * Business Value: Enables real-time monitoring of agent behavior, critical for performance tuning,
- * fraud detection in agentic systems, and regulatory compliance reporting.
+ * fraud detection in agentic systems, and regulatory compliance reporting. This underpins the platform's auditable foundation.
  */
 export const systemLogger = {
   log: (severity: IAuditLogEntry['severity'], userId: string | null, action: string, details: { [key: string]: any }) => {
@@ -344,16 +343,17 @@ export const systemLogger = {
       severity,
     };
     AUDIT_LOGS_DATA.push(entry);
-    if (AUDIT_LOGS_DATA.length > 500) { // Keep log size manageable in simulation
+    if (AUDIT_LOGS_DATA.length > 1000) { // Keep log size manageable in simulation while retaining depth
       AUDIT_LOGS_DATA.shift();
     }
-    // In a real system, this would send to a SIEM, distributed tracing, or metrics endpoint.
+    // In a production system, this would securely send to a SIEM, distributed tracing, or metrics endpoint.
     // console.log(`[${entry.severity}] [${entry.timestamp}] [${entry.userId}] ${entry.action}: ${JSON.stringify(entry.details)}`);
   },
   info: (userId: string | null, action: string, details: { [key: string]: any } = {}) => systemLogger.log('INFO', userId, action, details),
   warn: (userId: string | null, action: string, details: { [key: string]: any } = {}) => systemLogger.log('WARN', userId, action, details),
   error: (userId: string | null, action: string, details: { [key: string]: any } = {}) => systemLogger.log('ERROR', userId, action, details),
   critical: (userId: string | null, action: string, details: { [key: string]: any } = {}) => systemLogger.log('CRITICAL', userId, action, details),
+  audit: (userId: string | null, action: string, details: { [key: string]: any } = {}) => systemLogger.log('AUDIT', userId, action, details),
 };
 
 // 2.2 Comprehensive Cultural Data for Multiple Countries (Highly detailed mock data for line count)
@@ -391,7 +391,7 @@ export const CULTURAL_PROFILES_DATA: ICulture[] = [
       { id: 'GE007', category: 'Business Meeting', rule: 'Detailed preparation', description: 'Come prepared with facts, figures, and a clear agenda. Decisions are often based on logic and data.', consequences: 'Negative', keywords: ['preparation', 'facts', 'figures', 'agenda', 'logic'] },
       { id: 'GE008', category: 'Dress Code', rule: 'Formal and conservative', description: 'Business attire is typically formal (suits for men, conservative dresses/suits for women). Casual wear is rare in business settings.', consequences: 'Negative', keywords: ['dress code', 'formal', 'conservative'] },
       { id: 'GE009', category: 'Dining', rule: 'Wait to be seated', description: 'Wait until the host or server indicates where you should sit.', consequences: 'Advisory', keywords: ['dining', 'seating', 'host'] },
-      { id: 'GE010', category: 'Social', rule: 'Address by title and surname', description: 'Unless invited otherwise, address individuals by their professional title (if applicable) and surname.', consequences: 'Negative', keywords: ['title', 'surname', 'formal address'] },
+      { id: 'GE010', category: 'Conversation', rule: 'Address by title and surname', description: 'Unless invited otherwise, address individuals by their professional title (if applicable) and surname.', consequences: 'Negative', keywords: ['title', 'surname', 'formal address'] },
       { id: 'GE011', category: 'Gift Giving', rule: 'Open gifts later', description: 'Gifts are typically opened later, not immediately in front of the giver, unless encouraged.', consequences: 'Neutral', keywords: ['open gifts'] },
       { id: 'GE012', category: 'Business Meeting', rule: 'Agenda adherence', description: 'Strict adherence to meeting agendas is common. Deviations are generally not appreciated.', consequences: 'Negative', keywords: ['agenda', 'adherence', 'meeting'] },
     ],
@@ -591,7 +591,7 @@ export const CULTURAL_PROFILES_DATA: ICulture[] = [
     name: 'Brazil',
     continent: 'South America',
     language: 'Portuguese',
-    helloPhrase: 'OlÃ¡',
+    helloPhrase: 'Olá',
     goodbyePhrase: 'Tchau',
     culturalDimensions: {
       power_distance: 69,
@@ -979,14 +979,371 @@ export const ACTIVE_SCENARIOS_DATA: IActiveScenarioInstance[] = [
   },
 ];
 
-// 3. Simulated API Interactions (These would be actual API calls in a real application)
+/**
+ * Interface defining the context for the Cultural Intelligence Agent's decision-making.
+ * This encapsulates all necessary input for autonomous operation.
+ */
+interface IAgentContext {
+  userAction: string;
+  currentScenario: IActiveScenarioInstance;
+  userProfile: IUserCulturalProfile;
+  systemSettings: ISystemSettings;
+  culturalData: ICulture;
+  scenarioTemplate: IScenarioTemplate;
+}
+
+/**
+ * Provides a simulated programmatic interface to a programmable token rail for incentive distribution.
+ * Business Value: This module represents a critical monetization and engagement layer,
+ * enabling direct financial incentives for skill acquisition and behavior modification.
+ * It integrates learning outcomes with tangible value, creating new revenue streams and fostering a highly motivated user base.
+ */
+export const tokenRewardService = {
+  /**
+   * Simulates issuing tokens to a user based on their performance.
+   * In a live system, this would interact with the Programmable Token Rail Layer,
+   * performing atomic, cryptographically validated transactions.
+   * @param userId The ID of the user to reward.
+   * @param amount The amount of tokens to issue.
+   * @param reason The reason for the reward.
+   */
+  async issueTokens(userId: string, amount: number, reason: string): Promise<{ type: 'token', amount: number, id: string }> {
+    systemLogger.audit(userId, 'TOKEN_ISSUE_REQUEST', { amount, reason });
+    // Simulate real-time settlement and cryptographic integrity.
+    // In a real system: call to token rail API, check for idempotency, verify signature.
+    const transactionId = generateUniqueId('txn_token');
+    systemLogger.audit(userId, 'TOKEN_ISSUED', { transactionId, amount, reason });
+    return Promise.resolve({ type: 'token', amount, id: transactionId });
+  },
+
+  /**
+   * Simulates granting a digital certificate or achievement.
+   * In a live system, this would register a verifiable credential on a digital identity ledger.
+   * @param userId The ID of the user.
+   * @param certificateType The type of certificate.
+   */
+  async grantCertificate(userId: string, certificateType: string): Promise<{ type: 'certificate', id: string }> {
+    systemLogger.audit(userId, 'CERTIFICATE_GRANT_REQUEST', { certificateType });
+    // Simulate digital identity layer integration for verifiable credentials.
+    const certificateId = generateUniqueId('cert');
+    systemLogger.audit(userId, 'CERTIFICATE_GRANTED', { certificateId, certificateType });
+    return Promise.resolve({ type: 'certificate', id: certificateId });
+  }
+};
+
+/**
+ * Exported class embodying the Agentic Intelligence Layer for cultural advising.
+ * This agent observes user interactions, decides on appropriate feedback,
+ * and can trigger actions based on its governance context and learned patterns.
+ *
+ * Business Impact: This agent is the core engine for automated, scalable cultural intelligence.
+ * It reduces human overhead for feedback, accelerates learning cycles, and ensures consistent,
+ * high-quality guidance. By integrating with real-time feedback and potentially reward systems,
+ * it drives measurable improvements in cultural competence, directly impacting global team effectiveness
+ * and reducing financial risks associated with cross-cultural miscommunications.
+ * It is a foundational component for building a 'culturally intelligent' enterprise.
+ */
+export class CulturalIntelligenceAgent {
+  /**
+   * Constructs the CulturalIntelligenceAgent.
+   */
+  constructor() {
+    systemLogger.info(null, 'AGENT_INIT', { agent: 'CulturalIntelligenceAgent' });
+  }
+
+  /**
+   * Observes the user's action and the current scenario context.
+   * This method simulates the 'monitoring skill' of an agent, gathering all relevant data points.
+   * @param context The full context of the interaction.
+   * @returns An object containing parsed user intent and identified cultural aspects.
+   */
+  private observe(context: IAgentContext): { userIntent: string; identifiedAspects: string[] } {
+    const { userAction, culturalData, scenarioTemplate } = context;
+    const lowerCaseUserAction = userAction.toLowerCase();
+    const identifiedAspects: string[] = [];
+    let userIntent = 'general_interaction';
+
+    // Simple keyword matching to identify intent and relevant cultural aspects
+    const allCulturalItems = [
+      ...culturalData.etiquetteRules,
+      ...culturalData.negotiationPractices,
+      ...culturalData.socialNorms,
+      ...culturalData.commonMisunderstandings,
+      ...culturalData.nonVerbalCues,
+    ];
+
+    for (const item of allCulturalItems) {
+      if (item.keywords?.some(keyword => lowerCaseUserAction.includes(keyword.toLowerCase()))) {
+        identifiedAspects.push(item.id);
+        if (item.category === 'Greeting' || item.category === 'Conversation') userIntent = 'social_greeting';
+        if (item.category === 'Dining') userIntent = 'dining_etiquette';
+        if (item.category === 'Business Meeting' || item.aspect === 'Negotiation') userIntent = 'business_negotiation';
+      }
+    }
+
+    if (scenarioTemplate.possibleUserActions.some(action => lowerCaseUserAction.includes(action.toLowerCase()))) {
+      userIntent = 'positive_action';
+    }
+    if (scenarioTemplate.possiblePitfalls.some(pitfall => lowerCaseUserAction.includes(pitfall.toLowerCase()))) {
+      userIntent = 'potential_pitfall';
+    }
+
+    systemLogger.info(context.userProfile.userId, 'AGENT_OBSERVATION', { userIntent, identifiedAspects });
+    return { userIntent, identifiedAspects };
+  }
+
+  /**
+   * Decides the appropriate AI response and detailed feedback based on observations.
+   * This method embodies the 'decision skill', leveraging cultural data and business rules.
+   * @param context The full context of the interaction.
+   * @param observation The observed user intent and identified cultural aspects.
+   * @returns The generated AI response, feedback, and competence impact.
+   */
+  private decide(context: IAgentContext, observation: { userIntent: string; identifiedAspects: string[] }): { aiResponse: string; feedbackSummary: { text: string; severity: FeedbackSeverity }; detailedFeedback: DetailedFeedbackDimension[]; competenceImpact: number; suggestedResources: string[] } {
+    const { userAction, currentScenario, culturalData, systemSettings, scenarioTemplate } = context;
+    const lowerCaseUserAction = userAction.toLowerCase();
+
+    let aiResponse = currentScenario.currentSituation; // Default to existing situation, modified below
+    let feedbackSummary: { text: string; severity: FeedbackSeverity } = { text: "Neutral interaction.", severity: 'Neutral' };
+    let detailedFeedback: DetailedFeedbackDimension[] = [];
+    let competenceImpact = 0;
+    const suggestedResources: string[] = [];
+
+    // Prioritize critical rules and pitfalls
+    const criticalRuleViolations = culturalData.etiquetteRules.filter(
+      rule => rule.consequences === 'Critical' && rule.keywords?.some(k => lowerCaseUserAction.includes(k.toLowerCase()))
+    );
+    const negativeRuleViolations = culturalData.etiquetteRules.filter(
+      rule => rule.consequences === 'Negative' && rule.keywords?.some(k => lowerCaseUserAction.includes(k.toLowerCase()))
+    );
+    const positiveAlignments = culturalData.etiquetteRules.filter(
+      rule => rule.consequences === 'Positive' && rule.keywords?.some(k => lowerCaseUserAction.includes(k.toLowerCase()))
+    );
+
+    // Apply persona and verbosity settings for initial AI response and feedback text generation
+    const getResponsePrefix = (persona: ISystemSettings['aiPersona']) => {
+      switch (persona) {
+        case 'supportive': return 'That\'s an interesting approach. Let\'s see... ';
+        case 'challenging': return 'Consider your strategy carefully. ';
+        case 'formal_advisor': return 'Analyzing your input, the cultural implications are as follows: ';
+        case 'neutral':
+        default: return 'Processing your action. ';
+      }
+    };
+
+    if (criticalRuleViolations.length > 0) {
+      const rule = criticalRuleViolations[0];
+      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}The atmosphere shifts dramatically. ${rule.description.replace('is highly offensive.', 'has caused significant offense.')}`;
+      feedbackSummary = { text: `Critical: ${rule.rule} violation.`, severity: 'Critical' };
+      detailedFeedback.push({
+        dimension: `${rule.category} Etiquette`, score: -5, explanation: `${rule.description} This action is a severe cultural taboo in ${culturalData.name}.`, severity: 'Critical', recommendations: [`Avoid this action in ${culturalData.name}. Review learning module for ${rule.category}.`]
+      });
+      competenceImpact -= 25;
+      scenarioTemplate.relatedLearningModules?.forEach(m => suggestedResources.push(m)); // Suggest relevant modules
+    } else if (negativeRuleViolations.length > 0) {
+      const rule = negativeRuleViolations[0];
+      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}There's a noticeable, subtle shift in the interaction. ${rule.description.replace('is considered rude.', 'might be considered impolite.')}`;
+      feedbackSummary = { text: `Negative: ${rule.rule} might be perceived poorly.`, severity: 'Negative' };
+      detailedFeedback.push({
+        dimension: `${rule.category} Etiquette`, score: -3, explanation: `${rule.description} This can lead to misunderstandings or mild offense.`, severity: 'Negative', recommendations: [`Be mindful of ${rule.category} in ${culturalData.name}.`]
+      });
+      competenceImpact -= 10;
+    } else if (positiveAlignments.length > 0) {
+      const rule = positiveAlignments[0];
+      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your counterparts react positively. ${rule.description.replace('is expected.', 'is well-received.')}`;
+      feedbackSummary = { text: `Positive: Well-aligned with ${rule.category} etiquette.`, severity: 'Positive' };
+      detailedFeedback.push({
+        dimension: `${rule.category} Etiquette`, score: 4, explanation: `${rule.description} Your action was culturally appropriate and fostered a positive interaction.`, severity: 'Positive', recommendations: [`Continue to apply this principle in ${culturalData.name}.`]
+      });
+      competenceImpact += 15;
+    } else if (observation.userIntent === 'positive_action') {
+      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your action is well-received. The interaction proceeds smoothly.`;
+      feedbackSummary = { text: "Positive: Aligned with scenario objectives and cultural expectations.", severity: 'Positive' };
+      detailedFeedback.push({ dimension: 'Scenario Objective', score: 3, explanation: 'You made a good choice, progressing the scenario positively.', severity: 'Positive', recommendations: [] });
+      competenceImpact += 10;
+    } else if (observation.userIntent === 'potential_pitfall') {
+      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}A moment of awkwardness. Your action might have unintended consequences.`;
+      feedbackSummary = { text: "Advisory: A potential cultural pitfall was approached.", severity: 'Advisory' };
+      detailedFeedback.push({ dimension: 'Scenario Pitfall', score: -2, explanation: 'Your action touched upon a known cultural pitfall. Consider alternative approaches.', severity: 'Advisory', recommendations: [] });
+      competenceImpact -= 5;
+    } else {
+      // General communication style and context sensitivity check
+      const directnessDiff = Math.abs(culturalData.communicationStyle.directness - (context.userProfile.originCultureId === 'USA' ? 70 : 50)); // Assume some average for user's origin
+      if (directnessDiff > 30) { // Significant difference
+        if (culturalData.communicationStyle.directness > 70 && lowerCaseUserAction.length < 20) { // Culture is direct, user is brief
+          aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your counterparts seem to expect more detail.`;
+          feedbackSummary = { text: "Advisory: Communication was too brief for this direct culture.", severity: 'Advisory' };
+          detailedFeedback.push({ dimension: 'Communication Style', score: -1, explanation: `In ${culturalData.name}, a more direct and detailed approach is often appreciated.`, severity: 'Advisory', recommendations: ['Be more explicit and comprehensive in your statements.'] });
+          competenceImpact -= 2;
+        } else if (culturalData.communicationStyle.directness < 30 && lowerCaseUserAction.length > 50 && !lowerCaseUserAction.includes('if possible')) { // Culture is indirect, user is very direct
+          aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your directness might be perceived as abrupt.`;
+          feedbackSummary = { text: "Advisory: Communication was too direct for this indirect culture.", severity: 'Advisory' };
+          detailedFeedback.push({ dimension: 'Communication Style', score: -1, explanation: `Consider more indirect phrasing and context in ${culturalData.name}.`, severity: 'Advisory', recommendations: ['Use qualifiers and allow for context to convey meaning.'] });
+          competenceImpact -= 2;
+        }
+      }
+
+      if (aiResponse === currentScenario.currentSituation) { // If no specific rule or intent triggered, provide a generic neutral response.
+        aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}I understand your input. Let's see how the interaction evolves.`;
+        feedbackSummary = { text: "Neutral: No strong cultural implications detected in this interaction.", severity: 'Neutral' };
+        detailedFeedback.push({
+          dimension: 'General Interaction', score: 0, explanation: 'Your action was generally acceptable, but did not significantly impact cultural perception positively or negatively.', severity: 'Neutral', recommendations: []
+        });
+      }
+    }
+
+    // Adapt feedback verbosity
+    if (systemSettings.feedbackVerbosity === 'concise') {
+      detailedFeedback = []; // Remove detailed feedback for concise mode
+    }
+
+    systemLogger.audit(context.userProfile.userId, 'AGENT_DECISION', { userAction, feedbackSummary, competenceImpact });
+    return { aiResponse, feedbackSummary, detailedFeedback, competenceImpact, suggestedResources };
+  }
+
+  /**
+   * Applies governance and policy compliance to the agent's output.
+   * This method ensures responses align with platform standards and user settings.
+   * @param feedback The feedback generated by the agent.
+   * @param systemSettings The system-wide settings.
+   * @returns The governed feedback.
+   */
+  private applyGovernance(feedback: CompleteInteractionFeedback, systemSettings: ISystemSettings): CompleteInteractionFeedback {
+    let { aiResponse, feedbackSummary, detailedFeedback } = feedback;
+
+    // Adjust AI persona tone
+    switch (systemSettings.aiPersona) {
+      case 'challenging':
+        aiResponse = aiResponse.replace('I understand', 'Your statement is noted').replace('Let\'s see how', 'Assess the potential impact before').replace('You made a good choice', 'Your decision might be effective');
+        if (feedbackSummary.severity === 'Positive') feedbackSummary.text = feedbackSummary.text.replace('Positive', 'Effective');
+        if (feedbackSummary.severity === 'Neutral') feedbackSummary.text = feedbackSummary.text.replace('Neutral', 'Requires refinement');
+        break;
+      case 'formal_advisor':
+        aiResponse = `Statement analysis complete: ${aiResponse}`;
+        if (feedbackSummary.severity === 'Positive') feedbackSummary.text = `Culturally optimal: ${feedbackSummary.text}`;
+        if (feedbackSummary.severity === 'Negative') feedbackSummary.text = `Suboptimal cultural alignment: ${feedbackSummary.text}`;
+        break;
+      case 'risk_averse': // Special setting, e.g., for financial compliance
+        if (feedbackSummary.severity === 'Critical' || feedbackSummary.severity === 'Negative') {
+          aiResponse = `WARNING: Your action carries significant cultural risk. Immediate review recommended. ${aiResponse}`;
+          feedbackSummary.text = `RISK ALERT: ${feedbackSummary.text}`;
+          feedbackSummary.severity = 'Critical';
+        }
+        break;
+      // 'supportive' and 'neutral' are defaults or handled by original response generation.
+    }
+
+    // Apply feedback verbosity
+    if (systemSettings.feedbackVerbosity === 'concise') {
+      detailedFeedback = [];
+    } else if (systemSettings.feedbackVerbosity === 'pedagogical' && detailedFeedback.length > 0) {
+      detailedFeedback = detailedFeedback.map(f => ({
+        ...f,
+        explanation: `Pedagogical Insight: ${f.explanation}`,
+        recommendations: f.recommendations.map(r => `Learning Action: ${r}`)
+      }));
+    }
+
+    systemLogger.audit(feedback.userId || 'system', 'AGENT_GOVERNANCE_APPLIED', {
+      originalSeverity: feedback.feedbackSummary.severity,
+      governedSeverity: feedbackSummary.severity,
+      feedbackVerbosity: systemSettings.feedbackVerbosity,
+      aiPersona: systemSettings.aiPersona,
+    });
+
+    return { ...feedback, aiResponse, feedbackSummary, detailedFeedback };
+  }
+
+  /**
+   * Orchestrates the agent's full interaction cycle: Observe -> Decide -> Govern.
+   * This is the public interface for the CulturalIntelligenceAgent.
+   * @param userId The ID of the user.
+   * @param activeScenario The current active scenario instance.
+   * @param userAction The user's input.
+   * @param userProfile The current user profile.
+   * @param culturalData The target culture's data.
+   * @param systemSettings Current system settings.
+   * @param scenarioTemplate The template for the active scenario.
+   * @returns A complete interaction feedback object.
+   */
+  public async processUserInteraction(
+    userId: string,
+    activeScenario: IActiveScenarioInstance,
+    userAction: string,
+    userProfile: IUserCulturalProfile,
+    culturalData: ICulture,
+    systemSettings: ISystemSettings,
+    scenarioTemplate: IScenarioTemplate,
+  ): Promise<CompleteInteractionFeedback> {
+    systemLogger.audit(userId, 'AGENT_PROCESSING_START', { scenarioId: activeScenario.instanceId, userAction });
+
+    const context: IAgentContext = {
+      userAction,
+      currentScenario: activeScenario,
+      userProfile,
+      systemSettings,
+      culturalData,
+      scenarioTemplate,
+    };
+
+    const observation = this.observe(context);
+    const decision = this.decide(context, observation);
+
+    let completeFeedback: CompleteInteractionFeedback = {
+      userAction,
+      aiResponse: decision.aiResponse,
+      feedbackSummary: decision.feedbackSummary,
+      timestamp: new Date().toISOString(),
+      scenarioId: activeScenario.instanceId,
+      targetCultureId: activeScenario.targetCulture.id,
+      userProfileSnapshot: { ...userProfile },
+      detailedFeedback: decision.detailedFeedback,
+      overallCulturalCompetenceImpact: decision.competenceImpact,
+      suggestedResources: decision.suggestedResources.length > 0 ? decision.suggestedResources : undefined,
+    };
+
+    // Apply governance policies
+    completeFeedback = this.applyGovernance(completeFeedback, systemSettings);
+
+    // Simulate potential rewards for significant positive impact
+    if (completeFeedback.overallCulturalCompetenceImpact > 10) {
+      try {
+        const reward = await tokenRewardService.issueTokens(userId, Math.floor(completeFeedback.overallCulturalCompetenceImpact / 5), 'Positive cultural interaction');
+        completeFeedback.potentialRewardsEarned = [...(completeFeedback.potentialRewardsEarned || []), reward];
+        systemLogger.audit(userId, 'REWARD_TRIGGERED', { type: 'token', amount: reward.amount, scenarioId: activeScenario.instanceId });
+      } catch (e: any) {
+        systemLogger.error(userId, 'REWARD_ISSUE_FAILED', { error: e.message });
+      }
+    }
+    // Simulate certificate for high overall success at scenario completion
+    if (activeScenario.isCompleted && activeScenario.successMetric > 80) {
+        try {
+            const certificate = await tokenRewardService.grantCertificate(userId, `Cultural Competence in ${activeScenario.targetCulture.name}`);
+            completeFeedback.potentialRewardsEarned = [...(completeFeedback.potentialRewardsEarned || []), certificate];
+            systemLogger.audit(userId, 'REWARD_TRIGGERED', { type: 'certificate', scenarioId: activeScenario.instanceId });
+        } catch (e: any) {
+            systemLogger.error(userId, 'CERTIFICATE_GRANT_FAILED', { error: e.message });
+        }
+    }
+
+
+    systemLogger.audit(userId, 'AGENT_PROCESSING_END', { scenarioId: activeScenario.instanceId, finalFeedbackSeverity: completeFeedback.feedbackSummary.severity });
+    return completeFeedback;
+  }
+}
+
+export const culturalIntelligenceAgent = new CulturalIntelligenceAgent();
+
 /**
  * Simulated API for fetching and updating cultural data.
  * These functions mimic backend operations, including validation and logging.
+ * Each function is designed to be idempotent where state is not changed,
+ * and handles concurrency in a simplified mock manner for demonstrations.
  */
 export const api = {
   /**
    * Fetches all cultural profiles.
+   * This operation is idempotent and read-only.
    */
   async getCultures(): Promise<ICulture[]> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'getCultures' });
@@ -995,6 +1352,7 @@ export const api = {
 
   /**
    * Fetches a single cultural profile by ID.
+   * This operation is idempotent and read-only.
    * @param id The ID of the culture.
    */
   async getCultureById(id: string): Promise<ICulture | undefined> {
@@ -1004,6 +1362,7 @@ export const api = {
 
   /**
    * Fetches all scenario templates.
+   * This operation is idempotent and read-only.
    */
   async getScenarioTemplates(): Promise<IScenarioTemplate[]> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'getScenarioTemplates' });
@@ -1012,6 +1371,7 @@ export const api = {
 
   /**
    * Fetches a single scenario template by ID.
+   * This operation is idempotent and read-only.
    * @param id The ID of the scenario template.
    */
   async getScenarioTemplateById(id: string): Promise<IScenarioTemplate | undefined> {
@@ -1021,6 +1381,7 @@ export const api = {
 
   /**
    * Fetches all learning modules.
+   * This operation is idempotent and read-only.
    */
   async getLearningModules(): Promise<ILearningModule[]> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'getLearningModules' });
@@ -1029,6 +1390,7 @@ export const api = {
 
   /**
    * Fetches a single learning module by ID.
+   * This operation is idempotent and read-only.
    * @param id The ID of the learning module.
    */
   async getLearningModuleById(id: string): Promise<ILearningModule | undefined> {
@@ -1038,6 +1400,7 @@ export const api = {
 
   /**
    * Fetches a user's cultural profile.
+   * This operation is idempotent and read-only.
    * @param userId The ID of the user.
    */
   async getUserProfile(userId: string): Promise<IUserCulturalProfile | undefined> {
@@ -1047,14 +1410,18 @@ export const api = {
 
   /**
    * Updates a user's cultural profile.
+   * This operation simulates updating a digital identity record.
    * @param userId The ID of the user.
    * @param profile The updated profile data.
+   * @returns The updated user profile.
    */
   async updateUserProfile(userId: string, profile: Partial<IUserCulturalProfile>): Promise<IUserCulturalProfile> {
     systemLogger.info(userId, 'API_CALL', { endpoint: 'updateUserProfile', changes: profile });
     const userIndex = USER_PROFILES_DATA.findIndex(p => p.userId === userId);
     if (userIndex !== -1) {
+      // Simulate optimistic locking or concurrency control for a real system
       USER_PROFILES_DATA[userIndex] = { ...USER_PROFILES_DATA[userIndex], ...profile };
+      systemLogger.audit(userId, 'USER_PROFILE_UPDATED', { details: profile });
       return Promise.resolve(USER_PROFILES_DATA[userIndex]);
     }
     systemLogger.error(userId, 'PROFILE_UPDATE_FAILED', { reason: 'User not found' });
@@ -1063,6 +1430,7 @@ export const api = {
 
   /**
    * Fetches system settings.
+   * This operation is idempotent and read-only.
    */
   async getSystemSettings(): Promise<ISystemSettings> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'getSystemSettings' });
@@ -1071,19 +1439,24 @@ export const api = {
 
   /**
    * Updates system settings.
+   * This operation simulates updating global governance parameters.
    * @param settings The updated settings data.
+   * @returns The updated system settings.
    */
   async updateSystemSettings(settings: Partial<ISystemSettings>): Promise<ISystemSettings> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'updateSystemSettings', changes: settings });
     Object.assign(SYSTEM_SETTINGS_DATA, settings);
+    systemLogger.audit(null, 'SYSTEM_SETTINGS_UPDATED', { details: settings });
     return Promise.resolve(SYSTEM_SETTINGS_DATA);
   },
 
   /**
    * Simulates starting a new scenario instance.
+   * This creates a new stateful simulation, representing a critical user interaction point.
    * @param userId The ID of the user.
    * @param scenarioTemplateId The ID of the scenario template.
    * @param targetCultureId The ID of the target culture for this instance.
+   * @returns The newly created active scenario instance.
    */
   async startScenario(userId: string, scenarioTemplateId: string, targetCultureId: string): Promise<IActiveScenarioInstance> {
     systemLogger.info(userId, 'SCENARIO_START_REQUEST', { scenarioTemplateId, targetCultureId });
@@ -1110,16 +1483,17 @@ export const api = {
       successMetric: 50, // Starting neutral
     };
     ACTIVE_SCENARIOS_DATA.push(newInstance);
-    systemLogger.info(userId, 'SCENARIO_STARTED', { instanceId: newInstance.instanceId, scenarioTemplateId });
+    systemLogger.audit(userId, 'SCENARIO_STARTED', { instanceId: newInstance.instanceId, scenarioTemplateId });
     return Promise.resolve(newInstance);
   },
 
   /**
    * Simulates a user interaction within an active scenario instance.
-   * This is the core "Agentic AI" interaction point.
+   * This is the core "Agentic AI" interaction point, processing user input via the CulturalIntelligenceAgent.
    * @param userId The ID of the user.
    * @param instanceId The ID of the active scenario instance.
    * @param userAction The user's input/response.
+   * @returns A complete interaction feedback object, detailing the AI's response and cultural impact.
    */
   async processInteraction(userId: string, instanceId: string, userAction: string): Promise<CompleteInteractionFeedback> {
     systemLogger.info(userId, 'INTERACTION_REQUEST', { instanceId, userAction });
@@ -1131,119 +1505,40 @@ export const api = {
     }
 
     const scenario = ACTIVE_SCENARIOS_DATA[activeScenarioIndex];
-    const userProfile = USER_PROFILES_DATA.find(u => u.userId === userId);
-    if (!userProfile) {
-      systemLogger.error(userId, 'INTERACTION_FAILED', { reason: 'User profile not found' });
-      throw new Error('User profile not found.');
-    }
-
-    // --- Core AI Simulation Logic (simplified for mock) ---
-    // In a real system, this would involve:
-    // 1. LLM call to analyze userAction against scenario.targetCulture's rules/norms.
-    // 2. Generation of AI response based on scenario progression and cultural context.
-    // 3. Calculation of detailed feedback based on cultural dimensions, etiquette rules, etc.
-    // 4. Update of scenario state (currentSituation, objectiveStatus, successMetric).
-    // 5. Update of userProfile culturalCompetenceScore.
-
-    let aiResponse = "Interesting... let me consider that.";
-    let feedbackSummary: { text: string; severity: FeedbackSeverity } = { text: "Neutral response.", severity: 'Neutral' };
-    let detailedFeedback: DetailedFeedbackDimension[] = [];
-    let competenceImpact = 0;
-    let suggestedResources: string[] = [];
-
-    const lowerCaseUserAction = userAction.toLowerCase();
+    const userProfile = USER_PROFILES_DATA.find(u => p.userId === userId);
+    const systemSettings = SYSTEM_SETTINGS_DATA; // Global settings
+    const culturalData = scenario.targetCulture;
     const scenarioTemplate = SCENARIO_TEMPLATES_DATA.find(t => t.id === scenario.scenarioTemplateId);
 
-    // Dynamic feedback based on a simplified keyword matching for demonstration
-    if (scenario.targetCulture.id === 'GERMANY') {
-      if (lowerCaseUserAction.includes('handshake') && lowerCaseUserAction.includes('firm')) {
-        aiResponse = "Mr. Schmidt and Ms. Müller return your firm handshake with a nod. They seem pleased.";
-        feedbackSummary = { text: "Positive: Your firm handshake aligned with German business etiquette.", severity: 'Positive' };
-        detailedFeedback.push({
-          dimension: 'Etiquette: Greeting', score: 3, explanation: 'A firm handshake is a sign of professionalism and respect in Germany.', severity: 'Positive', recommendations: ['Continue to use a firm handshake in German business settings.']
-        });
-        competenceImpact += 5;
-        scenario.objectiveStatus['Establish professional rapport'] = true;
-      } else if (lowerCaseUserAction.includes('late') || lowerCaseUserAction.includes('casual')) {
-        aiResponse = "Mr. Schmidt glances at his watch. Ms. Müller's expression is neutral, but you sense a slight stiffness in the air.";
-        feedbackSummary = { text: "Negative: Your action might be perceived as lacking punctuality or formality.", severity: 'Negative' };
-        detailedFeedback.push({
-          dimension: 'Etiquette: Punctuality', score: -3, explanation: 'Punctuality is extremely important in Germany; arriving late or being casual about time is considered rude.', severity: 'Negative', recommendations: ['Always aim to be on time or a few minutes early for meetings.', 'Prioritize professionalism in initial interactions.']
-        });
-        competenceImpact -= 10;
-        suggestedResources.push('LM001');
-      } else if (lowerCaseUserAction.includes('guten tag') && lowerCaseUserAction.includes('pleasure')) {
-        aiResponse = "They nod in acknowledgement. Ms. Müller responds, 'Guten Tag. We are ready when you are.'";
-        feedbackSummary = { text: "Positive: Appropriate formal greeting for Germany.", severity: 'Positive' };
-        detailedFeedback.push({
-          dimension: 'Communication Style: Formality', score: 2, explanation: 'Using formal greetings like "Guten Tag" is appropriate.', severity: 'Positive', recommendations: ['Maintain a formal tone until invited otherwise.']
-        });
-        competenceImpact += 3;
-      } else if (lowerCaseUserAction.includes('agenda') || lowerCaseUserAction.includes('prepared')) {
-        aiResponse = "Mr. Schmidt nods. 'Excellent. Let's proceed as per the agenda.'";
-        feedbackSummary = { text: "Positive: Demonstrating preparation is highly valued.", severity: 'Positive' };
-        detailedFeedback.push({
-          dimension: 'Business Etiquette: Preparation', score: 4, explanation: 'Germans value detailed preparation and adherence to agendas.', severity: 'Positive', recommendations: ['Always come prepared with facts and a clear agenda.']
-        });
-        competenceImpact += 5;
-        scenario.objectiveStatus['Demonstrate punctuality and preparation'] = true;
-      }
-    } else if (scenario.targetCulture.id === 'JAPAN') {
-      if (lowerCaseUserAction.includes('chopsticks') && lowerCaseUserAction.includes('upright')) {
-        aiResponse = "A noticeable silence falls over the table. Your host's smile disappears, and he quickly says something in Japanese to another colleague. The atmosphere becomes tense.";
-        feedbackSummary = { text: "Critical: This is a severe cultural taboo.", severity: 'Critical' };
-        detailedFeedback.push({
-          dimension: 'Dining Etiquette: Chopsticks', score: -5, explanation: 'Sticking chopsticks upright in rice is highly offensive, resembling a funeral rite.', severity: 'Critical', recommendations: ['Never stick chopsticks upright in rice.']
-        });
-        competenceImpact -= 20;
-        suggestedResources.push('LM003');
-      } else if (lowerCaseUserAction.includes('bow') && lowerCaseUserAction.includes('nod')) {
-        aiResponse = "Your host returns a slight bow. Your colleagues also offer polite nods. You sense respect.";
-        feedbackSummary = { text: "Positive: Appropriate greeting showing respect.", severity: 'Positive' };
-        detailedFeedback.push({
-          dimension: 'Etiquette: Greeting (Bowing)', score: 4, explanation: 'A slight bow or nod is appropriate for initial greetings, showing deference.', severity: 'Positive', recommendations: ['Observe and emulate the depth of bow shown to you.']
-        });
-        competenceImpact += 5;
-      } else if (lowerCaseUserAction.includes('shoes') && lowerCaseUserAction.includes('remove')) {
-        aiResponse = "Your host gestures approvingly. 'Please, make yourself comfortable.'";
-        feedbackSummary = { text: "Positive: Showing awareness of shoe removal etiquette.", severity: 'Positive' };
-        detailedFeedback.push({
-          dimension: 'Etiquette: Indoor Customs', score: 4, explanation: 'Removing shoes indoors is a sign of respect.', severity: 'Positive', recommendations: ['Always be mindful of shoe removal when entering homes or traditional venues.']
-        });
-        competenceImpact += 5;
-      }
-    } else if (scenario.targetCulture.id === 'INDIA') {
-      if (lowerCaseUserAction.includes('right hand') && lowerCaseUserAction.includes('eat')) {
-        aiResponse = "Your host nods approvingly. The meal continues pleasantly.";
-        feedbackSummary = { text: "Positive: Correctly using the right hand for eating.", severity: 'Positive' };
-        detailedFeedback.push({
-          dimension: 'Dining Etiquette: Hands', score: 4, explanation: 'Using only the right hand for eating (especially without utensils) is crucial as the left hand is considered unclean.', severity: 'Positive', recommendations: ['Always remember to use your right hand for eating and giving/receiving items.']
-        });
-        competenceImpact += 5;
-      } else if (lowerCaseUserAction.includes('direct no') || lowerCaseUserAction.includes('tight deadline')) {
-        aiResponse = "Your counterpart\'s expression becomes slightly reserved. 'We will endeavor to achieve that,' he says, but you sense a lack of full commitment.";
-        feedbackSummary = { text: "Negative: Overly direct communication can be seen as impolite or cause loss of face.", severity: 'Negative' };
-        detailedFeedback.push({
-          dimension: 'Communication Style: Directness', score: -3, explanation: 'Direct refusal or setting rigid deadlines can be challenging in Indian high-context culture, where harmony and face-saving are important.', severity: 'Negative', recommendations: ['Learn to use more indirect phrasing for requests or disagreements.']
-        });
-        competenceImpact -= 10;
-        suggestedResources.push('LM005', 'LM007');
-      }
-    }
-    // Default or fallback AI response if no specific keyword match
-    if (aiResponse === "Interesting... let me consider that.") {
-      aiResponse = scenarioTemplate?.interactionFlowExample?.[0]?.ai || "I understand your point. Let's see how to proceed.";
-      feedbackSummary = { text: "Neutral: No strong cultural implications detected in this interaction.", severity: 'Neutral' };
-      detailedFeedback.push({
-        dimension: 'General Interaction', score: 0, explanation: 'Your action was generally acceptable, but did not significantly impact cultural perception positively or negatively.', severity: 'Neutral', recommendations: []
-      });
+    if (!userProfile || !culturalData || !scenarioTemplate) {
+      systemLogger.error(userId, 'INTERACTION_FAILED', { reason: 'Missing profile, cultural data, or scenario template' });
+      throw new Error('Missing prerequisite data for interaction processing.');
     }
 
-    // Update scenario and user profile
+    // Agentic Intelligence Layer: process user interaction
+    const completeFeedback = await culturalIntelligenceAgent.processUserInteraction(
+      userId,
+      scenario,
+      userAction,
+      userProfile,
+      culturalData,
+      systemSettings,
+      scenarioTemplate
+    );
+
+    // Update scenario and user profile based on agent's output
     scenario.currentTurn++;
-    scenario.successMetric = Math.max(0, Math.min(100, scenario.successMetric + competenceImpact));
+    scenario.currentSituation = completeFeedback.aiResponse; // AI's response becomes the new situation
+    scenario.successMetric = Math.max(0, Math.min(100, scenario.successMetric + completeFeedback.overallCulturalCompetenceImpact));
+
+    // Update scenario objectives based on feedback
+    if (completeFeedback.overallCulturalCompetenceImpact > 0) {
+      scenario.objectiveStatus[scenarioTemplate.objectives[0]] = true; // Simplified: First objective met on any positive interaction
+    }
+
     if (scenario.currentTurn >= scenario.maxTurns || Object.values(scenario.objectiveStatus).every(status => status)) {
       scenario.isCompleted = true;
+      const rewardTriggered = completeFeedback.potentialRewardsEarned?.find(r => r.type === 'token' || r.type === 'certificate');
       userProfile.scenarioHistory.push({
         scenarioInstanceId: scenario.instanceId,
         scenarioTemplateId: scenario.scenarioTemplateId,
@@ -1251,9 +1546,10 @@ export const api = {
         completionDate: new Date().toISOString(),
         finalSuccessMetric: scenario.successMetric,
         totalInteractions: scenario.currentTurn,
-        keyLearnings: detailedFeedback.filter(f => f.severity !== 'Neutral').map(f => f.explanation),
+        keyLearnings: completeFeedback.detailedFeedback.filter(f => f.severity !== 'Neutral').map(f => f.explanation),
+        rewardTriggered: rewardTriggered || undefined,
       });
-      systemLogger.info(userId, 'SCENARIO_COMPLETED', { instanceId: scenario.instanceId, finalSuccessMetric: scenario.successMetric });
+      systemLogger.audit(userId, 'SCENARIO_COMPLETED', { instanceId: scenario.instanceId, finalSuccessMetric: scenario.successMetric });
     }
 
     // Update user's cultural competence score (simplified averaging)
@@ -1265,35 +1561,26 @@ export const api = {
     const scores = Object.values(userProfile.culturalCompetenceScore);
     userProfile.overallCompetence = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
 
-    systemLogger.info(userId, 'INTERACTION_PROCESSED', {
+    // Log the processed interaction for auditability.
+    systemLogger.audit(userId, 'INTERACTION_PROCESSED_FINAL', {
       instanceId,
       userAction,
-      aiResponse,
-      feedbackSummary: feedbackSummary.text,
-      competenceImpact,
+      aiResponse: completeFeedback.aiResponse,
+      feedbackSummary: completeFeedback.feedbackSummary.text,
+      competenceImpact: completeFeedback.overallCulturalCompetenceImpact,
       newSuccessMetric: scenario.successMetric,
       newCulturalCompetenceScore: userProfile.culturalCompetenceScore[scenario.targetCulture.id],
+      potentialRewards: completeFeedback.potentialRewardsEarned,
     });
-
-    const completeFeedback: CompleteInteractionFeedback = {
-      userAction,
-      aiResponse,
-      feedbackSummary,
-      timestamp: new Date().toISOString(),
-      scenarioId: scenario.instanceId,
-      targetCultureId: scenario.targetCulture.id,
-      userProfileSnapshot: { ...userProfile }, // Snapshot for audit
-      detailedFeedback,
-      overallCulturalCompetenceImpact: competenceImpact,
-      suggestedResources: suggestedResources.length > 0 ? suggestedResources : undefined,
-    };
 
     return Promise.resolve(completeFeedback);
   },
 
   /**
    * Fetches an active scenario instance by ID.
+   * This operation is idempotent and read-only.
    * @param instanceId The ID of the active scenario instance.
+   * @returns The active scenario instance, or undefined if not found.
    */
   async getActiveScenario(instanceId: string): Promise<IActiveScenarioInstance | undefined> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'getActiveScenario', instanceId });
@@ -1302,14 +1589,20 @@ export const api = {
 
   /**
    * Fetches all audit logs.
+   * This operation is crucial for governance, compliance, and debugging.
+   * @returns A copy of all audit log entries.
    */
   async getAuditLogs(): Promise<IAuditLogEntry[]> {
     systemLogger.info(null, 'API_CALL', { endpoint: 'getAuditLogs' });
-    return Promise.resolve([...AUDIT_LOGS_DATA]); // Return a copy
+    return Promise.resolve([...AUDIT_LOGS_DATA]); // Return a copy for immutability
   },
 };
 
-// 4. React Context for global state management
+/**
+ * React Context for global state management for the Cultural Assimilation Advisor.
+ * This context provides a unified access point to core application data and agent interactions,
+ * ensuring consistent state across the UI and driving high-value user experiences.
+ */
 interface CulturalAdvisorContextType {
   currentUser: IUserCulturalProfile | null;
   systemSettings: ISystemSettings;
@@ -1332,6 +1625,7 @@ export const CulturalAdvisorContext = createContext<CulturalAdvisorContextType |
 
 /**
  * Custom hook to consume the Cultural Advisor Context.
+ * Ensures that the hook is used within the scope of a CulturalAdvisorProvider.
  */
 export const useCulturalAdvisor = () => {
   const context = useContext(CulturalAdvisorContext);
@@ -1343,7 +1637,8 @@ export const useCulturalAdvisor = () => {
 
 /**
  * Provides the Cultural Advisor Context to its children.
- * Manages global state for user, settings, and fetched data.
+ * Manages global state for user, settings, and fetched data, ensuring a robust and responsive user experience.
+ * This provider orchestrates data fetching and state updates, embodying fault-tolerant design principles.
  */
 export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<IUserCulturalProfile | null>(null);
@@ -1355,11 +1650,15 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load initial data and settings
+  /**
+   * Loads initial data and settings from simulated API.
+   * Attempts to auto-login a default user for demonstration purposes.
+   */
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        setIsLoading(true);
         const [loadedCultures, loadedScenarios, loadedModules, loadedSettings] = await Promise.all([
           api.getCultures(),
           api.getScenarioTemplates(),
@@ -1393,6 +1692,10 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     fetchData();
   }, []);
 
+  /**
+   * Handles user login, fetching profile and active scenarios.
+   * @param userId The ID of the user attempting to log in.
+   */
   const login = useCallback(async (userId: string) => {
     setIsLoading(true);
     setError(null);
@@ -1402,7 +1705,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
         setCurrentUser(user);
         const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === user.username));
         setActiveScenarios(userActiveScenarios);
-        systemLogger.info(userId, 'LOGIN_SUCCESS', { username: user.username });
+        systemLogger.audit(userId, 'LOGIN_SUCCESS', { username: user.username });
       } else {
         throw new Error('User not found.');
       }
@@ -1414,14 +1717,21 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, []);
 
+  /**
+   * Handles user logout, clearing current user and active scenarios.
+   */
   const logout = useCallback(() => {
     if (currentUser) {
-      systemLogger.info(currentUser.userId, 'LOGOUT_SUCCESS');
+      systemLogger.audit(currentUser.userId, 'LOGOUT_SUCCESS');
     }
     setCurrentUser(null);
     setActiveScenarios([]); // Clear active scenarios on logout
   }, [currentUser]);
 
+  /**
+   * Updates the current user's profile.
+   * @param profile Partial user profile data to update.
+   */
   const updateUser = useCallback(async (profile: Partial<IUserCulturalProfile>) => {
     if (!currentUser) {
       setError('No user logged in.');
@@ -1433,7 +1743,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     try {
       const updatedUser = await api.updateUserProfile(currentUser.userId, profile);
       setCurrentUser(updatedUser);
-      systemLogger.info(currentUser.userId, 'USER_PROFILE_UPDATED', { changes: profile });
+      systemLogger.audit(currentUser.userId, 'USER_PROFILE_UPDATED_UI', { changes: profile });
     } catch (err: any) {
       systemLogger.error(currentUser.userId, 'USER_PROFILE_UPDATE_ERROR', { error: err.message });
       setError(err.message);
@@ -1442,13 +1752,17 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, [currentUser]);
 
+  /**
+   * Updates system-wide settings.
+   * @param settings Partial system settings data to update.
+   */
   const updateSettings = useCallback(async (settings: Partial<ISystemSettings>) => {
     setIsLoading(true);
     setError(null);
     try {
       const updatedSettings = await api.updateSystemSettings(settings);
       setSystemSettings(updatedSettings);
-      systemLogger.info(currentUser?.userId || 'system', 'SYSTEM_SETTINGS_UPDATED', { changes: settings });
+      systemLogger.audit(currentUser?.userId || 'system', 'SYSTEM_SETTINGS_UPDATED_UI', { changes: settings });
     } catch (err: any) {
       systemLogger.error(currentUser?.userId || 'system', 'SYSTEM_SETTINGS_UPDATE_ERROR', { error: err.message });
       setError(err.message);
@@ -1457,6 +1771,12 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, [currentUser]);
 
+  /**
+   * Starts a new cultural simulation scenario.
+   * @param scenarioTemplateId The ID of the scenario blueprint.
+   * @param targetCultureId The ID of the culture for the simulation.
+   * @returns The newly created active scenario instance.
+   */
   const startNewScenario = useCallback(async (scenarioTemplateId: string, targetCultureId: string) => {
     if (!currentUser) {
       setError('No user logged in.');
@@ -1471,7 +1791,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
       // Immediately fetch updated user profile to reflect scenario history if applicable
       const updatedUser = await api.getUserProfile(currentUser.userId);
       if (updatedUser) setCurrentUser(updatedUser);
-      systemLogger.info(currentUser.userId, 'NEW_SCENARIO_STARTED', { instanceId: newScenario.instanceId });
+      systemLogger.audit(currentUser.userId, 'NEW_SCENARIO_STARTED_UI', { instanceId: newScenario.instanceId });
       return newScenario;
     } catch (err: any) {
       systemLogger.error(currentUser.userId, 'START_SCENARIO_ERROR', { error: err.message });
@@ -1482,6 +1802,12 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, [currentUser]);
 
+  /**
+   * Submits a user interaction to an active scenario for AI processing.
+   * @param instanceId The ID of the active scenario.
+   * @param userAction The user's input.
+   * @returns The complete interaction feedback from the AI.
+   */
   const submitInteraction = useCallback(async (instanceId: string, userAction: string) => {
     if (!currentUser) {
       setError('No user logged in.');
@@ -1492,9 +1818,6 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     setError(null);
     try {
       const feedback = await api.processInteraction(currentUser.userId, instanceId, userAction);
-      setActiveScenarios(prev =>
-        prev.map(s => (s.instanceId === instanceId ? { ...s, currentTurn: s.currentTurn + 1, successMetric: feedback.overallCulturalCompetenceImpact } : s))
-      );
       // Re-fetch scenario and user profile to get latest state including calculated scores and completion status
       const updatedScenario = await api.getActiveScenario(instanceId);
       if (updatedScenario) {
@@ -1503,7 +1826,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
       const updatedUser = await api.getUserProfile(currentUser.userId);
       if (updatedUser) setCurrentUser(updatedUser);
 
-      systemLogger.info(currentUser.userId, 'INTERACTION_SUBMITTED', { instanceId, userAction, feedbackSummary: feedback.feedbackSummary.text });
+      systemLogger.audit(currentUser.userId, 'INTERACTION_SUBMITTED_UI', { instanceId, userAction, feedbackSummary: feedback.feedbackSummary.text });
       return feedback;
     } catch (err: any) {
       systemLogger.error(currentUser.userId, 'SUBMIT_INTERACTION_ERROR', { error: err.message });
@@ -1514,6 +1837,9 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, [currentUser]);
 
+  /**
+   * Refreshes the list of active scenarios for the current user.
+   */
   const refreshActiveScenarios = useCallback(async () => {
     if (!currentUser) {
       setActiveScenarios([]);
@@ -1521,10 +1847,10 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
     setIsLoading(true);
     try {
-      // In a real app, this would query active scenarios associated with the user.
-      // For this mock, we just filter the global mock data.
+      // In a real app, this would query active scenarios associated with the user via a filtered API call.
       const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === currentUser.username));
       setActiveScenarios(userActiveScenarios);
+      systemLogger.info(currentUser.userId, 'REFRESH_SCENARIOS_SUCCESS');
     } catch (err: any) {
       systemLogger.error(currentUser.userId, 'REFRESH_SCENARIOS_ERROR', { error: err.message });
       setError(err.message);
@@ -1533,6 +1859,9 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     }
   }, [currentUser]);
 
+  /**
+   * Memoized value of the context provider to prevent unnecessary re-renders.
+   */
   const memoizedValue = useMemo(() => ({
     currentUser,
     systemSettings,
