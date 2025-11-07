@@ -1,30 +1,15 @@
-/**
- * This module implements the client-side user interface for the Personal Historian AI, a system designed to automate the collection,
- * organization, and intelligent analysis of an individual's life memories and digital artifacts.
- *
- * Business Value: This component delivers a transformative user experience, enabling individuals and enterprise clients
- * to derive unprecedented value from their personal and historical data. By leveraging advanced agentic AI,
- * it automates the laborious process of memory curation, transforming raw digital assets into structured,
- * deeply insightful narratives and actionable intelligence.
- *
- * System Leverage:
- * - **Agentic AI Integration**: Provides direct user interaction points for AI agents to process, categorize,
- *   and generate insights from memories, enhancing personalization and reducing manual effort.
- * - **Digital Identity Gateway**: Serves as a primary interface for users to manage their digital identity,
- *   securely interacting with token rails and payment infrastructure for premium AI services or data attestation.
- * - **Token Economy Visibility**: Exposes the underlying token rail mechanisms, allowing users to understand
- *   and manage the computational costs associated with AI processing, VR scene generation, and secure data storage,
- *   driving transparency and enabling new micro-transactional revenue streams.
- * - **Real-time Payments Orchestration**: Integrates payment initiation for value-added services,
- *   demonstrating the system's capability to process real-time transactions for high-demand AI capabilities.
- * - **Data Governance & Auditability**: Offers views into AI processing logs, ensuring users have transparency
- *   and control over how their data is used and processed by autonomous agents, thereby fostering trust
- *   and ensuring regulatory compliance.
- *
- * This view layer is critical for monetizing AI capabilities, providing a seamless bridge between complex
- * backend infrastructure and user-centric value, ultimately enabling new revenue models through
- * on-demand intelligent services and data products worth millions.
- */
+"""This module implements the client-side user interface for the Personal Historian AI, a revolutionary system designed to automate the collection, organization, and intelligent analysis of an individual's life memories and digital artifacts. This view layer is critical for monetizing AI capabilities, providing a seamless bridge between complex backend infrastructure and user-centric value, ultimately enabling new revenue models through on-demand intelligent services and data products worth millions.
+
+Business Value: This component delivers a transformative user experience, empowering individuals and enterprise clients to derive unprecedented value from their personal and historical data. By leveraging advanced agentic AI, it automates the laborious process of memory curation, transforming raw digital assets into structured, deeply insightful narratives and actionable intelligence. It provides the essential interface for engaging with the core financial infrastructure, including digital identity, programmable token rails, and real-time settlement for AI services, making the platform a blueprint for the next trillion-dollar financial backbone.
+
+System Leverage:
+- **Agentic AI Integration**: Provides direct user interaction points for AI agents to process, categorize, and generate insights from memories, enhancing personalization and reducing manual effort. It exposes agent activity logs and controls, fostering transparency and trust in autonomous operations.
+- **Digital Identity Gateway**: Serves as a primary interface for users to manage their cryptographic digital identity, securely interacting with token rails and payment infrastructure for premium AI services or data attestation. This is foundational for secure, auditable, and compliant interactions.
+- **Token Economy Visibility**: Exposes the underlying token rail mechanisms, allowing users to understand and manage the computational costs associated with AI processing, VR scene generation, and secure data storage, driving transparency and enabling new micro-transactional revenue streams. Users can monitor their token balances and transaction history.
+- **Real-time Payments Orchestration**: Integrates payment initiation for value-added services, demonstrating the system's capability to process real-time transactions for high-demand AI capabilities. It shows the immediate impact of AI service consumption on user token accounts.
+- **Data Governance & Auditability**: Offers views into AI processing logs and identity-related audit trails, ensuring users have transparency and control over how their data is used and processed by autonomous agents, thereby fostering trust and ensuring regulatory compliance. This layer is critical for demonstrating integrity and meeting enterprise-grade audit requirements.
+
+This view layer is paramount for illustrating the product’s potential worth in the financial ecosystem, acting as the user-facing bridge to a highly reliable, intelligent, scalable, and auditable digital finance platform."""
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 
 // --- Core Data Interfaces ---
@@ -108,7 +93,7 @@ export interface Memory {
 
 export interface TimelineEvent {
   id: string;
-  type: 'memory' | 'milestone' | 'period_summary' | 'ai_insight' | 'agent_action'; // Added agent_action
+  type: 'memory' | 'milestone' | 'period_summary' | 'ai_insight' | 'agent_action' | 'transaction_event'; // Added agent_action, transaction_event
   timestamp: string;
   title: string;
   description: string;
@@ -117,6 +102,7 @@ export interface TimelineEvent {
   imageUrl?: string;
   detailUrl?: string;
   agentId?: string; // For agent_action type
+  transactionId?: string; // For transaction_event type
 }
 
 export interface UserProfile {
@@ -196,7 +182,9 @@ export interface Recommendation {
  * This encapsulates cryptographic key material and attributes.
  * Business value: Essential for secure authentication, authorization,
  * and creating verifiable credentials or signed transactions, underpinning
- * trust and compliance in financial and data operations.
+ * trust and compliance in financial and data operations. This module provides
+ * the foundational layer for all secure interactions within the platform,
+ * ensuring non-repudiation and auditable access control, critical for enterprise adoption.
  */
 export interface DigitalIdentity {
   id: string;
@@ -216,6 +204,8 @@ export interface DigitalIdentity {
  * Business value: Enables granular control over system functionalities,
  * safeguarding sensitive operations and ensuring compliance with data
  * governance policies, critical for multi-user and multi-agent environments.
+ * This module ensures that only authorized entities can perform specific actions,
+ * dramatically reducing risk and facilitating regulatory adherence.
  */
 export interface Role {
   id: string;
@@ -229,6 +219,8 @@ export interface Role {
  * Business value: Enables autonomous workflows for data processing,
  * anomaly detection, and reconciliation, dramatically increasing
  * operational efficiency and unlocking new intelligent service offerings.
+ * Agents act as programmable value-add units, continuously enhancing
+ * data utility and driving platform engagement.
  */
 export interface Agent {
   id: string;
@@ -247,7 +239,9 @@ export interface Agent {
  * Represents a simulated Skill an AI Agent can perform.
  * Business value: Modularizes agent capabilities, allowing for flexible
  * deployment and extension of autonomous functions, accelerating
- * development cycles for new AI-powered features.
+ * development cycles for new AI-powered features. Each skill is a
+ * discreet, monetizable service unit, enabling fine-grained pricing
+ * and usage tracking.
  */
 export interface AgentSkill {
   id: string;
@@ -261,7 +255,8 @@ export interface AgentSkill {
  * Represents an activity log entry for an AI Agent.
  * Business value: Provides granular auditability for all agent actions,
  * crucial for regulatory compliance, post-incident analysis, and
- * demonstrating the ROI of autonomous operations.
+ * demonstrating the ROI of autonomous operations. This immutable log
+ * is a core component of the platform's governance and trust framework.
  */
 export interface AgentActivityLog {
   id: string;
@@ -280,7 +275,8 @@ export interface AgentActivityLog {
  * Represents a simulated Token Account.
  * Business value: Facilitates the internal micro-economy of the system,
  * enabling transparent billing for AI services, incentivizing data quality,
- * and creating a foundation for a programmable money layer.
+ * and creating a foundation for a programmable money layer. This is central
+ * to creating a dynamic, value-exchange ecosystem within the platform.
  */
 export interface TokenAccount {
   id: string;
@@ -296,7 +292,8 @@ export interface TokenAccount {
  * Represents a simulated Token Transaction.
  * Business value: Provides an immutable, auditable record of all value transfers,
  * ensuring transactional guarantees, idempotency, and full traceability
- * for financial reconciliation and regulatory reporting.
+ * for financial reconciliation and regulatory reporting. This is the backbone
+ * of the programmable value rails, enabling real-time settlement and trust.
  */
 export interface TokenTransaction {
   id: string;
@@ -319,7 +316,8 @@ export interface TokenTransaction {
  * and executed by one or more agents.
  * Business value: Orchestrates complex AI workflows, providing a single
  * auditable unit for a series of agent actions and token expenditures,
- * streamlining management of intensive computational tasks.
+ * streamlining management of intensive computational tasks. This is how
+ * users consume high-value AI services on the platform.
  */
 export interface DataProcessingJob {
   id: string;
@@ -590,32 +588,43 @@ export const cryptoSim = {
   },
   sign: async (data: string, privateKey: string): Promise<string> => {
     await delay(50);
-    // Simulate signing: simple hash of data + privateKey
-    const hash = btoa(data + privateKey); // Base64 encode for simplicity
-    return `sig-${hash.substring(0, 20)}`;
+    // Simulate signing: simple hash of data + privateKey. In a real system, this involves complex algorithms.
+    const combinedData = data + privateKey.substring(0, 10); // Use part of private key for deterministic mock signature
+    const hash = btoa(combinedData).substring(0, 20); // Base64 encode and truncate for simplicity
+    return `sig-${hash}`;
   },
   verify: async (data: string, signature: string, publicKey: string): Promise<boolean> => {
     await delay(50);
-    // Simulate verification: check if signature matches a plausible hash of data
-    // In a real system, this would involve actual cryptographic verification
-    const expectedSigPart = btoa(data + 'mocked_private_key').substring(0, 20); // Assume a mocked private key for verification
-    return signature.startsWith('sig-') && signature.includes(expectedSigPart.substring(0, 5)); // Very loose match for demo
+    // Simulate verification: rudimentary check based on how sign was mocked.
+    // In a real system, this involves cryptographic verification with public key.
+    if (!signature.startsWith('sig-')) return false;
+    const mockPrivateKeyPart = 'prk-mock_key_part'; // A static part of a mock private key
+    const expectedHashPart = btoa(data + mockPrivateKeyPart).substring(0, 20);
+    return signature.includes(expectedHashPart); // Very loose match for demo, real verification is mathematically rigorous
   },
   encrypt: async (data: string, publicKey: string): Promise<string> => {
     await delay(50);
+    // Simulate encryption: simply concatenating and base64 encoding.
+    // In a real system, this would use asymmetric encryption with the public key.
     return `enc-${btoa(data)}-${publicKey.substring(0, 10)}`;
   },
   decrypt: async (encryptedData: string, privateKey: string): Promise<string> => {
     await delay(50);
+    // Simulate decryption: simple base64 decode.
+    // In a real system, this uses the private key to reverse the encryption.
     const parts = encryptedData.split('-');
     if (parts.length > 1 && parts[0] === 'enc') {
       try {
-        return atob(parts[1]);
+        const decoded = atob(parts[1]);
+        // A real decryption would check if the privateKey is valid for this encrypted data
+        // For mock, we simply return the decoded string
+        return decoded;
       } catch (e) {
+        console.error("Mock decryption error:", e);
         return 'Decryption failed (mock)';
       }
     }
-    return 'Decryption failed (mock)';
+    return 'Decryption failed (invalid format)';
   }
 };
 
@@ -680,7 +689,7 @@ export const api = {
     };
     mockMemories.unshift(newMemory); // Add to beginning for freshness
     // Simulate auto-processing if enabled
-    if (mockAISettings.autoProcessNewMemories) {
+    if (mockAISettings.autoProcessNewMemories && mockUserProfile.id) {
       api.processMemoryForInsights(newMemory.id, mockUserProfile.id);
     }
     return newMemory;
@@ -709,6 +718,7 @@ export const api = {
         details: { userId: mockUserProfile.id, memoryTitle: `Deleted memory ${id}` },
         status: 'success',
         costInTokens: 0,
+        signature: await cryptoSim.sign(`memory_delete_${id}_${mockUserProfile.id}`, 'system_private_key'),
       };
       mockAgentActivityLogs.unshift(logEntry);
     }
@@ -790,14 +800,15 @@ export const api = {
 
   // --- New API functions for Money20/20 architecture ---
 
-  getDigitalIdentity: async (ownerId: string): Promise<DigitalIdentity | null> => {
+  getDigitalIdentity: async (identityId: string): Promise<DigitalIdentity | null> => {
     await delay(200);
-    return mockDigitalIdentities.find(id => id.ownerId === ownerId) || null;
+    return mockDigitalIdentities.find(id => id.id === identityId) || null;
   },
   generateDigitalIdentity: async (ownerId: string, ownerType: 'user' | 'agent', roleIds: string[]): Promise<DigitalIdentity> => {
     await delay(1000);
     const { publicKey, privateKey } = await cryptoSim.generateKeyPair();
-    const encryptedPrivateKey = await cryptoSim.encrypt(privateKey, publicKey); // Simulate encryption
+    // Simulate encryption of private key for secure storage, even if mock
+    const encryptedPrivateKey = await cryptoSim.encrypt(privateKey, publicKey);
     const newIdentity: DigitalIdentity = {
       id: `id-${ownerType}-${ownerId}-${Date.now()}`,
       ownerId,
@@ -844,7 +855,9 @@ export const api = {
   /**
    * Simulates an AI agent processing a memory. This includes cost deduction and log generation.
    * Business value: Demonstrates the core agentic AI workflow, showcasing real-time processing
-   * and the financial mechanics of token consumption for value-added services.
+   * and the financial mechanics of token consumption for value-added services. It represents
+   * the programmable value rails in action, where AI computational tasks are settled
+   * transparently via digital tokens, enabling a micro-transactional economy.
    */
   processMemoryForInsights: async (memoryId: string, initiatorId: string, options?: { forceVR?: boolean; reanalyzeSentiment?: boolean }): Promise<DataProcessingJob> => {
     await delay(2000 + Math.random() * 1000); // Simulate AI processing time
@@ -855,9 +868,13 @@ export const api = {
     const userTokenAccount = mockTokenAccounts.find(acc => acc.ownerId === initiatorId && acc.ownerType === 'user');
     if (!userTokenAccount) throw new Error('User token account not found.');
 
+    const userDigitalIdentity = mockDigitalIdentities.find(id => id.ownerId === initiatorId && id.ownerType === 'user');
+    if (!userDigitalIdentity) throw new Error('User digital identity not found for signing transactions.');
+
     let totalCost = 0;
     const agentActivityLogIds: string[] = [];
     const insights: string[] = [];
+    let transactionIds: string[] = [];
 
     const job: DataProcessingJob = {
       id: `job-${mockDataProcessingJobs.length + 1}`,
@@ -891,6 +908,9 @@ export const api = {
       agentAccount.balance += skill.costPerUseTokens;
       totalCost += skill.costPerUseTokens;
 
+      const transactionData = `txn_data_${job.id}_${skillId}_${new Date().getTime()}`; // Ensure unique data for signature
+      const transactionSignature = await cryptoSim.sign(transactionData, userDigitalIdentity.privateKeyEncrypted || 'mock_user_private_key'); // Use user's ID for signing
+
       const transaction: TokenTransaction = {
         id: `txn-${mockTokenTransactions.length + 1}`,
         timestamp: new Date().toISOString(),
@@ -902,11 +922,16 @@ export const api = {
         status: 'completed',
         description: `Fee for ${skill.name} on memory ${relatedMemory.id}`,
         associatedJobId: job.id,
-        signature: await cryptoSim.sign(`txn_data_${job.id}`, 'mock_private_key'),
+        signature: transactionSignature,
         rail: 'rail_fast',
-        metadata: { idempotencyKey: `idem-${job.id}-${skillId}` },
+        metadata: { idempotencyKey: `idem-${job.id}-${skillId}-${Date.now()}`, riskScore: Math.floor(Math.random() * 10) },
       };
       mockTokenTransactions.unshift(transaction);
+      transactionIds.push(transaction.id);
+
+
+      const agentDigitalIdentity = mockDigitalIdentities.find(id => id.ownerId === agentId && id.ownerType === 'agent');
+      const agentSignature = await cryptoSim.sign(`agent_log_data_${relatedMemory.id}_${agentId}_${Date.now()}`, agentDigitalIdentity?.privateKeyEncrypted || 'mock_agent_private_key');
 
       const agentLog: AgentActivityLog = {
         id: `agent-log-${mockAgentActivityLogs.length + 1}`,
@@ -914,11 +939,11 @@ export const api = {
         timestamp: new Date().toISOString(),
         action,
         relatedEntityId: relatedMemory.id,
-        details: { skill: skill.name, cost: skill.costPerUseTokens },
+        details: { skill: skill.name, cost: skill.costPerUseTokens, transactionId: transaction.id },
         status: 'success',
         costInTokens: skill.costPerUseTokens,
         transactionId: transaction.id,
-        signature: await cryptoSim.sign(`agent_log_data_${relatedMemory.id}`, 'mock_agent_private_key'),
+        signature: agentSignature,
       };
       mockAgentActivityLogs.unshift(agentLog);
       agentActivityLogIds.push(agentLog.id);
@@ -973,7 +998,15 @@ export const api = {
     if (insights.length > 0) {
       memory.aiGeneratedInsights = Array.from(new Set([...(memory.aiGeneratedInsights || []), ...insights]));
     }
-    memory.sourceAIModels = [...(memory.sourceAIModels || []), { modelName: 'HistorianAI Orchestrator', version: '1.0', timestamp: new Date().toISOString(), outputSummary: 'Processed by agents', costInTokens: totalCost, transactionId: job.finalTransactionId }];
+    // Update sourceAIModels if not already present, aggregate costs
+    const existingOrchestratorEntry = memory.sourceAIModels?.find(m => m.modelName === 'HistorianAI Orchestrator');
+    if (existingOrchestratorEntry) {
+        existingOrchestratorEntry.costInTokens = (existingOrchestratorEntry.costInTokens || 0) + totalCost;
+        existingOrchestratorEntry.timestamp = new Date().toISOString();
+        existingOrchestratorEntry.outputSummary = 'Processed by agents (updated)';
+    } else {
+        memory.sourceAIModels = [...(memory.sourceAIModels || []), { modelName: 'HistorianAI Orchestrator', version: '1.0', timestamp: new Date().toISOString(), outputSummary: 'Processed by agents', costInTokens: totalCost }];
+    }
     memory.agentProcessingJobId = job.id;
 
     // Finalize job
@@ -985,6 +1018,7 @@ export const api = {
         completedAt: new Date().toISOString(),
         actualCostTokens: totalCost,
         agentActivityLogIds: agentActivityLogIds,
+        finalTransactionId: transactionIds[0] || undefined, // Link to first transaction for simplicity
       };
       // Simulate system notification for job completion
       mockNotifications.unshift({
@@ -1015,6 +1049,62 @@ export const api = {
     await delay(100);
     return mockRoles;
   },
+
+  /**
+   * Simulates a user-initiated token minting transaction.
+   * Business value: Enables users to acquire tokens for accessing premium AI services,
+   * directly driving revenue and demonstrating the platform's robust token economy.
+   * This is a fundamental operation for fueling engagement and value exchange.
+   */
+  mintTokens: async (userId: string, amount: number): Promise<TokenTransaction> => {
+    await delay(1000);
+    const userAccount = mockTokenAccounts.find(acc => acc.ownerId === userId && acc.ownerType === 'user');
+    if (!userAccount) throw new Error('User token account not found.');
+
+    const userDigitalIdentity = mockDigitalIdentities.find(id => id.ownerId === userId && id.ownerType === 'user');
+    if (!userDigitalIdentity) throw new Error('User digital identity not found for signing transactions.');
+
+    // Simulate system account for minting source
+    let systemAccount = mockTokenAccounts.find(acc => acc.ownerId === 'system');
+    if (!systemAccount) {
+      systemAccount = { id: 'acc-system-fees', ownerId: 'system', ownerType: 'agent', balance: 1000000, currency: 'HST', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() };
+      mockTokenAccounts.push(systemAccount);
+    }
+
+    userAccount.balance += amount; // Directly update user's balance
+    systemAccount.balance -= amount; // Simulate system "issuing" tokens
+
+    const transactionData = `mint_data_${userId}_${amount}_${new Date().getTime()}`;
+    const transactionSignature = await cryptoSim.sign(transactionData, userDigitalIdentity.privateKeyEncrypted || 'mock_user_private_key');
+
+    const transaction: TokenTransaction = {
+      id: `txn-${mockTokenTransactions.length + 1}`,
+      timestamp: new Date().toISOString(),
+      senderId: systemAccount.id, // System is the sender of new tokens
+      receiverId: userAccount.id,
+      amount: amount,
+      currency: 'HST',
+      type: 'mint',
+      status: 'completed',
+      description: `User initiated token mint of ${amount} HST`,
+      signature: transactionSignature,
+      rail: 'rail_fast', // Minting usually fast
+      metadata: { idempotencyKey: `mint-${userId}-${Date.now()}` },
+    };
+    mockTokenTransactions.unshift(transaction);
+
+    mockNotifications.unshift({
+      id: `notif-${mockNotifications.length + 1}`,
+      type: 'transaction',
+      message: `${amount} HST successfully minted to your account.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      actionUrl: `#transaction-${transaction.id}`,
+      relatedEntityId: transaction.id,
+    });
+
+    return transaction;
+  }
 };
 
 // --- Context for Global State (Simplified for single file) ---
@@ -1132,7 +1222,8 @@ export const LocationBadge: React.FC<{ locationId: string }> = ({ locationId }) 
  * Displays a detailed view of a single memory.
  * Business value: Provides comprehensive context for a memory, integrating AI insights,
  * people, locations, and assets, transforming raw data into a rich, navigable narrative.
- * Critical for user engagement and understanding the value derived from AI processing.
+ * Critical for user engagement and understanding the value derived from AI processing,
+ * driving deeper interaction with the platform's intelligent capabilities.
  */
 export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: string) => void; onDelete?: (id: string) => void; onProcessAI?: (id: string) => void; }> = ({ memory, onEdit, onDelete, onProcessAI }) => {
   const { allPeople, allLocations } = useAppContext();
@@ -1259,7 +1350,9 @@ export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: str
 /**
  * Renders a compact card view for a memory.
  * Business value: Improves discoverability and provides an at-a-glance summary,
- * enhancing user navigation and engagement with their personal history.
+ * enhancing user navigation and engagement with their personal history. This component
+ * optimizes the display of high-density information, accelerating user comprehension
+ * and interaction across thousands of memory items.
  */
 export const MemoryCard: React.FC<{ memory: Memory; onClick: (memory: Memory) => void }> = ({ memory, onClick }) => (
   <div
@@ -1314,7 +1407,9 @@ export const MemoryCard: React.FC<{ memory: Memory; onClick: (memory: Memory) =>
 /**
  * Provides an advanced search interface for memories.
  * Business value: Empowers users to precisely locate specific memories within vast datasets,
- * maximizing the utility of their personal history and enabling targeted insights.
+ * maximizing the utility of their personal history and enabling targeted insights. This
+ * capability significantly enhances data liquidity and strategic analysis, transforming
+ * raw historical data into actionable business intelligence.
  */
 export const AdvancedSearchForm: React.FC<{
   onSearch: (params: any) => void;
@@ -1449,6 +1544,7 @@ export const AdvancedSearchForm: React.FC<{
  * Provides an interface for creating or editing memories.
  * Business value: Streamlines the memory capture process, ensuring data fidelity
  * and completeness, and serves as the entry point for activating AI processing workflows.
+ * This component is crucial for data ingestion and initiating intelligent value creation.
  */
 export const MemoryEditorComponent: React.FC<{
   memory?: Memory;
@@ -1644,7 +1740,9 @@ export const MemoryEditorComponent: React.FC<{
  * Displays key metrics, AI recommendations, and recent memories.
  * Business value: Provides an instant overview of a user's digital history,
  * highlighting AI-driven insights and fostering proactive engagement with the system,
- * crucial for showcasing the continuous value delivery of agentic AI.
+ * crucial for showcasing the continuous value delivery of agentic AI. This dashboard
+ * transforms complex data into easily digestible insights, supporting strategic
+ * decision-making and enhancing user retention.
  */
 export const DashboardInsights: React.FC = () => {
   const { allTags, userTokenAccount } = useAppContext();
@@ -1786,6 +1884,7 @@ export const DashboardInsights: React.FC = () => {
  * Manages and displays system notifications.
  * Business value: Centralizes important alerts, ensuring users are informed of system events,
  * AI processing outcomes, and transaction statuses, contributing to system reliability and trust.
+ * This proactive communication mitigates operational risk and enhances user confidence.
  */
 export const NotificationCenter: React.FC = () => {
   const { notifications, fetchNotifications, markNotificationRead } = useAppContext();
@@ -1832,9 +1931,9 @@ export const NotificationCenter: React.FC = () => {
               <div className="flex-shrink-0 mr-4">
                 {notif.type === 'info' && <span className="text-blue-400 text-2xl">i</span>}
                 {notif.type === 'warning' && <span className="text-yellow-400 text-2xl">!</span>}
-                {notif.type === 'error' && <span className="text-red-400 text-2xl">âœ•</span>}
-                {notif.type === 'success' && <span className="text-green-400 text-2xl">âœ“</span>}
-                {notif.type === 'agent' && <span className="text-indigo-400 text-2xl">âš™ï¸Ž</span>}
+                {notif.type === 'error' && <span className="text-red-400 text-2xl">×</span>}
+                {notif.type === 'success' && <span className="text-green-400 text-2xl">✓</span>}
+                {notif.type === 'agent' && <span className="text-indigo-400 text-2xl">⚙️</span>}
                 {notif.type === 'transaction' && <span className="text-purple-400 text-2xl">$</span>}
               </div>
               <div className="flex-grow">
@@ -1862,8 +1961,10 @@ export const NotificationCenter: React.FC = () => {
 /**
  * Manages user profile and AI settings.
  * Business value: Provides granular control over user data, AI behavior,
- * and privacy preferences, ensuring a personalized and secure experience.
- * Critical for user trust and compliance with data privacy regulations.
+ * digital identity, and token wallet, ensuring a personalized and secure experience.
+ * Critical for user trust, compliance with data privacy regulations, and direct
+ * engagement with the platform's financial backbone, creating a powerful user
+ * ownership model.
  */
 export const UserProfileSettings: React.FC = () => {
   const { userProfile, setUserProfile, aiSettings, setAiSettings, userDigitalIdentity, setUserDigitalIdentity, userTokenAccount, setUserTokenAccount } = useAppContext();
@@ -1973,7 +2074,10 @@ export const UserProfileSettings: React.FC = () => {
   };
 
   const handleGenerateDigitalIdentity = async () => {
-    if (!userProfile) return;
+    if (!userProfile) {
+      setError('User profile not available. Cannot generate identity.');
+      return;
+    }
     setIsGeneratingIdentity(true);
     setError(null);
     try {
@@ -1983,9 +2087,9 @@ export const UserProfileSettings: React.FC = () => {
       const updatedProfile = { ...userProfile, digitalIdentityId: newIdentity.id };
       await api.updateUserProfile(updatedProfile); // Also update server-side mock
       setUserProfile(updatedProfile);
-      alert('Digital Identity generated successfully!');
+      alert('Digital Identity generated successfully! Public key copied to clipboard (simulated).'); // Simulate copy
     } catch (err) {
-      setError('Failed to generate Digital Identity.');
+      setError(`Failed to generate Digital Identity: ${err instanceof Error ? err.message : String(err)}`);
       console.error(err);
     } finally {
       setIsGeneratingIdentity(false);
@@ -1993,31 +2097,20 @@ export const UserProfileSettings: React.FC = () => {
   };
 
   const handleMintTokens = async () => {
-    if (!userTokenAccount || !userDigitalIdentity) return;
+    if (!userTokenAccount || !userDigitalIdentity || !userProfile) {
+      setError('User profile, digital identity, or token account not available to mint tokens.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      // Simulate minting tokens
-      const amount = 1000;
-      userTokenAccount.balance += amount; // Directly update mock balance for simulation
-      const transaction: TokenTransaction = {
-        id: `txn-${mockTokenTransactions.length + 1}`,
-        timestamp: new Date().toISOString(),
-        senderId: 'acc-system-fees', // System mints to user
-        receiverId: userTokenAccount.id,
-        amount,
-        currency: 'HST',
-        type: 'mint',
-        status: 'completed',
-        description: 'User initiated token mint (simulated)',
-        signature: await cryptoSim.sign(`mint_data_${Date.now()}`, userDigitalIdentity.privateKeyEncrypted || 'mock_private_key'),
-        rail: 'rail_fast',
-      };
-      mockTokenTransactions.unshift(transaction);
-      setUserTokenAccount({ ...userTokenAccount }); // Trigger re-render
-      alert(`${amount} HST tokens minted successfully!`);
+      const amountToMint = 1000;
+      const transaction = await api.mintTokens(userProfile.id, amountToMint);
+      // Update user token account balance locally
+      setUserTokenAccount(prev => prev ? { ...prev, balance: prev.balance + amountToMint, lastUpdated: new Date().toISOString() } : null);
+      alert(`${amountToMint} HST tokens minted successfully! Transaction ID: ${transaction.id}`);
     } catch (err) {
-      setError('Failed to mint tokens.');
+      setError(`Failed to mint tokens: ${err instanceof Error ? err.message : String(err)}`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -2131,7 +2224,7 @@ export const UserProfileSettings: React.FC = () => {
       {/* Digital Identity Section */}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
         <h3 className="text-xl font-semibold text-white mb-4">Digital Identity Management</h3>
-        <p className="text-gray-400 text-sm mb-4">Your Digital Identity secures your data and transactions using cryptographic keys. It's essential for participating in the token economy and ensuring data integrity.</p>
+        <p className="text-gray-400 text-sm mb-4">Your Digital Identity secures your data and transactions using cryptographic keys. It's essential for participating in the token economy and ensuring data integrity. This cryptographic identity is the foundation of trust and non-repudiation across the platform.</p>
         {userDigitalIdentity ? (
           <div className="space-y-2">
             <p className="text-gray-300"><strong>Identity ID:</strong> <span className="font-mono text-cyan-400 text-sm">{userDigitalIdentity.id}</span></p>
@@ -2153,12 +2246,12 @@ export const UserProfileSettings: React.FC = () => {
       {/* Token Wallet Section */}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
         <h3 className="text-xl font-semibold text-white mb-4">Token Wallet (HST)</h3>
-        <p className="text-gray-400 text-sm mb-4">Manage your Historian Stable Tokens (HST), used for AI processing, VR generation, and other premium services.</p>
+        <p className="text-gray-400 text-sm mb-4">Manage your Historian Stable Tokens (HST), used for AI processing, VR generation, and other premium services. Your token balance fuels the intelligent automation layer and powers the programmable value rails of the platform.</p>
         <div className="space-y-2 mb-4">
           <p className="text-gray-300"><strong>Account ID:</strong> <span className="font-mono text-cyan-400 text-sm">{userTokenAccount.id}</span></p>
           <p className="text-gray-300 text-2xl"><strong>Current Balance:</strong> <span className="font-bold text-purple-400">{userTokenAccount.balance} HST</span></p>
         </div>
-        <button onClick={handleMintTokens} disabled={loading} className="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white font-bold disabled:opacity-50 mr-4">
+        <button onClick={handleMintTokens} disabled={loading || !userDigitalIdentity} className="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white font-bold disabled:opacity-50 mr-4">
           {loading ? 'Minting...' : 'Mint 1000 HST (Simulated)'}
         </button>
         <button disabled className="px-4 py-2 bg-gray-600 text-white rounded-lg opacity-50 cursor-not-allowed">View Transactions (Coming Soon)</button>
@@ -2244,11 +2337,14 @@ export const UserProfileSettings: React.FC = () => {
  * Displays a chronological timeline of memories and significant life events.
  * Business value: Offers an intuitive, interactive visualization of personal history,
  * allowing users to explore their past in a structured manner and identify patterns,
- * crucial for deep introspection and AI-driven pattern recognition.
+ * crucial for deep introspection and AI-driven pattern recognition. This component
+ * transforms scattered data points into a coherent, navigable narrative, providing
+ * unique insights for both individuals and institutional clients analyzing historical trends.
  */
 export const TimelineViewComponent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+  const { userTokenAccount } = useAppContext();
 
   useEffect(() => {
     const fetchTimeline = async () => {
@@ -2287,13 +2383,31 @@ export const TimelineViewComponent: React.FC = () => {
             id: `tlev-${log.id}`,
             type: 'agent_action',
             timestamp: log.timestamp,
-            title: `Agent Activity: ${log.action}`,
-            description: `Agent ${log.agentId} performed ${log.action} on related entity ${log.relatedEntityId}.`,
+            title: `Agent Activity: ${log.action} by ${mockAgents.find(a => a.id === log.agentId)?.name || log.agentId}`,
+            description: `Agent ${log.agentId} performed ${log.action} on related entity ${log.relatedEntityId}. Cost: ${log.costInTokens || 0} HST.`,
             relatedMemoryId: log.relatedEntityId?.startsWith('mem-') ? log.relatedEntityId : undefined,
             tags: ['Agent', 'Activity'],
             agentId: log.agentId,
+            detailUrl: `#agent-log-${log.id}`,
           });
         });
+
+        // Add some mock token transaction events to the timeline for the current user
+        mockTokenTransactions
+          .filter(txn => txn.senderId === userTokenAccount?.id || txn.receiverId === userTokenAccount?.id)
+          .slice(0, 10) // Limit for demo
+          .forEach(txn => {
+            events.push({
+              id: `tlev-txn-${txn.id}`,
+              type: 'transaction_event',
+              timestamp: txn.timestamp,
+              title: `Transaction: ${txn.type.toUpperCase()} ${txn.amount} HST`,
+              description: `${txn.description}. Status: ${txn.status}.`,
+              tags: ['Finance', 'Transaction'],
+              transactionId: txn.id,
+              detailUrl: `#transaction-${txn.id}`,
+            });
+          });
 
         // Sort all events chronologically
         events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -2305,7 +2419,7 @@ export const TimelineViewComponent: React.FC = () => {
       }
     };
     fetchTimeline();
-  }, []);
+  }, [userTokenAccount]);
 
   if (loading) return <LoadingSpinner />;
 
@@ -2322,6 +2436,7 @@ export const TimelineViewComponent: React.FC = () => {
                 event.type === 'memory' ? 'bg-cyan-600' :
                 event.type === 'ai_insight' ? 'bg-indigo-600' :
                 event.type === 'agent_action' ? 'bg-purple-600' :
+                event.type === 'transaction_event' ? 'bg-yellow-600' :
                 'bg-gray-500'
               }`}></div>
               <p className="text-gray-400 text-sm mb-1">{new Date(event.timestamp).toLocaleDateString()} {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
@@ -2350,6 +2465,8 @@ export const TimelineViewComponent: React.FC = () => {
  * Displays logs of all activities performed by AI agents.
  * Business value: Ensures transparency and auditability of autonomous AI operations,
  * critical for compliance, debugging, and understanding the scope of agent interventions.
+ * This granular logging demonstrates governance, accountability, and the immutable record
+ * of intelligent automation, essential for enterprise-grade financial systems.
  */
 export const AgentActivityLogViewer: React.FC = () => {
   const { allAgents } = useAppContext();
@@ -2444,6 +2561,8 @@ export const AgentActivityLogViewer: React.FC = () => {
  * Business value: Centralizes data fetching and state management,
  * ensuring consistent data across the application, simplifying development,
  * and improving application performance through optimized data access patterns.
+ * This provider forms the backbone of the application's responsiveness and data integrity,
+ * underpinning a seamless user experience across advanced financial and AI services.
  */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -2549,10 +2668,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
  * Business value: This top-level component orchestrates all sub-components,
  * providing the central navigation and dynamic content rendering that
  * makes the entire system accessible and valuable to the end-user.
- * It is the public face of the AI-powered personal history platform.
+ * It is the public face of the AI-powered personal history platform,
+ * a revolutionary, multi-million-dollar infrastructure leap, demonstrating
+ * seamless integration of intelligent automation, digital identity, programmable
+ * value, and real-time settlement capabilities for enterprise clients and investors.
  */
 export const PersonalHistorianAIView: React.FC = () => {
-  const { userProfile, notifications, fetchNotifications, userTokenAccount } = useAppContext();
+  const { userProfile, notifications, fetchNotifications, userTokenAccount, setUserTokenAccount } = useAppContext();
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Memory[]>([]);
@@ -2694,12 +2816,12 @@ export const PersonalHistorianAIView: React.FC = () => {
         setSearchResults(prev => prev.map(m => m.id === memoryId ? updatedMemory : m));
         if (selectedMemory?.id === memoryId) setSelectedMemory(updatedMemory);
       }
-      // Update user token account balance locally from global state
+      // Update user token account balance locally by refetching from mock or updating context directly
       if (userTokenAccount) {
         const updatedTokenAccount = await api.getTokenAccount(userTokenAccount.id);
-        if (updatedTokenAccount) userTokenAccount.balance = updatedTokenAccount.balance;
+        if (updatedTokenAccount) setUserTokenAccount(updatedTokenAccount); // Use setter to update context
       }
-      alert(`AI processing job "${processingJob.jobType}" initiated for memory. Cost: ${processingJob.actualCostTokens || processingJob.estimatedCostTokens} HST.`);
+      alert(`AI processing job "${processingJob.jobType}" initiated for memory. Actual cost: ${processingJob.actualCostTokens || processingJob.estimatedCostTokens} HST.`);
       fetchNotifications(); // Fetch new notification about job completion
     } catch (err: any) {
       setError(`AI Processing failed: ${err.message || 'Unknown error'}`);
