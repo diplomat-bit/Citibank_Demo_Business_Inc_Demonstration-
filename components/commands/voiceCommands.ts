@@ -1,10 +1,22 @@
+/**
+ * This module defines the foundational Natural Language Processing (NLP) command dictionary,
+ * enabling a sophisticated voice interface for the Money20/20 platform. It serves as the primary
+ * gateway for users and authorized agents to interact with critical financial infrastructure,
+ * including real-time payments, token rail operations, digital identity management, and
+ * autonomous AI agent orchestration.
+ *
+ * Business value: This comprehensive and extensible command set dramatically enhances
+ * operational efficiency, reduces friction in complex financial workflows, and accelerates
+ * decision-making by allowing intuitive, voice-driven control over high-value transactions
+ * and system governance. It unlocks new levels of productivity, reduces operational costs,
+ * and provides a significant competitive advantage through hands-free, intelligent interaction
+ * with enterprise financial systems. The precision in intent recognition and entity extraction
+ * ensures accuracy in critical financial operations, safeguarding assets and streamlining
+ * compliance and audit processes.
+ */
 import { View } from '../../types';
 import { VoiceCommandDefinition } from '../VoiceControl';
 
-/**
- * Defines a comprehensive collection of default and domain-specific voice commands
- * used by the NLP service, enabling flexible and extensible interaction patterns.
- */
 const defaultVoiceCommands: VoiceCommandDefinition[] = [
     {
         id: 'navigate_dashboard',
@@ -229,6 +241,164 @@ const defaultVoiceCommands: VoiceCommandDefinition[] = [
         description: 'Provides information about a person or entity.',
         requiresContext: ['InformationContext'],
         priority: 8
+    },
+    // --- New commands reflecting Money20/20 build phase architecture ---
+    {
+        id: 'initiate_payment',
+        patterns: [
+            /^(send|pay|transfer) \$?(\d+(\.\d{1,2})?) (to|for) (.+?)( for (.+?))?$/i,
+            /^(make a payment) of \$?(\d+(\.\d{1,2})?) (to|for) (.+?)( for (.+?))?$/i
+        ],
+        intent: { name: 'InitiatePayment', entities: { amount: '$2', recipient: '$5', reason: '$7' }, confidence: 0.98, rawUtterance: '' },
+        description: 'Initiates a real-time payment to a specified recipient with an amount and optional reason.',
+        requiresContext: ['FinancialContext', 'PaymentsContext'],
+        priority: 20
+    },
+    {
+        id: 'request_payment',
+        patterns: [
+            /^(request|ask for) \$?(\d+(\.\d{1,2})?) (from) (.+?)( for (.+?))?$/i,
+        ],
+        intent: { name: 'RequestPayment', entities: { amount: '$2', sender: '$5', reason: '$7' }, confidence: 0.95, rawUtterance: '' },
+        description: 'Requests a payment from a specified sender with an amount and optional reason.',
+        requiresContext: ['FinancialContext', 'PaymentsContext'],
+        priority: 18
+    },
+    {
+        id: 'review_pending_payments',
+        patterns: [/^(show|view|review) (my )?(pending|unapproved) payments?$/i],
+        intent: { name: 'QueryPayments', entities: { status: 'pending' }, confidence: 0.9, rawUtterance: '' },
+        description: 'Displays a list of payments awaiting approval.',
+        requiresContext: ['FinancialContext', 'PaymentsContext'],
+        priority: 16
+    },
+    {
+        id: 'approve_payment',
+        patterns: [/^(approve) (payment|transaction) (id|number)? (\w+)$/i],
+        intent: { name: 'ApprovePayment', entities: { transactionId: '$4' }, confidence: 0.98, rawUtterance: '' },
+        description: 'Approves a specific pending payment by its ID.',
+        requiresContext: ['FinancialContext', 'PaymentsContext', 'AuthorizationContext'],
+        priority: 25
+    },
+    {
+        id: 'reject_payment',
+        patterns: [/^(reject|deny) (payment|transaction) (id|number)? (\w+)$/i],
+        intent: { name: 'RejectPayment', entities: { transactionId: '$4' }, confidence: 0.98, rawUtterance: '' },
+        description: 'Rejects a specific pending payment by its ID.',
+        requiresContext: ['FinancialContext', 'PaymentsContext', 'AuthorizationContext'],
+        priority: 25
+    },
+    {
+        id: 'query_payment_status',
+        patterns: [/^(what's the status of|check status for) (payment|transaction) (id|number)? (\w+)$/i],
+        intent: { name: 'QueryPaymentStatus', entities: { transactionId: '$4' }, confidence: 0.9, rawUtterance: '' },
+        description: 'Queries the current status of a payment using its ID.',
+        requiresContext: ['FinancialContext', 'PaymentsContext'],
+        priority: 15
+    },
+    {
+        id: 'query_token_balance',
+        patterns: [/^(what's|how much is) my (.+?) (token )?balance$/i, /^token balance for (.+?)$/i],
+        intent: { name: 'QueryTokenData', entities: { tokenSymbol: '$2', type: 'balance' }, confidence: 0.95, rawUtterance: '' },
+        description: 'Retrieves the current balance for a specified token type.',
+        requiresContext: ['FinancialContext', 'TokenRailsContext'],
+        priority: 18
+    },
+    {
+        id: 'transfer_tokens',
+        patterns: [/^(transfer|send) (\d+(\.\d{1,2})?) (.+?) tokens? (to|wallet) (.+?)$/i],
+        intent: { name: 'TransferTokens', entities: { amount: '$2', tokenSymbol: '$4', recipientAddress: '$6' }, confidence: 0.97, rawUtterance: '' },
+        description: 'Initiates a transfer of a specified amount of tokens to a given wallet address.',
+        requiresContext: ['FinancialContext', 'TokenRailsContext', 'AuthorizationContext'],
+        priority: 22
+    },
+    {
+        id: 'query_rail_status',
+        patterns: [/^(what is the status of|how is) the (.+?) rail$/i],
+        intent: { name: 'QueryRailStatus', entities: { railName: '$2' }, confidence: 0.9, rawUtterance: '' },
+        description: 'Checks the operational status and latency of a specific token rail.',
+        requiresContext: ['ObservabilityContext', 'TokenRailsContext'],
+        priority: 14
+    },
+    {
+        id: 'assign_agent_task',
+        patterns: [/^(agent )?(.+?), (monitor|start monitoring) (.+?)$/i, /^(assign) (.+?) (to monitor|to detect) (.+?)$/i],
+        intent: { name: 'AssignAgentTask', entities: { agentId: '$2', task: '$4' }, confidence: 0.95, rawUtterance: '' },
+        description: 'Assigns a specific monitoring or action task to an autonomous agent.',
+        requiresContext: ['AgenticAIContext', 'GovernanceContext'],
+        priority: 20
+    },
+    {
+        id: 'query_agent_status',
+        patterns: [/^(what is|show me) (agent )?(.+?)('s )?(status|doing|activity)?$/i],
+        intent: { name: 'QueryAgentStatus', entities: { agentId: '$3' }, confidence: 0.9, rawUtterance: '' },
+        description: 'Retrieves the current operational status and active tasks of a specific agent.',
+        requiresContext: ['AgenticAIContext', 'ObservabilityContext'],
+        priority: 15
+    },
+    {
+        id: 'review_agent_logs',
+        patterns: [/^(show me|review) (agent )?(.+?)('s )?(logs|audit trail|recent activity)$/i],
+        intent: { name: 'ReviewAgentLogs', entities: { agentId: '$3' }, confidence: 0.92, rawUtterance: '' },
+        description: 'Displays the audit logs and recent actions performed by an autonomous agent.',
+        requiresContext: ['AgenticAIContext', 'GovernanceContext', 'AuditContext'],
+        priority: 17
+    },
+    {
+        id: 'verify_identity',
+        patterns: [/^(verify|confirm) (my )?identity$/i, /^(initiate) identity verification$/i],
+        intent: { name: 'VerifyIdentity', confidence: 0.98, rawUtterance: '' },
+        description: 'Initiates a digital identity verification process.',
+        requiresContext: ['IdentityContext', 'SecurityContext'],
+        priority: 20
+    },
+    {
+        id: 'view_access_logs',
+        patterns: [/^(show me|view) my (access|security) logs?$/i],
+        intent: { name: 'QueryAuditLogs', entities: { type: 'access' }, confidence: 0.9, rawUtterance: '' },
+        description: 'Displays the user\'s personal access and security logs.',
+        requiresContext: ['IdentityContext', 'SecurityContext', 'AuditContext'],
+        priority: 15
+    },
+    {
+        id: 'manage_rbac',
+        patterns: [/^(manage) (user )?roles (for )?(.+?)$/i],
+        intent: { name: 'ManageRBAC', entities: { targetUser: '$4' }, confidence: 0.95, rawUtterance: '' },
+        description: 'Navigates to the Role-Based Access Control (RBAC) management interface for a specified user.',
+        requiresContext: ['IdentityContext', 'SecurityContext', 'GovernanceContext'],
+        priority: 19
+    },
+    {
+        id: 'generate_audit_report',
+        patterns: [/^(generate|create) (an )?audit report (for (.+?))?$/i],
+        intent: { name: 'GenerateReport', entities: { type: 'audit', period: '$4' }, confidence: 0.95, rawUtterance: '' },
+        description: 'Generates a comprehensive audit report for a specified period or domain.',
+        requiresContext: ['GovernanceContext', 'AuditContext'],
+        priority: 20
+    },
+    {
+        id: 'query_system_health',
+        patterns: [/^(what is|report on) (the )?system health (status)?$/i],
+        intent: { name: 'QuerySystemHealth', confidence: 0.9, rawUtterance: '' },
+        description: 'Retrieves a summary of the overall system\'s operational health and performance metrics.',
+        requiresContext: ['ObservabilityContext'],
+        priority: 14
+    },
+    {
+        id: 'configure_fraud_rules',
+        patterns: [/^(configure|update) fraud rules (for (.+?))?$/i],
+        intent: { name: 'ConfigureFraudRules', entities: { scope: '$3' }, confidence: 0.92, rawUtterance: '' },
+        description: 'Opens the interface for configuring or updating real-time fraud detection rules.',
+        requiresContext: ['SecurityContext', 'GovernanceContext', 'PaymentsContext'],
+        priority: 21
+    },
+    {
+        id: 'simulate_transaction',
+        patterns: [/^(simulate) a (payment|token transfer) of \$?(\d+(\.\d{1,2})?) (.+?) (to|for) (.+?)$/i],
+        intent: { name: 'SimulateTransaction', entities: { type: '$2', amount: '$3', currencyOrToken: '$5', recipient: '$7' }, confidence: 0.95, rawUtterance: '' },
+        description: 'Initiates a simulated transaction (payment or token transfer) for testing and validation.',
+        requiresContext: ['DeveloperContext', 'TestingContext', 'FinancialContext'],
+        priority: 18
     }
 ];
 
