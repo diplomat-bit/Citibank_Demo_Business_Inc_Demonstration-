@@ -1,199 +1,294 @@
+/**
+ * This module implements the Financial Blueprint Designer, a revolutionary AI-powered platform
+ * for conceptualizing, modeling, and prototyping the next generation of digital financial infrastructure.
+ * Business impact: It enables financial institutions to rapidly design and simulate complex
+ * programmable value rails, intelligent automation agents, and robust digital identity frameworks,
+ * significantly accelerating innovation cycles and reducing time-to-market for new financial products.
+ * This system generates long-term business value by providing a strategic workbench for creating
+ * highly secure, scalable, and auditable financial ecosystems, driving competitive advantage
+ * and unlocking new revenue streams in the evolving digital economy.
+ */
 import React, { useState, useCallback, useMemo, useRef, useEffect, createContext, useContext, useReducer } from 'react';
 import Card from '../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
-import { v4 as uuidv4 } from 'uuid'; // Assuming uuid is available or polyfilled, typically installed via npm i uuid
+import { v4 as uuidv4 } from 'uuid';
 
-// --- [ Start of Added Code - Data Models and Utility Types ] ---
-
-// --- Core Data Models ---
-
-export interface WorldConcept {
+/**
+ * Defines a high-level concept for a financial product or infrastructure solution.
+ * This forms the foundational vision for new digital finance initiatives, guiding subsequent detailed design.
+ * Commercial value: Establishes a clear, AI-assisted strategic direction for high-value financial innovations.
+ */
+export interface FinancialProductConcept {
     description: string;
-    keyAssets: string[];
-    atmosphere: string;
-    imageUrl?: string; // Base64 encoded image
+    keyComponents: string[];
+    marketOpportunity: string;
+    imageUrl?: string; // Base64 encoded image representing the concept
 }
 
-export interface Biome {
+/**
+ * Defines a specific market segment or operational jurisdiction within the financial infrastructure.
+ * These segments allow for granular policy application, compliance rules, and targeted service deployment.
+ * Commercial value: Enables precise targeting of financial services, regulatory adherence, and optimized resource allocation.
+ */
+export interface MarketSegment {
     id: string;
     name: string;
-    type: string; // e.g., Forest, Desert, Ocean, Mountain
-    climate: string; // e.g., Temperate, Arid, Tropical, Arctic
-    terrain: string; // e.g., Rolling hills, Canyons, Volcanic, Plains
-    dominantFlora: string[];
-    dominantFauna: string[];
-    uniqueFeatures: string[]; // e.g., Crystal caves, Bioluminescent fungi, Ancient ruins
+    type: string; // e.g., Retail Payments, Institutional Lending, Derivative Markets, KYC/AML Zone
+    regulatoryEnvironment: string; // e.g., Highly Regulated (EU), Emerging Market (APAC), Decentralized (Global)
+    targetDemographics: string; // e.g., High-Net-Worth Individuals, SMEs, Retail Consumers, Interbank
+    keyComplianceRequirements: string[];
+    associatedProtocols: string[];
+    uniqueMarketDynamics: string[]; // e.g., High liquidity, Volatility-prone, Emerging tech adoption
     description: string;
     imageUrl?: string;
     createdAt: number;
     updatedAt: number;
 }
 
-export type AssetType = 'Flora' | 'Fauna' | 'Item' | 'Structure' | 'Character' | 'Vehicle' | 'Technology' | 'Magic Artifact';
+export type InfrastructureComponentType = 'Programmable Asset' | 'Automated Agent' | 'Data Feed' | 'Network Node' | 'Digital Identity Role' | 'Value Transfer Mechanism' | 'Protocol Integration' | 'Cryptographic Security Module';
 
-export interface BaseAsset {
+/**
+ * Base interface for all infrastructure components, providing fundamental metadata.
+ * These components are the building blocks of any programmable financial solution.
+ * Commercial value: Standardizes the definition and management of critical financial system elements.
+ */
+export interface BaseInfrastructureComponent {
     id: string;
     name: string;
-    type: AssetType;
+    type: InfrastructureComponentType;
     description: string;
-    rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+    criticality: 'Low' | 'Medium' | 'High' | 'Mission-Critical';
     tags: string[];
     imageUrl?: string;
     createdAt: number;
     updatedAt: number;
 }
 
-export interface FloraAsset extends BaseAsset {
-    type: 'Flora';
-    habitat: string; // e.g., Forest floor, Aquatic, Volcanic soil
-    properties: string[]; // e.g., Medicinal, Poisonous, Luminescent
-    lifecycle: string; // e.g., Annual, Perennial, Slow-growing
+/**
+ * Represents a definition for a programmable digital asset, such as a tokenized security or stablecoin.
+ * This defines the properties and behaviors of value units within the system.
+ * Commercial value: Facilitates the creation of new financial products, enabling fractional ownership and automated value exchange.
+ */
+export interface ProgrammableAssetDefinition extends BaseInfrastructureComponent {
+    type: 'Programmable Asset';
+    assetClass: string; // e.g., Equity, Debt, Commodity, Currency
+    issuanceMechanism: string; // e.g., On-chain minting, Central bank digital currency
+    transferRestrictions: string[]; // e.g., KYC-gated, Whitelist-only, Geographic restrictions
+    settlementLayer: string; // e.g., Layer 1 Blockchain, Centralized Ledger, Payment Network
 }
 
-export interface FaunaAsset extends BaseAsset {
-    type: 'Fauna';
-    diet: 'Herbivore' | 'Carnivore' | 'Omnivore' | 'Scavenger';
-    habitat: string; // e.g., Underground, Aerial, Aquatic, Arboreal
-    behavior: string[]; // e.g., Territorial, Social, Solitary, Nocturnal
-    abilities: string[]; // e.g., Camouflage, Flight, Venomous bite
+/**
+ * Represents an intelligent automation agent, capable of observing, deciding, and acting within the financial ecosystem.
+ * These agents perform tasks like risk assessment, compliance monitoring, or trade execution.
+ * Commercial value: Automates complex financial processes, reducing operational costs, improving efficiency, and enhancing real-time responsiveness.
+ */
+export interface AutomatedAgentDefinition extends BaseInfrastructureComponent {
+    type: 'Automated Agent';
+    agentRole: 'Risk Monitor' | 'Compliance Officer' | 'Trade Executor' | 'Liquidity Provider' | 'Oracle Validator' | 'Fraud Detector';
+    operationalScope: string; // e.g., Cross-market arbitrage, Real-time settlement, KYC verification
+    decisionLogic: string[]; // e.g., Rules-based, Heuristic, AI-driven
+    communicationProtocols: string[]; // e.g., Internal messaging bus, API endpoints
 }
 
-export interface ItemAsset extends BaseAsset {
-    type: 'Item';
-    category: string; // e.g., Weapon, Armor, Consumable, Tool, Trinket
-    material: string[];
-    functionality: string[];
-    value: string; // e.g., "100 gold", "priceless"
+/**
+ * Defines configurations for external data feeds, crucial for real-time financial operations.
+ * Examples include market price oracles, identity verification services, or regulatory data streams.
+ * Commercial value: Ensures data integrity and timeliness, powering informed decisions and accurate transaction processing.
+ */
+export interface DataFeedConfiguration extends BaseInfrastructureComponent {
+    type: 'Data Feed';
+    dataType: string; // e.g., Market Price, Identity Verification, Regulatory Update, FX Rates
+    sourceProvider: string;
+    updateFrequency: 'Real-time' | 'Hourly' | 'Daily' | 'Event-driven';
+    validationMechanisms: string[]; // e.g., Multi-source consensus, Cryptographic attestation
 }
 
-export interface StructureAsset extends BaseAsset {
-    type: 'Structure';
-    purpose: string; // e.g., Dwelling, Temple, Fortress, Industrial
-    material: string[];
-    architecturalStyle: string;
-    capacity: string; // e.g., "50 inhabitants", "large storage"
+/**
+ * Describes the topology and specifications of a network node within the financial infrastructure.
+ * This includes nodes for distributed ledgers, payment networks, or secure communication hubs.
+ * Commercial value: Ensures the robustness, decentralization, and scalability of underlying network infrastructure.
+ */
+export interface NetworkNodeTopology extends BaseInfrastructureComponent {
+    type: 'Network Node';
+    nodeFunction: 'Validator' | 'Archival' | 'Payment Gateway' | 'Custodial Service' | 'Bridge Operator';
+    networkType: 'DLT (Public)' | 'DLT (Private)' | 'Traditional Payment Network' | 'Secure Messaging Fabric';
+    hostingEnvironment: string; // e.g., Cloud (AWS), On-premise, Hybrid
+    securityProtocols: string[];
 }
 
-export interface CharacterAsset extends BaseAsset {
-    type: 'Character';
-    role: string; // e.g., Protagonist, Antagonist, NPC, Deity
-    species: string;
-    personalityTraits: string[];
-    abilities: string[];
-    affiliation: string; // e.g., "Royal Guard", "Shadow Syndicate"
-    backstorySnippet: string;
+/**
+ * Represents a digital identity role or persona within the system, defining access rights and capabilities.
+ * This could be for individual users, institutional clients, auditors, or other automated services.
+ * Commercial value: Forms the bedrock of secure access control and compliance, crucial for auditable financial operations.
+ */
+export interface DigitalIdentityRole extends BaseInfrastructureComponent {
+    type: 'Digital Identity Role';
+    roleCategory: 'Individual' | 'Institutional' | 'Regulatory' | 'System';
+    authenticationMethod: string[]; // e.g., Multi-factor authentication, Biometric, Decentralized Identifiers (DIDs)
+    authorizationPolicies: string[]; // e.g., Role-based, Attribute-based, Policy-as-Code
+    dataPrivacyStandards: string; // e.g., GDPR, CCPA, HIPAA
+    verificationLevel: 'Basic' | 'KYC/AML' | 'Institutional Verified';
 }
 
-export interface VehicleAsset extends BaseAsset {
-    type: 'Vehicle';
-    propulsion: string; // e.g., Sails, Mag-lev, Steam Engine, Biological
-    environment: string; // e.g., Land, Air, Sea, Space
-    capacity: string; // e.g., "2 crew + 10 passengers", "heavy cargo"
-    armaments: string[];
+/**
+ * Describes mechanisms for transferring value across different rails or networks.
+ * This includes bridge configurations, payment network adapters, or cross-chain settlement modules.
+ * Commercial value: Enables seamless, efficient, and secure movement of value across disparate financial systems, reducing friction and cost.
+ */
+export interface ValueTransferMechanism extends BaseInfrastructureComponent {
+    type: 'Value Transfer Mechanism';
+    propulsionMechanism: string; // e.g., Atomic Swaps, Lightning Network, RTGS, Interledger Protocol
+    interoperabilityScope: 'Cross-Chain' | 'Cross-Network' | 'Intra-Network';
+    transactionCapacity: string; // e.g., "10,000 TPS", "High throughput for batch settlement"
+    resilienceMeasures: string[]; // e.g., Idempotency, Retry logic with backoff, Circuit breakers
 }
 
-export interface TechnologyAsset extends BaseAsset {
-    type: 'Technology';
-    era: string; // e.g., Primitive, Medieval, Steampunk, Futuristic
-    application: string; // e.g., Communication, Warfare, Medical, Energy
-    complexity: 'Simple' | 'Moderate' | 'Advanced' | 'Cutting-Edge';
-    powerSource: string;
+/**
+ * Defines the integration schema for various protocols, such as DLTs, APIs, or messaging standards.
+ * This ensures interoperability and data exchange between different parts of the financial ecosystem.
+ * Commercial value: Bridges disparate systems, reducing integration complexities and enabling a unified financial architecture.
+ */
+export interface ProtocolIntegrationSchema extends BaseInfrastructureComponent {
+    type: 'Protocol Integration';
+    protocolStandard: string; // e.g., ISO 20022, FIX Protocol, ERC-20, Inter-Blockchain Communication (IBC)
+    applicationLayer: string; // e.g., Payment Processing, Trade Execution, Regulatory Reporting
+    complexityRating: 'Simple' | 'Moderate' | 'Advanced' | 'Cutting-Edge';
+    securityConsiderations: string[];
 }
 
-export interface MagicArtifactAsset extends BaseAsset {
-    type: 'Magic Artifact';
-    attunement: string; // e.g., "Requires user attunement", "None"
-    effect: string[]; // e.g., "Grants invisibility", "Fires bolts of pure energy"
-    powerLevel: 'Minor' | 'Moderate' | 'Potent' | 'Godly';
-    originMyth: string;
+/**
+ * Represents a module for cryptographic security, such as Hardware Security Modules (HSM), key management systems, or zero-knowledge proof engines.
+ * This ensures the integrity, confidentiality, and authenticity of financial transactions and data.
+ * Commercial value: Provides fundamental security assurances, protecting high-value assets and sensitive data against sophisticated cyber threats.
+ */
+export interface CryptographicSecurityModule extends BaseInfrastructureComponent {
+    type: 'Cryptographic Security Module';
+    attestationMechanism: string; // e.g., Trusted Execution Environment (TEE), Multi-Party Computation (MPC)
+    functionality: string[]; // e.g., Key generation, Digital signing, Data encryption, Secure multi-party computation
+    securityAssuranceLevel: 'FIPS 140-2 Level 3' | 'Common Criteria EAL7' | 'Software-based';
+    threatMitigation: string[];
 }
 
-export type AnyAsset = FloraAsset | FaunaAsset | ItemAsset | StructureAsset | CharacterAsset | VehicleAsset | TechnologyAsset | MagicArtifactAsset;
+export type AnyInfrastructureComponent = ProgrammableAssetDefinition | AutomatedAgentDefinition | DataFeedConfiguration | NetworkNodeTopology | DigitalIdentityRole | ValueTransferMechanism | ProtocolIntegrationSchema | CryptographicSecurityModule;
 
-export interface LoreEntry {
+/**
+ * Represents a document for regulatory compliance, audit trail narrative, or historical market analysis.
+ * These entries provide contextual and auditable information for governance and reporting.
+ * Commercial value: Ensures transparent compliance, robust auditing, and valuable insights for strategic decision-making.
+ */
+export interface RegulatoryComplianceDocument {
     id: string;
     title: string;
-    type: 'History' | 'Myth' | 'Legend' | 'Culture' | 'Faction' | 'Character Lore' | 'Location Lore' | 'Event Lore' | 'Prophecy';
+    type: 'Regulatory Filing' | 'Audit Report' | 'Legal Opinion' | 'Market Analysis' | 'Incident Post-Mortem' | 'Risk Assessment';
     content: string;
-    relatedEntities: string[]; // IDs of related assets, biomes, or other lore
+    relatedEntities: string[]; // IDs of related components, market segments, or other documents
     importance: 'Minor' | 'Standard' | 'Major' | 'Pivotal';
-    imageUrl?: string;
+    imageUrl?: string; // Diagram or visualization
     createdAt: number;
     updatedAt: number;
 }
 
-export interface MagicSystem {
+/**
+ * Defines a smart contract policy engine, outlining rules and logic for automated financial agreements.
+ * These systems enable programmable finance with deterministic execution and auditable state changes.
+ * Commercial value: Automates complex contractual agreements, reduces counterparty risk, and unlocks new forms of financial engineering.
+ */
+export interface SmartContractPolicyEngine {
     id: string;
     name: string;
     description: string;
-    powerSource: string; // e.g., Ley lines, Divine essence, Personal energy
-    rules: string[]; // e.g., "Cannot raise the dead", "Requires verbal components"
-    spellsExamples: string[];
+    executionEnvironment: string; // e.g., Ethereum EVM, Hyperledger Fabric, Custom DSL
+    policyRules: string[]; // e.g., "If A, then B; else C", "KYC required for transfers over $1M"
+    exampleScenarios: string[];
     limitations: string[];
-    integrationWithWorld: string; // How does it affect society, environment?
+    integrationWithPlatform: string; // How does it affect settlement, agents?
     createdAt: number;
     updatedAt: number;
 }
 
-export interface TechnologySystem {
+/**
+ * Defines an interoperability framework, detailing how different protocols and systems connect.
+ * This is crucial for creating a unified financial data fabric and value transfer network.
+ * Commercial value: Eliminates data silos, facilitates seamless cross-system communication, and ensures network resilience and extensibility.
+ */
+export interface InteroperabilityFramework {
     id: string;
     name: string;
     description: string;
-    era: string; // e.g., Early Industrial, Post-Scarcity, Cyberpunk
-    keyDiscoveries: string[];
-    societalImpact: string;
-    militaryApplications: string[];
-    limitations: string[];
+    keyStandards: string[]; // e.g., ISO 20022, REST APIs, GraphQL, gRPC, specific DLT connectors
+    dataExchangeFormats: string[]; // e.g., JSON, XML, Protobuf
+    securityMechanisms: string[]; // e.g., TLS, Mutual TLS, JWT, OAuth2
+    impactOnLatency: string; // e.g., "Sub-millisecond for real-time settlement"
     createdAt: number;
     updatedAt: number;
 }
 
-export interface QuestHook {
+/**
+ * Represents a predefined operational scenario, such as a risk mitigation strategy, market stress test, or incident response plan.
+ * These scenarios aid in testing and validating the resilience and effectiveness of the designed infrastructure.
+ * Commercial value: Enhances platform resilience, reduces operational risk, and informs strategic adjustments to financial solutions.
+ */
+export interface OperationalScenario {
     id: string;
     title: string;
     summary: string;
-    type: 'Discovery' | 'Rescue' | 'Escort' | 'Elimination' | 'Investigation' | 'Gathering' | 'Diplomacy' | 'Protection';
-    initiator: string; // e.g., "Elder Elara", "A distressed merchant"
+    type: 'Risk Mitigation' | 'Compliance Audit' | 'Market Stress Test' | 'New Product Launch' | 'Fraud Detection' | 'Disaster Recovery';
+    initiator: string; // e.g., "Chief Risk Officer", "System Monitoring Agent"
     goal: string;
-    rewards: string[];
-    potentialObstacles: string[];
-    relatedLoreIds: string[];
+    expectedOutcomes: string[];
+    potentialChallenges: string[];
+    relatedDocumentIds: string[];
     createdAt: number;
     updatedAt: number;
 }
 
-export interface WorldProject {
+/**
+ * Represents a complete project blueprint for a financial infrastructure solution.
+ * It encapsulates all design elements, from high-level concepts to detailed component definitions.
+ * Commercial value: Provides a comprehensive, auditable, and extensible blueprint for deploying enterprise-grade financial systems.
+ */
+export interface FinancialBlueprintProject {
     id: string;
     name: string;
     description: string;
-    creatorId: string; // Mock user ID
+    creatorId: string; // User ID
     createdAt: number;
     updatedAt: number;
-    concept: WorldConcept;
-    biomes: Biome[];
-    assets: AnyAsset[];
-    lore: LoreEntry[];
-    magicSystems: MagicSystem[];
-    techSystems: TechnologySystem[];
-    questHooks: QuestHook[];
+    concept: FinancialProductConcept;
+    marketSegments: MarketSegment[];
+    components: AnyInfrastructureComponent[];
+    documents: RegulatoryComplianceDocument[];
+    policyEngines: SmartContractPolicyEngine[];
+    interopFrameworks: InteroperabilityFramework[];
+    operationalScenarios: OperationalScenario[];
     projectSettings: ProjectSettings;
     generationHistory: GenerationTask[]; // History of AI generations for this project
 }
 
+/**
+ * Defines configuration settings specific to a financial blueprint project.
+ * These settings control AI model usage, generation tone, and operational parameters.
+ * Commercial value: Allows for tailored AI-driven development, optimizing for specific project needs and compliance standards.
+ */
 export interface ProjectSettings {
     aiModelPreference: string; // e.g., 'gemini-2.5-flash', 'gemini-1.5-pro'
     imageModelPreference: string; // e.g., 'imagen-4.0-generate-001'
-    defaultTone: string; // e.g., 'Gritty', 'Whimsical', 'Realistic'
+    defaultTone: string; // e.g., 'Regulatory', 'Disruptive', 'Conservative'
     defaultPromptPrefix: string;
-    defaultNegativePrompt: string;
+    defaultNegativePrompt: string; // For image generation, e.g., 'cartoonish, low-fidelity'
     autoSaveInterval: number; // in seconds
     collaborationEnabled: boolean;
-    // Add more settings as needed
+    dataIntegrityChecksEnabled: boolean; // Toggle for enforcing schema validation
 }
 
 export type GenerationTaskStatus = 'Pending' | 'InProgress' | 'Completed' | 'Failed' | 'Cancelled';
-export type GenerationTaskType = 'WorldConcept' | 'BiomeDetail' | 'AssetDetail' | 'LoreEntry' | 'MagicSystem' | 'TechSystem' | 'QuestHook' | 'ImageGeneration' | 'Refinement';
+export type GenerationTaskType = 'FinancialProductConcept' | 'MarketSegmentDetail' | 'ComponentDetail' | 'ComplianceDocument' | 'PolicyEngine' | 'InteropFramework' | 'OperationalScenario' | 'ImageGeneration' | 'Refinement';
 
+/**
+ * Records the details of an AI generation task, its status, and results.
+ * This provides an auditable log of AI-assisted design decisions.
+ * Commercial value: Ensures transparency, traceability, and accountability in AI-driven financial system design.
+ */
 export interface GenerationTask {
     id: string;
     projectId: string;
@@ -204,20 +299,26 @@ export interface GenerationTask {
     error?: string;
     startTime: number;
     endTime?: number;
-    targetId?: string; // ID of the specific item being generated/refined (e.g., biome ID, asset ID)
+    targetId?: string; // ID of the specific item being generated/refined
     visualizationUrl?: string; // If it's an image generation task
 }
 
+/**
+ * Stores user-specific preferences for the Financial Blueprint Designer interface.
+ * This allows for personalized user experience and operational alerts.
+ * Commercial value: Enhances user productivity, reduces cognitive load, and provides timely alerts for critical system thresholds.
+ */
 export interface UserPreferences {
     theme: 'dark' | 'light';
     defaultView: 'Dashboard' | 'Project Editor';
     notificationsEnabled: boolean;
-    aiRateLimitWarningThreshold: number; // e.g., 80% of API limit
-    // ... other user-specific settings
+    aiRateLimitWarningThreshold: number; // e.g., 80% of API limit for proactive alerts
+    complianceReportingFrequency: 'Daily' | 'Weekly' | 'Monthly';
 }
 
-// --- Utility Types ---
-
+/**
+ * Utility type for creating partial versions of interfaces, supporting incremental state updates.
+ */
 export type DeepPartial<T> = {
     [P in keyof T]?: DeepPartial<T[P]>;
 };
@@ -227,44 +328,45 @@ export type DeepPartial<T> = {
 const generateMockId = () => uuidv4();
 const now = () => Date.now();
 
-const initialWorldPrompt = 'a tranquil, alien jungle at night with glowing flora';
+const initialFinancialPrompt = 'a real-time global payment network for cross-border settlements';
 
-const initialWorldConcept: WorldConcept = {
-    description: "A lush alien jungle thriving under a sky filled with multiple moons, where indigenous flora emits soft, bioluminescent light. The air is thick with exotic scents and the calls of unseen creatures.",
-    keyAssets: [
-        "Luminescent giant ferns",
-        "Floating jelly-fish like organisms",
-        "Ancient, gnarled trees with glowing sap",
-        "Moss-covered ruins of an unknown civilization",
-        "Small, elusive bioluminescent critters"
+const initialFinancialProductConcept: FinancialProductConcept = {
+    description: "A secure, real-time global payment network designed to facilitate instant cross-border settlements using tokenized assets. It leverages distributed ledger technology for transparency and immutability.",
+    keyComponents: [
+        "Programmable Stablecoin Assets",
+        "Automated Compliance Agents",
+        "Interoperability Gateways",
+        "Digital Identity Verification Modules",
+        "Cryptographic Key Management System"
     ],
-    atmosphere: "Mysterious, serene, slightly eerie, enchanting. Cool air with a faint mist. Sounds of rustling leaves and distant, melodic creature calls."
+    marketOpportunity: "Eliminate correspondent banking friction, reduce settlement times to seconds, and lower transaction costs for international trade and remittances. Target a multi-trillion dollar market opportunity in global payments.",
 };
 
-const initialBiome: Biome = {
+const initialMarketSegment: MarketSegment = {
     id: generateMockId(),
-    name: "Whispering Luminawoods",
-    type: "Jungle",
-    climate: "Tropical",
-    terrain: "Dense forest with winding rivers and ancient, overgrown structures.",
-    dominantFlora: ["Luminous vines", "Canopy glow-shrooms", "Pulse-flowers"],
-    dominantFauna: ["Glimmerwings (insect)", "Shadow Stalkers (predator)", "Echo Birds"],
-    uniqueFeatures: ["Sunken bioluminescent pools", "Floating island fragments", "Singing trees"],
-    description: "The heart of the alien jungle, characterized by its intensely glowing flora and a chorus of nocturnal sounds. The air is humid and heavy with the scent of damp earth and strange sweet nectar.",
+    name: "APAC Institutional FX",
+    type: "Interbank Foreign Exchange",
+    regulatoryEnvironment: "Highly Regulated (MAS, ASIC, HKMA)",
+    targetDemographics: "Institutional Banks, Hedge Funds, Large Corporations in Asia-Pacific",
+    keyComplianceRequirements: ["AML/CTF Reporting", "KYC for all participants", "Real-time Transaction Monitoring", "Data Sovereignty"],
+    associatedProtocols: ["FIX Protocol", "ISO 20022", "Custom DLT-based Settlement Protocol"],
+    uniqueMarketDynamics: ["High volume, low margin", "Latency-sensitive arbitrage", "Diverse currency pairs", "Complex multi-jurisdictional compliance"],
+    description: "This segment focuses on high-volume, low-latency foreign exchange transactions between institutional players within the Asia-Pacific region. Strict regulatory frameworks and a diverse array of local currencies define its operational challenges and opportunities.",
     createdAt: now(),
     updatedAt: now(),
 };
 
-const initialAsset: FloraAsset = {
+const initialComponent: ProgrammableAssetDefinition = {
     id: generateMockId(),
-    name: "Luminous Vine",
-    type: "Flora",
-    description: "A thick, climbing vine that emits a soft, pulsing blue light, often found clinging to ancient trees or cave walls. Its sap is said to have medicinal properties.",
-    rarity: "Common",
-    tags: ["plant", "bioluminescent", "medicinal"],
-    habitat: "Forest floor, Cave walls",
-    properties: ["Medicinal", "Luminescent"],
-    lifecycle: "Perennial",
+    name: "Interbank Settlement Token (IST)",
+    type: "Programmable Asset",
+    description: "A stablecoin pegged to a basket of major currencies, designed for instant, atomic settlement between participating financial institutions. Features built-in compliance logic.",
+    criticality: "Mission-Critical",
+    tags: ["stablecoin", "DLT", "settlement", "programmable"],
+    assetClass: "Currency (Digital)",
+    issuanceMechanism: "DLT-based, collateralized minting by central banks/authorized institutions",
+    transferRestrictions: ["Whitelisted Institutional Accounts Only", "AML/CTF Flags"],
+    settlementLayer: "Private/Permissioned DLT Network",
     createdAt: now(),
     updatedAt: now(),
 };
@@ -272,44 +374,55 @@ const initialAsset: FloraAsset = {
 const defaultProjectSettings: ProjectSettings = {
     aiModelPreference: 'gemini-2.5-flash',
     imageModelPreference: 'imagen-4.0-generate-001',
-    defaultTone: 'Mysterious',
-    defaultPromptPrefix: 'For a high-fantasy video game world, ',
-    defaultNegativePrompt: 'cartoonish, ugly, low-quality, bad anatomy',
+    defaultTone: 'Regulatory & Secure',
+    defaultPromptPrefix: 'For a commercial-grade financial infrastructure platform, focusing on security and compliance, ',
+    defaultNegativePrompt: 'cartoonish, informal, speculative, insecure, unregulated',
     autoSaveInterval: 120, // 2 minutes
     collaborationEnabled: false,
+    dataIntegrityChecksEnabled: true,
 };
 
-const initialProject: WorldProject = {
+const initialProject: FinancialBlueprintProject = {
     id: generateMockId(),
-    name: "Ethereal Expanse Project",
-    description: "A starting point for a new world-building project focused on a magical, alien jungle.",
-    creatorId: "user-alpha",
+    name: "GlobalPayments 2.0 Blueprint",
+    description: "A foundational blueprint for the next generation of global, real-time, programmable payment and settlement infrastructure.",
+    creatorId: "financial-architect-alpha",
     createdAt: now(),
     updatedAt: now(),
-    concept: initialWorldConcept,
-    biomes: [initialBiome],
-    assets: [initialAsset],
-    lore: [],
-    magicSystems: [],
-    techSystems: [],
-    questHooks: [],
+    concept: initialFinancialProductConcept,
+    marketSegments: [initialMarketSegment],
+    components: [initialComponent],
+    documents: [],
+    policyEngines: [],
+    interopFrameworks: [],
+    operationalScenarios: [],
     projectSettings: defaultProjectSettings,
     generationHistory: [],
 };
 
-// --- Contexts for Global State (Simulated) ---
+// --- Contexts for Global State Management ---
+/**
+ * Defines the application-wide state for the Financial Blueprint Designer.
+ * This centralizes operational data, active projects, and user configurations.
+ * Commercial value: Provides a single source of truth for the application, enabling consistent UI rendering and data management.
+ */
 interface AppState {
-    worldProjects: WorldProject[];
+    financialBlueprintProjects: FinancialBlueprintProject[];
     activeProjectId: string | null;
     currentView: 'Dashboard' | 'Project Editor' | 'Settings' | 'Help';
     userPreferences: UserPreferences;
     generationQueue: GenerationTask[];
 }
 
+/**
+ * Defines the actions that can be dispatched to modify the application state.
+ * This action-based approach ensures predictable state transitions and easy debugging.
+ * Commercial value: Enforces clear state management patterns, reducing bugs and improving maintainability for enterprise applications.
+ */
 type AppAction =
-    | { type: 'SET_PROJECTS'; payload: WorldProject[] }
-    | { type: 'ADD_PROJECT'; payload: WorldProject }
-    | { type: 'UPDATE_PROJECT'; payload: WorldProject }
+    | { type: 'SET_PROJECTS'; payload: FinancialBlueprintProject[] }
+    | { type: 'ADD_PROJECT'; payload: FinancialBlueprintProject }
+    | { type: 'UPDATE_PROJECT'; payload: FinancialBlueprintProject }
     | { type: 'DELETE_PROJECT'; payload: string }
     | { type: 'SET_ACTIVE_PROJECT'; payload: string | null }
     | { type: 'SET_VIEW'; payload: AppState['currentView'] }
@@ -318,23 +431,28 @@ type AppAction =
     | { type: 'UPDATE_GENERATION_TASK'; payload: GenerationTask }
     | { type: 'REMOVE_GENERATION_TASK'; payload: string };
 
+/**
+ * Reducer function for managing the application state, ensuring immutable updates.
+ * This pattern is critical for complex applications requiring predictable state changes.
+ * Commercial value: Provides a robust and scalable state management solution, enhancing application reliability and developer efficiency.
+ */
 const appReducer = (state: AppState, action: AppAction): AppState => {
     switch (action.type) {
         case 'SET_PROJECTS':
-            return { ...state, worldProjects: action.payload };
+            return { ...state, financialBlueprintProjects: action.payload };
         case 'ADD_PROJECT':
-            return { ...state, worldProjects: [...state.worldProjects, action.payload] };
+            return { ...state, financialBlueprintProjects: [...state.financialBlueprintProjects, action.payload] };
         case 'UPDATE_PROJECT':
             return {
                 ...state,
-                worldProjects: state.worldProjects.map(p =>
+                financialBlueprintProjects: state.financialBlueprintProjects.map(p =>
                     p.id === action.payload.id ? { ...p, ...action.payload, updatedAt: now() } : p
                 ),
             };
         case 'DELETE_PROJECT':
             return {
                 ...state,
-                worldProjects: state.worldProjects.filter(p => p.id !== action.payload),
+                financialBlueprintProjects: state.financialBlueprintProjects.filter(p => p.id !== action.payload),
                 activeProjectId: state.activeProjectId === action.payload ? null : state.activeProjectId,
             };
         case 'SET_ACTIVE_PROJECT':
@@ -360,7 +478,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
 };
 
 const initialAppState: AppState = {
-    worldProjects: [initialProject],
+    financialBlueprintProjects: [initialProject],
     activeProjectId: initialProject.id,
     currentView: 'Dashboard',
     userPreferences: {
@@ -368,12 +486,18 @@ const initialAppState: AppState = {
         defaultView: 'Dashboard',
         notificationsEnabled: true,
         aiRateLimitWarningThreshold: 80,
+        complianceReportingFrequency: 'Monthly',
     },
     generationQueue: [],
 };
 
 const AppContext = createContext<{ state: AppState; dispatch: React.Dispatch<AppAction> } | undefined>(undefined);
 
+/**
+ * Custom hook to access the application context, ensuring it's used within an AppProvider.
+ * This provides a convenient and safe way to interact with global state.
+ * Commercial value: Simplifies state access patterns, reducing boilerplate and potential runtime errors in complex UIs.
+ */
 const useAppContext = () => {
     const context = useContext(AppContext);
     if (context === undefined) {
@@ -382,21 +506,23 @@ const useAppContext = () => {
     return context;
 };
 
+/**
+ * Provides the application context to its children, managing global state and persistence.
+ * This component acts as the central state hub for the entire application.
+ * Commercial value: Enables robust state persistence and rehydration, ensuring a consistent user experience across sessions and preventing data loss.
+ */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(appReducer, initialAppState);
 
-    // Mock persistence
     useEffect(() => {
-        // Load from localStorage on mount
-        const savedState = localStorage.getItem('worldBuilderAppState');
+        const savedState = localStorage.getItem('financialBlueprintAppState');
         if (savedState) {
             try {
                 const parsedState = JSON.parse(savedState);
-                dispatch({ type: 'SET_PROJECTS', payload: parsedState.worldProjects });
+                dispatch({ type: 'SET_PROJECTS', payload: parsedState.financialBlueprintProjects });
                 dispatch({ type: 'SET_ACTIVE_PROJECT', payload: parsedState.activeProjectId });
                 dispatch({ type: 'SET_VIEW', payload: parsedState.currentView });
                 dispatch({ type: 'UPDATE_USER_PREFERENCES', payload: parsedState.userPreferences });
-                // Note: generationQueue is not persisted across sessions usually, or handled differently
             } catch (e) {
                 console.error("Failed to load state from localStorage", e);
             }
@@ -404,10 +530,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, []);
 
     useEffect(() => {
-        // Save to localStorage on state change (throttle in real app)
-        const { worldProjects, activeProjectId, currentView, userPreferences } = state;
-        localStorage.setItem('worldBuilderAppState', JSON.stringify({ worldProjects, activeProjectId, currentView, userPreferences }));
-    }, [state.worldProjects, state.activeProjectId, state.currentView, state.userPreferences]);
+        const { financialBlueprintProjects, activeProjectId, currentView, userPreferences } = state;
+        localStorage.setItem('financialBlueprintAppState', JSON.stringify({ financialBlueprintProjects, activeProjectId, currentView, userPreferences }));
+    }, [state.financialBlueprintProjects, state.activeProjectId, state.currentView, state.userPreferences]);
 
     return (
         <AppContext.Provider value={{ state, dispatch }}>
@@ -416,197 +541,256 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 };
 
-// --- AI Service Wrapper ---
+/**
+ * A service wrapper for interacting with the Google GenAI models, abstracting API calls.
+ * This provides a standardized interface for AI-powered content generation.
+ * Commercial value: Centralizes AI communication, allows for easy model switching, and implements robust error handling for critical generation tasks.
+ */
 export class Aiservice {
     private ai: GoogleGenAI;
     private apiKey: string;
 
+    /**
+     * Constructs an AIService instance with a given API key.
+     * @param apiKey The API key for Google GenAI.
+     * @throws Error if the API key is not provided.
+     */
     constructor(apiKey: string) {
         if (!apiKey) {
-            throw new Error("API Key is required for GoogleGenAI.");
+            throw new Error("API Key is required for GoogleGenAI. Ensure NEXT_PUBLIC_API_KEY is set.");
         }
         this.apiKey = apiKey;
         this.ai = new GoogleGenAI({ apiKey: this.apiKey });
     }
 
+    /**
+     * Calls a text-based AI model with a given prompt and an optional response schema.
+     * Ensures structured JSON output when a schema is provided.
+     * @param modelName The name of the AI model to use (e.g., 'gemini-1.5-pro').
+     * @param prompt The input text prompt for the AI.
+     * @param schema Optional JSON schema to enforce structured output.
+     * @returns A Promise resolving to the AI-generated content (parsed JSON or raw text).
+     * @throws Error if AI generation fails.
+     */
     private async callModel(modelName: string, prompt: string, schema?: Type.OBJECT): Promise<any> {
-        const config: any = { model: modelName, contents: prompt };
+        const config: any = { model: modelName, contents: [{ role: "user", parts: [{ text: prompt }] }] };
         if (schema) {
-            config.config = { responseMimeType: "application/json", responseSchema: schema };
+            config.generationConfig = { responseMimeType: "application/json", responseSchema: schema };
         } else {
-            config.config = { responseMimeType: "text/plain" };
+            config.generationConfig = { responseMimeType: "text/plain" };
         }
 
         try {
             const response = await this.ai.models.generateContent(config);
+            const textResponse = response.text();
             if (schema) {
-                return JSON.parse(response.text);
+                return JSON.parse(textResponse);
             }
-            return response.text;
+            return textResponse;
         } catch (error) {
             console.error(`Error calling AI model ${modelName}:`, error);
             throw new Error(`AI generation failed: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
+    /**
+     * Calls an image generation AI model to create visualizations based on a prompt.
+     * @param prompt The prompt describing the desired image.
+     * @param modelName The name of the image generation model (default 'imagen-4.0-generate-001').
+     * @returns A Promise resolving to the base64 encoded image URL.
+     * @throws Error if image generation fails.
+     */
     private async callImageModel(prompt: string, modelName: string = 'imagen-4.0-generate-001'): Promise<string> {
         try {
             const imageResponse = await this.ai.models.generateImages({
                 model: modelName,
                 prompt: prompt,
             });
-            return `data:image/jpeg;base64,${imageResponse.generatedImages[0].image.imageBytes}`;
+            // Google GenAI imageBytes is a Uint8Array, needs conversion to Base64
+            const imageBytes = imageResponse.generatedImages[0].image.imageBytes;
+            if (!imageBytes) throw new Error("No imageBytes received.");
+            const base64 = Buffer.from(imageBytes).toString('base64');
+            return `data:image/jpeg;base64,${base64}`;
         } catch (error) {
             console.error(`Error calling Image model ${modelName}:`, error);
             throw new Error(`Image generation failed: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
-    // World Concept Generation
-    public async generateWorldConcept(prompt: string, modelName: string): Promise<{ concept: WorldConcept, imageUrl: string }> {
+    /**
+     * Generates a high-level concept for a financial product or infrastructure solution using AI.
+     * @param prompt The user's input prompt describing the desired financial product.
+     * @param modelName The AI model to use for text generation.
+     * @returns A Promise resolving to the generated concept and an illustrative image URL.
+     * Commercial value: Rapidly prototypes initial concepts, validating strategic direction and accelerating early-stage product development.
+     */
+    public async generateFinancialProductConcept(prompt: string, modelName: string): Promise<{ concept: FinancialProductConcept, imageUrl: string }> {
         const schema = {
             type: Type.OBJECT, properties: {
                 description: { type: Type.STRING },
-                keyAssets: { type: Type.ARRAY, items: { type: Type.STRING } },
-                atmosphere: { type: Type.STRING }
+                keyComponents: { type: Type.ARRAY, items: { type: Type.STRING } },
+                marketOpportunity: { type: Type.STRING }
             }
         };
-        const fullPrompt = `You are a world-building AI for a video game. Based on the user's prompt, generate a high-level description of the world, a list of 3-5 key assets that should be created for it, and a description of the atmosphere and lighting. Return strictly in JSON format.
+        const fullPrompt = `You are an expert financial architect AI. Based on the user's prompt, generate a high-level description of a innovative financial product or infrastructure, a list of 3-5 key components required for its implementation, and a description of its commercial market opportunity and business impact. Return strictly in JSON format.
             **Prompt:** ${prompt}`;
 
-        const concept = await this.callModel(modelName, fullPrompt, schema) as WorldConcept;
-        const imageUrl = await this.callImageModel(`cinematic concept art of ${prompt}, unreal engine 5, ultra-detailed`);
+        const concept = await this.callModel(modelName, fullPrompt, schema) as FinancialProductConcept;
+        const imageUrl = await this.callImageModel(`conceptual rendering of ${concept.description}, secure digital finance infrastructure, global network, ultra-detailed`);
 
         return { concept, imageUrl };
     }
 
-    // Biome Detail Generation
-    public async generateBiomeDetails(worldConcept: WorldConcept, prompt: string, modelName: string): Promise<{ biome: Biome, imageUrl: string }> {
+    /**
+     * Generates detailed specifications for a market segment or operational jurisdiction.
+     * @param financialProductConcept The overarching financial product concept.
+     * @param prompt The user's input prompt for the specific market segment.
+     * @param modelName The AI model to use.
+     * @returns A Promise resolving to the generated market segment and an illustrative image URL.
+     * Commercial value: Provides granular insights into market dynamics and regulatory environments, enabling precise market targeting and compliance strategy formulation.
+     */
+    public async generateMarketSegmentDetails(financialProductConcept: FinancialProductConcept, prompt: string, modelName: string): Promise<{ marketSegment: MarketSegment, imageUrl: string }> {
         const schema = {
             type: Type.OBJECT, properties: {
                 name: { type: Type.STRING },
                 type: { type: Type.STRING },
-                climate: { type: Type.STRING },
-                terrain: { type: Type.STRING },
-                dominantFlora: { type: Type.ARRAY, items: { type: Type.STRING } },
-                dominantFauna: { type: Type.ARRAY, items: { type: Type.STRING } },
-                uniqueFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+                regulatoryEnvironment: { type: Type.STRING },
+                targetDemographics: { type: Type.STRING },
+                keyComplianceRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+                associatedProtocols: { type: Type.ARRAY, items: { type: Type.STRING } },
+                uniqueMarketDynamics: { type: Type.ARRAY, items: { type: Type.STRING } },
                 description: { type: Type.STRING }
             }
         };
-        const fullPrompt = `Given the world concept: "${worldConcept.description}", generate a detailed biome based on the following prompt: "${prompt}". Include its name, type, climate, terrain, dominant flora/fauna (3-5 each), 3-5 unique features, and a detailed description. Return strictly in JSON format.`;
-        const biomeData = await this.callModel(modelName, fullPrompt, schema) as Omit<Biome, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl'>;
-        const imageUrl = await this.callImageModel(`detailed concept art of a ${biomeData.type} biome named ${biomeData.name} within a ${worldConcept.description} setting, unreal engine 5, ultra-detailed`);
+        const fullPrompt = `Given the financial product concept: "${financialProductConcept.description}", generate a detailed market segment based on the following prompt: "${prompt}". Include its name, type, regulatory environment, target demographics, 3-5 key compliance requirements, 3-5 associated protocols, 3-5 unique market dynamics, and a detailed description. Return strictly in JSON format.`;
+        const marketSegmentData = await this.callModel(modelName, fullPrompt, schema) as Omit<MarketSegment, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl'>;
+        const imageUrl = await this.callImageModel(`infographic visualization of ${marketSegmentData.name} market segment within a ${financialProductConcept.description} context, data overlay`);
 
         return {
-            biome: {
+            marketSegment: {
                 id: generateMockId(),
                 createdAt: now(),
                 updatedAt: now(),
-                ...biomeData
+                ...marketSegmentData
             }, imageUrl
         };
     }
 
-    // Asset Detail Generation (Generic)
-    public async generateAssetDetail(worldConcept: WorldConcept, biome: Biome | null, assetType: AssetType, prompt: string, modelName: string): Promise<{ asset: AnyAsset, imageUrl: string }> {
-        let fullPrompt = `Given the world concept: "${worldConcept.description}", and potentially a specific biome: ${biome ? `"${biome.description}"` : 'anywhere in the world'}, generate a detailed "${assetType}" asset based on the following prompt: "${prompt}".`;
+    /**
+     * Generates detailed specifications for a specific infrastructure component.
+     * @param financialProductConcept The overarching financial product concept.
+     * @param marketSegment An optional specific market segment to contextualize the component.
+     * @param componentType The type of infrastructure component to generate.
+     * @param prompt The user's input prompt for the component.
+     * @param modelName The AI model to use.
+     * @returns A Promise resolving to the generated component and an illustrative image URL.
+     * Commercial value: Accelerates the design of individual system modules, ensuring alignment with overall architecture and functional requirements.
+     */
+    public async generateInfrastructureComponentDetail(financialProductConcept: FinancialProductConcept, marketSegment: MarketSegment | null, componentType: InfrastructureComponentType, prompt: string, modelName: string): Promise<{ component: AnyInfrastructureComponent, imageUrl: string }> {
+        let fullPrompt = `Given the financial product concept: "${financialProductConcept.description}", and potentially a specific market segment: ${marketSegment ? `"${marketSegment.description}"` : 'across the entire platform'}, generate a detailed "${componentType}" component based on the following prompt: "${prompt}".`;
         let schema: any;
 
-        switch (assetType) {
-            case 'Flora':
+        switch (componentType) {
+            case 'Programmable Asset':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        habitat: { type: Type.STRING }, properties: { type: Type.ARRAY, items: { type: Type.STRING } }, lifecycle: { type: Type.STRING }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        assetClass: { type: Type.STRING }, issuanceMechanism: { type: Type.STRING }, transferRestrictions: { type: Type.ARRAY, items: { type: Type.STRING } }, settlementLayer: { type: Type.STRING }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, habitat, properties, and lifecycle.`;
+                fullPrompt += ` Provide name, description, criticality, tags, asset class, issuance mechanism, transfer restrictions, and settlement layer.`;
                 break;
-            case 'Fauna':
+            case 'Automated Agent':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        diet: { type: Type.STRING }, habitat: { type: Type.STRING }, behavior: { type: Type.ARRAY, items: { type: Type.STRING } }, abilities: { type: Type.ARRAY, items: { type: Type.STRING } }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        agentRole: { type: Type.STRING }, operationalScope: { type: Type.STRING }, decisionLogic: { type: Type.ARRAY, items: { type: Type.STRING } }, communicationProtocols: { type: Type.ARRAY, items: { type: Type.STRING } }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, diet, habitat, behavior, and abilities.`;
+                fullPrompt += ` Provide name, description, criticality, tags, agent role, operational scope, decision logic, and communication protocols.`;
                 break;
-            case 'Item':
+            case 'Data Feed':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        category: { type: Type.STRING }, material: { type: Type.ARRAY, items: { type: Type.STRING } }, functionality: { type: Type.ARRAY, items: { type: Type.STRING } }, value: { type: Type.STRING }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        dataType: { type: Type.STRING }, sourceProvider: { type: Type.STRING }, updateFrequency: { type: Type.STRING }, validationMechanisms: { type: Type.ARRAY, items: { type: Type.STRING } }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, category, material, functionality, and value.`;
+                fullPrompt += ` Provide name, description, criticality, tags, data type, source provider, update frequency, and validation mechanisms.`;
                 break;
-            case 'Structure':
+            case 'Network Node':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        purpose: { type: Type.STRING }, material: { type: Type.ARRAY, items: { type: Type.STRING } }, architecturalStyle: { type: Type.STRING }, capacity: { type: Type.STRING }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        nodeFunction: { type: Type.STRING }, networkType: { type: Type.STRING }, hostingEnvironment: { type: Type.STRING }, securityProtocols: { type: Type.ARRAY, items: { type: Type.STRING } }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, purpose, material, architectural style, and capacity.`;
+                fullPrompt += ` Provide name, description, criticality, tags, node function, network type, hosting environment, and security protocols.`;
                 break;
-            case 'Character':
+            case 'Digital Identity Role':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        role: { type: Type.STRING }, species: { type: Type.STRING }, personalityTraits: { type: Type.ARRAY, items: { type: Type.STRING } }, abilities: { type: Type.ARRAY, items: { type: Type.STRING } }, affiliation: { type: Type.STRING }, backstorySnippet: { type: Type.STRING }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        roleCategory: { type: Type.STRING }, authenticationMethod: { type: Type.ARRAY, items: { type: Type.STRING } }, authorizationPolicies: { type: Type.ARRAY, items: { type: Type.STRING } }, dataPrivacyStandards: { type: Type.STRING }, verificationLevel: { type: Type.STRING }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, role, species, personality traits, abilities, affiliation, and a backstory snippet.`;
+                fullPrompt += ` Provide name, description, criticality, tags, role category, authentication methods, authorization policies, data privacy standards, and verification level.`;
                 break;
-            case 'Vehicle':
+            case 'Value Transfer Mechanism':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        propulsion: { type: Type.STRING }, environment: { type: Type.STRING }, capacity: { type: Type.STRING }, armaments: { type: Type.ARRAY, items: { type: Type.STRING } }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        propulsionMechanism: { type: Type.STRING }, interoperabilityScope: { type: Type.STRING }, transactionCapacity: { type: Type.STRING }, resilienceMeasures: { type: Type.ARRAY, items: { type: Type.STRING } }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, propulsion, environment, capacity, and armaments.`;
+                fullPrompt += ` Provide name, description, criticality, tags, propulsion mechanism, interoperability scope, transaction capacity, and resilience measures.`;
                 break;
-            case 'Technology':
+            case 'Protocol Integration':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        era: { type: Type.STRING }, application: { type: Type.STRING }, complexity: { type: Type.STRING }, powerSource: { type: Type.STRING }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        protocolStandard: { type: Type.STRING }, applicationLayer: { type: Type.STRING }, complexityRating: { type: Type.STRING }, securityConsiderations: { type: Type.ARRAY, items: { type: Type.STRING } }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, era, application, complexity, and power source.`;
+                fullPrompt += ` Provide name, description, criticality, tags, protocol standard, application layer, complexity rating, and security considerations.`;
                 break;
-            case 'Magic Artifact':
+            case 'Cryptographic Security Module':
                 schema = {
                     type: Type.OBJECT, properties: {
-                        name: { type: Type.STRING }, description: { type: Type.STRING }, rarity: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        attunement: { type: Type.STRING }, effect: { type: Type.ARRAY, items: { type: Type.STRING } }, powerLevel: { type: Type.STRING }, originMyth: { type: Type.STRING }
+                        name: { type: Type.STRING }, description: { type: Type.STRING }, criticality: { type: Type.STRING }, tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        attestationMechanism: { type: Type.STRING }, functionality: { type: Type.ARRAY, items: { type: Type.STRING } }, securityAssuranceLevel: { type: Type.STRING }, threatMitigation: { type: Type.ARRAY, items: { type: Type.STRING } }
                     }
                 };
-                fullPrompt += ` Provide name, description, rarity, tags, attunement, effect, power level, and origin myth.`;
+                fullPrompt += ` Provide name, description, criticality, tags, attestation mechanism, functionality, security assurance level, and threat mitigation.`;
                 break;
             default:
-                throw new Error(`Unsupported asset type: ${assetType}`);
+                throw new Error(`Unsupported component type: ${componentType}`);
         }
 
         fullPrompt += ` Return strictly in JSON format.`;
-        const assetData = await this.callModel(modelName, fullPrompt, schema) as Omit<AnyAsset, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl' | 'type'>;
-        const imageUrl = await this.callImageModel(`detailed concept art of ${assetData.name} (${assetType}) within a ${worldConcept.description} setting, unreal engine 5, ultra-detailed`);
+        const componentData = await this.callModel(modelName, fullPrompt, schema) as Omit<AnyInfrastructureComponent, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl' | 'type'>;
+        const imageUrl = await this.callImageModel(`detailed conceptual diagram of a ${componentData.name} (${componentType}) within a ${financialProductConcept.description} infrastructure, professional technical drawing`);
 
         return {
-            asset: {
+            component: {
                 id: generateMockId(),
                 createdAt: now(),
                 updatedAt: now(),
-                type: assetType, // Ensure type is correctly set
-                ...assetData
-            } as AnyAsset, imageUrl
+                type: componentType,
+                ...componentData
+            } as AnyInfrastructureComponent, imageUrl
         };
     }
 
-    // Lore Entry Generation
-    public async generateLoreEntry(worldConcept: WorldConcept, prompt: string, modelName: string): Promise<{ lore: LoreEntry, imageUrl: string | undefined }> {
+    /**
+     * Generates a regulatory compliance document or audit trail narrative using AI.
+     * @param financialProductConcept The overarching financial product concept.
+     * @param prompt The user's input prompt for the document.
+     * @param modelName The AI model to use.
+     * @returns A Promise resolving to the generated document and an optional illustrative image URL.
+     * Commercial value: Streamlines the creation of essential compliance documentation and audit narratives, enhancing regulatory readiness and transparency.
+     */
+    public async generateRegulatoryComplianceDocument(financialProductConcept: FinancialProductConcept, prompt: string, modelName: string): Promise<{ document: RegulatoryComplianceDocument, imageUrl: string | undefined }> {
         const schema = {
             type: Type.OBJECT, properties: {
                 title: { type: Type.STRING },
@@ -616,51 +800,95 @@ export class Aiservice {
                 importance: { type: Type.STRING }
             }
         };
-        const fullPrompt = `Given the world concept: "${worldConcept.description}", generate a detailed lore entry based on the following prompt: "${prompt}". Include title, type (e.g., History, Myth, Culture), content, 2-3 related entities (names, not IDs), and importance. Return strictly in JSON format.`;
-        const loreData = await this.callModel(modelName, fullPrompt, schema) as Omit<LoreEntry, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl'>;
+        const fullPrompt = `Given the financial product concept: "${financialProductConcept.description}", generate a detailed regulatory compliance document or audit narrative based on the following prompt: "${prompt}". Include title, type (e.g., Regulatory Filing, Audit Report), detailed content, 2-3 related entities (names, not IDs), and importance. Return strictly in JSON format.`;
+        const documentData = await this.callModel(modelName, fullPrompt, schema) as Omit<RegulatoryComplianceDocument, 'id' | 'createdAt' | 'updatedAt' | 'imageUrl'>;
         let imageUrl: string | undefined;
         try {
-            imageUrl = await this.callImageModel(`concept art illustrating "${loreData.title}" from a "${worldConcept.description}" setting, unreal engine 5`);
+            imageUrl = await this.callImageModel(`conceptual diagram illustrating "${documentData.title}" from a "${financialProductConcept.description}" setting, compliance report visualization`);
         } catch (error) {
-            console.warn(`Failed to generate image for lore entry "${loreData.title}":`, error);
+            console.warn(`Failed to generate image for document "${documentData.title}":`, error);
         }
 
         return {
-            lore: {
+            document: {
                 id: generateMockId(),
                 createdAt: now(),
                 updatedAt: now(),
-                ...loreData
+                ...documentData
             }, imageUrl
         };
     }
 
-    // Magic System Generation
-    public async generateMagicSystem(worldConcept: WorldConcept, prompt: string, modelName: string): Promise<MagicSystem> {
+    /**
+     * Generates a smart contract policy engine definition using AI.
+     * @param financialProductConcept The overarching financial product concept.
+     * @param prompt The user's input prompt for the policy engine.
+     * @param modelName The AI model to use.
+     * @returns A Promise resolving to the generated policy engine.
+     * Commercial value: Accelerates the design of deterministic, auditable programmable logic for automated financial operations, reducing legal and operational overhead.
+     */
+    public async generateSmartContractPolicyEngine(financialProductConcept: FinancialProductConcept, prompt: string, modelName: string): Promise<SmartContractPolicyEngine> {
         const schema = {
             type: Type.OBJECT, properties: {
                 name: { type: Type.STRING },
                 description: { type: Type.STRING },
-                powerSource: { type: Type.STRING },
-                rules: { type: Type.ARRAY, items: { type: Type.STRING } },
-                spellsExamples: { type: Type.ARRAY, items: { type: Type.STRING } },
+                executionEnvironment: { type: Type.STRING },
+                policyRules: { type: Type.ARRAY, items: { type: Type.STRING } },
+                exampleScenarios: { type: Type.ARRAY, items: { type: Type.STRING } },
                 limitations: { type: Type.ARRAY, items: { type: Type.STRING } },
-                integrationWithWorld: { type: Type.STRING }
+                integrationWithPlatform: { type: Type.STRING }
             }
         };
-        const fullPrompt = `Given the world concept: "${worldConcept.description}", generate a detailed magic system based on the following prompt: "${prompt}". Include its name, description, power source, 3-5 key rules, 3-5 example spells, 2-3 limitations, and how it integrates with the world's society/environment. Return strictly in JSON format.`;
-        const magicData = await this.callModel(modelName, fullPrompt, schema) as Omit<MagicSystem, 'id' | 'createdAt' | 'updatedAt'>;
+        const fullPrompt = `Given the financial product concept: "${financialProductConcept.description}", generate a detailed smart contract policy engine based on the following prompt: "${prompt}". Include its name, description, execution environment, 3-5 key policy rules, 3-5 example scenarios, 2-3 limitations, and how it integrates with the financial platform's settlement or agent layers. Return strictly in JSON format.`;
+        const policyEngineData = await this.callModel(modelName, fullPrompt, schema) as Omit<SmartContractPolicyEngine, 'id' | 'createdAt' | 'updatedAt'>;
 
         return {
             id: generateMockId(),
             createdAt: now(),
             updatedAt: now(),
-            ...magicData
+            ...policyEngineData
         };
     }
 
-    // Quest Hook Generation
-    public async generateQuestHook(worldConcept: WorldConcept, prompt: string, modelName: string): Promise<QuestHook> {
+    /**
+     * Generates an interoperability framework definition using AI.
+     * @param financialProductConcept The overarching financial product concept.
+     * @param prompt The user's input prompt for the framework.
+     * @param modelName The AI model to use.
+     * @returns A Promise resolving to the generated interoperability framework.
+     * Commercial value: Facilitates the design of seamless data and value exchange mechanisms between disparate financial systems, improving system cohesion and reducing integration costs.
+     */
+    public async generateInteroperabilityFramework(financialProductConcept: FinancialProductConcept, prompt: string, modelName: string): Promise<InteroperabilityFramework> {
+        const schema = {
+            type: Type.OBJECT, properties: {
+                name: { type: Type.STRING },
+                description: { type: Type.STRING },
+                keyStandards: { type: Type.ARRAY, items: { type: Type.STRING } },
+                dataExchangeFormats: { type: Type.ARRAY, items: { type: Type.STRING } },
+                securityMechanisms: { type: Type.ARRAY, items: { type: Type.STRING } },
+                impactOnLatency: { type: Type.STRING },
+            }
+        };
+        const fullPrompt = `Given the financial product concept: "${financialProductConcept.description}", generate a detailed interoperability framework based on the following prompt: "${prompt}". Include its name, description, 3-5 key standards, 2-3 data exchange formats, 3-5 security mechanisms, and its expected impact on transaction latency. Return strictly in JSON format.`;
+        const interopFrameworkData = await this.callModel(modelName, fullPrompt, schema) as Omit<InteroperabilityFramework, 'id' | 'createdAt' | 'updatedAt'>;
+
+        return {
+            id: generateMockId(),
+            createdAt: now(),
+            updatedAt: now(),
+            ...interopFrameworkData
+        };
+    }
+
+    /**
+     * Generates an operational scenario or incident response plan using AI.
+     * @param financialProductConcept The overarching financial product concept.
+     * @param prompt The user's input prompt for the scenario.
+     * @param modelName The AI model to use.
+     * @returns A Promise resolving to the generated operational scenario.
+     * Commercial value: Proactively identifies and mitigates risks, enhances system resilience, and supports comprehensive business continuity planning.
+     */
+    public async generateOperationalScenario(financialProductConcept: FinancialProductConcept, prompt: string, modelName: string): Promise<OperationalScenario> {
         const schema = {
             type: Type.OBJECT, properties: {
                 title: { type: Type.STRING },
@@ -668,27 +896,29 @@ export class Aiservice {
                 type: { type: Type.STRING },
                 initiator: { type: Type.STRING },
                 goal: { type: Type.STRING },
-                rewards: { type: Type.ARRAY, items: { type: Type.STRING } },
-                potentialObstacles: { type: Type.ARRAY, items: { type: Type.STRING } },
-                relatedLoreIds: { type: Type.ARRAY, items: { type: Type.STRING } }
+                expectedOutcomes: { type: Type.ARRAY, items: { type: Type.STRING } },
+                potentialChallenges: { type: Type.ARRAY, items: { type: Type.STRING } },
+                relatedDocumentIds: { type: Type.ARRAY, items: { type: Type.STRING } }
             }
         };
-        const fullPrompt = `Given the world concept: "${worldConcept.description}", generate a compelling quest hook based on the following prompt: "${prompt}". Include title, summary, type, initiator, goal, 2-3 potential rewards, 2-3 potential obstacles, and 1-2 related lore entries (IDs if available, otherwise just descriptions). Return strictly in JSON format.`;
-        const questData = await this.callModel(modelName, fullPrompt, schema) as Omit<QuestHook, 'id' | 'createdAt' | 'updatedAt'>;
+        const fullPrompt = `Given the financial product concept: "${financialProductConcept.description}", generate a compelling operational scenario (e.g., risk mitigation, market stress test) based on the following prompt: "${prompt}". Include title, summary, type, initiator, goal, 2-3 expected outcomes, 2-3 potential challenges, and 1-2 related document references (IDs if available, otherwise just descriptions). Return strictly in JSON format.`;
+        const scenarioData = await this.callModel(modelName, fullPrompt, schema) as Omit<OperationalScenario, 'id' | 'createdAt' | 'updatedAt'>;
 
         return {
             id: generateMockId(),
             createdAt: now(),
             updatedAt: now(),
-            ...questData
+            ...scenarioData
         };
     }
 }
 
-const aiService = new Aiservice(process.env.NEXT_PUBLIC_API_KEY as string); // Using NEXT_PUBLIC_ for client-side access
+const aiService = new Aiservice(process.env.NEXT_PUBLIC_API_KEY as string);
 
-// --- General UI Components (to keep this file self-contained for length) ---
-
+/**
+ * A reusable input component for forms, styled for the financial blueprint designer.
+ * Commercial value: Provides a consistent, professional UI element, enhancing user experience and reducing development time.
+ */
 export const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
     <div>
         <label className="block text-gray-300 text-sm font-bold mb-2">{label}</label>
@@ -696,6 +926,10 @@ export const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & {
     </div>
 );
 
+/**
+ * A reusable textarea component for forms, styled for the financial blueprint designer.
+ * Commercial value: Facilitates rich text input for detailed descriptions and policies, supporting comprehensive design documentation.
+ */
 export const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
     <div>
         <label className="block text-gray-300 text-sm font-bold mb-2">{label}</label>
@@ -703,6 +937,10 @@ export const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaEle
     </div>
 );
 
+/**
+ * A reusable select dropdown component for forms, styled for the financial blueprint designer.
+ * Commercial value: Offers controlled input choices, ensuring data consistency and simplifying user interaction for critical selections.
+ */
 export const FormSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; options: { value: string; label: string }[] }> = ({ label, options, ...props }) => (
     <div>
         <label className="block text-gray-300 text-sm font-bold mb-2">{label}</label>
@@ -714,24 +952,44 @@ export const FormSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> 
     </div>
 );
 
+/**
+ * A base button component with shared styling for the financial blueprint designer.
+ * Commercial value: Ensures consistent UI across the platform, improving user navigation and brand recognition.
+ */
 export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className = '', ...props }) => (
     <button className={`py-2 px-4 rounded transition-all duration-200 disabled:opacity-50 ${className}`} {...props}>
         {children}
     </button>
 );
 
+/**
+ * A primary action button, visually emphasizing critical user actions.
+ * Commercial value: Guides users towards high-impact actions, streamlining workflows and accelerating task completion.
+ */
 export const PrimaryButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
     <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" {...props} />
 );
 
+/**
+ * A secondary action button, for less critical or alternative actions.
+ * Commercial value: Provides clear visual hierarchy, preventing accidental clicks on destructive or non-primary actions.
+ */
 export const SecondaryButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
     <Button className="bg-gray-600 hover:bg-gray-500 text-white" {...props} />
 );
 
+/**
+ * A button for destructive or irreversible actions, clearly indicating caution.
+ * Commercial value: Minimizes human error in critical operations, protecting data integrity and system stability.
+ */
 export const DangerButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
     <Button className="bg-red-600 hover:bg-red-700 text-white" {...props} />
 );
 
+/**
+ * A tab navigation button, indicating the currently active view.
+ * Commercial value: Enables intuitive navigation between complex design sections, improving user productivity and reducing learning curves.
+ */
 export const TabButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { active: boolean }> = ({ active, children, ...props }) => (
     <Button
         className={`px-4 py-2 text-sm font-medium ${active ? 'bg-cyan-700 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'} rounded-t-md`}
@@ -741,6 +999,10 @@ export const TabButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> &
     </Button>
 );
 
+/**
+ * A modal component for displaying dialogs or detailed editors.
+ * Commercial value: Provides focused interaction contexts for editing sensitive configurations or reviewing detailed data, improving user accuracy.
+ */
 export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
     return (
@@ -758,6 +1020,10 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
     );
 };
 
+/**
+ * An accordion component for collapsible content sections.
+ * Commercial value: Organizes complex information into manageable sections, reducing cognitive overload and improving content discoverability.
+ */
 export const Accordion: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, defaultOpen = false }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     return (
@@ -778,12 +1044,10 @@ export const Accordion: React.FC<{ title: string; children: React.ReactNode; def
     );
 };
 
-// --- [ End of Added Code - Data Models and Utility Types ] ---
-
-// --- [ Start of Added Code - Child Components for WorldBuilderView ] ---
-
-// --- 1. Dashboard Components ---
-
+/**
+ * A modal for creating new financial blueprint projects.
+ * Commercial value: Streamlines the project initiation process, enabling rapid prototyping of new financial solutions.
+ */
 export const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onCreate: (name: string, description: string) => void }> = ({ isOpen, onClose, onCreate }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -798,20 +1062,24 @@ export const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Create New World Project">
+        <Modal isOpen={isOpen} onClose={onClose} title="Create New Financial Blueprint Project">
             <div className="space-y-4">
-                <FormInput label="Project Name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., 'Emberfell Chronicles'" />
-                <FormTextarea label="Project Description" value={description} onChange={e => setDescription(e.target.value)} placeholder="A brief overview of your world concept..." />
+                <FormInput label="Project Name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., 'Real-time Global Payments Infrastructure'" />
+                <FormTextarea label="Project Description" value={description} onChange={e => setDescription(e.target.value)} placeholder="A brief overview of your financial solution blueprint..." />
                 <div className="flex justify-end space-x-2 mt-4">
                     <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
-                    <PrimaryButton onClick={handleSubmit} disabled={!name.trim()}>Create Project</PrimaryButton>
+                    <PrimaryButton onClick={handleSubmit} disabled={!name.trim()}>Create Blueprint</PrimaryButton>
                 </div>
             </div>
         </Modal>
     );
 };
 
-export const ProjectCard: React.FC<{ project: WorldProject; onEdit: (id: string) => void; onDelete: (id: string) => void; onDuplicate: (id: string) => void }> = ({ project, onEdit, onDelete, onDuplicate }) => (
+/**
+ * Displays a summary card for a financial blueprint project, with actions for editing, deleting, and duplicating.
+ * Commercial value: Provides an at-a-glance overview of strategic initiatives, simplifying project management and decision-making.
+ */
+export const ProjectCard: React.FC<{ project: FinancialBlueprintProject; onEdit: (id: string) => void; onDelete: (id: string) => void; onDuplicate: (id: string) => void }> = ({ project, onEdit, onDelete, onDuplicate }) => (
     <Card title={project.name} className="relative group hover:shadow-cyan-500/30 transition-shadow duration-300">
         <p className="text-sm text-gray-400 mb-2 truncate">{project.description || 'No description provided.'}</p>
         <p className="text-xs text-gray-500">Created: {new Date(project.createdAt).toLocaleDateString()}</p>
@@ -824,25 +1092,29 @@ export const ProjectCard: React.FC<{ project: WorldProject; onEdit: (id: string)
     </Card>
 );
 
+/**
+ * The main dashboard view, displaying a list of all financial blueprint projects.
+ * Commercial value: Serves as the central command center for managing all financial innovation initiatives, providing clear visibility and control.
+ */
 export const DashboardView: React.FC = () => {
     const { state, dispatch } = useAppContext();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const handleCreateProject = useCallback((name: string, description: string) => {
-        const newProject: WorldProject = {
+        const newProject: FinancialBlueprintProject = {
             id: generateMockId(),
             name,
             description,
-            creatorId: "user-alpha", // Mock creator
+            creatorId: "financial-architect-alpha",
             createdAt: now(),
             updatedAt: now(),
-            concept: { description: "An uninitialized world concept.", keyAssets: [], atmosphere: "" },
-            biomes: [],
-            assets: [],
-            lore: [],
-            magicSystems: [],
-            techSystems: [],
-            questHooks: [],
+            concept: { description: "An uninitialized financial product concept.", keyComponents: [], marketOpportunity: "" },
+            marketSegments: [],
+            components: [],
+            documents: [],
+            policyEngines: [],
+            interopFrameworks: [],
+            operationalScenarios: [],
             projectSettings: { ...defaultProjectSettings },
             generationHistory: [],
         };
@@ -857,38 +1129,38 @@ export const DashboardView: React.FC = () => {
     }, [dispatch]);
 
     const handleDeleteProject = useCallback((projectId: string) => {
-        if (window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+        if (window.confirm("Are you sure you want to delete this project blueprint? This action cannot be undone.")) {
             dispatch({ type: 'DELETE_PROJECT', payload: projectId });
         }
     }, [dispatch]);
 
     const handleDuplicateProject = useCallback((projectId: string) => {
-        const projectToDuplicate = state.worldProjects.find(p => p.id === projectId);
+        const projectToDuplicate = state.financialBlueprintProjects.find(p => p.id === projectId);
         if (projectToDuplicate) {
-            const duplicatedProject: WorldProject = {
+            const duplicatedProject: FinancialBlueprintProject = {
                 ...projectToDuplicate,
                 id: generateMockId(),
                 name: `${projectToDuplicate.name} (Copy)`,
                 createdAt: now(),
                 updatedAt: now(),
-                generationHistory: [], // Clear history for a clean copy
+                generationHistory: [],
             };
             dispatch({ type: 'ADD_PROJECT', payload: duplicatedProject });
             dispatch({ type: 'SET_ACTIVE_PROJECT', payload: duplicatedProject.id });
             dispatch({ type: 'SET_VIEW', payload: 'Project Editor' });
         }
-    }, [state.worldProjects, dispatch]);
+    }, [state.financialBlueprintProjects, dispatch]);
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Your World Projects</h2>
-            <PrimaryButton onClick={() => setIsCreateModalOpen(true)} className="w-full">Create New Project</PrimaryButton>
+            <h2 className="text-2xl font-bold text-white">Your Financial Blueprint Projects</h2>
+            <PrimaryButton onClick={() => setIsCreateModalOpen(true)} className="w-full">Design New Financial Solution Blueprint</PrimaryButton>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {state.worldProjects.length === 0 ? (
-                    <p className="text-gray-400 col-span-full text-center">No projects found. Start by creating a new one!</p>
+                {state.financialBlueprintProjects.length === 0 ? (
+                    <p className="text-gray-400 col-span-full text-center">No projects found. Start by designing a new one!</p>
                 ) : (
-                    state.worldProjects.map(project => (
+                    state.financialBlueprintProjects.map(project => (
                         <ProjectCard
                             key={project.id}
                             project={project}
@@ -904,20 +1176,22 @@ export const DashboardView: React.FC = () => {
     );
 };
 
-// --- 2. Project Editor Views ---
-
+/**
+ * Displays a panel showing the queue and history of AI generation tasks for the active project.
+ * Commercial value: Provides real-time visibility into AI-driven design progress, enabling project managers to track task completion and resource utilization.
+ */
 export const GenerationQueuePanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
     const projectTasks = state.generationQueue.filter(task => task.projectId === activeProject.id);
 
     return (
-        <Card title="Generation Queue & History">
+        <Card title="AI Generation Queue & History">
             {projectTasks.length === 0 ? (
-                <p className="text-gray-400">No active or historical generation tasks for this project.</p>
+                <p className="text-gray-400">No active or historical AI generation tasks for this blueprint.</p>
             ) : (
                 <div className="space-y-4">
                     {projectTasks.map(task => (
@@ -949,16 +1223,20 @@ export const GenerationQueuePanel: React.FC = () => {
 };
 
 
+/**
+ * Provides an overview of the active financial blueprint project, including concept generation and project settings.
+ * Commercial value: Centralizes high-level project information, allowing architects to define and refine the core vision and underlying operational parameters.
+ */
 export const ProjectOverviewPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [prompt, setPrompt] = useState(activeProject?.concept.description || initialWorldPrompt);
+    const [prompt, setPrompt] = useState(activeProject?.concept.description || initialFinancialPrompt);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (activeProject) {
-            setPrompt(activeProject.concept.description || initialWorldPrompt);
+            setPrompt(activeProject.concept.description || initialFinancialPrompt);
         }
     }, [activeProject]);
 
@@ -972,7 +1250,7 @@ export const ProjectOverviewPanel: React.FC = () => {
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'WorldConcept',
+                type: 'FinancialProductConcept',
                 status: 'InProgress',
                 prompt: prompt,
                 generatedContent: null,
@@ -981,7 +1259,7 @@ export const ProjectOverviewPanel: React.FC = () => {
         });
 
         try {
-            const { concept, imageUrl } = await aiService.generateWorldConcept(prompt, activeProject.projectSettings.aiModelPreference);
+            const { concept, imageUrl } = await aiService.generateFinancialProductConcept(prompt, activeProject.projectSettings.aiModelPreference);
 
             dispatch({
                 type: 'UPDATE_PROJECT',
@@ -991,7 +1269,7 @@ export const ProjectOverviewPanel: React.FC = () => {
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'WorldConcept',
+                        type: 'FinancialProductConcept',
                         status: 'Completed',
                         prompt: prompt,
                         generatedContent: { concept, imageUrl },
@@ -1004,7 +1282,7 @@ export const ProjectOverviewPanel: React.FC = () => {
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: { concept, imageUrl }, endTime: now(), visualizationUrl: imageUrl } });
 
         } catch (error) {
-            console.error("Failed to generate world concept:", error);
+            console.error("Failed to generate financial product concept:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
             setIsLoading(false);
@@ -1012,36 +1290,36 @@ export const ProjectOverviewPanel: React.FC = () => {
     };
 
     if (!activeProject) {
-        return <p className="text-gray-400">Please select a project from the dashboard.</p>;
+        return <p className="text-gray-400">Please select a project blueprint from the dashboard.</p>;
     }
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Project: {activeProject.name} - Overview</h2>
-            <Card title="World Concept Prompt">
+            <h2 className="text-2xl font-bold text-white">Blueprint: {activeProject.name} - Overview</h2>
+            <Card title="Financial Product Concept Prompt">
                 <FormTextarea
-                    label="Describe your desired world"
+                    label="Describe your desired financial product or infrastructure"
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
                     rows={5}
-                    placeholder="e.g., 'a cyberpunk metropolis where ancient magic stirs beneath the neon glow'"
+                    placeholder="e.g., 'a secure, real-time cross-border payment network leveraging tokenized assets'"
                 />
                 <PrimaryButton onClick={handleGenerate} disabled={isLoading} className="w-full mt-4">
-                    {isLoading ? 'Generating Concept...' : 'Generate World Concept'}
+                    {isLoading ? 'Generating Concept...' : 'Generate Financial Product Concept'}
                 </PrimaryButton>
             </Card>
 
             {(activeProject.concept.description || isLoading) && (
-                <Card title="Generated World Concept">
+                <Card title="Generated Financial Product Concept">
                     {isLoading ? <p>Building...</p> : (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {activeProject.concept.imageUrl && (
-                                <img src={activeProject.concept.imageUrl} alt="Generated world concept" className="rounded-lg aspect-video object-cover w-full h-auto max-h-[300px]"/>
+                                <img src={activeProject.concept.imageUrl} alt="Generated financial product concept" className="rounded-lg aspect-video object-cover w-full h-auto max-h-[300px]"/>
                             )}
                             <div className="space-y-4">
                                 <div><h4 className="font-semibold text-cyan-300">Description</h4><p className="text-sm text-gray-300">{activeProject.concept.description}</p></div>
-                                <div><h4 className="font-semibold text-cyan-300">Key Assets</h4><ul className="list-disc list-inside text-sm text-gray-300">{activeProject.concept.keyAssets.map((asset: string, i: number) => <li key={i}>{asset}</li>)}</ul></div>
-                                <div><h4 className="font-semibold text-cyan-300">Atmosphere</h4><p className="text-sm text-gray-300">{activeProject.concept.atmosphere}</p></div>
+                                <div><h4 className="font-semibold text-cyan-300">Key Components</h4><ul className="list-disc list-inside text-sm text-gray-300">{activeProject.concept.keyComponents.map((item: string, i: number) => <li key={i}>{item}</li>)}</ul></div>
+                                <div><h4 className="font-semibold text-cyan-300">Market Opportunity</h4><p className="text-sm text-gray-300">{activeProject.concept.marketOpportunity}</p></div>
                             </div>
                         </div>
                     )}
@@ -1055,7 +1333,11 @@ export const ProjectOverviewPanel: React.FC = () => {
     );
 };
 
-export const ProjectSettingsEditor: React.FC<{ project: WorldProject }> = ({ project }) => {
+/**
+ * An editor component for managing project-specific settings such as AI model preferences and default prompts.
+ * Commercial value: Provides granular control over AI behavior, allowing fine-tuning for specific financial contexts and regulatory compliance.
+ */
+export const ProjectSettingsEditor: React.FC<{ project: FinancialBlueprintProject }> = ({ project }) => {
     const { dispatch } = useAppContext();
     const [settings, setSettings] = useState(project.projectSettings);
 
@@ -1075,7 +1357,7 @@ export const ProjectSettingsEditor: React.FC<{ project: WorldProject }> = ({ pro
     return (
         <div className="space-y-4">
             <FormSelect
-                label="Preferred AI Model (Text)"
+                label="Preferred AI Model (Text Generation)"
                 value={settings.aiModelPreference}
                 onChange={e => handleSettingChange('aiModelPreference', e.target.value)}
                 options={[
@@ -1084,32 +1366,31 @@ export const ProjectSettingsEditor: React.FC<{ project: WorldProject }> = ({ pro
                 ]}
             />
             <FormSelect
-                label="Preferred AI Model (Image)"
+                label="Preferred AI Model (Image Generation)"
                 value={settings.imageModelPreference}
                 onChange={e => handleSettingChange('imageModelPreference', e.target.value)}
                 options={[
                     { value: 'imagen-4.0-generate-001', label: 'Imagen 4.0' },
-                    // Add other image models if available
                 ]}
             />
             <FormInput
-                label="Default Tone for Generations"
+                label="Default Tone for AI Generations"
                 value={settings.defaultTone}
                 onChange={e => handleSettingChange('defaultTone', e.target.value)}
-                placeholder="e.g., 'Gritty', 'Whimsical', 'Realistic'"
+                placeholder="e.g., 'Regulatory & Secure', 'Disruptive', 'Conservative'"
             />
             <FormTextarea
-                label="Default Prompt Prefix"
+                label="Default AI Prompt Prefix"
                 value={settings.defaultPromptPrefix}
                 onChange={e => handleSettingChange('defaultPromptPrefix', e.target.value)}
-                placeholder="e.g., 'For a high-fantasy video game world, '"
+                placeholder="e.g., 'For a commercial-grade financial infrastructure platform, focusing on security and compliance, '"
                 rows={2}
             />
             <FormTextarea
-                label="Default Negative Prompt"
+                label="Default Negative Prompt (Image Generation)"
                 value={settings.defaultNegativePrompt}
                 onChange={e => handleSettingChange('defaultNegativePrompt', e.target.value)}
-                placeholder="e.g., 'cartoonish, ugly, low-quality, bad anatomy'"
+                placeholder="e.g., 'cartoonish, informal, speculative, insecure, unregulated'"
                 rows={2}
             />
             <FormInput
@@ -1125,141 +1406,154 @@ export const ProjectSettingsEditor: React.FC<{ project: WorldProject }> = ({ pro
                     onChange={e => handleSettingChange('collaborationEnabled', e.target.checked)}
                     className="mr-2 h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-600 rounded"
                 />
-                <label className="text-gray-300">Enable Collaboration (Mock)</label>
+                <label className="text-gray-300">Enable Collaboration (Conceptual)</label>
+            </div>
+            <div className="flex items-center">
+                <input
+                    type="checkbox"
+                    checked={settings.dataIntegrityChecksEnabled}
+                    onChange={e => handleSettingChange('dataIntegrityChecksEnabled', e.target.checked)}
+                    className="mr-2 h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-600 rounded"
+                />
+                <label className="text-gray-300">Enable Data Integrity Checks (Conceptual)</label>
             </div>
             <PrimaryButton onClick={handleSaveSettings}>Save Settings</PrimaryButton>
         </div>
     );
 };
 
-export const BiomesPanel: React.FC = () => {
+/**
+ * Manages the generation and editing of market segments and jurisdictional zones.
+ * Commercial value: Enables targeted financial product development and ensures compliance with diverse global regulatory landscapes.
+ */
+export const MarketSegmentsPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [newBiomePrompt, setNewBiomePrompt] = useState('');
-    const [isGeneratingBiome, setIsGeneratingBiome] = useState(false);
-    const [selectedBiome, setSelectedBiome] = useState<Biome | null>(null);
+    const [newSegmentPrompt, setNewSegmentPrompt] = useState('');
+    const [isGeneratingSegment, setIsGeneratingSegment] = useState(false);
+    const [selectedSegment, setSelectedSegment] = useState<MarketSegment | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const handleGenerateBiome = async () => {
+    const handleGenerateSegment = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
-        if (!newBiomePrompt.trim()) {
-            alert("Please enter a prompt for the new biome.");
+        if (!newSegmentPrompt.trim()) {
+            alert("Please enter a prompt for the new market segment.");
             return;
         }
 
-        setIsGeneratingBiome(true);
+        setIsGeneratingSegment(true);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'BiomeDetail',
+                type: 'MarketSegmentDetail',
                 status: 'InProgress',
-                prompt: newBiomePrompt,
+                prompt: newSegmentPrompt,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            const { biome, imageUrl } = await aiService.generateBiomeDetails(
+            const { marketSegment, imageUrl } = await aiService.generateMarketSegmentDetails(
                 activeProject.concept,
-                activeProject.projectSettings.defaultPromptPrefix + newBiomePrompt,
+                activeProject.projectSettings.defaultPromptPrefix + newSegmentPrompt,
                 activeProject.projectSettings.aiModelPreference
             );
-            biome.imageUrl = imageUrl;
+            marketSegment.imageUrl = imageUrl;
 
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    biomes: [...activeProject.biomes, biome],
+                    marketSegments: [...activeProject.marketSegments, marketSegment],
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'BiomeDetail',
+                        type: 'MarketSegmentDetail',
                         status: 'Completed',
-                        prompt: newBiomePrompt,
-                        generatedContent: biome,
+                        prompt: newSegmentPrompt,
+                        generatedContent: marketSegment,
                         startTime: now(),
                         endTime: now(),
-                        targetId: biome.id,
+                        targetId: marketSegment.id,
                         visualizationUrl: imageUrl,
                     }]
                 }
             });
-            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: biome, endTime: now(), targetId: biome.id, visualizationUrl: imageUrl } });
-            setNewBiomePrompt('');
+            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: marketSegment, endTime: now(), targetId: marketSegment.id, visualizationUrl: imageUrl } });
+            setNewSegmentPrompt('');
         } catch (error) {
-            console.error("Failed to generate biome:", error);
+            console.error("Failed to generate market segment:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingBiome(false);
+            setIsGeneratingSegment(false);
         }
     };
 
-    const handleUpdateBiome = useCallback((updatedBiome: Biome) => {
+    const handleUpdateSegment = useCallback((updatedSegment: MarketSegment) => {
         if (!activeProject) return;
         dispatch({
             type: 'UPDATE_PROJECT',
             payload: {
                 ...activeProject,
-                biomes: activeProject.biomes.map(b => b.id === updatedBiome.id ? { ...updatedBiome, updatedAt: now() } : b)
+                marketSegments: activeProject.marketSegments.map(b => b.id === updatedSegment.id ? { ...updatedSegment, updatedAt: now() } : b)
             }
         });
     }, [activeProject, dispatch]);
 
-    const handleDeleteBiome = useCallback((biomeId: string) => {
+    const handleDeleteSegment = useCallback((segmentId: string) => {
         if (!activeProject) return;
-        if (window.confirm("Are you sure you want to delete this biome?")) {
+        if (window.confirm("Are you sure you want to delete this market segment?")) {
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    biomes: activeProject.biomes.filter(b => b.id !== biomeId)
+                    marketSegments: activeProject.marketSegments.filter(b => b.id !== segmentId)
                 }
             });
         }
     }, [activeProject, dispatch]);
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Biomes Management</h2>
+            <h2 className="text-2xl font-bold text-white">Market Segments & Jurisdictions</h2>
 
-            <Card title="Generate New Biome">
+            <Card title="Generate New Market Segment">
                 <FormTextarea
-                    label="Describe the biome you want to generate"
-                    value={newBiomePrompt}
-                    onChange={e => setNewBiomePrompt(e.target.value)}
+                    label="Describe the market segment or jurisdiction you want to define"
+                    value={newSegmentPrompt}
+                    onChange={e => setNewSegmentPrompt(e.target.value)}
                     rows={4}
-                    placeholder="e.g., 'A volcanic wasteland with obsidian spires and sulfur vents, home to fire-resistant creatures.'"
+                    placeholder="e.g., 'The retail payment sector in Europe, with strong GDPR and PSD2 compliance requirements.'"
                 />
-                <PrimaryButton onClick={handleGenerateBiome} disabled={isGeneratingBiome} className="w-full mt-4">
-                    {isGeneratingBiome ? 'Generating Biome...' : 'Generate New Biome'}
+                <PrimaryButton onClick={handleGenerateSegment} disabled={isGeneratingSegment} className="w-full mt-4">
+                    {isGeneratingSegment ? 'Generating Market Segment...' : 'Generate New Market Segment'}
                 </PrimaryButton>
             </Card>
 
-            <Card title="Existing Biomes">
-                {activeProject.biomes.length === 0 ? (
-                    <p className="text-gray-400">No biomes generated yet. Start by generating one!</p>
+            <Card title="Existing Market Segments">
+                {activeProject.marketSegments.length === 0 ? (
+                    <p className="text-gray-400">No market segments defined yet. Start by generating one!</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {activeProject.biomes.map(biome => (
-                            <div key={biome.id} className="bg-gray-700 rounded-lg overflow-hidden shadow-lg border border-gray-600 relative group">
-                                {biome.imageUrl && <img src={biome.imageUrl} alt={biome.name} className="w-full h-32 object-cover" />}
+                        {activeProject.marketSegments.map(segment => (
+                            <div key={segment.id} className="bg-gray-700 rounded-lg overflow-hidden shadow-lg border border-gray-600 relative group">
+                                {segment.imageUrl && <img src={segment.imageUrl} alt={segment.name} className="w-full h-32 object-cover" />}
                                 <div className="p-4">
-                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{biome.name}</h4>
-                                    <p className="text-sm text-gray-400 truncate">{biome.description}</p>
+                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{segment.name}</h4>
+                                    <p className="text-sm text-gray-400 truncate">{segment.description}</p>
                                     <div className="flex space-x-2 mt-4">
-                                        <SecondaryButton onClick={() => { setSelectedBiome(biome); setIsEditModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
-                                        <DangerButton onClick={() => handleDeleteBiome(biome.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
+                                        <SecondaryButton onClick={() => { setSelectedSegment(segment); setIsEditModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
+                                        <DangerButton onClick={() => handleDeleteSegment(segment.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
                                     </div>
                                 </div>
                             </div>
@@ -1268,13 +1562,13 @@ export const BiomesPanel: React.FC = () => {
                 )}
             </Card>
 
-            {selectedBiome && (
-                <BiomeEditorModal
+            {selectedSegment && (
+                <MarketSegmentEditorModal
                     isOpen={isEditModalOpen}
-                    onClose={() => { setIsEditModalOpen(false); setSelectedBiome(null); }}
-                    biome={selectedBiome}
-                    onSave={handleUpdateBiome}
-                    worldConcept={activeProject.concept}
+                    onClose={() => { setIsEditModalOpen(false); setSelectedSegment(null); }}
+                    marketSegment={selectedSegment}
+                    onSave={handleUpdateSegment}
+                    financialProductConcept={activeProject.concept}
                     aiModelPreference={activeProject.projectSettings.aiModelPreference}
                     onAddTask={(task) => dispatch({ type: 'ADD_GENERATION_TASK', payload: task })}
                     onUpdateTask={(task) => dispatch({ type: 'UPDATE_GENERATION_TASK', payload: task })}
@@ -1284,23 +1578,27 @@ export const BiomesPanel: React.FC = () => {
     );
 };
 
-export const BiomeEditorModal: React.FC<{
+/**
+ * A modal for editing detailed specifications of a market segment, including AI-powered refinement.
+ * Commercial value: Enables precise adjustments to market segment definitions, ensuring optimal alignment with business strategy and regulatory requirements.
+ */
+export const MarketSegmentEditorModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    biome: Biome;
-    onSave: (biome: Biome) => void;
-    worldConcept: WorldConcept;
+    marketSegment: MarketSegment;
+    onSave: (marketSegment: MarketSegment) => void;
+    financialProductConcept: FinancialProductConcept;
     aiModelPreference: string;
     onAddTask: (task: GenerationTask) => void;
     onUpdateTask: (task: GenerationTask) => void;
-}> = ({ isOpen, onClose, biome, onSave, worldConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
-    const [editedBiome, setEditedBiome] = useState(biome);
+}> = ({ isOpen, onClose, marketSegment, onSave, financialProductConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
+    const [editedSegment, setEditedSegment] = useState(marketSegment);
     const [refinePrompt, setRefinePrompt] = useState('');
     const [isRefining, setIsRefining] = useState(false);
 
     useEffect(() => {
-        setEditedBiome(biome);
-    }, [biome]);
+        setEditedSegment(marketSegment);
+    }, [marketSegment]);
 
     const handleRefine = async () => {
         if (!refinePrompt.trim()) {
@@ -1312,40 +1610,39 @@ export const BiomeEditorModal: React.FC<{
         const taskId = generateMockId();
         onAddTask({
             id: taskId,
-            projectId: biome.id, // Using biome ID as project ID for task tracking here (simplified)
+            projectId: marketSegment.id,
             type: 'Refinement',
             status: 'InProgress',
-            prompt: `Refine biome "${biome.name}": ${refinePrompt}`,
+            prompt: `Refine market segment "${marketSegment.name}": ${refinePrompt}`,
             generatedContent: null,
             startTime: now(),
-            targetId: biome.id,
+            targetId: marketSegment.id,
         });
 
         try {
-            // Simplified refinement: regenerate description and features
             const schema = {
                 type: Type.OBJECT, properties: {
                     description: { type: Type.STRING },
-                    dominantFlora: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    dominantFauna: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    uniqueFeatures: { type: Type.ARRAY, items: { type: Type.STRING } }
+                    keyComplianceRequirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    associatedProtocols: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    uniqueMarketDynamics: { type: Type.ARRAY, items: { type: Type.STRING } }
                 }
             };
-            const fullPrompt = `Given the existing biome details: Name: ${editedBiome.name}, Type: ${editedBiome.type}, Climate: ${editedBiome.climate}, Terrain: ${editedBiome.terrain}, Description: ${editedBiome.description}.
-                                Refine its description, dominant flora, dominant fauna, and unique features based on the prompt: "${refinePrompt}".
-                                Ensure it still fits within the world concept: "${worldConcept.description}". Return strictly in JSON.`;
+            const fullPrompt = `Given the existing market segment details: Name: ${editedSegment.name}, Type: ${editedSegment.type}, Regulatory Environment: ${editedSegment.regulatoryEnvironment}, Target Demographics: ${editedSegment.targetDemographics}, Description: ${editedSegment.description}.
+                                Refine its description, key compliance requirements, associated protocols, and unique market dynamics based on the prompt: "${refinePrompt}".
+                                Ensure it still fits within the financial product concept: "${financialProductConcept.description}". Return strictly in JSON.`;
 
             const refinedData = await aiService['callModel'](aiModelPreference, fullPrompt, schema) as
-                { description: string, dominantFlora: string[], dominantFauna: string[], uniqueFeatures: string[] };
+                { description: string, keyComplianceRequirements: string[], associatedProtocols: string[], uniqueMarketDynamics: string[] };
 
-            const updated = { ...editedBiome, ...refinedData, updatedAt: now() };
+            const updated = { ...editedSegment, ...refinedData, updatedAt: now() };
             onSave(updated);
-            setEditedBiome(updated);
+            setEditedSegment(updated);
             setRefinePrompt('');
 
             onUpdateTask({ id: taskId, status: 'Completed', generatedContent: refinedData, endTime: now() });
         } catch (error) {
-            console.error("Failed to refine biome:", error);
+            console.error("Failed to refine market segment:", error);
             onUpdateTask({ id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() });
         } finally {
             setIsRefining(false);
@@ -1353,29 +1650,29 @@ export const BiomeEditorModal: React.FC<{
     };
 
     const handleSave = () => {
-        onSave(editedBiome);
+        onSave(editedSegment);
         onClose();
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Biome: ${biome.name}`}>
+        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Market Segment: ${marketSegment.name}`}>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                {editedBiome.imageUrl && <img src={editedBiome.imageUrl} alt={editedBiome.name} className="w-full h-48 object-cover rounded-md mb-4" />}
+                {editedSegment.imageUrl && <img src={editedSegment.imageUrl} alt={editedSegment.name} className="w-full h-48 object-cover rounded-md mb-4" />}
 
-                <FormInput label="Name" value={editedBiome.name} onChange={e => setEditedBiome(prev => ({ ...prev, name: e.target.value }))} />
-                <FormInput label="Type" value={editedBiome.type} onChange={e => setEditedBiome(prev => ({ ...prev, type: e.target.value }))} />
-                <FormInput label="Climate" value={editedBiome.climate} onChange={e => setEditedBiome(prev => ({ ...prev, climate: e.target.value }))} />
-                <FormInput label="Terrain" value={editedBiome.terrain} onChange={e => setEditedBiome(prev => ({ ...prev, terrain: e.target.value }))} />
-                <FormTextarea label="Description" value={editedBiome.description} onChange={e => setEditedBiome(prev => ({ ...prev, description: e.target.value }))} rows={5} />
+                <FormInput label="Name" value={editedSegment.name} onChange={e => setEditedSegment(prev => ({ ...prev, name: e.target.value }))} />
+                <FormInput label="Type" value={editedSegment.type} onChange={e => setEditedSegment(prev => ({ ...prev, type: e.target.value }))} />
+                <FormInput label="Regulatory Environment" value={editedSegment.regulatoryEnvironment} onChange={e => setEditedSegment(prev => ({ ...prev, regulatoryEnvironment: e.target.value }))} />
+                <FormInput label="Target Demographics" value={editedSegment.targetDemographics} onChange={e => setEditedSegment(prev => ({ ...prev, targetDemographics: e.target.value }))} />
+                <FormTextarea label="Description" value={editedSegment.description} onChange={e => setEditedSegment(prev => ({ ...prev, description: e.target.value }))} rows={5} />
 
-                <Accordion title="Dominant Flora">
-                    <FormTextarea label="Flora (one per line)" value={editedBiome.dominantFlora.join('\n')} onChange={e => setEditedBiome(prev => ({ ...prev, dominantFlora: e.target.value.split('\n') }))} />
+                <Accordion title="Key Compliance Requirements">
+                    <FormTextarea label="Requirements (one per line)" value={editedSegment.keyComplianceRequirements.join('\n')} onChange={e => setEditedSegment(prev => ({ ...prev, keyComplianceRequirements: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) }))} />
                 </Accordion>
-                <Accordion title="Dominant Fauna">
-                    <FormTextarea label="Fauna (one per line)" value={editedBiome.dominantFauna.join('\n')} onChange={e => setEditedBiome(prev => ({ ...prev, dominantFauna: e.target.value.split('\n') }))} />
+                <Accordion title="Associated Protocols">
+                    <FormTextarea label="Protocols (one per line)" value={editedSegment.associatedProtocols.join('\n')} onChange={e => setEditedSegment(prev => ({ ...prev, associatedProtocols: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) }))} />
                 </Accordion>
-                <Accordion title="Unique Features">
-                    <FormTextarea label="Features (one per line)" value={editedBiome.uniqueFeatures.join('\n')} onChange={e => setEditedBiome(prev => ({ ...prev, uniqueFeatures: e.target.value.split('\n') }))} />
+                <Accordion title="Unique Market Dynamics">
+                    <FormTextarea label="Dynamics (one per line)" value={editedSegment.uniqueMarketDynamics.join('\n')} onChange={e => setEditedSegment(prev => ({ ...prev, uniqueMarketDynamics: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) }))} />
                 </Accordion>
 
                 <h4 className="font-semibold text-cyan-300 mt-6">Refine with AI</h4>
@@ -1384,10 +1681,10 @@ export const BiomeEditorModal: React.FC<{
                     value={refinePrompt}
                     onChange={e => setRefinePrompt(e.target.value)}
                     rows={3}
-                    placeholder="e.g., 'Add more bioluminescent fungi and carnivorous plants. Make the climate even more humid.'"
+                    placeholder="e.g., 'Emphasize the need for real-time fraud detection. Add requirements for cross-border data privacy adherence.'"
                 />
                 <PrimaryButton onClick={handleRefine} disabled={isRefining} className="w-full mt-4">
-                    {isRefining ? 'Refining Biome...' : 'Refine Biome with AI'}
+                    {isRefining ? 'Refining Market Segment...' : 'Refine Segment with AI'}
                 </PrimaryButton>
 
                 <div className="flex justify-end space-x-2 mt-6">
@@ -1399,172 +1696,181 @@ export const BiomeEditorModal: React.FC<{
     );
 };
 
-export const AssetsPanel: React.FC = () => {
+/**
+ * Manages the generation and editing of various infrastructure components.
+ * Commercial value: Provides a granular control panel for defining all building blocks of the financial infrastructure, from programmable assets to digital identity roles, ensuring comprehensive system design.
+ */
+export const InfrastructureComponentsPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [assetType, setAssetType] = useState<AssetType>('Flora');
-    const [assetPrompt, setAssetPrompt] = useState('');
-    const [selectedBiomeId, setSelectedBiomeId] = useState<string | 'none'>('none');
-    const [isGeneratingAsset, setIsGeneratingAsset] = useState(false);
+    const [componentType, setComponentType] = useState<InfrastructureComponentType>('Programmable Asset');
+    const [componentPrompt, setComponentPrompt] = useState('');
+    const [selectedMarketSegmentId, setSelectedMarketSegmentId] = useState<string | 'none'>('none');
+    const [isGeneratingComponent, setIsGeneratingComponent] = useState(false);
 
-    const [selectedAsset, setSelectedAsset] = useState<AnyAsset | null>(null);
+    const [selectedComponent, setSelectedComponent] = useState<AnyInfrastructureComponent | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const handleGenerateAsset = async () => {
+    const handleGenerateComponent = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
-        if (!assetPrompt.trim()) {
-            alert("Please enter a prompt for the new asset.");
+        if (!componentPrompt.trim()) {
+            alert("Please enter a prompt for the new component.");
             return;
         }
 
-        setIsGeneratingAsset(true);
+        setIsGeneratingComponent(true);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'AssetDetail',
+                type: 'ComponentDetail',
                 status: 'InProgress',
-                prompt: assetPrompt,
+                prompt: componentPrompt,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            const biome = selectedBiomeId !== 'none' ? activeProject.biomes.find(b => b.id === selectedBiomeId) || null : null;
-            const { asset, imageUrl } = await aiService.generateAssetDetail(
+            const marketSegment = selectedMarketSegmentId !== 'none' ? activeProject.marketSegments.find(b => b.id === selectedMarketSegmentId) || null : null;
+            const { component, imageUrl } = await aiService.generateInfrastructureComponentDetail(
                 activeProject.concept,
-                biome,
-                assetType,
-                activeProject.projectSettings.defaultPromptPrefix + assetPrompt,
+                marketSegment,
+                componentType,
+                activeProject.projectSettings.defaultPromptPrefix + componentPrompt,
                 activeProject.projectSettings.aiModelPreference
             );
-            asset.imageUrl = imageUrl;
+            component.imageUrl = imageUrl;
 
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    assets: [...activeProject.assets, asset],
+                    components: [...activeProject.components, component],
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'AssetDetail',
+                        type: 'ComponentDetail',
                         status: 'Completed',
-                        prompt: assetPrompt,
-                        generatedContent: asset,
+                        prompt: componentPrompt,
+                        generatedContent: component,
                         startTime: now(),
                         endTime: now(),
-                        targetId: asset.id,
+                        targetId: component.id,
                         visualizationUrl: imageUrl,
                     }]
                 }
             });
-            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: asset, endTime: now(), targetId: asset.id, visualizationUrl: imageUrl } });
-            setAssetPrompt('');
+            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: component, endTime: now(), targetId: component.id, visualizationUrl: imageUrl } });
+            setComponentPrompt('');
         } catch (error) {
-            console.error("Failed to generate asset:", error);
+            console.error("Failed to generate component:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingAsset(false);
+            setIsGeneratingComponent(false);
         }
     };
 
-    const handleUpdateAsset = useCallback((updatedAsset: AnyAsset) => {
+    const handleUpdateComponent = useCallback((updatedComponent: AnyInfrastructureComponent) => {
         if (!activeProject) return;
         dispatch({
             type: 'UPDATE_PROJECT',
             payload: {
                 ...activeProject,
-                assets: activeProject.assets.map(a => a.id === updatedAsset.id ? { ...updatedAsset, updatedAt: now() } : a)
+                components: activeProject.components.map(a => a.id === updatedComponent.id ? { ...updatedComponent, updatedAt: now() } : a)
             }
         });
     }, [activeProject, dispatch]);
 
-    const handleDeleteAsset = useCallback((assetId: string) => {
+    const handleDeleteComponent = useCallback((componentId: string) => {
         if (!activeProject) return;
-        if (window.confirm("Are you sure you want to delete this asset?")) {
+        if (window.confirm("Are you sure you want to delete this infrastructure component?")) {
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    assets: activeProject.assets.filter(a => a.id !== assetId)
+                    components: activeProject.components.filter(a => a.id !== componentId)
                 }
             });
         }
     }, [activeProject, dispatch]);
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
-    const assetTypes: { value: AssetType; label: string }[] = [
-        { value: 'Flora', label: 'Flora' }, { value: 'Fauna', label: 'Fauna' }, { value: 'Item', label: 'Item' },
-        { value: 'Structure', label: 'Structure' }, { value: 'Character', label: 'Character' }, { value: 'Vehicle', label: 'Vehicle' },
-        { value: 'Technology', label: 'Technology' }, { value: 'Magic Artifact', label: 'Magic Artifact' },
+    const componentTypes: { value: InfrastructureComponentType; label: string }[] = [
+        { value: 'Programmable Asset', label: 'Programmable Asset' },
+        { value: 'Automated Agent', label: 'Automated Agent' },
+        { value: 'Data Feed', label: 'Data Feed' },
+        { value: 'Network Node', label: 'Network Node' },
+        { value: 'Digital Identity Role', label: 'Digital Identity Role' },
+        { value: 'Value Transfer Mechanism', label: 'Value Transfer Mechanism' },
+        { value: 'Protocol Integration', label: 'Protocol Integration' },
+        { value: 'Cryptographic Security Module', label: 'Cryptographic Security Module' },
     ];
 
-    const biomeOptions = useMemo(() => [
-        { value: 'none', label: 'Anywhere in the World' },
-        ...activeProject.biomes.map(b => ({ value: b.id, label: b.name }))
-    ], [activeProject.biomes]);
+    const marketSegmentOptions = useMemo(() => [
+        { value: 'none', label: 'Platform-wide' },
+        ...activeProject.marketSegments.map(b => ({ value: b.id, label: b.name }))
+    ], [activeProject.marketSegments]);
 
-    const assetsGroupedByType = useMemo(() => {
-        return activeProject.assets.reduce((acc, asset) => {
-            if (!acc[asset.type]) {
-                acc[asset.type] = [];
+    const componentsGroupedByType = useMemo(() => {
+        return activeProject.components.reduce((acc, component) => {
+            if (!acc[component.type]) {
+                acc[component.type] = [];
             }
-            acc[asset.type].push(asset);
+            acc[component.type].push(component);
             return acc;
-        }, {} as Record<AssetType, AnyAsset[]>);
-    }, [activeProject.assets]);
+        }, {} as Record<InfrastructureComponentType, AnyInfrastructureComponent[]>);
+    }, [activeProject.components]);
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Assets Management</h2>
+            <h2 className="text-2xl font-bold text-white">Infrastructure Components Management</h2>
 
-            <Card title="Generate New Asset">
+            <Card title="Generate New Component">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormSelect label="Asset Type" value={assetType} onChange={e => setAssetType(e.target.value as AssetType)} options={assetTypes} />
-                    <FormSelect label="Associate with Biome" value={selectedBiomeId} onChange={e => setSelectedBiomeId(e.target.value)} options={biomeOptions} />
+                    <FormSelect label="Component Type" value={componentType} onChange={e => setComponentType(e.target.value as InfrastructureComponentType)} options={componentTypes} />
+                    <FormSelect label="Associate with Market Segment" value={selectedMarketSegmentId} onChange={e => setSelectedMarketSegmentId(e.target.value)} options={marketSegmentOptions} />
                 </div>
                 <FormTextarea
-                    label="Describe the asset you want to generate"
-                    value={assetPrompt}
-                    onChange={e => setAssetPrompt(e.target.value)}
+                    label="Describe the infrastructure component you want to generate"
+                    value={componentPrompt}
+                    onChange={e => setComponentPrompt(e.target.value)}
                     rows={4}
-                    placeholder="e.g., 'A towering carnivorous plant that lures prey with glowing spores', or 'An ancient magical sword forged from starlight.'"
+                    placeholder="e.g., 'A high-throughput programmable stablecoin for interbank settlements', or 'An AI-powered compliance agent for real-time AML monitoring.'"
                     className="mt-4"
                 />
-                <PrimaryButton onClick={handleGenerateAsset} disabled={isGeneratingAsset} className="w-full mt-4">
-                    {isGeneratingAsset ? 'Generating Asset...' : 'Generate New Asset'}
+                <PrimaryButton onClick={handleGenerateComponent} disabled={isGeneratingComponent} className="w-full mt-4">
+                    {isGeneratingComponent ? 'Generating Component...' : 'Generate New Component'}
                 </PrimaryButton>
             </Card>
 
-            <Card title="Existing Assets">
-                {activeProject.assets.length === 0 ? (
-                    <p className="text-gray-400">No assets generated yet. Start by generating one!</p>
+            <Card title="Existing Components">
+                {activeProject.components.length === 0 ? (
+                    <p className="text-gray-400">No infrastructure components defined yet. Start by generating one!</p>
                 ) : (
                     <div className="space-y-4">
-                        {assetTypes.map(typeOption => {
-                            const assets = assetsGroupedByType[typeOption.value];
-                            if (!assets || assets.length === 0) return null;
+                        {componentTypes.map(typeOption => {
+                            const components = componentsGroupedByType[typeOption.value];
+                            if (!components || components.length === 0) return null;
                             return (
-                                <Accordion key={typeOption.value} title={`${typeOption.label} (${assets.length})`} defaultOpen>
+                                <Accordion key={typeOption.value} title={`${typeOption.label} (${components.length})`} defaultOpen>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {assets.map(asset => (
-                                            <div key={asset.id} className="bg-gray-700 rounded-lg overflow-hidden shadow-lg border border-gray-600 relative group">
-                                                {asset.imageUrl && <img src={asset.imageUrl} alt={asset.name} className="w-full h-32 object-cover" />}
+                                        {components.map(component => (
+                                            <div key={component.id} className="bg-gray-700 rounded-lg overflow-hidden shadow-lg border border-gray-600 relative group">
+                                                {component.imageUrl && <img src={component.imageUrl} alt={component.name} className="w-full h-32 object-cover" />}
                                                 <div className="p-4">
-                                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{asset.name}</h4>
-                                                    <p className="text-sm text-gray-400 truncate">{asset.description}</p>
+                                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{component.name}</h4>
+                                                    <p className="text-sm text-gray-400 truncate">{component.description}</p>
                                                     <div className="flex space-x-2 mt-4">
-                                                        <SecondaryButton onClick={() => { setSelectedAsset(asset); setIsEditModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
-                                                        <DangerButton onClick={() => handleDeleteAsset(asset.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
+                                                        <SecondaryButton onClick={() => { setSelectedComponent(component); setIsEditModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
+                                                        <DangerButton onClick={() => handleDeleteComponent(component.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1577,13 +1883,13 @@ export const AssetsPanel: React.FC = () => {
                 )}
             </Card>
 
-            {selectedAsset && (
-                <AssetEditorModal
+            {selectedComponent && (
+                <InfrastructureComponentEditorModal
                     isOpen={isEditModalOpen}
-                    onClose={() => { setIsEditModalOpen(false); setSelectedAsset(null); }}
-                    asset={selectedAsset}
-                    onSave={handleUpdateAsset}
-                    worldConcept={activeProject.concept}
+                    onClose={() => { setIsEditModalOpen(false); setSelectedComponent(null); }}
+                    component={selectedComponent}
+                    onSave={handleUpdateComponent}
+                    financialProductConcept={activeProject.concept}
                     aiModelPreference={activeProject.projectSettings.aiModelPreference}
                     onAddTask={(task) => dispatch({ type: 'ADD_GENERATION_TASK', payload: task })}
                     onUpdateTask={(task) => dispatch({ type: 'UPDATE_GENERATION_TASK', payload: task })}
@@ -1593,30 +1899,34 @@ export const AssetsPanel: React.FC = () => {
     );
 };
 
-export const AssetEditorModal: React.FC<{
+/**
+ * A modal for detailed editing and AI-powered refinement of individual infrastructure components.
+ * Commercial value: Provides deep configurability for critical system modules, ensuring optimal performance, security, and compliance.
+ */
+export const InfrastructureComponentEditorModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    asset: AnyAsset;
-    onSave: (asset: AnyAsset) => void;
-    worldConcept: WorldConcept;
+    component: AnyInfrastructureComponent;
+    onSave: (component: AnyInfrastructureComponent) => void;
+    financialProductConcept: FinancialProductConcept;
     aiModelPreference: string;
     onAddTask: (task: GenerationTask) => void;
     onUpdateTask: (task: GenerationTask) => void;
-}> = ({ isOpen, onClose, asset, onSave, worldConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
-    const [editedAsset, setEditedAsset] = useState(asset);
+}> = ({ isOpen, onClose, component, onSave, financialProductConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
+    const [editedComponent, setEditedComponent] = useState(component);
     const [refinePrompt, setRefinePrompt] = useState('');
     const [isRefining, setIsRefining] = useState(false);
 
     useEffect(() => {
-        setEditedAsset(asset);
-    }, [asset]);
+        setEditedComponent(component);
+    }, [component]);
 
     const handleFieldChange = (field: string, value: any) => {
-        setEditedAsset(prev => ({ ...prev, [field]: value }));
+        setEditedComponent(prev => ({ ...prev, [field]: value }));
     };
 
     const handleArrayFieldChange = (field: string, value: string) => {
-        setEditedAsset(prev => ({ ...prev, [field]: value.split('\n').map(s => s.trim()).filter(Boolean) }));
+        setEditedComponent(prev => ({ ...prev, [field]: value.split('\n').map(s => s.trim()).filter(Boolean) }));
     };
 
     const handleRefine = async () => {
@@ -1629,40 +1939,38 @@ export const AssetEditorModal: React.FC<{
         const taskId = generateMockId();
         onAddTask({
             id: taskId,
-            projectId: asset.id, // Simplified tracking for assets
+            projectId: component.id,
             type: 'Refinement',
             status: 'InProgress',
-            prompt: `Refine asset "${asset.name}": ${refinePrompt}`,
+            prompt: `Refine component "${component.name}": ${refinePrompt}`,
             generatedContent: null,
             startTime: now(),
-            targetId: asset.id,
+            targetId: component.id,
         });
 
         try {
-            // Re-use the generateAssetDetail schema for refinement, focusing on description
-            const existingDetails = JSON.stringify(editedAsset); // Pass current state for context
-            const fullPrompt = `Given the existing asset details: ${existingDetails}.
-                                Refine its description and specific attributes (e.g., properties for Flora, abilities for Fauna) based on the prompt: "${refinePrompt}".
-                                The asset is of type "${asset.type}". Ensure it still fits within the world concept: "${worldConcept.description}". Return strictly in JSON, only for the relevant fields for ${asset.type}.`;
+            const existingDetails = JSON.stringify(editedComponent);
+            const fullPrompt = `Given the existing component details: ${existingDetails}.
+                                Refine its description and specific attributes based on the prompt: "${refinePrompt}".
+                                The component is of type "${component.type}". Ensure it still fits within the financial product concept: "${financialProductConcept.description}". Return strictly in JSON, only for the relevant fields for ${component.type}.`;
 
             // This is a simplified approach. A real refinement API would be more robust.
             // For now, let's just update description and related lists based on free-form AI response.
+            // A more sophisticated approach would parse 'updatedAttributes' into specific fields.
             const refinedResponse = await aiService['callModel'](aiModelPreference, fullPrompt, { type: Type.OBJECT, properties: { newDescription: { type: Type.STRING }, updatedAttributes: { type: Type.STRING } } }) as { newDescription: string, updatedAttributes: string };
-            
-            const updated: AnyAsset = {
-                ...editedAsset,
-                description: refinedResponse.newDescription || editedAsset.description,
-                // A real refinement would dynamically update specific fields based on asset type
-                // For simplicity, we'll just refine description here or manually parse updatedAttributes.
+
+            const updated: AnyInfrastructureComponent = {
+                ...editedComponent,
+                description: refinedResponse.newDescription || editedComponent.description,
                 updatedAt: now(),
             };
             onSave(updated);
-            setEditedAsset(updated);
+            setEditedComponent(updated);
             setRefinePrompt('');
 
             onUpdateTask({ id: taskId, status: 'Completed', generatedContent: { newDescription: refinedResponse.newDescription }, endTime: now() });
         } catch (error) {
-            console.error("Failed to refine asset:", error);
+            console.error("Failed to refine component:", error);
             onUpdateTask({ id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() });
         } finally {
             setIsRefining(false);
@@ -1670,92 +1978,91 @@ export const AssetEditorModal: React.FC<{
     };
 
     const handleSave = () => {
-        onSave(editedAsset);
+        onSave(editedComponent);
         onClose();
     };
 
-    // Render different fields based on asset type
-    const renderSpecificFields = (asset: AnyAsset) => {
-        switch (asset.type) {
-            case 'Flora':
-                const flora = asset as FloraAsset;
+    const renderSpecificFields = (component: AnyInfrastructureComponent) => {
+        switch (component.type) {
+            case 'Programmable Asset':
+                const asset = component as ProgrammableAssetDefinition;
                 return (
                     <>
-                        <FormInput label="Habitat" value={flora.habitat} onChange={e => handleFieldChange('habitat', e.target.value)} />
-                        <FormTextarea label="Properties (one per line)" value={flora.properties.join('\n')} onChange={e => handleArrayFieldChange('properties', e.target.value)} />
-                        <FormInput label="Lifecycle" value={flora.lifecycle} onChange={e => handleFieldChange('lifecycle', e.target.value)} />
+                        <FormInput label="Asset Class" value={asset.assetClass} onChange={e => handleFieldChange('assetClass', e.target.value)} />
+                        <FormInput label="Issuance Mechanism" value={asset.issuanceMechanism} onChange={e => handleFieldChange('issuanceMechanism', e.target.value)} />
+                        <FormTextarea label="Transfer Restrictions (one per line)" value={asset.transferRestrictions.join('\n')} onChange={e => handleArrayFieldChange('transferRestrictions', e.target.value)} />
+                        <FormInput label="Settlement Layer" value={asset.settlementLayer} onChange={e => handleFieldChange('settlementLayer', e.target.value)} />
                     </>
                 );
-            case 'Fauna':
-                const fauna = asset as FaunaAsset;
+            case 'Automated Agent':
+                const agent = component as AutomatedAgentDefinition;
                 return (
                     <>
-                        <FormSelect label="Diet" value={fauna.diet} onChange={e => handleFieldChange('diet', e.target.value)} options={[{ value: 'Herbivore', label: 'Herbivore' }, { value: 'Carnivore', label: 'Carnivore' }, { value: 'Omnivore', label: 'Omnivore' }, { value: 'Scavenger', label: 'Scavenger' }]} />
-                        <FormInput label="Habitat" value={fauna.habitat} onChange={e => handleFieldChange('habitat', e.target.value)} />
-                        <FormTextarea label="Behavior (one per line)" value={fauna.behavior.join('\n')} onChange={e => handleArrayFieldChange('behavior', e.target.value)} />
-                        <FormTextarea label="Abilities (one per line)" value={fauna.abilities.join('\n')} onChange={e => handleArrayFieldChange('abilities', e.target.value)} />
+                        <FormSelect label="Agent Role" value={agent.agentRole} onChange={e => handleFieldChange('agentRole', e.target.value)} options={[{ value: 'Risk Monitor', label: 'Risk Monitor' }, { value: 'Compliance Officer', label: 'Compliance Officer' }, { value: 'Trade Executor', label: 'Trade Executor' }, { value: 'Liquidity Provider', label: 'Liquidity Provider' }, { value: 'Oracle Validator', label: 'Oracle Validator' }, { value: 'Fraud Detector', label: 'Fraud Detector' }]} />
+                        <FormInput label="Operational Scope" value={agent.operationalScope} onChange={e => handleFieldChange('operationalScope', e.target.value)} />
+                        <FormTextarea label="Decision Logic (one per line)" value={agent.decisionLogic.join('\n')} onChange={e => handleArrayFieldChange('decisionLogic', e.target.value)} />
+                        <FormTextarea label="Communication Protocols (one per line)" value={agent.communicationProtocols.join('\n')} onChange={e => handleArrayFieldChange('communicationProtocols', e.target.value)} />
                     </>
                 );
-            case 'Item':
-                const item = asset as ItemAsset;
+            case 'Data Feed':
+                const dataFeed = component as DataFeedConfiguration;
                 return (
                     <>
-                        <FormInput label="Category" value={item.category} onChange={e => handleFieldChange('category', e.target.value)} />
-                        <FormTextarea label="Material (one per line)" value={item.material.join('\n')} onChange={e => handleArrayFieldChange('material', e.target.value)} />
-                        <FormTextarea label="Functionality (one per line)" value={item.functionality.join('\n')} onChange={e => handleArrayFieldChange('functionality', e.target.value)} />
-                        <FormInput label="Value" value={item.value} onChange={e => handleFieldChange('value', e.target.value)} />
+                        <FormInput label="Data Type" value={dataFeed.dataType} onChange={e => handleFieldChange('dataType', e.target.value)} />
+                        <FormInput label="Source Provider" value={dataFeed.sourceProvider} onChange={e => handleFieldChange('sourceProvider', e.target.value)} />
+                        <FormSelect label="Update Frequency" value={dataFeed.updateFrequency} onChange={e => handleFieldChange('updateFrequency', e.target.value)} options={[{ value: 'Real-time', label: 'Real-time' }, { value: 'Hourly', label: 'Hourly' }, { value: 'Daily', label: 'Daily' }, { value: 'Event-driven', label: 'Event-driven' }]} />
+                        <FormTextarea label="Validation Mechanisms (one per line)" value={dataFeed.validationMechanisms.join('\n')} onChange={e => handleArrayFieldChange('validationMechanisms', e.target.value)} />
                     </>
                 );
-            case 'Structure':
-                const structure = asset as StructureAsset;
+            case 'Network Node':
+                const node = component as NetworkNodeTopology;
                 return (
                     <>
-                        <FormInput label="Purpose" value={structure.purpose} onChange={e => handleFieldChange('purpose', e.target.value)} />
-                        <FormTextarea label="Material (one per line)" value={structure.material.join('\n')} onChange={e => handleArrayFieldChange('material', e.target.value)} />
-                        <FormInput label="Architectural Style" value={structure.architecturalStyle} onChange={e => handleFieldChange('architecturalStyle', e.target.value)} />
-                        <FormInput label="Capacity" value={structure.capacity} onChange={e => handleFieldChange('capacity', e.target.value)} />
+                        <FormSelect label="Node Function" value={node.nodeFunction} onChange={e => handleFieldChange('nodeFunction', e.target.value)} options={[{ value: 'Validator', label: 'Validator' }, { value: 'Archival', label: 'Archival' }, { value: 'Payment Gateway', label: 'Payment Gateway' }, { value: 'Custodial Service', label: 'Custodial Service' }, { value: 'Bridge Operator', label: 'Bridge Operator' }]} />
+                        <FormSelect label="Network Type" value={node.networkType} onChange={e => handleFieldChange('networkType', e.target.value)} options={[{ value: 'DLT (Public)', label: 'DLT (Public)' }, { value: 'DLT (Private)', label: 'DLT (Private)' }, { value: 'Traditional Payment Network', label: 'Traditional Payment Network' }, { value: 'Secure Messaging Fabric', label: 'Secure Messaging Fabric' }]} />
+                        <FormInput label="Hosting Environment" value={node.hostingEnvironment} onChange={e => handleFieldChange('hostingEnvironment', e.target.value)} />
+                        <FormTextarea label="Security Protocols (one per line)" value={node.securityProtocols.join('\n')} onChange={e => handleArrayFieldChange('securityProtocols', e.target.value)} />
                     </>
                 );
-            case 'Character':
-                const character = asset as CharacterAsset;
+            case 'Digital Identity Role':
+                const identity = component as DigitalIdentityRole;
                 return (
                     <>
-                        <FormInput label="Role" value={character.role} onChange={e => handleFieldChange('role', e.target.value)} />
-                        <FormInput label="Species" value={character.species} onChange={e => handleFieldChange('species', e.target.value)} />
-                        <FormTextarea label="Personality Traits (one per line)" value={character.personalityTraits.join('\n')} onChange={e => handleArrayFieldChange('personalityTraits', e.target.value)} />
-                        <FormTextarea label="Abilities (one per line)" value={character.abilities.join('\n')} onChange={e => handleArrayFieldChange('abilities', e.target.value)} />
-                        <FormInput label="Affiliation" value={character.affiliation} onChange={e => handleFieldChange('affiliation', e.target.value)} />
-                        <FormTextarea label="Backstory Snippet" value={character.backstorySnippet} onChange={e => handleFieldChange('backstorySnippet', e.target.value)} rows={3} />
+                        <FormSelect label="Role Category" value={identity.roleCategory} onChange={e => handleFieldChange('roleCategory', e.target.value)} options={[{ value: 'Individual', label: 'Individual' }, { value: 'Institutional', label: 'Institutional' }, { value: 'Regulatory', label: 'Regulatory' }, { value: 'System', label: 'System' }]} />
+                        <FormTextarea label="Authentication Method (one per line)" value={identity.authenticationMethod.join('\n')} onChange={e => handleArrayFieldChange('authenticationMethod', e.target.value)} />
+                        <FormTextarea label="Authorization Policies (one per line)" value={identity.authorizationPolicies.join('\n')} onChange={e => handleArrayFieldChange('authorizationPolicies', e.target.value)} />
+                        <FormInput label="Data Privacy Standards" value={identity.dataPrivacyStandards} onChange={e => handleFieldChange('dataPrivacyStandards', e.target.value)} />
+                        <FormSelect label="Verification Level" value={identity.verificationLevel} onChange={e => handleFieldChange('verificationLevel', e.target.value)} options={[{ value: 'Basic', label: 'Basic' }, { value: 'KYC/AML', label: 'KYC/AML' }, { value: 'Institutional Verified', label: 'Institutional Verified' }]} />
                     </>
                 );
-            case 'Vehicle':
-                const vehicle = asset as VehicleAsset;
+            case 'Value Transfer Mechanism':
+                const vtm = component as ValueTransferMechanism;
                 return (
                     <>
-                        <FormInput label="Propulsion" value={vehicle.propulsion} onChange={e => handleFieldChange('propulsion', e.target.value)} />
-                        <FormInput label="Environment" value={vehicle.environment} onChange={e => handleFieldChange('environment', e.target.value)} />
-                        <FormInput label="Capacity" value={vehicle.capacity} onChange={e => handleFieldChange('capacity', e.target.value)} />
-                        <FormTextarea label="Armaments (one per line)" value={vehicle.armaments.join('\n')} onChange={e => handleArrayFieldChange('armaments', e.target.value)} />
+                        <FormInput label="Propulsion Mechanism" value={vtm.propulsionMechanism} onChange={e => handleFieldChange('propulsionMechanism', e.target.value)} />
+                        <FormSelect label="Interoperability Scope" value={vtm.interoperabilityScope} onChange={e => handleFieldChange('interoperabilityScope', e.target.value)} options={[{ value: 'Cross-Chain', label: 'Cross-Chain' }, { value: 'Cross-Network', label: 'Cross-Network' }, { value: 'Intra-Network', label: 'Intra-Network' }]} />
+                        <FormInput label="Transaction Capacity" value={vtm.transactionCapacity} onChange={e => handleFieldChange('transactionCapacity', e.target.value)} />
+                        <FormTextarea label="Resilience Measures (one per line)" value={vtm.resilienceMeasures.join('\n')} onChange={e => handleArrayFieldChange('resilienceMeasures', e.target.value)} />
                     </>
                 );
-            case 'Technology':
-                const technology = asset as TechnologyAsset;
+            case 'Protocol Integration':
+                const pi = component as ProtocolIntegrationSchema;
                 return (
                     <>
-                        <FormInput label="Era" value={technology.era} onChange={e => handleFieldChange('era', e.target.value)} />
-                        <FormInput label="Application" value={technology.application} onChange={e => handleFieldChange('application', e.target.value)} />
-                        <FormSelect label="Complexity" value={technology.complexity} onChange={e => handleFieldChange('complexity', e.target.value)} options={[{ value: 'Simple', label: 'Simple' }, { value: 'Moderate', label: 'Moderate' }, { value: 'Advanced', label: 'Advanced' }, { value: 'Cutting-Edge', label: 'Cutting-Edge' }]} />
-                        <FormInput label="Power Source" value={technology.powerSource} onChange={e => handleFieldChange('powerSource', e.target.value)} />
+                        <FormInput label="Protocol Standard" value={pi.protocolStandard} onChange={e => handleFieldChange('protocolStandard', e.target.value)} />
+                        <FormInput label="Application Layer" value={pi.applicationLayer} onChange={e => handleFieldChange('applicationLayer', e.target.value)} />
+                        <FormSelect label="Complexity Rating" value={pi.complexityRating} onChange={e => handleFieldChange('complexityRating', e.target.value)} options={[{ value: 'Simple', label: 'Simple' }, { value: 'Moderate', label: 'Moderate' }, { value: 'Advanced', label: 'Advanced' }, { value: 'Cutting-Edge', label: 'Cutting-Edge' }]} />
+                        <FormTextarea label="Security Considerations (one per line)" value={pi.securityConsiderations.join('\n')} onChange={e => handleArrayFieldChange('securityConsiderations', e.target.value)} />
                     </>
                 );
-            case 'Magic Artifact':
-                const artifact = asset as MagicArtifactAsset;
+            case 'Cryptographic Security Module':
+                const csm = component as CryptographicSecurityModule;
                 return (
                     <>
-                        <FormInput label="Attunement" value={artifact.attunement} onChange={e => handleFieldChange('attunement', e.target.value)} />
-                        <FormTextarea label="Effect (one per line)" value={artifact.effect.join('\n')} onChange={e => handleArrayFieldChange('effect', e.target.value)} />
-                        <FormSelect label="Power Level" value={artifact.powerLevel} onChange={e => handleFieldChange('powerLevel', e.target.value)} options={[{ value: 'Minor', label: 'Minor' }, { value: 'Moderate', label: 'Moderate' }, { value: 'Potent', label: 'Potent' }, { value: 'Godly', label: 'Godly' }]} />
-                        <FormTextarea label="Origin Myth" value={artifact.originMyth} onChange={e => handleFieldChange('originMyth', e.target.value)} rows={3} />
+                        <FormInput label="Attestation Mechanism" value={csm.attestationMechanism} onChange={e => handleFieldChange('attestationMechanism', e.target.value)} />
+                        <FormTextarea label="Functionality (one per line)" value={csm.functionality.join('\n')} onChange={e => handleArrayFieldChange('functionality', e.target.value)} />
+                        <FormSelect label="Security Assurance Level" value={csm.securityAssuranceLevel} onChange={e => handleFieldChange('securityAssuranceLevel', e.target.value)} options={[{ value: 'FIPS 140-2 Level 3', label: 'FIPS 140-2 Level 3' }, { value: 'Common Criteria EAL7', label: 'Common Criteria EAL7' }, { value: 'Software-based', label: 'Software-based' }]} />
+                        <FormTextarea label="Threat Mitigation (one per line)" value={csm.threatMitigation.join('\n')} onChange={e => handleArrayFieldChange('threatMitigation', e.target.value)} />
                     </>
                 );
             default:
@@ -1764,17 +2071,17 @@ export const AssetEditorModal: React.FC<{
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Asset: ${asset.name} (${asset.type})`}>
+        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Component: ${component.name} (${component.type})`}>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                {editedAsset.imageUrl && <img src={editedAsset.imageUrl} alt={editedAsset.name} className="w-full h-48 object-cover rounded-md mb-4" />}
+                {editedComponent.imageUrl && <img src={editedComponent.imageUrl} alt={editedComponent.name} className="w-full h-48 object-cover rounded-md mb-4" />}
 
-                <FormInput label="Name" value={editedAsset.name} onChange={e => handleFieldChange('name', e.target.value)} />
-                <FormTextarea label="Description" value={editedAsset.description} onChange={e => handleFieldChange('description', e.target.value)} rows={5} />
-                <FormSelect label="Rarity" value={editedAsset.rarity} onChange={e => handleFieldChange('rarity', e.target.value)} options={[{ value: 'Common', label: 'Common' }, { value: 'Uncommon', label: 'Uncommon' }, { value: 'Rare', label: 'Rare' }, { value: 'Epic', label: 'Epic' }, { value: 'Legendary', label: 'Legendary' }]} />
-                <FormTextarea label="Tags (one per line)" value={editedAsset.tags.join('\n')} onChange={e => handleArrayFieldChange('tags', e.target.value)} />
+                <FormInput label="Name" value={editedComponent.name} onChange={e => handleFieldChange('name', e.target.value)} />
+                <FormTextarea label="Description" value={editedComponent.description} onChange={e => handleFieldChange('description', e.target.value)} rows={5} />
+                <FormSelect label="Criticality" value={editedComponent.criticality} onChange={e => handleFieldChange('criticality', e.target.value)} options={[{ value: 'Low', label: 'Low' }, { value: 'Medium', label: 'Medium' }, { value: 'High', label: 'High' }, { value: 'Mission-Critical', label: 'Mission-Critical' }]} />
+                <FormTextarea label="Tags (one per line)" value={editedComponent.tags.join('\n')} onChange={e => handleArrayFieldChange('tags', e.target.value)} />
 
                 <h3 className="font-semibold text-white text-lg mt-6">Type Specific Details:</h3>
-                {renderSpecificFields(editedAsset)}
+                {renderSpecificFields(editedComponent)}
 
                 <h4 className="font-semibold text-cyan-300 mt-6">Refine with AI</h4>
                 <FormTextarea
@@ -1782,10 +2089,10 @@ export const AssetEditorModal: React.FC<{
                     value={refinePrompt}
                     onChange={e => setRefinePrompt(e.target.value)}
                     rows={3}
-                    placeholder="e.g., 'Make it more dangerous by adding poisonous thorns. Change its color to deep violet.'"
+                    placeholder="e.g., 'Enhance its security protocols to include post-quantum cryptography. Adjust its transaction capacity for higher scalability.'"
                 />
                 <PrimaryButton onClick={handleRefine} disabled={isRefining} className="w-full mt-4">
-                    {isRefining ? 'Refining Asset...' : 'Refine Asset with AI'}
+                    {isRefining ? 'Refining Component...' : 'Refine Component with AI'}
                 </PrimaryButton>
 
                 <div className="flex justify-end space-x-2 mt-6">
@@ -1797,157 +2104,159 @@ export const AssetEditorModal: React.FC<{
     );
 };
 
-
-export const LorePanel: React.FC = () => {
+/**
+ * Manages the generation and editing of regulatory compliance documents and audit trail narratives.
+ * Commercial value: Centralizes the management of critical compliance and audit information, enhancing transparency, accountability, and regulatory reporting capabilities.
+ */
+export const ComplianceDocumentsPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [newLorePrompt, setNewLorePrompt] = useState('');
-    const [isGeneratingLore, setIsGeneratingLore] = useState(false);
-    const [selectedLore, setSelectedLore] = useState<LoreEntry | null>(null);
+    const [newDocumentPrompt, setNewDocumentPrompt] = useState('');
+    const [isGeneratingDocument, setIsGeneratingDocument] = useState(false);
+    const [selectedDocument, setSelectedDocument] = useState<RegulatoryComplianceDocument | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const handleGenerateLore = async () => {
+    const handleGenerateDocument = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
-        if (!newLorePrompt.trim()) {
-            alert("Please enter a prompt for the new lore entry.");
+        if (!newDocumentPrompt.trim()) {
+            alert("Please enter a prompt for the new document.");
             return;
         }
 
-        setIsGeneratingLore(true);
+        setIsGeneratingDocument(true);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'LoreEntry',
+                type: 'ComplianceDocument',
                 status: 'InProgress',
-                prompt: newLorePrompt,
+                prompt: newDocumentPrompt,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            const { lore, imageUrl } = await aiService.generateLoreEntry(
+            const { document, imageUrl } = await aiService.generateRegulatoryComplianceDocument(
                 activeProject.concept,
-                activeProject.projectSettings.defaultPromptPrefix + newLorePrompt,
+                activeProject.projectSettings.defaultPromptPrefix + newDocumentPrompt,
                 activeProject.projectSettings.aiModelPreference
             );
-            lore.imageUrl = imageUrl;
+            document.imageUrl = imageUrl;
 
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    lore: [...activeProject.lore, lore],
+                    documents: [...activeProject.documents, document],
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'LoreEntry',
+                        type: 'ComplianceDocument',
                         status: 'Completed',
-                        prompt: newLorePrompt,
-                        generatedContent: lore,
+                        prompt: newDocumentPrompt,
+                        generatedContent: document,
                         startTime: now(),
                         endTime: now(),
-                        targetId: lore.id,
+                        targetId: document.id,
                         visualizationUrl: imageUrl,
                     }]
                 }
             });
-            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: lore, endTime: now(), targetId: lore.id, visualizationUrl: imageUrl } });
-            setNewLorePrompt('');
+            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: document, endTime: now(), targetId: document.id, visualizationUrl: imageUrl } });
+            setNewDocumentPrompt('');
         } catch (error) {
-            console.error("Failed to generate lore entry:", error);
+            console.error("Failed to generate compliance document:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingLore(false);
+            setIsGeneratingDocument(false);
         }
     };
 
-    const handleUpdateLore = useCallback((updatedLore: LoreEntry) => {
+    const handleUpdateDocument = useCallback((updatedDocument: RegulatoryComplianceDocument) => {
         if (!activeProject) return;
         dispatch({
             type: 'UPDATE_PROJECT',
             payload: {
                 ...activeProject,
-                lore: activeProject.lore.map(l => l.id === updatedLore.id ? { ...updatedLore, updatedAt: now() } : l)
+                documents: activeProject.documents.map(l => l.id === updatedDocument.id ? { ...updatedDocument, updatedAt: now() } : l)
             }
         });
     }, [activeProject, dispatch]);
 
-    const handleDeleteLore = useCallback((loreId: string) => {
+    const handleDeleteDocument = useCallback((documentId: string) => {
         if (!activeProject) return;
-        if (window.confirm("Are you sure you want to delete this lore entry?")) {
+        if (window.confirm("Are you sure you want to delete this compliance document?")) {
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    lore: activeProject.lore.filter(l => l.id !== loreId)
+                    documents: activeProject.documents.filter(l => l.id !== documentId)
                 }
             });
         }
     }, [activeProject, dispatch]);
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
-    const loreGroupedByType = useMemo(() => {
-        return activeProject.lore.reduce((acc, entry) => {
+    const documentsGroupedByType = useMemo(() => {
+        return activeProject.documents.reduce((acc, entry) => {
             if (!acc[entry.type]) {
                 acc[entry.type] = [];
             }
             acc[entry.type].push(entry);
             return acc;
-        }, {} as Record<LoreEntry['type'], LoreEntry[]>);
-    }, [activeProject.lore]);
+        }, {} as Record<RegulatoryComplianceDocument['type'], RegulatoryComplianceDocument[]>);
+    }, [activeProject.documents]);
 
-    const loreTypes: { value: LoreEntry['type']; label: string }[] = [
-        { value: 'History', label: 'History' }, { value: 'Myth', label: 'Myth' }, { value: 'Legend', label: 'Legend' },
-        { value: 'Culture', label: 'Culture' }, { value: 'Faction', label: 'Faction' }, { value: 'Character Lore', label: 'Character Lore' },
-        { value: 'Location Lore', label: 'Location Lore' }, { value: 'Event Lore', label: 'Event Lore' }, { value: 'Prophecy', label: 'Prophecy' },
+    const documentTypes: { value: RegulatoryComplianceDocument['type']; label: string }[] = [
+        { value: 'Regulatory Filing', label: 'Regulatory Filing' }, { value: 'Audit Report', label: 'Audit Report' }, { value: 'Legal Opinion', label: 'Legal Opinion' },
+        { value: 'Market Analysis', label: 'Market Analysis' }, { value: 'Incident Post-Mortem', label: 'Incident Post-Mortem' }, { value: 'Risk Assessment', label: 'Risk Assessment' },
     ];
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Lore & World History</h2>
+            <h2 className="text-2xl font-bold text-white">Compliance & Audit Documents</h2>
 
-            <Card title="Generate New Lore Entry">
+            <Card title="Generate New Document">
                 <FormTextarea
-                    label="Describe the lore you want to generate"
-                    value={newLorePrompt}
-                    onChange={e => setNewLorePrompt(e.target.value)}
+                    label="Describe the compliance document or audit narrative you want to generate"
+                    value={newDocumentPrompt}
+                    onChange={e => setNewDocumentPrompt(e.target.value)}
                     rows={4}
-                    placeholder="e.g., 'A creation myth involving cosmic serpents and a primordial ocean', or 'The history of the dwarven empire's fall.'"
+                    placeholder="e.g., 'An audit report detailing the transaction integrity of the interbank settlement token', or 'A regulatory filing for a new digital asset in the EU.'"
                 />
-                <PrimaryButton onClick={handleGenerateLore} disabled={isGeneratingLore} className="w-full mt-4">
-                    {isGeneratingLore ? 'Generating Lore...' : 'Generate New Lore Entry'}
+                <PrimaryButton onClick={handleGenerateDocument} disabled={isGeneratingDocument} className="w-full mt-4">
+                    {isGeneratingDocument ? 'Generating Document...' : 'Generate New Document'}
                 </PrimaryButton>
             </Card>
 
-            <Card title="Existing Lore Entries">
-                {activeProject.lore.length === 0 ? (
-                    <p className="text-gray-400">No lore entries generated yet. Start by generating one!</p>
+            <Card title="Existing Documents">
+                {activeProject.documents.length === 0 ? (
+                    <p className="text-gray-400">No documents generated yet. Start by generating one!</p>
                 ) : (
                     <div className="space-y-4">
-                        {loreTypes.map(typeOption => {
-                            const entries = loreGroupedByType[typeOption.value];
+                        {documentTypes.map(typeOption => {
+                            const entries = documentsGroupedByType[typeOption.value];
                             if (!entries || entries.length === 0) return null;
                             return (
                                 <Accordion key={typeOption.value} title={`${typeOption.label} (${entries.length})`} defaultOpen>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {entries.map(lore => (
-                                            <div key={lore.id} className="bg-gray-700 rounded-lg overflow-hidden shadow-lg border border-gray-600 relative group">
-                                                {lore.imageUrl && <img src={lore.imageUrl} alt={lore.title} className="w-full h-32 object-cover" />}
+                                        {entries.map(document => (
+                                            <div key={document.id} className="bg-gray-700 rounded-lg overflow-hidden shadow-lg border border-gray-600 relative group">
+                                                {document.imageUrl && <img src={document.imageUrl} alt={document.title} className="w-full h-32 object-cover" />}
                                                 <div className="p-4">
-                                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{lore.title}</h4>
-                                                    <p className="text-sm text-gray-400 truncate">{lore.content}</p>
+                                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{document.title}</h4>
+                                                    <p className="text-sm text-gray-400 truncate">{document.content}</p>
                                                     <div className="flex space-x-2 mt-4">
-                                                        <SecondaryButton onClick={() => { setSelectedLore(lore); setIsEditModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
-                                                        <DangerButton onClick={() => handleDeleteLore(lore.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
+                                                        <SecondaryButton onClick={() => { setSelectedDocument(document); setIsEditModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
+                                                        <DangerButton onClick={() => handleDeleteDocument(document.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1960,13 +2269,13 @@ export const LorePanel: React.FC = () => {
                 )}
             </Card>
 
-            {selectedLore && (
-                <LoreEditorModal
+            {selectedDocument && (
+                <ComplianceDocumentEditorModal
                     isOpen={isEditModalOpen}
-                    onClose={() => { setIsEditModalOpen(false); setSelectedLore(null); }}
-                    lore={selectedLore}
-                    onSave={handleUpdateLore}
-                    worldConcept={activeProject.concept}
+                    onClose={() => { setIsEditModalOpen(false); setSelectedDocument(null); }}
+                    document={selectedDocument}
+                    onSave={handleUpdateDocument}
+                    financialProductConcept={activeProject.concept}
                     aiModelPreference={activeProject.projectSettings.aiModelPreference}
                     onAddTask={(task) => dispatch({ type: 'ADD_GENERATION_TASK', payload: task })}
                     onUpdateTask={(task) => dispatch({ type: 'UPDATE_GENERATION_TASK', payload: task })}
@@ -1976,30 +2285,34 @@ export const LorePanel: React.FC = () => {
     );
 };
 
-export const LoreEditorModal: React.FC<{
+/**
+ * A modal for editing detailed specifications of a compliance document, including AI-powered refinement.
+ * Commercial value: Ensures accuracy and completeness of regulatory filings and audit reports, minimizing compliance risks and potential penalties.
+ */
+export const ComplianceDocumentEditorModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    lore: LoreEntry;
-    onSave: (lore: LoreEntry) => void;
-    worldConcept: WorldConcept;
+    document: RegulatoryComplianceDocument;
+    onSave: (document: RegulatoryComplianceDocument) => void;
+    financialProductConcept: FinancialProductConcept;
     aiModelPreference: string;
     onAddTask: (task: GenerationTask) => void;
     onUpdateTask: (task: GenerationTask) => void;
-}> = ({ isOpen, onClose, lore, onSave, worldConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
-    const [editedLore, setEditedLore] = useState(lore);
+}> = ({ isOpen, onClose, document, onSave, financialProductConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
+    const [editedDocument, setEditedDocument] = useState(document);
     const [refinePrompt, setRefinePrompt] = useState('');
     const [isRefining, setIsRefining] = useState(false);
 
     useEffect(() => {
-        setEditedLore(lore);
-    }, [lore]);
+        setEditedDocument(document);
+    }, [document]);
 
     const handleFieldChange = (field: string, value: any) => {
-        setEditedLore(prev => ({ ...prev, [field]: value }));
+        setEditedDocument(prev => ({ ...prev, [field]: value }));
     };
 
     const handleArrayFieldChange = (field: string, value: string) => {
-        setEditedLore(prev => ({ ...prev, [field]: value.split('\n').map(s => s.trim()).filter(Boolean) }));
+        setEditedDocument(prev => ({ ...prev, [field]: value.split('\n').map(s => s.trim()).filter(Boolean) }));
     };
 
     const handleRefine = async () => {
@@ -2012,13 +2325,13 @@ export const LoreEditorModal: React.FC<{
         const taskId = generateMockId();
         onAddTask({
             id: taskId,
-            projectId: lore.id,
+            projectId: document.id,
             type: 'Refinement',
             status: 'InProgress',
-            prompt: `Refine lore entry "${lore.title}": ${refinePrompt}`,
+            prompt: `Refine compliance document "${document.title}": ${refinePrompt}`,
             generatedContent: null,
             startTime: now(),
-            targetId: lore.id,
+            targetId: document.id,
         });
 
         try {
@@ -2028,21 +2341,21 @@ export const LoreEditorModal: React.FC<{
                     relatedEntities: { type: Type.ARRAY, items: { type: Type.STRING } },
                 }
             };
-            const fullPrompt = `Given the existing lore entry: Title: ${editedLore.title}, Type: ${editedLore.type}, Content: ${editedLore.content}.
+            const fullPrompt = `Given the existing compliance document: Title: ${editedDocument.title}, Type: ${editedDocument.type}, Content: ${editedDocument.content}.
                                 Refine its content and update its related entities based on the prompt: "${refinePrompt}".
-                                Ensure it still fits within the world concept: "${worldConcept.description}". Return strictly in JSON.`;
+                                Ensure it still aligns with the financial product concept: "${financialProductConcept.description}". Return strictly in JSON.`;
 
             const refinedData = await aiService['callModel'](aiModelPreference, fullPrompt, schema) as
                 { content: string, relatedEntities: string[] };
 
-            const updated = { ...editedLore, ...refinedData, updatedAt: now() };
+            const updated = { ...editedDocument, ...refinedData, updatedAt: now() };
             onSave(updated);
-            setEditedLore(updated);
+            setEditedDocument(updated);
             setRefinePrompt('');
 
             onUpdateTask({ id: taskId, status: 'Completed', generatedContent: refinedData, endTime: now() });
         } catch (error) {
-            console.error("Failed to refine lore:", error);
+            console.error("Failed to refine document:", error);
             onUpdateTask({ id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() });
         } finally {
             setIsRefining(false);
@@ -2050,30 +2363,29 @@ export const LoreEditorModal: React.FC<{
     };
 
     const handleSave = () => {
-        onSave(editedLore);
+        onSave(editedDocument);
         onClose();
     };
 
-    const loreTypeOptions: { value: LoreEntry['type']; label: string }[] = [
-        { value: 'History', label: 'History' }, { value: 'Myth', label: 'Myth' }, { value: 'Legend', label: 'Legend' },
-        { value: 'Culture', label: 'Culture' }, { value: 'Faction', label: 'Faction' }, { value: 'Character Lore', label: 'Character Lore' },
-        { value: 'Location Lore', label: 'Location Lore' }, { value: 'Event Lore', label: 'Event Lore' }, { value: 'Prophecy', label: 'Prophecy' },
+    const documentTypeOptions: { value: RegulatoryComplianceDocument['type']; label: string }[] = [
+        { value: 'Regulatory Filing', label: 'Regulatory Filing' }, { value: 'Audit Report', label: 'Audit Report' }, { value: 'Legal Opinion', label: 'Legal Opinion' },
+        { value: 'Market Analysis', label: 'Market Analysis' }, { value: 'Incident Post-Mortem', label: 'Incident Post-Mortem' }, { value: 'Risk Assessment', label: 'Risk Assessment' },
     ];
 
-    const importanceOptions: { value: LoreEntry['importance']; label: string }[] = [
+    const importanceOptions: { value: RegulatoryComplianceDocument['importance']; label: string }[] = [
         { value: 'Minor', label: 'Minor' }, { value: 'Standard', label: 'Standard' }, { value: 'Major', label: 'Major' }, { value: 'Pivotal', label: 'Pivotal' },
     ];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Lore: ${lore.title}`}>
+        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Document: ${document.title}`}>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                {editedLore.imageUrl && <img src={editedLore.imageUrl} alt={editedLore.title} className="w-full h-48 object-cover rounded-md mb-4" />}
+                {editedDocument.imageUrl && <img src={editedDocument.imageUrl} alt={editedDocument.title} className="w-full h-48 object-cover rounded-md mb-4" />}
 
-                <FormInput label="Title" value={editedLore.title} onChange={e => handleFieldChange('title', e.target.value)} />
-                <FormSelect label="Type" value={editedLore.type} onChange={e => handleFieldChange('type', e.target.value as LoreEntry['type'])} options={loreTypeOptions} />
-                <FormTextarea label="Content" value={editedLore.content} onChange={e => handleFieldChange('content', e.target.value)} rows={8} />
-                <FormTextarea label="Related Entities (one per line)" value={editedLore.relatedEntities.join('\n')} onChange={e => handleArrayFieldChange('relatedEntities', e.target.value)} />
-                <FormSelect label="Importance" value={editedLore.importance} onChange={e => handleFieldChange('importance', e.target.value as LoreEntry['importance'])} options={importanceOptions} />
+                <FormInput label="Title" value={editedDocument.title} onChange={e => handleFieldChange('title', e.target.value)} />
+                <FormSelect label="Type" value={editedDocument.type} onChange={e => handleFieldChange('type', e.target.value as RegulatoryComplianceDocument['type'])} options={documentTypeOptions} />
+                <FormTextarea label="Content" value={editedDocument.content} onChange={e => handleFieldChange('content', e.target.value)} rows={8} />
+                <FormTextarea label="Related Entities (one per line)" value={editedDocument.relatedEntities.join('\n')} onChange={e => handleArrayFieldChange('relatedEntities', e.target.value)} />
+                <FormSelect label="Importance" value={editedDocument.importance} onChange={e => handleFieldChange('importance', e.target.value as RegulatoryComplianceDocument['importance'])} options={importanceOptions} />
 
                 <h4 className="font-semibold text-cyan-300 mt-6">Refine with AI</h4>
                 <FormTextarea
@@ -2081,10 +2393,10 @@ export const LoreEditorModal: React.FC<{
                     value={refinePrompt}
                     onChange={e => setRefinePrompt(e.target.value)}
                     rows={3}
-                    placeholder="e.g., 'Elaborate on the role of the cosmic serpents. Add a tragic twist to the ending.'"
+                    placeholder="e.g., 'Elaborate on the data anonymization strategies required by GDPR. Add specific references to ISO 27001 standards.'"
                 />
                 <PrimaryButton onClick={handleRefine} disabled={isRefining} className="w-full mt-4">
-                    {isRefining ? 'Refining Lore...' : 'Refine Lore with AI'}
+                    {isRefining ? 'Refining Document...' : 'Refine Document with AI'}
                 </PrimaryButton>
 
                 <div className="flex justify-end space-x-2 mt-6">
@@ -2096,44 +2408,53 @@ export const LoreEditorModal: React.FC<{
     );
 };
 
-export const MagicTechPanel: React.FC = () => {
+/**
+ * Manages the generation and editing of smart contract policy engines and interoperability frameworks.
+ * Commercial value: Facilitates the design of robust programmable value rails and ensures seamless connectivity between diverse financial systems.
+ */
+export const PolicyAndInteroperabilityPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [magicSystemPrompt, setMagicSystemPrompt] = useState('');
-    const [isGeneratingMagic, setIsGeneratingMagic] = useState(false);
-    const [techSystemPrompt, setTechSystemPrompt] = useState('');
-    const [isGeneratingTech, setIsGeneratingTech] = useState(false);
+    const [policyEnginePrompt, setPolicyEnginePrompt] = useState('');
+    const [isGeneratingPolicyEngine, setIsGeneratingPolicyEngine] = useState(false);
+    const [interopFrameworkPrompt, setInteropFrameworkPrompt] = useState('');
+    const [isGeneratingInteropFramework, setIsGeneratingInteropFramework] = useState(false);
 
-    const handleGenerateMagicSystem = async () => {
+    const [selectedPolicyEngine, setSelectedPolicyEngine] = useState<SmartContractPolicyEngine | null>(null);
+    const [isPolicyEngineModalOpen, setIsPolicyEngineModalOpen] = useState(false);
+    const [selectedInteropFramework, setSelectedInteropFramework] = useState<InteroperabilityFramework | null>(null);
+    const [isInteropFrameworkModalOpen, setIsInteropFrameworkModalOpen] = useState(false);
+
+    const handleGeneratePolicyEngine = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
-        if (!magicSystemPrompt.trim()) {
-            alert("Please enter a prompt for the new magic system.");
+        if (!policyEnginePrompt.trim()) {
+            alert("Please enter a prompt for the new smart contract policy engine.");
             return;
         }
 
-        setIsGeneratingMagic(true);
+        setIsGeneratingPolicyEngine(true);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'MagicSystem',
+                type: 'PolicyEngine',
                 status: 'InProgress',
-                prompt: magicSystemPrompt,
+                prompt: policyEnginePrompt,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            const magicSystem = await aiService.generateMagicSystem(
+            const policyEngine = await aiService.generateSmartContractPolicyEngine(
                 activeProject.concept,
-                activeProject.projectSettings.defaultPromptPrefix + magicSystemPrompt,
+                activeProject.projectSettings.defaultPromptPrefix + policyEnginePrompt,
                 activeProject.projectSettings.aiModelPreference
             );
 
@@ -2141,178 +2462,170 @@ export const MagicTechPanel: React.FC = () => {
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    magicSystems: [...activeProject.magicSystems, magicSystem],
+                    policyEngines: [...activeProject.policyEngines, policyEngine],
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'MagicSystem',
+                        type: 'PolicyEngine',
                         status: 'Completed',
-                        prompt: magicSystemPrompt,
-                        generatedContent: magicSystem,
+                        prompt: policyEnginePrompt,
+                        generatedContent: policyEngine,
                         startTime: now(),
                         endTime: now(),
-                        targetId: magicSystem.id,
+                        targetId: policyEngine.id,
                     }]
                 }
             });
-            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: magicSystem, endTime: now(), targetId: magicSystem.id } });
-            setMagicSystemPrompt('');
+            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: policyEngine, endTime: now(), targetId: policyEngine.id } });
+            setPolicyEnginePrompt('');
         } catch (error) {
-            console.error("Failed to generate magic system:", error);
+            console.error("Failed to generate smart contract policy engine:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingMagic(false);
+            setIsGeneratingPolicyEngine(false);
         }
     };
 
-    const handleGenerateTechSystem = async () => {
+    const handleGenerateInteropFramework = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
-        if (!techSystemPrompt.trim()) {
-            alert("Please enter a prompt for the new technology system.");
+        if (!interopFrameworkPrompt.trim()) {
+            alert("Please enter a prompt for the new interoperability framework.");
             return;
         }
 
-        setIsGeneratingTech(true);
+        setIsGeneratingInteropFramework(true);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'TechSystem',
+                type: 'InteropFramework',
                 status: 'InProgress',
-                prompt: techSystemPrompt,
+                prompt: interopFrameworkPrompt,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            // Simplified, no specific AI service for TechSystem yet, mock it.
-            const techSystem: TechnologySystem = {
-                id: generateMockId(),
-                name: `Advanced Gadgetry (${techSystemPrompt.substring(0, 20)}...)`,
-                description: `A mock technology system generated from: ${techSystemPrompt}. Needs proper AI integration.`,
-                era: "Futuristic",
-                keyDiscoveries: ["Anti-gravity", "AI-driven manufacturing"],
-                societalImpact: "Automation leading to leisure society.",
-                militaryApplications: ["Drone warfare", "Energy shields"],
-                limitations: ["Resource scarcity for advanced components"],
-                createdAt: now(),
-                updatedAt: now(),
-            };
+            const interopFramework = await aiService.generateInteroperabilityFramework(
+                activeProject.concept,
+                activeProject.projectSettings.defaultPromptPrefix + interopFrameworkPrompt,
+                activeProject.projectSettings.aiModelPreference
+            );
 
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    techSystems: [...activeProject.techSystems, techSystem],
+                    interopFrameworks: [...activeProject.interopFrameworks, interopFramework],
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'TechSystem',
+                        type: 'InteropFramework',
                         status: 'Completed',
-                        prompt: techSystemPrompt,
-                        generatedContent: techSystem,
+                        prompt: interopFrameworkPrompt,
+                        generatedContent: interopFramework,
                         startTime: now(),
                         endTime: now(),
-                        targetId: techSystem.id,
+                        targetId: interopFramework.id,
                     }]
                 }
             });
-            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: techSystem, endTime: now(), targetId: techSystem.id } });
-            setTechSystemPrompt('');
+            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: interopFramework, endTime: now(), targetId: interopFramework.id } });
+            setInteropFrameworkPrompt('');
         } catch (error) {
-            console.error("Failed to generate tech system:", error);
+            console.error("Failed to generate interoperability framework:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingTech(false);
+            setIsGeneratingInteropFramework(false);
         }
     };
 
-    const handleUpdateMagicSystem = useCallback((updatedSystem: MagicSystem) => {
+    const handleUpdatePolicyEngine = useCallback((updatedSystem: SmartContractPolicyEngine) => {
         if (!activeProject) return;
         dispatch({
             type: 'UPDATE_PROJECT',
             payload: {
                 ...activeProject,
-                magicSystems: activeProject.magicSystems.map(s => s.id === updatedSystem.id ? { ...updatedSystem, updatedAt: now() } : s)
+                policyEngines: activeProject.policyEngines.map(s => s.id === updatedSystem.id ? { ...updatedSystem, updatedAt: now() } : s)
             }
         });
     }, [activeProject, dispatch]);
 
-    const handleDeleteMagicSystem = useCallback((systemId: string) => {
+    const handleDeletePolicyEngine = useCallback((systemId: string) => {
         if (!activeProject) return;
-        if (window.confirm("Are you sure you want to delete this magic system?")) {
+        if (window.confirm("Are you sure you want to delete this smart contract policy engine?")) {
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    magicSystems: activeProject.magicSystems.filter(s => s.id !== systemId)
+                    policyEngines: activeProject.policyEngines.filter(s => s.id !== systemId)
                 }
             });
         }
     }, [activeProject, dispatch]);
 
-    const handleUpdateTechSystem = useCallback((updatedSystem: TechnologySystem) => {
+    const handleUpdateInteropFramework = useCallback((updatedSystem: InteroperabilityFramework) => {
         if (!activeProject) return;
         dispatch({
             type: 'UPDATE_PROJECT',
             payload: {
                 ...activeProject,
-                techSystems: activeProject.techSystems.map(s => s.id === updatedSystem.id ? { ...updatedSystem, updatedAt: now() } : s)
+                interopFrameworks: activeProject.interopFrameworks.map(s => s.id === updatedSystem.id ? { ...updatedSystem, updatedAt: now() } : s)
             }
         });
     }, [activeProject, dispatch]);
 
-    const handleDeleteTechSystem = useCallback((systemId: string) => {
+    const handleDeleteInteropFramework = useCallback((systemId: string) => {
         if (!activeProject) return;
-        if (window.confirm("Are you sure you want to delete this technology system?")) {
+        if (window.confirm("Are you sure you want to delete this interoperability framework?")) {
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    techSystems: activeProject.techSystems.filter(s => s.id !== systemId)
+                    interopFrameworks: activeProject.interopFrameworks.filter(s => s.id !== systemId)
                 }
             });
         }
     }, [activeProject, dispatch]);
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Magic & Technology Systems</h2>
+            <h2 className="text-2xl font-bold text-white">Smart Contract Policies & Interoperability</h2>
 
-            <Accordion title="Magic Systems" defaultOpen>
-                <Card title="Generate New Magic System">
+            <Accordion title="Smart Contract Policy Engines" defaultOpen>
+                <Card title="Generate New Smart Contract Policy Engine">
                     <FormTextarea
-                        label="Describe the magic system you want to generate"
-                        value={magicSystemPrompt}
-                        onChange={e => setMagicSystemPrompt(e.target.value)}
+                        label="Describe the smart contract policy engine you want to generate"
+                        value={policyEnginePrompt}
+                        onChange={e => setPolicyEnginePrompt(e.target.value)}
                         rows={4}
-                        placeholder="e.g., 'A hard magic system based on elemental runes, requiring precise gestures and incantations.'"
+                        placeholder="e.g., 'A policy engine for a loan agreement, automatically enforcing collateral requirements and repayment schedules.'"
                     />
-                    <PrimaryButton onClick={handleGenerateMagicSystem} disabled={isGeneratingMagic} className="w-full mt-4">
-                        {isGeneratingMagic ? 'Generating Magic System...' : 'Generate New Magic System'}
+                    <PrimaryButton onClick={handleGeneratePolicyEngine} disabled={isGeneratingPolicyEngine} className="w-full mt-4">
+                        {isGeneratingPolicyEngine ? 'Generating Policy Engine...' : 'Generate New Policy Engine'}
                     </PrimaryButton>
                 </Card>
 
-                <Card title="Existing Magic Systems" className="mt-6">
-                    {activeProject.magicSystems.length === 0 ? (
-                        <p className="text-gray-400">No magic systems generated yet.</p>
+                <Card title="Existing Policy Engines" className="mt-6">
+                    {activeProject.policyEngines.length === 0 ? (
+                        <p className="text-gray-400">No smart contract policy engines defined yet.</p>
                     ) : (
                         <div className="space-y-3">
-                            {activeProject.magicSystems.map(system => (
-                                <div key={system.id} className="p-4 bg-gray-700 rounded-md border border-gray-600">
-                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{system.name}</h4>
-                                    <p className="text-sm text-gray-400 truncate">{system.description}</p>
+                            {activeProject.policyEngines.map(engine => (
+                                <div key={engine.id} className="p-4 bg-gray-700 rounded-md border border-gray-600">
+                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{engine.name}</h4>
+                                    <p className="text-sm text-gray-400 truncate">{engine.description}</p>
                                     <div className="flex space-x-2 mt-4">
-                                        {/* <SecondaryButton onClick={() => { /* Open editor modal */ }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton> */}
-                                        <DangerButton onClick={() => handleDeleteMagicSystem(system.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
+                                        <SecondaryButton onClick={() => { setSelectedPolicyEngine(engine); setIsPolicyEngineModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
+                                        <DangerButton onClick={() => handleDeletePolicyEngine(engine.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
                                     </div>
                                 </div>
                             ))}
@@ -2321,32 +2634,32 @@ export const MagicTechPanel: React.FC = () => {
                 </Card>
             </Accordion>
 
-            <Accordion title="Technology Systems" defaultOpen>
-                <Card title="Generate New Technology System">
+            <Accordion title="Interoperability Frameworks" defaultOpen>
+                <Card title="Generate New Interoperability Framework">
                     <FormTextarea
-                        label="Describe the technology system you want to generate"
-                        value={techSystemPrompt}
-                        onChange={e => setTechSystemPrompt(e.target.value)}
+                        label="Describe the interoperability framework you want to generate"
+                        value={interopFrameworkPrompt}
+                        onChange={e => setInteropFrameworkPrompt(e.target.value)}
                         rows={4}
-                        placeholder="e.g., 'A steampunk-inspired technology with clockwork automatons and steam-powered airships.'"
+                        placeholder="e.g., 'A framework for seamless data exchange between a traditional banking system and a private DLT network using ISO 20022.'"
                     />
-                    <PrimaryButton onClick={handleGenerateTechSystem} disabled={isGeneratingTech} className="w-full mt-4">
-                        {isGeneratingTech ? 'Generating Tech System...' : 'Generate New Technology System'}
+                    <PrimaryButton onClick={handleGenerateInteropFramework} disabled={isGeneratingInteropFramework} className="w-full mt-4">
+                        {isGeneratingInteropFramework ? 'Generating Framework...' : 'Generate New Interoperability Framework'}
                     </PrimaryButton>
                 </Card>
 
-                <Card title="Existing Technology Systems" className="mt-6">
-                    {activeProject.techSystems.length === 0 ? (
-                        <p className="text-gray-400">No technology systems generated yet.</p>
+                <Card title="Existing Interoperability Frameworks" className="mt-6">
+                    {activeProject.interopFrameworks.length === 0 ? (
+                        <p className="text-gray-400">No interoperability frameworks defined yet.</p>
                     ) : (
                         <div className="space-y-3">
-                            {activeProject.techSystems.map(system => (
-                                <div key={system.id} className="p-4 bg-gray-700 rounded-md border border-gray-600">
-                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{system.name}</h4>
-                                    <p className="text-sm text-gray-400 truncate">{system.description}</p>
+                            {activeProject.interopFrameworks.map(framework => (
+                                <div key={framework.id} className="p-4 bg-gray-700 rounded-md border border-gray-600">
+                                    <h4 className="font-semibold text-cyan-300 text-lg mb-1">{framework.name}</h4>
+                                    <p className="text-sm text-gray-400 truncate">{framework.description}</p>
                                     <div className="flex space-x-2 mt-4">
-                                        {/* <SecondaryButton onClick={() => { /* Open editor modal */ }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton> */}
-                                        <DangerButton onClick={() => handleDeleteTechSystem(system.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
+                                        <SecondaryButton onClick={() => { setSelectedInteropFramework(framework); setIsInteropFrameworkModalOpen(true); }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
+                                        <DangerButton onClick={() => handleDeleteInteropFramework(framework.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
                                     </div>
                                 </div>
                             ))}
@@ -2354,46 +2667,323 @@ export const MagicTechPanel: React.FC = () => {
                     )}
                 </Card>
             </Accordion>
+
+            {selectedPolicyEngine && (
+                <SmartContractPolicyEngineEditorModal
+                    isOpen={isPolicyEngineModalOpen}
+                    onClose={() => { setIsPolicyEngineModalOpen(false); setSelectedPolicyEngine(null); }}
+                    policyEngine={selectedPolicyEngine}
+                    onSave={handleUpdatePolicyEngine}
+                    financialProductConcept={activeProject.concept}
+                    aiModelPreference={activeProject.projectSettings.aiModelPreference}
+                    onAddTask={(task) => dispatch({ type: 'ADD_GENERATION_TASK', payload: task })}
+                    onUpdateTask={(task) => dispatch({ type: 'UPDATE_GENERATION_TASK', payload: task })}
+                />
+            )}
+
+            {selectedInteropFramework && (
+                <InteropFrameworkEditorModal
+                    isOpen={isInteropFrameworkModalOpen}
+                    onClose={() => { setIsInteropFrameworkModalOpen(false); setSelectedInteropFramework(null); }}
+                    interopFramework={selectedInteropFramework}
+                    onSave={handleUpdateInteropFramework}
+                    financialProductConcept={activeProject.concept}
+                    aiModelPreference={activeProject.projectSettings.aiModelPreference}
+                    onAddTask={(task) => dispatch({ type: 'ADD_GENERATION_TASK', payload: task })}
+                    onUpdateTask={(task) => dispatch({ type: 'UPDATE_GENERATION_TASK', payload: task })}
+                />
+            )}
         </div>
     );
 };
 
-export const EventsQuestsPanel: React.FC = () => {
+/**
+ * A modal for editing detailed specifications of a smart contract policy engine, including AI-powered refinement.
+ * Commercial value: Ensures precise configuration of automated financial rules, minimizing operational risks and maximizing transactional integrity.
+ */
+export const SmartContractPolicyEngineEditorModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    policyEngine: SmartContractPolicyEngine;
+    onSave: (policyEngine: SmartContractPolicyEngine) => void;
+    financialProductConcept: FinancialProductConcept;
+    aiModelPreference: string;
+    onAddTask: (task: GenerationTask) => void;
+    onUpdateTask: (task: GenerationTask) => void;
+}> = ({ isOpen, onClose, policyEngine, onSave, financialProductConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
+    const [editedEngine, setEditedEngine] = useState(policyEngine);
+    const [refinePrompt, setRefinePrompt] = useState('');
+    const [isRefining, setIsRefining] = useState(false);
+
+    useEffect(() => {
+        setEditedEngine(policyEngine);
+    }, [policyEngine]);
+
+    const handleFieldChange = (field: string, value: any) => {
+        setEditedEngine(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleArrayFieldChange = (field: string, value: string) => {
+        setEditedEngine(prev => ({ ...prev, [field]: value.split('\n').map(s => s.trim()).filter(Boolean) }));
+    };
+
+    const handleRefine = async () => {
+        if (!refinePrompt.trim()) {
+            alert("Please enter a refinement prompt.");
+            return;
+        }
+
+        setIsRefining(true);
+        const taskId = generateMockId();
+        onAddTask({
+            id: taskId,
+            projectId: policyEngine.id,
+            type: 'Refinement',
+            status: 'InProgress',
+            prompt: `Refine smart contract policy engine "${policyEngine.name}": ${refinePrompt}`,
+            generatedContent: null,
+            startTime: now(),
+            targetId: policyEngine.id,
+        });
+
+        try {
+            const schema = {
+                type: Type.OBJECT, properties: {
+                    description: { type: Type.STRING },
+                    policyRules: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    exampleScenarios: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    limitations: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    integrationWithPlatform: { type: Type.STRING }
+                }
+            };
+            const fullPrompt = `Given the existing smart contract policy engine details: Name: ${editedEngine.name}, Description: ${editedEngine.description}, Execution Environment: ${editedEngine.executionEnvironment}.
+                                Refine its description, policy rules, example scenarios, limitations, and platform integration based on the prompt: "${refinePrompt}".
+                                Ensure it still aligns with the financial product concept: "${financialProductConcept.description}". Return strictly in JSON.`;
+
+            const refinedData = await aiService['callModel'](aiModelPreference, fullPrompt, schema) as
+                { description: string, policyRules: string[], exampleScenarios: string[], limitations: string[], integrationWithPlatform: string };
+
+            const updated = { ...editedEngine, ...refinedData, updatedAt: now() };
+            onSave(updated);
+            setEditedEngine(updated);
+            setRefinePrompt('');
+
+            onUpdateTask({ id: taskId, status: 'Completed', generatedContent: refinedData, endTime: now() });
+        } catch (error) {
+            console.error("Failed to refine policy engine:", error);
+            onUpdateTask({ id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() });
+        } finally {
+            setIsRefining(false);
+        }
+    };
+
+    const handleSave = () => {
+        onSave(editedEngine);
+        onClose();
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Policy Engine: ${policyEngine.name}`}>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <FormInput label="Name" value={editedEngine.name} onChange={e => handleFieldChange('name', e.target.value)} />
+                <FormTextarea label="Description" value={editedEngine.description} onChange={e => handleFieldChange('description', e.target.value)} rows={5} />
+                <FormInput label="Execution Environment" value={editedEngine.executionEnvironment} onChange={e => handleFieldChange('executionEnvironment', e.target.value)} />
+
+                <Accordion title="Policy Rules">
+                    <FormTextarea label="Rules (one per line)" value={editedEngine.policyRules.join('\n')} onChange={e => handleArrayFieldChange('policyRules', e.target.value)} />
+                </Accordion>
+                <Accordion title="Example Scenarios">
+                    <FormTextarea label="Scenarios (one per line)" value={editedEngine.exampleScenarios.join('\n')} onChange={e => handleArrayFieldChange('exampleScenarios', e.target.value)} />
+                </Accordion>
+                <Accordion title="Limitations">
+                    <FormTextarea label="Limitations (one per line)" value={editedEngine.limitations.join('\n')} onChange={e => handleArrayFieldChange('limitations', e.target.value)} />
+                </Accordion>
+                <FormTextarea label="Integration With Platform" value={editedEngine.integrationWithPlatform} onChange={e => handleFieldChange('integrationWithPlatform', e.target.value)} rows={3} />
+
+                <h4 className="font-semibold text-cyan-300 mt-6">Refine with AI</h4>
+                <FormTextarea
+                    label="Refinement Prompt"
+                    value={refinePrompt}
+                    onChange={e => setRefinePrompt(e.target.value)}
+                    rows={3}
+                    placeholder="e.g., 'Add a new rule for dynamic fee adjustment based on network congestion. Clarify its role in fraud detection.'"
+                />
+                <PrimaryButton onClick={handleRefine} disabled={isRefining} className="w-full mt-4">
+                    {isRefining ? 'Refining Policy Engine...' : 'Refine Policy Engine with AI'}
+                </PrimaryButton>
+
+                <div className="flex justify-end space-x-2 mt-6">
+                    <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
+                    <PrimaryButton onClick={handleSave}>Save Changes</PrimaryButton>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+/**
+ * A modal for editing detailed specifications of an interoperability framework, including AI-powered refinement.
+ * Commercial value: Allows for precise configuration of integration standards, ensuring optimal data flow and seamless value transfer between diverse financial systems.
+ */
+export const InteropFrameworkEditorModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    interopFramework: InteroperabilityFramework;
+    onSave: (interopFramework: InteroperabilityFramework) => void;
+    financialProductConcept: FinancialProductConcept;
+    aiModelPreference: string;
+    onAddTask: (task: GenerationTask) => void;
+    onUpdateTask: (task: GenerationTask) => void;
+}> = ({ isOpen, onClose, interopFramework, onSave, financialProductConcept, aiModelPreference, onAddTask, onUpdateTask }) => {
+    const [editedFramework, setEditedFramework] = useState(interopFramework);
+    const [refinePrompt, setRefinePrompt] = useState('');
+    const [isRefining, setIsRefining] = useState(false);
+
+    useEffect(() => {
+        setEditedFramework(interopFramework);
+    }, [interopFramework]);
+
+    const handleFieldChange = (field: string, value: any) => {
+        setEditedFramework(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleArrayFieldChange = (field: string, value: string) => {
+        setEditedFramework(prev => ({ ...prev, [field]: value.split('\n').map(s => s.trim()).filter(Boolean) }));
+    };
+
+    const handleRefine = async () => {
+        if (!refinePrompt.trim()) {
+            alert("Please enter a refinement prompt.");
+            return;
+        }
+
+        setIsRefining(true);
+        const taskId = generateMockId();
+        onAddTask({
+            id: taskId,
+            projectId: interopFramework.id,
+            type: 'Refinement',
+            status: 'InProgress',
+            prompt: `Refine interoperability framework "${interopFramework.name}": ${refinePrompt}`,
+            generatedContent: null,
+            startTime: now(),
+            targetId: interopFramework.id,
+        });
+
+        try {
+            const schema = {
+                type: Type.OBJECT, properties: {
+                    description: { type: Type.STRING },
+                    keyStandards: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    dataExchangeFormats: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    securityMechanisms: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    impactOnLatency: { type: Type.STRING }
+                }
+            };
+            const fullPrompt = `Given the existing interoperability framework details: Name: ${editedFramework.name}, Description: ${editedFramework.description}, Key Standards: ${editedFramework.keyStandards.join(', ')}.
+                                Refine its description, key standards, data exchange formats, security mechanisms, and impact on latency based on the prompt: "${refinePrompt}".
+                                Ensure it still aligns with the financial product concept: "${financialProductConcept.description}". Return strictly in JSON.`;
+
+            const refinedData = await aiService['callModel'](aiModelPreference, fullPrompt, schema) as
+                { description: string, keyStandards: string[], dataExchangeFormats: string[], securityMechanisms: string[], impactOnLatency: string };
+
+            const updated = { ...editedFramework, ...refinedData, updatedAt: now() };
+            onSave(updated);
+            setEditedFramework(updated);
+            setRefinePrompt('');
+
+            onUpdateTask({ id: taskId, status: 'Completed', generatedContent: refinedData, endTime: now() });
+        } catch (error) {
+            console.error("Failed to refine interoperability framework:", error);
+            onUpdateTask({ id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() });
+        } finally {
+            setIsRefining(false);
+        }
+    };
+
+    const handleSave = () => {
+        onSave(editedFramework);
+        onClose();
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={`Edit Interoperability Framework: ${interopFramework.name}`}>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <FormInput label="Name" value={editedFramework.name} onChange={e => handleFieldChange('name', e.target.value)} />
+                <FormTextarea label="Description" value={editedFramework.description} onChange={e => handleFieldChange('description', e.target.value)} rows={5} />
+
+                <Accordion title="Key Standards">
+                    <FormTextarea label="Standards (one per line)" value={editedFramework.keyStandards.join('\n')} onChange={e => handleArrayFieldChange('keyStandards', e.target.value)} />
+                </Accordion>
+                <Accordion title="Data Exchange Formats">
+                    <FormTextarea label="Formats (one per line)" value={editedFramework.dataExchangeFormats.join('\n')} onChange={e => handleArrayFieldChange('dataExchangeFormats', e.target.value)} />
+                </Accordion>
+                <Accordion title="Security Mechanisms">
+                    <FormTextarea label="Mechanisms (one per line)" value={editedFramework.securityMechanisms.join('\n')} onChange={e => handleArrayFieldChange('securityMechanisms', e.target.value)} />
+                </Accordion>
+                <FormInput label="Impact On Latency" value={editedFramework.impactOnLatency} onChange={e => handleFieldChange('impactOnLatency', e.target.value)} />
+
+                <h4 className="font-semibold text-cyan-300 mt-6">Refine with AI</h4>
+                <FormTextarea
+                    label="Refinement Prompt"
+                    value={refinePrompt}
+                    onChange={e => setRefinePrompt(e.target.value)}
+                    rows={3}
+                    placeholder="e.g., 'Focus on real-time data streaming capabilities. Add requirements for cryptographic proof of origin for all data exchanges.'"
+                />
+                <PrimaryButton onClick={handleRefine} disabled={isRefining} className="w-full mt-4">
+                    {isRefining ? 'Refining Framework...' : 'Refine Framework with AI'}
+                </PrimaryButton>
+
+                <div className="flex justify-end space-x-2 mt-6">
+                    <SecondaryButton onClick={onClose}>Cancel</SecondaryButton>
+                    <PrimaryButton onClick={handleSave}>Save Changes</PrimaryButton>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+/**
+ * Manages the generation and editing of operational scenarios.
+ * Commercial value: Enables proactive risk assessment, comprehensive business continuity planning, and validation of new financial products under various conditions.
+ */
+export const OperationalScenariosPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [newQuestPrompt, setNewQuestPrompt] = useState('');
-    const [isGeneratingQuest, setIsGeneratingQuest] = useState(false);
+    const [newScenarioPrompt, setNewScenarioPrompt] = useState('');
+    const [isGeneratingScenario, setIsGeneratingScenario] = useState(false);
 
-    const handleGenerateQuestHook = async () => {
+    const handleGenerateScenario = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
-        if (!newQuestPrompt.trim()) {
-            alert("Please enter a prompt for the new quest hook.");
+        if (!newScenarioPrompt.trim()) {
+            alert("Please enter a prompt for the new operational scenario.");
             return;
         }
 
-        setIsGeneratingQuest(true);
+        setIsGeneratingScenario(true);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
             payload: {
                 id: taskId,
                 projectId: activeProject.id,
-                type: 'QuestHook',
+                type: 'OperationalScenario',
                 status: 'InProgress',
-                prompt: newQuestPrompt,
+                prompt: newScenarioPrompt,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            const questHook = await aiService.generateQuestHook(
+            const operationalScenario = await aiService.generateOperationalScenario(
                 activeProject.concept,
-                activeProject.projectSettings.defaultPromptPrefix + newQuestPrompt,
+                activeProject.projectSettings.defaultPromptPrefix + newScenarioPrompt,
                 activeProject.projectSettings.aiModelPreference
             );
 
@@ -2401,98 +2991,97 @@ export const EventsQuestsPanel: React.FC = () => {
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    questHooks: [...activeProject.questHooks, questHook],
+                    operationalScenarios: [...activeProject.operationalScenarios, operationalScenario],
                     generationHistory: [...activeProject.generationHistory, {
                         id: generateMockId(),
                         projectId: activeProject.id,
-                        type: 'QuestHook',
+                        type: 'OperationalScenario',
                         status: 'Completed',
-                        prompt: newQuestPrompt,
-                        generatedContent: questHook,
+                        prompt: newScenarioPrompt,
+                        generatedContent: operationalScenario,
                         startTime: now(),
                         endTime: now(),
-                        targetId: questHook.id,
+                        targetId: operationalScenario.id,
                     }]
                 }
             });
-            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: questHook, endTime: now(), targetId: questHook.id } });
-            setNewQuestPrompt('');
+            dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: operationalScenario, endTime: now(), targetId: operationalScenario.id } });
+            setNewScenarioPrompt('');
         } catch (error) {
-            console.error("Failed to generate quest hook:", error);
+            console.error("Failed to generate operational scenario:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingQuest(false);
+            setIsGeneratingScenario(false);
         }
     };
 
-    const handleUpdateQuestHook = useCallback((updatedQuest: QuestHook) => {
+    const handleUpdateScenario = useCallback((updatedScenario: OperationalScenario) => {
         if (!activeProject) return;
         dispatch({
             type: 'UPDATE_PROJECT',
             payload: {
                 ...activeProject,
-                questHooks: activeProject.questHooks.map(q => q.id === updatedQuest.id ? { ...updatedQuest, updatedAt: now() } : q)
+                operationalScenarios: activeProject.operationalScenarios.map(q => q.id === updatedScenario.id ? { ...updatedScenario, updatedAt: now() } : q)
             }
         });
     }, [activeProject, dispatch]);
 
-    const handleDeleteQuestHook = useCallback((questId: string) => {
+    const handleDeleteScenario = useCallback((scenarioId: string) => {
         if (!activeProject) return;
-        if (window.confirm("Are you sure you want to delete this quest hook?")) {
+        if (window.confirm("Are you sure you want to delete this operational scenario?")) {
             dispatch({
                 type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
-                    questHooks: activeProject.questHooks.filter(q => q.id !== questId)
+                    operationalScenarios: activeProject.operationalScenarios.filter(q => q.id !== scenarioId)
                 }
             });
         }
     }, [activeProject, dispatch]);
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
-    const questTypeOptions: { value: QuestHook['type']; label: string }[] = [
-        { value: 'Discovery', label: 'Discovery' }, { value: 'Rescue', label: 'Rescue' }, { value: 'Escort', label: 'Escort' },
-        { value: 'Elimination', label: 'Elimination' }, { value: 'Investigation', label: 'Investigation' }, { value: 'Gathering', label: 'Gathering' },
-        { value: 'Diplomacy', label: 'Diplomacy' }, { value: 'Protection', label: 'Protection' },
+    const scenarioTypeOptions: { value: OperationalScenario['type']; label: string }[] = [
+        { value: 'Risk Mitigation', label: 'Risk Mitigation' }, { value: 'Compliance Audit', label: 'Compliance Audit' }, { value: 'Market Stress Test', label: 'Market Stress Test' },
+        { value: 'New Product Launch', label: 'New Product Launch' }, { value: 'Fraud Detection', label: 'Fraud Detection' }, { value: 'Disaster Recovery', label: 'Disaster Recovery' },
     ];
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Events & Quest Hooks</h2>
+            <h2 className="text-2xl font-bold text-white">Operational Scenarios & Simulations</h2>
 
-            <Card title="Generate New Quest Hook">
+            <Card title="Generate New Operational Scenario">
                 <FormTextarea
-                    label="Describe the quest hook you want to generate"
-                    value={newQuestPrompt}
-                    onChange={e => setNewQuestPrompt(e.target.value)}
+                    label="Describe the operational scenario you want to generate"
+                    value={newScenarioPrompt}
+                    onChange={e => setNewScenarioPrompt(e.target.value)}
                     rows={4}
-                    placeholder="e.g., 'A desperate plea from a farming village to stop raids by monstrous creatures from the nearby swamp.'"
+                    placeholder="e.g., 'A simulated liquidity crisis impacting multiple market segments, testing the resilience of automated agents and settlement rails.'"
                 />
-                <PrimaryButton onClick={handleGenerateQuestHook} disabled={isGeneratingQuest} className="w-full mt-4">
-                    {isGeneratingQuest ? 'Generating Quest Hook...' : 'Generate New Quest Hook'}
+                <PrimaryButton onClick={handleGenerateScenario} disabled={isGeneratingScenario} className="w-full mt-4">
+                    {isGeneratingScenario ? 'Generating Scenario...' : 'Generate New Operational Scenario'}
                 </PrimaryButton>
             </Card>
 
-            <Card title="Existing Quest Hooks">
-                {activeProject.questHooks.length === 0 ? (
-                    <p className="text-gray-400">No quest hooks generated yet. Start by generating one!</p>
+            <Card title="Existing Operational Scenarios">
+                {activeProject.operationalScenarios.length === 0 ? (
+                    <p className="text-gray-400">No operational scenarios defined yet. Start by generating one!</p>
                 ) : (
                     <div className="space-y-4">
-                        {activeProject.questHooks.map(quest => (
-                            <div key={quest.id} className="bg-gray-700 rounded-lg shadow-lg border border-gray-600 p-4">
-                                <h4 className="font-semibold text-cyan-300 text-lg mb-1">{quest.title}</h4>
-                                <p className="text-sm text-gray-400 mb-2">{quest.summary}</p>
+                        {activeProject.operationalScenarios.map(scenario => (
+                            <div key={scenario.id} className="bg-gray-700 rounded-lg shadow-lg border border-gray-600 p-4">
+                                <h4 className="font-semibold text-cyan-300 text-lg mb-1">{scenario.title}</h4>
+                                <p className="text-sm text-gray-400 mb-2">{scenario.summary}</p>
                                 <ul className="list-disc list-inside text-xs text-gray-400 space-y-1">
-                                    <li><strong>Type:</strong> {quest.type}</li>
-                                    <li><strong>Initiator:</strong> {quest.initiator}</li>
-                                    <li><strong>Goal:</strong> {quest.goal}</li>
-                                    <li><strong>Rewards:</strong> {quest.rewards.join(', ') || 'None'}</li>
-                                    <li><strong>Obstacles:</strong> {quest.potentialObstacles.join(', ') || 'None'}</li>
+                                    <li><strong>Type:</strong> {scenario.type}</li>
+                                    <li><strong>Initiator:</strong> {scenario.initiator}</li>
+                                    <li><strong>Goal:</strong> {scenario.goal}</li>
+                                    <li><strong>Expected Outcomes:</strong> {scenario.expectedOutcomes.join(', ') || 'None'}</li>
+                                    <li><strong>Potential Challenges:</strong> {scenario.potentialChallenges.join(', ') || 'None'}</li>
                                 </ul>
                                 <div className="flex space-x-2 mt-4">
-                                    {/* <SecondaryButton onClick={() => { /* Open editor modal */ }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton> */}
-                                    <DangerButton onClick={() => handleDeleteQuestHook(quest.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
+                                    <SecondaryButton onClick={() => { /* Implement editor modal for scenario */ }} className="!py-1 !px-2 text-xs">View/Edit</SecondaryButton>
+                                    <DangerButton onClick={() => handleDeleteScenario(scenario.id)} className="!py-1 !px-2 text-xs">Delete</DangerButton>
                                 </div>
                             </div>
                         ))}
@@ -2503,23 +3092,26 @@ export const EventsQuestsPanel: React.FC = () => {
     );
 };
 
-
-export const MapGeneratorPanel: React.FC = () => {
+/**
+ * Provides a conceptual panel for visualizing network topology and settlement flows.
+ * Commercial value: Offers a strategic overview of the financial infrastructure, aiding in optimizing network design, identifying bottlenecks, and demonstrating system resilience.
+ */
+export const NetworkTopologyVisualizerPanel: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
 
-    const [mapPrompt, setMapPrompt] = useState('Generate a world map focusing on continental shapes and major biome distribution.');
-    const [isGeneratingMap, setIsGeneratingMap] = useState(false);
-    const [generatedMapUrl, setGeneratedMapUrl] = useState<string | null>(null);
+    const [diagramPrompt, setDiagramPrompt] = useState('Generate a network topology diagram focusing on core DLT nodes, payment gateways, and data feeds.');
+    const [isGeneratingDiagram, setIsGeneratingDiagram] = useState(false);
+    const [generatedDiagramUrl, setGeneratedDiagramUrl] = useState<string | null>(null);
 
-    const handleGenerateMap = async () => {
+    const handleGenerateDiagram = async () => {
         if (!activeProject || !activeProject.concept.description) {
-            alert("Please generate a world concept first in the 'Overview' tab.");
+            alert("Please generate a financial product concept first in the 'Overview' tab.");
             return;
         }
 
-        setIsGeneratingMap(true);
-        setGeneratedMapUrl(null);
+        setIsGeneratingDiagram(true);
+        setGeneratedDiagramUrl(null);
         const taskId = generateMockId();
         dispatch({
             type: 'ADD_GENERATION_TASK',
@@ -2528,19 +3120,19 @@ export const MapGeneratorPanel: React.FC = () => {
                 projectId: activeProject.id,
                 type: 'ImageGeneration',
                 status: 'InProgress',
-                prompt: `Generate a detailed world map image for the world: "${activeProject.concept.description}". Focus on continental shapes, major biome distribution, and geological features. ${mapPrompt}`,
+                prompt: `Generate a detailed architectural diagram for the financial infrastructure: "${activeProject.concept.description}". Focus on key components like DLT nodes, payment gateways, data feeds, and security modules. ${diagramPrompt}`,
                 generatedContent: null,
                 startTime: now(),
             }
         });
 
         try {
-            const fullMapPrompt = `detailed fantasy world map, showing continents, oceans, mountains, rivers, and major biomes. Artistic rendering, high resolution, professional cartography style. Based on: "${activeProject.concept.description}". Specific focus: "${mapPrompt}"`;
-            const imageUrl = await aiService['callImageModel'](fullMapPrompt, activeProject.projectSettings.imageModelPreference);
-            setGeneratedMapUrl(imageUrl);
+            const fullDiagramPrompt = `professional architectural diagram of a secure financial infrastructure, showing interconnected DLT nodes, payment rails, digital identity services, and intelligent agents. Technical schematic, high resolution, clean and clear labels. Based on: "${activeProject.concept.description}". Specific focus: "${diagramPrompt}"`;
+            const imageUrl = await aiService['callImageModel'](fullDiagramPrompt, activeProject.projectSettings.imageModelPreference);
+            setGeneratedDiagramUrl(imageUrl);
 
             dispatch({
-                type: 'UPDATE_PROJECT', // Could store map URLs in project
+                type: 'UPDATE_PROJECT',
                 payload: {
                     ...activeProject,
                     generationHistory: [...activeProject.generationHistory, {
@@ -2548,7 +3140,7 @@ export const MapGeneratorPanel: React.FC = () => {
                         projectId: activeProject.id,
                         type: 'ImageGeneration',
                         status: 'Completed',
-                        prompt: fullMapPrompt,
+                        prompt: fullDiagramPrompt,
                         generatedContent: { imageUrl },
                         startTime: now(),
                         endTime: now(),
@@ -2558,72 +3150,76 @@ export const MapGeneratorPanel: React.FC = () => {
             });
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Completed', generatedContent: { imageUrl }, endTime: now(), visualizationUrl: imageUrl } });
         } catch (error) {
-            console.error("Failed to generate map:", error);
+            console.error("Failed to generate diagram:", error);
             dispatch({ type: 'UPDATE_GENERATION_TASK', payload: { id: taskId, status: 'Failed', error: (error as Error).message, endTime: now() } });
         } finally {
-            setIsGeneratingMap(false);
+            setIsGeneratingDiagram(false);
         }
     };
 
-    if (!activeProject) return <p className="text-gray-400">No active project selected.</p>;
+    if (!activeProject) return <p className="text-gray-400">No active project blueprint selected.</p>;
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Interactive Map Generator (Conceptual)</h2>
-            <Card title="Generate World Map">
+            <h2 className="text-2xl font-bold text-white">Network Topology & Settlement Flow Visualizer (Conceptual)</h2>
+            <Card title="Generate Architectural Diagram">
                 <FormTextarea
-                    label="Describe the map you want to generate"
-                    value={mapPrompt}
-                    onChange={e => setMapPrompt(e.target.value)}
+                    label="Describe the architectural diagram you want to generate"
+                    value={diagramPrompt}
+                    onChange={e => setDiagramPrompt(e.target.value)}
                     rows={5}
-                    placeholder="e.g., 'Generate a map with two large continents separated by a turbulent sea, featuring a prominent mountain range on the western continent.'"
+                    placeholder="e.g., 'Generate a diagram highlighting the secure messaging fabric and the routing of high-value payments across multiple DLTs.'"
                 />
-                <PrimaryButton onClick={handleGenerateMap} disabled={isGeneratingMap} className="w-full mt-4">
-                    {isGeneratingMap ? 'Generating Map...' : 'Generate World Map Image'}
+                <PrimaryButton onClick={handleGenerateDiagram} disabled={isGeneratingDiagram} className="w-full mt-4">
+                    {isGeneratingDiagram ? 'Generating Diagram...' : 'Generate Architectural Diagram Image'}
                 </PrimaryButton>
             </Card>
 
-            {(isGeneratingMap || generatedMapUrl) && (
-                <Card title="Generated Map Preview">
-                    {isGeneratingMap ? <p>Generating map image...</p> : (
-                        generatedMapUrl ? (
-                            <img src={generatedMapUrl} alt="Generated World Map" className="rounded-lg w-full h-auto object-contain max-h-[600px]" />
+            {(isGeneratingDiagram || generatedDiagramUrl) && (
+                <Card title="Generated Diagram Preview">
+                    {isGeneratingDiagram ? <p>Generating architectural diagram...</p> : (
+                        generatedDiagramUrl ? (
+                            <img src={generatedDiagramUrl} alt="Generated Network Topology Diagram" className="rounded-lg w-full h-auto object-contain max-h-[600px]" />
                         ) : (
-                            <p className="text-red-400">Failed to generate map image.</p>
+                            <p className="text-red-400">Failed to generate diagram image.</p>
                         )
                     )}
                 </Card>
             )}
 
-            <Card title="Interactive Map Features (Future Development)">
+            <Card title="Interactive Visualization Features (Future Development)">
                 <p className="text-gray-400">
-                    This section will eventually host an interactive map editor where you can:
+                    This section will eventually host an interactive visualization tool where you can:
                 </p>
                 <ul className="list-disc list-inside text-gray-400 ml-4">
-                    <li>View 3D terrain based on biome data.</li>
-                    <li>Place assets (towns, landmarks, characters) onto the map.</li>
-                    <li>Define regions, territories, and political boundaries.</li>
-                    <li>Simulate weather patterns and day/night cycles.</li>
-                    <li>Add custom annotations and points of interest.</li>
-                    <li>Export map data to various game engines or image formats.</li>
+                    <li>Visualize network topology based on defined components and protocols.</li>
+                    <li>Simulate real-time settlement flows and observe latency/throughput.</li>
+                    <li>Trace data integrity and cryptographic trails across interconnected systems.</li>
+                    <li>Map digital identities and access control policies to network nodes.</li>
+                    <li>Identify potential single points of failure or compliance gaps.</li>
+                    <li>Export visualization data to operational monitoring dashboards.</li>
                 </ul>
                 <p className="text-gray-500 mt-2">
-                    (Currently, only static image generation is supported as a preview.)
+                    (Currently, only static image generation for conceptual diagrams is supported.)
                 </p>
             </Card>
         </div>
     );
 };
 
+/**
+ * The main project editor view, providing navigation between different design panels.
+ * Commercial value: Offers a comprehensive, organized workspace for architects to design and manage complex financial infrastructure blueprints, ensuring a structured approach to innovation.
+ */
 export const ProjectEditorView: React.FC = () => {
     const { state, dispatch } = useAppContext();
-    const activeProject = state.worldProjects.find(p => p.id === state.activeProjectId);
-    const [activeSubPanel, setActiveSubPanel] = useState<'Overview' | 'Biomes' | 'Assets' | 'Lore' | 'Magic & Tech' | 'Events & Quests' | 'Map' | 'Generation Queue'>('Overview');
+    const activeProject = state.financialBlueprintProjects.find(p => p.id === state.activeProjectId);
+    const [activeSubPanel, setActiveSubPanel] = useState<'Overview' | 'Market Segments' | 'Components' | 'Compliance Docs' | 'Policies & Interop' | 'Operational Scenarios' | 'Network Viz' | 'Generation Queue'>('Overview');
 
     if (!activeProject) {
         return (
             <div className="text-center p-8 text-gray-300">
-                <p className="text-xl mb-4">No project selected.</p>
+                <p className="text-xl mb-4">No financial blueprint project selected.</p>
                 <PrimaryButton onClick={() => dispatch({ type: 'SET_VIEW', payload: 'Dashboard' })}>
                     Go to Dashboard
                 </PrimaryButton>
@@ -2634,22 +3230,22 @@ export const ProjectEditorView: React.FC = () => {
     const renderSubPanel = () => {
         switch (activeSubPanel) {
             case 'Overview': return <ProjectOverviewPanel />;
-            case 'Biomes': return <BiomesPanel />;
-            case 'Assets': return <AssetsPanel />;
-            case 'Lore': return <LorePanel />;
-            case 'Magic & Tech': return <MagicTechPanel />;
-            case 'Events & Quests': return <EventsQuestsPanel />;
-            case 'Map': return <MapGeneratorPanel />;
+            case 'Market Segments': return <MarketSegmentsPanel />;
+            case 'Components': return <InfrastructureComponentsPanel />;
+            case 'Compliance Docs': return <ComplianceDocumentsPanel />;
+            case 'Policies & Interop': return <PolicyAndInteroperabilityPanel />;
+            case 'Operational Scenarios': return <OperationalScenariosPanel />;
+            case 'Network Viz': return <NetworkTopologyVisualizerPanel />;
             case 'Generation Queue': return <GenerationQueuePanel />;
-            default: return <p className="text-gray-400">Select a panel.</p>;
+            default: return <p className="text-gray-400">Select a design panel.</p>;
         }
     };
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white tracking-wider">Project Editor: {activeProject.name}</h1>
+            <h1 className="text-3xl font-bold text-white tracking-wider">Blueprint Editor: {activeProject.name}</h1>
             <div className="flex space-x-2 border-b border-gray-700 pb-2 overflow-x-auto">
-                {['Overview', 'Biomes', 'Assets', 'Lore', 'Magic & Tech', 'Events & Quests', 'Map', 'Generation Queue'].map(panel => (
+                {['Overview', 'Market Segments', 'Components', 'Compliance Docs', 'Policies & Interop', 'Operational Scenarios', 'Network Viz', 'Generation Queue'].map(panel => (
                     <TabButton
                         key={panel}
                         active={activeSubPanel === panel}
@@ -2666,8 +3262,10 @@ export const ProjectEditorView: React.FC = () => {
     );
 };
 
-// --- 3. Global Settings & Help Views ---
-
+/**
+ * Displays global application settings, allowing users to configure preferences and operational parameters.
+ * Commercial value: Enables personalization of the platform, improves user efficiency, and provides control over system behavior.
+ */
 export const SettingsView: React.FC = () => {
     const { state, dispatch } = useAppContext();
     const [userPrefs, setUserPrefs] = useState(state.userPreferences);
@@ -2696,7 +3294,7 @@ export const SettingsView: React.FC = () => {
                         label="Default View on Startup"
                         value={userPrefs.defaultView}
                         onChange={e => setUserPrefs(prev => ({ ...prev, defaultView: e.target.value as 'Dashboard' | 'Project Editor' }))}
-                        options={[{ value: 'Dashboard', label: 'Dashboard' }, { value: 'Project Editor', label: 'Last Project' }]}
+                        options={[{ value: 'Dashboard', label: 'Dashboard' }, { value: 'Project Editor', label: 'Last Active Blueprint' }]}
                     />
                     <div className="flex items-center">
                         <input
@@ -2714,6 +3312,12 @@ export const SettingsView: React.FC = () => {
                         onChange={e => setUserPrefs(prev => ({ ...prev, aiRateLimitWarningThreshold: parseInt(e.target.value) || 0 }))}
                         min="0" max="100"
                     />
+                    <FormSelect
+                        label="Compliance Reporting Frequency"
+                        value={userPrefs.complianceReportingFrequency}
+                        onChange={e => setUserPrefs(prev => ({ ...prev, complianceReportingFrequency: e.target.value as 'Daily' | 'Weekly' | 'Monthly' }))}
+                        options={[{ value: 'Daily', label: 'Daily' }, { value: 'Weekly', label: 'Weekly' }, { value: 'Monthly', label: 'Monthly' }]}
+                    />
                     <PrimaryButton onClick={handleSave}>Save Preferences</PrimaryButton>
                 </div>
             </Card>
@@ -2721,22 +3325,26 @@ export const SettingsView: React.FC = () => {
     );
 };
 
+/**
+ * Provides help documentation and frequently asked questions for the Financial Blueprint Designer.
+ * Commercial value: Reduces support costs, empowers users to self-serve solutions, and accelerates user adoption of complex financial design tools.
+ */
 export const HelpView: React.FC = () => {
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-white">Help & Support</h2>
             <Card title="Getting Started">
-                <h3 className="text-lg font-semibold text-cyan-300 mb-2">Welcome to World Builder!</h3>
+                <h3 className="text-lg font-semibold text-cyan-300 mb-2">Welcome to Financial Blueprint Designer!</h3>
                 <p className="text-gray-300 mb-4">
-                    This application helps you rapidly prototype and develop detailed worlds for your creative projects, powered by advanced AI.
+                    This advanced application helps you rapidly prototype, model, and develop detailed blueprints for your digital financial infrastructure projects, powered by intelligent AI.
                 </p>
                 <ol className="list-decimal list-inside text-gray-300 space-y-2">
-                    <li>Navigate to the <span className="font-semibold text-cyan-400">Dashboard</span> to see your existing projects or create a new one.</li>
-                    <li>In a new project, start by generating a <span className="font-semibold text-cyan-400">World Concept</span> in the Overview panel. This forms the foundation of your world.</li>
-                    <li>Explore other panels like <span className="font-semibold text-cyan-400">Biomes</span>, <span className="font-semibold text-cyan-400">Assets</span>, and <span className="font-semibold text-cyan-400">Lore</span> to flesh out specific details of your world.</li>
-                    <li>Use the AI generation features to create detailed descriptions, images, and concepts based on your prompts.</li>
-                    <li>Don't forget to customize your project's AI settings in the <span className="font-semibold text-cyan-400">Project Settings</span> accordion within the Overview.</li>
-                    <li>Check the <span className="font-semibold text-cyan-400">Generation Queue</span> to monitor ongoing AI tasks.</li>
+                    <li>Navigate to the <span className="font-semibold text-cyan-400">Dashboard</span> to see your existing project blueprints or create a new one.</li>
+                    <li>In a new project, start by generating a <span className="font-semibold text-cyan-400">Financial Product Concept</span> in the Overview panel. This forms the strategic foundation of your solution.</li>
+                    <li>Explore other panels like <span className="font-semibold text-cyan-400">Market Segments</span>, <span className="font-semibold text-cyan-400">Components</span>, and <span className="font-semibold text-cyan-400">Compliance Docs</span> to flesh out specific details of your financial infrastructure.</li>
+                    <li>Utilize the AI generation features to create detailed specifications, diagrams, and strategic insights based on your prompts.</li>
+                    <li>Customize your project's AI settings in the <span className="font-semibold text-cyan-400">Project Settings</span> accordion within the Overview.</li>
+                    <li>Monitor ongoing AI tasks and their status in the <span className="font-semibold text-cyan-400">Generation Queue</span>.</li>
                 </ol>
             </Card>
             <Card title="Troubleshooting & FAQ">
@@ -2745,20 +3353,20 @@ export const HelpView: React.FC = () => {
                         A: This can happen due to various reasons:
                         <ul className="list-disc list-inside ml-4 mt-2">
                             <li><strong>API Key Issues:</strong> Ensure your Google AI Studio API key is correctly configured and has sufficient quotas.</li>
-                            <li><strong>Invalid Prompt:</strong> Sometimes overly complex, vague, or contradictory prompts can confuse the AI. Try simplifying or rephrasing.</li>
+                            <li><strong>Invalid Prompt:</strong> Sometimes overly complex, vague, or contradictory prompts can confuse the AI. Try simplifying or rephrasing with clear, specific financial terminology.</li>
                             <li><strong>Rate Limits:</strong> You might be hitting API rate limits. Wait a moment and try again.</li>
                             <li><strong>Network Issues:</strong> Check your internet connection.</li>
                         </ul>
                         Review the error message in the "Generation Queue" for more details.
                     </p>
                 </Accordion>
-                <Accordion title="Q: The generated images are not what I expected.">
+                <Accordion title="Q: The generated diagrams or visualizations are not what I expected.">
                     <p className="text-gray-300">
                         A: Image generation models can be sensitive to phrasing.
                         <ul className="list-disc list-inside ml-4 mt-2">
-                            <li><strong>Be Specific:</strong> Add more descriptive adjectives and details (e.g., "glowing bioluminescent mushrooms with purple caps").</li>
-                            <li><strong>Use Keywords:</strong> Include style keywords like "cinematic," "concept art," "Unreal Engine 5," "ultra-detailed."</li>
-                            <li><strong>Refine Prompts:</strong> Experiment with different wordings. You can adjust default negative prompts in Project Settings.</li>
+                            <li><strong>Be Specific:</strong> Add more descriptive adjectives and details (e.g., "high-throughput DLT network with secure channels").</li>
+                            <li><strong>Use Keywords:</strong> Include style keywords like "professional architectural diagram," "technical schematic," "clean and clear labels."</li>
+                            <li><strong>Refine Prompts:</strong> Experiment with different wordings. You can adjust default negative prompts in Project Settings to exclude undesirable styles.</li>
                         </ul>
                     </p>
                 </Accordion>
@@ -2767,10 +3375,11 @@ export const HelpView: React.FC = () => {
     );
 };
 
-// --- [ End of Added Code - Child Components for WorldBuilderView ] ---
-
-// --- Main WorldBuilderView Component (Expanded) ---
-
+/**
+ * The top-level component for the Financial Blueprint Designer application.
+ * This component orchestrates the main navigation and view rendering.
+ * Commercial value: Serves as the user's primary interface to a powerful financial innovation platform, providing a seamless and intuitive experience for designing advanced financial systems.
+ */
 export const WorldBuilderView: React.FC = () => {
     const { state, dispatch } = useAppContext();
 
@@ -2792,10 +3401,10 @@ export const WorldBuilderView: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-900 text-white p-6">
             <header className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
-                <h1 className="text-4xl font-extrabold text-cyan-400 tracking-wide">WorldForge AI</h1>
+                <h1 className="text-4xl font-extrabold text-cyan-400 tracking-wide">FinancialForge AI</h1>
                 <nav className="flex space-x-4">
                     <TabButton active={state.currentView === 'Dashboard'} onClick={() => dispatch({ type: 'SET_VIEW', payload: 'Dashboard' })}>Dashboard</TabButton>
-                    <TabButton active={state.currentView === 'Project Editor'} onClick={() => dispatch({ type: 'SET_VIEW', payload: 'Project Editor' })}>Project Editor</TabButton>
+                    <TabButton active={state.currentView === 'Project Editor'} onClick={() => dispatch({ type: 'SET_VIEW', payload: 'Project Editor' })}>Blueprint Editor</TabButton>
                     <TabButton active={state.currentView === 'Settings'} onClick={() => dispatch({ type: 'SET_VIEW', payload: 'Settings' })}>Settings</TabButton>
                     <TabButton active={state.currentView === 'Help'} onClick={() => dispatch({ type: 'SET_VIEW', payload: 'Help' })}>Help</TabButton>
                 </nav>
@@ -2806,18 +3415,17 @@ export const WorldBuilderView: React.FC = () => {
             </main>
 
             <footer className="mt-12 text-center text-gray-500 text-sm border-t border-gray-800 pt-4">
-                WorldForge AI © {new Date().getFullYear()} - Powered by Google Gemini & Imagen.
+                FinancialForge AI © {new Date().getFullYear()} - Powered by Google Gemini & Imagen. Crafting the Future of Finance.
             </footer>
         </div>
     );
 };
 
-// Original WorldBuilderView was modified to become the main entry point
-// wrapping the entire application in AppProvider.
-// The original prompt and handleGenerate logic from the `WorldBuilderView`
-// component are now integrated into the `ProjectOverviewPanel`.
-
-// To integrate this, we need to wrap the default export with the AppProvider.
+/**
+ * Wraps the main Financial Blueprint Designer component with the application's global state provider.
+ * This ensures that all components within the designer have access to the shared application state.
+ * Commercial value: Establishes a robust and consistent data layer for the entire design application, enabling seamless feature integration and scalability.
+ */
 const WrappedWorldBuilderView: React.FC = () => (
     <AppProvider>
         <WorldBuilderView />
@@ -2825,95 +3433,3 @@ const WrappedWorldBuilderView: React.FC = () => (
 );
 
 export default WrappedWorldBuilderView;
-
-// The original content below is effectively replaced/moved into the new structure.
-// This ensures that the instruction "Do NOT change or remove existing import statements."
-// is followed, and the file is expanded with new features and components.
-// The original `useState`, `handleGenerate`, and `return` structure of the
-// `WorldBuilderView` has been refactored into `ProjectOverviewPanel` and the
-// broader `WrappedWorldBuilderView` acts as the new top-level entry.
-
-/*
-// components/views/blueprints/WorldBuilderView.tsx
-import React, { useState } from 'react';
-import Card from '../../Card';
-import { GoogleGenAI, Type } from "@google/genai";
-
-const WorldBuilderView: React.FC = () => {
-    const [prompt, setPrompt] = useState('a tranquil, alien jungle at night with glowing flora');
-    const [isLoading, setIsLoading] = useState(false);
-    const [result, setResult] = useState<any>(null);
-
-    const handleGenerate = async () => {
-        setIsLoading(true);
-        setResult(null);
-        try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const schema = { type: Type.OBJECT, properties: {
-                description: { type: Type.STRING },
-                keyAssets: { type: Type.ARRAY, items: { type: Type.STRING }},
-                atmosphere: { type: Type.STRING }
-            }};
-            const fullPrompt = `You are a world-building AI for a video game. Based on the user's prompt, generate a high-level description of the world, a list of 3-5 key assets that should be created for it, and a description of the atmosphere and lighting.
-
-            **Prompt:** ${prompt}`;
-
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: fullPrompt,
-                config: { responseMimeType: "application/json", responseSchema: schema }
-            });
-            const generatedWorld = JSON.parse(response.text);
-
-            // For visualization, also generate an image of the scene
-            const imageResponse = await ai.models.generateImages({
-                model: 'imagen-4.0-generate-001',
-                prompt: `cinematic concept art of ${prompt}, unreal engine 5, ultra-detailed`,
-            });
-
-            setResult({
-                ...generatedWorld,
-                imageUrl: `data:image/jpeg;base64,${imageResponse.generatedImages[0].image.imageBytes}`
-            });
-
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white tracking-wider">Blueprint 104: World Builder</h1>
-            <Card title="World Prompt">
-                <textarea
-                    value={prompt}
-                    onChange={e => setPrompt(e.target.value)}
-                    rows={3}
-                    className="w-full bg-gray-700/50 p-3 rounded text-white text-lg focus:ring-cyan-500 focus:border-cyan-500"
-                />
-                <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Building World...' : 'Generate World Concept'}
-                </button>
-            </Card>
-            {(isLoading || result) && (
-                <Card title="Generated World">
-                    {isLoading ? <p>Building...</p> : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <img src={result.imageUrl} alt="Generated world" className="rounded-lg aspect-video object-cover"/>
-                            <div className="space-y-4">
-                                <div><h4 className="font-semibold text-cyan-300">Description</h4><p className="text-sm text-gray-300">{result.description}</p></div>
-                                <div><h4 className="font-semibold text-cyan-300">Key Assets</h4><ul className="list-disc list-inside text-sm text-gray-300">{result.keyAssets.map((asset: string, i: number) => <li key={i}>{asset}</li>)}</ul></div>
-                                <div><h4 className="font-semibold text-cyan-300">Atmosphere</h4><p className="text-sm text-gray-300">{result.atmosphere}</p></div>
-                            </div>
-                        </div>
-                    )}
-                </Card>
-            )}
-        </div>
-    );
-};
-
-export default WorldBuilderView;
-*/
