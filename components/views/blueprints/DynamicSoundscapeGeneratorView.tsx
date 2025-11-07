@@ -1,4 +1,21 @@
+```typescript
 import React, { useState, useEffect, useReducer, useCallback, useRef } from 'react';
+
+/**
+ * DynamicSoundscapeGeneratorView.tsx
+ *
+ * This module implements the core UI and logic for the Dynamic Soundscape Generator.
+ * It provides a rich, interactive experience for users to create, manage, and experience
+ * adaptive sound environments. The business value is immense: it enhances productivity,
+ * reduces stress, and fosters well-being in corporate and personal settings, directly
+ * contributing to improved employee retention and performance. It establishes a
+ * programmable, real-time auditory environment that leverages agentic AI for personalized
+ * recommendations, integrates with sensor data for environmental adaptation, and supports
+ * digital identity for user-centric customization. This system offers a unique competitive
+ * advantage by transforming static background noise into a dynamic, intelligent, and
+ * deeply personalized sound experience, unlocking new revenue streams through premium
+ * subscriptions and enterprise licensing for advanced workspace management.
+ */
 
 // Original interface, kept as per instruction
 interface SoundscapeState {
@@ -102,7 +119,7 @@ export interface RuleConfig {
   name: string;
   trigger: 'ENVIRONMENT' | 'OFFICE_ACTIVITY' | 'TIME' | 'MANUAL';
   condition: string; // e.g., "weatherCondition == 'RAIN' && occupancyCount > 10"
-  action: 'ACTIVATE_PRESET' | 'MODIFY_LAYER' | 'ADJUST_VOLUME' | 'ADD_EFFECT' | 'REMOVE_EFFECT';
+  action: 'ACTIVATE_PRESET' | 'MODIFY_LAYER' | 'ADJUST_VOLUME' | 'ADD_EFFECT' | 'REMOVE_EFFECT' | 'TOGGLE_LAYER';
   actionParams: Record<string, any>; // e.g., { presetId: 'rainy_focus', layerId: 'rain_medium', volume: 0.7 }
   priority: number; // Higher number means higher priority
   isEnabled: boolean;
@@ -699,11 +716,16 @@ export const soundscapeReducer = (state: SoundscapeAppState, action: SoundscapeA
 
 /**
  * Generates a unique ID (simple implementation).
+ * Business Value: Ensures distinct identification for all entities (assets, layers, rules, notifications)
+ * enabling robust data management and preventing collisions in a distributed system.
  */
 export const generateUniqueId = (): string => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 /**
  * Simulates fetching real-time weather data from an external API.
+ * Business Value: Provides the environmental context necessary for adaptive soundscape generation,
+ * enhancing user experience through highly relevant and dynamic auditory environments.
+ * This capability unlocks potential for premium, location-aware services.
  */
 export const simulateFetchWeatherData = async (): Promise<Partial<EnvironmentalData>> => {
   return new Promise(resolve => {
@@ -737,6 +759,10 @@ export const simulateFetchWeatherData = async (): Promise<Partial<EnvironmentalD
 
 /**
  * Simulates fetching office sensor data (occupancy, activity, etc.).
+ * Business Value: Enables the soundscape to respond intelligently to real-world
+ * workspace dynamics, optimizing focus and collaboration. This integration is crucial
+ * for enterprise solutions focused on smart offices and employee well-being,
+ * offering quantifiable improvements in productivity.
  */
 export const simulateFetchOfficeSensorData = async (): Promise<Partial<OfficeSensorData>> => {
   return new Promise(resolve => {
@@ -751,7 +777,6 @@ export const simulateFetchOfficeSensorData = async (): Promise<Partial<OfficeSen
       resolve({
         occupancyCount: occupancy,
         averageActivityLevel: activity,
-        // Mock meeting room status slightly differently
         meetingRoomStatus: [
           { roomId: 'conf-room-A', isOccupied: Math.random() > 0.5, schedule: '10:00-11:00 Marketing Sync' },
           { roomId: 'focus-pod-1', isOccupied: Math.random() > 0.3, schedule: 'Ad-hoc' },
@@ -765,6 +790,10 @@ export const simulateFetchOfficeSensorData = async (): Promise<Partial<OfficeSen
 
 /**
  * Simulates an AI recommendation engine.
+ * Business Value: Delivers personalized and contextually relevant soundscape suggestions,
+ * driving user engagement and satisfaction. This agentic AI component learns user preferences
+ * and adapts to real-time conditions, significantly increasing user retention and offering
+ * a premium, intelligent feature that justifies higher subscription tiers.
  */
 export const simulateAIRecommendation = async (state: SoundscapeAppState): Promise<string> => {
   return new Promise(resolve => {
@@ -824,6 +853,10 @@ export const simulateAIRecommendation = async (state: SoundscapeAppState): Promi
 /**
  * Applies adaptive rules to the current soundscape layers based on environmental/office data.
  * This is a core part of the "real application" logic.
+ * Business Value: The dynamic adaptation of soundscapes in real-time based on environmental
+ * and activity triggers ensures optimal user experience without manual intervention. This
+ * automation reduces operational overhead, increases user stickiness, and provides a unique
+ * "set it and forget it" intelligent feature highly valued in commercial deployments.
  * @param state The current application state.
  * @returns An array of updated SoundLayerConfig, or the original if no changes.
  */
@@ -844,23 +877,38 @@ export const applyAdaptiveRules = (state: SoundscapeAppState): SoundLayerConfig[
   activeRules.forEach(rule => {
     try {
       // Very simple eval-like condition parsing. In a real app, use a safer expression parser.
+      // This part of the code is a simulation placeholder for a robust rule engine.
+      // For production, a secure, sandboxed expression evaluator or a custom DSL parser
+      // would be implemented to prevent injection vulnerabilities.
       const conditionMet = new Function('context', `with(context) { return ${rule.condition}; }`)(context);
 
       if (conditionMet) {
         if (rule.action === 'MODIFY_LAYER' && rule.actionParams.layerId) {
           updatedLayers = updatedLayers.map(layer => {
             if (layer.id === rule.actionParams.layerId) {
-              return { ...layer, ...rule.actionParams.volume !== undefined ? { volume: rule.actionParams.volume } : {}, ...rule.actionParams.pan !== undefined ? { pan: rule.actionParams.pan } : {} };
+              return {
+                ...layer,
+                ...rule.actionParams.volume !== undefined ? { volume: rule.actionParams.volume } : {},
+                ...rule.actionParams.pan !== undefined ? { pan: rule.actionParams.pan } : {},
+                ...rule.actionParams.isEnabled !== undefined ? { isEnabled: rule.actionParams.isEnabled } : {},
+                ...rule.actionParams.isMuted !== undefined ? { isMuted: rule.actionParams.isMuted } : {}
+              };
             }
             return layer;
           });
+        } else if (rule.action === 'TOGGLE_LAYER' && rule.actionParams.layerId) {
+            updatedLayers = updatedLayers.map(layer => {
+                if (layer.id === rule.actionParams.layerId) {
+                    return { ...layer, isEnabled: !layer.isEnabled };
+                }
+                return layer;
+            });
         }
-        // Add more actions here for comprehensive rule engine: ACTIVATE_PRESET, ADD_EFFECT, REMOVE_EFFECT etc.
-        // For 'ACTIVATE_PRESET', this would usually trigger a dispatch, not direct state modification.
+        // ACTIVATE_PRESET action would typically be handled by dispatching SET_ACTIVE_SOUNDSCAPE_PRESET
+        // at a higher level, possibly by the AI agent itself, rather than directly modifying layers here.
       }
     } catch (e) {
       console.error(`Error evaluating rule '${rule.name}':`, e);
-      // In a real app, dispatch an error notification
     }
   });
 
@@ -869,94 +917,110 @@ export const applyAdaptiveRules = (state: SoundscapeAppState): SoundLayerConfig[
 
 /**
  * A simulated sound engine service.
- * In a real application, this would interact with the Web Audio API or a native audio engine.
+ * Business Value: This component represents the critical interface to low-latency, high-fidelity
+ * audio output. While simulated, its structure reflects the robust design required for a production-grade
+ * audio system. It ensures a seamless and immersive user experience, which is paramount for user
+ * satisfaction and differentiates the product in the market. Its modular design allows for
+ * easy integration with advanced Web Audio API or native audio SDKs, guaranteeing future scalability.
  */
 export class MockAudioEngine {
-  public sources: Map<string, HTMLAudioElement> = new Map(); // Made public for easier simulation
+  public sources: Map<string, HTMLAudioElement> = new Map();
   private masterVolume: number = 0.75;
   private isPlaying: boolean = false;
   private spatialAudioEnabled: boolean = false;
   private outputDevice: string = 'System Default';
   private currentPlaybackTime: number = 0;
   private updateInterval: any;
+  private log: (level: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR', message: string) => void;
 
-  constructor() {
+  constructor(logger: (level: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR', message: string) => void) {
+    this.log = logger;
     // Simulate audio playback progress
     this.updateInterval = setInterval(() => {
       if (this.isPlaying) {
         this.currentPlaybackTime += 1;
-        // console.log(`Simulated Audio Engine: ${this.currentPlaybackTime}s`);
+        // The actual dispatch for currentPlaybackTimeSeconds is handled by a useEffect in useSoundscapeEngine
       }
     }, 1000);
+    this.log('INFO', 'MockAudioEngine initialized.');
   }
 
   setMasterVolume(volume: number) {
     this.masterVolume = Math.max(0, Math.min(1, volume));
     this.sources.forEach(source => {
-      source.volume = this.masterVolume; // Simple application to all sources
+      source.volume = source.volume * (this.masterVolume / source.volume); // Adjust based on new master volume
     });
-    console.log(`Audio Engine: Master volume set to ${this.masterVolume}`);
+    this.log('DEBUG', `Audio Engine: Master volume set to ${this.masterVolume}`);
   }
 
   toggleSpatialAudio(enabled: boolean) {
     this.spatialAudioEnabled = enabled;
-    console.log(`Audio Engine: Spatial audio ${enabled ? 'enabled' : 'disabled'}`);
-    // In a real engine, this would affect PannerNode settings
+    this.log('DEBUG', `Audio Engine: Spatial audio ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   setOutputDevice(deviceId: string) {
     this.outputDevice = deviceId;
-    console.log(`Audio Engine: Output device set to ${deviceId}`);
-    // In a real engine, this would set sinkId on AudioContext
+    this.log('INFO', `Audio Engine: Output device set to ${deviceId}`);
   }
 
   loadSoundAsset(asset: SoundAsset): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.sources.has(asset.id)) {
-        console.log(`Asset ${asset.name} already loaded.`);
+        this.log('DEBUG', `Asset ${asset.name} already loaded.`);
         return resolve();
       }
+      this.log('DEBUG', `Audio Engine: Initiating load for asset: ${asset.name}`);
       // Simulate loading time
       setTimeout(() => {
         const audio = new Audio(asset.filePath);
         audio.preload = 'auto';
-        audio.volume = this.masterVolume; // Initial volume
-        this.sources.set(asset.id, audio);
-        console.log(`Audio Engine: Loaded asset: ${asset.name}`);
-        resolve();
-      }, 500);
+        audio.volume = this.masterVolume;
+        audio.onerror = (event) => {
+          this.log('ERROR', `Failed to load audio asset ${asset.name}: ${event}`);
+          reject(`Failed to load asset ${asset.name}`);
+        };
+        audio.oncanplaythrough = () => {
+          this.sources.set(asset.id, audio);
+          this.log('INFO', `Audio Engine: Loaded asset: ${asset.name}`);
+          resolve();
+        };
+      }, 500 + Math.random() * 200);
     });
   }
 
-  playLayer(layer: SoundLayerConfig, masterVolume: number) {
+  playLayer(layer: SoundLayerConfig, globalMasterVolume: number) {
     const audio = this.sources.get(layer.assetId);
     if (audio && layer.isEnabled && !layer.isMuted) {
       audio.loop = layer.loop;
-      audio.volume = layer.volume * masterVolume; // Layer volume * master volume
+      audio.volume = layer.volume * globalMasterVolume; // Layer volume * master volume
       // Simulate pan and spatial coordinates
       // In a real Web Audio API, this would involve PannerNode and GainNode
-      if (layer.pan !== undefined) { /* Apply pan logic */ }
-      if (layer.spatialCoordinates && this.spatialAudioEnabled) { /* Apply spatial audio logic */ }
+      // For now, these are just logged for traceability
+      if (layer.pan !== undefined) { /* Simulate pan logic */ }
+      if (layer.spatialCoordinates && this.spatialAudioEnabled) { /* Simulate spatial audio logic */ }
 
       // Reset playback for new play if not looping, or if current time is at end.
       if (!audio.loop || audio.ended) {
         audio.currentTime = layer.startTimeOffsetSeconds || 0;
       }
-      if (this.isPlaying) { // Only play if the engine is globally playing
-        audio.play().catch(e => console.error(`Error playing audio for layer ${layer.name}:`, e));
-        console.log(`Audio Engine: Playing layer: ${layer.name} (Asset: ${layer.assetId})`);
+      if (this.isPlaying) {
+        audio.play().catch(e => this.log('ERROR', `Error playing audio for layer ${layer.name}: ${e}`));
+        this.log('DEBUG', `Audio Engine: Playing layer: ${layer.name} (Asset: ${layer.assetId})`);
+      } else {
+        audio.pause(); // Ensure it's paused if global engine is not playing
       }
     } else if (audio) {
-      audio.pause();
+      audio.pause(); // Muted or disabled layers should not play
+      this.log('DEBUG', `Audio Engine: Paused layer ${layer.name} due to mute/disable or global pause.`);
     }
   }
 
-  stopLayer(assetId: string) { // Changed to assetId for consistency with sources map
+  stopLayer(assetId: string) {
     const audio = this.sources.get(assetId);
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
-      console.log(`Audio Engine: Stopped layer for asset: ${assetId}`);
+      this.log('DEBUG', `Audio Engine: Stopped layer for asset: ${assetId}`);
     }
   }
 
@@ -967,33 +1031,34 @@ export class MockAudioEngine {
     });
     this.isPlaying = false;
     this.currentPlaybackTime = 0;
-    console.log('Audio Engine: All layers stopped.');
+    this.log('INFO', 'Audio Engine: All layers stopped.');
   }
 
   pauseAllLayers() {
     this.sources.forEach(audio => audio.pause());
     this.isPlaying = false;
-    console.log('Audio Engine: All layers paused.');
+    this.log('INFO', 'Audio Engine: All layers paused.');
   }
 
   resumeAllLayers() {
+    this.isPlaying = true; // Set global state first
     this.sources.forEach(audio => {
-      // Only resume if it was playing before pause, or if it's meant to be active
-      // Simplified: resume all currently loaded. Real logic would be more complex.
-      if (this.isPlaying) { // Ensure global play state
-         audio.play().catch(e => console.error("Error resuming audio:", e));
-      }
+      // In a real implementation, only layers currently part of activeSoundscape would resume.
+      // For this mock, we assume anything loaded could resume if 'isPlaying' is true.
+      audio.play().catch(e => this.log('ERROR', `Error resuming audio: ${e}`));
     });
-    this.isPlaying = true;
-    console.log('Audio Engine: All layers resumed.');
+    this.log('INFO', 'Audio Engine: All layers resumed.');
   }
 
   cleanup() {
     clearInterval(this.updateInterval);
     this.stopAllLayers();
-    this.sources.forEach(audio => audio.src = ''); // Release resources
+    this.sources.forEach(audio => {
+      audio.src = ''; // Release resources
+      audio.load(); // Further ensures resource release
+    });
     this.sources.clear();
-    console.log('Audio Engine: Cleaned up resources.');
+    this.log('INFO', 'Audio Engine: Cleaned up resources.');
   }
 }
 
@@ -1003,6 +1068,11 @@ export class MockAudioEngine {
  * and complex logic for managing the dynamic soundscape.
  * It integrates with external data, applies adaptive rules, handles audio playback state,
  * and manages user preferences.
+ * Business Value: This hook is the orchestration core, providing real-time reactivity
+ * and intelligent automation. By centralizing complex interactions (sensor data, AI, audio engine),
+ * it ensures system stability, performance, and seamless user experience. It dramatically
+ * reduces development overhead for UI components and enforces a consistent application logic,
+ * acting as a vital abstraction layer for the entire soundscape platform.
  */
 export const useSoundscapeEngine = (
   state: SoundscapeAppState,
@@ -1010,53 +1080,68 @@ export const useSoundscapeEngine = (
 ) => {
   const audioEngineRef = useRef<MockAudioEngine | null>(null);
 
+  // Callback for logging, passed to the audio engine
+  const logToState = useCallback((level: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR', message: string) => {
+    dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level, message } });
+  }, [dispatch]);
+
   // Initialize audio engine on component mount
   useEffect(() => {
-    audioEngineRef.current = new MockAudioEngine();
-    console.log('useSoundscapeEngine: MockAudioEngine initialized.');
+    audioEngineRef.current = new MockAudioEngine(logToState);
+    logToState('INFO', 'useSoundscapeEngine: MockAudioEngine initialized.');
 
-    // Load initial assets
-    state.soundAssets.forEach(asset => {
-      audioEngineRef.current?.loadSoundAsset(asset);
+    // Load initial assets that are part of the default presets or user's last session
+    const allAssetIds = new Set<string>();
+    state.soundAssets.forEach(asset => allAssetIds.add(asset.id));
+    state.availablePresets.forEach(preset => preset.layers.forEach(layer => allAssetIds.add(layer.assetId)));
+    state.userProfiles.forEach(profile => profile.customSoundscapes.forEach(cs => cs.layers.forEach(layer => allAssetIds.add(layer.assetId))));
+
+    Array.from(allAssetIds).forEach(assetId => {
+      const asset = state.soundAssets.find(a => a.id === assetId);
+      if (asset) {
+        audioEngineRef.current?.loadSoundAsset(asset);
+      }
     });
 
     return () => {
       audioEngineRef.current?.cleanup();
-      console.log('useSoundscapeEngine: MockAudioEngine cleaned up.');
+      logToState('INFO', 'useSoundscapeEngine: MockAudioEngine cleaned up.');
     };
-  }, []);
+  }, [logToState, state.soundAssets, state.availablePresets, state.userProfiles]);
 
-  // Effect for handling global playback state changes
+  // Effect for handling global playback state changes and layer updates
   useEffect(() => {
     if (!audioEngineRef.current) return;
 
     audioEngineRef.current.setMasterVolume(state.globalSettings.masterVolume);
     audioEngineRef.current.toggleSpatialAudio(state.globalSettings.spatialAudioEnabled);
-    // Note: Output device and low latency mode would be handled by specific events, not global state changes here
 
+    // Ensure audio engine's global play/pause state matches app state
     if (state.audioEngine.isPlaying) {
-      audioEngineRef.current.resumeAllLayers(); // Resumes all *paused* layers if global isPlaying is true
+      audioEngineRef.current.resumeAllLayers();
     } else {
       audioEngineRef.current.pauseAllLayers();
     }
 
-    // Effect for updating individual layers based on activeSoundscape.layers
-    state.activeSoundscape.layers.forEach(layer => {
-        const asset = state.soundAssets.find(a => a.id === layer.assetId);
-        if (asset) {
-            audioEngineRef.current?.loadSoundAsset(asset).then(() => {
-                if (state.audioEngine.isPlaying && layer.isEnabled && !layer.isMuted) {
-                    audioEngineRef.current?.playLayer(layer, state.globalSettings.masterVolume);
-                } else {
-                    // Stop or mute if conditions are not met
-                    audioEngineRef.current?.stopLayer(asset.id);
-                }
-            });
+    // Iterate through active layers and manage their playback
+    const currentActiveLayerAssetIds = new Set(state.activeSoundscape.layers.map(l => l.assetId));
+    audioEngineRef.current.sources.forEach((audio, assetId) => {
+        const layer = state.activeSoundscape.layers.find(l => l.assetId === assetId);
+        if (layer && layer.isEnabled && !layer.isMuted && state.audioEngine.isPlaying) {
+            audioEngineRef.current?.playLayer(layer, state.globalSettings.masterVolume);
+        } else if (!currentActiveLayerAssetIds.has(assetId) || layer?.isMuted || !layer?.isEnabled || !state.audioEngine.isPlaying) {
+            audioEngineRef.current?.stopLayer(assetId);
         }
     });
 
-
-  }, [state.audioEngine.isPlaying, state.globalSettings.masterVolume, state.globalSettings.spatialAudioEnabled, state.activeSoundscape.layers, state.soundAssets]);
+  }, [
+    state.audioEngine.isPlaying,
+    state.globalSettings.masterVolume,
+    state.globalSettings.spatialAudioEnabled,
+    state.activeSoundscape.layers,
+    state.soundAssets,
+    logToState
+  ]);
 
 
   // Effect for initial state loading from local storage
@@ -1067,10 +1152,10 @@ export const useSoundscapeEngine = (
         const parsedState: SoundscapeAppState = JSON.parse(storedState);
         dispatch({ type: 'INITIALIZE_STATE', payload: parsedState });
         dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'INFO', message: 'State loaded from local storage.' } });
-      } catch (e) {
+      } catch (e: any) {
         console.error('Failed to load state from local storage:', e);
         dispatch({ type: 'SET_ERROR', payload: 'Failed to load saved state.' });
-        dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'ERROR', message: `Failed to load state from local storage: ${e}` } });
+        dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'ERROR', message: `Failed to load state from local storage: ${e.message}` } });
       }
     } else {
       dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'INFO', message: 'No saved state found, using initial state.' } });
@@ -1081,7 +1166,6 @@ export const useSoundscapeEngine = (
   useEffect(() => {
     const debounceSave = setTimeout(() => {
       localStorage.setItem('soundscapeAppState', JSON.stringify(state));
-      // console.log('State saved to local storage.'); // Too chatty for console
     }, 1000); // Save state after 1 second of no changes
     return () => clearTimeout(debounceSave);
   }, [state]);
@@ -1097,6 +1181,7 @@ export const useSoundscapeEngine = (
         dispatch({ type: 'UPDATE_ENVIRONMENTAL_DATA', payload: weather });
         dispatch({ type: 'UPDATE_OFFICE_SENSOR_DATA', payload: office });
         dispatch({ type: 'SET_LOADING', payload: false });
+        dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'INFO', message: 'Environmental and office sensor data refreshed.' } });
       } catch (e: any) {
         dispatch({ type: 'SET_ERROR', payload: `Data fetch failed: ${e.message}` });
         dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'ERROR', message: `Data fetch failed: ${e.message}` } });
@@ -1112,63 +1197,74 @@ export const useSoundscapeEngine = (
   // Effect for applying adaptive rules when environmental/office data changes
   useEffect(() => {
     const newLayers = applyAdaptiveRules(state);
-    // Deep comparison to avoid unnecessary re-renders/dispatches
-    // Note: This logic assumes applyAdaptiveRules returns modifications on *existing* layers, not new layers.
-    // A more robust system might dispatch a 'REPLACE_ACTIVE_LAYERS' or a batch 'UPDATE_LAYERS' action.
     const changesDetected = newLayers.some((newL, index) => {
-        const oldL = state.activeSoundscape.layers.find(l => l.id === newL.id); // Find by ID, order might change
-        return oldL && (newL.volume !== oldL.volume || newL.pan !== oldL.pan || newL.isEnabled !== oldL.isEnabled);
+        const oldL = state.activeSoundscape.layers.find(l => l.id === newL.id);
+        return oldL && (newL.volume !== oldL.volume || newL.pan !== oldL.pan || newL.isEnabled !== oldL.isEnabled || newL.isMuted !== oldL.isMuted);
     });
 
     if (changesDetected) {
         newLayers.forEach(newL => {
           const oldL = state.activeSoundscape.layers.find(l => l.id === newL.id);
-          if (oldL && (newL.volume !== oldL.volume || newL.pan !== oldL.pan || newL.isEnabled !== oldL.isEnabled)) {
+          if (oldL && (newL.volume !== oldL.volume || newL.pan !== oldL.pan || newL.isEnabled !== oldL.isEnabled || newL.isMuted !== oldL.isMuted)) {
               dispatch({
                   type: 'UPDATE_LAYER_CONFIG',
                   payload: {
                       layerId: newL.id,
-                      updates: { volume: newL.volume, pan: newL.pan, isEnabled: newL.isEnabled }
+                      updates: { volume: newL.volume, pan: newL.pan, isEnabled: newL.isEnabled, isMuted: newL.isMuted }
                   }
               });
           }
         });
         dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'INFO', message: 'Adaptive rules applied, soundscape layers updated.' } });
     }
-  }, [state.environmentalData, state.officeSensorData, state.activeSoundscape.activeAdaptiveRules, state.activeSoundscape.layers, dispatch]); // Dependencies for re-evaluation
-
+  }, [state.environmentalData, state.officeSensorData, state.activeSoundscape.activeAdaptiveRules, state.activeSoundscape.layers, dispatch]);
 
   // Effect for AI recommendations
   useEffect(() => {
     if (state.globalSettings.aiRecommendationMode !== 'OFF') {
       const fetchRecommendation = async () => {
         const recommendationText = await simulateAIRecommendation(state);
-        // This should trigger a state update for currentRecommendation in activeSoundscape
-        // For simplicity, let's add a notification
+        // Dispatching as a notification for now. In a real system,
+        // this might update a specific `currentRecommendation` field in `activeSoundscape` state.
         dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'INFO', message: `AI Suggestion: ${recommendationText}`, timestamp: new Date().toISOString(), isRead: false } });
       };
       const interval = setInterval(fetchRecommendation, 60000); // Every minute
       return () => clearInterval(interval);
     }
-  }, [state.globalSettings.aiRecommendationMode, state.environmentalData, state.officeSensorData, state.userProfiles, dispatch, state]); // Include state as dependency for AI to react to changes
-
+  }, [state.globalSettings.aiRecommendationMode, state.environmentalData, state.officeSensorData, state.userProfiles, dispatch, state]);
 
   // Effect for current playback time update simulation
   useEffect(() => {
     if (state.audioEngine.isPlaying) {
       const interval = setInterval(() => {
+        // Direct state update for playback time to avoid re-rendering entire component on every second
+        // This is a common optimization for frequently changing values.
+        audioEngineRef.current?.sources.forEach(audio => {
+            if (!audio.paused && !audio.ended && audio.duration) {
+                // Find the layer associated with this audio asset
+                const layer = state.activeSoundscape.layers.find(l => {
+                    const asset = state.soundAssets.find(a => a.id === l.assetId);
+                    return asset && asset.filePath === audio.src;
+                });
+                if (layer) {
+                    // This dispatcher structure is a simplified way to update the state with the current playback time.
+                    // A more robust implementation might track individual layer playback times or expose
+                    // a dedicated action for this.
+                }
+            }
+        });
         dispatch(current => ({
           ...current,
           audioEngine: {
             ...current.audioEngine,
-            currentPlaybackTimeSeconds: current.audioEngine.currentPlaybackTimeSeconds + 1
+            currentPlaybackTimeSeconds: (current.audioEngine.currentPlaybackTimeSeconds % 3600) + 1 // Max 1 hour, then loop
           }
-        }) as SoundscapeAction); // Cast needed due to complex return type from reducer
+        }) as SoundscapeAction);
       }, 1000);
       return () => clearInterval(interval);
     }
     return undefined;
-  }, [state.audioEngine.isPlaying, dispatch]);
+  }, [state.audioEngine.isPlaying, dispatch, state.activeSoundscape.layers, state.soundAssets]);
 
 
   // Effect for loading sound assets dynamically as layers are added/changed
@@ -1310,8 +1406,9 @@ interface InputFieldProps {
   onChange: (value: string | number) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
-export const InputField: React.FC<InputFieldProps> = ({ label, type, value, onChange, placeholder, className }) => (
+export const InputField: React.FC<InputFieldProps> = ({ label, type, value, onChange, placeholder, className, disabled }) => (
   <div className={`flex flex-col gap-2 ${className}`}>
     <label className="text-sm text-gray-300">{label}</label>
     <input
@@ -1320,6 +1417,7 @@ export const InputField: React.FC<InputFieldProps> = ({ label, type, value, onCh
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className="block w-full px-3 py-2 text-gray-300 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+      disabled={disabled}
     />
   </div>
 );
@@ -1362,10 +1460,11 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({ state, dispa
   const currentTrack = state.activeSoundscape.name;
 
   const activeProfile = state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId);
-  const aiRecommendation = state.notifications.find(n => n.message.startsWith('AI Suggestion:'))?.message || state.activeSoundscape.currentRecommendation || 'No new recommendations.';
+  const aiRecommendationNotification = state.notifications.find(n => n.message.startsWith('AI Suggestion:') && !n.isRead);
+  const aiRecommendation = aiRecommendationNotification?.message || state.activeSoundscape.currentRecommendation || 'No new recommendations.';
 
-  const handlePresetSelect = (presetId: string) => {
-    dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId } });
+  const handlePresetSelect = (presetId: string, userId?: string) => {
+    dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId, userId } });
   };
 
   const handleTogglePlayPause = () => {
@@ -1380,13 +1479,31 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({ state, dispa
     dispatch({ type: 'ADJUST_MASTER_VOLUME', payload: value });
   };
 
+  const acceptRecommendation = useCallback(() => {
+    // Parse preset ID from recommendation
+    const match = aiRecommendation.match(/"([^"]+)"/);
+    if (match && match[1]) {
+      const recommendedPresetName = match[1];
+      const recommendedPreset = state.availablePresets.find(p => p.name === recommendedPresetName);
+      if (recommendedPreset) {
+        dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId: recommendedPreset.id, userId: activeProfile?.id } });
+        dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'SUCCESS', message: `Switched to "${recommendedPreset.name}" as recommended.`, timestamp: new Date().toISOString(), isRead: false } });
+        if (aiRecommendationNotification) {
+          dispatch({ type: 'MARK_NOTIFICATION_AS_READ', payload: aiRecommendationNotification.id });
+        }
+      } else {
+        dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'WARNING', message: `Could not find recommended preset "${recommendedPresetName}".`, timestamp: new Date().toISOString(), isRead: false } });
+      }
+    }
+  }, [aiRecommendation, activeProfile, dispatch, state.availablePresets, aiRecommendationNotification]);
+
   return (
     <div className="p-6 bg-gray-800 rounded-lg shadow-xl min-h-[800px]">
       <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
         <h2 className="text-3xl font-bold text-white">Soundscape Dashboard</h2>
         <div className="flex items-center gap-4">
           <Button onClick={handleTogglePlayPause} variant="primary">
-            {state.audioEngine.isPlaying ? '⏸ Pause' : '▶ Play'}
+            {state.audioEngine.isPlaying ? 'â ¸ Pause' : 'â–¶ Play'}
           </Button>
           <SliderControl
             label="Master Volume"
@@ -1404,7 +1521,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({ state, dispa
       <div className="flex gap-2 mb-6">
         <TabButton label="Overview" isActive={state.activeDashboardTab === 'OVERVIEW'} onClick={() => dispatch({ type: 'SET_ACTIVE_DASHBOARD_TAB', payload: 'OVERVIEW' })} />
         <TabButton label="Mixer" isActive={state.activeDashboardTab === 'MIXER'} onClick={() => dispatch({ type: 'SET_ACTIVE_DASHBOARD_TAB', payload: 'MIXER' })} />
-        <TabButton label="Recommendations" isActive={state.activeDashboardTab === 'RECOMMENDATIONS'} onClick={() => dispatch({ type: 'SET_ACTIVE_DASHBOARD_TAB', payload: 'RECOMMENDATIONS' })} />
+        <TabButton label="Recommendations" isActive={state.activeDashboardTab === 'RECOMMENDATIONS'} onClick={() => dispatch({ type: 'SET_ACTIVE_DASHBOARD_TAB', payload: 'RECOMMENDATIONS' })} notificationCount={aiRecommendationNotification ? 1 : 0} />
       </div>
 
       {state.activeDashboardTab === 'OVERVIEW' && (
@@ -1413,7 +1530,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({ state, dispa
             <InfoCard title="Current Weather" value={currentWeather} icon={<i className="fas fa-cloud"></i>} colorClass="text-blue-300" />
             <InfoCard title="Office Activity" value={currentActivity} icon={<i className="fas fa-users"></i>} colorClass="text-yellow-300" />
             <InfoCard title="Now Playing" value={currentTrack} icon={<i className="fas fa-music"></i>} colorClass="text-green-300" />
-            <InfoCard title="Temperature" value={state.environmentalData.temperatureCelsius} unit="°C" icon={<i className="fas fa-thermometer-half"></i>} />
+            <InfoCard title="Temperature" value={state.environmentalData.temperatureCelsius} unit="Â°C" icon={<i className="fas fa-thermometer-half"></i>} />
             <InfoCard title="Occupancy" value={state.officeSensorData.occupancyCount} unit="people" icon={<i className="fas fa-person"></i>} />
             <InfoCard title="Time of Day" value={state.environmentalData.timeOfDay} icon={<i className="fas fa-sun"></i>} />
           </div>
@@ -1453,7 +1570,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({ state, dispa
               {activeProfile?.customSoundscapes.map(preset => (
                 <Button
                   key={preset.id}
-                  onClick={() => handlePresetSelect(preset.id)}
+                  onClick={() => handlePresetSelect(preset.id, activeProfile.id)}
                   variant={state.activeSoundscape.id === preset.id ? 'primary' : 'secondary'}
                   className="whitespace-nowrap overflow-hidden text-ellipsis border border-yellow-500"
                 >
@@ -1486,18 +1603,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({ state, dispa
               onChange={(value) => dispatch({ type: 'TOGGLE_AI_RECOMMENDATION_MODE', payload: value as SoundscapeAppState['globalSettings']['aiRecommendationMode'] })}
             />
             {aiRecommendation.includes('Would you like to switch to') && (
-              <Button onClick={() => {
-                // Parse preset ID from recommendation
-                const match = aiRecommendation.match(/"([^"]+)"/);
-                if (match && match[1]) {
-                  const recommendedPresetName = match[1];
-                  const recommendedPreset = state.availablePresets.find(p => p.name === recommendedPresetName);
-                  if (recommendedPreset) {
-                    dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId: recommendedPreset.id } });
-                    dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'SUCCESS', message: `Switched to "${recommendedPreset.name}" as recommended.`, timestamp: new Date().toISOString(), isRead: false } });
-                  }
-                }
-              }} className="mt-4">Accept Recommendation</Button>
+              <Button onClick={acceptRecommendation} className="mt-4">Accept Recommendation</Button>
             )}
           </div>
           <div className="bg-gray-700 p-5 rounded-lg shadow-md">
@@ -1526,6 +1632,9 @@ interface SoundMixerSectionProps {
   dispatch: React.Dispatch<SoundscapeAction>;
 }
 export const SoundMixerSection: React.FC<SoundMixerSectionProps> = ({ state, dispatch }) => {
+  const [newAssetName, setNewAssetName] = useState('');
+  const [newAssetFilePath, setNewAssetFilePath] = useState('');
+  const [newAssetCategory, setNewAssetCategory] = useState<SoundAsset['category']>('AMBIENT');
 
   const handleLayerVolumeChange = (layerId: string, volume: number) => {
     dispatch({ type: 'UPDATE_LAYER_CONFIG', payload: { layerId, updates: { volume } } });
@@ -1566,6 +1675,28 @@ export const SoundMixerSection: React.FC<SoundMixerSectionProps> = ({ state, dis
       };
       dispatch({ type: 'ADD_LAYER_TO_ACTIVE_SOUNDSCAPE', payload: newLayer });
     }
+  };
+
+  const handleUploadAsset = () => {
+    if (!newAssetName || !newAssetFilePath) {
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'WARNING', message: 'Asset name and file path are required.', timestamp: new Date().toISOString(), isRead: false } });
+      return;
+    }
+
+    const newAsset: SoundAsset = {
+      id: generateUniqueId(),
+      name: newAssetName,
+      category: newAssetCategory,
+      filePath: newAssetFilePath,
+      durationSeconds: Math.floor(Math.random() * 300) + 60, // Simulate duration
+      tags: ['custom', newAssetCategory.toLowerCase()],
+      isCustomUpload: true,
+    };
+
+    dispatch({ type: 'ADD_SOUND_ASSET', payload: newAsset });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'SUCCESS', message: `Asset "${newAssetName}" uploaded successfully!`, timestamp: new Date().toISOString(), isRead: false } });
+    setNewAssetName('');
+    setNewAssetFilePath('');
   };
 
   return (
@@ -1649,6 +1780,8 @@ export const SoundMixerSection: React.FC<SoundMixerSectionProps> = ({ state, dis
                           { value: 'EQ', label: 'Equalizer' },
                           { value: 'COMPRESSOR', label: 'Compressor' },
                           { value: 'SPATIALIZER', label: 'Spatializer' },
+                          { value: 'LOWPASS', label: 'Low-Pass Filter' },
+                          { value: 'HIGHPASS', label: 'High-Pass Filter' },
                         ]}
                         onChange={(value) => {
                           if (value) {
@@ -1688,16 +1821,16 @@ export const SoundMixerSection: React.FC<SoundMixerSectionProps> = ({ state, dis
           </div>
           <div className="mt-6 border-t border-gray-600 pt-4">
             <h3 className="text-xl font-semibold text-white mb-3">Upload Custom Asset</h3>
-            <InputField label="Asset Name" type="text" value="" onChange={() => {}} placeholder="e.g., My Custom Rain Loop" className="mb-2" />
-            <InputField label="File Path (URL)" type="text" value="" onChange={() => {}} placeholder="e.g., /my_uploads/rain_loop.mp3" className="mb-2" />
+            <InputField label="Asset Name" type="text" value={newAssetName} onChange={setNewAssetName} placeholder="e.g., My Custom Rain Loop" className="mb-2" />
+            <InputField label="File Path (URL)" type="text" value={newAssetFilePath} onChange={setNewAssetFilePath} placeholder="e.g., /my_uploads/rain_loop.mp3" className="mb-2" />
             <SelectInput
               label="Category"
-              value="AMBIENT"
-              options={Object.values({ 'AMBIENT': 'Ambient', 'NATURE': 'Nature', 'MUSIC': 'Music', 'VOICES': 'Voices', 'MACHINES': 'Machines', 'EFFECTS': 'Effects' }).map(c => ({ value: c.toUpperCase(), label: c }))}
-              onChange={() => {}}
+              value={newAssetCategory}
+              options={Object.values(['AMBIENT', 'NATURE', 'MUSIC', 'VOICES', 'MACHINES', 'EFFECTS']).map(c => ({ value: c, label: c }))}
+              onChange={(value) => setNewAssetCategory(value as SoundAsset['category'])}
               className="mb-2"
             />
-            <Button onClick={() => { /* Implement actual upload logic */ }} className="w-full mt-3">Upload Asset</Button>
+            <Button onClick={handleUploadAsset} className="w-full mt-3" disabled={!newAssetName || !newAssetFilePath}>Upload Asset</Button>
           </div>
         </div>
       </div>
@@ -1711,11 +1844,24 @@ interface SettingsSectionProps {
   dispatch: React.Dispatch<SoundscapeAction>;
 }
 export const SettingsSection: React.FC<SettingsSectionProps> = ({ state, dispatch }) => {
+  const activeProfile = state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId);
+  const [weatherApiKey, setWeatherApiKey] = useState('****************'); // Simulate sensitive config
+  const [officeSensorEndpoint, setOfficeSensorEndpoint] = useState('https://api.example.com/occupancy');
+  const [calendarSyncProvider, setCalendarSyncProvider] = useState('Google Calendar');
+  const [micEnabled, setMicEnabled] = useState(true);
+
   const handleThemeChange = (theme: 'DARK' | 'LIGHT') => {
     // This would typically update a global theme context, but for this file, just logs.
+    document.documentElement.setAttribute('data-theme', theme.toLowerCase()); // Apply theme to root element
     console.log(`Theme changed to: ${theme}`);
     // Potentially update globalSettings.theme in state if it's stored there
     // dispatch({ type: 'UPDATE_GLOBAL_SETTINGS', payload: { theme }});
+  };
+
+  const saveSensorSettings = () => {
+    dispatch({ type: 'ADD_LOG', payload: { timestamp: new Date().toISOString(), level: 'INFO', message: 'Sensor settings saved (simulated).' } });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'SUCCESS', message: 'Sensor settings updated.', timestamp: new Date().toISOString(), isRead: false } });
+    // In a real application, this would trigger an update to a backend service or a configuration file.
   };
 
   return (
@@ -1728,7 +1874,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ state, dispatc
         <TabButton label="General" isActive={state.activeSettingsTab === 'GENERAL'} onClick={() => dispatch({ type: 'SET_ACTIVE_SETTINGS_TAB', payload: 'GENERAL' })} />
         <TabButton label="Audio" isActive={state.activeSettingsTab === 'AUDIO'} onClick={() => dispatch({ type: 'SET_ACTIVE_SETTINGS_TAB', payload: 'AUDIO' })} />
         <TabButton label="Sensor Integration" isActive={state.activeSettingsTab === 'SENSORS'} onClick={() => dispatch({ type: 'SET_ACTIVE_SETTINGS_TAB', payload: 'SENSORS' })} />
-        <TabButton label="Notifications" isActive={state.activeSettingsTab === 'NOTIFICATIONS'} onClick={() => dispatch({ type: 'SET_ACTIVE_SETTINGS_TAB', payload: 'NOTIFICATIONS' })} />
+        <TabButton label="Notifications" isActive={state.activeSettingsTab === 'NOTIFICATIONS'} onClick={() => dispatch({ type: 'SET_ACTIVE_SETTINGS_TAB', payload: 'NOTIFICATIONS' })} notificationCount={state.notifications.filter(n => !n.isRead).length} />
       </div>
 
       {state.activeSettingsTab === 'GENERAL' && (
@@ -1736,20 +1882,25 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ state, dispatc
           <h3 className="text-xl font-semibold text-white mb-4">General Preferences</h3>
           <SelectInput
             label="Preferred Language"
-            value={state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId)?.personalSettings.preferredLanguage || 'en-US'}
-            options={[{ value: 'en-US', label: 'English (US)' }, { value: 'es-ES', label: 'Español (ES)' }, { value: 'fr-FR', label: 'Français (FR)' }]}
-            onChange={(value) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: state.globalSettings.activeProfileId, updates: { personalSettings: { ...state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId)?.personalSettings, preferredLanguage: value } } } })}
+            value={activeProfile?.personalSettings.preferredLanguage || 'en-US'}
+            options={[{ value: 'en-US', label: 'English (US)' }, { value: 'es-ES', label: 'EspaÃ±ol (ES)' }, { value: 'fr-FR', label: 'FranÃ§ais (FR)' }]}
+            onChange={(value) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: state.globalSettings.activeProfileId, updates: { personalSettings: { ...activeProfile?.personalSettings, preferredLanguage: value } } } })}
           />
           <SelectInput
             label="Application Theme"
             value={state.globalSettings.theme}
             options={[{ value: 'DARK', label: 'Dark Mode' }, { value: 'LIGHT', label: 'Light Mode' }]}
-            onChange={(value) => handleThemeChange(value as 'DARK' | 'LIGHT')}
+            onChange={(value) => {
+              dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: state.globalSettings.activeProfileId, updates: { personalSettings: { ...activeProfile?.personalSettings, theme: value } } } }); // Assuming theme is part of personalSettings
+              // Also update global settings if theme is managed globally or reflected globally for UI
+              // dispatch({ type: 'UPDATE_GLOBAL_SETTINGS', payload: { theme: value } }); // Add if needed
+              handleThemeChange(value as 'DARK' | 'LIGHT');
+            }}
           />
           <ToggleSwitch
             label="Enable AI Recommendations"
-            isChecked={state.globalSettings.aiRecommendationMode !== 'OFF'}
-            onChange={(checked) => dispatch({ type: 'TOGGLE_AI_RECOMMENDATION_MODE', payload: checked ? 'AMBIENT' : 'OFF' })}
+            isChecked={activeProfile?.personalSettings.aiRecommendationsEnabled || false}
+            onChange={(checked) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: activeProfile!.id, updates: { personalSettings: { ...activeProfile?.personalSettings, aiRecommendationsEnabled: checked } } } })}
           />
         </div>
       )}
@@ -1792,11 +1943,11 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ state, dispatc
         <div className="space-y-6 bg-gray-700 p-5 rounded-lg shadow-md">
           <h3 className="text-xl font-semibold text-white mb-4">Sensor Integration</h3>
           <p className="text-gray-300 mb-4">Manage connections to external data sources.</p>
-          <InputField label="Weather API Key" type="password" value="****************" onChange={() => {}} placeholder="Enter your API key" />
-          <InputField label="Office Occupancy Sensor Endpoint" type="text" value="https://api.example.com/occupancy" onChange={() => {}} />
-          <InputField label="Calendar Sync Provider" type="text" value="Google Calendar" onChange={() => {}} />
-          <ToggleSwitch label="Enable Microphone for Ambient Noise Detection" isChecked={true} onChange={() => { /* Toggle mic input */ }} />
-          <Button onClick={() => { /* Save sensor settings */ }} className="mt-4">Save Sensor Settings</Button>
+          <InputField label="Weather API Key" type="password" value={weatherApiKey} onChange={setWeatherApiKey} placeholder="Enter your API key" />
+          <InputField label="Office Occupancy Sensor Endpoint" type="text" value={officeSensorEndpoint} onChange={setOfficeSensorEndpoint} />
+          <InputField label="Calendar Sync Provider" type="text" value={calendarSyncProvider} onChange={setCalendarSyncProvider} />
+          <ToggleSwitch label="Enable Microphone for Ambient Noise Detection" isChecked={micEnabled} onChange={setMicEnabled} />
+          <Button onClick={saveSensorSettings} className="w-full mt-4">Save Sensor Settings</Button>
         </div>
       )}
 
@@ -1805,8 +1956,8 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ state, dispatc
           <h3 className="text-xl font-semibold text-white mb-4">Notification Preferences</h3>
           <ToggleSwitch
             label="Enable Desktop Notifications"
-            isChecked={state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId)?.personalSettings.notificationsEnabled || false}
-            onChange={(checked) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: state.globalSettings.activeProfileId, updates: { personalSettings: { ...state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId)?.personalSettings, notificationsEnabled: checked } } } })}
+            isChecked={activeProfile?.personalSettings.notificationsEnabled || false}
+            onChange={(checked) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: activeProfile!.id, updates: { personalSettings: { ...activeProfile?.personalSettings, notificationsEnabled: checked } } } })}
           />
           <p className="text-gray-400 text-sm">Receive alerts for important updates and AI recommendations.</p>
 
@@ -1845,6 +1996,7 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
   const activeProfile = state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId);
   const [newSoundscapeName, setNewSoundscapeName] = useState('');
   const [newSoundscapeDescription, setNewSoundscapeDescription] = useState('');
+  const [newUserName, setNewUserName] = useState('');
 
   const handleCreateCustomSoundscape = () => {
     if (!activeProfile || !newSoundscapeName) {
@@ -1872,6 +2024,10 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
 
   const handleDeleteCustomSoundscape = (soundscapeId: string) => {
     if (activeProfile) {
+      if (soundscapeId === state.activeSoundscape.id) {
+        dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'WARNING', message: 'Cannot delete the currently active soundscape. Please switch to another first.', timestamp: new Date().toISOString(), isRead: false } });
+        return;
+      }
       dispatch({ type: 'DELETE_CUSTOM_SOUNDSCAPE_FROM_PROFILE', payload: { userId: activeProfile.id, soundscapeId } });
       dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'SUCCESS', message: 'Custom soundscape deleted.', timestamp: new Date().toISOString(), isRead: false } });
     }
@@ -1879,6 +2035,37 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
 
   const handleActivateCustomSoundscape = (soundscapeId: string) => {
     dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId: soundscapeId, userId: activeProfile?.id } });
+  };
+
+  const handleCreateNewUser = () => {
+    if (!newUserName) {
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'WARNING', message: 'Username is required to create a new profile.', timestamp: new Date().toISOString(), isRead: false } });
+      return;
+    }
+    const newUserId = generateUniqueId();
+    const newUser: UserProfile = {
+      id: newUserId,
+      username: newUserName,
+      favoritePresets: [],
+      customSoundscapes: [],
+      personalSettings: {
+        masterVolume: initialSoundscapeState.globalSettings.masterVolume,
+        spatialAudioEnabled: initialSoundscapeState.globalSettings.spatialAudioEnabled,
+        notificationsEnabled: true,
+        preferredLanguage: 'en-US',
+        aiRecommendationsEnabled: true,
+      },
+      sessionHistory: [],
+    };
+    // This action type doesn't exist, we'd need to add it to SoundscapeAction and reducer
+    // For now, simulate adding a user by pushing directly, or dispatching an 'UPDATE_USER_PROFILES' with new array
+    // Since direct state mutation is not ideal with useReducer, let's simulate it by dispatching a custom action
+    // A proper `ADD_USER_PROFILE` action would be needed in `SoundscapeAction`
+    const updatedUserProfiles = [...state.userProfiles, newUser];
+    dispatch({ type: 'INITIALIZE_STATE', payload: { ...state, userProfiles: updatedUserProfiles } }); // This is a hack, a real action is better
+    dispatch({ type: 'SET_ACTIVE_PROFILE', payload: newUserId });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { id: generateUniqueId(), type: 'SUCCESS', message: `New profile "${newUserName}" created and activated!`, timestamp: new Date().toISOString(), isRead: false } });
+    setNewUserName('');
   };
 
   return (
@@ -1894,36 +2081,45 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
       </div>
 
       {state.activeProfileManagementTab === 'OVERVIEW' && (
-        <div className="space-y-6 bg-gray-700 p-5 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold text-white mb-4">Your Profile: {activeProfile?.username}</h3>
-          <SelectInput
-            label="Active User Profile"
-            value={state.globalSettings.activeProfileId}
-            options={state.userProfiles.map(p => ({ value: p.id, label: p.username }))}
-            onChange={(value) => dispatch({ type: 'SET_ACTIVE_PROFILE', payload: value })}
-          />
-          <InputField
-            label="Username"
-            type="text"
-            value={activeProfile?.username || ''}
-            onChange={(value) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: activeProfile!.id, updates: { username: value as string } } })}
-          />
-          <ToggleSwitch
-            label="Enable Personal Notifications"
-            isChecked={activeProfile?.personalSettings.notificationsEnabled || false}
-            onChange={(checked) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: activeProfile!.id, updates: { personalSettings: { ...activeProfile?.personalSettings, notificationsEnabled: checked } } } })}
-          />
-          <h4 className="text-lg font-semibold text-white mt-6 mb-3">Favorite Presets</h4>
-          <div className="flex flex-wrap gap-2">
-            {activeProfile?.favoritePresets.length === 0 && <p className="text-gray-400">No favorite presets.</p>}
-            {activeProfile?.favoritePresets.map(presetId => {
-              const preset = state.availablePresets.find(p => p.id === presetId) || activeProfile.customSoundscapes.find(cs => cs.id === presetId);
-              return preset ? (
-                <Button key={preset.id} onClick={() => dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId: preset.id } })} variant="secondary" className="px-3 py-1 text-sm">
-                  {preset.name}
-                </Button>
-              ) : null;
-            })}
+        <div className="space-y-6">
+          <div className="bg-gray-700 p-5 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white mb-4">Your Profile: {activeProfile?.username}</h3>
+            <SelectInput
+              label="Active User Profile"
+              value={state.globalSettings.activeProfileId}
+              options={state.userProfiles.map(p => ({ value: p.id, label: p.username }))}
+              onChange={(value) => dispatch({ type: 'SET_ACTIVE_PROFILE', payload: value })}
+            />
+            <InputField
+              label="Username"
+              type="text"
+              value={activeProfile?.username || ''}
+              onChange={(value) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: activeProfile!.id, updates: { username: value as string } } })}
+              className="mt-4"
+            />
+            <ToggleSwitch
+              label="Enable Personal Notifications"
+              isChecked={activeProfile?.personalSettings.notificationsEnabled || false}
+              onChange={(checked) => dispatch({ type: 'UPDATE_USER_PROFILE', payload: { userId: activeProfile!.id, updates: { personalSettings: { ...activeProfile?.personalSettings, notificationsEnabled: checked } } } })}
+              className="mt-4"
+            />
+            <h4 className="text-lg font-semibold text-white mt-6 mb-3">Favorite Presets</h4>
+            <div className="flex flex-wrap gap-2">
+              {activeProfile?.favoritePresets.length === 0 && <p className="text-gray-400">No favorite presets.</p>}
+              {activeProfile?.favoritePresets.map(presetId => {
+                const preset = state.availablePresets.find(p => p.id === presetId) || activeProfile.customSoundscapes.find(cs => cs.id === presetId);
+                return preset ? (
+                  <Button key={preset.id} onClick={() => dispatch({ type: 'SET_ACTIVE_SOUNDSCAPE_PRESET', payload: { presetId: preset.id, userId: activeProfile.id } })} variant="secondary" className="px-3 py-1 text-sm">
+                    {preset.name}
+                  </Button>
+                ) : null;
+              })}
+            </div>
+          </div>
+          <div className="bg-gray-700 p-5 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white mb-4">Create New Profile</h3>
+            <InputField label="New Username" type="text" value={newUserName} onChange={setNewUserName} placeholder="Enter new username" className="mb-4" />
+            <Button onClick={handleCreateNewUser} className="w-full" disabled={!newUserName}>Create & Switch to New Profile</Button>
           </div>
         </div>
       )}
@@ -1934,7 +2130,7 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
             <h3 className="text-xl font-semibold text-white mb-4">Create New Custom Soundscape from Current Mix</h3>
             <InputField label="Soundscape Name" type="text" value={newSoundscapeName} onChange={(val) => setNewSoundscapeName(val as string)} placeholder="e.g., My Rainy Focus Blend" className="mb-2" />
             <InputField label="Description" type="text" value={newSoundscapeDescription} onChange={(val) => setNewSoundscapeDescription(val as string)} placeholder="Optional description for your custom mix" className="mb-4" />
-            <Button onClick={handleCreateCustomSoundscape} className="w-full">Save Current Soundscape as New Custom</Button>
+            <Button onClick={handleCreateCustomSoundscape} className="w-full" disabled={!newSoundscapeName}>Save Current Soundscape as New Custom</Button>
           </div>
 
           <div className="bg-gray-700 p-5 rounded-lg shadow-md">
@@ -1949,7 +2145,12 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
                     <Button onClick={() => handleActivateCustomSoundscape(cs.id)} variant="primary" className="px-3 py-1 text-sm">
                       Activate
                     </Button>
-                    <Button onClick={() => handleDeleteCustomSoundscape(cs.id)} variant="danger" className="px-3 py-1 text-sm">
+                    <Button
+                      onClick={() => handleDeleteCustomSoundscape(cs.id)}
+                      variant="danger"
+                      className="px-3 py-1 text-sm"
+                      disabled={cs.id === state.activeSoundscape.id}
+                    >
                       Delete
                     </Button>
                   </div>
@@ -1966,4 +2167,95 @@ export const ProfilesSection: React.FC<ProfilesSectionProps> = ({ state, dispatc
           {activeProfile?.sessionHistory.length === 0 && <p className="text-gray-400">No playback history yet.</p>}
           <ul className="space-y-3 max-h-80 overflow-y-auto pr-2">
             {activeProfile?.sessionHistory.slice().reverse().map((session, index) => { // Show most recent first
-              const preset = state.availablePresets.find(p => p.id === session.presetId) || activeProfile.customSoundscapes.find(cs
+              const preset = state.availablePresets.find(p => p.id === session.presetId) || activeProfile.customSoundscapes.find(cs => cs.id === session.presetId);
+              return preset ? (
+                <li key={`${session.presetId}-${session.timestamp}-${index}`} className="p-3 bg-gray-600 rounded-md flex justify-between items-center text-sm">
+                  <div>
+                    <p className="font-medium text-gray-200">{preset.name}</p>
+                    <p className="text-xs text-gray-400">Played: {new Date(session.timestamp).toLocaleString()}</p>
+                  </div>
+                  <span className="text-cyan-300">{session.durationMinutes} min</span>
+                </li>
+              ) : null;
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+/**
+ * `DynamicSoundscapeGeneratorView` is the top-level React component that integrates
+ * all aspects of the dynamic soundscape system.
+ * It provides the main user interface for interacting with the soundscape,
+ * leveraging React's `useReducer` for state management and `useEffect` for
+ * side effects like data fetching, rule application, and audio playback.
+ * Business Value: This component is the direct user touchpoint, encapsulating the entire
+ * value proposition of the platform. Its robust architecture ensures a responsive,
+ * feature-rich, and extensible client-side application. By integrating AI-driven
+ * recommendations, real-time sensor data, and personalized user profiles, it delivers
+ * an unparalleled user experience that drives adoption and monetization through enhanced
+ * productivity and well-being.
+ */
+export const DynamicSoundscapeGeneratorView: React.FC = () => {
+  const [state, dispatch] = useReducer(soundscapeReducer, initialSoundscapeState);
+
+  // Hook into the soundscape engine logic
+  useSoundscapeEngine(state, dispatch);
+
+  // Simple UI state for the main navigation tabs
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'MIXER' | 'PROFILES' | 'SETTINGS' | 'ADMIN'>('DASHBOARD');
+
+  // Logic to apply the theme from state
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', state.globalSettings.theme.toLowerCase());
+  }, [state.globalSettings.theme]);
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col p-4">
+      <header className="bg-gray-800 p-4 rounded-lg shadow-lg mb-6 flex justify-between items-center">
+        <h1 className="text-4xl font-extrabold text-cyan-400">Dynamic Soundscape Generator</h1>
+        <div className="flex items-center space-x-4">
+          <span className="text-gray-300">Logged in as: <span className="font-semibold text-cyan-300">{state.userProfiles.find(p => p.id === state.globalSettings.activeProfileId)?.username}</span></span>
+          <Button onClick={() => dispatch({ type: 'RESET_STATE' })} variant="danger" className="text-sm">Reset App State</Button>
+        </div>
+      </header>
+
+      <nav className="flex space-x-1 bg-gray-800 p-2 rounded-t-lg mb-4 shadow-md">
+        <TabButton label="Dashboard" isActive={activeTab === 'DASHBOARD'} onClick={() => setActiveTab('DASHBOARD')} />
+        <TabButton label="Mixer" isActive={activeTab === 'MIXER'} onClick={() => setActiveTab('MIXER')} />
+        <TabButton label="Profiles" isActive={activeTab === 'PROFILES'} onClick={() => setActiveTab('PROFILES')} />
+        <TabButton label="Settings" isActive={activeTab === 'SETTINGS'} onClick={() => setActiveTab('SETTINGS')} notificationCount={state.notifications.filter(n => !n.isRead).length} />
+        {/* Potentially an Admin tab for managing presets, rules, assets globally */}
+        {/* <TabButton label="Admin" isActive={activeTab === 'ADMIN'} onClick={() => setActiveTab('ADMIN')} /> */}
+      </nav>
+
+      <main className="flex-grow">
+        {state.error && (
+          <div className="bg-red-800 text-white p-4 rounded-md mb-4 flex justify-between items-center">
+            <span>Error: {state.error}</span>
+            <Button onClick={() => dispatch({ type: 'SET_ERROR', payload: null })} variant="secondary">Clear Error</Button>
+          </div>
+        )}
+        {state.isLoading && (
+          <div className="bg-blue-800 text-white p-4 rounded-md mb-4 animate-pulse">
+            Loading data...
+          </div>
+        )}
+
+        {activeTab === 'DASHBOARD' && <DashboardSection state={state} dispatch={dispatch} />}
+        {activeTab === 'MIXER' && <SoundMixerSection state={state} dispatch={dispatch} />}
+        {activeTab === 'PROFILES' && <ProfilesSection state={state} dispatch={dispatch} />}
+        {activeTab === 'SETTINGS' && <SettingsSection state={state} dispatch={dispatch} />}
+        {/* {activeTab === 'ADMIN' && <AdminSection state={state} dispatch={dispatch} />} */}
+      </main>
+
+      <footer className="bg-gray-800 p-4 rounded-lg shadow-lg mt-6 text-center text-gray-400 text-sm">
+        &copy; {new Date().getFullYear()} Money20/20 Build Phase. All rights reserved. Real-time Sound Intelligence.
+      </footer>
+    </div>
+  );
+};
+```
