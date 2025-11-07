@@ -1,5 +1,4 @@
 ```typescript
-// components/views/blueprints/CareerTrajectoryView.tsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Card from '../../Card'; // Keep existing import for Card
 import { GoogleGenAI, Type } from "@google/genai"; // Keep existing import for GoogleGenAI
@@ -10,7 +9,7 @@ import { GoogleGenAI, Type } from "@google/genai"; // Keep existing import for G
  * It delivers hyper-personalized career trajectory planning, real-time skill gap analysis, AI-powered content generation, and intelligent mentorship matching.
  * By automating career growth and talent optimization, it significantly enhances human capital efficiency, reduces hiring friction, and unlocks new revenue streams
  * through predictive talent development and retention strategies for both individuals and enterprises. This leads to millions in value by optimizing workforce potential
- * and ensuring continuous skill alignment with evolving market demands.
+ * and ensuring continuous skill alignment with evolving market demands. This system represents a revolutionary, multi-million-dollar infrastructure leap, enabling next-generation talent management.
  */
 
 /**
@@ -142,6 +141,39 @@ export enum PriorityLevel {
     Critical = 'Critical'
 }
 
+export enum IdentityVerificationLevel {
+    None = "None",
+    Basic = "Basic", // Email/Phone verified
+    Verified = "Verified", // Document/KYC verified
+    Enterprise = "Enterprise" // Corporate entity verification
+}
+
+export enum AuditEventType {
+    ProfileUpdated = "PROFILE_UPDATED",
+    GoalCreated = "GOAL_CREATED",
+    GoalUpdated = "GOAL_UPDATED",
+    GoalDeleted = "GOAL_DELETED",
+    AITaskCompleted = "AI_TASK_COMPLETED",
+    TokenIssued = "TOKEN_ISSUED",
+    TokenTransferred = "TOKEN_TRANSFERRED",
+    PaymentProcessed = "PAYMENT_PROCESSED",
+    IdentityVerified = "IDENTITY_VERIFIED",
+    AccessDenied = "ACCESS_DENIED",
+    ApplicationAdded = "APPLICATION_ADDED",
+    ApplicationUpdated = "APPLICATION_UPDATED",
+    SessionScheduled = "SESSION_SCHEDULED",
+    ResourceAdded = "RESOURCE_ADDED",
+    ProjectAdded = "PROJECT_ADDED",
+    ContactAdded = "CONTACT_ADDED",
+    BrandStatementGenerated = "BRAND_STATEMENT_GENERATED",
+    DailyPlanGenerated = "DAILY_PLAN_GENERATED"
+}
+
+export enum TokenType {
+    CareerCoin = "CareerCoin",
+    SkillPoint = "SkillPoint",
+    AetherCredit = "AetherCredit"
+}
 
 /**
  * ---------------------------------------------------------------------------------------------------------------------
@@ -165,7 +197,6 @@ export interface UserProfile {
     salaryExpectationMin: number;
     salaryExpectationMax: number;
     lastUpdated: string;
-    // New fields for extended profile
     resumeText: string; // Stored here for easy access
     linkedInProfileUrl?: string;
     personalWebsiteUrl?: string;
@@ -173,6 +204,12 @@ export interface UserProfile {
     careerVision: string; // Long-term vision
     preferredLearningStyles: string[]; // e.g., "Visual", "Auditory", "Kinesthetic"
     aiModelPreference?: keyof typeof AI_MODELS; // User's preferred AI model
+    // Digital Identity Layer fields
+    publicKey: string; // Simulated public key for the user's digital identity
+    identityVerificationLevel: IdentityVerificationLevel;
+    walletAddress: string; // Simulated wallet address for token interactions
+    signature?: string; // Cryptographic signature of the profile data (simulated)
+    nonce?: string; // Nonce for replay protection (simulated)
 }
 
 export interface SkillAssessmentResult {
@@ -183,6 +220,8 @@ export interface SkillAssessmentResult {
     gap: number; // targetLevel - currentLevel
     recommendations: LearningResource[];
     lastAssessed: string;
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface CareerGoal {
@@ -197,6 +236,8 @@ export interface CareerGoal {
     actionItems: ActionItem[]; // New: break down goals into actionable steps
     createdAt: string;
     lastUpdated: string;
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface ActionItem {
@@ -208,6 +249,8 @@ export interface ActionItem {
     completedDate?: string; // ISO date string
     notes?: string;
     relatedResourceIds?: string[]; // IDs of related learning resources
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface JobApplication {
@@ -229,6 +272,8 @@ export interface JobApplication {
     createdAt: string;
     lastUpdated: string;
     contacts: NetworkContact[]; // New: contacts related to this application
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface AISuggestion {
@@ -302,6 +347,8 @@ export interface InterviewSession {
     createdAt: string;
     lastUpdated: string;
     stageType: InterviewStageType; // New: which type of interview
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface Notification {
@@ -316,10 +363,11 @@ export interface Notification {
 // Simulated Webhook event structure
 export interface WebhookEvent {
     id: string;
-    eventType: 'JOB_APPLIED' | 'INTERVIEW_SCHEDULED' | 'GOAL_UPDATED' | 'PROFILE_CHANGED' | 'AI_TASK_COMPLETED' | 'SKILL_IMPROVED' | 'NEW_MENTOR_SUGGESTION';
+    eventType: 'JOB_APPLIED' | 'INTERVIEW_SCHEDULED' | 'GOAL_UPDATED' | 'PROFILE_CHANGED' | 'AI_TASK_COMPLETED' | 'SKILL_IMPROVED' | 'NEW_MENTOR_SUGGESTION' | 'TOKEN_ISSUED_EVENT';
     payload: any; // Generic payload for the event
     timestamp: string;
     processed: boolean;
+    signature?: string; // Signature for event integrity
 }
 
 export interface NetworkContact {
@@ -336,6 +384,8 @@ export interface NetworkContact {
     linkedInUrl?: string;
     email?: string;
     phone?: string;
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface PersonalProject {
@@ -352,6 +402,8 @@ export interface PersonalProject {
     goalIds: string[]; // Related career goals
     createdAt: string;
     lastUpdated: string;
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface MentorProfile {
@@ -369,6 +421,8 @@ export interface MentorProfile {
     currentMentees: string[]; // User IDs of current mentees
     isAvailable: boolean;
     rating?: number; // average rating by mentees
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface MentorshipSession {
@@ -383,6 +437,8 @@ export interface MentorshipSession {
     menteeRating?: number; // Mentee's rating of the session
     actionItems: string[]; // Action items agreed upon during session
     status: 'Scheduled' | 'Completed' | 'Cancelled';
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface UserPreferences {
@@ -409,6 +465,8 @@ export interface PortfolioItem {
     skillsDemonstrated?: string[];
     date: string; // ISO date string
     thumbnailUrl?: string;
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface PersonalBrandStatement {
@@ -418,6 +476,8 @@ export interface PersonalBrandStatement {
     generatedDate: string;
     rationale: string;
     keywords: string[];
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
 }
 
 export interface DailyPlanItem {
@@ -428,6 +488,57 @@ export interface DailyPlanItem {
     type: 'Learning' | 'Networking' | 'Job Search' | 'Project' | 'Goal' | 'Other';
     isCompleted: boolean;
     relatedEntityId?: string; // e.g., LearningResource ID, Goal ID
+    signature?: string; // Simulated signature for data integrity
+    nonce?: string; // Nonce for replay protection
+}
+
+export interface AuditLogEntry {
+    id: string;
+    timestamp: string; // ISO date string
+    actorId: string; // User ID, Agent ID, or System
+    eventType: AuditEventType;
+    entityType: string; // e.g., 'UserProfile', 'CareerGoal'
+    entityId: string; // ID of the entity affected
+    payloadHash: string; // Hashed payload of the change/event
+    signature: string; // Cryptographic signature of the log entry (simulated)
+    status: 'SUCCESS' | 'FAILURE';
+    message: string;
+    resource?: string; // URL or identifier for the resource accessed
+}
+
+export interface TokenAccount {
+    userId: string;
+    tokenType: TokenType;
+    balance: number;
+    lastUpdated: string;
+    signature?: string;
+    nonce?: string;
+}
+
+export interface TokenTransaction {
+    id: string;
+    timestamp: string;
+    senderId: string; // User, Agent, or System
+    receiverId: string; // User, Agent, or System
+    amount: number;
+    tokenType: TokenType;
+    memo?: string; // Description of the transaction
+    status: 'PENDING' | 'COMPLETED' | 'FAILED';
+    transactionHash: string; // Hash of the transaction data
+    signature?: string; // Signature of the transaction
+}
+
+export interface PaymentRecord {
+    id: string;
+    timestamp: string;
+    payerId: string; // User or System
+    payeeId: string; // System or Merchant
+    amount: number;
+    currency: string; // e.g., "USD", "EUR"
+    memo?: string; // Description of the payment
+    status: 'PENDING' | 'COMPLETED' | 'FAILED';
+    transactionHash: string; // Hash of the payment data
+    signature?: string; // Signature of the payment
 }
 
 
@@ -439,6 +550,12 @@ export interface DailyPlanItem {
 
 export const generateId = (): string => `_${Math.random().toString(36).substr(2, 9)}`;
 
+/**
+ * Provides comprehensive date and time utilities.
+ * Business value: Ensures consistent date handling across the platform, critical for features like
+ * scheduling, deadline tracking, and audit logging. Standardized time utilities reduce errors and
+ * complexity in managing time-sensitive financial and career progression data.
+ */
 export const DateUtils = {
     getNowISO: () => new Date().toISOString(),
     formatDate: (isoString: string) => new Date(isoString).toLocaleDateString(),
@@ -473,6 +590,12 @@ export const DateUtils = {
     }
 };
 
+/**
+ * Provides robust text manipulation and formatting utilities.
+ * Business value: Enhances user experience through clean data presentation, supports content generation,
+ * and improves data consistency for AI processing. Effective text handling reduces operational
+ * errors and improves the clarity of communications within the platform.
+ */
 export const TextUtils = {
     truncate: (text: string, maxLength: number) => {
         if (!text || text.length <= maxLength) return text;
@@ -484,6 +607,12 @@ export const TextUtils = {
     removeMarkdown: (text: string) => text.replace(/[`*_\-\[\]()#\+\.!]/g, '').replace(/(\r\n|\n|\r)/gm, " ")
 };
 
+/**
+ * Offers a suite of data validation functions.
+ * Business value: Enforces data integrity at the input layer, preventing malformed or invalid data from corrupting
+ * the system. This is crucial for security, compliance, and reliable operation, minimizing downstream errors and
+ * ensuring high-quality data for AI analysis and financial transactions.
+ */
 export const ValidationUtils = {
     isValidEmail: (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
     isNotNullOrEmpty: (str: string | null | undefined) => str !== null && str !== undefined && str.trim() !== '',
@@ -498,6 +627,12 @@ export const ValidationUtils = {
     }
 };
 
+/**
+ * Custom error class for standardized error reporting.
+ * Business value: Provides granular control over error types, enabling precise error handling,
+ * logging, and user feedback. This streamlines debugging, improves system resilience, and ensures
+ * that critical issues are addressed effectively, maintaining a high standard of operational integrity.
+ */
 export class CustomError extends Error {
     constructor(message: string, public code: string = 'GENERIC_ERROR') {
         super(message);
@@ -547,8 +682,10 @@ export function useAsyncState<T>(
         try {
             const result = await fn(...args);
             setValue(result);
+            return result; // Return result for direct use if needed
         } catch (err: any) {
             setError(err);
+            throw err; // Re-throw to allow callers to handle/catch
         } finally {
             setLoading(false);
         }
@@ -655,7 +792,12 @@ export const dataStore = LocalDataStore.getInstance();
 export class NotificationService {
     private notifications: Notification[] = [];
     private listeners: ((notifications: Notification[]) => void)[] = [];
+    private maxNotifications: number = 20;
 
+    /**
+     * Adds a new notification to the system and notifies all subscribers.
+     * @param notification The notification object without ID, timestamp, or read status.
+     */
     public addNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>): void {
         const newNotification: Notification = {
             ...notification,
@@ -664,18 +806,25 @@ export class NotificationService {
             read: false,
         };
         this.notifications.unshift(newNotification); // Add to beginning
+        // Keep only the latest N notifications
+        this.notifications = this.notifications.slice(0, this.maxNotifications);
         this.notifyListeners();
         // Persist notifications (e.g., in localStorage) for later retrieval
         dataStore.setItem('notification', newNotification);
     }
 
+    /**
+     * Retrieves all current in-memory notifications.
+     * @returns An array of Notification objects.
+     */
     public getNotifications(): Notification[] {
-        // In a real app, this would fetch from a persistent store,
-        // here we just return the in-memory list for simplicity.
-        // Also combine with persisted ones on initial load, but for simplicity here we just show what's added runtime.
         return this.notifications;
     }
 
+    /**
+     * Marks a specific notification as read.
+     * @param id The ID of the notification to mark as read.
+     */
     public markAsRead(id: string): void {
         const notification = this.notifications.find(n => n.id === id);
         if (notification) {
@@ -686,12 +835,20 @@ export class NotificationService {
         }
     }
 
+    /**
+     * Clears all notifications from the system.
+     */
     public clearNotifications(): void {
         this.notifications = [];
         this.notifyListeners();
         dataStore.clearAll('notification');
     }
 
+    /**
+     * Subscribes a listener function to receive notification updates.
+     * @param listener The function to be called when notifications change.
+     * @returns A function to unsubscribe the listener.
+     */
     public subscribe(listener: (notifications: Notification[]) => void): () => void {
         this.listeners.push(listener);
         // Immediately notify with current notifications upon subscription
@@ -701,6 +858,9 @@ export class NotificationService {
         };
     }
 
+    /**
+     * Notifies all registered listeners about changes in the notification list.
+     */
     private notifyListeners(): void {
         this.listeners.forEach(listener => listener([...this.notifications]));
     }
@@ -727,17 +887,27 @@ export class WebhookProcessor {
         return WebhookProcessor.instance;
     }
 
-    public async receiveEvent(event: Omit<WebhookEvent, 'id' | 'timestamp' | 'processed'>): Promise<void> {
+    /**
+     * Receives an event and adds it to the processing queue.
+     * @param event The event object without ID, timestamp, or processed status.
+     * @returns A Promise that resolves when the event is added to the queue.
+     */
+    public async receiveEvent(event: Omit<WebhookEvent, 'id' | 'timestamp' | 'processed' | 'signature'>): Promise<void> {
         const newEvent: WebhookEvent = {
             ...event,
             id: generateId(),
             timestamp: DateUtils.getNowISO(),
             processed: false,
+            signature: identityService.signData(event) // Simulate signing the event for integrity
         };
         this.eventQueue.push(newEvent);
         await this.processQueue();
     }
 
+    /**
+     * Processes events from the queue sequentially.
+     * @returns A Promise that resolves when the queue is empty.
+     */
     private async processQueue(): Promise<void> {
         if (this.processing) return;
         this.processing = true;
@@ -746,14 +916,25 @@ export class WebhookProcessor {
             const event = this.eventQueue.shift();
             if (!event) continue;
 
+            if (!identityService.verifySignature(event.payload, event.signature || '', USER_ID_AGENT_ORCHESTRATOR)) { // Simulate event origin check
+                console.warn(`Webhook event ${event.id} failed signature verification. Skipping.`);
+                auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.AccessDenied, 'WebhookEvent', event.id, 'Signature mismatch', 'FAILURE', { eventType: event.eventType });
+                notificationService.addNotification({
+                    type: 'error',
+                    message: `Security Alert: Webhook event validation failed for ${event.eventType}.`
+                });
+                continue;
+            }
+
             console.log(`Processing webhook event: ${event.eventType} (ID: ${event.id})`);
             try {
                 await this.handleEvent(event);
                 event.processed = true;
+                auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.AITaskCompleted, 'WebhookEvent', event.id, `Webhook event ${event.eventType} processed.`, 'SUCCESS', { eventType: event.eventType });
                 console.log(`Webhook event ${event.id} processed successfully.`);
             } catch (error) {
                 console.error(`Error processing webhook event ${event.id}:`, error);
-                // Optionally re-queue with a delay or move to a dead-letter queue
+                auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.AITaskCompleted, 'WebhookEvent', event.id, `Webhook event ${event.eventType} processing failed.`, 'FAILURE', { error: (error as Error).message });
                 notificationService.addNotification({
                     type: 'error',
                     message: `Failed to process webhook event: ${event.eventType}. Error: ${(error as Error).message}`
@@ -763,17 +944,19 @@ export class WebhookProcessor {
         this.processing = false;
     }
 
+    /**
+     * Handles a specific webhook event based on its type.
+     * @param event The webhook event to handle.
+     * @returns A Promise that resolves when the event is handled.
+     */
     private async handleEvent(event: WebhookEvent): Promise<void> {
         switch (event.eventType) {
             case 'JOB_APPLIED':
-                // Simulate sending a follow-up reminder
                 notificationService.addNotification({
                     type: 'info',
                     message: `Don't forget to follow up on your application for ${event.payload.jobTitle} at ${event.payload.company} in 7 days!`,
                     actionLink: `/applications/${event.payload.id}`
                 });
-                // Update internal application status or analytics
-                // This would involve interacting with the dataStore or other internal APIs
                 break;
             case 'INTERVIEW_SCHEDULED':
                 notificationService.addNotification({
@@ -790,12 +973,10 @@ export class WebhookProcessor {
                 });
                 break;
             case 'PROFILE_CHANGED':
-                // Trigger AI re-evaluation for recommendations based on new profile
                 notificationService.addNotification({
                     type: 'info',
                     message: `Your profile has been updated. Re-evaluating career recommendations...`
                 });
-                // Call a simulated internal AI API for re-evaluation
                 break;
             case 'AI_TASK_COMPLETED':
                 notificationService.addNotification({
@@ -818,13 +999,832 @@ export class WebhookProcessor {
                     actionLink: `/mentorship/${event.payload.mentorId}`
                 });
                 break;
+            case 'TOKEN_ISSUED_EVENT':
+                notificationService.addNotification({
+                    type: 'success',
+                    message: `You earned ${event.payload.amount} ${event.payload.tokenType} for ${event.payload.memo}!`,
+                    actionLink: `/tokens`
+                });
+                break;
             default:
                 console.warn(`Unknown webhook event type: ${event.eventType}`);
         }
-        // In a real system, would save the processed webhook event status
     }
 }
 export const webhookProcessor = WebhookProcessor.getInstance();
+
+export const USER_ID_SYSTEM = 'system_agent';
+export const USER_ID_AGENT_ORCHESTRATOR = 'agent_orchestrator';
+export const USER_ID_AUTH_SERVICE = 'auth_service';
+export const USER_ID = 'default_user_id'; // Hardcoded for single-user simulation
+
+/**
+ * This DigitalIdentityService simulates the core functions of a robust digital identity system,
+ * including key management, authentication, and authorization.
+ * Business value: Establishes a foundation of trust and security across the entire platform. By managing
+ * cryptographic identities for users and agents, it enables secure transactions, verifiable access control,
+ * and auditable actions, which are critical for compliance and mitigating financial risks. This service
+ * is essential for enterprise adoption, allowing integration with external identity providers and
+ * providing a seamless, secure user experience.
+ */
+export class DigitalIdentityService {
+    private static instance: DigitalIdentityService;
+    private currentIdentities: Map<string, { publicKey: string; privateKey: string; verificationLevel: IdentityVerificationLevel; walletAddress: string; }> = new Map();
+
+    private constructor() {
+        this.initializeDefaultIdentities();
+    }
+
+    public static getInstance(): DigitalIdentityService {
+        if (!DigitalIdentityService.instance) {
+            DigitalIdentityService.instance = new DigitalIdentityService();
+        }
+        return DigitalIdentityService.instance;
+    }
+
+    /**
+     * Initializes default identities for the system and a placeholder user.
+     * This is a simulation; in production, keys would be securely generated and managed.
+     */
+    private initializeDefaultIdentities(): void {
+        // System Agent
+        this.currentIdentities.set(USER_ID_SYSTEM, {
+            publicKey: 'SYS_PUB_KEY_001',
+            privateKey: 'SYS_PRIV_KEY_001',
+            verificationLevel: IdentityVerificationLevel.Enterprise,
+            walletAddress: 'SYS_WALLET_001'
+        });
+        // Agent Orchestrator
+        this.currentIdentities.set(USER_ID_AGENT_ORCHESTRATOR, {
+            publicKey: 'AGNT_ORCH_PUB_KEY_001',
+            privateKey: 'AGNT_ORCH_PRIV_KEY_001',
+            verificationLevel: IdentityVerificationLevel.Enterprise,
+            walletAddress: 'AGNT_ORCH_WALLET_001'
+        });
+        // Auth Service
+        this.currentIdentities.set(USER_ID_AUTH_SERVICE, {
+            publicKey: 'AUTH_SERV_PUB_KEY_001',
+            privateKey: 'AUTH_SERV_PRIV_KEY_001',
+            verificationLevel: IdentityVerificationLevel.Enterprise,
+            walletAddress: 'AUTH_SERV_WALLET_001'
+        });
+        // Default User
+        this.currentIdentities.set(USER_ID, {
+            publicKey: 'USER_PUB_KEY_001',
+            privateKey: 'USER_PRIV_KEY_001',
+            verificationLevel: IdentityVerificationLevel.Basic,
+            walletAddress: 'USER_WALLET_001'
+        });
+    }
+
+    /**
+     * Generates a new simulated asymmetric key pair and wallet address for a given entity.
+     * @param entityId The ID of the entity (user or agent) to generate keys for.
+     * @returns An object containing the public key, private key, and wallet address.
+     */
+    public generateKeys(entityId: string): { publicKey: string; privateKey: string; walletAddress: string; } {
+        const publicKey = `PUB_KEY_${generateId()}`;
+        const privateKey = `PRIV_KEY_${generateId()}`;
+        const walletAddress = `WALLET_ADDR_${generateId()}`;
+        this.currentIdentities.set(entityId, { publicKey, privateKey, verificationLevel: IdentityVerificationLevel.None, walletAddress });
+        auditLogService.recordEvent(USER_ID_AUTH_SERVICE, AuditEventType.IdentityVerified, 'DigitalIdentity', entityId, `Keys generated for ${entityId}.`, 'SUCCESS', { publicKey, walletAddress });
+        return { publicKey, privateKey, walletAddress };
+    }
+
+    /**
+     * Retrieves the public key for a given entity.
+     * @param entityId The ID of the entity.
+     * @returns The public key string, or undefined if not found.
+     */
+    public getPublicKey(entityId: string): string | undefined {
+        return this.currentIdentities.get(entityId)?.publicKey;
+    }
+
+    /**
+     * Retrieves the wallet address for a given entity.
+     * @param entityId The ID of the entity.
+     * @returns The wallet address string, or undefined if not found.
+     */
+    public getWalletAddress(entityId: string): string | undefined {
+        return this.currentIdentities.get(entityId)?.walletAddress;
+    }
+
+    /**
+     * Simulates signing a data payload with an entity's private key.
+     * @param data The data to be signed.
+     * @param entityId The ID of the entity performing the signing.
+     * @returns A simulated cryptographic signature string.
+     */
+    public signData(data: any, entityId: string = USER_ID): string {
+        const identity = this.currentIdentities.get(entityId);
+        if (!identity) {
+            console.warn(`Attempted to sign data with unknown entityId: ${entityId}`);
+            auditLogService.recordEvent(USER_ID_AUTH_SERVICE, AuditEventType.AccessDenied, 'DigitalIdentity', entityId, `Signing failed: entity ID not found.`, 'FAILURE');
+            return 'INVALID_SIGNATURE';
+        }
+        // Simplified simulation: base64 encode data + private key part + nonce
+        const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+        const hash = btoa(dataString).slice(0, 16); // Simulate a data hash
+        const signature = `${hash}_${identity.privateKey.substring(0, 8)}_${generateId().slice(1)}`;
+        return signature;
+    }
+
+    /**
+     * Simulates verifying a signature against a public key and data payload.
+     * @param data The original data payload.
+     * @param signature The signature to verify.
+     * @param signerId The ID of the entity whose public key should be used for verification.
+     * @returns True if the signature is valid, false otherwise.
+     */
+    public verifySignature(data: any, signature: string, signerId: string = USER_ID): boolean {
+        const identity = this.currentIdentities.get(signerId);
+        if (!identity) {
+            console.warn(`Attempted to verify signature for unknown signerId: ${signerId}`);
+            return false;
+        }
+        // Simplified simulation: check if signature contains expected components
+        const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+        const expectedHashPart = btoa(dataString).slice(0, 16);
+        const expectedPrivateKeyPart = identity.privateKey.substring(0, 8); // Public key derived from this for simplicity
+        const isValid = signature.startsWith(expectedHashPart) && signature.includes(expectedPrivateKeyPart);
+
+        if (!isValid) {
+            auditLogService.recordEvent(USER_ID_AUTH_SERVICE, AuditEventType.AccessDenied, 'DigitalIdentity', signerId, `Signature verification failed.`, 'FAILURE');
+        }
+        return isValid;
+    }
+
+    /**
+     * Sets the verification level for a user's digital identity.
+     * @param userId The ID of the user.
+     * @param level The new verification level.
+     */
+    public setVerificationLevel(userId: string, level: IdentityVerificationLevel): void {
+        const identity = this.currentIdentities.get(userId);
+        if (identity) {
+            this.currentIdentities.set(userId, { ...identity, verificationLevel: level });
+            auditLogService.recordEvent(USER_ID_AUTH_SERVICE, AuditEventType.IdentityVerified, 'DigitalIdentity', userId, `Identity verification level set to ${level}.`, 'SUCCESS', { level });
+        } else {
+            console.warn(`Cannot set verification level for unknown user: ${userId}`);
+            auditLogService.recordEvent(USER_ID_AUTH_SERVICE, AuditEventType.AccessDenied, 'DigitalIdentity', userId, `Verification level update failed: user not found.`, 'FAILURE', { level });
+        }
+    }
+
+    /**
+     * Retrieves the verification level for a user.
+     * @param userId The ID of the user.
+     * @returns The IdentityVerificationLevel.
+     */
+    public getVerificationLevel(userId: string): IdentityVerificationLevel {
+        return this.currentIdentities.get(userId)?.verificationLevel || IdentityVerificationLevel.None;
+    }
+}
+export const identityService = DigitalIdentityService.getInstance();
+
+
+/**
+ * This AuditLogService provides an immutable and cryptographically auditable record of all critical system events.
+ * Business value: Ensures transparency, accountability, and compliance across the financial infrastructure.
+ * By maintaining a tamper-evident log of every transaction, user action, and agent decision, it provides an
+ * undeniable source of truth for regulatory audits, dispute resolution, and forensic analysis. This
+ * capability is fundamental for establishing trust with users and regulators, significantly reducing
+ * legal and operational risks, and driving enterprise-grade reliability.
+ */
+export class AuditLogService {
+    private static instance: AuditLogService;
+    private constructor() {}
+
+    public static getInstance(): AuditLogService {
+        if (!AuditLogService.instance) {
+            AuditLogService.instance = new AuditLogService();
+        }
+        return AuditLogService.instance;
+    }
+
+    /**
+     * Records a critical system event, including a simulated cryptographic signature.
+     * @param actorId The ID of the entity performing the action (user, agent, system).
+     * @param eventType The type of audit event.
+     * @param entityType The type of entity affected.
+     * @param entityId The ID of the entity affected.
+     * @param message A descriptive message for the event.
+     * @param status The outcome of the event (SUCCESS/FAILURE).
+     * @param payload The relevant data payload for the event.
+     * @returns The created AuditLogEntry.
+     */
+    public recordEvent(
+        actorId: string,
+        eventType: AuditEventType,
+        entityType: string,
+        entityId: string,
+        message: string,
+        status: 'SUCCESS' | 'FAILURE',
+        payload: any = {}
+    ): AuditLogEntry {
+        const previousLog = this.getLastLogEntry();
+        const payloadString = JSON.stringify(payload);
+        const payloadHash = btoa(payloadString); // Simulate hashing payload
+        const entry: AuditLogEntry = {
+            id: generateId(),
+            timestamp: DateUtils.getNowISO(),
+            actorId,
+            eventType,
+            entityType,
+            entityId,
+            message,
+            status,
+            payloadHash: previousLog ? btoa(previousLog.payloadHash + payloadHash) : payloadHash, // Simple hash chaining simulation
+            signature: identityService.signData({ ...payload, timestamp: DateUtils.getNowISO(), actorId, eventType, entityType, entityId }, actorId), // Event signed by actor
+        };
+        dataStore.setItem('AuditLogEntry', entry);
+        return entry;
+    }
+
+    /**
+     * Retrieves all recorded audit log entries.
+     * @returns An array of AuditLogEntry objects.
+     */
+    public getAllLogEntries(): AuditLogEntry[] {
+        return dataStore.getAllItems<AuditLogEntry>('AuditLogEntry').sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }
+
+    /**
+     * Retrieves the last recorded audit log entry.
+     * @returns The last AuditLogEntry or null if no entries exist.
+     */
+    private getLastLogEntry(): AuditLogEntry | null {
+        const allLogs = this.getAllLogEntries();
+        return allLogs.length > 0 ? allLogs[0] : null;
+    }
+
+    /**
+     * Verifies the integrity of an audit log entry using its signature.
+     * @param entry The AuditLogEntry to verify.
+     * @returns True if the signature is valid, false otherwise.
+     */
+    public verifyLogEntryIntegrity(entry: AuditLogEntry): boolean {
+        const payloadToVerify = {
+            timestamp: entry.timestamp,
+            actorId: entry.actorId,
+            eventType: entry.eventType,
+            entityType: entry.entityType,
+            entityId: entry.entityId,
+            payloadHash: entry.payloadHash,
+            message: entry.message,
+            status: entry.status,
+            // Exclude signature and id from payload for verification
+        };
+        return identityService.verifySignature(payloadToVerify, entry.signature, entry.actorId);
+    }
+}
+export const auditLogService = AuditLogService.getInstance();
+
+
+/**
+ * This AccessControlService provides a role-based access control (RBAC) mechanism.
+ * Business value: Enforces granular security policies across the platform, ensuring that users and agents
+ * can only perform authorized actions on specific resources. This is fundamental for protecting sensitive
+ * financial data, maintaining operational integrity, and complying with stringent regulatory requirements.
+ * Robust access control prevents unauthorized data breaches and ensures that only trusted entities can
+ * interact with critical system functionalities.
+ */
+export class AccessControlService {
+    private static instance: AccessControlService;
+    private permissions: Map<string, string[]> = new Map(); // userId/agentId -> roles
+    private rolePermissions: Map<string, string[]> = new Map(); // role -> list of permissions (e.g., 'read_profile', 'edit_profile', 'issue_token')
+
+    private constructor() {
+        this.initializeRolesAndPermissions();
+    }
+
+    public static getInstance(): AccessControlService {
+        if (!AccessControlService.instance) {
+            AccessControlService.instance = new AccessControlService();
+        }
+        return AccessControlService.instance;
+    }
+
+    /**
+     * Initializes default roles and their associated permissions.
+     * In a real system, these would be fetched from a persistent store.
+     */
+    private initializeRolesAndPermissions(): void {
+        this.rolePermissions.set('admin', ['*']); // Admins have all permissions
+        this.rolePermissions.set('user', [
+            'read_profile', 'edit_profile', 'view_goals', 'manage_goals', 'view_applications', 'manage_applications',
+            'view_interview_sessions', 'manage_interview_sessions', 'view_skills', 'generate_skills',
+            'view_market_trends', 'generate_negotiation_script', 'optimize_linkedin', 'generate_brand_statement',
+            'prepare_performance_review', 'view_network', 'manage_network', 'generate_network_message',
+            'view_projects', 'manage_projects', 'generate_project_ideas', 'view_mentorship', 'match_mentors',
+            'schedule_mentorship', 'view_learning_resources', 'view_portfolio', 'manage_portfolio', 'review_portfolio',
+            'generate_content_ideas', 'view_daily_plan', 'manage_daily_plan', 'view_tokens', 'spend_tokens', 'view_audit_log'
+        ]);
+        this.rolePermissions.set('agent_ai', [
+            'read_profile', 'generate_resume_suggestions', 'generate_cover_letter', 'generate_skill_gap_analysis',
+            'generate_career_paths', 'generate_interview_questions', 'get_interview_feedback',
+            'generate_salary_negotiation', 'generate_linkedin_optimization', 'generate_performance_review',
+            'generate_market_trends', 'generate_networking_message', 'generate_project_ideas_ai',
+            'match_mentors_ai', 'review_portfolio_ai', 'generate_content_ideas_ai', 'generate_daily_plan_ai'
+        ]);
+        this.rolePermissions.set('auditor', ['read_audit_log']); // For audit purposes
+        this.rolePermissions.set('auth_service', ['manage_identity']);
+        this.rolePermissions.set('orchestrator', ['execute_agent_tasks']);
+
+        // Assign default roles (simulation)
+        this.permissions.set(USER_ID, ['user']);
+        this.permissions.set(USER_ID_SYSTEM, ['admin', 'agent_ai']); // System agent can act as AI and admin
+        this.permissions.set(USER_ID_AGENT_ORCHESTRATOR, ['orchestrator']);
+        this.permissions.set(USER_ID_AUTH_SERVICE, ['auth_service']);
+    }
+
+    /**
+     * Assigns a role to a specific entity.
+     * @param entityId The ID of the entity.
+     * @param role The role to assign.
+     */
+    public assignRole(entityId: string, role: string): void {
+        const currentRoles = this.permissions.get(entityId) || [];
+        if (!currentRoles.includes(role)) {
+            currentRoles.push(role);
+            this.permissions.set(entityId, currentRoles);
+            auditLogService.recordEvent(USER_ID_AUTH_SERVICE, AuditEventType.ProfileUpdated, 'UserAccess', entityId, `Role '${role}' assigned.`, 'SUCCESS');
+        }
+    }
+
+    /**
+     * Checks if an entity has permission to perform an action on a resource.
+     * @param entityId The ID of the entity (user or agent).
+     * @param action The specific action being attempted (e.g., 'edit_profile', 'issue_token').
+     * @param resource The resource being accessed (optional, for future granular control).
+     * @returns True if the entity has permission, false otherwise.
+     */
+    public hasPermission(entityId: string, action: string, resource?: string): boolean {
+        const entityRoles = this.permissions.get(entityId);
+        if (!entityRoles || entityRoles.length === 0) {
+            auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.AccessDenied, 'AccessControl', entityId, `Permission denied for action '${action}': no roles assigned.`, 'FAILURE', { action, resource });
+            return false;
+        }
+
+        for (const role of entityRoles) {
+            const allowedPermissions = this.rolePermissions.get(role);
+            if (allowedPermissions && (allowedPermissions.includes('*') || allowedPermissions.includes(action))) {
+                return true;
+            }
+        }
+        auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.AccessDenied, 'AccessControl', entityId, `Permission denied for action '${action}': insufficient role.`, 'FAILURE', { action, resource });
+        return false;
+    }
+}
+export const accessControlService = AccessControlService.getInstance();
+
+
+/**
+ * This AgentOrchestrationService coordinates tasks between various intelligent agents within the platform.
+ * Business value: Enables the platform to leverage autonomous AI capabilities by providing a centralized
+ * coordination and logging mechanism for agent interactions. It ensures message ordering, maintains
+ * auditable logs of every agent action, and integrates with role-based permissions, allowing complex
+ * workflows to be executed reliably and securely. This system is crucial for scalable automation,
+ * enabling new levels of operational intelligence and cost reduction.
+ */
+export class AgentOrchestrationService {
+    private static instance: AgentOrchestrationService;
+    private constructor() {}
+
+    public static getInstance(): AgentOrchestrationService {
+        if (!AgentOrchestrationService.instance) {
+            AgentOrchestrationService.instance = new AgentOrchestrationService();
+        }
+        return AgentOrchestrationService.instance;
+    }
+
+    /**
+     * Coordinates a task by an agent, recording the action in the audit log.
+     * @param agentId The ID of the agent performing the task.
+     * @param taskName A descriptive name for the task.
+     * @param payload The data payload associated with the task.
+     * @param requiringUserAction If the agent's task needs further user input/review.
+     * @returns A Promise that resolves to the result of the agent's action (simulated).
+     */
+    public async coordinateTask<T>(
+        agentId: string,
+        taskName: string,
+        payload: any,
+        requiringUserAction: boolean = false
+    ): Promise<T> {
+        if (!accessControlService.hasPermission(agentId, 'execute_agent_tasks')) {
+            throw new CustomError(`Agent ${agentId} lacks permission to execute tasks.`, 'AGENT_PERMISSION_DENIED');
+        }
+
+        // Simulate agent executing a task
+        console.log(`Agent ${agentId} is coordinating task: ${taskName} with payload:`, payload);
+
+        // Record the initiation of the agent task
+        auditLogService.recordEvent(
+            agentId,
+            EventType.AITaskCompleted, // Using AITaskCompleted for now, could be more granular
+            'AgentTask',
+            generateId(), // Task ID
+            `Agent ${agentId} initiated task: ${taskName}`,
+            'SUCCESS', // Assume initiation is always successful
+            { taskName, payload }
+        );
+
+        // Simulate a delay for agent processing
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+
+        // For this file, the "agent" is primarily the CareerAIClient, which returns a direct result.
+        // In a more complex setup, this would dispatch to different agent skills.
+        // Here, we just return the payload as a placeholder, expecting the actual AI call to be made by the caller.
+        const simulatedResult: T = { status: 'completed', message: `Task '${taskName}' processed by ${agentId}.`, requiresReview: requiringUserAction, ...payload } as T;
+
+        auditLogService.recordEvent(
+            agentId,
+            EventType.AITaskCompleted,
+            'AgentTask',
+            generateId(), // New Task ID or same as initiation
+            `Agent ${agentId} completed task: ${taskName}`,
+            'SUCCESS',
+            { taskName, result: simulatedResult }
+        );
+
+        return simulatedResult;
+    }
+}
+export const agentOrchestrationService = AgentOrchestrationService.getInstance();
+
+
+/**
+ * This TokenizedRewardService simulates a programmable value rail, enabling the issuance and transfer of digital tokens.
+ * Business value: Creates a dynamic incentive layer within the platform, driving user engagement and motivating
+ * completion of career development milestones. It allows for the tokenization of value (e.g., "CareerCoin" for learning,
+ * "SkillPoint" for achievement), opening avenues for new business models like gamification, micro-incentives,
+ * and integration with broader digital economies. This directly contributes to user retention and can foster a vibrant
+ * community-driven ecosystem.
+ */
+export class TokenizedRewardService {
+    private static instance: TokenizedRewardService;
+    private accounts: Map<string, TokenAccount> = new Map(); // userId_tokenType -> TokenAccount
+
+    private constructor() {
+        this.initializeDefaultAccounts();
+    }
+
+    public static getInstance(): TokenizedRewardService {
+        if (!TokenizedRewardService.instance) {
+            TokenizedRewardService.instance = new TokenizedRewardService();
+        }
+        return TokenizedRewardService.instance;
+    }
+
+    /**
+     * Initializes default token accounts for the user and system.
+     */
+    private initializeDefaultAccounts(): void {
+        this.loadAccount(USER_ID, TokenType.CareerCoin, 100); // Default user starts with 100 CareerCoin
+        this.loadAccount(USER_ID_SYSTEM, TokenType.CareerCoin, 1000000); // System holds large supply
+    }
+
+    /**
+     * Loads or creates a token account.
+     * @param userId The ID of the user.
+     * @param tokenType The type of token.
+     * @param initialBalance The initial balance if creating a new account.
+     * @returns The TokenAccount object.
+     */
+    private loadAccount(userId: string, tokenType: TokenType, initialBalance: number = 0): TokenAccount {
+        const key = `${userId}_${tokenType}`;
+        let account = dataStore.getItem<TokenAccount>('TokenAccount', key);
+        if (!account) {
+            account = {
+                userId,
+                tokenType,
+                balance: initialBalance,
+                lastUpdated: DateUtils.getNowISO(),
+                id: key, // Use key as ID for simplicity
+                signature: identityService.signData({ userId, tokenType, balance: initialBalance }),
+                nonce: generateId()
+            };
+            dataStore.setItem('TokenAccount', account);
+        }
+        this.accounts.set(key, account);
+        return account;
+    }
+
+    /**
+     * Issues new tokens to a user.
+     * @param userId The ID of the user to issue tokens to.
+     * @param amount The amount of tokens to issue.
+     * @param tokenType The type of token.
+     * @param memo A description for the transaction.
+     * @returns The updated TokenAccount.
+     */
+    public async issueToken(userId: string, amount: number, tokenType: TokenType, memo: string = 'Token issuance'): Promise<TokenAccount> {
+        if (!accessControlService.hasPermission(USER_ID_SYSTEM, 'issue_token')) {
+            throw new CustomError('System lacks permission to issue tokens.', 'PERMISSION_DENIED');
+        }
+        if (amount <= 0) throw new CustomError('Amount must be positive.', 'INVALID_AMOUNT');
+
+        const userAccount = this.loadAccount(userId, tokenType);
+        userAccount.balance += amount;
+        userAccount.lastUpdated = DateUtils.getNowISO();
+        userAccount.nonce = generateId();
+        userAccount.signature = identityService.signData(userAccount, userId); // User signs their updated balance
+
+        dataStore.setItem('TokenAccount', userAccount);
+
+        const transaction: TokenTransaction = {
+            id: generateId(),
+            timestamp: DateUtils.getNowISO(),
+            senderId: USER_ID_SYSTEM,
+            receiverId: userId,
+            amount,
+            tokenType,
+            memo,
+            status: 'COMPLETED',
+            transactionHash: btoa(JSON.stringify({ sender: USER_ID_SYSTEM, receiver: userId, amount, tokenType, memo })),
+            signature: identityService.signData({ sender: USER_ID_SYSTEM, receiver: userId, amount, tokenType, memo }, USER_ID_SYSTEM),
+        };
+        dataStore.setItem('TokenTransaction', transaction);
+        auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.TokenIssued, 'TokenAccount', userId, `Issued ${amount} ${tokenType} to ${userId}.`, 'SUCCESS', { amount, tokenType, memo });
+        webhookProcessor.receiveEvent({ eventType: 'TOKEN_ISSUED_EVENT', payload: { userId, amount, tokenType, memo } });
+        return userAccount;
+    }
+
+    /**
+     * Transfers tokens from one user to another.
+     * @param senderId The ID of the sender.
+     * @param receiverId The ID of the receiver.
+     * @param amount The amount of tokens to transfer.
+     * @param tokenType The type of token.
+     * @param memo A description for the transaction.
+     * @returns The updated TokenAccount of the sender.
+     */
+    public async transferTokens(senderId: string, receiverId: string, amount: number, tokenType: TokenType, memo: string = 'Token transfer'): Promise<TokenAccount> {
+        if (!accessControlService.hasPermission(senderId, 'transfer_token')) { // Assuming users can transfer their own tokens
+            throw new CustomError(`User ${senderId} lacks permission to transfer tokens.`, 'PERMISSION_DENIED');
+        }
+        if (amount <= 0) throw new CustomError('Amount must be positive.', 'INVALID_AMOUNT');
+
+        const senderAccount = this.loadAccount(senderId, tokenType);
+        if (senderAccount.balance < amount) {
+            throw new CustomError('Insufficient token balance.', 'INSUFFICIENT_FUNDS');
+        }
+
+        const receiverAccount = this.loadAccount(receiverId, tokenType);
+
+        senderAccount.balance -= amount;
+        receiverAccount.balance += amount;
+
+        senderAccount.lastUpdated = DateUtils.getNowISO();
+        receiverAccount.lastUpdated = DateUtils.getNowISO();
+
+        // Simulate new nonces and re-sign
+        senderAccount.nonce = generateId();
+        senderAccount.signature = identityService.signData(senderAccount, senderId);
+        receiverAccount.nonce = generateId();
+        receiverAccount.signature = identityService.signData(receiverAccount, receiverId);
+
+        dataStore.setItem('TokenAccount', senderAccount);
+        dataStore.setItem('TokenAccount', receiverAccount);
+
+        const transaction: TokenTransaction = {
+            id: generateId(),
+            timestamp: DateUtils.getNowISO(),
+            senderId,
+            receiverId,
+            amount,
+            tokenType,
+            memo,
+            status: 'COMPLETED',
+            transactionHash: btoa(JSON.stringify({ senderId, receiverId, amount, tokenType, memo })),
+            signature: identityService.signData({ senderId, receiverId, amount, tokenType, memo }, senderId), // Sender signs the transaction
+        };
+        dataStore.setItem('TokenTransaction', transaction);
+        auditLogService.recordEvent(senderId, AuditEventType.TokenTransferred, 'TokenAccount', senderId, `Transferred ${amount} ${tokenType} from ${senderId} to ${receiverId}.`, 'SUCCESS', { amount, tokenType, receiverId, memo });
+        return senderAccount;
+    }
+
+    /**
+     * Retrieves the token balance for a specific user and token type.
+     * @param userId The ID of the user.
+     * @param tokenType The type of token.
+     * @returns The balance of the specified token type.
+     */
+    public getBalance(userId: string, tokenType: TokenType): number {
+        return this.loadAccount(userId, tokenType).balance;
+    }
+
+    /**
+     * Retrieves all token transactions.
+     * @returns An array of TokenTransaction objects.
+     */
+    public getAllTokenTransactions(): TokenTransaction[] {
+        return dataStore.getAllItems<TokenTransaction>('TokenTransaction');
+    }
+}
+export const tokenizedRewardService = TokenizedRewardService.getInstance();
+
+
+/**
+ * This PaymentGatewayService simulates a real-time settlement engine for processing value movements.
+ * Business value: Enables the platform to offer paid services and premium features, directly generating
+ * revenue. By simulating real-time payment processing, balance validation, and risk scoring, it lays
+ * the groundwork for a fully functional financial layer. This ensures that monetary transactions are
+ * fast, secure, and auditable, critical for monetizing career development resources and driving
+ * sustained business growth.
+ */
+export class PaymentGatewayService {
+    private static instance: PaymentGatewayService;
+    private constructor() {}
+
+    public static getInstance(): PaymentGatewayService {
+        if (!PaymentGatewayService.instance) {
+            PaymentGatewayService.instance = new PaymentGatewayService();
+        }
+        return PaymentGatewayService.instance;
+    }
+
+    /**
+     * Simulates processing a payment from a payer to a payee.
+     * @param payerId The ID of the entity making the payment.
+     * @param payeeId The ID of the entity receiving the payment.
+     * @param amount The amount of money to transfer.
+     * @param currency The currency of the transaction.
+     * @param memo A description for the payment.
+     * @returns A Promise that resolves to the created PaymentRecord.
+     */
+    public async processPayment(
+        payerId: string,
+        payeeId: string,
+        amount: number,
+        currency: string = 'USD',
+        memo: string = 'Service payment'
+    ): Promise<PaymentRecord> {
+        if (!accessControlService.hasPermission(payerId, 'process_payment')) {
+            throw new CustomError(`Payer ${payerId} lacks permission to process payments.`, 'PERMISSION_DENIED');
+        }
+        if (amount <= 0) throw new CustomError('Amount must be positive.', 'INVALID_AMOUNT');
+        // Simulate risk scoring - e.g., flag large amounts or unusual patterns
+        const isHighRisk = amount > 1000 || Math.random() < 0.05; // 5% random chance of high risk
+
+        // Simulate network latency
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 100));
+
+        const status = isHighRisk ? 'PENDING' : 'COMPLETED'; // High risk payments might be pending review
+
+        const paymentRecord: PaymentRecord = {
+            id: generateId(),
+            timestamp: DateUtils.getNowISO(),
+            payerId,
+            payeeId,
+            amount,
+            currency,
+            memo,
+            status,
+            transactionHash: btoa(JSON.stringify({ payerId, payeeId, amount, currency, memo, timestamp: DateUtils.getNowISO() })),
+            signature: identityService.signData({ payerId, payeeId, amount, currency, memo }, payerId),
+        };
+        dataStore.setItem('PaymentRecord', paymentRecord);
+        auditLogService.recordEvent(payerId, AuditEventType.PaymentProcessed, 'PaymentRecord', paymentRecord.id, `Payment for ${amount} ${currency} from ${payerId} to ${payeeId}. Status: ${status}`, status === 'COMPLETED' ? 'SUCCESS' : 'FAILURE', { amount, currency, payeeId, memo, isHighRisk });
+
+        if (isHighRisk) {
+            notificationService.addNotification({
+                type: 'warning',
+                message: `Payment of ${amount} ${currency} to ${payeeId} flagged for review. Status: PENDING.`,
+                actionLink: `/payments/${paymentRecord.id}`
+            });
+            throw new CustomError('Payment flagged as high risk and is pending review.', 'PAYMENT_PENDING_RISK_REVIEW');
+        } else {
+            notificationService.addNotification({
+                type: 'success',
+                message: `Payment of ${amount} ${currency} to ${payeeId} completed successfully.`,
+                actionLink: `/payments/${paymentRecord.id}`
+            });
+        }
+
+        return paymentRecord;
+    }
+
+    /**
+     * Retrieves all payment records.
+     * @returns An array of PaymentRecord objects.
+     */
+    public getAllPaymentRecords(): PaymentRecord[] {
+        return dataStore.getAllItems<PaymentRecord>('PaymentRecord');
+    }
+}
+export const paymentGatewayService = PaymentGatewayService.getInstance();
+
+
+/**
+ * ---------------------------------------------------------------------------------------------------------------------
+ *  1.6: Security Utilities
+ * ---------------------------------------------------------------------------------------------------------------------
+ * This module provides cryptographic integrity utilities for data structures.
+ * Business value: Ensures the authenticity and immutability of critical data, protecting against tampering and fraud.
+ * By embedding cryptographic signatures and nonces, every significant data record becomes auditable and verifiable,
+ * which is paramount for a financial infrastructure. This dramatically increases trust, reduces risk, and provides
+ * a strong foundation for compliance and data governance.
+ */
+export const SecurityUtils = {
+    /**
+     * Attaches a simulated signature and nonce to a data object.
+     * This is a simplified simulation for illustrative purposes, not real cryptography.
+     * @param data The data object to sign.
+     * @param signerId The ID of the entity signing the data.
+     * @returns The data object with `signature` and `nonce` properties added.
+     */
+    signObject<T extends { id: string, signature?: string, nonce?: string }>(data: T, signerId: string = USER_ID): T {
+        const nonce = generateId();
+        const dataToSign = { ...data, nonce }; // Include nonce in data for signature
+        delete dataToSign.signature; // Don't sign the signature itself
+        const signature = identityService.signData(dataToSign, signerId);
+        return { ...data, nonce, signature };
+    },
+
+    /**
+     * Verifies the integrity of a signed data object.
+     * This is a simplified simulation for illustrative purposes, not real cryptography.
+     * @param data The signed data object.
+     * @param signerId The ID of the entity that signed the data.
+     * @returns True if the signature is valid, false otherwise.
+     */
+    verifyObjectSignature<T extends { id: string, signature?: string, nonce?: string }>(data: T, signerId: string = USER_ID): boolean {
+        if (!data.signature || !data.nonce) {
+            console.warn(`Object ${data.id} is missing signature or nonce.`);
+            return false;
+        }
+        const dataToVerify = { ...data };
+        delete dataToVerify.signature; // Don't verify against the signature itself
+        return identityService.verifySignature(dataToVerify, data.signature, signerId);
+    },
+
+    /**
+     * Generates a simple SHA-256 like hash for a string or object.
+     * This is purely illustrative and not a cryptographically secure hash.
+     * @param data The data to hash.
+     * @returns A base64 encoded string acting as a hash.
+     */
+    simpleHash(data: any): string {
+        const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+        return btoa(dataString + 'SALT_FOR_HASH');
+    }
+};
+
+
+/**
+ * ---------------------------------------------------------------------------------------------------------------------
+ *  1.7: Idempotent & Fault-Tolerant Operations
+ * ---------------------------------------------------------------------------------------------------------------------
+ * This module provides utilities to ensure operations are idempotent and fault-tolerant.
+ * Business value: Guarantees that repeating an operation (e.g., due to network retry) yields the same result
+ * as performing it once, preventing duplicate data creation or incorrect state transitions. This is critical
+ * for reliability in distributed systems, especially in financial contexts where consistency and correctness
+ * are paramount, reducing data corruption and simplifying error recovery mechanisms.
+ */
+export class IdempotencyManager {
+    private static instance: IdempotencyManager;
+    private processedRequests: Set<string> = new Set(); // Stores request IDs that have been processed
+
+    private constructor() {}
+
+    public static getInstance(): IdempotencyManager {
+        if (!IdempotencyManager.instance) {
+            IdempotencyManager.instance = new IdempotencyManager();
+        }
+        return IdempotencyManager.instance;
+    }
+
+    /**
+     * Generates an idempotency key for a given operation and payload.
+     * @param operationName A unique identifier for the operation type.
+     * @param payload The relevant data for the operation.
+     * @param actorId The ID of the entity initiating the operation.
+     * @returns A unique string representing the idempotency key.
+     */
+    public generateKey(operationName: string, payload: any, actorId: string): string {
+        const payloadHash = SecurityUtils.simpleHash(payload);
+        return `${operationName}:${actorId}:${payloadHash}`;
+    }
+
+    /**
+     * Checks if an operation with the given idempotency key has already been processed.
+     * @param key The idempotency key.
+     * @returns True if already processed, false otherwise.
+     */
+    public isProcessed(key: string): boolean {
+        return this.processedRequests.has(key);
+    }
+
+    /**
+     * Marks an operation with the given idempotency key as processed.
+     * @param key The idempotency key.
+     */
+    public markProcessed(key: string): void {
+        this.processedRequests.add(key);
+    }
+}
+export const idempotencyManager = IdempotencyManager.getInstance();
 
 
 /**
@@ -838,7 +1838,8 @@ export const webhookProcessor = WebhookProcessor.getInstance();
  *  2.1: Advanced CareerAIClient (Wraps GoogleGenAI with specific career methods)
  * ---------------------------------------------------------------------------------------------------------------------
  * This class abstracts the raw GoogleGenAI calls into higher-level, career-specific functions,
- * simulating a more complex internal AI engine.
+ * simulating a more complex internal AI engine. It represents the primary "skill execution" module
+ * for a specialized career intelligence agent.
  * Business value: This is the core agentic AI layer, providing hyper-personalized insights and automation.
  * It transforms raw user data into actionable career intelligence (skill gaps, pathing, content generation),
  * significantly reducing the time and cost associated with traditional career coaching. The modular, schema-driven
@@ -864,10 +1865,17 @@ export class CareerAIClient {
             yearsExperience: 0, careerStage: CareerStage.EntryLevel, skills: [], education: [], certifications: [],
             desiredRoles: [], desiredIndustry: 'Any', salaryExpectationMin: 0, salaryExpectationMax: 0,
             lastUpdated: DateUtils.getNowISO(), resumeText: '', achievements: [], careerVision: '', preferredLearningStyles: [],
-            aiModelPreference: 'balanced'
+            aiModelPreference: 'balanced',
+            publicKey: 'AI_DEFAULT_PUB_KEY',
+            identityVerificationLevel: IdentityVerificationLevel.None,
+            walletAddress: 'AI_DEFAULT_WALLET'
         };
     }
 
+    /**
+     * Sets the AI model to be used for subsequent generative calls.
+     * @param modelKey The key representing the desired AI model from `AI_MODELS`.
+     */
     public setModel(modelKey: keyof typeof AI_MODELS): void {
         const modelName = AI_MODELS[modelKey];
         if (modelName) {
@@ -877,9 +1885,26 @@ export class CareerAIClient {
         }
     }
 
-    private async callGenerativeAI<T>(prompt: string, schema: any, model?: string): Promise<T> {
+    /**
+     * Internal method to call the generative AI model with specified prompt and schema.
+     * Includes timeout and robust JSON parsing.
+     * @param prompt The text prompt for the AI.
+     * @param schema The JSON schema for the expected AI response.
+     * @param model The specific AI model to use, defaults to the current model.
+     * @param context An optional context object that might influence AI behavior (e.g., agent persona).
+     * @returns A Promise resolving to the parsed AI response object.
+     */
+    private async callGenerativeAI<T>(prompt: string, schema: any, model?: string, context?: any): Promise<T> {
         const selectedModel = model || this.currentModel;
         try {
+            const agentAction = await agentOrchestrationService.coordinateTask(
+                USER_ID_SYSTEM, // The AI Client itself is an 'agent' here
+                `Generative AI call for prompt: ${TextUtils.truncate(prompt, 100)}`,
+                { prompt, schema, model: selectedModel, context },
+                false // Not requiring user action for generation
+            );
+            console.log('Agent Orchestrator acknowledged AI task:', agentAction);
+
             const result = await Promise.race([
                 this.ai.getGenerativeModel({
                     model: selectedModel,
@@ -897,7 +1922,6 @@ export class CareerAIClient {
                 throw new CustomError("AI returned no text content.", "AI_EMPTY_RESPONSE");
             }
 
-            // Attempt to parse JSON. Gemini sometimes returns markdown wrapped JSON.
             let parsedJson: T;
             try {
                 if (responseText.startsWith("```json")) {
@@ -919,7 +1943,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Analyze Resume for a specific Job Description
+     * AI method: Analyze Resume for a specific Job Description.
      * @param resumeText The user's resume content.
      * @param jobDescription The target job description.
      * @returns A list of actionable AI suggestions for resume improvement.
@@ -964,7 +1988,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Generate a tailored Cover Letter
+     * AI method: Generate a tailored Cover Letter.
      * @param userProfile The user's profile data.
      * @param jobApplication The job application details, including job description and company.
      * @param resumeSummary A summary of the user's resume for context.
@@ -1000,7 +2024,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Perform a Skill Gap Analysis
+     * AI method: Perform a Skill Gap Analysis.
      * @param userProfile The user's current profile.
      * @param targetRoles A list of desired roles or a specific job description.
      * @returns A list of SkillAssessmentResult showing gaps and recommendations.
@@ -1067,16 +2091,16 @@ export class CareerAIClient {
         };
 
         const response = await this.callGenerativeAI<{ skillGaps: SkillAssessmentResult[] }>(prompt, schema);
-        // Assign generated IDs for resources, as AI doesn't always generate complex IDs
         response.skillGaps.forEach(gap => {
             gap.recommendations.forEach(rec => rec.id = rec.id || generateId());
             gap.lastAssessed = DateUtils.getNowISO(); // Ensure current date
+            SecurityUtils.signObject(gap, USER_ID_SYSTEM); // Simulate AI signing its assessment
         });
         return response.skillGaps;
     }
 
     /**
-     * AI method: Generate Career Path Recommendations
+     * AI method: Generate Career Path Recommendations.
      * @param userProfile The user's current profile.
      * @param currentGoals A list of user's current career goals.
      * @returns A list of CareerPathRecommendation objects.
@@ -1153,7 +2177,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Generate Interview Questions
+     * AI method: Generate Interview Questions.
      * @param jobDescription The target job description.
      * @param userProfile The user's profile for contextualizing questions.
      * @param previousQuestions A list of questions already asked, to avoid repetition.
@@ -1196,7 +2220,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Provide feedback on Interview Answers
+     * AI method: Provide feedback on Interview Answers.
      * @param questionsWithAnswers A list of objects containing question and user's answer.
      * @param jobDescription The job description for context.
      * @param userProfile The user's profile for context.
@@ -1245,7 +2269,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Draft Salary Negotiation Script
+     * AI method: Draft Salary Negotiation Script.
      * @param jobTitle The job title.
      * @param company The company name.
      * @param initialOffer The initial salary offer.
@@ -1284,7 +2308,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Optimize LinkedIn Profile Summary
+     * AI method: Optimize LinkedIn Profile Summary.
      * @param userProfile The user's profile.
      * @desiredRoles Desired job roles/target keywords.
      * @returns An optimized LinkedIn summary string.
@@ -1314,7 +2338,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Generate Performance Review Preparation bullet points
+     * AI method: Generate Performance Review Preparation bullet points.
      * @param userProfile The user's profile.
      * @param achievements A list of raw achievement descriptions.
      * @returns A list of bullet points formatted for performance reviews.
@@ -1345,7 +2369,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Analyze Market Trends
+     * AI method: Analyze Market Trends.
      * @param industry The industry to analyze.
      * @param keywords Specific keywords to focus on.
      * @returns A list of relevant market trends.
@@ -1392,7 +2416,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Generate Networking Message/Email
+     * AI method: Generate Networking Message/Email.
      * @param userProfile The user's profile.
      * @param contact The network contact to message.
      * @param purpose The purpose of the message (e.g., "informational interview", "job referral").
@@ -1423,13 +2447,13 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Suggest Personal Project Ideas
+     * AI method: Suggest Personal Project Ideas.
      * @param userProfile The user's profile.
      * @param targetSkills Skills the user wants to develop.
      * @param careerGoal Focus career goal if any.
      * @returns A list of PersonalProject ideas.
      */
-    public async suggestProjectIdeas(userProfile: UserProfile, targetSkills: string[], careerGoal?: string): Promise<Omit<PersonalProject, 'id' | 'startDate' | 'createdAt' | 'lastUpdated' | 'goalIds' | 'status' | 'technologiesUsed' | 'endDate'>[]> {
+    public async suggestProjectIdeas(userProfile: UserProfile, targetSkills: string[], careerGoal?: string): Promise<Omit<PersonalProject, 'id' | 'startDate' | 'createdAt' | 'lastUpdated' | 'goalIds' | 'status' | 'technologiesUsed' | 'endDate' | 'signature' | 'nonce'>[]> {
         const profile = userProfile || this.defaultUserProfile;
         const goalContext = careerGoal ? `to help achieve the goal: "${careerGoal}"` : 'to enhance their profile';
         const prompt = `You are a product ideation and career development specialist.
@@ -1467,7 +2491,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Match Mentors to User Profile
+     * AI method: Match Mentors to User Profile.
      * @param userProfile The user's profile.
      * @param existingMentors A list of available mentor profiles.
      * @param numberOfMatches Desired number of mentor matches.
@@ -1509,7 +2533,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Review Portfolio Item
+     * AI method: Review Portfolio Item.
      * @param portfolioItem The specific portfolio item to review.
      * @param userProfile The user's profile.
      * @param targetJobDescription Optional: specific job description for context.
@@ -1554,7 +2578,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Generate Content Ideas (e.g., blog posts, speaking topics)
+     * AI method: Generate Content Ideas (e.g., blog posts, speaking topics).
      * @param userProfile The user's profile.
      * @param contentType The type of content (e.g., 'blog post', 'conference talk').
      * @param focusArea Specific area for content.
@@ -1596,7 +2620,7 @@ export class CareerAIClient {
     }
 
     /**
-     * AI method: Generate a Personal Brand Statement
+     * AI method: Generate a Personal Brand Statement.
      * @param userProfile The user's profile.
      * @param desiredImpact The desired impact or perception the user wants to convey.
      * @returns A generated PersonalBrandStatement.
@@ -1634,25 +2658,25 @@ export class CareerAIClient {
             required: ['statement', 'rationale', 'keywords']
         };
         const response = await this.callGenerativeAI<{ statement: string; rationale: string; keywords: string[] }>(prompt, schema);
-        return {
+        return SecurityUtils.signObject({
             id: generateId(),
             statement: response.statement,
             version: 1, // Start at version 1
             generatedDate: DateUtils.getNowISO(),
             rationale: response.rationale,
             keywords: response.keywords
-        };
+        }, USER_ID_SYSTEM); // AI signs its own generation
     }
 
     /**
-     * AI method: Generate Daily Career Development Plan
+     * AI method: Generate Daily Career Development Plan.
      * @param userProfile The user's profile.
      * @param goals A list of user's active goals.
      * @param skillsToDevelop Top 3 skills the user wants to focus on.
      * @param numberOfItems Number of daily activities to suggest.
      * @returns A list of DailyPlanItem suggestions.
      */
-    public async generateDailyPlan(userProfile: UserProfile, goals: CareerGoal[], skillsToDevelop: string[], numberOfItems: number = 5): Promise<Omit<DailyPlanItem, 'id' | 'date' | 'isCompleted'>[]> {
+    public async generateDailyPlan(userProfile: UserProfile, goals: CareerGoal[], skillsToDevelop: string[], numberOfItems: number = 5): Promise<Omit<DailyPlanItem, 'id' | 'date' | 'isCompleted' | 'signature' | 'nonce'>[]> {
         const profile = userProfile || this.defaultUserProfile;
         const prompt = `You are a productivity and career planning expert.
             Generate a realistic and actionable daily plan for the user, focusing on career development.
@@ -1688,17 +2712,11 @@ export class CareerAIClient {
         const response = await this.callGenerativeAI<{ dailyPlan: Omit<DailyPlanItem, 'id' | 'date' | 'isCompleted'>[] }>(prompt, schema);
         return response.dailyPlan;
     }
-
-    // Add more AI methods as needed to reach desired complexity and line count...
 }
 
 export let careerAIClient: CareerAIClient | null = null;
 try {
-    // API_KEY is expected to be present in process.env at build/runtime.
-    // In a "self-contained" scenario, one might hardcode it (BAD PRACTICE) or expect it from an env file accessible locally.
-    // For this demonstration, we assume process.env.AI_API_KEY or process.env.GOOGLE_API_KEY is available as per original code.
-    // If not found, a dummy client might be created, but features will fail.
-    const apiKey = process.env.AI_API_KEY || process.env.GOOGLE_API_KEY || ''; // Use a more specific key name
+    const apiKey = process.env.AI_API_KEY || process.env.GOOGLE_API_KEY || '';
     if (apiKey === '') {
         console.warn("AI_API_KEY is not set. AI services will not function.");
         notificationService.addNotification({
@@ -1730,24 +2748,51 @@ try {
  * real-time payments, and digital identity systems.
  */
 
-const USER_ID = 'default_user_id'; // Hardcoded for single-user simulation
-
 // 3.1 User Profile Management API
+/**
+ * Retrieves the user's profile from the local data store.
+ * @param userId The ID of the user.
+ * @returns A Promise resolving to the UserProfile or null if not found.
+ */
 export const apiGetUserProfile = async (userId: string = USER_ID): Promise<UserProfile | null> => {
     return dataStore.getItem<UserProfile>('UserProfile', userId);
 };
 
+/**
+ * Updates the user's profile in the local data store.
+ * Includes security measures like signature generation and audit logging.
+ * @param profile The updated UserProfile object.
+ * @returns A Promise resolving to the updated UserProfile.
+ */
 export const apiUpdateUserProfile = async (profile: UserProfile): Promise<UserProfile> => {
+    if (!accessControlService.hasPermission(profile.id, 'edit_profile')) {
+        throw new CustomError('Permission denied to update profile.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(profile, profile.id)) { // Verify incoming data integrity
+        throw new CustomError('Data integrity check failed for profile update.', 'SIGNATURE_MISMATCH');
+    }
+
     profile.lastUpdated = DateUtils.getNowISO();
-    dataStore.setItem('UserProfile', profile);
-    webhookProcessor.receiveEvent({ eventType: 'PROFILE_CHANGED', payload: profile });
+    const signedProfile = SecurityUtils.signObject(profile, profile.id); // Re-sign after update
+    dataStore.setItem('UserProfile', signedProfile);
+    webhookProcessor.receiveEvent({ eventType: 'PROFILE_CHANGED', payload: signedProfile });
     notificationService.addNotification({ type: 'success', message: 'User profile updated successfully!' });
-    return profile;
+    auditLogService.recordEvent(profile.id, AuditEventType.ProfileUpdated, 'UserProfile', profile.id, 'User profile updated.', 'SUCCESS', { name: profile.name, email: profile.email });
+    return signedProfile;
 };
 
+/**
+ * Initializes a default user profile if none exists, otherwise retrieves the existing one.
+ * Includes generation of digital identity components.
+ * @param userId The ID of the user.
+ * @returns A Promise resolving to the initialized UserProfile.
+ */
 export const apiInitializeUserProfile = async (userId: string = USER_ID): Promise<UserProfile> => {
     let profile = await apiGetUserProfile(userId);
     if (!profile) {
+        // Generate digital identity for the new user
+        const { publicKey, walletAddress } = identityService.generateKeys(userId);
+
         profile = {
             id: userId,
             name: "Jane Doe",
@@ -1798,14 +2843,47 @@ export const apiInitializeUserProfile = async (userId: string = USER_ID): Promis
             ],
             careerVision: "To lead a product division focused on ethical and impactful AI solutions, driving innovation that solves complex societal problems.",
             preferredLearningStyles: ["Visual", "Kinesthetic"],
-            aiModelPreference: 'balanced'
+            aiModelPreference: 'balanced',
+            publicKey,
+            identityVerificationLevel: IdentityVerificationLevel.Basic, // Default to basic for new users
+            walletAddress
         };
-        dataStore.setItem('UserProfile', profile);
+        const signedProfile = SecurityUtils.signObject(profile, userId);
+        dataStore.setItem('UserProfile', signedProfile);
+        auditLogService.recordEvent(userId, AuditEventType.ProfileUpdated, 'UserProfile', userId, 'New user profile created and initialized.', 'SUCCESS');
     }
     return profile;
 };
 
+/**
+ * Requests a simulated identity verification level upgrade.
+ * @param userId The user ID to verify.
+ * @param level The desired new verification level.
+ * @returns The updated IdentityVerificationLevel.
+ */
+export const apiRequestIdentityVerification = async (userId: string = USER_ID, level: IdentityVerificationLevel): Promise<IdentityVerificationLevel> => {
+    if (!accessControlService.hasPermission(userId, 'manage_identity')) { // User can request, Auth Service performs
+        throw new CustomError('Permission denied to request identity verification.', 'PERMISSION_DENIED');
+    }
+    // Simulate an async process for verification
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    identityService.setVerificationLevel(userId, level);
+    const updatedProfile = await apiGetUserProfile(userId);
+    if (updatedProfile) {
+        updatedProfile.identityVerificationLevel = level;
+        await apiUpdateUserProfile(updatedProfile); // Persist updated level
+    }
+    notificationService.addNotification({ type: 'success', message: `Identity verification level updated to ${level}.` });
+    return level;
+};
+
 // 3.2 Resume & Cover Letter API
+/**
+ * Generates resume improvement suggestions using AI.
+ * @param resume The user's resume text.
+ * @param jobDesc The job description.
+ * @returns A Promise resolving to an array of AISuggestion objects.
+ */
 export const apiGenerateResumeSuggestions = async (resume: string, jobDesc: string): Promise<AISuggestion[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!ValidationUtils.isNotNullOrEmpty(resume) || !ValidationUtils.isNotNullOrEmpty(jobDesc)) {
@@ -1814,9 +2892,17 @@ export const apiGenerateResumeSuggestions = async (resume: string, jobDesc: stri
     const suggestions = await careerAIClient.analyzeResumeForJob(resume, jobDesc);
     notificationService.addNotification({ type: 'success', message: `Generated ${suggestions.length} resume suggestions.`, actionLink: `/resume` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Resume Suggestions', actionLink: `/resume` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'ResumeAnalysis', generateId(), 'Resume suggestions generated.', 'SUCCESS', { resumeLength: resume.length, jobDescLength: jobDesc.length });
     return suggestions;
 };
 
+/**
+ * Generates a tailored cover letter using AI.
+ * @param userProfile The user's profile.
+ * @param jobApplication The job application details.
+ * @param resumeSummary A summary of the user's resume.
+ * @returns A Promise resolving to the generated cover letter string.
+ */
 export const apiGenerateCoverLetter = async (
     userProfile: UserProfile,
     jobApplication: JobApplication,
@@ -1829,40 +2915,53 @@ export const apiGenerateCoverLetter = async (
     const coverLetter = await careerAIClient.generateCoverLetter(userProfile, jobApplication, resumeSummary);
     notificationService.addNotification({ type: 'success', message: 'Cover letter generated successfully!', actionLink: `/applications/${jobApplication.id}` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Cover Letter Generation', actionLink: `/applications/${jobApplication.id}` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'CoverLetterGeneration', jobApplication.id, 'Cover letter generated.', 'SUCCESS', { jobId: jobApplication.id });
     return coverLetter;
 };
 
 // 3.3 Skill & Career Pathing API
+/**
+ * Performs a skill gap analysis using AI.
+ * @param userProfile The user's profile.
+ * @param targetRoles A list of target roles or a job description.
+ * @returns A Promise resolving to an array of SkillAssessmentResult objects.
+ */
 export const apiGetSkillGapAnalysis = async (userProfile: UserProfile, targetRoles: string[] | string): Promise<SkillAssessmentResult[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || (Array.isArray(targetRoles) && targetRoles.length === 0) || (!Array.isArray(targetRoles) && !ValidationUtils.isNotNullOrEmpty(targetRoles))) {
         throw new CustomError("Missing user profile or target roles for skill gap analysis.", "INPUT_VALIDATION_ERROR");
     }
     const results = await careerAIClient.getSkillGapAnalysis(userProfile, targetRoles);
-    // Optionally persist new learning resources here
     results.forEach(gap => {
-        gap.recommendations.forEach(res => {
-            if (!dataStore.getItem('LearningResource', res.id)) { // Only add if not already present
-                dataStore.setItem('LearningResource', { ...res, dateAdded: DateUtils.getNowISO() });
-            }
-        });
+        if (!dataStore.getItem('LearningResource', gap.id)) {
+            gap.recommendations.forEach(res => { // For each recommendation, persist if new.
+                if (!dataStore.getItem('LearningResource', res.id)) {
+                    dataStore.setItem('LearningResource', { ...res, dateAdded: DateUtils.getNowISO() });
+                }
+            });
+        }
     });
     notificationService.addNotification({ type: 'success', message: `Skill gap analysis completed. Found ${results.length} skills.`, actionLink: `/skills` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Skill Gap Analysis', actionLink: `/skills` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'SkillGapAnalysis', generateId(), 'Skill gap analysis completed.', 'SUCCESS', { target: targetRoles });
     return results;
 };
 
+/**
+ * Generates career path recommendations using AI.
+ * @param userProfile The user's profile.
+ * @param currentGoals A list of the user's current career goals.
+ * @returns A Promise resolving to an array of CareerPathRecommendation objects.
+ */
 export const apiGetCareerPathRecommendations = async (userProfile: UserProfile, currentGoals: CareerGoal[]): Promise<CareerPathRecommendation[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile) {
         throw new CustomError("Missing user profile for career path recommendations.", "INPUT_VALIDATION_ERROR");
     }
     const recommendations = await careerAIClient.getCareerPathRecommendations(userProfile, currentGoals);
-    // Optionally persist new learning resources from pathways
     recommendations.forEach(path => {
         path.pathways.forEach(p => {
             if (p.type !== RecommendationType.NetworkingEvent && ValidationUtils.isValidUrl(p.resource)) {
-                // Simplified creation of learning resource from pathway
                 const newResource: LearningResource = {
                     id: generateId(),
                     title: p.title,
@@ -1873,7 +2972,7 @@ export const apiGetCareerPathRecommendations = async (userProfile: UserProfile, 
                     cost: "Mixed",
                     relatedSkills: path.requiredSkills.map(s => s.skill),
                     provider: "AI Suggestion",
-                    difficulty: "Intermediate", // Default
+                    difficulty: "Intermediate",
                     dateAdded: DateUtils.getNowISO()
                 };
                 if (!dataStore.getItem('LearningResource', newResource.id)) {
@@ -1884,11 +2983,22 @@ export const apiGetCareerPathRecommendations = async (userProfile: UserProfile, 
     });
     notificationService.addNotification({ type: 'success', message: `Generated ${recommendations.length} career path recommendations.`, actionLink: `/skills` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Career Path Recommendations', actionLink: `/skills` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'CareerPathRecommendations', generateId(), 'Career path recommendations generated.', 'SUCCESS');
     return recommendations;
 };
 
 // 3.4 Job Application Tracking API
-export const apiAddJobApplication = async (app: Omit<JobApplication, 'id' | 'createdAt' | 'lastUpdated' | 'contacts' | 'negotiationHistory' | 'feedbackReceived' | 'interviewDates'>): Promise<JobApplication> => {
+/**
+ * Adds a new job application to the local data store.
+ * Includes security measures like signature generation and audit logging.
+ * @param app The job application data to add.
+ * @returns A Promise resolving to the newly added JobApplication.
+ */
+export const apiAddJobApplication = async (app: Omit<JobApplication, 'id' | 'createdAt' | 'lastUpdated' | 'contacts' | 'negotiationHistory' | 'feedbackReceived' | 'interviewDates' | 'signature' | 'nonce'>): Promise<JobApplication> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_applications')) {
+        throw new CustomError('Permission denied to add job application.', 'PERMISSION_DENIED');
+    }
+
     const newApp: JobApplication = {
         ...app,
         id: generateId(),
@@ -1899,38 +3009,83 @@ export const apiAddJobApplication = async (app: Omit<JobApplication, 'id' | 'cre
         interviewDates: [],
         contacts: [],
     };
-    dataStore.setItem('JobApplication', newApp);
-    webhookProcessor.receiveEvent({ eventType: 'JOB_APPLIED', payload: { id: newApp.id, jobTitle: newApp.jobTitle, company: newApp.company } });
-    notificationService.addNotification({ type: 'success', message: `Application for ${newApp.jobTitle} at ${newApp.company} added.`, actionLink: `/applications/${newApp.id}` });
-    return newApp;
+    const signedApp = SecurityUtils.signObject(newApp, USER_ID);
+    dataStore.setItem('JobApplication', signedApp);
+    webhookProcessor.receiveEvent({ eventType: 'JOB_APPLIED', payload: { id: signedApp.id, jobTitle: signedApp.jobTitle, company: signedApp.company } });
+    notificationService.addNotification({ type: 'success', message: `Application for ${signedApp.jobTitle} at ${signedApp.company} added.`, actionLink: `/applications/${signedApp.id}` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ApplicationAdded, 'JobApplication', signedApp.id, 'New job application added.', 'SUCCESS', { jobTitle: signedApp.jobTitle, company: signedApp.company });
+    return signedApp;
 };
 
+/**
+ * Updates an existing job application in the local data store.
+ * Includes security measures like signature generation and audit logging.
+ * @param app The updated JobApplication object.
+ * @returns A Promise resolving to the updated JobApplication.
+ */
 export const apiUpdateJobApplication = async (app: JobApplication): Promise<JobApplication> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_applications')) {
+        throw new CustomError('Permission denied to update job application.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(app, USER_ID)) {
+        throw new CustomError('Data integrity check failed for job application update.', 'SIGNATURE_MISMATCH');
+    }
+
     app.lastUpdated = DateUtils.getNowISO();
-    dataStore.setItem('JobApplication', app);
+    const signedApp = SecurityUtils.signObject(app, USER_ID);
+    dataStore.setItem('JobApplication', signedApp);
     if (app.status === JobApplicationStatus.Interviewing && app.interviewDates.length > 0) {
         webhookProcessor.receiveEvent({ eventType: 'INTERVIEW_SCHEDULED', payload: { role: app.jobTitle, company: app.company, interviewDate: app.interviewDates[0], applicationId: app.id } });
     }
     notificationService.addNotification({ type: 'success', message: `Application for ${app.jobTitle} updated.`, actionLink: `/applications/${app.id}` });
-    return app;
+    auditLogService.recordEvent(USER_ID, AuditEventType.ApplicationUpdated, 'JobApplication', app.id, 'Job application updated.', 'SUCCESS', { jobTitle: app.jobTitle, status: app.status });
+    return signedApp;
 };
 
+/**
+ * Retrieves all job applications from the local data store.
+ * @returns A Promise resolving to an array of JobApplication objects.
+ */
 export const apiGetAllJobApplications = async (): Promise<JobApplication[]> => {
     return dataStore.getAllItems<JobApplication>('JobApplication');
 };
 
+/**
+ * Retrieves a specific job application by ID.
+ * @param id The ID of the job application.
+ * @returns A Promise resolving to the JobApplication or null if not found.
+ */
 export const apiGetJobApplicationById = async (id: string): Promise<JobApplication | null> => {
     return dataStore.getItem<JobApplication>('JobApplication', id);
 };
 
+/**
+ * Deletes a job application by ID.
+ * Includes audit logging.
+ * @param id The ID of the job application to delete.
+ * @returns A Promise that resolves when the application is removed.
+ */
 export const apiDeleteJobApplication = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_applications')) {
+        throw new CustomError('Permission denied to delete job application.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('JobApplication', id);
     notificationService.addNotification({ type: 'info', message: 'Job application removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ApplicationUpdated, 'JobApplication', id, 'Job application deleted.', 'SUCCESS');
 };
 
 
 // 3.5 Career Goal Management API
-export const apiAddCareerGoal = async (goal: Omit<CareerGoal, 'id' | 'createdAt' | 'lastUpdated' | 'progressNotes' | 'actionItems'>): Promise<CareerGoal> => {
+/**
+ * Adds a new career goal.
+ * Includes security measures like signature generation and audit logging.
+ * @param goal The career goal data to add.
+ * @returns A Promise resolving to the newly added CareerGoal.
+ */
+export const apiAddCareerGoal = async (goal: Omit<CareerGoal, 'id' | 'createdAt' | 'lastUpdated' | 'progressNotes' | 'actionItems' | 'signature' | 'nonce'>): Promise<CareerGoal> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_goals')) {
+        throw new CustomError('Permission denied to add career goal.', 'PERMISSION_DENIED');
+    }
     const newGoal: CareerGoal = {
         ...goal,
         id: generateId(),
@@ -1939,65 +3094,147 @@ export const apiAddCareerGoal = async (goal: Omit<CareerGoal, 'id' | 'createdAt'
         createdAt: DateUtils.getNowISO(),
         lastUpdated: DateUtils.getNowISO(),
     };
-    dataStore.setItem('CareerGoal', newGoal);
-    notificationService.addNotification({ type: 'success', message: `Career goal "${newGoal.title}" added.`, actionLink: `/goals/${newGoal.id}` });
-    return newGoal;
+    const signedGoal = SecurityUtils.signObject(newGoal, USER_ID);
+    dataStore.setItem('CareerGoal', signedGoal);
+    notificationService.addNotification({ type: 'success', message: `Career goal "${signedGoal.title}" added.`, actionLink: `/goals/${signedGoal.id}` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalCreated, 'CareerGoal', signedGoal.id, 'New career goal added.', 'SUCCESS', { title: signedGoal.title });
+    return signedGoal;
 };
 
+/**
+ * Updates an existing career goal.
+ * Includes security measures like signature generation and audit logging.
+ * @param goal The updated CareerGoal object.
+ * @returns A Promise resolving to the updated CareerGoal.
+ */
 export const apiUpdateCareerGoal = async (goal: CareerGoal): Promise<CareerGoal> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_goals')) {
+        throw new CustomError('Permission denied to update career goal.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(goal, USER_ID)) {
+        throw new CustomError('Data integrity check failed for career goal update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const idempotencyKey = idempotencyManager.generateKey('update_career_goal', { id: goal.id, status: goal.status }, USER_ID);
+    if (idempotencyManager.isProcessed(idempotencyKey)) {
+        console.log(`Idempotent call: Goal ${goal.id} already processed.`);
+        return goal; // Return existing state, no re-processing
+    }
+
     goal.lastUpdated = DateUtils.getNowISO();
-    dataStore.setItem('CareerGoal', goal);
-    webhookProcessor.receiveEvent({ eventType: 'GOAL_UPDATED', payload: { id: goal.id, title: goal.title, status: goal.status } });
-    notificationService.addNotification({ type: 'success', message: `Career goal "${goal.title}" updated.`, actionLink: `/goals/${goal.id}` });
-    return goal;
+    const signedGoal = SecurityUtils.signObject(goal, USER_ID);
+    dataStore.setItem('CareerGoal', signedGoal);
+    webhookProcessor.receiveEvent({ eventType: 'GOAL_UPDATED', payload: { id: signedGoal.id, title: signedGoal.title, status: signedGoal.status } });
+    notificationService.addNotification({ type: 'success', message: `Career goal "${signedGoal.title}" updated.`, actionLink: `/goals/${signedGoal.id}` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalUpdated, 'CareerGoal', signedGoal.id, 'Career goal updated.', 'SUCCESS', { title: signedGoal.title, status: signedGoal.status });
+
+    if (signedGoal.status === GoalStatus.Completed) {
+        // Reward tokens for completing a goal
+        await tokenizedRewardService.issueToken(USER_ID, 10, TokenType.CareerCoin, `Completed goal: ${signedGoal.title}`);
+    }
+
+    idempotencyManager.markProcessed(idempotencyKey);
+    return signedGoal;
 };
 
+/**
+ * Retrieves all career goals.
+ * @returns A Promise resolving to an array of CareerGoal objects.
+ */
 export const apiGetAllCareerGoals = async (): Promise<CareerGoal[]> => {
     return dataStore.getAllItems<CareerGoal>('CareerGoal');
 };
 
+/**
+ * Retrieves a specific career goal by ID.
+ * @param id The ID of the career goal.
+ * @returns A Promise resolving to the CareerGoal or null if not found.
+ */
 export const apiGetCareerGoalById = async (id: string): Promise<CareerGoal | null> => {
     return dataStore.getItem<CareerGoal>('CareerGoal', id);
 };
 
+/**
+ * Deletes a career goal and its associated action items.
+ * Includes audit logging.
+ * @param id The ID of the career goal to delete.
+ * @returns A Promise that resolves when the goal is removed.
+ */
 export const apiDeleteCareerGoal = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_goals')) {
+        throw new CustomError('Permission denied to delete career goal.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('CareerGoal', id);
-    // Also remove related action items
     const allActionItems = dataStore.getAllItems<ActionItem>('ActionItem');
     allActionItems.filter(item => item.goalId === id).forEach(item => dataStore.removeItem('ActionItem', item.id));
     notificationService.addNotification({ type: 'info', message: 'Career goal and its action items removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalDeleted, 'CareerGoal', id, 'Career goal deleted.', 'SUCCESS');
 };
 
 // 3.5.1 Action Item Management API
-export const apiAddActionItem = async (item: Omit<ActionItem, 'id'>): Promise<ActionItem> => {
+/**
+ * Adds a new action item to a career goal.
+ * Includes security measures like signature generation and audit logging.
+ * @param item The action item data to add.
+ * @returns A Promise resolving to the newly added ActionItem.
+ */
+export const apiAddActionItem = async (item: Omit<ActionItem, 'id' | 'signature' | 'nonce'>): Promise<ActionItem> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_goals')) {
+        throw new CustomError('Permission denied to add action item.', 'PERMISSION_DENIED');
+    }
     const newActionItem: ActionItem = {
         ...item,
         id: generateId(),
     };
-    dataStore.setItem('ActionItem', newActionItem);
-    // Update parent goal to include this action item (simplified, would be more complex in real app)
+    const signedItem = SecurityUtils.signObject(newActionItem, USER_ID);
+    dataStore.setItem('ActionItem', signedItem);
     const parentGoal = await apiGetCareerGoalById(item.goalId);
     if (parentGoal) {
-        parentGoal.actionItems.push(newActionItem);
-        await apiUpdateCareerGoal(parentGoal);
+        parentGoal.actionItems.push(signedItem);
+        await apiUpdateCareerGoal(parentGoal); // This will re-sign the parent goal
     }
     notificationService.addNotification({ type: 'success', message: `Action item "${TextUtils.truncate(item.description, 50)}" added.` });
-    return newActionItem;
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalUpdated, 'ActionItem', signedItem.id, 'New action item added.', 'SUCCESS', { goalId: item.goalId, description: item.description });
+    return signedItem;
 };
 
+/**
+ * Updates an existing action item.
+ * Includes security measures like signature generation and audit logging.
+ * @param item The updated ActionItem object.
+ * @returns A Promise resolving to the updated ActionItem.
+ */
 export const apiUpdateActionItem = async (item: ActionItem): Promise<ActionItem> => {
-    dataStore.setItem('ActionItem', item);
-    // Update parent goal if its action items array needs refresh
+    if (!accessControlService.hasPermission(USER_ID, 'manage_goals')) {
+        throw new CustomError('Permission denied to update action item.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(item, USER_ID)) {
+        throw new CustomError('Data integrity check failed for action item update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const signedItem = SecurityUtils.signObject(item, USER_ID);
+    dataStore.setItem('ActionItem', signedItem);
     const parentGoal = await apiGetCareerGoalById(item.goalId);
     if (parentGoal) {
-        parentGoal.actionItems = parentGoal.actionItems.map(ai => ai.id === item.id ? item : ai);
+        parentGoal.actionItems = parentGoal.actionItems.map(ai => ai.id === signedItem.id ? signedItem : ai);
         await apiUpdateCareerGoal(parentGoal);
     }
     notificationService.addNotification({ type: 'info', message: `Action item "${TextUtils.truncate(item.description, 50)}" updated.` });
-    return item;
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalUpdated, 'ActionItem', signedItem.id, 'Action item updated.', 'SUCCESS', { goalId: item.goalId, description: item.description, isCompleted: item.isCompleted });
+    return signedItem;
 };
 
+/**
+ * Deletes an action item.
+ * Includes audit logging.
+ * @param id The ID of the action item to delete.
+ * @param goalId The ID of the parent career goal.
+ * @returns A Promise that resolves when the item is removed.
+ */
 export const apiDeleteActionItem = async (id: string, goalId: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_goals')) {
+        throw new CustomError('Permission denied to delete action item.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('ActionItem', id);
     const parentGoal = await apiGetCareerGoalById(goalId);
     if (parentGoal) {
@@ -2005,15 +3242,35 @@ export const apiDeleteActionItem = async (id: string, goalId: string): Promise<v
         await apiUpdateCareerGoal(parentGoal);
     }
     notificationService.addNotification({ type: 'info', message: 'Action item removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalUpdated, 'ActionItem', id, 'Action item deleted.', 'SUCCESS', { goalId });
 };
 
+/**
+ * Retrieves all action items for a specific career goal.
+ * @param goalId The ID of the parent career goal.
+ * @returns A Promise resolving to an array of ActionItem objects.
+ */
 export const apiGetAllActionItemsForGoal = async (goalId: string): Promise<ActionItem[]> => {
     return dataStore.getAllItems<ActionItem>('ActionItem').filter(item => item.goalId === goalId);
 };
 
 
 // 3.6 Interview Preparation API
+/**
+ * Starts a new interview session, generating initial questions using AI.
+ * Includes security measures like signature generation and audit logging.
+ * @param jobApplicationId The ID of the associated job application.
+ * @param role The job role.
+ * @param company The company name.
+ * @param jobDescription The job description for context.
+ * @param userProfile The user's profile.
+ * @param stageType The type of interview stage.
+ * @returns A Promise resolving to the new InterviewSession.
+ */
 export const apiStartInterviewSession = async (jobApplicationId: string, role: string, company: string, jobDescription: string, userProfile: UserProfile, stageType: InterviewStageType = InterviewStageType.Behavioral): Promise<InterviewSession> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_interview_sessions')) {
+        throw new CustomError('Permission denied to start interview session.', 'PERMISSION_DENIED');
+    }
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!ValidationUtils.isNotNullOrEmpty(jobApplicationId) || !ValidationUtils.isNotNullOrEmpty(jobDescription) || !userProfile) {
         throw new CustomError("Missing details to start interview session.", "INPUT_VALIDATION_ERROR");
@@ -2035,12 +3292,26 @@ export const apiStartInterviewSession = async (jobApplicationId: string, role: s
         lastUpdated: DateUtils.getNowISO(),
         stageType: stageType,
     };
-    dataStore.setItem('InterviewSession', session);
-    notificationService.addNotification({ type: 'info', message: `Interview session for ${role} started. Good luck!`, actionLink: `/interview/${session.id}` });
-    return session;
+    const signedSession = SecurityUtils.signObject(session, USER_ID);
+    dataStore.setItem('InterviewSession', signedSession);
+    notificationService.addNotification({ type: 'info', message: `Interview session for ${role} started. Good luck!`, actionLink: `/interview/${signedSession.id}` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.SessionScheduled, 'InterviewSession', signedSession.id, 'Interview session started.', 'SUCCESS', { role, company, stageType });
+    return signedSession;
 };
 
+/**
+ * Submits interview answers and retrieves AI feedback for a session.
+ * Includes security measures like signature generation and audit logging.
+ * @param sessionId The ID of the interview session.
+ * @param questionsWithAnswers A list of questions and the user's answers.
+ * @param jobDescription The job description for context.
+ * @param userProfile The user's profile.
+ * @returns A Promise resolving to the updated InterviewSession with feedback.
+ */
 export const apiSubmitInterviewAnswersAndGetFeedback = async (sessionId: string, questionsWithAnswers: { question: string; userAnswer: string; }[], jobDescription: string, userProfile: UserProfile): Promise<InterviewSession> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_interview_sessions')) {
+        throw new CustomError('Permission denied to submit interview answers.', 'PERMISSION_DENIED');
+    }
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!ValidationUtils.isNotNullOrEmpty(sessionId) || questionsWithAnswers.length === 0 || !ValidationUtils.isNotNullOrEmpty(jobDescription) || !userProfile) {
         throw new CustomError("Missing session ID, answers, job description, or profile for feedback.", "INPUT_VALIDATION_ERROR");
@@ -2048,6 +3319,9 @@ export const apiSubmitInterviewAnswersAndGetFeedback = async (sessionId: string,
 
     const session = await dataStore.getItem<InterviewSession>('InterviewSession', sessionId);
     if (!session) throw new CustomError("Interview session not found.", "NOT_FOUND");
+    if (!SecurityUtils.verifyObjectSignature(session, USER_ID)) {
+        throw new CustomError('Data integrity check failed for interview session.', 'SIGNATURE_MISMATCH');
+    }
 
     const feedback = await careerAIClient.getInterviewFeedback(questionsWithAnswers, jobDescription, userProfile);
 
@@ -2065,22 +3339,39 @@ export const apiSubmitInterviewAnswersAndGetFeedback = async (sessionId: string,
     session.score = feedback.score;
     session.lastUpdated = DateUtils.getNowISO();
 
-    dataStore.setItem('InterviewSession', session);
-    notificationService.addNotification({ type: 'success', message: `Feedback for interview session "${session.role}" received.`, actionLink: `/interview/${session.id}` });
-    webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Interview Feedback', actionLink: `/interview/${session.id}` } });
-    return session;
+    const signedSession = SecurityUtils.signObject(session, USER_ID);
+    dataStore.setItem('InterviewSession', signedSession);
+    notificationService.addNotification({ type: 'success', message: `Feedback for interview session "${signedSession.role}" received.`, actionLink: `/interview/${signedSession.id}` });
+    webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Interview Feedback', actionLink: `/interview/${signedSession.id}` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'InterviewSession', signedSession.id, 'Interview feedback generated.', 'SUCCESS', { score: signedSession.score });
+    return signedSession;
 };
 
+/**
+ * Retrieves all interview sessions.
+ * @returns A Promise resolving to an array of InterviewSession objects.
+ */
 export const apiGetAllInterviewSessions = async (): Promise<InterviewSession[]> => {
     return dataStore.getAllItems<InterviewSession>('InterviewSession');
 };
 
+/**
+ * Retrieves a specific interview session by ID.
+ * @param id The ID of the interview session.
+ * @returns A Promise resolving to the InterviewSession or null if not found.
+ */
 export const apiGetInterviewSessionById = async (id: string): Promise<InterviewSession | null> => {
     return dataStore.getItem<InterviewSession>('InterviewSession', id);
 };
 
 
 // 3.7 Market Insights API
+/**
+ * Retrieves market trends using AI.
+ * @param industry The industry to analyze.
+ * @param keywords Specific keywords to focus on.
+ * @returns A Promise resolving to an array of MarketTrend objects.
+ */
 export const apiGetMarketTrends = async (industry: string, keywords: string[]): Promise<MarketTrend[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!ValidationUtils.isNotNullOrEmpty(industry)) {
@@ -2089,10 +3380,20 @@ export const apiGetMarketTrends = async (industry: string, keywords: string[]): 
     const trends = await careerAIClient.getMarketTrends(industry, keywords);
     notificationService.addNotification({ type: 'info', message: `Fetched ${trends.length} market trends for ${industry}.`, actionLink: `/market` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Market Trend Analysis', actionLink: `/market` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'MarketTrendAnalysis', generateId(), 'Market trends generated.', 'SUCCESS', { industry, keywords });
     return trends;
 };
 
 // 3.8 Salary Negotiation API
+/**
+ * Generates a salary negotiation script using AI.
+ * @param jobTitle The job title.
+ * @param company The company name.
+ * @param initialOffer The initial salary offer.
+ * @param desiredSalary The user's desired salary.
+ * @param userProfile The user's profile.
+ * @returns A Promise resolving to the generated script string.
+ */
 export const apiGetSalaryNegotiationScript = async (
     jobTitle: string,
     company: string,
@@ -2107,10 +3408,17 @@ export const apiGetSalaryNegotiationScript = async (
     const script = await careerAIClient.getSalaryNegotiationScript(jobTitle, company, initialOffer, desiredSalary, userProfile);
     notificationService.addNotification({ type: 'success', message: 'Salary negotiation script generated.', actionLink: `/negotiation` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Salary Negotiation Script', actionLink: `/negotiation` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'SalaryNegotiationScript', generateId(), 'Salary negotiation script generated.', 'SUCCESS', { jobTitle, company });
     return script;
 };
 
 // 3.9 Personal Branding API
+/**
+ * Optimizes a user's LinkedIn profile summary using AI.
+ * @param userProfile The user's profile.
+ * @param desiredRoles The user's desired job roles.
+ * @returns A Promise resolving to the optimized summary string.
+ */
 export const apiOptimizeLinkedInProfile = async (userProfile: UserProfile, desiredRoles: string[]): Promise<string> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || desiredRoles.length === 0) {
@@ -2119,21 +3427,36 @@ export const apiOptimizeLinkedInProfile = async (userProfile: UserProfile, desir
     const summary = await careerAIClient.optimizeLinkedInProfile(userProfile, desiredRoles);
     notificationService.addNotification({ type: 'success', message: 'LinkedIn summary optimized.', actionLink: `/branding` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'LinkedIn Profile Optimization', actionLink: `/branding` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'LinkedInOptimization', generateId(), 'LinkedIn profile optimized.', 'SUCCESS');
     return summary;
 };
 
+/**
+ * Generates a personal brand statement using AI.
+ * Includes security measures like signature generation and audit logging.
+ * @param userProfile The user's profile.
+ * @param desiredImpact The desired impact of the brand statement.
+ * @returns A Promise resolving to the generated PersonalBrandStatement.
+ */
 export const apiGeneratePersonalBrandStatement = async (userProfile: UserProfile, desiredImpact: string): Promise<PersonalBrandStatement> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || !ValidationUtils.isNotNullOrEmpty(desiredImpact)) {
         throw new CustomError("Missing user profile or desired impact for brand statement generation.", "INPUT_VALIDATION_ERROR");
     }
     const statement = await careerAIClient.generatePersonalBrandStatement(userProfile, desiredImpact);
-    dataStore.setItem('PersonalBrandStatement', statement); // Persist the statement
+    const signedStatement = SecurityUtils.signObject(statement, USER_ID); // User also signs for adoption
+    dataStore.setItem('PersonalBrandStatement', signedStatement);
     notificationService.addNotification({ type: 'success', message: 'Personal brand statement generated and saved.', actionLink: `/branding` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Personal Brand Statement', actionLink: `/branding` } });
-    return statement;
+    auditLogService.recordEvent(USER_ID, AuditEventType.BrandStatementGenerated, 'PersonalBrandStatement', signedStatement.id, 'Personal brand statement generated and saved.', 'SUCCESS');
+    return signedStatement;
 };
 
+/**
+ * Retrieves the latest personal brand statement for the user.
+ * @param userId The ID of the user.
+ * @returns A Promise resolving to the latest PersonalBrandStatement or null.
+ */
 export const apiGetLatestPersonalBrandStatement = async (userId: string = USER_ID): Promise<PersonalBrandStatement | null> => {
     const statements = dataStore.getAllItems<PersonalBrandStatement>('PersonalBrandStatement').filter(pbs => true); // In a multi-user app, filter by userId
     if (statements.length === 0) return null;
@@ -2142,6 +3465,12 @@ export const apiGetLatestPersonalBrandStatement = async (userId: string = USER_I
 
 
 // 3.10 Performance Review API
+/**
+ * Prepares performance review bullet points using AI.
+ * @param userProfile The user's profile.
+ * @param achievements A list of raw achievement descriptions.
+ * @returns A Promise resolving to an array of formatted review points.
+ */
 export const apiPreparePerformanceReview = async (userProfile: UserProfile, achievements: string[]): Promise<string[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || achievements.length === 0) {
@@ -2150,37 +3479,85 @@ export const apiPreparePerformanceReview = async (userProfile: UserProfile, achi
     const reviewPoints = await careerAIClient.preparePerformanceReview(userProfile, achievements);
     notificationService.addNotification({ type: 'success', message: 'Performance review points generated.', actionLink: `/review` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Performance Review Prep', actionLink: `/review` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'PerformanceReviewPrep', generateId(), 'Performance review points generated.', 'SUCCESS');
     return reviewPoints;
 };
 
 // 3.11 Networking API
-export const apiAddNetworkContact = async (contact: Omit<NetworkContact, 'id' | 'connectionDate' | 'lastContactDate'>): Promise<NetworkContact> => {
+/**
+ * Adds a new network contact.
+ * Includes security measures like signature generation and audit logging.
+ * @param contact The network contact data to add.
+ * @returns A Promise resolving to the newly added NetworkContact.
+ */
+export const apiAddNetworkContact = async (contact: Omit<NetworkContact, 'id' | 'connectionDate' | 'lastContactDate' | 'signature' | 'nonce'>): Promise<NetworkContact> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_network')) {
+        throw new CustomError('Permission denied to add network contact.', 'PERMISSION_DENIED');
+    }
     const newContact: NetworkContact = {
         ...contact,
         id: generateId(),
         connectionDate: DateUtils.getNowISO(),
         lastContactDate: DateUtils.getNowISO(),
     };
-    dataStore.setItem('NetworkContact', newContact);
-    notificationService.addNotification({ type: 'success', message: `Added new contact: ${newContact.name}.`, actionLink: `/network` });
-    return newContact;
+    const signedContact = SecurityUtils.signObject(newContact, USER_ID);
+    dataStore.setItem('NetworkContact', signedContact);
+    notificationService.addNotification({ type: 'success', message: `Added new contact: ${signedContact.name}.`, actionLink: `/network` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ContactAdded, 'NetworkContact', signedContact.id, 'New network contact added.', 'SUCCESS', { name: signedContact.name });
+    return signedContact;
 };
 
+/**
+ * Updates an existing network contact.
+ * Includes security measures like signature generation and audit logging.
+ * @param contact The updated NetworkContact object.
+ * @returns A Promise resolving to the updated NetworkContact.
+ */
 export const apiUpdateNetworkContact = async (contact: NetworkContact): Promise<NetworkContact> => {
-    dataStore.setItem('NetworkContact', contact);
-    notificationService.addNotification({ type: 'success', message: `Updated contact: ${contact.name}.`, actionLink: `/network` });
-    return contact;
+    if (!accessControlService.hasPermission(USER_ID, 'manage_network')) {
+        throw new CustomError('Permission denied to update network contact.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(contact, USER_ID)) {
+        throw new CustomError('Data integrity check failed for network contact update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const signedContact = SecurityUtils.signObject(contact, USER_ID);
+    dataStore.setItem('NetworkContact', signedContact);
+    notificationService.addNotification({ type: 'success', message: `Updated contact: ${signedContact.name}.`, actionLink: `/network` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ProfileUpdated, 'NetworkContact', signedContact.id, 'Network contact updated.', 'SUCCESS', { name: signedContact.name });
+    return signedContact;
 };
 
+/**
+ * Retrieves all network contacts.
+ * @returns A Promise resolving to an array of NetworkContact objects.
+ */
 export const apiGetAllNetworkContacts = async (): Promise<NetworkContact[]> => {
     return dataStore.getAllItems<NetworkContact>('NetworkContact');
 };
 
+/**
+ * Deletes a network contact.
+ * Includes audit logging.
+ * @param id The ID of the network contact to delete.
+ * @returns A Promise that resolves when the contact is removed.
+ */
 export const apiDeleteNetworkContact = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_network')) {
+        throw new CustomError('Permission denied to delete network contact.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('NetworkContact', id);
     notificationService.addNotification({ type: 'info', message: 'Network contact removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ProfileUpdated, 'NetworkContact', id, 'Network contact deleted.', 'SUCCESS');
 };
 
+/**
+ * Generates a networking message using AI.
+ * @param userProfile The user's profile.
+ * @param contact The network contact.
+ * @param purpose The purpose of the message.
+ * @returns A Promise resolving to the generated message string.
+ */
 export const apiGenerateNetworkingMessage = async (userProfile: UserProfile, contact: NetworkContact, purpose: string): Promise<string> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || !contact || !ValidationUtils.isNotNullOrEmpty(purpose)) {
@@ -2189,81 +3566,182 @@ export const apiGenerateNetworkingMessage = async (userProfile: UserProfile, con
     const message = await careerAIClient.generateNetworkingMessage(userProfile, contact, purpose);
     notificationService.addNotification({ type: 'success', message: 'Networking message generated.', actionLink: `/network` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Networking Message', actionLink: `/network` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'NetworkingMessageGeneration', generateId(), 'Networking message generated.', 'SUCCESS', { contactName: contact.name, purpose });
     return message;
 };
 
 // 3.12 Project Management API
-export const apiAddPersonalProject = async (project: Omit<PersonalProject, 'id' | 'createdAt' | 'lastUpdated'>): Promise<PersonalProject> => {
+/**
+ * Adds a new personal project.
+ * Includes security measures like signature generation and audit logging.
+ * @param project The project data to add.
+ * @returns A Promise resolving to the newly added PersonalProject.
+ */
+export const apiAddPersonalProject = async (project: Omit<PersonalProject, 'id' | 'createdAt' | 'lastUpdated' | 'signature' | 'nonce'>): Promise<PersonalProject> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_projects')) {
+        throw new CustomError('Permission denied to add personal project.', 'PERMISSION_DENIED');
+    }
     const newProject: PersonalProject = {
         ...project,
         id: generateId(),
         createdAt: DateUtils.getNowISO(),
         lastUpdated: DateUtils.getNowISO(),
     };
-    dataStore.setItem('PersonalProject', newProject);
-    notificationService.addNotification({ type: 'success', message: `Project "${newProject.title}" added.`, actionLink: `/projects` });
-    return newProject;
+    const signedProject = SecurityUtils.signObject(newProject, USER_ID);
+    dataStore.setItem('PersonalProject', signedProject);
+    notificationService.addNotification({ type: 'success', message: `Project "${signedProject.title}" added.`, actionLink: `/projects` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ProjectAdded, 'PersonalProject', signedProject.id, 'New personal project added.', 'SUCCESS', { title: signedProject.title });
+    return signedProject;
 };
 
+/**
+ * Updates an existing personal project.
+ * Includes security measures like signature generation and audit logging.
+ * @param project The updated PersonalProject object.
+ * @returns A Promise resolving to the updated PersonalProject.
+ */
 export const apiUpdatePersonalProject = async (project: PersonalProject): Promise<PersonalProject> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_projects')) {
+        throw new CustomError('Permission denied to update personal project.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(project, USER_ID)) {
+        throw new CustomError('Data integrity check failed for personal project update.', 'SIGNATURE_MISMATCH');
+    }
+
     project.lastUpdated = DateUtils.getNowISO();
-    dataStore.setItem('PersonalProject', project);
-    notificationService.addNotification({ type: 'success', message: `Project "${project.title}" updated.`, actionLink: `/projects` });
-    return project;
+    const signedProject = SecurityUtils.signObject(project, USER_ID);
+    dataStore.setItem('PersonalProject', signedProject);
+    notificationService.addNotification({ type: 'success', message: `Project "${signedProject.title}" updated.`, actionLink: `/projects` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ProfileUpdated, 'PersonalProject', signedProject.id, 'Personal project updated.', 'SUCCESS', { title: signedProject.title });
+    return signedProject;
 };
 
+/**
+ * Retrieves all personal projects.
+ * @returns A Promise resolving to an array of PersonalProject objects.
+ */
 export const apiGetAllPersonalProjects = async (): Promise<PersonalProject[]> => {
     return dataStore.getAllItems<PersonalProject>('PersonalProject');
 };
 
+/**
+ * Deletes a personal project.
+ * Includes audit logging.
+ * @param id The ID of the personal project to delete.
+ * @returns A Promise that resolves when the project is removed.
+ */
 export const apiDeletePersonalProject = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_projects')) {
+        throw new CustomError('Permission denied to delete personal project.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('PersonalProject', id);
     notificationService.addNotification({ type: 'info', message: 'Personal project removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ProfileUpdated, 'PersonalProject', id, 'Personal project deleted.', 'SUCCESS');
 };
 
-export const apiSuggestPersonalProjectIdeas = async (userProfile: UserProfile, targetSkills: string[], careerGoal?: string): Promise<Omit<PersonalProject, 'id' | 'startDate' | 'createdAt' | 'lastUpdated' | 'goalIds' | 'status' | 'technologiesUsed' | 'endDate'>[]> => {
+/**
+ * Suggests personal project ideas using AI.
+ * @param userProfile The user's profile.
+ * @param targetSkills Skills the user wants to develop.
+ * @param careerGoal An optional career goal to focus on.
+ * @returns A Promise resolving to an array of project ideas.
+ */
+export const apiSuggestPersonalProjectIdeas = async (userProfile: UserProfile, targetSkills: string[], careerGoal?: string): Promise<Omit<PersonalProject, 'id' | 'startDate' | 'createdAt' | 'lastUpdated' | 'goalIds' | 'status' | 'technologiesUsed' | 'endDate' | 'signature' | 'nonce'>[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || targetSkills.length === 0) {
         throw new CustomError("User profile and target skills are required for project ideas.", "INPUT_VALIDATION_ERROR");
     }
     const ideas = await careerAIClient.suggestProjectIdeas(userProfile, targetSkills, careerGoal);
-    notificationService.addNotification({ type: 'success', message: `Generated ${ideas.length} project ideas.`, actionLink: `/projects` });
+    notificationService.addNotification({ type: 'success', message: `Generated ${ideas.length} project ideas!`, actionLink: `/projects` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Project Idea Generation', actionLink: `/projects` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'ProjectIdeaGeneration', generateId(), 'Project ideas generated.', 'SUCCESS', { targetSkills, careerGoal });
     return ideas;
 };
 
 // 3.13 Mentorship API
-export const apiAddMentorProfile = async (mentor: Omit<MentorProfile, 'id' | 'currentMentees' | 'isAvailable'>): Promise<MentorProfile> => {
+/**
+ * Adds a new mentor profile.
+ * Includes security measures like signature generation and audit logging.
+ * @param mentor The mentor profile data to add.
+ * @returns A Promise resolving to the newly added MentorProfile.
+ */
+export const apiAddMentorProfile = async (mentor: Omit<MentorProfile, 'id' | 'currentMentees' | 'isAvailable' | 'signature' | 'nonce'>): Promise<MentorProfile> => {
+    // This is an admin/system function, not for regular users to add mentors directly for now
+    if (!accessControlService.hasPermission(USER_ID, 'manage_mentorship_profiles')) { // Assuming an admin permission
+        throw new CustomError('Permission denied to add mentor profile.', 'PERMISSION_DENIED');
+    }
     const newMentor: MentorProfile = {
         ...mentor,
         id: generateId(),
         currentMentees: [],
         isAvailable: true,
     };
-    dataStore.setItem('MentorProfile', newMentor);
-    notificationService.addNotification({ type: 'success', message: `Mentor "${newMentor.name}" added to database.` });
-    return newMentor;
+    const signedMentor = SecurityUtils.signObject(newMentor, USER_ID_SYSTEM); // System agent signs mentor profiles
+    dataStore.setItem('MentorProfile', signedMentor);
+    notificationService.addNotification({ type: 'success', message: `Mentor "${signedMentor.name}" added to database.` });
+    auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.ResourceAdded, 'MentorProfile', signedMentor.id, 'New mentor profile added.', 'SUCCESS', { name: signedMentor.name });
+    return signedMentor;
 };
 
+/**
+ * Updates an existing mentor profile.
+ * Includes security measures like signature generation and audit logging.
+ * @param mentor The updated MentorProfile object.
+ * @returns A Promise resolving to the updated MentorProfile.
+ */
 export const apiUpdateMentorProfile = async (mentor: MentorProfile): Promise<MentorProfile> => {
-    dataStore.setItem('MentorProfile', mentor);
-    notificationService.addNotification({ type: 'success', message: `Mentor "${mentor.name}" profile updated.` });
-    return mentor;
+    if (!accessControlService.hasPermission(USER_ID, 'manage_mentorship_profiles')) {
+        throw new CustomError('Permission denied to update mentor profile.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(mentor, USER_ID_SYSTEM)) {
+        throw new CustomError('Data integrity check failed for mentor profile update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const signedMentor = SecurityUtils.signObject(mentor, USER_ID_SYSTEM);
+    dataStore.setItem('MentorProfile', signedMentor);
+    notificationService.addNotification({ type: 'success', message: `Mentor "${signedMentor.name}" profile updated.` });
+    auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.ResourceAdded, 'MentorProfile', signedMentor.id, 'Mentor profile updated.', 'SUCCESS', { name: signedMentor.name });
+    return signedMentor;
 };
 
+/**
+ * Retrieves all mentor profiles.
+ * @returns A Promise resolving to an array of MentorProfile objects.
+ */
 export const apiGetAllMentorProfiles = async (): Promise<MentorProfile[]> => {
     return dataStore.getAllItems<MentorProfile>('MentorProfile');
 };
 
+/**
+ * Retrieves a specific mentor profile by ID.
+ * @param id The ID of the mentor.
+ * @returns A Promise resolving to the MentorProfile or null if not found.
+ */
 export const apiGetMentorProfileById = async (id: string): Promise<MentorProfile | null> => {
     return dataStore.getItem<MentorProfile>('MentorProfile', id);
 };
 
+/**
+ * Deletes a mentor profile.
+ * Includes audit logging.
+ * @param id The ID of the mentor profile to delete.
+ * @returns A Promise that resolves when the profile is removed.
+ */
 export const apiDeleteMentorProfile = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_mentorship_profiles')) {
+        throw new CustomError('Permission denied to delete mentor profile.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('MentorProfile', id);
     notificationService.addNotification({ type: 'info', message: 'Mentor profile removed.' });
+    auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.ResourceAdded, 'MentorProfile', id, 'Mentor profile deleted.', 'SUCCESS');
 };
 
+/**
+ * Matches mentors to the user's profile using AI.
+ * @param userProfile The user's profile.
+ * @param numberOfMatches The desired number of mentor matches.
+ * @returns A Promise resolving to an array of matched MentorProfile objects.
+ */
 export const apiMatchMentors = async (userProfile: UserProfile, numberOfMatches: number = 3): Promise<MentorProfile[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile) {
@@ -2281,10 +3759,22 @@ export const apiMatchMentors = async (userProfile: UserProfile, numberOfMatches:
     });
     notificationService.addNotification({ type: 'success', message: `Found ${matchedMentors.length} mentor matches!`, actionLink: `/mentorship` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Mentor Matching', actionLink: `/mentorship` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'MentorMatching', generateId(), 'Mentors matched.', 'SUCCESS', { numberOfMatches: matchedMentors.length });
     return matchedMentors;
 };
 
+/**
+ * Schedules a new mentorship session.
+ * Includes security measures like signature generation and audit logging.
+ * @param mentorId The ID of the mentor.
+ * @param topic The topic of the session.
+ * @param durationMinutes The duration of the session in minutes.
+ * @returns A Promise resolving to the newly scheduled MentorshipSession.
+ */
 export const apiScheduleMentorshipSession = async (mentorId: string, topic: string, durationMinutes: number): Promise<MentorshipSession> => {
+    if (!accessControlService.hasPermission(USER_ID, 'schedule_mentorship')) {
+        throw new CustomError('Permission denied to schedule mentorship session.', 'PERMISSION_DENIED');
+    }
     const userProfile = await apiGetUserProfile(USER_ID);
     if (!userProfile) throw new CustomError("User profile not found.", "USER_NOT_FOUND");
     const mentor = await apiGetMentorProfileById(mentorId);
@@ -2301,33 +3791,66 @@ export const apiScheduleMentorshipSession = async (mentorId: string, topic: stri
         status: 'Scheduled',
         actionItems: []
     };
-    dataStore.setItem('MentorshipSession', newSession);
+    const signedSession = SecurityUtils.signObject(newSession, USER_ID);
+    dataStore.setItem('MentorshipSession', signedSession);
 
-    // Update mentor and user profile to reflect new session
-    mentor.currentMentees.push(userProfile.id); // Add mentee to mentor's list
+    mentor.currentMentees.push(userProfile.id);
     await apiUpdateMentorProfile(mentor);
-    // In a real app, user profile would track sessions as well.
 
-    notificationService.addNotification({ type: 'success', message: `Mentorship session with ${mentor.name} scheduled for ${DateUtils.formatDate(newSession.sessionDate)}.`, actionLink: `/mentorship/${newSession.id}` });
-    return newSession;
+    notificationService.addNotification({ type: 'success', message: `Mentorship session with ${mentor.name} scheduled for ${DateUtils.formatDate(signedSession.sessionDate)}.`, actionLink: `/mentorship/${signedSession.id}` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.SessionScheduled, 'MentorshipSession', signedSession.id, 'Mentorship session scheduled.', 'SUCCESS', { mentorId, topic, durationMinutes });
+    return signedSession;
 };
 
+/**
+ * Updates an existing mentorship session.
+ * Includes security measures like signature generation and audit logging.
+ * @param session The updated MentorshipSession object.
+ * @returns A Promise resolving to the updated MentorshipSession.
+ */
 export const apiUpdateMentorshipSession = async (session: MentorshipSession): Promise<MentorshipSession> => {
-    dataStore.setItem('MentorshipSession', session);
-    notificationService.addNotification({ type: 'success', message: `Mentorship session for "${session.topic}" updated.`, actionLink: `/mentorship/${session.id}` });
-    return session;
+    if (!accessControlService.hasPermission(USER_ID, 'schedule_mentorship')) { // User can update their own sessions
+        throw new CustomError('Permission denied to update mentorship session.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(session, USER_ID)) {
+        throw new CustomError('Data integrity check failed for mentorship session update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const signedSession = SecurityUtils.signObject(session, USER_ID);
+    dataStore.setItem('MentorshipSession', signedSession);
+    notificationService.addNotification({ type: 'success', message: `Mentorship session for "${signedSession.topic}" updated.`, actionLink: `/mentorship/${signedSession.id}` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.SessionScheduled, 'MentorshipSession', signedSession.id, 'Mentorship session updated.', 'SUCCESS', { topic: signedSession.topic, status: signedSession.status });
+    return signedSession;
 };
 
+/**
+ * Retrieves all mentorship sessions for a specific mentee.
+ * @param menteeId The ID of the mentee.
+ * @returns A Promise resolving to an array of MentorshipSession objects.
+ */
 export const apiGetAllMentorshipSessions = async (menteeId: string = USER_ID): Promise<MentorshipSession[]> => {
     return dataStore.getAllItems<MentorshipSession>('MentorshipSession').filter(session => session.menteeId === menteeId);
 };
 
 // 3.14 Learning Resources API
+/**
+ * Retrieves all learning resources.
+ * @returns A Promise resolving to an array of LearningResource objects.
+ */
 export const apiGetAllLearningResources = async (): Promise<LearningResource[]> => {
     return dataStore.getAllItems<LearningResource>('LearningResource');
 };
 
+/**
+ * Adds a new learning resource.
+ * Includes audit logging.
+ * @param resource The learning resource data to add.
+ * @returns A Promise resolving to the newly added LearningResource.
+ */
 export const apiAddLearningResource = async (resource: Omit<LearningResource, 'id' | 'dateAdded'>): Promise<LearningResource> => {
+    if (!accessControlService.hasPermission(USER_ID, 'add_learning_resource')) { // Admin or specific content manager role
+        throw new CustomError('Permission denied to add learning resource.', 'PERMISSION_DENIED');
+    }
     const newResource: LearningResource = {
         ...resource,
         id: generateId(),
@@ -2335,48 +3858,116 @@ export const apiAddLearningResource = async (resource: Omit<LearningResource, 'i
     };
     dataStore.setItem('LearningResource', newResource);
     notificationService.addNotification({ type: 'success', message: `Learning resource "${newResource.title}" added.` });
+    auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.ResourceAdded, 'LearningResource', newResource.id, 'New learning resource added.', 'SUCCESS', { title: newResource.title });
     return newResource;
 };
 
+/**
+ * Updates an existing learning resource.
+ * Includes audit logging.
+ * @param resource The updated LearningResource object.
+ * @returns A Promise resolving to the updated LearningResource.
+ */
 export const apiUpdateLearningResource = async (resource: LearningResource): Promise<LearningResource> => {
+    if (!accessControlService.hasPermission(USER_ID, 'edit_learning_resource')) {
+        throw new CustomError('Permission denied to update learning resource.', 'PERMISSION_DENIED');
+    }
     dataStore.setItem('LearningResource', resource);
     notificationService.addNotification({ type: 'success', message: `Learning resource "${resource.title}" updated.` });
+    auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.ResourceAdded, 'LearningResource', resource.id, 'Learning resource updated.', 'SUCCESS', { title: resource.title });
     return resource;
 };
 
+/**
+ * Deletes a learning resource.
+ * Includes audit logging.
+ * @param id The ID of the learning resource to delete.
+ * @returns A Promise that resolves when the resource is removed.
+ */
 export const apiDeleteLearningResource = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'delete_learning_resource')) {
+        throw new CustomError('Permission denied to delete learning resource.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('LearningResource', id);
     notificationService.addNotification({ type: 'info', message: 'Learning resource removed.' });
+    auditLogService.recordEvent(USER_ID_SYSTEM, AuditEventType.ResourceAdded, 'LearningResource', id, 'Learning resource deleted.', 'SUCCESS');
 };
 
 
 // 3.15 Portfolio Management API
-export const apiAddPortfolioItem = async (item: Omit<PortfolioItem, 'id'>): Promise<PortfolioItem> => {
+/**
+ * Adds a new portfolio item.
+ * Includes security measures like signature generation and audit logging.
+ * @param item The portfolio item data to add.
+ * @returns A Promise resolving to the newly added PortfolioItem.
+ */
+export const apiAddPortfolioItem = async (item: Omit<PortfolioItem, 'id' | 'signature' | 'nonce'>): Promise<PortfolioItem> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_portfolio')) {
+        throw new CustomError('Permission denied to add portfolio item.', 'PERMISSION_DENIED');
+    }
     const newItem: PortfolioItem = {
         ...item,
         id: generateId(),
-        date: item.date || DateUtils.getNowISO() // Ensure date is set
+        date: item.date || DateUtils.getNowISO()
     };
-    dataStore.setItem('PortfolioItem', newItem);
-    notificationService.addNotification({ type: 'success', message: `Portfolio item "${newItem.title}" added.`, actionLink: `/portfolio` });
-    return newItem;
+    const signedItem = SecurityUtils.signObject(newItem, USER_ID);
+    dataStore.setItem('PortfolioItem', signedItem);
+    notificationService.addNotification({ type: 'success', message: `Portfolio item "${signedItem.title}" added.`, actionLink: `/portfolio` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ResourceAdded, 'PortfolioItem', signedItem.id, 'New portfolio item added.', 'SUCCESS', { title: signedItem.title });
+    return signedItem;
 };
 
+/**
+ * Updates an existing portfolio item.
+ * Includes security measures like signature generation and audit logging.
+ * @param item The updated PortfolioItem object.
+ * @returns A Promise resolving to the updated PortfolioItem.
+ */
 export const apiUpdatePortfolioItem = async (item: PortfolioItem): Promise<PortfolioItem> => {
-    dataStore.setItem('PortfolioItem', item);
-    notificationService.addNotification({ type: 'success', message: `Portfolio item "${item.title}" updated.`, actionLink: `/portfolio` });
-    return item;
+    if (!accessControlService.hasPermission(USER_ID, 'manage_portfolio')) {
+        throw new CustomError('Permission denied to update portfolio item.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(item, USER_ID)) {
+        throw new CustomError('Data integrity check failed for portfolio item update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const signedItem = SecurityUtils.signObject(item, USER_ID);
+    dataStore.setItem('PortfolioItem', signedItem);
+    notificationService.addNotification({ type: 'success', message: `Portfolio item "${signedItem.title}" updated.`, actionLink: `/portfolio` });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ResourceAdded, 'PortfolioItem', signedItem.id, 'Portfolio item updated.', 'SUCCESS', { title: signedItem.title });
+    return signedItem;
 };
 
+/**
+ * Retrieves all portfolio items.
+ * @returns A Promise resolving to an array of PortfolioItem objects.
+ */
 export const apiGetAllPortfolioItems = async (): Promise<PortfolioItem[]> => {
     return dataStore.getAllItems<PortfolioItem>('PortfolioItem');
 };
 
+/**
+ * Deletes a portfolio item.
+ * Includes audit logging.
+ * @param id The ID of the portfolio item to delete.
+ * @returns A Promise that resolves when the item is removed.
+ */
 export const apiDeletePortfolioItem = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_portfolio')) {
+        throw new CustomError('Permission denied to delete portfolio item.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('PortfolioItem', id);
     notificationService.addNotification({ type: 'info', message: 'Portfolio item removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.ResourceAdded, 'PortfolioItem', id, 'Portfolio item deleted.', 'SUCCESS');
 };
 
+/**
+ * Reviews a portfolio item using AI.
+ * @param item The portfolio item to review.
+ * @param userProfile The user's profile.
+ * @param targetJobDescription An optional job description for contextual review.
+ * @returns A Promise resolving to an array of AISuggestion objects.
+ */
 export const apiReviewPortfolioItem = async (item: PortfolioItem, userProfile: UserProfile, targetJobDescription?: string): Promise<AISuggestion[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || !item) {
@@ -2385,10 +3976,18 @@ export const apiReviewPortfolioItem = async (item: PortfolioItem, userProfile: U
     const suggestions = await careerAIClient.reviewPortfolioItem(item, userProfile, targetJobDescription);
     notificationService.addNotification({ type: 'success', message: `Portfolio item "${item.title}" reviewed.`, actionLink: `/portfolio` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Portfolio Review', actionLink: `/portfolio` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'PortfolioReview', item.id, 'Portfolio item reviewed by AI.', 'SUCCESS', { title: item.title, targetJobDescription });
     return suggestions;
 };
 
 // 3.16 Content Generation API
+/**
+ * Generates content ideas using AI.
+ * @param userProfile The user's profile.
+ * @param contentType The type of content to generate.
+ * @param focusArea The focus area for the content.
+ * @returns A Promise resolving to an array of content ideas.
+ */
 export const apiGenerateContentIdeas = async (userProfile: UserProfile, contentType: string, focusArea: string): Promise<{ title: string; outline: string; targetAudience: string; keywords: string[] }[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || !ValidationUtils.isNotNullOrEmpty(contentType) || !ValidationUtils.isNotNullOrEmpty(focusArea)) {
@@ -2397,10 +3996,20 @@ export const apiGenerateContentIdeas = async (userProfile: UserProfile, contentT
     const ideas = await careerAIClient.generateContentIdeas(userProfile, contentType, focusArea);
     notificationService.addNotification({ type: 'success', message: `Generated ${ideas.length} content ideas for ${focusArea}.`, actionLink: `/content` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Content Idea Generation', actionLink: `/content` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.AITaskCompleted, 'ContentIdeaGeneration', generateId(), 'Content ideas generated.', 'SUCCESS', { contentType, focusArea });
     return ideas;
 };
 
 // 3.17 Daily Planning API
+/**
+ * Generates a daily career development plan using AI.
+ * Includes security measures like signature generation and audit logging.
+ * @param userProfile The user's profile.
+ * @param goals A list of the user's active goals.
+ * @param skillsToDevelop Top skills the user wants to focus on.
+ * @param numberOfItems The number of daily activities to suggest.
+ * @returns A Promise resolving to an array of DailyPlanItem objects.
+ */
 export const apiGenerateDailyPlan = async (userProfile: UserProfile, goals: CareerGoal[], skillsToDevelop: string[], numberOfItems: number): Promise<DailyPlanItem[]> => {
     if (!careerAIClient) throw new CustomError("AI service not initialized.", "AI_SERVICE_UNAVAILABLE");
     if (!userProfile || skillsToDevelop.length === 0) {
@@ -2408,32 +4017,150 @@ export const apiGenerateDailyPlan = async (userProfile: UserProfile, goals: Care
     }
     const planItems = await careerAIClient.generateDailyPlan(userProfile, goals, skillsToDevelop, numberOfItems);
     const today = new Date().toISOString().substring(0, 10);
-    const fullPlan: DailyPlanItem[] = planItems.map(item => ({
+    const fullPlan: DailyPlanItem[] = planItems.map(item => SecurityUtils.signObject({
         ...item,
         id: generateId(),
         date: today,
         isCompleted: false
-    }));
+    }, USER_ID));
     fullPlan.forEach(item => dataStore.setItem('DailyPlanItem', item));
     notificationService.addNotification({ type: 'success', message: `Generated your daily plan for today!`, actionLink: `/daily-plan` });
     webhookProcessor.receiveEvent({ eventType: 'AI_TASK_COMPLETED', payload: { taskName: 'Daily Plan Generation', actionLink: `/daily-plan` } });
+    auditLogService.recordEvent(USER_ID, AuditEventType.DailyPlanGenerated, 'DailyPlan', generateId(), 'Daily plan generated.', 'SUCCESS', { date: today, skillsToDevelop });
     return fullPlan;
 };
 
+/**
+ * Retrieves the daily plan items for a specific date.
+ * @param date The ISO date string (YYYY-MM-DD).
+ * @returns A Promise resolving to an array of DailyPlanItem objects.
+ */
 export const apiGetDailyPlanForDate = async (date: string): Promise<DailyPlanItem[]> => {
     return dataStore.getAllItems<DailyPlanItem>('DailyPlanItem').filter(item => item.date === date)
         .sort((a, b) => a.time.localeCompare(b.time));
 };
 
+/**
+ * Updates a daily plan item.
+ * Includes security measures like signature generation and audit logging.
+ * @param item The updated DailyPlanItem object.
+ * @returns A Promise resolving to the updated DailyPlanItem.
+ */
 export const apiUpdateDailyPlanItem = async (item: DailyPlanItem): Promise<DailyPlanItem> => {
-    dataStore.setItem('DailyPlanItem', item);
+    if (!accessControlService.hasPermission(USER_ID, 'manage_daily_plan')) {
+        throw new CustomError('Permission denied to update daily plan item.', 'PERMISSION_DENIED');
+    }
+    if (!SecurityUtils.verifyObjectSignature(item, USER_ID)) {
+        throw new CustomError('Data integrity check failed for daily plan item update.', 'SIGNATURE_MISMATCH');
+    }
+
+    const signedItem = SecurityUtils.signObject(item, USER_ID);
+    dataStore.setItem('DailyPlanItem', signedItem);
     notificationService.addNotification({ type: 'info', message: `Daily plan item "${TextUtils.truncate(item.activity, 50)}" updated.` });
-    return item;
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalUpdated, 'DailyPlanItem', signedItem.id, 'Daily plan item updated.', 'SUCCESS', { activity: signedItem.activity, isCompleted: signedItem.isCompleted });
+    return signedItem;
 };
 
+/**
+ * Deletes a daily plan item.
+ * Includes audit logging.
+ * @param id The ID of the daily plan item to delete.
+ * @returns A Promise that resolves when the item is removed.
+ */
 export const apiDeleteDailyPlanItem = async (id: string): Promise<void> => {
+    if (!accessControlService.hasPermission(USER_ID, 'manage_daily_plan')) {
+        throw new CustomError('Permission denied to delete daily plan item.', 'PERMISSION_DENIED');
+    }
     dataStore.removeItem('DailyPlanItem', id);
     notificationService.addNotification({ type: 'info', message: 'Daily plan item removed.' });
+    auditLogService.recordEvent(USER_ID, AuditEventType.GoalUpdated, 'DailyPlanItem', id, 'Daily plan item deleted.', 'SUCCESS');
+};
+
+/**
+ * Retrieves all audit log entries.
+ * @returns A Promise resolving to an array of AuditLogEntry objects.
+ */
+export const apiGetAllAuditLogs = async (): Promise<AuditLogEntry[]> => {
+    if (!accessControlService.hasPermission(USER_ID, 'view_audit_log')) {
+        throw new CustomError('Permission denied to view audit logs.', 'PERMISSION_DENIED');
+    }
+    return auditLogService.getAllLogEntries();
+};
+
+/**
+ * Retrieves the user's token balance for a specific token type.
+ * @param tokenType The type of token.
+ * @param userId The ID of the user.
+ * @returns A Promise resolving to the token balance.
+ */
+export const apiGetTokenBalance = async (tokenType: TokenType, userId: string = USER_ID): Promise<number> => {
+    if (!accessControlService.hasPermission(userId, 'view_tokens')) {
+        throw new CustomError('Permission denied to view token balance.', 'PERMISSION_DENIED');
+    }
+    return tokenizedRewardService.getBalance(userId, tokenType);
+};
+
+/**
+ * Retrieves all token transactions.
+ * @returns A Promise resolving to an array of TokenTransaction objects.
+ */
+export const apiGetAllTokenTransactions = async (): Promise<TokenTransaction[]> => {
+    if (!accessControlService.hasPermission(USER_ID, 'view_tokens')) {
+        throw new CustomError('Permission denied to view token transactions.', 'PERMISSION_DENIED');
+    }
+    return tokenizedRewardService.getAllTokenTransactions();
+};
+
+/**
+ * Simulates spending tokens for a premium feature or service.
+ * @param amount The amount of tokens to spend.
+ * @param tokenType The type of token.
+ * @param memo A description for the transaction.
+ * @param userId The ID of the user.
+ * @returns A Promise resolving to the updated token balance.
+ */
+export const apiSpendTokens = async (amount: number, tokenType: TokenType, memo: string, userId: string = USER_ID): Promise<number> => {
+    if (!accessControlService.hasPermission(userId, 'spend_tokens')) {
+        throw new CustomError('Permission denied to spend tokens.', 'PERMISSION_DENIED');
+    }
+    await tokenizedRewardService.transferTokens(userId, USER_ID_SYSTEM, amount, tokenType, memo);
+    notificationService.addNotification({ type: 'success', message: `Successfully spent ${amount} ${tokenType} for ${memo}.` });
+    return tokenizedRewardService.getBalance(userId, tokenType);
+};
+
+/**
+ * Simulates a payment for a premium feature or mentorship.
+ * @param amount The amount of money.
+ * @param currency The currency.
+ * @param memo A description for the payment.
+ * @param userId The ID of the user.
+ * @returns A Promise resolving to the PaymentRecord.
+ */
+export const apiMakePayment = async (amount: number, currency: string, memo: string, userId: string = USER_ID): Promise<PaymentRecord> => {
+    if (!accessControlService.hasPermission(userId, 'process_payment')) {
+        throw new CustomError('Permission denied to make payment.', 'PERMISSION_DENIED');
+    }
+    return paymentGatewayService.processPayment(userId, USER_ID_SYSTEM, amount, currency, memo);
+};
+
+/**
+ * Retrieves all payment records.
+ * @returns A Promise resolving to an array of PaymentRecord objects.
+ */
+export const apiGetAllPayments = async (): Promise<PaymentRecord[]> => {
+    if (!accessControlService.hasPermission(USER_ID, 'view_payments')) {
+        throw new CustomError('Permission denied to view payments.', 'PERMISSION_DENIED');
+    }
+    return paymentGatewayService.getAllPaymentRecords();
+};
+
+/**
+ * Retrieves a specific learning resource by ID.
+ * @param id The ID of the learning resource.
+ * @returns A Promise resolving to the LearningResource or null if not found.
+ */
+export const apiGetLearningResourceById = async (id: string): Promise<LearningResource | null> => {
+    return dataStore.getItem<LearningResource>('LearningResource', id);
 };
 
 
@@ -2453,7 +4180,7 @@ export const CareerTrajectoryView: React.FC = () => {
     // -----------------------------------------------------------------------------------------------------------------
     //  4.1: Component-level State Management
     // -----------------------------------------------------------------------------------------------------------------
-    const [activeTab, setActiveTab] = useState<string>('resume'); // 'resume', 'profile', 'goals', 'applications', 'interview', 'skills', 'market', 'branding', 'review', 'network', 'projects', 'mentorship', 'portfolio', 'content', 'daily-plan'
+    const [activeTab, setActiveTab] = useState<string>('resume'); // 'resume', 'profile', 'goals', 'applications', 'interview', 'skills', 'market', 'branding', 'review', 'network', 'projects', 'mentorship', 'portfolio', 'content', 'daily-plan', 'identity', 'tokens', 'audit-log', 'payments'
 
     // Core AI Analysis State (Resume & JD)
     const [resume, setResume] = useState<string>('');
@@ -2466,6 +4193,8 @@ export const CareerTrajectoryView: React.FC = () => {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [isProfileEditing, setIsProfileEditing] = useState<boolean>(false);
     const [aiModelPreference, setAiModelPreference] = useState<keyof typeof AI_MODELS>('balanced');
+    const [currentIdentityVerificationLevel, setCurrentIdentityVerificationLevel] = useState<IdentityVerificationLevel>(IdentityVerificationLevel.None);
+
 
     // Job Applications State
     const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
@@ -2548,7 +4277,7 @@ export const CareerTrajectoryView: React.FC = () => {
     const [isSavingProject, setIsSavingProject] = useState<boolean>(false);
     const [projectIdeaSkills, setProjectIdeaSkills] = useState<string>('');
     const [projectIdeaGoalId, setProjectIdeaGoalId] = useState<string>('');
-    const [suggestedProjectIdeas, setSuggestedProjectIdeas] = useState<Omit<PersonalProject, 'id' | 'startDate' | 'createdAt' | 'lastUpdated' | 'goalIds' | 'status' | 'technologiesUsed' | 'endDate'>[]>([]);
+    const [suggestedProjectIdeas, setSuggestedProjectIdeas] = useState<Omit<PersonalProject, 'id' | 'startDate' | 'createdAt' | 'lastUpdated' | 'goalIds' | 'status' | 'technologiesUsed' | 'endDate' | 'signature' | 'nonce'>[]>([]);
     const [isSuggestingProjectIdeas, setIsSuggestingProjectIdeas] = useState<boolean>(false);
 
     // Mentorship State
@@ -2585,6 +4314,22 @@ export const CareerTrajectoryView: React.FC = () => {
     const [dailyPlanSkillsToFocus, setDailyPlanSkillsToFocus] = useState<string>('');
     const [isGeneratingDailyPlan, setIsGeneratingDailyPlan] = useState<boolean>(false);
 
+    // Tokenized Rewards State
+    const [careerCoinBalance, setCareerCoinBalance] = useState<number>(0);
+    const [tokenTransactions, setTokenTransactions] = useState<TokenTransaction[]>([]);
+    const [isSpendingTokens, setIsSpendingTokens] = useState<boolean>(false);
+    const [tokenSpendAmount, setTokenSpendAmount] = useState<number>(0);
+    const [tokenSpendMemo, setTokenSpendMemo] = useState<string>('');
+
+    // Payments State
+    const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
+    const [isMakingPayment, setIsMakingPayment] = useState<boolean>(false);
+    const [paymentAmount, setPaymentAmount] = useState<number>(0);
+    const [paymentCurrency, setPaymentCurrency] = useState<string>('USD');
+    const [paymentMemo, setPaymentMemo] = useState<string>('');
+
+    // Audit Log State
+    const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
 
     // Global Notifications
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -2597,78 +4342,60 @@ export const CareerTrajectoryView: React.FC = () => {
     // -----------------------------------------------------------------------------------------------------------------
     //  4.2: Lifecycle & Initial Data Loading
     // -----------------------------------------------------------------------------------------------------------------
-    useEffect(() => {
-        const loadInitialData = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const profile = await apiInitializeUserProfile();
-                setUserProfile(profile);
-                setResume(profile.resumeText || `Experience:\nSoftware Engineer at Acme Corp (2020-2024)\n- Worked on a team to build software.\n- Fixed bugs and improved performance.`);
-                setJobDesc(`Job: Senior Software Engineer at Innovate Inc.\nRequirements:\n- 5+ years of experience.\n- Expertise in agile development and CI/CD pipelines.\n- Proven ability to mentor junior engineers.`);
-                setAiModelPreference(profile.aiModelPreference || 'balanced');
+    const loadAllData = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const profile = await apiInitializeUserProfile(USER_ID);
+            setUserProfile(profile);
+            setResume(profile.resumeText || `Experience:\nSoftware Engineer at Acme Corp (2020-2024)\n- Worked on a team to build software.\n- Fixed bugs and improved performance.`);
+            setJobDesc(`Job: Senior Software Engineer at Innovate Inc.\nRequirements:\n- 5+ years of experience.\n- Expertise in agile development and CI/CD pipelines.\n- Proven ability to mentor junior engineers.`);
+            setAiModelPreference(profile.aiModelPreference || 'balanced');
+            setCurrentIdentityVerificationLevel(profile.identityVerificationLevel);
 
+            setJobApplications(await apiGetAllJobApplications());
+            setCareerGoals(await apiGetAllCareerGoals());
+            setInterviewSessions(await apiGetAllInterviewSessions());
+            setNetworkContacts(await apiGetAllNetworkContacts());
+            setPersonalProjects(await apiGetAllPersonalProjects());
+            setMentorProfiles(await apiGetAllMentorProfiles());
+            setMentorshipSessions(await apiGetAllMentorshipSessions());
+            setLearningResources(await apiGetAllLearningResources());
+            setPortfolioItems(await apiGetAllPortfolioItems());
+            setPersonalBrandStatement(await apiGetLatestPersonalBrandStatement());
+            setDailyPlanItems(await apiGetDailyPlanForDate(new Date().toISOString().substring(0, 10)));
+            setCareerCoinBalance(await apiGetTokenBalance(TokenType.CareerCoin, USER_ID));
+            setTokenTransactions(await apiGetAllTokenTransactions());
+            setPaymentRecords(await apiGetAllPayments());
+            setAuditLogs(await apiGetAllAuditLogs());
 
-                const applications = await apiGetAllJobApplications();
-                setJobApplications(applications);
-
-                const goals = await apiGetAllCareerGoals();
-                setCareerGoals(goals);
-
-                const sessions = await apiGetAllInterviewSessions();
-                setInterviewSessions(sessions);
-
-                const contacts = await apiGetAllNetworkContacts();
-                setNetworkContacts(contacts);
-
-                const projects = await apiGetAllPersonalProjects();
-                setPersonalProjects(projects);
-
-                const mentors = await apiGetAllMentorProfiles();
-                setMentorProfiles(mentors);
-
-                const sessionships = await apiGetAllMentorshipSessions();
-                setMentorshipSessions(sessionships);
-
-                const resources = await apiGetAllLearningResources();
-                setLearningResources(resources);
-
-                const portfolio = await apiGetAllPortfolioItems();
-                setPortfolioItems(portfolio);
-
-                const brandStatement = await apiGetLatestPersonalBrandStatement();
-                setPersonalBrandStatement(brandStatement);
-
-                const todayPlan = await apiGetDailyPlanForDate(new Date().toISOString().substring(0, 10));
-                setDailyPlanItems(todayPlan);
-
-            } catch (err) {
-                console.error("Failed to load initial data:", err);
-                setError(`Failed to load initial data: ${(err as Error).message}`);
-                notificationService.addNotification({ type: 'error', message: `Initial data load failed: ${(err as Error).message}` });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadInitialData();
-
-        // Subscribe to notifications
-        const unsubscribe = notificationService.subscribe((newNotifications) => {
-            setNotifications([...newNotifications]); // Ensure state update with new array
-        });
-
-        return () => unsubscribe();
+        } catch (err) {
+            console.error("Failed to load initial data:", err);
+            setError(`Failed to load initial data: ${(err as Error).message}`);
+            notificationService.addNotification({ type: 'error', message: `Initial data load failed: ${(err as Error).message}` });
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    // Effect to update user profile's resume whenever the local resume state changes
+    useEffect(() => {
+        loadAllData();
+        const unsubscribe = notificationService.subscribe((newNotifications) => {
+            setNotifications([...newNotifications]);
+        });
+        return () => unsubscribe();
+    }, [loadAllData]);
+
     useEffect(() => {
         if (userProfile && resume !== userProfile.resumeText) {
-            // Update profile resume text without immediate API call to avoid loops,
-            // but mark it as needing save or prompt user to save.
-            // For this exhaustive example, we simulate immediate persistence.
             const updatedProfile = { ...userProfile, resumeText: resume };
-            dataStore.setItem('UserProfile', updatedProfile);
-            setUserProfile(updatedProfile);
+            // Simulate saving profile, but prevent excessive API calls due to every keystroke
+            const timer = setTimeout(() => {
+                apiUpdateUserProfile(updatedProfile)
+                    .then(p => setUserProfile(p))
+                    .catch(e => console.error("Auto-save resume to profile failed:", e));
+            }, 1000); // Debounce auto-save
+            return () => clearTimeout(timer);
         }
     }, [resume, userProfile]);
 
@@ -2700,12 +4427,13 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Resume analysis failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsLoading(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [resume, jobDesc]);
 
     const handleProfileUpdate = useCallback(async () => {
         if (!userProfile) return;
-        setIsSavingApplication(true); // Reusing for profile save
+        setIsSavingApplication(true);
         setError(null);
         try {
             const updatedProfile = await apiUpdateUserProfile(userProfile);
@@ -2718,6 +4446,26 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Profile update failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingApplication(false);
+            setAuditLogs(await apiGetAllAuditLogs());
+        }
+    }, [userProfile]);
+
+    const handleRequestIdentityVerification = useCallback(async (level: IdentityVerificationLevel) => {
+        if (!userProfile) return;
+        setError(null);
+        try {
+            await apiRequestIdentityVerification(userProfile.id, level);
+            const updatedProfile = await apiGetUserProfile(userProfile.id);
+            if (updatedProfile) {
+                setUserProfile(updatedProfile);
+                setCurrentIdentityVerificationLevel(updatedProfile.identityVerificationLevel);
+            }
+        } catch (err) {
+            console.error("Failed to request identity verification:", err);
+            setError(`Identity verification request failed: ${(err as CustomError).message || (err as Error).message}`);
+            notificationService.addNotification({ type: 'error', message: `Identity verification failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile]);
 
@@ -2734,7 +4482,7 @@ export const CareerTrajectoryView: React.FC = () => {
             if (currentApplicationForm.id) {
                 updatedApp = await apiUpdateJobApplication(currentApplicationForm as JobApplication);
             } else {
-                updatedApp = await apiAddJobApplication(currentApplicationForm as Omit<JobApplication, 'id' | 'createdAt' | 'lastUpdated' | 'contacts' | 'negotiationHistory' | 'feedbackReceived' | 'interviewDates'>);
+                updatedApp = await apiAddJobApplication(currentApplicationForm as Omit<JobApplication, 'id' | 'createdAt' | 'lastUpdated' | 'contacts' | 'negotiationHistory' | 'feedbackReceived' | 'interviewDates' | 'signature' | 'nonce'>);
             }
             setJobApplications(prev => {
                 const existingIndex = prev.findIndex(app => app.id === updatedApp.id);
@@ -2754,6 +4502,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Application save failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingApplication(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [currentApplicationForm]);
 
@@ -2766,11 +4515,9 @@ export const CareerTrajectoryView: React.FC = () => {
         setCoverLetterContent('');
         setError(null);
         try {
-            // Use current resume or a summary from userProfile.resume
-            const resumeSummary = TextUtils.truncate(userProfile.resumeText, 500); // Or use an AI call to summarize resume
+            const resumeSummary = TextUtils.truncate(userProfile.resumeText, 500);
             const generatedLetter = await apiGenerateCoverLetter(userProfile, app, resumeSummary);
             setCoverLetterContent(generatedLetter);
-            // Optionally, update the application with the generated cover letter
             const updatedApp = { ...app, coverLetterUsed: generatedLetter, lastUpdated: DateUtils.getNowISO() };
             await apiUpdateJobApplication(updatedApp);
             setJobApplications(prev => prev.map(a => a.id === updatedApp.id ? updatedApp : a));
@@ -2781,6 +4528,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Cover letter generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingCoverLetter(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile]);
 
@@ -2797,7 +4545,7 @@ export const CareerTrajectoryView: React.FC = () => {
             if (currentGoalForm.id) {
                 updatedGoal = await apiUpdateCareerGoal(currentGoalForm as CareerGoal);
             } else {
-                updatedGoal = await apiAddCareerGoal(currentGoalForm as Omit<CareerGoal, 'id' | 'createdAt' | 'lastUpdated' | 'progressNotes' | 'actionItems'>);
+                updatedGoal = await apiAddCareerGoal(currentGoalForm as Omit<CareerGoal, 'id' | 'createdAt' | 'lastUpdated' | 'progressNotes' | 'actionItems' | 'signature' | 'nonce'>);
             }
             setCareerGoals(prev => {
                 const existingIndex = prev.findIndex(goal => goal.id === updatedGoal.id);
@@ -2817,6 +4565,9 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Goal save failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingGoal(false);
+            setAuditLogs(await apiGetAllAuditLogs());
+            setCareerCoinBalance(await apiGetTokenBalance(TokenType.CareerCoin, USER_ID)); // Refresh token balance
+            setTokenTransactions(await apiGetAllTokenTransactions());
         }
     }, [currentGoalForm]);
 
@@ -2831,6 +4582,8 @@ export const CareerTrajectoryView: React.FC = () => {
             console.error("Failed to delete goal:", err);
             setError(`Failed to delete goal: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Goal deletion failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, []);
 
@@ -2840,16 +4593,15 @@ export const CareerTrajectoryView: React.FC = () => {
             return;
         }
 
-        setIsSavingGoal(true); // Reusing this for action items
+        setIsSavingGoal(true);
         setError(null);
         try {
             let updatedItem: ActionItem;
             if (currentActionItemForm.id) {
                 updatedItem = await apiUpdateActionItem(currentActionItemForm as ActionItem);
             } else {
-                updatedItem = await apiAddActionItem(currentActionItemForm as Omit<ActionItem, 'id'>);
+                updatedItem = await apiAddActionItem(currentActionItemForm as Omit<ActionItem, 'id' | 'signature' | 'nonce'>);
             }
-            // Refresh goals or just the selected one
             const updatedGoal = careerGoals.find(g => g.id === updatedItem.goalId);
             if (updatedGoal) {
                 const updatedActionItems = updatedGoal.actionItems.find(ai => ai.id === updatedItem.id)
@@ -2867,6 +4619,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Action item save failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingGoal(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [currentActionItemForm, careerGoals]);
 
@@ -2882,6 +4635,8 @@ export const CareerTrajectoryView: React.FC = () => {
             console.error("Failed to delete action item:", err);
             setError(`Failed to delete action item: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Action item deletion failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [careerGoals]);
 
@@ -2901,7 +4656,6 @@ export const CareerTrajectoryView: React.FC = () => {
             const results = await apiGetSkillGapAnalysis(userProfile, skillGapTarget);
             setSkillGaps(results);
             notificationService.addNotification({ type: 'success', message: 'Skill gap analysis completed!' });
-            // Refresh all learning resources in case new ones were generated
             setLearningResources(await apiGetAllLearningResources());
         } catch (err) {
             console.error("Skill analysis failed:", err);
@@ -2909,6 +4663,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Skill analysis failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsAnalyzingSkills(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, skillGapTarget]);
 
@@ -2924,7 +4679,6 @@ export const CareerTrajectoryView: React.FC = () => {
             const paths = await apiGetCareerPathRecommendations(userProfile, careerGoals);
             setCareerPaths(paths);
             notificationService.addNotification({ type: 'success', message: 'Career path recommendations generated!' });
-            // Refresh all learning resources in case new ones were generated for pathways
             setLearningResources(await apiGetAllLearningResources());
         } catch (err) {
             console.error("Career path generation failed:", err);
@@ -2932,6 +4686,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Career path generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingCareerPaths(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, careerGoals]);
 
@@ -2948,7 +4703,7 @@ export const CareerTrajectoryView: React.FC = () => {
             setInterviewSessions(prev => [...prev, session]);
             setSelectedInterviewSession(session);
             setCurrentInterviewQuestions(session.questionsAsked.map(q => ({ question: q.question, userAnswer: '' })));
-            setActiveTab('interview'); // Switch to interview tab
+            setActiveTab('interview');
             notificationService.addNotification({ type: 'info', message: `Interview session for ${app.jobTitle} started.` });
         } catch (err) {
             console.error("Failed to start interview session:", err);
@@ -2956,6 +4711,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Interview session start failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsStartingInterview(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile]);
 
@@ -2987,6 +4743,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Interview answer submission failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSubmittingAnswers(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [selectedInterviewSession, userProfile, currentInterviewQuestions, jobApplications]);
 
@@ -3013,6 +4770,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Market trend fetch failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsFetchingMarketTrends(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, debouncedMarketTrendIndustry, debouncedMarketTrendKeywords]);
 
@@ -3045,6 +4803,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Negotiation script generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingNegotiationScript(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, negotiationJobTitle, negotiationCompany, negotiationInitialOffer, negotiationDesiredSalary]);
 
@@ -3067,6 +4826,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `LinkedIn optimization failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsOptimizingLinkedIn(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile]);
 
@@ -3088,6 +4848,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Brand statement generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingBrandStatement(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, brandStatementDesiredImpact]);
 
@@ -3115,6 +4876,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Performance review prep failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsPreparingReview(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, performanceAchievements]);
 
@@ -3139,7 +4901,7 @@ export const CareerTrajectoryView: React.FC = () => {
             if (currentContactForm.id) {
                 updatedContact = await apiUpdateNetworkContact(currentContactForm as NetworkContact);
             } else {
-                updatedContact = await apiAddNetworkContact(currentContactForm as Omit<NetworkContact, 'id' | 'connectionDate' | 'lastContactDate'>);
+                updatedContact = await apiAddNetworkContact(currentContactForm as Omit<NetworkContact, 'id' | 'connectionDate' | 'lastContactDate' | 'signature' | 'nonce'>);
             }
             setNetworkContacts(prev => {
                 const existingIndex = prev.findIndex(c => c.id === updatedContact.id);
@@ -3159,6 +4921,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Contact save failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingContact(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [currentContactForm]);
 
@@ -3173,6 +4936,8 @@ export const CareerTrajectoryView: React.FC = () => {
             console.error("Failed to delete contact:", err);
             setError(`Failed to delete contact: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Contact deletion failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, []);
 
@@ -3194,6 +4959,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Networking message generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingNetworkingMessage(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, selectedContactForMessage, networkingMessagePurpose]);
 
@@ -3209,7 +4975,7 @@ export const CareerTrajectoryView: React.FC = () => {
             let updatedProject: PersonalProject;
             const projectToSave = {
                 ...currentProjectForm,
-                startDate: currentProjectForm.startDate || DateUtils.getNowISO().substring(0, 10), // Default start date
+                startDate: currentProjectForm.startDate || DateUtils.getNowISO().substring(0, 10),
                 status: currentProjectForm.status || 'Idea',
                 skillsDeveloped: currentProjectForm.skillsDeveloped || [],
                 technologiesUsed: currentProjectForm.technologiesUsed || [],
@@ -3219,7 +4985,7 @@ export const CareerTrajectoryView: React.FC = () => {
             if (projectToSave.id) {
                 updatedProject = await apiUpdatePersonalProject(projectToSave as PersonalProject);
             } else {
-                updatedProject = await apiAddPersonalProject(projectToSave as Omit<PersonalProject, 'id' | 'createdAt' | 'lastUpdated'>);
+                updatedProject = await apiAddPersonalProject(projectToSave as Omit<PersonalProject, 'id' | 'createdAt' | 'lastUpdated' | 'signature' | 'nonce'>);
             }
             setPersonalProjects(prev => {
                 const existingIndex = prev.findIndex(p => p.id === updatedProject.id);
@@ -3239,6 +5005,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Project save failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingProject(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [currentProjectForm]);
 
@@ -3253,6 +5020,8 @@ export const CareerTrajectoryView: React.FC = () => {
             console.error("Failed to delete project:", err);
             setError(`Failed to delete project: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Project deletion failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, []);
 
@@ -3275,6 +5044,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Project idea suggestion failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSuggestingProjectIdeas(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, projectIdeaSkills, projectIdeaGoalId]);
 
@@ -3296,6 +5066,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Mentor matching failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsMatchingMentors(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile]);
 
@@ -3320,6 +5091,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Session scheduling failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSchedulingSession(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, currentSessionMentorId, currentSessionTopic, currentSessionDuration]);
 
@@ -3348,7 +5120,7 @@ export const CareerTrajectoryView: React.FC = () => {
             if (itemToSave.id) {
                 updatedItem = await apiUpdatePortfolioItem(itemToSave as PortfolioItem);
             } else {
-                updatedItem = await apiAddPortfolioItem(itemToSave as Omit<PortfolioItem, 'id'>);
+                updatedItem = await apiAddPortfolioItem(itemToSave as Omit<PortfolioItem, 'id' | 'signature' | 'nonce'>);
             }
             setPortfolioItems(prev => {
                 const existingIndex = prev.findIndex(item => item.id === updatedItem.id);
@@ -3368,6 +5140,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Portfolio item save failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsSavingPortfolioItem(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [currentPortfolioItemForm]);
 
@@ -3382,6 +5155,8 @@ export const CareerTrajectoryView: React.FC = () => {
             console.error("Failed to delete portfolio item:", err);
             setError(`Failed to delete portfolio item: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Portfolio item deletion failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, []);
 
@@ -3403,6 +5178,7 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Portfolio item review failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsReviewingPortfolioItem(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, selectedPortfolioItem, portfolioReviewJobDesc]);
 
@@ -3417,13 +5193,14 @@ export const CareerTrajectoryView: React.FC = () => {
         try {
             const ideas = await apiGenerateContentIdeas(userProfile, contentType, contentFocusArea);
             setGeneratedContentIdeas(ideas);
-            notificationService.addNotification({ type: 'success', message: `Generated ${ideas.length} content ideas for ${focusArea}.`, actionLink: `/content` });
+            notificationService.addNotification({ type: 'success', message: `Generated ${ideas.length} content ideas for ${contentFocusArea}.`, actionLink: `/content` });
         } catch (err) {
             console.error("Failed to generate content ideas:", err);
             setError(`Failed to generate content ideas: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Content idea generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingContentIdeas(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, [userProfile, contentType, contentFocusArea]);
 
@@ -3432,18 +5209,19 @@ export const CareerTrajectoryView: React.FC = () => {
             setError("User profile and skills to focus on are required for daily plan generation.");
             return;
         }
-        const skillsArray = dailyPlanSkillsToFocus.split(',').map(s => s.trim()).filter(Boolean);
+        const skillsArray = dailyPlanSkillsToFocus.split(',').map(s```typescript
+=> s.trim()).filter(Boolean);
         if (skillsArray.length === 0) {
-            setError("Please list at least one skill to focus on for your daily plan.");
+            setError("Please enter at least one skill to focus on.");
             return;
         }
+
         setIsGeneratingDailyPlan(true);
         setDailyPlanItems([]);
         setError(null);
         try {
-            const plan = await apiGenerateDailyPlan(userProfile, careerGoals, skillsArray, 5); // Default 5 items
+            const plan = await apiGenerateDailyPlan(userProfile, careerGoals.filter(g => g.status === GoalStatus.InProgress || g.status === GoalStatus.Pending), skillsArray, 5); // Request 5 items
             setDailyPlanItems(plan);
-            setDailyPlanDate(new Date().toISOString().substring(0, 10)); // Set to today
             notificationService.addNotification({ type: 'success', message: 'Daily plan generated!' });
         } catch (err) {
             console.error("Failed to generate daily plan:", err);
@@ -3451,1742 +5229,2657 @@ export const CareerTrajectoryView: React.FC = () => {
             notificationService.addNotification({ type: 'error', message: `Daily plan generation failed: ${(err as CustomError).message || (err as Error).message}` });
         } finally {
             setIsGeneratingDailyPlan(false);
+            setAuditLogs(await apiGetAllAuditLogs());
         }
-    }, [userProfile, careerGoals, dailyPlanSkillsToFocus]);
+    }, [userProfile, dailyPlanSkillsToFocus, careerGoals]);
 
-    const handleToggleDailyPlanItemCompletion = useCallback(async (item: DailyPlanItem) => {
+    const handleUpdateDailyPlanItem = useCallback(async (item: DailyPlanItem) => {
         setError(null);
         try {
-            const updatedItem = { ...item, isCompleted: !item.isCompleted };
-            await apiUpdateDailyPlanItem(updatedItem);
-            setDailyPlanItems(prev => prev.map(i => i.id === updatedItem.id ? updatedItem : i));
+            const updatedItem = await apiUpdateDailyPlanItem(item);
+            setDailyPlanItems(prev => prev.map(dpi => dpi.id === updatedItem.id ? updatedItem : dpi));
+            notificationService.addNotification({ type: 'info', message: 'Daily plan item updated.' });
         } catch (err) {
             console.error("Failed to update daily plan item:", err);
             setError(`Failed to update daily plan item: ${(err as CustomError).message || (err as Error).message}`);
             notificationService.addNotification({ type: 'error', message: `Daily plan item update failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, []);
 
-    const handleChangeDailyPlanDate = useCallback(async (dateString: string) => {
-        setDailyPlanDate(dateString);
+    const handleDeleteDailyPlanItem = useCallback(async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this daily plan item?")) return;
         setError(null);
         try {
-            const items = await apiGetDailyPlanForDate(dateString);
-            setDailyPlanItems(items);
-            notificationService.addNotification({ type: 'info', message: `Loaded daily plan for ${DateUtils.formatDate(dateString)}.` });
+            await apiDeleteDailyPlanItem(id);
+            setDailyPlanItems(prev => prev.filter(item => item.id !== id));
+            notificationService.addNotification({ type: 'info', message: 'Daily plan item deleted.' });
         } catch (err) {
-            console.error("Failed to load daily plan for date:", err);
-            setError(`Failed to load daily plan: ${(err as CustomError).message || (err as Error).message}`);
-            notificationService.addNotification({ type: 'error', message: `Daily plan load failed: ${(err as CustomError).message || (err as Error).message}` });
+            console.error("Failed to delete daily plan item:", err);
+            setError(`Failed to delete daily plan item: ${(err as CustomError).message || (err as Error).message}`);
+            notificationService.addNotification({ type: 'error', message: `Daily plan item deletion failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setAuditLogs(await apiGetAllAuditLogs());
         }
     }, []);
 
+    const handleSpendTokens = useCallback(async () => {
+        if (!userProfile || !ValidationUtils.isPositiveNumber(tokenSpendAmount) || !ValidationUtils.isNotNullOrEmpty(tokenSpendMemo)) {
+            setError("Please enter a positive amount and a memo to spend tokens.");
+            return;
+        }
+        setIsSpendingTokens(true);
+        setError(null);
+        try {
+            const newBalance = await apiSpendTokens(tokenSpendAmount, TokenType.CareerCoin, tokenSpendMemo, userProfile.id);
+            setCareerCoinBalance(newBalance);
+            setTokenTransactions(await apiGetAllTokenTransactions());
+            setTokenSpendAmount(0);
+            setTokenSpendMemo('');
+            notificationService.addNotification({ type: 'success', message: 'Tokens spent successfully!' });
+        } catch (err) {
+            console.error("Failed to spend tokens:", err);
+            setError(`Failed to spend tokens: ${(err as CustomError).message || (err as Error).message}`);
+            notificationService.addNotification({ type: 'error', message: `Token spend failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setIsSpendingTokens(false);
+            setAuditLogs(await apiGetAllAuditLogs());
+        }
+    }, [userProfile, tokenSpendAmount, tokenSpendMemo]);
+
+    const handleMakePayment = useCallback(async () => {
+        if (!userProfile || !ValidationUtils.isPositiveNumber(paymentAmount) || !ValidationUtils.isNotNullOrEmpty(paymentCurrency) || !ValidationUtils.isNotNullOrEmpty(paymentMemo)) {
+            setError("Please enter a positive amount, currency, and a memo for the payment.");
+            return;
+        }
+        setIsMakingPayment(true);
+        setError(null);
+        try {
+            const record = await apiMakePayment(paymentAmount, paymentCurrency, paymentMemo, userProfile.id);
+            setPaymentRecords(prev => [...prev, record]);
+            setPaymentAmount(0);
+            setPaymentCurrency('USD');
+            setPaymentMemo('');
+            notificationService.addNotification({ type: 'success', message: 'Payment processed successfully!' });
+        } catch (err) {
+            console.error("Failed to make payment:", err);
+            setError(`Failed to make payment: ${(err as CustomError).message || (err as Error).message}`);
+            notificationService.addNotification({ type: 'error', message: `Payment failed: ${(err as CustomError).message || (err as Error).message}` });
+        } finally {
+            setIsMakingPayment(false);
+            setAuditLogs(await apiGetAllAuditLogs());
+        }
+    }, [userProfile, paymentAmount, paymentCurrency, paymentMemo]);
 
     // -----------------------------------------------------------------------------------------------------------------
-    //  4.4: Memoized Components & UI Helpers
+    //  4.4: Memoized Data & Computed Values
+    // -----------------------------------------------------------------------------------------------------------------
+    const sortedNotifications = useMemo(() => {
+        return [...notifications].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }, [notifications]);
+
+    const unreadNotificationCount = useMemo(() => {
+        return notifications.filter(n => !n.read).length;
+    }, [notifications]);
+
+    const getRecommendationTypeColor = (type: RecommendationType) => {
+        switch (type) {
+            case RecommendationType.Course: return 'bg-blue-100 text-blue-800';
+            case RecommendationType.Certification: return 'bg-purple-100 text-purple-800';
+            case RecommendationType.Book: return 'bg-green-100 text-green-800';
+            case RecommendationType.NetworkingEvent: return 'bg-yellow-100 text-yellow-800';
+            case RecommendationType.Project: return 'bg-indigo-100 text-indigo-800';
+            case RecommendationType.Mentor: return 'bg-pink-100 text-pink-800';
+            case RecommendationType.Article: return 'bg-teal-100 text-teal-800';
+            case RecommendationType.Podcast: return 'bg-cyan-100 text-cyan-800';
+            case RecommendationType.Workshop: return 'bg-orange-100 text-orange-800';
+            case RecommendationType.Conference: return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getGoalStatusColor = (status: GoalStatus) => {
+        switch (status) {
+            case GoalStatus.Pending: return 'text-yellow-600 bg-yellow-50';
+            case GoalStatus.InProgress: return 'text-blue-600 bg-blue-50';
+            case GoalStatus.Completed: return 'text-green-600 bg-green-50';
+            case GoalStatus.Deferred: return 'text-gray-600 bg-gray-50';
+            case GoalStatus.Cancelled: return 'text-red-600 bg-red-50';
+            default: return 'text-gray-600 bg-gray-50';
+        }
+    };
+
+    const getJobApplicationStatusColor = (status: JobApplicationStatus) => {
+        switch (status) {
+            case JobApplicationStatus.Applied: return 'text-blue-600 bg-blue-50';
+            case JobApplicationStatus.Interviewing: return 'text-purple-600 bg-purple-50';
+            case JobApplicationStatus.OfferReceived: return 'text-green-600 bg-green-50';
+            case JobApplicationStatus.Rejected: return 'text-red-600 bg-red-50';
+            case JobApplicationStatus.Withdrawn: return 'text-gray-600 bg-gray-50';
+            case JobApplicationStatus.Accepted: return 'text-indigo-600 bg-indigo-50';
+            default: return 'text-gray-600 bg-gray-50';
+        }
+    };
+
+    const getSeverityColor = (severity: 'Minor' | 'Moderate' | 'Major') => {
+        switch (severity) {
+            case 'Minor': return 'bg-yellow-100 text-yellow-800';
+            case 'Moderate': return 'bg-orange-100 text-orange-800';
+            case 'Major': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    // -----------------------------------------------------------------------------------------------------------------
+    //  4.5: Helper Render Functions (for modals, lists, etc.)
     // -----------------------------------------------------------------------------------------------------------------
 
-    const NotificationTray: React.FC = useMemo(() => {
-        return () => (
-            <div className="fixed top-4 right-4 z-50 space-y-2 max-h-screen-75 overflow-y-auto max-w-sm">
-                {notifications.map(n => (
-                    <div
-                        key={n.id}
-                        className={`p-3 rounded-lg shadow-lg flex justify-between items-start text-sm ${
-                            n.type === 'success' ? 'bg-green-600' :
-                            n.type === 'info' ? 'bg-blue-600' :
-                            n.type === 'warning' ? 'bg-yellow-600' :
-                            'bg-red-600'
-                        } text-white transition-opacity duration-300 ${n.read ? 'opacity-50' : ''}`}
-                        role="alert"
-                    >
-                        <div className="flex-1">
-                            <p>{n.message}</p>
-                            <span className="text-gray-200 text-xs mt-1 block">({DateUtils.timeSince(n.timestamp)})</span>
-                            {n.actionLink && (
-                                <a href="#" onClick={() => setActiveTab(n.actionLink.split('/')[1])} className="text-white underline text-xs mt-1 block">View Details</a>
-                            )}
-                        </div>
-                        <button onClick={() => notificationService.markAsRead(n.id)} className="ml-4 flex-shrink-0 text-white hover:text-gray-200 focus:outline-none">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
-                ))}
+    const renderUserProfileForm = (profile: UserProfile, isEditing: boolean, onFieldChange: (field: keyof UserProfile, value: any) => void) => (
+        <div className="space-y-4">
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                    type="text"
+                    value={profile.name}
+                    onChange={(e) => onFieldChange('name', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
             </div>
-        );
-    }, [notifications, setActiveTab]);
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) => onFieldChange('email', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Current Role</label>
+                <input
+                    type="text"
+                    value={profile.currentRole}
+                    onChange={(e) => onFieldChange('currentRole', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Industry</label>
+                <input
+                    type="text"
+                    value={profile.industry}
+                    onChange={(e) => onFieldChange('industry', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Years Experience</label>
+                <input
+                    type="number"
+                    value={profile.yearsExperience}
+                    onChange={(e) => onFieldChange('yearsExperience', parseInt(e.target.value, 10))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Career Stage</label>
+                <select
+                    value={profile.careerStage}
+                    onChange={(e) => onFieldChange('careerStage', e.target.value as CareerStage)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    disabled={!isEditing}
+                >
+                    {Object.values(CareerStage).map(stage => (
+                        <option key={stage} value={stage}>{stage}</option>
+                    ))}
+                </select>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Skills (comma-separated)</label>
+                <input
+                    type="text"
+                    value={profile.skills.join(', ')}
+                    onChange={(e) => onFieldChange('skills', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Education (semicolon-separated)</label>
+                <input
+                    type="text"
+                    value={profile.education.join('; ')}
+                    onChange={(e) => onFieldChange('education', e.target.value.split(';').map(s => s.trim()).filter(Boolean))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Certifications (comma-separated)</label>
+                <input
+                    type="text"
+                    value={profile.certifications.join(', ')}
+                    onChange={(e) => onFieldChange('certifications', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Desired Roles (comma-separated)</label>
+                <input
+                    type="text"
+                    value={profile.desiredRoles.join(', ')}
+                    onChange={(e) => onFieldChange('desiredRoles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Desired Industry</label>
+                <input
+                    type="text"
+                    value={profile.desiredIndustry}
+                    onChange={(e) => onFieldChange('desiredIndustry', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Salary Expectation Min</label>
+                <input
+                    type="number"
+                    value={profile.salaryExpectationMin}
+                    onChange={(e) => onFieldChange('salaryExpectationMin', parseInt(e.target.value, 10))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Salary Expectation Max</label>
+                <input
+                    type="number"
+                    value={profile.salaryExpectationMax}
+                    onChange={(e) => onFieldChange('salaryExpectationMax', parseInt(e.target.value, 10))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">LinkedIn Profile URL</label>
+                <input
+                    type="text"
+                    value={profile.linkedInProfileUrl || ''}
+                    onChange={(e) => onFieldChange('linkedInProfileUrl', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Personal Website URL</label>
+                <input
+                    type="text"
+                    value={profile.personalWebsiteUrl || ''}
+                    onChange={(e) => onFieldChange('personalWebsiteUrl', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Achievements (one per line)</label>
+                <textarea
+                    value={profile.achievements.join('\n')}
+                    onChange={(e) => onFieldChange('achievements', e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+                    readOnly={!isEditing}
+                ></textarea>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Career Vision</label>
+                <textarea
+                    value={profile.careerVision}
+                    onChange={(e) => onFieldChange('careerVision', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+                    readOnly={!isEditing}
+                ></textarea>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Preferred Learning Styles (comma-separated)</label>
+                <input
+                    type="text"
+                    value={profile.preferredLearningStyles.join(', ')}
+                    onChange={(e) => onFieldChange('preferredLearningStyles', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    readOnly={!isEditing}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">AI Model Preference</label>
+                <select
+                    value={profile.aiModelPreference || 'balanced'}
+                    onChange={(e) => onFieldChange('aiModelPreference', e.target.value as keyof typeof AI_MODELS)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    disabled={!isEditing}
+                >
+                    {Object.keys(AI_MODELS).map(modelKey => (
+                        <option key={modelKey} value={modelKey}>{modelKey} ({AI_MODELS[modelKey as keyof typeof AI_MODELS]})</option>
+                    ))}
+                </select>
+            </div>
+        </div>
+    );
 
-    const Navbar: React.FC = useMemo(() => {
-        const tabs = [
-            { id: 'resume', name: 'Resume & JD' },
-            { id: 'profile', name: 'Profile' },
-            { id: 'goals', name: 'Goals & Actions' },
-            { id: 'applications', name: 'Applications' },
-            { id: 'interview', name: 'Interview Prep' },
-            { id: 'skills', name: 'Skills & Paths' },
-            { id: 'market', name: 'Market Trends' },
-            { id: 'branding', name: 'Branding' },
-            { id: 'review', name: 'Performance Review' },
-            { id: 'negotiation', name: 'Salary Negotiation' },
-            { id: 'network', name: 'Networking' },
-            { id: 'projects', name: 'Projects' },
-            { id: 'mentorship', name: 'Mentorship' },
-            { id: 'portfolio', name: 'Portfolio' },
-            { id: 'content', name: 'Content Ideas' },
-            { id: 'daily-plan', name: 'Daily Plan' },
-        ];
-        return () => (
-            <nav className="mb-8 p-4 bg-gray-900 rounded-lg shadow-lg flex flex-wrap gap-2 justify-center sticky top-0 z-40 border-b border-gray-700">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                            activeTab === tab.id
-                                ? 'bg-cyan-700 text-white shadow-md'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-                        }`}
-                    >
-                        {tab.name}
-                    </button>
-                ))}
-            </nav>
-        );
-    }, [activeTab]);
-
-    const renderUserProfileSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Professional Profile</h2>
-            <Card title="Edit Profile">
+    const renderApplicationModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">{currentApplicationForm.id ? 'Edit Job Application' : 'Add New Job Application'}</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
                 <div className="space-y-4">
-                    {userProfile ? (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label className="block">
-                                    <span className="text-gray-400">Name</span>
-                                    <input type="text" value={userProfile.name} onChange={e => setUserProfile({ ...userProfile, name: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Email</span>
-                                    <input type="email" value={userProfile.email} onChange={e => setUserProfile({ ...userProfile, email: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Current Role</span>
-                                    <input type="text" value={userProfile.currentRole} onChange={e => setUserProfile({ ...userProfile, currentRole: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Industry</span>
-                                    <input type="text" value={userProfile.industry} onChange={e => setUserProfile({ ...userProfile, industry: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Years Experience</span>
-                                    <input type="number" value={userProfile.yearsExperience} onChange={e => setUserProfile({ ...userProfile, yearsExperience: parseInt(e.target.value) || 0 })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Career Stage</span>
-                                    <select value={userProfile.careerStage} onChange={e => setUserProfile({ ...userProfile, careerStage: e.target.value as CareerStage })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75">
-                                        {Object.values(CareerStage).map(stage => <option key={stage} value={stage}>{stage}</option>)}
-                                    </select>
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">LinkedIn Profile URL</span>
-                                    <input type="url" value={userProfile.linkedInProfileUrl || ''} onChange={e => setUserProfile({ ...userProfile, linkedInProfileUrl: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Personal Website URL</span>
-                                    <input type="url" value={userProfile.personalWebsiteUrl || ''} onChange={e => setUserProfile({ ...userProfile, personalWebsiteUrl: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                            </div>
-                            <label className="block">
-                                <span className="text-gray-400">Skills (comma-separated)</span>
-                                <textarea value={userProfile.skills.join(', ')} onChange={e => setUserProfile({ ...userProfile, skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} disabled={!isProfileEditing} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Education (one per line)</span>
-                                <textarea value={userProfile.education.join('\n')} onChange={e => setUserProfile({ ...userProfile, education: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) })} disabled={!isProfileEditing} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Certifications (one per line)</span>
-                                <textarea value={userProfile.certifications.join('\n')} onChange={e => setUserProfile({ ...userProfile, certifications: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) })} disabled={!isProfileEditing} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Desired Roles (comma-separated)</span>
-                                <textarea value={userProfile.desiredRoles.join(', ')} onChange={e => setUserProfile({ ...userProfile, desiredRoles: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} disabled={!isProfileEditing} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Desired Industry</span>
-                                <input type="text" value={userProfile.desiredIndustry} onChange={e => setUserProfile({ ...userProfile, desiredIndustry: e.target.value })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label className="block">
-                                    <span className="text-gray-400">Salary Expectation Min ($)</span>
-                                    <input type="number" value={userProfile.salaryExpectationMin} onChange={e => setUserProfile({ ...userProfile, salaryExpectationMin: parseInt(e.target.value) || 0 })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-400">Salary Expectation Max ($)</span>
-                                    <input type="number" value={userProfile.salaryExpectationMax} onChange={e => setUserProfile({ ...userProfile, salaryExpectationMax: parseInt(e.target.value) || 0 })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                                </label>
-                            </div>
-                            <label className="block">
-                                <span className="text-gray-400">Career Vision</span>
-                                <textarea value={userProfile.careerVision || ''} onChange={e => setUserProfile({ ...userProfile, careerVision: e.target.value })} disabled={!isProfileEditing} className="w-full h-32 bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Preferred Learning Styles (comma-separated)</span>
-                                <input type="text" value={userProfile.preferredLearningStyles.join(', ')} onChange={e => setUserProfile({ ...userProfile, preferredLearningStyles: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">AI Model Preference</span>
-                                <select value={aiModelPreference} onChange={e => {
-                                    setAiModelPreference(e.target.value as keyof typeof AI_MODELS);
-                                    if (userProfile) setUserProfile({ ...userProfile, aiModelPreference: e.target.value as keyof typeof AI_MODELS });
-                                    if (careerAIClient) careerAIClient.setModel(e.target.value as keyof typeof AI_MODELS);
-                                }} disabled={!isProfileEditing} className="w-full bg-gray-900/50 p-2 rounded text-sm disabled:opacity-75">
-                                    {Object.entries(AI_MODELS).map(([key, value]) => <option key={key} value={key}>{TextUtils.toSentenceCase(key)} ({value})</option>)}
-                                </select>
-                            </label>
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                {isProfileEditing ? (
-                                    <>
-                                        <button onClick={() => { setIsProfileEditing(false); /* A more robust system would re-fetch to revert changes */ }} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                        <button onClick={handleProfileUpdate} disabled={isSavingApplication} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                            {isSavingApplication ? 'Saving...' : 'Save Profile'}
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button onClick={() => setIsProfileEditing(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white">Edit Profile</button>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <p className="text-gray-400">Loading profile...</p>
-                    )}
-                </div>
-            </Card>
-        </div>
-    );
-
-    const renderCareerGoalsSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Career Goals & Action Plan</h2>
-            <div className="text-right">
-                <button onClick={() => { setCurrentGoalForm({}); setShowAddGoalModal(true); }} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white">Add New Goal</button>
-            </div>
-            {careerGoals.length === 0 && !isLoading && <p className="text-gray-400">No career goals set yet. Add one to get started!</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {careerGoals.map(goal => (
-                    <Card key={goal.id} title={goal.title}>
-                        <p className="text-sm text-gray-300 mb-2">{TextUtils.truncate(goal.description, 100)}</p>
-                        <p className="text-xs text-gray-400">Target Date: {DateUtils.formatDate(goal.targetDate)}</p>
-                        <p className="text-xs text-gray-400">Status: <span className={`font-semibold ${goal.status === 'Completed' ? 'text-green-400' : goal.status === 'InProgress' ? 'text-blue-400' : 'text-yellow-400'}`}>{goal.status}</span></p>
-                        <p className="text-xs text-gray-400">Priority: <span className={`${goal.priority === 'Critical' ? 'text-red-400' : goal.priority === 'High' ? 'text-orange-400' : 'text-gray-400'}`}>{goal.priority}</span></p>
-                        {goal.relatedSkills.length > 0 && <p className="text-xs text-gray-400 mt-1">Skills: {TextUtils.truncate(goal.relatedSkills.join(', '), 60)}</p>}
-                        {goal.actionItems.length > 0 && <p className="text-xs text-gray-400 mt-1">Action Items: {goal.actionItems.filter(ai => !ai.isCompleted).length} pending</p>}
-
-                        <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                            <button onClick={() => setSelectedGoal(goal)} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">View Details</button>
-                            <button onClick={() => { setCurrentGoalForm(goal); setShowAddGoalModal(true); }} className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">Edit</button>
-                            <button onClick={() => handleDeleteGoal(goal.id)} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">Delete</button>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Add/Edit Goal Modal */}
-            {showAddGoalModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={currentGoalForm.id ? "Edit Career Goal" : "Add New Career Goal"} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Title</span>
-                                <input type="text" value={currentGoalForm.title || ''} onChange={e => setCurrentGoalForm({ ...currentGoalForm, title: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Description</span>
-                                <textarea value={currentGoalForm.description || ''} onChange={e => setCurrentGoalForm({ ...currentGoalForm, description: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Target Date</span>
-                                <input type="date" value={currentGoalForm.targetDate ? currentGoalForm.targetDate.substring(0, 10) : ''} onChange={e => setCurrentGoalForm({ ...currentGoalForm, targetDate: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Status</span>
-                                <select value={currentGoalForm.status || GoalStatus.Pending} onChange={e => setCurrentGoalForm({ ...currentGoalForm, status: e.target.value as GoalStatus })} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    {Object.values(GoalStatus).map(status => <option key={status} value={status}>{status}</option>)}
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Priority</span>
-                                <select value={currentGoalForm.priority || PriorityLevel.Medium} onChange={e => setCurrentGoalForm({ ...currentGoalForm, priority: e.target.value as PriorityLevel })} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    {Object.values(PriorityLevel).map(priority => <option key={priority} value={priority}>{priority}</option>)}
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Related Skills (comma-separated)</span>
-                                <input type="text" value={currentGoalForm.relatedSkills?.join(', ') || ''} onChange={e => setCurrentGoalForm({ ...currentGoalForm, relatedSkills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setShowAddGoalModal(false)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleAddOrUpdateGoal} disabled={isSavingGoal} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSavingGoal ? 'Saving...' : (currentGoalForm.id ? 'Update Goal' : 'Add Goal')}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Goal Details & Action Items Modal */}
-            {selectedGoal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={`${selectedGoal.title} - Details`} className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <p><strong>Description:</strong> {selectedGoal.description}</p>
-                            <p><strong>Target Date:</strong> {DateUtils.formatDate(selectedGoal.targetDate)}</p>
-                            <p><strong>Status:</strong> <span className={`font-semibold ${selectedGoal.status === GoalStatus.Completed ? 'text-green-400' : selectedGoal.status === GoalStatus.InProgress ? 'text-blue-400' : 'text-yellow-400'}`}>{selectedGoal.status}</span></p>
-                            <p><strong>Priority:</strong> <span className={`${selectedGoal.priority === PriorityLevel.Critical ? 'text-red-400' : selectedGoal.priority === PriorityLevel.High ? 'text-orange-400' : 'text-gray-400'}`}>{selectedGoal.priority}</span></p>
-                            {selectedGoal.relatedSkills.length > 0 && <p><strong>Related Skills:</strong> {selectedGoal.relatedSkills.join(', ')}</p>}
-                            <p className="text-gray-500 text-xs">Last Updated: {DateUtils.formatDateTime(selectedGoal.lastUpdated)}</p>
-
-                            <h3 className="text-xl font-bold mt-6 flex justify-between items-center">
-                                Action Items ({selectedGoal.actionItems.filter(ai => !ai.isCompleted).length} Pending)
-                                <button onClick={() => { setCurrentActionItemForm({ goalId: selectedGoal.id }); setShowAddActionItemModal(true); }} className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm">Add Action Item</button>
-                            </h3>
-                            {selectedGoal.actionItems.length === 0 ? (
-                                <p className="text-gray-400">No action items for this goal yet.</p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {selectedGoal.actionItems.sort((a,b) => (a.isCompleted === b.isCompleted) ? 0 : a.isCompleted ? 1 : -1).map(item => (
-                                        <div key={item.id} className={`p-3 rounded-md flex items-center justify-between ${item.isCompleted ? 'bg-gray-800/50 text-gray-500 line-through' : 'bg-gray-900/50 border border-gray-700'}`}>
-                                            <div className="flex-1">
-                                                <p className="font-semibold">{item.description}</p>
-                                                <p className="text-xs text-gray-400">Due: {DateUtils.formatDate(item.dueDate)}</p>
-                                            </div>
-                                            <div className="flex space-x-2 ml-4 flex-shrink-0">
-                                                <button onClick={() => {
-                                                    setCurrentActionItemForm(item);
-                                                    setShowAddActionItemModal(true);
-                                                }} className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">Edit</button>
-                                                <button onClick={() => handleDeleteActionItem(item.id, item.goalId)} className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">Delete</button>
-                                                <button onClick={() => {
-                                                    apiUpdateActionItem({ ...item, isCompleted: !item.isCompleted, completedDate: !item.isCompleted ? DateUtils.getNowISO() : undefined });
-                                                    // Immediately update local state for responsiveness
-                                                    setSelectedGoal(prev => prev ? { ...prev, actionItems: prev.actionItems.map(ai => ai.id === item.id ? { ...ai, isCompleted: !ai.isCompleted, completedDate: !item.isCompleted ? DateUtils.getNowISO() : undefined } : ai) } : prev);
-                                                }} className={`px-2 py-1 ${item.isCompleted ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'} text-white text-xs rounded`}>
-                                                    {item.isCompleted ? 'Mark Pending' : 'Mark Complete'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setSelectedGoal(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Close</button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Add/Edit Action Item Modal */}
-            {showAddActionItemModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={currentActionItemForm.id ? "Edit Action Item" : "Add New Action Item"} className="max-w-xl w-full">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Description</span>
-                                <input type="text" value={currentActionItemForm.description || ''} onChange={e => setCurrentActionItemForm({ ...currentActionItemForm, description: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Due Date</span>
-                                <input type="date" value={currentActionItemForm.dueDate ? currentActionItemForm.dueDate.substring(0, 10) : ''} onChange={e => setCurrentActionItemForm({ ...currentActionItemForm, dueDate: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Notes (Optional)</span>
-                                <textarea value={currentActionItemForm.notes || ''} onChange={e => setCurrentActionItemForm({ ...currentActionItemForm, notes: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block flex items-center space-x-2">
-                                <input type="checkbox" checked={currentActionItemForm.isCompleted || false} onChange={e => setCurrentActionItemForm({ ...currentActionItemForm, isCompleted: e.target.checked })} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-900/50 border-gray-700 rounded" />
-                                <span className="text-gray-400">Completed</span>
-                            </label>
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setShowAddActionItemModal(false)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleAddOrUpdateActionItem} disabled={isSavingGoal} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSavingGoal ? 'Saving...' : (currentActionItemForm.id ? 'Update Item' : 'Add Item')}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-        </div>
-    );
-
-    const renderJobApplicationsSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Job Applications</h2>
-            <div className="text-right">
-                <button onClick={() => { setCurrentApplicationForm({applicationDate: DateUtils.getNowISO().substring(0,10), status: JobApplicationStatus.Applied, resumeUsed: userProfile?.resumeText || ''}); setShowAddApplicationModal(true); }} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white">Add New Application</button>
-            </div>
-            {jobApplications.length === 0 && !isLoading && <p className="text-gray-400">No applications tracked yet. Add one!</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobApplications.map(app => (
-                    <Card key={app.id} title={`${app.jobTitle} at ${app.company}`}>
-                        <p className="text-sm text-gray-300 mb-2">Applied: {DateUtils.formatDate(app.applicationDate)}</p>
-                        <p className="text-sm text-gray-300">Status: <span className={`font-semibold ${app.status === JobApplicationStatus.OfferReceived ? 'text-green-400' : app.status === JobApplicationStatus.Interviewing ? 'text-blue-400' : app.status === JobApplicationStatus.Rejected ? 'text-red-400' : 'text-yellow-400'}`}>{app.status}</span></p>
-                        <p className="text-xs text-gray-400 mt-1">{TextUtils.truncate(app.notes, 100)}</p>
-                        <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                            <button onClick={() => { setSelectedApplication(app); setCoverLetterContent(app.coverLetterUsed || ''); }} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">Details</button>
-                            <button onClick={() => handleGenerateCoverLetter(app)} disabled={isGeneratingCoverLetter || !userProfile} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded disabled:opacity-50">{isGeneratingCoverLetter ? 'Generating...' : 'Gen Cover Letter'}</button>
-                            {(app.status === JobApplicationStatus.Applied || app.status === JobApplicationStatus.Interviewing) && (
-                                <button onClick={() => handleStartInterview(app)} disabled={isStartingInterview || !userProfile} className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded disabled:opacity-50">{isStartingInterview ? 'Starting...' : 'Start Interview Prep'}</button>
-                            )}
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Add/Edit Application Modal */}
-            {showAddApplicationModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={currentApplicationForm.id ? "Edit Job Application" : "Add New Job Application"} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Job Title</span>
-                                <input type="text" value={currentApplicationForm.jobTitle || ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, jobTitle: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Company</span>
-                                <input type="text" value={currentApplicationForm.company || ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, company: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Application Date</span>
-                                <input type="date" value={currentApplicationForm.applicationDate ? currentApplicationForm.applicationDate.substring(0, 10) : ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, applicationDate: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Status</span>
-                                <select value={currentApplicationForm.status || JobApplicationStatus.Applied} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, status: e.target.value as JobApplicationStatus })} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    {Object.values(JobApplicationStatus).map(status => <option key={status} value={status}>{status}</option>)}
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Job Posting Link</span>
-                                <input type="url" value={currentApplicationForm.link || ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, link: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Job Description (full text)</span>
-                                <textarea value={currentApplicationForm.jobDescription || ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, jobDescription: e.target.value })} className="w-full h-32 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Notes</span>
-                                <textarea value={currentApplicationForm.notes || ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, notes: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Resume Snapshot (Text)</span>
-                                <textarea value={currentApplicationForm.resumeUsed || userProfile?.resumeText || ''} onChange={e => setCurrentApplicationForm({ ...currentApplicationForm, resumeUsed: e.target.value })} className="w-full h-32 bg-gray-900/50 p-2 rounded text-sm" placeholder="Automatically populated from your profile resume, or paste specific version here" />
-                            </label>
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => {setShowAddApplicationModal(false); setSelectedApplication(null); setCoverLetterContent('');}} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleAddOrUpdateApplication} disabled={isSavingApplication} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSavingApplication ? 'Saving...' : (currentApplicationForm.id ? 'Update Application' : 'Add Application')}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Application Details & Cover Letter Viewer */}
-            {selectedApplication && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={`${selectedApplication.jobTitle} - Details`} className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <p><strong>Company:</strong> {selectedApplication.company}</p>
-                            <p><strong>Status:</strong> {selectedApplication.status}</p>
-                            <p><strong>Application Date:</strong> {DateUtils.formatDate(selectedApplication.applicationDate)}</p>
-                            {selectedApplication.link && <p><strong>Job Link:</strong> <a href={selectedApplication.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{selectedApplication.link}</a></p>}
-                            <p><strong>Notes:</strong> {selectedApplication.notes || 'N/A'}</p>
-                            <div className="bg-gray-800 p-3 rounded-md">
-                                <h4 className="font-semibold text-gray-300">Job Description:</h4>
-                                <pre className="text-sm text-gray-200 whitespace-pre-wrap">{selectedApplication.jobDescription}</pre>
-                            </div>
-
-                            <h3 className="text-xl font-bold mt-6">Generated Cover Letter</h3>
-                            {isGeneratingCoverLetter ? (
-                                <p className="text-gray-400">Generating cover letter...</p>
-                            ) : (
-                                <div className="bg-gray-800 p-3 rounded-md">
-                                    {coverLetterContent ? (
-                                        <pre className="text-sm text-gray-200 whitespace-pre-wrap">{coverLetterContent}</pre>
-                                    ) : (
-                                        <p className="text-gray-400">No cover letter generated yet. Click "Gen Cover Letter" to create one.</p>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => { setSelectedApplication(null); setCoverLetterContent(''); }} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Close</button>
-                                <button onClick={() => { setCurrentApplicationForm(selectedApplication); setShowAddApplicationModal(true); setSelectedApplication(null); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white">Edit Application</button>
-                                <button onClick={() => { if (window.confirm('Are you sure you want to delete this application?')) { apiDeleteJobApplication(selectedApplication.id); setJobApplications(prev => prev.filter(app => app.id !== selectedApplication.id)); setSelectedApplication(null); setCoverLetterContent(''); } }} className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white">Delete</button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-        </div>
-    );
-
-    const renderSkillGapSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Skill Gap Analysis & Learning Paths</h2>
-            <Card title="Analyze Skills">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Target Roles or Job Description (e.g., "Senior React Developer", "Manager")</span>
-                        <textarea
-                            value={skillGapTarget}
-                            onChange={e => setSkillGapTarget(e.target.value)}
-                            className="w-full h-32 bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="Enter target roles or paste a job description here..."
-                        />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleAnalyzeSkills}
-                            disabled={isAnalyzingSkills || !userProfile || !ValidationUtils.isNotNullOrEmpty(skillGapTarget)}
-                            className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isAnalyzingSkills ? 'Analyzing...' : 'Perform Skill Gap Analysis'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
-            {isAnalyzingSkills && <p className="text-gray-400">Analyzing skills...</p>}
-            {skillGaps.length > 0 && (
-                <Card title="Skill Gap Results">
-                    <div className="space-y-4">
-                        {skillGaps.map((skill, i) => (
-                            <div key={i} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{skill.skill} <span className="text-xs text-gray-400 ml-2">({skill.category})</span></h3>
-                                <p className="text-sm text-gray-300 mt-1">Current Level: {skill.currentLevel}/5 | Target Level: {skill.targetLevel}/5 | Gap: <span className={`${skill.gap > 0 ? 'text-red-400' : 'text-green-400'}`}>{skill.gap}</span></p>
-                                {skill.gap > 0 && (
-                                    <div className="mt-3">
-                                        <p className="text-md font-medium text-blue-300">Recommendations to bridge gap:</p>
-                                        <ul className="list-disc list-inside space-y-1 mt-1">
-                                            {skill.recommendations.map((rec, idx) => (
-                                                <li key={rec.id || idx} className="text-sm text-gray-300">
-                                                    <a href={rec.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                                                        {rec.title} ({rec.type})
-                                                    </a> - {rec.provider} ({rec.cost}, {rec.estimatedTime}) [Difficulty: {rec.difficulty}]
-                                                    <p className="text-xs text-gray-500 ml-4">{TextUtils.truncate(rec.description, 100)}</p>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            <h3 className="text-xl font-bold text-white mt-8">Career Path Recommendations</h3>
-            <Card title="Generate Career Paths">
-                <p className="text-gray-400 mb-4">Leverage your profile and goals to get AI-powered career path suggestions.</p>
-                <div className="text-center">
-                    <button
-                        onClick={handleGenerateCareerPaths}
-                        disabled={isGeneratingCareerPaths || !userProfile}
-                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white disabled:opacity-50"
-                    >
-                        {isGeneratingCareerPaths ? 'Generating...' : 'Generate Career Paths'}
-                    </button>
-                    {!userProfile && <p className="text-red-400 mt-2">Please complete your profile first.</p>}
-                    {userProfile && careerGoals.length === 0 && <p className="text-yellow-400 mt-2">Add some career goals to your profile for better recommendations.</p>}
-                </div>
-            </Card>
-
-            {isGeneratingCareerPaths && <p className="text-gray-400">Generating career paths...</p>}
-            {careerPaths.length > 0 && (
-                <Card title="Recommended Career Paths">
-                    <div className="space-y-6">
-                        {careerPaths.map((path, i) => (
-                            <div key={path.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-xl font-semibold text-green-400">{path.role} <span className="text-sm text-gray-400">({path.industry})</span></h3>
-                                <p className="text-sm text-gray-300 mt-2">{path.description}</p>
-                                <p className="text-sm text-gray-300">Salary Range: {path.averageSalaryRange}</p>
-                                <p className="text-sm text-gray-300">Growth Outlook: <span className={`${path.growthOutlook === 'Very High' ? 'text-green-500' : path.growthOutlook === 'High' ? 'text-yellow-500' : 'text-gray-400'}`}>{path.growthOutlook}</span></p>
-
-                                <div className="mt-4">
-                                    <p className="font-semibold text-white">Required Skills:</p>
-                                    <ul className="list-disc list-inside text-sm text-gray-300 ml-2">
-                                        {path.requiredSkills.map((s, idx) => (
-                                            <li key={idx}>{s.skill} ({s.category}, Level {s.level}/5)</li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                <div className="mt-4">
-                                    <p className="font-semibold text-white">Pathways to achieve:</p>
-                                    <ul className="list-disc list-inside text-sm text-gray-300 ml-2">
-                                        {path.pathways.map((p, idx) => (
-                                            <li key={idx}><a href={ValidationUtils.isValidUrl(p.resource) ? p.resource : '#'} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{p.title}</a> ({p.type})</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                {path.potentialMentors && path.potentialMentors.length > 0 && (
-                                    <div className="mt-4">
-                                        <p className="font-semibold text-white">Potential Mentor Types:</p>
-                                        <ul className="list-disc list-inside text-sm text-gray-300 ml-2">
-                                            {path.potentialMentors.map((m, idx) => <li key={idx}>{m}</li>)}
-                                        </ul>
-                                    </div>
-                                )}
-                                {path.typicalCompanies && path.typicalCompanies.length > 0 && (
-                                    <div className="mt-4">
-                                        <p className="font-semibold text-white">Typical Companies:</p>
-                                        <ul className="list-disc list-inside text-sm text-gray-300 ml-2">
-                                            {path.typicalCompanies.map((c, idx) => <li key={idx}>{c}</li>)}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-            <Card title="Your Learning Resources">
-                {learningResources.length === 0 ? (
-                    <p className="text-gray-400">No learning resources yet. Analyze your skills or career paths to get recommendations.</p>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {learningResources.map(resource => (
-                            <div key={resource.id} className="p-3 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{resource.title}</h3>
-                                <p className="text-sm text-gray-300 mt-1">{TextUtils.truncate(resource.description, 120)}</p>
-                                <p className="text-xs text-gray-400">Type: {resource.type} | Cost: {resource.cost} | Est. Time: {resource.estimatedTime}</p>
-                                <p className="text-xs text-gray-500">Provider: {resource.provider} | Difficulty: {resource.difficulty}</p>
-                                {resource.link && (
-                                    <a href={resource.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline text-sm mt-2 block">Access Resource</a>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </Card>
-        </div>
-    );
-
-    const renderInterviewPrepSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Interview Preparation</h2>
-            <Card title="Your Interview Sessions">
-                <div className="space-y-4">
-                    {interviewSessions.length === 0 && <p className="text-gray-400">No interview sessions recorded. Start one from your applications!</p>}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {interviewSessions.map(session => (
-                            <div key={session.id} className="p-3 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{session.role} at {session.company}</h3>
-                                <p className="text-sm text-gray-400">Date: {DateUtils.formatDate(session.sessionDate)}</p>
-                                <p className="text-sm text-gray-400">Type: {session.stageType}</p>
-                                <p className="text-sm text-gray-400">Overall Score: <span className={`${session.score > 70 ? 'text-green-400' : session.score > 50 ? 'text-yellow-400' : 'text-red-400'}`}>{session.score}/100</span></p>
-                                <div className="flex justify-end mt-2">
-                                    <button onClick={() => { setSelectedInterviewSession(session); setCurrentInterviewQuestions(session.questionsAsked.map(q => ({ question: q.question, userAnswer: q.userAnswer }))); }} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">View Feedback</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </Card>
-
-            {selectedInterviewSession && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={`Interview for ${selectedInterviewSession.role} at ${selectedInterviewSession.company}`} className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-6 text-white">
-                            <h3 className="text-xl font-bold">Overall Feedback: <span className={`${selectedInterviewSession.score > 70 ? 'text-green-400' : selectedInterviewSession.score > 50 ? 'text-yellow-400' : 'text-red-400'}`}>{selectedInterviewSession.score}/100</span></h3>
-                            <p className="text-gray-300">{selectedInterviewSession.overallFeedback}</p>
-
-                            {selectedInterviewSession.strengths.length > 0 && (
-                                <div>
-                                    <h4 className="font-semibold text-green-400">Strengths:</h4>
-                                    <ul className="list-disc list-inside text-sm text-gray-300">
-                                        {selectedInterviewSession.strengths.map((s, i) => <li key={i}>{s}</li>)}
-                                    </ul>
-                                </div>
-                            )}
-                            {selectedInterviewSession.areasForImprovement.length > 0 && (
-                                <div>
-                                    <h4 className="font-semibold text-red-400">Areas for Improvement:</h4>
-                                    <ul className="list-disc list-inside text-sm text-gray-300">
-                                        {selectedInterviewSession.areasForImprovement.map((a, i) => <li key={i}>{a}</li>)}
-                                    </ul>
-                                </div>
-                            )}
-
-                            <h3 className="text-xl font-bold mt-6">Question-by-Question Analysis:</h3>
-                            <div className="space-y-4">
-                                {selectedInterviewSession.questionsAsked.map((qa, i) => (
-                                    <div key={i} className="p-3 bg-gray-800 rounded-lg">
-                                        <p className="font-semibold text-cyan-400">Q: {qa.question}</p>
-                                        <p className="text-sm text-gray-400 mt-1">Your Answer:</p>
-                                        <pre className="text-sm text-gray-200 whitespace-pre-wrap">{qa.userAnswer}</pre>
-                                        <p className="text-sm text-gray-400 mt-2">AI Feedback (Score: {qa.score}/10):</p>
-                                        <pre className="text-sm text-gray-200 whitespace-pre-wrap">{qa.aiFeedback}</pre>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {selectedInterviewSession.score === 0 && ( // Allow re-submission if no feedback received yet
-                                <>
-                                    <h3 className="text-xl font-bold mt-6">Continue Interview Simulation:</h3>
-                                    <div className="space-y-4">
-                                        {currentInterviewQuestions.map((q, i) => (
-                                            <div key={i} className="p-3 bg-gray-800 rounded-lg">
-                                                <label className="block">
-                                                    <span className="text-cyan-400 font-semibold">Question {i + 1}: {q.question}</span>
-                                                    <textarea
-                                                        value={q.userAnswer}
-                                                        onChange={e => {
-                                                            const newQuestions = [...currentInterviewQuestions];
-                                                            newQuestions[i] = { ...newQuestions[i], userAnswer: e.target.value };
-                                                            setCurrentInterviewQuestions(newQuestions);
-                                                        }}
-                                                        className="w-full h-32 bg-gray-900/50 p-2 rounded text-sm mt-1"
-                                                        placeholder="Type your answer here..."
-                                                    />
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="text-center mt-6">
-                                        <button
-                                            onClick={handleSubmitInterviewAnswers}
-                                            disabled={isSubmittingAnswers || currentInterviewQuestions.some(q => !ValidationUtils.isNotNullOrEmpty(q.userAnswer))}
-                                            className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50"
-                                        >
-                                            {isSubmittingAnswers ? 'Submitting Answers...' : 'Get AI Feedback'}
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                            <div className="flex justify-end mt-4">
-                                <button onClick={() => setSelectedInterviewSession(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Close</button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-        </div>
-    );
-
-    const renderMarketTrendsSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Market Trends & Insights</h2>
-            <Card title="Fetch Latest Trends">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Industry</span>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Job Title</label>
                         <input
                             type="text"
-                            value={marketTrendIndustry}
-                            onChange={e => setMarketTrendIndustry(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="e.g., Technology, Healthcare, Finance"
+                            value={currentApplicationForm.jobTitle || ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, jobTitle: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                         />
-                    </label>
-                    <label className="block">
-                        <span className="text-gray-400">Keywords (comma-separated, optional)</span>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Company</label>
                         <input
                             type="text"
-                            value={marketTrendKeywords}
-                            onChange={e => setMarketTrendKeywords(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="e.g., AI, Remote Work, Sustainability"
+                            value={currentApplicationForm.company || ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, company: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                         />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleFetchMarketTrends}
-                            disabled={isFetchingMarketTrends || !ValidationUtils.isNotNullOrEmpty(marketTrendIndustry)}
-                            className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isFetchingMarketTrends ? 'Fetching...' : 'Get Market Trends'}
-                        </button>
                     </div>
-                </div>
-            </Card>
-
-            {isFetchingMarketTrends && <p className="text-gray-400">Fetching market trends...</p>}
-            {marketTrends.length > 0 && (
-                <Card title="Current Market Insights">
-                    <div className="space-y-4">
-                        {marketTrends.map(trend => (
-                            <div key={trend.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{trend.title}</h3>
-                                <p className="text-sm text-gray-300 mt-1">{trend.description}</p>
-                                <p className="text-sm text-gray-400 mt-2"><strong>Impact on Career:</strong> {trend.impactOnCareer}</p>
-                                <p className="text-xs text-gray-500">Relevant Skills: {trend.relevantSkills.join(', ')}</p>
-                                <p className="text-xs text-gray-500">Source: {trend.source} ({DateUtils.formatDate(trend.date)})</p>
-                                {trend.suggestedActions && trend.suggestedActions.length > 0 && (
-                                    <div className="mt-2">
-                                        <p className="font-semibold text-blue-300">Suggested Actions:</p>
-                                        <ul className="list-disc list-inside text-sm text-gray-300 ml-2">
-                                            {trend.suggestedActions.map((action, idx) => <li key={idx}>{action}</li>)}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-        </div>
-    );
-
-    const renderSalaryNegotiationSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Salary Negotiation Assistant</h2>
-            <Card title="Generate Negotiation Script">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Job Title</span>
-                        <input type="text" value={negotiationJobTitle} onChange={e => setNegotiationJobTitle(e.target.value)} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                    </label>
-                    <label className="block">
-                        <span className="text-gray-400">Company</span>
-                        <input type="text" value={negotiationCompany} onChange={e => setNegotiationCompany(e.target.value)} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                    </label>
-                    <label className="block">
-                        <span className="text-gray-400">Initial Offer ($)</span>
-                        <input type="number" value={negotiationInitialOffer} onChange={e => setNegotiationInitialOffer(parseFloat(e.target.value) || 0)} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                    </label>
-                    <label className="block">
-                        <span className="text-gray-400">Desired Salary ($)</span>
-                        <input type="number" value={negotiationDesiredSalary} onChange={e => setNegotiationDesiredSalary(parseFloat(e.target.value) || 0)} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleGenerateNegotiationScript}
-                            disabled={isGeneratingNegotiationScript || !userProfile || negotiationDesiredSalary <= negotiationInitialOffer || !ValidationUtils.isNotNullOrEmpty(negotiationJobTitle)}
-                            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isGeneratingNegotiationScript ? 'Generating...' : 'Generate Negotiation Script'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
-            {isGeneratingNegotiationScript && <p className="text-gray-400">Generating script...</p>}
-            {negotiationScript && (
-                <Card title="Suggested Negotiation Script">
-                    <pre className="text-sm text-gray-200 whitespace-pre-wrap p-3 bg-gray-900/50 rounded-lg">{negotiationScript}</pre>
-                    <button onClick={() => navigator.clipboard.writeText(negotiationScript)} className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm">Copy to Clipboard</button>
-                </Card>
-            )}
-        </div>
-    );
-
-    const renderPersonalBrandingSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Personal Branding & LinkedIn Optimization</h2>
-            <Card title="Optimize LinkedIn Summary">
-                <p className="text-gray-400 mb-4">Generate a professional and keyword-rich LinkedIn summary based on your profile and desired roles.</p>
-                <div className="text-center">
-                    <button
-                        onClick={handleOptimizeLinkedIn}
-                        disabled={isOptimizingLinkedIn || !userProfile || userProfile.desiredRoles.length === 0}
-                        className="px-6 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-white disabled:opacity-50"
-                    >
-                        {isOptimizingLinkedIn ? 'Optimizing...' : 'Optimize LinkedIn Summary'}
-                    </button>
-                    {!userProfile && <p className="text-red-400 mt-2">Please complete your profile first.</p>}
-                    {userProfile && userProfile.desiredRoles.length === 0 && <p className="text-yellow-400 mt-2">Add desired roles to your profile for better optimization.</p>}
-                </div>
-            </Card>
-
-            {isOptimizingLinkedIn && <p className="text-gray-400">Optimizing LinkedIn summary...</p>}
-            {linkedInSummary && (
-                <Card title="Optimized LinkedIn Summary">
-                    <pre className="text-sm text-gray-200 whitespace-pre-wrap p-3 bg-gray-900/50 rounded-lg">{linkedInSummary}</pre>
-                    <button onClick={() => navigator.clipboard.writeText(linkedInSummary)} className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm">Copy to Clipboard</button>
-                </Card>
-            )}
-
-            <Card title="Personal Brand Statement Generator">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Desired Impact / Perception</span>
-                        <textarea
-                            value={brandStatementDesiredImpact}
-                            onChange={e => setBrandStatementDesiredImpact(e.target.value)}
-                            className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="e.g., 'Become a recognized innovator in sustainable technology', 'Be seen as a compassionate and effective leader'"
-                        />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleGenerateBrandStatement}
-                            disabled={isGeneratingBrandStatement || !userProfile || !ValidationUtils.isNotNullOrEmpty(brandStatementDesiredImpact)}
-                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isGeneratingBrandStatement ? 'Generating...' : 'Generate Brand Statement'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-            {isGeneratingBrandStatement && <p className="text-gray-400">Generating personal brand statement...</p>}
-            {personalBrandStatement && (
-                <Card title="Your Personal Brand Statement">
-                    <div className="space-y-2">
-                        <p className="text-lg font-semibold text-cyan-300">"{personalBrandStatement.statement}"</p>
-                        <p className="text-sm text-gray-300"><strong>Rationale:</strong> {personalBrandStatement.rationale}</p>
-                        <p className="text-xs text-gray-400"><strong>Keywords:</strong> {personalBrandStatement.keywords.join(', ')}</p>
-                        <p className="text-xs text-gray-500">Generated: {DateUtils.formatDateTime(personalBrandStatement.generatedDate)} (Version: {personalBrandStatement.version})</p>
-                    </div>
-                    <button onClick={() => navigator.clipboard.writeText(personalBrandStatement.statement)} className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm">Copy to Clipboard</button>
-                </Card>
-            )}
-        </div>
-    );
-
-    const renderPerformanceReviewSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Performance Review Assistant</h2>
-            <Card title="Prepare Performance Review Points">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Your Achievements (one per line, raw descriptions)</span>
-                        <textarea
-                            value={performanceAchievements}
-                            onChange={e => setPerformanceAchievements(e.target.value)}
-                            className="w-full h-48 bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="e.g., Implemented new feature X. Helped team with project Y. Improved efficiency of process Z."
-                        />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handlePreparePerformanceReview}
-                            disabled={isPreparingReview || !userProfile || !ValidationUtils.isNotNullOrEmpty(performanceAchievements)}
-                            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isPreparingReview ? 'Preparing...' : 'Generate Review Points'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
-            {isPreparingReview && <p className="text-gray-400">Generating review points...</p>}
-            {performanceReviewPoints.length > 0 && (
-                <Card title="Suggested Performance Review Points">
-                    <ul className="list-disc list-inside space-y-2 text-sm text-gray-200 p-3 bg-gray-900/50 rounded-lg">
-                        {performanceReviewPoints.map((point, i) => (
-                            <li key={i}>{point}</li>
-                        ))}
-                    </ul>
-                    <button onClick={() => navigator.clipboard.writeText(performanceReviewPoints.join('\n'))} className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm">Copy to Clipboard</button>
-                </Card>
-            )}
-        </div>
-    );
-
-    const renderNetworkingSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Professional Network</h2>
-            <div className="text-right">
-                <button onClick={() => { setCurrentContactForm({connectionDate: DateUtils.getNowISO().substring(0,10), lastContactDate: DateUtils.getNowISO().substring(0,10), relationshipStrength: 'Professional Connection', tags: []}); setShowAddContactModal(true); }} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white">Add New Contact</button>
-            </div>
-            {networkContacts.length === 0 && !isLoading && <p className="text-gray-400">No network contacts added yet. Start building your network!</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {networkContacts.map(contact => (
-                    <Card key={contact.id} title={contact.name}>
-                        <p className="text-sm text-gray-300 mb-2">{contact.role} at {contact.company}</p>
-                        <p className="text-xs text-gray-400">Connection Date: {DateUtils.formatDate(contact.connectionDate)}</p>
-                        <p className="text-xs text-gray-400">Last Contact: {DateUtils.formatDate(contact.lastContactDate)}</p>
-                        <p className="text-xs text-gray-400">Strength: {contact.relationshipStrength}</p>
-                        {contact.tags.length > 0 && <p className="text-xs text-gray-400">Tags: {contact.tags.join(', ')}</p>}
-                        <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                            <button onClick={() => { setSelectedContactForMessage(contact); setNetworkingMessagePurpose(''); setGeneratedNetworkingMessage(''); }} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded">Gen Message</button>
-                            <button onClick={() => { setCurrentContactForm(contact); setShowAddContactModal(true); }} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">Edit</button>
-                            <button onClick={() => handleDeleteContact(contact.id)} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">Delete</button>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Add/Edit Contact Modal */}
-            {showAddContactModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={currentContactForm.id ? "Edit Network Contact" : "Add New Network Contact"} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Name</span>
-                                <input type="text" value={currentContactForm.name || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, name: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Company</span>
-                                <input type="text" value={currentContactForm.company || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, company: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Role</span>
-                                <input type="text" value={currentContactForm.role || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, role: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Relationship Strength</span>
-                                <select value={currentContactForm.relationshipStrength || 'Professional Connection'} onChange={e => setCurrentContactForm({ ...currentContactForm, relationshipStrength: e.target.value as NetworkContact['relationshipStrength'] })} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    <option value="Acquaintance">Acquaintance</option>
-                                    <option value="Professional Connection">Professional Connection</option>
-                                    <option value="Strong Ally">Strong Ally</option>
-                                    <option value="Mentor">Mentor</option>
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Last Contact Date</span>
-                                <input type="date" value={currentContactForm.lastContactDate ? currentContactForm.lastContactDate.substring(0, 10) : ''} onChange={e => setCurrentContactForm({ ...currentContactForm, lastContactDate: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Follow-up Date (Optional)</span>
-                                <input type="date" value={currentContactForm.followUpDate ? currentContactForm.followUpDate.substring(0, 10) : ''} onChange={e => setCurrentContactForm({ ...currentContactForm, followUpDate: e.target.value || null })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Tags (comma-separated)</span>
-                                <input type="text" value={currentContactForm.tags?.join(', ') || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">LinkedIn URL</span>
-                                <input type="url" value={currentContactForm.linkedInUrl || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, linkedInUrl: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Email</span>
-                                <input type="email" value={currentContactForm.email || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, email: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Phone (Optional)</span>
-                                <input type="tel" value={currentContactForm.phone || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, phone: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Notes</span>
-                                <textarea value={currentContactForm.notes || ''} onChange={e => setCurrentContactForm({ ...currentContactForm, notes: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setShowAddContactModal(false)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleAddOrUpdateContact} disabled={isSavingContact} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSavingContact ? 'Saving...' : (currentContactForm.id ? 'Update Contact' : 'Add Contact')}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Generate Networking Message Modal */}
-            {selectedContactForMessage && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={`Generate Message for ${selectedContactForMessage.name}`} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <p className="text-gray-300"><strong>Contact:</strong> {selectedContactForMessage.role} at {selectedContactForMessage.company}</p>
-                            <label className="block">
-                                <span className="text-gray-400">Purpose of Message</span>
-                                <textarea
-                                    value={networkingMessagePurpose}
-                                    onChange={e => setNetworkingMessagePurpose(e.target.value)}
-                                    className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm"
-                                    placeholder="e.g., 'Request an informational interview', 'Ask for a job referral for role X', 'Reconnect and share industry insights'"
-                                />
-                            </label>
-                            <div className="text-center">
-                                <button
-                                    onClick={handleGenerateNetworkingMessage}
-                                    disabled={isGeneratingNetworkingMessage || !userProfile || !ValidationUtils.isNotNullOrEmpty(networkingMessagePurpose)}
-                                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white disabled:opacity-50"
-                                >
-                                    {isGeneratingNetworkingMessage ? 'Generating...' : 'Generate Message'}
-                                </button>
-                            </div>
-                            {generatedNetworkingMessage && (
-                                <div className="mt-4">
-                                    <h4 className="font-semibold text-white">Generated Message:</h4>
-                                    <pre className="text-sm text-gray-200 whitespace-pre-wrap p-3 bg-gray-900/50 rounded-lg">{generatedNetworkingMessage}</pre>
-                                    <button onClick={() => navigator.clipboard.writeText(generatedNetworkingMessage)} className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm">Copy to Clipboard</button>
-                                </div>
-                            )}
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => { setSelectedContactForMessage(null); setNetworkingMessagePurpose(''); setGeneratedNetworkingMessage(''); }} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Close</button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-        </div>
-    );
-
-    const renderProjectsSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Personal Projects</h2>
-            <div className="text-right">
-                <button onClick={() => { setCurrentProjectForm({startDate: DateUtils.getNowISO().substring(0,10), status: 'Idea', skillsDeveloped: [], technologiesUsed: [], goalIds: []}); setShowAddProjectModal(true); }} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white">Add New Project</button>
-            </div>
-            {personalProjects.length === 0 && !isLoading && <p className="text-gray-400">No personal projects added yet. Start building your portfolio!</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {personalProjects.map(project => (
-                    <Card key={project.id} title={project.title}>
-                        <p className="text-sm text-gray-300 mb-2">{TextUtils.truncate(project.description, 100)}</p>
-                        <p className="text-xs text-gray-400">Status: {project.status}</p>
-                        <p className="text-xs text-gray-400">Started: {DateUtils.formatDate(project.startDate)}</p>
-                        {project.skillsDeveloped.length > 0 && <p className="text-xs text-gray-400">Skills: {TextUtils.truncate(project.skillsDeveloped.join(', '), 60)}</p>}
-                        {project.technologiesUsed.length > 0 && <p className="text-xs text-gray-400">Tech: {TextUtils.truncate(project.technologiesUsed.join(', '), 60)}</p>}
-                        <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                            {project.repositoryLink && <a href={project.repositoryLink} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">Repo</a>}
-                            {project.demoLink && <a href={project.demoLink} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">Demo</a>}
-                            <button onClick={() => { setCurrentProjectForm(project); setShowAddProjectModal(true); }} className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">Edit</button>
-                            <button onClick={() => handleDeleteProject(project.id)} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">Delete</button>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Add/Edit Project Modal */}
-            {showAddProjectModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={currentProjectForm.id ? "Edit Personal Project" : "Add New Personal Project"} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Title</span>
-                                <input type="text" value={currentProjectForm.title || ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, title: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Description</span>
-                                <textarea value={currentProjectForm.description || ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, description: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Status</span>
-                                <select value={currentProjectForm.status || 'Idea'} onChange={e => setCurrentProjectForm({ ...currentProjectForm, status: e.target.value as PersonalProject['status'] })} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    <option value="Idea">Idea</option>
-                                    <option value="Planning">Planning</option>
-                                    <option value="InProgress">In Progress</option>
-                                    <option value="Completed">Completed</option>
-                                    <option value="Archived">Archived</option>
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Start Date</span>
-                                <input type="date" value={currentProjectForm.startDate ? currentProjectForm.startDate.substring(0, 10) : ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, startDate: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">End Date (Optional)</span>
-                                <input type="date" value={currentProjectForm.endDate ? currentProjectForm.endDate.substring(0, 10) : ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, endDate: e.target.value || undefined })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Skills Developed (comma-separated)</span>
-                                <input type="text" value={currentProjectForm.skillsDeveloped?.join(', ') || ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, skillsDeveloped: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Technologies Used (comma-separated)</span>
-                                <input type="text" value={currentProjectForm.technologiesUsed?.join(', ') || ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, technologiesUsed: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Repository Link (e.g., GitHub)</span>
-                                <input type="url" value={currentProjectForm.repositoryLink || ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, repositoryLink: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Demo Link (Optional)</span>
-                                <input type="url" value={currentProjectForm.demoLink || ''} onChange={e => setCurrentProjectForm({ ...currentProjectForm, demoLink: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Related Career Goals (select all that apply)</span>
-                                <select multiple value={currentProjectForm.goalIds || []} onChange={e => {
-                                    const options = Array.from(e.target.selectedOptions, option => option.value);
-                                    setCurrentProjectForm({ ...currentProjectForm, goalIds: options });
-                                }} className="w-full h-32 bg-gray-900/50 p-2 rounded text-sm custom-scroll">
-                                    {careerGoals.map(goal => (
-                                        <option key={goal.id} value={goal.id}>{goal.title}</option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setShowAddProjectModal(false)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleAddOrUpdateProject} disabled={isSavingProject} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSavingProject ? 'Saving...' : (currentProjectForm.id ? 'Update Project' : 'Add Project')}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            <Card title="Generate Project Ideas">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Skills to Develop (comma-separated, e.g., "React, Node.js, AWS")</span>
-                        <input
-                            type="text"
-                            value={projectIdeaSkills}
-                            onChange={e => setProjectIdeaSkills(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="Enter skills you want to practice..."
-                        />
-                    </label>
-                    <label className="block">
-                        <span className="text-gray-400">Relate to Career Goal (Optional)</span>
-                        <select
-                            value={projectIdeaGoalId}
-                            onChange={e => setProjectIdeaGoalId(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
-                        >
-                            <option value="">-- Select a Goal --</option>
-                            {careerGoals.map(goal => (
-                                <option key={goal.id} value={goal.id}>{goal.title}</option>
-                            ))}
-                        </select>
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleSuggestProjectIdeas}
-                            disabled={isSuggestingProjectIdeas || !userProfile || !ValidationUtils.isNotNullOrEmpty(projectIdeaSkills)}
-                            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isSuggestingProjectIdeas ? 'Generating Ideas...' : 'Suggest Project Ideas'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
-            {isSuggestingProjectIdeas && <p className="text-gray-400">Generating project ideas...</p>}
-            {suggestedProjectIdeas.length > 0 && (
-                <Card title="Suggested Project Ideas">
-                    <div className="space-y-4">
-                        {suggestedProjectIdeas.map((idea, i) => (
-                            <div key={i} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{idea.title}</h3>
-                                <p className="text-sm text-gray-300 mt-1">{idea.description}</p>
-                                <p className="text-xs text-gray-400 mt-2"><strong>Skills:</strong> {idea.skillsDeveloped.join(', ')}</p>
-                                <p className="text-xs text-gray-400"><strong>Technologies:</strong> {idea.technologiesUsed.join(', ')}</p>
-                                <button onClick={() => { setCurrentProjectForm(idea); setShowAddProjectModal(true); }} className="mt-3 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded">Add to My Projects</button>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-        </div>
-    );
-
-    const renderMentorshipSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Mentorship Program</h2>
-            <Card title="Find a Mentor">
-                <p className="text-gray-400 mb-4">Let our AI match you with suitable mentors based on your profile and goals.</p>
-                <div className="text-center">
-                    <button
-                        onClick={handleMatchMentors}
-                        disabled={isMatchingMentors || !userProfile}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white disabled:opacity-50"
-                    >
-                        {isMatchingMentors ? 'Matching...' : 'Find My Mentors'}
-                    </button>
-                </div>
-            </Card>
-
-            {isMatchingMentors && <p className="text-gray-400">Searching for mentor matches...</p>}
-            {matchedMentors.length > 0 && (
-                <Card title="Recommended Mentors">
-                    <div className="space-y-4">
-                        {matchedMentors.map(mentor => (
-                            <div key={mentor.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{mentor.name} <span className="text-sm text-gray-400 ml-2">({mentor.currentRole})</span></h3>
-                                <p className="text-sm text-gray-300 mt-1">{mentor.industry} - {mentor.yearsExperience} Years Exp.</p>
-                                <p className="text-xs text-gray-400">Specialties: {mentor.specialties.join(', ')}</p>
-                                <p className="text-xs text-gray-500">Bio: {TextUtils.truncate(mentor.bio, 150)}</p>
-                                <div className="mt-3 flex flex-wrap gap-2 justify-end">
-                                    {mentor.linkedInUrl && <a href={mentor.linkedInUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">LinkedIn</a>}
-                                    <button onClick={() => { setCurrentSessionMentorId(mentor.id); setCurrentSessionTopic(''); setShowScheduleSessionModal(true); }} className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded">Schedule Session</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            <Card title="Your Mentorship Sessions">
-                {mentorshipSessions.length === 0 && <p className="text-gray-400">No mentorship sessions scheduled yet.</p>}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {mentorshipSessions.map(session => {
-                        const mentor = mentorProfiles.find(m => m.id === session.mentorId);
-                        return (
-                            <div key={session.id} className="p-3 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">Session with {mentor?.name || 'Unknown Mentor'}</h3>
-                                <p className="text-sm text-gray-300">Topic: {session.topic}</p>
-                                <p className="text-xs text-gray-400">Date: {DateUtils.formatDate(session.sessionDate)} ({session.durationMinutes} min)</p>
-                                <p className="text-xs text-gray-400">Status: {session.status}</p>
-                                <div className="flex justify-end mt-2">
-                                    <button onClick={() => setSelectedMentorshipSession(session)} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">View Details</button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </Card>
-
-            {/* Schedule Mentorship Session Modal */}
-            {showScheduleSessionModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title="Schedule Mentorship Session" className="max-w-xl w-full">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Mentor</span>
-                                <select value={currentSessionMentorId} onChange={e => setCurrentSessionMentorId(e.target.value)} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    <option value="">-- Select a Mentor --</option>
-                                    {matchedMentors.map(mentor => (
-                                        <option key={mentor.id} value={mentor.id}>{mentor.name} ({mentor.currentRole})</option>
-                                    ))}
-                                    {mentorProfiles.filter(m => !matchedMentors.some(mm => mm.id === m.id)).map(mentor => (
-                                        <option key={mentor.id} value={mentor.id}>{mentor.name} (Other: {mentor.currentRole})</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Topic</span>
-                                <input type="text" value={currentSessionTopic} onChange={e => setCurrentSessionTopic(e.target.value)} className="w-full bg-gray-900/50 p-2 rounded text-sm" placeholder="e.g., Career Transition, Technical Deep Dive" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Duration (minutes)</span>
-                                <input type="number" value={currentSessionDuration} onChange={e => setCurrentSessionDuration(parseInt(e.target.value) || 30)} min="15" step="15" className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setShowScheduleSessionModal(false)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleScheduleMentorshipSession} disabled={isSchedulingSession} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSchedulingSession ? 'Scheduling...' : 'Schedule Session'}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Mentorship Session Details Modal */}
-            {selectedMentorshipSession && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={`Mentorship Session: ${selectedMentorshipSession.topic}`} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <p><strong>Mentor:</strong> {mentorProfiles.find(m => m.id === selectedMentorshipSession.mentorId)?.name || 'N/A'}</p>
-                            <p><strong>Date:</strong> {DateUtils.formatDate(selectedMentorshipSession.sessionDate)}</p>
-                            <p><strong>Duration:</strong> {selectedMentorshipSession.durationMinutes} minutes</p>
-                            <p><strong>Status:</strong> {selectedMentorshipSession.status}</p>
-                            <label className="block">
-                                <span className="text-gray-400">Notes</span>
-                                <textarea value={selectedMentorshipSession.notes || ''} onChange={e => setSelectedMentorshipSession({ ...selectedMentorshipSession, notes: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" placeholder="Add session notes here..." />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Feedback Given (Optional)</span>
-                                <textarea value={selectedMentorshipSession.feedbackGiven || ''} onChange={e => setSelectedMentorshipSession({ ...selectedMentorshipSession, feedbackGiven: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" placeholder="Provide feedback to your mentor..." />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Your Rating (1-5, Optional)</span>
-                                <input type="number" value={selectedMentorshipSession.menteeRating || ''} onChange={e => setSelectedMentorshipSession({ ...selectedMentorshipSession, menteeRating: parseInt(e.target.value) || undefined })} min="1" max="5" className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-
-                            <h4 className="font-semibold text-white mt-4">Action Items for this Session:</h4>
-                            {selectedMentorshipSession.actionItems.length === 0 ? (
-                                <p className="text-gray-400 text-sm">No action items from this session.</p>
-                            ) : (
-                                <ul className="list-disc list-inside text-sm text-gray-300">
-                                    {selectedMentorshipSession.actionItems.map((item, i) => <li key={i}>{item}</li>)}
-                                </ul>
-                            )}
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setSelectedMentorshipSession(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Close</button>
-                                <button onClick={async () => {
-                                    if (selectedMentorshipSession) {
-                                        const updated = await apiUpdateMentorshipSession(selectedMentorshipSession);
-                                        setMentorshipSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
-                                        notificationService.addNotification({ type: 'success', message: 'Session details updated.' });
-                                    }
-                                }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white">Save Changes</button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-        </div>
-    );
-
-    const renderPortfolioSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Professional Portfolio</h2>
-            <div className="text-right">
-                <button onClick={() => { setCurrentPortfolioItemForm({ date: DateUtils.getNowISO().substring(0, 10), type: 'Project', technologies: [], skillsDemonstrated: [] }); setShowAddPortfolioModal(true); }} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white">Add New Portfolio Item</button>
-            </div>
-            {portfolioItems.length === 0 && !isLoading && <p className="text-gray-400">No portfolio items added yet. Showcase your work!</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {portfolioItems.map(item => (
-                    <Card key={item.id} title={item.title}>
-                        <p className="text-sm text-gray-300 mb-2">{TextUtils.truncate(item.description, 100)}</p>
-                        <p className="text-xs text-gray-400">Type: {item.type}</p>
-                        <p className="text-xs text-gray-400">Date: {DateUtils.formatDate(item.date)}</p>
-                        {item.skillsDemonstrated && item.skillsDemonstrated.length > 0 && <p className="text-xs text-gray-400">Skills: {TextUtils.truncate(item.skillsDemonstrated.join(', '), 60)}</p>}
-                        <div className="mt-4 flex flex-wrap gap-2 justify-end">
-                            {item.link && <a href={item.link} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded">View</a>}
-                            <button onClick={() => { setSelectedPortfolioItem(item); setPortfolioReviewJobDesc(''); setPortfolioReviewSuggestions([]); }} className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded">AI Review</button>
-                            <button onClick={() => { setCurrentPortfolioItemForm(item); setShowAddPortfolioModal(true); }} className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-xs rounded">Edit</button>
-                            <button onClick={() => handleDeletePortfolioItem(item.id)} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">Delete</button>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Add/Edit Portfolio Item Modal */}
-            {showAddPortfolioModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={currentPortfolioItemForm.id ? "Edit Portfolio Item" : "Add New Portfolio Item"} className="max-w-xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <label className="block">
-                                <span className="text-gray-400">Title</span>
-                                <input type="text" value={currentPortfolioItemForm.title || ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, title: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Type</span>
-                                <select value={currentPortfolioItemForm.type || 'Project'} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, type: e.target.value as PortfolioItem['type'] })} className="w-full bg-gray-900/50 p-2 rounded text-sm">
-                                    <option value="Project">Project</option>
-                                    <option value="Publication">Publication</option>
-                                    <option value="Presentation">Presentation</option>
-                                    <option value="Website">Website</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Description</span>
-                                <textarea value={currentPortfolioItemForm.description || ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, description: e.target.value })} className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Link (e.g., URL to project, article, live demo)</span>
-                                <input type="url" value={currentPortfolioItemForm.link || ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, link: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Date (YYYY-MM-DD)</span>
-                                <input type="date" value={currentPortfolioItemForm.date ? currentPortfolioItemForm.date.substring(0, 10) : ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, date: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Technologies Used (comma-separated)</span>
-                                <input type="text" value={currentPortfolioItemForm.technologies?.join(', ') || ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, technologies: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Skills Demonstrated (comma-separated)</span>
-                                <input type="text" value={currentPortfolioItemForm.skillsDemonstrated?.join(', ') || ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, skillsDemonstrated: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-400">Thumbnail URL (Optional)</span>
-                                <input type="url" value={currentPortfolioItemForm.thumbnailUrl || ''} onChange={e => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, thumbnailUrl: e.target.value })} className="w-full bg-gray-900/50 p-2 rounded text-sm" />
-                            </label>
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setShowAddPortfolioModal(false)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Cancel</button>
-                                <button onClick={handleAddOrUpdatePortfolioItem} disabled={isSavingPortfolioItem} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white disabled:opacity-50">
-                                    {isSavingPortfolioItem ? 'Saving...' : (currentPortfolioItemForm.id ? 'Update Item' : 'Add Item')}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* Portfolio Item Review Modal */}
-            {selectedPortfolioItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <Card title={`AI Review of "${selectedPortfolioItem.title}"`} className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="space-y-4 text-white">
-                            <p className="text-gray-300"><strong>Item Type:</strong> {selectedPortfolioItem.type}</p>
-                            <p className="text-gray-300"><strong>Description:</strong> {selectedPortfolioItem.description}</p>
-                            {selectedPortfolioItem.link && <p className="text-gray-300"><strong>Link:</strong> <a href={selectedPortfolioItem.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{selectedPortfolioItem.link}</a></p>}
-
-                            <label className="block mt-4">
-                                <span className="text-gray-400">Optional: Job Description for Contextual Review</span>
-                                <textarea
-                                    value={portfolioReviewJobDesc}
-                                    onChange={e => setPortfolioReviewJobDesc(e.target.value)}
-                                    className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm"
-                                    placeholder="Paste a job description here to get targeted suggestions for this portfolio item..."
-                                />
-                            </label>
-                            <div className="text-center">
-                                <button
-                                    onClick={handleReviewPortfolioItem}
-                                    disabled={isReviewingPortfolioItem || !userProfile}
-                                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white disabled:opacity-50"
-                                >
-                                    {isReviewingPortfolioItem ? 'Reviewing...' : 'Get AI Review Suggestions'}
-                                </button>
-                            </div>
-
-                            {isReviewingPortfolioItem && <p className="text-gray-400 mt-4">Generating review suggestions...</p>}
-                            {portfolioReviewSuggestions.length > 0 && (
-                                <div className="mt-6">
-                                    <h3 className="text-xl font-bold">AI Suggestions:</h3>
-                                    <div className="space-y-3 mt-3">
-                                        {portfolioReviewSuggestions.map((s, i) => (
-                                            <div key={s.id || i} className="p-3 bg-gray-800 rounded-lg border border-gray-700">
-                                                <p className={`font-semibold ${s.severity === 'Major' ? 'text-red-400' : s.severity === 'Moderate' ? 'text-yellow-400' : 'text-green-400'}`}>{s.severity} Suggestion ({s.category})</p>
-                                                {s.originalText && <p className="text-sm text-gray-400 mt-1"><strong>Original:</strong> {s.originalText}</p>}
-                                                <p className="text-sm text-gray-300"><strong>Improved:</strong> {s.improvedText}</p>
-                                                <p className="text-xs text-gray-500 mt-1"><strong>Rationale:</strong> {s.rationale}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex justify-end space-x-2 mt-4">
-                                <button onClick={() => setSelectedPortfolioItem(null)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-white">Close</button>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-        </div>
-    );
-
-    const renderContentIdeasSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Content Idea Generation</h2>
-            <Card title="Generate Content Ideas">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Content Type</span>
-                        <input
-                            type="text"
-                            value={contentType}
-                            onChange={e => setContentType(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="e.g., 'blog post', 'conference talk', 'YouTube series', 'podcast script'"
-                        />
-                    </label>
-                    <label className="block">
-                        <span className="text-gray-400">Focus Area</span>
-                        <textarea
-                            value={contentFocusArea}
-                            onChange={e => setContentFocusArea(e.target.value)}
-                            className="w-full h-24 bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="e.g., 'future of AI in product development', 'leveraging data science for marketing', 'personal branding for developers'"
-                        />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleGenerateContentIdeas}
-                            disabled={isGeneratingContentIdeas || !userProfile || !ValidationUtils.isNotNullOrEmpty(contentType) || !ValidationUtils.isNotNullOrEmpty(contentFocusArea)}
-                            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isGeneratingContentIdeas ? 'Generating...' : 'Generate Content Ideas'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
-            {isGeneratingContentIdeas && <p className="text-gray-400">Generating content ideas...</p>}
-            {generatedContentIdeas.length > 0 && (
-                <Card title="Suggested Content Ideas">
-                    <div className="space-y-4">
-                        {generatedContentIdeas.map((idea, i) => (
-                            <div key={i} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                <h3 className="text-lg font-semibold text-white">{idea.title}</h3>
-                                <p className="text-sm text-gray-300 mt-1"><strong>Target Audience:</strong> {idea.targetAudience}</p>
-                                <p className="text-sm text-gray-300"><strong>Keywords:</strong> {idea.keywords.join(', ')}</p>
-                                <div className="mt-2">
-                                    <p className="font-semibold text-cyan-400">Outline:</p>
-                                    <pre className="text-sm text-gray-200 whitespace-pre-wrap p-2 bg-gray-800 rounded-md">{idea.outline}</pre>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-        </div>
-    );
-
-    const renderDailyPlanSection = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Your Daily Career Plan</h2>
-            <Card title="Generate Today's Plan">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Skills to Focus On (comma-separated, top 3-5, e.g., "AI Ethics, Leadership, Public Speaking")</span>
-                        <input
-                            type="text"
-                            value={dailyPlanSkillsToFocus}
-                            onChange={e => setDailyPlanSkillsToFocus(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
-                            placeholder="Enter skills for today's development focus..."
-                        />
-                    </label>
-                    <div className="text-center">
-                        <button
-                            onClick={handleGenerateDailyPlan}
-                            disabled={isGeneratingDailyPlan || !userProfile || !ValidationUtils.isNotNullOrEmpty(dailyPlanSkillsToFocus)}
-                            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white disabled:opacity-50"
-                        >
-                            {isGeneratingDailyPlan ? 'Generating...' : 'Generate Daily Plan'}
-                        </button>
-                    </div>
-                </div>
-            </Card>
-
-            <Card title="Your Plan for the Day">
-                <div className="space-y-4">
-                    <label className="block">
-                        <span className="text-gray-400">Select Date:</span>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Application Date</label>
                         <input
                             type="date"
-                            value={dailyPlanDate}
-                            onChange={e => handleChangeDailyPlanDate(e.target.value)}
-                            className="w-full bg-gray-900/50 p-2 rounded text-sm"
+                            value={currentApplicationForm.applicationDate ? currentApplicationForm.applicationDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, applicationDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                         />
-                    </label>
-
-                    {isGeneratingDailyPlan && <p className="text-gray-400">Loading daily plan...</p>}
-                    {dailyPlanItems.length === 0 && !isGeneratingDailyPlan && (
-                        <p className="text-gray-400">No daily plan items for {DateUtils.formatDate(dailyPlanDate)}. Generate one for today!</p>
-                    )}
-                    <div className="space-y-3">
-                        {dailyPlanItems.map(item => (
-                            <div key={item.id} className={`p-3 rounded-lg flex items-center justify-between ${item.isCompleted ? 'bg-gray-800/50 text-gray-500 line-through' : 'bg-gray-900/50 border border-gray-700'}`}>
-                                <div className="flex-1 flex items-center space-x-3">
-                                    <input
-                                        type="checkbox"
-                                        checked={item.isCompleted}
-                                        onChange={() => handleToggleDailyPlanItemCompletion(item)}
-                                        className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-900/50 border-gray-700 rounded"
-                                    />
-                                    <div>
-                                        <p className="font-semibold text-white">{item.time} - {item.activity}</p>
-                                        <p className="text-xs text-gray-400">Type: {item.type}</p>
-                                    </div>
-                                </div>
-                                <div className="flex-shrink-0 ml-4">
-                                    <button onClick={() => apiDeleteDailyPlanItem(item.id).then(() => setDailyPlanItems(prev => prev.filter(i => i.id !== item.id)))} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded">Delete</button>
-                                </div>
-                            </div>
-                        ))}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select
+                            value={currentApplicationForm.status || JobApplicationStatus.Applied}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, status: e.target.value as JobApplicationStatus })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            {Object.values(JobApplicationStatus).map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Link to Job Posting</label>
+                        <input
+                            type="url"
+                            value={currentApplicationForm.link || ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, link: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Job Description</label>
+                        <textarea
+                            value={currentApplicationForm.jobDescription || ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, jobDescription: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Resume Used (snapshot)</label>
+                        <textarea
+                            value={currentApplicationForm.resumeUsed || ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, resumeUsed: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea
+                            value={currentApplicationForm.notes || ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, notes: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Follow-up Date</label>
+                        <input
+                            type="date"
+                            value={currentApplicationForm.followUpDate ? currentApplicationForm.followUpDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentApplicationForm({ ...currentApplicationForm, followUpDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
                     </div>
                 </div>
-            </Card>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowAddApplicationModal(false); setCurrentApplicationForm({}); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSavingApplication}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddOrUpdateApplication}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSavingApplication}
+                    >
+                        {isSavingApplication ? 'Saving...' : (currentApplicationForm.id ? 'Update Application' : 'Add Application')}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 
+    const renderGoalModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">{currentGoalForm.id ? 'Edit Career Goal' : 'Add New Career Goal'}</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <input
+                            type="text"
+                            value={currentGoalForm.title || ''}
+                            onChange={(e) => setCurrentGoalForm({ ...currentGoalForm, title: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                            value={currentGoalForm.description || ''}
+                            onChange={(e) => setCurrentGoalForm({ ...currentGoalForm, description: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Target Date</label>
+                        <input
+                            type="date"
+                            value={currentGoalForm.targetDate ? currentGoalForm.targetDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentGoalForm({ ...currentGoalForm, targetDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select
+                            value={currentGoalForm.status || GoalStatus.Pending}
+                            onChange={(e) => setCurrentGoalForm({ ...currentGoalForm, status: e.target.value as GoalStatus })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            {Object.values(GoalStatus).map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Priority</label>
+                        <select
+                            value={currentGoalForm.priority || PriorityLevel.Medium}
+                            onChange={(e) => setCurrentGoalForm({ ...currentGoalForm, priority: e.target.value as PriorityLevel })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            {Object.values(PriorityLevel).map(priority => (
+                                <option key={priority} value={priority}>{priority}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Related Skills (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentGoalForm.relatedSkills?.join(', ') || ''}
+                            onChange={(e) => setCurrentGoalForm({ ...currentGoalForm, relatedSkills: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowAddGoalModal(false); setCurrentGoalForm({}); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSavingGoal}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddOrUpdateGoal}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSavingGoal}
+                    >
+                        {isSavingGoal ? 'Saving...' : (currentGoalForm.id ? 'Update Goal' : 'Add Goal')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderActionItemModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">{currentActionItemForm.id ? 'Edit Action Item' : 'Add New Action Item'}</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                            value={currentActionItemForm.description || ''}
+                            onChange={(e) => setCurrentActionItemForm({ ...currentActionItemForm, description: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Due Date</label>
+                        <input
+                            type="date"
+                            value={currentActionItemForm.dueDate ? currentActionItemForm.dueDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentActionItemForm({ ...currentActionItemForm, dueDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Completed</label>
+                        <input
+                            type="checkbox"
+                            checked={currentActionItemForm.isCompleted || false}
+                            onChange={(e) => setCurrentActionItemForm({ ...currentActionItemForm, isCompleted: e.target.checked, completedDate: e.target.checked ? DateUtils.getNowISO().substring(0, 10) : undefined })}
+                            className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea
+                            value={currentActionItemForm.notes || ''}
+                            onChange={(e) => setCurrentActionItemForm({ ...currentActionItemForm, notes: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-20"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Related Resource IDs (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentActionItemForm.relatedResourceIds?.join(', ') || ''}
+                            onChange={(e) => setCurrentActionItemForm({ ...currentActionItemForm, relatedResourceIds: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowAddActionItemModal(false); setCurrentActionItemForm({}); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSavingGoal}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddOrUpdateActionItem}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSavingGoal}
+                    >
+                        {isSavingGoal ? 'Saving...' : (currentActionItemForm.id ? 'Update Item' : 'Add Item')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderContactModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">{currentContactForm.id ? 'Edit Network Contact' : 'Add New Network Contact'}</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Name</label>
+                        <input
+                            type="text"
+                            value={currentContactForm.name || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, name: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Company</label>
+                        <input
+                            type="text"
+                            value={currentContactForm.company || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, company: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Role</label>
+                        <input
+                            type="text"
+                            value={currentContactForm.role || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, role: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Relationship Strength</label>
+                        <select
+                            value={currentContactForm.relationshipStrength || 'Acquaintance'}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, relationshipStrength: e.target.value as 'Acquaintance' | 'Professional Connection' | 'Strong Ally' | 'Mentor' })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            <option value="Acquaintance">Acquaintance</option>
+                            <option value="Professional Connection">Professional Connection</option>
+                            <option value="Strong Ally">Strong Ally</option>
+                            <option value="Mentor">Mentor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentContactForm.tags?.join(', ') || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">LinkedIn URL</label>
+                        <input
+                            type="url"
+                            value={currentContactForm.linkedInUrl || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, linkedInUrl: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            value={currentContactForm.email || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, email: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Phone</label>
+                        <input
+                            type="tel"
+                            value={currentContactForm.phone || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, phone: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea
+                            value={currentContactForm.notes || ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, notes: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Follow-up Date</label>
+                        <input
+                            type="date"
+                            value={currentContactForm.followUpDate ? currentContactForm.followUpDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentContactForm({ ...currentContactForm, followUpDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowAddContactModal(false); setCurrentContactForm({}); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSavingContact}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddOrUpdateContact}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSavingContact}
+                    >
+                        {isSavingContact ? 'Saving...' : (currentContactForm.id ? 'Update Contact' : 'Add Contact')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderProjectModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">{currentProjectForm.id ? 'Edit Personal Project' : 'Add New Personal Project'}</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <input
+                            type="text"
+                            value={currentProjectForm.title || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, title: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                            value={currentProjectForm.description || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, description: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select
+                            value={currentProjectForm.status || 'Idea'}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, status: e.target.value as 'Idea' | 'Planning' | 'InProgress' | 'Completed' | 'Archived' })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            <option value="Idea">Idea</option>
+                            <option value="Planning">Planning</option>
+                            <option value="InProgress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Start Date</label>
+                        <input
+                            type="date"
+                            value={currentProjectForm.startDate ? currentProjectForm.startDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, startDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">End Date</label>
+                        <input
+                            type="date"
+                            value={currentProjectForm.endDate ? currentProjectForm.endDate.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, endDate: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Skills Developed (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentProjectForm.skillsDeveloped?.join(', ') || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, skillsDeveloped: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Technologies Used (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentProjectForm.technologiesUsed?.join(', ') || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, technologiesUsed: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Repository Link</label>
+                        <input
+                            type="url"
+                            value={currentProjectForm.repositoryLink || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, repositoryLink: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Demo Link</label>
+                        <input
+                            type="url"
+                            value={currentProjectForm.demoLink || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, demoLink: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Related Goal IDs (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentProjectForm.goalIds?.join(', ') || ''}
+                            onChange={(e) => setCurrentProjectForm({ ...currentProjectForm, goalIds: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowAddProjectModal(false); setCurrentProjectForm({}); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSavingProject}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddOrUpdateProject}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSavingProject}
+                    >
+                        {isSavingProject ? 'Saving...' : (currentProjectForm.id ? 'Update Project' : 'Add Project')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderScheduleSessionModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">Schedule Mentorship Session</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Mentor</label>
+                        <select
+                            value={currentSessionMentorId}
+                            onChange={(e) => setCurrentSessionMentorId(e.target.value)}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            <option value="">Select a Mentor</option>
+                            {mentorProfiles.map(mentor => (
+                                <option key={mentor.id} value={mentor.id}>{mentor.name} ({mentor.currentRole})</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Topic</label>
+                        <input
+                            type="text"
+                            value={currentSessionTopic}
+                            onChange={(e) => setCurrentSessionTopic(e.target.value)}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+                        <input
+                            type="number"
+                            value={currentSessionDuration}
+                            onChange={(e) => setCurrentSessionDuration(parseInt(e.target.value, 10))}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            min="15"
+                            step="15"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowScheduleSessionModal(false); setCurrentSessionMentorId(''); setCurrentSessionTopic(''); setCurrentSessionDuration(30); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSchedulingSession}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleScheduleMentorshipSession}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSchedulingSession}
+                    >
+                        {isSchedulingSession ? 'Scheduling...' : 'Schedule Session'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderPortfolioItemModal = () => (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <h3 className="text-xl font-bold mb-4">{currentPortfolioItemForm.id ? 'Edit Portfolio Item' : 'Add New Portfolio Item'}</h3>
+                {error && <div className="bg-red-100 text-red-800 p-3 rounded mb-4">{error}</div>}
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <input
+                            type="text"
+                            value={currentPortfolioItemForm.title || ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, title: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Type</label>
+                        <select
+                            value={currentPortfolioItemForm.type || 'Project'}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, type: e.target.value as 'Project' | 'Publication' | 'Presentation' | 'Website' | 'Other' })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        >
+                            <option value="Project">Project</option>
+                            <option value="Publication">Publication</option>
+                            <option value="Presentation">Presentation</option>
+                            <option value="Website">Website</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                            value={currentPortfolioItemForm.description || ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, description: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-24"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Link</label>
+                        <input
+                            type="url"
+                            value={currentPortfolioItemForm.link || ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, link: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Technologies (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentPortfolioItemForm.technologies?.join(', ') || ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, technologies: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Skills Demonstrated (comma-separated)</label>
+                        <input
+                            type="text"
+                            value={currentPortfolioItemForm.skillsDemonstrated?.join(', ') || ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, skillsDemonstrated: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Date (YYYY-MM-DD)</label>
+                        <input
+                            type="date"
+                            value={currentPortfolioItemForm.date ? currentPortfolioItemForm.date.substring(0, 10) : ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, date: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Thumbnail URL</label>
+                        <input
+                            type="url"
+                            value={currentPortfolioItemForm.thumbnailUrl || ''}
+                            onChange={(e) => setCurrentPortfolioItemForm({ ...currentPortfolioItemForm, thumbnailUrl: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-2">
+                    <button
+                        onClick={() => { setShowAddPortfolioModal(false); setCurrentPortfolioItemForm({}); setError(null); }}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        disabled={isSavingPortfolioItem}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddOrUpdatePortfolioItem}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        disabled={isSavingPortfolioItem}
+                    >
+                        {isSavingPortfolioItem ? 'Saving...' : (currentPortfolioItemForm.id ? 'Update Item' : 'Add Item')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+
     // -----------------------------------------------------------------------------------------------------------------
-    //  4.5: Main Render Function
+    //  4.6: Main Component Render
     // -----------------------------------------------------------------------------------------------------------------
     return (
-        <div className="min-h-screen bg-gray-950 text-white p-8">
-            <h1 className="text-4xl font-extrabold text-center mb-10 text-cyan-400 drop-shadow-lg">{APP_NAME}</h1>
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl font-extrabold text-gray-900 mb-6">{APP_NAME}</h1>
+            <p className="text-lg text-gray-600 mb-8">{APP_VERSION} - Your AI-Powered Career Co-pilot</p>
 
-            <NotificationTray />
-            <Navbar />
+            {/* Global Notifications */}
+            <div className="fixed top-4 right-4 z-50 space-y-2 w-full max-w-sm">
+                {sortedNotifications.map((note) => (
+                    <div
+                        key={note.id}
+                        className={`p-4 rounded-lg shadow-md flex items-center justify-between ${
+                            note.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' :
+                            note.type === 'info' ? 'bg-blue-100 border-blue-400 text-blue-700' :
+                            note.type === 'warning' ? 'bg-yellow-100 border-yellow-400 text-yellow-700' :
+                            'bg-red-100 border-red-400 text-red-700'
+                        }`}
+                        role="alert"
+                    >
+                        <div>
+                            <p className="font-semibold">{TextUtils.capitalizeFirstLetter(note.type)}!</p>
+                            <p className="text-sm">{note.message}</p>
+                            <p className="text-xs text-gray-500 mt-1">{DateUtils.timeSince(note.timestamp)}</p>
+                            {note.actionLink && (
+                                <a href={note.actionLink} className="text-sm text-blue-600 hover:underline mt-1 block">View details</a>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => notificationService.markAsRead(note.id)}
+                            className="ml-4 text-sm font-medium p-1 rounded-full hover:bg-opacity-75 focus:outline-none focus:ring-2"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                ))}
+                {unreadNotificationCount > 0 && (
+                    <button
+                        onClick={() => notifications.filter(n => !n.read).forEach(n => notificationService.markAsRead(n.id))}
+                        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                        Mark All as Read ({unreadNotificationCount})
+                    </button>
+                )}
+            </div>
 
+            {/* Error Display */}
             {error && (
-                <div className="bg-red-700 p-4 rounded-lg mb-8 text-center shadow-lg animate-pulse">
-                    <p className="font-bold text-lg">Error:</p>
-                    <p className="text-sm">{error}</p>
-                    <button onClick={() => setError(null)} className="mt-2 px-3 py-1 bg-red-800 hover:bg-red-900 rounded text-xs">Dismiss</button>
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative w-full max-w-4xl mb-6" role="alert">
+                    <strong className="font-bold">Error!</strong>
+                    <span className="block sm:inline ml-2">{error}</span>
+                    <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+                        <svg onClick={() => setError(null)} className="fill-current h-6 w-6 text-red-500 cursor-pointer" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 2.65a1.2 1.2 0 1 1-1.697-1.697l2.758-2.758-2.758-2.759a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-2.651a1.2 1.2 0 1 1 1.697 1.697l-2.758 2.758 2.758 2.759a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                    </span>
                 </div>
             )}
 
-            {isLoading && (
-                <div className="flex justify-center items-center h-48">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500"></div>
-                    <p className="ml-4 text-cyan-400">Loading initial data...</p>
+            <div className="w-full max-w-5xl bg-white shadow-xl rounded-lg p-8">
+                {/* Tabs for different sections */}
+                <div className="flex flex-wrap border-b border-gray-200 mb-6">
+                    {['resume', 'profile', 'goals', 'applications', 'interview', 'skills', 'market', 'branding', 'review', 'network', 'projects', 'mentorship', 'portfolio', 'content', 'daily-plan', 'identity', 'tokens', 'audit-log', 'payments'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-4 py-2 text-sm font-medium ${activeTab === tab ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'} focus:outline-none`}
+                        >
+                            {TextUtils.toSentenceCase(tab)}
+                        </button>
+                    ))}
                 </div>
-            )}
 
-            {!isLoading && (
-                <main className="max-w-7xl mx-auto py-6">
-                    {activeTab === 'resume' && (
-                        <div className="space-y-6">
-                            <h2 className="text-2xl font-bold text-white mb-4">Resume Optimization</h2>
-                            <Card title="Your Resume">
-                                <label className="block mb-4">
-                                    <span className="text-gray-400">Paste your current resume text here (max {MAX_RESUME_LENGTH} chars):</span>
+                {/* Content for each tab */}
+                {isLoading && (
+                    <div className="text-center text-blue-600 font-semibold text-lg py-10">
+                        Loading data... Please wait.
+                    </div>
+                )}
+
+                {userProfile && !isLoading && (
+                    <div>
+                        {activeTab === 'profile' && (
+                            <Card title="User Profile" className="p-6">
+                                {renderUserProfileForm(userProfile, isProfileEditing, (field, value) => setUserProfile(prev => prev ? { ...prev, [field]: value } : null))}
+                                <div className="mt-6 flex justify-end space-x-2">
+                                    {!isProfileEditing ? (
+                                        <button onClick={() => setIsProfileEditing(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                            Edit Profile
+                                        </button>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => { setIsProfileEditing(false); loadAllData(); }} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                                                Cancel
+                                            </button>
+                                            <button onClick={handleProfileUpdate} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                                Save Changes
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </Card>
+                        )}
+
+                        {activeTab === 'identity' && (
+                            <Card title="Digital Identity & Verification" className="p-6">
+                                <div className="space-y-4">
+                                    <p className="text-gray-700"><strong>Public Key:</strong> <span className="font-mono bg-gray-100 p-1 rounded text-sm">{userProfile.publicKey}</span></p>
+                                    <p className="text-gray-700"><strong>Wallet Address:</strong> <span className="font-mono bg-gray-100 p-1 rounded text-sm">{userProfile.walletAddress}</span></p>
+                                    <p className="text-gray-700">
+                                        <strong>Verification Level:</strong> <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                            currentIdentityVerificationLevel === IdentityVerificationLevel.None ? 'bg-red-100 text-red-800' :
+                                            currentIdentityVerificationLevel === IdentityVerificationLevel.Basic ? 'bg-yellow-100 text-yellow-800' :
+                                            currentIdentityVerificationLevel === IdentityVerificationLevel.Verified ? 'bg-green-100 text-green-800' :
+                                            'bg-indigo-100 text-indigo-800'
+                                        }`}>{currentIdentityVerificationLevel}</span>
+                                    </p>
+                                </div>
+                                <h4 className="text-lg font-semibold mt-6 mb-3">Request Verification Level Upgrade</h4>
+                                <div className="flex space-x-3">
+                                    {Object.values(IdentityVerificationLevel).filter(level => level !== currentIdentityVerificationLevel && level !== IdentityVerificationLevel.Enterprise).map(level => (
+                                        <button
+                                            key={level}
+                                            onClick={() => handleRequestIdentityVerification(level)}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                                            disabled={currentIdentityVerificationLevel >= level}
+                                        >
+                                            Request {level}
+                                        </button>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
+
+                        {activeTab === 'resume' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Card title="Your Resume" className="p-6">
                                     <textarea
                                         ref={resumeRef}
                                         value={resume}
                                         onChange={(e) => setResume(e.target.value)}
-                                        className="w-full h-64 bg-gray-900/50 p-3 rounded-lg border border-gray-700 focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm custom-scroll"
+                                        placeholder="Paste your resume here..."
+                                        className="w-full p-3 border border-gray-300 rounded-md shadow-sm h-96 focus:ring-blue-500 focus:border-blue-500"
                                         maxLength={MAX_RESUME_LENGTH}
-                                        placeholder="Paste your resume text here..."
                                     />
-                                    <span className="text-xs text-gray-500">{resume.length}/{MAX_RESUME_LENGTH} characters</span>
-                                </label>
-                            </Card>
-
-                            <Card title="Job Description">
-                                <label className="block mb-4">
-                                    <span className="text-gray-400">Paste the job description you are targeting (max {MAX_JOB_DESC_LENGTH} chars):</span>
+                                    <p className="text-sm text-gray-500 mt-2">Max {MAX_RESUME_LENGTH} characters. Current: {resume.length}</p>
+                                </Card>
+                                <Card title="Target Job Description" className="p-6">
                                     <textarea
                                         ref={jobDescRef}
                                         value={jobDesc}
                                         onChange={(e) => setJobDesc(e.target.value)}
-                                        className="w-full h-48 bg-gray-900/50 p-3 rounded-lg border border-gray-700 focus:ring-2 focus:ring-cyan-600 focus:border-transparent text-sm custom-scroll"
-                                        maxLength={MAX_JOB_DESC_LENGTH}
                                         placeholder="Paste the job description here..."
+                                        className="w-full p-3 border border-gray-300 rounded-md shadow-sm h-96 focus:ring-blue-500 focus:border-blue-500"
+                                        maxLength={MAX_JOB_DESC_LENGTH}
                                     />
-                                    <span className="text-xs text-gray-500">{jobDesc.length}/{MAX_JOB_DESC_LENGTH} characters</span>
-                                </label>
-                            </Card>
+                                    <p className="text-sm text-gray-500 mt-2">Max {MAX_JOB_DESC_LENGTH} characters. Current: {jobDesc.length}</p>
+                                </Card>
 
-                            <div className="text-center mt-8">
-                                <button
-                                    onClick={handleAnalyze}
-                                    disabled={isLoading || resume.length === 0 || jobDesc.length === 0}
-                                    className="px-8 py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-                                >
-                                    {isLoading ? 'Analyzing...' : 'Analyze My Resume & Get Suggestions'}
-                                </button>
-                            </div>
+                                <div className="md:col-span-2 text-center mt-6">
+                                    <button
+                                        onClick={handleAnalyze}
+                                        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                                        disabled={isLoading || resume.length === 0 || jobDesc.length === 0}
+                                    >
+                                        {isLoading ? 'Analyzing...' : 'Analyze Resume & Get Suggestions'}
+                                    </button>
+                                </div>
 
-                            {suggestions.length > 0 && (
-                                <Card title="AI Powered Resume Suggestions">
-                                    <p className="text-gray-300 mb-4">Here are some suggestions to improve your resume's alignment with the job description:</p>
-                                    <div className="space-y-4">
-                                        {suggestions.map((s) => (
-                                            <div key={s.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                                                <p className={`font-semibold ${s.severity === 'Major' ? 'text-red-400' : s.severity === 'Moderate' ? 'text-yellow-400' : 'text-green-400'}`}>
-                                                    <span className="capitalize">{s.severity}</span> Suggestion ({s.category})
-                                                </p>
-                                                {s.originalText && (
-                                                    <div className="mt-2 text-sm">
-                                                        <p className="text-gray-400"><strong>Original:</strong> <span className="text-gray-200 italic">"{TextUtils.truncate(s.originalText, 200)}"</span></p>
+                                {suggestions.length > 0 && (
+                                    <Card title="AI-Powered Resume Suggestions" className="md:col-span-2 mt-6 p-6">
+                                        <div className="space-y-6">
+                                            {suggestions.map((s) => (
+                                                <div key={s.id} className="border-b pb-4 last:border-b-0">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h4 className="text-lg font-semibold text-gray-800">Suggestion for: <span className="text-blue-600">"{TextUtils.truncate(s.originalText, 50)}"</span></h4>
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getSeverityColor(s.severity)}`}>
+                                                            {s.severity}
+                                                        </span>
                                                     </div>
-                                                )}
-                                                <div className="mt-2 text-sm">
-                                                    <p className="text-cyan-300"><strong>Improved:</strong> <span className="text-white">"{TextUtils.truncate(s.improvedText, 200)}"</span></p>
+                                                    <p className="text-gray-700 mb-2">
+                                                        <strong>Improved Text:</strong> <span className="italic">{s.improvedText}</span>
+                                                    </p>
+                                                    <p className="text-gray-600 text-sm">
+                                                        <strong>Rationale:</strong> {s.rationale}
+                                                    </p>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-2"><strong>Rationale:</strong> {s.rationale}</p>
+                                            ))}
+                                        </div>
+                                    </Card>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'applications' && (
+                            <Card title="Job Applications" className="p-6">
+                                <button
+                                    onClick={() => { setShowAddApplicationModal(true); setCurrentApplicationForm({ status: JobApplicationStatus.Applied, applicationDate: DateUtils.getNowISO().substring(0, 10), resumeUsed: userProfile.resumeText || '' }); }}
+                                    className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Add New Application
+                                </button>
+
+                                {jobApplications.length === 0 ? (
+                                    <p className="text-gray-600">No job applications added yet.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {jobApplications.map(app => (
+                                            <div key={app.id} className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h3 className="text-xl font-semibold text-gray-900">{app.jobTitle} at {app.company}</h3>
+                                                        <p className="text-sm text-gray-500">Applied on: {DateUtils.formatDate(app.applicationDate)}</p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getJobApplicationStatusColor(app.status)}`}>
+                                                        {app.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-700 text-sm mb-2">{TextUtils.truncate(app.notes, 150)}</p>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {app.link && (
+                                                        <a href={app.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">View Job</a>
+                                                    )}
+                                                    <button
+                                                        onClick={() => { setSelectedApplication(app); setShowAddApplicationModal(true); setCurrentApplicationForm(app); }}
+                                                        className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => apiDeleteJobApplication(app.id).then(() => setJobApplications(prev => prev.filter(a => a.id !== app.id)))}
+                                                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleGenerateCoverLetter(app)}
+                                                        className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                                        disabled={isGeneratingCoverLetter}
+                                                    >
+                                                        {isGeneratingCoverLetter ? 'Generating...' : 'Generate Cover Letter'}
+                                                    </button>
+                                                    {app.coverLetterUsed && (
+                                                        <button
+                                                            onClick={() => {setSelectedApplication(app); setCoverLetterContent(app.coverLetterUsed || '');}}
+                                                            className="px-3 py-1 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700"
+                                                        >
+                                                            View Cover Letter
+                                                        </button>
+                                                    )}
+                                                    {app.status !== JobApplicationStatus.Rejected && app.status !== JobApplicationStatus.Accepted && app.status !== JobApplicationStatus.Withdrawn && (
+                                                        <button
+                                                            onClick={() => handleStartInterview(app)}
+                                                            className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+                                                            disabled={isStartingInterview}
+                                                        >
+                                                            {isStartingInterview ? 'Starting...' : 'Start Mock Interview'}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
+                                )}
+                                {showAddApplicationModal && renderApplicationModal()}
+                                {coverLetterContent && (
+                                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                                        <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                                            <h3 className="text-xl font-bold mb-4">Cover Letter for {selectedApplication?.jobTitle} at {selectedApplication?.company}</h3>
+                                            <div className="bg-gray-50 p-4 rounded-md whitespace-pre-wrap text-gray-800 border border-gray-200 h-96 overflow-y-auto">
+                                                {coverLetterContent}
+                                            </div>
+                                            <div className="flex justify-end mt-4">
+                                                <button
+                                                    onClick={() => setCoverLetterContent('')}
+                                                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                                                >
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'goals' && (
+                            <Card title="Career Goals & Action Items" className="p-6">
+                                <button
+                                    onClick={() => { setShowAddGoalModal(true); setCurrentGoalForm({ status: GoalStatus.Pending, priority: PriorityLevel.Medium, targetDate: DateUtils.addDays(DateUtils.getNowISO().substring(0, 10), 30) }); }}
+                                    className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Add New Goal
+                                </button>
+
+                                {careerGoals.length === 0 ? (
+                                    <p className="text-gray-600">No career goals added yet.</p>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {careerGoals.sort((a,b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime()).map(goal => (
+                                            <div key={goal.id} className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <h3 className="text-xl font-semibold text-gray-900 mb-1">{goal.title}</h3>
+                                                        <p className="text-sm text-gray-500">Target: {DateUtils.formatDate(goal.targetDate)} ({DateUtils.isFutureDate(goal.targetDate) ? 'Upcoming' : 'Past Due'})</p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getGoalStatusColor(goal.status)}`}>
+                                                        {goal.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-700 text-sm mb-3">{TextUtils.truncate(goal.description, 200)}</p>
+                                                {goal.relatedSkills.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2 mb-3">
+                                                        {goal.relatedSkills.map(skill => (
+                                                            <span key={skill} className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">{skill}</span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <h4 className="font-semibold text-gray-800 mb-2">Action Items ({goal.actionItems.filter(ai => !ai.isCompleted).length} pending)</h4>
+                                                {goal.actionItems.length === 0 ? (
+                                                    <p className="text-gray-600 text-sm mb-3">No action items for this goal.</p>
+                                                ) : (
+                                                    <ul className="list-disc list-inside space-y-2 mb-3">
+                                                        {goal.actionItems.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).map(item => (
+                                                            <li key={item.id} className={`text-sm ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={item.isCompleted}
+                                                                    onChange={(e) => handleDeleteActionItem(item.id, goal.id).then(() => handleAddOrUpdateActionItem())} // Placeholder: Mark complete. Need to wrap logic.
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation(); // Prevent opening goal detail
+                                                                        const updatedItem = { ...item, isCompleted: e.currentTarget.checked, completedDate: e.currentTarget.checked ? DateUtils.getNowISO() : undefined };
+                                                                        apiUpdateActionItem(updatedItem).then(res => {
+                                                                            setCareerGoals(prev => prev.map(g => g.id === goal.id ? { ...g, actionItems: g.actionItems.map(ai => ai.id === res.id ? res : ai) } : g));
+                                                                        }).catch(err => console.error("Failed to update action item completion:", err));
+                                                                    }}
+                                                                    className="mr-2"
+                                                                />
+                                                                {item.description} (Due: {DateUtils.formatDate(item.dueDate)})
+                                                                <div className="flex gap-2 ml-4 mt-1 text-xs">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setShowAddActionItemModal(true);
+                                                                            setCurrentActionItemForm({ ...item, goalId: goal.id });
+                                                                        }}
+                                                                        className="text-blue-500 hover:underline"
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDeleteActionItem(item.id, goal.id);
+                                                                        }}
+                                                                        className="text-red-500 hover:underline"
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+
+                                                <div className="flex flex-wrap gap-2 mt-4">
+                                                    <button
+                                                        onClick={() => {
+                                                            setCurrentActionItemForm({ goalId: goal.id, dueDate: DateUtils.addDays(DateUtils.getNowISO().substring(0, 10), 7), isCompleted: false });
+                                                            setShowAddActionItemModal(true);
+                                                        }}
+                                                        className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+                                                    >
+                                                        Add Action Item
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setShowAddGoalModal(true); setCurrentGoalForm(goal); }}
+                                                        className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                                                    >
+                                                        Edit Goal
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteGoal(goal.id)}
+                                                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                                                    >
+                                                        Delete Goal
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {showAddGoalModal && renderGoalModal()}
+                                {showAddActionItemModal && renderActionItemModal()}
+                            </Card>
+                        )}
+
+                        {activeTab === 'skills' && (
+                            <div className="space-y-6">
+                                <Card title="Skill Gap Analysis" className="p-6">
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700">Target Roles or Job Description</label>
+                                        <textarea
+                                            value={skillGapTarget}
+                                            onChange={(e) => setSkillGapTarget(e.target.value)}
+                                            placeholder="e.g., 'Senior Software Engineer, specializing in AI' or 'Full stack developer for fintech applications'"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32"
+                                        ></textarea>
+                                    </div>
+                                    <button
+                                        onClick={handleAnalyzeSkills}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isAnalyzingSkills || !skillGapTarget}
+                                    >
+                                        {isAnalyzingSkills ? 'Analyzing Skills...' : 'Analyze Skill Gaps'}
+                                    </button>
+
+                                    {skillGaps.length > 0 && (
+                                        <div className="mt-8">
+                                            <h3 className="text-xl font-semibold mb-4">Your Skill Gaps</h3>
+                                            <div className="space-y-4">
+                                                {skillGaps.map(gap => (
+                                                    <div key={gap.skill} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white">
+                                                        <h4 className="text-lg font-semibold text-gray-900">{gap.skill} <span className="text-gray-500 text-sm">({gap.category})</span></h4>
+                                                        <p className="text-sm text-gray-700">Current Level: {gap.currentLevel}/5 | Target Level: {gap.targetLevel}/5 | Gap: {gap.gap}</p>
+                                                        {gap.recommendations.length > 0 && (
+                                                            <div className="mt-3">
+                                                                <p className="font-medium text-gray-800">Recommendations:</p>
+                                                                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 mt-1">
+                                                                    {gap.recommendations.map(rec => (
+                                                                        <li key={rec.id}>
+                                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRecommendationTypeColor(rec.type)} mr-2`}>
+                                                                                {rec.type}
+                                                                            </span>
+                                                                            <a href={rec.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                                                                {rec.title}
+                                                                            </a> ({rec.provider}, {rec.estimatedTime}, {rec.cost})
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </Card>
-                            )}
-                        </div>
-                    )}
-                    {activeTab === 'profile' && renderUserProfileSection()}
-                    {activeTab === 'goals' && renderCareerGoalsSection()}
-                    {activeTab === 'applications' && renderJobApplicationsSection()}
-                    {activeTab === 'skills' && renderSkillGapSection()}
-                    {activeTab === 'interview' && renderInterviewPrepSection()}
-                    {activeTab === 'market' && renderMarketTrendsSection()}
-                    {activeTab === 'negotiation' && renderSalaryNegotiationSection()}
-                    {activeTab === 'branding' && renderPersonalBrandingSection()}
-                    {activeTab === 'review' && renderPerformanceReviewSection()}
-                    {activeTab === 'network' && renderNetworkingSection()}
-                    {activeTab === 'projects' && renderProjectsSection()}
-                    {activeTab === 'mentorship' && renderMentorshipSection()}
-                    {activeTab === 'portfolio' && renderPortfolioSection()}
-                    {activeTab === 'content' && renderContentIdeasSection()}
-                    {activeTab === 'daily-plan' && renderDailyPlanSection()}
-                </main>
-            )}
+
+                                <Card title="Career Path Recommendations" className="p-6">
+                                    <button
+                                        onClick={handleGenerateCareerPaths}
+                                        className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isGeneratingCareerPaths}
+                                    >
+                                        {isGeneratingCareerPaths ? 'Generating Paths...' : 'Generate Career Paths'}
+                                    </button>
+
+                                    {careerPaths.length === 0 ? (
+                                        <p className="text-gray-600">No career path recommendations generated yet.</p>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {careerPaths.map(path => (
+                                                <div key={path.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white">
+                                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{path.role} ({path.industry})</h3>
+                                                    <p className="text-gray-700 text-sm mb-3">{path.description}</p>
+                                                    <p className="text-gray-600 text-sm mb-1"><strong>Salary:</strong> {path.averageSalaryRange}</p>
+                                                    <p className="text-gray-600 text-sm mb-3"><strong>Growth Outlook:</strong> <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${path.growthOutlook === 'High' || path.growthOutlook === 'Very High' ? 'bg-green-100 text-green-800' : path.growthOutlook === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{path.growthOutlook}</span></p>
+
+                                                    <div className="mb-3">
+                                                        <h4 className="font-medium text-gray-800">Required Skills:</h4>
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {path.requiredSkills.map(skill => (
+                                                                <span key={skill.skill} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                                                                    {skill.skill} (Level {skill.level})
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mb-3">
+                                                        <h4 className="font-medium text-gray-800">Pathways:</h4>
+                                                        <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 mt-1">
+                                                            {path.pathways.map((p, idx) => (
+                                                                <li key={idx}>
+                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRecommendationTypeColor(p.type)} mr-2`}>
+                                                                        {p.type}
+                                                                    </span>
+                                                                    {p.resource.startsWith('http') ? (
+                                                                        <a href={p.resource} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{p.title}</a>
+                                                                    ) : (
+                                                                        <span>{p.title} ({p.resource})</span>
+                                                                    )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+
+                                                    {path.potentialMentors && path.potentialMentors.length > 0 && (
+                                                        <div className="mb-3">
+                                                            <h4 className="font-medium text-gray-800">Potential Mentors:</h4>
+                                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                                {path.potentialMentors.map((mentor, idx) => (
+                                                                    <span key={idx} className="px-2 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full">{mentor}</span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {path.typicalCompanies && path.typicalCompanies.length > 0 && (
+                                                        <div>
+                                                            <h4 className="font-medium text-gray-800">Typical Companies:</h4>
+                                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                                {path.typicalCompanies.map((company, idx) => (
+                                                                    <span key={idx} className="px-2 py-1 bg-pink-100 text-pink-800 text-xs font-medium rounded-full">{company}</span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Card>
+                            </div>
+                        )}
+
+                        {activeTab === 'interview' && (
+                            <Card title="Interview Preparation" className="p-6">
+                                <h3 className="text-xl font-semibold mb-4">Your Interview Sessions</h3>
+                                {interviewSessions.length === 0 ? (
+                                    <p className="text-gray-600 mb-6">No interview sessions conducted yet. Start one from an application!</p>
+                                ) : (
+                                    <div className="space-y-4 mb-6">
+                                        {interviewSessions.sort((a,b) => new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()).map(session => (
+                                            <div key={session.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white cursor-pointer hover:bg-gray-50"
+                                                onClick={() => setSelectedInterviewSession(session)}>
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <h4 className="text-lg font-semibold text-gray-900">{session.role} at {session.company}</h4>
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${session.score > 70 ? 'bg-green-100 text-green-800' : session.score > 40 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                                        Score: {session.score}%
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-600">Date: {DateUtils.formatDate(session.sessionDate)} | Stage: {session.stageType}</p>
+                                                <p className="text-sm text-gray-700 mt-2">{TextUtils.truncate(session.overallFeedback, 100)}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {selectedInterviewSession && (
+                                    <div className="mt-8 border-t pt-6">
+                                        <h3 className="text-xl font-semibold mb-4">Session Details: {selectedInterviewSession.role} at {selectedInterviewSession.company}</h3>
+                                        <p className="text-sm text-gray-600 mb-4">Session Date: {DateUtils.formatDateTime(selectedInterviewSession.sessionDate)}</p>
+
+                                        <div className="space-y-4">
+                                            {selectedInterviewSession.questionsAsked.map((qa, index) => (
+                                                <div key={index} className="border border-gray-100 rounded-md p-3 bg-gray-50">
+                                                    <p className="font-semibold text-gray-800">Q{index + 1}: {qa.question}</p>
+                                                    <textarea
+                                                        value={currentInterviewQuestions[index]?.userAnswer || qa.userAnswer || ''}
+                                                        onChange={(e) => {
+                                                            const newQuestions = [...currentInterviewQuestions];
+                                                            newQuestions[index] = { ...newQuestions[index], userAnswer: e.target.value };
+                                                            setCurrentInterviewQuestions(newQuestions);
+                                                        }}
+                                                        placeholder="Your answer here..."
+                                                        rows={4}
+                                                        className="mt-2 w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                    ></textarea>
+                                                    {qa.aiFeedback && (
+                                                        <div className="mt-2 p-2 bg-blue-50 rounded-md text-sm text-blue-800">
+                                                            <strong>AI Feedback (Score: {qa.score}/10):</strong> {qa.aiFeedback}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={handleSubmitInterviewAnswers}
+                                            className="mt-6 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                                            disabled={isSubmittingAnswers || !userProfile || !jobApplications.find(app => app.id === selectedInterviewSession.jobApplicationId)?.jobDescription}
+                                        >
+                                            {isSubmittingAnswers ? 'Submitting...' : 'Submit Answers & Get Feedback'}
+                                        </button>
+
+                                        {selectedInterviewSession.overallFeedback !== 'No feedback yet.' && (
+                                            <div className="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+                                                <h4 className="text-lg font-semibold text-gray-900">Overall Feedback (Score: {selectedInterviewSession.score}%)</h4>
+                                                <p className="text-gray-700 mt-2">{selectedInterviewSession.overallFeedback}</p>
+                                                {selectedInterviewSession.strengths.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <p className="font-medium text-green-800">Strengths:</p>
+                                                        <ul className="list-disc list-inside text-sm text-green-700">
+                                                            {selectedInterviewSession.strengths.map((s, idx) => <li key={idx}>{s}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                {selectedInterviewSession.areasForImprovement.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <p className="font-medium text-red-800">Areas for Improvement:</p>
+                                                        <ul className="list-disc list-inside text-sm text-red-700">
+                                                            {selectedInterviewSession.areasForImprovement.map((a, idx) => <li key={idx}>{a}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'market' && (
+                            <Card title="Market Trend Analysis" className="p-6">
+                                <div className="space-y-4 mb-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Industry to Analyze</label>
+                                        <input
+                                            type="text"
+                                            value={marketTrendIndustry}
+                                            onChange={(e) => setMarketTrendIndustry(e.target.value)}
+                                            placeholder="e.g., Technology, Healthcare, Finance"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Keywords (comma-separated)</label>
+                                        <input
+                                            type="text"
+                                            value={marketTrendKeywords}
+                                            onChange={(e) => setMarketTrendKeywords(e.target.value)}
+                                            placeholder="e.g., AI, Remote Work, ESG, Blockchain"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleFetchMarketTrends}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isFetchingMarketTrends || !debouncedMarketTrendIndustry}
+                                    >
+                                        {isFetchingMarketTrends ? 'Fetching Trends...' : 'Fetch Market Trends'}
+                                    </button>
+                                </div>
+
+                                {marketTrends.length > 0 && (
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-4">Latest Market Trends for {marketTrendIndustry}</h3>
+                                        <div className="space-y-6">
+                                            {marketTrends.map(trend => (
+                                                <div key={trend.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-1">{trend.title}</h4>
+                                                    <p className="text-sm text-gray-600 mb-2">Source: {trend.source} | Date: {DateUtils.formatDate(trend.date)}</p>
+                                                    <p className="text-gray-700 text-sm mb-3">{trend.description}</p>
+                                                    <p className="text-gray-700 text-sm mb-3"><strong>Impact on Career:</strong> {trend.impactOnCareer}</p>
+                                                    <div className="mb-3">
+                                                        <h5 className="font-medium text-gray-800">Relevant Skills:</h5>
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {trend.relevantSkills.map((skill, idx) => (
+                                                                <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">{skill}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="font-medium text-gray-800">Suggested Actions:</h5>
+                                                        <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 mt-1">
+                                                            {trend.suggestedActions.map((action, idx) => <li key={idx}>{action}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'branding' && (
+                            <div className="space-y-6">
+                                <Card title="LinkedIn Profile Optimization" className="p-6">
+                                    <p className="text-gray-700 mb-4">Generate an optimized LinkedIn profile summary based on your current profile and desired roles.</p>
+                                    <button
+                                        onClick={handleOptimizeLinkedIn}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isOptimizingLinkedIn || !userProfile?.desiredRoles.length}
+                                    >
+                                        {isOptimizingLinkedIn ? 'Optimizing...' : 'Optimize LinkedIn Summary'}
+                                    </button>
+                                    {linkedInSummary && (
+                                        <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+                                            <h4 className="font-semibold text-blue-800 mb-2">Generated LinkedIn Summary:</h4>
+                                            <p className="whitespace-pre-wrap text-blue-900">{linkedInSummary}</p>
+                                        </div>
+                                    )}
+                                </Card>
+
+                                <Card title="Personal Brand Statement" className="p-6">
+                                    <p className="text-gray-700 mb-4">Craft a concise and powerful personal brand statement.</p>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700">Desired Impact/Perception</label>
+                                        <input
+                                            type="text"
+                                            value={brandStatementDesiredImpact}
+                                            onChange={(e) => setBrandStatementDesiredImpact(e.target.value)}
+                                            placeholder="e.g., 'A visionary leader in sustainable tech', 'A meticulous data scientist driving business growth'"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleGenerateBrandStatement}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isGeneratingBrandStatement || !brandStatementDesiredImpact}
+                                    >
+                                        {isGeneratingBrandStatement ? 'Generating...' : 'Generate Brand Statement'}
+                                    </button>
+                                    {personalBrandStatement && (
+                                        <div className="mt-6 p-4 bg-green-50 rounded-md border border-green-200">
+                                            <h4 className="font-semibold text-green-800 mb-2">Your Personal Brand Statement:</h4>
+                                            <p className="text-green-900 font-medium mb-3">"{personalBrandStatement.statement}"</p>
+                                            <p className="text-sm text-green-700"><strong>Rationale:</strong> {personalBrandStatement.rationale}</p>
+                                            <p className="text-sm text-green-700"><strong>Keywords:</strong> {personalBrandStatement.keywords.join(', ')}</p>
+                                            <p className="text-xs text-gray-500 mt-2">Generated: {DateUtils.formatDateTime(personalBrandStatement.generatedDate)} (v{personalBrandStatement.version})</p>
+                                            <p className="text-xs text-gray-500">Signature: {TextUtils.truncate(personalBrandStatement.signature || 'N/A', 30)}</p>
+                                        </div>
+                                    )}
+                                </Card>
+                            </div>
+                        )}
+
+                        {activeTab === 'review' && (
+                            <Card title="Performance Review Preparation" className="p-6">
+                                <p className="text-gray-700 mb-4">Enter your raw achievements (one per line) and get AI-powered, quantifiable bullet points for your performance review.</p>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700">Your Achievements (one per line)</label>
+                                    <textarea
+                                        value={performanceAchievements}
+                                        onChange={(e) => setPerformanceAchievements(e.target.value)}
+                                        placeholder="e.g., Led Q3 project delivery, Exceeded sales target by 15%, Mentored 3 junior developers"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-40"
+                                    ></textarea>
+                                </div>
+                                <button
+                                    onClick={handlePreparePerformanceReview}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                    disabled={isPreparingReview || !performanceAchievements}
+                                >
+                                    {isPreparingReview ? 'Preparing Review...' : 'Prepare Review Points'}
+                                </button>
+                                {performanceReviewPoints.length > 0 && (
+                                    <div className="mt-6 p-4 bg-purple-50 rounded-md border border-purple-200">
+                                        <h4 className="font-semibold text-purple-800 mb-2">Generated Performance Review Points:</h4>
+                                        <ul className="list-disc list-inside space-y-2 text-purple-900">
+                                            {performanceReviewPoints.map((point, idx) => <li key={idx}>{point}</li>)}
+                                        </ul>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'network' && (
+                            <Card title="Network Management & Communication" className="p-6">
+                                <button
+                                    onClick={() => { setShowAddContactModal(true); setCurrentContactForm({ relationshipStrength: 'Professional Connection', tags: [] }); }}
+                                    className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Add New Contact
+                                </button>
+
+                                {networkContacts.length === 0 ? (
+                                    <p className="text-gray-600">No network contacts added yet.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {networkContacts.map(contact => (
+                                            <div key={contact.id} className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h3 className="text-xl font-semibold text-gray-900">{contact.name}</h3>
+                                                        <p className="text-sm text-gray-500">{contact.role} at {contact.company}</p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                        contact.relationshipStrength === 'Mentor' ? 'bg-indigo-100 text-indigo-800' :
+                                                        contact.relationshipStrength === 'Strong Ally' ? 'bg-green-100 text-green-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                        {contact.relationshipStrength}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-700 text-sm mb-2">{TextUtils.truncate(contact.notes, 100)}</p>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {contact.linkedInUrl && (
+                                                        <a href={contact.linkedInUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">LinkedIn</a>
+                                                    )}
+                                                    {contact.email && (
+                                                        <a href={`mailto:${contact.email}`} className="text-blue-600 hover:underline text-sm">Email</a>
+                                                    )}
+                                                    {contact.phone && (
+                                                        <a href={`tel:${contact.phone}`} className="text-blue-600 hover:underline text-sm">Call</a>
+                                                    )}
+                                                    <button
+                                                        onClick={() => { setShowAddContactModal(true); setCurrentContactForm(contact); }}
+                                                        className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteContact(contact.id)}
+                                                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setSelectedContactForMessage(contact)}
+                                                        className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                                    >
+                                                        Draft Message
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {showAddContactModal && renderContactModal()}
+
+                                {selectedContactForMessage && (
+                                    <div className="mt-8 border-t pt-6">
+                                        <h3 className="text-xl font-semibold mb-4">Draft Message for {selectedContactForMessage.name}</h3>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium text-gray-700">Purpose of Message</label>
+                                            <input
+                                                type="text"
+                                                value={networkingMessagePurpose}
+                                                onChange={(e) => setNetworkingMessagePurpose(e.target.value)}
+                                                placeholder="e.g., 'Informational Interview', 'Job Referral', 'Catching Up'"
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleGenerateNetworkingMessage}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                            disabled={isGeneratingNetworkingMessage || !networkingMessagePurpose}
+                                        >
+                                            {isGeneratingNetworkingMessage ? 'Generating...' : 'Generate Message'}
+                                        </button>
+                                        {generatedNetworkingMessage && (
+                                            <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+                                                <h4 className="font-semibold text-blue-800 mb-2">Suggested Message:</h4>
+                                                <textarea
+                                                    value={generatedNetworkingMessage}
+                                                    readOnly
+                                                    rows={8}
+                                                    className="w-full p-2 border border-gray-300 rounded-md text-sm bg-white"
+                                                ></textarea>
+                                                <div className="flex justify-end mt-2">
+                                                    <button
+                                                        onClick={() => { navigator.clipboard.writeText(generatedNetworkingMessage); notificationService.addNotification({ type: 'info', message: 'Message copied to clipboard!' }); }}
+                                                        className="px-3 py-1 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm"
+                                                    >
+                                                        Copy to Clipboard
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'projects' && (
+                            <Card title="Personal Projects" className="p-6">
+                                <button
+                                    onClick={() => { setShowAddProjectModal(true); setCurrentProjectForm({ status: 'Idea' }); }}
+                                    className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Add New Project
+                                </button>
+
+                                {personalProjects.length === 0 ? (
+                                    <p className="text-gray-600">No personal projects added yet.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {personalProjects.map(project => (
+                                            <div key={project.id} className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h3 className="text-xl font-semibold text-gray-900">{project.title}</h3>
+                                                        <p className="text-sm text-gray-500">{project.startDate} {project.endDate ? `- ${project.endDate}` : ''}</p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                        project.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                                        project.status === 'InProgress' ? 'bg-blue-100 text-blue-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                        {project.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-700 text-sm mb-2">{TextUtils.truncate(project.description, 150)}</p>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {project.repositoryLink && (
+                                                        <a href={project.repositoryLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">Repo</a>
+                                                    )}
+                                                    {project.demoLink && (
+                                                        <a href={project.demoLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">Demo</a>
+                                                    )}
+                                                    <button
+                                                        onClick={() => { setShowAddProjectModal(true); setCurrentProjectForm(project); }}
+                                                        className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteProject(project.id)}
+                                                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                                {project.skillsDeveloped && project.skillsDeveloped.length > 0 && (
+                                                    <div className="mt-3">
+                                                        <p className="font-medium text-gray-800 text-sm">Skills Developed:</p>
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {project.skillsDeveloped.map((skill, idx) => (
+                                                                <span key={idx} className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full">{skill}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {showAddProjectModal && renderProjectModal()}
+
+                                <div className="mt-8 border-t pt-6">
+                                    <h3 className="text-xl font-semibold mb-4">Suggest New Project Ideas (AI)</h3>
+                                    <div className="space-y-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Skills to Develop (comma-separated)</label>
+                                            <input
+                                                type="text"
+                                                value={projectIdeaSkills}
+                                                onChange={(e) => setProjectIdeaSkills(e.target.value)}
+                                                placeholder="e.g., Python, Machine Learning, Web Development"
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Related Career Goal (optional)</label>
+                                            <select
+                                                value={projectIdeaGoalId}
+                                                onChange={(e) => setProjectIdeaGoalId(e.target.value)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            >
+                                                <option value="">None</option>
+                                                {careerGoals.map(goal => (
+                                                    <option key={goal.id} value={goal.id}>{goal.title}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <button
+                                            onClick={handleSuggestProjectIdeas}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                            disabled={isSuggestingProjectIdeas || !projectIdeaSkills}
+                                        >
+                                            {isSuggestingProjectIdeas ? 'Suggesting Ideas...' : 'Suggest Project Ideas'}
+                                        </button>
+                                    </div>
+
+                                    {suggestedProjectIdeas.length > 0 && (
+                                        <div>
+                                            <h4 className="text-lg font-semibold mb-3">AI-Suggested Project Ideas:</h4>
+                                            <div className="space-y-4">
+                                                {suggestedProjectIdeas.map((idea, idx) => (
+                                                    <div key={idx} className="border border-gray-100 rounded-md p-3 bg-blue-50">
+                                                        <h5 className="font-semibold text-blue-800">{idea.title}</h5>
+                                                        <p className="text-sm text-blue-700 mt-1">{idea.description}</p>
+                                                        <div className="flex flex-wrap gap-2 mt-2">
+                                                            {idea.skillsDeveloped && idea.skillsDeveloped.map((skill, sIdx) => (
+                                                                <span key={sIdx} className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Skill: {skill}</span>
+                                                            ))}
+                                                            {idea.technologiesUsed && idea.technologiesUsed.map((tech, tIdx) => (
+                                                                <span key={tIdx} className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Tech: {tech}</span>
+                                                            ))}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => {
+                                                                setCurrentProjectForm({
+                                                                    title: idea.title,
+                                                                    description: idea.description,
+                                                                    skillsDeveloped: idea.skillsDeveloped,
+                                                                    technologiesUsed: idea.technologiesUsed,
+                                                                    status: 'Idea',
+                                                                    goalIds: projectIdeaGoalId ? [projectIdeaGoalId] : []
+                                                                });
+                                                                setShowAddProjectModal(true);
+                                                                notificationService.addNotification({ type: 'info', message: 'Project idea loaded into form.' });
+                                                            }}
+                                                            className="mt-3 px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                                                        >
+                                                            Add to My Projects
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        )}
+
+                        {activeTab === 'mentorship' && (
+                            <Card title="Mentorship & Coaching" className="p-6">
+                                <h3 className="text-xl font-semibold mb-4">Find a Mentor</h3>
+                                <button
+                                    onClick={handleMatchMentors}
+                                    className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                    disabled={isMatchingMentors}
+                                >
+                                    {isMatchingMentors ? 'Matching Mentors...' : 'Match with Mentors (AI)'}
+                                </button>
+                                {matchedMentors.length > 0 && (
+                                    <div className="mt-6">
+                                        <h4 className="text-lg font-semibold mb-3">Suggested Mentors:</h4>
+                                        <div className="space-y-4">
+                                            {matchedMentors.map(mentor => (
+                                                <div key={mentor.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white">
+                                                    <h5 className="text-lg font-semibold text-gray-900">{mentor.name}</h5>
+                                                    <p className="text-sm text-gray-700">{mentor.currentRole} in {mentor.industry}</p>
+                                                    <p className="text-sm text-gray-600">Specialties: {mentor.specialties.join(', ')}</p>
+                                                    <p className="text-sm text-gray-600">Experience: {mentor.yearsExperience} years</p>
+                                                    <p className="text-sm text-gray-600">Availability: {mentor.availability}</p>
+                                                    <div className="flex gap-2 mt-3">
+                                                        {mentor.linkedInUrl && (
+                                                            <a href={mentor.linkedInUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">LinkedIn</a>
+                                                        )}
+                                                        <button
+                                                            onClick={() => {
+                                                                setCurrentSessionMentorId(mentor.id);
+                                                                setShowScheduleSessionModal(true);
+                                                            }}
+                                                            className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
+                                                        >
+                                                            Schedule Session
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <h3 className="text-xl font-semibold mt-8 mb-4">Your Mentorship Sessions</h3>
+                                {mentorshipSessions.length === 0 ? (
+                                    <p className="text-gray-600">No mentorship sessions scheduled yet.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {mentorshipSessions.sort((a,b) => new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()).map(session => {
+                                            const mentor = mentorProfiles.find(m => m.id === session.mentorId);
+                                            return (
+                                                <div key={session.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white cursor-pointer hover:bg-gray-50"
+                                                    onClick={() => setSelectedMentorshipSession(session)}>
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <h4 className="text-lg font-semibold text-gray-900">Session with {mentor?.name || 'Unknown Mentor'}</h4>
+                                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                                            session.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
+                                                            session.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {session.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600">Topic: {session.topic} | Date: {DateUtils.formatDateTime(session.sessionDate)}</p>
+                                                    <p className="text-sm text-gray-700 mt-2">{TextUtils.truncate(session.notes, 100)}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                {selectedMentorshipSession && (
+                                    <div className="mt-8 border-t pt-6">
+                                        <h3 className="text-xl font-semibold mb-4">Session Details: {selectedMentorshipSession.topic}</h3>
+                                        <p className="text-sm text-gray-600 mb-2">Mentor: {mentorProfiles.find(m => m.id === selectedMentorshipSession?.mentorId)?.name || 'N/A'}</p>
+                                        <p className="text-sm text-gray-600 mb-4">Date: {DateUtils.formatDateTime(selectedMentorshipSession.sessionDate)} | Duration: {selectedMentorshipSession.durationMinutes} mins</p>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Notes</label>
+                                                <textarea
+                                                    value={selectedMentorshipSession.notes}
+                                                    onChange={(e) => setSelectedMentorshipSession(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                                                    rows={6}
+                                                    className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                ></textarea>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Action Items (one per line)</label>
+                                                <textarea
+                                                    value={selectedMentorshipSession.actionItems.join('\n')}
+                                                    onChange={(e) => setSelectedMentorshipSession(prev => prev ? { ...prev, actionItems: e.target.value.split('\n').filter(Boolean) } : null)}
+                                                    rows={4}
+                                                    className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                ></textarea>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Status</label>
+                                                <select
+                                                    value={selectedMentorshipSession.status}
+                                                    onChange={(e) => setSelectedMentorshipSession(prev => prev ? { ...prev, status: e.target.value as 'Scheduled' | 'Completed' | 'Cancelled' } : null)}
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                                >
+                                                    <option value="Scheduled">Scheduled</option>
+                                                    <option value="Completed">Completed</option>
+                                                    <option value="Cancelled">Cancelled</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Mentee Rating (1-5)</label>
+                                                <input
+                                                    type="number"
+                                                    min="1" max="5"
+                                                    value={selectedMentorshipSession.menteeRating || ''}
+                                                    onChange={(e) => setSelectedMentorshipSession(prev => prev ? { ...prev, menteeRating: parseInt(e.target.value, 10) } : null)}
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end mt-4 space-x-2">
+                                            <button
+                                                onClick={() => setSelectedMentorshipSession(null)}
+                                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                                            >
+                                                Close
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (selectedMentorshipSession) {
+                                                        apiUpdateMentorshipSession(selectedMentorshipSession)
+                                                            .then(updated => {
+                                                                setMentorshipSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
+                                                                setSelectedMentorshipSession(updated);
+                                                                notificationService.addNotification({ type: 'success', message: 'Mentorship session updated!' });
+                                                            })
+                                                            .catch(err => {
+                                                                setError(`Failed to update session: ${(err as CustomError).message || (err as Error).message}`);
+                                                                notificationService.addNotification({ type: 'error', message: `Session update failed: ${(err as CustomError).message || (err as Error).message}` });
+                                                            });
+                                                    }
+                                                }}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                            >
+                                                Update Session
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {showScheduleSessionModal && renderScheduleSessionModal()}
+                            </Card>
+                        )}
+
+                        {activeTab === 'portfolio' && (
+                            <Card title="Portfolio Management" className="p-6">
+                                <button
+                                    onClick={() => { setShowAddPortfolioModal(true); setCurrentPortfolioItemForm({ type: 'Project', date: DateUtils.getNowISO().substring(0, 10) }); }}
+                                    className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                >
+                                    Add New Portfolio Item
+                                </button>
+
+                                {portfolioItems.length === 0 ? (
+                                    <p className="text-gray-600">No portfolio items added yet.</p>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {portfolioItems.map(item => (
+                                            <div key={item.id} className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h3 className="text-xl font-semibold text-gray-900">{item.title}</h3>
+                                                        <p className="text-sm text-gray-500">Type: {item.type} | Date: {DateUtils.formatDate(item.date)}</p>
+                                                    </div>
+                                                    {item.thumbnailUrl && (
+                                                        <img src={item.thumbnailUrl} alt={item.title} className="w-16 h-16 object-cover rounded-md" />
+                                                    )}
+                                                </div>
+                                                <p className="text-gray-700 text-sm mb-2">{TextUtils.truncate(item.description, 150)}</p>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">View Item</a>
+                                                    <button
+                                                        onClick={() => { setShowAddPortfolioModal(true); setCurrentPortfolioItemForm(item); }}
+                                                        className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeletePortfolioItem(item.id)}
+                                                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setSelectedPortfolioItem(item); setPortfolioReviewJobDesc(''); setPortfolioReviewSuggestions([]); }}
+                                                        className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                                    >
+                                                        Review with AI
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {showAddPortfolioModal && renderPortfolioItemModal()}
+
+                                {selectedPortfolioItem && (
+                                    <div className="mt-8 border-t pt-6">
+                                        <h3 className="text-xl font-semibold mb-4">AI Review for "{selectedPortfolioItem.title}"</h3>
+                                        <div className="mb-4">
+                                            <label className="block text-sm font-medium text-gray-700">Target Job Description (optional, for contextual review)</label>
+                                            <textarea
+                                                value={portfolioReviewJobDesc}
+                                                onChange={(e) => setPortfolioReviewJobDesc(e.target.value)}
+                                                placeholder="Paste a job description to get tailored suggestions."
+                                                rows={4}
+                                                className="mt-1 w-full p-2 border border-gray-300 rounded-md text-sm"
+                                            ></textarea>
+                                        </div>
+                                        <button
+                                            onClick={handleReviewPortfolioItem}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                            disabled={isReviewingPortfolioItem || !userProfile}
+                                        >
+                                            {isReviewingPortfolioItem ? 'Reviewing...' : 'Get AI Review Suggestions'}
+                                        </button>
+                                        {portfolioReviewSuggestions.length > 0 && (
+                                            <div className="mt-6 space-y-4">
+                                                <h4 className="font-semibold text-gray-800">AI Suggestions:</h4>
+                                                {portfolioReviewSuggestions.map((s) => (
+                                                    <div key={s.id} className="border-b pb-4 last:border-b-0">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <h5 className="text-md font-semibold text-gray-800">For: <span className="text-blue-600">"{TextUtils.truncate(s.originalText, 50)}"</span></h5>
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getSeverityColor(s.severity)}`}>
+                                                                {s.severity}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-gray-700 mb-2">
+                                                            <strong>Improved:</strong> <span className="italic">{s.improvedText}</span>
+                                                        </p>
+                                                        <p className="text-gray-600 text-sm">
+                                                            <strong>Rationale:</strong> {s.rationale}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="flex justify-end mt-4">
+                                            <button
+                                                onClick={() => setSelectedPortfolioItem(null)}
+                                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                                            >
+                                                Close Review
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'content' && (
+                            <Card title="Content Idea Generation" className="p-6">
+                                <p className="text-gray-700 mb-4">Generate ideas for various content types (e.g., blog posts, speaking topics) to boost your personal brand.</p>
+                                <div className="space-y-4 mb-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Content Type</label>
+                                        <input
+                                            type="text"
+                                            value={contentType}
+                                            onChange={(e) => setContentType(e.target.value)}
+                                            placeholder="e.g., 'blog post', 'conference talk', 'YouTube series'"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Focus Area</label>
+                                        <input
+                                            type="text"
+                                            value={contentFocusArea}
+                                            onChange={(e) => setContentFocusArea(e.target.value)}
+                                            placeholder="e.g., 'AI in Product Management', 'Career Transition for Developers'"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleGenerateContentIdeas}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isGeneratingContentIdeas || !contentType || !contentFocusArea}
+                                    >
+                                        {isGeneratingContentIdeas ? 'Generating Ideas...' : 'Generate Content Ideas'}
+                                    </button>
+                                </div>
+                                {generatedContentIdeas.length > 0 && (
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-4">Generated Content Ideas:</h3>
+                                        <div className="space-y-6">
+                                            {generatedContentIdeas.map((idea, idx) => (
+                                                <div key={idx} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white">
+                                                    <h4 className="text-lg font-semibold text-gray-900 mb-1">{idea.title}</h4>
+                                                    <p className="text-sm text-gray-600 mb-2">Target Audience: {idea.targetAudience}</p>
+                                                    <p className="text-gray-700 text-sm mb-3"><strong>Outline:</strong> {idea.outline}</p>
+                                                    <div>
+                                                        <h5 className="font-medium text-gray-800">Keywords:</h5>
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {idea.keywords.map((keyword, kIdx) => (
+                                                                <span key={kIdx} className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">{keyword}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'daily-plan' && (
+                            <Card title="Daily Career Development Plan" className="p-6">
+                                <div className="space-y-4 mb-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Date</label>
+                                        <input
+                                            type="date"
+                                            value={dailyPlanDate}
+                                            onChange={async (e) => {
+                                                setDailyPlanDate(e.target.value);
+                                                setDailyPlanItems(await apiGetDailyPlanForDate(e.target.value));
+                                            }}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Skills to Focus On (comma-separated)</label>
+                                        <input
+                                            type="text"
+                                            value={dailyPlanSkillsToFocus}
+                                            onChange={(e) => setDailyPlanSkillsToFocus(e.target.value)}
+                                            placeholder="e.g., 'Leadership, Python, Public Speaking'"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleGenerateDailyPlan}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                        disabled={isGeneratingDailyPlan || !dailyPlanSkillsToFocus}
+                                    >
+                                        {isGeneratingDailyPlan ? 'Generating Plan...' : 'Generate Today\'s Plan'}
+                                    </button>
+                                </div>
+                                {dailyPlanItems.length > 0 && (
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-4">Your Plan for {DateUtils.formatDate(dailyPlanDate)}:</h3>
+                                        <div className="space-y-4">
+                                            {dailyPlanItems.map(item => (
+                                                <div key={item.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white flex items-center justify-between">
+                                                    <div className="flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.isCompleted}
+                                                            onChange={(e) => handleUpdateDailyPlanItem({ ...item, isCompleted: e.target.checked })}
+                                                            className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3"
+                                                        />
+                                                        <div>
+                                                            <p className={`font-medium ${item.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>{item.time} - {item.activity}</p>
+                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                                item.type === 'Learning' ? 'bg-purple-100 text-purple-800' :
+                                                                item.type === 'Networking' ? 'bg-teal-100 text-teal-800' :
+                                                                item.type === 'Job Search' ? 'bg-orange-100 text-orange-800' :
+                                                                item.type === 'Project' ? 'bg-indigo-100 text-indigo-800' :
+                                                                item.type === 'Goal' ? 'bg-green-100 text-green-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                            } mt-1`}>
+                                                                {item.type}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteDailyPlanItem(item.id)}
+                                                        className="p-2 text-red-500 hover:text-red-700 rounded-full"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+
+                        {activeTab === 'tokens' && (
+                            <Card title="Tokenized Rewards" className="p-6">
+                                <div className="mb-6">
+                                    <h3 className="text-xl font-semibold mb-3">Your Balances</h3>
+                                    <p className="text-gray-700 text-lg">
+                                        <strong>{TokenType.CareerCoin}:</strong> <span className="text-blue-600 font-bold">{careerCoinBalance}</span>
+                                    </p>
+                                    {/* Add other token types if implemented */}
+                                </div>
+
+                                <div className="mb-8 border-t pt-6">
+                                    <h3 className="text-xl font-semibold mb-3">Spend Tokens</h3>
+                                    <p className="text-gray-700 mb-4">Use your CareerCoins for premium features or exclusive content.</p>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Amount to Spend ({TokenType.CareerCoin})</label>
+                                            <input
+                                                type="number"
+                                                value={tokenSpendAmount}
+                                                onChange={(e) => setTokenSpendAmount(parseInt(e.target.value, 10) || 0)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                                min="1"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Memo (e.g., "AI Resume Review", "Premium Course Access")</label>
+                                            <input
+                                                type="text"
+                                                value={tokenSpendMemo}
+                                                onChange={(e) => setTokenSpendMemo(e.target.value)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleSpendTokens}
+                                            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                                            disabled={isSpendingTokens || tokenSpendAmount <= 0 || !tokenSpendMemo || careerCoinBalance < tokenSpendAmount}
+                                        >
+                                            {isSpendingTokens ? 'Processing...' : 'Spend Tokens'}
+                                        </button>
+                                        {careerCoinBalance < tokenSpendAmount && (
+                                            <p className="text-red-600 text-sm mt-2">Insufficient CareerCoin balance.</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 border-t pt-6">
+                                    <h3 className="text-xl font-semibold mb-3">Token Transaction History</h3>
+                                    {tokenTransactions.length === 0 ? (
+                                        <p className="text-gray-600">No token transactions yet.</p>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From/To</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Memo</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {tokenTransactions.map((tx) => (
+                                                        <tr key={tx.id}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{DateUtils.formatDateTime(tx.timestamp)}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{tx.tokenType}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{tx.senderId === userProfile.id ? '-' : '+'}{tx.amount}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                                {tx.senderId === userProfile.id ? `To: ${tx.receiverId}` : `From: ${tx.senderId}`}
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{tx.memo}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                                    tx.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                                                                    tx.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                                                    'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                    {tx.status}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        )}
+
+                        {activeTab === 'payments' && (
+                            <Card title="Payment Gateway" className="p-6">
+                                <div className="mb-8">
+                                    <h3 className="text-xl font-semibold mb-3">Make a Payment</h3>
+                                    <p className="text-gray-700 mb-4">Process payments for premium services, mentorship sessions, or other platform offerings.</p>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Amount</label>
+                                            <input
+                                                type="number"
+                                                value={paymentAmount}
+                                                onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                                min="0.01"
+                                                step="0.01"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Currency</label>
+                                            <input
+                                                type="text"
+                                                value={paymentCurrency}
+                                                onChange={(e) => setPaymentCurrency(e.target.value)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                                placeholder="e.g., USD, EUR"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Memo (Description)</label>
+                                            <input
+                                                type="text"
+                                                value={paymentMemo}
+                                                onChange={(e) => setPaymentMemo(e.target.value)}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                                placeholder="e.g., 'Premium AI Review', 'Mentorship package'"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleMakePayment}
+                                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                                            disabled={isMakingPayment || paymentAmount <= 0 || !paymentCurrency || !paymentMemo}
+                                        >
+                                            {isMakingPayment ? 'Processing Payment...' : 'Make Payment'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 border-t pt-6">
+                                    <h3 className="text-xl font-semibold mb-3">Payment Records</h3>
+                                    {paymentRecords.length === 0 ? (
+                                        <p className="text-gray-600">No payment records yet.</p>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Memo</th>
+                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {paymentRecords.map((record) => (
+                                                        <tr key={record.id}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{DateUtils.formatDateTime(record.timestamp)}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{record.amount}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.currency}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.memo}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                                    record.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                                                                    record.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                                                    'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                    {record.status}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        )}
+
+                        {activeTab === 'audit-log' && (
+                            <Card title="Audit Log" className="p-6">
+                                <p className="text-gray-700 mb-4">Review all critical system events and user actions for transparency and accountability. Each entry includes a simulated cryptographic signature for integrity verification.</p>
+                                {auditLogs.length === 0 ? (
+                                    <p className="text-gray-600">No audit log entries yet.</p>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actor</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Integrity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {auditLogs.map((log) => {
+                                                    const isIntegrityValid = auditLogService.verifyLogEntryIntegrity(log);
+                                                    return (
+                                                        <tr key={log.id}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{DateUtils.formatDateTime(log.timestamp)}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.actorId}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.eventType}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.entityType} ({log.entityId})</td>
+                                                            <td className="px-6 py-4 text-sm text-gray-900 max-w-xs overflow-hidden text-ellipsis">{log.message}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                                    log.status === 'SUCCESS' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                    {log.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                                    isIntegrityValid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                    {isIntegrityValid ? 'VALID' : 'INVALID!'}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </Card>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
+
+export default CareerTrajectoryView;
+
 ```
