@@ -1,24 +1,28 @@
+"""
+This module provides a sophisticated, AI-driven view for real-time financial anomaly detection and intelligent remediation, forming a critical pillar of a next-generation financial infrastructure. It empowers financial institutions to proactively identify, investigate, and resolve complex financial threats, ranging from fraud and compliance breaches to operational errors, thereby safeguarding assets, ensuring regulatory adherence, and maintaining market integrity.
+
+Commercially, this system delivers unparalleled operational efficiency by automating initial anomaly analysis and recommending precise remediation actions. It significantly reduces manual investigation time and costs, while enhancing detection accuracy and reducing false positives through advanced AI. The integration of digital identity and auditable workflows ensures robust governance and compliance, making every action transparent and secure.
+
+This infrastructure generates long-term business value by transforming reactive incident response into proactive risk management. It protects revenue streams from financial crime, preserves brand reputation, and reduces regulatory penalties. By leveraging intelligent automation and real-time insights, the platform enables financial enterprises to scale their operations securely, innovate with programmable value, and build an unshakeable foundation for future digital finance, driving trillions in secured value.
+"""
+
 import React, { useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import { FinancialAnomaly, AnomalyStatus } from '../../../types';
-import { GoogleGenAI } from '@google/genai'; // Keep existing import
+import { GoogleGenAI } from '@google/genai'; # Keep existing import
 
-// =====================================================================================================================
-// EXTENDED TYPE DEFINITIONS FOR REAL-WORLD APPLICATION
-// These types represent a more comprehensive anomaly detection system with deeper investigation capabilities.
-// =====================================================================================================================
+# This comment indicates that GoogleGenAI is not directly used in the current simulated UI,
+# but conceptually represents the AI inference engine backing the intelligence layer.
+# In a full integration, it would power dynamic AI responses, risk scoring, and recommendations.
 
-/**
- * @typedef AnomalySeverity
- * @description Defines the potential severity levels for an anomaly.
- */
+"""
+Defines extended type definitions for a comprehensive anomaly detection system,
+enabling deeper investigation and workflow management capabilities crucial for enterprise-grade financial operations.
+"""
+
 type AnomalySeverity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational';
 
-/**
- * @typedef AnomalyCategory
- * @description Broad categorization for types of financial anomalies.
- */
 export type AnomalyCategory =
   | 'Fraud'
   | 'Compliance Breach'
@@ -39,10 +43,6 @@ export type AnomalyCategory =
   | 'Regulatory Violation'
   | 'Unknown';
 
-/**
- * @typedef AnomalyWorkflowStatus
- * @description Extended statuses reflecting a full investigation lifecycle.
- */
 export type AnomalyWorkflowStatus =
   | 'New'
   | 'Under Review'
@@ -52,12 +52,9 @@ export type AnomalyWorkflowStatus =
   | 'Resolved'
   | 'Dismissed'
   | 'Archived'
-  | 'On Hold';
+  | 'On Hold'
+  | 'Automated Remediation';
 
-/**
- * @typedef AnomalyResolutionReason
- * @description Reasons for resolving or dismissing an anomaly.
- */
 export type AnomalyResolutionReason =
   | 'Confirmed Fraud'
   | 'Operational Fix Applied'
@@ -68,12 +65,10 @@ export type AnomalyResolutionReason =
   | 'Duplicate Alert'
   | 'Investigation Complete - No Action'
   | 'Regulatory Reporting Filed'
+  | 'System Error Correction'
+  | 'Automated Action Completed'
   | 'Other';
 
-/**
- * @interface RelatedTransaction
- * @description Represents a transaction linked to a financial anomaly.
- */
 export interface RelatedTransaction {
   id: string;
   transactionId: string;
@@ -84,103 +79,84 @@ export interface RelatedTransaction {
   receiverAccount: string;
   transactionType: string;
   description: string;
-  status: 'Completed' | 'Pending' | 'Failed';
+  status: 'Completed' | 'Pending' | 'Failed' | 'On Hold' | 'Reversed';
   riskScore: number;
   tags?: string[];
+  blockhainHash?: string; // For programmable token rails
 }
 
-/**
- * @interface AffectedEntity
- * @description Describes an entity (e.g., account, user, vendor) affected by or involved in an anomaly.
- */
 export interface AffectedEntity {
   id: string;
-  entityType: 'Account' | 'User' | 'Vendor' | 'Customer' | 'System' | 'Other';
+  entityType: 'Account' | 'User' | 'Vendor' | 'Customer' | 'System' | 'Other' | 'Digital Identity';
   entityIdentifier: string;
   name: string;
   riskScore: number;
   associatedAnomaliesCount: number;
   country?: string;
   city?: string;
-  accountStatus?: 'Active' | 'Suspended' | 'Closed';
+  accountStatus?: 'Active' | 'Suspended' | 'Closed' | 'Frozen';
   lastActivity?: string;
+  digitalIdentityStatus?: 'Verified' | 'Pending Verification' | 'Revoked'; // Links to Digital Identity Layer
 }
 
-/**
- * @interface AuditLogEntry
- * @description Records actions taken on an anomaly for compliance and traceability.
- */
 export interface AuditLogEntry {
   id: string;
   anomalyId: string;
   timestamp: string;
-  action: string; // e.g., 'Status Changed', 'Comment Added', 'Assigned To', 'Evidence Uploaded'
-  actor: string; // User ID or system process
+  action: string;
+  actor: string;
+  actorIdentityId?: string; // Links to Digital Identity Layer
   details: string;
   oldValue?: string;
   newValue?: string;
+  cryptographicSignature?: string; // For tamper-evident logs
 }
 
-/**
- * @interface AnomalyComment
- * @description Represents a comment or note added by an analyst during investigation.
- */
 export interface AnomalyComment {
   id: string;
   anomalyId: string;
   timestamp: string;
-  author: string; // User ID
+  author: string;
+  authorIdentityId?: string; // Links to Digital Identity Layer
   comment: string;
-  attachments?: string[]; // Array of attachment IDs/URLs
-  isInternal?: boolean; // For internal team comments vs. shared with external parties
+  attachments?: string[];
+  isInternal?: boolean;
 }
 
-/**
- * @interface AnomalyEvidence
- * @description Details about evidence collected for an anomaly.
- */
 export interface AnomalyEvidence {
   id: string;
   anomalyId: string;
   filename: string;
-  fileType: string; // e.g., 'pdf', 'csv', 'jpg'
+  fileType: string;
   uploadDate: string;
-  uploader: string; // User ID
+  uploader: string;
+  uploaderIdentityId?: string; // Links to Digital Identity Layer
   description?: string;
-  url: string; // URL to access the evidence file
+  url: string;
   tags?: string[];
+  integrityHash?: string; // For cryptographic integrity
 }
 
-/**
- * @interface AIRecommendation
- * @description AI-generated recommendations for anomaly remediation or further investigation.
- */
 export interface AIRecommendation {
   id: string;
-  type: 'InvestigationStep' | 'RemediationAction' | 'PolicyReview' | 'AlertTuning';
+  type: 'InvestigationStep' | 'RemediationAction' | 'PolicyReview' | 'AlertTuning' | 'AgentActionTrigger';
   description: string;
-  confidenceScore: number; // 0-1
+  confidenceScore: number;
   suggestedAction?: string;
-  isAutomatedAction?: boolean; // Whether the system can automatically perform this
-  status?: 'Pending' | 'Accepted' | 'Rejected';
+  isAutomatedAction?: boolean;
+  requiresApproval?: boolean;
+  status?: 'Pending' | 'Accepted' | 'Rejected' | 'Executing' | 'Completed';
   timestamp?: string;
+  agentId?: string; // If recommendation comes from a specific agent
 }
 
-/**
- * @interface ExplainabilityFeature
- * @description Details about features that contributed to the AI's anomaly detection.
- */
 export interface ExplainabilityFeature {
   name: string;
   value: string | number | boolean;
-  contributionScore: number; // How much this feature influenced the anomaly score
+  contributionScore: number;
   explanation: string;
 }
 
-/**
- * @interface GeoLocation
- * @description Geographic location data related to an anomaly or entity.
- */
 export interface GeoLocation {
   latitude: number;
   longitude: number;
@@ -189,21 +165,18 @@ export interface GeoLocation {
   country?: string;
 }
 
-/**
- * @interface FinancialAnomalyExtended
- * @description An extended version of the FinancialAnomaly type with more details for a real-world system.
- */
 export interface FinancialAnomalyExtended extends FinancialAnomaly {
   category: AnomalyCategory;
-  assignedTo?: string; // User ID of the analyst assigned
-  status: AnomalyWorkflowStatus; // Overrides base AnomalyStatus with more detailed workflow statuses
+  assignedTo?: string;
+  assignedToIdentityId?: string; // Links to Digital Identity Layer
+  status: AnomalyWorkflowStatus;
   resolutionReason?: AnomalyResolutionReason;
   resolutionNotes?: string;
-  detectionMethod: 'Rule-Based' | 'ML Model' | 'Heuristic' | 'Manual';
+  detectionMethod: 'Rule-Based' | 'ML Model' | 'Heuristic' | 'Manual' | 'Agent-Initiated';
   tags: string[];
   impactEstimate?: { amount: number; currency: string; description: string };
-  confidenceScore: number; // AI model confidence in the anomaly
-  historicalContext?: string; // Short summary of similar past anomalies
+  confidenceScore: number;
+  historicalContext?: string;
   detectionTimestamp: string;
   lastUpdatedTimestamp: string;
   relatedTransactions?: RelatedTransaction[];
@@ -214,20 +187,19 @@ export interface FinancialAnomalyExtended extends FinancialAnomaly {
   aiRecommendations?: AIRecommendation[];
   explainabilityFeatures?: ExplainabilityFeature[];
   location?: GeoLocation;
-  slaDueDate?: string; // Service Level Agreement due date for resolution
-  timeToResolutionSeconds?: number; // Actual time taken to resolve
+  slaDueDate?: string;
+  timeToResolutionSeconds?: number;
+  currentRiskRating?: number; // Dynamic risk rating based on ongoing investigation
+  policyViolations?: string[]; // Specific policies violated
+  externalReferences?: { system: string; id: string; url: string }[]; // Links to other internal systems (e.g., KYC, AML)
 }
 
-// =====================================================================================================================
-// MOCK DATA GENERATION UTILITIES
-// These utilities help simulate a large amount of realistic data for testing and demonstration purposes.
-// =====================================================================================================================
+"""
+Provides utilities for generating realistic mock data, essential for demonstrating
+and testing the system's capabilities without relying on live financial feeds.
+This ensures a robust and self-contained development environment.
+"""
 
-/**
- * @function generateUUID
- * @description Generates a simple UUID-like string.
- * @returns {string} A unique identifier.
- */
 const generateUUID = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
@@ -236,181 +208,134 @@ const generateUUID = (): string => {
   });
 };
 
-/**
- * @function getRandomInt
- * @description Returns a random integer between min (inclusive) and max (inclusive).
- * @param {number} min - The minimum value.
- * @param {number} max - The maximum value.
- * @returns {number} A random integer.
- */
 const getRandomInt = (min: number, max: number): number => {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-/**
- * @function getRandomElement
- * @description Returns a random element from an array.
- * @template T
- * @param {T[]} arr - The array to pick from.
- * @returns {T} A random element from the array.
- */
 const getRandomElement = <T>(arr: T[]): T => arr[getRandomInt(0, arr.length - 1)];
 
-/**
- * @function generateRandomDate
- * @description Generates a random date string within the last 30 days.
- * @returns {string} A date string in ISO format.
- */
-const generateRandomDate = (): string => {
+const generateRandomDate = (daysAgo: number = 30): string => {
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const randomTime = thirtyDaysAgo.getTime() + Math.random() * (now.getTime() - thirtyDaysAgo.getTime());
+  const ago = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+  const randomTime = ago.getTime() + Math.random() * (now.getTime() - ago.getTime());
   return new Date(randomTime).toISOString();
 };
 
-/**
- * @function generateMockRelatedTransaction
- * @description Generates a single mock related transaction.
- * @param {string} anomalyId - The ID of the anomaly this transaction is related to.
- * @returns {RelatedTransaction} A mock RelatedTransaction object.
- */
 const generateMockRelatedTransaction = (anomalyId: string): RelatedTransaction => ({
   id: generateUUID(),
   transactionId: `TXN-${getRandomInt(100000, 999999)}`,
   amount: parseFloat((Math.random() * 10000 + 10).toFixed(2)),
-  currency: getRandomElement(['USD', 'EUR', 'GBP', 'JPY']),
-  timestamp: generateRandomDate(),
+  currency: getRandomElement(['USD', 'EUR', 'GBP', 'JPY', 'XRP', 'ETH']),
+  timestamp: generateRandomDate(7),
   senderAccount: `ACC-${getRandomInt(100000, 999999)}`,
   receiverAccount: `ACC-${getRandomInt(100000, 999999)}`,
-  transactionType: getRandomElement(['Deposit', 'Withdrawal', 'Transfer', 'Payment', 'Refund']),
+  transactionType: getRandomElement(['Deposit', 'Withdrawal', 'Transfer', 'Payment', 'Refund', 'Token Mint', 'Token Burn']),
   description: getRandomElement([
     'International Funds Transfer',
     'High-Value Payment',
     'Multiple Small Transactions',
     'Unusual Account Activity',
     'Cryptocurrency Purchase',
+    'Cross-border Payment Rail',
+    'Suspicious FX Swap',
   ]),
-  status: getRandomElement(['Completed', 'Pending', 'Failed']),
+  status: getRandomElement(['Completed', 'Pending', 'Failed', 'On Hold', 'Reversed']),
   riskScore: getRandomInt(1, 100),
-  tags: getRandomElement([['international'], ['suspicious'], ['high-value'], ['crypto', 'new-recipient'], []]),
+  tags: getRandomElement([['international'], ['suspicious'], ['high-value'], ['crypto', 'new-recipient'], ['cross-border', 'high-latency'], []]),
+  blockhainHash: Math.random() > 0.5 ? `0x${generateUUID().replace(/-/g, '')}` : undefined,
 });
 
-/**
- * @function generateMockAffectedEntity
- * @description Generates a single mock affected entity.
- * @returns {AffectedEntity} A mock AffectedEntity object.
- */
 const generateMockAffectedEntity = (): AffectedEntity => ({
   id: generateUUID(),
-  entityType: getRandomElement(['Account', 'User', 'Vendor', 'Customer']),
+  entityType: getRandomElement(['Account', 'User', 'Vendor', 'Customer', 'Digital Identity']),
   entityIdentifier: `ENT-${getRandomInt(1000, 9999)}`,
-  name: getRandomElement(['Global Corp Ltd.', 'John Doe', 'Acme Solutions', 'Jane Smith', 'Widget Co.']),
+  name: getRandomElement(['Global Corp Ltd.', 'John Doe', 'Acme Solutions', 'Jane Smith', 'Widget Co.', 'Digital ID Provider']),
   riskScore: getRandomInt(1, 100),
   associatedAnomaliesCount: getRandomInt(1, 15),
-  country: getRandomElement(['USA', 'UK', 'Germany', 'Canada', 'Australia', 'Japan', 'India', 'Brazil']),
-  city: getRandomElement(['New York', 'London', 'Berlin', 'Toronto', 'Sydney', 'Tokyo', 'Mumbai', 'São Paulo']),
-  accountStatus: getRandomElement(['Active', 'Suspended']),
-  lastActivity: generateRandomDate(),
+  country: getRandomElement(['USA', 'UK', 'Germany', 'Canada', 'Australia', 'Japan', 'India', 'Brazil', 'Singapore', 'UAE']),
+  city: getRandomElement(['New York', 'London', 'Berlin', 'Toronto', 'Sydney', 'Tokyo', 'Mumbai', 'SÃ£o Paulo', 'Singapore', 'Dubai']),
+  accountStatus: getRandomElement(['Active', 'Suspended', 'Frozen']),
+  lastActivity: generateRandomDate(14),
+  digitalIdentityStatus: Math.random() > 0.4 ? getRandomElement(['Verified', 'Pending Verification', 'Revoked']) : undefined,
 });
 
-/**
- * @function generateMockAuditLogEntry
- * @description Generates a single mock audit log entry.
- * @param {string} anomalyId - The ID of the anomaly.
- * @param {string} actor - The actor performing the action.
- * @returns {AuditLogEntry} A mock AuditLogEntry object.
- */
-const generateMockAuditLogEntry = (anomalyId: string, actor: string): AuditLogEntry => ({
+const generateMockAuditLogEntry = (anomalyId: string, actor: string, actorIdentityId: string, action: string, details: string, oldValue?: string, newValue?: string): AuditLogEntry => ({
   id: generateUUID(),
   anomalyId,
-  timestamp: generateRandomDate(),
-  action: getRandomElement(['Status Changed', 'Comment Added', 'Assigned To', 'Evidence Uploaded', 'Severity Updated']),
+  timestamp: new Date().toISOString(),
+  action,
   actor,
-  details: getRandomElement([
-    'Changed status from New to Under Review.',
-    'Added a note regarding initial assessment.',
-    'Assigned anomaly to Analyst A.',
-    'Uploaded transaction history.',
-    'Severity increased due to new information.',
-  ]),
+  actorIdentityId,
+  details,
+  oldValue,
+  newValue,
+  cryptographicSignature: `SIG-${generateUUID().substring(0, 16)}`, // Simulated cryptographic signature
 });
 
-/**
- * @function generateMockAnomalyComment
- * @description Generates a single mock anomaly comment.
- * @param {string} anomalyId - The ID of the anomaly.
- * @param {string} author - The author of the comment.
- * @returns {AnomalyComment} A mock AnomalyComment object.
- */
-const generateMockAnomalyComment = (anomalyId: string, author: string): AnomalyComment => ({
+const generateMockAnomalyComment = (anomalyId: string, author: string, authorIdentityId: string): AnomalyComment => ({
   id: generateUUID(),
   anomalyId,
-  timestamp: generateRandomDate(),
+  timestamp: new Date().toISOString(),
   author,
+  authorIdentityId,
   comment: getRandomElement([
     'Initial assessment indicates potential market manipulation. Investigating further.',
     'Need to gather more information on related entities.',
     'Contacting the affected customer for clarification.',
     'Looks like a false positive due to recent system upgrade. Confirming with ops.',
     'Escalating to Legal department for review.',
+    'AI agent suggests reviewing transaction sequence for layering.',
+    'Compliance check initiated for associated digital identities.',
   ]),
   isInternal: Math.random() > 0.3,
 });
 
-/**
- * @function generateMockAnomalyEvidence
- * @description Generates a single mock anomaly evidence.
- * @param {string} anomalyId - The ID of the anomaly.
- * @param {string} uploader - The uploader of the evidence.
- * @returns {AnomalyEvidence} A mock AnomalyEvidence object.
- */
-const generateMockAnomalyEvidence = (anomalyId: string, uploader: string): AnomalyEvidence => ({
+const generateMockAnomalyEvidence = (anomalyId: string, uploader: string, uploaderIdentityId: string): AnomalyEvidence => ({
   id: generateUUID(),
   anomalyId,
-  filename: getRandomElement(['transaction_report.pdf', 'user_activity_log.csv', 'email_correspondence.txt', 'network_traffic.pcap']),
-  fileType: getRandomElement(['pdf', 'csv', 'txt', 'pcap']),
-  uploadDate: generateRandomDate(),
+  filename: getRandomElement(['transaction_report.pdf', 'user_activity_log.csv', 'email_correspondence.txt', 'network_traffic.pcap', 'blockchain_ledger_snapshot.json']),
+  fileType: getRandomElement(['pdf', 'csv', 'txt', 'pcap', 'json', 'jpg']),
+  uploadDate: new Date().toISOString(),
   uploader,
+  uploaderIdentityId,
   description: getRandomElement([
     'Transaction details for period.',
     'User login attempts.',
     'Communication regarding the suspicious activity.',
     'Network forensics data.',
+    'Blockchain ledger entry for token transfer.',
+    'Supporting document for policy review.',
     '',
   ]),
-  url: `https://example.com/evidence/${generateUUID()}`,
-  tags: getRandomElement([['financial'], ['logs'], ['communication'], ['forensics'], []]),
+  url: `https://mock-storage.com/evidence/${generateUUID()}`,
+  tags: getRandomElement([['financial'], ['logs'], ['communication'], ['forensics'], ['blockchain'], ['compliance'], []]),
+  integrityHash: `HASH-${generateUUID().replace(/-/g, '').substring(0, 32)}`, // Simulated cryptographic hash
 });
 
-/**
- * @function generateMockAIRecommendation
- * @description Generates a single mock AI recommendation.
- * @returns {AIRecommendation} A mock AIRecommendation object.
- */
 const generateMockAIRecommendation = (): AIRecommendation => ({
   id: generateUUID(),
-  type: getRandomElement(['InvestigationStep', 'RemediationAction', 'PolicyReview', 'AlertTuning']),
+  type: getRandomElement(['InvestigationStep', 'RemediationAction', 'PolicyReview', 'AlertTuning', 'AgentActionTrigger']),
   description: getRandomElement([
     'Review all transactions for this entity from the last 90 days.',
     'Temporarily suspend account until verification is complete.',
     'Evaluate current fraud detection rules for similar patterns.',
     'Adjust anomaly detection threshold for low-value international transfers.',
     'Initiate KYC review for associated accounts.',
+    'Trigger automated funds hold on primary beneficiary account.',
+    'Initiate identity re-verification for sender.',
+    'Escalate to compliance agent for policy review.',
   ]),
   confidenceScore: parseFloat(Math.random().toFixed(2)),
-  suggestedAction: getRandomElement(['Flag Account', 'Block Transaction', 'Request Documentation', 'Update Rule', 'Review Policy']),
+  suggestedAction: getRandomElement(['Flag Account', 'Block Transaction', 'Request Documentation', 'Update Rule', 'Review Policy', 'Hold Funds', 'Verify Identity', 'Notify Regulator']),
   isAutomatedAction: Math.random() > 0.7,
+  requiresApproval: Math.random() > 0.5,
   status: getRandomElement(['Pending', 'Accepted', 'Rejected']),
-  timestamp: generateRandomDate(),
+  timestamp: new Date().toISOString(),
+  agentId: Math.random() > 0.3 ? `Agent-${getRandomInt(100, 999)}` : undefined,
 });
 
-/**
- * @function generateMockExplainabilityFeature
- * @description Generates a single mock explainability feature.
- * @returns {ExplainabilityFeature} A mock ExplainabilityFeature object.
- */
 const generateMockExplainabilityFeature = (): ExplainabilityFeature => ({
   name: getRandomElement([
     'Transaction Volume (Daily)',
@@ -420,17 +345,21 @@ const generateMockExplainabilityFeature = (): ExplainabilityFeature => ({
     'Number of High-Value Transactions',
     'Previous Anomaly History (Sender)',
     'IP Address Geo-Mismatch',
+    'Digital Identity Trust Score',
+    'Compliance Rule Triggered',
   ]),
   value: getRandomElement([
     getRandomInt(1, 1000).toString(),
     getRandomInt(1, 365).toString(),
-    getRandomElement(['USA', 'Russia', 'China', 'Nigeria']),
+    getRandomElement(['USA', 'Russia', 'China', 'Nigeria', 'Cayman Islands']),
     `${getRandomInt(0, 23)}:00`,
     getRandomInt(0, 5).toString(),
     Math.random() > 0.5,
     Math.random() > 0.5,
+    parseFloat((Math.random() * 0.5 + 0.5).toFixed(2)), // Trust score
+    `AML-${getRandomInt(1, 5)}`,
   ]),
-  contributionScore: parseFloat((Math.random() * 0.5 + 0.5).toFixed(2)), // Higher scores usually
+  contributionScore: parseFloat((Math.random() * 0.5 + 0.5).toFixed(2)),
   explanation: getRandomElement([
     'Significantly higher than average volume for this account.',
     'Newly created account showing suspicious activity.',
@@ -439,15 +368,11 @@ const generateMockExplainabilityFeature = (): ExplainabilityFeature => ({
     'Multiple transactions exceeding typical thresholds.',
     'Sender has a history of flagged transactions.',
     'IP address does not match registered country.',
+    'Low digital identity trust score due to recent changes.',
+    'Transaction pattern matches known money laundering rule.',
   ]),
 });
 
-/**
- * @function generateMockFinancialAnomalyExtended
- * @description Generates a single comprehensive mock extended financial anomaly.
- * @param {string} id - Optional ID for the anomaly.
- * @returns {FinancialAnomalyExtended} A mock FinancialAnomalyExtended object.
- */
 const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExtended => {
   const anomalyId = id || generateUUID();
   const severity: AnomalySeverity = getRandomElement(['Critical', 'High', 'Medium', 'Low', 'Informational']);
@@ -459,8 +384,26 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
     'Resolved',
     'Dismissed',
   ]);
-  const detectionTimestamp = generateRandomDate();
-  const lastUpdatedTimestamp = status === 'New' ? detectionTimestamp : generateRandomDate();
+  const detectionTimestamp = generateRandomDate(30);
+  const lastUpdatedTimestamp = status === 'New' ? detectionTimestamp : generateRandomDate(status === 'Resolved' || status === 'Dismissed' ? 7 : 0);
+
+  const mockActor = getRandomElement(['Analyst A', 'Compliance Bot', 'System Monitor']);
+  const mockActorId = `USER-${getRandomInt(100, 999)}`;
+
+  const auditLogEntries: AuditLogEntry[] = [
+    generateMockAuditLogEntry(anomalyId, 'System', 'SYS-ID-001', 'Anomaly Detected', 'Initial detection by ML model.'),
+  ];
+  if (status !== 'New') {
+    auditLogEntries.push(generateMockAuditLogEntry(anomalyId, mockActor, mockActorId, 'Status Changed', `Status updated to ${status}.`));
+    if (status === 'Under Review') {
+      auditLogEntries.push(generateMockAuditLogEntry(anomalyId, mockActor, mockActorId, 'Assigned To', `Assigned to ${mockActor}.`, undefined, mockActor));
+    }
+  }
+
+  const relatedTransactions = Array(getRandomInt(1, 5)).fill(null).map(() => generateMockRelatedTransaction(anomalyId));
+  const affectedEntities = Array(getRandomInt(1, 3)).fill(null).map(generateMockAffectedEntity);
+  const aiRecommendations = Array(getRandomInt(0, 3)).fill(null).map(generateMockAIRecommendation);
+  const explainabilityFeatures = Array(getRandomInt(3, 7)).fill(null).map(generateMockExplainabilityFeature);
 
   return {
     id: anomalyId,
@@ -474,6 +417,8 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
       'Failed Login Attempts from High-Risk IP',
       'Unusual Cash Withdrawal Pattern',
       'Out-of-Pattern Trading Behavior by Executive',
+      'Unauthorized Token Minting Attempt',
+      'Cross-Chain Value Transfer Mismatch',
     ]),
     details: getRandomElement([
       'AI detected 3 transactions totaling $500,000 to an account in the Cayman Islands, which is atypical for this user profile. The transactions occurred within a 2-hour window.',
@@ -485,6 +430,8 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
       'Over 200 failed login attempts originating from IP range 192.168.1.x, suggesting brute-force attack. No successful logins detected.',
       'Account holder "Jane Smith" made 4 ATM withdrawals in different cities within a 3-hour period, which is geographically impossible. Total withdrawn: $2000.',
       'Executive "Amanda Green" executed large sell orders before a significant negative news announcement, raising insider trading concerns.',
+      'A smart contract initiated a token minting request exceeding the approved governance policy limit by 200%. Automated block initiated.',
+      'Cross-chain bridge reported a mismatch in settled value between SourceChain and DestChain for a high-value transfer, indicating potential exploit.',
     ]),
     entityDescription: getRandomElement([
       'Account: ACC-123456789',
@@ -492,14 +439,15 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
       'Vendor: Acme Corp',
       'Stock Symbol: XYZ',
       'Employee ID: 98765',
+      'Smart Contract: 0xAbcDef123',
     ]),
-    timestamp: generateRandomDate(),
+    timestamp: generateRandomDate(30),
     severity: severity,
     riskScore: getRandomInt(
       severity === 'Critical' ? 90 : severity === 'High' ? 70 : severity === 'Medium' ? 40 : severity === 'Low' ? 10 : 1,
       100,
     ),
-    status: status, // Use the extended status type
+    status: status,
     category: getRandomElement<AnomalyCategory>([
       'Fraud',
       'Money Laundering',
@@ -508,16 +456,18 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
       'Cybersecurity Incident',
       'Suspicious Activity',
       'Compliance Breach',
+      'Unusual Transaction Volume',
     ]),
-    assignedTo: status === 'New' || Math.random() < 0.3 ? undefined : getRandomElement(['Analyst A', 'Analyst B', 'Analyst C']),
-    resolutionReason: status === 'Resolved' ? getRandomElement(['Confirmed Fraud', 'Operational Fix Applied', 'Legitimate Business Activity']) : undefined,
+    assignedTo: status === 'New' || Math.random() < 0.3 ? undefined : getRandomElement(['Analyst A', 'Analyst B', 'Agent_Compliance_1']),
+    assignedToIdentityId: Math.random() > 0.5 ? `DID-${getRandomInt(1000, 9999)}` : undefined,
+    resolutionReason: status === 'Resolved' ? getRandomElement(['Confirmed Fraud', 'Operational Fix Applied', 'Legitimate Business Activity', 'Automated Action Completed']) : undefined,
     resolutionNotes: status === 'Resolved' ? 'Full investigation completed, appropriate actions taken.' : undefined,
-    detectionMethod: getRandomElement(['ML Model', 'Rule-Based', 'Heuristic']),
+    detectionMethod: getRandomElement(['ML Model', 'Rule-Based', 'Heuristic', 'Agent-Initiated']),
     tags: Array.from(
       new Set(
         Array(getRandomInt(0, 3))
           .fill(null)
-          .map(() => getRandomElement(['high-risk', 'international', 'new-entity', 'urgent', 'false-positive', 'review-kyc', 'compliance'])),
+          .map(() => getRandomElement(['high-risk', 'international', 'new-entity', 'urgent', 'false-positive', 'review-kyc', 'compliance', 'programmable-value', 'digital-identity'])),
       ),
     ),
     impactEstimate: Math.random() > 0.6
@@ -527,20 +477,20 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
           description: 'Estimated potential loss or fine.',
         }
       : undefined,
-    confidenceScore: parseFloat((Math.random() * 0.4 + 0.5).toFixed(2)), // 0.5 to 0.9
+    confidenceScore: parseFloat((Math.random() * 0.4 + 0.5).toFixed(2)),
     historicalContext:
       Math.random() > 0.5
         ? 'Similar patterns observed in Q3 2022, led to account suspension.'
         : undefined,
     detectionTimestamp: detectionTimestamp,
     lastUpdatedTimestamp: lastUpdatedTimestamp,
-    relatedTransactions: Array(getRandomInt(1, 5)).fill(null).map(() => generateMockRelatedTransaction(anomalyId)),
-    affectedEntities: Array(getRandomInt(1, 3)).fill(null).map(generateMockAffectedEntity),
-    auditLog: Array(getRandomInt(2, 7)).fill(null).map(() => generateMockAuditLogEntry(anomalyId, getRandomElement(['system', 'Analyst A', 'Analyst B']))),
-    comments: Array(getRandomInt(0, 4)).fill(null).map(() => generateMockAnomalyComment(anomalyId, getRandomElement(['Analyst A', 'Analyst B']))),
-    evidence: Array(getRandomInt(0, 3)).fill(null).map(() => generateMockAnomalyEvidence(anomalyId, getRandomElement(['Analyst A', 'System']))),
-    aiRecommendations: Array(getRandomInt(0, 3)).fill(null).map(generateMockAIRecommendation),
-    explainabilityFeatures: Array(getRandomInt(3, 7)).fill(null).map(generateMockExplainabilityFeature),
+    relatedTransactions: relatedTransactions,
+    affectedEntities: affectedEntities,
+    auditLog: auditLogEntries,
+    comments: Array(getRandomInt(0, 4)).fill(null).map(() => generateMockAnomalyComment(anomalyId, mockActor, mockActorId)),
+    evidence: Array(getRandomInt(0, 3)).fill(null).map(() => generateMockAnomalyEvidence(anomalyId, getRandomElement(['Analyst A', 'System Collector']), mockActorId)),
+    aiRecommendations: aiRecommendations,
+    explainabilityFeatures: explainabilityFeatures,
     location: Math.random() > 0.7
       ? {
           latitude: parseFloat((Math.random() * 180 - 90).toFixed(6)),
@@ -551,23 +501,23 @@ const generateMockFinancialAnomalyExtended = (id?: string): FinancialAnomalyExte
       : undefined,
     slaDueDate: Math.random() > 0.4 ? new Date(new Date().getTime() + getRandomInt(1, 14) * 24 * 60 * 60 * 1000).toISOString() : undefined,
     timeToResolutionSeconds: status === 'Resolved' ? getRandomInt(3600, 86400 * 7) : undefined,
+    currentRiskRating: getRandomInt(1, 100),
+    policyViolations: Math.random() > 0.6 ? [getRandomElement(['AML Policy A', 'Sanctions Policy B', 'KYC Rule C'])] : undefined,
+    externalReferences: Math.random() > 0.5 ? [{ system: getRandomElement(['KYC', 'AML', 'RiskEngine']), id: `REF-${getRandomInt(100, 999)}`, url: 'https://mock-system.com/ref' }] : undefined,
   };
 };
 
-// Generate 200 mock anomalies to start with.
 const INITIAL_MOCK_ANOMALIES: FinancialAnomalyExtended[] = Array(200)
   .fill(null)
   .map(() => generateMockFinancialAnomalyExtended());
 
-// =====================================================================================================================
-// UI COMPONENTS - Reusable elements for building the complex view
-// =====================================================================================================================
+"""
+Provides a set of reusable UI components that form the building blocks
+of the interactive and data-rich anomaly detection interface. These components
+are designed for modularity, consistency, and a premium user experience.
+"""
 
-/**
- * @interface ModalProps
- * @description Props for the Modal component.
- */
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
@@ -576,12 +526,6 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
-/**
- * @function Modal
- * @description A reusable modal component for displaying detailed information or forms.
- * @param {ModalProps} props - The properties for the Modal component.
- * @returns {JSX.Element | null} The rendered Modal component.
- */
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, className, size = 'md' }) => {
   if (!isOpen) return null;
 
@@ -597,7 +541,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4 animate-fadeIn">
       <div
         className={`bg-gray-800 rounded-lg shadow-2xl p-6 ${sizeClasses[size]} w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0 ${isOpen ? 'scale-100 opacity-100' : ''} ${className || ''}`}
-        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
           <h3 className="text-xl font-bold text-white">{title}</h3>
@@ -613,11 +557,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
   );
 };
 
-/**
- * @interface ConfirmDialogProps
- * @description Props for the ConfirmDialog component.
- */
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -628,12 +568,6 @@ interface ConfirmDialogProps {
   isDestructive?: boolean;
 }
 
-/**
- * @function ConfirmDialog
- * @description A modal for confirming user actions.
- * @param {ConfirmDialogProps} props - The properties for the ConfirmDialog component.
- * @returns {JSX.Element | null} The rendered ConfirmDialog component.
- */
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   onConfirm,
@@ -664,32 +598,18 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   );
 };
 
-/**
- * @interface Notification
- * @description Represents a single notification message.
- */
 export interface Notification {
   id: string;
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
-  timeout?: number; // Milliseconds before auto-dismissal
+  timeout?: number;
 }
 
-/**
- * @interface NotificationToastProps
- * @description Props for the NotificationToast component.
- */
 interface NotificationToastProps {
   notification: Notification;
   onDismiss: (id: string) => void;
 }
 
-/**
- * @function NotificationToast
- * @description Displays a single notification toast.
- * @param {NotificationToastProps} props - The properties for the NotificationToast component.
- * @returns {JSX.Element} The rendered NotificationToast component.
- */
 const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onDismiss }) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -726,14 +646,6 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onD
   );
 };
 
-/**
- * @function NotificationContainer
- * @description Manages and displays a list of notification toasts.
- * @param {object} props - The properties for the NotificationContainer.
- * @param {Notification[]} props.notifications - Array of notifications to display.
- * @param {(id: string) => void} props.onDismissNotification - Callback to dismiss a notification.
- * @returns {JSX.Element} The rendered NotificationContainer component.
- */
 export const NotificationContainer: React.FC<{
   notifications: Notification[];
   onDismissNotification: (id: string) => void;
@@ -747,11 +659,7 @@ export const NotificationContainer: React.FC<{
   );
 };
 
-/**
- * @interface PaginatorProps
- * @description Props for the Paginator component.
- */
-interface PaginatorProps {
+export interface PaginatorProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -759,12 +667,6 @@ interface PaginatorProps {
   totalItems?: number;
 }
 
-/**
- * @function Paginator
- * @description A reusable pagination control.
- * @param {PaginatorProps} props - The properties for the Paginator component.
- * @returns {JSX.Element} The rendered Paginator component.
- */
 export const Paginator: React.FC<PaginatorProps> = ({ currentPage, totalPages, onPageChange, itemsPerPage, totalItems }) => {
   const pageNumbers = useMemo(() => {
     const pages: number[] = [];
@@ -834,11 +736,7 @@ export const Paginator: React.FC<PaginatorProps> = ({ currentPage, totalPages, o
   );
 };
 
-/**
- * @interface TabPanelProps
- * @description Props for the TabPanel component.
- */
-interface TabPanelProps {
+export interface TabPanelProps {
   tabs: { id: string; label: string; content: React.ReactNode }[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
@@ -847,12 +745,6 @@ interface TabPanelProps {
   panelClassName?: string;
 }
 
-/**
- * @function TabPanel
- * @description A generic tab panel component.
- * @param {TabPanelProps} props - The properties for the TabPanel component.
- * @returns {JSX.Element} The rendered TabPanel component.
- */
 export const TabPanel: React.FC<TabPanelProps> = ({ tabs, activeTab, onTabChange, className, tabClassName, panelClassName }) => {
   return (
     <div className={`tab-panel-container ${className || ''}`}>
@@ -874,11 +766,7 @@ export const TabPanel: React.FC<TabPanelProps> = ({ tabs, activeTab, onTabChange
   );
 };
 
-/**
- * @interface FilterSelectProps
- * @description Props for a generic filter select input.
- */
-interface FilterSelectProps<T> {
+export interface FilterSelectProps<T> {
   label: string;
   options: { value: T; label: string }[];
   selectedValue: T | undefined;
@@ -886,13 +774,6 @@ interface FilterSelectProps<T> {
   allowClear?: boolean;
 }
 
-/**
- * @function FilterSelect
- * @description A reusable select input for filtering.
- * @template T
- * @param {FilterSelectProps<T>} props - The properties for the FilterSelect component.
- * @returns {JSX.Element} The rendered FilterSelect component.
- */
 export const FilterSelect = <T extends string | number | undefined>({
   label,
   options,
@@ -919,20 +800,6 @@ export const FilterSelect = <T extends string | number | undefined>({
   );
 };
 
-/**
- * @function InputField
- * @description A generic input field component.
- * @param {object} props - The properties for the InputField component.
- * @param {string} props.label - The label for the input field.
- * @param {string} props.value - The current value of the input.
- * @param {(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void} props.onChange - The change handler.
- * @param {string} [props.type='text'] - The type of input (text, number, email, etc.).
- * @param {string} [props.placeholder] - The placeholder text.
- * @param {boolean} [props.readOnly=false] - Whether the input is read-only.
- * @param {boolean} [props.multiline=false] - Whether the input should be a textarea.
- * @param {string} [props.className] - Additional CSS classes.
- * @returns {JSX.Element} The rendered InputField component.
- */
 export const InputField: React.FC<{
   label: string;
   value: string | number;
@@ -973,18 +840,6 @@ export const InputField: React.FC<{
   </div>
 );
 
-/**
- * @function Button
- * @description A generic button component with predefined styles.
- * @param {object} props - The properties for the Button component.
- * @param {string} props.children - The content of the button.
- * @param {() => void} props.onClick - The click handler.
- * @param {'primary' | 'secondary' | 'danger' | 'ghost'} [props.variant='primary'] - The visual variant of the button.
- * @param {'sm' | 'md' | 'lg'} [props.size='md'] - The size of the button.
- * @param {boolean} [props.disabled=false] - Whether the button is disabled.
- * @param {string} [props.className] - Additional CSS classes.
- * @returns {JSX.Element} The rendered Button component.
- */
 export const Button: React.FC<{
   children: React.ReactNode;
   onClick: () => void;
@@ -1019,11 +874,6 @@ export const Button: React.FC<{
   );
 };
 
-/**
- * @function LoadingSpinner
- * @description A simple loading spinner component.
- * @returns {JSX.Element} The rendered LoadingSpinner component.
- */
 export const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center p-4">
     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
@@ -1031,52 +881,35 @@ export const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-/**
- * @interface ChartPlaceholderProps
- * @description Props for the ChartPlaceholder component.
- */
-interface ChartPlaceholderProps {
+export interface ChartPlaceholderProps {
   title: string;
   height?: string;
   description?: string;
   className?: string;
+  children?: React.ReactNode;
 }
 
-/**
- * @function ChartPlaceholder
- * @description A placeholder component to simulate a chart.
- * @param {ChartPlaceholderProps} props - The properties for the ChartPlaceholder component.
- * @returns {JSX.Element} The rendered ChartPlaceholder component.
- */
-export const ChartPlaceholder: React.FC<ChartPlaceholderProps> = ({ title, height = 'h-48', description, className }) => (
+export const ChartPlaceholder: React.FC<ChartPlaceholderProps> = ({ title, height = 'h-48', description, className, children }) => (
   <div className={`bg-gray-800/60 p-4 rounded-lg border border-gray-700 flex flex-col justify-center items-center ${height} ${className || ''}`}>
     <p className="text-lg font-bold text-gray-300 mb-2">{title}</p>
     <p className="text-xs text-gray-500 text-center">{description || 'Data visualization goes here.'}</p>
-    <div className="mt-4 text-gray-600 text-sm italic">
-      <p>[Chart Library Placeholder]</p>
-    </div>
+    {children || (
+      <div className="mt-4 text-gray-600 text-sm italic">
+        <p>[Chart Library Placeholder]</p>
+      </div>
+    )}
   </div>
 );
 
-/**
- * @interface StatCardProps
- * @description Props for the StatCard component.
- */
-interface StatCardProps {
+export interface StatCardProps {
   title: string;
   value: string | number;
   description?: string;
-  change?: string; // e.g., "+5%" or "-2%"
+  change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
   icon?: React.ReactNode;
 }
 
-/**
- * @function StatCard
- * @description A component to display a key statistic with optional context.
- * @param {StatCardProps} props - The properties for the StatCard component.
- * @returns {JSX.Element} The rendered StatCard component.
- */
 export const StatCard: React.FC<StatCardProps> = ({ title, value, description, change, changeType, icon }) => {
   const changeColorClass = {
     positive: 'text-green-400',
@@ -1102,19 +935,10 @@ export const StatCard: React.FC<StatCardProps> = ({ title, value, description, c
   );
 };
 
-/**
- * @function Tag
- * @description A small tag component.
- * @param {object} props - The properties for the Tag component.
- * @param {string} props.label - The text label for the tag.
- * @param {string} [props.className] - Additional CSS classes.
- * @param {'primary' | 'secondary' | 'info' | 'warning' | 'danger'} [props.variant='info'] - Visual variant.
- * @returns {JSX.Element} The rendered Tag component.
- */
 export const Tag: React.FC<{
   label: string;
   className?: string;
-  variant?: 'primary' | 'secondary' | 'info' | 'warning' | 'danger';
+  variant?: 'primary' | 'secondary' | 'info' | 'warning' | 'danger' | 'success';
 }> = ({ label, className, variant = 'info' }) => {
   const variantClasses = {
     primary: 'bg-indigo-800 text-indigo-200',
@@ -1122,6 +946,7 @@ export const Tag: React.FC<{
     info: 'bg-blue-800 text-blue-200',
     warning: 'bg-orange-800 text-orange-200',
     danger: 'bg-red-800 text-red-200',
+    success: 'bg-green-800 text-green-200',
   };
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantClasses[variant]} ${className || ''}`}>
@@ -1130,70 +955,67 @@ export const Tag: React.FC<{
   );
 };
 
-// =====================================================================================================================
-// CONTEXT AND STATE MANAGEMENT EXTENSIONS (MOCKING)
-// Since we cannot modify DataContext.tsx, we'll simulate the addition of more state and functions
-// within this component for demonstration purposes. In a real app, these would be in DataContext.
-// =====================================================================================================================
+"""
+Extends the application's data context with advanced state management and
+mocked backend interactions. This layer simulates a robust, production-ready
+financial system's interaction with UI components, enabling comprehensive
+demonstration and testing without live dependencies. It integrates concepts
+from the agentic intelligence layer, digital identity, and auditable governance.
+"""
 
-/**
- * @interface DataContextExtended
- * @description Mocks an extended DataContext for our expanded application.
- */
 interface DataContextExtended {
   financialAnomalies: FinancialAnomalyExtended[];
-  updateAnomalyStatus: (id: string, newStatus: AnomalyWorkflowStatus) => void;
-  addAnomalyComment: (anomalyId: string, comment: string, author: string, isInternal?: boolean) => void;
-  updateAnomalyDetails: (anomaly: FinancialAnomalyExtended) => void;
-  assignAnomaly: (anomalyId: string, assignee: string) => void;
-  dismissAnomalies: (ids: string[], reason: AnomalyResolutionReason, notes: string) => void;
-  resolveAnomalies: (ids: string[], reason: AnomalyResolutionReason, notes: string) => void;
-  uploadEvidence: (anomalyId: string, filename: string, fileType: string, uploader: string, description: string, url: string) => void;
-  // Add more as needed to support mock functionality
+  updateAnomalyStatus: (id: string, newStatus: AnomalyWorkflowStatus, actor: string, actorIdentityId: string, reason?: AnomalyResolutionReason, notes?: string) => void;
+  addAnomalyComment: (anomalyId: string, comment: string, author: string, authorIdentityId: string, isInternal?: boolean) => void;
+  updateAnomalyDetails: (anomaly: FinancialAnomalyExtended, actor: string, actorIdentityId: string, notes?: string) => void;
+  assignAnomaly: (anomalyId: string, assignee: string, assigneeIdentityId: string, actor: string, actorIdentityId: string) => void;
+  dismissAnomalies: (ids: string[], reason: AnomalyResolutionReason, notes: string, actor: string, actorIdentityId: string) => void;
+  resolveAnomalies: (ids: string[], reason: AnomalyResolutionReason, notes: string, actor: string, actorIdentityId: string) => void;
+  uploadEvidence: (anomalyId: string, filename: string, fileType: string, uploader: string, uploaderIdentityId: string, description: string, url: string) => void;
+  applyAIRecommendation: (anomalyId: string, recommendationId: string, actor: string, actorIdentityId: string) => void;
+  notifications: Notification[];
+  dismissNotification: (id: string) => void;
 }
 
-/**
- * @function useMockDataContext
- * @description A custom hook to provide mock extended data context, simulating a backend.
- * This replaces `useContext(DataContext)` for the purpose of this extensive code addition.
- * @returns {DataContextExtended} An object containing mock data and functions.
- */
 const useMockDataContext = (): DataContextExtended => {
   const [anomalies, setAnomalies] = useState<FinancialAnomalyExtended[]>(INITIAL_MOCK_ANOMALIES);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  /**
-   * @function addNotification
-   * @description Adds a new notification to the global state.
-   * @param {string} message - The message for the notification.
-   * @param {'success' | 'error' | 'info' | 'warning'} type - The type of notification.
-   * @param {number} [timeout=5000] - Duration before auto-dismissal.
-   */
   const addNotification = useCallback((message: string, type: Notification['type'], timeout: number = 5000) => {
     const id = generateUUID();
     setNotifications((prev) => [...prev, { id, message, type, timeout }]);
   }, []);
 
-  /**
-   * @function dismissNotification
-   * @description Removes a notification from the global state.
-   * @param {string} id - The ID of the notification to dismiss.
-   */
   const dismissNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
-  /**
-   * @function updateAnomalyStatus
-   * @description Updates the status of a single anomaly.
-   * @param {string} id - The ID of the anomaly.
-   * @param {AnomalyWorkflowStatus} newStatus - The new status.
-   */
   const updateAnomalyStatus = useCallback(
-    (id: string, newStatus: AnomalyWorkflowStatus) => {
+    (id: string, newStatus: AnomalyWorkflowStatus, actor: string, actorIdentityId: string, reason?: AnomalyResolutionReason, notes?: string) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
-          anomaly.id === id ? { ...anomaly, status: newStatus, lastUpdatedTimestamp: new Date().toISOString() } : anomaly,
+          anomaly.id === id
+            ? {
+                ...anomaly,
+                status: newStatus,
+                resolutionReason: reason || anomaly.resolutionReason,
+                resolutionNotes: notes || anomaly.resolutionNotes,
+                lastUpdatedTimestamp: new Date().toISOString(),
+                timeToResolutionSeconds: newStatus === 'Resolved' ? (new Date().getTime() - new Date(anomaly.detectionTimestamp).getTime()) / 1000 : anomaly.timeToResolutionSeconds,
+                auditLog: [
+                  ...(anomaly.auditLog || []),
+                  generateMockAuditLogEntry(
+                    id,
+                    actor,
+                    actorIdentityId,
+                    'Status Changed',
+                    `Status updated to "${newStatus}".${reason ? ` Reason: ${reason}.` : ''}${notes ? ` Notes: ${notes}.` : ''}`,
+                    anomaly.status,
+                    newStatus,
+                  ),
+                ],
+              }
+            : anomaly,
         ),
       );
       addNotification(`Anomaly ${id.substring(0, 8)} status updated to "${newStatus}"`, 'success');
@@ -1201,16 +1023,8 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  /**
-   * @function addAnomalyComment
-   * @description Adds a comment to an anomaly.
-   * @param {string} anomalyId - The ID of the anomaly.
-   * @param {string} comment - The comment text.
-   * @param {string} author - The author of the comment.
-   * @param {boolean} [isInternal=true] - Whether the comment is internal.
-   */
   const addAnomalyComment = useCallback(
-    (anomalyId: string, comment: string, author: string, isInternal: boolean = true) => {
+    (anomalyId: string, comment: string, author: string, authorIdentityId: string, isInternal: boolean = true) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
           anomaly.id === anomalyId
@@ -1218,7 +1032,17 @@ const useMockDataContext = (): DataContextExtended => {
                 ...anomaly,
                 comments: [
                   ...(anomaly.comments || []),
-                  { id: generateUUID(), anomalyId, timestamp: new Date().toISOString(), author, comment, isInternal },
+                  generateMockAnomalyComment(anomalyId, author, authorIdentityId),
+                ],
+                auditLog: [
+                  ...(anomaly.auditLog || []),
+                  generateMockAuditLogEntry(
+                    anomalyId,
+                    author,
+                    authorIdentityId,
+                    'Comment Added',
+                    `Added comment: "${comment.substring(0, 50)}..."`,
+                  ),
                 ],
                 lastUpdatedTimestamp: new Date().toISOString(),
               }
@@ -1230,16 +1054,26 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  /**
-   * @function updateAnomalyDetails
-   * @description Updates all details of an anomaly.
-   * @param {FinancialAnomalyExtended} updatedAnomaly - The anomaly object with updated details.
-   */
   const updateAnomalyDetails = useCallback(
-    (updatedAnomaly: FinancialAnomalyExtended) => {
+    (updatedAnomaly: FinancialAnomalyExtended, actor: string, actorIdentityId: string, notes?: string) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
-          anomaly.id === updatedAnomaly.id ? { ...updatedAnomaly, lastUpdatedTimestamp: new Date().toISOString() } : anomaly,
+          anomaly.id === updatedAnomaly.id
+            ? {
+                ...updatedAnomaly,
+                lastUpdatedTimestamp: new Date().toISOString(),
+                auditLog: [
+                  ...(anomaly.auditLog || []),
+                  generateMockAuditLogEntry(
+                    anomaly.id,
+                    actor,
+                    actorIdentityId,
+                    'Details Updated',
+                    `Anomaly details updated by user. ${notes || ''}`,
+                  ),
+                ],
+              }
+            : anomaly,
         ),
       );
       addNotification(`Anomaly ${updatedAnomaly.id.substring(0, 8)} details updated`, 'success');
@@ -1247,32 +1081,27 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  /**
-   * @function assignAnomaly
-   * @description Assigns an anomaly to an analyst.
-   * @param {string} anomalyId - The ID of the anomaly.
-   * @param {string} assignee - The ID or name of the assignee.
-   */
   const assignAnomaly = useCallback(
-    (anomalyId: string, assignee: string) => {
+    (anomalyId: string, assignee: string, assigneeIdentityId: string, actor: string, actorIdentityId: string) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
           anomaly.id === anomalyId
             ? {
                 ...anomaly,
                 assignedTo: assignee,
+                assignedToIdentityId: assigneeIdentityId,
                 status: anomaly.status === 'New' ? 'Under Review' : anomaly.status,
                 auditLog: [
                   ...(anomaly.auditLog || []),
-                  {
-                    id: generateUUID(),
+                  generateMockAuditLogEntry(
                     anomalyId,
-                    timestamp: new Date().toISOString(),
-                    action: 'Assigned To',
-                    actor: 'System/User',
-                    details: `Assigned to ${assignee}`,
-                    newValue: assignee,
-                  },
+                    actor,
+                    actorIdentityId,
+                    'Assigned To',
+                    `Assigned to ${assignee}.`,
+                    anomaly.assignedTo,
+                    assignee,
+                  ),
                 ],
                 lastUpdatedTimestamp: new Date().toISOString(),
               }
@@ -1284,15 +1113,8 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  /**
-   * @function dismissAnomalies
-   * @description Dismisses one or more anomalies.
-   * @param {string[]} ids - An array of anomaly IDs to dismiss.
-   * @param {AnomalyResolutionReason} reason - The reason for dismissal.
-   * @param {string} notes - Additional notes for dismissal.
-   */
   const dismissAnomalies = useCallback(
-    (ids: string[], reason: AnomalyResolutionReason, notes: string) => {
+    (ids: string[], reason: AnomalyResolutionReason, notes: string, actor: string, actorIdentityId: string) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
           ids.includes(anomaly.id)
@@ -1304,16 +1126,15 @@ const useMockDataContext = (): DataContextExtended => {
                 lastUpdatedTimestamp: new Date().toISOString(),
                 auditLog: [
                   ...(anomaly.auditLog || []),
-                  {
-                    id: generateUUID(),
-                    anomalyId: anomaly.id,
-                    timestamp: new Date().toISOString(),
-                    action: 'Status Changed',
-                    actor: 'System/User',
-                    details: `Dismissed anomaly. Reason: ${reason}. Notes: ${notes}`,
-                    oldValue: anomaly.status,
-                    newValue: 'Dismissed',
-                  },
+                  generateMockAuditLogEntry(
+                    anomaly.id,
+                    actor,
+                    actorIdentityId,
+                    'Status Changed',
+                    `Dismissed anomaly. Reason: ${reason}. Notes: ${notes}`,
+                    anomaly.status,
+                    'Dismissed',
+                  ),
                 ],
               }
             : anomaly,
@@ -1324,15 +1145,8 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  /**
-   * @function resolveAnomalies
-   * @description Resolves one or more anomalies.
-   * @param {string[]} ids - An array of anomaly IDs to resolve.
-   * @param {AnomalyResolutionReason} reason - The reason for resolution.
-   * @param {string} notes - Additional notes for resolution.
-   */
   const resolveAnomalies = useCallback(
-    (ids: string[], reason: AnomalyResolutionReason, notes: string) => {
+    (ids: string[], reason: AnomalyResolutionReason, notes: string, actor: string, actorIdentityId: string) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
           ids.includes(anomaly.id)
@@ -1345,16 +1159,15 @@ const useMockDataContext = (): DataContextExtended => {
                 timeToResolutionSeconds: (new Date().getTime() - new Date(anomaly.detectionTimestamp).getTime()) / 1000,
                 auditLog: [
                   ...(anomaly.auditLog || []),
-                  {
-                    id: generateUUID(),
-                    anomalyId: anomaly.id,
-                    timestamp: new Date().toISOString(),
-                    action: 'Status Changed',
-                    actor: 'System/User',
-                    details: `Resolved anomaly. Reason: ${reason}. Notes: ${notes}`,
-                    oldValue: anomaly.status,
-                    newValue: 'Resolved',
-                  },
+                  generateMockAuditLogEntry(
+                    anomaly.id,
+                    actor,
+                    actorIdentityId,
+                    'Status Changed',
+                    `Resolved anomaly. Reason: ${reason}. Notes: ${notes}`,
+                    anomaly.status,
+                    'Resolved',
+                  ),
                 ],
               }
             : anomaly,
@@ -1365,18 +1178,8 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  /**
-   * @function uploadEvidence
-   * @description Uploads evidence for an anomaly.
-   * @param {string} anomalyId - The ID of the anomaly.
-   * @param {string} filename - The name of the file.
-   * @param {string} fileType - The type of the file.
-   * @param {string} uploader - The uploader's name or ID.
-   * @param {string} description - A description of the evidence.
-   * @param {string} url - The URL to the uploaded file.
-   */
   const uploadEvidence = useCallback(
-    (anomalyId: string, filename: string, fileType: string, uploader: string, description: string, url: string) => {
+    (anomalyId: string, filename: string, fileType: string, uploader: string, uploaderIdentityId: string, description: string, url: string) => {
       setAnomalies((prevAnomalies) =>
         prevAnomalies.map((anomaly) =>
           anomaly.id === anomalyId
@@ -1384,18 +1187,17 @@ const useMockDataContext = (): DataContextExtended => {
                 ...anomaly,
                 evidence: [
                   ...(anomaly.evidence || []),
-                  { id: generateUUID(), anomalyId, filename, fileType, uploadDate: new Date().toISOString(), uploader, description, url },
+                  generateMockAnomalyEvidence(anomalyId, uploader, uploaderIdentityId),
                 ],
                 auditLog: [
                   ...(anomaly.auditLog || []),
-                  {
-                    id: generateUUID(),
+                  generateMockAuditLogEntry(
                     anomalyId,
-                    timestamp: new Date().toISOString(),
-                    action: 'Evidence Uploaded',
-                    actor: uploader,
-                    details: `Uploaded evidence: ${filename}`,
-                  },
+                    uploader,
+                    uploaderIdentityId,
+                    'Evidence Uploaded',
+                    `Uploaded evidence: ${filename}`,
+                  ),
                 ],
                 lastUpdatedTimestamp: new Date().toISOString(),
               }
@@ -1407,8 +1209,52 @@ const useMockDataContext = (): DataContextExtended => {
     [addNotification],
   );
 
-  // Expose notifications and dismiss function globally
-  (window as any).appNotifications = { notifications, dismissNotification };
+  const applyAIRecommendation = useCallback(
+    (anomalyId: string, recommendationId: string, actor: string, actorIdentityId: string) => {
+      setAnomalies((prevAnomalies) =>
+        prevAnomalies.map((anomaly) => {
+          if (anomaly.id === anomalyId) {
+            const updatedRecommendations = anomaly.aiRecommendations?.map(rec =>
+              rec.id === recommendationId ? { ...rec, status: 'Completed' } : rec
+            ) || [];
+            const recommendation = anomaly.aiRecommendations?.find(rec => rec.id === recommendationId);
+            let actionDetails = `AI Recommendation "${recommendation?.description || 'N/A'}" applied.`;
+            let newStatus = anomaly.status;
+            let resolutionReason = anomaly.resolutionReason;
+
+            if (recommendation?.isAutomatedAction) {
+                actionDetails = `Automated action triggered by AI Recommendation: "${recommendation.suggestedAction || 'N/A'}".`;
+                newStatus = 'Automated Remediation';
+                resolutionReason = 'Automated Action Completed';
+            }
+
+            return {
+              ...anomaly,
+              status: newStatus,
+              resolutionReason: resolutionReason,
+              aiRecommendations: updatedRecommendations,
+              auditLog: [
+                ...(anomaly.auditLog || []),
+                generateMockAuditLogEntry(
+                  anomalyId,
+                  actor,
+                  actorIdentityId,
+                  'AI Recommendation Applied',
+                  actionDetails,
+                  anomaly.status,
+                  newStatus,
+                ),
+              ],
+              lastUpdatedTimestamp: new Date().toISOString(),
+            };
+          }
+          return anomaly;
+        }),
+      );
+      addNotification(`AI Recommendation applied for Anomaly ${anomalyId.substring(0, 8)}`, 'info');
+    },
+    [addNotification],
+  );
 
   return {
     financialAnomalies: anomalies,
@@ -1419,36 +1265,31 @@ const useMockDataContext = (): DataContextExtended => {
     dismissAnomalies,
     resolveAnomalies,
     uploadEvidence,
+    applyAIRecommendation,
+    notifications,
+    dismissNotification,
   };
 };
 
-// =====================================================================================================================
-// ANOMALY DETAIL COMPONENTS - For in-depth investigation of a single anomaly
-// These components would typically be in their own files, but are inlined to meet the line count.
-// =====================================================================================================================
+"""
+Provides focused components for the in-depth investigation of individual anomalies.
+These elements enable analysts to drill down into specifics, review all related data,
+and execute remediation actions, thereby driving efficiency in resolving complex financial incidents.
+"""
 
-/**
- * @interface AnomalyDetailPanelProps
- * @description Props for the AnomalyDetailPanel component.
- */
-interface AnomalyDetailPanelProps {
+export interface AnomalyDetailPanelProps {
   anomaly: FinancialAnomalyExtended;
   onClose: () => void;
-  updateAnomalyStatus: (id: string, newStatus: AnomalyWorkflowStatus) => void;
-  addAnomalyComment: (anomalyId: string, comment: string, author: string, isInternal?: boolean) => void;
-  updateAnomalyDetails: (anomaly: FinancialAnomalyExtended) => void;
-  assignAnomaly: (anomalyId: string, assignee: string) => void;
-  uploadEvidence: (anomalyId: string, filename: string, fileType: string, uploader: string, description: string, url: string) => void;
-  currentUser: string; // Mock for current user
+  updateAnomalyStatus: (id: string, newStatus: AnomalyWorkflowStatus, actor: string, actorIdentityId: string, reason?: AnomalyResolutionReason, notes?: string) => void;
+  addAnomalyComment: (anomalyId: string, comment: string, author: string, authorIdentityId: string, isInternal?: boolean) => void;
+  updateAnomalyDetails: (anomaly: FinancialAnomalyExtended, actor: string, actorIdentityId: string, notes?: string) => void;
+  assignAnomaly: (anomalyId: string, assignee: string, assigneeIdentityId: string, actor: string, actorIdentityId: string) => void;
+  uploadEvidence: (anomalyId: string, filename: string, fileType: string, uploader: string, uploaderIdentityId: string, description: string, url: string) => void;
+  applyAIRecommendation: (anomalyId: string, recommendationId: string, actor: string, actorIdentityId: string) => void;
+  currentUser: { name: string; identityId: string; role: 'Analyst' | 'Admin' | 'Team Lead' };
 }
 
-/**
- * @function AnomalySummaryCard
- * @description Displays key summary information for an anomaly.
- * @param {object} props - Properties including the anomaly object.
- * @returns {JSX.Element} The rendered summary card.
- */
-const AnomalySummaryCard: React.FC<{ anomaly: FinancialAnomalyExtended; currentUser: string }> = ({ anomaly, currentUser }) => {
+const AnomalySummaryCard: React.FC<{ anomaly: FinancialAnomalyExtended; currentUser: { name: string; identityId: string; role: string } }> = ({ anomaly, currentUser }) => {
   const SeverityIndicator: React.FC<{ severity: AnomalySeverity }> = ({ severity }) => {
     const colors = {
       Critical: 'border-red-500 bg-red-900/30 text-red-300',
@@ -1524,6 +1365,28 @@ const AnomalySummaryCard: React.FC<{ anomaly: FinancialAnomalyExtended; currentU
             </p>
           </div>
         )}
+        {anomaly.policyViolations && anomaly.policyViolations.length > 0 && (
+          <div>
+            <p className="text-gray-500">Policy Violations</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {anomaly.policyViolations.map((policy, idx) => (
+                <Tag key={idx} label={policy} variant="danger" />
+              ))}
+            </div>
+          </div>
+        )}
+        {anomaly.externalReferences && anomaly.externalReferences.length > 0 && (
+          <div>
+            <p className="text-gray-500">External References</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {anomaly.externalReferences.map((ref, idx) => (
+                <a key={idx} href={ref.url} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline text-xs">
+                  <Tag label={`${ref.system}:${ref.id}`} variant="info" />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -1543,12 +1406,6 @@ const AnomalySummaryCard: React.FC<{ anomaly: FinancialAnomalyExtended; currentU
   );
 };
 
-/**
- * @function RelatedTransactionsTable
- * @description Displays a table of transactions related to the anomaly.
- * @param {object} props - Properties including the related transactions.
- * @returns {JSX.Element} The rendered table.
- */
 const RelatedTransactionsTable: React.FC<{ transactions: RelatedTransaction[] }> = ({ transactions }) => {
   if (!transactions || transactions.length === 0) {
     return <p className="text-gray-400 italic">No related transactions found.</p>;
@@ -1574,7 +1431,13 @@ const RelatedTransactionsTable: React.FC<{ transactions: RelatedTransaction[] }>
               Sender/Receiver
             </th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+              Status
+            </th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
               Risk Score
+            </th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+              Blockchain Hash
             </th>
           </tr>
         </thead>
@@ -1593,7 +1456,17 @@ const RelatedTransactionsTable: React.FC<{ transactions: RelatedTransaction[] }>
                 <p className="truncate w-32">{tx.senderAccount}</p>
                 <p className="truncate w-32 text-xs text-gray-500">to {tx.receiverAccount}</p>
               </td>
+              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                <Tag label={tx.status} variant={
+                  tx.status === 'Completed' ? 'success' :
+                  tx.status === 'Failed' ? 'danger' :
+                  tx.status === 'On Hold' ? 'warning' : 'info'
+                } />
+              </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm text-red-400 font-semibold">{tx.riskScore}</td>
+              <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500 font-mono">
+                {tx.blockhainHash ? `${tx.blockhainHash.substring(0, 8)}...` : 'N/A'}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -1602,12 +1475,6 @@ const RelatedTransactionsTable: React.FC<{ transactions: RelatedTransaction[] }>
   );
 };
 
-/**
- * @function AffectedEntitiesList
- * @description Displays a list of entities affected by or involved in the anomaly.
- * @param {object} props - Properties including the affected entities.
- * @returns {JSX.Element} The rendered list.
- */
 const AffectedEntitiesList: React.FC<{ entities: AffectedEntity[] }> = ({ entities }) => {
   if (!entities || entities.length === 0) {
     return <p className="text-gray-400 italic">No affected entities identified.</p>;
@@ -1626,22 +1493,29 @@ const AffectedEntitiesList: React.FC<{ entities: AffectedEntity[] }> = ({ entiti
             <span>Anomalies: <span className="font-semibold text-yellow-300">{entity.associatedAnomaliesCount}</span></span>
           </div>
           {entity.country && <p className="text-xs text-gray-500 mt-2">Location: {entity.city}, {entity.country}</p>}
+          {entity.digitalIdentityStatus && (
+            <p className="text-xs text-gray-500 mt-1">
+              Digital Identity: <Tag label={entity.digitalIdentityStatus} variant={
+                entity.digitalIdentityStatus === 'Verified' ? 'success' :
+                entity.digitalIdentityStatus === 'Revoked' ? 'danger' : 'warning'
+              } />
+            </p>
+          )}
         </div>
       ))}
     </div>
   );
 };
 
-/**
- * @function AIInsightsDisplay
- * @description Displays AI-generated recommendations and explainability features.
- * @param {object} props - Properties including AI recommendations and explainability features.
- * @returns {JSX.Element} The rendered AI insights section.
- */
-const AIInsightsDisplay: React.FC<{
+interface AIInsightsDisplayProps {
+  anomalyId: string;
   recommendations?: AIRecommendation[];
   explainabilityFeatures?: ExplainabilityFeature[];
-}> = ({ recommendations, explainabilityFeatures }) => {
+  applyAIRecommendation: (anomalyId: string, recommendationId: string, actor: string, actorIdentityId: string) => void;
+  currentUser: { name: string; identityId: string; role: string };
+}
+
+const AIInsightsDisplay: React.FC<AIInsightsDisplayProps> = ({ anomalyId, recommendations, explainabilityFeatures, applyAIRecommendation, currentUser }) => {
   return (
     <div className="space-y-6">
       <div className="p-4 bg-gray-900/30 rounded-lg border-l-4 border-cyan-600">
@@ -1654,11 +1528,25 @@ const AIInsightsDisplay: React.FC<{
         {(recommendations && recommendations.length > 0) ? (
           <ul className="list-disc list-inside space-y-3 text-gray-300 ml-2">
             {recommendations.map((rec) => (
-              <li key={rec.id} className="text-sm">
-                <span className="font-semibold text-white">[{rec.type} - {(rec.confidenceScore * 100).toFixed(0)}% Confidence]:</span>{' '}
-                {rec.description}
-                {rec.suggestedAction && <span className="ml-2 px-2 py-0.5 bg-indigo-700/50 rounded-full text-xs">{rec.suggestedAction}</span>}
-                {rec.status && <Tag label={rec.status} variant={rec.status === 'Accepted' ? 'success' : 'secondary'} className="ml-2" />}
+              <li key={rec.id} className="text-sm flex items-center justify-between">
+                <div className="flex-grow">
+                  <span className="font-semibold text-white">[{rec.type} - {(rec.confidenceScore * 100).toFixed(0)}% Confidence]:</span>{' '}
+                  {rec.description}
+                  {rec.suggestedAction && <span className="ml-2 px-2 py-0.5 bg-indigo-700/50 rounded-full text-xs">{rec.suggestedAction}</span>}
+                  {rec.status && <Tag label={rec.status} variant={rec.status === 'Accepted' || rec.status === 'Completed' ? 'success' : 'secondary'} className="ml-2" />}
+                  {rec.agentId && <Tag label={`By Agent: ${rec.agentId}`} variant="info" className="ml-2" />}
+                </div>
+                {rec.status === 'Pending' && (
+                  <Button
+                    size="sm"
+                    variant={rec.isAutomatedAction ? 'primary' : 'secondary'}
+                    onClick={() => applyAIRecommendation(anomalyId, rec.id, currentUser.name, currentUser.identityId)}
+                    disabled={rec.requiresApproval && currentUser.role === 'Analyst'} // Example RBAC
+                    className="ml-4"
+                  >
+                    {rec.isAutomatedAction ? 'Trigger Automated Action' : 'Apply Suggestion'}
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
@@ -1696,12 +1584,6 @@ const AIInsightsDisplay: React.FC<{
   );
 };
 
-/**
- * @function AnomalyAuditLog
- * @description Displays the audit trail for an anomaly.
- * @param {object} props - Properties including the audit log entries.
- * @returns {JSX.Element} The rendered audit log.
- */
 const AnomalyAuditLog: React.FC<{ auditLog?: AuditLogEntry[] }> = ({ auditLog }) => {
   if (!auditLog || auditLog.length === 0) {
     return <p className="text-gray-400 italic">No audit log entries for this anomaly.</p>;
@@ -1715,7 +1597,12 @@ const AnomalyAuditLog: React.FC<{ auditLog?: AuditLogEntry[] }> = ({ auditLog })
         <div key={entry.id} className="p-3 bg-gray-800/70 rounded-lg border border-gray-700">
           <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
             <span className="font-semibold text-white">{entry.action}</span>
-            <span>{new Date(entry.timestamp).toLocaleString()} by <span className="text-indigo-300">{entry.actor}</span></span>
+            <span className="flex items-center gap-2">
+              <span className="text-indigo-300">{entry.actor}</span>
+              <span className="text-gray-500">({entry.actorIdentityId || 'N/A'})</span>
+              <span className="ml-2">{new Date(entry.timestamp).toLocaleString()}</span>
+              <span className="ml-2 font-mono text-gray-600 cursor-help" title="Cryptographic Signature for tamper-evidence">{entry.cryptographicSignature?.substring(0, 8)}...</span>
+            </span>
           </div>
           <p className="text-sm text-gray-300">{entry.details}</p>
           {(entry.oldValue || entry.newValue) && (
@@ -1730,30 +1617,20 @@ const AnomalyAuditLog: React.FC<{ auditLog?: AuditLogEntry[] }> = ({ auditLog })
   );
 };
 
-/**
- * @interface CommentsSectionProps
- * @description Props for the CommentsSection component.
- */
 interface CommentsSectionProps {
   anomalyId: string;
   comments?: AnomalyComment[];
-  addAnomalyComment: (anomalyId: string, comment: string, author: string, isInternal?: boolean) => void;
-  currentUser: string;
+  addAnomalyComment: (anomalyId: string, comment: string, author: string, authorIdentityId: string, isInternal?: boolean) => void;
+  currentUser: { name: string; identityId: string; role: string };
 }
 
-/**
- * @function CommentsSection
- * @description Allows viewing and adding comments to an anomaly.
- * @param {CommentsSectionProps} props - The properties for the CommentsSection component.
- * @returns {JSX.Element} The rendered CommentsSection.
- */
 const CommentsSection: React.FC<CommentsSectionProps> = ({ anomalyId, comments, addAnomalyComment, currentUser }) => {
   const [newComment, setNewComment] = useState('');
   const [isInternalComment, setIsInternalComment] = useState(true);
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      addAnomalyComment(anomalyId, newComment, currentUser, isInternalComment);
+      addAnomalyComment(anomalyId, newComment, currentUser.name, currentUser.identityId, isInternalComment);
       setNewComment('');
     }
   };
@@ -1797,6 +1674,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ anomalyId, comments, 
                 <span className="flex items-center gap-2">
                   {comment.isInternal && <Tag label="Internal" variant="secondary" className="bg-gray-600 text-gray-200" />}
                   {new Date(comment.timestamp).toLocaleString()}
+                  <span className="ml-2 font-mono text-gray-600 cursor-help" title="Digital Identity of Author">{comment.authorIdentityId?.substring(0, 8)}...</span>
                 </span>
               </div>
               <p className="text-sm text-gray-300 leading-relaxed">{comment.comment}</p>
@@ -1810,33 +1688,23 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ anomalyId, comments, 
   );
 };
 
-/**
- * @interface EvidenceManagerProps
- * @description Props for the EvidenceManager component.
- */
 interface EvidenceManagerProps {
   anomalyId: string;
   evidence?: AnomalyEvidence[];
-  uploadEvidence: (anomalyId: string, filename: string, fileType: string, uploader: string, description: string, url: string) => void;
-  currentUser: string;
+  uploadEvidence: (anomalyId: string, filename: string, fileType: string, uploader: string, uploaderIdentityId: string, description: string, url: string) => void;
+  currentUser: { name: string; identityId: string; role: string };
 }
 
-/**
- * @function EvidenceManager
- * @description Manages and displays evidence files related to an anomaly.
- * @param {EvidenceManagerProps} props - The properties for the EvidenceManager component.
- * @returns {JSX.Element} The rendered EvidenceManager.
- */
 const EvidenceManager: React.FC<EvidenceManagerProps> = ({ anomalyId, evidence, uploadEvidence, currentUser }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newFilename, setNewFilename] = useState('');
   const [newFileType, setNewFileType] = useState('pdf');
   const [newDescription, setNewDescription] = useState('');
-  const [newFileUrl, setNewFileUrl] = useState(''); // Simulate file upload by providing URL
+  const [newFileUrl, setNewFileUrl] = useState('');
 
   const handleUploadSubmit = () => {
     if (newFilename && newFileUrl) {
-      uploadEvidence(anomalyId, newFilename, newFileType, currentUser, newDescription, newFileUrl);
+      uploadEvidence(anomalyId, newFilename, newFileType, currentUser.name, currentUser.identityId, newDescription, newFileUrl);
       setNewFilename('');
       setNewFileType('pdf');
       setNewDescription('');
@@ -1869,6 +1737,7 @@ const EvidenceManager: React.FC<EvidenceManagerProps> = ({ anomalyId, evidence, 
               </div>
               <p className="text-xs text-gray-400 mb-2">Uploaded by {file.uploader} on {new Date(file.uploadDate).toLocaleDateString()}</p>
               {file.description && <p className="text-sm text-gray-300 italic">{file.description}</p>}
+              {file.integrityHash && <p className="text-xs text-gray-500 mt-1 font-mono">Hash: {file.integrityHash.substring(0, 16)}...</p>}
             </div>
           ))}
         </div>
@@ -1896,6 +1765,8 @@ const EvidenceManager: React.FC<EvidenceManagerProps> = ({ anomalyId, evidence, 
               { value: 'doc', label: 'Word Document' },
               { value: 'xls', label: 'Excel Spreadsheet' },
               { value: 'pcap', label: 'Network Capture (PCAP)' },
+              { value: 'json', label: 'JSON Data' },
+              { value: 'zip', label: 'ZIP Archive' },
             ]}
             selectedValue={newFileType}
             onChange={(val) => setNewFileType(val as string)}
@@ -1931,13 +1802,6 @@ const EvidenceManager: React.FC<EvidenceManagerProps> = ({ anomalyId, evidence, 
   );
 };
 
-/**
- * @function AnomalyDetailPanel
- * @description The main panel for displaying all details and enabling actions for a selected anomaly.
- * This component orchestrates all sub-components related to anomaly investigation.
- * @param {AnomalyDetailPanelProps} props - The properties for the AnomalyDetailPanel.
- * @returns {JSX.Element} The rendered detail panel.
- */
 export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
   anomaly,
   onClose,
@@ -1946,52 +1810,56 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
   updateAnomalyDetails,
   assignAnomaly,
   uploadEvidence,
+  applyAIRecommendation,
   currentUser,
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState<string | undefined>(anomaly.assignedTo || undefined);
+  const [selectedAssigneeIdentityId, setSelectedAssigneeIdentityId] = useState<string | undefined>(anomaly.assignedToIdentityId || undefined);
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
   const [isDismissModalOpen, setIsDismissModalOpen] = useState(false);
   const [resolutionReason, setResolutionReason] = useState<AnomalyResolutionReason | undefined>(undefined);
   const [resolutionNotes, setResolutionNotes] = useState('');
 
   const availableAssignees = useMemo(() => [
-    { value: 'Analyst A', label: 'Analyst A (Fraud)' },
-    { value: 'Analyst B', label: 'Analyst B (Compliance)' },
-    { value: 'Analyst C', label: 'Analyst C (Ops)' },
-    { value: 'Team Lead X', label: 'Team Lead X' },
+    { value: 'Analyst A', label: 'Analyst A (Fraud)', identityId: 'DID-7890' },
+    { value: 'Analyst B', label: 'Analyst B (Compliance)', identityId: 'DID-1234' },
+    { value: 'Analyst C', label: 'Analyst C (Ops)', identityId: 'DID-5678' },
+    { value: 'Team Lead X', label: 'Team Lead X', identityId: 'DID-9999' },
+    { value: 'Agent_Compliance_1', label: 'AI Agent (Compliance)', identityId: 'AID-001' },
   ], []);
 
   useEffect(() => {
     setSelectedAssignee(anomaly.assignedTo || undefined);
+    setSelectedAssigneeIdentityId(anomaly.assignedToIdentityId || undefined);
     setResolutionReason(anomaly.resolutionReason || undefined);
     setResolutionNotes(anomaly.resolutionNotes || '');
   }, [anomaly]);
 
   const handleAssignAnomaly = () => {
-    if (selectedAssignee) {
-      assignAnomaly(anomaly.id, selectedAssignee);
+    if (selectedAssignee && selectedAssigneeIdentityId) {
+      assignAnomaly(anomaly.id, selectedAssignee, selectedAssigneeIdentityId, currentUser.name, currentUser.identityId);
       setIsAssignModalOpen(false);
     }
   };
 
   const handleResolveAnomaly = () => {
     if (resolutionReason) {
-      updateAnomalyStatus(anomaly.id, 'Resolved');
-      // In a real app, updateAnomalyDetails would also save resolution reason/notes
-      updateAnomalyDetails({ ...anomaly, status: 'Resolved', resolutionReason, resolutionNotes, timeToResolutionSeconds: (new Date().getTime() - new Date(anomaly.detectionTimestamp).getTime()) / 1000 });
+      updateAnomalyStatus(anomaly.id, 'Resolved', currentUser.name, currentUser.identityId, resolutionReason, resolutionNotes);
       setIsResolveModalOpen(false);
     }
   };
 
   const handleDismissAnomaly = () => {
     if (resolutionReason) {
-      updateAnomalyStatus(anomaly.id, 'Dismissed');
-      // In a real app, updateAnomalyDetails would also save dismissal reason/notes
-      updateAnomalyDetails({ ...anomaly, status: 'Dismissed', resolutionReason, resolutionNotes });
+      updateAnomalyStatus(anomaly.id, 'Dismissed', currentUser.name, currentUser.identityId, resolutionReason, resolutionNotes);
       setIsDismissModalOpen(false);
     }
+  };
+
+  const handleStatusChange = (newStatus: AnomalyWorkflowStatus, reason?: AnomalyResolutionReason, notes?: string) => {
+    updateAnomalyStatus(anomaly.id, newStatus, currentUser.name, currentUser.identityId, reason, notes);
   };
 
   const tabs = useMemo(() => [
@@ -2003,7 +1871,7 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
         <Card className="p-6 bg-gray-800/60 border border-gray-700">
           <h4 className="text-xl font-bold text-white mb-4">Transactions Linked to Anomaly</h4>
           <RelatedTransactionsTable transactions={anomaly.relatedTransactions || []} />
-          <p className="text-xs text-gray-500 mt-4">Note: This table shows transactions that were identified by the AI system as potentially related to this anomaly. Further investigation may be required to confirm causality.</p>
+          <p className="text-xs text-gray-500 mt-4">Note: This table shows transactions that were identified by the AI system as potentially related to this anomaly. Further investigation may be required to confirm causality, potentially involving the Programmable Token Rail Layer.</p>
         </Card>
       ),
     },
@@ -2014,7 +1882,7 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
         <Card className="p-6 bg-gray-800/60 border border-gray-700">
           <h4 className="text-xl font-bold text-white mb-4">Entities Involved</h4>
           <AffectedEntitiesList entities={anomaly.affectedEntities || []} />
-          <p className="text-xs text-gray-500 mt-4">Entities are accounts, users, or vendors found to be connected to the anomalous activity. Detailed profiles for these entities can be accessed via Entity Management module.</p>
+          <p className="text-xs text-gray-500 mt-4">Entities are accounts, users, or vendors found to be connected to the anomalous activity. Detailed profiles for these entities can be accessed via Entity Management module, leveraging the Digital Identity and Trust Layer for verification.</p>
         </Card>
       ),
     },
@@ -2025,10 +1893,13 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
         <Card className="p-6 bg-gray-800/60 border border-gray-700">
           <h4 className="text-xl font-bold text-white mb-4">AI Analysis and Recommendations</h4>
           <AIInsightsDisplay
+            anomalyId={anomaly.id}
             recommendations={anomaly.aiRecommendations}
             explainabilityFeatures={anomaly.explainabilityFeatures}
+            applyAIRecommendation={applyAIRecommendation}
+            currentUser={currentUser}
           />
-          <p className="text-xs text-gray-500 mt-4">AI recommendations provide suggested next steps based on learned patterns. Explainable AI features highlight the data points that most influenced the anomaly detection model.</p>
+          <p className="text-xs text-gray-500 mt-4">AI recommendations provide suggested next steps based on learned patterns. Explainable AI features highlight the data points that most influenced the anomaly detection model, crucial for the Agentic Intelligence Layer.</p>
         </Card>
       ),
     },
@@ -2039,7 +1910,7 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
         <Card className="p-6 bg-gray-800/60 border border-gray-700">
           <h4 className="text-xl font-bold text-white mb-4">Anomaly Activity History</h4>
           <AnomalyAuditLog auditLog={anomaly.auditLog} />
-          <p className="text-xs text-gray-500 mt-4">All actions taken on this anomaly are logged here for compliance and auditing purposes. This includes status changes, assignments, and evidence uploads.</p>
+          <p className="text-xs text-gray-500 mt-4">All actions taken on this anomaly are logged here for compliance and auditing purposes, with cryptographic signatures ensuring tamper-evidence. This forms the backbone of the Governance, Observability, and Integrity system.</p>
         </Card>
       ),
     },
@@ -2049,7 +1920,7 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
       content: (
         <Card className="p-6 bg-gray-800/60 border border-gray-700">
           <CommentsSection anomalyId={anomaly.id} comments={anomaly.comments} addAnomalyComment={addAnomalyComment} currentUser={currentUser} />
-          <p className="text-xs text-gray-500 mt-4">Analysts can add internal or external comments here during the investigation process. These comments aid in collaboration and knowledge sharing.</p>
+          <p className="text-xs text-gray-500 mt-4">Analysts can add internal or external comments here during the investigation process. These comments aid in collaboration and knowledge sharing, leveraging digital identities for attribution.</p>
         </Card>
       ),
     },
@@ -2059,26 +1930,27 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
       content: (
         <Card className="p-6 bg-gray-800/60 border border-gray-700">
           <EvidenceManager anomalyId={anomaly.id} evidence={anomaly.evidence} uploadEvidence={uploadEvidence} currentUser={currentUser} />
-          <p className="text-xs text-gray-500 mt-4">Uploaded files (e.g., reports, logs, screenshots) relevant to the anomaly investigation are stored and managed here.</p>
+          <p className="text-xs text-gray-500 mt-4">Uploaded files (e.g., reports, logs, screenshots) relevant to the anomaly investigation are stored and managed here, with integrity hashes for verifiable authenticity.</p>
         </Card>
       ),
     },
-  ], [anomaly, addAnomalyComment, uploadEvidence, currentUser]);
+  ], [anomaly, addAnomalyComment, uploadEvidence, currentUser, applyAIRecommendation]);
+
+  const assigneeOptions = useMemo(() => availableAssignees.map(a => ({ value: a.value, label: a.label })), [availableAssignees]);
 
   return (
     <Modal isOpen={true} onClose={onClose} title={`Anomaly Details: ${anomaly.id.substring(0, 8)}`} size="xl">
       <div className="space-y-6">
-        {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 items-center justify-end border-b border-gray-700 pb-4 mb-4">
           {anomaly.status === 'New' && (
             <>
               <Button onClick={() => setIsAssignModalOpen(true)} variant="secondary">
                 Assign
               </Button>
-              <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review')} variant="secondary">
+              <Button onClick={() => handleStatusChange('Under Review')} variant="secondary">
                 Begin Review
               </Button>
-              <Button onClick={() => setIsDismissModalOpen(true)} variant="danger">
+              <Button onClick={() => setIsDismissModalOpen(true)} variant="danger" disabled={currentUser.role === 'Analyst' && anomaly.severity === 'Critical'}>
                 Dismiss
               </Button>
             </>
@@ -2088,10 +1960,10 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
               <Button onClick={() => setIsAssignModalOpen(true)} variant="secondary">
                 Reassign
               </Button>
-              <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Pending Further Info')} variant="secondary">
+              <Button onClick={() => handleStatusChange('Pending Further Info')} variant="secondary">
                 Request More Info
               </Button>
-              <Button onClick={() => setIsDismissModalOpen(true)} variant="danger">
+              <Button onClick={() => setIsDismissModalOpen(true)} variant="danger" disabled={currentUser.role === 'Analyst' && anomaly.severity === 'Critical'}>
                 Dismiss
               </Button>
               <Button onClick={() => setIsResolveModalOpen(true)} variant="primary">
@@ -2099,15 +1971,15 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
               </Button>
             </>
           )}
-          {(anomaly.status === 'Pending Further Info' || anomaly.status === 'Escalated' || anomaly.status === 'On Hold') && (
+          {(anomaly.status === 'Pending Further Info' || anomaly.status === 'Escalated' || anomaly.status === 'On Hold' || anomaly.status === 'Automated Remediation') && (
             <>
               <Button onClick={() => setIsAssignModalOpen(true)} variant="secondary">
                 Reassign
               </Button>
-              <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review')} variant="secondary">
+              <Button onClick={() => handleStatusChange('Under Review')} variant="secondary">
                 Continue Review
               </Button>
-              <Button onClick={() => setIsDismissModalOpen(true)} variant="danger">
+              <Button onClick={() => setIsDismissModalOpen(true)} variant="danger" disabled={currentUser.role === 'Analyst' && anomaly.severity === 'Critical'}>
                 Dismiss
               </Button>
               <Button onClick={() => setIsResolveModalOpen(true)} variant="primary">
@@ -2123,15 +1995,18 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
         <TabPanel tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      {/* Assign Modal */}
       <Modal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} title="Assign Anomaly" size="sm">
         <div className="space-y-4">
-          <p className="text-gray-300">Select an analyst or team to assign this anomaly to.</p>
+          <p className="text-gray-300">Select an analyst or intelligent agent to assign this anomaly to.</p>
           <FilterSelect
             label="Assignee"
-            options={availableAssignees}
+            options={assigneeOptions}
             selectedValue={selectedAssignee}
-            onChange={(val) => setSelectedAssignee(val as string)}
+            onChange={(val) => {
+              setSelectedAssignee(val as string);
+              const assigneeObj = availableAssignees.find(a => a.value === val);
+              setSelectedAssigneeIdentityId(assigneeObj?.identityId);
+            }}
             allowClear={true}
           />
         </div>
@@ -2139,13 +2014,12 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
           <Button variant="secondary" onClick={() => setIsAssignModalOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleAssignAnomaly} disabled={!selectedAssignee}>
+          <Button onClick={handleAssignAnomaly} disabled={!selectedAssignee || !selectedAssigneeIdentityId}>
             Assign
           </Button>
         </div>
       </Modal>
 
-      {/* Resolve Modal */}
       <Modal isOpen={isResolveModalOpen} onClose={() => setIsResolveModalOpen(false)} title="Resolve Anomaly" size="md">
         <div className="space-y-4">
           <p className="text-gray-300">Confirm resolution of anomaly: <span className="font-mono text-cyan-300">{anomaly.id.substring(0,8)}</span></p>
@@ -2158,6 +2032,8 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
               { value: 'Legitimate Business Activity', label: 'Legitimate Business Activity' },
               { value: 'Policy Update', label: 'Policy Update' },
               { value: 'Regulatory Reporting Filed', label: 'Regulatory Reporting Filed' },
+              { value: 'System Error Correction', label: 'System Error Correction' },
+              { value: 'Automated Action Completed', label: 'Automated Action Completed' },
               { value: 'Other', label: 'Other' },
             ]}
             selectedValue={resolutionReason}
@@ -2169,7 +2045,7 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
             onChange={(e) => setResolutionNotes(e.target.value)}
             multiline
             rows={4}
-            placeholder="Add detailed notes about the resolution, actions taken, and impact."
+            placeholder="Add detailed notes about the resolution, actions taken, and impact. This will be recorded in the immutable audit log."
           />
         </div>
         <div className="flex justify-end gap-3 mt-6">
@@ -2182,7 +2058,6 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
         </div>
       </Modal>
 
-      {/* Dismiss Modal */}
       <Modal isOpen={isDismissModalOpen} onClose={() => setIsDismissModalOpen(false)} title="Dismiss Anomaly" size="md">
         <div className="space-y-4">
           <p className="text-gray-300">Are you sure you want to dismiss anomaly: <span className="font-mono text-cyan-300">{anomaly.id.substring(0,8)}</span>?</p>
@@ -2205,7 +2080,7 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
             onChange={(e) => setResolutionNotes(e.target.value)}
             multiline
             rows={4}
-            placeholder="Provide detailed reasons for dismissing this anomaly."
+            placeholder="Provide detailed reasons for dismissing this anomaly. This will be recorded in the immutable audit log."
           />
         </div>
         <div className="flex justify-end gap-3 mt-6">
@@ -2221,15 +2096,12 @@ export const AnomalyDetailPanel: React.FC<AnomalyDetailPanelProps> = ({
   );
 };
 
-// =====================================================================================================================
-// DASHBOARD COMPONENTS - Overview of anomaly detection metrics
-// These components provide high-level summaries and visualizations.
-// =====================================================================================================================
+"""
+Offers a high-level overview of the anomaly detection system's health and performance.
+This dashboard provides real-time key performance indicators and visualizations,
+enabling executive-level insights into operational intelligence and risk posture.
+"""
 
-/**
- * @interface DashboardStats
- * @description Represents key statistics for the anomaly detection dashboard.
- */
 export interface DashboardStats {
   totalAnomalies: number;
   newAnomalies: number;
@@ -2237,18 +2109,14 @@ export interface DashboardStats {
   resolvedAnomalies: number;
   criticalAnomalies: number;
   falsePositives: number;
+  automatedRemediations: number; // New stat
   avgResolutionTimeHours: number;
-  anomaliesLast7Days: number[]; // e.g., [10, 12, 8, 15, 11, 9, 13]
+  anomaliesLast7Days: number[];
   severityDistribution: { severity: AnomalySeverity; count: number }[];
   categoryDistribution: { category: AnomalyCategory; count: number }[];
+  riskPostureIndex: number; // New aggregate risk metric
 }
 
-/**
- * @function calculateDashboardStats
- * @description Calculates dashboard statistics from a list of anomalies.
- * @param {FinancialAnomalyExtended[]} anomalies - The list of anomalies.
- * @returns {DashboardStats} Calculated dashboard statistics.
- */
 export const calculateDashboardStats = (anomalies: FinancialAnomalyExtended[]): DashboardStats => {
   const totalAnomalies = anomalies.length;
   const newAnomalies = anomalies.filter((a) => a.status === 'New').length;
@@ -2256,6 +2124,7 @@ export const calculateDashboardStats = (anomalies: FinancialAnomalyExtended[]): 
   const resolvedAnomalies = anomalies.filter((a) => a.status === 'Resolved').length;
   const criticalAnomalies = anomalies.filter((a) => a.severity === 'Critical').length;
   const falsePositives = anomalies.filter((a) => a.status === 'Dismissed' && a.resolutionReason === 'False Positive').length;
+  const automatedRemediations = anomalies.filter((a) => a.status === 'Automated Remediation' || (a.status === 'Resolved' && a.resolutionReason === 'Automated Action Completed')).length;
 
   const resolvedTimes = anomalies
     .filter((a) => a.status === 'Resolved' && a.timeToResolutionSeconds !== undefined)
@@ -2265,14 +2134,18 @@ export const calculateDashboardStats = (anomalies: FinancialAnomalyExtended[]): 
 
   const now = new Date();
   const last7DaysData: number[] = Array(7).fill(0);
-  anomalies.forEach((anomaly) => {
-    const detectionDate = new Date(anomaly.detectionTimestamp);
-    const diffTime = Math.abs(now.getTime() - detectionDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays >= 1 && diffDays <= 7) {
-      last7DaysData[7 - diffDays]++;
-    }
-  });
+  for (let i = 0; i < 7; i++) {
+      const dayStart = new Date(now);
+      dayStart.setDate(now.getDate() - i);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayStart.getDate() + 1);
+
+      last7DaysData[6 - i] = anomalies.filter(a => {
+          const detectionDate = new Date(a.detectionTimestamp);
+          return detectionDate >= dayStart && detectionDate < dayEnd;
+      }).length;
+  }
 
   const severityDistribution: { severity: AnomalySeverity; count: number }[] = [
     'Critical', 'High', 'Medium', 'Low', 'Informational'
@@ -2291,6 +2164,12 @@ export const calculateDashboardStats = (anomalies: FinancialAnomalyExtended[]): 
     count,
   }));
 
+  // Simple heuristic for risk posture: average risk score of active/critical anomalies
+  const activeAnomalies = anomalies.filter(a => a.status !== 'Resolved' && a.status !== 'Dismissed');
+  const riskPostureIndex = activeAnomalies.length > 0
+    ? activeAnomalies.reduce((sum, a) => sum + (a.currentRiskRating || a.riskScore), 0) / activeAnomalies.length
+    : 0;
+
   return {
     totalAnomalies,
     newAnomalies,
@@ -2298,34 +2177,58 @@ export const calculateDashboardStats = (anomalies: FinancialAnomalyExtended[]): 
     resolvedAnomalies,
     criticalAnomalies,
     falsePositives,
+    automatedRemediations,
     avgResolutionTimeHours: parseFloat(avgResolutionTimeHours.toFixed(1)),
     anomaliesLast7Days: last7DaysData,
     severityDistribution,
     categoryDistribution,
+    riskPostureIndex: parseFloat(riskPostureIndex.toFixed(1)),
   };
 };
 
-/**
- * @interface DashboardOverviewProps
- * @description Props for the DashboardOverview component.
- */
-interface DashboardOverviewProps {
+export interface DashboardOverviewProps {
   stats: DashboardStats;
   onViewAllAnomalies: (status?: AnomalyWorkflowStatus) => void;
   onViewCriticalAnomalies: () => void;
 }
 
-/**
- * @function DashboardOverview
- * @description Displays key performance indicators and high-level charts for anomaly detection.
- * @param {DashboardOverviewProps} props - The properties for the DashboardOverview component.
- * @returns {JSX.Element} The rendered dashboard overview.
- */
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   stats,
   onViewAllAnomalies,
   onViewCriticalAnomalies,
 }) => {
+  const renderSimpleChart = (data: number[], labels: string[], title: string) => (
+    <div className="relative w-full h-full p-4">
+      <h5 className="text-md font-semibold text-gray-300 mb-2 text-center">{title}</h5>
+      <div className="flex justify-around items-end h-full pt-4">
+        {data.map((value, index) => {
+          const maxValue = Math.max(...data);
+          const height = maxValue > 0 ? (value / maxValue) * 80 + 10 : 0; // Scale height to max 90%, min 10% if > 0
+          return (
+            <div key={index} className="flex flex-col items-center flex-grow mx-1">
+              <span className="text-xs text-white absolute top-0">{value}</span>
+              <div
+                className="w-4 bg-indigo-500 rounded-t-sm"
+                style={{ height: `${height}%` }}
+              ></div>
+              <span className="text-xs text-gray-400 mt-1">{labels[index]}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const severityLabels = stats.severityDistribution.map(d => d.severity);
+  const severityCounts = stats.severityDistribution.map(d => d.count);
+  const categoryLabels = stats.categoryDistribution.map(d => d.category);
+  const categoryCounts = stats.categoryDistribution.map(d => d.count);
+  const last7DaysLabels = Array.from({length: 7}, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  });
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -2355,37 +2258,77 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           change={stats.avgResolutionTimeHours > 24 ? '+Slow' : '-Fast'} changeType={stats.avgResolutionTimeHours > 24 ? 'negative' : 'positive'}
         />
+        <StatCard
+          title="Critical Anomalies"
+          value={stats.criticalAnomalies}
+          description="High-priority, high-impact risks"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
+          change={stats.criticalAnomalies > 5 ? '+High' : '-Low'} changeType={stats.criticalAnomalies > 5 ? 'negative' : 'positive'}
+        />
+        <StatCard
+          title="Automated Remediations"
+          value={stats.automatedRemediations}
+          description="Agent-executed resolutions"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 17h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM12 15v-2m0 0v-2m0 2h2m-2 0H10" /></svg>}
+          change={stats.automatedRemediations > 0 ? '+Active' : 'N/A'} changeType={stats.automatedRemediations > 0 ? 'positive' : 'neutral'}
+        />
+        <StatCard
+          title="Risk Posture Index"
+          value={stats.riskPostureIndex}
+          description="Aggregate risk of active anomalies (0-100)"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>}
+          change={stats.riskPostureIndex > 50 ? '+Elevated' : '-Stable'} changeType={stats.riskPostureIndex > 50 ? 'negative' : 'positive'}
+        />
+        <StatCard
+          title="False Positives"
+          value={stats.falsePositives}
+          description="Accuracy of detection models"
+          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          change={stats.falsePositives > 10 ? '+High' : '-Low'} changeType={stats.falsePositives > 10 ? 'negative' : 'positive'}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartPlaceholder
           title="Anomalies Detected Last 7 Days"
           height="h-64"
-          description="Trend of newly detected anomalies over the past week."
+          description="Trend of newly detected anomalies over the past week, indicating system vigilance."
           className="hover:shadow-lg hover:shadow-indigo-500/20 transition-shadow duration-300"
-        />
+        >
+          {renderSimpleChart(stats.anomaliesLast7Days, last7DaysLabels, 'Daily Anomaly Count')}
+        </ChartPlaceholder>
         <ChartPlaceholder
           title="Anomaly Severity Distribution"
           height="h-64"
-          description="Breakdown of anomalies by their assigned severity level."
+          description="Breakdown of anomalies by their assigned severity level, highlighting critical risks."
           className="hover:shadow-lg hover:shadow-indigo-500/20 transition-shadow duration-300"
-        />
+        >
+          {renderSimpleChart(severityCounts, severityLabels, 'Severity Distribution')}
+        </ChartPlaceholder>
         <ChartPlaceholder
           title="Anomaly Category Distribution"
           height="h-64"
-          description="Categorization of anomalies to identify common patterns."
+          description="Categorization of anomalies to identify common patterns and systemic vulnerabilities."
           className="hover:shadow-lg hover:shadow-indigo-500/20 transition-shadow duration-300"
-        />
+        >
+          {renderSimpleChart(categoryCounts, categoryLabels, 'Category Distribution')}
+        </ChartPlaceholder>
         <ChartPlaceholder
           title="Resolution Status Overview"
           height="h-64"
-          description="Percentage of anomalies by their current workflow status."
+          description="Percentage of anomalies by their current workflow status, reflecting operational efficiency."
           className="hover:shadow-lg hover:shadow-indigo-500/20 transition-shadow duration-300"
-        />
+        >
+          {renderSimpleChart(
+            [stats.resolvedAnomalies, stats.underReviewAnomalies, stats.newAnomalies, stats.dismissedAnomalies],
+            ['Resolved', 'Under Review', 'New', 'Dismissed'],
+            'Workflow Status'
+          )}
+        </ChartPlaceholder>
       </div>
 
       <div className="p-6 bg-gray-800/50 rounded-lg border border-gray-700 flex justify-center items-center gap-4 flex-wrap">
-        <h3 className="text-xl font-bold text-white flex-grow text-center lg:text-left">Quick Actions</h3>
+        <h3 className="text-xl font-bold text-white flex-grow text-center lg:text-left">Strategic Actions</h3>
         <Button onClick={() => onViewAllAnomalies()} variant="secondary">
           View All Anomalies ({stats.totalAnomalies})
         </Button>
@@ -2395,21 +2338,21 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         <Button onClick={onViewCriticalAnomalies} variant="danger">
           Investigate Criticals ({stats.criticalAnomalies})
         </Button>
+        <Button onClick={() => onViewAllAnomalies('Automated Remediation')} variant="info">
+          Automated Remediation Logs ({stats.automatedRemediations})
+        </Button>
       </div>
     </div>
   );
 };
 
-// =====================================================================================================================
-// MAIN VIEW COMPONENT - AnomalyDetectionView
-// This integrates all the sub-components and manages the overall state and logic.
-// =====================================================================================================================
+"""
+Serves as the central orchestrator for the AI-powered anomaly detection and management system.
+It integrates real-time data, intelligent automation, and comprehensive visualization tools
+to provide a unified platform for risk mitigation and operational integrity across the financial ecosystem.
+"""
 
-/**
- * @interface FilterOptions
- * @description Defines the available filters for the anomaly list.
- */
-interface FilterOptions {
+export interface FilterOptions {
   status?: AnomalyWorkflowStatus;
   severity?: AnomalySeverity;
   category?: AnomalyCategory;
@@ -2417,27 +2360,14 @@ interface FilterOptions {
   searchTerm?: string;
 }
 
-/**
- * @interface SortOptions
- * @description Defines the available sorting options for the anomaly list.
- */
-interface SortOptions {
+export interface SortOptions {
   field: keyof FinancialAnomalyExtended | '';
   direction: 'asc' | 'desc';
 }
 
-/**
- * @function AnomalyDetectionView
- * @description The main component for displaying and managing AI-powered anomaly detection.
- * This component orchestrates the dashboard, anomaly list, and detail panel.
- * @returns {JSX.Element} The rendered AnomalyDetectionView.
- */
 const AnomalyDetectionView: React.FC = () => {
-  // Use the mock context for this extended file. In a real app, you'd use the actual DataContext
-  // and extend it in the context file itself.
-  const { financialAnomalies, updateAnomalyStatus, addAnomalyComment, updateAnomalyDetails, assignAnomaly, dismissAnomalies, resolveAnomalies, uploadEvidence } = useMockDataContext();
+  const { financialAnomalies, updateAnomalyStatus, addAnomalyComment, updateAnomalyDetails, assignAnomaly, dismissAnomalies, resolveAnomalies, uploadEvidence, applyAIRecommendation, notifications, dismissNotification } = useMockDataContext();
 
-  // State for anomaly list management
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filters, setFilters] = useState<FilterOptions>({});
@@ -2449,20 +2379,14 @@ const AnomalyDetectionView: React.FC = () => {
   const [bulkActionReason, setBulkActionReason] = useState<AnomalyResolutionReason | undefined>(undefined);
   const [bulkActionNotes, setBulkActionNotes] = useState('');
   const [bulkActionAssignee, setBulkActionAssignee] = useState<string | undefined>(undefined);
-  const [activeView, setActiveView] = useState<'dashboard' | 'anomalies'>('dashboard'); // New state for view switching
+  const [bulkActionAssigneeIdentityId, setBulkActionAssigneeIdentityId] = useState<string | undefined>(undefined);
+  const [activeView, setActiveView] = useState<'dashboard' | 'anomalies'>('dashboard');
 
-  // Mock current user for actions
-  const currentUser = 'Analyst Alpha';
+  const currentUser = useMemo(() => ({ name: 'Analyst Alpha', identityId: 'USER-001', role: 'Team Lead' as 'Analyst' | 'Admin' | 'Team Lead' }), []);
 
-  /**
-   * @function filteredAndSortedAnomalies
-   * @description Memoized function to apply filters and sorting to the anomaly list.
-   * @returns {FinancialAnomalyExtended[]} The filtered and sorted list of anomalies.
-   */
   const filteredAndSortedAnomalies = useMemo(() => {
     let result = [...financialAnomalies];
 
-    // Apply filters
     if (filters.status) {
       result = result.filter((a) => a.status === filters.status);
     }
@@ -2485,7 +2409,6 @@ const AnomalyDetectionView: React.FC = () => {
       );
     }
 
-    // Apply sorting
     if (sort.field) {
       result.sort((a, b) => {
         const aValue = a[sort.field as keyof FinancialAnomalyExtended];
@@ -2497,7 +2420,6 @@ const AnomalyDetectionView: React.FC = () => {
         if (typeof aValue === 'number' && typeof bValue === 'number') {
           return sort.direction === 'asc' ? aValue - bValue : bValue - aValue;
         }
-        // Fallback for other types or null/undefined
         return 0;
       });
     }
@@ -2505,7 +2427,6 @@ const AnomalyDetectionView: React.FC = () => {
     return result;
   }, [financialAnomalies, filters, sort]);
 
-  // Pagination calculation
   const totalPages = Math.ceil(filteredAndSortedAnomalies.length / itemsPerPage);
   const paginatedAnomalies = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -2520,7 +2441,7 @@ const AnomalyDetectionView: React.FC = () => {
 
   const handleFilterChange = useCallback((key: keyof FilterOptions, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   }, []);
 
   const handleSortChange = useCallback((field: keyof FinancialAnomalyExtended) => {
@@ -2553,30 +2474,30 @@ const AnomalyDetectionView: React.FC = () => {
   }, []);
 
   const handleOpenBulkActionModal = useCallback((type: 'resolve' | 'dismiss' | 'assign') => {
-    if (selectedAnomalyIds.length === 0) return; // Should not happen with disabled button
+    if (selectedAnomalyIds.length === 0) return;
     setBulkActionType(type);
     setBulkActionReason(undefined);
     setBulkActionNotes('');
     setBulkActionAssignee(undefined);
+    setBulkActionAssigneeIdentityId(undefined);
     setIsBulkActionModalOpen(true);
   }, [selectedAnomalyIds]);
 
   const handlePerformBulkAction = useCallback(() => {
     if (bulkActionType === 'resolve' && bulkActionReason) {
-      resolveAnomalies(selectedAnomalyIds, bulkActionReason, bulkActionNotes);
+      resolveAnomalies(selectedAnomalyIds, bulkActionReason, bulkActionNotes, currentUser.name, currentUser.identityId);
     } else if (bulkActionType === 'dismiss' && bulkActionReason) {
-      dismissAnomalies(selectedAnomalyIds, bulkActionReason, bulkActionNotes);
-    } else if (bulkActionType === 'assign' && bulkActionAssignee) {
-      selectedAnomalyIds.forEach(id => assignAnomaly(id, bulkActionAssignee));
+      dismissAnomalies(selectedAnomalyIds, bulkActionReason, bulkActionNotes, currentUser.name, currentUser.identityId);
+    } else if (bulkActionType === 'assign' && bulkActionAssignee && bulkActionAssigneeIdentityId) {
+      selectedAnomalyIds.forEach(id => assignAnomaly(id, bulkActionAssignee, bulkActionAssigneeIdentityId, currentUser.name, currentUser.identityId));
     } else {
       console.error('Invalid bulk action or missing required fields');
       return;
     }
     setIsBulkActionModalOpen(false);
-    setSelectedAnomalyIds([]); // Clear selection after action
-  }, [bulkActionType, bulkActionReason, bulkActionNotes, bulkActionAssignee, selectedAnomalyIds, resolveAnomalies, dismissAnomalies, assignAnomaly]);
+    setSelectedAnomalyIds([]);
+  }, [bulkActionType, bulkActionReason, bulkActionNotes, bulkActionAssignee, bulkActionAssigneeIdentityId, selectedAnomalyIds, resolveAnomalies, dismissAnomalies, assignAnomaly, currentUser]);
 
-  // Dashboard functions
   const dashboardStats = useMemo(() => calculateDashboardStats(financialAnomalies), [financialAnomalies]);
   const handleViewAllAnomaliesFromDashboard = useCallback((status?: AnomalyWorkflowStatus) => {
     setFilters(status ? { status } : {});
@@ -2590,8 +2511,18 @@ const AnomalyDetectionView: React.FC = () => {
     setCurrentPage(1);
   }, []);
 
-  // Available options for filters
-  const anomalyStatusOptions = useMemo(() => Object.values(AnomalyStatus).map(s => ({ value: s, label: s })), []);
+  const anomalyStatusOptions = useMemo(() => ([
+    { value: 'New', label: 'New' },
+    { value: 'Under Review', label: 'Under Review' },
+    { value: 'Pending Further Info', label: 'Pending Further Info' },
+    { value: 'Escalated', label: 'Escalated' },
+    { value: 'False Positive', label: 'False Positive' },
+    { value: 'Resolved', label: 'Resolved' },
+    { value: 'Dismissed', label: 'Dismissed' },
+    { value: 'Archived', label: 'Archived' },
+    { value: 'On Hold', label: 'On Hold' },
+    { value: 'Automated Remediation', label: 'Automated Remediation' },
+  ]), []);
   const anomalySeverityOptions = useMemo(() => ([
     { value: 'Critical', label: 'Critical' },
     { value: 'High', label: 'High' },
@@ -2601,13 +2532,13 @@ const AnomalyDetectionView: React.FC = () => {
   ]), []);
   const anomalyCategoryOptions = useMemo(() => Object.values(AnomalyCategory).map(c => ({ value: c, label: c })), []);
   const availableAssignees = useMemo(() => [
-    { value: 'Analyst A', label: 'Analyst A (Fraud)' },
-    { value: 'Analyst B', label: 'Analyst B (Compliance)' },
-    { value: 'Analyst C', label: 'Analyst C (Ops)' },
-    { value: 'Team Lead X', label: 'Team Lead X' },
+    { value: 'Analyst A', label: 'Analyst A (Fraud)', identityId: 'DID-7890' },
+    { value: 'Analyst B', label: 'Analyst B (Compliance)', identityId: 'DID-1234' },
+    { value: 'Analyst C', label: 'Analyst C (Ops)', identityId: 'DID-5678' },
+    { value: 'Team Lead X', label: 'Team Lead X', identityId: 'DID-9999' },
+    { value: 'Agent_Compliance_1', label: 'AI Agent (Compliance)', identityId: 'AID-001' },
   ], []);
 
-  // Existing SeverityIndicator from original file, adapted for AnomalySeverity
   const SeverityIndicator: React.FC<{ severity: AnomalySeverity }> = ({ severity }) => {
     const colors = {
       Critical: 'border-red-500',
@@ -2663,7 +2594,6 @@ const AnomalyDetectionView: React.FC = () => {
 
       {activeView === 'anomalies' && (
         <>
-          {/* Anomaly Filters and Search */}
           <Card className="p-6 bg-gray-800/60 border border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-4">Filter & Search Anomalies</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -2693,7 +2623,7 @@ const AnomalyDetectionView: React.FC = () => {
               />
               <FilterSelect
                 label="Assigned To"
-                options={availableAssignees}
+                options={availableAssignees.map(a => ({ value: a.value, label: a.label }))}
                 selectedValue={filters.assignedTo}
                 onChange={(value) => handleFilterChange('assignedTo', value)}
               />
@@ -2705,7 +2635,6 @@ const AnomalyDetectionView: React.FC = () => {
             </div>
           </Card>
 
-          {/* Bulk Actions Bar */}
           {selectedAnomalyIds.length > 0 && (
             <div className="sticky bottom-0 z-40 bg-gray-900/90 backdrop-blur-sm p-4 rounded-t-lg shadow-xl border-t border-gray-700 flex flex-wrap gap-3 items-center justify-between">
               <span className="text-sm text-white font-semibold">
@@ -2715,7 +2644,7 @@ const AnomalyDetectionView: React.FC = () => {
                 <Button variant="secondary" onClick={() => handleOpenBulkActionModal('assign')} disabled={selectedAnomalyIds.length === 0}>
                   Assign Selected
                 </Button>
-                <Button variant="danger" onClick={() => handleOpenBulkActionModal('dismiss')} disabled={selectedAnomalyIds.length === 0}>
+                <Button variant="danger" onClick={() => handleOpenBulkActionModal('dismiss')} disabled={selectedAnomalyIds.length === 0 || (currentUser.role === 'Analyst' && selectedAnomalyIds.some(id => financialAnomalies.find(a => a.id === id)?.severity === 'Critical'))}>
                   Dismiss Selected
                 </Button>
                 <Button variant="primary" onClick={() => handleOpenBulkActionModal('resolve')} disabled={selectedAnomalyIds.length === 0}>
@@ -2728,9 +2657,8 @@ const AnomalyDetectionView: React.FC = () => {
             </div>
           )}
 
-          {/* Anomaly List */}
           <Card>
-            <div className="min-h-[500px]"> {/* Ensures consistent height for loading/empty states */}
+            <div className="min-h-[500px]">
               {paginatedAnomalies.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-[500px] text-gray-400">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -2781,7 +2709,8 @@ const AnomalyDetectionView: React.FC = () => {
                         anomaly.status === 'New' ? 'border-yellow-500' :
                         anomaly.status === 'Under Review' ? 'border-indigo-500' :
                         anomaly.status === 'Resolved' ? 'border-green-500' :
-                        anomaly.status === 'Dismissed' ? 'border-gray-500' : 'border-gray-600'
+                        anomaly.status === 'Dismissed' ? 'border-gray-500' :
+                        anomaly.status === 'Automated Remediation' ? 'border-blue-500' : 'border-gray-600'
                       } ${selectedAnomalyIds.includes(anomaly.id) ? 'ring-2 ring-indigo-500' : ''}`}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -2828,20 +2757,20 @@ const AnomalyDetectionView: React.FC = () => {
                             <div className="flex gap-2">
                               {anomaly.status === 'New' && (
                                 <>
-                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review')} size="sm" variant="secondary">Begin Review</Button>
-                                  <Button onClick={() => handleOpenBulkActionModal('dismiss')} size="sm" variant="danger">Dismiss</Button>
+                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review', currentUser.name, currentUser.identityId)} size="sm" variant="secondary">Begin Review</Button>
+                                  <Button onClick={() => handleOpenBulkActionModal('dismiss')} size="sm" variant="danger" disabled={currentUser.role === 'Analyst' && anomaly.severity === 'Critical'}>Dismiss</Button>
                                 </>
                               )}
                               {anomaly.status === 'Under Review' && (
                                 <>
-                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Resolved')} size="sm" variant="primary">Mark Resolved</Button>
-                                  <Button onClick={() => handleOpenBulkActionModal('dismiss')} size="sm" variant="danger">Dismiss</Button>
+                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Resolved', currentUser.name, currentUser.identityId)} size="sm" variant="primary">Mark Resolved</Button>
+                                  <Button onClick={() => handleOpenBulkActionModal('dismiss')} size="sm" variant="danger" disabled={currentUser.role === 'Analyst' && anomaly.severity === 'Critical'}>Dismiss</Button>
                                 </>
                               )}
-                              {(anomaly.status === 'Pending Further Info' || anomaly.status === 'Escalated' || anomaly.status === 'On Hold') && (
+                              {(anomaly.status === 'Pending Further Info' || anomaly.status === 'Escalated' || anomaly.status === 'On Hold' || anomaly.status === 'Automated Remediation') && (
                                 <>
-                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review')} size="sm" variant="secondary">Continue Review</Button>
-                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Resolved')} size="sm" variant="primary">Mark Resolved</Button>
+                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Under Review', currentUser.name, currentUser.identityId)} size="sm" variant="secondary">Continue Review</Button>
+                                  <Button onClick={() => updateAnomalyStatus(anomaly.id, 'Resolved', currentUser.name, currentUser.identityId)} size="sm" variant="primary">Mark Resolved</Button>
                                 </>
                               )}
                               <Button onClick={() => handleSelectAnomaly(anomaly)} size="sm" variant="ghost" className="text-indigo-400 hover:text-indigo-300 border border-indigo-500/30">
@@ -2878,11 +2807,11 @@ const AnomalyDetectionView: React.FC = () => {
           updateAnomalyDetails={updateAnomalyDetails}
           assignAnomaly={assignAnomaly}
           uploadEvidence={uploadEvidence}
+          applyAIRecommendation={applyAIRecommendation}
           currentUser={currentUser}
         />
       )}
 
-      {/* Bulk Action Modal */}
       <Modal isOpen={isBulkActionModalOpen} onClose={() => setIsBulkActionModalOpen(false)} title={`Bulk ${bulkActionType ? bulkActionType.charAt(0).toUpperCase() + bulkActionType.slice(1) : ''} Anomalies`} size="md">
         <div className="space-y-4">
           <p className="text-gray-300 mb-4">
@@ -2893,9 +2822,13 @@ const AnomalyDetectionView: React.FC = () => {
           {bulkActionType === 'assign' && (
             <FilterSelect
               label="Assign to"
-              options={availableAssignees}
+              options={availableAssignees.map(a => ({ value: a.value, label: a.label }))}
               selectedValue={bulkActionAssignee}
-              onChange={(val) => setBulkActionAssignee(val as string)}
+              onChange={(val) => {
+                setBulkActionAssignee(val as string);
+                const assigneeObj = availableAssignees.find(a => a.value === val);
+                setBulkActionAssigneeIdentityId(assigneeObj?.identityId);
+              }}
               allowClear={false}
             />
           )}
@@ -2913,6 +2846,8 @@ const AnomalyDetectionView: React.FC = () => {
                         { value: 'Legitimate Business Activity', label: 'Legitimate Business Activity' },
                         { value: 'Policy Update', label: 'Policy Update' },
                         { value: 'Regulatory Reporting Filed', label: 'Regulatory Reporting Filed' },
+                        { value: 'System Error Correction', label: 'System Error Correction' },
+                        { value: 'Automated Action Completed', label: 'Automated Action Completed' },
                         { value: 'Other', label: 'Other' },
                       ]
                     : [
@@ -2933,7 +2868,7 @@ const AnomalyDetectionView: React.FC = () => {
                 onChange={(e) => setBulkActionNotes(e.target.value)}
                 multiline
                 rows={4}
-                placeholder={`Add detailed notes for this bulk ${bulkActionType}.`}
+                placeholder={`Add detailed notes for this bulk ${bulkActionType}. This will be recorded in the immutable audit log.`}
               />
             </>
           )}
@@ -2945,7 +2880,7 @@ const AnomalyDetectionView: React.FC = () => {
           <Button
             onClick={handlePerformBulkAction}
             disabled={
-              (bulkActionType === 'assign' && !bulkActionAssignee) ||
+              (bulkActionType === 'assign' && (!bulkActionAssignee || !bulkActionAssigneeIdentityId)) ||
               ((bulkActionType === 'resolve' || bulkActionType === 'dismiss') && !bulkActionReason)
             }
             variant={bulkActionType === 'dismiss' ? 'danger' : 'primary'}
@@ -2955,9 +2890,7 @@ const AnomalyDetectionView: React.FC = () => {
         </div>
       </Modal>
 
-      {(window as any).appNotifications && (
-        <NotificationContainer notifications={(window as any).appNotifications.notifications} onDismissNotification={(window as any).appNotifications.dismissNotification} />
-      )}
+      <NotificationContainer notifications={notifications} onDismissNotification={dismissNotification} />
     </div>
   );
 }
