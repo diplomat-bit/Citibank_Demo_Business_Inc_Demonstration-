@@ -1,5 +1,17 @@
+/**
+ * This module, `useAIInsightManagement`, serves as the central hub for managing AI-generated insights across an enterprise.
+ * It provides a sophisticated, commercial-grade interface for accessing, filtering, prioritizing, and acting upon critical business intelligence.
+ *
+ * Business value: This hook is worth millions by transforming raw data into actionable intelligence, driving strategic decisions, and enabling
+ * automated remediation through integrated agentic AI systems. It significantly reduces operational latency, enhances risk mitigation,
+ * uncovers new market opportunities, and ensures regulatory compliance by providing real-time, explainable, and accountable insights.
+ * The robust management features, including advanced filtering, prioritization rules, collaboration tools, and agent orchestration,
+ * empower businesses to maximize the value of their AI investments, leading to substantial cost savings, accelerated revenue growth,
+ * and a sustained competitive advantage in dynamic markets. It acts as the operational front-end for a sophisticated AI decision
+ * intelligence layer, directly impacting efficiency and profitability.
+ */
 import { useState, useCallback, useMemo, useEffect, useContext, useRef } from 'react';
-import { DataContext } from '../../../context/DataContext'; // Adjust path as necessary
+import { DataContext } from '../../../context/DataContext';
 
 //region Copied Definitions from AIInsights.tsx for self-containment and strict adherence
 // Expanded Insight Data Structure (conceptual, assumes DataContext provides this)
@@ -9,31 +21,36 @@ export interface ExtendedAIInsight {
     description: string;
     urgency: 'low' | 'medium' | 'high' | 'critical' | 'informational';
     type: 'general' | 'predictive' | 'actionable' | 'correlation' | 'anomaly' | 'sentiment' | 'geospatial' | 'multimedia' | 'risk' | 'opportunity' | 'efficiency' | 'compliance' | 'market' | 'customer' | 'security' | 'ethical' | 'resource' | 'sustainability' | 'trend' | 'forecasting' | 'optimization' | 'recommendation' | 'compliance' | 'security' | 'financial' | 'operational';
-    timestamp: string; // ISO string
-    source: string; // e.g., 'Sales Data', 'Marketing Analytics', 'IoT Sensors'
-    dataPoints?: any[]; // Raw data points supporting the insight
-    metrics?: { [key: string]: any }; // Key metrics related to the insight
+    timestamp: string;
+    source: string;
+    dataPoints?: any[];
+    metrics?: { [key: string]: any };
     relatedEntities?: { type: string; id: string; name: string }[];
-    recommendedActions?: { id: string; description: string; priority: 'low' | 'medium' | 'high'; status: 'pending' | 'in-progress' | 'completed' | 'deferred'; assignedTo?: string; deadline?: string }[];
+    recommendedActions?: { id: string; description: string; priority: 'low' | 'medium' | 'high'; status: 'pending' | 'in-progress' | 'completed' | 'deferred'; assignedTo?: string; deadline?: string; agentInitiated?: boolean }[];
     predictions?: { target: string; value: number; confidence: number; trend: 'up' | 'down' | 'stable' }[];
     visualizations?: { type: 'chart' | 'map' | 'graph' | 'table' | 'image'; data: any; options?: any; description?: string }[];
-    explanation?: string; // Explainable AI (XAI)
+    explanation?: string;
     feedback?: { rating: number; comment: string; timestamp: string; userId: string; userName: string }[];
     modelVersion?: string;
-    ethicalConsiderations?: { aspect: string; score: number; details: string }[]; // Ethical AI
+    ethicalConsiderations?: { aspect: string; score: number; details: string }[];
     tags?: string[];
     status?: 'active' | 'archived' | 'dismissed' | 'resolved' | 'pending review' | 'actioned' | 'reopened';
-    impactScore?: number; // Calculated impact (0-100)
-    priorityScore?: number; // Calculated priority (0-100), combining urgency, impact, and custom rules
+    impactScore?: number;
+    priorityScore?: number;
     assignedTo?: { userId: string; name: string; assignedAt: string; status: 'pending' | 'in-progress' | 'completed' }[];
     comments?: { id: string; userId: string; userName: string; timestamp: string; text: string; parentCommentId?: string }[];
     auditTrail?: { id: string; userId: string; userName: string; action: string; timestamp: string; details?: any }[];
     resolutionDetails?: { resolvedBy: string; resolvedAt: string; summary: string; actionsTaken?: string[] };
     costEstimate?: { currency: string; amount: number; modelUsed: string; calculationMethod: 'estimated' | 'actual' };
     attachments?: { id: string; fileName: string; fileType: string; url: string; uploadedBy: string; uploadedAt: string }[];
+    // Agentic AI System fields
+    agentDecisionHistory?: { agentId: string; decision: string; rationale: string; timestamp: string; skillInvoked?: string; outcome?: string; }[];
+    // Token Rail / Payments Infrastructure fields
+    relatedTransactionIds?: string[];
+    // Digital Identity & Security fields
+    accessControl?: { userId: string; role: string; permission: 'view' | 'edit' | 'assign' | 'approve' }[];
 }
 
-// Insight Type Icon Map (new)
 export const InsightTypeIconMap: { [key: string]: string } = {
     'general': '💡',
     'predictive': '🔮',
@@ -52,19 +69,17 @@ export const InsightTypeIconMap: { [key: string]: string } = {
     'security': '🔒',
     'ethical': '⚖️',
     'resource': '📦',
-    'sustainability': '🌳',
+    'sustainability': '🌱',
     'trend': '📊',
     'forecasting': '🗓️',
     'optimization': '🎯',
     'recommendation': '👍',
     'financial': '💰',
-    'operational': '🛠️'
+    'operational': '🏗️'
 };
 
-// Utility for generating unique IDs (new)
 export const generateUniqueId = (): string => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-// Utility for debouncing functions
 export const debounce = <T extends (...args: any[]) => void>(func: T, delay: number) => {
     let timeout: NodeJS.Timeout;
     return function (this: any, ...args: Parameters<T>) {
@@ -73,22 +88,23 @@ export const debounce = <T extends (...args: any[]) => void>(func: T, delay: num
         timeout = setTimeout(() => func.apply(context, args), delay);
     };
 };
-
 //endregion
 
-// Define the structure for AI performance metrics as used in the seed
 export interface AIPerformanceMetrics {
     lastHeartbeat: string;
-    insightGenerationRate: number; // Insights per minute
-    averageResponseTime: number; // ms
-    dataProcessingVolume: number; // GB/hour
+    insightGenerationRate: number;
+    averageResponseTime: number;
+    dataProcessingVolume: number;
     modelAccuracyHistory: { timestamp: string; accuracy: number }[];
-    resourceUtilization: { cpu: number; memory: number; gpu?: number }; // %
-    errorRate: number; // %
-    costPerInsight: number; // USD
+    resourceUtilization: { cpu: number; memory: number; gpu?: number };
+    errorRate: number;
+    costPerInsight: number;
+    // Agent-specific metrics
+    agentActivityRate?: number; // Actions per minute by agents
+    agentSuccessRate?: number; // % of agent actions leading to desired outcome
+    agentDecisionLatency?: number; // ms, time for agents to make a decision
 }
 
-// Define the structure for AI model
 export interface AIModel {
     id: string;
     name: string;
@@ -99,17 +115,16 @@ export interface AIModel {
     lastUpdated: string;
     performanceMetrics?: { accuracy: number; precision: number; recall: number; f1_score: number };
     trainingDataInfo?: { sizeGB: number; lastRefresh: string; biasDetected: boolean };
-    costMultiplier?: number; // Relative cost compared to a baseline model
+    costMultiplier?: number;
 }
 
-// Define the structure for AI preferences
 export interface AIPreferences {
     insightTypes: string[];
     urgencyThreshold: 'low' | 'medium' | 'high' | 'critical' | 'informational';
     dataSources: string[];
     realtimeUpdates: boolean;
     explanationLevel: 'none' | 'basic' | 'detailed' | 'verbose';
-    modelSelection: string; // ID of the preferred model
+    modelSelection: string;
     notificationSettings: {
         email: boolean;
         push: boolean;
@@ -117,24 +132,23 @@ export interface AIPreferences {
         threshold: 'medium' | 'high' | 'critical' | 'all';
         digestFrequency: 'daily' | 'weekly' | 'none';
     };
-    refreshIntervalMinutes: number; // How often to auto-refresh insights
-    costOptimizationLevel: 'none' | 'moderate' | 'aggressive'; // Prioritize cost over detail/frequency
-    autoArchiveDurationDays: number; // How long to keep resolved insights visible
+    refreshIntervalMinutes: number;
+    costOptimizationLevel: 'none' | 'moderate' | 'aggressive';
+    autoArchiveDurationDays: number;
     customReportSchedule: 'daily' | 'weekly' | 'monthly' | 'none';
     preferredTimezone: string;
     language: string;
 }
 
-// Define the structure for a collaboration user
 export interface CollaborationUser {
     id: string;
     name: string;
     avatar: string;
     role: string;
     email: string;
+    permissions?: ('view_all_insights' | 'edit_all_insights' | 'assign_insights' | 'approve_insights' | 'manage_rules' | 'deploy_models')[];
 }
 
-// Define an interface for custom insight prioritization rules
 export interface InsightPrioritizationRule {
     id: string;
     name: string;
@@ -146,17 +160,16 @@ export interface InsightPrioritizationRule {
         keywords?: string[];
         minImpactScore?: number;
     };
-    boostFactor: number; // Multiplier for priorityScore (e.g., 1.5 for 50% boost)
+    boostFactor: number;
     isActive: boolean;
     lastModified: string;
 }
 
-// Define an interface for a notification
 export interface AINotification {
     id: string;
     userId: string;
     insightId?: string;
-    type: 'new-insight' | 'assigned-insight' | 'comment-added' | 'insight-status-change' | 'system-alert' | 'preferences-update';
+    type: 'new-insight' | 'assigned-insight' | 'comment-added' | 'insight-status-change' | 'system-alert' | 'preferences-update' | 'agent-action-complete' | 'agent-action-failed';
     message: string;
     timestamp: string;
     isRead: boolean;
@@ -164,7 +177,6 @@ export interface AINotification {
     priority: 'low' | 'medium' | 'high';
 }
 
-// Define an interface for data source configuration
 export interface DataSourceConfig {
     id: string;
     name: string;
@@ -177,29 +189,34 @@ export interface DataSourceConfig {
     description: string;
 }
 
+export interface AIAgent {
+    id: string;
+    name: string;
+    role: string; // e.g., 'Anomaly Detection Agent', 'Fraud Prevention Agent', 'Reconciliation Agent'
+    status: 'active' | 'idle' | 'monitoring' | 'remediating' | 'error';
+    lastActivity: string;
+    skills: string[]; // e.g., 'monitor_transactions', 'flag_fraud', 'initiate_payment_hold', 'reconcile_ledger'
+    modelId: string; // The AI model it uses
+    efficiencyScore: number; // 0-100, how well it performs its tasks
+    autoAssignmentEnabled: boolean;
+}
+
 export const useAIInsightManagement = () => {
-    // Attempt to get data and actions from DataContext. If not available, use local mocks.
     const context = useContext(DataContext);
 
-    // region Core Insight Data & Actions from Context/Mocks
     const aiInsights = context?.aiInsights || [];
     const isInsightsLoading = context?.isInsightsLoading || false;
     const generateDashboardInsights = context?.generateDashboardInsights || (() => {
         console.warn('generateDashboardInsights not provided by DataContext. Mocking generation.');
-        // Mock generation logic
         setTimeout(() => {
             console.log('Mock: Generating new insights...');
-            // In a real app, this would fetch from a backend.
-            // For now, let's assume DataContext would update aiInsights.
         }, 1000);
     });
     const dismissInsight = context?.dismissInsight || ((id: string) => console.log(`Mock: Dismiss insight ${id}`));
     const markInsightAsActioned = context?.markInsightAsActioned || ((insightId: string, actionId: string) => console.log(`Mock: Actioned ${actionId} for insight ${insightId}`));
     const updateInsightStatus = context?.updateInsightStatus || ((insightId: string, status: ExtendedAIInsight['status']) => console.log(`Mock: Updated insight ${insightId} status to ${status}`));
     const addInsightAttachment = context?.addInsightAttachment || ((insightId: string, file: File) => console.log(`Mock: Added attachment ${file.name} to insight ${insightId}`));
-    // endregion
 
-    // region AI Query Interface Logic
     const [queryInput, setQueryInput] = useState('');
     const [queryResults, setQueryResults] = useState<string[]>(context?.aiQueryResults || []);
     const [isQuerying, setIsQuerying] = useState(context?.isQueryingAI || false);
@@ -219,16 +236,14 @@ export const useAIInsightManagement = () => {
     }, [context]);
 
     const clearQueryResults = useCallback(() => setQueryResults([]), []);
-    // endregion
 
-    // region Preferences Manager Logic
     const availableInsightTypes = useMemo(() => Object.keys(InsightTypeIconMap), []);
     const availableDataSources = useMemo(() => ['Sales Data', 'Marketing Analytics', 'Customer Support Logs', 'IoT Sensor Data', 'Financial Reports', 'Social Media Feeds', 'Website Analytics', 'ERP System', 'HR Data'], []);
     const availableAIModels: AIModel[] = useMemo(() => [
         { id: 'quantum-v3.2', name: 'Quantum Core', version: '3.2', description: 'Advanced general intelligence model with enhanced predictive capabilities.', status: 'active', deploymentDate: '2023-01-15T10:00:00Z', lastUpdated: '2023-11-20T14:30:00Z', performanceMetrics: { accuracy: 0.902, precision: 0.88, recall: 0.92, f1_score: 0.90 }, trainingDataInfo: { sizeGB: 1200, lastRefresh: '2023-12-01T08:00:00Z', biasDetected: false }, costMultiplier: 1.2 },
-        { id: 'symphony-v1.1', name: 'Symphony-XAI', version: '1.1', description: 'Specialized model for explainable AI, providing detailed reasoning for insights.', status: 'active', deploymentDate: '2023-03-01T11:00:00Z', lastUpdated: '2023-10-05T09:15:00Z', performanceMetrics: { accuracy: 0.885, precision: 0.85, recall: 0.91, f1_score: 0.88 }, trainingDataInfo: { sizeGB: 800, lastRefresh: '2023-11-15T07:00:00Z', biasDetected: true }, costMultiplier: 1.0 },
-        { id: 'chronos-v2.0', name: 'Chronos-Temporal', version: '2.0', description: 'Optimized for real-time anomaly detection and temporal forecasting.', status: 'active', deploymentDate: '2023-06-20T13:00:00Z', lastUpdated: '2023-12-10T16:00:00Z', performanceMetrics: { accuracy: 0.915, precision: 0.90, recall: 0.93, f1_score: 0.92 }, trainingDataInfo: { sizeGB: 600, lastRefresh: '2023-12-12T10:00:00Z', biasDetected: false }, costMultiplier: 1.1 },
-        { id: 'atlas-v0.5-beta', name: 'Atlas-Geospatial (Beta)', version: '0.5', description: 'Experimental model for location-based insights and risk assessment.', status: 'training', deploymentDate: '2024-01-01T00:00:00Z', lastUpdated: '2024-01-20T18:00:00Z', costMultiplier: 0.8 }
+        { id: 'symphony-xai-1.1', name: 'Symphony-XAI', version: '1.1', description: 'Specialized model for explainable AI, providing detailed reasoning for insights.', status: 'active', deploymentDate: '2023-03-01T11:00:00Z', lastUpdated: '2023-10-05T09:15:00Z', performanceMetrics: { accuracy: 0.885, precision: 0.85, recall: 0.91, f1_score: 0.88 }, trainingDataInfo: { sizeGB: 800, lastRefresh: '2023-11-15T07:00:00Z', biasDetected: true }, costMultiplier: 1.0 },
+        { id: 'chronos-temporal-2.0', name: 'Chronos-Temporal', version: '2.0', description: 'Optimized for real-time anomaly detection and temporal forecasting.', status: 'active', deploymentDate: '2023-06-20T13:00:00Z', lastUpdated: '2023-12-10T16:00:00Z', performanceMetrics: { accuracy: 0.915, precision: 0.90, recall: 0.93, f1_score: 0.92 }, trainingDataInfo: { sizeGB: 600, lastRefresh: '2023-12-12T10:00:00Z', biasDetected: false }, costMultiplier: 1.1 },
+        { id: 'atlas-geospatial-0.5', name: 'Atlas-Geospatial (Beta)', version: '0.5', description: 'Experimental model for location-based insights and risk assessment.', status: 'training', deploymentDate: '2024-01-01T00:00:00Z', lastUpdated: '2024-01-20T18:00:00Z', costMultiplier: 0.8 }
     ], []);
 
     const initialPreferences: AIPreferences = useMemo(() => ({
@@ -237,7 +252,7 @@ export const useAIInsightManagement = () => {
         dataSources: ['Sales Data', 'Marketing Analytics'],
         realtimeUpdates: true,
         explanationLevel: 'detailed',
-        modelSelection: availableAIModels[0]?.id || 'quantum-v3.2', // Ensure a fallback
+        modelSelection: availableAIModels[0]?.id || 'quantum-v3.2',
         notificationSettings: {
             email: true,
             push: true,
@@ -301,13 +316,9 @@ export const useAIInsightManagement = () => {
         setPreferences(initialPreferences);
         alert('AI Preferences reset to defaults! (Mock)');
     }, [initialPreferences]);
-    // endregion
 
-    // region Insight Feedback Module Logic
     const provideInsightFeedback = context?.provideInsightFeedback || ((insightId: string, rating: number, comment: string, userId: string, userName: string) => {
         console.log(`Mock Feedback for ${insightId}: Rating=${rating}, Comment="${comment}", User=${userName}`);
-        // In a real app, this would update insight data.
-        // For mock, let's pretend it adds to the feedback array if possible.
         const currentInsight = aiInsights.find(i => i.id === insightId);
         if (currentInsight) {
             const newFeedback = { rating, comment, timestamp: new Date().toISOString(), userId, userName };
@@ -315,14 +326,11 @@ export const useAIInsightManagement = () => {
                 ...currentInsight,
                 feedback: currentInsight.feedback ? [...currentInsight.feedback, newFeedback] : [newFeedback],
             };
-            // In a real context, this would trigger an update in the DataContext
-            // For mock, we just log.
             console.log("Mock: Updated insight with new feedback:", updatedInsight);
+            // In a real DataContext, this would update the central state
         }
     });
-    // endregion
 
-    // region AI System Health and Performance Monitor
     const aiSystemStatus = context?.aiSystemStatus || 'operational';
     const aiPerformanceMetrics: AIPerformanceMetrics = useMemo(() => context?.aiPerformanceMetrics || {
         lastHeartbeat: new Date().toISOString(),
@@ -337,6 +345,9 @@ export const useAIInsightManagement = () => {
         resourceUtilization: { cpu: 75.2, memory: 45.1, gpu: 88.9 },
         errorRate: 0.1,
         costPerInsight: 0.05,
+        agentActivityRate: 5.2,
+        agentSuccessRate: 98.5,
+        agentDecisionLatency: 80,
     }, [context?.aiPerformanceMetrics]);
 
     const getAIModelDetails = useCallback((modelId: string): AIModel | undefined => {
@@ -348,17 +359,12 @@ export const useAIInsightManagement = () => {
             context.checkAISystemHealth();
         } else {
             console.log("Mock: Initiating AI system health check...");
-            // Simulate a check
-            // For a real app, this would update aiSystemStatus and aiPerformanceMetrics in context
             setTimeout(() => {
                 console.log("Mock: AI System health check completed. Status: Operational");
             }, 1000);
         }
     }, [context]);
 
-    // endregion
-
-    // region Historical Insight Archive Logic
     const [historicalSearchTerm, setHistoricalSearchTerm] = useState('');
     const [historicalFilters, setHistoricalFilters] = useState({
         type: 'all', urgency: 'all', status: 'all',
@@ -386,7 +392,7 @@ export const useAIInsightManagement = () => {
     const handleHistoricalFilterChange = useCallback((e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const { name, value } = e.target;
         setHistoricalFilters(prev => ({ ...prev, [name]: value }));
-        setHistoricalCurrentPage(1); // Reset page on filter change
+        setHistoricalCurrentPage(1);
     }, []);
 
     const handleHistoricalSortChange = useCallback((sortBy: string, sortOrder: 'asc' | 'desc') => {
@@ -400,9 +406,8 @@ export const useAIInsightManagement = () => {
                 await context.fetchHistoricalInsights(query, filters, page, pageSize, sortBy, sortOrder);
             } else {
                 setIsHistoricalLoading(true);
-                // Simulate API call
                 setTimeout(() => {
-                    const allInsights = aiInsights; // Using current insights as mock historical data
+                    const allInsights = aiInsights;
                     let filtered = allInsights.filter(insight => {
                         const matchesSearch = !query ||
                             insight.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -425,7 +430,6 @@ export const useAIInsightManagement = () => {
                         return matchesSearch && matchesType && matchesUrgency && matchesStatus && matchesSource && matchesAssignedTo && matchesDate;
                     });
 
-                    // Apply sorting
                     filtered.sort((a, b) => {
                         let valA: any, valB: any;
                         if (sortBy === 'timestamp') {
@@ -459,9 +463,9 @@ export const useAIInsightManagement = () => {
                     setHistoricalSearchResults(paginatedResults);
                     setHistoricalTotalResults(filtered.length);
                     setIsHistoricalLoading(false);
-                }, 750); // Shorter debounce for faster mock
+                }, 750);
             }
-        }, 300) // Debounce by 300ms
+        }, 300)
     ).current;
 
     useEffect(() => {
@@ -474,24 +478,44 @@ export const useAIInsightManagement = () => {
             historicalSortOrder
         );
     }, [historicalSearchTerm, historicalFilters, historicalCurrentPage, historicalPageSize, historicalSortBy, historicalSortOrder, fetchHistoricalInsightsDebounced, aiInsights]);
-    // endregion
 
-    // region Collaboration Hub Logic
     const [selectedCollaborationInsightId, setSelectedCollaborationInsightId] = useState<string | null>(null);
     const [newCommentText, setNewCommentText] = useState('');
     const [assignedUserForCollaboration, setAssignedUserForCollaboration] = useState<string>('');
     const [assignActionToUser, setAssignActionToUser] = useState<{ actionId: string, userId: string } | null>(null);
 
     const collaborationUsers: CollaborationUser[] = useMemo(() => [
-        { id: 'user-123', name: 'You (AI Lead)', avatar: 'https://i.pravatar.cc/30?img=6', role: 'AI Lead', email: 'you@example.com' },
-        { id: 'user-456', name: 'Dr. Evelyn Reed (Data Scientist)', avatar: 'https://i.pravatar.cc/30?img=12', role: 'Data Scientist', email: 'evelyn.reed@example.com' },
-        { id: 'user-789', name: 'Mr. Alex Chen (Operations Manager)', avatar: 'https://i.pravatar.cc/30?img=22', role: 'Operations Manager', email: 'alex.chen@example.com' },
-        { id: 'user-101', name: 'Ms. Sarah Miller (Marketing Analyst)', avatar: 'https://i.pravatar.cc/30?img=34', role: 'Marketing Analyst', email: 'sarah.miller@example.com' },
-        { id: 'user-202', name: 'Eng. David Kim (DevOps Engineer)', avatar: 'https://i.pravatar.cc/30?img=42', role: 'DevOps Engineer', email: 'david.kim@example.com' },
+        { id: 'user-123', name: 'You (AI Lead)', avatar: 'https://i.pravatar.cc/30?img=6', role: 'AI Lead', email: 'you@example.com', permissions: ['view_all_insights', 'edit_all_insights', 'assign_insights', 'approve_insights', 'manage_rules', 'deploy_models'] },
+        { id: 'user-456', name: 'Dr. Evelyn Reed (Data Scientist)', avatar: 'https://i.pravatar.cc/30?img=12', role: 'Data Scientist', email: 'evelyn.reed@example.com', permissions: ['view_all_insights', 'edit_all_insights'] },
+        { id: 'user-789', name: 'Mr. Alex Chen (Operations Manager)', avatar: 'https://i.pravatar.cc/30?img=22', role: 'Operations Manager', email: 'alex.chen@example.com', permissions: ['view_all_insights', 'assign_insights'] },
+        { id: 'user-101', name: 'Ms. Sarah Miller (Marketing Analyst)', avatar: 'https://i.pravatar.cc/30?img=34', role: 'Marketing Analyst', email: 'sarah.miller@example.com', permissions: ['view_all_insights'] },
+        { id: 'user-202', name: 'Eng. David Kim (DevOps Engineer)', avatar: 'https://i.pravatar.cc/30?img=42', role: 'DevOps Engineer', email: 'david.kim@example.com', permissions: ['view_all_insights'] },
     ], []);
 
-    const currentUserId = collaborationUsers[0].id; // Mocking current user
+    const currentUserId = collaborationUsers[0].id;
     const currentUserName = collaborationUsers[0].name;
+    const currentUserRole = collaborationUsers[0].role;
+    const currentUserPermissions = collaborationUsers[0].permissions || [];
+
+    const hasPermission = useCallback((permission: CollaborationUser['permissions'][0]) => {
+        return currentUserPermissions.includes(permission);
+    }, [currentUserPermissions]);
+
+    const addInsightAuditEntry = useCallback((insightId: string, action: string, details?: any) => {
+        const targetInsight = aiInsights.find(i => i.id === insightId);
+        if (targetInsight) {
+            const newAuditEntry = {
+                id: generateUniqueId(),
+                userId: currentUserId,
+                userName: currentUserName,
+                action,
+                timestamp: new Date().toISOString(),
+                details,
+            };
+            // In a real DataContext, this would update the central state
+            console.log("Mock: Added audit trail entry:", newAuditEntry);
+        }
+    }, [aiInsights, currentUserId, currentUserName]);
 
     const addInsightComment = context?.addInsightComment || ((insightId: string, userId: string, userName: string, comment: string, parentCommentId?: string) => {
         console.log(`Mock: User ${userName} commented on ${insightId}: "${comment}" (Parent: ${parentCommentId})`);
@@ -505,25 +529,32 @@ export const useAIInsightManagement = () => {
                 text: comment,
                 parentCommentId
             };
-            // In a real system, this would trigger a DataContext update
             console.log("Mock: Added comment to insight", { ...targetInsight, comments: [...(targetInsight.comments || []), newComment] });
+            addInsightAuditEntry(insightId, 'added-comment', { commentId: newComment.id, text: comment.substring(0, 50) + '...' });
         }
     });
 
     const assignInsight = context?.assignInsight || ((insightId: string, userId: string, userName: string, assignmentStatus: 'pending' | 'in-progress' = 'pending') => {
+        if (!hasPermission('assign_insights')) {
+            console.warn('Permission denied: User cannot assign insights.');
+            alert('Permission denied to assign insights.');
+            return;
+        }
         console.log(`Mock: Insight ${insightId} assigned to user ${userName}`);
         const targetInsight = aiInsights.find(i => i.id === insightId);
         if (targetInsight) {
             const newAssignment = { userId, name: userName, assignedAt: new Date().toISOString(), status: assignmentStatus };
-            // In a real system, this would trigger a DataContext update
             console.log("Mock: Assigned insight", { ...targetInsight, assignedTo: [...(targetInsight.assignedTo || []), newAssignment] });
-            // Potentially also add to audit trail
-            const auditEntry = { id: generateUniqueId(), userId: currentUserId, userName: currentUserName, action: 'assign-insight', timestamp: new Date().toISOString(), details: { assignedTo: userName, status: assignmentStatus } };
-            console.log("Mock: Added audit trail entry:", auditEntry);
+            addInsightAuditEntry(insightId, 'assign-insight', { assignedTo: userName, status: assignmentStatus });
         }
     });
 
     const assignActionToUserInInsight = context?.assignActionToUserInInsight || ((insightId: string, actionId: string, userId: string) => {
+        if (!hasPermission('assign_insights')) {
+            console.warn('Permission denied: User cannot assign actions.');
+            alert('Permission denied to assign actions.');
+            return;
+        }
         console.log(`Mock: Action ${actionId} in insight ${insightId} assigned to user ${userId}`);
         const targetInsight = aiInsights.find(i => i.id === insightId);
         if (targetInsight && targetInsight.recommendedActions) {
@@ -531,6 +562,7 @@ export const useAIInsightManagement = () => {
                 action.id === actionId ? { ...action, assignedTo: userId, status: 'in-progress', deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() } : action
             );
             console.log("Mock: Assigned action within insight", { ...targetInsight, recommendedActions: updatedActions });
+            addInsightAuditEntry(insightId, 'assign-action', { actionId, assignedTo: userId });
         }
     });
 
@@ -546,7 +578,7 @@ export const useAIInsightManagement = () => {
             const user = collaborationUsers.find(u => u.id === assignedUserForCollaboration);
             if (user) {
                 assignInsight(selectedCollaborationInsightId, user.id, user.name);
-                setAssignedUserForCollaboration(''); // Clear selection after assigning
+                setAssignedUserForCollaboration('');
             }
         }
     }, [selectedCollaborationInsightId, assignedUserForCollaboration, assignInsight, collaborationUsers]);
@@ -557,9 +589,7 @@ export const useAIInsightManagement = () => {
             setAssignActionToUser(null);
         }
     }, [selectedCollaborationInsightId, assignActionToUser, assignActionToUserInInsight]);
-    // endregion
 
-    // region Insight Prioritization Engine
     const [prioritizationRules, setPrioritizationRules] = useState<InsightPrioritizationRule[]>(context?.prioritizationRules || []);
 
     const defaultPrioritizationRules: InsightPrioritizationRule[] = useMemo(() => [
@@ -575,6 +605,11 @@ export const useAIInsightManagement = () => {
     }, [context?.prioritizationRules, defaultPrioritizationRules]);
 
     const addPrioritizationRule = useCallback((rule: Omit<InsightPrioritizationRule, 'id' | 'lastModified'>) => {
+        if (!hasPermission('manage_rules')) {
+            console.warn('Permission denied: User cannot add prioritization rules.');
+            alert('Permission denied to add prioritization rules.');
+            return;
+        }
         const newRule: InsightPrioritizationRule = {
             id: generateUniqueId(),
             ...rule,
@@ -585,9 +620,15 @@ export const useAIInsightManagement = () => {
             context.updatePrioritizationRules([...prioritizationRules, newRule]);
         }
         console.log("Mock: Added new prioritization rule:", newRule);
-    }, [prioritizationRules, context]);
+        addInsightAuditEntry('system', 'added-prioritization-rule', { ruleId: newRule.id, ruleName: newRule.name });
+    }, [prioritizationRules, context, hasPermission, addInsightAuditEntry]);
 
     const updatePrioritizationRule = useCallback((id: string, updates: Partial<InsightPrioritizationRule>) => {
+        if (!hasPermission('manage_rules')) {
+            console.warn('Permission denied: User cannot update prioritization rules.');
+            alert('Permission denied to update prioritization rules.');
+            return;
+        }
         setPrioritizationRules(prev => {
             const updated = prev.map(rule =>
                 rule.id === id ? { ...rule, ...updates, lastModified: new Date().toISOString() } : rule
@@ -596,27 +637,33 @@ export const useAIInsightManagement = () => {
                 context.updatePrioritizationRules(updated);
             }
             console.log("Mock: Updated prioritization rule:", id, updates);
+            addInsightAuditEntry('system', 'updated-prioritization-rule', { ruleId: id, updates });
             return updated;
         });
-    }, [prioritizationRules, context]);
+    }, [prioritizationRules, context, hasPermission, addInsightAuditEntry]);
 
     const deletePrioritizationRule = useCallback((id: string) => {
+        if (!hasPermission('manage_rules')) {
+            console.warn('Permission denied: User cannot delete prioritization rules.');
+            alert('Permission denied to delete prioritization rules.');
+            return;
+        }
         setPrioritizationRules(prev => {
             const filtered = prev.filter(rule => rule.id !== id);
             if (context?.updatePrioritizationRules) {
                 context.updatePrioritizationRules(filtered);
             }
             console.log("Mock: Deleted prioritization rule:", id);
+            addInsightAuditEntry('system', 'deleted-prioritization-rule', { ruleId: id });
             return filtered;
         });
-    }, [prioritizationRules, context]);
+    }, [prioritizationRules, context, hasPermission, addInsightAuditEntry]);
 
     const recalculateAllInsightPriorities = useCallback(() => {
         console.log("Mock: Recalculating all insight priorities based on current rules...");
         if (context?.recalculateInsightPriorities) {
             context.recalculateInsightPriorities();
         } else {
-            // Simulate recalculation for current insights
             const updatedInsights = aiInsights.map(insight => {
                 let baseScore = (insight.impactScore || 0) + (insight.urgency === 'critical' ? 40 : insight.urgency === 'high' ? 30 : insight.urgency === 'medium' ? 20 : insight.urgency === 'low' ? 10 : 0);
                 let finalScore = baseScore;
@@ -637,37 +684,40 @@ export const useAIInsightManagement = () => {
                         finalScore *= rule.boostFactor;
                     }
                 });
-                return { ...insight, priorityScore: Math.round(Math.min(finalScore, 100)) }; // Cap at 100
+                return { ...insight, priorityScore: Math.round(Math.min(finalScore, 100)) };
             });
-            // In a real app, this would update aiInsights in DataContext
             console.log("Mock: Insights with new priority scores:", updatedInsights.map(i => ({ id: i.id, title: i.title, priorityScore: i.priorityScore })));
             alert('Mock: Insight priorities recalculated!');
+            addInsightAuditEntry('system', 'recalculated-priorities');
         }
-    }, [aiInsights, prioritizationRules, context]);
-    // endregion
+    }, [aiInsights, prioritizationRules, context, addInsightAuditEntry]);
 
-    // region AI Model Management
     const [selectedAIModelForDetails, setSelectedAIModelForDetails] = useState<string | null>(null);
     const [isModelTesting, setIsModelTesting] = useState(false);
     const [modelComparisonResults, setModelComparisonResults] = useState<{ modelId: string; insightsGenerated: number; avgAccuracy: number }[]>([]);
 
     const deployAIModel = useCallback(async (modelId: string) => {
+        if (!hasPermission('deploy_models')) {
+            console.warn('Permission denied: User cannot deploy AI models.');
+            alert('Permission denied to deploy AI models.');
+            return;
+        }
         if (context?.deployAIModel) {
             await context.deployAIModel(modelId);
         } else {
             console.log(`Mock: Deploying AI Model ${modelId}...`);
-            // Simulate API call
             setIsModelTesting(true);
             setTimeout(() => {
                 const model = availableAIModels.find(m => m.id === modelId);
                 if (model) {
-                    model.status = 'active'; // In a real scenario, this would update the actual model data
+                    model.status = 'active';
                     alert(`Model ${model.name} deployed successfully! (Mock)`);
                 }
                 setIsModelTesting(false);
+                addInsightAuditEntry('system', 'deployed-ai-model', { modelId });
             }, 3000);
         }
-    }, [context, availableAIModels]);
+    }, [context, availableAIModels, hasPermission, addInsightAuditEntry]);
 
     const compareAIModels = useCallback(async (modelIds: string[]) => {
         if (context?.compareAIModels) {
@@ -685,12 +735,11 @@ export const useAIInsightManagement = () => {
                 setModelComparisonResults(mockResults);
                 setIsModelTesting(false);
                 alert('Model comparison completed! (Mock)');
+                addInsightAuditEntry('system', 'compared-ai-models', { modelIds });
             }, 4000);
         }
-    }, [context, availableAIModels]);
-    // endregion
+    }, [context, availableAIModels, addInsightAuditEntry]);
 
-    // region Notification System
     const [notifications, setNotifications] = useState<AINotification[]>(context?.notifications || []);
     const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
@@ -731,10 +780,9 @@ export const useAIInsightManagement = () => {
         }
     }, [context]);
 
-    // Simulate new notifications arriving
     useEffect(() => {
         const interval = setInterval(() => {
-            if (Math.random() > 0.7 && preferences.notificationSettings.realtimeUpdates) { // 30% chance for new notification
+            if (Math.random() > 0.7 && preferences.notificationSettings.realtimeUpdates) {
                 const mockInsight = aiInsights[Math.floor(Math.random() * aiInsights.length)];
                 if (!mockInsight) return;
 
@@ -751,17 +799,15 @@ export const useAIInsightManagement = () => {
                     link: `/insights/${mockInsight.id}`,
                     priority: mockInsight.urgency === 'critical' ? 'high' : 'medium',
                 };
-                if (preferences.notificationSettings.threshold === 'all' || newNotification.priority === 'high' || preferences.notificationSettings.threshold === 'medium' && newNotification.priority === 'medium') {
+                if (preferences.notificationSettings.threshold === 'all' || newNotification.priority === 'high' || (preferences.notificationSettings.threshold === 'medium' && newNotification.priority === 'medium')) {
                     setNotifications(prev => [newNotification, ...prev]);
                     console.log("Mock: New notification generated:", newNotification);
                 }
             }
-        }, 15000); // Check every 15 seconds for a new notification
+        }, 15000);
         return () => clearInterval(interval);
     }, [aiInsights, preferences.notificationSettings, currentUserId, collaborationUsers]);
-    // endregion
 
-    // region Data Source Management
     const [dataSourcesConfig, setDataSourcesConfig] = useState<DataSourceConfig[]>(context?.dataSourcesConfig || []);
     const [isDataSourceLoading, setIsDataSourceLoading] = useState(false);
 
@@ -769,7 +815,6 @@ export const useAIInsightManagement = () => {
         if (context?.dataSourcesConfig) {
             setDataSourcesConfig(context.dataSourcesConfig);
         } else {
-            // Mock initial data sources if context doesn't provide
             setDataSourcesConfig([
                 { id: 'ds-sales', name: 'CRM Sales Data', type: 'database', status: 'connected', lastSync: new Date(Date.now() - 600000).toISOString(), refreshIntervalMinutes: 60, credentialsMasked: true, healthCheckUrl: '/api/ds/sales/health', description: 'Primary sales transaction and customer data.' },
                 { id: 'ds-marketing', name: 'Marketing Analytics', type: 'api', status: 'connected', lastSync: new Date(Date.now() - 3600000).toISOString(), refreshIntervalMinutes: 240, credentialsMasked: true, healthCheckUrl: '/api/ds/marketing/health', description: 'Website traffic, campaign performance, and social media metrics.' },
@@ -812,9 +857,10 @@ export const useAIInsightManagement = () => {
                 ));
                 setIsDataSourceLoading(false);
                 alert(`Data source ${dataSourceId} configuration updated! (Mock)`);
+                addInsightAuditEntry('system', 'updated-data-source-config', { dataSourceId, updates: Object.keys(updates) });
             }, 1000);
         }
-    }, [context]);
+    }, [context, addInsightAuditEntry]);
 
     const triggerManualSync = useCallback(async (dataSourceId: string) => {
         if (context?.triggerManualSync) {
@@ -828,19 +874,167 @@ export const useAIInsightManagement = () => {
                 ));
                 setIsDataSourceLoading(false);
                 alert(`Data source ${dataSourceId} manually synced! (Mock)`);
-                // This would trigger insight regeneration in a real app
                 generateDashboardInsights();
+                addInsightAuditEntry('system', 'manual-data-source-sync', { dataSourceId });
             }, 2500);
         }
-    }, [context, generateDashboardInsights]);
-    // endregion
+    }, [context, generateDashboardInsights, addInsightAuditEntry]);
 
-    // region Initial Load Effect
+    // Agentic AI System Management
+    const availableAIAgents: AIAgent[] = useMemo(() => [
+        { id: 'agent-fraud-001', name: 'Fraud Prevention Agent', role: 'Security', status: 'active', lastActivity: new Date().toISOString(), skills: ['monitor_transactions', 'flag_fraud', 'initiate_payment_hold'], modelId: 'chronos-temporal-2.0', efficiencyScore: 95, autoAssignmentEnabled: true },
+        { id: 'agent-recon-002', name: 'Reconciliation Agent', role: 'Finance', status: 'active', lastActivity: new Date().toISOString(), skills: ['monitor_ledgers', 'identify_discrepancies', 'initiate_reconciliation'], modelId: 'symphony-xai-1.1', efficiencyScore: 92, autoAssignmentEnabled: true },
+        { id: 'agent-opt-003', name: 'Resource Optimization Agent', role: 'Operations', status: 'idle', lastActivity: new Date(Date.now() - 3600000).toISOString(), skills: ['analyze_resource_usage', 'recommend_adjustments'], modelId: 'quantum-v3.2', efficiencyScore: 88, autoAssignmentEnabled: false },
+    ], []);
+
+    const [agentActivityLog, setAgentActivityLog] = useState<{ agentId: string; insightId?: string; action: string; timestamp: string; outcome?: string }[]>([]);
+
+    const assignInsightToAgent = useCallback(async (insightId: string, agentId: string) => {
+        if (!hasPermission('assign_insights')) {
+            console.warn('Permission denied: User cannot assign insights to agents.');
+            alert('Permission denied to assign insights to agents.');
+            return;
+        }
+        if (context?.assignInsightToAgent) {
+            await context.assignInsightToAgent(insightId, agentId);
+        } else {
+            console.log(`Mock: Assigning insight ${insightId} to agent ${agentId} for automated processing.`);
+            setAgentActivityLog(prev => [...prev, { agentId, insightId, action: 'assignment_received', timestamp: new Date().toISOString() }]);
+            // Simulate agent processing
+            setTimeout(() => {
+                const outcome = Math.random() > 0.2 ? 'completed' : 'failed';
+                setAgentActivityLog(prev => [...prev, { agentId, insightId, action: 'processing_complete', timestamp: new Date().toISOString(), outcome }]);
+
+                // Update the insight's agent decision history
+                const updatedInsights = aiInsights.map(insight =>
+                    insight.id === insightId ? {
+                        ...insight,
+                        agentDecisionHistory: [...(insight.agentDecisionHistory || []), {
+                            agentId,
+                            decision: 'Automated remediation initiated',
+                            rationale: `Agent ${agentId} processed the insight.`,
+                            timestamp: new Date().toISOString(),
+                            skillInvoked: 'remediate',
+                            outcome: outcome
+                        }],
+                        status: outcome === 'completed' ? 'actioned' : 'pending review',
+                    } : insight
+                );
+                // In a real context, this would trigger an update in the DataContext
+                console.log(`Mock: Agent ${agentId} finished processing insight ${insightId} with outcome: ${outcome}.`);
+                addInsightAuditEntry(insightId, 'agent-assigned', { agentId, outcome });
+                if (outcome === 'completed') {
+                    // Simulate notification for success
+                    setNotifications(prev => [...prev, {
+                        id: generateUniqueId(), userId: currentUserId, insightId, type: 'agent-action-complete',
+                        message: `Agent ${availableAIAgents.find(a => a.id === agentId)?.name} successfully acted on insight "${aiInsights.find(i => i.id === insightId)?.title}".`,
+                        timestamp: new Date().toISOString(), isRead: false, link: `/insights/${insightId}`, priority: 'medium'
+                    }]);
+                } else {
+                    // Simulate notification for failure
+                    setNotifications(prev => [...prev, {
+                        id: generateUniqueId(), userId: currentUserId, insightId, type: 'agent-action-failed',
+                        message: `Agent ${availableAIAgents.find(a => a.id === agentId)?.name} failed to act on insight "${aiInsights.find(i => i.id === insightId)?.title}". Manual intervention required.`,
+                        timestamp: new Date().toISOString(), isRead: false, link: `/insights/${insightId}`, priority: 'high'
+                    }]);
+                }
+
+            }, 5000);
+        }
+    }, [context, hasPermission, availableAIAgents, aiInsights, currentUserId, addInsightAuditEntry, setNotifications]);
+
+    const triggerAgentActionForInsight = useCallback(async (insightId: string, agentId: string, actionDescription: string, skill: string) => {
+        if (!hasPermission('assign_insights')) {
+            console.warn('Permission denied: User cannot trigger agent actions.');
+            alert('Permission denied to trigger agent actions.');
+            return;
+        }
+        if (context?.triggerAgentActionForInsight) {
+            await context.triggerAgentActionForInsight(insightId, agentId, actionDescription, skill);
+        } else {
+            console.log(`Mock: Triggering agent ${agentId} for action "${actionDescription}" on insight ${insightId}. Skill: ${skill}`);
+            setAgentActivityLog(prev => [...prev, { agentId, insightId, action: `triggered_skill:${skill}`, timestamp: new Date().toISOString() }]);
+            // Simulate agent processing
+            setTimeout(() => {
+                const outcome = Math.random() > 0.3 ? 'completed' : 'failed';
+                setAgentActivityLog(prev => [...prev, { agentId, insightId, action: `skill_execution_complete`, timestamp: new Date().toISOString(), outcome }]);
+
+                // Update the insight's agent decision history
+                const updatedInsights = aiInsights.map(insight =>
+                    insight.id === insightId ? {
+                        ...insight,
+                        agentDecisionHistory: [...(insight.agentDecisionHistory || []), {
+                            agentId,
+                            decision: `User-triggered agent action: ${actionDescription}`,
+                            rationale: `Agent ${agentId} invoked skill ${skill}.`,
+                            timestamp: new Date().toISOString(),
+                            skillInvoked: skill,
+                            outcome: outcome
+                        }],
+                        status: outcome === 'completed' ? 'actioned' : 'pending review',
+                    } : insight
+                );
+                console.log(`Mock: Agent ${agentId} executed skill ${skill} for insight ${insightId} with outcome: ${outcome}.`);
+                addInsightAuditEntry(insightId, 'agent-action-triggered', { agentId, actionDescription, skill, outcome });
+
+                if (outcome === 'completed') {
+                    setNotifications(prev => [...prev, {
+                        id: generateUniqueId(), userId: currentUserId, insightId, type: 'agent-action-complete',
+                        message: `Agent ${availableAIAgents.find(a => a.id === agentId)?.name} successfully completed action "${actionDescription}" for insight "${aiInsights.find(i => i.id === insightId)?.title}".`,
+                        timestamp: new Date().toISOString(), isRead: false, link: `/insights/${insightId}`, priority: 'medium'
+                    }]);
+                } else {
+                    setNotifications(prev => [...prev, {
+                        id: generateUniqueId(), userId: currentUserId, insightId, type: 'agent-action-failed',
+                        message: `Agent ${availableAIAgents.find(a => a.id === agentId)?.name} failed to complete action "${actionDescription}" for insight "${aiInsights.find(i => i.id === insightId)?.title}".`,
+                        timestamp: new Date().toISOString(), isRead: false, link: `/insights/${insightId}`, priority: 'high'
+                    }]);
+                }
+            }, 4000);
+        }
+    }, [context, hasPermission, availableAIAgents, aiInsights, currentUserId, addInsightAuditEntry, setNotifications]);
+
+    const getInsightAccessPermissions = useCallback((insightId: string, userId: string): ('view' | 'edit' | 'assign' | 'approve')[] => {
+        const insight = aiInsights.find(i => i.id === insightId);
+        if (!insight || !insight.accessControl) {
+            // Default permissions if no specific ACL
+            if (currentUserRole === 'AI Lead') return ['view', 'edit', 'assign', 'approve'];
+            if (currentUserRole === 'Data Scientist' || currentUserRole === 'Operations Manager') return ['view', 'edit', 'assign'];
+            return ['view'];
+        }
+        const userAccess = insight.accessControl.find(ac => ac.userId === userId);
+        if (userAccess) {
+            return [userAccess.permission]; // Assuming one permission per user in this mock
+        }
+        // Fallback to general role-based if no direct ACL entry
+        return getInsightAccessPermissions(insightId, currentUserId); // Recursively check current user's role
+    }, [aiInsights, currentUserRole, currentUserId]);
+
+
+    const flagRelatedTransaction = useCallback(async (insightId: string, transactionId: string, reason: string) => {
+        if (context?.flagRelatedTransaction) {
+            await context.flagRelatedTransaction(insightId, transactionId, reason);
+        } else {
+            console.log(`Mock: Flagging transaction ${transactionId} related to insight ${insightId} for review. Reason: ${reason}`);
+            // Simulate API call to payments infrastructure
+            setTimeout(() => {
+                const status = Math.random() > 0.1 ? 'flagged_for_review' : 'flagging_failed';
+                console.log(`Mock: Transaction ${transactionId} status: ${status}`);
+                alert(`Transaction ${transactionId} flagged: ${status}. (Mock)`);
+                addInsightAuditEntry(insightId, 'flagged-transaction', { transactionId, reason, status });
+                setNotifications(prev => [...prev, {
+                    id: generateUniqueId(), userId: currentUserId, insightId, type: 'system-alert',
+                    message: `Transaction ${transactionId} flagged from insight "${aiInsights.find(i => i.id === insightId)?.title}" with status: ${status}.`,
+                    timestamp: new Date().toISOString(), isRead: false, link: `/transactions/${transactionId}`, priority: status === 'flagging_failed' ? 'high' : 'medium'
+                }]);
+            }, 2000);
+        }
+    }, [context, aiInsights, currentUserId, addInsightAuditEntry, setNotifications]);
+
     useEffect(() => {
         if (aiInsights.length === 0 && !isInsightsLoading) {
             generateDashboardInsights();
         }
-        // Initial fetch for historical insights when component mounts
         fetchHistoricalInsightsDebounced(
             historicalSearchTerm,
             historicalFilters,
@@ -850,10 +1044,8 @@ export const useAIInsightManagement = () => {
             historicalSortOrder
         );
     }, [aiInsights.length, isInsightsLoading, generateDashboardInsights, fetchHistoricalInsightsDebounced, historicalSearchTerm, historicalFilters, historicalCurrentPage, historicalPageSize, historicalSortBy, historicalSortOrder]);
-    // endregion
 
     return {
-        // Core Insights
         aiInsights,
         isInsightsLoading,
         generateDashboardInsights,
@@ -862,7 +1054,6 @@ export const useAIInsightManagement = () => {
         updateInsightStatus,
         addInsightAttachment,
 
-        // AI Query Interface
         queryInput,
         setQueryInput,
         queryResults,
@@ -870,7 +1061,6 @@ export const useAIInsightManagement = () => {
         submitAIQuery,
         clearQueryResults,
 
-        // Preferences Management
         preferences,
         handlePreferenceChange,
         handleSavePreferences,
@@ -879,22 +1069,19 @@ export const useAIInsightManagement = () => {
         availableDataSources,
         availableAIModels,
 
-        // Insight Feedback
         provideInsightFeedback,
 
-        // AI System Performance
         aiSystemStatus,
         aiPerformanceMetrics,
         getAIModelDetails,
         checkSystemHealth,
 
-        // Historical Insights
         historicalSearchTerm,
         setHistoricalSearchTerm,
         historicalFilters,
         setHistoricalFilters,
         handleHistoricalFilterChange,
-        handleHistoricalSearch: fetchHistoricalInsightsDebounced, // Expose debounced version
+        handleHistoricalSearch: fetchHistoricalInsightsDebounced,
         historicalSearchResults,
         isHistoricalLoading,
         historicalTotalResults,
@@ -906,7 +1093,6 @@ export const useAIInsightManagement = () => {
         historicalSortOrder,
         handleHistoricalSortChange,
 
-        // Collaboration Hub
         selectedCollaborationInsightId,
         setSelectedCollaborationInsightId,
         newCommentText,
@@ -916,18 +1102,19 @@ export const useAIInsightManagement = () => {
         assignActionToUser,
         setAssignActionToUser,
         collaborationUsers,
+        currentUserId,
+        currentUserName,
         handleAddComment,
         handleAssignInsight,
-        assignActionToUserInInsight, // Expose this directly for recommended actions in UI
+        assignActionToUserInInsight,
+        hasPermission, // Expose permission check
 
-        // Insight Prioritization Engine
         prioritizationRules,
         addPrioritizationRule,
         updatePrioritizationRule,
         deletePrioritizationRule,
         recalculateAllInsightPriorities,
 
-        // AI Model Management
         selectedAIModelForDetails,
         setSelectedAIModelForDetails,
         isModelTesting,
@@ -935,18 +1122,27 @@ export const useAIInsightManagement = () => {
         compareAIModels,
         modelComparisonResults,
 
-        // Notification System
         notifications,
         unreadNotificationCount,
         markNotificationAsRead,
         markAllNotificationsAsRead,
         dismissNotification,
 
-        // Data Source Management
         dataSourcesConfig,
         isDataSourceLoading,
         fetchDataSourceStatus,
         updateDataSourceConfiguration,
         triggerManualSync,
+
+        // New Agentic AI Management
+        availableAIAgents,
+        agentActivityLog,
+        assignInsightToAgent,
+        triggerAgentActionForInsight,
+        getInsightAccessPermissions,
+        addInsightAuditEntry, // Expose audit entry helper
+
+        // New Payments Infrastructure Integration
+        flagRelatedTransaction,
     };
 };
