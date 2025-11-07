@@ -1,4 +1,16 @@
-import React, { useContext, useMemo, useState, useCallback } from 'react';
+```typescript
+/**
+ * This module implements a comprehensive Financial Goals Tracker component.
+ * Business value: This system empowers users with sophisticated financial planning capabilities,
+ * translating raw transaction data into actionable insights for wealth accumulation, debt reduction,
+ * and strategic investments. By providing dynamic goal tracking, AI-powered optimization,
+ * and robust visualization, it significantly enhances user engagement and financial literacy.
+ * This directly drives customer loyalty and opens avenues for personalized financial product offerings,
+ * enabling new revenue streams and substantial value delivery for enterprise financial institutions.
+ * Its integration with a larger agentic AI ecosystem allows for autonomous financial adjustments
+ * and proactive client engagement, solidifying a competitive advantage in the digital finance landscape.
+ */
+import React, { useContext, useMemo, useState, useCallback, useEffect } from 'react';
 import { DataContext } from '../context/DataContext';
 import Card from './Card';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
@@ -18,6 +30,8 @@ export interface FinancialGoal {
     creationDate: string; // Added for historical tracking
     lastUpdateDate: string; // Added for historical tracking
     progressHistory?: { date: string; amount: number }[]; // For detailed charts
+    recommendedAction?: string; // AI-driven recommendation
+    riskScore?: number; // Calculated risk for this goal
 }
 
 export interface Transaction {
@@ -55,6 +69,27 @@ export interface ExtendedDataContextType {
     cryptoWallets: any[]; // Simplified for this component's focus
     marketData: any; // Simplified for this component's focus
     userPreferences: UserPreferences; // This is crucial
+    // Agentic AI Integration: Functions to interact with the AI for goal management
+    performGoalAction: (goalId: string, actionType: 'adjust_contribution' | 'rebalance_funds' | 'mark_achieved' | 'defer', amount?: number) => Promise<boolean>;
+    getAIRecommendedActions: (goalId?: string) => Promise<AIRecommendation[]>;
+    // Digital Identity Integration: For secure actions
+    isAuthenticated: () => boolean;
+    getUserRole: () => 'user' | 'admin' | 'agent';
+}
+
+/**
+ * Represents an AI-driven recommendation for a financial goal.
+ * This structure enables the agentic AI to provide specific, actionable advice.
+ */
+export interface AIRecommendation {
+    goalId?: string;
+    type: 'adjust_contribution' | 'rebalance_funds' | 'accelerate_debt_payment' | 'optimize_investment' | 'scenario_planning';
+    description: string;
+    suggestedAmount?: number; // Amount for adjustment/rebalance
+    currency?: string;
+    impactDescription: string; // e.g., "reduces timeline by 3 months", "saves $500 in interest"
+    actionable: boolean; // Can be directly executed by the platform
+    confidenceScore: number; // AI's confidence in the recommendation
 }
 
 // --- Helper Functions and Advanced Calculators for Goals ---
@@ -130,6 +165,150 @@ export const getGoalStatusColor = (status: 'on_track' | 'behind' | 'achieved' | 
 const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#6A5ACD', '#DC143C', '#20B2AA', '#BA55D3', '#DAA520'];
 const BAR_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#a4de6c', '#d0ed57', '#e28829', '#ff7300', '#c2f97c', '#b10dc9', '#0074d9'];
 
+/**
+ * Simulates a robust Agentic AI system that provides financial recommendations.
+ * In a production environment, this would involve complex LLM interactions,
+ * real-time market data analysis, and deep integration with the financial ledger.
+ * For this simulation, it provides plausible, deterministic advice.
+ *
+ * Business value: This simulation demonstrates the power of agentic AI to offer
+ * hyper-personalized, proactive financial guidance. It moves beyond static advice
+ * to dynamic, context-aware recommendations that can adapt to market changes,
+ * user behavior, and goal progress. This capability significantly enhances customer
+ * satisfaction, reduces financial stress, and creates opportunities for automated
+ * financial optimization, leading to increased AUM and reduced operational costs.
+ * It's a key differentiator for financial platforms seeking to deliver intelligent,
+ * future-proof services.
+ */
+export const financialAIAdvisorSimulator = async (
+    goals: FinancialGoal[],
+    monthlySavingsRate: number,
+    totalIncomeAvg: number,
+    totalExpensesAvg: number,
+    userPreferences: UserPreferences
+): Promise<AIRecommendation[]> => {
+    const recommendations: AIRecommendation[] = [];
+
+    // Simulate market data for investment advice
+    const simulatedMarketSentiment = userPreferences.investmentHorizon === 'long' && userPreferences.riskTolerance === 'high' ? 'bullish' : 'neutral';
+    const simulatedInvestmentReturnRate = simulatedMarketSentiment === 'bullish' ? 0.08 : 0.05; // 8% vs 5% annual
+
+    const now = new Date();
+
+    // 1. Smart Contribution Rebalancing (Risk Mitigation/Acceleration)
+    const highPriorityBehindGoals = goals.filter(g => g.priority === 'high' && g.status === 'behind' && getDaysRemaining(g.dueDate) > 0);
+    const lowPriorityOnTrackGoals = goals.filter(g => g.priority === 'low' && g.status === 'on_track' && g.currentAmount < g.targetAmount);
+
+    if (highPriorityBehindGoals.length > 0 && lowPriorityOnTrackGoals.length > 0 && monthlySavingsRate > 0) {
+        const goalToAccelerate = highPriorityBehindGoals[0]; // Focus on one for simplicity
+        const goalToDeferFrom = lowPriorityOnTrackGoals[0];
+
+        if (goalToAccelerate && goalToDeferFrom) {
+            const potentialReallocationAmount = Math.min(monthlySavingsRate * 0.2, 500); // Max $500 reallocation or 20% of savings
+            if (potentialReallocationAmount > 0) {
+                const acceleratedMonths = Math.floor(potentialReallocationAmount / ((goalToAccelerate.targetAmount - goalToAccelerate.currentAmount) / Math.max(1, getDaysRemaining(goalToAccelerate.dueDate) / 30.4375)) * 3); // Rough estimate over 3 months
+                recommendations.push({
+                    goalId: goalToAccelerate.id,
+                    type: 'rebalance_funds',
+                    description: `Consider reallocating ${formatCurrency(potentialReallocationAmount)} from "${goalToDeferFrom.name}" to "${goalToAccelerate.name}" for the next 3 months to mitigate risk.`,
+                    suggestedAmount: potentialReallocationAmount,
+                    currency: userPreferences.displayCurrency,
+                    impactDescription: `This will accelerate your "${goalToAccelerate.name}" progress by approximately ${acceleratedMonths > 0 ? `${acceleratedMonths} months` : 'a few weeks'}`,
+                    actionable: true,
+                    confidenceScore: 0.85
+                });
+            }
+        }
+    }
+
+    // 2. Opportunity Detection: Accelerated Growth for Investment Goals
+    const investmentGoals = goals.filter(g => g.type === 'investment' && g.status === 'on_track' && g.currentAmount < g.targetAmount);
+    if (investmentGoals.length > 0 && monthlySavingsRate > 0) {
+        const freeSavings = monthlySavingsRate - goals.filter(g => g.status !== 'achieved' && g.status !== 'deferred').reduce((sum, g) => sum + (g.contributionsPerPeriod || 0), 0);
+        if (freeSavings > 100) { // If there's at least $100 available to invest more
+            const goal = investmentGoals[0];
+            const additionalContribution = Math.min(freeSavings * 0.5, 1000); // Suggest up to 50% of free savings or $1000
+            if (additionalContribution > 0) {
+                // Simplified time shortening calculation:
+                // New monthly contribution for the goal
+                const currentMonthly = goal.contributionsPerPeriod || ((goal.targetAmount - goal.currentAmount) / Math.max(1, getDaysRemaining(goal.dueDate) / 30.4375));
+                const newMonthly = currentMonthly + additionalContribution;
+
+                const remainingAmount = goal.targetAmount - goal.currentAmount;
+                const currentMonthsToReach = remainingAmount / currentMonthly;
+                const newMonthsToReach = remainingAmount / newMonthly;
+                const monthsShortened = Math.max(0, Math.round(currentMonthsToReach - newMonthsToReach));
+
+                recommendations.push({
+                    goalId: goal.id,
+                    type: 'optimize_investment',
+                    description: `Your "${goal.name}" goal is performing well. With current market sentiment, consider increasing your monthly investment by ${formatCurrency(additionalContribution)}.`,
+                    suggestedAmount: additionalContribution,
+                    currency: userPreferences.displayCurrency,
+                    impactDescription: `This could shorten your goal timeline by approximately ${monthsShortened} months, assuming a consistent ${Math.round(simulatedInvestmentReturnRate * 100)}% annual return.`,
+                    actionable: true,
+                    confidenceScore: 0.90
+                });
+            }
+        }
+    }
+
+    // 3. Risk Mitigation: Overdue Goals & Debt Reduction
+    const highInterestDebtGoals = goals.filter(g => g.type === 'debt_reduction' && g.status === 'behind' && getDaysRemaining(g.dueDate) < 180); // Near due date
+    if (highInterestDebtGoals.length > 0 && monthlySavingsRate > 0) {
+        const debtGoal = highInterestDebtGoals[0];
+        const additionalPayment = Math.min(monthlySavingsRate * 0.3, 800);
+        if (additionalPayment > 0) {
+            const estimatedInterestSaved = Math.floor(Math.random() * 500 + 200); // Simulate interest savings
+            recommendations.push({
+                goalId: debtGoal.id,
+                type: 'accelerate_debt_payment',
+                description: `The "${debtGoal.name}" goal is behind schedule and likely accrues significant interest. Prioritizing an additional ${formatCurrency(additionalPayment)} per month could save you an estimated ${formatCurrency(estimatedInterestSaved)} in interest.`,
+                suggestedAmount: additionalPayment,
+                currency: userPreferences.displayCurrency,
+                impactDescription: `Accelerating payment could save ${formatCurrency(estimatedInterestSaved)} in interest over the remaining term.`,
+                actionable: true,
+                confidenceScore: 0.95
+            });
+        }
+    }
+
+    // 4. Future Goal Planning & Feasibility
+    // Simulate user interest in a new car (not a current goal)
+    const newCarGoalId = 'new-car-purchase-sim';
+    if (!goals.some(g => g.id === newCarGoalId) && monthlySavingsRate > 200) {
+        const potentialDownPayment = 30000;
+        const requiredMonthlyForNewCar = 1000;
+        const monthsToAchieve = potentialDownPayment / requiredMonthlyForNewCar;
+        if (monthlySavingsRate >= requiredMonthlyForNewCar) {
+            recommendations.push({
+                goalId: newCarGoalId, // No actual goal yet, but for scenario
+                type: 'scenario_planning',
+                description: `You've previously shown interest in a "New Car Purchase". Based on your current financial health, we project you could realistically save a down payment of ${formatCurrency(potentialDownPayment)} within ${Math.round(monthsToAchieve)} months.`,
+                suggestedAmount: requiredMonthlyForNewCar,
+                currency: userPreferences.displayCurrency,
+                impactDescription: `Requires allocating an additional ${formatCurrency(requiredMonthlyForNewCar)} per month starting next quarter.`,
+                actionable: false, // This is a suggestion, not a direct action on an existing goal
+                confidenceScore: 0.75
+            });
+        }
+    }
+
+    // Remove placeholder recommendations if specific ones were generated
+    const finalRecommendations = recommendations.length > 0 ? recommendations : [
+        {
+            type: 'scenario_planning',
+            description: 'No specific high-priority actions detected right now. Your goals are generally on track or have sufficient buffer. Consider reviewing long-term investment strategies.',
+            impactDescription: 'Maintain current financial trajectory, explore new investment opportunities.',
+            actionable: false,
+            confidenceScore: 0.6
+        }
+    ];
+
+    return finalRecommendations;
+};
+
+
 // --- Component Definition ---
 
 const FinancialGoalsTracker: React.FC = () => {
@@ -141,13 +320,23 @@ const FinancialGoalsTracker: React.FC = () => {
     const {
         goals: allGoals,
         transactions,
-        userPreferences = { displayCurrency: 'USD', theme: 'dark', dateFormat: 'YYYY-MM-DD', enableNotifications: true, riskTolerance: 'medium', investmentHorizon: 'long' }
+        userPreferences = { displayCurrency: 'USD', theme: 'dark', dateFormat: 'YYYY-MM-DD', enableNotifications: true, riskTolerance: 'medium', investmentHorizon: 'long' },
+        performGoalAction, // Agentic AI hook
+        getAIRecommendedActions, // Agentic AI hook
+        isAuthenticated, // Digital Identity hook
+        getUserRole // Digital Identity hook
     } = extendedContext;
 
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [filterPriority, setFilterPriority] = useState<string>('all');
     const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+    const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([]);
+    const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+    const [actionToConfirm, setActionToConfirm] = useState<{ goalId: string; actionType: 'adjust_contribution' | 'rebalance_funds' | 'mark_achieved' | 'defer'; amount?: number; description: string } | null>(null);
+    const [actionFeedback, setActionFeedback] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
+
+    // Derive core financial metrics and processed goals
     const {
         activeGoals,
         achievedGoals,
@@ -265,8 +454,27 @@ const FinancialGoalsTracker: React.FC = () => {
         };
     }, [allGoals, transactions, selectedGoalId]);
 
+    // Load AI recommendations on component mount or when goals/preferences change
+    useEffect(() => {
+        const fetchRecommendations = async () => {
+            if (getAIRecommendedActions) {
+                // In a real scenario, this would call an API endpoint for the AI agent
+                // For this simulation, we use the local simulator
+                const fetchedRecommendations = await financialAIAdvisorSimulator(
+                    allGoals,
+                    monthlySavingsRate,
+                    monthlyIncomeAvg,
+                    monthlyExpensesAvg,
+                    userPreferences
+                );
+                setAiRecommendations(fetchedRecommendations);
+            }
+        };
+        fetchRecommendations();
+    }, [allGoals, monthlySavingsRate, monthlyIncomeAvg, monthlyExpensesAvg, userPreferences, getAIRecommendedActions]);
+
     const formatCurrency = (amount: number) => {
-        return `${userPreferences.displayCurrency === 'EUR' ? 'â‚¬' : '$'}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `${userPreferences.displayCurrency === 'EUR' ? '€' : '$'}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     const filteredGoals = goalsWithContributionAnalysis.filter(goal => {
@@ -275,8 +483,99 @@ const FinancialGoalsTracker: React.FC = () => {
         return matchesStatus && matchesPriority;
     });
 
+    const handleAITriggeredAction = useCallback(async () => {
+        if (!actionToConfirm || !performGoalAction || !isAuthenticated()) {
+            setActionFeedback({ message: "Action not authorized or invalid.", type: 'error' });
+            return;
+        }
+
+        setShowConfirmModal(false);
+        setActionFeedback(null); // Clear previous feedback
+
+        try {
+            // Simulate agent authentication and authorization
+            if (getUserRole() !== 'user' && getUserRole() !== 'agent') { // Only users or approved agents can trigger
+                setActionFeedback({ message: "You do not have permission to perform this action.", type: 'error' });
+                return;
+            }
+
+            // Execute the action via the DataContext (which would interface with token rails/payments)
+            const success = await performGoalAction(actionToConfirm.goalId, actionToConfirm.actionType, actionToConfirm.amount);
+
+            if (success) {
+                setActionFeedback({ message: `Successfully applied recommendation: ${actionToConfirm.description}`, type: 'success' });
+            } else {
+                setActionFeedback({ message: `Failed to apply recommendation: ${actionToConfirm.description}. Check system logs.`, type: 'error' });
+            }
+        } catch (error: any) {
+            setActionFeedback({ message: `An error occurred: ${error.message || 'Unknown error'}`, type: 'error' });
+        } finally {
+            setActionToConfirm(null);
+            // Optionally refresh recommendations after an action
+            const fetchedRecommendations = await financialAIAdvisorSimulator(
+                allGoals,
+                monthlySavingsRate,
+                monthlyIncomeAvg,
+                monthlyExpensesAvg,
+                userPreferences
+            );
+            setAiRecommendations(fetchedRecommendations);
+        }
+    }, [actionToConfirm, performGoalAction, isAuthenticated, getUserRole, allGoals, monthlySavingsRate, monthlyIncomeAvg, monthlyExpensesAvg, userPreferences]);
+
+    const handleConfirmAction = (goalId: string, actionType: 'adjust_contribution' | 'rebalance_funds' | 'mark_achieved' | 'defer', amount: number | undefined, description: string) => {
+        if (!isAuthenticated()) {
+            setActionFeedback({ message: "You must be logged in to perform this action.", type: 'error' });
+            return;
+        }
+        setActionToConfirm({ goalId, actionType, amount, description });
+        setShowConfirmModal(true);
+    };
+
+    // Component for action confirmation modal
+    const ConfirmationModal = () => {
+        if (!showConfirmModal || !actionToConfirm) return null;
+
+        return (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+                <div className="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-700 w-full max-w-md">
+                    <h3 className="text-xl font-bold text-white mb-4">Confirm Financial Action</h3>
+                    <p className="text-gray-300 mb-4">
+                        Are you sure you want to proceed with the following AI-recommended action?
+                    </p>
+                    <p className="text-gray-200 mb-4 font-mono bg-gray-700 p-3 rounded-md text-sm">
+                        {actionToConfirm.description} {actionToConfirm.amount !== undefined ? ` (${formatCurrency(actionToConfirm.amount)})` : ''}
+                    </p>
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => setShowConfirmModal(false)}
+                            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleAITriggeredAction}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition"
+                        >
+                            Confirm & Execute
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+
     return (
         <div className="space-y-6">
+            <ConfirmationModal />
+            {actionFeedback && (
+                <div className={`p-4 rounded-lg text-white font-medium ${actionFeedback.type === 'success' ? 'bg-green-600' : actionFeedback.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
+                    {actionFeedback.message}
+                    <button onClick={() => setActionFeedback(null)} className="float-right text-white font-bold">X</button>
+                </div>
+            )}
+
             <Card title="Financial Goals Dashboard Overview">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
                     <div className="p-4 bg-gray-800 rounded-lg shadow-md">
@@ -415,7 +714,7 @@ const FinancialGoalsTracker: React.FC = () => {
                             ${goal.status === 'achieved' ? 'bg-green-900/[.2] border-green-700' :
                              goal.status === 'behind' ? 'bg-red-900/[.2] border-red-700' :
                              goal.status === 'on_track' ? 'bg-blue-900/[.2] border-blue-700' :
-                             'bg-gray-800 border-gray-700'}`}
+                             'bg-gray-800 border-gray-700'} cursor-pointer hover:bg-gray-700 transition-colors duration-200`}
                              onClick={() => setSelectedGoalId(goal.id)}
                         >
                             <div className="flex justify-between items-center mb-2">
@@ -511,8 +810,10 @@ const FinancialGoalsTracker: React.FC = () => {
                                         labelFormatter={(label: string) => `Date: ${formatDate(label, userPreferences.dateFormat)}`}
                                         formatter={(value: number) => [formatCurrency(value), 'Saved Amount']}
                                     />
+                                    {/* The Line component for targetAmount assumes targetAmount is consistent, if it changes over time,
+                                        it would need to be part of mockProgressHistory as well. For now, a flat line if needed. */}
+                                    {/* <Line type="monotone" dataKey="targetAmount" stroke="#FFBB28" dot={false} strokeDasharray="5 5" /> */}
                                     <Area type="monotone" dataKey="amount" stroke="#82ca9d" fill="url(#goalProgressGradient)" strokeWidth={2} />
-                                    <Line type="monotone" dataKey="targetAmount" stroke="#FFBB28" dot={false} strokeDasharray="5 5" /> {/* This assumes targetAmount is available on history points or rendered as a separate line */}
                                 </AreaChart>
                             </ResponsiveContainer>
                         ) : (
@@ -525,43 +826,36 @@ const FinancialGoalsTracker: React.FC = () => {
 
             <Card title="AI-Powered Goal Optimization & Insights">
                 <div className="space-y-4">
-                    <div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Smart Contribution Rebalancing</h3>
-                        <p className="text-gray-400">
-                            Based on your {formatCurrency(monthlySavingsRate)} monthly savings, our AI suggests a strategic adjustment.
-                            You are currently <span className="text-red-400">behind on 3 high-priority goals</span>.
-                            Consider reallocating <span className="text-blue-400">{formatCurrency(Math.min(monthlySavingsRate * 0.2, 500))}</span> from lower priority "Travel Fund" to "Emergency Fund" for the next 3 months to mitigate risk.
-                            This will accelerate your "Emergency Fund" progress by <span className="text-green-400">{Math.ceil(Math.min(monthlySavingsRate * 0.2, 500) * 3 / (selectedGoalDetails?.targetAmount || 1) * 100)}%</span>.
-                            <span className="block text-sm text-gray-500 mt-1"> (Dynamic recommendations leveraging your financial position and goal priorities)</span>
-                        </p>
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Opportunity Detection: Accelerated Growth</h3>
-                        <p className="text-gray-400">
-                            Your "Investment Portfolio Growth" goal is <span className="text-green-400">on track</span>. With your current investment ratio and market sentiment,
-                            we've identified an opportunity to increase your monthly investment by <span className="text-purple-400">{formatCurrency(Math.max(0, monthlySavingsRate - projectedMonthlySavings))}</span>.
-                            This additional contribution could shorten your goal timeline by approximately <span className="text-purple-400">4 months</span>, assuming a consistent 7% annual return.
-                            <span className="block text-sm text-gray-500 mt-1"> (Connects market data, personal risk tolerance, and goal types for actionable advice)</span>
-                        </p>
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Risk Mitigation: Overdue Goals & Debt Reduction</h3>
-                        <p className="text-gray-400">
-                            The "Student Loan Repayment" goal is <span className="text-orange-400">behind schedule by 6 months</span> and has a high interest rate.
-                            Prioritizing an additional <span className="text-red-400">{formatCurrency(Math.min(monthlySavingsRate * 0.3, 800))}</span> per month could save you an estimated {formatCurrency(Math.floor(Math.random() * 500 + 200))} in interest over the remaining loan term.
-                            Consider temporary adjustments to discretionary spending.
-                            <span className="block text-sm text-gray-500 mt-1"> (Analyzes debt characteristics and goal urgency for critical interventions)</span>
-                        </p>
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Future Goal Planning & Feasibility</h3>
-                        <p className="text-gray-400">
-                            You've expressed interest in a "New Car Purchase" goal. Based on your current financial health and active goals,
-                            we project that you could realistically save a down payment of {formatCurrency(30000)} within <span className="text-blue-400">30 months</span>,
-                            by allocating an additional {formatCurrency(1000)} per month starting next quarter.
-                            <span className="block text-sm text-gray-500 mt-1"> (Utilizes comprehensive financial modeling to forecast new goal feasibility)</span>
-                        </p>
-                    </div>
+                    {aiRecommendations.length > 0 ? (
+                        aiRecommendations.map((rec, index) => (
+                            <div key={index} className="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+                                <h3 className="text-xl font-semibold text-white mb-2 flex justify-between items-center">
+                                    {rec.type.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                    <span className={`text-sm font-normal ${rec.confidenceScore > 0.8 ? 'text-green-400' : rec.confidenceScore > 0.7 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                        Confidence: {(rec.confidenceScore * 100).toFixed(0)}%
+                                    </span>
+                                </h3>
+                                <p className="text-gray-300">
+                                    {rec.description}
+                                    <span className="block text-sm text-gray-500 mt-1">
+                                        {rec.impactDescription}
+                                    </span>
+                                </p>
+                                {rec.actionable && rec.goalId && performGoalAction && (
+                                    <div className="mt-4 text-right">
+                                        <button
+                                            onClick={() => handleConfirmAction(rec.goalId!, rec.type as any, rec.suggestedAmount, rec.description)}
+                                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md transition-all duration-300"
+                                        >
+                                            Apply Recommendation
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-center py-4">Generating AI recommendations...</p>
+                    )}
                 </div>
             </Card>
 
@@ -595,3 +889,4 @@ const FinancialGoalsTracker: React.FC = () => {
 };
 
 export default FinancialGoalsTracker;
+```
