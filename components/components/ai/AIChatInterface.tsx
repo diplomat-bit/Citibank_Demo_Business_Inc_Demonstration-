@@ -1,12 +1,28 @@
+/**
+ * This module implements the `AIChatInterface` React component, a sophisticated, multimodal front-end for the
+ * hyper-cognitive AI ecosystem. It serves as the primary human-AI interaction point, facilitating seamless
+ * communication across diverse input/output modalities (text, speech, vision, BCI, haptic) and providing
+ * real-time access to advanced AI capabilities including agent orchestration, generative content creation,
+ * knowledge graph querying, and simulation.
+ *
+ * Business value: This interface is the gateway to unlocking the full potential of an agentic AI architecture,
+ * enabling unprecedented operational velocity and automation for enterprise clients. By providing a unified,
+ * intelligent conversational layer, it dramatically reduces friction in complex workflows, accelerates decision-making,
+ * and enhances human-in-the-loop governance. The robust integration with real-time payment infrastructure and
+ * digital identity management, accessible through this interface, empowers secure, instant value exchange and
+ * financial automation, establishing a durable programmable rail that drives new revenue models and substantial
+ * cost arbitrage opportunities. It is a critical component for delivering a competitive advantage in a fast-evolving
+ * digital economy, ensuring secure, compliant, and highly performant AI-driven operations.
+ */
 import React, { useState, useEffect, useRef, useCallback, Fragment, ChangeEvent, KeyboardEvent, useMemo } from 'react';
-import { useAI, AIEvent, AIModelConfig, AIUserProfile, AIAgent, AITask } from '../../AIWrapper'; // Adjust path as needed
+import { useAI, AIEvent, AIModelConfig, AIUserProfile, AIAgent, AITask, TokenAccount, TransactionRecord, TokenRail, AILogEntry } from '../../AIWrapper'; // Adjust path as needed
 
 // --- Chat Message Interfaces ---
 
 /**
  * Defines the various types of content a chat message can hold.
  */
-export type MessageType = 'text' | 'image' | 'audio' | 'video' | 'code' | 'system' | 'haptic' | 'bci_command' | '3d_model' | 'document' | 'simulation_log' | 'knowledge_graph_entry';
+export type MessageType = 'text' | 'image' | 'audio' | 'video' | 'code' | 'system' | 'haptic' | 'bci_command' | '3d_model' | 'document' | 'simulation_log' | 'knowledge_graph_entry' | 'payment_transaction' | 'system_status_report' | 'identity_event' | 'governance_audit_log';
 
 /**
  * Defines the possible senders of a chat message within the interface.
@@ -73,7 +89,7 @@ export interface AIChatInterfaceProps {
     enableAgentDelegation?: boolean; // Allows the AI to delegate tasks to autonomous agents
 }
 
-const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
+export const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
     initialMessages = [],
     onSendMessage,
     onReceiveMessage,
@@ -106,6 +122,8 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
         userProfile,
         userId,
         sessionId,
+        tokenRailSimulator,
+        paymentsEngine,
     } = ai;
 
     // --- Component State Variables ---
@@ -125,6 +143,11 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
     const [modelConfigurationPanelVisible, setModelConfigurationPanelVisible] = useState(false);
     const [agentManagementPanelVisible, setAgentManagementPanelVisible] = useState(false);
     const [systemMonitoringPanelVisible, setSystemMonitoringPanelVisible] = useState(false);
+    const [userProfilePanelVisible, setUserProfilePanelVisible] = useState(false); // New panel state
+    const [paymentSimulatorPanelVisible, setPaymentSimulatorPanelVisible] = useState(false); // New panel state
+    const [knowledgeGraphExplorerVisible, setKnowledgeGraphExplorerVisible] = useState(false); // New panel state
+    const [auditLogViewerVisible, setAuditLogViewerVisible] = useState(false); // New panel state
+
     const [userFeedbackPendingMessageId, setUserFeedbackPendingMessageId] = useState<string | null>(null);
     const [aiHealthSummary, setAiHealthSummary] = useState<string>('Monitoring AI ecosystem...');
 
@@ -275,6 +298,11 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                     timestamp: Date.now(), metadata: { scenarioId: scenario.id, results: simResults }
                 });
             } else if (actionType === 'spawn_new_agent') {
+                if (userProfile?.securityCredentials?.level < 3) { // Example RBAC check
+                    addMessage({ id: `msg_rbac_fail_${Date.now()}`, sender: 'system', type: 'text', content: 'Authorization denied: Insufficient security clearance to spawn new agents.', timestamp: Date.now() });
+                    aiEventLogger.logEvent({ type: 'security_alert', source: 'AIChatInterface.AgentControl', payload: { action: 'spawn_agent_denied', userId, reason: 'Insufficient clearance', traceId: sessionId }, severity: 'critical' });
+                    return;
+                }
                 const newAgentId = `agent_${Date.now()}`;
                 const newAgent: AIAgent = {
                     id: newAgentId, name: `NewAgent-${Math.random().toString(36).substring(2, 7)}`, persona: 'General Helper', role: 'executor',
@@ -287,6 +315,41 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                     id: `msg_agent_spawn_${Date.now()}`, sender: 'system', type: 'text',
                     content: `New agent '${newAgent.name}' (ID: ${newAgent.id}) spawned and is now idle.`, timestamp: Date.now(), metadata: { agentId: newAgent.id }
                 });
+            } else if (actionType === 'initiate_payment' && taskDescription) { // taskDescription here is payment details like "recipientId:AMOUNT:rail"
+                if (userProfile?.securityCredentials?.level < 2) {
+                    addMessage({ id: `msg_rbac_fail_${Date.now()}`, sender: 'system', type: 'text', content: 'Authorization denied: Insufficient security clearance for payment initiation.', timestamp: Date.now() });
+                    aiEventLogger.logEvent({ type: 'security_alert', source: 'AIChatInterface.PaymentControl', payload: { action: 'payment_denied', userId, reason: 'Insufficient clearance', traceId: sessionId }, severity: 'critical' });
+                    return;
+                }
+                const [recipientId, amountStr, railPreference] = taskDescription.split(':');
+                const amount = parseFloat(amountStr);
+                if (!recipientId || isNaN(amount) || amount <= 0) {
+                    addMessage({ id: `msg_payment_error_${Date.now()}`, sender: 'system', type: 'text', content: 'Invalid payment details. Format: recipientId:amount:rail.', timestamp: Date.now() });
+                    return;
+                }
+                setAiStatusMessage(`Initiating payment of ${amount} to ${recipientId} via ${railPreference || 'auto'} rail...`);
+                const paymentRequest = {
+                    payerId: userId,
+                    payeeId: recipientId,
+                    amount: amount,
+                    currency: 'USD_TOKEN', // Example stablecoin
+                    idempotencyKey: generateUUID(),
+                    meta: { railPreference: railPreference || 'auto' }
+                };
+                const txResult = await paymentsEngine.processPayment(paymentRequest);
+                if (txResult.success) {
+                    addMessage({
+                        id: `msg_payment_success_${Date.now()}`, sender: 'system', type: 'payment_transaction',
+                        content: `Payment of ${amount} USD_TOKEN to ${recipientId} successful. TX ID: ${txResult.transactionId}. Rail: ${txResult.meta?.actualRail || 'N/A'}.`,
+                        timestamp: Date.now(), metadata: { transactionId: txResult.transactionId, ...txResult.meta }
+                    });
+                } else {
+                    addMessage({
+                        id: `msg_payment_failed_${Date.now()}`, sender: 'system', type: 'payment_transaction',
+                        content: `Payment to ${recipientId} failed: ${txResult.errorMessage || 'Unknown error'}. Risk score: ${txResult.meta?.riskScore || 'N/A'}.`,
+                        timestamp: Date.now(), metadata: { transactionId: txResult.transactionId, ...txResult.meta }
+                    });
+                }
             }
         } catch (error) {
             addMessage({
@@ -296,7 +359,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
         } finally {
             setAiStatusMessage('Ready.');
         }
-    }, [addMessage, aiEventLogger, agentOrchestrator, userProfile, currentEmotionalState, registeredAgents, simulationEngine, sessionId]);
+    }, [addMessage, aiEventLogger, agentOrchestrator, userProfile, currentEmotionalState, registeredAgents, simulationEngine, sessionId, generateUUID, paymentsEngine]);
 
     /**
      * Handles changes to model configuration options.
@@ -527,7 +590,12 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                 const taskDesc = lowerCaseContent.substring('/create task '.length).trim();
                 setAiStatusMessage('Delegating to agent orchestrator...'); const newTask = await agentOrchestrator.createTask(taskDesc.substring(0, 50), taskDesc, userProfile?.expertiseLevels.coding && userProfile.expertiseLevels.coding > 7 ? 'critical' : 'high');
                 setActiveAgentTasks(prev => [...prev.filter(t => t.id !== newTask.id), newTask]); triggeredTaskId = newTask.id; aiResponseContent = `Task "${newTask.name}" (ID: ${newTask.id}) has been assigned to an agent (${newTask.assignedAgentId || 'auto-selected'}). I will inform you upon completion.`; aiMessageType = 'system';
-            } else {
+            } else if (lowerCaseContent.startsWith('/send payment ') && enableAgentDelegation) {
+                const paymentDetails = lowerCaseContent.substring('/send payment '.length).trim();
+                handleAgentAction('initiate_payment', undefined, paymentDetails); // Route through agent action
+                aiResponseContent = `Initiating payment: "${paymentDetails}".`; aiMessageType = 'system';
+            }
+            else {
                 const generativePrompt = `Given the user's input/intent: "${processedInput.text || content}", and the following reasoning: "${reasoningResult}", generate a helpful, personalized, and context-aware response in ${userProfile?.preferences.language || 'English'}. Adapt to user's verbosity (${userProfile?.preferences.verbosity || 'medium'}) and emotional state (${currentEmotionalState}).`;
                 setAiStatusMessage('Generating comprehensive response...');
 
@@ -576,7 +644,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
         } finally {
             setIsTyping(false); setAiStatusMessage('Ready.'); processingInputRef.current = false;
         }
-    }, [addMessage, onSendMessage, userId, sessionId, modelManager, personalizationEngine, universalInterfaceCoordinator, generativeContentStudio, cognitiveArchitect, agentOrchestrator, globalKnowledgeGraph, simulationEngine, aiEventLogger, enablePersonalization, currentOutputModality, currentEmotionalState, registeredAgents, userProfile, generateUUID, enableAgentDelegation]);
+    }, [addMessage, onSendMessage, userId, sessionId, modelManager, personalizationEngine, universalInterfaceCoordinator, generativeContentStudio, cognitiveArchitect, agentOrchestrator, globalKnowledgeGraph, simulationEngine, aiEventLogger, enablePersonalization, currentOutputModality, currentEmotionalState, registeredAgents, userProfile, generateUUID, enableAgentDelegation, handleAgentAction]);
 
     /**
      * Handles text input submission, clearing the input field and triggering AI response.
@@ -762,7 +830,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
             const agents = registeredAgents.map(a => a.name); if (agents.length < 2) return; const sender = agents[Math.floor(Math.random() * agents.length)]; let receiver; do { receiver = agents[Math.floor(Math.random() * agents.length)]; } while (receiver === sender); const messageTypes = ['status_update', 'task_query', 'data_exchange', 'coordination_request', 'resource_negotiation']; const randomMessage = messageTypes[Math.floor(Math.random() * messageTypes.length)]; setInterAgentCommunicationLogs(prev => [...prev.slice(-99), { sender, receiver, message: randomMessage, timestamp: Date.now() }]);
         }, 3000);
         const integrityCheckInterval = setInterval(() => {
-            const dataSources = ['UserDB', 'ModelCache', 'KnowledgeBase', 'EventLog']; dataSources.forEach(source => { setDataIntegrityChecks(prev => ({ ...prev, [source]: Math.random() > 0.05 ? 'passed' : 'failed' })); if (dataIntegrityChecks[source] === 'failed') { aiEventLogger.logEvent({ type: 'system_alert', source: 'AIChatInterface.IntegrityMonitor', payload: { message: `Data integrity check failed for ${source}.`, source, traceId: sessionId }, severity: 'critical' }); } });
+            const dataSources = ['UserDB', 'ModelCache', 'KnowledgeBase', 'EventLog']; dataSources.forEach(source => { setDataIntegrityChecks(prev => ({ ...prev, [source]: Math.random() > 0.05 ? 'passed' : 'failed' })); if (prev[source] === 'failed') { aiEventLogger.logEvent({ type: 'system_alert', source: 'AIChatInterface.IntegrityMonitor', payload: { message: `Data integrity check failed for ${source}.`, source, traceId: sessionId }, severity: 'critical' }); } });
         }, 12000);
         const securityScanInterval = setInterval(() => {
             setActiveSecurityScans(prev => {
@@ -834,11 +902,15 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                 case 'audio': const audioSrc = message.mediaBlob ? URL.createObjectURL(message.mediaBlob) : message.content; return (<audio controls src={audioSrc} style={{ width: '100%', minWidth: '200px' }}>Your browser does not support the audio element.</audio>);
                 case 'code': return (<pre style={{ backgroundColor: '#282c34', color: '#abb2bf', padding: '10px', borderRadius: '5px', overflowX: 'auto', fontSize: '0.9em', border: `1px solid ${styles.borderColor}` }}><code>{message.content}</code></pre>);
                 case 'document': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(0,123,255,0.05)' }}>📄 Document: <span style={{ color: styles.accentColor, cursor: 'pointer' }} onClick={() => window.open(message.content, '_blank')}>{message.content.substring(0, 50)}...</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>{message.metadata?.analysisSummary || 'Click to view/download.'}</p></div>);
-                case '3d_model': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(255,165,0,0.05)' }}>🌐 3D Model: <span style={{ color: styles.accentColor, cursor: 'pointer' }} onClick={() => window.open(message.content, '_blank')}>{message.content.substring(0, 50)}...</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>{message.metadata?.modelFormat || 'Interactive 3D preview would load here.'}</p></div>);
+                case '3d_model': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(255,165,0,0.05)' }}>🧊 3D Model: <span style={{ color: styles.accentColor, cursor: 'pointer' }} onClick={() => window.open(message.content, '_blank')}>{message.content.substring(0, 50)}...</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>{message.metadata?.modelFormat || 'Interactive 3D preview would load here.'}</p></div>);
                 case 'simulation_log': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(128,0,128,0.05)' }}>🧪 Simulation Log: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>Scenario ID: {message.metadata?.scenarioId || 'N/A'}</p></div>);
-                case 'knowledge_graph_entry': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(0,128,128,0.05)' }}>🧠 KG Entry: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>Node ID: {message.metadata?.nodeId || 'N/A'}</p></div>);
+                case 'knowledge_graph_entry': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(0,128,128,0.05)' }}>🌐 KG Entry: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>Node ID: {message.metadata?.nodeId || 'N/A'}</p></div>);
                 case 'haptic': return <span style={{ color: '#9dff9d' }}>[Haptic Feedback Simulated: {message.content}. Intensity: {message.metadata?.feedbackIntensity || 'N/A'}]</span>;
                 case 'bci_command': return <span style={{ color: '#9d9dff' }}>[BCI Command Processed: {message.content}. Intent: {message.metadata?.neuralIntent || 'N/A'}]</span>;
+                case 'payment_transaction': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(0,255,0,0.05)' }}>💰 Payment Transaction: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>TX ID: {message.metadata?.transactionId || 'N/A'}, Rail: {message.metadata?.actualRail || 'N/A'}</p></div>);
+                case 'system_status_report': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(255,255,0,0.05)' }}>📊 Status Report: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>Component: {message.metadata?.component || 'N/A'}</p></div>);
+                case 'identity_event': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(255,0,255,0.05)' }}>👤 Identity Event: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>Event Type: {message.metadata?.eventType || 'N/A'}</p></div>);
+                case 'governance_audit_log': return (<div style={{ border: `1px solid ${styles.accentColor}`, padding: '8px', borderRadius: '5px', backgroundColor: 'rgba(255,100,0,0.05)' }}>📜 Audit Log: <span style={{ color: styles.accentColor }}>{message.content}</span><p style={{ fontSize: '0.7em', color: '#aaa', marginTop: '5px' }}>Action: {message.metadata?.action || 'N/A'}, By: {message.metadata?.actorId || 'N/A'}</p></div>);
                 default: return <span style={{ color: '#ccc' }}>[Unsupported message type: {message.type}]</span>;
             }
         }, [styles.accentColor, styles.borderColor]);
@@ -854,7 +926,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                     {renderMessageContent(msg)}
                     <div style={{ fontSize: '0.7em', color: '#888', marginTop: '5px', display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start', alignItems: 'center', gap: '10px' }}>
                         {new Date(msg.timestamp).toLocaleTimeString()}
-                        {msg.sender === 'ai' && msg.processingLatencyMs !== undefined && (<span title="AI processing latency">🕒 {msg.processingLatencyMs}ms</span>)}
+                        {msg.sender === 'ai' && msg.processingLatencyMs !== undefined && (<span title="AI processing latency">⏱️ {msg.processingLatencyMs}ms</span>)}
                         {msg.isStreamEnd === false && <span style={{ marginLeft: '5px', fontStyle: 'italic', color: styles.accentColor }}>Streaming...</span>}
                         {(msg.sender === 'ai' || msg.sender === 'agent') && renderFeedbackIcons()}
                     </div>
@@ -911,7 +983,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                     aiEventLogger.logEvent({ type: 'data_update', source: 'AIChatInterface.AdvancedConfig', payload: { action: 'toggle_feature', featureId: id, enabled, traceId: sessionId }, severity: 'info' });
                     setAiStatusMessage(`Feature '${feature.name}' ${enabled ? 'enabled' : 'disabled'}.`);
                     // Direct propagation for `proactiveSuggestionsEnabled` prop (if it were stateful here)
-                    if (id === 'proactive_assistance' && setProactiveSuggestionsEnabled) { /* setProactiveSuggestionsEnabled(enabled); */ }
+                    // if (id === 'proactive_assistance' && setProactiveSuggestionsEnabled) { /* setProactiveSuggestionsEnabled(enabled); */ }
                 },
                 updateParameter: (id: string, param: string, value: any) => {
                     setAdvancedFeatures(current => current.map(f => f.featureId === id ? { ...f, parameters: { ...f.parameters, [param]: value } } : f));
@@ -920,7 +992,7 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                 }
             }));
         });
-    }, [aiEventLogger, sessionId, /* setProactiveSuggestionsEnabled */]); // `setProactiveSuggestionsEnabled` is commented out as prop, not state.
+    }, [aiEventLogger, sessionId]);
 
     /**
      * Renders the advanced AI options panel.
@@ -946,12 +1018,16 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
                 </div>
                 <div style={{ borderTop: `1px solid ${styles.borderColor}`, paddingTop: '10px' }}>
                      <h5 style={{ margin: '0 0 8px 0', color: styles.headerText }}>Quick Actions:</h5>
-                     <button onClick={() => handleAgentAction('create_task', 'data_analyst_agent', 'Analyze recent chat sentiment data for user profile insights.')} style={{ ...getButtonStyle('primary'), width: '100%', marginBottom: '5px' }}>📊 Analyze Sentiment</button>
-                     <button onClick={() => handleAgentAction('run_simulation', undefined, 'Simulate user engagement trends under various conversational AI configurations.')} style={{ ...getButtonStyle('primary'), width: '100%', marginBottom: '5px' }}>🧪 Run Engagement Sim</button>
+                     <button onClick={() => handleAgentAction('create_task', 'data_analyst_agent', 'Analyze recent chat sentiment data for user profile insights.')} style={{ ...getButtonStyle('primary'), width: '100%', marginBottom: '5px' }}>📈 Analyze Sentiment</button>
+                     <button onClick={() => handleAgentAction('run_simulation', undefined, 'Simulate user engagement trends under various conversational AI configurations.')} style={{ ...getButtonStyle('primary'), width: '100%', marginBottom: '5px' }}>🔬 Run Engagement Sim</button>
                      <button onClick={() => handleAgentAction('reboot_agent', 'design_agent_1')} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>🔄 Reboot Design Agent</button>
                      <button onClick={() => setModelConfigurationPanelVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>⚙️ Configure AI Models ({modelManager.getAllModels().length})</button>
                     <button onClick={() => setAgentManagementPanelVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>🤖 Manage Agents ({registeredAgents.length})</button>
-                    <button onClick={() => setSystemMonitoringPanelVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>📈 System Monitor</button>
+                    <button onClick={() => setSystemMonitoringPanelVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>📊 System Monitor</button>
+                    <button onClick={() => setUserProfilePanelVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>👤 Manage Profile & Identity</button>
+                    <button onClick={() => setPaymentSimulatorPanelVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>💰 Payment & Token Rail Sim</button>
+                    <button onClick={() => setKnowledgeGraphExplorerVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>🌐 Knowledge Graph Explorer</button>
+                    <button onClick={() => setAuditLogViewerVisible(true)} style={{ ...getButtonStyle('secondary'), width: '100%', marginBottom: '5px' }}>📜 Audit Log Viewer</button>
                 </div>
             </div>
         </div>
@@ -987,4 +1063,618 @@ const AIChatInterface: React.FC<AIChatInterfaceProps> = ({
             </h4>
             <div style={{ maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {modelManager.getAllModels().map(model => <ModelConfigItem key={model.id} model={model} />)}
-                <div style={{ borderTop
+            </div>
+        </div>
+    ), [styles, modelManager, getPanelBaseStyle, getButtonStyle, ModelConfigItem]);
+
+
+    /**
+     * Component for displaying a single Agent's details and controls.
+     */
+    const AgentManagementItem: React.FC<{ agent: AIAgent }> = useCallback(({ agent }) => {
+        const [showDetails, setShowDetails] = useState(false);
+        return (
+            <div style={{ padding: '10px', border: `1px solid ${styles.borderColor}`, borderRadius: '5px', backgroundColor: styles.inputBg, marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => setShowDetails(!showDetails)}>
+                    <span style={{ fontWeight: 'bold' }}>{agent.name} ({agent.id.substring(0, 8)})</span>
+                    <span style={{ fontSize: '0.8em', color: agent.status === 'idle' ? '#0f0' : (agent.status === 'executing' ? '#ff0' : 'red') }}>{agent.status.toUpperCase()} {showDetails ? '▼' : '▶'}</span>
+                </div>
+                {showDetails && (
+                    <div style={{ fontSize: '0.75em', color: styles.textColor, marginTop: '5px' }}>
+                        <p>Role: {agent.role} | Persona: {agent.persona}</p>
+                        <p>Capabilities: {agent.capabilities.join(', ')}</p>
+                        <p>Current Goal: {agent.currentGoal || 'None'}</p>
+                        <p>Tasks: {agent.assignedTasks.length > 0 ? agent.assignedTasks.map(t => t.id.substring(0, 8)).join(', ') : 'None'}</p>
+                        <p>Security Clearance: {agent.securityClearance} | Trust Score: {agent.trustScore}</p>
+                        <p>Last Online: {new Date(agent.lastOnline).toLocaleString()}</p>
+                        <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                            <button onClick={() => handleAgentAction('reboot_agent', agent.id)} style={getButtonStyle('secondary_small')} title="Simulate agent reboot">Reboot</button>
+                            <button onClick={() => handleAgentAction('create_task', agent.id, `Investigate system logs for ${agent.name} anomalies.`)} style={getButtonStyle('secondary_small')} title="Assign a diagnostic task">Diagnose</button>
+                            {/* Add more control buttons based on agent capabilities/status */}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }, [styles, getButtonStyle, handleAgentAction]);
+
+
+    /**
+     * Renders the Agent Management panel.
+     */
+    const renderAgentManagementPanel = useCallback(() => (
+        <div style={{ ...getPanelBaseStyle(), left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '10px', width: '450px' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: styles.headerText, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Agent Management <button onClick={() => setAgentManagementPanelVisible(false)} style={getButtonStyle('secondary_small')}>Close</button>
+            </h4>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {registeredAgents.length === 0 ? <p style={{ color: styles.textColor }}>No agents registered.</p> : registeredAgents.map(agent => <AgentManagementItem key={agent.id} agent={agent} />)}
+                <div style={{ borderTop: `1px solid ${styles.borderColor}`, paddingTop: '10px', display: 'flex', justifyContent: 'center' }}>
+                    <button onClick={() => handleAgentAction('spawn_new_agent')} style={getButtonStyle('primary')}>Spawn New Agent</button>
+                </div>
+            </div>
+        </div>
+    ), [styles, registeredAgents, getPanelBaseStyle, getButtonStyle, AgentManagementItem, handleAgentAction]);
+
+
+    /**
+     * Renders the System Monitoring panel.
+     */
+    const renderSystemMonitoringPanel = useCallback(() => (
+        <div style={{ ...getPanelBaseStyle(), left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '10px', width: '500px' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: styles.headerText, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                AI System Monitor <button onClick={() => setSystemMonitoringPanelVisible(false)} style={getButtonStyle('secondary_small')}>Close</button>
+            </h4>
+            <div style={{ maxHeight: '450px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9em' }}>
+                <p style={{ color: styles.statusText }}>{aiHealthSummary}</p>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>System Load</h5>
+                    {Object.entries(systemLoadMetrics).map(([cluster, metrics]) => (
+                        <p key={cluster} style={{ margin: '2px 0', color: styles.textColor }}>
+                            <span style={{ fontWeight: 'bold' }}>{cluster}:</span> CPU {metrics.cpu}%, Mem {metrics.memory}%, Net {metrics.network}Mbps
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Realtime Data Streams</h5>
+                    {Object.entries(realtimeDataStreams).map(([id, stream]) => (
+                        <p key={id} style={{ margin: '2px 0', color: styles.textColor }}>
+                            <span style={{ fontWeight: 'bold' }}>{id}:</span> {stream.latestValue} ({new Date(stream.timestamp).toLocaleTimeString()})
+                            <br/><span style={{ fontSize: '0.7em', color: '#888' }}>History: {stream.history.map(h => h.value.toFixed(0)).join(', ')}</span>
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Agent Communication (Latest 5)</h5>
+                    {interAgentCommunicationLogs.slice(-5).reverse().map((log, i) => (
+                        <p key={i} style={{ margin: '2px 0', color: styles.textColor }}>
+                            [{new Date(log.timestamp).toLocaleTimeString()}] {log.sender} -> {log.receiver}: {log.message}
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Data Integrity Checks</h5>
+                    {Object.entries(dataIntegrityChecks).map(([source, status]) => (
+                        <p key={source} style={{ margin: '2px 0', color: status === 'passed' ? 'lightgreen' : (status === 'failed' ? 'red' : styles.textColor) }}>
+                            <span style={{ fontWeight: 'bold' }}>{source}:</span> {status.toUpperCase()}
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Active Security Scans</h5>
+                    {activeSecurityScans.length === 0 ? <p style={{ color: styles.textColor }}>No active scans.</p> : activeSecurityScans.map(scan => (
+                        <p key={scan.scanId} style={{ margin: '2px 0', color: styles.textColor }}>
+                            <span style={{ fontWeight: 'bold' }}>{scan.target}:</span> {scan.progress.toFixed(0)}% ({scan.status})
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Anomaly Detection Queue</h5>
+                    {anomalyDetectionQueue.slice(-3).reverse().map((anomaly, i) => (
+                        <p key={i} style={{ margin: '2px 0', color: anomaly.severity === 'critical' ? 'red' : 'orange' }}>
+                            [{new Date(anomaly.timestamp).toLocaleTimeString()}] {anomaly.dataType}: {anomaly.detectedAnomaly ? 'DETECTED!' : 'No Anomaly'} (Severity: {anomaly.severity || 'low'})
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Optimization Suggestions</h5>
+                    {optimizationSuggestions.slice(-3).reverse().map((suggestion, i) => (
+                        <p key={i} style={{ margin: '2px 0', color: styles.textColor }}>
+                            <span style={{ fontWeight: 'bold' }}>{suggestion.target}:</span> {suggestion.recommendation} ({suggestion.applied ? 'Applied' : 'Pending'})
+                        </p>
+                    ))}
+                </div>
+
+                <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                    <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>User Engagement ({userId})</h5>
+                    {userEngagementMetrics[userId] ? (
+                        <p style={{ margin: '2px 0', color: styles.textColor }}>
+                            Interactions: {userEngagementMetrics[userId].interactions}, Session Duration: {userEngagementMetrics[userId].sessionDuration}s, Last Active: {new Date(userEngagementMetrics[userId].lastActive).toLocaleTimeString()}
+                        </p>
+                    ) : <p style={{ color: styles.textColor }}>No engagement data for current user.</p>}
+                </div>
+
+            </div>
+        </div>
+    ), [styles, getPanelBaseStyle, getButtonStyle, aiHealthSummary, systemLoadMetrics, realtimeDataStreams, interAgentCommunicationLogs, dataIntegrityChecks, activeSecurityScans, anomalyDetectionQueue, optimizationSuggestions, userEngagementMetrics, userId]);
+
+
+    /**
+     * Renders the User Profile and Digital Identity management panel.
+     */
+    const renderUserProfilePanel = useCallback(() => (
+        <div style={{ ...getPanelBaseStyle(), left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '10px', width: '400px' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: styles.headerText, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                User Profile & Digital Identity <button onClick={() => setUserProfilePanelVisible(false)} style={getButtonStyle('secondary_small')}>Close</button>
+            </h4>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9em' }}>
+                {userProfile ? (
+                    <Fragment>
+                        <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                            <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Basic Information</h5>
+                            <p><strong>User ID:</strong> {userProfile.userId}</p>
+                            <p><strong>Account ID:</strong> {userProfile.accountId}</p>
+                            <p><strong>Role:</strong> {userProfile.role}</p>
+                            <p><strong>Status:</strong> {userProfile.status}</p>
+                        </div>
+                        <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                            <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Preferences</h5>
+                            <p><strong>Language:</strong> <input type="text" value={userProfile.preferences.language} onChange={(e) => personalizationEngine.updateUserProfile(userId, { preferences: { ...userProfile.preferences, language: e.target.value }})} style={getTextInputStyle('small')} /></p>
+                            <p><strong>Verbosity:</strong> <select value={userProfile.preferences.verbosity} onChange={(e) => personalizationEngine.updateUserProfile(userId, { preferences: { ...userProfile.preferences, verbosity: e.target.value as any }})} style={getSelectInputStyle('small')}><option value="terse">Terse</option><option value="medium">Medium</option><option="verbose">Verbose</option></select></p>
+                            <p><strong>Theme:</strong> <select value={theme} onChange={(e) => toggleTheme(e.target.value as any)} style={getSelectInputStyle('small')}><option value="dark">Dark</option><option value="light">Light</option><option value="synthwave">Synthwave</option><option value="hacker_green">Hacker Green</option><option value="corporate_blue">Corporate Blue</option></select></p>
+                        </div>
+                        <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                            <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Security Credentials</h5>
+                            <p><strong>Key ID:</strong> {userProfile.securityCredentials.keyId || 'N/A'}</p>
+                            <p><strong>Level:</strong> {userProfile.securityCredentials.level}</p>
+                            <p><strong>MFA Enabled:</strong> {userProfile.securityCredentials.mfaEnabled ? 'Yes' : 'No'}</p>
+                            <button onClick={async () => {
+                                const newKey = await personalizationEngine.generateKeyPair(userId);
+                                personalizationEngine.updateUserProfile(userId, { securityCredentials: { ...userProfile.securityCredentials, keyId: newKey.publicKeyId }});
+                                addMessage({ id: generateUUID(), sender: 'system', type: 'identity_event', content: `New key pair generated for ${userId}. Public Key ID: ${newKey.publicKeyId}`, timestamp: Date.now() });
+                            }} style={getButtonStyle('secondary_small')} disabled={userProfile.securityCredentials.keyId !== undefined}>Generate Key Pair</button>
+                        </div>
+                        <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                            <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Agent Permissions (Simulated)</h5>
+                            {userProfile.agentPermissions && Object.keys(userProfile.agentPermissions).length > 0 ?
+                                Object.entries(userProfile.agentPermissions).map(([agentId, perm]) => (
+                                    <p key={agentId} style={{ margin: '2px 0' }}><strong>{agentId}:</strong> {perm.join(', ')}</p>
+                                )) : <p>No specific agent permissions.</p>
+                            }
+                        </div>
+                    </Fragment>
+                ) : <p style={{ color: styles.textColor }}>User profile not loaded.</p>}
+            </div>
+        </div>
+    ), [styles, getPanelBaseStyle, getButtonStyle, userProfile, personalizationEngine, userId, getTextInputStyle, getSelectInputStyle, theme, toggleTheme, addMessage, generateUUID]);
+
+    /**
+     * Renders the Payment & Token Rail Simulator panel.
+     */
+    const renderPaymentSimulatorPanel = useCallback(() => {
+        const [recipientId, setRecipientId] = useState('');
+        const [amount, setAmount] = useState<number | ''>(0);
+        const [selectedRail, setSelectedRail] = useState<TokenRail['id']>('rail_fast');
+        const [myAccount, setMyAccount] = useState<TokenAccount | null>(null);
+        const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+
+        const fetchAccountData = useCallback(async () => {
+            if (userId) {
+                const account = await tokenRailSimulator.getAccount(userId);
+                setMyAccount(account || null);
+                const userTransactions = await tokenRailSimulator.getTransactions(userId);
+                setTransactions(userTransactions.sort((a,b) => b.timestamp - a.timestamp));
+            }
+        }, [userId, tokenRailSimulator]);
+
+        useEffect(() => {
+            fetchAccountData();
+            const interval = setInterval(fetchAccountData, 5000); // Refresh every 5 seconds
+            return () => clearInterval(interval);
+        }, [fetchAccountData]);
+
+        const handleSendPayment = async () => {
+            if (!recipientId || amount === '' || amount <= 0 || !myAccount) {
+                setAiStatusMessage('Invalid payment details.');
+                return;
+            }
+            if (userProfile?.securityCredentials?.level < 2) { // Example RBAC check
+                addMessage({ id: generateUUID(), sender: 'system', type: 'text', content: 'Authorization denied: Insufficient security clearance for payment initiation.', timestamp: Date.now() });
+                aiEventLogger.logEvent({ type: 'security_alert', source: 'AIChatInterface.PaymentPanel', payload: { action: 'payment_denied', userId, reason: 'Insufficient clearance', traceId: sessionId }, severity: 'critical' });
+                return;
+            }
+
+            setAiStatusMessage(`Sending ${amount} USD_TOKEN to ${recipientId} via ${selectedRail}...`);
+            const paymentRequest = {
+                payerId: userId,
+                payeeId: recipientId,
+                amount: amount as number,
+                currency: 'USD_TOKEN',
+                idempotencyKey: generateUUID(),
+                meta: { railPreference: selectedRail, initiatedFromUI: true }
+            };
+
+            try {
+                const txResult = await paymentsEngine.processPayment(paymentRequest);
+                if (txResult.success) {
+                    addMessage({
+                        id: generateUUID(), sender: 'system', type: 'payment_transaction',
+                        content: `Payment of ${amount} USD_TOKEN to ${recipientId} successful! TX ID: ${txResult.transactionId}. Rail: ${txResult.meta?.actualRail || 'N/A'}.`,
+                        timestamp: Date.Now(), metadata: { transactionId: txResult.transactionId, ...txResult.meta }
+                    });
+                    setRecipientId('');
+                    setAmount('');
+                    fetchAccountData(); // Refresh balances and history
+                } else {
+                    addMessage({
+                        id: generateUUID(), sender: 'system', type: 'payment_transaction',
+                        content: `Payment failed: ${txResult.errorMessage || 'Unknown error'}. Risk: ${txResult.meta?.riskScore || 'N/A'}.`,
+                        timestamp: Date.Now(), metadata: { ...txResult.meta }
+                    });
+                }
+            } catch (error) {
+                addMessage({
+                    id: generateUUID(), sender: 'system', type: 'payment_transaction',
+                    content: `Error initiating payment: ${(error as Error).message}.`,
+                    timestamp: Date.now(), metadata: { error: (error as Error).message }
+                });
+            } finally {
+                setAiStatusMessage('Ready.');
+            }
+        };
+
+        const handleMintTokens = async () => {
+            if (!userProfile || userProfile.role !== 'admin') { // RBAC: Only admin can mint
+                setAiStatusMessage('Authorization denied: Only admins can mint tokens.');
+                aiEventLogger.logEvent({ type: 'security_alert', source: 'AIChatInterface.PaymentPanel', payload: { action: 'mint_denied', userId, reason: 'Not admin', traceId: sessionId }, severity: 'critical' });
+                return;
+            }
+            if (amount === '' || amount <= 0) {
+                setAiStatusMessage('Invalid amount for minting.');
+                return;
+            }
+            try {
+                await tokenRailSimulator.mintTokens(userId, amount as number, generateUUID(), 'Admin Mint via UI');
+                addMessage({ id: generateUUID(), sender: 'system', type: 'payment_transaction', content: `Minted ${amount} USD_TOKEN for ${userId}.`, timestamp: Date.now() });
+                fetchAccountData();
+                setAmount('');
+            } catch (error) {
+                addMessage({ id: generateUUID(), sender: 'system', type: 'payment_transaction', content: `Failed to mint tokens: ${(error as Error).message}.`, timestamp: Date.now() });
+            }
+        };
+
+        const handleBurnTokens = async () => {
+             if (!userProfile || userProfile.role !== 'admin') { // RBAC: Only admin can burn
+                setAiStatusMessage('Authorization denied: Only admins can burn tokens.');
+                aiEventLogger.logEvent({ type: 'security_alert', source: 'AIChatInterface.PaymentPanel', payload: { action: 'burn_denied', userId, reason: 'Not admin', traceId: sessionId }, severity: 'critical' });
+                return;
+            }
+            if (amount === '' || amount <= 0 || !myAccount || (amount as number) > myAccount.balance) {
+                setAiStatusMessage('Invalid amount or insufficient balance for burning.');
+                return;
+            }
+            try {
+                await tokenRailSimulator.burnTokens(userId, amount as number, generateUUID(), 'Admin Burn via UI');
+                addMessage({ id: generateUUID(), sender: 'system', type: 'payment_transaction', content: `Burned ${amount} USD_TOKEN from ${userId}.`, timestamp: Date.now() });
+                fetchAccountData();
+                setAmount('');
+            } catch (error) {
+                addMessage({ id: generateUUID(), sender: 'system', type: 'payment_transaction', content: `Failed to burn tokens: ${(error as Error).message}.`, timestamp: Date.now() });
+            }
+        };
+
+
+        return (
+            <div style={{ ...getPanelBaseStyle(), left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '10px', width: '500px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: styles.headerText, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Payment & Token Rail Simulator <button onClick={() => setPaymentSimulatorPanelVisible(false)} style={getButtonStyle('secondary_small')}>Close</button>
+                </h4>
+                <div style={{ maxHeight: '450px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9em' }}>
+                    <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                        <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>My Account</h5>
+                        <p><strong>Account ID:</strong> {myAccount?.accountId || userId}</p>
+                        <p><strong>Balance:</strong> {myAccount?.balance || '0'} USD_TOKEN</p>
+                    </div>
+
+                    <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                        <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Simulate Payment</h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input type="text" placeholder="Recipient ID" value={recipientId} onChange={(e) => setRecipientId(e.target.value)} style={getTextInputStyle()} />
+                            <input type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value))} style={getTextInputStyle()} min="0.01" step="0.01" />
+                            <select value={selectedRail} onChange={(e) => setSelectedRail(e.target.value as TokenRail['id'])} style={getSelectInputStyle()}>
+                                <option value="rail_fast">Fast Rail</option>
+                                <option value="rail_batch">Batch Rail</option>
+                                <option value="rail_quantum">Quantum Rail (Sim)</option>
+                            </select>
+                            <button onClick={handleSendPayment} style={getButtonStyle('primary')}>Send Payment</button>
+                        </div>
+                    </div>
+
+                    {(userProfile?.role === 'admin') && (
+                        <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                            <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Admin Token Operations</h5>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <input type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value))} style={getTextInputStyle()} min="0.01" step="0.01" />
+                                <button onClick={handleMintTokens} style={{ ...getButtonStyle('secondary_small'), backgroundColor: 'darkgreen' }}>Mint</button>
+                                <button onClick={handleBurnTokens} style={{ ...getButtonStyle('secondary_small'), backgroundColor: 'darkred' }}>Burn</button>
+                            </div>
+                        </div>
+                    )}
+
+
+                    <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                        <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Recent Transactions</h5>
+                        {transactions.length === 0 ? <p style={{ color: styles.textColor }}>No transactions found.</p> : (
+                            <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                                {transactions.map((tx) => (
+                                    <p key={tx.id} style={{ margin: '2px 0', color: styles.textColor, borderBottom: `1px dotted ${styles.borderColor}` }}>
+                                        [{new Date(tx.timestamp).toLocaleTimeString()}] {tx.payerId === userId ? `Sent ${tx.amount} to ${tx.payeeId}` : `Received ${tx.amount} from ${tx.payerId}`} ({tx.status}) - Rail: {tx.meta?.actualRail || 'N/A'}
+                                        {tx.meta?.riskScore && <span style={{ color: 'orange', marginLeft: '5px' }}> (Risk: {tx.meta.riskScore})</span>}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }, [styles, getPanelBaseStyle, getButtonStyle, getTextInputStyle, getSelectInputStyle, userId, userProfile, tokenRailSimulator, paymentsEngine, generateUUID, addMessage, aiEventLogger, sessionId]);
+
+
+    /**
+     * Renders the Knowledge Graph Explorer panel.
+     */
+    const renderKnowledgeGraphExplorerPanel = useCallback(() => {
+        const [searchTerm, setSearchTerm] = useState('');
+        const [searchResults, setSearchResults] = useState<any[]>([]); // Using 'any' as KG Node type not fully defined here
+        const [isLoading, setIsLoading] = useState(false);
+
+        const handleSearch = async () => {
+            if (!searchTerm.trim()) return;
+            setIsLoading(true);
+            try {
+                const results = await globalKnowledgeGraph.semanticSearch(searchTerm, 10, { securityLevel: userProfile?.securityCredentials?.tokenLifetime ? 'internal' : 'public' });
+                setSearchResults(results);
+            } catch (error) {
+                addMessage({ id: generateUUID(), sender: 'system', type: 'knowledge_graph_entry', content: `Error querying KG: ${(error as Error).message}`, timestamp: Date.now() });
+                setSearchResults([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        return (
+            <div style={{ ...getPanelBaseStyle(), left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '10px', width: '500px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: styles.headerText, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Knowledge Graph Explorer <button onClick={() => setKnowledgeGraphExplorerVisible(false)} style={getButtonStyle('secondary_small')}>Close</button>
+                </h4>
+                <div style={{ maxHeight: '450px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9em' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <input type="text" placeholder="Search knowledge graph..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={getTextInputStyle()} onKeyPress={(e) => e.key === 'Enter' && handleSearch()} />
+                        <button onClick={handleSearch} style={getButtonStyle('primary')} disabled={isLoading}>{isLoading ? 'Searching...' : 'Search'}</button>
+                    </div>
+
+                    <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                        <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Search Results ({searchResults.length})</h5>
+                        {searchResults.length === 0 ? <p style={{ color: styles.textColor }}>No results. Try "agent behavior" or "token rail".</p> : (
+                            <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                                {searchResults.map((node, i) => (
+                                    <p key={i} style={{ margin: '2px 0', color: styles.textColor, borderBottom: `1px dotted ${styles.borderColor}` }}>
+                                        <strong>{node.label}:</strong> {node.description.substring(0, 100)}... (Conf: {(node.confidenceScore * 100).toFixed(0)}%)
+                                    </p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                        <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Recent KG Updates (Latest 5)</h5>
+                        {knowledgeGraphUpdates.slice(-5).reverse().map((update, i) => (
+                            <p key={i} style={{ margin: '2px 0', color: styles.textColor }}>
+                                [{new Date(update.timestamp).toLocaleTimeString()}] Node {update.nodeId.substring(0, 8)} {update.type}: {update.payload.label}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }, [styles, getPanelBaseStyle, getButtonStyle, getTextInputStyle, globalKnowledgeGraph, userProfile, addMessage, generateUUID, knowledgeGraphUpdates]);
+
+    /**
+     * Renders the Audit Log Viewer panel.
+     */
+    const renderAuditLogViewerPanel = useCallback(() => {
+        const [auditLogs, setAuditLogs] = useState<AILogEntry[]>([]);
+        const [filterSeverity, setFilterSeverity] = useState<string>('all');
+        const [filterType, setFilterType] = useState<string>('all');
+        const [logIntegrityStatus, setLogIntegrityStatus] = useState<'checking' | 'passed' | 'failed' | 'idle'>('idle');
+
+        const fetchAuditLogs = useCallback(async () => {
+            if (userProfile?.securityCredentials?.level < 4) { // High security clearance for full audit logs
+                addMessage({ id: generateUUID(), sender: 'system', type: 'text', content: 'Authorization denied: Insufficient security clearance to view audit logs.', timestamp: Date.now() });
+                aiEventLogger.logEvent({ type: 'security_alert', source: 'AIChatInterface.AuditLogViewer', payload: { action: 'audit_log_access_denied', userId, reason: 'Insufficient clearance', traceId: sessionId }, severity: 'critical' });
+                setAuditLogs([]);
+                return;
+            }
+            const allLogs = await aiEventLogger.getAllLogs(); // Assuming aiEventLogger can return all logs
+            const filteredLogs = allLogs.filter(log =>
+                (filterSeverity === 'all' || log.severity === filterSeverity) &&
+                (filterType === 'all' || log.type === filterType)
+            ).slice(-500).sort((a,b) => b.timestamp - a.timestamp);
+            setAuditLogs(filteredLogs);
+        }, [aiEventLogger, userId, userProfile, addMessage, generateUUID, sessionId]);
+
+        const checkLogIntegrity = useCallback(async () => {
+            setLogIntegrityStatus('checking');
+            try {
+                const integrityCheck = await aiEventLogger.checkLogIntegrity(); // Assuming this method exists and checks chained hashes
+                if (integrityCheck.isTamperEvident) {
+                    setLogIntegrityStatus('failed');
+                    addMessage({ id: generateUUID(), sender: 'system', type: 'governance_audit_log', content: `CRITICAL: Audit log integrity check FAILED! Possible tampering detected. Details: ${integrityCheck.details}`, timestamp: Date.now(), metadata: { action: 'log_integrity_breach', details: integrityCheck.details } });
+                } else {
+                    setLogIntegrityStatus('passed');
+                    addMessage({ id: generateUUID(), sender: 'system', type: 'governance_audit_log', content: 'Audit log integrity check PASSED. No tampering detected.', timestamp: Date.now(), metadata: { action: 'log_integrity_check_passed' } });
+                }
+            } catch (error) {
+                setLogIntegrityStatus('failed');
+                addMessage({ id: generateUUID(), sender: 'system', type: 'governance_audit_log', content: `Error during integrity check: ${(error as Error).message}`, timestamp: Date.now(), metadata: { action: 'log_integrity_check_error', error: (error as Error).message } });
+            }
+        }, [aiEventLogger, addMessage, generateUUID]);
+
+        useEffect(() => {
+            fetchAuditLogs();
+            const interval = setInterval(fetchAuditLogs, 10000); // Refresh logs every 10 seconds
+            return () => clearInterval(interval);
+        }, [fetchAuditLogs]);
+
+        const uniqueSeverities = useMemo(() => ['all', ...Array.from(new Set(aiEventLogger.getAllLogs().map(log => log.severity)))], [aiEventLogger]);
+        const uniqueTypes = useMemo(() => ['all', ...Array.from(new Set(aiEventLogger.getAllLogs().map(log => log.type)))], [aiEventLogger]);
+
+
+        return (
+            <div style={{ ...getPanelBaseStyle(), left: '50%', transform: 'translateX(-50%)', bottom: '100%', marginBottom: '10px', width: '600px' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: styles.headerText, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Governance Audit Log Viewer <button onClick={() => setAuditLogViewerVisible(false)} style={getButtonStyle('secondary_small')}>Close</button>
+                </h4>
+                <div style={{ maxHeight: '450px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9em' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span>Filter Severity:</span>
+                        <select value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)} style={getSelectInputStyle('small')}>
+                            {uniqueSeverities.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+                        </select>
+                        <span>Filter Type:</span>
+                        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={getSelectInputStyle('small')}>
+                             {uniqueTypes.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                        </select>
+                        <button onClick={fetchAuditLogs} style={getButtonStyle('secondary_small')}>Refresh</button>
+                        <button onClick={checkLogIntegrity} style={{ ...getButtonStyle('secondary_small'), marginLeft: 'auto' }}>Check Integrity</button>
+                    </div>
+
+                    <p style={{ color: logIntegrityStatus === 'passed' ? 'lightgreen' : (logIntegrityStatus === 'failed' ? 'red' : styles.textColor) }}>
+                        Log Integrity Status: {logIntegrityStatus.toUpperCase()}
+                    </p>
+
+                    <div style={{ border: `1px solid ${styles.borderColor}`, padding: '8px', borderRadius: '5px', backgroundColor: styles.inputBg }}>
+                        <h5 style={{ margin: '0 0 5px 0', color: styles.accentColor }}>Audit Entries (Latest {auditLogs.length})</h5>
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {auditLogs.length === 0 ? <p style={{ color: styles.textColor }}>No audit logs found (or insufficient permissions).</p> : (
+                                auditLogs.map((log) => (
+                                    <p key={log.id} style={{ margin: '2px 0', color: styles.textColor, borderBottom: `1px dotted ${styles.borderColor}` }}>
+                                        [{new Date(log.timestamp).toLocaleTimeString()}] <span style={{ color: log.severity === 'critical' ? 'red' : (log.severity === 'error' ? 'orange' : (log.severity === 'warning' ? 'yellow' : 'lightgreen')) }}>[{log.severity?.toUpperCase()}]</span> [{log.source}] {log.type}: {log.payload.message || JSON.stringify(log.payload).substring(0, 80)}... (Trace: {log.traceId || 'N/A'})
+                                    </p>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }, [styles, getPanelBaseStyle, getButtonStyle, getSelectInputStyle, aiEventLogger, userId, userProfile, addMessage, generateUUID, sessionId]);
+
+
+    return (
+        <div style={{
+            display: 'flex', flexDirection: 'column', height: '100vh', width: '100%',
+            backgroundColor: styles.background, color: styles.textColor, fontFamily: 'Arial, sans-serif',
+            position: 'relative', overflow: 'hidden',
+        }}>
+            {/* --- Header --- */}
+            <div style={{
+                padding: '15px 20px', backgroundColor: styles.headerBg, color: styles.headerText,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: styles.shadowColor,
+            }}>
+                <h2 style={{ margin: 0, fontSize: '1.5em' }}>{chatTitle}</h2>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.9em', fontStyle: 'italic', color: styles.statusText }}>{aiStatusMessage}</span>
+                    <audio ref={audioPlayerRef} style={{ display: 'none' }} controls /> {/* Hidden audio player */}
+                    <button onClick={() => setShowOptionsPanel(!showOptionsPanel)} style={getButtonStyle('secondary_small')} title="Advanced Options">
+                        ⚙️ Options
+                    </button>
+                </div>
+            </div>
+
+            {/* --- Chat Messages Area --- */}
+            <div style={{
+                flexGrow: 1, overflowY: 'auto', padding: '15px', display: 'flex', flexDirection: 'column',
+                scrollBehavior: 'smooth',
+            }}>
+                {messages.map((msg) => (
+                    <MessageBubble key={msg.id} msg={msg} />
+                ))}
+                {isTyping && (
+                    <div style={{ alignSelf: 'flex-start', backgroundColor: styles.aiBubbleBg, color: styles.textColor, padding: '8px 12px', borderRadius: '18px 18px 18px 2px', maxWidth: '70%', fontSize: '0.9em', marginBottom: '8px', boxShadow: `0 1px 2px ${styles.shadowColor}` }}>
+                        AI is typing...
+                    </div>
+                )}
+                <div ref={messagesEndRef} /> {/* For auto-scrolling */}
+            </div>
+
+            {/* Proactive Suggestions */}
+            {proactiveSuggestion && (
+                <div style={{
+                    backgroundColor: 'rgba(0,123,255,0.1)', color: styles.accentColor, padding: '10px 15px',
+                    margin: '0 15px 10px 15px', borderRadius: '8px', border: `1px solid ${styles.accentColor}`,
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85em',
+                }}>
+                    <span>💡 Suggestion: {proactiveSuggestion}</span>
+                    <button onClick={() => setProactiveSuggestion(null)} style={{ background: 'none', border: 'none', color: styles.accentColor, cursor: 'pointer', fontSize: '1em' }}>✕</button>
+                </div>
+            )}
+
+            {/* --- Chat Input Area --- */}
+            <div style={{
+                padding: '10px 15px', borderTop: `1px solid ${styles.borderColor}`, backgroundColor: styles.inputBg,
+                display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0,
+            }}>
+                {enableMultiModalInput && (
+                    <Fragment>
+                        <button
+                            onClick={isRecordingAudio ? handleSpeechStop : handleSpeechStart}
+                            style={{ ...getButtonStyle(isRecordingAudio ? 'danger' : 'secondary'), width: '40px', height: '40px', borderRadius: '50%' }}
+                            title={isRecordingAudio ? 'Stop Recording' : 'Start Speech Input'}
+                        >
+                            {isRecordingAudio ? '🔴' : '🎤'}
+                        </button>
+                        {renderFileInput('imageUpload', 'image/*', handleImageUpload, selectedImageFile, '🖼️ Image')}
+                        {selectedImageFile && <button onClick={handleSendImage} style={{ ...getButtonStyle('primary'), width: '40px', height: '40px', borderRadius: '50%' }} title="Send Image">⬆️</button>}
+                        {renderFileInput('documentUpload', '.pdf,.doc,.docx,.txt', handleDocumentUpload, selectedDocumentFile, '📄 Document')}
+                        {selectedDocumentFile && <button onClick={handleSendDocument} style={{ ...getButtonStyle('primary'), width: '40px', height: '40px', borderRadius: '50%' }} title="Send Document">⬆️</button>}
+                    </Fragment>
+                )}
+
+                <form onSubmit={handleTextSubmit} style={{ flexGrow: 1, display: 'flex', gap: '10px' }}>
+                    <input
+                        ref={chatInputRef}
+                        type="text"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        placeholder="Type your message or command..."
+                        disabled={isTyping}
+                        style={getTextInputStyle()}
+                    />
+                    <button type="submit" disabled={!inputMessage.trim() || isTyping} style={getButtonStyle('primary')}>
+                        Send
+                    </button>
+                </form>
+            </div>
+
+            {/* --- Floating Panels --- */}
+            {showOptionsPanel && renderAdvancedOptionsPanel()}
+            {modelConfigurationPanelVisible && renderModelConfigurationPanel()}
+            {agentManagementPanelVisible && renderAgentManagementPanel()}
+            {systemMonitoringPanelVisible && renderSystemMonitoringPanel()}
+            {userProfilePanelVisible && renderUserProfilePanel()}
+            {paymentSimulatorPanelVisible && renderPaymentSimulatorPanel()}
+            {knowledgeGraphExplorerVisible && renderKnowledgeGraphExplorerPanel()}
+            {auditLogViewerVisible && renderAuditLogViewerPanel()}
+
+        </div>
+    );
+};
