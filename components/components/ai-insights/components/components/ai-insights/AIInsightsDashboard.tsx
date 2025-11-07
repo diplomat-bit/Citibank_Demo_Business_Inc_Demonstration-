@@ -1,7 +1,37 @@
+/**
+ * AIInsightsDashboard Component
+ *
+ * This component serves as the central operational hub for managing and interacting with the advanced
+ * AI-driven financial intelligence platform. It provides a comprehensive, real-time view into agentic
+ * AI activities, token rail performance, digital identity governance, and real-time payment infrastructure.
+ *
+ * Business Value: This dashboard is a critical asset worth millions, as it empowers enterprises to
+ * unlock unprecedented operational velocity and strategic foresight. By consolidating disparate
+ * data streams and AI-generated insights into a single pane of glass, it drastically reduces
+ * decision-making latency, minimizes operational risks through real-time anomaly detection and
+ * automated remediation by AI agents, and optimizes transactional efficiency across token rails.
+ * It provides auditable transparency over all financial movements and AI actions, crucial for
+ * regulatory compliance and trust. Furthermore, the ability to configure AI preferences and
+ * prioritization rules directly translates into strategic competitive advantage, allowing
+ * businesses to dynamically adapt to market shifts, identify new revenue streams, and
+ * achieve substantial cost arbitrage through intelligent resource allocation and payment routing.
+ * This system transforms reactive operations into proactive, intelligent orchestration,
+ * ensuring business resilience and continuous growth in a rapidly evolving digital economy.
+ */
 import React, { useState, useCallback, useMemo, useEffect, Fragment, useRef } from 'react';
-import { useAIInsightManagement, InsightTypeIconMap, ExtendedAIInsight, AIModel, AIPerformanceMetrics, DataSourceConfig, AINotification, InsightPrioritizationRule } from '../useAIInsightManagement';
+import {
+    useAIInsightManagement, InsightTypeIconMap, ExtendedAIInsight, AIModel, AIPerformanceMetrics,
+    DataSourceConfig, AINotification, InsightPrioritizationRule, Agent, PaymentTransaction,
+    TokenTransaction, AuditEvent, UserProfile, TokenLedgerStatus, AgentSkill
+} from '../useAIInsightManagement';
 
-// Helper for dynamic styling based on urgency/status - keeping it simple with classes
+/**
+ * Provides dynamic styling based on urgency/priority levels for UI elements.
+ * This function translates abstract urgency levels into distinct visual cues,
+ * ensuring that critical information is immediately discernible to operators.
+ * It's a key component in minimizing decision latency and focusing attention
+ * on high-impact events, thereby enhancing operational efficiency and risk management.
+ */
 const getUrgencyClass = (urgency: ExtendedAIInsight['urgency'] | AINotification['priority']) => {
     switch (urgency) {
         case 'critical': return 'bg-red-500 text-white';
@@ -13,6 +43,13 @@ const getUrgencyClass = (urgency: ExtendedAIInsight['urgency'] | AINotification[
     }
 };
 
+/**
+ * Provides dynamic styling based on the status of an insight or task.
+ * This function visually communicates the lifecycle stage of an operational item,
+ * from 'active' to 'resolved' or 'dismissed'. Clear status indicators improve
+ * workflow management, reduce cognitive load, and ensure team alignment on
+ * the progression of remediation or action plans, driving project velocity.
+ */
 const getStatusClass = (status: ExtendedAIInsight['status']) => {
     switch (status) {
         case 'active': return 'bg-blue-200 text-blue-800';
@@ -26,7 +63,13 @@ const getStatusClass = (status: ExtendedAIInsight['status']) => {
     }
 };
 
-// Basic Modal Component
+/**
+ * A reusable modal component for displaying detailed information or forms.
+ * This modal streamlines user interaction by providing context-specific overlays,
+ * minimizing navigation overhead and maintaining user focus on the primary dashboard.
+ * Its responsive design and clear call-to-action buttons enhance usability,
+ * which is critical for complex enterprise applications requiring efficient data drill-downs.
+ */
 const Modal = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
     return (
@@ -56,56 +99,48 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 
-// Main Dashboard Component
-const AIInsightsDashboard = () => {
-    // Harnessing the power of our AI insight management system! This is where the magic happens, folks.
-    // We're pulling in all the brains, brawn, and beautiful data from our custom hook.
-    // Think of it as plugging into the matrix, but with less Neo and more 'Oh my gosh, that's brilliant!' moments.
+/**
+ * The main AIInsightsDashboard component provides a unified interface for agentic AI management.
+ * It integrates real-time insights, AI querying, historical data analysis, team collaboration,
+ * AI model governance, token rail monitoring, and payment infrastructure oversight.
+ *
+ * This dashboard is a strategic control center, delivering unparalleled operational transparency
+ * and control. It enables stakeholders to proactively manage risks, seize opportunities,
+ * and optimize financial flows by orchestrating intelligent automation across the entire
+ * enterprise. Its comprehensive view translates directly into reduced operational costs,
+ * enhanced security through real-time fraud detection, and accelerated time-to-market
+ * for new financial products, driving multi-million dollar value through intelligent orchestration.
+ */
+export const AIInsightsDashboard = () => {
     const {
-        // Core Insight Display & Actions - Your AI's daily wisdom, hot off the press!
         aiInsights, isInsightsLoading, generateDashboardInsights, dismissInsight, markInsightAsActioned,
         updateInsightStatus, addInsightAttachment,
-
-        // AI Query Interface - Got a burning question? Ask our AI. It's better than a Magic 8-Ball, trust us.
         queryInput, setQueryInput, queryResults, isQuerying, submitAIQuery, clearQueryResults,
-
-        // Preferences Management - Make our AI work *your* way. Customization is king (or queen)!
         preferences, handlePreferenceChange, handleSavePreferences, resetPreferences,
         availableInsightTypes, availableDataSources, availableAIModels,
-
-        // Insight Feedback - Tell us what you think! Our AI is smart, but it loves feedback (unlike some exes).
         provideInsightFeedback,
-
-        // AI System Performance - Peek under the hood. Everything's running smoother than a buttered cheetah!
         aiSystemStatus, aiPerformanceMetrics, getAIModelDetails, checkSystemHealth,
-
-        // Historical Insights - The archives! Learning from the past without repeating fashion disasters.
         historicalSearchTerm, setHistoricalSearchTerm, historicalFilters, setHistoricalFilters, handleHistoricalFilterChange,
         handleHistoricalSearch, historicalSearchResults, isHistoricalLoading, historicalTotalResults,
         historicalCurrentPage, setHistoricalCurrentPage, historicalPageSize, setHistoricalPageSize,
         historicalSortBy, historicalSortOrder, handleHistoricalSortChange,
-
-        // Collaboration Hub - Teamwork makes the dream work. Humans and AI, together at last!
         selectedCollaborationInsightId, setSelectedCollaborationInsightId, newCommentText, setNewCommentText,
         assignedUserForCollaboration, setAssignedUserForCollaboration, assignActionToUser, setAssignActionToUser,
         collaborationUsers, handleAddComment, handleAssignInsight, assignActionToUserInInsight,
-
-        // Insight Prioritization Engine - What's important to you? Our AI wants to know!
         prioritizationRules, addPrioritizationRule, updatePrioritizationRule, deletePrioritizationRule,
         recalculateAllInsightPriorities,
-
-        // AI Model Management - The actual brains. Don't worry, they're friendly. Mostly.
         selectedAIModelForDetails, setSelectedAIModelForDetails, isModelTesting, deployAIModel,
         compareAIModels, modelComparisonResults,
-
-        // Notification System - Your AI's personal messenger. Keeping you in the loop, not lost in limbo.
         notifications, unreadNotificationCount, markNotificationAsRead, markAllNotificationsAsRead, dismissNotification,
-
-        // Data Source Management - Fueling the genius. Clean data, brilliant insights, happy you.
         dataSourcesConfig, isDataSourceLoading, fetchDataSourceStatus, updateDataSourceConfiguration, triggerManualSync,
+        // --- New additions for Money20/20 build phase architecture ---
+        agents, getAgentDetails, triggerAgentAction, setAgentStatus,
+        payments, getPaymentDetails, simulatePaymentRequest,
+        tokenLedgerStatus, tokenTransactions, simulateTokenTransfer,
+        auditEvents, currentUser, isSimulationMode,
+        assignAgentSkill, removeAgentSkill,
     } = useAIInsightManagement();
 
-    // Local UI State - Managing the dashboard's hustle and bustle.
     const [activeTab, setActiveTab] = useState('insights');
     const [isInsightDetailsModalOpen, setIsInsightDetailsModalOpen] = useState(false);
     const [selectedInsightForDisplay, setSelectedInsightForDisplay] = useState<ExtendedAIInsight | null>(null);
@@ -119,52 +154,59 @@ const AIInsightsDashboard = () => {
         name: '', isActive: true, boostFactor: 1.2, criteria: {}
     });
     const [feedbackInput, setFeedbackInput] = useState({ rating: 5, comment: '' });
+    // --- New states for Agentic AI, Token Rail, Payments, Identity tabs ---
+    const [isAgentDetailsModalOpen, setIsAgentDetailsModalOpen] = useState(false);
+    const [selectedAgentForDisplay, setSelectedAgentForDisplay] = useState<Agent | null>(null);
+    const [isPaymentDetailsModalOpen, setIsPaymentDetailsModalOpen] = useState(false);
+    const [selectedPaymentForDisplay, setSelectedPaymentForDisplay] = useState<PaymentTransaction | null>(null);
+    const [newTokenTransferForm, setNewTokenTransferForm] = useState({ fromAccountId: '', toAccountId: '', amount: 0, token: 'USD_TOKEN', rail: 'rail_fast' });
+    const [newPaymentRequestForm, setNewPaymentRequestForm] = useState({ amount: 0, currency: 'USD', recipient: '', description: '' });
+    const [newSkillInput, setNewSkillInput] = useState('');
+    const [selectedAgentForSkillManagement, setSelectedAgentForSkillManagement] = useState<Agent['id'] | null>(null);
 
-    // Open an insight's full details modal. Because sometimes, you need the full story.
+
     const openInsightDetails = useCallback((insight: ExtendedAIInsight) => {
         setSelectedInsightForDisplay(insight);
         setIsInsightDetailsModalOpen(true);
     }, []);
 
-    // Close the insight details modal. All good things must come to an end, even brilliant insights.
     const closeInsightDetails = useCallback(() => {
         setSelectedInsightForDisplay(null);
         setIsInsightDetailsModalOpen(false);
-        setSelectedCollaborationInsightId(null); // Clear collaboration context when closing
+        setSelectedCollaborationInsightId(null);
     }, []);
 
-    // Handle feedback submission. Let's make our AI even smarter (if that's even possible).
     const handleSubmitFeedback = useCallback((insightId: string) => {
-        provideInsightFeedback(insightId, feedbackInput.rating, feedbackInput.comment, collaborationUsers[0].id, collaborationUsers[0].name);
+        // Use current user for feedback if available, otherwise default to a known user for simulation
+        const userId = currentUser ? currentUser.id : (collaborationUsers.length > 0 ? collaborationUsers[0].id : 'simulated-user-1');
+        const userName = currentUser ? currentUser.name : (collaborationUsers.length > 0 ? collaborationUsers[0].name : 'Simulated User');
+        provideInsightFeedback(insightId, feedbackInput.rating, feedbackInput.comment, userId, userName);
         setFeedbackInput({ rating: 5, comment: '' });
-        alert('Feedback submitted! Thanks for helping our AI grow!');
-    }, [provideInsightFeedback, feedbackInput, collaborationUsers]);
+        alert('Feedback submitted!');
+    }, [provideInsightFeedback, feedbackInput, collaborationUsers, currentUser]);
 
-    // Handle saving new prioritization rules. You're basically a super-strategist now.
     const handleSaveNewRule = useCallback(() => {
         if (newRuleForm.name && newRuleForm.boostFactor) {
             addPrioritizationRule(newRuleForm as Omit<InsightPrioritizationRule, 'id' | 'lastModified'>);
             setNewRuleForm({ name: '', isActive: true, boostFactor: 1.2, criteria: {} });
             setIsAddRuleModalOpen(false);
-            alert('New prioritization rule added! Watch those insights align!');
+            alert('New prioritization rule added!');
         } else {
-            alert('Rule name and boost factor are required, champ!');
+            alert('Rule name and boost factor are required.');
         }
     }, [newRuleForm, addPrioritizationRule]);
 
-    // Handle data source configuration update. Keeping the data flowing, like a digital river of gold!
     const handleSaveDataSourceConfig = useCallback(async () => {
         if (selectedDataSourceConfig) {
             await updateDataSourceConfiguration(selectedDataSourceConfig.id, selectedDataSourceConfig);
             setIsDataSourceConfigModalOpen(false);
+            alert('Data source configuration updated!');
         }
     }, [selectedDataSourceConfig, updateDataSourceConfiguration]);
 
-    // Handle a specific action completion. Marking it done like a boss!
     const handleMarkRecommendedActionComplete = useCallback((insightId: string, actionId: string) => {
         markInsightAsActioned(insightId, actionId);
-        alert('Action marked as completed! You\'re a productivity machine!');
-        // Ideally, refresh insights or update the specific insight here
+        alert('Action marked as completed!');
         if (selectedInsightForDisplay?.id === insightId) {
             setSelectedInsightForDisplay(prev => prev ? {
                 ...prev,
@@ -175,7 +217,124 @@ const AIInsightsDashboard = () => {
         }
     }, [markInsightAsActioned, selectedInsightForDisplay]);
 
-    // Helper to render a single insight card - a quick glance at brilliance.
+    // --- New handlers for Money20/20 features ---
+    const openAgentDetails = useCallback((agent: Agent) => {
+        setSelectedAgentForDisplay(agent);
+        setIsAgentDetailsModalOpen(true);
+    }, []);
+
+    const closeAgentDetails = useCallback(() => {
+        setSelectedAgentForDisplay(null);
+        setIsAgentDetailsModalOpen(false);
+        setSelectedAgentForSkillManagement(null);
+        setNewSkillInput('');
+    }, []);
+
+    const handleTriggerAgentAction = useCallback(async (agentId: string, actionType: string, payload: any) => {
+        try {
+            await triggerAgentAction(agentId, actionType, payload);
+            alert(`Action '${actionType}' triggered for agent ${agentId}.`);
+        } catch (error) {
+            alert(`Failed to trigger action: ${error.message}`);
+        }
+    }, [triggerAgentAction]);
+
+    const handleSetAgentStatus = useCallback(async (agentId: string, status: 'active' | 'idle' | 'suspended') => {
+        try {
+            await setAgentStatus(agentId, status);
+            alert(`Agent ${agentId} status updated to ${status}.`);
+        } catch (error) {
+            alert(`Failed to update agent status: ${error.message}`);
+        }
+    }, [setAgentStatus]);
+
+    const openPaymentDetails = useCallback((payment: PaymentTransaction) => {
+        setSelectedPaymentForDisplay(payment);
+        setIsPaymentDetailsModalOpen(true);
+    }, []);
+
+    const closePaymentDetails = useCallback(() => {
+        setSelectedPaymentForDisplay(null);
+        setIsPaymentDetailsModalOpen(false);
+    }, []);
+
+    const handleSimulateTokenTransfer = useCallback(async () => {
+        if (!newTokenTransferForm.fromAccountId || !newTokenTransferForm.toAccountId || newTokenTransferForm.amount <= 0) {
+            alert('Please fill all token transfer fields correctly.');
+            return;
+        }
+        try {
+            await simulateTokenTransfer(
+                newTokenTransferForm.fromAccountId,
+                newTokenTransferForm.toAccountId,
+                newTokenTransferForm.amount,
+                newTokenTransferForm.token,
+                newTokenTransferForm.rail
+            );
+            alert('Token transfer simulation initiated!');
+            setNewTokenTransferForm({ fromAccountId: '', toAccountId: '', amount: 0, token: 'USD_TOKEN', rail: 'rail_fast' });
+        } catch (error) {
+            alert(`Token transfer failed: ${error.message}`);
+        }
+    }, [newTokenTransferForm, simulateTokenTransfer]);
+
+    const handleSimulatePaymentRequest = useCallback(async () => {
+        if (!newPaymentRequestForm.recipient || newPaymentRequestForm.amount <= 0) {
+            alert('Please fill all payment request fields correctly.');
+            return;
+        }
+        try {
+            await simulatePaymentRequest(
+                newPaymentRequestForm.amount,
+                newPaymentRequestForm.currency,
+                newPaymentRequestForm.recipient,
+                newPaymentRequestForm.description
+            );
+            alert('Payment request simulation initiated!');
+            setNewPaymentRequestForm({ amount: 0, currency: 'USD', recipient: '', description: '' });
+        } catch (error) {
+            alert(`Payment request failed: ${error.message}`);
+        }
+    }, [newPaymentRequestForm, simulatePaymentRequest]);
+
+    const handleAssignAgentSkill = useCallback(async (agentId: string) => {
+        if (!newSkillInput.trim()) {
+            alert("Skill name cannot be empty.");
+            return;
+        }
+        try {
+            await assignAgentSkill(agentId, { id: Date.now().toString(), name: newSkillInput, description: `Dynamic skill: ${newSkillInput}` });
+            alert(`Skill '${newSkillInput}' assigned to agent ${agentId}.`);
+            setNewSkillInput('');
+            setSelectedAgentForDisplay(prev => prev ? {
+                ...prev,
+                skills: [...(prev.skills || []), { id: Date.now().toString(), name: newSkillInput, description: `Dynamic skill: ${newSkillInput}` }]
+            } : null);
+        } catch (error) {
+            alert(`Failed to assign skill: ${error.message}`);
+        }
+    }, [assignAgentSkill, newSkillInput]);
+
+    const handleRemoveAgentSkill = useCallback(async (agentId: string, skillId: string) => {
+        try {
+            await removeAgentSkill(agentId, skillId);
+            alert(`Skill removed from agent ${agentId}.`);
+            setSelectedAgentForDisplay(prev => prev ? {
+                ...prev,
+                skills: prev.skills?.filter(skill => skill.id !== skillId)
+            } : null);
+        } catch (error) {
+            alert(`Failed to remove skill: ${error.message}`);
+        }
+    }, [removeAgentSkill]);
+
+
+    /**
+     * Renders a single insight card. This component provides a concise, at-a-glance summary
+     * of an AI-generated insight, highlighting its urgency and status. The efficient presentation
+     * minimizes cognitive load for operators, allowing for rapid assessment and prioritization
+     * of critical business intelligence. This design directly supports agile decision-making.
+     */
     const InsightCard = ({ insight }: { insight: ExtendedAIInsight }) => (
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col" style={{ minHeight: '280px' }}>
             <div className="flex justify-between items-start mb-4">
@@ -198,13 +357,19 @@ const AIInsightsDashboard = () => {
                     onClick={() => openInsightDetails(insight)}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200"
                 >
-                    View Details (It's worth it!)
+                    View Details
                 </button>
             </div>
         </div>
     );
 
-    // Helper to render a single notification item - because you need to know, without the drama.
+    /**
+     * Renders a single notification item, displaying the message, priority, and timestamp.
+     * This component ensures timely delivery of critical alerts, enabling rapid response
+     * to system events or emerging insights. The clear visual cues for read/unread status
+     * and immediate action buttons (read, dismiss, go to link) optimize user workflow
+     * and prevent information overload, central to operational excellence.
+     */
     const NotificationItem = ({ notification }: { notification: AINotification }) => (
         <div className={`bg-white rounded-lg shadow p-4 mb-3 flex items-start ${!notification.isRead ? 'border-l-4 border-blue-500' : 'border-l-4 border-gray-200'}`}>
             <div className="flex-grow">
@@ -242,36 +407,134 @@ const AIInsightsDashboard = () => {
         </div>
     );
 
-    // The entire dashboard structure. Get ready for some serious business wisdom!
+    /**
+     * Renders a card displaying an individual AI Agent's status and key details.
+     * This component is crucial for overseeing the agentic AI system, allowing operators
+     * to quickly assess the health, activity, and assigned roles of autonomous agents.
+     * Real-time visibility into agent performance ensures proactive management of automated workflows,
+     * directly supporting system resilience and the efficient execution of high-value tasks like
+     * anomaly detection and reconciliation.
+     */
+    const AgentCard = ({ agent }: { agent: Agent }) => (
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col" style={{ minHeight: '220px' }}>
+            <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">{agent.name}</h3>
+            <p className="text-sm text-gray-600 mb-2 flex-grow">{agent.description}</p>
+            <div className="flex justify-between items-center text-sm mb-2">
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${agent.status === 'active' ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-800'}`}>
+                    {agent.status.toUpperCase()}
+                </span>
+                <span className="text-gray-500">Last Active: {new Date(agent.lastActive).toLocaleDateString()}</span>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">Roles: {agent.roles.join(', ')}</p>
+            <div className="mt-auto flex justify-end space-x-3">
+                <button
+                    onClick={() => openAgentDetails(agent)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm"
+                >
+                    Details
+                </button>
+                <button
+                    onClick={() => handleSetAgentStatus(agent.id, agent.status === 'active' ? 'suspended' : 'active')}
+                    className={`px-4 py-2 rounded-md text-white text-sm font-medium ${agent.status === 'active' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                >
+                    {agent.status === 'active' ? 'Suspend' : 'Activate'}
+                </button>
+            </div>
+        </div>
+    );
+
+    /**
+     * Renders a card displaying a payment transaction, highlighting its status and routing.
+     * This component provides critical visibility into the real-time payments infrastructure,
+     * allowing operators to monitor transaction progression, identify bottlenecks, and verify
+     * routing decisions. This transparency ensures high confidence in settlement guarantees
+     * and supports rapid intervention in case of issues, enhancing the reliability and
+     * performance of the entire payments engine.
+     */
+    const PaymentCard = ({ payment }: { payment: PaymentTransaction }) => (
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col" style={{ minHeight: '180px' }}>
+            <h3 className="text-xl font-bold text-gray-800 mb-2 truncate">Payment: {payment.id.substring(0, 8)}...</h3>
+            <p className="text-sm text-gray-600 mb-2">Amount: <span className="font-semibold">{payment.amount} {payment.currency}</span></p>
+            <p className="text-sm text-gray-600 mb-2">Recipient: <span className="font-semibold">{payment.recipient}</span></p>
+            <div className="flex justify-between items-center text-sm mb-2">
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${payment.status === 'settled' ? 'bg-green-200 text-green-800' : payment.status === 'pending' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'}`}>
+                    {payment.status.toUpperCase()}
+                </span>
+                <span className="text-gray-500">Rail: {payment.railUsed}</span>
+            </div>
+            {payment.fraudScore && payment.fraudScore > 0.5 && (
+                <p className="text-xs text-red-600 mt-1 font-semibold">Fraud Risk: HIGH ({payment.fraudScore.toFixed(2)})</p>
+            )}
+            <div className="mt-auto flex justify-end">
+                <button
+                    onClick={() => openPaymentDetails(payment)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm"
+                >
+                    Details
+                </button>
+            </div>
+        </div>
+    );
+
+    /**
+     * Renders a single token transaction item for the ledger view.
+     * This component offers a real-time, auditable display of value movement across token rails,
+     * showcasing the transparency and integrity of the stablecoin-style ledger. Each item provides
+     * immediate context on sender, receiver, amount, and the rail used, which is vital for
+     * reconciliation, compliance, and understanding the flow of capital in the system.
+     */
+    const TokenTransactionItem = ({ tx }: { tx: TokenTransaction }) => (
+        <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200 mb-3">
+            <p className="text-sm font-semibold text-gray-800">
+                {tx.type.toUpperCase()}: <span className="font-normal text-blue-700">{tx.transactionId.substring(0, 10)}...</span>
+            </p>
+            {tx.fromAccountId && <p className="text-xs text-gray-600 mt-1">From: {tx.fromAccountId.substring(0, 15)}...</p>}
+            {tx.toAccountId && <p className="text-xs text-gray-600">To: {tx.toAccountId.substring(0, 15)}...</p>}
+            <p className="text-sm text-gray-700 mt-1">
+                Amount: <span className="font-bold">{tx.amount} {tx.token}</span>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+                Rail: {tx.rail} | Timestamp: {new Date(tx.timestamp).toLocaleString()}
+            </p>
+            {tx.status === 'failed' && (
+                <p className="text-xs text-red-600 mt-1 font-semibold">Status: Failed - {tx.errorMessage}</p>
+            )}
+            {tx.signature && <p className="text-xs text-gray-500 truncate mt-1">Signature: {tx.signature}</p>}
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 font-sans p-8">
-            {/* Header: The grand welcome to your AI-powered future! */}
             <header className="text-center mb-12">
                 <h1 className="text-5xl font-extrabold text-blue-700 leading-tight mb-4">
-                    "The Brainiac Barometer: Your AI's Inner Thoughts, Declassified!"
+                    AI-Driven Financial Intelligence Dashboard
                 </h1>
                 <p className="text-lg text-gray-700 max-w-4xl mx-auto mb-6">
-                    Ever wish your business came with a crystal ball? Well, we got something even better. This isn't just about drowning in data; it's about making that data *do* something. This dashboard is your backstage pass to what our AI is *really* thinking, helping you spot opportunities before they even know they're opportunities. Less guesswork, more 'Heck yeah, I knew that!' moments. And don't worry, it's so easy, your coffee machine will be jealous. It's time to leverage AI, not just for efficiency, but for genuine, game-changing insights that propel you forward. This is how you don't just survive in the market, you *thrive*.
+                    This dashboard is your command center for intelligent operations, bridging agentic AI with robust financial infrastructure. Gain real-time insights, manage autonomous agents, oversee tokenized transactions, and ensure digital identity security. It's built to accelerate decision-making, mitigate risk, and unlock new revenue streams in a composable, secure financial ecosystem.
                 </p>
                 <div className="flex justify-center space-x-4">
                     <button
                         onClick={() => setIsPreferencesModalOpen(true)}
                         className="bg-purple-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-purple-700 transition-colors duration-200 shadow-md"
                     >
-                        Adjust My AI Genius Settings (Seriously, Do It!)
+                        Configure AI Preferences
                     </button>
                     <button
                         onClick={() => setIsSystemHealthModalOpen(true)}
                         className="bg-teal-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-teal-700 transition-colors duration-200 shadow-md"
                     >
-                        Check AI's Pulse (It's Healthy, Don't Worry!)
+                        Monitor System Health
                     </button>
+                    {isSimulationMode && (
+                        <span className="bg-orange-500 text-white px-4 py-2 rounded-lg text-lg font-semibold flex items-center">
+                            SIMULATION MODE ACTIVE
+                        </span>
+                    )}
                 </div>
             </header>
 
-            {/* Navigation Tabs: Your guided tour through AI brilliance */}
             <nav className="mb-8 bg-white p-3 rounded-lg shadow-sm flex flex-wrap justify-center space-x-2 sm:space-x-4">
-                {['insights', 'query', 'historical', 'collaboration', 'prioritization', 'models', 'notifications', 'data-sources'].map(tab => (
+                {['insights', 'query', 'historical', 'collaboration', 'prioritization', 'models', 'notifications', 'data-sources', 'operations'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -291,17 +554,15 @@ const AIInsightsDashboard = () => {
                 ))}
             </nav>
 
-            {/* Main Content Area: Where the AI-powered action unfolds! */}
             <div className="dashboard-content bg-white p-8 rounded-lg shadow-xl">
 
-                {/* Tab: Current Insights - Your daily dose of brilliance, served hot! */}
                 {activeTab === 'insights' && (
                     <section className="section-dashboard-summary">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Your Daily Dose of Brilliance: Insights on Tap!
+                            Actionable Insights: Your Strategic Advantage
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            No more drowning in spreadsheets or guessing what's next. Our AI sifts through the noise, identifies the hidden gems, and serves up the golden nuggets of wisdom you need to make swift, impactful decisions. It's like having a team of genius analysts working 24/7, but they only ask for electricity and occasionally a software update. Bargain! This isn't just data visualization; it's *actionable intelligence* designed to elevate your strategy. We're talking about finding problems before they become crises and seizing opportunities before your competitors even smell them. This is the future of proactive business.
+                            Our AI proactively analyzes vast datasets to deliver timely, context-rich insights. This intelligence helps you identify emerging trends, mitigate risks before they escalate, and uncover hidden opportunities, ensuring your strategy is always informed and agile.
                         </p>
                         <div className="text-center mb-8">
                             <button
@@ -309,11 +570,11 @@ const AIInsightsDashboard = () => {
                                 disabled={isInsightsLoading}
                                 className="bg-gradient-to-r from-green-500 to-green-700 text-white px-8 py-4 rounded-full text-xl font-bold hover:from-green-600 hover:to-green-800 transition-all duration-300 shadow-lg transform hover:scale-105"
                             >
-                                {isInsightsLoading ? "Brainstorming Brilliance... (Hold On Tight!)" : "Generate Fresh Insights (Go On, Press It! Your Business Will Thank You!)"}
+                                {isInsightsLoading ? "Generating Insights..." : "Generate Fresh Insights"}
                             </button>
                         </div>
 
-                        {isInsightsLoading && <p className="text-center text-blue-600 text-lg mt-4">AI is crunching numbers, predicting futures, and generally being awesome. Please wait...</p>}
+                        {isInsightsLoading && <p className="text-center text-blue-600 text-lg mt-4">AI is processing data for new insights...</p>}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {aiInsights.length > 0 ? (
@@ -321,8 +582,7 @@ const AIInsightsDashboard = () => {
                             ) : (
                                 !isInsightsLoading && (
                                     <p className="col-span-full text-center text-gray-600 text-lg py-10">
-                                        No active insights right now. Maybe hit that 'Generate Fresh Insights' button?
-                                        Or perhaps our AI is just too good, and you've already actioned everything! You rock!
+                                        No active insights. Generate new ones to refresh your perspective.
                                     </p>
                                 )
                             )}
@@ -330,21 +590,20 @@ const AIInsightsDashboard = () => {
                     </section>
                 )}
 
-                {/* Tab: AI Query - Your personal genius, ready for Q&A. */}
                 {activeTab === 'query' && (
                     <section className="section-ai-query">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Ask the Oracle (Our AI, Not That Other One)
+                            Dynamic AI Query: On-Demand Strategic Answers
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            Got a burning question that goes beyond the current dashboard views? Want to dive deeper into a specific scenario or test a hypothesis? Type it in! Our AI isn't just passively generating insights; it's ready to engage in a dynamic conversation. Think of it as having your most knowledgeable (and non-judgmental) colleague on speed dial. No silly questions, just smarter, on-demand answers to guide your strategic thinking. This empowers you to explore possibilities and get quick answers to complex business questions without waiting for manual reports. It's about empowering your curiosity with immediate, intelligent responses.
+                            Engage directly with our AI to explore specific scenarios, validate hypotheses, or delve deeper into complex business questions. This interactive capability provides immediate, intelligent responses, empowering agile decision-making and fostering data-driven curiosity.
                         </p>
                         <div className="flex flex-col md:flex-row gap-4 mb-6">
                             <input
                                 type="text"
                                 value={queryInput}
                                 onChange={(e) => setQueryInput(e.target.value)}
-                                placeholder="E.g., 'What's the predicted impact of recent supply chain disruptions on Q2 profits?'"
+                                placeholder="e.g., 'What's the predicted impact of recent supply chain disruptions on Q2 profits?'"
                                 className="flex-grow p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
                                 disabled={isQuerying}
                             />
@@ -353,7 +612,7 @@ const AIInsightsDashboard = () => {
                                 disabled={isQuerying || !queryInput.trim()}
                                 className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-md"
                             >
-                                {isQuerying ? "AI Brainstorming..." : "Get AI Answer (Prepare to Be Amazed!)"}
+                                {isQuerying ? "AI Processing..." : "Get AI Answer"}
                             </button>
                             <button
                                 onClick={clearQueryResults}
@@ -362,34 +621,33 @@ const AIInsightsDashboard = () => {
                                 Clear Results
                             </button>
                         </div>
-                        {isQuerying && <p className="text-center text-blue-600 text-lg mt-4">AI is formulating its response. It's probably thinking about world domination... or just your query.</p>}
+                        {isQuerying && <p className="text-center text-blue-600 text-lg mt-4">AI is formulating its response. Please wait.</p>}
                         {queryResults.length > 0 && (
                             <div className="bg-gray-100 p-6 rounded-lg shadow-inner mt-6">
-                                <h3 className="text-2xl font-semibold text-gray-700 mb-4">AI's Wisdom Unveiled:</h3>
+                                <h3 className="text-2xl font-semibold text-gray-700 mb-4">AI Response:</h3>
                                 {queryResults.map((result, index) => (
                                     <p key={index} className="text-gray-800 mb-3 leading-relaxed border-l-4 border-blue-400 pl-4 py-2">
                                         {result}
                                     </p>
                                 ))}
                                 <p className="text-sm text-gray-500 italic mt-6">
-                                    (Disclaimer: AI's answers are for strategic guidance. Always combine with human expertise and a good cup of coffee.)
+                                    (AI responses provide strategic guidance and should be complemented by human expertise.)
                                 </p>
                             </div>
                         )}
                     </section>
                 )}
 
-                {/* Tab: Historical Insights - Learning from yesterday to conquer tomorrow. */}
                 {activeTab === 'historical' && (
                     <section className="section-historical-archive">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            The Hall of Fame (and Shame): Past Insights
+                            Historical Insights: Learning from Past Operations
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            Every insight, every action, every "Oh, that's what that meant!" moment – it's all archived here, meticulously categorized and ready for review. This isn't just a digital attic; it's a treasure trove of past brilliance (and sometimes, lessons learned the hard way). It's like a business diary, but way more useful and less likely to contain embarrassing teenage poetry. Find patterns, learn from history, and impress your boss with your newfound wisdom about how situations evolved over time. This historical context is invaluable for refining future strategies and understanding long-term trends, ensuring you're always building on success, not just starting from scratch.
+                            Access a comprehensive archive of past AI insights and their resolutions. This historical context is invaluable for trend analysis, root cause identification, and refining future strategic initiatives, ensuring continuous organizational learning and improvement.
                         </p>
                         <div className="bg-gray-100 p-6 rounded-lg shadow-sm mb-8">
-                            <h3 className="text-2xl font-semibold text-gray-700 mb-4">Search & Filter Your Past Victories:</h3>
+                            <h3 className="text-2xl font-semibold text-gray-700 mb-4">Search & Filter Historical Records:</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                 <input
                                     type="text"
@@ -474,7 +732,7 @@ const AIInsightsDashboard = () => {
                             </div>
                         </div>
 
-                        {isHistoricalLoading && <p className="text-center text-blue-600 text-lg mt-4">Rummaging through the archives... patience, grasshopper!</p>}
+                        {isHistoricalLoading && <p className="text-center text-blue-600 text-lg mt-4">Retrieving historical insights...</p>}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
                             {historicalSearchResults.length > 0 ? (
@@ -482,7 +740,7 @@ const AIInsightsDashboard = () => {
                             ) : (
                                 !isHistoricalLoading && (
                                     <p className="col-span-full text-center text-gray-600 text-lg py-10">
-                                        No historical insights match your criteria. Time to make some new history, perhaps? Or adjust those filters!
+                                        No historical insights match your criteria. Adjust filters or generate new insights.
                                     </p>
                                 )
                             )}
@@ -520,14 +778,13 @@ const AIInsightsDashboard = () => {
                     </section>
                 )}
 
-                {/* Tab: Collaboration Hub - Where humans and AI co-create greatness! */}
                 {activeTab === 'collaboration' && (
                     <section className="section-collaboration-hub">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Team Up with the Brains (Human & AI Edition)
+                            Collaboration Hub: Human-AI Synergy
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            Insights are fantastic, but *action* is where the real magic happens. This is your digital war room where brilliant humans and our even more brilliant AI play nicely, turning 'aha!' moments into 'cha-ching!' results. Discuss, delegate, and conquer complex challenges together, ensuring every insight gets the attention and execution it deserves. No more insights sitting in a silo; this is about breaking down barriers and fostering a truly collaborative environment. It's how you amplify the intelligence of your team with the analytical power of AI, making every decision a shared victory.
+                            Foster a collaborative environment where human expertise and AI insights converge. Discuss, delegate, and track actions on critical insights, ensuring rapid and effective problem-solving across your organization. This seamless integration accelerates operational response and ensures accountability.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
@@ -550,7 +807,7 @@ const AIInsightsDashboard = () => {
                                             </div>
                                         ))
                                     ) : (
-                                        <p className="text-gray-600">No insights to collaborate on. Time to generate some!</p>
+                                        <p className="text-gray-600">No insights available for collaboration.</p>
                                     )}
                                 </div>
                             </div>
@@ -567,14 +824,14 @@ const AIInsightsDashboard = () => {
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="text-gray-600">No comments yet. Be the first to spark a conversation!</p>
+                                            <p className="text-gray-600">No comments yet. Start a discussion!</p>
                                         )}
                                     </div>
                                     <div className="mb-4">
                                         <textarea
                                             value={newCommentText}
                                             onChange={(e) => setNewCommentText(e.target.value)}
-                                            placeholder="Add a brilliant comment or question..."
+                                            placeholder="Add a comment or question..."
                                             rows={3}
                                             className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base"
                                         ></textarea>
@@ -587,7 +844,6 @@ const AIInsightsDashboard = () => {
                                         </button>
                                     </div>
 
-                                    {/* Insight Assignment */}
                                     <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
                                         <h4 className="font-semibold text-blue-800 mb-2">Assign Insight to Team:</h4>
                                         <div className="flex flex-wrap gap-2 items-center">
@@ -611,7 +867,6 @@ const AIInsightsDashboard = () => {
                                         </div>
                                     </div>
 
-                                    {/* Action Assignment - because every recommended action needs a hero! */}
                                     {(selectedInsightForDisplay?.recommendedActions && selectedInsightForDisplay.recommendedActions.filter(a => a.status !== 'completed').length > 0) && (
                                         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
                                             <h4 className="font-semibold text-yellow-800 mb-2">Assign Recommended Actions:</h4>
@@ -651,27 +906,26 @@ const AIInsightsDashboard = () => {
                     </section>
                 )}
 
-                {/* Tab: Prioritization Engine - You're the conductor of this AI symphony! */}
                 {activeTab === 'prioritization' && (
                     <section className="section-prioritization-engine">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Your Wish is Our AI's Command: Insight Prioritization Rules
+                            AI Prioritization Engine: Aligning AI with Business Goals
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            Ever felt like some insights just scream for attention more than others? Our AI agrees! This is where you become the maestro, conducting your AI to highlight what truly matters most to *your* business. Got a critical risk alert? Boost it! A high-impact opportunity? Amplify it! It's like giving your assistant superpowers, but without the cape (unless you provide one, we're not judging). By customizing these prioritization rules, you ensure your team's focus is always aligned with your strategic objectives, cutting through the noise to the signals that drive success. This is about strategic steering, not just reactive responses.
+                            Customize how our AI prioritizes insights to align perfectly with your strategic objectives. Define rules to amplify critical risks or high-impact opportunities, ensuring that your team's focus is always on what drives maximum business value.
                         </p>
                         <div className="flex justify-center mb-8 space-x-4">
                             <button
                                 onClick={() => setIsAddRuleModalOpen(true)}
                                 className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-md"
                             >
-                                Add New Super-Rule!
+                                Add New Prioritization Rule
                             </button>
                             <button
                                 onClick={recalculateAllInsightPriorities}
                                 className="bg-purple-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition-colors duration-200 shadow-md"
                             >
-                                Recalculate All Priorities (Feel the Power!)
+                                Recalculate All Priorities
                             </button>
                         </div>
 
@@ -709,21 +963,20 @@ const AIInsightsDashboard = () => {
                                 ))
                             ) : (
                                 <p className="col-span-full text-center text-gray-600 text-lg py-10">
-                                    No custom prioritization rules set yet. Let's create some to shape your AI's focus!
+                                    No custom prioritization rules set. Define rules to shape your AI's focus.
                                 </p>
                             )}
                         </div>
                     </section>
                 )}
 
-                {/* Tab: AI Model Management - Meet the unsung heroes of your data! */}
                 {activeTab === 'models' && (
                     <section className="section-ai-model-management">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Under the Hood: Meet the Brains of the Operation
+                            AI Model Governance: Transparency and Control
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            These are the powerful AI models working tirelessly behind the scenes, crunching numbers, spotting patterns, and predicting the future. Think of them as the super-athletes of data processing. We let them lift the heavy data, so you can lift a celebratory glass. They're doing great, but you can always peek in, see their performance stats, compare their capabilities, and even deploy a new champion! This transparency and control over your AI models isn't just cool; it's essential for trust, optimization, and staying ahead of the curve. It means you're investing in a robust, evolving intelligence.
+                            Oversee the performance and lifecycle of your AI models. This section provides a transparent view into model status, performance metrics, and deployment options, ensuring that your AI infrastructure is robust, optimized, and aligned with enterprise standards.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                             {availableAIModels.map(model => (
@@ -756,17 +1009,16 @@ const AIInsightsDashboard = () => {
                         </div>
 
                         <div className="bg-gray-100 p-6 rounded-lg shadow-sm mt-8">
-                            <h3 className="text-2xl font-semibold text-gray-700 mb-4">AI Model Face-Off! (Comparison)</h3>
+                            <h3 className="text-2xl font-semibold text-gray-700 mb-4">AI Model Comparison: Optimize Performance</h3>
                             <p className="text-md text-gray-700 mb-4">
-                                Can't decide which model is the MVP? Let's put them to the test! Select a few of your favorites and see how they stack up against each other. It's like a scientific cage match, but for data. Choose wisely, the future of your insights depends on it! (Just kidding, they're all pretty great.)
+                                Evaluate and compare the performance of different AI models to inform strategic deployment decisions. This allows for evidence-based selection of the most effective algorithms for specific tasks, maximizing insight accuracy and system efficiency.
                             </p>
                             <div className="flex flex-wrap items-center gap-4 mb-4">
                                 <select
                                     multiple
-                                    value={[]} // Controlled internally for demonstration
+                                    value={modelComparisonResults.map(r => r.modelId)} // Display selected options
                                     onChange={(e) => {
                                         const selectedOptions = Array.from(e.target.options).filter(opt => opt.selected).map(opt => opt.value);
-                                        // For simplicity, directly comparing selected models
                                         compareAIModels(selectedOptions);
                                     }}
                                     className="p-3 border border-gray-300 rounded-md shadow-sm text-base h-32 flex-grow"
@@ -777,14 +1029,14 @@ const AIInsightsDashboard = () => {
                                     ))}
                                 </select>
                                 <button
-                                    onClick={() => compareAIModels(availableAIModels.slice(0, 2).map(m => m.id))} // Example: Compare first two
-                                    disabled={isModelTesting}
+                                    onClick={() => compareAIModels(modelComparisonResults.map(r => r.modelId))} // Re-run with current selection
+                                    disabled={isModelTesting || modelComparisonResults.length < 2}
                                     className="bg-orange-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-orange-700 transition-colors duration-200 shadow-md disabled:opacity-50"
                                 >
-                                    {isModelTesting ? 'Comparing Brains...' : 'Run Comparison!'}
+                                    {isModelTesting ? 'Comparing Models...' : 'Run Comparison'}
                                 </button>
                             </div>
-                            {isModelTesting && <p className="text-center text-orange-600 text-lg mt-4">Models are duking it out behind the scenes. May the best algorithm win!</p>}
+                            {isModelTesting && <p className="text-center text-orange-600 text-lg mt-4">Models are being evaluated for performance.</p>}
                             {modelComparisonResults.length > 0 && (
                                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {modelComparisonResults.map(result => (
@@ -795,7 +1047,7 @@ const AIInsightsDashboard = () => {
                                             <p className="text-gray-700 text-sm">Insights Generated: <span className="font-semibold">{result.insightsGenerated.toLocaleString()}</span></p>
                                             <p className="text-gray-700 text-sm">Average Accuracy: <span className="font-semibold">{(result.avgAccuracy * 100).toFixed(2)}%</span></p>
                                             <p className="text-sm text-gray-500 italic mt-2">
-                                                (These numbers are just to show off, they're pretty darn good!)
+                                                (Performance metrics indicate model effectiveness.)
                                             </p>
                                         </div>
                                     ))}
@@ -805,14 +1057,13 @@ const AIInsightsDashboard = () => {
                     </section>
                 )}
 
-                {/* Tab: Notification System - Your AI's personal messenger. */}
                 {activeTab === 'notifications' && (
                     <section className="section-notifications">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Your Personal AI Whisperer: Notifications!
+                            Notification Center: Timely Alerts for Critical Events
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            Never miss a beat, or a critical insight. Our AI will give you the heads-up on the really important stuff, ensuring you're always in the loop and never lost in limbo. It's like having a very polite, incredibly smart friend tapping you on the shoulder and saying, "Hey, you might want to see this!" These aren't just annoying pop-ups; they're tailored alerts designed to bring timely, actionable intelligence directly to your attention, enabling rapid response and informed decision-making. No more sifting through emails; just clear, concise updates that respect your time.
+                            Receive personalized, real-time notifications on critical insights, system alerts, and operational changes. This ensures you are always informed and can respond swiftly to situations requiring your attention, minimizing delays and maximizing operational responsiveness.
                         </p>
                         <div className="flex justify-center mb-8 space-x-4">
                             <button
@@ -820,7 +1071,7 @@ const AIInsightsDashboard = () => {
                                 disabled={unreadNotificationCount === 0}
                                 className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-md disabled:opacity-50"
                             >
-                                Mark All as Read (Feeling Efficient?)
+                                Mark All as Read
                             </button>
                         </div>
                         <div className="max-w-3xl mx-auto">
@@ -830,23 +1081,22 @@ const AIInsightsDashboard = () => {
                                 ))
                             ) : (
                                 <p className="text-center text-gray-600 text-lg py-10">
-                                    All quiet on the notification front! Enjoy the peace, or go generate some new insights to stir things up!
+                                    No new notifications.
                                 </p>
                             )}
                         </div>
                     </section>
                 )}
 
-                {/* Tab: Data Source Management - Fueling the genius! */}
                 {activeTab === 'data-sources' && (
                     <section className="section-data-sources">
                         <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
-                            Fueling the Genius: Data Sources Unleashed
+                            Data Source Management: Fueling Intelligent Operations
                         </h2>
                         <p className="text-md text-gray-700 max-w-3xl mx-auto mb-8 text-center">
-                            Our AI is only as smart as the data it gets. This is where we ensure those data pipelines are flowing smoothly, clean, and happy. Think of it as the AI's gourmet kitchen – fresh, quality ingredients lead to Michelin-star insights! Keeping these connections robust and optimized is crucial because happy data makes for brilliant insights, and brilliant insights make you look like a genius. It's a win-win-win! This comprehensive view and control over your data sources ensure that your AI always has the most accurate, real-time information to work with, guaranteeing the relevance and power of every insight. This is foundational for intelligent operations.
+                            Ensure the integrity and real-time flow of data to your AI systems. This section allows for configuration, monitoring, and manual synchronization of data sources, guaranteeing that your AI always operates on the most current and accurate information.
                         </p>
-                        {isDataSourceLoading && <p className="text-center text-blue-600 text-lg mb-4">Checking connections, ensuring data happiness...</p>}
+                        {isDataSourceLoading && <p className="text-center text-blue-600 text-lg mb-4">Checking data source connections...</p>}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {dataSourcesConfig.map(ds => (
                                 <div key={ds.id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col">
@@ -883,11 +1133,194 @@ const AIInsightsDashboard = () => {
                         </div>
                     </section>
                 )}
+
+                {/* New Tab: Operations - Agentic AI, Token Rails, Payments, Identity & Audit */}
+                {activeTab === 'operations' && (
+                    <section className="section-operations-hub">
+                        <h2 className="text-4xl font-bold text-gray-800 mb-6 text-center">
+                            Financial Operations Hub: Agentic AI, Token Rails & Payments
+                        </h2>
+                        <p className="text-md text-gray-700 max-w-4xl mx-auto mb-8 text-center">
+                            This comprehensive module provides real-time oversight and control over the core financial infrastructure. Manage autonomous AI agents, monitor token rail transactions, track payment flows, and ensure digital identity integrity. This granular control is vital for achieving transactional guarantees, regulatory compliance, and maximizing the efficiency of your digital value movements.
+                        </p>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            {/* Sub-section: Agent Management */}
+                            <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
+                                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Autonomous AI Agent Management</h3>
+                                <p className="text-md text-gray-600 mb-6">
+                                    Monitor and manage your fleet of AI agents. View their status, assigned roles, and activate/deactivate them to orchestrate autonomous workflows for monitoring, anomaly detection, and remediation across your financial systems.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {agents.length > 0 ? (
+                                        agents.map(agent => <AgentCard key={agent.id} agent={agent} />)
+                                    ) : (
+                                        <p className="col-span-full text-gray-600">No active AI agents found.</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Sub-section: Token Rail Monitoring */}
+                            <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
+                                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Token Rail & Ledger Monitoring</h3>
+                                <p className="text-md text-gray-600 mb-4">
+                                    Gain real-time visibility into your tokenized asset ledger and transaction rails. Monitor token balances, track mint/burn operations, and observe multi-rail settlement activity for transparency and auditability.
+                                </p>
+                                <div className="mb-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+                                    <h4 className="font-bold text-blue-800 text-lg mb-2">Ledger Overview:</h4>
+                                    <p className="text-gray-700 text-sm">Total Tokens in Circulation: <span className="font-semibold">{tokenLedgerStatus.totalTokens.toLocaleString()} USD_TOKEN</span></p>
+                                    <p className="text-gray-700 text-sm">Last Block ID: <span className="font-mono text-xs">{tokenLedgerStatus.lastBlockId.substring(0, 20)}...</span></p>
+                                </div>
+
+                                <h4 className="font-bold text-gray-700 text-xl mb-3">Recent Token Transactions:</h4>
+                                <div className="max-h-80 overflow-y-auto pr-2">
+                                    {tokenTransactions.length > 0 ? (
+                                        [...tokenTransactions].reverse().map(tx => <TokenTransactionItem key={tx.transactionId} tx={tx} />)
+                                    ) : (
+                                        <p className="text-gray-600">No recent token transactions.</p>
+                                    )}
+                                </div>
+
+                                {isSimulationMode && (
+                                    <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                                        <h4 className="font-semibold text-yellow-800 mb-3">Simulate Token Transfer:</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                            <input
+                                                type="text" placeholder="From Account ID (e.g., 'account-alpha')" value={newTokenTransferForm.fromAccountId}
+                                                onChange={(e) => setNewTokenTransferForm(prev => ({ ...prev, fromAccountId: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            />
+                                            <input
+                                                type="text" placeholder="To Account ID (e.g., 'account-beta')" value={newTokenTransferForm.toAccountId}
+                                                onChange={(e) => setNewTokenTransferForm(prev => ({ ...prev, toAccountId: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            />
+                                            <input
+                                                type="number" placeholder="Amount" value={newTokenTransferForm.amount || ''}
+                                                onChange={(e) => setNewTokenTransferForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                                                min="0.01" step="0.01" className="p-2 border rounded-md"
+                                            />
+                                            <select
+                                                value={newTokenTransferForm.token}
+                                                onChange={(e) => setNewTokenTransferForm(prev => ({ ...prev, token: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            >
+                                                <option value="USD_TOKEN">USD_TOKEN</option>
+                                                {/* Add other simulated tokens here */}
+                                            </select>
+                                            <select
+                                                value={newTokenTransferForm.rail}
+                                                onChange={(e) => setNewTokenTransferForm(prev => ({ ...prev, rail: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            >
+                                                <option value="rail_fast">Rail Fast</option>
+                                                <option value="rail_batch">Rail Batch</option>
+                                            </select>
+                                        </div>
+                                        <button
+                                            onClick={handleSimulateTokenTransfer}
+                                            className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 shadow-sm w-full"
+                                        >
+                                            Simulate Token Transfer
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Sub-section: Real-time Payments Infrastructure */}
+                            <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
+                                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Real-time Payments Infrastructure</h3>
+                                <p className="text-md text-gray-600 mb-6">
+                                    Monitor the flow of real-time payments through the system. Track settlement status, observe predictive routing decisions, and identify transactions flagged by the risk and fraud detection module. This ensures high throughput and secure value exchange.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {payments.length > 0 ? (
+                                        payments.map(payment => <PaymentCard key={payment.id} payment={payment} />)
+                                    ) : (
+                                        <p className="col-span-full text-gray-600">No recent payment transactions.</p>
+                                    )}
+                                </div>
+                                {isSimulationMode && (
+                                    <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                                        <h4 className="font-semibold text-yellow-800 mb-3">Simulate Payment Request:</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                            <input
+                                                type="number" placeholder="Amount" value={newPaymentRequestForm.amount || ''}
+                                                onChange={(e) => setNewPaymentRequestForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                                                min="0.01" step="0.01" className="p-2 border rounded-md"
+                                            />
+                                            <input
+                                                type="text" placeholder="Currency (e.g., 'USD')" value={newPaymentRequestForm.currency}
+                                                onChange={(e) => setNewPaymentRequestForm(prev => ({ ...prev, currency: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            />
+                                            <input
+                                                type="text" placeholder="Recipient ID" value={newPaymentRequestForm.recipient}
+                                                onChange={(e) => setNewPaymentRequestForm(prev => ({ ...prev, recipient: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            />
+                                            <input
+                                                type="text" placeholder="Description (Optional)" value={newPaymentRequestForm.description}
+                                                onChange={(e) => setNewPaymentRequestForm(prev => ({ ...prev, description: e.target.value }))}
+                                                className="p-2 border rounded-md"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleSimulatePaymentRequest}
+                                            className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 shadow-sm w-full"
+                                        >
+                                            Simulate Payment Request
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Sub-section: Digital Identity & Audit Logs */}
+                            <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
+                                <h3 className="text-2xl font-semibold text-gray-700 mb-4">Digital Identity & Audit Governance</h3>
+                                <p className="text-md text-gray-600 mb-6">
+                                    Review key digital identity details for the current user and access tamper-evident audit logs. This ensures robust role-based access control (RBAC) and maintain an immutable record of all critical system events for compliance and security.
+                                </p>
+                                <div className="mb-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+                                    <h4 className="font-bold text-blue-800 text-lg mb-2">Current User Profile:</h4>
+                                    {currentUser ? (
+                                        <div>
+                                            <p className="text-gray-700 text-sm">Name: <span className="font-semibold">{currentUser.name}</span></p>
+                                            <p className="text-gray-700 text-sm">User ID: <span className="font-semibold">{currentUser.id}</span></p>
+                                            <p className="text-gray-700 text-sm">Roles: <span className="font-semibold">{currentUser.roles.join(', ')}</span></p>
+                                            <p className="text-gray-700 text-sm truncate">Public Key: <span className="font-mono text-xs">{currentUser.publicKey}</span></p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-600">No user profile loaded.</p>
+                                    )}
+                                </div>
+
+                                <h4 className="font-bold text-gray-700 text-xl mb-3">Recent Audit Events:</h4>
+                                <div className="max-h-80 overflow-y-auto pr-2">
+                                    {auditEvents.length > 0 ? (
+                                        [...auditEvents].reverse().map(event => (
+                                            <div key={event.id} className="bg-white p-3 rounded-md shadow-sm border border-gray-200 mb-2">
+                                                <p className="text-sm font-semibold text-gray-800">{event.action}</p>
+                                                <p className="text-xs text-gray-600 mt-1">
+                                                    User: {event.userId} | Target: {event.targetId} | Timestamp: {new Date(event.timestamp).toLocaleString()}
+                                                </p>
+                                                {event.details && <p className="text-xs text-gray-500 mt-1">Details: {JSON.stringify(event.details).substring(0, 100)}...</p>}
+                                                <p className="text-xs text-gray-500 mt-1 truncate">Hash: {event.eventHash}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-600">No recent audit events.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
             </div>
 
-            {/* Modals - Because sometimes, you need a closer look, or to tweak things just right. */}
+            {/* Modals */}
 
-            {/* Insight Details Modal - Dive deep into that brilliance! */}
+            {/* Insight Details Modal */}
             <Modal isOpen={isInsightDetailsModalOpen} onClose={closeInsightDetails} title={`Insight Details: ${selectedInsightForDisplay?.title || 'Loading...'}`}>
                 {selectedInsightForDisplay ? (
                     <div className="space-y-4">
@@ -909,16 +1342,16 @@ const AIInsightsDashboard = () => {
                         </div>
                         {selectedInsightForDisplay.explanation && (
                             <div>
-                                <h3 className="text-lg font-semibold mt-4 mb-2 text-blue-800">AI's Thought Process (XAI):</h3>
+                                <h3 className="text-lg font-semibold mt-4 mb-2 text-blue-800">AI Explanation:</h3>
                                 <p className="bg-blue-50 p-3 rounded-md border border-blue-200 leading-relaxed">{selectedInsightForDisplay.explanation}</p>
                                 <p className="text-xs italic text-gray-500 mt-2">
-                                    (Yes, our AI even explains itself. It's very polite.)
+                                    (Explainable AI provides transparency into decision-making.)
                                 </p>
                             </div>
                         )}
                         {selectedInsightForDisplay.recommendedActions && selectedInsightForDisplay.recommendedActions.length > 0 && (
                             <div>
-                                <h3 className="text-lg font-semibold mt-4 mb-2 text-green-800">Recommended Actions (Go forth and conquer!):</h3>
+                                <h3 className="text-lg font-semibold mt-4 mb-2 text-green-800">Recommended Actions:</h3>
                                 <ul className="list-disc list-inside space-y-2">
                                     {selectedInsightForDisplay.recommendedActions.map(action => (
                                         <li key={action.id} className={`p-2 rounded-md ${action.status === 'completed' ? 'bg-green-100 line-through text-gray-500' : 'bg-white border border-gray-200'}`}>
@@ -936,7 +1369,7 @@ const AIInsightsDashboard = () => {
                                     ))}
                                 </ul>
                                 <p className="text-xs italic text-gray-500 mt-2">
-                                    (Our AI doesn't just tell you what's happening, it tells you what to *do* about it. Talk about service!)
+                                    (AI-driven actions streamline operational response.)
                                 </p>
                             </div>
                         )}
@@ -952,14 +1385,13 @@ const AIInsightsDashboard = () => {
                                 ))}
                                 </div>
                                 <p className="text-xs italic text-gray-500 mt-2">
-                                    (This is where the human genius meets AI insights. A beautiful partnership!)
+                                    (Leverage collective intelligence for better outcomes.)
                                 </p>
                             </div>
                         )}
 
-                        {/* Insight Feedback Section - because even AI needs a little love (or constructive criticism). */}
                         <div className="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
-                            <h3 className="text-lg font-semibold mb-3 text-gray-800">Provide Feedback (Help us make AI even better!):</h3>
+                            <h3 className="text-lg font-semibold mb-3 text-gray-800">Provide Feedback:</h3>
                             <div className="flex items-center space-x-3 mb-3">
                                 <label className="text-gray-700 font-medium">Rating:</label>
                                 <select
@@ -973,7 +1405,7 @@ const AIInsightsDashboard = () => {
                             <textarea
                                 value={feedbackInput.comment}
                                 onChange={(e) => setFeedbackInput(prev => ({ ...prev, comment: e.target.value }))}
-                                placeholder="Share your thoughts on this insight... be nice, our AI has feelings (probably)."
+                                placeholder="Share your thoughts on this insight..."
                                 rows={4}
                                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base"
                             ></textarea>
@@ -985,23 +1417,23 @@ const AIInsightsDashboard = () => {
                                 Submit Feedback
                             </button>
                             <p className="text-xs italic text-gray-500 mt-2">
-                                (Your input directly trains our AI to be more aligned with your business needs. You're basically an AI trainer now!)
+                                (Your feedback directly contributes to AI model refinement.)
                             </p>
                         </div>
                     </div>
                 ) : (
-                    <p className="text-center text-gray-600">Loading insight details... or perhaps the AI is taking a coffee break.</p>
+                    <p className="text-center text-gray-600">Loading insight details...</p>
                 )}
             </Modal>
 
-            {/* AI Preferences Modal - Fine-tune your genius! */}
-            <Modal isOpen={isPreferencesModalOpen} onClose={() => setIsPreferencesModalOpen(false)} title="Fine-Tune Your Genius: AI Preferences">
+            {/* AI Preferences Modal */}
+            <Modal isOpen={isPreferencesModalOpen} onClose={() => setIsPreferencesModalOpen(false)} title="AI Preferences: Customize Your Intelligence">
                 <p className="text-md text-gray-700 mb-6 leading-relaxed">
-                    This is where you tell our AI exactly how you like your insights served: hot, fresh, and perfectly tailored to your taste. Customize away, maestro! Adjust everything from the types of insights you prioritize to how you receive notifications. This level of granular control ensures that the AI is always working in perfect harmony with your strategic focus and operational rhythms. It’s not just about what the AI can do; it’s about what the AI can do *for you*, precisely how you need it. This personalization is key to unlocking its full, transformative potential.
+                    Personalize your AI experience. Adjust settings to tailor insight delivery, notification preferences, and AI model selection, ensuring the system operates in perfect harmony with your individual workflow and strategic priorities. This granular control maximizes the utility of AI for every user.
                 </p>
                 <div className="space-y-6">
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-2">Favorite Insight Types (Pick Your Brain Food!):</label>
+                        <label className="block text-lg font-medium text-gray-700 mb-2">Favorite Insight Types:</label>
                         <select
                             name="insightTypes"
                             multiple
@@ -1016,12 +1448,12 @@ const AIInsightsDashboard = () => {
                             ))}
                         </select>
                         <p className="text-sm text-gray-500 mt-2">
-                            (Tell our AI which insights make your strategic heart sing. It'll pay extra attention to these!)
+                            (Prioritize the types of insights most relevant to your role and objectives.)
                         </p>
                     </div>
 
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-2">Urgency Threshold (What's Your 'Drop Everything' Level?):</label>
+                        <label className="block text-lg font-medium text-gray-700 mb-2">Urgency Threshold:</label>
                         <select
                             name="urgencyThreshold"
                             value={preferences.urgencyThreshold}
@@ -1033,12 +1465,12 @@ const AIInsightsDashboard = () => {
                             ))}
                         </select>
                         <p className="text-sm text-gray-500 mt-2">
-                            (Set the bar for what really needs your immediate attention. No more false alarms, just focused brilliance.)
+                            (Define the minimum urgency level for insights requiring your attention.)
                         </p>
                     </div>
 
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-2">Preferred AI Model (Choose Your Champion!):</label>
+                        <label className="block text-lg font-medium text-gray-700 mb-2">Preferred AI Model:</label>
                         <select
                             name="modelSelection"
                             value={preferences.modelSelection}
@@ -1052,12 +1484,12 @@ const AIInsightsDashboard = () => {
                             ))}
                         </select>
                         <p className="text-sm text-gray-500 mt-2">
-                            (Pick the AI brain that best suits your needs – some are speed demons, some are deep thinkers!)
+                            (Select the AI model that best fits your performance and interpretability needs.)
                         </p>
                     </div>
 
                     <div className="p-4 bg-blue-50 rounded-md border border-blue-200">
-                        <h3 className="text-xl font-bold text-blue-800 mb-3">Notification Settings (How do you like your pings?):</h3>
+                        <h3 className="text-xl font-bold text-blue-800 mb-3">Notification Settings:</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label className="flex items-center space-x-2">
                                 <input
@@ -1067,7 +1499,7 @@ const AIInsightsDashboard = () => {
                                     onChange={handlePreferenceChange}
                                     className="form-checkbox h-5 w-5 text-blue-600 rounded"
                                 />
-                                <span className="text-gray-700">Email Me (For when you're not glued to the dashboard)</span>
+                                <span className="text-gray-700">Email Notifications</span>
                             </label>
                             <label className="flex items-center space-x-2">
                                 <input
@@ -1077,7 +1509,7 @@ const AIInsightsDashboard = () => {
                                     onChange={handlePreferenceChange}
                                     className="form-checkbox h-5 w-5 text-blue-600 rounded"
                                 />
-                                <span className="text-gray-700">Push Notifications (Instant updates, like a digital tap on the shoulder)</span>
+                                <span className="text-gray-700">Push Notifications</span>
                             </label>
                             <label className="flex items-center space-x-2">
                                 <input
@@ -1087,7 +1519,7 @@ const AIInsightsDashboard = () => {
                                     onChange={handlePreferenceChange}
                                     className="form-checkbox h-5 w-5 text-blue-600 rounded"
                                 />
-                                <span className="text-gray-700">SMS Alerts (Only for the REALLY critical stuff!)</span>
+                                <span className="text-gray-700">SMS Alerts</span>
                             </label>
                             <label className="flex items-center space-x-2">
                                 <span className="text-gray-700">Notification Threshold:</span>
@@ -1105,12 +1537,12 @@ const AIInsightsDashboard = () => {
                             </label>
                         </div>
                         <p className="text-sm text-gray-500 mt-2">
-                            (Control the noise! Only get pinged when it truly matters, because your focus is gold.)
+                            (Tailor notification frequency to prevent information overload.)
                         </p>
                     </div>
 
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-2">Refresh Interval (How fresh do you like your insights?):</label>
+                        <label className="block text-lg font-medium text-gray-700 mb-2">Refresh Interval (Minutes):</label>
                         <div className="flex items-center space-x-2">
                             <input
                                 type="number"
@@ -1123,7 +1555,7 @@ const AIInsightsDashboard = () => {
                             <span className="text-gray-700">Minutes</span>
                         </div>
                         <p className="text-sm text-gray-500 mt-2">
-                            (Our AI is always watching, but you get to decide how often it whispers sweet nothings (aka insights) into your ear.)
+                            (Set how frequently the dashboard automatically updates with new insights.)
                         </p>
                     </div>
                 </div>
@@ -1133,21 +1565,21 @@ const AIInsightsDashboard = () => {
                         onClick={resetPreferences}
                         className="bg-gray-400 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-gray-500 transition-colors duration-200 shadow-md"
                     >
-                        Reset to Defaults (If you dare!)
+                        Reset to Defaults
                     </button>
                     <button
                         onClick={handleSavePreferences}
                         className="bg-green-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-green-700 transition-colors duration-200 shadow-md"
                     >
-                        Save My AI Masterpiece!
+                        Save Preferences
                     </button>
                 </div>
             </Modal>
 
-            {/* AI System Health Modal - All systems go! */}
-            <Modal isOpen={isSystemHealthModalOpen} onClose={() => setIsSystemHealthModalOpen(false)} title="The AI Engine Room: Performance Metrics">
+            {/* AI System Health Modal */}
+            <Modal isOpen={isSystemHealthModalOpen} onClose={() => setIsSystemHealthModalOpen(false)} title="AI System Health & Performance">
                 <p className="text-md text-gray-700 mb-6 leading-relaxed">
-                    All green lights here! Or, well, mostly green. This is where we monitor our AI's vital signs, ensuring it's always running at peak performance to deliver those gold-standard insights. It's always working hard, processing mountains of data so you don't have to. You can just sit back, enjoy the show, and rest assured your intelligent assistant is always on the job. A healthy AI means healthy insights, and healthy insights mean a healthier bottom line. We're talking about robust, reliable, and continuously optimized intelligence working for you 24/7.
+                    Monitor the operational status and performance metrics of the entire AI system. This comprehensive overview ensures the continuous health, reliability, and efficiency of your AI infrastructure, critical for sustaining high-value insight generation and autonomous operations.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
@@ -1168,7 +1600,7 @@ const AIInsightsDashboard = () => {
                     </div>
                 </div>
                 <div className="bg-gray-100 p-4 rounded-md border border-gray-200 mb-6">
-                    <h3 className="font-bold text-gray-800 text-lg mb-2">Resource Utilization (The AI's workload):</h3>
+                    <h3 className="font-bold text-gray-800 text-lg mb-2">Resource Utilization:</h3>
                     <p className="text-gray-700 text-sm">CPU: {aiPerformanceMetrics.resourceUtilization.cpu.toFixed(1)}%</p>
                     <p className="text-gray-700 text-sm">Memory: {aiPerformanceMetrics.resourceUtilization.memory.toFixed(1)}%</p>
                     {aiPerformanceMetrics.resourceUtilization.gpu && (
@@ -1179,31 +1611,31 @@ const AIInsightsDashboard = () => {
                     onClick={checkSystemHealth}
                     className="bg-green-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-green-700 transition-colors duration-200 shadow-md"
                 >
-                    Run Quick Health Check (Just to be sure!)
+                    Run Health Check
                 </button>
                 <p className="text-xs italic text-gray-500 mt-4">
-                    (Our AI is designed to be resilient, but a little check-up never hurt anyone. Except maybe the bugs we squash!)
+                    (Regular health checks ensure optimal AI system performance.)
                 </p>
             </Modal>
 
-            {/* Add Prioritization Rule Modal - Become an AI rule-making guru! */}
-            <Modal isOpen={isAddRuleModalOpen} onClose={() => setIsAddRuleModalOpen(false)} title="Craft a New Super-Rule!">
+            {/* Add Prioritization Rule Modal */}
+            <Modal isOpen={isAddRuleModalOpen} onClose={() => setIsAddRuleModalOpen(false)} title="Create New Prioritization Rule">
                 <p className="text-md text-gray-700 mb-6 leading-relaxed">
-                    Let's make some insights *really* pop. Add a rule to tell our AI exactly what kind of brilliance you want amplified. Do certain types of insights need more attention? Should critical risks get an extra boost? This is your chance to explicitly tell the AI what's paramount to your business objectives. This mechanism ensures that the AI's output is not just intelligent, but *strategically aligned* with your most pressing needs, making your decision-making processes even more targeted and effective. You're not just observing; you're *directing* the intelligence.
+                    Define new rules to customize how insights are prioritized. By setting specific criteria and boost factors, you can ensure the AI system consistently highlights the information most crucial to your business objectives, optimizing strategic focus.
                 </p>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-1">Rule Name (Make it snappy!):</label>
+                        <label className="block text-lg font-medium text-gray-700 mb-1">Rule Name:</label>
                         <input
                             type="text"
                             value={newRuleForm.name || ''}
                             onChange={(e) => setNewRuleForm(prev => ({ ...prev, name: e.target.value }))}
-                            placeholder="E.g., 'Boost Critical Financial Risks'"
+                            placeholder="e.g., 'Boost Critical Financial Risks'"
                             className="w-full p-3 border border-gray-300 rounded-md"
                         />
                     </div>
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-1">Boost Factor (How much oomph does it need? E.g., 1.5 for 50% more priority):</label>
+                        <label className="block text-lg font-medium text-gray-700 mb-1">Boost Factor (e.g., 1.5 for 50% more priority):</label>
                         <input
                             type="number"
                             step="0.1"
@@ -1213,8 +1645,8 @@ const AIInsightsDashboard = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-lg font-medium text-gray-700 mb-1">Criteria (When does this rule kick in?):</label>
-                        <p className="text-sm text-gray-500 mb-2">(Select specific conditions to trigger this priority boost.)</p>
+                        <label className="block text-lg font-medium text-gray-700 mb-1">Criteria:</label>
+                        <p className="text-sm text-gray-500 mb-2">(Select conditions to trigger this priority boost.)</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-md font-medium text-gray-600 mb-1">Insight Types:</label>
@@ -1248,7 +1680,6 @@ const AIInsightsDashboard = () => {
                                     className="w-full p-2 border border-gray-300 rounded-md"
                                 />
                             </div>
-                            {/* Add more criteria fields as needed: source, tags, keywords etc. */}
                         </div>
                     </div>
                 </div>
@@ -1257,22 +1688,22 @@ const AIInsightsDashboard = () => {
                         onClick={() => setIsAddRuleModalOpen(false)}
                         className="bg-gray-400 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-gray-500 transition-colors duration-200 shadow-md"
                     >
-                        Cancel (No masterpiece today!)
+                        Cancel
                     </button>
                     <button
                         onClick={handleSaveNewRule}
                         className="bg-green-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-green-700 transition-colors duration-200 shadow-md"
                     >
-                        Save New Rule (Unleash the priority!)
+                        Save New Rule
                     </button>
                 </div>
             </Modal>
 
-            {/* AI Model Details Modal - Get up close and personal with a digital brain! */}
+            {/* AI Model Details Modal */}
             <Modal isOpen={isModelDetailsModalOpen} onClose={() => setIsModelDetailsModalOpen(false)} title={`AI Model Details: ${getAIModelDetails(selectedAIModelForDetails || '')?.name || 'Unknown Model'}`}>
                 {selectedAIModelForDetails ? (() => {
                     const model = getAIModelDetails(selectedAIModelForDetails);
-                    if (!model) return <p className="text-gray-600">Model details not found. Did it sneak off for a coffee break?</p>;
+                    if (!model) return <p className="text-gray-600">Model details not found.</p>;
 
                     return (
                         <div className="space-y-4">
@@ -1297,7 +1728,7 @@ const AIInsightsDashboard = () => {
                                     <p className="text-gray-700 text-sm">Recall: <span className="font-semibold">{(model.performanceMetrics.recall * 100).toFixed(2)}%</span></p>
                                     <p className="text-gray-700 text-sm">F1 Score: <span className="font-semibold">{(model.performanceMetrics.f1_score * 100).toFixed(2)}%</span></p>
                                     <p className="text-xs italic text-gray-500 mt-2">
-                                        (These numbers mean it's doing a really, *really* good job. Like, "employee of the month" good!)
+                                        (These metrics are key indicators of model effectiveness.)
                                     </p>
                                 </div>
                             )}
@@ -1308,7 +1739,7 @@ const AIInsightsDashboard = () => {
                                     <p className="text-gray-700 text-sm">Last Refresh: <span className="font-semibold">{new Date(model.trainingDataInfo.lastRefresh).toLocaleDateString()}</span></p>
                                     <p className="text-gray-700 text-sm">Bias Detected: <span className={`font-semibold ${model.trainingDataInfo.biasDetected ? 'text-red-600' : 'text-green-600'}`}>{model.trainingDataInfo.biasDetected ? 'Yes (Managed)' : 'No'}</span></p>
                                     <p className="text-xs italic text-gray-500 mt-2">
-                                        (We keep an eye on everything, even the data's manners. Bias is like glitter, it gets everywhere, but we clean it up!)
+                                        (Training data quality and bias detection are critical for fair and accurate AI.)
                                     </p>
                                 </div>
                             )}
@@ -1323,15 +1754,15 @@ const AIInsightsDashboard = () => {
                             </div>
                         </div>
                     );
-                })() : <p className="text-center text-gray-600">Selecting model for details... or maybe it's just shy.</p>}
+                })() : <p className="text-center text-gray-600">Selecting model for details...</p>}
             </Modal>
 
-            {/* Data Source Configuration Modal - Nurturing your AI's food source. */}
+            {/* Data Source Configuration Modal */}
             <Modal isOpen={isDataSourceConfigModalOpen} onClose={() => setIsDataSourceConfigModalOpen(false)} title={`Configure Data Source: ${selectedDataSourceConfig?.name || 'Unknown Source'}`}>
                 {selectedDataSourceConfig ? (
                     <div className="space-y-4">
                         <p className="text-gray-700 leading-relaxed text-md mb-4">
-                            This is where you can fine-tune the connection and behavior of your data sources. Ensuring these sources are optimized and connected reliably is paramount, as they are the lifeblood of our AI. Happy, healthy data streams mean more accurate, timely, and impactful insights. It’s like tending to a garden; well-nourished plants (data) yield the best fruits (insights). This management ensures the AI always has the freshest, most relevant information to work with, keeping your strategic decisions grounded in reality and primed for success.
+                            Fine-tune the connection and behavior of your data sources. Optimized and reliably connected data streams are the lifeblood of our AI, ensuring accurate, timely, and impactful insights for strategic decision-making.
                         </p>
                         <div>
                             <label className="block text-lg font-medium text-gray-700 mb-1">Data Source Name:</label>
@@ -1382,6 +1813,145 @@ const AIInsightsDashboard = () => {
                     </div>
                 ) : (
                     <p className="text-center text-gray-600">Loading data source configuration...</p>
+                )}
+            </Modal>
+
+            {/* Agent Details Modal - New for Money20/20 */}
+            <Modal isOpen={isAgentDetailsModalOpen} onClose={closeAgentDetails} title={`AI Agent Details: ${selectedAgentForDisplay?.name || 'Unknown Agent'}`}>
+                {selectedAgentForDisplay ? (
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-bold text-blue-700">{selectedAgentForDisplay.name}</h3>
+                        <p className="text-gray-700 leading-relaxed">{selectedAgentForDisplay.description}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <span className={`px-3 py-1 rounded-full text-white ${selectedAgentForDisplay.status === 'active' ? 'bg-green-500' : 'bg-gray-500'}`}>
+                                Status: {selectedAgentForDisplay.status.toUpperCase()}
+                            </span>
+                            <span className="px-3 py-1 rounded-full bg-gray-200 text-gray-800">
+                                Last Active: {new Date(selectedAgentForDisplay.lastActive).toLocaleString()}
+                            </span>
+                            <span className="px-3 py-1 rounded-full bg-gray-200 text-gray-800">
+                                Type: {selectedAgentForDisplay.type}
+                            </span>
+                        </div>
+                        <p className="text-sm text-gray-700">Roles: <span className="font-semibold">{selectedAgentForDisplay.roles.join(', ')}</span></p>
+                        <p className="text-sm text-gray-700 truncate">Public Key: <span className="font-mono text-xs">{selectedAgentForDisplay.publicKey}</span></p>
+
+                        <div className="p-4 bg-purple-50 rounded-md border border-purple-200">
+                            <h4 className="font-semibold text-purple-800 text-lg mb-2">Assigned Skills:</h4>
+                            {selectedAgentForDisplay.skills && selectedAgentForDisplay.skills.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1">
+                                    {selectedAgentForDisplay.skills.map(skill => (
+                                        <li key={skill.id} className="text-gray-700 text-sm flex justify-between items-center">
+                                            <span>{skill.name}: {skill.description}</span>
+                                            <button
+                                                onClick={() => handleRemoveAgentSkill(selectedAgentForDisplay.id, skill.id)}
+                                                className="ml-3 px-2 py-1 bg-red-500 text-white rounded-md text-xs hover:bg-red-600 transition-colors"
+                                            >
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-600 text-sm">No skills assigned to this agent.</p>
+                            )}
+                            <div className="mt-4 flex space-x-2">
+                                <input
+                                    type="text"
+                                    placeholder="Add new skill name (e.g., 'Fraud Detection')"
+                                    value={newSkillInput}
+                                    onChange={(e) => setNewSkillInput(e.target.value)}
+                                    className="flex-grow p-2 border rounded-md"
+                                />
+                                <button
+                                    onClick={() => handleAssignAgentSkill(selectedAgentForDisplay.id)}
+                                    disabled={!newSkillInput.trim()}
+                                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm"
+                                >
+                                    Add Skill
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-teal-50 rounded-md border border-teal-200">
+                            <h4 className="font-semibold text-teal-800 text-lg mb-2">Agent Actions:</h4>
+                            <div className="flex flex-col space-y-2">
+                                <button
+                                    onClick={() => handleTriggerAgentAction(selectedAgentForDisplay.id, 'reconcileLedger', { details: 'manual trigger' })}
+                                    className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors duration-200"
+                                >
+                                    Trigger Ledger Reconciliation
+                                </button>
+                                <button
+                                    onClick={() => handleTriggerAgentAction(selectedAgentForDisplay.id, 'reviewAnomaly', { anomalyId: 'sample-anomaly-123' })}
+                                    className="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 transition-colors duration-200"
+                                >
+                                    Trigger Anomaly Review
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                onClick={() => handleSetAgentStatus(selectedAgentForDisplay.id, selectedAgentForDisplay.status === 'active' ? 'suspended' : 'active')}
+                                className={`px-6 py-3 rounded-md text-lg font-semibold transition-colors duration-200 shadow-md ${selectedAgentForDisplay.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                            >
+                                {selectedAgentForDisplay.status === 'active' ? 'Suspend Agent' : 'Activate Agent'}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-600">Loading agent details...</p>
+                )}
+            </Modal>
+
+            {/* Payment Details Modal - New for Money20/20 */}
+            <Modal isOpen={isPaymentDetailsModalOpen} onClose={closePaymentDetails} title={`Payment Details: ${selectedPaymentForDisplay?.id.substring(0, 10)}...`}>
+                {selectedPaymentForDisplay ? (
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-bold text-blue-700">Transaction ID: {selectedPaymentForDisplay.id}</h3>
+                        <p className="text-gray-700 leading-relaxed">Description: {selectedPaymentForDisplay.description || 'N/A'}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <span className={`px-3 py-1 rounded-full text-white ${selectedPaymentForDisplay.status === 'settled' ? 'bg-green-500' : selectedPaymentForDisplay.status === 'pending' ? 'bg-yellow-500' : 'bg-red-500'}`}>
+                                Status: {selectedPaymentForDisplay.status.toUpperCase()}
+                            </span>
+                            <span className="px-3 py-1 rounded-full bg-gray-200 text-gray-800">
+                                Amount: {selectedPaymentForDisplay.amount} {selectedPaymentForDisplay.currency}
+                            </span>
+                            <span className="px-3 py-1 rounded-full bg-gray-200 text-gray-800">
+                                Rail Used: {selectedPaymentForDisplay.railUsed}
+                            </span>
+                        </div>
+                        <p className="text-sm text-gray-700">Sender: <span className="font-semibold">{selectedPaymentForDisplay.sender}</span></p>
+                        <p className="text-sm text-gray-700">Recipient: <span className="font-semibold">{selectedPaymentForDisplay.recipient}</span></p>
+                        <p className="text-sm text-gray-700">Timestamp: <span className="font-semibold">{new Date(selectedPaymentForDisplay.timestamp).toLocaleString()}</span></p>
+
+                        {selectedPaymentForDisplay.fraudScore && (
+                            <div className={`p-4 rounded-md border ${selectedPaymentForDisplay.fraudScore > 0.5 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                                <h4 className="font-semibold text-lg mb-2">Risk & Fraud Analysis:</h4>
+                                <p className="text-gray-700 text-sm">Fraud Score: <span className="font-semibold">{selectedPaymentForDisplay.fraudScore.toFixed(2)}</span></p>
+                                {selectedPaymentForDisplay.fraudReasons && selectedPaymentForDisplay.fraudReasons.length > 0 && (
+                                    <p className="text-gray-700 text-sm">Reasons: {selectedPaymentForDisplay.fraudReasons.join(', ')}</p>
+                                )}
+                                <p className="text-xs italic text-gray-500 mt-2">
+                                    (Real-time fraud detection enhances security and reduces financial loss.)
+                                </p>
+                            </div>
+                        )}
+                         {selectedPaymentForDisplay.routingDecision && (
+                            <div className="p-4 bg-blue-50 rounded-md border border-blue-200">
+                                <h4 className="font-semibold text-lg mb-2 text-blue-800">Routing Decision:</h4>
+                                <p className="text-gray-700 text-sm">Chosen Rail: <span className="font-semibold">{selectedPaymentForDisplay.routingDecision.chosenRail}</span></p>
+                                <p className="text-gray-700 text-sm">Predictive Latency: <span className="font-semibold">{selectedPaymentForDisplay.routingDecision.predictedLatencyMs} ms</span></p>
+                                <p className="text-gray-700 text-sm">Cost Estimate: <span className="font-semibold">{selectedPaymentForDisplay.routingDecision.costEstimate}</span></p>
+                                <p className="text-xs italic text-gray-500 mt-2">
+                                    (AI-powered predictive routing optimizes for speed and cost.)
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-600">Loading payment details...</p>
                 )}
             </Modal>
         </div>
