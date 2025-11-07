@@ -1,3 +1,30 @@
+/**
+ * This module implements the client-side user interface for the Personal Historian AI, a system designed to automate the collection,
+ * organization, and intelligent analysis of an individual's life memories and digital artifacts.
+ *
+ * Business Value: This component delivers a transformative user experience, enabling individuals and enterprise clients
+ * to derive unprecedented value from their personal and historical data. By leveraging advanced agentic AI,
+ * it automates the laborious process of memory curation, transforming raw digital assets into structured,
+ * deeply insightful narratives and actionable intelligence.
+ *
+ * System Leverage:
+ * - **Agentic AI Integration**: Provides direct user interaction points for AI agents to process, categorize,
+ *   and generate insights from memories, enhancing personalization and reducing manual effort.
+ * - **Digital Identity Gateway**: Serves as a primary interface for users to manage their digital identity,
+ *   securely interacting with token rails and payment infrastructure for premium AI services or data attestation.
+ * - **Token Economy Visibility**: Exposes the underlying token rail mechanisms, allowing users to understand
+ *   and manage the computational costs associated with AI processing, VR scene generation, and secure data storage,
+ *   driving transparency and enabling new micro-transactional revenue streams.
+ * - **Real-time Payments Orchestration**: Integrates payment initiation for value-added services,
+ *   demonstrating the system's capability to process real-time transactions for high-demand AI capabilities.
+ * - **Data Governance & Auditability**: Offers views into AI processing logs, ensuring users have transparency
+ *   and control over how their data is used and processed by autonomous agents, thereby fostering trust
+ *   and ensuring regulatory compliance.
+ *
+ * This view layer is critical for monetizing AI capabilities, providing a seamless bridge between complex
+ * backend infrastructure and user-centric value, ultimately enabling new revenue models through
+ * on-demand intelligent services and data products worth millions.
+ */
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 
 // --- Core Data Interfaces ---
@@ -9,6 +36,7 @@ export interface Person {
   bio?: string;
   relationship?: string;
   tags?: string[];
+  digitalIdentityId?: string; // Link to DigitalIdentity
 }
 
 export interface Location {
@@ -34,6 +62,8 @@ export interface AIModelUsage {
   confidenceScore?: number;
   outputSummary?: string;
   processedDataChunks?: number;
+  costInTokens?: number; // Cost associated with this specific AI model usage
+  transactionId?: string; // Link to TokenTransaction if applicable
 }
 
 export type AssetType = 'PHOTO' | 'VIDEO' | 'AUDIO' | 'EMAIL' | 'DOCUMENT' | 'SOCIAL_POST' | 'WEBPAGE_ARCHIVE' | 'OTHER';
@@ -72,11 +102,13 @@ export interface Memory {
   vrExperienceUrl?: string;
   aiGeneratedInsights?: string[]; // AI-driven deeper analyses
   relevanceScore?: number; // For search ranking
+  agentProcessingJobId?: string; // Link to a DataProcessingJob for this memory
+  processingCostTokenId?: string; // Link to TokenTransaction for overall processing
 }
 
 export interface TimelineEvent {
   id: string;
-  type: 'memory' | 'milestone' | 'period_summary' | 'ai_insight';
+  type: 'memory' | 'milestone' | 'period_summary' | 'ai_insight' | 'agent_action'; // Added agent_action
   timestamp: string;
   title: string;
   description: string;
@@ -84,6 +116,7 @@ export interface TimelineEvent {
   tags?: string[];
   imageUrl?: string;
   detailUrl?: string;
+  agentId?: string; // For agent_action type
 }
 
 export interface UserProfile {
@@ -93,6 +126,8 @@ export interface UserProfile {
   avatarUrl?: string;
   bio?: string;
   preferences: UserPreferences;
+  digitalIdentityId?: string; // Link to the user's main DigitalIdentity
+  tokenAccountId?: string; // Link to the user's primary token account
 }
 
 export interface UserPreferences {
@@ -102,10 +137,13 @@ export interface UserPreferences {
     memoryAnniversaries: boolean;
     newInsights: boolean;
     aiProcessingComplete: boolean;
+    agentActivityAlerts: boolean; // Added for agentic AI
+    transactionNotifications: boolean; // Added for token rails
   };
   privacySettings: {
     dataRetentionDays: number;
     anonymizeInsights: boolean;
+    allowAIContextLearning: boolean; // Added for AI governance
   };
   language: string;
   defaultTimezone: string;
@@ -118,15 +156,18 @@ export interface AISettings {
   preferredTranscriptionModel: string;
   preferredImageAnalysisModel: string;
   aiModelAccessKeys: { [modelName: string]: string };
+  autoProcessNewMemories: boolean; // Added for agentic AI workflow
+  maxMonthlyAICostTokens: number; // Added for token governance
 }
 
 export interface Notification {
   id: string;
-  type: 'info' | 'warning' | 'error' | 'success';
+  type: 'info' | 'warning' | 'error' | 'success' | 'agent' | 'transaction'; // Added agent, transaction
   message: string;
   timestamp: string;
   read: boolean;
   actionUrl?: string;
+  relatedEntityId?: string; // e.g., memory ID, transaction ID, agent ID
 }
 
 export interface SearchHistoryEntry {
@@ -138,18 +179,167 @@ export interface SearchHistoryEntry {
 
 export interface Recommendation {
   id: string;
-  type: 'related_memory' | 'insight' | 'action_item' | 'anniversary';
+  type: 'related_memory' | 'insight' | 'action_item' | 'anniversary' | 'agent_suggestion'; // Added agent_suggestion
   title: string;
   description: string;
   relatedMemoryId?: string;
   actionUrl?: string;
   timestamp: string;
   priority?: 'low' | 'medium' | 'high';
+  agentId?: string; // Agent that made the recommendation
+}
+
+// --- New Money20/20 Related Interfaces ---
+
+/**
+ * Represents a simulated Digital Identity for users or agents.
+ * This encapsulates cryptographic key material and attributes.
+ * Business value: Essential for secure authentication, authorization,
+ * and creating verifiable credentials or signed transactions, underpinning
+ * trust and compliance in financial and data operations.
+ */
+export interface DigitalIdentity {
+  id: string;
+  ownerId: string; // userId or agentId
+  ownerType: 'user' | 'agent';
+  publicKey: string; // Simulated public key
+  privateKeyEncrypted?: string; // Simulated encrypted private key (NEVER expose in real system)
+  createdAt: string;
+  lastUsed: string;
+  status: 'active' | 'revoked' | 'suspended';
+  roleIds?: string[]; // Links to Role (for RBAC)
+  auditLogId?: string; // Link to AuditLog for identity actions
+}
+
+/**
+ * Represents a simulated Role for Role-Based Access Control (RBAC).
+ * Business value: Enables granular control over system functionalities,
+ * safeguarding sensitive operations and ensuring compliance with data
+ * governance policies, critical for multi-user and multi-agent environments.
+ */
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[]; // e.g., 'memory:read', 'memory:write', 'agent:manage', 'token:transfer'
+}
+
+/**
+ * Represents a simulated AI Agent operating within the system.
+ * Business value: Enables autonomous workflows for data processing,
+ * anomaly detection, and reconciliation, dramatically increasing
+ * operational efficiency and unlocking new intelligent service offerings.
+ */
+export interface Agent {
+  id: string;
+  name: string;
+  type: 'analyzer' | 'curator' | 'remediator' | 'orchestrator';
+  description: string;
+  status: 'active' | 'suspended' | 'idle';
+  skillIds: string[]; // List of skills the agent possesses
+  digitalIdentityId: string; // Agent's own DigitalIdentity
+  lastActivity: string;
+  tokenBalance: number; // For internal operational costs
+  ownerUserId?: string; // If a user 'owns' this agent instance
+}
+
+/**
+ * Represents a simulated Skill an AI Agent can perform.
+ * Business value: Modularizes agent capabilities, allowing for flexible
+ * deployment and extension of autonomous functions, accelerating
+ * development cycles for new AI-powered features.
+ */
+export interface AgentSkill {
+  id: string;
+  name: string;
+  description: string;
+  costPerUseTokens: number; // Cost for an agent to use this skill
+  expectedDurationMs: number;
+}
+
+/**
+ * Represents an activity log entry for an AI Agent.
+ * Business value: Provides granular auditability for all agent actions,
+ * crucial for regulatory compliance, post-incident analysis, and
+ * demonstrating the ROI of autonomous operations.
+ */
+export interface AgentActivityLog {
+  id: string;
+  agentId: string;
+  timestamp: string;
+  action: string; // e.g., 'memory:analyze', 'tag:create', 'asset:transcribe', 'payment:initiate'
+  relatedEntityId?: string; // e.g., memoryId, assetId, transactionId
+  details: { [key: string]: any };
+  status: 'success' | 'failed' | 'pending';
+  costInTokens?: number;
+  transactionId?: string; // If this activity resulted in a token transaction
+  signature?: string; // Agent's digital signature for the action
+}
+
+/**
+ * Represents a simulated Token Account.
+ * Business value: Facilitates the internal micro-economy of the system,
+ * enabling transparent billing for AI services, incentivizing data quality,
+ * and creating a foundation for a programmable money layer.
+ */
+export interface TokenAccount {
+  id: string;
+  ownerId: string; // userId or agentId
+  ownerType: 'user' | 'agent';
+  balance: number;
+  currency: 'HST'; // Historian Stable Token
+  createdAt: string;
+  lastUpdated: string;
+}
+
+/**
+ * Represents a simulated Token Transaction.
+ * Business value: Provides an immutable, auditable record of all value transfers,
+ * ensuring transactional guarantees, idempotency, and full traceability
+ * for financial reconciliation and regulatory reporting.
+ */
+export interface TokenTransaction {
+  id: string;
+  timestamp: string;
+  senderId: string; // TokenAccount ID
+  receiverId: string; // TokenAccount ID
+  amount: number;
+  currency: 'HST';
+  type: 'mint' | 'burn' | 'transfer' | 'fee' | 'reward';
+  status: 'pending' | 'completed' | 'failed' | 'reverted';
+  description: string;
+  associatedJobId?: string; // e.g., DataProcessingJob ID
+  signature: string; // Cryptographic signature of the transaction
+  rail?: 'rail_fast' | 'rail_batch'; // Simulated payment rail
+  metadata?: { [key: string]: any }; // Idempotency key, risk score, etc.
+}
+
+/**
+ * Represents a simulated Data Processing Job, typically initiated by a user
+ * and executed by one or more agents.
+ * Business value: Orchestrates complex AI workflows, providing a single
+ * auditable unit for a series of agent actions and token expenditures,
+ * streamlining management of intensive computational tasks.
+ */
+export interface DataProcessingJob {
+  id: string;
+  initiatorId: string; // userId
+  targetMemoryId: string;
+  jobType: 'full_analysis' | 'vr_generation' | 'sentiment_reanalysis' | 'asset_transcription';
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  estimatedCostTokens: number;
+  actualCostTokens?: number;
+  agentActivityLogIds: string[]; // Links to AgentActivityLog entries
+  finalTransactionId?: string; // Overall transaction for the job
+  outputDetails?: { [key: string]: any }; // e.g., new insights, VR URL
 }
 
 // --- Mock Data Store & API Simulation ---
 
-const mockMemories: Memory[] = Array.from({ length: 500 }).map((_, i) => ({
+let mockMemories: Memory[] = Array.from({ length: 500 }).map((_, i) => ({
   id: `mem-${i}`,
   title: `Memory Title ${i + 1}: ${i % 3 === 0 ? 'Travel' : i % 3 === 1 ? 'Family' : 'Work Event'}`,
   summary: `A brief summary of Memory ${i + 1}. This memory highlights key events and emotions from the period.`,
@@ -169,27 +359,30 @@ const mockMemories: Memory[] = Array.from({ length: 500 }).map((_, i) => ({
     aiAnalyzed: Math.random() > 0.3,
   })),
   sentiment: ['positive', 'neutral', 'negative', 'mixed'][Math.floor(Math.random() * 4)] as any,
-  sourceAIModels: i % 2 === 0 ? [{ modelName: 'GPT-4', version: '4.0', timestamp: new Date().toISOString(), confidenceScore: 0.95 }] : [],
+  sourceAIModels: i % 2 === 0 ? [{ modelName: 'GPT-4', version: '4.0', timestamp: new Date().toISOString(), confidenceScore: 0.95, costInTokens: 10, transactionId: `txn-${Math.floor(Math.random() * 100)}` }] : [],
   linkedMemoryIds: i % 10 === 0 && i < 490 ? [`mem-${i + 10}`] : [],
   originalSources: [{ type: 'Google Drive', url: '#google-drive', identifier: `doc-${i}` }],
   notes: i % 6 === 0 ? `AI suggests this memory is highly significant due to its emotional valence.` : undefined,
   status: 'published',
   visibility: 'private',
-  vrExperienceUrl: `#vr-exp-${i}`,
+  vrExperienceUrl: i % 15 === 0 ? `#vr-exp-${i}` : undefined,
   aiGeneratedInsights: i % 3 === 0 ? [`Potential link to early career decisions.`, `Shows recurring themes of innovation.`] : [],
   relevanceScore: Math.random() * 100,
+  agentProcessingJobId: i % 5 === 0 ? `job-${Math.floor(Math.random() * 50)}` : undefined,
+  processingCostTokenId: i % 5 === 0 ? `txn-${Math.floor(Math.random() * 100)}` : undefined,
 }));
 
-const mockPeople: Person[] = Array.from({ length: 20 }).map((_, i) => ({
+let mockPeople: Person[] = Array.from({ length: 20 }).map((_, i) => ({
   id: `person-${i}`,
   name: `Person Name ${i + 1}`,
   avatarUrl: `https://api.lorem.space/image/face?w=100&h=100&r=${i}`,
   bio: `A close acquaintance. Interested in ${i % 2 === 0 ? 'tech' : 'art'}.`,
   relationship: i % 3 === 0 ? 'Family' : i % 3 === 1 ? 'Friend' : 'Colleague',
   tags: i % 2 === 0 ? ['Close', 'Supportive'] : ['Distant'],
+  digitalIdentityId: `id-${i % 3 === 0 ? 'user' : 'agent'}-${i}`,
 }));
 
-const mockLocations: Location[] = Array.from({ length: 10 }).map((_, i) => ({
+let mockLocations: Location[] = Array.from({ length: 10 }).map((_, i) => ({
   id: `loc-${i}`,
   name: `Location ${i + 1}`,
   coordinates: { lat: 34 + i * 0.1, lng: -118 + i * 0.1 },
@@ -198,14 +391,14 @@ const mockLocations: Location[] = Array.from({ length: 10 }).map((_, i) => ({
   tags: ['Visited', 'Lived'],
 }));
 
-const mockTags: Tag[] = Array.from({ length: 50 }).map((_, i) => ({
+let mockTags: Tag[] = Array.from({ length: 50 }).map((_, i) => ({
   id: `tag-${i}`,
   name: `tag_${i + 1}`,
   category: ['Event', 'Emotion', 'Topic', 'People'][i % 4],
   color: ['#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1'][i % 5],
 }));
 
-const mockUserProfile: UserProfile = {
+let mockUserProfile: UserProfile = {
   id: 'user-123',
   name: 'John Doe',
   email: 'john.doe@example.com',
@@ -218,17 +411,22 @@ const mockUserProfile: UserProfile = {
       memoryAnniversaries: true,
       newInsights: true,
       aiProcessingComplete: false,
+      agentActivityAlerts: true,
+      transactionNotifications: true,
     },
     privacySettings: {
       dataRetentionDays: 3650,
       anonymizeInsights: false,
+      allowAIContextLearning: true,
     },
     language: 'en-US',
     defaultTimezone: 'America/Los_Angeles',
   },
+  digitalIdentityId: 'id-user-123',
+  tokenAccountId: 'acc-user-123',
 };
 
-const mockAISettings: AISettings = {
+let mockAISettings: AISettings = {
   enableAutoTagging: true,
   enableSentimentAnalysis: true,
   enableVRSceneGeneration: false,
@@ -238,34 +436,189 @@ const mockAISettings: AISettings = {
     'GPT-4': 'sk-...',
     'WhisperV3': 'sk-...',
   },
+  autoProcessNewMemories: true,
+  maxMonthlyAICostTokens: 5000,
 };
 
-const mockNotifications: Notification[] = Array.from({ length: 5 }).map((_, i) => ({
+let mockNotifications: Notification[] = Array.from({ length: 5 }).map((_, i) => ({
   id: `notif-${i}`,
-  type: ['info', 'warning', 'success'][i % 3] as any,
+  type: ['info', 'warning', 'success', 'agent', 'transaction'][i % 5] as any,
   message: `Notification ${i + 1}: ${i % 2 === 0 ? 'New insight available!' : 'Memory processing complete.'}`,
   timestamp: new Date(Date.now() - i * 3600000).toISOString(),
   read: i < 2,
   actionUrl: i % 2 === 0 ? `#insight-${i}` : undefined,
+  relatedEntityId: i % 3 === 0 ? `mem-${i * 10}` : `agent-${i}`,
 }));
 
-const mockSearchHistory: SearchHistoryEntry[] = Array.from({ length: 10 }).map((_, i) => ({
+let mockSearchHistory: SearchHistoryEntry[] = Array.from({ length: 10 }).map((_, i) => ({
   id: `sh-${i}`,
   query: i % 3 === 0 ? 'vacation in europe' : i % 3 === 1 ? 'my first job' : 'family reunion',
   timestamp: new Date(Date.now() - i * 7200000).toISOString(),
   resultCount: Math.floor(Math.random() * 10) + 1,
 }));
 
-const mockRecommendations: Recommendation[] = Array.from({ length: 7 }).map((_, i) => ({
+let mockRecommendations: Recommendation[] = Array.from({ length: 7 }).map((_, i) => ({
   id: `rec-${i}`,
-  type: ['related_memory', 'insight', 'action_item', 'anniversary'][i % 4] as any,
+  type: ['related_memory', 'insight', 'action_item', 'anniversary', 'agent_suggestion'][i % 5] as any,
   title: `Recommendation ${i + 1}: ${i % 2 === 0 ? 'Memory Anniversary!' : 'Deep Insight Uncovered'}`,
   description: `This is a detailed description of recommendation ${i + 1}. AI analysis suggests you might find this relevant.`,
   relatedMemoryId: i % 2 === 0 ? `mem-${i * 10}` : undefined,
   actionUrl: `#rec-action-${i}`,
   timestamp: new Date(Date.now() - i * 1800000).toISOString(),
   priority: ['low', 'medium', 'high'][i % 3] as any,
+  agentId: `agent-${i % 2}`,
 }));
+
+let mockDigitalIdentities: DigitalIdentity[] = [
+  {
+    id: 'id-user-123', ownerId: 'user-123', ownerType: 'user',
+    publicKey: 'pk-user-123-abcdef123456', privateKeyEncrypted: 'ek-user-123-xyz789',
+    createdAt: new Date().toISOString(), lastUsed: new Date().toISOString(),
+    status: 'active', roleIds: ['role-user'], auditLogId: 'audit-user-123',
+  },
+  {
+    id: 'id-agent-analyzer-001', ownerId: 'agent-analyzer-001', ownerType: 'agent',
+    publicKey: 'pk-agent-analyzer-001-fede4321', privateKeyEncrypted: 'ek-agent-analyzer-001-abc987',
+    createdAt: new Date().toISOString(), lastUsed: new Date().toISOString(),
+    status: 'active', roleIds: ['role-agent-analyzer'], auditLogId: 'audit-agent-analyzer-001',
+  },
+  {
+    id: 'id-agent-curator-002', ownerId: 'agent-curator-002', ownerType: 'agent',
+    publicKey: 'pk-agent-curator-002-abcd1234', privateKeyEncrypted: 'ek-agent-curator-002-wxyz5678',
+    createdAt: new Date().toISOString(), lastUsed: new Date().toISOString(),
+    status: 'active', roleIds: ['role-agent-curator'], auditLogId: 'audit-agent-curator-002',
+  },
+];
+
+let mockRoles: Role[] = [
+  { id: 'role-user', name: 'Standard User', description: 'Can create/edit/delete own memories, view basic insights.', permissions: ['memory:read', 'memory:write', 'identity:view'] },
+  { id: 'role-admin', name: 'Administrator', description: 'Full system access.', permissions: ['*:*'] },
+  { id: 'role-agent-analyzer', name: 'AI Analyzer Agent', description: 'Can analyze memories for sentiment, tags, insights.', permissions: ['memory:read', 'memory:update:insights', 'tag:create', 'asset:read'] },
+  { id: 'role-agent-curator', name: 'AI Curator Agent', description: 'Can organize memories, suggest links, create VR scenes.', permissions: ['memory:read', 'memory:update:structure', 'memory:update:vr', 'location:read', 'person:read'] },
+];
+
+let mockAgents: Agent[] = [
+  {
+    id: 'agent-analyzer-001', name: 'Insight Agent', type: 'analyzer',
+    description: 'Specializes in deep semantic analysis and insight generation.',
+    status: 'active', skillIds: ['skill-sentiment', 'skill-tagging'],
+    digitalIdentityId: 'id-agent-analyzer-001', lastActivity: new Date().toISOString(),
+    tokenBalance: 1000, ownerUserId: 'user-123',
+  },
+  {
+    id: 'agent-curator-002', name: 'Archivist Agent', type: 'curator',
+    description: 'Manages memory organization, links related events, and generates VR experiences.',
+    status: 'active', skillIds: ['skill-linking', 'skill-vr'],
+    digitalIdentityId: 'id-agent-curator-002', lastActivity: new Date().toISOString(),
+    tokenBalance: 800, ownerUserId: 'user-123',
+  },
+];
+
+let mockAgentSkills: AgentSkill[] = [
+  { id: 'skill-sentiment', name: 'Sentiment Analysis', description: 'Analyzes emotional tone of memory content.', costPerUseTokens: 5, expectedDurationMs: 500 },
+  { id: 'skill-tagging', name: 'Auto-Tagging', description: 'Automatically applies relevant tags to memories.', costPerUseTokens: 3, expectedDurationMs: 300 },
+  { id: 'skill-linking', name: 'Memory Linking', description: 'Identifies and suggests links between related memories.', costPerUseTokens: 8, expectedDurationMs: 800 },
+  { id: 'skill-vr', name: 'VR Scene Generation', description: 'Generates a virtual reality experience from memory details and assets.', costPerUseTokens: 50, expectedDurationMs: 5000 },
+];
+
+let mockAgentActivityLogs: AgentActivityLog[] = Array.from({ length: 15 }).map((_, i) => ({
+  id: `agent-log-${i}`,
+  agentId: i % 2 === 0 ? 'agent-analyzer-001' : 'agent-curator-002',
+  timestamp: new Date(Date.now() - i * 1200000).toISOString(),
+  action: i % 3 === 0 ? 'memory:analyze' : i % 3 === 1 ? 'tag:create' : 'memory:update',
+  relatedEntityId: `mem-${i * 10}`,
+  details: i % 3 === 0 ? { tagsAdded: ['new_tag'], sentiment: 'positive' } : { description: 'Updated for clarity' },
+  status: i % 5 === 0 ? 'failed' : 'success',
+  costInTokens: i % 3 === 0 ? 5 : 3,
+  transactionId: `txn-${Math.floor(Math.random() * 100)}`,
+  signature: `sig-agent-log-${i}-xyz`, // Simulated signature
+}));
+
+let mockTokenAccounts: TokenAccount[] = [
+  { id: 'acc-user-123', ownerId: 'user-123', ownerType: 'user', balance: 1500, currency: 'HST', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
+  { id: 'acc-agent-analyzer-001', ownerId: 'agent-analyzer-001', ownerType: 'agent', balance: 1000, currency: 'HST', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
+  { id: 'acc-agent-curator-002', ownerId: 'agent-curator-002', ownerType: 'agent', balance: 800, currency: 'HST', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
+  { id: 'acc-system-fees', ownerId: 'system', ownerType: 'agent', balance: 5000, currency: 'HST', createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString() },
+];
+
+let mockTokenTransactions: TokenTransaction[] = Array.from({ length: 100 }).map((_, i) => ({
+  id: `txn-${i}`,
+  timestamp: new Date(Date.now() - i * 360000).toISOString(),
+  senderId: i % 2 === 0 ? 'acc-user-123' : 'acc-agent-analyzer-001',
+  receiverId: i % 2 === 0 ? 'acc-agent-analyzer-001' : 'acc-system-fees',
+  amount: Math.floor(Math.random() * 20) + 1,
+  currency: 'HST',
+  type: i % 5 === 0 ? 'mint' : i % 5 === 1 ? 'burn' : 'fee',
+  status: i % 10 === 0 ? 'failed' : 'completed',
+  description: i % 3 === 0 ? 'AI analysis fee' : 'Memory processing reward',
+  associatedJobId: `job-${Math.floor(Math.random() * 50)}`,
+  signature: `sig-txn-${i}-abc`, // Simulated cryptographic signature
+  rail: i % 2 === 0 ? 'rail_fast' : 'rail_batch', // Simulated rail
+  metadata: { idempotencyKey: `idem-${i}-${Date.now()}` },
+}));
+
+let mockDataProcessingJobs: DataProcessingJob[] = Array.from({ length: 50 }).map((_, i) => {
+  const jobType: DataProcessingJob['jobType'] = ['full_analysis', 'vr_generation', 'sentiment_reanalysis', 'asset_transcription'][i % 4] as any;
+  const estimatedCost = jobType === 'vr_generation' ? 50 : (jobType === 'full_analysis' ? 15 : 5);
+  return {
+    id: `job-${i}`,
+    initiatorId: 'user-123',
+    targetMemoryId: `mem-${i * 10}`,
+    jobType: jobType,
+    status: i % 3 === 0 ? 'completed' : i % 3 === 1 ? 'in_progress' : 'pending',
+    createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+    startedAt: i % 3 === 0 || i % 3 === 1 ? new Date(Date.now() - i * 86400000 + 3600000).toISOString() : undefined,
+    completedAt: i % 3 === 0 ? new Date(Date.now() - i * 86400000 + 7200000).toISOString() : undefined,
+    estimatedCostTokens: estimatedCost,
+    actualCostTokens: i % 3 === 0 ? estimatedCost + Math.floor(Math.random() * 2) : undefined,
+    agentActivityLogIds: Array.from({ length: Math.floor(Math.random() * 3) + 1 }).map(
+      (_, actIdx) => `agent-log-${(i + actIdx) % mockAgentActivityLogs.length}`
+    ),
+    finalTransactionId: i % 3 === 0 ? `txn-${(i * 2) % mockTokenTransactions.length}` : undefined,
+    outputDetails: jobType === 'vr_generation' && i % 3 === 0 ? { vrExperienceUrl: `#generated-vr-${i}` } : undefined,
+  };
+});
+
+// Helper for simulating cryptographic operations (simplified for front-end mock)
+export const cryptoSim = {
+  generateKeyPair: async (): Promise<{ publicKey: string; privateKey: string }> => {
+    // In a real system, this would use web crypto or a backend service
+    await delay(100);
+    const publicKey = `pk-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    const privateKey = `prk-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    return { publicKey, privateKey };
+  },
+  sign: async (data: string, privateKey: string): Promise<string> => {
+    await delay(50);
+    // Simulate signing: simple hash of data + privateKey
+    const hash = btoa(data + privateKey); // Base64 encode for simplicity
+    return `sig-${hash.substring(0, 20)}`;
+  },
+  verify: async (data: string, signature: string, publicKey: string): Promise<boolean> => {
+    await delay(50);
+    // Simulate verification: check if signature matches a plausible hash of data
+    // In a real system, this would involve actual cryptographic verification
+    const expectedSigPart = btoa(data + 'mocked_private_key').substring(0, 20); // Assume a mocked private key for verification
+    return signature.startsWith('sig-') && signature.includes(expectedSigPart.substring(0, 5)); // Very loose match for demo
+  },
+  encrypt: async (data: string, publicKey: string): Promise<string> => {
+    await delay(50);
+    return `enc-${btoa(data)}-${publicKey.substring(0, 10)}`;
+  },
+  decrypt: async (encryptedData: string, privateKey: string): Promise<string> => {
+    await delay(50);
+    const parts = encryptedData.split('-');
+    if (parts.length > 1 && parts[0] === 'enc') {
+      try {
+        return atob(parts[1]);
+      } catch (e) {
+        return 'Decryption failed (mock)';
+      }
+    }
+    return 'Decryption failed (mock)';
+  }
+};
+
 
 export const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -280,7 +633,8 @@ export const api = {
         m.title.toLowerCase().includes(lowerQuery) ||
         m.summary.toLowerCase().includes(lowerQuery) ||
         m.description?.toLowerCase().includes(lowerQuery) ||
-        m.notes?.toLowerCase().includes(lowerQuery)
+        m.notes?.toLowerCase().includes(lowerQuery) ||
+        m.aiGeneratedInsights?.some(insight => insight.toLowerCase().includes(lowerQuery))
       );
     }
     if (params?.tagIds && params.tagIds.length > 0) {
@@ -325,6 +679,10 @@ export const api = {
       visibility: 'private',
     };
     mockMemories.unshift(newMemory); // Add to beginning for freshness
+    // Simulate auto-processing if enabled
+    if (mockAISettings.autoProcessNewMemories) {
+      api.processMemoryForInsights(newMemory.id, mockUserProfile.id);
+    }
     return newMemory;
   },
   updateMemory: async (id: string, updates: Partial<Memory>): Promise<Memory | null> => {
@@ -338,7 +696,22 @@ export const api = {
   deleteMemory: async (id: string): Promise<boolean> => {
     await delay(600 + Math.random() * 300);
     const initialLength = mockMemories.length;
-    mockMemories.splice(mockMemories.findIndex(m => m.id === id), 1);
+    const memoryIndex = mockMemories.findIndex(m => m.id === id);
+    if (memoryIndex !== -1) {
+      mockMemories.splice(memoryIndex, 1);
+      // Simulate audit log for deletion
+      const logEntry: AgentActivityLog = {
+        id: `audit-delete-${Date.now()}`,
+        agentId: 'system-governance-agent', // Placeholder for a system agent
+        timestamp: new Date().toISOString(),
+        action: 'memory:delete',
+        relatedEntityId: id,
+        details: { userId: mockUserProfile.id, memoryTitle: `Deleted memory ${id}` },
+        status: 'success',
+        costInTokens: 0,
+      };
+      mockAgentActivityLogs.unshift(logEntry);
+    }
     return mockMemories.length < initialLength;
   },
   getPeople: async () => {
@@ -414,6 +787,234 @@ export const api = {
       aiAnalyzed: false,
     };
   },
+
+  // --- New API functions for Money20/20 architecture ---
+
+  getDigitalIdentity: async (ownerId: string): Promise<DigitalIdentity | null> => {
+    await delay(200);
+    return mockDigitalIdentities.find(id => id.ownerId === ownerId) || null;
+  },
+  generateDigitalIdentity: async (ownerId: string, ownerType: 'user' | 'agent', roleIds: string[]): Promise<DigitalIdentity> => {
+    await delay(1000);
+    const { publicKey, privateKey } = await cryptoSim.generateKeyPair();
+    const encryptedPrivateKey = await cryptoSim.encrypt(privateKey, publicKey); // Simulate encryption
+    const newIdentity: DigitalIdentity = {
+      id: `id-${ownerType}-${ownerId}-${Date.now()}`,
+      ownerId,
+      ownerType,
+      publicKey,
+      privateKeyEncrypted: encryptedPrivateKey,
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString(),
+      status: 'active',
+      roleIds,
+      auditLogId: `audit-log-${Date.now()}`,
+    };
+    mockDigitalIdentities.push(newIdentity);
+    return newIdentity;
+  },
+  getAgentProfile: async (agentId: string): Promise<Agent | null> => {
+    await delay(200);
+    return mockAgents.find(a => a.id === agentId) || null;
+  },
+  getAgentSkills: async (): Promise<AgentSkill[]> => {
+    await delay(150);
+    return mockAgentSkills;
+  },
+  getAgentActivityLogs: async (agentId?: string, relatedEntityId?: string): Promise<AgentActivityLog[]> => {
+    await delay(300);
+    let logs = [...mockAgentActivityLogs];
+    if (agentId) logs = logs.filter(log => log.agentId === agentId);
+    if (relatedEntityId) logs = logs.filter(log => log.relatedEntityId === relatedEntityId);
+    return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  },
+  getTokenAccount: async (accountId: string): Promise<TokenAccount | null> => {
+    await delay(200);
+    return mockTokenAccounts.find(acc => acc.id === accountId) || null;
+  },
+  getTokenTransactions: async (accountId?: string): Promise<TokenTransaction[]> => {
+    await delay(400);
+    let transactions = [...mockTokenTransactions];
+    if (accountId) {
+      transactions = transactions.filter(txn => txn.senderId === accountId || txn.receiverId === accountId);
+    }
+    return transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  },
+
+  /**
+   * Simulates an AI agent processing a memory. This includes cost deduction and log generation.
+   * Business value: Demonstrates the core agentic AI workflow, showcasing real-time processing
+   * and the financial mechanics of token consumption for value-added services.
+   */
+  processMemoryForInsights: async (memoryId: string, initiatorId: string, options?: { forceVR?: boolean; reanalyzeSentiment?: boolean }): Promise<DataProcessingJob> => {
+    await delay(2000 + Math.random() * 1000); // Simulate AI processing time
+
+    const memory = mockMemories.find(m => m.id === memoryId);
+    if (!memory) throw new Error('Memory not found for processing.');
+
+    const userTokenAccount = mockTokenAccounts.find(acc => acc.ownerId === initiatorId && acc.ownerType === 'user');
+    if (!userTokenAccount) throw new Error('User token account not found.');
+
+    let totalCost = 0;
+    const agentActivityLogIds: string[] = [];
+    const insights: string[] = [];
+
+    const job: DataProcessingJob = {
+      id: `job-${mockDataProcessingJobs.length + 1}`,
+      initiatorId,
+      targetMemoryId: memoryId,
+      jobType: options?.forceVR ? 'vr_generation' : 'full_analysis',
+      status: 'in_progress',
+      createdAt: new Date().toISOString(),
+      estimatedCostTokens: 0, // Will be updated
+      agentActivityLogIds: [],
+    };
+    mockDataProcessingJobs.unshift(job); // Add job immediately
+
+    const processSkill = async (skillId: string, agentId: string, relatedMemory: Memory, action: string) => {
+      const skill = mockAgentSkills.find(s => s.id === skillId);
+      if (!skill) return;
+
+      const agentAccount = mockTokenAccounts.find(acc => acc.ownerId === agentId);
+      if (!agentAccount) {
+        console.error(`Agent account for ${agentId} not found.`);
+        return;
+      }
+
+      // Pre-flight check for user balance
+      if (userTokenAccount.balance < skill.costPerUseTokens) {
+        throw new Error(`Insufficient tokens for skill '${skill.name}'. Required: ${skill.costPerUseTokens}, Available: ${userTokenAccount.balance}`);
+      }
+
+      // Deduct from user, credit to agent (simplified, in real token rail, it's more complex)
+      userTokenAccount.balance -= skill.costPerUseTokens;
+      agentAccount.balance += skill.costPerUseTokens;
+      totalCost += skill.costPerUseTokens;
+
+      const transaction: TokenTransaction = {
+        id: `txn-${mockTokenTransactions.length + 1}`,
+        timestamp: new Date().toISOString(),
+        senderId: userTokenAccount.id,
+        receiverId: agentAccount.id,
+        amount: skill.costPerUseTokens,
+        currency: 'HST',
+        type: 'fee',
+        status: 'completed',
+        description: `Fee for ${skill.name} on memory ${relatedMemory.id}`,
+        associatedJobId: job.id,
+        signature: await cryptoSim.sign(`txn_data_${job.id}`, 'mock_private_key'),
+        rail: 'rail_fast',
+        metadata: { idempotencyKey: `idem-${job.id}-${skillId}` },
+      };
+      mockTokenTransactions.unshift(transaction);
+
+      const agentLog: AgentActivityLog = {
+        id: `agent-log-${mockAgentActivityLogs.length + 1}`,
+        agentId,
+        timestamp: new Date().toISOString(),
+        action,
+        relatedEntityId: relatedMemory.id,
+        details: { skill: skill.name, cost: skill.costPerUseTokens },
+        status: 'success',
+        costInTokens: skill.costPerUseTokens,
+        transactionId: transaction.id,
+        signature: await cryptoSim.sign(`agent_log_data_${relatedMemory.id}`, 'mock_agent_private_key'),
+      };
+      mockAgentActivityLogs.unshift(agentLog);
+      agentActivityLogIds.push(agentLog.id);
+
+      // Simulate output
+      if (skill.id === 'skill-sentiment') {
+        const sentiments = ['positive', 'neutral', 'negative', 'mixed'];
+        const newSentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
+        insights.push(`Sentiment re-analyzed as ${newSentiment}.`);
+        relatedMemory.sentiment = newSentiment as any;
+      } else if (skill.id === 'skill-tagging') {
+        const newTags = [`ai_tag_${Math.floor(Math.random() * 10)}`, `event_detail_${Math.floor(Math.random() * 10)}`];
+        relatedMemory.tagIds = Array.from(new Set([...(relatedMemory.tagIds || []), ...newTags]));
+        insights.push(`Added new tags: ${newTags.join(', ')}.`);
+        // Also simulate creation of new tags in mockTags if they don't exist
+        newTags.forEach(tagName => {
+          if (!mockTags.some(t => t.name === tagName)) {
+            mockTags.push({ id: `tag-${mockTags.length + 1}`, name: tagName, category: 'AI', color: '#6B5B95' });
+          }
+        });
+      } else if (skill.id === 'skill-linking') {
+        insights.push('Found 3 related memories and linked them.');
+        if (!relatedMemory.linkedMemoryIds) relatedMemory.linkedMemoryIds = [];
+        relatedMemory.linkedMemoryIds.push(`mem-${Math.floor(Math.random() * mockMemories.length)}`);
+      } else if (skill.id === 'skill-vr') {
+        const vrUrl = `https://historian.ai/vr/exp-${memoryId}-${Date.now()}`;
+        relatedMemory.vrExperienceUrl = vrUrl;
+        insights.push(`VR experience generated: ${vrUrl}`);
+        job.outputDetails = { vrExperienceUrl: vrUrl };
+      }
+    };
+
+    const analyzerAgent = mockAgents.find(a => a.id === 'agent-analyzer-001');
+    const curatorAgent = mockAgents.find(a => a.id === 'agent-curator-002');
+
+    if (analyzerAgent) {
+      if (mockAISettings.enableSentimentAnalysis || options?.reanalyzeSentiment) {
+        await processSkill('skill-sentiment', analyzerAgent.id, memory, 'memory:sentiment_analysis');
+      }
+      if (mockAISettings.enableAutoTagging) {
+        await processSkill('skill-tagging', analyzerAgent.id, memory, 'memory:auto_tagging');
+      }
+    }
+
+    if (curatorAgent && options?.forceVR && mockAISettings.enableVRSceneGeneration) {
+      await processSkill('skill-vr', curatorAgent.id, memory, 'memory:vr_generation');
+    } else if (curatorAgent && mockAISettings.enableAutoTagging) { // Assuming auto-linking happens with auto-tagging
+      await processSkill('skill-linking', curatorAgent.id, memory, 'memory:auto_linking');
+    }
+
+    // Update memory insights
+    if (insights.length > 0) {
+      memory.aiGeneratedInsights = Array.from(new Set([...(memory.aiGeneratedInsights || []), ...insights]));
+    }
+    memory.sourceAIModels = [...(memory.sourceAIModels || []), { modelName: 'HistorianAI Orchestrator', version: '1.0', timestamp: new Date().toISOString(), outputSummary: 'Processed by agents', costInTokens: totalCost, transactionId: job.finalTransactionId }];
+    memory.agentProcessingJobId = job.id;
+
+    // Finalize job
+    const finalJobIndex = mockDataProcessingJobs.findIndex(j => j.id === job.id);
+    if (finalJobIndex !== -1) {
+      mockDataProcessingJobs[finalJobIndex] = {
+        ...mockDataProcessingJobs[finalJobIndex],
+        status: 'completed',
+        completedAt: new Date().toISOString(),
+        actualCostTokens: totalCost,
+        agentActivityLogIds: agentActivityLogIds,
+      };
+      // Simulate system notification for job completion
+      mockNotifications.unshift({
+        id: `notif-${mockNotifications.length + 1}`,
+        type: 'agent',
+        message: `AI processing for "${memory.title}" completed. Total cost: ${totalCost} HST.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        actionUrl: `#memory-${memory.id}`,
+        relatedEntityId: memory.id,
+      });
+    }
+
+    // Update the memory object in mockMemories array directly
+    const memoryIdx = mockMemories.findIndex(m => m.id === memoryId);
+    if (memoryIdx !== -1) {
+      mockMemories[memoryIdx] = memory;
+    }
+
+    return mockDataProcessingJobs[finalJobIndex];
+  },
+
+  getDataProcessingJob: async (jobId: string): Promise<DataProcessingJob | null> => {
+    await delay(200);
+    return mockDataProcessingJobs.find(job => job.id === jobId) || null;
+  },
+  getRoles: async (): Promise<Role[]> => {
+    await delay(100);
+    return mockRoles;
+  },
 };
 
 // --- Context for Global State (Simplified for single file) ---
@@ -429,6 +1030,13 @@ interface GlobalState {
   notifications: Notification[];
   fetchNotifications: () => Promise<void>;
   markNotificationRead: (id: string) => Promise<void>;
+  userDigitalIdentity: DigitalIdentity | null;
+  setUserDigitalIdentity: React.Dispatch<React.SetStateAction<DigitalIdentity | null>>;
+  userTokenAccount: TokenAccount | null;
+  setUserTokenAccount: React.Dispatch<React.SetStateAction<TokenAccount | null>>;
+  allAgents: Agent[];
+  allAgentSkills: AgentSkill[];
+  fetchAgentData: () => Promise<void>;
 }
 
 const AppContext = createContext<GlobalState | undefined>(undefined);
@@ -520,7 +1128,13 @@ export const LocationBadge: React.FC<{ locationId: string }> = ({ locationId }) 
 
 // --- Feature-Specific Components (exported as per requirement) ---
 
-export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: string) => void; onDelete?: (id: string) => void }> = ({ memory, onEdit, onDelete }) => {
+/**
+ * Displays a detailed view of a single memory.
+ * Business value: Provides comprehensive context for a memory, integrating AI insights,
+ * people, locations, and assets, transforming raw data into a rich, navigable narrative.
+ * Critical for user engagement and understanding the value derived from AI processing.
+ */
+export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: string) => void; onDelete?: (id: string) => void; onProcessAI?: (id: string) => void; }> = ({ memory, onEdit, onDelete, onProcessAI }) => {
   const { allPeople, allLocations } = useAppContext();
   const location = memory.locationId ? allLocations.find(l => l.id === memory.locationId) : null;
   const people = memory.peopleIds?.map(pId => allPeople.find(p => p.id === pId)).filter(Boolean) as Person[];
@@ -530,6 +1144,9 @@ export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: str
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold text-cyan-400">{memory.title}</h2>
         <div className="flex space-x-2">
+          {onProcessAI && (
+            <button onClick={() => onProcessAI(memory.id)} className="p-2 bg-indigo-600 rounded hover:bg-indigo-700 text-sm">Process with AI</button>
+          )}
           {onEdit && (
             <button onClick={() => onEdit(memory.id)} className="p-2 bg-blue-600 rounded hover:bg-blue-700 text-sm">Edit</button>
           )}
@@ -567,6 +1184,12 @@ export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: str
               memory.sentiment === 'negative' ? 'bg-red-600' :
               memory.sentiment === 'mixed' ? 'bg-yellow-600' : 'bg-gray-600'
             }`}>{memory.sentiment}</span>
+          </div>
+        )}
+        {memory.processingCostTokenId && (
+          <div className="bg-gray-800 p-3 rounded">
+            <h4 className="font-semibold text-gray-300">AI Processing Cost</h4>
+            <p className="text-gray-400 text-sm">{mockTokenTransactions.find(t => t.id === memory.processingCostTokenId)?.amount || 'N/A'} HST</p>
           </div>
         )}
       </div>
@@ -613,6 +1236,14 @@ export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: str
         </div>
       )}
 
+      {memory.agentProcessingJobId && (
+        <div className="mt-4 bg-gray-800 p-4 rounded-lg">
+          <h3 className="text-xl font-semibold text-gray-200 mb-2">AI Processing Job Details</h3>
+          <p className="text-gray-400 text-sm">Job ID: <span className="font-mono text-cyan-400">{memory.agentProcessingJobId}</span></p>
+          <p className="text-gray-400 text-sm">View <a href={`#job-details-${memory.agentProcessingJobId}`} className="text-cyan-500 hover:underline">agent activity logs</a> for this memory.</p>
+        </div>
+      )}
+
       {memory.vrExperienceUrl && (
         <div className="mt-4 p-4 bg-gray-800 rounded-lg text-center">
           <h3 className="text-xl font-semibold mb-2">Experience this Memory in VR</h3>
@@ -625,6 +1256,11 @@ export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: str
   );
 };
 
+/**
+ * Renders a compact card view for a memory.
+ * Business value: Improves discoverability and provides an at-a-glance summary,
+ * enhancing user navigation and engagement with their personal history.
+ */
 export const MemoryCard: React.FC<{ memory: Memory; onClick: (memory: Memory) => void }> = ({ memory, onClick }) => (
   <div
     className="bg-gray-800 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all cursor-pointer relative"
@@ -675,6 +1311,11 @@ export const MemoryCard: React.FC<{ memory: Memory; onClick: (memory: Memory) =>
   </div>
 );
 
+/**
+ * Provides an advanced search interface for memories.
+ * Business value: Empowers users to precisely locate specific memories within vast datasets,
+ * maximizing the utility of their personal history and enabling targeted insights.
+ */
 export const AdvancedSearchForm: React.FC<{
   onSearch: (params: any) => void;
   isLoading: boolean;
@@ -804,6 +1445,11 @@ export const AdvancedSearchForm: React.FC<{
   );
 };
 
+/**
+ * Provides an interface for creating or editing memories.
+ * Business value: Streamlines the memory capture process, ensuring data fidelity
+ * and completeness, and serves as the entry point for activating AI processing workflows.
+ */
 export const MemoryEditorComponent: React.FC<{
   memory?: Memory;
   onSave: (memory: Partial<Memory>) => Promise<void>;
@@ -875,7 +1521,6 @@ export const MemoryEditorComponent: React.FC<{
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Reformat dates for API if they were modified by input type="datetime-local"
     const dataToSave = { ...formData };
     if (dataToSave.timestamp && !dataToSave.timestamp.endsWith('Z')) {
       dataToSave.timestamp = new Date(dataToSave.timestamp).toISOString();
@@ -995,11 +1640,19 @@ export const MemoryEditorComponent: React.FC<{
   );
 };
 
+/**
+ * Displays key metrics, AI recommendations, and recent memories.
+ * Business value: Provides an instant overview of a user's digital history,
+ * highlighting AI-driven insights and fostering proactive engagement with the system,
+ * crucial for showcasing the continuous value delivery of agentic AI.
+ */
 export const DashboardInsights: React.FC = () => {
+  const { allTags, userTokenAccount } = useAppContext();
   const [loading, setLoading] = useState(true);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]
+  );
   const [recentMemories, setRecentMemories] = useState<Memory[]>([]);
-  const [stats, setStats] = useState<{ totalMemories: number; avgSentiment: string; mostFrequentTag: string; } | null>(null);
+  const [stats, setStats] = useState<{ totalMemories: number; avgSentiment: string; mostFrequentTag: string; totalAIAgentCost: number } | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -1031,9 +1684,14 @@ export const DashboardInsights: React.FC = () => {
         const mostFrequentTagId = Object.keys(tagCounts).length > 0
           ? Object.keys(tagCounts).reduce((a, b) => tagCounts[a] > tagCounts[b] ? a : b)
           : '';
-        const mostFrequentTag = useAppContext().allTags.find(t => t.id === mostFrequentTagId)?.name || 'N/A';
+        const mostFrequentTag = allTags.find(t => t.id === mostFrequentTagId)?.name || 'N/A';
 
-        setStats({ totalMemories, avgSentiment, mostFrequentTag });
+        // Calculate total AI agent cost
+        const totalAIAgentCost = mockTokenTransactions
+          .filter(txn => txn.senderId === userTokenAccount?.id && txn.type === 'fee')
+          .reduce((sum, txn) => sum + txn.amount, 0);
+
+        setStats({ totalMemories, avgSentiment, mostFrequentTag, totalAIAgentCost });
 
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -1042,7 +1700,7 @@ export const DashboardInsights: React.FC = () => {
       }
     };
     fetchDashboardData();
-  }, []);
+  }, [allTags, userTokenAccount]);
 
   if (loading) return <LoadingSpinner />;
 
@@ -1051,7 +1709,7 @@ export const DashboardInsights: React.FC = () => {
       <h2 className="text-3xl font-bold text-white mb-6">Your Personal Historian Dashboard</h2>
 
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-gray-800 p-5 rounded-lg shadow-md">
             <p className="text-gray-400 text-sm">Total Memories</p>
             <p className="text-3xl font-bold text-cyan-400">{stats.totalMemories}</p>
@@ -1067,6 +1725,10 @@ export const DashboardInsights: React.FC = () => {
           <div className="bg-gray-800 p-5 rounded-lg shadow-md">
             <p className="text-gray-400 text-sm">Most Frequent Tag</p>
             <p className="text-3xl font-bold text-indigo-400">{stats.mostFrequentTag}</p>
+          </div>
+          <div className="bg-gray-800 p-5 rounded-lg shadow-md">
+            <p className="text-gray-400 text-sm">Total AI Agent Costs (HST)</p>
+            <p className="text-3xl font-bold text-purple-400">{stats.totalAIAgentCost}</p>
           </div>
         </div>
       )}
@@ -1120,6 +1782,11 @@ export const DashboardInsights: React.FC = () => {
   );
 };
 
+/**
+ * Manages and displays system notifications.
+ * Business value: Centralizes important alerts, ensuring users are informed of system events,
+ * AI processing outcomes, and transaction statuses, contributing to system reliability and trust.
+ */
 export const NotificationCenter: React.FC = () => {
   const { notifications, fetchNotifications, markNotificationRead } = useAppContext();
   const [loading, setLoading] = useState(true);
@@ -1165,8 +1832,10 @@ export const NotificationCenter: React.FC = () => {
               <div className="flex-shrink-0 mr-4">
                 {notif.type === 'info' && <span className="text-blue-400 text-2xl">i</span>}
                 {notif.type === 'warning' && <span className="text-yellow-400 text-2xl">!</span>}
-                {notif.type === 'error' && <span className="text-red-400 text-2xl">✕</span>}
-                {notif.type === 'success' && <span className="text-green-400 text-2xl">✓</span>}
+                {notif.type === 'error' && <span className="text-red-400 text-2xl">âœ•</span>}
+                {notif.type === 'success' && <span className="text-green-400 text-2xl">âœ“</span>}
+                {notif.type === 'agent' && <span className="text-indigo-400 text-2xl">âš™ï¸Ž</span>}
+                {notif.type === 'transaction' && <span className="text-purple-400 text-2xl">$</span>}
               </div>
               <div className="flex-grow">
                 <p className={`font-semibold text-lg ${notif.read ? 'text-gray-400' : 'text-white'}`}>{notif.message}</p>
@@ -1190,12 +1859,19 @@ export const NotificationCenter: React.FC = () => {
   );
 };
 
+/**
+ * Manages user profile and AI settings.
+ * Business value: Provides granular control over user data, AI behavior,
+ * and privacy preferences, ensuring a personalized and secure experience.
+ * Critical for user trust and compliance with data privacy regulations.
+ */
 export const UserProfileSettings: React.FC = () => {
-  const { userProfile, setUserProfile, aiSettings, setAiSettings } = useAppContext();
+  const { userProfile, setUserProfile, aiSettings, setAiSettings, userDigitalIdentity, setUserDigitalIdentity, userTokenAccount, setUserTokenAccount } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileFormData, setProfileFormData] = useState<UserProfile | null>(userProfile);
   const [aiSettingsFormData, setAiSettingsFormData] = useState<AISettings | null>(aiSettings);
+  const [isGeneratingIdentity, setIsGeneratingIdentity] = useState(false);
 
   useEffect(() => {
     setProfileFormData(userProfile);
@@ -1205,17 +1881,8 @@ export const UserProfileSettings: React.FC = () => {
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     if (profileFormData) {
-      if (name.startsWith('preferences.')) {
-        const prefName = name.split('.')[1] as keyof UserPreferences;
-        setProfileFormData({
-          ...profileFormData,
-          preferences: {
-            ...profileFormData.preferences,
-            [prefName]: type === 'checkbox' ? checked : value,
-          },
-        });
-      } else if (name.startsWith('notificationSettings.')) {
-        const notifSettingName = name.split('.')[1] as keyof UserPreferences['notificationSettings'];
+      if (name.startsWith('preferences.notificationSettings.')) {
+        const notifSettingName = name.split('.')[2] as keyof UserPreferences['notificationSettings'];
         setProfileFormData({
           ...profileFormData,
           preferences: {
@@ -1226,8 +1893,8 @@ export const UserProfileSettings: React.FC = () => {
             },
           },
         });
-      } else if (name.startsWith('privacySettings.')) {
-        const privacySettingName = name.split('.')[1] as keyof UserPreferences['privacySettings'];
+      } else if (name.startsWith('preferences.privacySettings.')) {
+        const privacySettingName = name.split('.')[2] as keyof UserPreferences['privacySettings'];
         setProfileFormData({
           ...profileFormData,
           preferences: {
@@ -1236,6 +1903,15 @@ export const UserProfileSettings: React.FC = () => {
               ...profileFormData.preferences.privacySettings,
               [privacySettingName]: type === 'checkbox' ? checked : value,
             },
+          },
+        });
+      } else if (name.startsWith('preferences.')) {
+        const prefName = name.split('.')[1] as keyof UserPreferences;
+        setProfileFormData({
+          ...profileFormData,
+          preferences: {
+            ...profileFormData.preferences,
+            [prefName]: type === 'checkbox' ? checked : value,
           },
         });
       } else {
@@ -1257,7 +1933,7 @@ export const UserProfileSettings: React.FC = () => {
           },
         });
       } else {
-        setAiSettingsFormData({ ...aiSettingsFormData, [name]: type === 'checkbox' ? checked : value });
+        setAiSettingsFormData({ ...aiSettingsFormData, [name]: type === 'checkbox' ? checked : (name === 'maxMonthlyAICostTokens' ? parseInt(value, 10) : value) });
       }
     }
   };
@@ -1296,7 +1972,60 @@ export const UserProfileSettings: React.FC = () => {
     }
   };
 
-  if (!profileFormData || !aiSettingsFormData) return <LoadingSpinner />;
+  const handleGenerateDigitalIdentity = async () => {
+    if (!userProfile) return;
+    setIsGeneratingIdentity(true);
+    setError(null);
+    try {
+      const newIdentity = await api.generateDigitalIdentity(userProfile.id, 'user', ['role-user']);
+      setUserDigitalIdentity(newIdentity);
+      // Update user profile to link new identity
+      const updatedProfile = { ...userProfile, digitalIdentityId: newIdentity.id };
+      await api.updateUserProfile(updatedProfile); // Also update server-side mock
+      setUserProfile(updatedProfile);
+      alert('Digital Identity generated successfully!');
+    } catch (err) {
+      setError('Failed to generate Digital Identity.');
+      console.error(err);
+    } finally {
+      setIsGeneratingIdentity(false);
+    }
+  };
+
+  const handleMintTokens = async () => {
+    if (!userTokenAccount || !userDigitalIdentity) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // Simulate minting tokens
+      const amount = 1000;
+      userTokenAccount.balance += amount; // Directly update mock balance for simulation
+      const transaction: TokenTransaction = {
+        id: `txn-${mockTokenTransactions.length + 1}`,
+        timestamp: new Date().toISOString(),
+        senderId: 'acc-system-fees', // System mints to user
+        receiverId: userTokenAccount.id,
+        amount,
+        currency: 'HST',
+        type: 'mint',
+        status: 'completed',
+        description: 'User initiated token mint (simulated)',
+        signature: await cryptoSim.sign(`mint_data_${Date.now()}`, userDigitalIdentity.privateKeyEncrypted || 'mock_private_key'),
+        rail: 'rail_fast',
+      };
+      mockTokenTransactions.unshift(transaction);
+      setUserTokenAccount({ ...userTokenAccount }); // Trigger re-render
+      alert(`${amount} HST tokens minted successfully!`);
+    } catch (err) {
+      setError('Failed to mint tokens.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  if (!profileFormData || !aiSettingsFormData || !userTokenAccount) return <LoadingSpinner />;
 
   return (
     <div className="p-6">
@@ -1353,16 +2082,24 @@ export const UserProfileSettings: React.FC = () => {
           <h4 className="text-lg font-semibold text-gray-200 mt-6 mb-2">Notification Settings</h4>
           <div className="space-y-2">
             <label className="flex items-center text-gray-300">
-              <input type="checkbox" name="notificationSettings.memoryAnniversaries" checked={profileFormData.preferences.notificationSettings.memoryAnniversaries} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <input type="checkbox" name="preferences.notificationSettings.memoryAnniversaries" checked={profileFormData.preferences.notificationSettings.memoryAnniversaries} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
               <span className="ml-2">Memory Anniversaries</span>
             </label>
             <label className="flex items-center text-gray-300">
-              <input type="checkbox" name="notificationSettings.newInsights" checked={profileFormData.preferences.notificationSettings.newInsights} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <input type="checkbox" name="preferences.notificationSettings.newInsights" checked={profileFormData.preferences.notificationSettings.newInsights} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
               <span className="ml-2">New AI Insights</span>
             </label>
             <label className="flex items-center text-gray-300">
-              <input type="checkbox" name="notificationSettings.aiProcessingComplete" checked={profileFormData.preferences.notificationSettings.aiProcessingComplete} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <input type="checkbox" name="preferences.notificationSettings.aiProcessingComplete" checked={profileFormData.preferences.notificationSettings.aiProcessingComplete} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
               <span className="ml-2">AI Processing Complete</span>
+            </label>
+            <label className="flex items-center text-gray-300">
+              <input type="checkbox" name="preferences.notificationSettings.agentActivityAlerts" checked={profileFormData.preferences.notificationSettings.agentActivityAlerts} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <span className="ml-2">Agent Activity Alerts</span>
+            </label>
+            <label className="flex items-center text-gray-300">
+              <input type="checkbox" name="preferences.notificationSettings.transactionNotifications" checked={profileFormData.preferences.notificationSettings.transactionNotifications} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <span className="ml-2">Token Transaction Notifications</span>
             </label>
           </div>
 
@@ -1370,12 +2107,16 @@ export const UserProfileSettings: React.FC = () => {
           <div className="space-y-2">
             <div>
               <label htmlFor="dataRetentionDays" className="block text-gray-300 text-sm font-bold mb-1">Data Retention (Days)</label>
-              <input type="number" id="dataRetentionDays" name="privacySettings.dataRetentionDays" value={profileFormData.preferences.privacySettings.dataRetentionDays} onChange={handleProfileChange}
+              <input type="number" id="dataRetentionDays" name="preferences.privacySettings.dataRetentionDays" value={profileFormData.preferences.privacySettings.dataRetentionDays} onChange={handleProfileChange}
                 className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white" />
             </div>
             <label className="flex items-center text-gray-300">
-              <input type="checkbox" name="privacySettings.anonymizeInsights" checked={profileFormData.preferences.privacySettings.anonymizeInsights} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <input type="checkbox" name="preferences.privacySettings.anonymizeInsights" checked={profileFormData.preferences.privacySettings.anonymizeInsights} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
               <span className="ml-2">Anonymize Insights for AI Training</span>
+            </label>
+            <label className="flex items-center text-gray-300">
+              <input type="checkbox" name="preferences.privacySettings.allowAIContextLearning" checked={profileFormData.preferences.privacySettings.allowAIContextLearning} onChange={handleProfileChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <span className="ml-2">Allow AI Contextual Learning (for improved insights)</span>
             </label>
           </div>
 
@@ -1386,6 +2127,43 @@ export const UserProfileSettings: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Digital Identity Section */}
+      <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+        <h3 className="text-xl font-semibold text-white mb-4">Digital Identity Management</h3>
+        <p className="text-gray-400 text-sm mb-4">Your Digital Identity secures your data and transactions using cryptographic keys. It's essential for participating in the token economy and ensuring data integrity.</p>
+        {userDigitalIdentity ? (
+          <div className="space-y-2">
+            <p className="text-gray-300"><strong>Identity ID:</strong> <span className="font-mono text-cyan-400 text-sm">{userDigitalIdentity.id}</span></p>
+            <p className="text-gray-300"><strong>Public Key:</strong> <span className="font-mono text-gray-400 text-xs break-all">{userDigitalIdentity.publicKey}</span></p>
+            <p className="text-gray-300"><strong>Status:</strong> <span className={`font-semibold ${userDigitalIdentity.status === 'active' ? 'text-green-500' : 'text-red-500'}`}>{userDigitalIdentity.status}</span></p>
+            <p className="text-gray-500 text-xs">Private key is securely stored (simulated encryption) and never displayed.</p>
+            <button disabled className="px-4 py-2 bg-gray-600 text-white rounded-lg opacity-50 cursor-not-allowed">View Audit Log (Coming Soon)</button>
+          </div>
+        ) : (
+          <div>
+            <p className="text-gray-400 mb-4">No Digital Identity found. Generate one to enable full platform features, including AI agent interaction and token transactions.</p>
+            <button onClick={handleGenerateDigitalIdentity} disabled={isGeneratingIdentity || loading} className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-bold disabled:opacity-50">
+              {isGeneratingIdentity ? 'Generating...' : 'Generate New Digital Identity'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Token Wallet Section */}
+      <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+        <h3 className="text-xl font-semibold text-white mb-4">Token Wallet (HST)</h3>
+        <p className="text-gray-400 text-sm mb-4">Manage your Historian Stable Tokens (HST), used for AI processing, VR generation, and other premium services.</p>
+        <div className="space-y-2 mb-4">
+          <p className="text-gray-300"><strong>Account ID:</strong> <span className="font-mono text-cyan-400 text-sm">{userTokenAccount.id}</span></p>
+          <p className="text-gray-300 text-2xl"><strong>Current Balance:</strong> <span className="font-bold text-purple-400">{userTokenAccount.balance} HST</span></p>
+        </div>
+        <button onClick={handleMintTokens} disabled={loading} className="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white font-bold disabled:opacity-50 mr-4">
+          {loading ? 'Minting...' : 'Mint 1000 HST (Simulated)'}
+        </button>
+        <button disabled className="px-4 py-2 bg-gray-600 text-white rounded-lg opacity-50 cursor-not-allowed">View Transactions (Coming Soon)</button>
+      </div>
+
 
       {/* AI Settings Section */}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
@@ -1403,6 +2181,10 @@ export const UserProfileSettings: React.FC = () => {
             <label className="flex items-center text-gray-300">
               <input type="checkbox" name="enableVRSceneGeneration" checked={aiSettingsFormData.enableVRSceneGeneration} onChange={handleAISettingsChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
               <span className="ml-2">Enable VR Scene Generation (Experimental)</span>
+            </label>
+            <label className="flex items-center text-gray-300">
+              <input type="checkbox" name="autoProcessNewMemories" checked={aiSettingsFormData.autoProcessNewMemories} onChange={handleAISettingsChange} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded" />
+              <span className="ml-2">Auto-Process New Memories with Default AI Agents</span>
             </label>
           </div>
 
@@ -1422,9 +2204,14 @@ export const UserProfileSettings: React.FC = () => {
               <option value="BasicVision">BasicVision (Standard)</option>
             </select>
           </div>
+          <div>
+            <label htmlFor="maxMonthlyAICostTokens" className="block text-gray-300 text-sm font-bold mb-1">Max Monthly AI Cost (HST Tokens)</label>
+            <input type="number" id="maxMonthlyAICostTokens" name="maxMonthlyAICostTokens" value={aiSettingsFormData.maxMonthlyAICostTokens} onChange={handleAISettingsChange}
+              className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white" />
+          </div>
 
           <h4 className="text-lg font-semibold text-gray-200 mt-6 mb-2">AI Model Access Keys</h4>
-          <p className="text-gray-400 text-sm mb-2">Enter your API keys for third-party AI services. These are stored securely.</p>
+          <p className="text-gray-400 text-sm mb-2">Enter your API keys for third-party AI services. These are stored securely (simulated).</p>
           <div className="space-y-2">
             {Object.keys(aiSettingsFormData.aiModelAccessKeys).map(modelName => (
               <div key={modelName}>
@@ -1440,7 +2227,6 @@ export const UserProfileSettings: React.FC = () => {
                 />
               </div>
             ))}
-            {/* Add more key inputs if new models are added */}
           </div>
 
           <div className="flex justify-end mt-6">
@@ -1454,7 +2240,211 @@ export const UserProfileSettings: React.FC = () => {
   );
 };
 
+/**
+ * Displays a chronological timeline of memories and significant life events.
+ * Business value: Offers an intuitive, interactive visualization of personal history,
+ * allowing users to explore their past in a structured manner and identify patterns,
+ * crucial for deep introspection and AI-driven pattern recognition.
+ */
+export const TimelineViewComponent: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
 
+  useEffect(() => {
+    const fetchTimeline = async () => {
+      setLoading(true);
+      try {
+        const memoriesResponse = await api.getMemories({ limit: 500 }); // Fetch a reasonable number
+        const events: TimelineEvent[] = memoriesResponse.data.map(mem => ({
+          id: `tlev-${mem.id}`,
+          type: 'memory',
+          timestamp: mem.timestamp,
+          title: mem.title,
+          description: mem.summary,
+          relatedMemoryId: mem.id,
+          tags: mem.tagIds?.map(tid => mockTags.find(t => t.id === tid)?.name || 'N/A'),
+          imageUrl: mem.assets[0]?.thumbnailUrl || mem.assets[0]?.url,
+          detailUrl: `#memory-${mem.id}`,
+        }));
+
+        // Add some mock AI insight events to the timeline
+        mockRecommendations.filter(r => r.type === 'insight').forEach(rec => {
+          events.push({
+            id: `tlev-${rec.id}`,
+            type: 'ai_insight',
+            timestamp: rec.timestamp,
+            title: `AI Insight: ${rec.title}`,
+            description: rec.description,
+            relatedMemoryId: rec.relatedMemoryId,
+            tags: ['AI', 'Insight'],
+            detailUrl: rec.actionUrl,
+          });
+        });
+
+        // Add some mock agent activity events to the timeline
+        mockAgentActivityLogs.filter(log => log.status === 'success').slice(0, 10).forEach(log => {
+          events.push({
+            id: `tlev-${log.id}`,
+            type: 'agent_action',
+            timestamp: log.timestamp,
+            title: `Agent Activity: ${log.action}`,
+            description: `Agent ${log.agentId} performed ${log.action} on related entity ${log.relatedEntityId}.`,
+            relatedMemoryId: log.relatedEntityId?.startsWith('mem-') ? log.relatedEntityId : undefined,
+            tags: ['Agent', 'Activity'],
+            agentId: log.agentId,
+          });
+        });
+
+        // Sort all events chronologically
+        events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        setTimelineEvents(events);
+      } catch (error) {
+        console.error('Failed to fetch timeline data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTimeline();
+  }, []);
+
+  if (loading) return <LoadingSpinner />;
+
+  return (
+    <div className="p-6">
+      <h2 className="text-3xl font-bold mb-6 text-white">Your Personal Timeline</h2>
+      {timelineEvents.length === 0 ? (
+        <p className="text-gray-500">No events to display on the timeline.</p>
+      ) : (
+        <div className="relative border-l-2 border-gray-700 ml-4 pl-4">
+          {timelineEvents.map((event, index) => (
+            <div key={event.id} className="mb-8 relative">
+              <div className={`absolute -left-5 top-0 w-4 h-4 rounded-full ${
+                event.type === 'memory' ? 'bg-cyan-600' :
+                event.type === 'ai_insight' ? 'bg-indigo-600' :
+                event.type === 'agent_action' ? 'bg-purple-600' :
+                'bg-gray-500'
+              }`}></div>
+              <p className="text-gray-400 text-sm mb-1">{new Date(event.timestamp).toLocaleDateString()} {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <h3 className="text-xl font-semibold text-white mb-2">{event.title}</h3>
+              <p className="text-gray-300 text-sm mb-2">{event.description}</p>
+              <div className="flex flex-wrap items-center text-xs text-gray-500">
+                {event.tags?.map(tag => (
+                  <span key={tag} className="bg-gray-700 text-gray-300 px-2 py-0.5 rounded-full mr-2 mb-2">{tag}</span>
+                ))}
+                {event.detailUrl && (
+                  <a href={event.detailUrl} className="text-cyan-500 hover:underline mr-2 mb-2">View Details</a>
+                )}
+              </div>
+              {event.imageUrl && (
+                <img src={event.imageUrl} alt={event.title} className="w-48 h-auto rounded-lg mt-2 object-cover" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Displays logs of all activities performed by AI agents.
+ * Business value: Ensures transparency and auditability of autonomous AI operations,
+ * critical for compliance, debugging, and understanding the scope of agent interventions.
+ */
+export const AgentActivityLogViewer: React.FC = () => {
+  const { allAgents } = useAppContext();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [logs, setLogs] = useState<AgentActivityLog[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<string>('');
+
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchedLogs = await api.getAgentActivityLogs(selectedAgent || undefined);
+      setLogs(fetchedLogs);
+    } catch (err) {
+      setError('Failed to fetch agent activity logs.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedAgent]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+
+  return (
+    <div className="p-6">
+      <h2 className="text-3xl font-bold text-white mb-6">AI Agent Activity Logs</h2>
+
+      <div className="mb-4">
+        <label htmlFor="agent-filter" className="block text-gray-300 text-sm font-bold mb-2">Filter by Agent</label>
+        <select
+          id="agent-filter"
+          value={selectedAgent}
+          onChange={(e) => setSelectedAgent(e.target.value)}
+          className="w-full md:w-1/3 p-2 bg-gray-700 rounded border border-gray-600 text-white focus:ring-purple-500 focus:border-purple-500"
+        >
+          <option value="">All Agents</option>
+          {allAgents.map(agent => (
+            <option key={agent.id} value={agent.id}>{agent.name} ({agent.type})</option>
+          ))}
+        </select>
+      </div>
+
+      {logs.length === 0 ? (
+        <p className="text-gray-500">No agent activities found.</p>
+      ) : (
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+          <ul className="space-y-4">
+            {logs.map(log => (
+              <li key={log.id} className="border-b border-gray-700 pb-4 last:border-b-0">
+                <div className="flex justify-between items-start mb-2">
+                  <p className="font-semibold text-lg text-indigo-400">{log.action}</p>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    log.status === 'success' ? 'bg-green-700 text-green-100' :
+                    log.status === 'failed' ? 'bg-red-700 text-red-100' :
+                    'bg-gray-700 text-gray-300'
+                  }`}>{log.status}</span>
+                </div>
+                <p className="text-gray-400 text-sm mb-1">Agent: <span className="text-cyan-400">{allAgents.find(a => a.id === log.agentId)?.name || log.agentId}</span></p>
+                <p className="text-gray-500 text-xs">Timestamp: {new Date(log.timestamp).toLocaleString()}</p>
+                {log.relatedEntityId && (
+                  <p className="text-gray-500 text-xs">Related Entity: <span className="font-mono text-gray-400">{log.relatedEntityId}</span></p>
+                )}
+                {log.costInTokens !== undefined && (
+                  <p className="text-gray-500 text-xs">Cost: <span className="font-bold text-purple-400">{log.costInTokens} HST</span></p>
+                )}
+                {log.transactionId && (
+                  <p className="text-gray-500 text-xs">Transaction ID: <span className="font-mono text-gray-400">{log.transactionId}</span></p>
+                )}
+                <details className="text-gray-500 text-xs mt-2 cursor-pointer">
+                  <summary className="text-cyan-500 hover:text-cyan-400">Details</summary>
+                  <pre className="bg-gray-900 p-2 rounded mt-1 overflow-x-auto text-gray-400">{JSON.stringify(log.details, null, 2)}</pre>
+                  {log.signature && <p className="mt-1">Signature: <span className="font-mono text-gray-600 text-xs break-all">{log.signature}</span></p>}
+                </details>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Manages the global application context, loading initial data and providing
+ * shared state and functions to all components.
+ * Business value: Centralizes data fetching and state management,
+ * ensuring consistent data across the application, simplifying development,
+ * and improving application performance through optimized data access patterns.
+ */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [aiSettings, setAiSettings] = useState<AISettings | null>(null);
@@ -1462,6 +2452,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [allLocations, setAllLocations] = useState<Location[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [userDigitalIdentity, setUserDigitalIdentity] = useState<DigitalIdentity | null>(null);
+  const [userTokenAccount, setUserTokenAccount] = useState<TokenAccount | null>(null);
+  const [allAgents, setAllAgents] = useState<Agent[]>([]);
+  const [allAgentSkills, setAllAgentSkills] = useState<AgentSkill[]>([]);
 
   const fetchStaticData = useCallback(async () => {
     try {
@@ -1477,8 +2471,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAllPeople(people);
       setAllLocations(locations);
       setAllTags(tags);
+
+      // Fetch digital identity and token account after profile is loaded
+      if (profile.digitalIdentityId) {
+        const identity = await api.getDigitalIdentity(profile.digitalIdentityId);
+        setUserDigitalIdentity(identity);
+      }
+      if (profile.tokenAccountId) {
+        const tokenAccount = await api.getTokenAccount(profile.tokenAccountId);
+        setUserTokenAccount(tokenAccount);
+      }
+
     } catch (error) {
       console.error('Failed to load initial app data:', error);
+    }
+  }, []);
+
+  const fetchAgentData = useCallback(async () => {
+    try {
+      const [agents, skills] = await Promise.all([
+        Promise.resolve(mockAgents), // Directly use mock for now
+        api.getAgentSkills(),
+      ]);
+      setAllAgents(agents);
+      setAllAgentSkills(skills);
+    } catch (error) {
+      console.error('Failed to load agent data:', error);
     }
   }, []);
 
@@ -1505,7 +2523,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     fetchStaticData();
     fetchNotifications();
-  }, [fetchStaticData, fetchNotifications]);
+    fetchAgentData();
+  }, [fetchStaticData, fetchNotifications, fetchAgentData]);
 
   const contextValue = {
     userProfile, setUserProfile,
@@ -1513,6 +2532,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     allPeople, allLocations, allTags,
     fetchStaticData,
     notifications, fetchNotifications, markNotificationRead,
+    userDigitalIdentity, setUserDigitalIdentity,
+    userTokenAccount, setUserTokenAccount,
+    allAgents, allAgentSkills, fetchAgentData,
   };
 
   return (
@@ -1522,17 +2544,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 };
 
-// --- Main Application Component (Enhanced) ---
-
+/**
+ * The main application view for the Personal Historian AI.
+ * Business value: This top-level component orchestrates all sub-components,
+ * providing the central navigation and dynamic content rendering that
+ * makes the entire system accessible and valuable to the end-user.
+ * It is the public face of the AI-powered personal history platform.
+ */
 export const PersonalHistorianAIView: React.FC = () => {
-  const { userProfile, notifications, fetchNotifications } = useAppContext();
+  const { userProfile, notifications, fetchNotifications, userTokenAccount } = useAppContext();
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Memory[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'search' | 'create' | 'edit' | 'settings' | 'notifications' | 'timeline'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'search' | 'create' | 'edit' | 'settings' | 'notifications' | 'timeline' | 'agentLogs'>('dashboard');
   const [memoryToEdit, setMemoryToEdit] = useState<Memory | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -1564,8 +2591,6 @@ export const PersonalHistorianAIView: React.FC = () => {
       setHasMore(response.data.length === memoriesPerPage);
       setPage(currentPage + 1);
       if (response.data.length > 0) {
-        // For the original query, still show the first result directly if nothing else is specified.
-        // For general search, we show a list.
         if (!params?.tagIds && !params?.peopleIds && !params?.locationId && !params?.startDate && !params?.endDate && !params?.sentiment && response.data.length === 1) {
              setSelectedMemory(response.data[0]);
         }
@@ -1580,7 +2605,6 @@ export const PersonalHistorianAIView: React.FC = () => {
   }, [query, page, memoriesPerPage]);
 
   const handleInitialRecall = async () => {
-    // This is for the simple search box at the top, like the original component
     if (!query.trim()) return;
     setSearchResults([]);
     setSelectedMemory(null);
@@ -1605,7 +2629,7 @@ export const PersonalHistorianAIView: React.FC = () => {
       const memory = await api.getMemoryById(memoryId);
       if (memory) {
         setSelectedMemory(memory);
-        setCurrentView('search'); // Stay on search view, but show detail
+        setCurrentView('search');
       } else {
         setError('Memory not found.');
       }
@@ -1623,7 +2647,7 @@ export const PersonalHistorianAIView: React.FC = () => {
   };
 
   const handleEditMemory = (id: string) => {
-    const memory = searchResults.find(m => m.id === id) || mockMemories.find(m => m.id === id); // Also check mock data
+    const memory = searchResults.find(m => m.id === id) || mockMemories.find(m => m.id === id);
     if (memory) {
       setMemoryToEdit(memory);
       setCurrentView('edit');
@@ -1643,6 +2667,7 @@ export const PersonalHistorianAIView: React.FC = () => {
       setSearchResults(prev => prev.filter(m => m.id !== id));
       setSelectedMemory(null);
       alert('Memory deleted successfully!');
+      fetchNotifications(); // Refresh notifications in case of new audit log
     } catch (err) {
       setError('Failed to delete memory.');
       console.error(err);
@@ -1650,6 +2675,40 @@ export const PersonalHistorianAIView: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const handleProcessMemoryWithAI = async (memoryId: string) => {
+    if (!userProfile?.id || !userTokenAccount) {
+      setError('User profile or token account not available.');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      // For simplicity, let's allow force VR generation option here
+      const confirmVr = window.confirm('Do you want to request VR Scene Generation for this memory? This is a higher cost service.');
+      const processingJob = await api.processMemoryForInsights(memoryId, userProfile.id, { forceVR: confirmVr });
+
+      // Update the memory in searchResults and selectedMemory if it was the one
+      const updatedMemory = await api.getMemoryById(memoryId);
+      if (updatedMemory) {
+        setSearchResults(prev => prev.map(m => m.id === memoryId ? updatedMemory : m));
+        if (selectedMemory?.id === memoryId) setSelectedMemory(updatedMemory);
+      }
+      // Update user token account balance locally from global state
+      if (userTokenAccount) {
+        const updatedTokenAccount = await api.getTokenAccount(userTokenAccount.id);
+        if (updatedTokenAccount) userTokenAccount.balance = updatedTokenAccount.balance;
+      }
+      alert(`AI processing job "${processingJob.jobType}" initiated for memory. Cost: ${processingJob.actualCostTokens || processingJob.estimatedCostTokens} HST.`);
+      fetchNotifications(); // Fetch new notification about job completion
+    } catch (err: any) {
+      setError(`AI Processing failed: ${err.message || 'Unknown error'}`);
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const handleSaveMemory = async (memoryData: Partial<Memory>) => {
     setIsLoading(true);
@@ -1664,9 +2723,10 @@ export const PersonalHistorianAIView: React.FC = () => {
         savedMemory = await api.createMemory(memoryData);
         setSearchResults(prev => [savedMemory, ...prev]);
       }
-      setCurrentView('search'); // Go back to search or dashboard after save
-      setSelectedMemory(savedMemory); // Show the newly created/edited memory
+      setCurrentView('search');
+      setSelectedMemory(savedMemory);
       alert('Memory saved successfully!');
+      fetchNotifications(); // New memories might trigger auto-processing notifications
     } catch (err) {
       setError('Failed to save memory.');
       console.error(err);
@@ -1677,10 +2737,9 @@ export const PersonalHistorianAIView: React.FC = () => {
 
   const handleCancelEdit = () => {
     setMemoryToEdit(null);
-    setCurrentView('search'); // Or dashboard, depending on context
+    setCurrentView('search');
   };
 
-  // Simplified navigation
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -1693,6 +2752,7 @@ export const PersonalHistorianAIView: React.FC = () => {
           <button onClick={() => setCurrentView('search')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'search' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Search Memories</button>
           <button onClick={handleCreateMemory} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'create' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Add New Memory</button>
           <button onClick={() => setCurrentView('timeline')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'timeline' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Timeline View</button>
+          <button onClick={() => setCurrentView('agentLogs')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'agentLogs' ? 'bg-purple-700' : 'hover:bg-gray-700'}`}>AI Agent Activity</button>
           <button onClick={() => setCurrentView('settings')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'settings' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Settings</button>
           <button onClick={() => setCurrentView('notifications')} className={`p-3 text-left rounded-lg transition-colors flex items-center justify-between ${currentView === 'notifications' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>
             <span>Notifications</span>
@@ -1705,6 +2765,7 @@ export const PersonalHistorianAIView: React.FC = () => {
             <div>
               <p className="font-semibold">{userProfile.name}</p>
               <p className="text-sm text-gray-400">{userProfile.email}</p>
+              {userTokenAccount && <p className="text-sm text-purple-400 font-bold">Balance: {userTokenAccount.balance} HST</p>}
             </div>
           </div>
         )}
@@ -1754,7 +2815,12 @@ export const PersonalHistorianAIView: React.FC = () => {
               <div className="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 overflow-y-auto p-8">
                 <div className="max-w-4xl mx-auto">
                   <button onClick={() => setSelectedMemory(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-4xl">&times;</button>
-                  <MemoryDetailComponent memory={selectedMemory} onEdit={handleEditMemory} onDelete={handleDeleteMemory} />
+                  <MemoryDetailComponent
+                    memory={selectedMemory}
+                    onEdit={handleEditMemory}
+                    onDelete={handleDeleteMemory}
+                    onProcessAI={handleProcessMemoryWithAI}
+                  />
                 </div>
               </div>
             )}
@@ -1769,23 +2835,9 @@ export const PersonalHistorianAIView: React.FC = () => {
           <MemoryEditorComponent memory={memoryToEdit} onSave={handleSaveMemory} onCancel={handleCancelEdit} isLoading={isLoading} />
         )}
 
-        {currentView === 'timeline' && (
-          <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-            <h2 className="text-3xl font-bold mb-6 text-white">Memory Timeline (Coming Soon)</h2>
-            <p className="text-gray-500">This section will display your memories in a chronological, interactive timeline view. Stay tuned for updates!</p>
-            <div className="mt-4 border-t border-gray-700 pt-4">
-              <h3 className="text-xl font-semibold text-gray-200 mb-2">Mock Timeline Data Preview</h3>
-              {mockMemories.slice(0, 5).map((memory, index) => (
-                <div key={memory.id} className="relative pl-6 pb-8 border-l-2 border-gray-700 last:border-l-0">
-                  <div className="absolute -left-2 top-0 w-4 h-4 bg-cyan-600 rounded-full"></div>
-                  <p className="text-gray-400 text-sm">{new Date(memory.timestamp).toLocaleDateString()}</p>
-                  <p className="text-white font-semibold text-lg">{memory.title}</p>
-                  <p className="text-gray-500 text-sm">{memory.summary}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {currentView === 'timeline' && <TimelineViewComponent />}
+
+        {currentView === 'agentLogs' && <AgentActivityLogViewer />}
 
         {currentView === 'settings' && <UserProfileSettings />}
 
@@ -1803,4 +2855,3 @@ const PersonalHistorianAIApp: React.FC = () => (
 );
 
 export default PersonalHistorianAIApp;
-```
