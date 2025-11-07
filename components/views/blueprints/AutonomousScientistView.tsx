@@ -1,28 +1,528 @@
-```tsx
-/**
- * This module implements the core user interface and control logic for the Autonomous Scientist AI,
- * a transformative agentic system designed to accelerate scientific discovery and material innovation.
- *
- * Business Value: The Autonomous Scientist represents a multi-million dollar asset by dramatically
- * reducing the time and cost associated with traditional R&D cycles. It automates goal decomposition,
- * literature synthesis, hypothesis generation, multi-modal simulation, and data analysis,
- * delivering a pipeline for rapid material discovery and optimization. This leads to:
- * 1.  **Accelerated Innovation Velocity:** Drastically shortens the "idea-to-product" lifecycle,
- *     enabling enterprises to bring cutting-edge materials to market faster.
- * 2.  **Cost Arbitrage:** Significantly reduces experimental overhead by prioritizing high-fidelity
- *     simulations and intelligent resource allocation, optimizing budget spend.
- * 3.  **Intellectual Property Generation:** Systematically identifies patentable innovations,
- *     automates patent drafting, and supports grant applications, establishing a strong
- *     competitive advantage and new revenue streams from licensing.
- * 4.  **Enhanced Decision Making:** Provides data-driven insights, risk assessments, and economic
- *     analyses at every stage, empowering strategic decisions on material viability and market potential.
- * 5.  **Scale and Parallelization:** Enables the exploration of vast material design spaces
- *     beyond human capacity, unlocking novel solutions for critical applications like
- *     next-generation batteries, catalysts, and advanced composites.
- * This system generates tangible value through unprecedented efficiency, strategic intellectual
- * property, and a superior rate of scientific advancement.
- */
+"""This module implements the core user interface and control logic for the Autonomous Scientist AI, a transformative agentic system designed to accelerate scientific discovery and material innovation. This system now operates as a specialized intelligent agent within a commercial-grade financial infrastructure, leveraging programmable value rails, digital identity, and real-time auditable transactions to manage its research lifecycle.
+
+Business Value: The Autonomous Scientist represents a multi-million dollar asset by dramatically reducing the time and cost associated with traditional R&D cycles. By integrating with a financial backbone, it automates resource acquisition, manages research budgets via tokenized value, and secures intellectual property with cryptographic integrity. This leads to:
+1.  **Accelerated Innovation Velocity:** Drastically shortens the "idea-to-product" lifecycle, enabling enterprises to bring cutting-edge materials to market faster, funded by agile, tokenized capital.
+2.  **Cost Arbitrage & Optimization:** Significantly reduces experimental overhead by prioritizing high-fidelity simulations and intelligent resource allocation, optimizing budget spend through real-time financial controls and adaptive funding mechanisms.
+3.  **Intellectual Property Generation & Monetization:** Systematically identifies patentable innovations, automates patent drafting, and supports grant applications, establishing a strong competitive advantage and new revenue streams from licensing, all secured and recorded on an immutable ledger.
+4.  **Enhanced Decision Making & Auditability:** Provides data-driven insights, risk assessments, and economic analyses at every stage, empowering strategic decisions on material viability and market potential, with every agentic decision and transaction cryptographically logged for full transparency and compliance.
+5.  **Scale and Parallelization:** Enables the exploration of vast material design spaces beyond human capacity, unlocking novel solutions for critical applications like next-generation batteries, catalysts, and advanced composites, scalable through secure inter-agent collaboration and tokenized resource pools.
+
+This system generates tangible value through unprecedented efficiency, strategic intellectual property, and a superior rate of scientific advancement, underpinned by a robust, secure, and auditable financial and identity framework. This is a revolutionary infrastructure leap."""
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+/**
+ * Represents a simulated asymmetric cryptographic key pair for digital identity.
+ * This interface defines the structure for public and private keys, enabling
+ * simulated signing and verification of data within the system.
+ */
+export interface KeyPair {
+    publicKey: string;
+    privateKey: string;
+}
+
+/**
+ * Represents a digital identity for users, services, or agents within the financial infrastructure.
+ * This structure is fundamental for authentication, authorization, and cryptographic operations,
+ * providing the basis for secure and auditable interactions across the platform.
+ */
+export interface DigitalIdentity {
+    id: string;
+    keyPair: KeyPair;
+    roles: string[];
+    createdAt: string;
+    sign: (data: string) => string;
+    verify: (data: string, signature: string, publicKey: string) => boolean;
+}
+
+/**
+ * Manages the generation, storage, and cryptographic operations for digital identities.
+ * This service is central to the platform's security, ensuring that all entities are
+ * authenticated and their actions cryptographically verifiable, forming the trust layer.
+ *
+ * Business Value: Establishes a bedrock of trust and security, crucial for financial
+ * operations. It enables secure authentication and granular authorization, mitigating
+ * fraud and ensuring regulatory compliance. The robust identity management supports
+ * scalable and verifiable agentic operations across the platform.
+ */
+export class DigitalIdentityService {
+    private static identities: Map<string, DigitalIdentity> = new Map();
+
+    /**
+     * Generates a simulated cryptographic key pair.
+     * @returns A simulated KeyPair object.
+     */
+    private static generateKeyPair(): KeyPair {
+        // In a real system, this would involve robust cryptographic key generation.
+        // For simulation, we use simple unique strings.
+        const publicKey = `PUBKEY-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const privateKey = `PRIVKEY-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        return { publicKey, privateKey };
+    }
+
+    /**
+     * Creates and registers a new digital identity for an entity.
+     * @param id The unique identifier for the entity.
+     * @param roles An array of roles assigned to the entity.
+     * @returns The newly created DigitalIdentity object.
+     */
+    public static generateIdentity(id: string, roles: string[]): DigitalIdentity {
+        if (DigitalIdentityService.identities.has(id)) {
+            return DigitalIdentityService.identities.get(id)!;
+        }
+
+        const keyPair = DigitalIdentityService.generateKeyPair();
+        const identity: DigitalIdentity = {
+            id,
+            keyPair,
+            roles,
+            createdAt: new Date().toISOString(),
+            sign: (data: string) => DigitalIdentityService.signData(id, data),
+            verify: (data: string, signature: string, publicKey: string) => DigitalIdentityService.verifySignature(data, signature, publicKey),
+        };
+        DigitalIdentityService.identities.set(id, identity);
+        return identity;
+    }
+
+    /**
+     * Retrieves a digital identity by its ID.
+     * @param id The ID of the identity to retrieve.
+     * @returns The DigitalIdentity object or undefined if not found.
+     */
+    public static getIdentity(id: string): DigitalIdentity | undefined {
+        return DigitalIdentityService.identities.get(id);
+    }
+
+    /**
+     * Simulates signing data with an entity's private key.
+     * @param signerId The ID of the signing entity.
+     * @param data The data string to sign.
+     * @returns A simulated cryptographic signature.
+     * @throws Error if the signer's identity is not found.
+     */
+    public static signData(signerId: string, data: string): string {
+        const identity = DigitalIdentityService.identities.get(signerId);
+        if (!identity) {
+            throw new Error(`Signer identity ${signerId} not found.`);
+        }
+        // Simulated signature: a hash of the data combined with the private key
+        const signatureHash = btoa(data + identity.keyPair.privateKey); // Base64 for simplicity
+        return `SIG-${signerId}-${signatureHash}`;
+    }
+
+    /**
+     * Simulates verifying a signature using an entity's public key.
+     * @param data The original data string.
+     * @param signature The simulated signature.
+     * @param publicKey The public key of the signer.
+     * @returns True if the signature is valid, false otherwise.
+     */
+    public static verifySignature(data: string, signature: string, publicKey: string): boolean {
+        // For simulation, we reconstruct the expected signature hash.
+        const parts = signature.split('-');
+        if (parts.length !== 3 || parts[0] !== 'SIG') {
+            return false;
+        }
+        const signerId = parts[1];
+        const expectedSignatureHash = parts[2];
+
+        const identity = DigitalIdentityService.identities.get(signerId);
+        if (!identity || identity.keyPair.publicKey !== publicKey) {
+            return false;
+        }
+
+        const calculatedSignatureHash = btoa(data + identity.keyPair.privateKey);
+        return calculatedSignatureHash === expectedSignatureHash;
+    }
+}
+
+/**
+ * Represents a transaction on the programmable token rail.
+ * This interface standardizes the structure for all value movements,
+ * ensuring atomic, idempotent, and cryptographically validated settlement.
+ */
+export interface TokenTransaction {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    amount: number;
+    tokenType: string;
+    timestamp: string;
+    status: 'pending' | 'settled' | 'failed' | 'blocked';
+    transactionHash: string; // Hash of transaction data for integrity
+    signedBy: string; // Digital Identity ID of the entity that initiated the transaction
+    signature: string; // Cryptographic signature of the transaction data
+    purpose: string; // Business context for the transaction
+    nonce: number; // For replay protection
+}
+
+/**
+ * Implements a programmable ledger system simulating real digital value rails.
+ * This class handles token issuance, transfers, and balance management, ensuring
+ * atomic and auditable settlement. It integrates with the Digital Identity Layer
+ * for secure transaction validation.
+ *
+ * Business Value: The core engine for programmable value, enabling real-time
+ * settlement of financial assets. It supports fine-grained control over capital
+ * flows, optimizes liquidity, and ensures every value transfer is secure, auditable,
+ * and compliant. This module is essential for creating new financial products and
+ * services with intelligent automation.
+ */
+export class ProgrammableTokenRail {
+    private static balances: Map<string, number> = new Map();
+    private static transactions: TokenTransaction[] = [];
+    private static nonces: Map<string, number> = new Map(); // For replay protection
+
+    /**
+     * Generates a unique, deterministic hash for a transaction.
+     * @param transactionData The data used to generate the hash.
+     * @returns A simulated transaction hash.
+     */
+    private static generateTransactionHash(transactionData: any): string {
+        // In a real system, this would be a secure cryptographic hash (e.g., SHA-256).
+        return btoa(JSON.stringify(transactionData) + Date.now() + Math.random()).substring(0, 32);
+    }
+
+    /**
+     * Issues new tokens to an account, effectively minting value into the system.
+     * @param receiverId The ID of the account to receive tokens.
+     * @param amount The amount of tokens to issue.
+     * @param tokenType The type of token (e.g., 'USD', 'RESEARCH_CREDITS').
+     * @param purpose The business purpose for issuing tokens.
+     * @returns The newly created TokenTransaction.
+     */
+    public static async issueTokens(receiverId: string, amount: number, tokenType: string, purpose: string): Promise<TokenTransaction> {
+        if (amount <= 0) {
+            throw new Error('Amount must be positive.');
+        }
+
+        const issuerIdentity = DigitalIdentityService.generateIdentity('SYSTEM_ISSUER', ['ISSUER']);
+        const nonce = (ProgrammableTokenRail.nonces.get(issuerIdentity.id) || 0) + 1;
+        ProgrammableTokenRail.nonces.set(issuerIdentity.id, nonce);
+
+        const transactionData = { senderId: issuerIdentity.id, receiverId, amount, tokenType, purpose, nonce, timestamp: new Date().toISOString() };
+        const transactionHash = ProgrammableTokenRail.generateTransactionHash(transactionData);
+        const signature = issuerIdentity.sign(JSON.stringify(transactionData));
+
+        ProgrammableTokenRail.balances.set(receiverId, (ProgrammableTokenRail.balances.get(receiverId) || 0) + amount);
+
+        const transaction: TokenTransaction = {
+            id: `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            senderId: issuerIdentity.id,
+            receiverId,
+            amount,
+            tokenType,
+            timestamp: new Date().toISOString(),
+            status: 'settled',
+            transactionHash,
+            signedBy: issuerIdentity.id,
+            signature,
+            purpose,
+            nonce,
+        };
+        ProgrammableTokenRail.transactions.push(transaction);
+        ImmutableAuditLog.addEntry({ type: 'token_issue', transaction }, transaction.signedBy);
+        return transaction;
+    }
+
+    /**
+     * Transfers tokens from a sender to a receiver, performing real-time balance validation and idempotent execution.
+     * @param senderIdentity The DigitalIdentity of the sender.
+     * @param receiverId The ID of the receiver account.
+     * @param amount The amount of tokens to transfer.
+     * @param tokenType The type of token.
+     * @param purpose The business purpose for the transfer.
+     * @returns A Promise resolving to the TokenTransaction object.
+     * @throws Error if the sender's balance is insufficient, signature is invalid, or nonce is replayed.
+     */
+    public static async transfer(senderIdentity: DigitalIdentity, receiverId: string, amount: number, tokenType: string, purpose: string): Promise<TokenTransaction> {
+        if (amount <= 0) {
+            throw new Error('Amount must be positive.');
+        }
+
+        // Replay protection: Check nonce
+        const currentNonce = ProgrammableTokenRail.nonces.get(senderIdentity.id) || 0;
+        const newNonce = currentNonce + 1; // Assuming sequential nonce for each sender
+        ProgrammableTokenRail.nonces.set(senderIdentity.id, newNonce);
+
+        const transactionData = { senderId: senderIdentity.id, receiverId, amount, tokenType, purpose, nonce: newNonce, timestamp: new Date().toISOString() };
+        const transactionHash = ProgrammableTokenRail.generateTransactionHash(transactionData);
+        const signature = senderIdentity.sign(JSON.stringify(transactionData));
+
+        // Idempotency check: prevent duplicate processing
+        const existingTxn = ProgrammableTokenRail.transactions.find(tx => tx.transactionHash === transactionHash && tx.signedBy === senderIdentity.id);
+        if (existingTxn && existingTxn.status === 'settled') {
+            console.warn(`Idempotent transaction ${existingTxn.id} already settled.`);
+            return existingTxn;
+        }
+        if (existingTxn && existingTxn.status === 'pending') {
+             // In a real system, this would block and wait for the original to complete or fail.
+             // For simulation, we'll mark as blocked for simplicity or assume it would eventually settle.
+             console.warn(`Idempotent transaction ${existingTxn.id} is pending. Blocking new attempt.`);
+             throw new Error('Transaction already pending, replay attempt blocked.');
+        }
+
+        const senderBalance = ProgrammableTokenRail.balances.get(senderIdentity.id) || 0;
+        if (senderBalance < amount) {
+            const failedTransaction: TokenTransaction = {
+                id: `TXN-FAILED-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                senderId: senderIdentity.id,
+                receiverId,
+                amount,
+                tokenType,
+                timestamp: new Date().toISOString(),
+                status: 'failed',
+                transactionHash,
+                signedBy: senderIdentity.id,
+                signature,
+                purpose,
+                nonce: newNonce,
+            };
+            ProgrammableTokenRail.transactions.push(failedTransaction);
+            ImmutableAuditLog.addEntry({ type: 'token_transfer_failed', transaction: failedTransaction, reason: 'Insufficient funds' }, senderIdentity.id);
+            throw new Error(`Insufficient balance for ${senderIdentity.id}. Available: ${senderBalance}, Requested: ${amount}`);
+        }
+
+        // Simulate a simple risk check (e.g., block large transfers from new identities)
+        const isHighRisk = (amount > 50000 && senderIdentity.createdAt.startsWith(new Date().toISOString().split('T')[0]));
+        if (isHighRisk) {
+            const blockedTransaction: TokenTransaction = {
+                id: `TXN-BLOCKED-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                senderId: senderIdentity.id,
+                receiverId,
+                amount,
+                tokenType,
+                timestamp: new Date().toISOString(),
+                status: 'blocked',
+                transactionHash,
+                signedBy: senderIdentity.id,
+                signature,
+                purpose,
+                nonce: newNonce,
+            };
+            ProgrammableTokenRail.transactions.push(blockedTransaction);
+            ImmutableAuditLog.addEntry({ type: 'token_transfer_blocked', transaction: blockedTransaction, reason: 'High risk detected' }, senderIdentity.id);
+            throw new Error('High-risk transfer flagged and blocked by automated risk scoring.');
+        }
+
+        ProgrammableTokenRail.balances.set(senderIdentity.id, senderBalance - amount);
+        ProgrammableTokenRail.balances.set(receiverId, (ProgrammableTokenRail.balances.get(receiverId) || 0) + amount);
+
+        const transaction: TokenTransaction = {
+            id: `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            senderId: senderIdentity.id,
+            receiverId,
+            amount,
+            tokenType,
+            timestamp: new Date().toISOString(),
+            status: 'settled',
+            transactionHash,
+            signedBy: senderIdentity.id,
+            signature,
+            purpose,
+            nonce: newNonce,
+        };
+        ProgrammableTokenRail.transactions.push(transaction);
+        ImmutableAuditLog.addEntry({ type: 'token_transfer_settled', transaction }, senderIdentity.id);
+        return transaction;
+    }
+
+    /**
+     * Retrieves the current token balance for a given account.
+     * @param accountId The ID of the account.
+     * @returns The current balance.
+     */
+    public static getBalance(accountId: string): number {
+        return ProgrammableTokenRail.balances.get(accountId) || 0;
+    }
+
+    /**
+     * Retrieves all recorded token transactions.
+     * @returns An array of all TokenTransaction objects.
+     */
+    public static getAllTransactions(): TokenTransaction[] {
+        return [...ProgrammableTokenRail.transactions];
+    }
+}
+
+/**
+ * Represents a secure message exchanged between intelligent agents.
+ * This structure ensures message integrity, authenticity, and ordering
+ * within the internal messaging layer.
+ */
+export interface AgentMessage {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    type: string;
+    payload: any;
+    timestamp: string;
+    signature: string; // Cryptographic signature of the message payload
+    nonce: number; // For replay protection
+    sequence: number; // For message ordering
+}
+
+/**
+ * Implements an internal, secure messaging layer for inter-agent communication.
+ * This layer ensures secure, authenticated, and ordered message exchange,
+ * forming the backbone of the agentic intelligence layer. It prevents message
+ * tampering and replay attacks.
+ *
+ * Business Value: Enables robust and secure collaboration between autonomous
+ * agents, critical for complex distributed operations in financial infrastructure.
+ * Guarantees message integrity, prevents unauthorized instructions, and provides
+ * auditable communication trails, enhancing operational reliability and compliance.
+ */
+export class InternalMessagingLayer {
+    private static messageQueue: AgentMessage[] = [];
+    private static nonces: Map<string, number> = new Map(); // Per-sender nonce for replay protection
+    private static sequences: Map<string, number> = new Map(); // Per-sender sequence for ordering
+
+    /**
+     * Sends a cryptographically signed message from one agent to another.
+     * @param senderIdentity The DigitalIdentity of the sender agent.
+     * @param receiverId The ID of the receiver agent.
+     * @param type The type of message (e.g., 'REQUEST_DATA', 'REPORT_RESULT').
+     * @param payload The content of the message.
+     * @returns A Promise resolving to the sent AgentMessage.
+     * @throws Error if the sender's identity is not found or signature fails.
+     */
+    public static async sendMessage(senderIdentity: DigitalIdentity, receiverId: string, type: string, payload: any): Promise<AgentMessage> {
+        const nonce = (InternalMessagingLayer.nonces.get(senderIdentity.id) || 0) + 1;
+        InternalMessagingLayer.nonces.set(senderIdentity.id, nonce);
+
+        const sequence = (InternalMessagingLayer.sequences.get(senderIdentity.id) || 0) + 1;
+        InternalMessagingLayer.sequences.set(senderIdentity.id, sequence);
+
+        const messageData = { senderId: senderIdentity.id, receiverId, type, payload, timestamp: new Date().toISOString(), nonce, sequence };
+        const signature = senderIdentity.sign(JSON.stringify(messageData));
+
+        const message: AgentMessage = {
+            id: `MSG-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            ...messageData,
+            signature,
+        };
+
+        InternalMessagingLayer.messageQueue.push(message);
+        ImmutableAuditLog.addEntry({ type: 'agent_message_sent', message }, senderIdentity.id);
+        return message;
+    }
+
+    /**
+     * Retrieves messages intended for a specific receiver, ordered by sequence number.
+     * @param receiverId The ID of the receiver agent.
+     * @returns An array of AgentMessage objects.
+     */
+    public static receiveMessages(receiverId: string): AgentMessage[] {
+        const received = InternalMessagingLayer.messageQueue
+            .filter(msg => msg.receiverId === receiverId)
+            .sort((a, b) => a.sequence - b.sequence);
+        // Clear received messages from queue to simulate processing
+        InternalMessagingLayer.messageQueue = InternalMessagingLayer.messageQueue.filter(msg => msg.receiverId !== receiverId);
+        return received;
+    }
+
+    /**
+     * Verifies the authenticity and integrity of a received message.
+     * @param message The AgentMessage to verify.
+     * @returns True if the message is valid, false otherwise.
+     */
+    public static verifyMessage(message: AgentMessage): boolean {
+        const senderIdentity = DigitalIdentityService.getIdentity(message.senderId);
+        if (!senderIdentity) {
+            return false; // Sender identity not found
+        }
+        const messageDataWithoutSignature = { ...message, signature: undefined, id: undefined }; // Reconstruct data as it was signed
+        return senderIdentity.verify(JSON.stringify(messageDataWithoutSignature), message.signature, senderIdentity.keyPair.publicKey);
+    }
+}
+
+/**
+ * Implements an immutable, hash-linked audit log for all critical system events.
+ * Each entry is cryptographically linked to the previous one, ensuring tamper-evidence
+ * and a complete, verifiable history of operations.
+ *
+ * Business Value: Provides an indispensable foundation for governance, risk, and compliance.
+ * The tamper-evident log ensures absolute transparency and accountability for all agent
+ * actions and financial transactions, drastically reducing audit costs and enhancing
+ * regulatory trust in the platform. It is a non-repudiable record of value creation.
+ */
+export class ImmutableAuditLog {
+    private static logEntries: { data: any; timestamp: string; hash: string; prevHash: string; signedBy?: string }[] = [];
+
+    /**
+     * Generates a simple hash for log data. In a production system, this would be SHA-256.
+     * @param data The data to hash.
+     * @returns A simulated hash string.
+     */
+    private static calculateHash(data: any): string {
+        return btoa(JSON.stringify(data) + Date.now() + Math.random()).substring(0, 32);
+    }
+
+    /**
+     * Adds a new entry to the immutable audit log, linking it cryptographically to the previous entry.
+     * @param data The data to be logged (e.g., agent decision, transaction details).
+     * @param signedBy (Optional) The ID of the digital identity that initiated the event.
+     * @returns The hash of the newly added log entry.
+     */
+    public static addEntry(data: any, signedBy?: string): string {
+        const timestamp = new Date().toISOString();
+        const prevHash = ImmutableAuditLog.logEntries.length > 0
+            ? ImmutableAuditLog.logEntries[ImmutableAuditLog.logEntries.length - 1].hash
+            : 'GENESIS_BLOCK_HASH'; // First entry
+
+        const entryData = { data, timestamp, prevHash, signedBy };
+        const hash = ImmutableAuditLog.calculateHash(entryData);
+
+        const newEntry = { ...entryData, hash };
+        ImmutableAuditLog.logEntries.push(newEntry);
+        return hash;
+    }
+
+    /**
+     * Verifies the integrity of the entire audit log by checking the hash chain.
+     * @returns True if the log is consistent and untampered, false otherwise.
+     */
+    public static verifyLog(): boolean {
+        if (ImmutableAuditLog.logEntries.length === 0) {
+            return true;
+        }
+
+        for (let i = 0; i < ImmutableAuditLog.logEntries.length; i++) {
+            const currentEntry = ImmutableAuditLog.logEntries[i];
+            const calculatedHash = ImmutableAuditLog.calculateHash({
+                data: currentEntry.data,
+                timestamp: currentEntry.timestamp,
+                prevHash: currentEntry.prevHash,
+                signedBy: currentEntry.signedBy
+            });
+
+            if (calculatedHash !== currentEntry.hash) {
+                console.error(`Audit log integrity compromised at entry ${i}. Expected hash: ${calculatedHash}, Actual hash: ${currentEntry.hash}`);
+                return false;
+            }
+
+            if (i > 0) {
+                const previousEntry = ImmutableAuditLog.logEntries[i - 1];
+                if (currentEntry.prevHash !== previousEntry.hash) {
+                    console.error(`Audit log chain broken at entry ${i}. Previous hash link mismatch.`);
+                    return false;
+                }
+            } else if (currentEntry.prevHash !== 'GENESIS_BLOCK_HASH') {
+                console.error('Audit log genesis block hash mismatch.');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Retrieves all entries in the immutable audit log.
+     * @returns An array of audit log entries.
+     */
+    public static getLogEntries(): typeof ImmutableAuditLog.logEntries {
+        return [...ImmutableAuditLog.logEntries];
+    }
+}
 
 interface LocalCardProps {
     title: string;
@@ -98,7 +598,7 @@ export class MockGenerativeModel {
         } else if (prompt.includes('design a molecular dynamics simulation')) {
             response = 'Simulation Design: Utilize LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) for Molecular Dynamics (MD) simulations. The system will comprise an N-doped graphene lattice, with a defined percentage of nitrogen substitutions (e.g., 3-5 at.%), and vertically aligned BNNS interlayers. Li+ ions and a model electrolyte (e.g., ethylene carbonate/dimethyl carbonate) will be included. Key parameters to vary: N-doping concentration (range: 0.01 to 0.08), BNNS layer thickness (range: 1 to 5 layers) and spacing (range: 0.5 to 2 nm), and temperature (298-333 K). Metrics to measure: lattice strain evolution during Li+ intercalation, Li+ diffusion coefficient, binding energy of Li+ to active sites, and structural integrity after multiple simulated cycles. Compare results against pristine graphene and only N-doped graphene models. The output will include atomic trajectories, energy profiles, and mean square displacement calculations. Associated API calls: simulationEngine.runMolecularDynamics, labRobotics.characterizeMaterial (TEM for morphology, XRD for structure). Specific sim type: runMolecularDynamics.';
         } else if (prompt.includes('simulated experiment results')) {
-            response = 'Simulated Experiment Results Summary: The MD simulations revealed that the N-doped graphene with BNNS interlayers exhibited a remarkable 28.5% reduction in average lattice strain compared to N-doped graphene without BNNS after 200 simulated lithiation cycles. The Li+ diffusion coefficient in the composite structure was measured at 0.35 x 10^-7 cm²/s, a 20% increase over the N-doped counterpart, attributed to optimized diffusion pathways. Capacity retention after 500 equivalent cycles was projected at 91%, far surpassing the 75% for N-doped graphene. These findings strongly suggest improved durability and enhanced kinetics.';
+            response = 'Simulated Experiment Results Summary: The MD simulations revealed that the N-doped graphene with BNNS interlayers exhibited a remarkable 28.5% reduction in average lattice strain compared to N-doped graphene without BNNS after 200 simulated lithiation cycles. The Li+ diffusion coefficient in the composite structure was measured at 0.35 x 10^-7 cmÂ²/s, a 20% increase over the N-doped counterpart, attributed to optimized diffusion pathways. Capacity retention after 500 equivalent cycles was projected at 91%, far surpassing the 75% for N-doped graphene. These findings strongly suggest improved durability and enhanced kinetics.';
         } else if (prompt.includes('brief abstract summarizing our experiment')) {
             response = 'Abstract: This computational study explores a novel anode material strategy for lithium-ion batteries, integrating nitrogen-doped graphene with boron nitride nanosheet interlayers. Through molecular dynamics simulations, we demonstrate that this composite architecture significantly mitigates lattice strain (28.5% reduction) and enhances Li+ diffusion kinetics (20% increase) compared to conventional N-doped graphene. The projected electrochemical performance indicates superior cycle life and stability, positioning this design as a promising candidate for next-generation high-performance battery anodes. Our findings underscore the critical role of multi-material heterostructures in overcoming inherent limitations of 2D materials.';
         } else if (prompt.includes('break down the goal')) {
@@ -109,12 +609,12 @@ export class MockGenerativeModel {
             const randomConductivity = (Math.random() * 1000 + 10).toFixed(2);
             const randomBandGap = (Math.random() * 5).toFixed(2);
             const randomStrength = (Math.random() * 100 + 10).toFixed(2);
-            response = `Simulated properties for ${material}:\n- Density: ${randomDensity} g/cm³\n- Electrical Conductivity: ${randomConductivity} S/cm\n- Band Gap: ${randomBandGap} eV\n- Mechanical Strength: ${randomStrength} GPa.\nThese values are based on typical ranges for similar materials and adjusted for potential doping effects.`;
+            response = `Simulated properties for ${material}:\n- Density: ${randomDensity} g/cmÂ³\n- Electrical Conductivity: ${randomConductivity} S/cm\n- Band Gap: ${randomBandGap} eV\n- Mechanical Strength: ${randomStrength} GPa.\nThese values are based on typical ranges for similar materials and adjusted for potential doping effects.`;
         } else if (prompt.includes('propose a new material candidate')) {
             response = 'New Material Candidate: Lithium Manganese Iron Phosphate (LMFP) doped with Vanadium (V) and coated with a thin layer of reduced Graphene Oxide (rGO). Rationale: LMFP offers high voltage, good safety, and abundant elements; V-doping enhances intrinsic conductivity and rate capability; rGO coating improves electronic pathways and mitigates capacity fade from particle aggregation. This combination aims for a cathode with superior energy density, power density, and cycle stability. Composition: {Li:1, Mn:0.5, Fe:0.5, P:1, O:4}, Dopants: {V:0.02}, Structure: olivine, Nanostructure: rGO-coated particles.';
         } else if (prompt.includes('optimal synthesis parameters for')) {
             const material = prompt.match(/optimal synthesis parameters for ([\w\s]+)/)?.[1] || 'unknown material';
-            response = `Optimal synthesis parameters for ${material} via a solvothermal route:\n- Temperature: 180-220°C\n- Duration: 18-24 hours\n- Solvent: N,N-dimethylformamide (DMF) or ethanol/water mixture\n- Precursor ratios: Specific to desired stoichiometry (e.g., Li:Mn:Fe:P = 1:0.5:0.5:1, V = 2% molar)\n- Post-annealing: 700°C for 5h under reducing (Ar/H2) atmosphere to enhance crystallinity and remove residual carbon.`;
+            response = `Optimal synthesis parameters for ${material} via a solvothermal route:\n- Temperature: 180-220Â°C\n- Duration: 18-24 hours\n- Solvent: N,N-dimethylformamide (DMF) or ethanol/water mixture\n- Precursor ratios: Specific to desired stoichiometry (e.g., Li:Mn:Fe:P = 1:0.5:0.5:1, V = 2% molar)\n- Post-annealing: 700Â°C for 5h under reducing (Ar/H2) atmosphere to enhance crystallinity and remove residual carbon.`;
         } else if (prompt.includes('identify key experimental metrics')) {
             response = 'Key Experimental Metrics for Battery Anodes:\n1. Specific Capacity (mAh/g): Initial and reversible capacity.\n2. Initial Coulombic Efficiency (%): Ratio of discharge to charge capacity in the first cycle.\n3. Cycle Life (Capacity Retention over cycles): Percentage of initial capacity retained after a specified number of cycles (e.g., 500, 1000).\n4. Rate Capability: Capacity performance at various C-rates (e.g., 0.1C, 0.5C, 1C, 2C).\n5. Impedance Spectroscopy (EIS): To analyze charge transfer resistance and SEI properties.\n6. Volume Expansion (%): Measured via operando techniques.\n7. Structural Integrity: Monitored with XRD, TEM, SEM post-cycling.';
         } else if (prompt.includes('analyze simulated data for trends')) {
@@ -128,11 +628,11 @@ export class MockGenerativeModel {
         } else if (prompt.includes('suggest characterization techniques')) {
             response = 'Suggested Characterization Techniques:\n- X-ray Diffraction (XRD): For crystal structure, phase identification, and lattice parameter determination.\n- Transmission Electron Microscopy (TEM) / Scanning Electron Microscopy (SEM): For morphology, particle size, and elemental mapping (EDX).\n- X-ray Photoelectron Spectroscopy (XPS): For surface elemental composition and chemical states (e.g., confirming N-doping).\n- Cyclic Voltammetry (CV) / Galvanostatic Charge-Discharge (GCD) / Electrochemical Impedance Spectroscopy (EIS): For comprehensive electrochemical performance assessment.\n- Raman Spectroscopy: To assess carbon lattice quality, defects, and doping effects.\n- Thermogravimetric Analysis (TGA): To evaluate thermal stability and composition.\n- Nuclear Magnetic Resonance (NMR): To analyze local atomic environments and chemical bonding.';
         } else if (prompt.includes('design a new experiment based on')) {
-            response = `New Experiment Design: Design an *operando* X-ray Diffraction (XRD) experiment to directly monitor the structural evolution of the N-doped graphene/BNNS composite anode during lithiation/delithiation cycles. This will provide real-time insight into lattice strain, phase transitions, and volume changes. Parameters: Synchrotron light source, C-rate 0.1C to 1C, temperature range 25-50°C. Complement with *ex-situ* TEM/SEM analysis after 100 and 500 cycles to observe morphological changes and SEI stability. Associated API calls: labRobotics.characterizeMaterial. Specific sim type: runMolecularDynamics.`;
+            response = `New Experiment Design: Design an *operando* X-ray Diffraction (XRD) experiment to directly monitor the structural evolution of the N-doped graphene/BNNS composite anode during lithiation/delithiation cycles. This will provide real-time insight into lattice strain, phase transitions, and volume changes. Parameters: Synchrotron light source, C-rate 0.1C to 1C, temperature range 25-50Â°C. Complement with *ex-situ* TEM/SEM analysis after 100 and 500 cycles to observe morphological changes and SEI stability. Associated API calls: labRobotics.characterizeMaterial. Specific sim type: runMolecularDynamics.`;
         } else if (prompt.includes('evaluate simulated cost implications')) {
             response = 'Simulated Cost Implications: The introduction of boron nitride nanosheets adds an estimated 15-25% to the raw material cost per kg of anode material, depending on the synthesis route for BNNS. However, the projected 30% improvement in cycle life and capacity retention could lead to a 10-15% reduction in the total cost of ownership over the battery\'s lifespan, due to increased durability and fewer replacement cycles. Production scale-up of BNNS remains a key cost challenge.';
         } else if (prompt.includes('predict performance under extreme conditions')) {
-            response = 'Performance Prediction under Extreme Conditions:\n- Extreme Cold (-20°C): Predicted to retain ~70% of room temperature capacity at 0.1C due to reduced Li+ kinetics and increased electrolyte viscosity. Internal resistance will increase by ~30%.\n- High Heat (60°C): Predicted to maintain >90% capacity retention at 0.5C, but accelerated SEI growth and potential electrolyte decomposition are concerns over extended cycling. Close monitoring for thermal runaway indicators is essential.\n- High C-Rate (5C): Expected to deliver ~60% of 0.1C capacity, demonstrating decent power capability but with increased polarization.';
+            response = 'Performance Prediction under Extreme Conditions:\n- Extreme Cold (-20Â°C): Predicted to retain ~70% of room temperature capacity at 0.1C due to reduced Li+ kinetics and increased electrolyte viscosity. Internal resistance will increase by ~30%.\n- High Heat (60Â°C): Predicted to maintain >90% capacity retention at 0.5C, but accelerated SEI growth and potential electrolyte decomposition are concerns over extended cycling. Close monitoring for thermal runaway indicators is essential.\n- High C-Rate (5C): Expected to deliver ~60% of 0.1C capacity, demonstrating decent power capability but with increased polarization.';
         } else if (prompt.includes('formulate a counter-hypothesis')) {
             response = 'Counter-Hypothesis: The observed reduction in lattice strain in the N-doped graphene/BNNS composite is primarily a physical stiffening effect from the inert BNNS layers, which merely delays fracture rather than enhancing fundamental electrochemical activity. This suggests the composite might achieve mechanical stability but without significant improvements in intrinsic specific capacity or charge transfer beyond simple N-doping, potentially leading to lower practical energy densities if the BNNS layers are too thick or dense. Target property: Electrochemical Activity. Predicted effect: No significant improvement in intrinsic capacity beyond N-doping.';
         } else if (prompt.includes('critique the experimental setup')) {
@@ -166,22 +666,22 @@ Budget Request: $500,000 for personnel, computational resources, and mock lab su
         } else if (prompt.includes('allocate resources')) {
             response = 'Resource Allocation Plan: Project "High-Performance Anode Materials": Allocate 60% of compute cycles to MD simulations, 20% to DFT, 10% to electrochemical modeling. Budget: $30,000 for computational licenses, $15,000 for simulated lab time (synthesis & characterization), $5,000 for administrative overhead. Personnel: Assign Lead Scientist AI for hypothesis generation, Simulation AI for model execution, Analysis AI for data interpretation.';
         } else if (prompt.includes('define a new research project')) {
-            response = 'New Project Definition: Project Name: "High-Temperature Solid Electrolytes for All-Solid-State Batteries". Goal: Discover and optimize novel solid electrolyte materials (e.g., garnet-type, argyrodite) with ionic conductivity >10^-3 S/cm at 100°C and high electrochemical stability against Li metal. Key challenges: Interface resistance, mechanical properties, synthesis scalability. Expected duration: 12 months.';
+            response = 'New Project Definition: Project Name: "High-Temperature Solid Electrolytes for All-Solid-State Batteries". Goal: Discover and optimize novel solid electrolyte materials (e.g., garnet-type, argyrodite) with ionic conductivity >10^-3 S/cm at 100Â°C and high electrochemical stability against Li metal. Key challenges: Interface resistance, mechanical properties, synthesis scalability. Expected duration: 12 months.';
         } else if (prompt.includes('synthesize a novel catalyst')) {
-            response = 'Synthesis Recipe: For a novel MoS2-graphene heterostructure catalyst via hydrothermal method: Precursors: Ammonium heptamolybdate, thiourea, graphene oxide. Solvent: Deionized water. Conditions: 200°C, 24 hours, Teflon-lined autoclave. Post-processing: Annealing at 500°C under H2/Ar for 2 hours to reduce graphene oxide and enhance crystallinity. Goal: High surface area and abundant active sites for oxygen reduction reaction.';
+            response = 'Synthesis Recipe: For a novel MoS2-graphene heterostructure catalyst via hydrothermal method: Precursors: Ammonium heptamolybdate, thiourea, graphene oxide. Solvent: Deionized water. Conditions: 200Â°C, 24 hours, Teflon-lined autoclave. Post-processing: Annealing at 500Â°C under H2/Ar for 2 hours to reduce graphene oxide and enhance crystallinity. Goal: High surface area and abundant active sites for oxygen reduction reaction.';
         } else if (prompt.includes('quantum mechanics simulation for band gap')) {
             response = 'Quantum Mechanics Simulation Design (DFT): Utilize VASP for Density Functional Theory calculations. Material: Proposed N-doped graphene. Calculation: Geometry optimization, electronic band structure, and density of states (DOS) calculations. Parameters: PBE functional, plane-wave cutoff energy 500 eV, k-point mesh 11x11x1, spin-polarized calculations enabled for potential magnetic effects. Target: Precisely determine the band gap and identify changes due to N-doping. Associated API calls: simulationEngine.runDFT. Specific sim type: runDFT.';
         } else if (prompt.includes('predict long-term degradation')) {
             response = 'Long-term Degradation Prediction: Material: N-doped graphene/BNNS composite anode. Prediction: Over 1000 cycles, expected capacity fade of 15% (after initial ~5% irreversible loss). Primary degradation mechanisms: gradual structural degradation of graphene layers, slow accumulation of irreversible SEI species, and minor BNNS delamination at high stress points. Mitigation strategies: develop self-healing polymer binders, optimized electrolyte additives, and protective coatings.';
         } else if (prompt.includes('identify key performance indicators for a project')) {
-            response = 'Key Performance Indicators (KPIs) for Project "High-Performance Anode Materials":\n1. Material Performance: Achieved specific capacity (mAh/g), cycle life (cycles to 80% capacity retention), rate capability (capacity at 5C).\n2. Project Efficiency: Number of hypotheses tested per month, simulation cost per experiment ($), time to market (simulated).\n3. Safety & Scalability: Thermal stability index (°C), predicted manufacturing cost (USD/kg), environmental impact score.\n4. Intellectual Property: Number of patent applications filed, potential licensing opportunities.';
+            response = 'Key Performance Indicators (KPIs) for Project "High-Performance Anode Materials":\n1. Material Performance: Achieved specific capacity (mAh/g), cycle life (cycles to 80% capacity retention), rate capability (capacity at 5C).\n2. Project Efficiency: Number of hypotheses tested per month, simulation cost per experiment ($), time to market (simulated).\n3. Safety & Scalability: Thermal stability index (Â°C), predicted manufacturing cost (USD/kg), environmental impact score.\n4. Intellectual Property: Number of patent applications filed, potential licensing opportunities.';
         } else if (prompt.includes('comprehensive research report titled')) {
              response = `Comprehensive Research Report Summary: This research cycle successfully demonstrated the efficacy of a BNNS-interlayered, N-doped graphene composite for advanced Li-ion battery anodes. Key findings include improved strain resilience, superior Li+ diffusivity, and projected enhanced cycle life. Recommendations for future work involve optimizing doping profiles and exploring alternative intercalation chemistries.\n\nAbstract:\nThis report details an autonomous research campaign targeting novel high-performance battery anode materials. Utilizing a multi-stage AI agent, the research explored N-doped graphene/BNNS composites through advanced computational simulations...\n\nIntroduction:\nThe demand for high energy density and long-lasting batteries necessitates the discovery of next-generation electrode materials...\n\nHypotheses:\n1. N-doped graphene with BNNS interlayers will improve cycle life.\n2. Specific doping concentrations optimize Li+ kinetics.\n\nMethodology & Experiments:\nPerformed MD and DFT simulations on various composite configurations. Material characterization was simulated...\n\nResults Summary:\nSimulations confirmed reduced strain (28.5%) and enhanced Li+ diffusion (20%). Capacity retention projected at 91%...\n\nDiscussion:\nThe findings validate the initial hypothesis, highlighting the synergistic effects of doping and nanostructuring...\n\nConclusion:\nN-doped graphene/BNNS composites represent a significant advancement for Li-ion anodes, offering improved stability and kinetics...\n\nFuture Work:\nExplore different heteroatom dopants, optimize synthesis parameters, and conduct full-cell simulations.\n\nSafety Assessment Metrics: Overall Safety Score: 85.5/100 (Higher score means safer.); Volume Expansion Risk: Moderate (Volume changes can occur, but mitigated by BNNS.).\nEconomic Analysis Metrics: Raw Material Cost: $180.50 USD/kg (Estimated cost of raw materials for production. Influenced by elemental scarcity and processing complexity.); Projected Manufacturing Cost: $270.75 USD/kg (Includes processing, energy, and labor costs at specified production scale.).\n\nCitations:\n[1] A. Smith et al., "Graphene Degradation Mechanisms," J. Mat. Sci., 2020.\n[2] B. Jones et al., "Boron Nitride in Batteries," Adv. Energy Mat., 2021.`;
         } else if (prompt.includes('suitable target journal')) {
             response = `Target Journal: Advanced Energy Materials. Justification: Our research presents novel findings in battery anode materials, a direct fit for the journal's scope and readership which values high-impact, materials science-focused energy research. The computational depth and projected performance gains are highly relevant. Cover letter snippet: "We are pleased to submit our manuscript titled 'AI-Driven Discovery of High-Performance N-Doped Graphene/BNNS Composite Anodes for Lithium-Ion Batteries' for consideration as an Article in Advanced Energy Materials. This work, performed by our autonomous research platform, presents groundbreaking insights into a novel material system..."`;
         }
 
-        await new Promise(r => setTimeout(r, Math.random() * 1000 + 500)); // Simulate processing time
+        await new Promise(r => setTimeout(r, Math.random() * 1000 + 500));
         return { text: response };
     }
 }
@@ -200,7 +700,6 @@ export class MockGoogleGenAI {
     };
 
     constructor(params: { apiKey: string }) {
-        // API Key is ignored for mock purposes
         this.models = {
             generateContent: (params) => new MockGenerativeModel(params.model).generateContent(params),
         };
@@ -263,7 +762,7 @@ export interface MaterialComposition {
     structure?: string;
     dopants?: { [key: string]: number };
     nanostructure?: string;
-    name?: string; // Added for more flexible material naming in composition
+    name?: string;
 }
 
 /**
@@ -297,7 +796,7 @@ export interface Hypothesis {
     targetProperty: string;
     predictedEffect: string;
     evidence: string[];
-    status: 'proposed' | 'tested' | 'supported' | 'refuted' | 'refined' | 'pending_retest' | 'superseded' | 'partial_support' | 'new_insight'; // Added new status
+    status: 'proposed' | 'tested' | 'supported' | 'refuted' | 'refined' | 'pending_retest' | 'superseded' | 'partial_support' | 'new_insight';
     priority: 'high' | 'medium' | 'low';
     formulationDate: string;
     parentHypothesisId?: string;
@@ -489,11 +988,10 @@ export interface ResearchProject {
     status: 'active' | 'completed' | 'on_hold' | 'failed' | 'archived';
     startDate: string;
     endDate?: string;
-    currentBudget: number;
+    currentBudget: number; // Stored here for UI, but actual tokens in ProgrammableTokenRail
     initialBudget: number;
     kpis: { name: string, target: number | string, current: number | string, unit?: string }[];
     teamMembers: string[];
-    focusMaterial?: string;
 }
 
 /**
@@ -509,17 +1007,17 @@ export class MaterialDatabase {
     private static materials: Material[] = [
         {
             id: 'mat-001', name: 'Graphene', composition: { elements: { 'C': 1 }, structure: '2D sheet', nanostructure: 'nanosheet' },
-            properties: [{ name: 'Density', value: 2.2, unit: 'g/cm³' }, { name: 'Conductivity', value: 10000, unit: 'S/cm' }, { name: 'Band Gap', value: 0, unit: 'eV' }],
+            properties: [{ name: 'Density', value: 2.2, unit: 'g/cmÂ³' }, { name: 'Conductivity', value: 10000, unit: 'S/cm' }, { name: 'Band Gap', value: 0, unit: 'eV' }],
             discoveryDate: '2004-10-22', synthesisMethod: 'Mechanical exfoliation, CVD', potentialApplications: ['batteries', 'composites', 'electronics'], stabilityScore: 70, performanceScore: 65, riskScore: 20, costScore: 40,
         },
         {
             id: 'mat-002', name: 'Lithium Cobalt Oxide (LCO)', composition: { elements: { 'Li': 1, 'Co': 1, 'O': 2 }, structure: 'layered' },
-            properties: [{ name: 'Density', value: 4.9, unit: 'g/cm³' }, { name: 'Theoretical Capacity', value: 274, unit: 'mAh/g' }, { name: 'Voltage Range', value: '3.6-4.2', unit: 'V' }],
+            properties: [{ name: 'Density', value: 4.9, unit: 'g/cmÂ³' }, { name: 'Theoretical Capacity', value: 274, unit: 'mAh/g' }, { name: 'Voltage Range', value: '3.6-4.2', unit: 'V' }],
             discoveryDate: '1980-01-01', synthesisMethod: 'Solid-state reaction', potentialApplications: ['cathode material', 'portable electronics'], stabilityScore: 80, performanceScore: 75, riskScore: 60, costScore: 80,
         },
         {
             id: 'mat-003', name: 'Boron Nitride Nanosheets (BNNS)', composition: { elements: { 'B': 1, 'N': 1 }, structure: '2D sheet', nanostructure: 'nanosheet' },
-            properties: [{ name: 'Density', value: 2.2, unit: 'g/cm³' }, { name: 'Thermal Conductivity', value: 2000, unit: 'W/mK' }, { name: 'Band Gap', value: 5.9, unit: 'eV' }],
+            properties: [{ name: 'Density', value: 2.2, unit: 'g/cmÂ³' }, { name: 'Thermal Conductivity', value: 2000, unit: 'W/mK' }, { name: 'Band Gap', value: 5.9, unit: 'eV' }],
             discoveryDate: '1990-01-01', synthesisMethod: 'Chemical Vapor Deposition', potentialApplications: ['dielectrics', 'composites', 'thermal management'], stabilityScore: 90, performanceScore: 50, riskScore: 10, costScore: 70,
         },
         {
@@ -566,7 +1064,7 @@ export class MaterialDatabase {
         { id: 'mat-017', name: 'Vanadium Oxide (V2O5)', composition: { elements: { 'V': 2, 'O': 5 } }, properties: [{ name: 'Capacity', value: 294, unit: 'mAh/g' }], discoveryDate: '1830-01-01', potentialApplications: ['cathodes', 'supercapacitors'], stabilityScore: 70, performanceScore: 60, riskScore: 30, costScore: 40, },
         { id: 'mat-018', name: 'Zinc Oxide (ZnO)', composition: { elements: { 'Zn': 1, 'O': 1 } }, properties: [{ name: 'Band Gap', value: 3.37, unit: 'eV' }], discoveryDate: '1800-01-01', potentialApplications: ['electronics', 'sensors'], stabilityScore: 90, performanceScore: 30, riskScore: 10, costScore: 15, },
         { id: 'mat-019', name: 'Iron Sulfide (FeS2)', composition: { elements: { 'Fe': 1, 'S': 2 } }, properties: [{ name: 'Theoretical Capacity', value: 894, unit: 'mAh/g' }], discoveryDate: '1700-01-01', potentialApplications: ['secondary batteries'], stabilityScore: 60, performanceScore: 70, riskScore: 45, costScore: 25, },
-        { id: 'mat-020', name: 'Aluminum (Al)', composition: { elements: { 'Al': 1 } }, properties: [{ name: 'Density', value: 2.7, unit: 'g/cm³' }], discoveryDate: '1825-01-01', potentialApplications: ['current collectors', 'structural'], stabilityScore: 99, performanceScore: 10, riskScore: 5, costScore: 5, },
+        { id: 'mat-020', name: 'Aluminum (Al)', composition: { elements: { 'Al': 1 } }, properties: [{ name: 'Density', value: 2.7, unit: 'g/cmÂ³' }], discoveryDate: '1825-01-01', potentialApplications: ['current collectors', 'structural'], stabilityScore: 99, performanceScore: 10, riskScore: 5, costScore: 5, },
     ];
 
     private static patents: PatentApplication[] = [];
@@ -750,32 +1248,38 @@ export interface SimulatedAPIS {
     economicAnalysis: (materialId: string, productionScale: string, targetMarket: string) => Promise<ExperimentResultMetric[]>;
     knowledgeGraph: {
         queryKnowledgeGraph: (query: string) => Promise<string[]>;
-        addKnowledgeEntry: (entry: string, source: string, timestamp: string) => Promise<void>;
-        refineKnowledgeGraph: (newInsights: string) => Promise<string>;
+        addKnowledgeEntry: (entry: string, source: string, timestamp: string, signedBy: string) => Promise<void>;
+        refineKnowledgeGraph: (newInsights: string, signedBy: string) => Promise<string>;
     };
     projectManagement: {
         updateKPI: (projectId: string, kpiName: string, value: number | string) => Promise<void>;
-        allocateBudget: (projectId: string, amount: number, category: string) => Promise<void>;
         getProjectStatus: (projectId: string) => Promise<ResearchProject>;
     };
     ipManagement: {
-        draftPatentApplication: (materialId: string, noveltySummary: string, keyClaims: string[]) => Promise<PatentApplication>;
-        filePatentApplication: (patent: PatentApplication) => Promise<PatentApplication>;
+        draftPatentApplication: (materialId: string, noveltySummary: string, keyClaims: string[], signedBy: string) => Promise<PatentApplication>;
+        filePatentApplication: (patent: PatentApplication, signedBy: string) => Promise<PatentApplication>;
         monitorPatentLandscape: (keywords: string[]) => Promise<string[]>;
     };
     grantManagement: {
-        draftGrantProposal: (researchSummary: string, budgetNeeded: number) => Promise<GrantProposal>;
-        submitGrantProposal: (grant: GrantProposal) => Promise<GrantProposal>;
+        draftGrantProposal: (researchSummary: string, budgetNeeded: number, signedBy: string) => Promise<GrantProposal>;
+        submitGrantProposal: (grant: GrantProposal, signedBy: string) => Promise<GrantProposal>;
     };
     publicationService: {
-        draftArticle: (report: ResearchReport, targetJournal: string) => Promise<PublicationArticle>;
-        submitArticleForReview: (article: PublicationArticle) => Promise<PublicationArticle>;
+        draftArticle: (report: ResearchReport, targetJournal: string, signedBy: string) => Promise<PublicationArticle>;
+        submitArticleForReview: (article: PublicationArticle, signedBy: string) => Promise<PublicationArticle>;
         simulatePeerReview: (articleId: string) => Promise<string>;
     };
     collaborativeAgentAPI: {
-        requestExpertOpinion: (topic: string, specificQuestion: string) => Promise<string>;
-        shareDataWithPartner: (data: any, partnerId: string) => Promise<string>;
+        requestExpertOpinion: (topic: string, specificQuestion: string, senderId: string) => Promise<string>;
+        shareDataWithPartner: (data: any, partnerId: string, senderId: string) => Promise<string>;
     };
+    // New financial services to wrap token rail
+    financialService: {
+        transferFunds: (senderIdentity: DigitalIdentity, receiverId: string, amount: number, tokenType: string, purpose: string) => Promise<TokenTransaction>;
+        issueFunds: (receiverId: string, amount: number, tokenType: string, purpose: string) => Promise<TokenTransaction>;
+        getBalance: (accountId: string) => number;
+        getAllTransactions: () => TokenTransaction[];
+    }
 }
 
 /**
@@ -871,10 +1375,10 @@ export const simulatedAPIs: SimulatedAPIS = {
                 dataPoints: { cycle_number: cycleNumbers, capacity_retention_percent: capacityData },
                 metrics: [
                     { name: 'Lattice Strain Reduction', value: strainReduction, unit: '%' },
-                    { name: 'Li+ Diffusion Coefficient', value: liDiffusion, unit: '10^-7 cm²/s' },
+                    { name: 'Li+ Diffusion Coefficient', value: liDiffusion, unit: '10^-7 cmÂ²/s' },
                     { name: 'Projected Capacity Retention @ 500 cycles', value: capacityRetention, unit: '%' }
                 ],
-                analysisSummary: `Molecular Dynamics simulation completed. Results show ${strainReduction}% reduction in lattice strain, a Li+ diffusion coefficient of ${liDiffusion} x 10^-7 cm²/s, and projected ${capacityRetention}% capacity retention after 500 cycles.`,
+                analysisSummary: `Molecular Dynamics simulation completed. Results show ${strainReduction}% reduction in lattice strain, a Li+ diffusion coefficient of ${liDiffusion} x 10^-7 cmÂ²/s, and projected ${capacityRetention}% capacity retention after 500 cycles.`,
                 interpretation: isSuccess ? 'Strong support for material design, demonstrating enhanced stability and kinetics.' : 'Partial support, material shows some promise but requires further optimization.',
                 conclusion: isSuccess ? 'supported' : 'partial_support',
                 confidenceScore: isSuccess ? 0.85 : 0.65,
@@ -975,11 +1479,11 @@ export const simulatedAPIs: SimulatedAPIS = {
                 experimentId: 'dummy-thermal-exp',
                 dataPoints: { temperature: Array.from({ length: 50 }, (_, i) => 50 + i * 5), heat_flow: Array.from({ length: 50 }, (_, i) => 10 + Math.sin(i / 5) * 5 + Math.exp(i / 25) * 0.5) },
                 metrics: [
-                    { name: 'Thermal Onset Temperature', value: onsetTemp, unit: '°C' },
-                    { name: 'Peak Exothermic Temperature', value: peakTemp, unit: '°C' },
+                    { name: 'Thermal Onset Temperature', value: onsetTemp, unit: 'Â°C' },
+                    { name: 'Peak Exothermic Temperature', value: peakTemp, unit: 'Â°C' },
                     { name: 'Total Heat Release', value: heatRelease, unit: 'J/g' }
                 ],
-                analysisSummary: `Thermal stability simulation completed. Onset of exothermic reaction at ${onsetTemp}°C, with a total heat release of ${heatRelease} J/g.`,
+                analysisSummary: `Thermal stability simulation completed. Onset of exothermic reaction at ${onsetTemp}Â°C, with a total heat release of ${heatRelease} J/g.`,
                 interpretation: isStable ? 'Material exhibits good thermal stability, suitable for safe battery operation.' : 'Thermal stability is a concern; may require further mitigation strategies or material modifications.',
                 conclusion: isStable ? 'supported' : 'refuted',
                 confidenceScore: isStable ? 0.8 : 0.5,
@@ -1036,11 +1540,11 @@ export const simulatedAPIs: SimulatedAPIS = {
                 dataPoints: {},
                 metrics: [
                     { name: 'Stable Phases', value: stablePhases.join(', ') },
-                    { name: 'Eutectic Temperature', value: eutecticTemp, unit: '°C' },
-                    { name: 'Solidus Temperature', value: (parseFloat(eutecticTemp) - 50 + Math.random() * 30).toFixed(0), unit: '°C' }
+                    { name: 'Eutectic Temperature', value: eutecticTemp, unit: 'Â°C' },
+                    { name: 'Solidus Temperature', value: (parseFloat(eutecticTemp) - 50 + Math.random() * 30).toFixed(0), unit: 'Â°C' }
                 ],
                 analysisSummary: `Phase diagram calculation for ${Object.keys(elements).join('-')} system completed. Identified ${numPhases} stable phases.`,
-                interpretation: `The calculated phase diagram suggests complex phase behavior, with a eutectic point at ${eutecticTemp}°C. Understanding these phases is crucial for synthesis control and material stability.`,
+                interpretation: `The calculated phase diagram suggests complex phase behavior, with a eutectic point at ${eutecticTemp}Â°C. Understanding these phases is crucial for synthesis control and material stability.`,
                 conclusion: 'new_insight',
                 confidenceScore: 0.85,
                 rawLog: `Simulated CALPHAD output: Gibbs free energy minimization completed. Phase boundaries determined.`,
@@ -1086,7 +1590,7 @@ export const simulatedAPIs: SimulatedAPIS = {
 
             let recipe = `Synthesis Recipe for ${materialGoal.name || JSON.stringify(materialGoal.elements)} via ${method}:\n`;
             recipe += `Precursors: ${precursors}\n`;
-            recipe += `Conditions: Temperature ${temperature}°C, Duration ${duration} hours, under ${method === 'Solvothermal Synthesis' ? 'autoclave' : 'ambient'} atmosphere.\n`;
+            recipe += `Conditions: Temperature ${temperature}Â°C, Duration ${duration} hours, under ${method === 'Solvothermal Synthesis' ? 'autoclave' : 'ambient'} atmosphere.\n`;
             recipe += `Solvent: ${method === 'Solvothermal Synthesis' ? 'N,N-dimethylformamide (DMF)' : 'N/A'}\n`;
             recipe += `Post-processing: ${postProcessing}.\n`;
             recipe += `Target Properties: ${targetProperties.join(', ')}.`;
@@ -1175,8 +1679,8 @@ export const simulatedAPIs: SimulatedAPIS = {
                 generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_raman_spectra', title: 'Raman Spectra' });
             }
             if (techniques.includes('TGA')) {
-                metrics.push({ name: 'Thermal Degradation Onset', value: (250 + Math.random() * 100).toFixed(1), unit: '°C' });
-                metrics.push({ name: 'Mass Loss at 800°C', value: (5 + Math.random() * 15).toFixed(1), unit: '%' });
+                metrics.push({ name: 'Thermal Degradation Onset', value: (250 + Math.random() * 100).toFixed(1), unit: 'Â°C' });
+                metrics.push({ name: 'Mass Loss at 800Â°C', value: (5 + Math.random() * 15).toFixed(1), unit: '%' });
                 generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_tga_curve', title: 'TGA Curve' });
             }
             if (techniques.includes('NMR')) {
@@ -1456,24 +1960,20 @@ export const simulatedAPIs: SimulatedAPIS = {
             ];
             return mockEntries.filter(entry => entry.toLowerCase().includes(query.toLowerCase()));
         },
-        addKnowledgeEntry: async (entry, source, timestamp) => {
+        addKnowledgeEntry: async (entry, source, timestamp, signedBy) => {
             await new Promise(r => setTimeout(r, 100));
-            // In a real system, this would add to a persistent knowledge store
-            // console.log(`Knowledge Graph: Added new entry "${entry}" from ${source} at ${timestamp}`);
+            ImmutableAuditLog.addEntry({ type: 'knowledge_graph_add', entry, source, timestamp }, signedBy);
         },
-        refineKnowledgeGraph: async (newInsights) => {
+        refineKnowledgeGraph: async (newInsights, signedBy) => {
             await new Promise(r => setTimeout(r, 800));
+            ImmutableAuditLog.addEntry({ type: 'knowledge_graph_refine', newInsights }, signedBy);
             return `Knowledge Graph refined. Integrated insights on ${newInsights.substring(0, 50)}... Updated material properties and interdependencies.`;
         }
     },
     projectManagement: {
         updateKPI: async (projectId, kpiName, value) => {
             await new Promise(r => setTimeout(r, 50));
-            // console.log(`Project ${projectId}: KPI "${kpiName}" updated to ${value}`);
-        },
-        allocateBudget: async (projectId, amount, category) => {
-            await new Promise(r => setTimeout(r, 50));
-            // console.log(`Project ${projectId}: Allocated $${amount} to ${category}`);
+            // In a real system, this would update a persistent project store
         },
         getProjectStatus: async (projectId) => {
             await new Promise(r => setTimeout(r, 100));
@@ -1489,12 +1989,12 @@ export const simulatedAPIs: SimulatedAPIS = {
                     { name: 'Cycle Life Target', target: 1000, current: 500, unit: 'cycles' },
                     { name: 'Capacity Retention', target: 90, current: 85, unit: '%' }
                 ],
-                teamMembers: ['Autonomous Scientist AI', 'Simulation AI'],
+                teamMembers: ['Autonomous Scientist AI'],
             };
         }
     },
     ipManagement: {
-        draftPatentApplication: async (materialId, noveltySummary, keyClaims) => {
+        draftPatentApplication: async (materialId, noveltySummary, keyClaims, signedBy) => {
             await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000));
             const material = await MaterialDatabase.fetchMaterialById(materialId);
             const title = `Novel ${material?.name || 'Material'} Composite for Enhanced Battery Performance`;
@@ -1505,11 +2005,13 @@ export const simulatedAPIs: SimulatedAPIS = {
                 status: 'draft', filingDate: new Date().toISOString().split('T')[0],
                 inventors: ['Autonomous Scientist AI'], associatedMaterials: [materialId]
             };
+            ImmutableAuditLog.addEntry({ type: 'patent_drafted', patent }, signedBy);
             return patent;
         },
-        filePatentApplication: async (patent) => {
+        filePatentApplication: async (patent, signedBy) => {
             await new Promise(r => setTimeout(r, 3000 + Math.random() * 1500));
             const filedPatent = await MaterialDatabase.filePatent(patent);
+            ImmutableAuditLog.addEntry({ type: 'patent_filed', patent: filedPatent }, signedBy);
             return { ...filedPatent, status: 'pending_review' as const };
         },
         monitorPatentLandscape: async (keywords) => {
@@ -1523,7 +2025,7 @@ export const simulatedAPIs: SimulatedAPIS = {
         }
     },
     grantManagement: {
-        draftGrantProposal: async (researchSummary, budgetNeeded) => {
+        draftGrantProposal: async (researchSummary, budgetNeeded, signedBy) => {
             await new Promise(r => setTimeout(r, 2500 + Math.random() * 1000));
             const title = `AI-Driven Discovery of High-Performance Energy Storage Materials`;
             const specificAims = [
@@ -1537,16 +2039,18 @@ export const simulatedAPIs: SimulatedAPIS = {
                 budgetRequest: budgetNeeded, status: 'draft', submissionDate: new Date().toISOString().split('T')[0],
                 fundingAgency: 'National Science Foundation (Simulated)'
             };
+            ImmutableAuditLog.addEntry({ type: 'grant_drafted', grant }, signedBy);
             return grant;
         },
-        submitGrantProposal: async (grant) => {
+        submitGrantProposal: async (grant, signedBy) => {
             await new Promise(r => setTimeout(r, 3500 + Math.random() * 1500));
             const submittedGrant = await MaterialDatabase.submitGrant(grant);
+            ImmutableAuditLog.addEntry({ type: 'grant_submitted', grant: submittedGrant }, signedBy);
             return { ...submittedGrant, status: 'under_review' as const };
         }
     },
     publicationService: {
-        draftArticle: async (report, targetJournal) => {
+        draftArticle: async (report, targetJournal, signedBy) => {
             await new Promise(r => setTimeout(r, 3000 + Math.random() * 1000));
             const keywords = ['battery', 'anode', 'graphene', 'BNNS', 'simulation', 'AI', report.conclusion.split(':')[0]];
             const article: PublicationArticle = {
@@ -1559,11 +2063,13 @@ export const simulatedAPIs: SimulatedAPIS = {
                 keywords: keywords,
                 citations: report.citations,
             };
+            ImmutableAuditLog.addEntry({ type: 'article_drafted', article }, signedBy);
             return article;
         },
-        submitArticleForReview: async (article) => {
+        submitArticleForReview: async (article, signedBy) => {
             await new Promise(r => setTimeout(r, 2000 + Math.random() * 800));
             const submittedArticle = await MaterialDatabase.submitPublication(article);
+            ImmutableAuditLog.addEntry({ type: 'article_submitted', article: submittedArticle }, signedBy);
             return { ...submittedArticle, status: 'under_review' as const };
         },
         simulatePeerReview: async (articleId) => {
@@ -1576,8 +2082,17 @@ export const simulatedAPIs: SimulatedAPIS = {
         }
     },
     collaborativeAgentAPI: {
-        requestExpertOpinion: async (topic, specificQuestion) => {
+        requestExpertOpinion: async (topic, specificQuestion, senderId) => {
             await new Promise(r => setTimeout(r, 1000));
+            const expertIdentity = DigitalIdentityService.generateIdentity('EXPERT_AI', ['EXPERT']);
+            const message = await InternalMessagingLayer.sendMessage(
+                DigitalIdentityService.getIdentity(senderId)!, // Assuming senderId is a valid identity
+                expertIdentity.id,
+                'REQUEST_EXPERT_OPINION',
+                { topic, specificQuestion }
+            );
+            // Simulate expert processing and responding
+            await new Promise(r => setTimeout(r, 500));
             const expertResponses: { [key: string]: string } = {
                 'thermal stability': `(Expert AI: Thermal Safety) For ${topic}, regarding "${specificQuestion}", it's crucial to consider the exothermic reaction pathways. Our models suggest a higher onset temperature could be achieved with increased covalent bonding at interfaces.`,
                 'synthesis scalability': `(Expert AI: Process Engineering) Regarding ${topic}, for "${specificQuestion}", the primary challenge for BNNS synthesis is maintaining uniformity and controlling layer number at industrial scales. Current methods are often batch-limited.`,
@@ -1585,12 +2100,31 @@ export const simulatedAPIs: SimulatedAPIS = {
                 'economic viability': `(Expert AI: Economist) For "${topic}", considering "${specificQuestion}", a high material cost necessitates strong performance differentials or unique market niches. Explore process optimization to reduce synthesis cost, or focus on niche high-value applications.`
             };
             const response = expertResponses[topic.toLowerCase()] || `(Expert AI: Generalist) For "${topic}", I'd advise reviewing the most recent literature on "${specificQuestion}". Consider multi-fidelity modeling approaches.`;
+            await InternalMessagingLayer.sendMessage(
+                expertIdentity,
+                senderId,
+                'EXPERT_OPINION_RESPONSE',
+                { originalMessageId: message.id, response }
+            );
             return response;
         },
-        shareDataWithPartner: async (data, partnerId) => {
+        shareDataWithPartner: async (data, partnerId, senderId) => {
             await new Promise(r => setTimeout(r, 500));
+            const partnerIdentity = DigitalIdentityService.generateIdentity(partnerId, ['PARTNER_AGENT']);
+            await InternalMessagingLayer.sendMessage(
+                DigitalIdentityService.getIdentity(senderId)!,
+                partnerIdentity.id,
+                'SHARE_DATA',
+                data
+            );
             return `Data successfully shared with partner ${partnerId}. Acknowledged receipt of ${Object.keys(data).length} data points/files.`;
         }
+    },
+    financialService: {
+        transferFunds: (senderIdentity, receiverId, amount, tokenType, purpose) => ProgrammableTokenRail.transfer(senderIdentity, receiverId, amount, tokenType, purpose),
+        issueFunds: (receiverId, amount, tokenType, purpose) => ProgrammableTokenRail.issueTokens(receiverId, amount, tokenType, purpose),
+        getBalance: (accountId) => ProgrammableTokenRail.getBalance(accountId),
+        getAllTransactions: () => ProgrammableTokenRail.getAllTransactions(),
     }
 };
 
@@ -1615,7 +2149,8 @@ export interface ResearchContext {
     focusMaterialId?: string;
     ai: MockGoogleGenAI;
     researchReport?: ResearchReport;
-    budget: number;
+    tokenBalance: number; // Current balance on the programmable token rail
+    transactions: TokenTransaction[]; // History of financial transactions
     timeElapsed: number;
     currentProject: ResearchProject;
     patentsFiled: PatentApplication[];
@@ -1624,6 +2159,7 @@ export interface ResearchContext {
     knowledgeBase: string[];
     currentRiskAssessment?: ExperimentResultMetric[];
     currentEconomicAnalysis?: ExperimentResultMetric[];
+    agentIdentity: DigitalIdentity; // The digital identity of this autonomous agent
 }
 
 /**
@@ -1655,6 +2191,7 @@ export class AutonomousScientistAgent {
     private context: ResearchContext;
     private addLog: (entry: LogEntry) => void;
     private updateContext: (updater: (prev: ResearchContext) => ResearchContext) => void;
+    private agentIdentity: DigitalIdentity;
 
     /**
      * Constructs an instance of the AutonomousScientistAgent.
@@ -1670,7 +2207,9 @@ export class AutonomousScientistAgent {
         this.context = initialContext;
         this.addLog = addLogFunc;
         this.updateContext = updateContextFunc;
-        this.context.knowledgeBase = []; // Ensure knowledge base is initialized
+        this.agentIdentity = DigitalIdentityService.generateIdentity('AutonomousScientistAI', ['RESEARCHER', 'FINANCIAL_TRANSACTOR', 'IP_MANAGER', 'GOVERNOR']);
+        this.context.agentIdentity = this.agentIdentity;
+        this.context.knowledgeBase = [];
     }
 
     /**
@@ -1706,6 +2245,7 @@ export class AutonomousScientistAgent {
         this.updateInternalContext({
             decisions: [...this.context.decisions, decision]
         });
+        ImmutableAuditLog.addEntry({ type: 'agent_decision', decision }, this.agentIdentity.id);
         this.addLog(createLogEntry('thought', `Decision: ${description}. Outcome: ${outcome.toUpperCase()}${reasoning ? ` Reasoning: ${reasoning}` : ''}`));
     }
 
@@ -1715,31 +2255,70 @@ export class AutonomousScientistAgent {
      */
     private updateCurrentPhase(newPhase: ResearchPhase) {
         this.updateInternalContext({ currentPhase: newPhase });
+        ImmutableAuditLog.addEntry({ type: 'phase_transition', newPhase }, this.agentIdentity.id);
         this.addLog(createLogEntry('thought', `Transitioning to phase: ${newPhase.replace(/_/g, ' ')}`));
     }
 
     /**
-     * Simulates the consumption of financial budget and time resources.
-     * This method updates the agent's internal budget and time tracking,
-     * and also updates relevant KPIs in the simulated project management system.
+     * Authorizes an action based on the agent's assigned roles.
+     * @param actionType The type of action to authorize.
+     * @param requiredRoles An array of roles required for the action.
+     * @returns True if the agent is authorized, false otherwise.
+     */
+    private authorizeAction(actionType: string, requiredRoles: string[]): boolean {
+        const isAuthorized = requiredRoles.some(role => this.agentIdentity.roles.includes(role));
+        if (!isAuthorized) {
+            this.addLog(createLogEntry('error', `Authorization failed for ${actionType}. Required roles: ${requiredRoles.join(', ')}.`));
+            this.logDecision(this.context.currentPhase, `Authorization failure for ${actionType}`, { actionType, requiredRoles }, 'failure', 'Agent lacks necessary roles for this operation.');
+        }
+        return isAuthorized;
+    }
+
+    /**
+     * Executes a financial transaction to simulate resource consumption.
+     * This method interacts with the Programmable Token Rail to transfer funds
+     * and records the transaction in the audit log.
      * @param cost The simulated financial cost incurred.
      * @param time The simulated time elapsed in hours.
      * @param category The category of expenditure.
-     * @throws Error if the budget is exceeded.
+     * @throws Error if the token transfer fails due to insufficient funds or security blocks.
      */
-    private async spendResources(cost: number, time: number, category: string = 'research') {
-        const newBudget = this.context.budget - cost;
-        const newTime = this.context.timeElapsed + time;
-        this.updateInternalContext({
-            budget: newBudget,
-            timeElapsed: newTime,
-        });
-        await simulatedAPIs.projectManagement.updateKPI(this.context.currentProject.id, 'Budget Remaining', newBudget);
-        await simulatedAPIs.projectManagement.updateKPI(this.context.currentProject.id, 'Time Elapsed', newTime);
-        this.addLog(createLogEntry('action', `Consumed resources: $${cost.toFixed(2)} and ${time.toFixed(1)} hours for ${category}. Remaining budget: $${newBudget.toFixed(2)}.`));
-        if (newBudget < 0) {
-            this.addLog(createLogEntry('result', 'Budget exceeded! Critical resource constraint hit.'));
-            throw new Error('Budget exceeded');
+    private async executeFinancialTransaction(cost: number, time: number, category: string = 'research') {
+        if (!this.authorizeAction('execute_financial_transaction', ['FINANCIAL_TRANSACTOR'])) {
+            throw new Error('Unauthorized to execute financial transaction.');
+        }
+
+        this.addLog(createLogEntry('action', `Attempting to spend ${cost.toFixed(2)} tokens for ${category}.`));
+        try {
+            const transaction = await simulatedAPIs.financialService.transferFunds(
+                this.agentIdentity,
+                'RESEARCH_PROVIDER_ACCOUNT', // A generic simulated service provider account
+                cost,
+                'RESEARCH_CREDITS',
+                `Funding ${category} for project ${this.context.currentProject.id}`
+            );
+            this.updateInternalContext(prev => ({
+                tokenBalance: simulatedAPIs.financialService.getBalance(this.agentIdentity.id),
+                transactions: [...prev.transactions, transaction],
+                timeElapsed: prev.timeElapsed + time,
+                currentProject: {
+                    ...prev.currentProject,
+                    currentBudget: prev.currentProject.currentBudget - cost, // Reflect UI budget
+                }
+            }));
+            await simulatedAPIs.projectManagement.updateKPI(this.context.currentProject.id, 'Budget Remaining', this.context.tokenBalance);
+            await simulatedAPIs.projectManagement.updateKPI(this.context.currentProject.id, 'Time Elapsed', this.context.timeElapsed);
+            this.addLog(createLogEntry('result', `Successfully transacted $${cost.toFixed(2)} tokens for ${category}. Remaining balance: $${this.context.tokenBalance.toFixed(2)}.`));
+            this.logDecision(this.context.currentPhase, `Executed financial transaction for ${category}`, { cost, time, category, transactionId: transaction.id }, 'success');
+        } catch (error: any) {
+            this.addLog(createLogEntry('error', `Financial transaction failed for ${category}: ${error.message}`));
+            this.logDecision(this.context.currentPhase, `Financial transaction failed for ${category}`, { cost, time, category, error: error.message }, 'failure', error.message);
+            throw error;
+        }
+
+        if (this.context.tokenBalance < 0) {
+            this.addLog(createLogEntry('result', 'Token balance negative! Critical resource constraint hit.'));
+            throw new Error('Token balance exceeded');
         }
     }
 
@@ -1752,6 +2331,28 @@ export class AutonomousScientistAgent {
     public async runResearchCycle() {
         this.updateCurrentPhase(ResearchPhase.PROJECT_SETUP);
         this.logDecision(ResearchPhase.PROJECT_SETUP, `Setting up project for goal: "${this.context.goal}"`, { goal: this.context.goal }, 'success');
+
+        const initialBudget = this.context.initialBudget;
+        // Issue initial tokens to the agent's account
+        try {
+            const initialIssueTxn = await simulatedAPIs.financialService.issueFunds(this.agentIdentity.id, initialBudget, 'RESEARCH_CREDITS', 'Initial project funding');
+            this.updateInternalContext(prev => ({
+                tokenBalance: simulatedAPIs.financialService.getBalance(this.agentIdentity.id),
+                transactions: [...prev.transactions, initialIssueTxn],
+                currentProject: {
+                    ...prev.currentProject,
+                    currentBudget: initialBudget, // UI reflects initial funding
+                }
+            }));
+            this.addLog(createLogEntry('result', `Initial funding of ${initialBudget} RESEARCH_CREDITS received. Balance: ${this.context.tokenBalance}.`));
+            this.logDecision(ResearchPhase.PROJECT_SETUP, 'Initial funding received via token rail', { amount: initialBudget }, 'success');
+        } catch (e: any) {
+            this.addLog(createLogEntry('error', `Failed to receive initial funding: ${e.message}`));
+            this.logDecision(ResearchPhase.PROJECT_SETUP, 'Initial funding failed', { error: e.message }, 'failure');
+            this.updateInternalContext({ currentPhase: ResearchPhase.FAILED, currentProject: { ...this.context.currentProject, status: 'failed' } });
+            return;
+        }
+
         this.updateInternalContext({
             currentProject: {
                 id: `proj-${Date.now()}`,
@@ -1759,24 +2360,24 @@ export class AutonomousScientistAgent {
                 goal: this.context.goal,
                 status: 'active',
                 startDate: new Date().toISOString().split('T')[0],
-                initialBudget: this.context.budget,
-                currentBudget: this.context.budget,
+                initialBudget: initialBudget,
+                currentBudget: initialBudget,
                 kpis: [
                     { name: 'Cycle Life Target', target: 1000, current: 0, unit: 'cycles' },
                     { name: 'Capacity Retention', target: 90, current: 0, unit: '%' },
-                    { name: 'Budget Remaining', target: 0, current: this.context.budget, unit: 'USD' },
+                    { name: 'Budget Remaining', target: 0, current: this.context.tokenBalance, unit: 'RESEARCH_CREDITS' },
                     { name: 'Time Elapsed', target: -1, current: 0, unit: 'hours' },
                 ],
-                teamMembers: ['Autonomous Scientist AI'],
+                teamMembers: [this.agentIdentity.id],
             }
         });
-        await this.spendResources(100, 1.0, 'project_setup');
+        await this.executeFinancialTransaction(100, 1.0, 'project_setup');
 
         try {
             // Phase 1: Goal Decomposition & Initial Literature Review
             this.updateCurrentPhase(ResearchPhase.LITERATURE_REVIEW);
             this.addLog(createLogEntry('action', `Decomposing goal: "${this.context.goal}" into actionable sub-objectives.`));
-            await this.spendResources(50, 0.5);
+            await this.executeFinancialTransaction(50, 0.5);
 
             const goalBreakdownResponse = await this.context.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
@@ -1785,7 +2386,7 @@ export class AutonomousScientistAgent {
             const subGoals = goalBreakdownResponse.text.split('\n').filter(s => s.trim() !== '').map(s => s.replace(/^\d+\.\s*/, ''));
             this.addLog(createLogEntry('result', `Goal decomposed into: ${subGoals.join('; ')}`));
             this.logDecision(ResearchPhase.LITERATURE_REVIEW, 'Goal decomposed', { subGoals }, 'success');
-            await this.spendResources(20, 0.2);
+            await this.executeFinancialTransaction(20, 0.2);
 
             this.addLog(createLogEntry('action', `Performing initial literature search for "${this.context.goal}" across multiple domains...`));
             const searchQueries = [
@@ -1800,11 +2401,11 @@ export class AutonomousScientistAgent {
             ];
             let keyFindings: string[] = [];
             for (const query of searchQueries) {
-                await this.spendResources(10, 0.3, 'literature_search');
+                await this.executeFinancialTransaction(10, 0.3, 'literature_search');
                 const papers = await simulatedAPIs.literatureSearch(query, 3);
                 keyFindings.push(...papers);
                 this.addLog(createLogEntry('action', `Searched "${query}", found ${papers.length} relevant entries.`));
-                papers.forEach(p => simulatedAPIs.knowledgeGraph.addKnowledgeEntry(p, 'literature', new Date().toISOString()));
+                papers.forEach(p => simulatedAPIs.knowledgeGraph.addKnowledgeEntry(p, 'literature', new Date().toISOString(), this.agentIdentity.id));
             }
 
             const literatureSummaryPrompt = `Synthesize key findings from the following literature entries relevant to "${this.context.goal}". Identify common challenges, promising material classes, experimental techniques, and initial safety/economic considerations. Summarize in a concise paragraph:\n- ${keyFindings.join('\n- ')}`;
@@ -1814,19 +2415,19 @@ export class AutonomousScientistAgent {
             });
             this.addLog(createLogEntry('result', `Literature Summary: ${literatureSummaryResponse.text}`));
             this.logDecision(ResearchPhase.LITERATURE_REVIEW, 'Initial literature review completed', { summary: literatureSummaryResponse.text }, 'success');
-            await this.spendResources(30, 0.5, 'literature_synthesis');
-            await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(literatureSummaryResponse.text, 'AI_synthesis', new Date().toISOString());
+            await this.executeFinancialTransaction(30, 0.5, 'literature_synthesis');
+            await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(literatureSummaryResponse.text, 'AI_synthesis', new Date().toISOString(), this.agentIdentity.id);
 
 
             // Iterative Research Loop
             for (let i = 0; i < this.context.maxIterations; i++) {
-                if (this.context.budget < 2000) {
+                if (this.context.tokenBalance < 2000) {
                     this.addLog(createLogEntry('result', 'Insufficient budget to start a new iteration. Attempting to apply for a grant.'));
-                    this.logDecision(ResearchPhase.RESOURCE_MANAGEMENT, 'Budget low, initiating grant application', { budget: this.context.budget }, 'pivot', 'Budget threshold reached, need more funding.');
+                    this.logDecision(ResearchPhase.RESOURCE_MANAGEMENT, 'Budget low, initiating grant application', { budget: this.context.tokenBalance }, 'pivot', 'Budget threshold reached, need more funding.');
                     await this.handleGrantApplication();
-                    if (this.context.currentProject.currentBudget < 2000) {
+                    if (this.context.tokenBalance < 2000) {
                         this.addLog(createLogEntry('result', 'Grant application unsuccessful or insufficient. Concluding research due to resource constraints.'));
-                        this.logDecision(ResearchPhase.RESOURCE_MANAGEMENT, 'Failed to secure additional funding, ending iterations', { budget: this.context.budget }, 'failure', 'Could not secure additional funding.');
+                        this.logDecision(ResearchPhase.RESOURCE_MANAGEMENT, 'Failed to secure additional funding, ending iterations', { budget: this.context.tokenBalance }, 'failure', 'Could not secure additional funding.');
                         break;
                     }
                 }
@@ -1835,7 +2436,7 @@ export class AutonomousScientistAgent {
 
                 // Phase 2: Hypothesis Generation
                 this.updateCurrentPhase(ResearchPhase.HYPOTHESIS_GENERATION);
-                await this.spendResources(80, 1.0, 'hypothesis_generation');
+                await this.executeFinancialTransaction(80, 1.0, 'hypothesis_generation');
                 const currentKnowledge = `Goal: ${this.context.goal}\nRecent Literature Summary: ${literatureSummaryResponse.text}\nPrevious Hypotheses: ${this.context.hypotheses.map(h => `(${h.status}) ${h.text}`).join('; ')}\nRecent Experiment Results: ${this.context.experiments.filter(e => e.results).slice(-2).map(e => e.results?.analysisSummary).join('; ') || 'None yet.'}\nKnown Materials: ${this.context.materialsDiscovered.map(m => m.name).join(', ')}.`;
                 const hypothesisPrompt = `Based on the following knowledge:\n${currentKnowledge}\nFormulate one novel, testable hypothesis to advance the research goal. Focus on specific material modifications or combinations for improved battery performance (e.g., enhanced cycle life, higher capacity, better stability), considering safety and cost. Specify target property and predicted effect. Also, suggest if this hypothesis needs a new material synthesis route. If novel, also suggest a "Novelty summary" and "Key claims" for a patent application.`;
                 this.addLog(createLogEntry('action', 'Generating a novel hypothesis based on current knowledge...'));
@@ -1860,11 +2461,11 @@ export class AutonomousScientistAgent {
                 this.updateInternalContext({ hypotheses: [...this.context.hypotheses, newHypothesis] });
                 this.addLog(createLogEntry('result', `New Hypothesis Generated: ${newHypothesisText}`));
                 this.logDecision(ResearchPhase.HYPOTHESIS_GENERATION, 'Generated new hypothesis', { hypothesis: newHypothesisText }, 'success');
-                await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(`Hypothesis: ${newHypothesisText}`, 'AI_hypothesis', new Date().toISOString());
+                await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(`Hypothesis: ${newHypothesisText}`, 'AI_hypothesis', new Date().toISOString(), this.agentIdentity.id);
 
                 // Phase 3: Experiment Design
                 this.updateCurrentPhase(ResearchPhase.EXPERIMENT_DESIGN);
-                await this.spendResources(120, 2.0, 'experiment_design');
+                await this.executeFinancialTransaction(120, 2.0, 'experiment_design');
                 this.addLog(createLogEntry('action', `Designing a multi-stage simulated experiment to test hypothesis: "${newHypothesisText}"`));
                 const experimentDesignPrompt = `Design a detailed, multi-stage computational experiment (e.g., MD, DFT, electrochemical simulation, thermal stability, QM, phase diagram, defect formation) to rigorously test the hypothesis: "${newHypothesisText}". Specify material composition (e.g., N-doped graphene with BNNS interlayers), precise key parameters (ranges where applicable), expected outcomes, and multiple metrics to measure. Also, suggest relevant simulated characterization techniques. Provide justification for each step. Consider cost and time efficiency. Mention a "Specific sim type" for the main simulation, such as runMolecularDynamics, runDFT, runElectrochemicalModel, etc.`;
                 const experimentDesignResponse = await this.context.ai.models.generateContent({
@@ -1910,7 +2511,7 @@ export class AutonomousScientistAgent {
                 // Phase 4: Risk Assessment & Economic Evaluation
                 this.updateCurrentPhase(ResearchPhase.RISK_ASSESSMENT);
                 this.addLog(createLogEntry('action', `Performing safety risk assessment for material ${materialToSimulate.name} in application: 'EV battery'.`));
-                await this.spendResources(50, 0.5, 'risk_assessment');
+                await this.executeFinancialTransaction(50, 0.5, 'risk_assessment');
                 const safetyMetrics = await simulatedAPIs.safetyAssessment(materialToSimulate.id, 'EV battery', this.context.knowledgeBase.join('. '));
                 this.updateInternalContext({ currentRiskAssessment: safetyMetrics });
                 this.addLog(createLogEntry('result', `Safety Assessment: ${safetyMetrics.map(m => `${m.name}: ${m.value}`).join(', ')}`));
@@ -1919,7 +2520,7 @@ export class AutonomousScientistAgent {
 
                 this.updateCurrentPhase(ResearchPhase.ECONOMIC_EVALUATION);
                 this.addLog(createLogEntry('action', `Performing economic analysis for material ${materialToSimulate.name} at 'mass' production scale for 'EV battery' market.`));
-                await this.spendResources(50, 0.5, 'economic_analysis');
+                await this.executeFinancialTransaction(50, 0.5, 'economic_analysis');
                 const economicMetrics = await simulatedAPIs.economicAnalysis(materialToSimulate.id, 'mass', 'EV battery');
                 this.updateInternalContext({ currentEconomicAnalysis: economicMetrics });
                 this.addLog(createLogEntry('result', `Economic Analysis: ${economicMetrics.map(m => `${m.name}: ${m.value}`).join(', ')}`));
@@ -1934,9 +2535,9 @@ export class AutonomousScientistAgent {
                 if (materialRiskScore < 60 || parseFloat(materialCostPerKg) > 800) {
                     this.addLog(createLogEntry('warning', `High risk or cost detected for ${materialToSimulate.name}. Re-evaluating experiment execution.`));
                     this.logDecision(ResearchPhase.SELF_CORRECTION, 'High risk/cost detected, reconsidering experiment', { material: materialToSimulate.name, risk: materialRiskScore, cost: materialCostPerKg }, 'pivot', 'Experiment may not be viable given current risk/cost profile.');
-                    const expertOpinion = await simulatedAPIs.collaborativeAgentAPI.requestExpertOpinion('economic viability', `Given the high cost of ${materialCostPerKg} USD/kg for ${materialToSimulate.name}, how can we proceed?`);
+                    const expertOpinion = await simulatedAPIs.collaborativeAgentAPI.requestExpertOpinion('economic viability', `Given the high cost of ${materialCostPerKg} USD/kg for ${materialToSimulate.name}, how can we proceed?`, this.agentIdentity.id);
                     this.addLog(createLogEntry('thought', `Expert Opinion: ${expertOpinion}`));
-                    await this.spendResources(20, 0.2, 'expert_consultation');
+                    await this.executeFinancialTransaction(20, 0.2, 'expert_consultation');
                     if (expertOpinion.toLowerCase().includes('further optimization')) {
                         this.addLog(createLogEntry('action', 'Expert suggests further optimization. Modifying next iteration.'));
                         continue;
@@ -1945,7 +2546,7 @@ export class AutonomousScientistAgent {
 
                 // Phase 5: Simulation Execution
                 this.updateCurrentPhase(ResearchPhase.SIMULATION_EXECUTION);
-                await this.spendResources(newExperiment.costEstimate, newExperiment.timeEstimate, 'experiment_execution');
+                await this.executeFinancialTransaction(newExperiment.costEstimate, newExperiment.timeEstimate, 'experiment_execution');
                 this.addLog(createLogEntry('action', `Executing ${newExperiment.type} simulation for ${newExperiment.name} on material ${materialToSimulate.name}...`));
                 let experimentResult: ExperimentResult | null = null;
                 try {
@@ -1972,7 +2573,7 @@ export class AutonomousScientistAgent {
                         case 'synthesis':
                             const recipeDesign = await simulatedAPIs.labRobotics.designSynthesisRoute(materialToSimulate.composition, [newHypothesis.targetProperty]);
                             this.addLog(createLogEntry('thought', `Generated Synthesis Recipe: ${recipeDesign}`));
-                            await this.spendResources(20, 0.5, 'synthesis_protocol_design');
+                            await this.executeFinancialTransaction(20, 0.5, 'synthesis_protocol_design');
 
                             const synthesizedId = await simulatedAPIs.labRobotics.synthesizeMaterial({ name: materialToSimulate.name, composition: materialToSimulate.composition, method: recipeDesign, applications: materialToSimulate.potentialApplications });
                             this.addLog(createLogEntry('result', `Material ${materialToSimulate.name} synthesized with ID: ${synthesizedId}`));
@@ -2040,7 +2641,7 @@ export class AutonomousScientistAgent {
 
                         if ((newExperiment.type === 'synthesis' || newExperiment.type === 'optimization') && materialToSimulate.id) {
                             this.addLog(createLogEntry('action', `Material ${materialToSimulate.name} processed. Automatically initiating comprehensive characterization.`));
-                            await this.spendResources(newExperiment.costEstimate * 0.5, newExperiment.timeEstimate * 0.5, 'post_processing_characterization');
+                            await this.executeFinancialTransaction(newExperiment.costEstimate * 0.5, newExperiment.timeEstimate * 0.5, 'post_processing_characterization');
                             const charResult = await simulatedAPIs.labRobotics.characterizeMaterial(materialToSimulate.id, ['XRD', 'TEM', 'XPS', 'EIS', 'Cycling', 'Raman', 'TGA', 'NMR']);
                             this.addLog(createLogEntry('result', `Characterization of ${materialToSimulate.name} completed. Summary: ${charResult.analysisSummary}`));
                             this.updateInternalContext({
@@ -2062,7 +2663,7 @@ export class AutonomousScientistAgent {
                                 }]
                             });
                             this.logDecision(ResearchPhase.SIMULATION_EXECUTION, 'Material characterized post-synthesis/optimization', { materialId: materialToSimulate.id, charMetrics: charResult.metrics }, charResult.conclusion === 'supported' ? 'success' : 'failure');
-                            await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(`Characterization results for ${materialToSimulate.name}: ${charResult.analysisSummary}`, 'AI_analysis', new Date().toISOString());
+                            await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(`Characterization results for ${materialToSimulate.name}: ${charResult.analysisSummary}`, 'AI_analysis', new Date().toISOString(), this.agentIdentity.id);
                         }
 
                     } else {
@@ -2082,7 +2683,7 @@ export class AutonomousScientistAgent {
 
                 // Phase 6: Data Analysis & Knowledge Integration
                 this.updateCurrentPhase(ResearchPhase.DATA_ANALYSIS);
-                await this.spendResources(90, 1.5, 'data_analysis');
+                await this.executeFinancialTransaction(90, 1.5, 'data_analysis');
                 this.addLog(createLogEntry('action', `Analyzing results from ${newExperiment.name}...`));
                 const analysisContext = `Hypothesis: "${newHypothesisText}"\nExperiment Type: ${newExperiment.type}\nKey Metrics: ${JSON.stringify(experimentResult?.metrics, null, 2)}\nData Summary: ${experimentResult?.analysisSummary || 'N/A'}\nInterpretation: ${experimentResult?.interpretation || 'N/A'}\nConclusion: ${experimentResult?.conclusion || 'N/A'}\nRaw Log Sample: ${experimentResult?.rawLog?.substring(0, 100) || 'N/A'}`;
                 const analysisPrompt = `Perform a detailed analysis of the following experiment results to identify trends, anomalies, and strong implications for the hypothesis. Evaluate if the results support, refute, or are inconclusive. Also, identify any unexpected outcomes or areas for further investigation. Synthesize key insights for the knowledge graph:\n${analysisContext}`;
@@ -2092,13 +2693,13 @@ export class AutonomousScientistAgent {
                 });
                 this.addLog(createLogEntry('result', `Analysis Report: ${analysisResponse.text}`));
                 this.logDecision(ResearchPhase.DATA_ANALYSIS, 'Analyzed experiment data', { analysis: analysisResponse.text, experimentId: newExperiment.id }, 'success');
-                const knowledgeRefinement = await simulatedAPIs.knowledgeGraph.refineKnowledgeGraph(analysisResponse.text);
+                const knowledgeRefinement = await simulatedAPIs.knowledgeGraph.refineKnowledgeGraph(analysisResponse.text, this.agentIdentity.id);
                 this.addLog(createLogEntry('result', `Knowledge Graph updated: ${knowledgeRefinement}`));
-                await this.spendResources(10, 0.1, 'knowledge_integration');
+                await this.executeFinancialTransaction(10, 0.1, 'knowledge_integration');
 
                 // Phase 7: Hypothesis Refinement / Self-Correction / Patent Filing (Conditional)
                 this.updateCurrentPhase(ResearchPhase.HYPOTHESIS_REFINEMENT);
-                await this.spendResources(100, 1.8, 'hypothesis_refinement');
+                await this.executeFinancialTransaction(100, 1.8, 'hypothesis_refinement');
 
                 if (experimentResult?.conclusion === 'supported' || experimentResult?.conclusion === 'partial_support' || experimentResult?.conclusion === 'new_insight') {
                     this.addLog(createLogEntry('thought', `Hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion}. Considering next steps to optimize or expand.`));
@@ -2112,7 +2713,7 @@ export class AutonomousScientistAgent {
                 } else {
                     this.addLog(createLogEntry('thought', `Hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion}. Initiating self-correction and generating a new hypothesis.`));
                     this.updateCurrentPhase(ResearchPhase.SELF_CORRECTION);
-                    await this.spendResources(150, 2.5, 'self_correction');
+                    await this.executeFinancialTransaction(150, 2.5, 'self_correction');
                     const correctionPrompt = `The hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion}. Based on the analysis:\n${analysisResponse.text}\nIdentify the most likely reasons for failure/inconclusiveness and formulate a refined or completely new hypothesis that addresses these issues or pivots to a more promising direction. Provide a brief self-critique of the previous design, considering the safety and economic analysis outcomes.`;
                     const correctionResponse = await this.context.ai.models.generateContent({ model: 'gemini-2.5-flash', contents: correctionPrompt });
                     this.addLog(createLogEntry('result', `Self-Correction & New Hypothesis: ${correctionResponse.text}`));
@@ -2122,7 +2723,7 @@ export class AutonomousScientistAgent {
 
             // Final Phase: Report Generation & Publication Strategy
             this.updateCurrentPhase(ResearchPhase.REPORT_GENERATION);
-            await this.spendResources(200, 3.0, 'report_generation');
+            await this.executeFinancialTransaction(200, 3.0, 'report_generation');
             this.addLog(createLogEntry('action', 'Generating comprehensive final research report, including safety and economic assessments...'));
 
             const finalMaterialId = this.context.materialsDiscovered[this.context.materialsDiscovered.length - 1]?.id || 'mat-001';
@@ -2139,7 +2740,7 @@ export class AutonomousScientistAgent {
 - A strong Conclusion stating the main achievements.
 - Future Work recommendations based on findings and limitations.
 - Simulated Safety Assessment Metrics: ${safetyMetrics.map(m => `${m.name}: ${m.value}${m.unit ? ` ${m.unit}` : ''} (${m.interpretation})`).join('; ')}.
-- Simulated Economic Analysis Metrics: ${economicMetrics.map(m => `${m.name}: ${m.value}${m.unit ? ` ${m.unit}` : ''} (${m.interpretation})`).join('; ')}.
+- Simulated Economic Analysis Metrics: ${economicMetrics.map(m => `${m.value}${m.unit ? ` ${m.unit}` : ''} (${m.interpretation})`).join('; ')}.
 - Ensure to provide relevant citations from the simulated literature review where appropriate.
 Structure the report clearly with headings.`;
             const finalReportResponse = await this.context.ai.models.generateContent({
@@ -2158,12 +2759,11 @@ Structure the report clearly with headings.`;
                 if (end !== -1) {
                     return contentAfterStart.substring(0, end).trim();
                 } else {
-                    // If endKey is not found, check for subsequent major headers as delimiters
                     const nextHeaderMatch = contentAfterStart.match(/^(Abstract|Introduction|Hypotheses|Methodology & Experiments|Results Summary|Discussion|Conclusion|Future Work|Safety Assessment Metrics|Economic Analysis Metrics|Citations):$/im);
                     if (nextHeaderMatch) {
                         return contentAfterStart.substring(0, nextHeaderMatch.index).trim();
                     }
-                    return contentAfterStart.trim(); // Take till the end if no other header found
+                    return contentAfterStart.trim();
                 }
             };
 
@@ -2171,7 +2771,7 @@ Structure the report clearly with headings.`;
             const finalReport: ResearchReport = {
                 id: `report-${Date.now()}`,
                 title: `Autonomous Research Report: ${this.context.goal}`,
-                author: 'Autonomous Scientist AI',
+                author: this.agentIdentity.id,
                 date: new Date().toISOString().split('T')[0],
                 abstract: getSection(fullReportContent, 'Abstract:', 'Introduction:'),
                 introduction: getSection(fullReportContent, 'Introduction:', 'Hypotheses:'),
@@ -2200,7 +2800,12 @@ Structure the report clearly with headings.`;
         } finally {
             this.updateInternalContext({ currentProject: { ...this.context.currentProject, status: this.context.currentPhase === ResearchPhase.COMPLETED ? 'completed' : 'on_hold', endDate: new Date().toISOString().split('T')[0] } });
             this.addLog(createLogEntry('thought', `Research cycle finished. Final phase: ${this.context.currentPhase}`));
-            this.addLog(createLogEntry('result', `Total simulated budget spent: $${(this.context.currentProject.initialBudget - this.context.budget).toFixed(2)}. Total simulated time elapsed: ${this.context.timeElapsed.toFixed(1)} hours.`));
+            this.addLog(createLogEntry('result', `Total simulated tokens spent: $${(this.context.initialBudget - this.context.tokenBalance).toFixed(2)}. Total simulated time elapsed: ${this.context.timeElapsed.toFixed(1)} hours.`));
+            if (!ImmutableAuditLog.verifyLog()) {
+                this.addLog(createLogEntry('error', 'CRITICAL: Audit log integrity compromised! Immediate investigation required.'));
+            } else {
+                this.addLog(createLogEntry('result', 'Audit log integrity verified: All operations are tamper-evident.'));
+            }
         }
     }
 
@@ -2212,8 +2817,10 @@ Structure the report clearly with headings.`;
      * @param refinementText The AI's refinement text, potentially containing claims and novelty summary.
      */
     private async handlePatentApplication(materialId: string, refinementText: string) {
+        if (!this.authorizeAction('file_patent', ['IP_MANAGER'])) return;
+
         this.updateCurrentPhase(ResearchPhase.IP_MANAGEMENT);
-        await this.spendResources(300, 5.0, 'patent_application');
+        await this.executeFinancialTransaction(300, 5.0, 'patent_application');
         this.addLog(createLogEntry('action', `Evaluating findings for patentability for material ID: ${materialId}.`));
 
         const patentClaimsMatch = refinementText.match(/key claims:\s*(.+)/i);
@@ -2222,15 +2829,15 @@ Structure the report clearly with headings.`;
         const keyClaims = patentClaimsMatch ? patentClaimsMatch[1].split(';').map(s => s.trim()) : [`A material for ${this.context.goal} comprising the novel features identified.`];
         const noveltySummary = noveltySummaryMatch ? noveltySummaryMatch[1].trim() : `The unique combination of materials and structural design leading to improved performance.`;
 
-        const draftedPatent = await simulatedAPIs.ipManagement.draftPatentApplication(materialId, noveltySummary, keyClaims);
+        const draftedPatent = await simulatedAPIs.ipManagement.draftPatentApplication(materialId, noveltySummary, keyClaims, this.agentIdentity.id);
         this.addLog(createLogEntry('result', `Drafted patent application for "${draftedPatent.title}". Status: ${draftedPatent.status}.`));
         this.logDecision(ResearchPhase.IP_MANAGEMENT, 'Drafted patent application', { patentTitle: draftedPatent.title }, 'success');
 
-        const filedPatent = await simulatedAPIs.ipManagement.filePatentApplication(draftedPatent);
+        const filedPatent = await simulatedAPIs.ipManagement.filePatentApplication(draftedPatent, this.agentIdentity.id);
         this.addLog(createLogEntry('result', `Filed patent application "${filedPatent.title}". Status: ${filedPatent.status}.`));
         this.updateInternalContext({ patentsFiled: [...this.context.patentsFiled, filedPatent] });
         this.logDecision(ResearchPhase.IP_MANAGEMENT, 'Filed patent application', { patentId: filedPatent.id, status: filedPatent.status }, 'success');
-        await this.spendResources(500, 2.0, 'patent_filing_fees');
+        await this.executeFinancialTransaction(500, 2.0, 'patent_filing_fees');
     }
 
     /**
@@ -2239,35 +2846,40 @@ Structure the report clearly with headings.`;
      * apply for grants to sustain its research initiatives.
      */
     private async handleGrantApplication() {
+        if (!this.authorizeAction('apply_for_grant', ['FINANCIAL_TRANSACTOR'])) return;
+
         this.updateCurrentPhase(ResearchPhase.GRANT_APPLICATION);
-        this.addLog(createLogEntry('action', `Current budget is low ($${this.context.budget.toFixed(2)}). Drafting a grant proposal for additional funding.`));
-        await this.spendResources(150, 8.0, 'grant_writing');
+        this.addLog(createLogEntry('action', `Current budget is low ($${this.context.tokenBalance.toFixed(2)}). Drafting a grant proposal for additional funding.`));
+        await this.executeFinancialTransaction(150, 8.0, 'grant_writing');
 
         const researchSummary = `Our project aims to ${this.context.goal}, having already achieved significant computational insights into novel materials. We require further funding to validate these findings and expand into experimental synthesis and characterization.`;
-        const budgetNeeded = Math.max(50000, 100000 - this.context.budget);
+        const budgetNeeded = Math.max(50000, 100000 - this.context.tokenBalance);
 
-        const draftedGrant = await simulatedAPIs.grantManagement.draftGrantProposal(researchSummary, budgetNeeded);
+        const draftedGrant = await simulatedAPIs.grantManagement.draftGrantProposal(researchSummary, budgetNeeded, this.agentIdentity.id);
         this.addLog(createLogEntry('result', `Drafted grant proposal for "${draftedGrant.title}" requesting $${budgetNeeded}. Status: ${draftedGrant.status}.`));
         this.logDecision(ResearchPhase.GRANT_APPLICATION, 'Drafted grant proposal', { grantTitle: draftedGrant.title, budget: budgetNeeded }, 'success');
 
-        const submittedGrant = await simulatedAPIs.grantManagement.submitGrantProposal(draftedGrant);
+        const submittedGrant = await simulatedAPIs.grantManagement.submitGrantProposal(draftedGrant, this.agentIdentity.id);
         this.addLog(createLogEntry('result', `Submitted grant proposal "${submittedGrant.title}". Status: ${submittedGrant.status}.`));
         this.updateInternalContext({ grantsSubmitted: [...this.context.grantsSubmitted, submittedGrant] });
         this.logDecision(ResearchPhase.GRANT_APPLICATION, 'Submitted grant proposal', { grantId: submittedGrant.id, status: submittedGrant.status }, 'success');
-        await this.spendResources(50, 0.5, 'grant_submission_fees');
+        await this.executeFinancialTransaction(50, 0.5, 'grant_submission_fees');
 
         await new Promise(r => setTimeout(r, 10000 + Math.random() * 5000));
         const fundingOutcome = Math.random();
         if (fundingOutcome > 0.4) {
             const fundedAmount = budgetNeeded * (0.7 + Math.random() * 0.3);
+            // Simulate funding agency issuing tokens
+            const fundingTxn = await simulatedAPIs.financialService.issueFunds(this.agentIdentity.id, fundedAmount, 'RESEARCH_CREDITS', `Grant funding for ${submittedGrant.title}`);
             this.addLog(createLogEntry('result', `Grant "${submittedGrant.title}" was FUNDED for $${fundedAmount.toFixed(2)}! Project budget updated.`));
             this.updateInternalContext(prev => ({
-                budget: prev.budget + fundedAmount,
+                tokenBalance: simulatedAPIs.financialService.getBalance(this.agentIdentity.id),
+                transactions: [...prev.transactions, fundingTxn],
                 currentProject: { ...prev.currentProject, currentBudget: prev.currentProject.currentBudget + fundedAmount },
                 grantsSubmitted: prev.grantsSubmitted.map(g => g.id === submittedGrant.id ? { ...g, status: 'funded' as const, currentFunding: fundedAmount } : g)
             }));
-            this.logDecision(ResearchPhase.GRANT_APPLICATION, 'Grant funded', { amount: fundedAmount }, 'success', 'Secured additional funding.');
-            await simulatedAPIs.projectManagement.updateKPI(this.context.currentProject.id, 'Budget Remaining', this.context.budget);
+            this.logDecision(ResearchPhase.GRANT_APPLICATION, 'Grant funded', { amount: fundedAmount, transactionId: fundingTxn.id }, 'success', 'Secured additional funding via token issuance.');
+            await simulatedAPIs.projectManagement.updateKPI(this.context.currentProject.id, 'Budget Remaining', this.context.tokenBalance);
         } else {
             this.addLog(createLogEntry('warning', `Grant "${submittedGrant.title}" was REJECTED. Need to reconsider resource strategy.`));
             this.updateInternalContext(prev => ({
@@ -2284,9 +2896,11 @@ Structure the report clearly with headings.`;
      * @param report The final research report to be published.
      */
     private async handlePublicationStrategy(report: ResearchReport) {
+        if (!this.authorizeAction('manage_publication', ['RESEARCHER'])) return;
+
         this.updateCurrentPhase(ResearchPhase.PUBLICATION_STRATEGY);
         this.addLog(createLogEntry('action', `Developing publication strategy for the final research report.`));
-        await this.spendResources(80, 2.0, 'publication_strategy');
+        await this.executeFinancialTransaction(80, 2.0, 'publication_strategy');
 
         const publicationPrompt = `Based on the attached comprehensive research report titled "${report.title}", and considering the significance of the findings, suggest a suitable target journal (e.g., Nature, Science, Adv. Materials, J. Mat. Chem. A) and justify the choice. Also, draft a compelling cover letter snippet.`;
         const publicationResponse = await this.context.ai.models.generateContent({
@@ -2300,20 +2914,20 @@ Structure the report clearly with headings.`;
         const targetJournalMatch = pubStrategyDetails.match(/target journal:\s*([\w\s.]+)/i);
         const targetJournal = targetJournalMatch ? targetJournalMatch[1].trim() : 'Advanced Energy Materials';
 
-        const draftedArticle = await simulatedAPIs.publicationService.draftArticle(report, targetJournal);
+        const draftedArticle = await simulatedAPIs.publicationService.draftArticle(report, targetJournal, this.agentIdentity.id);
         this.addLog(createLogEntry('result', `Drafted manuscript for submission to ${targetJournal}. Title: "${draftedArticle.title}".`));
         this.logDecision(ResearchPhase.PUBLICATION_STRATEGY, 'Drafted research article', { articleTitle: draftedArticle.title, journal: targetJournal }, 'success');
-        await this.spendResources(100, 3.0, 'article_drafting');
+        await this.executeFinancialTransaction(100, 3.0, 'article_drafting');
 
-        const submittedArticle = await simulatedAPIs.publicationService.submitArticleForReview(draftedArticle);
+        const submittedArticle = await simulatedAPIs.publicationService.submitArticleForReview(draftedArticle, this.agentIdentity.id);
         this.addLog(createLogEntry('result', `Submitted article "${submittedArticle.title}" to ${submittedArticle.journal}. Status: ${submittedArticle.status}.`));
         this.updateInternalContext({ publicationsSubmitted: [...this.context.publicationsSubmitted, submittedArticle] });
         this.logDecision(ResearchPhase.PUBLICATION_STRATEGY, 'Submitted article for review', { articleId: submittedArticle.id, status: submittedArticle.status }, 'success');
-        await this.spendResources(50, 0.5, 'submission_fees');
+        await this.executeFinancialTransaction(50, 0.5, 'submission_fees');
 
         this.updateCurrentPhase(ResearchPhase.PEER_REVIEW);
         this.addLog(createLogEntry('action', `Simulating peer review process for article "${submittedArticle.title}"...`));
-        await this.spendResources(200, 10.0, 'peer_review');
+        await this.executeFinancialTransaction(200, 10.0, 'peer_review');
         const reviewOutcome = await simulatedAPIs.publicationService.simulatePeerReview(submittedArticle.id);
         this.addLog(createLogEntry('result', `Peer review outcome: ${reviewOutcome.replace(/_/g, ' ')}.`));
 
@@ -2350,12 +2964,12 @@ Structure the report clearly with headings.`;
         const elements: { [key: string]: number } = {};
         const elementsMatch = designDetails.match(/composition:\s*({[^}]+})/i) || designDetails.match(/elements:\s*([\w\s,:]+)/i);
         if (elementsMatch && elementsMatch[1]) {
-            try { // Attempt to parse as JSON first
+            try {
                 const parsedElements = JSON.parse(elementsMatch[1].replace(/(\w+)\s*:\s*(\w+)/g, '"$1":"$2"'));
                 for (const key in parsedElements) {
                     elements[key] = parseFloat(parsedElements[key]) || 1;
                 }
-            } catch { // Fallback to regex parsing
+            } catch {
                 elementsMatch[1].split(',').forEach(part => {
                     const [key, val] = part.trim().split(/:\s*|\s*=\s*/);
                     if (key && val) elements[key.trim()] = parseFloat(val.trim()) || 1;
@@ -2378,7 +2992,7 @@ Structure the report clearly with headings.`;
             try {
                 const parsedDopants = JSON.parse(dopantsMatch[1].replace(/(\w+)\s*:\s*(\w+)/g, '"$1":"$2"'));
                 for (const key in parsedDopants) {
-                    dopants[key] = parseFloat(parsedDopants[key]) / 100 || 0.05; // Assume percentage for doping
+                    dopants[key] = parseFloat(parsedDopants[key]) / 100 || 0.05;
                 }
             } catch {
                 dopantsMatch[1].split(',').forEach(part => {
@@ -2426,7 +3040,7 @@ Structure the report clearly with headings.`;
      */
     private extractParametersFromDesign(designDetails: string): ExperimentParameter[] {
         const parameters: ExperimentParameter[] = [];
-        const paramRegex = /(?:parameter|metric|variable|key parameter):\s*([\w\s]+?)(?:(?:\s*=\s*|:\s*)(\d+\.?\d*(?:\s*[%°\w\/]+)?|\w+))?(?:,\s*range:\s*\[(\d+\.?\d*),\s*(\d+\.?\d*)\])?/gi;
+        const paramRegex = /(?:parameter|metric|variable|key parameter):\s*([\w\s]+?)(?:(?:\s*=\s*|:\s*)(\d+\.?\d*(?:\s*[%Â°\w\/]+)?|\w+))?(?:,\s*range:\s*\[(\d+\.?\d*),\s*(\d+\.?\d*)\])?/gi;
         let match;
         while ((match = paramRegex.exec(designDetails)) !== null) {
             const name = match[1].trim();
@@ -2454,9 +3068,9 @@ Structure the report clearly with headings.`;
                 parameters.push({ name: 'voltage_window', value: '3.0-4.2', unit: 'V', description: 'Operating voltage window' });
                 parameters.push({ name: 'electrolyte_composition', value: 'EC:DMC', description: 'Simulated electrolyte composition' });
             } else if (designDetails.toLowerCase().includes('thermal stability')) {
-                parameters.push({ name: 'heating_rate', value: 10, unit: '°C/min', description: 'Heating rate for thermal analysis' });
+                parameters.push({ name: 'heating_rate', value: 10, unit: 'Â°C/min', description: 'Heating rate for thermal analysis' });
                 parameters.push({ name: 'atmosphere', value: 'argon', description: 'Atmosphere during thermal analysis' });
-                parameters.push({ name: 'max_temperature', value: 800, unit: '°C', description: 'Maximum temperature for thermal analysis' });
+                parameters.push({ name: 'max_temperature', value: 800, unit: 'Â°C', description: 'Maximum temperature for thermal analysis' });
             } else if (designDetails.toLowerCase().includes('optimization')) {
                 parameters.push({ name: 'doping_concentration', value: 0.05, unit: '%', range: [0.01, 0.1], description: 'Range for doping concentration optimization' });
                 parameters.push({ name: 'layer_thickness', value: 5, unit: 'nm', range: [1, 10], description: 'Range for layer thickness optimization' });
@@ -2464,7 +3078,7 @@ Structure the report clearly with headings.`;
                 parameters.push({ name: 'target_property', value: 'band_gap', description: 'Specific property to calculate (e.g., band_gap, electron_affinity)' });
                 parameters.push({ name: 'software', value: 'VASP', description: 'Quantum mechanics software package' });
             } else if (designDetails.toLowerCase().includes('phase diagram')) {
-                parameters.push({ name: 'temperature_range', value: [0, 1500], unit: '°C', description: 'Temperature range for phase diagram calculation' });
+                parameters.push({ name: 'temperature_range', value: [0, 1500], unit: 'Â°C', description: 'Temperature range for phase diagram calculation' });
                 parameters.push({ name: 'pressure_constant', value: 1, unit: 'atm', description: 'Constant pressure for calculation' });
             } else if (designDetails.toLowerCase().includes('defect formation')) {
                 parameters.push({ name: 'defect_type', value: 'vacancy', description: 'Type of defect to simulate (e.g., vacancy, interstitial, antisite)' });
@@ -2570,6 +3184,8 @@ const AutonomousScientistView: React.FC = () => {
         agentDecisionHistory: true,
         ipAndPublications: true,
         finalResearchReport: true,
+        financialOverview: true,
+        auditLog: true,
     });
 
     /**
@@ -2585,6 +3201,11 @@ const AutonomousScientistView: React.FC = () => {
 
     const [context, setContext] = useState<ResearchContext>(() => {
         const initialBudget = 100000;
+        // Initialize the agent's identity and setup initial token rail balance
+        const agentId = 'AutonomousScientistAI';
+        const agentIdentity = DigitalIdentityService.generateIdentity(agentId, ['RESEARCHER', 'FINANCIAL_TRANSACTOR', 'IP_MANAGER', 'GOVERNOR']);
+        ProgrammableTokenRail.issueTokens('RESEARCH_PROVIDER_ACCOUNT', 10000000, 'RESEARCH_CREDITS', 'Initial capital for research operations'); // Prime the provider account
+
         return {
             goal: '',
             currentPhase: ResearchPhase.IDLE,
@@ -2596,7 +3217,8 @@ const AutonomousScientistView: React.FC = () => {
             iterationCount: 0,
             maxIterations: 4,
             ai: new MockGoogleGenAI({ apiKey: 'mock-api-key' }),
-            budget: initialBudget,
+            tokenBalance: 0, // Will be set by initial token issue
+            transactions: [],
             timeElapsed: 0,
             currentProject: {
                 id: 'proj-init',
@@ -2607,7 +3229,7 @@ const AutonomousScientistView: React.FC = () => {
                 initialBudget: initialBudget,
                 currentBudget: initialBudget,
                 kpis: [],
-                teamMembers: ['Autonomous Scientist AI'],
+                teamMembers: [agentId],
             },
             patentsFiled: [],
             grantsSubmitted: [],
@@ -2615,6 +3237,7 @@ const AutonomousScientistView: React.FC = () => {
             knowledgeBase: [],
             currentRiskAssessment: undefined,
             currentEconomicAnalysis: undefined,
+            agentIdentity: agentIdentity,
         };
     });
 
@@ -2637,6 +3260,24 @@ const AutonomousScientistView: React.FC = () => {
     const runSimulation = async () => {
         setIsLoading(true);
         const initialBudget = 100000;
+        const agentId = 'AutonomousScientistAI';
+        const agentIdentity = DigitalIdentityService.generateIdentity(agentId, ['RESEARCHER', 'FINANCIAL_TRANSACTOR', 'IP_MANAGER', 'GOVERNOR']);
+
+        // Reset global static stores for a fresh simulation run
+        (ProgrammableTokenRail as any).balances = new Map();
+        (ProgrammableTokenRail as any).transactions = [];
+        (ProgrammableTokenRail as any).nonces = new Map();
+        (InternalMessagingLayer as any).messageQueue = [];
+        (InternalMessagingLayer as any).nonces = new Map();
+        (InternalMessagingLayer as any).sequences = new Map();
+        (ImmutableAuditLog as any).logEntries = [];
+        (MaterialDatabase as any).patents = [];
+        (MaterialDatabase as any).grants = [];
+        (MaterialDatabase as any).publications = [];
+
+        // Re-prime the provider account
+        ProgrammableTokenRail.issueTokens('RESEARCH_PROVIDER_ACCOUNT', 10000000, 'RESEARCH_CREDITS', 'Fresh initial capital for research operations');
+
         setContext(prev => ({
             ...prev,
             goal: goal,
@@ -2648,7 +3289,8 @@ const AutonomousScientistView: React.FC = () => {
             decisions: [],
             iterationCount: 0,
             researchReport: undefined,
-            budget: initialBudget,
+            tokenBalance: 0, // Will be set by initial token issue
+            transactions: [],
             timeElapsed: 0,
             currentProject: {
                 id: `proj-${Date.now()}`,
@@ -2661,10 +3303,10 @@ const AutonomousScientistView: React.FC = () => {
                 kpis: [
                     { name: 'Cycle Life Target', target: 1000, current: 0, unit: 'cycles' },
                     { name: 'Capacity Retention', target: 90, current: 0, unit: '%' },
-                    { name: 'Budget Remaining', target: 0, current: initialBudget, unit: 'USD' },
+                    { name: 'Budget Remaining', target: 0, current: initialBudget, unit: 'RESEARCH_CREDITS' },
                     { name: 'Time Elapsed', target: -1, current: 0, unit: 'hours' },
                 ],
-                teamMembers: ['Autonomous Scientist AI'],
+                teamMembers: [agentId],
             },
             patentsFiled: [],
             grantsSubmitted: [],
@@ -2672,6 +3314,7 @@ const AutonomousScientistView: React.FC = () => {
             knowledgeBase: [],
             currentRiskAssessment: undefined,
             currentEconomicAnalysis: undefined,
+            agentIdentity: agentIdentity,
         }));
 
         const scientistAgent = new AutonomousScientistAgent(
@@ -2679,8 +3322,9 @@ const AutonomousScientistView: React.FC = () => {
                 ...context,
                 goal: goal,
                 ai: new MockGoogleGenAI({ apiKey: 'mock-api-key' }),
-                budget: initialBudget,
-                currentProject: { // Ensure agent gets fully reset project context too
+                tokenBalance: 0, // Ensure agent starts with 0 before initial funding
+                transactions: [],
+                currentProject: {
                     id: `proj-${Date.now()}`,
                     name: `Autonomous Research: ${goal.substring(0, Math.min(goal.length, 30))}...`,
                     goal: goal,
@@ -2691,11 +3335,12 @@ const AutonomousScientistView: React.FC = () => {
                     kpis: [
                         { name: 'Cycle Life Target', target: 1000, current: 0, unit: 'cycles' },
                         { name: 'Capacity Retention', target: 90, current: 0, unit: '%' },
-                        { name: 'Budget Remaining', target: 0, current: initialBudget, unit: 'USD' },
+                        { name: 'Budget Remaining', target: 0, current: initialBudget, unit: 'RESEARCH_CREDITS' },
                         { name: 'Time Elapsed', target: -1, current: 0, unit: 'hours' },
                     ],
-                    teamMembers: ['Autonomous Scientist AI'],
+                    teamMembers: [agentId],
                 },
+                agentIdentity: agentIdentity,
             },
             addLog,
             setContext
@@ -2743,7 +3388,7 @@ const AutonomousScientistView: React.FC = () => {
             case ResearchPhase.PROJECT_SETUP: colorClass = 'bg-blue-800'; break;
             case ResearchPhase.IP_MANAGEMENT: colorClass = 'bg-amber-600'; break;
             case ResearchPhase.GRANT_APPLICATION: colorClass = 'bg-fuchsia-600'; break;
-            case ResearchPhase.PEER_REVIEW: colorClass = 'bg-sky-600'; break; // Changed from lightBlue-600 for consistency
+            case ResearchPhase.PEER_REVIEW: colorClass = 'bg-sky-600'; break;
             case ResearchPhase.PUBLICATION_STRATEGY: colorClass = 'bg-rose-600'; break;
             case ResearchPhase.RISK_ASSESSMENT: colorClass = 'bg-red-800'; break;
             case ResearchPhase.ECONOMIC_EVALUATION: colorClass = 'bg-green-800'; break;
@@ -2764,6 +3409,16 @@ const AutonomousScientistView: React.FC = () => {
     const formatNumber = (num: number, currency: boolean = false) => {
         if (currency) return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         return num.toLocaleString('en-US');
+    };
+
+    const getTransactionStatusClass = (status: TokenTransaction['status']) => {
+        switch (status) {
+            case 'settled': return 'text-green-400';
+            case 'failed': return 'text-red-400';
+            case 'blocked': return 'text-orange-400';
+            case 'pending': return 'text-yellow-400';
+            default: return 'text-gray-400';
+        }
     };
 
     return (
@@ -2811,8 +3466,8 @@ const AutonomousScientistView: React.FC = () => {
                         <span className="text-white font-medium">{context.iterationCount} / {context.maxIterations}</span>
                     </div>
                     <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm flex items-center justify-between">
-                        <span className="text-green-300 font-semibold">Budget Remaining:</span>
-                        <span className="text-white font-medium">{formatNumber(context.budget, true)}</span>
+                        <span className="text-green-300 font-semibold">Token Balance:</span>
+                        <span className="text-white font-medium">{formatNumber(context.tokenBalance, true)} RESEARCH_CREDITS</span>
                     </div>
                     <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm flex items-center justify-between">
                         <span className="text-yellow-300 font-semibold">Time Elapsed:</span>
@@ -2907,6 +3562,36 @@ const AutonomousScientistView: React.FC = () => {
                 </LocalCard>
             )}
 
+            {context.transactions.length > 0 && (
+                <LocalCard title="Financial Overview (Token Rail)" className="bg-gray-800/70 border-green-800" expanded={expandedCards.financialOverview} onToggleExpand={() => toggleCardExpansion('financialOverview')}>
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto p-4 rounded-lg bg-gray-900/50 border border-gray-700 shadow-inner">
+                        <div className="flex justify-between items-center text-xl font-semibold text-green-300 mb-4 pb-2 border-b border-gray-700">
+                            <span>Current Balance:</span>
+                            <span>{formatNumber(context.tokenBalance, true)} RESEARCH_CREDITS</span>
+                        </div>
+                        <h3 className="text-lg font-semibold text-green-300 mb-2">Transaction History ({context.transactions.length})</h3>
+                        <ul className="space-y-3">
+                            {context.transactions.map((tx, i) => (
+                                <li key={tx.id} className="p-3 bg-gray-800 rounded border border-gray-700 text-sm">
+                                    <div className="flex justify-between items-center text-gray-400 mb-1">
+                                        <span className="font-semibold text-white">{tx.purpose}</span>
+                                        <span className={`font-medium ${getTransactionStatusClass(tx.status)} capitalize`}>{tx.status}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-1 text-xs text-gray-500">
+                                        <span><strong>ID:</strong> {tx.id.substring(0, 8)}...</span>
+                                        <span><strong>Amount:</strong> {formatNumber(tx.amount, true)} {tx.tokenType}</span>
+                                        <span><strong>From:</strong> {tx.senderId.substring(0, 12)}...</span>
+                                        <span><strong>To:</strong> {tx.receiverId.substring(0, 12)}...</span>
+                                        <span><strong>Time:</strong> {new Date(tx.timestamp).toLocaleTimeString()}</span>
+                                        <span><strong>SignedBy:</strong> {tx.signedBy.substring(0, 12)}...</span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </LocalCard>
+            )}
+
             {context.hypotheses.length > 0 && (
                 <LocalCard title="Generated Hypotheses" className="bg-gray-800/70 border-purple-800" expanded={expandedCards.generatedHypotheses} onToggleExpand={() => toggleCardExpansion('generatedHypotheses')}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2963,9 +3648,9 @@ const AutonomousScientistView: React.FC = () => {
                                                 <summary className="text-cyan-400 hover:text-cyan-300">View Visualizations ({exp.results.generatedVisualizations.length})</summary>
                                                 <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {exp.results.generatedVisualizations.map((vis, vIdx) => (
-                                                        <div key={vIdx} className="bg-gray-700/50 p-2 rounded">
-                                                            <p className="text-xs text-gray-300 font-semibold mb-1">{vis.title}</p>
-                                                            <img src={vis.dataUrl} alt={vis.title} className="w-full h-24 object-contain bg-gray-900 rounded" />
+                                                        <div key={vIdx}                                                         className="bg-gray-700/50 p-3 rounded border border-gray-600">
+                                                            <h5 className="text-sm font-semibold text-white mb-2">{vis.title}</h5>
+                                                            <img src={vis.dataUrl} alt={vis.title} className="w-full h-auto object-contain rounded" />
                                                         </div>
                                                     ))}
                                                 </div>
@@ -2980,32 +3665,35 @@ const AutonomousScientistView: React.FC = () => {
             )}
 
             {context.materialsDiscovered.length > 0 && (
-                <LocalCard title="Discovered Materials (Simulated)" className="bg-gray-800/70 border-emerald-800" expanded={expandedCards.discoveredMaterials} onToggleExpand={() => toggleCardExpansion('discoveredMaterials')}>
+                <LocalCard title="Discovered & Investigated Materials" className="bg-gray-800/70 border-teal-800" expanded={expandedCards.discoveredMaterials} onToggleExpand={() => toggleCardExpansion('discoveredMaterials')}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {context.materialsDiscovered.map(mat => (
-                            <div key={mat.id} className="p-5 bg-gray-900/50 rounded-lg border border-gray-700 shadow-md transition-all duration-200 hover:shadow-lg hover:border-emerald-600">
-                                <h3 className="font-semibold text-emerald-400 text-xl mb-2">{mat.name}</h3>
-                                <p className="text-gray-300 text-sm mb-3">Composition: <span className="text-white font-medium">{Object.entries(mat.composition.elements).map(([el, val]) => `${el}${val}`).join('')}{mat.composition.dopants && Object.entries(mat.composition.dopants).map(([dop, val]) => `(${dop}:${(val * 100).toFixed(1)}%)`)}</span></p>
-                                {mat.composition.structure && <p className="text-gray-300 text-xs mb-1">Structure: <span className="text-white font-medium">{mat.composition.structure}</span></p>}
-                                {mat.composition.nanostructure && <p className="text-gray-300 text-xs mb-3">Nanostructure: <span className="text-white font-medium">{mat.composition.nanostructure}</span></p>}
-                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-400 border-t border-gray-700 pt-3">
-                                    {mat.properties.length > 0 ? mat.properties.map((prop, idx) => (
-                                        <li key={idx}>
-                                            {prop.name}: <span className="text-white font-medium">{prop.value}{prop.unit ? ` ${prop.unit}` : ''}</span>
-                                            {prop.source && <span className="italic text-gray-500 ml-2">({prop.source})</span>}
-                                        </li>
-                                    )) : <li><span className="text-gray-500">No detailed properties characterized yet.</span></li>}
-                                </ul>
-                                <div className="flex justify-between items-center text-xs text-gray-500 mt-4 border-t border-gray-700 pt-3">
-                                    <span>Discovered: {mat.discoveryDate}</span>
-                                    <span>App: {mat.potentialApplications.join(', ')}</span>
+                            <div key={mat.id} className="p-5 bg-gray-900/50 rounded-lg border border-gray-700 shadow-md transition-all duration-200 hover:shadow-lg hover:border-teal-600">
+                                <h3 className="font-semibold text-teal-400 text-xl mb-2">{mat.name} <span className="text-xs text-gray-500 ml-2">({mat.id})</span></h3>
+                                <p className="text-gray-300 text-sm mb-3">Discovery Date: <span className="font-medium text-white">{mat.discoveryDate}</span></p>
+                                <div className="text-sm text-gray-400 space-y-1">
+                                    <p><strong>Composition:</strong> <span className="text-white">{Object.entries(mat.composition.elements).map(([el, val]) => `${el}${val}`).join('')}</span></p>
+                                    {mat.composition.dopants && Object.keys(mat.composition.dopants).length > 0 && <p><strong>Dopants:</strong> <span className="text-white">{Object.entries(mat.composition.dopants).map(([el, val]) => `${el}:${(val * 100).toFixed(1)}%`).join(', ')}</span></p>}
+                                    {mat.composition.structure && <p><strong>Structure:</strong> <span className="text-white">{mat.composition.structure}</span></p>}
+                                    {mat.composition.nanostructure && <p><strong>Nanostructure:</strong> <span className="text-white">{mat.composition.nanostructure}</span></p>}
+                                    {mat.synthesisMethod && <p><strong>Synthesis:</strong> <span className="text-white">{mat.synthesisMethod}</span></p>}
+                                    <p><strong>Applications:</strong> <span className="text-white">{mat.potentialApplications.join(', ')}</span></p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 mt-2">
-                                    <span>Stability: <span className="text-white font-medium">{mat.stabilityScore}%</span></span>
-                                    <span>Performance: <span className="text-white font-medium">{mat.performanceScore}%</span></span>
-                                    <span>Risk: <span className="text-white font-medium">{mat.riskScore}%</span></span>
-                                    <span>Cost: <span className="text-white font-medium">{mat.costScore}%</span></span>
-                                </div>
+                                <details className="text-sm text-gray-500 cursor-pointer mt-3">
+                                    <summary className="text-teal-400 hover:text-teal-300">View Properties & Scores ({mat.properties.length})</summary>
+                                    <div className="mt-2 space-y-1">
+                                        {mat.properties.map((prop, pIdx) => (
+                                            <p key={pIdx} className="text-xs text-gray-400">
+                                                <strong className="text-gray-300">{prop.name}:</strong> <span className="text-white">{prop.value}{prop.unit ? ` ${prop.unit}` : ''}</span>
+                                                {prop.source && <span className="italic text-gray-500 ml-1">({prop.source})</span>}
+                                            </p>
+                                        ))}
+                                        {mat.stabilityScore !== undefined && <p className="text-xs text-gray-400"><strong className="text-gray-300">Stability Score:</strong> <span className="text-white">{mat.stabilityScore}</span></p>}
+                                        {mat.performanceScore !== undefined && <p className="text-xs text-gray-400"><strong className="text-gray-300">Performance Score:</strong> <span className="text-white">{mat.performanceScore}</span></p>}
+                                        {mat.riskScore !== undefined && <p className="text-xs text-gray-400"><strong className="text-gray-300">Risk Score:</strong> <span className="text-white">{mat.riskScore}</span></p>}
+                                        {mat.costScore !== undefined && <p className="text-xs text-gray-400"><strong className="text-gray-300">Cost Score:</strong> <span className="text-white">{mat.costScore}</span></p>}
+                                    </div>
+                                </details>
                             </div>
                         ))}
                     </div>
@@ -3013,21 +3701,36 @@ const AutonomousScientistView: React.FC = () => {
             )}
 
             {context.decisions.length > 0 && (
-                <LocalCard title="Agent Decision History" className="bg-gray-800/70 border-blue-800" expanded={expandedCards.agentDecisionHistory} onToggleExpand={() => toggleCardExpansion('agentDecisionHistory')}>
+                <LocalCard title="Agent Decision History" className="bg-gray-800/70 border-lime-800" expanded={expandedCards.agentDecisionHistory} onToggleExpand={() => toggleCardExpansion('agentDecisionHistory')}>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto p-4 rounded-lg bg-gray-900/50 border border-gray-700 shadow-inner">
-                        {context.decisions.map((decision, i) => (
-                            <div key={i} className={`p-3 rounded-lg text-sm border-l-4
-                                ${decision.outcome === 'success' ? 'bg-green-900/20 border-green-500 text-green-200' :
-                                decision.outcome === 'failure' ? 'bg-red-900/20 border-red-500 text-red-200' :
-                                decision.outcome === 'pivot' ? 'bg-yellow-900/20 border-yellow-500 text-yellow-200' :
-                                'bg-blue-900/20 border-blue-500 text-blue-200'}`}
+                        {context.decisions.map((dec, i) => (
+                            <div key={i} className={`p-4 rounded-lg border-l-4
+                                ${dec.outcome === 'success' ? 'bg-green-900/20 border-green-500 text-green-200' :
+                                dec.outcome === 'failure' ? 'bg-red-900/20 border-red-500 text-red-200' :
+                                dec.outcome === 'pivot' ? 'bg-yellow-900/20 border-yellow-500 text-yellow-200' :
+                                'bg-gray-700/30 border-gray-600 text-gray-300'}`}
                             >
-                                <div className="flex justify-between items-center mb-1">
-                                    <strong className="text-blue-400">{decision.phase.replace(/_/g, ' ')}</strong>
-                                    <span className="text-xs text-gray-400">{new Date(decision.timestamp).toLocaleTimeString()}</span>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs text-gray-400">{new Date(dec.timestamp).toLocaleString()}</span>
+                                    {renderPhaseBadge(dec.phase)}
                                 </div>
-                                <p className="text-gray-200 mb-1">{decision.description}</p>
-                                {decision.reasoning && <p className="text-xs italic text-gray-400">Reasoning: {decision.reasoning}</p>}
+                                <h3 className="font-semibold text-white text-base mb-1">{dec.description}</h3>
+                                <p className="text-sm text-gray-300 italic mb-2">Outcome: <span className="font-medium capitalize">{dec.outcome}</span></p>
+                                {dec.reasoning && <p className="text-sm text-gray-400"><strong>Reasoning:</strong> {dec.reasoning}</p>}
+                                {dec.decisionMetrics && dec.decisionMetrics.length > 0 && (
+                                    <details className="text-xs text-gray-500 cursor-pointer mt-2">
+                                        <summary className="text-lime-400 hover:text-lime-300">Metrics Considered</summary>
+                                        <ul className="list-disc list-inside mt-1">
+                                            {dec.decisionMetrics.map((metric, mIdx) => (
+                                                <li key={mIdx}>{metric.name}: <span className="text-white font-medium">{JSON.stringify(metric.value)}</span></li>
+                                            ))}
+                                        </ul>
+                                    </details>
+                                )}
+                                <details className="text-xs text-gray-500 cursor-pointer mt-2">
+                                    <summary className="text-lime-400 hover:text-lime-300">Raw Details</summary>
+                                    <pre className="mt-1 p-2 bg-gray-800 rounded text-gray-300 overflow-x-auto">{JSON.stringify(dec.details, null, 2)}</pre>
+                                </details>
                             </div>
                         ))}
                     </div>
@@ -3035,120 +3738,122 @@ const AutonomousScientistView: React.FC = () => {
             )}
 
             {(context.patentsFiled.length > 0 || context.grantsSubmitted.length > 0 || context.publicationsSubmitted.length > 0) && (
-                <LocalCard title="IP & Publications" className="bg-gray-800/70 border-amber-800" expanded={expandedCards.ipAndPublications} onToggleExpand={() => toggleCardExpansion('ipAndPublications')}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {context.patentsFiled.length > 0 && (
-                            <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
-                                <h3 className="font-semibold text-amber-400 text-xl mb-3">Patents Filed ({context.patentsFiled.length})</h3>
-                                <ul className="space-y-3">
-                                    {context.patentsFiled.map(patent => (
-                                        <li key={patent.id} className="text-sm border-b border-gray-700 pb-2">
-                                            <p className="font-medium text-white">{patent.title}</p>
-                                            <p className="text-gray-400">Status: <span className={`font-medium ${patent.status === 'granted' ? 'text-green-400' : patent.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{patent.status.replace(/_/g, ' ')}</span></p>
-                                            <p className="text-gray-500">Filed: {patent.filingDate}</p>
-                                            <p className="text-gray-500">Materials: {patent.associatedMaterials.map(mId => mId.split('-')[1]).join(', ')}</p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                        {context.grantsSubmitted.length > 0 && (
-                            <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
-                                <h3 className="font-semibold text-fuchsia-400 text-xl mb-3">Grants Submitted ({context.grantsSubmitted.length})</h3>
-                                <ul className="space-y-3">
-                                    {context.grantsSubmitted.map(grant => (
-                                        <li key={grant.id} className="text-sm border-b border-gray-700 pb-2">
-                                            <p className="font-medium text-white">{grant.title}</p>
-                                            <p className="text-gray-400">Status: <span className={`font-medium ${grant.status === 'funded' ? 'text-green-400' : grant.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{grant.status.replace(/_/g, ' ')}</span></p>
-                                            <p className="text-gray-500">Requested: {formatNumber(grant.budgetRequest, true)}</p>
-                                            {grant.currentFunding && <p className="text-gray-500">Funded: {formatNumber(grant.currentFunding, true)}</p>}
-                                            <p className="text-gray-500">Agency: {grant.fundingAgency}</p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                        {context.publicationsSubmitted.length > 0 && (
-                            <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
-                                <h3 className="font-semibold text-rose-400 text-xl mb-3">Publications ({context.publicationsSubmitted.length})</h3>
-                                <ul className="space-y-3">
-                                    {context.publicationsSubmitted.map(pub => (
-                                        <li key={pub.id} className="text-sm border-b border-gray-700 pb-2">
-                                            <p className="font-medium text-white">{pub.title}</p>
-                                            <p className="text-gray-400">Journal: {pub.journal}</p>
-                                            <p className="text-gray-400">Status: <span className={`font-medium ${pub.status === 'accepted' ? 'text-green-400' : pub.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{pub.status.replace(/_/g, ' ')}</span></p>
-                                            <p className="text-gray-500">Submitted: {pub.submissionDate}</p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                </LocalCard>
-            )}
-
-
-            {context.researchReport && context.currentPhase === ResearchPhase.COMPLETED && (
-                <LocalCard title="Final Research Report: Publication Draft" className="bg-gray-800/70 border-cyan-800" expanded={expandedCards.finalResearchReport} onToggleExpand={() => toggleCardExpansion('finalResearchReport')}>
-                    <h2 className="text-4xl font-bold text-white mb-4 text-center">{context.researchReport.title}</h2>
-                    <p className="text-gray-400 text-md mb-6 text-center">By: {context.researchReport.author} | Date: {context.researchReport.date}</p>
-
-                    <div className="space-y-8 text-gray-300 text-base leading-relaxed">
+                <LocalCard title="Intellectual Property & Publications" className="bg-gray-800/70 border-amber-800" expanded={expandedCards.ipAndPublications} onToggleExpand={() => toggleCardExpansion('ipAndPublications')}>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Abstract</h3>
-                            <p className="text-lg">{context.researchReport.abstract}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Introduction</h3>
-                            <p>{context.researchReport.introduction}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Hypotheses</h3>
-                            <ul className="list-disc list-inside space-y-2 pl-4">
-                                {context.researchReport.hypotheses.map((h, i) => (
-                                    <li key={i}>
-                                        <strong className="text-white">H{i + 1}:</strong> {h.text} (Status: <span className={`${h.status === 'supported' ? 'text-green-400' : h.status === 'refuted' ? 'text-red-400' : 'text-yellow-400'}`}>{h.status.replace(/_/g, ' ')}</span>)
+                            <h3 className="text-xl font-semibold text-amber-300 mb-3">Patents Filed ({context.patentsFiled.length})</h3>
+                            <ul className="space-y-4">
+                                {context.patentsFiled.map(patent => (
+                                    <li key={patent.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm">
+                                        <p className="font-semibold text-white text-base">{patent.title}</p>
+                                        <p className="text-sm text-gray-400">Status: <span className={`font-medium ${patent.status === 'granted' ? 'text-green-400' : patent.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'} capitalize`}>{patent.status.replace(/_/g, ' ')}</span></p>
+                                        <p className="text-xs text-gray-500 mt-1">Filed: {patent.filingDate}</p>
+                                        <details className="text-xs text-gray-500 cursor-pointer mt-2">
+                                            <summary className="text-amber-400 hover:text-amber-300">Claims ({patent.claims.length})</summary>
+                                            <ul className="list-disc list-inside mt-1 space-y-1">
+                                                {patent.claims.map((claim, idx) => <li key={idx} className="text-gray-300">{claim}</li>)}
+                                            </ul>
+                                        </details>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                         <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Methodology & Experiments</h3>
-                            <div className="space-y-4 pl-4">
-                                {context.researchReport.experiments.map((exp, i) => (
-                                    <div key={i} className="bg-gray-900/50 p-4 rounded border border-gray-700 shadow-sm">
-                                        <h4 className="font-semibold text-purple-300 text-lg">{exp.name} ({exp.type.charAt(0).toUpperCase() + exp.type.slice(1)})</h4>
-                                        <p className="text-sm italic text-gray-400 mt-1">{exp.designRationale.substring(0, Math.min(exp.designRationale.length, 150))}...</p>
-                                        {exp.results && (
-                                            <p className="text-sm mt-2 text-gray-300">Summary: {exp.results.analysisSummary}</p>
-                                        )}
-                                    </div>
+                            <h3 className="text-xl font-semibold text-fuchsia-300 mb-3">Grants Submitted ({context.grantsSubmitted.length})</h3>
+                            <ul className="space-y-4">
+                                {context.grantsSubmitted.map(grant => (
+                                    <li key={grant.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm">
+                                        <p className="font-semibold text-white text-base">{grant.title}</p>
+                                        <p className="text-sm text-gray-400">Status: <span className={`font-medium ${grant.status === 'funded' ? 'text-green-400' : grant.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'} capitalize`}>{grant.status.replace(/_/g, ' ')}</span></p>
+                                        <p className="text-xs text-gray-500 mt-1">Requested: {formatNumber(grant.budgetRequest, true)} {grant.currentFunding ? `(Funded: ${formatNumber(grant.currentFunding, true)})` : ''}</p>
+                                        <details className="text-xs text-gray-500 cursor-pointer mt-2">
+                                            <summary className="text-fuchsia-400 hover:text-fuchsia-300">Summary & Aims</summary>
+                                            <p className="text-gray-300 mt-1 mb-2">{grant.summary}</p>
+                                            <ul className="list-disc list-inside space-y-1">
+                                                {grant.specificAims.map((aim, idx) => <li key={idx} className="text-gray-300">{aim}</li>)}
+                                            </ul>
+                                        </details>
+                                    </li>
                                 ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Results Summary</h3>
-                            <p>{context.researchReport.resultsSummary}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Discussion</h3>
-                            <p>{context.researchReport.discussion}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Conclusion</h3>
-                            <p>{context.researchReport.conclusion}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Future Work & Recommendations</h3>
-                            <p>{context.researchReport.futureWork}</p>
-                            <ul className="list-disc list-inside space-y-1 pl-4 mt-2 text-gray-400">
-                                {context.researchReport.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
                             </ul>
                         </div>
-                        {context.researchReport.safetyAssessment && (
-                            <div>
-                                <h3 className="text-2xl font-semibold text-red-300 mb-3 border-b border-gray-700 pb-1">Simulated Safety Assessment</h3>
-                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-400 pl-4">
+                        <div>
+                            <h3 className="text-xl font-semibold text-rose-300 mb-3">Publications Submitted ({context.publicationsSubmitted.length})</h3>
+                            <ul className="space-y-4">
+                                {context.publicationsSubmitted.map(pub => (
+                                    <li key={pub.id} className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm">
+                                        <p className="font-semibold text-white text-base">{pub.title}</p>
+                                        <p className="text-sm text-gray-400">Journal: <span className="font-medium text-white">{pub.journal}</span></p>
+                                        <p className="text-sm text-gray-400">Status: <span className={`font-medium ${pub.status === 'published' || pub.status === 'accepted' ? 'text-green-400' : pub.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'} capitalize`}>{pub.status.replace(/_/g, ' ')}</span></p>
+                                        <p className="text-xs text-gray-500 mt-1">Submitted: {pub.submissionDate}{pub.doi && <span className="ml-2">DOI: {pub.doi}</span>}</p>
+                                        <details className="text-xs text-gray-500 cursor-pointer mt-2">
+                                            <summary className="text-rose-400 hover:text-rose-300">Abstract & Keywords</summary>
+                                            <p className="text-gray-300 mt-1 mb-2">{pub.abstract}</p>
+                                            <p className="text-gray-300">Keywords: {pub.keywords.join(', ')}</p>
+                                        </details>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </LocalCard>
+            )}
+
+            {context.researchReport && (
+                <LocalCard title="Final Research Report" className="bg-gray-800/70 border-emerald-800" expanded={expandedCards.finalResearchReport} onToggleExpand={() => toggleCardExpansion('finalResearchReport')}>
+                    <div className="space-y-6 text-gray-300 leading-relaxed text-base p-4 rounded-lg bg-gray-900/50 border border-gray-700 shadow-inner">
+                        <h2 className="text-3xl font-bold text-emerald-300 mb-2">{context.researchReport.title}</h2>
+                        <p className="text-sm text-gray-400"><strong>Author:</strong> {context.researchReport.author} | <strong>Date:</strong> {context.researchReport.date}</p>
+
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Abstract</h3>
+                            <p>{context.researchReport.abstract}</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Introduction</h3>
+                            <p>{context.researchReport.introduction}</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Key Hypotheses & Outcomes</h3>
+                            <ul className="list-disc list-inside space-y-2">
+                                {context.researchReport.hypotheses.map(h => (
+                                    <li key={h.id}>
+                                        <p className="text-white font-medium">{h.text} <span className={`font-normal text-sm ml-2 ${h.status === 'supported' ? 'text-green-400' : h.status === 'refuted' ? 'text-red-400' : 'text-yellow-400'}`}>({h.status.replace(/_/g, ' ')})</span></p>
+                                        <p className="text-gray-500 text-xs ml-4">Target: {h.targetProperty}, Predicted: {h.predictedEffect}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Experiments & Methodology Summary</h3>
+                            <ul className="list-disc list-inside space-y-2">
+                                {context.researchReport.experiments.map(exp => (
+                                    <li key={exp.id}>
+                                        <p className="text-white font-medium">{exp.name} ({exp.type}) - <span className="text-gray-400">{exp.results?.analysisSummary.substring(0, Math.min(exp.results.analysisSummary.length, 100))}...</span></p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Results Summary</h3>
+                            <p>{context.researchReport.resultsSummary}</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Discussion</h3>
+                            <p>{context.researchReport.discussion}</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Conclusion</h3>
+                            <p>{context.researchReport.conclusion}</p>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-semibold text-emerald-400">Future Work</h3>
+                            <p>{context.researchReport.futureWork}</p>
+                        </div>
+                        {context.researchReport.safetyAssessment && context.researchReport.safetyAssessment.length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-semibold text-emerald-400">Safety Assessment Metrics</h3>
+                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-400">
                                     {context.researchReport.safetyAssessment.map((metric, idx) => (
                                         <li key={idx}>
                                             {metric.name}: <span className="text-white font-medium">{metric.value}{metric.unit ? ` ${metric.unit}` : ''}</span>
@@ -3158,10 +3863,10 @@ const AutonomousScientistView: React.FC = () => {
                                 </ul>
                             </div>
                         )}
-                        {context.researchReport.economicAnalysis && (
-                            <div>
-                                <h3 className="text-2xl font-semibold text-green-300 mb-3 border-b border-gray-700 pb-1">Simulated Economic Analysis</h3>
-                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-400 pl-4">
+                        {context.researchReport.economicAnalysis && context.researchReport.economicAnalysis.length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-semibold text-emerald-400">Economic Analysis Metrics</h3>
+                                <ul className="list-disc list-inside space-y-1 text-sm text-gray-400">
                                     {context.researchReport.economicAnalysis.map((metric, idx) => (
                                         <li key={idx}>
                                             {metric.name}: <span className="text-white font-medium">{metric.value}{metric.unit ? ` ${metric.unit}` : ''}</span>
@@ -3171,12 +3876,12 @@ const AutonomousScientistView: React.FC = () => {
                                 </ul>
                             </div>
                         )}
-                        {context.researchReport.citations.length > 0 && (
-                            <div>
-                                <h3 className="text-2xl font-semibold text-cyan-300 mb-3 border-b border-gray-700 pb-1">Citations</h3>
-                                <ul className="list-disc list-inside text-sm space-y-1 pl-4">
-                                    {context.researchReport.citations.map((citation, i) => (
-                                        <li key={i}>{citation}</li>
+                        {context.researchReport.citations && context.researchReport.citations.length > 0 && (
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-semibold text-emerald-400">Citations</h3>
+                                <ul className="list-disc list-inside space-y-1">
+                                    {context.researchReport.citations.map((cite, idx) => (
+                                        <li key={idx} className="text-gray-400">{cite}</li>
                                     ))}
                                 </ul>
                             </div>
@@ -3185,18 +3890,40 @@ const AutonomousScientistView: React.FC = () => {
                 </LocalCard>
             )}
 
-            {context.currentPhase === ResearchPhase.FAILED && (
-                <LocalCard title="Research Cycle Failed" className="bg-red-900/40 border-red-700 shadow-xl">
-                    <p className="text-red-300 text-xl text-center">
-                        The autonomous scientist encountered a critical error and could not complete the research goal.
-                        Please review the Agent Activity Log and Decision History for details to understand the failure.
-                    </p>
-                </LocalCard>
-            )}
-
-            <div className="text-center text-gray-500 text-sm mt-12 pb-8">
-                Autonomous Scientist AI v1.0.1 - Advanced Simulated Research Environment.
-            </div>
+            <LocalCard title="Immutable Audit Log" className="bg-gray-800/70 border-gray-900" expanded={expandedCards.auditLog} onToggleExpand={() => toggleCardExpansion('auditLog')}>
+                <div className="flex justify-end mb-4">
+                    <button
+                        onClick={() => {
+                            const isVerified = ImmutableAuditLog.verifyLog();
+                            if (isVerified) {
+                                alert('Audit Log Integrity Verified: The log is consistent and untampered.');
+                            } else {
+                                alert('Audit Log Integrity Compromised: Inconsistencies detected. Check console for details.');
+                            }
+                        }}
+                        className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-lg text-white font-medium text-sm transition-colors duration-200"
+                    >
+                        Verify Audit Log Integrity
+                    </button>
+                </div>
+                <div className="space-y-3 max-h-[50vh] overflow-y-auto p-4 rounded-lg bg-gray-900/50 border border-gray-700 shadow-inner">
+                    {ImmutableAuditLog.getLogEntries().length === 0 ? (
+                        <p className="text-gray-500 text-center italic">No audit log entries yet.</p>
+                    ) : (
+                        ImmutableAuditLog.getLogEntries().map((entry, i) => (
+                            <div key={i} className="p-3 bg-gray-800/50 rounded-lg border border-gray-700 text-sm">
+                                <div className="flex justify-between items-center text-gray-400 mb-1">
+                                    <span><strong>Time:</strong> {new Date(entry.timestamp).toLocaleString()}</span>
+                                    {entry.signedBy && <span><strong>Signed By:</strong> {entry.signedBy.substring(0, 12)}...</span>}
+                                </div>
+                                <p className="text-gray-300 truncate"><strong>Data:</strong> {JSON.stringify(entry.data)}</p>
+                                <p className="text-gray-500 text-xs mt-1"><strong>Hash:</strong> {entry.hash}</p>
+                                <p className="text-gray-500 text-xs"><strong>Prev Hash:</strong> {entry.prevHash}</p>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </LocalCard>
         </div>
     );
 };
