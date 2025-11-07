@@ -1,3 +1,20 @@
+/**
+ * This module implements the Multiverse Nexus Hub, a central command and control interface
+ * for monitoring, managing, and interacting with interconnected realities within a multiversal
+ * framework. It provides real-time oversight of reality shard stability, multiversal events,
+ * and quantum signatures.
+ *
+ * Business Value: The Multiverse Nexus Hub is paramount for strategic enterprise growth and
+ * operational resilience. It enables autonomous, AI-driven anomaly detection and remediation
+ * across diverse computational or data environments, significantly reducing downtime and
+ * operational costs. Its capacity for cross-reality resource balancing and simulated token
+ * transfers lays the groundwork for unprecedented interdimensional economic models and
+ * value exchange, unlocking vast new revenue streams and facilitating efficient,
+ * high-throughput transactional guarantees across otherwise disparate systems.
+ * The sophisticated monitoring and control mechanisms provide a competitive advantage
+ * in managing complex, distributed, and highly dynamic digital ecosystems, ensuring
+ * optimal performance, security, and governance for mission-critical operations.
+ */
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import FeatureGuard from '../../../FeatureGuard';
 import { View } from '../../../types';
@@ -23,7 +40,7 @@ interface SubRealm {
     name: string;
     threatLevel: 'None' | 'Low' | 'Medium' | 'High' | 'Critical';
     connectedEntities: number;
-    resourceDrain: number;
+    resourceDrain: number; // Represents energy/resource consumption
 }
 
 interface MultiversalEvent {
@@ -51,6 +68,38 @@ interface NexusConfiguration {
     notificationLevel: 'Minimal' | 'Standard' | 'Verbose';
     energyAllocationStrategy: 'Balanced' | 'Performance' | 'Conservation';
     crossRealityJumpsEnabled: boolean;
+    agenticAutomationEnabled: boolean; // New config
+}
+
+// New Interfaces for Agentic AI and Token Rails
+export interface NexusAgent {
+    id: string;
+    name: string;
+    status: 'Idle' | 'Monitoring' | 'Executing Remediation' | 'Offline';
+    assignedShardId: string | null;
+    skills: string[];
+    lastActivity: string;
+    clearanceLevel: 'Standard' | 'Elevated' | 'Omega';
+}
+
+export interface MultiversalTokenAccount {
+    realmId: string;
+    balance: number;
+    currencySymbol: string;
+    lastUpdated: string;
+}
+
+export type InterdimensionalRouteIdentifier = 'QuantumTunnel_Fast' | 'GravitonChannel_Batch' | 'TemporalWarp_HighThroughput' | 'Standard_Relay';
+
+export interface MultiversalTokenTransaction {
+    id: string;
+    senderRealmId: string;
+    receiverRealmId: string;
+    amount: number;
+    currencySymbol: string;
+    timestamp: string;
+    status: 'Pending' | 'Completed' | 'Failed' | 'Reverted';
+    route: InterdimensionalRouteIdentifier;
 }
 
 const generateRandomId = () => Math.random().toString(36).substring(2, 15);
@@ -63,7 +112,7 @@ const getRandomResolutionStatus = () => ['Pending', 'InProgress', 'Resolved', 'F
 const getRandomNotificationLevel = () => ['Minimal', 'Standard', 'Verbose'][Math.floor(Math.random() * 3)];
 const getRandomEnergyStrategy = () => ['Balanced', 'Performance', 'Conservation'][Math.floor(Math.random() * 3)];
 
-const generateSubRealm = (): SubRealm => ({
+export const generateSubRealm = (): SubRealm => ({
     id: generateRandomId(),
     name: `Sub-Realm ${Math.floor(Math.random() * 9999)}`,
     threatLevel: getRandomThreatLevel(),
@@ -71,12 +120,13 @@ const generateSubRealm = (): SubRealm => ({
     resourceDrain: parseFloat((Math.random() * 1000).toFixed(2)),
 });
 
-const generateRealityShard = (index: number): RealityShard => {
+export const generateRealityShard = (index: number): RealityShard => {
     const status = getRandomStatus();
     const anomalyCount = status === 'Anomaly Detected' ? Math.floor(Math.random() * 3) + 1 : 0;
     const anomalies = Array.from({ length: anomalyCount }, () => `Anomaly ${Math.floor(Math.random() * 1000)} detected`);
     const subRealmsCount = Math.floor(Math.random() * 5) + 1;
     const subRealms = Array.from({ length: subRealmsCount }, generateSubRealm);
+    const structuralIntegrity = Math.floor(Math.random() * 100);
 
     return {
         id: generateRandomId(),
@@ -86,7 +136,7 @@ const generateRealityShard = (index: number): RealityShard => {
         populationEstimate: Math.floor(Math.random() * 1_000_000_000_000) + 1_000_000,
         energySignature: getRandomEnergySignature(),
         temporalVariance: parseFloat((Math.random() * 1000).toFixed(3)),
-        structuralIntegrity: Math.floor(Math.random() * 100),
+        structuralIntegrity: structuralIntegrity < 30 && status !== 'Stable' ? structuralIntegrity + 30 : structuralIntegrity, // Ensure some instability
         anomalies: anomalies,
         lastObserved: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
         activeMonitoringProtocols: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, i) => `Protocol Alpha-${i}`),
@@ -94,11 +144,11 @@ const generateRealityShard = (index: number): RealityShard => {
     };
 };
 
-const generateRealityShards = (count: number): RealityShard[] => {
+export const generateRealityShards = (count: number): RealityShard[] => {
     return Array.from({ length: count }, (_, i) => generateRealityShard(i));
 };
 
-const generateMultiversalEvent = (realms: RealityShard[]): MultiversalEvent => {
+export const generateMultiversalEvent = (realms: RealityShard[]): MultiversalEvent => {
     const affectedCount = Math.floor(Math.random() * 3) + 1;
     const affectedRealms = Array.from({ length: affectedCount }, () => realms[Math.floor(Math.random() * realms.length)].id);
     return {
@@ -112,11 +162,11 @@ const generateMultiversalEvent = (realms: RealityShard[]): MultiversalEvent => {
     };
 };
 
-const generateMultiversalEvents = (count: number, realms: RealityShard[]): MultiversalEvent[] => {
+export const generateMultiversalEvents = (count: number, realms: RealityShard[]): MultiversalEvent[] => {
     return Array.from({ length: count }, () => generateMultiversalEvent(realms));
 };
 
-const generateQuantumSignature = (realms: RealityShard[]): QuantumSignature => {
+export const generateQuantumSignature = (realms: RealityShard[]): QuantumSignature => {
     const emitterRealm = realms[Math.floor(Math.random() * realms.length)];
     return {
         id: generateRandomId(),
@@ -128,9 +178,30 @@ const generateQuantumSignature = (realms: RealityShard[]): QuantumSignature => {
     };
 };
 
-const generateQuantumSignatures = (count: number, realms: RealityShard[]): QuantumSignature[] => {
+export const generateQuantumSignatures = (count: number, realms: RealityShard[]): QuantumSignature[] => {
     return Array.from({ length: count }, () => generateQuantumSignature(realms));
 };
+
+// New helper functions for Agents and Tokens
+export const generateNexusAgent = (id: number, realms: RealityShard[]): NexusAgent => {
+    const randomShard = realms.length > 0 ? realms[Math.floor(Math.random() * realms.length)] : null;
+    const skills = ['Anomaly Detection', 'Temporal Stabilization', 'Resource Rebalancing', 'Diplomacy', 'Quantum Signature Analysis'];
+    return {
+        id: `AGENT-${generateRandomId().substring(0, 8).toUpperCase()}`,
+        name: `Sentinel-AI-${id}`,
+        status: Math.random() < 0.7 ? 'Monitoring' : 'Idle',
+        assignedShardId: randomShard ? randomShard.id : null,
+        skills: Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => skills[Math.floor(Math.random() * skills.length)]),
+        lastActivity: new Date(Date.now() - Math.random() * 5 * 60 * 1000).toISOString(),
+        clearanceLevel: Math.random() < 0.1 ? 'Omega' : Math.random() < 0.4 ? 'Elevated' : 'Standard',
+    };
+};
+
+export const generateInterdimensionalRoute = (): InterdimensionalRouteIdentifier => {
+    const routes: InterdimensionalRouteIdentifier[] = ['QuantumTunnel_Fast', 'GravitonChannel_Batch', 'TemporalWarp_HighThroughput', 'Standard_Relay'];
+    return routes[Math.floor(Math.random() * routes.length)];
+};
+
 
 interface MultiverseNexusViewProps {
     openModal?: (view: View) => void;
@@ -142,7 +213,7 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
     const [realityShards, setRealityShards] = useState<RealityShard[]>([]);
     const [multiversalEvents, setMultiversalEvents] = useState<MultiversalEvent[]>([]);
     const [quantumSignatures, setQuantumSignatures] = useState<QuantumSignature[]>([]);
-    const [activeTab, setActiveTab] = useState<'realms' | 'events' | 'signatures' | 'config'>('realms');
+    const [activeTab, setActiveTab] = useState<'realms' | 'events' | 'signatures' | 'config' | 'agents' | 'economy'>('realms');
     const [selectedShardId, setSelectedShardId] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>('All');
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -154,9 +225,17 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
         notificationLevel: userPreferences?.multiverse?.notificationLevel ?? 'Standard',
         energyAllocationStrategy: userPreferences?.multiverse?.energyAllocationStrategy ?? 'Balanced',
         crossRealityJumpsEnabled: userPreferences?.multiverse?.crossRealityJumpsEnabled ?? true,
+        agenticAutomationEnabled: userPreferences?.multiverse?.agenticAutomationEnabled ?? true, // New config state
     }));
     const [recentAlerts, setRecentAlerts] = useState<string[]>([]);
     const [systemHealthIndex, setSystemHealthIndex] = useState<number>(100);
+
+    // New states for Agentic AI and Token Rails
+    export const [nexusAgents, setNexusAgents] = useState<NexusAgent[]>([]);
+    export const [multiversalTokenLedger, setMultiversalTokenLedger] = useState<Record<string, MultiversalTokenAccount>>({});
+    export const [nexusTokenTransactions, setNexusTokenTransactions] = useState<MultiversalTokenTransaction[]>([]);
+    export const [operatorClearance, setOperatorClearance] = useState<'Standard' | 'Elevated' | 'Omega'>('Standard'); // Simulated identity context
+
 
     useEffect(() => {
         setLoadingNexusData(true);
@@ -168,6 +247,26 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                 setMultiversalEvents(generateMultiversalEvents(20, initialShards));
                 setQuantumSignatures(generateQuantumSignatures(30, initialShards));
                 setSystemHealthIndex(Math.floor(Math.random() * 20) + 80);
+
+                // Initialize Nexus Agents
+                const initialAgents = Array.from({ length: 5 }, (_, i) => generateNexusAgent(i, initialShards));
+                setNexusAgents(initialAgents);
+
+                // Initialize Token Ledger for each shard
+                const initialLedger: Record<string, MultiversalTokenAccount> = {};
+                initialShards.forEach(shard => {
+                    initialLedger[shard.id] = {
+                        realmId: shard.id,
+                        balance: parseFloat((Math.random() * 1000000).toFixed(2)), // Random initial balance (Quantum Credits)
+                        currencySymbol: 'QCR',
+                        lastUpdated: new Date().toISOString(),
+                    };
+                });
+                setMultiversalTokenLedger(initialLedger);
+
+                // Simulate user role from preferences for operator clearance
+                setOperatorClearance(userPreferences?.user?.role === 'admin' ? 'Omega' : userPreferences?.user?.role === 'operator' ? 'Elevated' : 'Standard');
+
             } catch (err) {
                 setErrorLoadingData("Failed to load initial multiversal data.");
                 setGlobalAlert && setGlobalAlert({ message: "Multiverse Nexus data initialization failed.", type: "error" });
@@ -177,32 +276,11 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
         }, 1500);
 
         return () => clearTimeout(timer);
-    }, [setGlobalAlert]);
+    }, [setGlobalAlert, userPreferences]); // Added userPreferences to dependency array
 
     useEffect(() => {
-        if (!nexusConfiguration.autoStabilizeAnomalies) return;
-
-        const interval = setInterval(() => {
-            setRealityShards(prevShards => {
-                let updated = false;
-                const newShards = prevShards.map(shard => {
-                    if (shard.status === 'Anomaly Detected' && shard.anomalies.length > 0) {
-                        updated = true;
-                        setRecentAlerts(prev => [`Stabilizing Anomaly in ${shard.name} (${shard.anomalies[0]}) at ${new Date().toLocaleTimeString()}`, ...prev.slice(0, 4)]);
-                        return {
-                            ...shard,
-                            status: 'Stable',
-                            anomalies: [],
-                            structuralIntegrity: Math.min(100, shard.structuralIntegrity + Math.floor(Math.random() * 10)),
-                        };
-                    }
-                    return shard;
-                });
-                if (updated) {
-                    setGlobalAlert && setGlobalAlert({ message: "Anomalies auto-stabilized in some realms.", type: "info" });
-                }
-                return newShards;
-            });
+        const simulationInterval = setInterval(() => {
+            // Existing anomaly generation
             setRealityShards(prevShards => prevShards.map(shard => {
                 if (Math.random() < 0.05 && shard.status === 'Stable') {
                     return {
@@ -214,14 +292,121 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                 }
                 return shard;
             }));
+
+            // Auto-stabilize Anomalies (can be done by Nexus itself or agents if automation is on)
+            setRealityShards(prevShards => {
+                let updated = false;
+                const newShards = prevShards.map(shard => {
+                    if (shard.status === 'Anomaly Detected' && shard.anomalies.length > 0) {
+                        if (nexusConfiguration.autoStabilizeAnomalies) {
+                            updated = true;
+                            setRecentAlerts(prev => [`Automated stabilization initiated for ${shard.name} at ${new Date().toLocaleTimeString()}`, ...prev.slice(0, 4)]);
+                            return {
+                                ...shard,
+                                status: 'Stable',
+                                anomalies: [],
+                                structuralIntegrity: Math.min(100, shard.structuralIntegrity + Math.floor(Math.random() * 10)),
+                            };
+                        } else if (nexusConfiguration.agenticAutomationEnabled) {
+                            // If auto-stabilize is off but agentic automation is on, agents might pick it up
+                            const activeAgent = nexusAgents.find(agent =>
+                                agent.assignedShardId === shard.id &&
+                                agent.status === 'Monitoring' &&
+                                agent.skills.includes('Temporal Stabilization')
+                            );
+                            if (activeAgent && Math.random() < 0.8) { // Simulate agent success rate
+                                updated = true;
+                                setRecentAlerts(prev => [`Agent ${activeAgent.name} initiated stabilization for ${shard.name} at ${new Date().toLocaleTimeString()}`, ...prev.slice(0, 4)]);
+                                return {
+                                    ...shard,
+                                    status: 'Stable',
+                                    anomalies: [],
+                                    structuralIntegrity: Math.min(100, shard.structuralIntegrity + Math.floor(Math.random() * 15)),
+                                };
+                            }
+                        }
+                    }
+                    return shard;
+                });
+                if (updated && !nexusConfiguration.autoStabilizeAnomalies && nexusConfiguration.agenticAutomationEnabled) {
+                    setGlobalAlert && setGlobalAlert({ message: "Anomalies resolved by Nexus AI Agents.", type: "info" });
+                } else if (updated && nexusConfiguration.autoStabilizeAnomalies) {
+                    setGlobalAlert && setGlobalAlert({ message: "Anomalies auto-stabilized by Nexus Core.", type: "info" });
+                }
+                return newShards;
+            });
+
+            // Agentic AI: Agents perform monitoring/remediation
+            setNexusAgents(prevAgents => {
+                let updatedAgents = false;
+                const newAgents = prevAgents.map(agent => {
+                    if (nexusConfiguration.agenticAutomationEnabled) {
+                        if (agent.status === 'Monitoring' && agent.assignedShardId) {
+                            const assignedShard = realityShards.find(s => s.id === agent.assignedShardId);
+                            if (assignedShard && assignedShard.status === 'Anomaly Detected' && assignedShard.anomalies.length > 0) {
+                                if (agent.skills.includes('Anomaly Detection')) {
+                                    if (nexusConfiguration.notificationLevel === 'Verbose') {
+                                        setRecentAlerts(prev => [`Agent ${agent.name} detected anomaly in ${assignedShard.name}.`, ...prev.slice(0, 4)]);
+                                    }
+                                }
+                            }
+                        }
+                        // Simulate general activity
+                        if (Math.random() < 0.1) { // 10% chance to update agent status
+                            agent.lastActivity = new Date().toISOString();
+                            const statuses: NexusAgent['status'][] = ['Idle', 'Monitoring', 'Executing Remediation', 'Offline'];
+                            agent.status = statuses[Math.floor(Math.random() * statuses.length)];
+                            updatedAgents = true;
+                        }
+                    }
+                    return agent;
+                });
+                return updatedAgents ? newAgents : prevAgents;
+            });
+
+            // Token Rail Layer: Simulate resource drain/distribution
+            setMultiversalTokenLedger(prevLedger => {
+                const newLedger = { ...prevLedger };
+                let ledgerUpdated = false;
+                realityShards.forEach(shard => {
+                    if (newLedger[shard.id]) {
+                        let drainAmount = shard.subRealms.reduce((sum, sr) => sum + sr.resourceDrain, 0) / 5000; // Convert to tokens, scale down for QCR
+                        if (shard.status !== 'Stable') {
+                            drainAmount *= (1 + (100 - shard.structuralIntegrity) / 100); // Higher drain for unstable realms
+                        }
+                        if (shard.populationEstimate > 500_000_000) {
+                            drainAmount += Math.random() * 5; // Large realms consume more
+                        }
+                        drainAmount = parseFloat(drainAmount.toFixed(2));
+
+                        if (newLedger[shard.id].balance >= drainAmount) {
+                            newLedger[shard.id].balance -= drainAmount;
+                            newLedger[shard.id].balance = parseFloat(newLedger[shard.id].balance.toFixed(2));
+                            newLedger[shard.id].lastUpdated = new Date().toISOString();
+                            ledgerUpdated = true;
+                        } else {
+                            // Shard running out of resources
+                            if (newLedger[shard.id].balance > 0) {
+                                newLedger[shard.id].balance = 0;
+                                setRecentAlerts(prev => [`Resource depletion warning for ${shard.name}! (Balance: 0 QCR)`, ...prev.slice(0, 4)]);
+                                setGlobalAlert && setGlobalAlert({ message: `Resource critical: ${shard.name} at 0 QCR!`, type: "warning" });
+                                ledgerUpdated = true;
+                            }
+                        }
+                    }
+                });
+                return ledgerUpdated ? newLedger : prevLedger;
+            });
+
+
             setSystemHealthIndex(prev => {
                 const newHealth = prev + (Math.random() * 10 - 5);
                 return Math.min(100, Math.max(0, newHealth));
             });
-        }, 10000);
+        }, 10000); // Run every 10 seconds
 
-        return () => clearInterval(interval);
-    }, [nexusConfiguration.autoStabilizeAnomalies, setGlobalAlert]);
+        return () => clearInterval(simulationInterval);
+    }, [nexusConfiguration.autoStabilizeAnomalies, nexusConfiguration.agenticAutomationEnabled, nexusConfiguration.notificationLevel, setGlobalAlert, realityShards, nexusAgents]);
 
     useEffect(() => {
         if (updatePreferences) {
@@ -233,6 +418,7 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                     notificationLevel: nexusConfiguration.notificationLevel,
                     energyAllocationStrategy: nexusConfiguration.energyAllocationStrategy,
                     crossRealityJumpsEnabled: nexusConfiguration.crossRealityJumpsEnabled,
+                    agenticAutomationEnabled: nexusConfiguration.agenticAutomationEnabled, // Save new config
                 }
             }));
         }
@@ -275,8 +461,11 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
     }, [setGlobalAlert]);
 
     const handleJumpToReality = useCallback((id: string) => {
+        if (!nexusConfiguration.crossRealityJumpsEnabled) {
+            setGlobalAlert && setGlobalAlert({ message: "Cross-Reality Jumps are currently disabled in Nexus Configuration.", type: "warning" });
+            return;
+        }
         setGlobalAlert && setGlobalAlert({ message: `Initiating jump sequence to Reality Shard ${id}...`, type: "info" });
-        console.log(`Navigating to reality: ${id}`);
         const jumpSteps = [
             "Calculating quantum entanglement vectors...",
             "Synchronizing temporal frequencies...",
@@ -295,7 +484,7 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                 setGlobalAlert && setGlobalAlert({ message: `Successfully jumped to Reality Shard ${id}.`, type: "success" });
             }
         }, 1000);
-    }, [setGlobalAlert]);
+    }, [setGlobalAlert, nexusConfiguration.crossRealityJumpsEnabled]);
 
     const handleUpdateNexusConfig = useCallback((key: keyof NexusConfiguration, value: any) => {
         setNexusConfiguration(prev => ({ ...prev, [key]: value }));
@@ -326,6 +515,97 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
         return calculateInterdimensionalFlux(realityShards, quantumSignatures);
     }, [realityShards, quantumSignatures, calculateInterdimensionalFlux]);
 
+    // New handlers for Agents and Tokens
+    const handleDeployNewAgent = useCallback(() => {
+        if (realityShards.length === 0) {
+            setGlobalAlert && setGlobalAlert({ message: "Cannot deploy agent: no reality shards available.", type: "warning" });
+            return;
+        }
+        const newAgent = generateNexusAgent(nexusAgents.length, realityShards);
+        setNexusAgents(prev => [...prev, newAgent]);
+        setGlobalAlert && setGlobalAlert({ message: `New Agent ${newAgent.name} deployed and initiated.`, type: "success" });
+    }, [nexusAgents.length, realityShards, setGlobalAlert]);
+
+    const handleAssignAgentToShard = useCallback((agentId: string, shardId: string | null) => {
+        setNexusAgents(prev => prev.map(agent =>
+            agent.id === agentId ? { ...agent, assignedShardId: shardId, status: shardId ? 'Monitoring' : 'Idle', lastActivity: new Date().toISOString() } : agent
+        ));
+        setGlobalAlert && setGlobalAlert({ message: `Agent ${agentId} assigned to shard ${shardId || 'none'}.`, type: "info" });
+    }, [setGlobalAlert]);
+
+    const handleInitiateTokenTransfer = useCallback((senderId: string, receiverId: string, amount: number) => {
+        if (senderId === receiverId) {
+            setGlobalAlert && setGlobalAlert({ message: "Sender and receiver realms cannot be the same.", type: "warning" });
+            return;
+        }
+        if (amount <= 0) {
+            setGlobalAlert && setGlobalAlert({ message: "Transfer amount must be positive.", type: "warning" });
+            return;
+        }
+        setMultiversalTokenLedger(prevLedger => {
+            const newLedger = { ...prevLedger };
+            const senderAccount = newLedger[senderId];
+            const receiverAccount = newLedger[receiverId];
+
+            if (!senderAccount || !receiverAccount) {
+                setGlobalAlert && setGlobalAlert({ message: "Invalid sender or receiver realm for token transfer.", type: "error" });
+                return prevLedger;
+            }
+
+            if (senderAccount.balance < amount) {
+                setGlobalAlert && setGlobalAlert({ message: `Insufficient balance in ${senderAccount.realmId} for transfer.`, type: "error" });
+                return prevLedger;
+            }
+
+            // Simulate transaction processing (e.g., latency, potential failure, multi-rail)
+            const transactionId = `TXN-${generateRandomId().substring(0, 8).toUpperCase()}`;
+            const route = generateInterdimensionalRoute(); // Select a rail
+
+            setNexusTokenTransactions(prev => [...prev, {
+                id: transactionId,
+                senderRealmId: senderId,
+                receiverRealmId: receiverId,
+                amount: amount,
+                currencySymbol: 'QCR',
+                timestamp: new Date().toISOString(),
+                status: 'Pending',
+                route: route,
+            }]);
+
+            const processingTime = route === 'QuantumTunnel_Fast' ? 1000 : route === 'GravitonChannel_Batch' ? 5000 : 2000; // Simulate rail speed
+            // Simulate fraud/risk detection based on structural integrity and random chance
+            const senderShard = realityShards.find(s => s.id === senderId);
+            const isHighRisk = senderShard && senderShard.structuralIntegrity < 40 && Math.random() < 0.3; // 30% risk if low integrity
+            const successChance = isHighRisk ? 0.6 : 0.95; // Lower success for high risk
+            const isSuccess = Math.random() < successChance;
+
+            setTimeout(() => {
+                setMultiversalTokenLedger(currentLedger => {
+                    const updatedLedger = { ...currentLedger };
+                    if (isSuccess) {
+                        updatedLedger[senderId].balance -= amount;
+                        updatedLedger[receiverId].balance += amount;
+                        updatedLedger[senderId].lastUpdated = new Date().toISOString();
+                        updatedLedger[receiverId].lastUpdated = new Date().toISOString();
+                        setGlobalAlert && setGlobalAlert({ message: `Token transfer ${transactionId} via ${route} completed successfully!`, type: "success" });
+                    } else {
+                        setGlobalAlert && setGlobalAlert({ message: `Token transfer ${transactionId} via ${route} failed! Funds reverted. ${isHighRisk ? '(Risk Flagged)' : ''}`, type: "error" });
+                        // For failed transactions, funds are implicitly reverted as ledger is not updated.
+                    }
+                    return updatedLedger;
+                });
+
+                setNexusTokenTransactions(prev => prev.map(txn =>
+                    txn.id === transactionId ? { ...txn, status: isSuccess ? 'Completed' : 'Failed', timestamp: new Date().toISOString() } : txn
+                ));
+            }, processingTime);
+
+            setGlobalAlert && setGlobalAlert({ message: `Initiating token transfer of ${amount} QCR from ${senderId} to ${receiverId} via ${route}.`, type: "info" });
+            return newLedger; // Return current ledger before async update
+        });
+    }, [realityShards, setGlobalAlert]);
+
+
     if (loadingNexusData) {
         return (
             <div className="flex items-center justify-center min-h-[80vh]">
@@ -355,6 +635,17 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
             <div className="p-8 bg-gray-900 rounded-lg shadow-xl min-h-[90vh] flex flex-col space-y-6 max-w-full mx-auto relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 pointer-events-none z-0" style={{ backgroundImage: `url('/assets/multiverse_pattern.svg')`, backgroundSize: 'cover' }}></div>
                 <div className="relative z-10">
+                    <div className="absolute top-8 right-8 text-gray-400 text-sm flex items-center">
+                        <span className="mr-2">Operator: <strong className="text-white">{userPreferences?.user?.name || 'Unidentified'}</strong></span>
+                        <span className="mr-2">Clearance Level:</span>
+                        <span className={`font-semibold px-2 py-1 rounded-full text-xs ${
+                            operatorClearance === 'Omega' ? 'bg-red-700 text-red-200' :
+                            operatorClearance === 'Elevated' ? 'bg-orange-700 text-orange-200' :
+                            'bg-green-700 text-green-200'
+                        }`}>
+                            {operatorClearance}
+                        </span>
+                    </div>
                     <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-4 text-center">
                         Multiverse Nexus Hub
                     </h1>
@@ -387,30 +678,42 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                         </div>
                     </div>
 
-                    <div className="flex border-b border-gray-700 mb-6">
+                    <div className="flex border-b border-gray-700 mb-6 overflow-x-auto custom-scrollbar-horizontal">
                         <button
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'realms' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                            className={`flex-shrink-0 px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'realms' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
                             onClick={() => setActiveTab('realms')}
                         >
                             Reality Shards
                         </button>
                         <button
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'events' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                            className={`flex-shrink-0 px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'events' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
                             onClick={() => setActiveTab('events')}
                         >
                             Multiversal Events
                         </button>
                         <button
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'signatures' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                            className={`flex-shrink-0 px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'signatures' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
                             onClick={() => setActiveTab('signatures')}
                         >
                             Quantum Signatures
                         </button>
                         <button
-                            className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'config' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                            className={`flex-shrink-0 px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'config' ? 'border-b-2 border-purple-500 text-white' : 'text-gray-400 hover:text-white'}`}
                             onClick={() => setActiveTab('config')}
                         >
                             Nexus Configuration
+                        </button>
+                        <button
+                            className={`flex-shrink-0 px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'agents' ? 'border-b-2 border-green-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                            onClick={() => setActiveTab('agents')}
+                        >
+                            Nexus Agents
+                        </button>
+                        <button
+                            className={`flex-shrink-0 px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'economy' ? 'border-b-2 border-yellow-500 text-white' : 'text-gray-400 hover:text-white'}`}
+                            onClick={() => setActiveTab('economy')}
+                        >
+                            Multiversal Economy
                         </button>
                     </div>
 
@@ -650,7 +953,7 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                                             <p className="text-gray-400 text-sm"><strong className="text-cyan-300">Emitter Realm:</strong> {realityShards.find(s => s.id === signature.emitterRealmId)?.name || signature.emitterRealmId}</p>
                                             <p className="text-gray-400 text-sm"><strong className="text-cyan-300">Magnitude:</strong> {signature.magnitude.toFixed(2)} units</p>
                                             <p className="text-gray-400 text-sm"><strong className="text-cyan-300">Frequency:</strong> {signature.frequency.toFixed(3)} THz</p>
-                                            <p className="text-gray-400 text-sm"><strong className="text-cyan-300">Decay Rate:</strong> {signature.decayRate.toFixed(4)} /µs</p>
+                                            <p className="text-gray-400 text-sm"><strong className="text-cyan-300">Decay Rate:</strong> {signature.decayRate.toFixed(4)} /Âµs</p>
                                             <button
                                                 onClick={() => {
                                                     setSelectedShardId(signature.emitterRealmId);
@@ -682,6 +985,17 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                                         checked={nexusConfiguration.autoStabilizeAnomalies}
                                         onChange={(e) => handleUpdateNexusConfig('autoStabilizeAnomalies', e.target.checked)}
                                         className="h-6 w-6 rounded text-purple-600 focus:ring-purple-500 bg-gray-700 border-gray-600"
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between bg-gray-800 p-4 rounded-md border border-gray-700">
+                                    <label htmlFor="agenticAutomationEnabled" className="text-lg font-medium text-purple-300">Agentic Automation Enabled:</label>
+                                    <input
+                                        type="checkbox"
+                                        id="agenticAutomationEnabled"
+                                        checked={nexusConfiguration.agenticAutomationEnabled}
+                                        onChange={(e) => handleUpdateNexusConfig('agenticAutomationEnabled', e.target.checked)}
+                                        className="h-6 w-6 rounded text-green-600 focus:ring-green-500 bg-gray-700 border-gray-600"
                                     />
                                 </div>
 
@@ -751,6 +1065,177 @@ const MultiverseNexusView: React.FC<MultiverseNexusViewProps> = ({ openModal }) 
                             </div>
                         </div>
                     )}
+
+                    {activeTab === 'agents' && (
+                        <div className="bg-gray-850 p-6 rounded-lg shadow-lg">
+                            <h2 className="text-3xl font-bold text-white mb-4">Nexus AI Agents ({nexusAgents.length})</h2>
+                            <p className="text-gray-400 mb-6">Autonomous entities monitoring, managing, and intervening across the multiversal fabric. Automation is {nexusConfiguration.agenticAutomationEnabled ? 'Active' : 'Disabled'}.</p>
+
+                            <div className="mb-6 flex justify-between items-center">
+                                <button
+                                    onClick={handleDeployNewAgent}
+                                    className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
+                                >
+                                    Deploy New Agent
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-[700px] pr-4 custom-scrollbar">
+                                {nexusAgents.length === 0 ? (
+                                    <p className="text-gray-400 text-center py-8 col-span-full">No agents currently deployed.</p>
+                                ) : (
+                                    nexusAgents.map(agent => (
+                                        <div key={agent.id} className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 hover:border-green-600 transition-colors">
+                                            <h3 className="text-xl font-semibold text-green-300 mb-2">{agent.name}</h3>
+                                            <p className="text-gray-400 text-sm"><strong className="text-green-300">ID:</strong> {agent.id}</p>
+                                            <p className="text-gray-400 text-sm"><strong className="text-green-300">Status:</strong> <span className={
+                                                agent.status === 'Executing Remediation' ? 'text-red-400' :
+                                                agent.status === 'Monitoring' ? 'text-blue-400' :
+                                                agent.status === 'Offline' ? 'text-gray-400' :
+                                                'text-green-400'
+                                            }>
+                                                {agent.status} {agent.status === 'Executing Remediation' && "(Anomaly Detected)"}
+                                            </span></p>
+                                            <p className="text-gray-400 text-sm"><strong className="text-green-300">Assigned Shard:</strong> {realityShards.find(s => s.id === agent.assignedShardId)?.name || 'Unassigned'}</p>
+                                            <p className="text-gray-400 text-sm"><strong className="text-green-300">Skills:</strong> {agent.skills.join(', ')}</p>
+                                            <p className="text-gray-400 text-sm"><strong className="text-green-300">Last Activity:</strong> {new Date(agent.lastActivity).toLocaleTimeString()}</p>
+                                            <p className="text-gray-400 text-sm"><strong className="text-green-300">Clearance:</strong> <span className={
+                                                agent.clearanceLevel === 'Omega' ? 'text-red-400' : agent.clearanceLevel === 'Elevated' ? 'text-orange-400' : 'text-green-400'
+                                            }>{agent.clearanceLevel}</span></p>
+
+                                            <div className="mt-4">
+                                                <label htmlFor={`assign-${agent.id}`} className="block text-sm font-medium text-gray-300 mb-1">Assign to Shard:</label>
+                                                <select
+                                                    id={`assign-${agent.id}`}
+                                                    className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+                                                    value={agent.assignedShardId || ''}
+                                                    onChange={(e) => handleAssignAgentToShard(agent.id, e.target.value || null)}
+                                                >
+                                                    <option value="">Unassign</option>
+                                                    {realityShards.map(shard => (
+                                                        <option key={`assign-opt-${agent.id}-${shard.id}`} value={shard.id}>{shard.name}</option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={() => setGlobalAlert && setGlobalAlert({ message: `Requesting Agent ${agent.name} to perform deep scan...`, type: "info" })}
+                                                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm mt-2"
+                                                >
+                                                    Request Deep Scan
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'economy' && (
+                        <div className="bg-gray-850 p-6 rounded-lg shadow-lg">
+                            <h2 className="text-3xl font-bold text-white mb-4">Multiversal Economic Overview</h2>
+                            <p className="text-gray-400 mb-6">Monitor inter-reality resource flow, token balances, and transactional history across the nexus. Currency: Quantum Credits (QCR).</p>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="bg-gray-800 p-5 rounded-lg shadow-md border border-yellow-700">
+                                    <h3 className="text-2xl font-semibold text-yellow-300 mb-3">Realm Token Ledgers</h3>
+                                    <div className="overflow-y-auto max-h-[400px] pr-4 custom-scrollbar space-y-3">
+                                        {Object.values(multiversalTokenLedger).length === 0 ? (
+                                            <p className="text-gray-400">No token accounts active.</p>
+                                        ) : (
+                                            Object.values(multiversalTokenLedger).sort((a,b) => b.balance - a.balance).map(account => (
+                                                <div key={account.realmId} className="bg-gray-700 p-3 rounded-md text-sm border border-gray-600">
+                                                    <p><strong className="text-yellow-300">Realm:</strong> {realityShards.find(s => s.id === account.realmId)?.name || account.realmId}</p>
+                                                    <p><strong className="text-yellow-300">Balance:</strong> <span className={account.balance < 1000 ? 'text-red-400' : 'text-white'}>{account.balance.toFixed(2)} {account.currencySymbol}</span></p>
+                                                    <p className="text-xs text-gray-500">Last Update: {new Date(account.lastUpdated).toLocaleString()}</p>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-800 p-5 rounded-lg shadow-md border border-orange-700">
+                                    <h3 className="text-2xl font-semibold text-orange-300 mb-3">Simulate Token Transfer</h3>
+                                    <p className="text-gray-400 mb-4">Initiate a secure, atomic value transfer between two reality shards.</p>
+                                    <div className="flex flex-col space-y-3">
+                                        <label htmlFor="transferSender" className="block text-sm font-medium text-gray-300">Sender Realm:</label>
+                                        <select
+                                            id="transferSender"
+                                            className="p-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                            defaultValue=""
+                                        >
+                                            <option value="">Select Sender</option>
+                                            {Object.values(multiversalTokenLedger).map(account => (
+                                                <option key={`sender-${account.realmId}`} value={account.realmId}>{realityShards.find(s => s.id === account.realmId)?.name || account.realmId} ({account.balance.toFixed(2)} QCR)</option>
+                                            ))}
+                                        </select>
+                                        <label htmlFor="transferReceiver" className="block text-sm font-medium text-gray-300">Receiver Realm:</label>
+                                        <select
+                                            id="transferReceiver"
+                                            className="p-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                            defaultValue=""
+                                        >
+                                            <option value="">Select Receiver</option>
+                                            {Object.values(multiversalTokenLedger).filter(account => account.realmId !== (document.getElementById('transferSender') as HTMLSelectElement)?.value).map(account => (
+                                                <option key={`receiver-${account.realmId}`} value={account.realmId}>{realityShards.find(s => s.id === account.realmId)?.name || account.realmId} ({account.balance.toFixed(2)} QCR)</option>
+                                            ))}
+                                        </select>
+                                        <label htmlFor="transferAmount" className="block text-sm font-medium text-gray-300">Amount (QCR):</label>
+                                        <input
+                                            type="number"
+                                            id="transferAmount"
+                                            placeholder="e.g., 1000.00"
+                                            min="0.01"
+                                            step="0.01"
+                                            className="p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                const senderId = (document.getElementById('transferSender') as HTMLSelectElement).value;
+                                                const receiverId = (document.getElementById('transferReceiver') as HTMLSelectElement).value;
+                                                const amountStr = (document.getElementById('transferAmount') as HTMLInputElement).value;
+                                                const amount = parseFloat(amountStr);
+                                                if (senderId && receiverId && !isNaN(amount)) {
+                                                    handleInitiateTokenTransfer(senderId, receiverId, amount);
+                                                } else {
+                                                    setGlobalAlert && setGlobalAlert({ message: "Please fill all transfer details correctly.", type: "warning" });
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors font-medium"
+                                        >
+                                            Execute Atomic Transfer
+                                        </button>
+                                        <p className="text-sm text-gray-500 mt-2">Simulates multi-rail routing based on current nexus conditions, with risk assessment.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 bg-gray-800 p-5 rounded-lg shadow-md border border-blue-700">
+                                <h3 className="text-2xl font-semibold text-blue-300 mb-3">Multiversal Transaction Log ({nexusTokenTransactions.length})</h3>
+                                <div className="overflow-y-auto max-h-[300px] pr-4 custom-scrollbar space-y-3">
+                                    {nexusTokenTransactions.length === 0 ? (
+                                        <p className="text-gray-400">No transactions recorded.</p>
+                                    ) : (
+                                        nexusTokenTransactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map(txn => (
+                                            <div key={txn.id} className="bg-gray-700 p-3 rounded-md text-sm border border-gray-600">
+                                                <p><strong className="text-blue-300">TXN ID:</strong> {txn.id}</p>
+                                                <p><strong className="text-blue-300">From:</strong> {realityShards.find(s => s.id === txn.senderRealmId)?.name || txn.senderRealmId}</p>
+                                                <p><strong className="text-blue-300">To:</strong> {realityShards.find(s => s.id === txn.receiverRealmId)?.name || txn.receiverRealmId}</p>
+                                                <p><strong className="text-blue-300">Amount:</strong> <span className="text-white">{txn.amount.toFixed(2)} {txn.currencySymbol}</span></p>
+                                                <p><strong className="text-blue-300">Route:</strong> <span className="text-cyan-400">{txn.route}</span></p>
+                                                <p><strong className="text-blue-300">Status:</strong> <span className={
+                                                    txn.status === 'Completed' ? 'text-green-400' :
+                                                    txn.status === 'Failed' ? 'text-red-400' :
+                                                    'text-yellow-400'
+                                                }>{txn.status}</span></p>
+                                                <p className="text-xs text-gray-500">Timestamp: {new Date(txn.timestamp).toLocaleString()}</p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
 
                     <div className="mt-8 bg-gray-850 p-6 rounded-lg shadow-lg">
                         <h2 className="text-3xl font-bold text-white mb-4">Recent Nexus Alerts</h2>
@@ -838,7 +1323,7 @@ Protocol Status:
   - SENTINEL Protocol (Threat Detection): Active (99.8% Coverage)
   - CHRONOS Protocol (Temporal Integrity): Active (No Major Deviations)
   - ODYSSEY Protocol (Exploration & Mapping): Active (67% Multiverse Mapped)
-  - VANGUARD Protocol (Anomaly Response): ${nexusConfiguration.autoStabilizeAnomalies ? 'Automated' : 'Manual Intervention Required'}
+  - VANGUARD Protocol (Anomaly Response): ${nexusConfiguration.autoStabilizeAnomalies ? 'Automated by Core' : nexusConfiguration.agenticAutomationEnabled ? 'Agent-Assisted' : 'Manual Intervention Required'}
   - HARMONY Protocol (Inter-Reality Diplomacy): Active (Low Conflict Index)
 
 Next Scheduled Maintenance:
@@ -896,7 +1381,7 @@ Active Administrative Overrides:
 
                                 <div className="bg-gray-800 p-5 rounded-lg shadow-md border border-green-700">
                                     <h3 className="text-2xl font-semibold text-green-300 mb-3">Resource Harmonic Balancing</h3>
-                                    <p className="text-gray-400 mb-4">Optimize resource flow and prevent energy drain cascades.</p>
+                                    <p className="text-gray-400 mb-4">Optimize resource flow and prevent energy drain cascades by token transfer.</p>
                                     <div className="flex flex-col space-y-3">
                                         <label htmlFor="resourceSourceShard" className="block text-sm font-medium text-gray-300">Resource Source:</label>
                                         <select
@@ -905,8 +1390,8 @@ Active Administrative Overrides:
                                             defaultValue=""
                                         >
                                             <option value="">Select Source Shard</option>
-                                            {realityShards.filter(s => s.structuralIntegrity > 80).map(shard => (
-                                                <option key={`res-src-${shard.id}`} value={shard.id}>{shard.name}</option>
+                                            {Object.values(multiversalTokenLedger).filter(a => a.balance > 0).map(account => (
+                                                <option key={`res-src-${account.realmId}`} value={account.realmId}>{realityShards.find(s => s.id === account.realmId)?.name || account.realmId} ({account.balance.toFixed(2)} QCR)</option>
                                             ))}
                                         </select>
                                         <label htmlFor="resourceTargetShard" className="block text-sm font-medium text-gray-300">Resource Target:</label>
@@ -916,19 +1401,31 @@ Active Administrative Overrides:
                                             defaultValue=""
                                         >
                                             <option value="">Select Target Shard</option>
-                                            {realityShards.filter(s => s.structuralIntegrity < 60).map(shard => (
-                                                <option key={`res-tgt-${shard.id}`} value={shard.id}>{shard.name}</option>
+                                            {Object.values(multiversalTokenLedger).filter(a => a.realmId !== (document.getElementById('resourceSourceShard') as HTMLSelectElement)?.value).map(account => (
+                                                <option key={`res-tgt-${account.realmId}`} value={account.realmId}>{realityShards.find(s => s.id === account.realmId)?.name || account.realmId}</option>
                                             ))}
                                         </select>
+                                        <label htmlFor="resourceAmount" className="block text-sm font-medium text-gray-300">Transfer Amount (QCR):</label>
                                         <input
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            defaultValue="50"
-                                            className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer range-lg accent-green-500"
+                                            type="number"
+                                            id="resourceAmount"
+                                            placeholder="Enter amount"
+                                            min="0.01"
+                                            step="0.01"
+                                            className="p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                                         />
                                         <button
-                                            onClick={() => setGlobalAlert && setGlobalAlert({ message: "Executing resource re-distribution algorithms...", type: "success" })}
+                                            onClick={() => {
+                                                const senderId = (document.getElementById('resourceSourceShard') as HTMLSelectElement).value;
+                                                const receiverId = (document.getElementById('resourceTargetShard') as HTMLSelectElement).value;
+                                                const amountStr = (document.getElementById('resourceAmount') as HTMLInputElement).value;
+                                                const amount = parseFloat(amountStr);
+                                                if (senderId && receiverId && !isNaN(amount)) {
+                                                    handleInitiateTokenTransfer(senderId, receiverId, amount);
+                                                } else {
+                                                    setGlobalAlert && setGlobalAlert({ message: "Please select source, target, and amount for resource balancing.", type: "warning" });
+                                                }
+                                            }}
                                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
                                         >
                                             Initiate Harmonic Balance
@@ -976,7 +1473,7 @@ Active Administrative Overrides:
                                         <div key={`crm-${shard.id}`} className="bg-gray-800 p-4 rounded-md border border-gray-700">
                                             <h4 className="text-xl font-semibold text-purple-300 mb-2">{shard.name}</h4>
                                             <p className="text-gray-400 text-sm">Collective Cohesion Index: <span className="text-green-400">{(Math.random() * 0.3 + 0.7).toFixed(3)}</span> ({(Math.random() * 10).toFixed(2)}% vs. avg)</p>
-                                            <p className="text-gray-400 text-sm">Sentience Baseline Fluctuation: <span className="text-yellow-400">{(Math.random() * 0.05 + 0.95).toFixed(4)}</span> µHz</p>
+                                            <p className="text-gray-400 text-sm">Sentience Baseline Fluctuation: <span className="text-yellow-400">{(Math.random() * 0.05 + 0.95).toFixed(4)}</span> ÂµHz</p>
                                             <p className="text-gray-400 text-sm">Emergent Thought-Form Detected: <span className={Math.random() > 0.8 ? 'text-red-400' : 'text-gray-400'}>{Math.random() > 0.8 ? 'True' : 'False'}</span></p>
                                             <p className="text-gray-400 text-sm">Dominant Emotional Spectrum: <span className="text-cyan-400">{['Neutral', 'Hopeful', 'Anxious', 'Curious'][Math.floor(Math.random() * 4)]}</span></p>
                                             <button
@@ -1090,8 +1587,17 @@ Active Administrative Overrides:
                                         <label htmlFor="confirmAuthorization" className="text-red-400 text-sm">I understand the irreversible consequences and confirm authorization.</label>
                                     </div>
                                     <button
-                                        onClick={() => setGlobalAlert && setGlobalAlert({ message: "Critical Warning: Initiating Event Horizon protocol. This action is irreversible without Temporal Reversal Horizon.", type: "critical" })}
-                                        className="w-full px-6 py-3 bg-red-800 text-white rounded-md hover:bg-red-900 transition-colors font-bold text-xl uppercase tracking-wider"
+                                        onClick={() => {
+                                            if (operatorClearance !== 'Omega') {
+                                                setGlobalAlert && setGlobalAlert({ message: "Insufficient clearance for Event Horizon activation. Omega-level authorization required.", type: "error" });
+                                                return;
+                                            }
+                                            setGlobalAlert && setGlobalAlert({ message: "Critical Warning: Initiating Event Horizon protocol. This action is irreversible without Temporal Reversal Horizon.", type: "critical" });
+                                        }}
+                                        className={`w-full px-6 py-3 rounded-md transition-colors font-bold text-xl uppercase tracking-wider ${
+                                            operatorClearance === 'Omega' ? 'bg-red-800 hover:bg-red-900 text-white' : 'bg-gray-600 cursor-not-allowed text-gray-400'
+                                        }`}
+                                        disabled={operatorClearance !== 'Omega'}
                                     >
                                         Activate Event Horizon
                                     </button>
@@ -1125,7 +1631,7 @@ Active Administrative Overrides:
                                         <h4 className="text-xl font-semibold text-green-300 mb-2">Economic Health Indicators</h4>
                                         <div className="space-y-2">
                                             <p><strong className="text-green-300">Global Market Index:</strong> <span className="text-white">{(Math.random() * 2000 + 1000).toFixed(2)}</span> ({Math.random() > 0.5 ? '+' : '-'}{(Math.random() * 5).toFixed(2)}%)</p>
-                                            <p><strong className="text-green-300">Cross-Reality Liquidity:</strong> <span className="text-white">{(Math.random() * 100).toFixed(2)} Quads ({(Math.random() * 10).toFixed(2)}% vs. peak)</span></p>
+                                            <p><strong className="text-green-300">Cross-Reality Liquidity:</strong> <span className="text-white">{Object.values(multiversalTokenLedger).reduce((sum, acc) => sum + acc.balance, 0).toFixed(2)} QCR ({(Math.random() * 10).toFixed(2)}% vs. peak)</span></p>
                                             <p><strong className="text-green-300">Inflationary Pressure:</strong> <span className={Math.random() > 0.6 ? 'text-red-400' : 'text-green-400'}>{(Math.random() * 8).toFixed(2)}% ({Math.random() > 0.5 ? 'Rising' : 'Stable'})</span></p>
                                             <p><strong className="text-green-300">Deflationary Risk:</strong> <span className={Math.random() > 0.8 ? 'text-yellow-400' : 'text-green-400'}>{(Math.random() * 3).toFixed(2)}%</span></p>
                                             <p><strong className="text-green-300">Interdimensional Debt Ratio:</strong> <span className="text-white">{(Math.random() * 0.5 + 0.5).toFixed(2)}</span></p>
