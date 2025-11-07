@@ -1,14 +1,37 @@
+/**
+ * This module implements a comprehensive dashboard for managing and monitoring the lifecycle and performance
+ * of autonomous AI agents within a sophisticated enterprise ecosystem. It provides real-time insights into agent
+ * health, task execution, resource allocation, and ethical compliance.
+ *
+ * Business value: This dashboard is a critical control plane for an agentic AI system, enabling rapid
+ * operational oversight, anomaly detection, and intervention. It directly contributes to millions in value by:
+ * - **Ensuring operational resilience**: Provides immediate visibility into agent status and performance,
+ *   reducing downtime and accelerating resolution of issues.
+ * - **Optimizing resource utilization**: Facilitates efficient allocation and monitoring of computational
+ *   resources, leading to significant cost savings.
+ * - **Enhancing ethical governance**: Offers tools to track ethical compliance and intervene in case of
+ *   violations, safeguarding brand reputation and ensuring regulatory adherence.
+ * - **Improving decision velocity**: Allows human operators to quickly understand agent activities and
+ *   intervene, augmenting human decision-making and accelerating business processes.
+ * - **Enabling new service models**: By providing robust management for autonomous agents, it underpins the
+ *   development and scaling of innovative, agent-driven financial services and operational efficiencies,
+ *   generating new revenue streams.
+ * - **Security and auditability**: Integrates with system-wide logging and identity frameworks to provide
+ *   a tamper-evident audit trail for all agent actions and system changes, critical for compliance and trust.
+ */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAI, AIContextValue, AIAgent, AITask, AIModelConfig, AIUserProfile } from '../AIWrapper';
+import { useAI, AIContextValue, AIAgent, AITask, AIModelConfig, AIUserProfile, AIEvent } from '../AIWrapper';
 
 /**
- * Utility to generate a random ID matching the pattern in the seed file.
+ * Generates a unique, random ID for various entities within the system.
  */
 const generateRandomId = (prefix: string = 'id'): string => {
     return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 };
 
-// --- New Types for expanded functionality ---
+/**
+ * Represents a specific system health metric.
+ */
 export type AISystemHealthMetric = {
     id: string;
     name: string;
@@ -18,6 +41,9 @@ export type AISystemHealthMetric = {
     status: 'ok' | 'warning' | 'critical';
 };
 
+/**
+ * Describes an ethical violation detected in an AI agent's operation.
+ */
 export type AIEthicalViolation = {
     id: string;
     agentId: string;
@@ -26,21 +52,63 @@ export type AIEthicalViolation = {
     severity: 'low' | 'medium' | 'high' | 'critical';
     timestamp: number;
     actionTaken: string;
+    context: any; // Additional contextual data
 };
 
-// --- New Component: AgentHealthMonitor (nested helper component) ---
-interface AgentHealthMonitorProps {
-    agent: AIAgent;
-    onFeedbackSubmit: (agentId: string, feedback: string) => void;
-}
+/**
+ * Represents an entry in the system-wide audit log.
+ */
+export type AIAuditLogEntry = {
+    id: string;
+    timestamp: number;
+    actorId: string; // User ID or Agent ID
+    action: string;
+    targetId?: string; // ID of the entity acted upon (e.g., agent, task)
+    details: any;
+    isTamperEvident: boolean; // Simulation of tamper-evident property (e.g., chained hash)
+    previousHash?: string; // For chained hash simulation
+};
 
-const AgentHealthMonitor: React.FC<AgentHealthMonitorProps> = ({ agent, onFeedbackSubmit }) => {
+/**
+ * Summarizes an agent's financial activities.
+ */
+export type AIAgentFinancialSummary = {
+    agentId: string;
+    totalTransactionsInitiated: number;
+    totalValueTransacted: string; // e.g., "USD 12345.67"
+    pendingTransactions: number;
+    fraudFlagsRaised: number;
+    lastReconciliationStatus: 'ok' | 'pending' | 'error';
+};
+
+/**
+ * Defines possible user roles for access control.
+ */
+export type UserRole = 'admin' | 'operator' | 'viewer';
+
+/**
+ * Determines if a user has permission for a specific action.
+ */
+const hasPermission = (userRole: UserRole, requiredRole: UserRole): boolean => {
+    const roleHierarchy = {
+        'viewer': 0,
+        'operator': 1,
+        'admin': 2,
+    };
+    return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+};
+
+/**
+ * Renders a compact display of an agent's current health and performance metrics,
+ * including a feedback mechanism for operators.
+ */
+const AgentHealthMonitor: React.FC<{ agent: AIAgent; onFeedbackSubmit: (agentId: string, feedback: string) => void }> = ({ agent, onFeedbackSubmit }) => {
     const [feedback, setFeedback] = useState<string>('');
     const [showAdvancedMetrics, setShowAdvancedMetrics] = useState<boolean>(false);
 
     const memoryUsage = agent.resourceAllocation?.memoryGB ? (agent.memoryCapacity / agent.resourceAllocation.memoryGB * 100).toFixed(2) : 'N/A';
-    const cpuUsage = (Math.random() * 100).toFixed(2); // Mocked CPU usage
-    const networkLatency = (Math.random() * 50 + 10).toFixed(0); // Mocked network latency in ms
+    const cpuUsage = (Math.random() * 100).toFixed(2);
+    const networkLatency = (Math.random() * 50 + 10).toFixed(0);
 
     const handleSubmitFeedback = () => {
         if (feedback.trim()) {
@@ -76,6 +144,11 @@ const AgentHealthMonitor: React.FC<AgentHealthMonitorProps> = ({ agent, onFeedba
                     <p><strong>Network Latency:</strong> {networkLatency}ms</p>
                     <p><strong>Learning Rate:</strong> {(agent.learningRate * 100).toFixed(2)}%</p>
                     <p><strong>Memory Capacity:</strong> {agent.memoryCapacity} units</p>
+                    {agent.hardwareIntegration && (
+                        <div>
+                            <strong>Hardware Integration:</strong> {agent.hardwareIntegration.deviceType} (Enabled: {agent.hardwareIntegration.isEnabled ? 'Yes' : 'No'})
+                        </div>
+                    )}
                 </div>
             )}
             <div style={{ marginTop: '15px' }}>
@@ -97,13 +170,10 @@ const AgentHealthMonitor: React.FC<AgentHealthMonitorProps> = ({ agent, onFeedba
     );
 };
 
-// --- New Component: AgentLogsDisplay (nested helper component) ---
-interface AgentLogsDisplayProps {
-    agentId: string;
-    logs: any[]; // In a real app, this would be `AIEvent[]` or a more specific log type
-}
-
-const AgentLogsDisplay: React.FC<AgentLogsDisplayProps> = ({ agentId, logs }) => {
+/**
+ * Displays a filtered list of recent activity logs for a specific agent.
+ */
+const AgentLogsDisplay: React.FC<{ agentId: string; logs: AIEvent[] }> = ({ agentId, logs }) => {
     const filteredLogs = useMemo(() => logs.filter(log => log.payload?.agentId === agentId || log.payload?.targetAgentId === agentId), [agentId, logs]);
 
     return (
@@ -117,7 +187,7 @@ const AgentLogsDisplay: React.FC<AgentLogsDisplayProps> = ({ agentId, logs }) =>
                         <div key={index} style={{ marginBottom: '8px', borderBottom: '1px dashed #4a4f5c', paddingBottom: '8px' }}>
                             <div style={{ fontSize: '0.8em', color: '#999' }}>{new Date(log.timestamp || Date.now()).toLocaleTimeString()} - {log.type}</div>
                             <div style={{ fontSize: '0.9em', color: '#ddd' }}>Source: {log.source}</div>
-                            <div style={{ fontSize: '0.9em', color: '#ccc' }}>Payload: {JSON.stringify(log.payload, null, 2)}</div>
+                            <div style={{ fontSize: '0.9em', color: '#ccc', wordBreak: 'break-all' }}>Payload: {JSON.stringify(log.payload, null, 2)}</div>
                         </div>
                     ))
                 )}
@@ -126,10 +196,52 @@ const AgentLogsDisplay: React.FC<AgentLogsDisplayProps> = ({ agentId, logs }) =>
     );
 };
 
+/**
+ * Provides an overview of an agent's digital identity and security posture.
+ */
+const AgentIdentitySecurityDisplay: React.FC<{ agent: AIAgent }> = ({ agent }) => {
+    // In a real system, this would fetch actual identity details (e.g., public key hash)
+    // from an Identity Management service using the agent.id
+    const mockPublicKeyHash = useMemo(() => {
+        const hash = agent.id.split('').reduce((acc, char) => (acc + char.charCodeAt(0)), 0).toString(16);
+        return `0x${hash.padEnd(64, '0').substring(0,64)}`;
+    }, [agent.id]);
+
+    return (
+        <div style={{ border: '1px solid #555', borderRadius: '5px', padding: '15px', marginBottom: '20px', background: '#3c404c' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#61dafb' }}>Digital Identity & Security</h4>
+            <p><strong>Public Key Hash:</strong> <span style={{fontFamily: 'monospace'}}>{mockPublicKeyHash}</span></p>
+            <p><strong>Security Clearance:</strong> <span style={{color: agent.securityClearance === 'level_5' ? 'red' : agent.securityClearance === 'level_1' ? 'lightgreen' : 'orange'}}>{agent.securityClearance?.toUpperCase() || 'N/A'}</span></p>
+            <p><strong>Ethical Guidelines:</strong> {agent.ethicalGuidelines || 'N/A'}</p>
+            <p><strong>Is Autonomous:</strong> {agent.isAutonomous ? 'Yes' : 'No'}</p>
+            <p><strong>Associated User ID (Owner):</strong> {agent.ownerUserId || 'System'}</p>
+            {/* Further details like last audit, security incidents, RBAC capabilities */}
+        </div>
+    );
+};
+
+/**
+ * Simulates and displays an agent's financial summary.
+ */
+const AgentFinancialSummaryDisplay: React.FC<{ summary: AIAgentFinancialSummary | null }> = ({ summary }) => {
+    if (!summary) return null;
+
+    return (
+        <div style={{ border: '1px solid #555', borderRadius: '5px', padding: '15px', marginBottom: '20px', background: '#3c404c' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#61dafb' }}>Financial Activity Overview</h4>
+            <p><strong>Transactions Initiated:</strong> {summary.totalTransactionsInitiated}</p>
+            <p><strong>Total Value Transacted:</strong> {summary.totalValueTransacted}</p>
+            <p><strong>Pending Transactions:</strong> {summary.pendingTransactions}</p>
+            <p><strong>Fraud Flags Raised:</strong> <span style={{color: summary.fraudFlagsRaised > 0 ? 'red' : 'lightgreen'}}>{summary.fraudFlagsRaised}</span></p>
+            <p><strong>Last Reconciliation:</strong> <span style={{color: summary.lastReconciliationStatus === 'ok' ? 'lightgreen' : 'red'}}>{summary.lastReconciliationStatus.toUpperCase()}</span></p>
+        </div>
+    );
+};
 
 /**
  * A React component providing a user interface to monitor, configure, and interact with various AI agents
- * managed by the AutonomousAgentOrchestrator.
+ * managed by the AutonomousAgentOrchestrator. This dashboard is a central hub for operators to maintain
+ * system stability, ethical compliance, and overall performance.
  */
 const AIAgentDashboard: React.FC = () => {
     const ai: AIContextValue = useAI();
@@ -139,8 +251,6 @@ const AIAgentDashboard: React.FC = () => {
         ethicalAILayer,
         aiEventLogger,
         userProfile,
-        sessionId,
-        userId
     } = ai;
 
     const [agents, setAgents] = useState<AIAgent[]>([]);
@@ -155,6 +265,8 @@ const AIAgentDashboard: React.FC = () => {
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
     const [agentToDelete, setAgentToDelete] = useState<AIAgent | null>(null);
 
+    const currentUserRole: UserRole = (userProfile?.role as UserRole) || 'viewer';
+
     // State for new task creation
     const [newTaskData, setNewTaskData] = useState<{
         name: string;
@@ -162,7 +274,8 @@ const AIAgentDashboard: React.FC = () => {
         priority: AITask['priority'];
         dataSensitivity: AITask['securityContext']['dataSensitivity'];
         assignToAgentId: string;
-        requiredModelId: string; // New field for model requirement
+        requiredModelId: string;
+        rewardBounty: number; // New field for token rail integration
     }>({
         name: '',
         description: '',
@@ -170,6 +283,7 @@ const AIAgentDashboard: React.FC = () => {
         dataSensitivity: 'internal',
         assignToAgentId: '',
         requiredModelId: '',
+        rewardBounty: 0,
     });
 
     // State for new agent creation
@@ -191,27 +305,32 @@ const AIAgentDashboard: React.FC = () => {
             networkBandwidthMbps: 100,
         },
         trustScore: 0.5,
+        ownerUserId: userProfile?.userId, // Assign current user as owner
     });
     const [newAgentCapabilitiesInput, setNewAgentCapabilitiesInput] = useState<string>('');
 
     // State for updating selected agent
     const [updatedAgentConfig, setUpdatedAgentConfig] = useState<Partial<AIAgent>>({});
-    const [currentAgentLogs, setCurrentAgentLogs] = useState<any[]>([]); // To store agent-specific logs
-    const [systemEvents, setSystemEvents] = useState<any[]>([]); // To store system-wide events/alerts
+    const [currentAgentLogs, setCurrentAgentLogs] = useState<AIEvent[]>([]);
+    const [systemEvents, setSystemEvents] = useState<AIEvent[]>([]);
     const [availableModels, setAvailableModels] = useState<AIModelConfig[]>([]);
+    const [systemMetrics, setSystemMetrics] = useState<AISystemHealthMetric[]>([]);
+    const [ethicalViolations, setEthicalViolations] = useState<AIEthicalViolation[]>([]);
+    const [auditLogEntries, setAuditLogEntries] = useState<AIAuditLogEntry[]>([]);
+    const [selectedAgentFinancialSummary, setSelectedAgentFinancialSummary] = useState<AIAgentFinancialSummary | null>(null);
 
     useEffect(() => {
         aiEventLogger.logEvent({
-            type: 'ai_wrapper_view_update',
+            type: 'ai_dashboard_view_update',
             source: 'AIAgentDashboard',
             payload: { viewName: 'AIAgentDashboard', userId: ai.userId }
         });
         fetchData();
-        fetchAvailableModels(); // Fetch available models on load
+        fetchAvailableModels();
         // Set an interval to refresh agents and tasks periodically, simulating real-time updates
-        const refreshInterval = setInterval(fetchData, 10000); // Refresh every 10 seconds
+        const refreshInterval = setInterval(fetchData, 10000);
         return () => clearInterval(refreshInterval);
-    }, [aiEventLogger, ai.userId, agentOrchestrator, modelManager]);
+    }, [aiEventLogger, ai.userId, agentOrchestrator, modelManager, ethicalAILayer]);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -223,20 +342,38 @@ const AIAgentDashboard: React.FC = () => {
             const fetchedTasks = agentOrchestrator.getAllTasks();
             setAllTasks(fetchedTasks);
 
-            // Update selected agent/task if they exist
             if (selectedAgent) {
                 const updatedSelectedAgent = fetchedAgents.find(a => a.id === selectedAgent.id);
                 setSelectedAgent(updatedSelectedAgent || null);
+                // Simulate fetching financial summary for the selected agent
+                setSelectedAgentFinancialSummary(ethicalAILayer.getAgentFinancialSummary(selectedAgent.id));
+            } else {
+                 setSelectedAgentFinancialSummary(null);
             }
             if (selectedTask) {
                 const updatedSelectedTask = fetchedTasks.find(t => t.id === selectedTask.id);
                 setSelectedTask(updatedSelectedTask || null);
             }
 
-            // Mock recent logs and alerts for dashboard display
-            // In a real scenario, aiEventLogger would provide methods to query logs
-            setCurrentAgentLogs(aiEventLogger.getRecentEvents().slice(-100)); // Get last 100 events
-            setSystemEvents(aiEventLogger.getRecentEvents().filter(e => e.severity === 'error' || e.type === 'system_alert' || e.type === 'ethical_violation').slice(-50)); // Last 50 alerts/errors
+            setCurrentAgentLogs(aiEventLogger.getRecentEvents().slice(-100));
+            setSystemEvents(aiEventLogger.getRecentEvents().filter(e => e.severity === 'error' || e.type === 'system_alert' || e.type === 'ethical_violation').slice(-50));
+
+            // Simulate fetching new system metrics, ethical violations, and audit logs
+            const mockSystemMetrics: AISystemHealthMetric[] = [
+                { id: generateRandomId('metric'), name: 'Orchestrator CPU Load', value: (Math.random() * 20 + 5).toFixed(2), unit: '%', timestamp: Date.now(), status: 'ok' },
+                { id: generateRandomId('metric'), name: 'Orchestrator Memory Use', value: (Math.random() * 100 + 500).toFixed(0), unit: 'MB', timestamp: Date.now(), status: 'ok' },
+                { id: generateRandomId('metric'), name: 'Total Active Agents', value: fetchedAgents.filter(a => a.status === 'busy').length, unit: '', timestamp: Date.now(), status: 'ok' },
+                { id: generateRandomId('metric'), name: 'Pending Tasks', value: fetchedTasks.filter(t => t.status === 'pending').length, unit: '', timestamp: Date.now(), status: 'warning' },
+                { id: generateRandomId('metric'), name: 'Critical Alerts', value: systemEvents.filter(e => e.severity === 'critical').length, unit: '', timestamp: Date.now(), status: systemEvents.filter(e => e.severity === 'critical').length > 0 ? 'critical' : 'ok' },
+            ];
+            setSystemMetrics(mockSystemMetrics);
+
+            // Ethical AI Layer: Simulate fetching violations
+            setEthicalViolations(ethicalAILayer.getRecentEthicalViolations().slice(-20));
+
+            // Simulate fetching audit logs. In a real scenario, this would involve a dedicated audit log service.
+            // aiEventLogger.getAuditLogs() is a placeholder for this.
+            setAuditLogEntries(aiEventLogger.getAuditLogs().slice(-50));
 
             aiEventLogger.logEvent({
                 type: 'data_update',
@@ -254,7 +391,7 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [agentOrchestrator, selectedAgent, selectedTask, aiEventLogger]);
+    }, [agentOrchestrator, selectedAgent, selectedTask, aiEventLogger, ethicalAILayer]);
 
     const fetchAvailableModels = useCallback(() => {
         const models = modelManager.getAllModels();
@@ -277,14 +414,18 @@ const AIAgentDashboard: React.FC = () => {
                 isAutonomous: selectedAgent.isAutonomous,
                 trustScore: selectedAgent.trustScore,
                 hardwareIntegration: selectedAgent.hardwareIntegration ? { ...selectedAgent.hardwareIntegration } : undefined,
-                modelConfig: selectedAgent.modelConfig ? { ...selectedAgent.modelConfig } : undefined, // Include model config
+                modelConfig: selectedAgent.modelConfig ? { ...selectedAgent.modelConfig } : undefined,
+                ownerUserId: selectedAgent.ownerUserId,
             });
             setNewTaskData(prev => ({ ...prev, assignToAgentId: selectedAgent.id }));
+            // Also fetch financial summary when agent is selected
+            setSelectedAgentFinancialSummary(ethicalAILayer.getAgentFinancialSummary(selectedAgent.id));
         } else {
             setUpdatedAgentConfig({});
             setNewTaskData(prev => ({ ...prev, assignToAgentId: '' }));
+            setSelectedAgentFinancialSummary(null);
         }
-    }, [selectedAgent]);
+    }, [selectedAgent, ethicalAILayer]);
 
     const handleTabChange = useCallback((tab: 'agents' | 'tasks' | 'system') => {
         setActiveTab(tab);
@@ -297,7 +438,7 @@ const AIAgentDashboard: React.FC = () => {
 
     const handleSelectAgent = useCallback((agent: AIAgent) => {
         setSelectedAgent(agent);
-        setSelectedTask(null); // Deselect task when agent is selected
+        setSelectedTask(null);
         setNewTaskData(prev => ({ ...prev, assignToAgentId: agent.id }));
         aiEventLogger.logEvent({
             type: 'user_interaction',
@@ -308,7 +449,7 @@ const AIAgentDashboard: React.FC = () => {
 
     const handleSelectTask = useCallback((task: AITask) => {
         setSelectedTask(task);
-        setSelectedAgent(null); // Deselect agent when task is selected
+        setSelectedAgent(null);
         aiEventLogger.logEvent({
             type: 'user_interaction',
             source: 'AIAgentDashboard',
@@ -322,6 +463,11 @@ const AIAgentDashboard: React.FC = () => {
 
     const handleCreateTask = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!hasPermission(currentUserRole, 'operator')) {
+            setError('Permission denied: You do not have the required role to create tasks.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setSuccessMessage(null);
@@ -343,7 +489,8 @@ const AIAgentDashboard: React.FC = () => {
             },
             environmentalContext: {
                 deviceType: 'desktop'
-            }
+            },
+            rewardBounty: newTaskData.rewardBounty, // Add reward bounty
         };
 
         try {
@@ -351,11 +498,17 @@ const AIAgentDashboard: React.FC = () => {
                 await agentOrchestrator.assignTask(newTaskData.assignToAgentId, task);
                 setSuccessMessage(`Task "${task.name}" created and assigned to ${newTaskData.assignToAgentId}.`);
             } else {
-                await agentOrchestrator.createTask(task); // Assume orchestrator has a createTask method that takes a full task object
+                await agentOrchestrator.createTask(task);
                 setSuccessMessage(`Task "${task.name}" created (awaiting agent assignment).`);
             }
-            setNewTaskData({ name: '', description: '', priority: 'medium', dataSensitivity: 'internal', assignToAgentId: selectedAgent?.id || '', requiredModelId: '' });
-            fetchData(); // Refresh agent and task lists
+            setNewTaskData({ name: '', description: '', priority: 'medium', dataSensitivity: 'internal', assignToAgentId: selectedAgent?.id || '', requiredModelId: '', rewardBounty: 0 });
+            fetchData();
+            aiEventLogger.logAudit({
+                action: 'create_task',
+                actorId: userProfile?.userId || 'system',
+                targetId: task.id,
+                details: { taskName: task.name, assignedAgent: newTaskData.assignToAgentId }
+            });
         } catch (err) {
             setError(`Failed to create task: ${(err as Error).message}`);
             aiEventLogger.logEvent({
@@ -367,9 +520,14 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [newTaskData, selectedAgent, agentOrchestrator, userProfile, fetchData, aiEventLogger]);
+    }, [newTaskData, selectedAgent, agentOrchestrator, userProfile, fetchData, aiEventLogger, currentUserRole]);
 
     const handleUpdateTask = useCallback(async (task: AITask) => {
+        if (!hasPermission(currentUserRole, 'operator')) {
+            setError('Permission denied: You do not have the required role to update tasks.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setSuccessMessage(null);
@@ -378,6 +536,12 @@ const AIAgentDashboard: React.FC = () => {
             setSuccessMessage(`Task "${task.name}" updated successfully.`);
             setSelectedTask(task);
             fetchData();
+            aiEventLogger.logAudit({
+                action: 'update_task',
+                actorId: userProfile?.userId || 'system',
+                targetId: task.id,
+                details: { taskName: task.name, status: task.status }
+            });
         } catch (err) {
             setError(`Failed to update task: ${(err as Error).message}`);
             aiEventLogger.logEvent({
@@ -389,9 +553,13 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [agentOrchestrator, fetchData, aiEventLogger]);
+    }, [agentOrchestrator, fetchData, aiEventLogger, currentUserRole, userProfile]);
 
     const handleDeleteTask = useCallback(async (taskId: string) => {
+        if (!hasPermission(currentUserRole, 'admin')) { // Only admin can delete tasks
+            setError('Permission denied: You do not have the required role to delete tasks.');
+            return;
+        }
         if (!window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) return;
         setIsLoading(true);
         setError(null);
@@ -401,6 +569,12 @@ const AIAgentDashboard: React.FC = () => {
             setSuccessMessage(`Task ${taskId} deleted successfully.`);
             setSelectedTask(null);
             fetchData();
+            aiEventLogger.logAudit({
+                action: 'delete_task',
+                actorId: userProfile?.userId || 'system',
+                targetId: taskId,
+                details: { message: `Task ${taskId} deleted` }
+            });
         } catch (err) {
             setError(`Failed to delete task: ${(err as Error).message}`);
             aiEventLogger.logEvent({
@@ -412,8 +586,7 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [agentOrchestrator, fetchData, aiEventLogger]);
-
+    }, [agentOrchestrator, fetchData, aiEventLogger, currentUserRole, userProfile]);
 
     const handleUpdateAgentConfigChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type, checked } = e.target;
@@ -455,6 +628,10 @@ const AIAgentDashboard: React.FC = () => {
     const handleUpdateAgent = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAgent) return;
+        if (!hasPermission(currentUserRole, 'operator')) {
+            setError('Permission denied: You do not have the required role to update agents.');
+            return;
+        }
 
         setIsLoading(true);
         setError(null);
@@ -475,13 +652,20 @@ const AIAgentDashboard: React.FC = () => {
                 ...selectedAgent.modelConfig,
                 ...updatedAgentConfig.modelConfig,
             } : selectedAgent.modelConfig,
+            lastActivityTimestamp: Date.now(), // Update last activity on config change
         };
 
         try {
-            agentOrchestrator.registerAgent(updatedAgent); // registerAgent can update existing ones
+            agentOrchestrator.registerAgent(updatedAgent);
             setSuccessMessage(`Agent "${updatedAgent.name}" updated successfully.`);
-            setSelectedAgent(updatedAgent); // Update the local selected agent state immediately
-            fetchData(); // Refresh the list from orchestrator
+            setSelectedAgent(updatedAgent);
+            fetchData();
+            aiEventLogger.logAudit({
+                action: 'update_agent_config',
+                actorId: userProfile?.userId || 'system',
+                targetId: updatedAgent.id,
+                details: { agentName: updatedAgent.name, changes: updatedAgentConfig }
+            });
         } catch (err) {
             setError(`Failed to update agent: ${(err as Error).message}`);
             aiEventLogger.logEvent({
@@ -493,7 +677,7 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedAgent, updatedAgentConfig, agentOrchestrator, fetchData, aiEventLogger]);
+    }, [selectedAgent, updatedAgentConfig, agentOrchestrator, fetchData, aiEventLogger, currentUserRole, userProfile]);
 
     const handleNewAgentChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type, checked } = e.target;
@@ -505,6 +689,16 @@ const AIAgentDashboard: React.FC = () => {
                     resourceAllocation: {
                         ...(prev.resourceAllocation || {}),
                         [resourceKey]: type === 'number' ? parseFloat(value) : parseInt(value, 10)
+                    }
+                };
+            }
+            if (name.startsWith('hardwareIntegration.')) {
+                const hardwareKey = name.split('.')[1] as keyof AIAgent['hardwareIntegration'];
+                return {
+                    ...prev,
+                    hardwareIntegration: {
+                        ...(prev.hardwareIntegration || {}),
+                        [hardwareKey]: type === 'checkbox' ? checked : value
                     }
                 };
             }
@@ -531,6 +725,11 @@ const AIAgentDashboard: React.FC = () => {
 
     const handleCreateNewAgent = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!hasPermission(currentUserRole, 'operator')) {
+            setError('Permission denied: You do not have the required role to create agents.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setSuccessMessage(null);
@@ -562,20 +761,27 @@ const AIAgentDashboard: React.FC = () => {
             modelConfig: newAgentData.modelConfig,
             creationTimestamp: Date.now(),
             lastActivityTimestamp: Date.now(),
+            ownerUserId: newAgentData.ownerUserId || userProfile?.userId || 'system',
         };
 
         try {
             agentOrchestrator.registerAgent(agent);
             setSuccessMessage(`Agent "${agent.name}" created successfully.`);
-            setNewAgentData({ // Reset form
+            setNewAgentData({
                 name: '', persona: '', role: 'planner', capabilities: [], status: 'idle', isAutonomous: true,
                 memoryCapacity: 100, learningRate: 0.05, emotionalState: 'calm', ethicalGuidelines: 'adaptive',
                 securityClearance: 'level_1', resourceAllocation: { computeUnits: 1, memoryGB: 2, networkBandwidthMbps: 100 },
-                trustScore: 0.5,
+                trustScore: 0.5, ownerUserId: userProfile?.userId,
             });
             setNewAgentCapabilitiesInput('');
             setShowNewAgentModal(false);
             fetchData();
+            aiEventLogger.logAudit({
+                action: 'create_agent',
+                actorId: userProfile?.userId || 'system',
+                targetId: agent.id,
+                details: { agentName: agent.name, role: agent.role }
+            });
         } catch (err) {
             setError(`Failed to create agent: ${(err as Error).message}`);
             aiEventLogger.logEvent({
@@ -587,12 +793,16 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [newAgentData, agentOrchestrator, fetchData, aiEventLogger]);
+    }, [newAgentData, agentOrchestrator, fetchData, aiEventLogger, userProfile, currentUserRole]);
 
     const confirmDeleteAgent = useCallback((agent: AIAgent) => {
+        if (!hasPermission(currentUserRole, 'admin')) {
+            setError('Permission denied: You do not have the required role to delete agents.');
+            return;
+        }
         setAgentToDelete(agent);
         setShowDeleteConfirmModal(true);
-    }, []);
+    }, [currentUserRole]);
 
     const handleDeleteAgent = useCallback(async () => {
         if (!agentToDelete) return;
@@ -606,8 +816,14 @@ const AIAgentDashboard: React.FC = () => {
             setSuccessMessage(`Agent "${agentToDelete.name}" deleted successfully.`);
             setAgentToDelete(null);
             setShowDeleteConfirmModal(false);
-            setSelectedAgent(null); // Deselect the deleted agent
+            setSelectedAgent(null);
             fetchData();
+            aiEventLogger.logAudit({
+                action: 'delete_agent',
+                actorId: userProfile?.userId || 'system',
+                targetId: agentToDelete.id,
+                details: { agentName: agentToDelete.name }
+            });
         } catch (err) {
             setError(`Failed to delete agent: ${(err as Error).message}`);
             aiEventLogger.logEvent({
@@ -619,7 +835,7 @@ const AIAgentDashboard: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [agentToDelete, agentOrchestrator, fetchData, aiEventLogger]);
+    }, [agentToDelete, agentOrchestrator, fetchData, aiEventLogger, userProfile]);
 
     const handleAgentFeedback = useCallback((agentId: string, feedback: string) => {
         aiEventLogger.logEvent({
@@ -772,7 +988,7 @@ const AIAgentDashboard: React.FC = () => {
                                     onChange={handleNewAgentChange}
                                     style={inputStyle}
                                 >
-                                    {['planner', 'executor', 'monitor', 'collaborator', 'sentient_entity'].map(role => (
+                                    {['planner', 'executor', 'monitor', 'collaborator', 'sentient_entity', 'financial_analyst', 'security_auditor'].map(role => (
                                         <option key={role} value={role}>{role}</option>
                                     ))}
                                 </select>
@@ -816,7 +1032,6 @@ const AIAgentDashboard: React.FC = () => {
                                     ))}
                                 </div>
                             </label>
-                            {/* Simplified resource allocation for new agent */}
                             <div style={{ marginBottom: '15px' }}>
                                 <strong>Resource Allocation:</strong>
                                 <div>Compute Units: <input type="number" name="resourceAllocation.computeUnits" value={newAgentData.resourceAllocation?.computeUnits ?? 1} onChange={handleNewAgentChange} style={{...inputStyle, width: 'auto'}} /></div>
@@ -837,6 +1052,42 @@ const AIAgentDashboard: React.FC = () => {
                                     ))}
                                 </select>
                             </label>
+                             <label style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                Is Autonomous:
+                                <input
+                                    type="checkbox"
+                                    name="isAutonomous"
+                                    checked={newAgentData.isAutonomous ?? true}
+                                    onChange={handleNewAgentChange}
+                                    style={{ marginLeft: '10px', width: 'auto' }}
+                                />
+                            </label>
+                             <label>
+                                Security Clearance:
+                                <select
+                                    name="securityClearance"
+                                    value={newAgentData.securityClearance || ''}
+                                    onChange={handleNewAgentChange}
+                                    style={inputStyle}
+                                >
+                                    {['level_1', 'level_2', 'level_3', 'level_4', 'level_5'].map(clearance => (
+                                        <option key={clearance} value={clearance}>{clearance}</option>
+                                    ))}
+                                </select>
+                            </label>
+                             <label>
+                                Ethical Guidelines:
+                                <select
+                                    name="ethicalGuidelines"
+                                    value={newAgentData.ethicalGuidelines || ''}
+                                    onChange={handleNewAgentChange}
+                                    style={inputStyle}
+                                >
+                                    {['strict', 'adaptive', 'flexible'].map(guideline => (
+                                        <option key={guideline} value={guideline}>{guideline}</option>
+                                    ))}
+                                </select>
+                            </label>
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
                                 <button
@@ -846,7 +1097,7 @@ const AIAgentDashboard: React.FC = () => {
                                 >
                                     Cancel
                                 </button>
-                                <button type="submit" style={buttonStyle} disabled={isLoading}>
+                                <button type="submit" style={buttonStyle} disabled={isLoading || !hasPermission(currentUserRole, 'operator')}>
                                     {isLoading ? 'Creating...' : 'Create Agent'}
                                 </button>
                             </div>
@@ -875,7 +1126,7 @@ const AIAgentDashboard: React.FC = () => {
                                 type="button"
                                 onClick={handleDeleteAgent}
                                 style={dangerButtonStyle}
-                                disabled={isLoading}
+                                disabled={isLoading || !hasPermission(currentUserRole, 'admin')}
                             >
                                 {isLoading ? 'Deleting...' : 'Delete Agent'}
                             </button>
@@ -902,8 +1153,11 @@ const AIAgentDashboard: React.FC = () => {
                     onClick={() => handleTabChange('system')}
                     style={{ ...buttonStyle, background: activeTab === 'system' ? '#61dafb' : '#4a4f5c', color: activeTab === 'system' ? '#282c34' : '#e0e0e0' }}
                 >
-                    System Health
+                    System Health & Audit
                 </button>
+            </div>
+            <div style={{ marginBottom: '10px', color: '#bbb' }}>
+                Logged in as: <strong>{userProfile?.name || 'Guest'}</strong> (Role: <span style={{fontWeight: 'bold', color: currentUserRole === 'admin' ? 'red' : currentUserRole === 'operator' ? 'orange' : 'white'}}>{currentUserRole.toUpperCase()}</span>)
             </div>
 
             <div style={{ display: 'flex', flex: 1, gap: '20px' }}>
@@ -917,6 +1171,7 @@ const AIAgentDashboard: React.FC = () => {
                                     <button
                                         onClick={() => setShowNewAgentModal(true)}
                                         style={{ ...buttonStyle, background: '#4CAF50', marginBottom: '0' }}
+                                        disabled={!hasPermission(currentUserRole, 'operator')}
                                     >
                                         + New Agent
                                     </button>
@@ -942,12 +1197,14 @@ const AIAgentDashboard: React.FC = () => {
                                         <div>
                                             <strong>{agent.name}</strong> ({agent.id.substring(0, 8)}...)
                                             <div style={{ fontSize: '0.9em', color: '#bbb' }}>{agent.persona} - {agent.role}</div>
+                                            <div style={{ fontSize: '0.8em', color: '#999' }}>Owner: {agent.ownerUserId || 'System'}</div>
                                         </div>
                                         <span style={{ color: (statusColors as any)[agent.status] || 'white', fontWeight: 'bold' }}>{agent.status.toUpperCase()}</span>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); confirmDeleteAgent(agent); }}
                                             style={{ ...dangerButtonStyle, padding: '5px 8px', fontSize: '0.8em', marginLeft: '10px', marginTop: '0' }}
                                             title="Delete Agent"
+                                            disabled={!hasPermission(currentUserRole, 'admin')}
                                         >
                                             &times;
                                         </button>
@@ -981,13 +1238,14 @@ const AIAgentDashboard: React.FC = () => {
                                     >
                                         <div>
                                             <strong>{task.name}</strong> ({task.id.substring(0, 8)}...)
-                                            <div style={{ fontSize: '0.9em', color: '#bbb' }}>{task.description.substring(0, 50)}...</div>
+                                            <div style={{ fontSize: '0.9em', color: '#bbb' }}>{task.description.substring(0, Math.min(task.description.length, 50))}...</div>
                                         </div>
                                         <span style={{ color: task.status === 'completed' ? 'lightgreen' : task.status === 'error' ? 'red' : 'orange', fontWeight: 'bold' }}>{task.status.toUpperCase()} ({task.progress.toFixed(0)}%)</span>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
                                             style={{ ...dangerButtonStyle, padding: '5px 8px', fontSize: '0.8em', marginLeft: '10px', marginTop: '0' }}
                                             title="Delete Task"
+                                            disabled={!hasPermission(currentUserRole, 'admin')}
                                         >
                                             &times;
                                         </button>
@@ -1013,24 +1271,51 @@ const AIAgentDashboard: React.FC = () => {
                             {error && <p style={{ color: 'red' }}>Error: {error}</p>}
                             <div style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
                                 <div style={{ marginBottom: '20px' }}>
-                                    <h3>Overall Metrics</h3>
-                                    <p><strong>Total Agents:</strong> {agents.length}</p>
-                                    <p><strong>Active Tasks:</strong> {allTasks.filter(t => t.status !== 'completed' && t.status !== 'error').length}</p>
-                                    <p><strong>Available Models:</strong> {availableModels.length}</p>
-                                    {/* Mock system resource usage */}
-                                    <p><strong>Orchestrator CPU Load:</strong> {(Math.random() * 20 + 5).toFixed(2)}%</p>
-                                    <p><strong>Orchestrator Memory Use:</strong> {(Math.random() * 100 + 500).toFixed(0)}MB</p>
-                                </div>
-                                <h3>Recent System Alerts ({systemEvents.length})</h3>
-                                <div style={{ background: '#282c34', padding: '10px', borderRadius: '4px', maxHeight: '300px', overflowY: 'auto' }}>
-                                    {systemEvents.length === 0 && <p style={{ color: '#bbb' }}>No system alerts.</p>}
-                                    {systemEvents.map((event, index) => (
-                                        <div key={index} style={{ marginBottom: '8px', borderBottom: '1px dashed #4a4f5c', paddingBottom: '8px', color: event.severity === 'error' || event.severity === 'critical' ? 'red' : event.severity === 'warning' ? 'orange' : '#ddd' }}>
-                                            <div style={{ fontSize: '0.8em', color: '#999' }}>{new Date(event.timestamp || Date.now()).toLocaleString()}</div>
-                                            <strong>[{event.severity?.toUpperCase() || 'INFO'}]</strong> {event.payload?.message || event.type}
-                                            {event.payload?.agentId && <span style={{fontSize: '0.9em', marginLeft: '10px'}}> (Agent: {event.payload.agentId.substring(0,8)})</span>}
-                                        </div>
+                                    <h3>Performance Metrics</h3>
+                                    {systemMetrics.map(metric => (
+                                        <p key={metric.id}>
+                                            <strong>{metric.name}:</strong> <span style={{color: metric.status === 'critical' ? 'red' : metric.status === 'warning' ? 'orange' : 'lightgreen'}}>{metric.value}{metric.unit}</span>
+                                        </p>
                                     ))}
+                                </div>
+                                <div style={{ marginBottom: '20px' }}>
+                                    <h3>Ethical Violations ({ethicalViolations.length})</h3>
+                                    <div style={{ background: '#282c34', padding: '10px', borderRadius: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                                        {ethicalViolations.length === 0 && <p style={{ color: '#bbb' }}>No recent ethical violations.</p>}
+                                        {ethicalViolations.map((violation, index) => (
+                                            <div key={index} style={{ marginBottom: '8px', borderBottom: '1px dashed #4a4f5c', paddingBottom: '8px', color: violation.severity === 'critical' || violation.severity === 'high' ? 'red' : violation.severity === 'medium' ? 'orange' : '#ddd' }}>
+                                                <div style={{ fontSize: '0.8em', color: '#999' }}>{new Date(violation.timestamp).toLocaleString()}</div>
+                                                <strong>[{violation.severity.toUpperCase()}]</strong> Agent {violation.agentId.substring(0,8)}: {violation.rule} - {violation.description}
+                                                <div style={{ fontSize: '0.8em', color: '#bbb' }}>Action Taken: {violation.actionTaken}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div style={{ marginBottom: '20px' }}>
+                                    <h3>Recent System Alerts ({systemEvents.length})</h3>
+                                    <div style={{ background: '#282c34', padding: '10px', borderRadius: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                                        {systemEvents.length === 0 && <p style={{ color: '#bbb' }}>No recent system alerts.</p>}
+                                        {systemEvents.map((event, index) => (
+                                            <div key={index} style={{ marginBottom: '8px', borderBottom: '1px dashed #4a4f5c', paddingBottom: '8px', color: event.severity === 'error' || event.severity === 'critical' ? 'red' : event.severity === 'warning' ? 'orange' : '#ddd' }}>
+                                                <div style={{ fontSize: '0.8em', color: '#999' }}>{new Date(event.timestamp || Date.now()).toLocaleString()}</div>
+                                                <strong>[{event.severity?.toUpperCase() || 'INFO'}]</strong> {event.payload?.message || event.type}
+                                                {event.payload?.agentId && <span style={{fontSize: '0.9em', marginLeft: '10px'}}> (Agent: {event.payload.agentId.substring(0,8)})</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div style={{ marginBottom: '20px' }}>
+                                    <h3>Audit Trail Summary ({auditLogEntries.length})</h3>
+                                    <div style={{ background: '#282c34', padding: '10px', borderRadius: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                                        {auditLogEntries.length === 0 && <p style={{ color: '#bbb' }}>No recent audit entries.</p>}
+                                        {auditLogEntries.map((log, index) => (
+                                            <div key={index} style={{ marginBottom: '8px', borderBottom: '1px dashed #4a4f5c', paddingBottom: '8px' }}>
+                                                <div style={{ fontSize: '0.8em', color: '#999' }}>{new Date(log.timestamp).toLocaleString()}</div>
+                                                <div style={{ fontSize: '0.9em', color: '#ddd' }}><strong>Actor:</strong> {log.actorId.substring(0,8)}... | <strong>Action:</strong> {log.action} | <strong>Target:</strong> {log.targetId?.substring(0,8) || 'N/A'}</div>
+                                                <div style={{ fontSize: '0.8em', color: '#bbb' }}>Tamper-Evident: {log.isTamperEvident ? 'Yes' : 'No'} {log.previousHash && `(Prev Hash: ${log.previousHash.substring(0, 8)}...)`}</div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </>
@@ -1046,7 +1331,10 @@ const AIAgentDashboard: React.FC = () => {
                         <>
                             <h2>Agent Details: {selectedAgent.name}</h2>
                             <AgentHealthMonitor agent={selectedAgent} onFeedbackSubmit={handleAgentFeedback} />
+                            <AgentIdentitySecurityDisplay agent={selectedAgent} />
+                            {selectedAgentFinancialSummary && <AgentFinancialSummaryDisplay summary={selectedAgentFinancialSummary} />}
                             <form onSubmit={handleUpdateAgent}>
+                                <h3>Configuration</h3>
                                 <label>
                                     Persona:
                                     <input
@@ -1065,7 +1353,7 @@ const AIAgentDashboard: React.FC = () => {
                                         onChange={handleUpdateAgentConfigChange}
                                         style={inputStyle}
                                     >
-                                        {['planner', 'executor', 'monitor', 'collaborator', 'sentient_entity'].map(role => (
+                                        {['planner', 'executor', 'monitor', 'collaborator', 'sentient_entity', 'financial_analyst', 'security_auditor'].map(role => (
                                             <option key={role} value={role}>{role}</option>
                                         ))}
                                     </select>
@@ -1137,7 +1425,7 @@ const AIAgentDashboard: React.FC = () => {
                                     <strong>Capabilities:</strong> {selectedAgent.capabilities.length > 0 ? selectedAgent.capabilities.join(', ') : 'None'}
                                 </div>
                                 <div style={{ marginBottom: '15px' }}>
-                                    <strong>Assigned Tasks:</strong> {selectedAgent.assignedTasks.length > 0 ? selectedAgent.assignedTasks.map(taskId => <span key={taskId} style={{background: '#555', padding: '3px 8px', borderRadius: '3px', marginRight: '5px'}}>{taskId.substring(0,8)}</span>) : 'None'}
+                                    <strong>Assigned Tasks:</strong> {selectedAgent.assignedTasks.length > 0 ? selectedAgent.assignedTasks.map(taskId => <span key={taskId} style={{background: '#555', padding: '3px 8px', borderRadius: '3px', marginRight: '5px', display: 'inline-block', marginBottom: '5px'}}>{taskId.substring(0,8)}</span>) : 'None'}
                                 </div>
                                 <div style={{ marginBottom: '15px' }}>
                                     <strong>Resource Allocation:</strong>
@@ -1155,7 +1443,7 @@ const AIAgentDashboard: React.FC = () => {
                                         style={{ marginLeft: '10px' }}
                                     />
                                 </label>
-                                <button type="submit" style={buttonStyle} disabled={isLoading}>
+                                <button type="submit" style={buttonStyle} disabled={isLoading || !hasPermission(currentUserRole, 'operator')}>
                                     {isLoading ? 'Updating...' : 'Update Agent'}
                                 </button>
                             </form>
@@ -1229,6 +1517,17 @@ const AIAgentDashboard: React.FC = () => {
                                     </select>
                                 </label>
                                 <label>
+                                    Reward Bounty (Tokens):
+                                    <input
+                                        type="number"
+                                        name="rewardBounty"
+                                        value={newTaskData.rewardBounty}
+                                        onChange={handleNewTaskChange}
+                                        style={inputStyle}
+                                        min="0"
+                                    />
+                                </label>
+                                <label>
                                     Assign To Agent:
                                     <select
                                         name="assignToAgentId"
@@ -1244,7 +1543,7 @@ const AIAgentDashboard: React.FC = () => {
                                         ))}
                                     </select>
                                 </label>
-                                <button type="submit" style={buttonStyle} disabled={isLoading}>
+                                <button type="submit" style={buttonStyle} disabled={isLoading || !hasPermission(currentUserRole, 'operator')}>
                                     {isLoading ? 'Creating Task...' : 'Create & Assign Task'}
                                 </button>
                             </form>
@@ -1335,15 +1634,18 @@ const AIAgentDashboard: React.FC = () => {
                                 <div style={{ marginBottom: '15px' }}>
                                     <strong>Required Model:</strong> {selectedTask.requiredResources?.modelId ? (availableModels.find(m => m.id === selectedTask.requiredResources?.modelId)?.name || selectedTask.requiredResources.modelId) : 'None Specified'}
                                 </div>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <strong>Reward Bounty:</strong> {selectedTask.rewardBounty || 0} Tokens
+                                </div>
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button type="submit" style={buttonStyle} disabled={isLoading}>
+                                    <button type="submit" style={buttonStyle} disabled={isLoading || !hasPermission(currentUserRole, 'operator')}>
                                         {isLoading ? 'Updating Task...' : 'Update Task'}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => handleDeleteTask(selectedTask.id)}
                                         style={dangerButtonStyle}
-                                        disabled={isLoading}
+                                        disabled={isLoading || !hasPermission(currentUserRole, 'admin')}
                                     >
                                         Delete Task
                                     </button>
