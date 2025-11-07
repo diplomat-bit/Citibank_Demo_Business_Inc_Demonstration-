@@ -1,10 +1,19 @@
+/**
+ * This module implements a sophisticated Quantum Entanglement Debugger View, a pivotal component within a commercial-grade financial infrastructure.
+ * Its business value lies in enabling financial institutions to rigorously validate and optimize quantum algorithms intended for high-stakes applications such as
+ * fraud detection, algorithmic trading, risk modeling, and cryptographic security. By providing deep insights into quantum circuit integrity, coherence,
+ * and error mechanisms, this debugger ensures the reliability and performance of quantum-enhanced financial models.
+ * This capability translates directly into long-term business value by mitigating systemic quantum risk, accelerating the deployment of next-generation
+ * financial technologies, and establishing a trusted foundation for programmable value rails and real-time settlement systems, ultimately driving
+ * competitive advantage and operational resilience in the era of quantum finance.
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // --- ENUMERATIONS AND CONSTANTS (Expanding Scope) ---
 
 /**
  * Enumeration of supported quantum circuit input formats.
- * This allows the debugger to handle various common representations.
+ * This allows the debugger to handle various common representations crucial for diverse quantum financial applications.
  */
 export enum QuantumInputFormat {
   QASM = 'OpenQASM 2.0',
@@ -16,11 +25,12 @@ export enum QuantumInputFormat {
   PULSE_SEQUENCE_JSON = 'Pulse Sequence (JSON)',
   ERROR_MODEL_JSON = 'Custom Error Model (JSON)',
   CALIBRATION_DATA_JSON = 'Calibration Data (JSON)',
+  QUANTUM_FINANCIAL_MODEL = 'Quantum Financial Model (QFM)', // New: Specific format for financial algorithms
 }
 
 /**
  * Enumeration of different analysis modes for the debugger.
- * Each mode might trigger a different set of backend simulations or data processing.
+ * Each mode might trigger a different set of backend simulations or data processing relevant to financial integrity.
  */
 export enum AnalysisMode {
   STATIC_STATE_ANALYSIS = 'Static State Analysis',
@@ -30,10 +40,13 @@ export enum AnalysisMode {
   GATE_FIDELITY_CHECK = 'Gate Fidelity Check',
   CROSS_TALK_IDENTIFICATION = 'Cross-Talk Identification',
   PULSE_SEQUENCE_OPTIMIZATION = 'Pulse Sequence Optimization',
+  FINANCIAL_RISK_IMPACT = 'Financial Risk Impact Assessment', // New: Assesses financial implications
+  QUANTUM_SECURITY_VULNERABILITY = 'Quantum Security Vulnerability Scan', // New: Security assessment
 }
 
 /**
  * Enumeration for severity levels of identified issues.
+ * Aligns with enterprise-grade risk assessment frameworks.
  */
 export enum IssueSeverity {
   CRITICAL = 'Critical',
@@ -45,7 +58,7 @@ export enum IssueSeverity {
 
 /**
  * Enumeration for different types of quantum errors.
- * This helps in classifying and suggesting targeted fixes.
+ * Helps in classifying and suggesting targeted fixes, impacting financial system reliability.
  */
 export enum QuantumErrorType {
   DECOHERENCE = 'Decoherence',
@@ -61,6 +74,9 @@ export enum QuantumErrorType {
   QUBIT_LOSS = 'Qubit Loss/Failure',
   SOFTWARE_BUG = 'Software/Firmware Bug',
   COMPILER_OPTIMIZATION_ISSUE = 'Compiler Optimization Issue',
+  ALGORITHMIC_BIAS = 'Algorithmic Bias (Quantum)', // New: Specific to quantum algorithms in finance
+  QUANTUM_DATA_CORRUPTION = 'Quantum Data Corruption', // New: Integrity of financial quantum data
+  PREDICTIVE_MODEL_INSTABILITY = 'Predictive Model Instability (QFM)', // New: QFM specific instability
 }
 
 /**
@@ -84,6 +100,7 @@ export enum QuantumGateType {
 
 /**
  * Defines the status of a long-running analysis job.
+ * Essential for monitoring automated financial processes.
  */
 export enum JobStatus {
   PENDING = 'PENDING',
@@ -91,6 +108,44 @@ export enum JobStatus {
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
   CANCELLED = 'CANCELLED',
+}
+
+/**
+ * Defines types of financial impact.
+ * Crucial for quantifying the commercial implications of quantum errors.
+ */
+export enum FinancialImpactType {
+  RISK_EXPOSURE_INCREASE = 'Risk Exposure Increase',
+  TRANSACTION_LATENCY_SPIKE = 'Transaction Latency Spike',
+  SETTLEMENT_INTEGRITY_COMPROMISE = 'Settlement Integrity Compromise',
+  COMPLIANCE_VIOLATION = 'Compliance Violation',
+  DATA_PRIVACY_BREACH_RISK = 'Data Privacy Breach Risk',
+  CAPITAL_LOSS_POTENTIAL = 'Capital Loss Potential',
+  OPERATIONAL_INEFFICIENCY = 'Operational Inefficiency',
+  REVENUE_LOSS_FORECAST = 'Revenue Loss Forecast',
+}
+
+/**
+ * Defines security threat categories for quantum systems in finance.
+ */
+export enum QuantumSecurityThreat {
+  SIDE_CHANNEL_ATTACK = 'Side-Channel Attack Vulnerability',
+  QUANTUM_BYZANTINE_FAULT = 'Quantum Byzantine Fault',
+  POST_QUANTUM_COMPROMISE = 'Post-Quantum Algorithm Vulnerability',
+  IDENTITY_SPOOFING_RISK = 'Quantum Identity Spoofing Risk',
+  QUANTUM_DO_S_ATTACK = 'Quantum Denial-of-Service Attack',
+}
+
+/**
+ * Enumeration for types of agents that interact with the debugger.
+ * Facilitates role-based permissions and auditable agent actions.
+ */
+export enum AgentType {
+  FINANCIAL_ENGINEER = 'FinancialEngineerAgent',
+  RISK_ASSESSMENT = 'RiskAssessmentAgent',
+  COMPLIANCE_OFFICER = 'ComplianceOfficerAgent',
+  QUANTUM_ANALYST = 'QuantumAnalystAgent',
+  ORCHESTRATOR = 'AgentOrchestrator',
 }
 
 // --- INTERFACES (Significantly Expanded for Real-World Complexity) ---
@@ -136,6 +191,7 @@ export interface DetailedErrorSource {
     gates?: { gateType: QuantumGateType; cycle?: number; name?: string; }[]; // Affected gates
     timeSlice?: { start: number; end: number; } // Time window in microseconds
     hardwareComponent?: string; // e.g., "CryoUnit-A", "MicrowaveGenerator-B"
+    financialModule?: string; // New: e.g., "FraudDetectionQNN", "DerivativePricingCircuit"
   };
   severity: IssueSeverity;
   observedMagnitude: number; // e.g., probability of error, fidelity reduction
@@ -143,6 +199,7 @@ export interface DetailedErrorSource {
   potentialRootCauses: string[];
   mitigationStrategies: string[];
   referenceId?: string; // Link to an internal knowledge base entry
+  financialImpactEstimate?: QuantumFinancialImpactAssessment; // New: Direct financial impact link
 }
 
 /**
@@ -156,6 +213,7 @@ export interface SuggestedFix {
   steps: string[]; // Step-by-step instructions
   toolsRequired?: string[]; // e.g., "Oscilloscope", "Calibration Software v2.1"
   relatedErrors?: string[]; // IDs of errors this fix might address
+  complianceCheckRequired?: boolean; // New: Does this fix require a compliance re-check?
 }
 
 /**
@@ -170,24 +228,29 @@ export interface DebuggingReport {
   summary: string;
   identifiedErrors: DetailedErrorSource[];
   suggestedFixes: SuggestedFix[];
-  performanceMetrics: QuantumPerformanceMetrics; // New complex metric
-  entanglementAnalysis: EntanglementAnalysisResult; // New complex analysis
-  decoherenceProfile: DecoherenceProfile; // New complex analysis
-  faultToleranceEstimate?: FaultToleranceEstimate; // Optional, depending on mode
-  resourceEstimate?: ResourceEstimate; // Optional, depending on mode
-  circuitDiagramData?: CircuitDiagramData; // Optional, for visualization
-  errorHeatmapData?: ErrorHeatmapData; // Optional, for visualization
-  logs: DebugLogEntry[]; // Detailed log entries
+  performanceMetrics: QuantumPerformanceMetrics;
+  entanglementAnalysis: EntanglementAnalysisResult;
+  decoherenceProfile: DecoherenceProfile;
+  faultToleranceEstimate?: FaultToleranceEstimate;
+  resourceEstimate?: ResourceEstimate;
+  circuitDiagramData?: CircuitDiagramData;
+  errorHeatmapData?: ErrorHeatmapData;
+  logs: DebugLogEntry[];
+  quantumFinancialImpact?: QuantumFinancialImpactAssessment; // New: Overall financial impact
+  quantumSecurityScan?: QuantumSecurityScanResult; // New: Overall security scan
 }
 
 /**
  * Interface for a log entry within the debugger.
+ * Enhanced to include digital identity and cryptographic signature for auditable operations.
  */
 export interface DebugLogEntry {
   timestamp: string;
-  level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+  level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG' | 'AUDIT'; // Added AUDIT level
   message: string;
   details?: Record<string, any>;
+  identityId?: string; // New: Digital Identity of the entity performing/logging the action
+  signature?: string; // New: Cryptographic signature of the log entry
 }
 
 /**
@@ -208,6 +271,8 @@ export interface QuantumPerformanceMetrics {
   };
   qubitTemperatures?: Record<string, number>; // Temperature in mK per qubit
   controlPulseAmplitudes?: Record<string, Record<QuantumGateType, number>>; // Amplitude in V per qubit per gate
+  quantumVolumeEstimate?: number; // New: A benchmark for overall quantum computer capability
+  algorithmicSuccessProbability?: number; // New: For financial algorithms (0-1)
 }
 
 /**
@@ -227,6 +292,7 @@ export interface EntanglementAnalysisResult {
   }>;
   multiQubitEntanglementEntropy?: Record<string, number>; // Shannon entropy-like measure
   entanglementDiagramData?: EntanglementDiagramData; // For visualization
+  averageEntanglementDepth?: number; // New: How deeply entangled the circuit is on average
 }
 
 /**
@@ -292,6 +358,7 @@ export interface ResourceEstimate {
   estimatedControlElectronicsCostUSD?: number;
   dominantResourceConstraint: string; // e.g., "Qubit Connectivity", "Coherence Time", "Gate Count"
   optimizationSuggestions: string[];
+  estimatedOperationalCostUSDPerRun?: number; // New: Financial cost of running the quantum algorithm
 }
 
 /**
@@ -302,9 +369,9 @@ export interface CircuitDiagramData {
   numClassicalBits: number;
   circuitLayers: Array<{
     id: string;
-    type: 'barrier' | 'gate' | 'measurement';
+    type: 'barrier' | 'gate' | 'measurement' | 'quantum_channel'; // Added quantum_channel
     gates: Array<{
-      type: QuantumGateType;
+      type: QuantumGateType | 'QChannel'; // Added 'QChannel'
       targetQubits: number[]; // Qubit indices
       controlQubits?: number[]; // Qubit indices
       rotationAngle?: number; // For Rx, Ry, Rz
@@ -330,7 +397,7 @@ export interface ErrorHeatmapData {
   title: string;
   xAxisLabel: string;
   yAxisLabel: string;
-  type: 'Qubit' | 'Gate' | 'TimeSlice';
+  type: 'Qubit' | 'Gate' | 'TimeSlice' | 'QubitPairInteraction'; // Added QubitPairInteraction
   dataPoints: Array<{
     xLabel: string; // e.g., "q[0]", "H_0_q0"
     yLabel: string; // e.g., "q[1]", "CNOT_1_q0q1", "Time 100ns"
@@ -354,10 +421,12 @@ export interface DebugSessionHistoryEntry {
   mostLikelyErrorSource: string;
   confidence: number;
   viewed: boolean;
+  identityId: string; // New: Who ran this session
 }
 
 /**
  * Configuration options for the debugger.
+ * Includes governance and security parameters.
  */
 export interface DebuggerConfig {
   preferredSimulator: 'qiskit' | 'cirq' | 'custom_backend_A';
@@ -365,9 +434,70 @@ export interface DebuggerConfig {
   noiseModelParameters: Record<string, any>;
   entanglementThreshold: number; // Min concurrence to report entanglement
   reportingLevel: IssueSeverity; // Min severity to include in report
-  autoApplySuggestedFixes: boolean; // DANGER!
+  autoApplySuggestedFixes: boolean; // DANGER! Requires high trust.
   dataRetentionDays: number;
   developerMode: boolean;
+  auditLevel: 'Minimal' | 'Verbose' | 'Cryptographic'; // New: Level of audit logging
+  identityVerificationRequired: boolean; // New: Mandate digital identity for actions
+}
+
+/**
+ * Assesses the financial impact of quantum errors or vulnerabilities.
+ * Directly links quantum analysis to commercial outcomes.
+ */
+export interface QuantumFinancialImpactAssessment {
+  impactType: FinancialImpactType;
+  estimatedMonetaryLossUSD?: number; // New: Quantifiable financial loss
+  estimatedLatencyIncreaseMs?: number; // New: Impact on transaction speed
+  riskScore: number; // New: (0-100)
+  recommendations: string[];
+  complianceRiskLevel?: IssueSeverity; // New: Level of compliance risk
+  affectedFinancialProducts?: string[]; // New: e.g., "High-Frequency Trading", "Derivatives Portfolio"
+}
+
+/**
+ * Results of a quantum security vulnerability scan.
+ * Critical for financial systems relying on quantum-safe cryptography or algorithms.
+ */
+export interface QuantumSecurityScanResult {
+  threatsDetected: Array<{
+    type: QuantumSecurityThreat;
+    description: string;
+    severity: IssueSeverity;
+    affectedComponents: string[]; // e.g., "Qubit 3", "CNOT Gate Layer 5"
+    mitigationSuggestions: string[];
+  }>;
+  overallSecurityScore: number; // 0-100
+  postQuantumComplianceStatus: 'Compliant' | 'At Risk' | 'Non-Compliant';
+  auditTrailIntegrityCheck?: {
+    isTamperEvident: boolean;
+    lastAuditTimestamp: string;
+  };
+}
+
+/**
+ * Represents a message sent between agents for internal communication.
+ * Simulates a secure internal messaging layer.
+ */
+export interface AgentMessage {
+  messageId: string;
+  senderId: string; // Digital Identity of the sending agent
+  receiverId: string; // Digital Identity of the receiving agent
+  timestamp: string;
+  payload: any; // The actual content of the message
+  messageType: 'INFO' | 'ACTION_REQUEST' | 'REPORT' | 'COMMAND';
+  signature: string; // Cryptographic signature of the message
+  correlationId?: string; // For chaining related messages
+}
+
+/**
+ * Represents a digital identity in the system.
+ */
+export interface DigitalIdentity {
+  id: string; // Unique identifier for the identity
+  name: string;
+  role: string; // e.g., "QuantumAnalyst", "RiskManager", "ComplianceOfficer"
+  publicKey: string; // Mock public key for signature verification
 }
 
 interface DebugResponse {
@@ -386,6 +516,16 @@ const generateQubitIds = (count: number): string[] => {
 };
 
 /**
+ * Generates a mock cryptographic signature.
+ */
+const generateMockSignature = (identityId: string, payload: any): string => {
+  // In a real system, this would involve actual cryptographic signing.
+  // Here, it's a deterministic hash for simulation.
+  const hash = btoa(JSON.stringify(payload) + identityId + Date.now().toString()).substring(0, 32);
+  return `SIG-${hash}`;
+};
+
+/**
  * Generates mock QubitState data.
  */
 export const generateMockQubitState = (id: string): QubitState => ({
@@ -400,6 +540,92 @@ export const generateMockQubitState = (id: string): QubitState => ({
   populationOne: parseFloat(Math.random().toFixed(3)),
   phase: parseFloat((Math.random() * 2 * Math.PI).toFixed(3)),
 });
+
+/**
+ * Generates mock QuantumFinancialImpactAssessment data.
+ */
+export const generateMockQuantumFinancialImpactAssessment = (errorSeverity: IssueSeverity): QuantumFinancialImpactAssessment => {
+  const impactTypes = Object.values(FinancialImpactType);
+  const impactType = impactTypes[Math.floor(Math.random() * impactTypes.length)];
+  let estimatedMonetaryLossUSD = undefined;
+  let estimatedLatencyIncreaseMs = undefined;
+  let riskScore = 0;
+
+  switch (errorSeverity) {
+    case IssueSeverity.CRITICAL:
+      estimatedMonetaryLossUSD = parseFloat((Math.random() * 1000000 + 500000).toFixed(2)); // $500k - $1.5M
+      riskScore = parseFloat((90 + Math.random() * 10).toFixed(1)); // 90-100
+      break;
+    case IssueSeverity.HIGH:
+      estimatedMonetaryLossUSD = parseFloat((Math.random() * 100000 + 10000).toFixed(2)); // $10k - $110k
+      riskScore = parseFloat((70 + Math.random() * 20).toFixed(1)); // 70-90
+      break;
+    case IssueSeverity.MEDIUM:
+      estimatedLatencyIncreaseMs = parseFloat((Math.random() * 500 + 100).toFixed(2)); // 100-600ms
+      riskScore = parseFloat((40 + Math.random() * 30).toFixed(1)); // 40-70
+      break;
+    case IssueSeverity.LOW:
+      estimatedLatencyIncreaseMs = parseFloat((Math.random() * 50 + 10).toFixed(2)); // 10-60ms
+      riskScore = parseFloat((20 + Math.random() * 20).toFixed(1)); // 20-40
+      break;
+    case IssueSeverity.INFORMATIONAL:
+    default:
+      riskScore = parseFloat((5 + Math.random() * 15).toFixed(1)); // 5-20
+      break;
+  }
+
+  const affectedProducts = ['Algorithmic Trading', 'Fraud Detection', 'Derivative Pricing', 'Portfolio Optimization'];
+  const numAffected = Math.floor(Math.random() * 2) + 1; // 1 or 2 products
+  const selectedProducts = Array.from({ length: numAffected }, () => affectedProducts[Math.floor(Math.random() * affectedProducts.length)]);
+
+  return {
+    impactType,
+    estimatedMonetaryLossUSD: impactType === FinancialImpactType.CAPITAL_LOSS_POTENTIAL || impactType === FinancialImpactType.REVENUE_LOSS_FORECAST ? estimatedMonetaryLossUSD : undefined,
+    estimatedLatencyIncreaseMs: impactType === FinancialImpactType.TRANSACTION_LATENCY_SPIKE ? estimatedLatencyIncreaseMs : undefined,
+    riskScore,
+    recommendations: [
+      `Review ${selectedProducts.join(', ')} for quantum algorithm re-calibration.`,
+      `Consult with Risk Assessment Agent for detailed financial modeling.`,
+    ],
+    complianceRiskLevel: Math.random() > 0.7 ? IssueSeverity.HIGH : IssueSeverity.MEDIUM,
+    affectedFinancialProducts: selectedProducts,
+  };
+};
+
+/**
+ * Generates mock QuantumSecurityScanResult.
+ */
+export const generateMockQuantumSecurityScanResult = (): QuantumSecurityScanResult => {
+  const threats: QuantumSecurityScanResult['threatsDetected'] = [];
+  const threatTypes = Object.values(QuantumSecurityThreat);
+  const severities = Object.values(IssueSeverity).filter(s => s !== IssueSeverity.INFORMATIONAL);
+
+  for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) { // 1-3 threats
+    const type = threatTypes[Math.floor(Math.random() * threatTypes.length)];
+    const severity = severities[Math.floor(Math.random() * severities.length)];
+    threats.push({
+      type,
+      description: `Potential ${type} detected affecting core quantum operations.`,
+      severity,
+      affectedComponents: ['Quantum Processor Unit', 'Control Plane', 'Inter-Qubit Couplers'],
+      mitigationSuggestions: ['Implement advanced side-channel countermeasures', 'Strengthen quantum state isolation protocols'],
+    });
+  }
+
+  const overallSecurityScore = parseFloat((70 + Math.random() * 30).toFixed(1)); // 70-100
+  const complianceStatus = overallSecurityScore > 90 ? 'Compliant' : (overallSecurityScore > 75 ? 'At Risk' : 'Non-Compliant');
+
+  return {
+    threatsDetected: threats,
+    overallSecurityScore,
+    postQuantumComplianceStatus: complianceStatus,
+    auditTrailIntegrityCheck: {
+      isTamperEvident: Math.random() > 0.05, // 95% tamper-evident
+      lastAuditTimestamp: new Date().toISOString(),
+    },
+  };
+};
+
 
 /**
  * Generates mock DetailedErrorSource data.
@@ -430,6 +656,9 @@ export const generateMockDetailedErrorSource = (qubitCount: number, errorIndex: 
     [QuantumErrorType.QUBIT_LOSS]: `Qubit ${randomQubits ? randomQubits[0] : 'a critical qubit'} shows signs of irreversible failure.`,
     [QuantumErrorType.SOFTWARE_BUG]: `Backend software processing error during pulse sequence generation.`,
     [QuantumErrorType.COMPILER_OPTIMIZATION_ISSUE]: `Compiler introduced an inefficient gate sequence causing increased error.`,
+    [QuantumErrorType.ALGORITHMIC_BIAS]: `Detected potential algorithmic bias in QFM output for specific market conditions.`,
+    [QuantumErrorType.QUANTUM_DATA_CORRUPTION]: `Integrity check failed for quantum-encoded financial data.`,
+    [QuantumErrorType.PREDICTIVE_MODEL_INSTABILITY]: `QFM showed instability in predictive outcomes under stress test conditions.`,
   };
 
   const potentialRootCausesMap: Record<QuantumErrorType, string[]> = {
@@ -446,6 +675,9 @@ export const generateMockDetailedErrorSource = (qubitCount: number, errorIndex: 
     [QuantumErrorType.QUBIT_LOSS]: ['Physical damage', 'Persistent parasitic coupling'],
     [QuantumErrorType.SOFTWARE_BUG]: ['Firmware bug', 'Control software logic error'],
     [QuantumErrorType.COMPILER_OPTIMIZATION_ISSUE]: ['Heuristic search limitations', 'Bug in transpiler pass'],
+    [QuantumErrorType.ALGORITHMIC_BIAS]: ['Insufficient training data diversity', 'Flawed quantum feature mapping', 'Unintended quantum entanglement effects'],
+    [QuantumErrorType.QUANTUM_DATA_CORRUPTION]: ['Interference during data loading', 'Memory fault in quantum register', 'Incorrect QKD protocol implementation'],
+    [QuantumErrorType.PREDICTIVE_MODEL_INSTABILITY]: ['Hyperparameter misconfiguration', 'Sensitivity to noisy quantum input', 'Lack of robustness to adversarial quantum examples'],
   };
 
   const mitigationStrategiesMap: Record<QuantumErrorType, string[]> = {
@@ -462,8 +694,12 @@ export const generateMockDetailedErrorSource = (qubitCount: number, errorIndex: 
     [QuantumErrorType.QUBIT_LOSS]: ['Schedule maintenance', 'Bypass qubit in future experiments'],
     [QuantumErrorType.SOFTWARE_BUG]: ['Review code for the identified module', 'Deploy patch'],
     [QuantumErrorType.COMPILER_OPTIMIZATION_ISSUE]: ['Report issue to compiler team', 'Try different compilation settings'],
+    [QuantumErrorType.ALGORITHMIC_BIAS]: ['Expand quantum dataset diversity', 'Implement fairness-aware quantum cost functions', 'Perform bias-testing with varied financial scenarios'],
+    [QuantumErrorType.QUANTUM_DATA_CORRUPTION]: ['Reinforce quantum error detection codes', 'Implement redundant quantum data storage', 'Validate QKD endpoints'],
+    [QuantumErrorType.PREDICTIVE_MODEL_INSTABILITY]: ['Fine-tune quantum model hyperparameters', 'Employ quantum-inspired regularization techniques', 'Implement quantum adversarial training'],
   };
 
+  const financialModules = ['FraudDetectionQNN', 'AlgorithmicTradingStrategy', 'DerivativePricingModel', 'RiskPortfolioOptimizer'];
 
   return {
     id: `ERR-${Date.now()}-${errorIndex}`,
@@ -478,6 +714,7 @@ export const generateMockDetailedErrorSource = (qubitCount: number, errorIndex: 
       }] : undefined,
       timeSlice: Math.random() > 0.5 ? { start: Math.random() * 100, end: Math.random() * 100 + 100 } : undefined,
       hardwareComponent: Math.random() > 0.7 ? (Math.random() > 0.5 ? "PulseGenerator-A" : "ReadoutResonator-B") : undefined,
+      financialModule: Math.random() > 0.4 ? financialModules[Math.floor(Math.random() * financialModules.length)] : undefined,
     },
     severity,
     observedMagnitude: parseFloat(Math.random().toFixed(3)),
@@ -485,6 +722,7 @@ export const generateMockDetailedErrorSource = (qubitCount: number, errorIndex: 
     potentialRootCauses: potentialRootCausesMap[type],
     mitigationStrategies: mitigationStrategiesMap[type],
     referenceId: `KB-${Math.floor(Math.random() * 1000)}`,
+    financialImpactEstimate: severity === IssueSeverity.CRITICAL || severity === IssueSeverity.HIGH ? generateMockQuantumFinancialImpactAssessment(severity) : undefined,
   };
 };
 
@@ -492,23 +730,24 @@ export const generateMockDetailedErrorSource = (qubitCount: number, errorIndex: 
  * Generates mock SuggestedFix data.
  */
 export const generateMockSuggestedFix = (error: DetailedErrorSource): SuggestedFix => {
-  const commonTools = ['Cryogenic monitoring software', 'Microwave pulse calibrator', 'RF spectrum analyzer', 'Qubit characterization suite'];
+  const commonTools = ['Cryogenic monitoring software', 'Microwave pulse calibrator', 'RF spectrum analyzer', 'Qubit characterization suite', 'Quantum Financial Model Re-Optimizer'];
   const stepsBase = [
-    `Verify integrity of ${error.location.hardwareComponent || 'affected subsystem'}.`,
+    `Verify integrity of ${error.location.hardwareComponent || error.location.financialModule || 'affected subsystem'}.`,
     `Execute diagnostic protocol for ${error.type.toLowerCase()}.`,
     `Adjust ${error.type === QuantumErrorType.CALIBRATION_DRIFT ? 'calibration parameters' : 'control pulse timings'}.`,
     `Re-run full system calibration.`,
-    `Monitor ${error.location.qubits?.join(', ') || 'affected qubits'} for ${error.type} after fix.`,
+    `Monitor ${error.location.qubits?.join(', ') || 'affected components'} for ${error.type} after fix.`,
     `Log changes in the system maintenance journal.`,
   ];
   return {
     fixId: `FIX-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-    description: `Address "${error.type}" identified on ${error.location.qubits?.join(', ') || 'multiple qubits'}.`,
+    description: `Address "${error.type}" identified on ${error.location.qubits?.join(', ') || error.location.financialModule || 'multiple components'}.`,
     priority: error.severity,
     estimatedImpact: parseFloat((0.6 + Math.random() * 0.4).toFixed(2)),
     steps: stepsBase.map((step, i) => `${i + 1}. ${step}`),
     toolsRequired: Math.random() > 0.5 ? commonTools.slice(0, Math.floor(Math.random() * commonTools.length) + 1) : undefined,
     relatedErrors: [error.id],
+    complianceCheckRequired: error.type.includes('Financial') || error.type.includes('Bias') || error.type.includes('Corruption') ? true : Math.random() > 0.7,
   };
 };
 
@@ -552,7 +791,9 @@ export const generateMockPerformanceMetrics = (qubitCount: number): QuantumPerfo
     readoutErrorRate: parseFloat((0.005 + Math.random() * 0.02).toFixed(4)),
     coherenceTimes: { t1, t2, t2Echo },
     qubitTemperatures: temperatures,
-    controlPulseAmplitudes: controlPulseAmplitudes,
+    controlPulseAmplitudes: controlPulsePulseAmplitudes,
+    quantumVolumeEstimate: parseFloat((Math.pow(2, Math.random() * qubitCount / 2 + 1)).toFixed(1)), // 2^(Q/2)
+    algorithmicSuccessProbability: parseFloat((0.7 + Math.random() * 0.25).toFixed(3)), // 70-95%
   };
 };
 
@@ -611,6 +852,7 @@ export const generateMockEntanglementAnalysisResult = (qubitCount: number): Enta
       nodes: entanglementDiagramNodes,
       edges: entanglementDiagramEdges,
     },
+    averageEntanglementDepth: parseFloat((Math.random() * qubitCount / 2).toFixed(1)),
   };
 };
 
@@ -690,7 +932,7 @@ export const generateMockFaultToleranceEstimate = (qubitCount: number): FaultTol
       time: parseFloat((Math.random() * 100 + 10).toFixed(1)),
     },
     resourceImpact: isAbove ? "High" : "Moderate",
-    recommendations: isAbove ? ["Improve physical error rates", "Consider a stronger error correction code"] : ["Maintain current parameters", "Optimize gate sequences"],
+    recommendations: isAbove ? ["Improve physical error rates", "Consider a stronger error correction code", "Consult QuantumArchitectAgent for topology review"] : ["Maintain current parameters", "Optimize gate sequences", "Validate error budget with RiskAgent"],
   };
 };
 
@@ -703,6 +945,7 @@ export const generateMockResourceEstimate = (qubitCount: number): ResourceEstima
   const circuitDepth = Math.floor(Math.random() * 1000) + 100;
   const runtime = Math.floor(Math.random() * 60000) + 10000; // 10s to 70s
   const power = parseFloat((Math.random() * 1000 + 500).toFixed(2)); // 500-1500W
+  const operationalCost = parseFloat((Math.random() * 50 + 5).toFixed(2)); // $5-$55 per run
 
   const constraints = ["Qubit Connectivity", "Coherence Time", "Gate Count", "Control Pulse Bandwidth"];
   const dominantConstraint = constraints[Math.floor(Math.random() * constraints.length)];
@@ -719,7 +962,9 @@ export const generateMockResourceEstimate = (qubitCount: number): ResourceEstima
       `Reduce circuit depth by ${Math.floor(Math.random() * 20 + 5)}%.`,
       `Explore alternative qubit mapping strategies.`,
       `Investigate higher-fidelity ${dominantConstraint.includes('Coherence') ? 'qubits' : 'gates'}.`,
+      `Optimize quantum compiler passes for resource efficiency.`,
     ],
+    estimatedOperationalCostUSDPerRun: operationalCost,
   };
 };
 
@@ -728,7 +973,7 @@ export const generateMockResourceEstimate = (qubitCount: number): ResourceEstima
  */
 export const generateMockCircuitDiagramData = (numQubits: number): CircuitDiagramData => {
   const circuitLayers: CircuitDiagramData['circuitLayers'] = [];
-  const gateTypes = [QuantumGateType.H, QuantumGateType.X, QuantumGateType.CNOT, QuantumGateType.MEASURE, QuantumGateType.RX];
+  const gateTypes = [QuantumGateType.H, QuantumGateType.X, QuantumGateType.CNOT, QuantumGateType.MEASURE, QuantumGateType.RX, 'QChannel'];
 
   for (let i = 0; i < numQubits * 3; i++) { // Generate layers
     const layerGates: CircuitDiagramData['circuitLayers'][0]['gates'] = [];
@@ -763,11 +1008,22 @@ export const generateMockCircuitDiagramData = (numQubits: number): CircuitDiagra
         label: `M${q}`,
         errorProbability: parseFloat((0.005 + Math.random() * 0.01).toFixed(4)),
       });
+    } else if (layerGateType === 'QChannel') {
+      const q = Math.floor(Math.random() * numQubits);
+      layerGates.push({
+        type: 'QChannel',
+        targetQubits: [q],
+        label: `QChannel-${q}`,
+        color: '#FFD700', // Gold color for quantum channel
+        errorProbability: parseFloat((0.0005 + Math.random() * 0.002).toFixed(4)),
+      });
+      circuitLayers.push({ id: `layer-${i}-channel`, type: 'quantum_channel', gates: layerGates });
+      continue; // Continue to next layer, as QChannel is a special type
     } else {
       // Single qubit gates
       const q = Math.floor(Math.random() * numQubits);
       layerGates.push({
-        type: layerGateType,
+        type: layerGateType as QuantumGateType, // Type assertion for other gates
         targetQubits: [q],
         fidelity: parseFloat((0.99 + Math.random() * 0.005).toFixed(4)),
       });
@@ -821,7 +1077,7 @@ export const generateMockErrorHeatmapData = (qubitCount: number): ErrorHeatmapDa
     title: 'Qubit Cross-Talk Error Heatmap',
     xAxisLabel: 'Source Qubit',
     yAxisLabel: 'Target Qubit',
-    type: 'Qubit',
+    type: 'QubitPairInteraction',
     dataPoints,
     minValue: 0,
     maxValue: 0.05,
@@ -832,19 +1088,20 @@ export const generateMockErrorHeatmapData = (qubitCount: number): ErrorHeatmapDa
 /**
  * Generates a full mock DebuggingReport.
  */
-export const generateMockDebuggingReport = (qubitCount: number = 5, mode: AnalysisMode = AnalysisMode.DYNAMIC_DECOHERENCE_SIMULATION): DebuggingReport => {
+export const generateMockDebuggingReport = (qubitCount: number = 5, mode: AnalysisMode = AnalysisMode.DYNAMIC_DECOHERENCE_SIMULATION, identityId: string = 'sys_internal_agent'): DebuggingReport => {
   const numErrors = Math.floor(Math.random() * 5) + 2; // 2-6 errors
   const identifiedErrors = Array.from({ length: numErrors }, (_, i) => generateMockDetailedErrorSource(qubitCount, i));
   const suggestedFixes = identifiedErrors.map(error => generateMockSuggestedFix(error));
 
   const logs: DebugLogEntry[] = [
-    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Starting quantum debugger analysis.' },
-    { timestamp: new Date().toISOString(), level: 'DEBUG', message: `Input format detected: ${QuantumInputFormat.QASM}` },
-    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Running noise model simulation.' },
-    { timestamp: new Date().toISOString(), level: 'WARN', message: 'Minor phase error detected, within acceptable bounds.', details: { qubit: 'q[1]', magnitude: 0.01 } },
-    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Performing entanglement analysis.' },
-    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Generating performance metrics.' },
-    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Analysis complete.' },
+    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Starting quantum debugger analysis.', identityId, signature: generateMockSignature(identityId, 'start') },
+    { timestamp: new Date().toISOString(), level: 'DEBUG', message: `Input format detected: ${QuantumInputFormat.QASM}`, identityId, signature: generateMockSignature(identityId, 'format') },
+    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Running noise model simulation.', identityId, signature: generateMockSignature(identityId, 'noise_sim') },
+    { timestamp: new Date().toISOString(), level: 'WARN', message: 'Minor phase error detected, within acceptable bounds.', details: { qubit: 'q[1]', magnitude: 0.01 }, identityId, signature: generateMockSignature(identityId, 'phase_warn') },
+    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Performing entanglement analysis.', identityId, signature: generateMockSignature(identityId, 'entanglement') },
+    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Generating performance metrics.', identityId, signature: generateMockSignature(identityId, 'metrics') },
+    { timestamp: new Date().toISOString(), level: 'AUDIT', message: 'Analysis parameters logged for compliance.', details: { mode, qubitCount }, identityId, signature: generateMockSignature(identityId, 'audit_params') },
+    { timestamp: new Date().toISOString(), level: 'INFO', message: 'Analysis complete.', identityId, signature: generateMockSignature(identityId, 'complete') },
   ];
 
   const report: DebuggingReport = {
@@ -853,7 +1110,7 @@ export const generateMockDebuggingReport = (qubitCount: number = 5, mode: Analys
     inputHash: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0',
     analysisMode: mode,
     overallStatus: Math.random() > 0.1 ? 'Success' : 'Partial Success',
-    summary: `Comprehensive debug report for ${qubitCount} qubits. Identified ${numErrors} potential issues.`,
+    summary: `Comprehensive debug report for ${qubitCount} qubits, mode ${mode}. Identified ${numErrors} potential issues.`,
     identifiedErrors,
     suggestedFixes,
     performanceMetrics: generateMockPerformanceMetrics(qubitCount),
@@ -871,6 +1128,13 @@ export const generateMockDebuggingReport = (qubitCount: number = 5, mode: Analys
   if (mode === AnalysisMode.RESOURCE_OPTIMIZATION) {
     report.resourceEstimate = generateMockResourceEstimate(qubitCount);
   }
+  if (mode === AnalysisMode.FINANCIAL_RISK_IMPACT) {
+    const highestSeverityError = identifiedErrors.sort((a, b) => Object.values(IssueSeverity).indexOf(a.severity) - Object.values(IssueSeverity).indexOf(b.severity))[0];
+    report.quantumFinancialImpact = generateMockQuantumFinancialImpactAssessment(highestSeverityError?.severity || IssueSeverity.INFORMATIONAL);
+  }
+  if (mode === AnalysisMode.QUANTUM_SECURITY_VULNERABILITY) {
+    report.quantumSecurityScan = generateMockQuantumSecurityScanResult();
+  }
 
   return report;
 };
@@ -878,11 +1142,11 @@ export const generateMockDebuggingReport = (qubitCount: number = 5, mode: Analys
 /**
  * Generates mock DebugSessionHistoryEntry.
  */
-export const generateMockHistoryEntry = (index: number): DebugSessionHistoryEntry => {
+export const generateMockHistoryEntry = (index: number, identityId: string = 'sys_internal_agent'): DebugSessionHistoryEntry => {
   const modes = Object.values(AnalysisMode);
   const mode = modes[Math.floor(Math.random() * modes.length)];
   const status = Math.random() > 0.2 ? 'Success' : 'Failure';
-  const errors = ['Decoherence', 'Gate Fidelity', 'Cross-Talk', 'Thermal Noise'];
+  const errors = ['Decoherence', 'Gate Fidelity', 'Cross-Talk', 'Thermal Noise', 'Algorithmic Bias'];
   const errorSource = errors[Math.floor(Math.random() * errors.length)];
 
   return {
@@ -894,6 +1158,7 @@ export const generateMockHistoryEntry = (index: number): DebugSessionHistoryEntr
     mostLikelyErrorSource: status === 'Success' ? 'No critical errors' : `${errorSource} in Q${Math.floor(Math.random() * 5)}`,
     confidence: status === 'Success' ? 1.0 : parseFloat((0.6 + Math.random() * 0.3).toFixed(2)),
     viewed: Math.random() > 0.5,
+    identityId: identityId,
   };
 };
 
@@ -917,7 +1182,27 @@ export const generateMockDebuggerConfig = (): DebuggerConfig => ({
   autoApplySuggestedFixes: false,
   dataRetentionDays: 90,
   developerMode: Math.random() > 0.8,
+  auditLevel: Math.random() > 0.6 ? 'Cryptographic' : (Math.random() > 0.3 ? 'Verbose' : 'Minimal'),
+  identityVerificationRequired: Math.random() > 0.5,
 });
+
+/**
+ * Generates mock DigitalIdentity.
+ */
+export const generateMockDigitalIdentity = (id: string, name: string, role: string): DigitalIdentity => ({
+  id,
+  name,
+  role,
+  publicKey: `PUBKEY_${id.toUpperCase()}_${Math.random().toString(36).substring(2, 15).toUpperCase()}`,
+});
+
+export const MOCK_DIGITAL_IDENTITIES: DigitalIdentity[] = [
+  generateMockDigitalIdentity('agent_qa_001', 'Quantum Analyst Agent', 'QuantumAnalystAgent'),
+  generateMockDigitalIdentity('agent_risk_007', 'Risk Assessment Agent', 'RiskAssessmentAgent'),
+  generateMockDigitalIdentity('user_dev_999', 'Jane Doe', 'FinancialEngineer'),
+  generateMockDigitalIdentity('user_audit_101', 'Audit Compliance Agent', 'ComplianceOfficer'),
+];
+
 
 // --- HELPER COMPONENTS (Exported for Top-Level requirement and structure) ---
 
@@ -953,6 +1238,7 @@ export const ErrorSourceDisplay: React.FC<{ error: DetailedErrorSource }> = ({ e
       {error.location.qubits && <p className="text-xs"><strong>Affected Qubits:</strong> {error.location.qubits.join(', ')}</p>}
       {error.location.gates && <p className="text-xs"><strong>Affected Gates:</strong> {error.location.gates.map(g => `${g.gateType} on ${g.cycle}`).join(', ')}</p>}
       {error.location.hardwareComponent && <p className="text-xs"><strong>Hardware:</strong> {error.location.hardwareComponent}</p>}
+      {error.location.financialModule && <p className="text-xs"><strong>Financial Module:</strong> {error.location.financialModule}</p>}
       <p className="text-xs"><strong>Observed Magnitude:</strong> {error.observedMagnitude.toFixed(4)}</p>
       <p className="text-xs"><strong>Confidence:</strong> {(error.confidence * 100).toFixed(0)}%</p>
       <div className="mt-2">
@@ -967,6 +1253,17 @@ export const ErrorSourceDisplay: React.FC<{ error: DetailedErrorSource }> = ({ e
           {error.mitigationStrategies.map((ms, i) => <li key={i}>{ms}</li>)}
         </ul>
       </div>
+      {error.financialImpactEstimate && (
+        <div className="mt-4 p-3 bg-gray-600 rounded-md border border-gray-500">
+          <h5 className="font-semibold text-md text-red-300">Financial Impact Assessment</h5>
+          <p className="text-sm"><strong>Impact Type:</strong> {error.financialImpactEstimate.impactType}</p>
+          {error.financialImpactEstimate.estimatedMonetaryLossUSD && <p className="text-sm"><strong>Estimated Loss:</strong> ${error.financialImpactEstimate.estimatedMonetaryLossUSD.toLocaleString()}</p>}
+          {error.financialImpactEstimate.estimatedLatencyIncreaseMs && <p className="text-sm"><strong>Est. Latency Increase:</strong> {error.financialImpactEstimate.estimatedLatencyIncreaseMs.toFixed(1)} ms</p>}
+          <p className="text-sm"><strong>Risk Score:</strong> {error.financialImpactEstimate.riskScore.toFixed(1)}/100</p>
+          <p className="text-sm"><strong>Compliance Risk:</strong> {error.financialImpactEstimate.complianceRiskLevel}</p>
+          <p className="text-sm"><strong>Affected Products:</strong> {error.financialImpactEstimate.affectedFinancialProducts?.join(', ') || 'N/A'}</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -979,6 +1276,7 @@ export const SuggestedFixDisplay: React.FC<{ fix: SuggestedFix }> = ({ fix }) =>
     <h4 className="font-semibold text-lg mb-1">Suggested Fix: {fix.description}</h4>
     <p className="text-sm"><strong>Priority:</strong> {fix.priority}</p>
     <p className="text-sm"><strong>Estimated Impact:</strong> {(fix.estimatedImpact * 100).toFixed(1)}% improvement</p>
+    {fix.complianceCheckRequired && <p className="text-sm text-orange-400"><strong>Requires Compliance Re-check:</strong> Yes</p>}
     <div className="mt-2">
       <p className="text-xs font-semibold">Steps:</p>
       <ol className="list-decimal list-inside text-xs ml-2">
@@ -1010,6 +1308,8 @@ export const PerformanceMetricsDisplay: React.FC<{ metrics: QuantumPerformanceMe
       <p><strong>Avg Gate Fidelity:</strong> {(metrics.averageGateFidelity[QuantumGateType.CNOT] * 100).toFixed(2)}% (CNOT)</p>
       <p><strong>Measurement Fidelity:</strong> {(metrics.measurementFidelity * 100).toFixed(2)}%</p>
       <p><strong>Readout Error Rate:</strong> {(metrics.readoutErrorRate * 100).toFixed(2)}%</p>
+      <p><strong>Quantum Volume Est.:</strong> {metrics.quantumVolumeEstimate?.toFixed(1) || 'N/A'}</p>
+      <p><strong>Algo Success Prob:</strong> {(metrics.algorithmicSuccessProbability * 100).toFixed(2)}%</p>
     </div>
     <div className="mt-3">
       <p className="font-semibold text-sm mb-1">Coherence Times (T1/T2 in µs):</p>
@@ -1038,6 +1338,7 @@ export const PerformanceMetricsDisplay: React.FC<{ metrics: QuantumPerformanceMe
 export const EntanglementAnalysisDisplay: React.FC<{ result: EntanglementAnalysisResult }> = ({ result }) => (
   <div className="p-4 bg-gray-700 rounded-md mb-3 border border-gray-600">
     <h4 className="font-semibold text-lg mb-2">Entanglement Analysis</h4>
+    <p className="text-sm mb-2"><strong>Average Entanglement Depth:</strong> {result.averageEntanglementDepth?.toFixed(1) || 'N/A'}</p>
     {result.entangledPairs.length === 0 && <p className="text-sm">No significant entanglement detected above threshold.</p>}
     {result.entangledPairs.map((pair, idx) => (
       <div key={idx} className="mb-2 p-2 bg-gray-600 rounded-md">
@@ -1052,7 +1353,6 @@ export const EntanglementAnalysisDisplay: React.FC<{ result: EntanglementAnalysi
     {result.entanglementDiagramData && (
       <div className="mt-3">
         <p className="font-semibold text-sm mb-1">Entanglement Graph (Simplified):</p>
-        {/* In a real app, this would be an SVG/Canvas rendering of nodes and edges */}
         <div className="bg-gray-800 p-2 rounded-sm text-xs text-gray-400 font-mono">
           <p>Nodes: {result.entanglementDiagramData.nodes.map(n => n.id).join(', ')}</p>
           <p>Edges: {result.entanglementDiagramData.edges.map(e => `${e.source}-${e.target} (${e.strength.toFixed(2)})`).join(', ')}</p>
@@ -1131,11 +1431,67 @@ export const ResourceEstimateDisplay: React.FC<{ estimate: ResourceEstimate }> =
     <p className="text-sm"><strong>Estimated Runtime:</strong> {(estimate.estimatedRuntimeMs / 1000).toFixed(1)} s</p>
     <p className="text-sm"><strong>Cryogenic Power:</strong> {estimate.estimatedCryogenicPowerW.toFixed(1)} W</p>
     <p className="text-sm"><strong>Dominant Constraint:</strong> {estimate.dominantResourceConstraint}</p>
+    {estimate.estimatedOperationalCostUSDPerRun && <p className="text-sm"><strong>Est. Cost Per Run:</strong> ${estimate.estimatedOperationalCostUSDPerRun.toFixed(2)}</p>}
     <div className="mt-2">
       <p className="text-xs font-semibold">Optimization Suggestions:</p>
       <ul className="list-disc list-inside text-xs ml-2">
         {estimate.optimizationSuggestions.map((sug, i) => <li key={i}>{sug}</li>)}
       </ul>
+    </div>
+  </div>
+);
+
+/**
+ * Component to display QuantumFinancialImpactAssessment.
+ */
+export const QuantumFinancialImpactDisplay: React.FC<{ assessment: QuantumFinancialImpactAssessment }> = ({ assessment }) => (
+  <div className="p-4 bg-gray-700 rounded-md mb-3 border border-red-500">
+    <h4 className="font-semibold text-lg mb-2 text-red-300">Quantum Financial Impact Assessment</h4>
+    <p className="text-sm"><strong>Impact Type:</strong> {assessment.impactType}</p>
+    {assessment.estimatedMonetaryLossUSD && <p className="text-sm"><strong>Estimated Monetary Loss:</strong> <span className="text-red-400">${assessment.estimatedMonetaryLossUSD.toLocaleString()}</span></p>}
+    {assessment.estimatedLatencyIncreaseMs && <p className="text-sm"><strong>Estimated Latency Increase:</strong> {assessment.estimatedLatencyIncreaseMs.toFixed(2)} ms</p>}
+    <p className="text-sm"><strong>Risk Score:</strong> <span className="font-bold">{assessment.riskScore.toFixed(1)}/100</span></p>
+    <p className="text-sm"><strong>Compliance Risk Level:</strong> <span className="font-bold text-orange-400">{assessment.complianceRiskLevel}</span></p>
+    <p className="text-sm"><strong>Affected Financial Products:</strong> {assessment.affectedFinancialProducts?.join(', ') || 'N/A'}</p>
+    <div className="mt-2">
+      <p className="text-xs font-semibold">Recommendations:</p>
+      <ul className="list-disc list-inside text-xs ml-2">
+        {assessment.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
+      </ul>
+    </div>
+  </div>
+);
+
+/**
+ * Component to display QuantumSecurityScanResult.
+ */
+export const QuantumSecurityScanDisplay: React.FC<{ scan: QuantumSecurityScanResult }> = ({ scan }) => (
+  <div className="p-4 bg-gray-700 rounded-md mb-3 border border-purple-500">
+    <h4 className="font-semibold text-lg mb-2 text-purple-300">Quantum Security Scan Result</h4>
+    <p className="text-sm"><strong>Overall Security Score:</strong> <span className="font-bold">{scan.overallSecurityScore.toFixed(1)}/100</span></p>
+    <p className="text-sm"><strong>Post-Quantum Compliance:</strong> <span className={scan.postQuantumComplianceStatus === 'Compliant' ? 'text-green-400' : 'text-red-400'}>{scan.postQuantumComplianceStatus}</span></p>
+    {scan.auditTrailIntegrityCheck && (
+      <p className="text-sm"><strong>Audit Trail Tamper-Evident:</strong> <span className={scan.auditTrailIntegrityCheck.isTamperEvident ? 'text-green-400' : 'text-red-400'}>{scan.auditTrailIntegrityCheck.isTamperEvident ? 'Yes' : 'No'}</span> (Last Audit: {new Date(scan.auditTrailIntegrityCheck.lastAuditTimestamp).toLocaleString()})</p>
+    )}
+    <div className="mt-3">
+      <p className="font-semibold text-sm mb-1">Threats Detected ({scan.threatsDetected.length}):</p>
+      {scan.threatsDetected.length > 0 ? (
+        scan.threatsDetected.map((threat, idx) => (
+          <div key={idx} className="p-2 bg-gray-600 rounded-md mb-2">
+            <p className="text-sm"><strong>Type:</strong> {threat.type} (<span className={threat.severity === IssueSeverity.CRITICAL ? 'text-red-400' : threat.severity === IssueSeverity.HIGH ? 'text-orange-400' : 'text-yellow-400'}>{threat.severity}</span>)</p>
+            <p className="text-xs ml-2">{threat.description}</p>
+            <p className="text-xs ml-2"><strong>Affected:</strong> {threat.affectedComponents.join(', ')}</p>
+            <div className="mt-1">
+              <p className="text-xs font-semibold">Mitigation:</p>
+              <ul className="list-disc list-inside text-xxs ml-4">
+                {threat.mitigationSuggestions.map((sug, i) => <li key={i}>{sug}</li>)}
+              </ul>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-sm text-green-400">No significant quantum security threats detected.</p>
+      )}
     </div>
   </div>
 );
@@ -1159,10 +1515,10 @@ export const CircuitDiagramDisplay: React.FC<{ circuit: CircuitDiagramData }> = 
                 gate.targetQubits.includes(qIdx) && (
                   <span key={`${lIdx}-${gIdx}`}
                         title={`${gate.type} (Fidelity: ${(gate.fidelity || 1).toFixed(3)})`}
-                        className={`inline-block px-1 py-0.5 rounded ${gate.type === QuantumGateType.MEASURE ? 'bg-orange-600' : gate.controlQubits?.includes(qIdx) ? 'bg-indigo-600' : 'bg-blue-600'} text-white text-center text-xs mr-1`}
-                        style={{ position: 'relative', top: '2px' }}
+                        className={`inline-block px-1 py-0.5 rounded ${gate.type === QuantumGateType.MEASURE ? 'bg-orange-600' : gate.type === 'QChannel' ? 'bg-amber-600' : gate.controlQubits?.includes(qIdx) ? 'bg-indigo-600' : 'bg-blue-600'} text-white text-center text-xs mr-1`}
+                        style={{ position: 'relative', top: '2px', backgroundColor: gate.color }}
                   >
-                    {gate.type.substring(0, 3)}{gate.targetQubits.length > 1 ? '+' : ''}
+                    {String(gate.type).substring(0, 3)}{gate.targetQubits.length > 1 ? '+' : ''}
                     {gate.errorProbability && gate.errorProbability > 0.001 && <span className="absolute top-0 right-0 text-red-300 text-xxs leading-none">*</span>}
                   </span>
                 )
@@ -1221,17 +1577,21 @@ export const ErrorHeatmapDisplay: React.FC<{ heatmap: ErrorHeatmapData }> = ({ h
 /**
  * Component to display DebugLogEntry.
  */
-export const DebugLogDisplay: React.FC<{ logs: DebugLogEntry[] }> = ({ logs }) => (
+export const DebugLogDisplay: React.FC<{ logs: DebugLogEntry[]; auditLevel: DebuggerConfig['auditLevel'] }> = ({ logs, auditLevel }) => (
   <div className="p-4 bg-gray-700 rounded-md mb-3 border border-gray-600 max-h-96 overflow-y-auto">
     <h4 className="font-semibold text-lg mb-2">Analysis Logs</h4>
-    {logs.map((log, idx) => (
+    {logs
+      .filter(log => auditLevel === 'Minimal' ? (log.level !== 'DEBUG' && log.level !== 'AUDIT') : (auditLevel === 'Verbose' ? log.level !== 'AUDIT' : true))
+      .map((log, idx) => (
       <div key={idx} className="mb-1 text-xs font-mono border-b border-gray-600 last:border-b-0 py-1">
-        <span className={`font-bold mr-2 ${log.level === 'ERROR' ? 'text-red-400' : log.level === 'WARN' ? 'text-yellow-400' : 'text-gray-400'}`}>
+        <span className={`font-bold mr-2 ${log.level === 'ERROR' ? 'text-red-400' : log.level === 'WARN' ? 'text-yellow-400' : log.level === 'AUDIT' ? 'text-purple-400' : 'text-gray-400'}`}>
           [{log.level}]
         </span>
         <span className="text-gray-500 mr-2">{new Date(log.timestamp).toLocaleTimeString()}</span>
         <span className="text-white">{log.message}</span>
+        {log.identityId && <span className="ml-2 text-cyan-300"> (by {log.identityId})</span>}
         {log.details && <pre className="ml-8 text-gray-400 bg-gray-800 p-1 rounded-sm mt-1 overflow-x-auto">{JSON.stringify(log.details, null, 2)}</pre>}
+        {log.signature && auditLevel === 'Cryptographic' && <p className="ml-8 text-gray-500 text-xxs truncate">Signature: {log.signature}</p>}
       </div>
     ))}
   </div>
@@ -1312,6 +1672,27 @@ export const DebuggerConfigPanel: React.FC<{ config: DebuggerConfig; onConfigCha
             className="mt-2 h-4 w-4 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Audit Log Level</label>
+          <select
+            value={config.auditLevel}
+            onChange={(e) => handleChange('auditLevel', e.target.value as DebuggerConfig['auditLevel'])}
+            className="w-full p-2 bg-gray-600 rounded text-sm"
+          >
+            <option value="Minimal">Minimal (INFO, WARN, ERROR)</option>
+            <option value="Verbose">Verbose (INFO, WARN, ERROR, DEBUG)</option>
+            <option value="Cryptographic">Cryptographic (All + Signatures)</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Identity Verification Required</label>
+          <input
+            type="checkbox"
+            checked={config.identityVerificationRequired}
+            onChange={(e) => handleChange('identityVerificationRequired', e.target.checked)}
+            className="mt-2 h-4 w-4 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
+          />
+        </div>
         {config.noiseModelEnabled && (
           <div className="col-span-1 md:col-span-2 mt-4 p-3 bg-gray-600 rounded-md">
             <h5 className="font-semibold text-md mb-2">Noise Model Parameters</h5>
@@ -1340,12 +1721,10 @@ export const DebuggerConfigPanel: React.FC<{ config: DebuggerConfig; onConfigCha
 // --- MAIN COMPONENT (Vastly Expanded) ---
 
 const QuantumEntanglementDebuggerView: React.FC = () => {
-  // --- Original State (Expanded) ---
   const [inputCode, setInputCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [debugReport, setDebugReport] = useState<DebuggingReport | null>(null);
 
-  // --- New State Variables for Enhanced Functionality ---
   const [selectedInputFormat, setSelectedInputFormat] = useState<QuantumInputFormat>(QuantumInputFormat.QASM);
   const [selectedAnalysisMode, setSelectedAnalysisMode] = useState<AnalysisMode>(AnalysisMode.DYNAMIC_DECOHERENCE_SIMULATION);
   const [qubitCountInput, setQubitCountInput] = useState<number>(5); // For mocking
@@ -1354,28 +1733,57 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
 
   const [sessionHistory, setSessionHistory] = useState<DebugSessionHistoryEntry[]>([]);
   const [activeTab, setActiveTab] = useState<string>('input'); // 'input', 'history', 'settings', 'results'
-  const [resultsSubTab, setResultsSubTab] = useState<string>('summary'); // 'summary', 'errors', 'fixes', 'metrics', 'entanglement', 'decoherence', 'fault_tolerance', 'resources', 'circuit', 'heatmap', 'logs'
+  const [resultsSubTab, setResultsSubTab] = useState<string>('summary'); // 'summary', 'errors', 'fixes', 'metrics', 'entanglement', 'decoherence', 'fault_tolerance', 'resources', 'circuit', 'heatmap', 'logs', 'financial_impact', 'security_scan'
 
   const [debuggerConfig, setDebuggerConfig] = useState<DebuggerConfig>(generateMockDebuggerConfig());
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activeDigitalIdentity, setActiveDigitalIdentity] = useState<DigitalIdentity>(MOCK_DIGITAL_IDENTITIES[2]); // Default to a user identity
 
-  // --- Initial Setup and History Loading (Mock) ---
-  useEffect(() => {
-    // Mock loading history from local storage or an API
-    const mockHistory = Array.from({ length: 10 }, (_, i) => generateMockHistoryEntry(i)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    setSessionHistory(mockHistory);
+  /**
+   * Mock function to simulate an Agent Orchestrator receiving a message.
+   */
+  const simulateAgentOrchestratorMessage = useCallback((message: AgentMessage) => {
+    if (debuggerConfig.developerMode) {
+      console.log(`Agent Orchestrator (Mock) received message from ${message.senderId} (${message.messageType}):`, message.payload);
+    }
+    // In a real system, this would trigger further agent workflows.
+  }, [debuggerConfig.developerMode]);
 
-    // Mock loading config
-    setDebuggerConfig(generateMockDebuggerConfig());
+  /**
+   * Mock function to simulate cryptographic signing.
+   */
+  const signAction = useCallback((identityId: string, payload: any): string => {
+    return generateMockSignature(identityId, payload);
   }, []);
 
-  // --- Handlers for User Interactions ---
+  /**
+   * Function to append a log entry with identity and signature if audit level requires it.
+   */
+  const appendLogEntry = useCallback((prevReport: DebuggingReport | null, level: DebugLogEntry['level'], message: string, details?: Record<string, any>) => {
+    const logs = prevReport?.logs || [];
+    const identityId = activeDigitalIdentity.id;
+    let signature: string | undefined = undefined;
+
+    if (debuggerConfig.auditLevel === 'Cryptographic' && identityId) {
+      signature = signAction(identityId, { level, message, details });
+    }
+
+    return {
+      ...prevReport,
+      logs: [...logs, { timestamp: new Date().toISOString(), level, message, details, identityId, signature }]
+    } as DebuggingReport;
+  }, [activeDigitalIdentity, debuggerConfig.auditLevel, signAction]);
+
+  useEffect(() => {
+    const mockHistory = Array.from({ length: 10 }, (_, i) => generateMockHistoryEntry(i, MOCK_DIGITAL_IDENTITIES[Math.floor(Math.random() * MOCK_DIGITAL_IDENTITIES.length)].id)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    setSessionHistory(mockHistory);
+    setDebuggerConfig(generateMockDebuggerConfig());
+  }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setUploadFile(file);
-      // Read file content for display in textarea if applicable
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result && typeof e.target.result === 'string') {
@@ -1391,7 +1799,7 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
     setUploadFile(null);
     setInputCode('');
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Clear file input value
+      fileInputRef.current.value = '';
     }
   };
 
@@ -1399,9 +1807,35 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
     setIsLoading(true);
     setDebugReport(null);
     setErrorMessage(null);
-    setResultsSubTab('summary'); // Reset sub-tab on new analysis
+    setResultsSubTab('summary');
 
-    // --- Input Validation (Expanded Mock) ---
+    let currentReport: DebuggingReport | null = null;
+    const updateReportAndLog = (level: DebugLogEntry['level'], message: string, details?: Record<string, any>) => {
+      setDebugReport((prev) => {
+        currentReport = appendLogEntry(prev, level, message, details);
+        return currentReport;
+      });
+      if (debuggerConfig.auditLevel === 'Cryptographic' && currentReport) {
+        // Simulate sending audit message to Orchestrator
+        simulateAgentOrchestratorMessage({
+          messageId: `MSG-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          senderId: activeDigitalIdentity.id,
+          receiverId: 'agent_orchestrator', // Mock Orchestrator ID
+          timestamp: new Date().toISOString(),
+          payload: { type: 'LogEntry', level, message, details },
+          messageType: 'INFO',
+          signature: signAction(activeDigitalIdentity.id, { type: 'LogEntry', level, message, details }),
+          correlationId: currentReport?.reportId,
+        });
+      }
+    };
+
+    if (debuggerConfig.identityVerificationRequired && activeDigitalIdentity.id === 'unauthenticated_guest') {
+      setErrorMessage("Identity verification is required to perform debugging. Please select a valid identity.");
+      setIsLoading(false);
+      return;
+    }
+
     if (!inputCode && !uploadFile) {
       setErrorMessage("Please provide quantum input code or upload a file.");
       setIsLoading(false);
@@ -1409,58 +1843,70 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
     }
 
     if (inputCode.length < 50 && selectedInputFormat !== QuantumInputFormat.MEASUREMENT_RESULTS_JSON) {
-      // Very basic mock check for "meaningful" input
       setErrorMessage("Input code seems too short for a complex quantum circuit/state. Please provide more detailed input.");
       setIsLoading(false);
       return;
     }
 
-    // Simulate complex parsing and API calls
     try {
-      // MOCK API: Simulate various stages of complex quantum debugging
-      await new Promise(res => setTimeout(res, 500)); // Simulate initial processing
-      console.log(`Starting analysis with format: ${selectedInputFormat}, mode: ${selectedAnalysisMode}`);
+      updateReportAndLog('INFO', `Starting quantum debugger analysis by ${activeDigitalIdentity.name} (${activeDigitalIdentity.role}).`);
+      simulateAgentOrchestratorMessage({
+        messageId: `MSG-${Date.now()}-REQ`,
+        senderId: activeDigitalIdentity.id,
+        receiverId: 'agent_orchestrator',
+        timestamp: new Date().toISOString(),
+        payload: { action: 'initiate_quantum_debug', inputFormat: selectedInputFormat, analysisMode: selectedAnalysisMode },
+        messageType: 'ACTION_REQUEST',
+        signature: signAction(activeDigitalIdentity.id, { action: 'initiate_quantum_debug', inputFormat: selectedInputFormat, analysisMode: selectedAnalysisMode }),
+      });
+      await new Promise(res => setTimeout(res, 500));
 
-      // Step 1: Input ingestion and basic validation
-      setDebugReport((prev) => ({
-        ...prev,
-        logs: [...(prev?.logs || []), { timestamp: new Date().toISOString(), level: 'INFO', message: `Input ingestion for ${selectedInputFormat} started.` }]
-      } as DebuggingReport));
+      updateReportAndLog('INFO', `Input ingestion for ${selectedInputFormat} started.`);
       await new Promise(res => setTimeout(res, 700));
 
-      // Step 2: Quantum circuit/state parsing and preliminary analysis
-      setDebugReport((prev) => ({
-        ...prev,
-        logs: [...(prev?.logs || []), { timestamp: new Date().toISOString(), level: 'INFO', message: 'Parsing quantum data and identifying circuit topology.' }]
-      } as DebuggingReport));
+      updateReportAndLog('INFO', 'Parsing quantum data and identifying circuit topology.');
       await new Promise(res => setTimeout(res, 1000));
 
-      if (Math.random() < 0.1 && debuggerConfig.developerMode) { // Simulate a parsing error occasionally
+      if (Math.random() < 0.1 && debuggerConfig.developerMode) {
         throw new Error("Simulated QASM parsing error: unexpected token on line 42.");
       }
 
-      // Step 3: Running selected analysis mode (e.g., decoherence simulation, fault tolerance)
-      setDebugReport((prev) => ({
-        ...prev,
-        logs: [...(prev?.logs || []), { timestamp: new Date().toISOString(), level: 'INFO', message: `Executing ${selectedAnalysisMode} simulation.` }]
-      } as DebuggingReport));
+      updateReportAndLog('INFO', `Executing ${selectedAnalysisMode} simulation.`);
+      // Simulate inter-agent communication for advanced analysis
+      simulateAgentOrchestratorMessage({
+        messageId: `MSG-${Date.now()}-SIM`,
+        senderId: 'agent_qa_001', // Quantum Analyst Agent
+        receiverId: 'agent_orchestrator',
+        timestamp: new Date().toISOString(),
+        payload: { action: 'run_simulation_slice', mode: selectedAnalysisMode, config: debuggerConfig.noiseModelParameters },
+        messageType: 'COMMAND',
+        signature: generateMockSignature('agent_qa_001', 'run_simulation_slice'),
+        correlationId: currentReport?.reportId,
+      });
       await new Promise(res => setTimeout(res, 2000));
 
-      // Step 4: Data interpretation and error identification
-      setDebugReport((prev) => ({
-        ...prev,
-        logs: [...(prev?.logs || []), { timestamp: new Date().toISOString(), level: 'INFO', message: 'Interpreting simulation results and identifying potential errors.' }]
-      } as DebuggingReport));
+      updateReportAndLog('INFO', 'Interpreting simulation results and identifying potential errors.');
+      if (selectedAnalysisMode === AnalysisMode.FINANCIAL_RISK_IMPACT) {
+        updateReportAndLog('DEBUG', 'Consulting RiskAssessmentAgent for financial impact evaluation.');
+        simulateAgentOrchestratorMessage({
+          messageId: `MSG-${Date.now()}-RISK`,
+          senderId: 'agent_qa_001',
+          receiverId: 'agent_risk_007', // Risk Assessment Agent
+          timestamp: new Date().toISOString(),
+          payload: { request: 'assess_quantum_risk', identifiedErrors: [], currentMode: selectedAnalysisMode },
+          messageType: 'ACTION_REQUEST',
+          signature: generateMockSignature('agent_qa_001', 'assess_quantum_risk'),
+          correlationId: currentReport?.reportId,
+        });
+      }
       await new Promise(res => setTimeout(res, 1500));
 
-      // Step 5: Generating comprehensive report
       const response: DebuggingReport = await new Promise(res => setTimeout(() => res(
-        generateMockDebuggingReport(qubitCountInput, selectedAnalysisMode)
-      ), 3000)); // Simulate long computation for report generation
+        generateMockDebuggingReport(qubitCountInput, selectedAnalysisMode, activeDigitalIdentity.id)
+      ), 3000));
 
       setDebugReport(response);
 
-      // Add to session history
       const newHistoryEntry: DebugSessionHistoryEntry = {
         sessionId: response.reportId,
         timestamp: response.timestamp,
@@ -1470,41 +1916,54 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
         mostLikelyErrorSource: response.identifiedErrors[0]?.description || "No critical errors found.",
         confidence: response.identifiedErrors[0]?.confidence || 1.0,
         viewed: true,
+        identityId: activeDigitalIdentity.id,
       };
-      setSessionHistory((prev) => [newHistoryEntry, ...prev].slice(0, 50)); // Keep last 50 sessions
+      setSessionHistory((prev) => [newHistoryEntry, ...prev].slice(0, 50));
 
-      // Update the legacy `result` for the old display, if needed. This will be deprecated.
-      const legacyResult: DebugResponse = {
-        mostLikelyErrorSource: response.identifiedErrors[0]?.description || "No critical errors found.",
-        confidence: response.identifiedErrors[0]?.confidence || 1.0,
-        suggestedFix: response.suggestedFixes[0]?.description || "No specific fix needed.",
-      };
-      // For backwards compatibility with the original component structure
-      // setOutputState(JSON.stringify(response, null, 2)); // Or some other summarized output
-      // setResult(legacyResult); // Keeping this here to satisfy existing structure
+      updateReportAndLog('INFO', `Analysis complete. Report ID: ${response.reportId}`);
+      simulateAgentOrchestratorMessage({
+        messageId: `MSG-${Date.now()}-RPT`,
+        senderId: 'agent_qa_001',
+        receiverId: 'agent_orchestrator',
+        timestamp: new Date().toISOString(),
+        payload: { type: 'DebuggingReportGenerated', reportId: response.reportId, status: response.overallStatus },
+        messageType: 'REPORT',
+        signature: generateMockSignature('agent_qa_001', 'report_generated'),
+        correlationId: response.reportId,
+      });
 
     } catch (err: any) {
       console.error("Debugging failed:", err);
       setErrorMessage(`Analysis Failed: ${err.message || 'Unknown error.'}`);
-      setDebugReport((prev) => ({
-        ...prev,
-        overallStatus: 'Failure',
-        summary: `Analysis failed due to error: ${err.message}`,
-        logs: [...(prev?.logs || []), { timestamp: new Date().toISOString(), level: 'ERROR', message: `Analysis failed: ${err.message}` }]
-      } as DebuggingReport));
+      setDebugReport((prev) => {
+        const failedReport = appendLogEntry(prev, 'ERROR', `Analysis failed: ${err.message}`);
+        return {
+          ...failedReport,
+          overallStatus: 'Failure',
+          summary: `Analysis failed due to error: ${err.message}`,
+        };
+      });
+      simulateAgentOrchestratorMessage({
+        messageId: `MSG-${Date.now()}-FAIL`,
+        senderId: 'agent_qa_001',
+        receiverId: 'agent_orchestrator',
+        timestamp: new Date().toISOString(),
+        payload: { type: 'AnalysisFailed', error: err.message },
+        messageType: 'REPORT',
+        signature: generateMockSignature('agent_qa_001', 'analysis_failed'),
+        correlationId: currentReport?.reportId,
+      });
     } finally {
       setIsLoading(false);
-      setActiveTab('results'); // Switch to results tab automatically
+      setActiveTab('results');
     }
-  }, [inputCode, uploadFile, selectedInputFormat, selectedAnalysisMode, qubitCountInput, debuggerConfig.developerMode]);
+  }, [inputCode, uploadFile, selectedInputFormat, selectedAnalysisMode, qubitCountInput, debuggerConfig, activeDigitalIdentity, appendLogEntry, simulateAgentOrchestratorMessage, signAction]);
 
   const handleLoadHistorySession = useCallback((sessionId: string) => {
     setIsLoading(true);
-    // In a real app, this would fetch the full report from a backend.
-    // For mock, we'll re-generate or find a matching mock report.
     const historyEntry = sessionHistory.find(s => s.sessionId === sessionId);
     if (historyEntry) {
-      setDebugReport(generateMockDebuggingReport(Math.floor(Math.random() * 8) + 3, historyEntry.analysisMode)); // Regenerate with random qubits
+      setDebugReport(generateMockDebuggingReport(Math.floor(Math.random() * 8) + 3, historyEntry.analysisMode, historyEntry.identityId));
       setSessionHistory(prev => prev.map(s => s.sessionId === sessionId ? { ...s, viewed: true } : s));
       setActiveTab('results');
     } else {
@@ -1514,19 +1973,48 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
   }, [sessionHistory]);
 
   const handleClearHistory = () => {
-    if (window.confirm("Are you sure you want to clear all session history?")) {
+    if (window.confirm("Are you sure you want to clear all session history? This action is auditable.")) {
       setSessionHistory([]);
+      simulateAgentOrchestratorMessage({
+        messageId: `MSG-${Date.now()}-CLEAR`,
+        senderId: activeDigitalIdentity.id,
+        receiverId: 'agent_orchestrator',
+        timestamp: new Date().toISOString(),
+        payload: { action: 'clear_session_history', user: activeDigitalIdentity.name },
+        messageType: 'AUDIT',
+        signature: signAction(activeDigitalIdentity.id, 'clear_session_history'),
+      });
     }
   };
 
   const handleConfigChange = useCallback((newConfig: DebuggerConfig) => {
     setDebuggerConfig(newConfig);
-    // In a real app, this would persist the config to backend/local storage
-    console.log("Debugger configuration updated:", newConfig);
-  }, []);
+    simulateAgentOrchestratorMessage({
+      messageId: `MSG-${Date.now()}-CONF`,
+      senderId: activeDigitalIdentity.id,
+      receiverId: 'agent_orchestrator',
+      timestamp: new Date().toISOString(),
+      payload: { action: 'update_debugger_config', user: activeDigitalIdentity.name, changes: newConfig },
+      messageType: 'AUDIT',
+      signature: signAction(activeDigitalIdentity.id, 'update_debugger_config'),
+    });
+  }, [activeDigitalIdentity, simulateAgentOrchestratorMessage, signAction]);
 
-
-  // --- Render Logic (Highly detailed and structured) ---
+  const handleIdentityChange = useCallback((identityId: string) => {
+    const newIdentity = MOCK_DIGITAL_IDENTITIES.find(id => id.id === identityId);
+    if (newIdentity) {
+      setActiveDigitalIdentity(newIdentity);
+      simulateAgentOrchestratorMessage({
+        messageId: `MSG-${Date.now()}-ID`,
+        senderId: identityId,
+        receiverId: 'agent_orchestrator',
+        timestamp: new Date().toISOString(),
+        payload: { action: 'change_active_identity', newIdentity: newIdentity.name },
+        messageType: 'AUDIT',
+        signature: signAction(identityId, 'change_active_identity'),
+      });
+    }
+  }, [simulateAgentOrchestratorMessage, signAction]);
 
   return (
     <div className="bg-gray-800 text-white p-6 rounded-lg shadow-xl min-h-screen flex flex-col">
@@ -1576,6 +2064,24 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Active Digital Identity Display */}
+      <div className="mb-4 p-3 bg-gray-700 rounded-md border border-gray-600 flex items-center justify-between">
+        <div className="flex items-center">
+          <span className="text-sm font-medium text-gray-300 mr-2">Operating As:</span>
+          <select
+            value={activeDigitalIdentity.id}
+            onChange={(e) => handleIdentityChange(e.target.value)}
+            className="p-1 bg-gray-600 rounded text-sm text-cyan-300"
+          >
+            {MOCK_DIGITAL_IDENTITIES.map(identity => (
+              <option key={identity.id} value={identity.id}>{identity.name} ({identity.role})</option>
+            ))}
+             <option value="unauthenticated_guest">Unauthenticated Guest</option>
+          </select>
+        </div>
+        <p className="text-xs text-gray-400">Public Key (mock): <span className="font-mono">{activeDigitalIdentity.publicKey.substring(0, 10)}...</span></p>
+      </div>
 
       {/* Input & Analysis Tab Content */}
       {activeTab === 'input' && (
@@ -1659,7 +2165,7 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
 
           <button
             onClick={handleDebug}
-            disabled={isLoading}
+            disabled={isLoading || (debuggerConfig.identityVerificationRequired && activeDigitalIdentity.id === 'unauthenticated_guest')}
             className="w-full p-3 bg-cyan-600 text-white rounded-lg font-bold text-lg hover:bg-cyan-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Analyzing Quantum State...' : 'Start Quantum Debugging'}
@@ -1667,7 +2173,7 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
           {isLoading && debugReport?.logs && (
             <div className="mt-4 p-4 bg-gray-900 rounded-lg">
               <h3 className="text-xl font-semibold mb-2">Current Analysis Progress:</h3>
-              <DebugLogDisplay logs={debugReport.logs.slice(-5)} /> {/* Show last 5 logs */}
+              <DebugLogDisplay logs={debugReport.logs.slice(-5)} auditLevel={debuggerConfig.auditLevel} />
             </div>
           )}
         </div>
@@ -1694,6 +2200,8 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
                   <button onClick={() => setResultsSubTab('decoherence')} className={`${resultsSubTab === 'decoherence' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Decoherence</button>
                   {debugReport.faultToleranceEstimate && <button onClick={() => setResultsSubTab('fault_tolerance')} className={`${resultsSubTab === 'fault_tolerance' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Fault Tolerance</button>}
                   {debugReport.resourceEstimate && <button onClick={() => setResultsSubTab('resources')} className={`${resultsSubTab === 'resources' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Resources</button>}
+                  {debugReport.quantumFinancialImpact && <button onClick={() => setResultsSubTab('financial_impact')} className={`${resultsSubTab === 'financial_impact' ? 'border-red-500 text-red-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Financial Impact</button>}
+                  {debugReport.quantumSecurityScan && <button onClick={() => setResultsSubTab('security_scan')} className={`${resultsSubTab === 'security_scan' ? 'border-purple-500 text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Security Scan</button>}
                   {debugReport.circuitDiagramData && <button onClick={() => setResultsSubTab('circuit')} className={`${resultsSubTab === 'circuit' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Circuit Diagram</button>}
                   {debugReport.errorHeatmapData && <button onClick={() => setResultsSubTab('heatmap')} className={`${resultsSubTab === 'heatmap' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Error Heatmap</button>}
                   <button onClick={() => setResultsSubTab('logs')} className={`${resultsSubTab === 'logs' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-500 hover:text-gray-300'} whitespace-nowrap py-2 px-1 border-b-2 text-sm`}>Logs ({debugReport.logs.length})</button>
@@ -1764,6 +2272,14 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
                 <ResourceEstimateDisplay estimate={debugReport.resourceEstimate} />
               )}
 
+              {resultsSubTab === 'financial_impact' && debugReport.quantumFinancialImpact && (
+                <QuantumFinancialImpactDisplay assessment={debugReport.quantumFinancialImpact} />
+              )}
+
+              {resultsSubTab === 'security_scan' && debugReport.quantumSecurityScan && (
+                <QuantumSecurityScanDisplay scan={debugReport.quantumSecurityScan} />
+              )}
+
               {resultsSubTab === 'circuit' && debugReport.circuitDiagramData && (
                 <CircuitDiagramDisplay circuit={debugReport.circuitDiagramData} />
               )}
@@ -1773,7 +2289,7 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
               )}
 
               {resultsSubTab === 'logs' && debugReport.logs && (
-                <DebugLogDisplay logs={debugReport.logs} />
+                <DebugLogDisplay logs={debugReport.logs} auditLevel={debuggerConfig.auditLevel} />
               )}
 
             </div>
@@ -1801,7 +2317,7 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
               {sessionHistory.map((session) => (
                 <div key={session.sessionId} className={`p-4 bg-gray-700 rounded-lg shadow-md border ${session.viewed ? 'border-gray-600' : 'border-cyan-500'}`}>
                   <h4 className="font-semibold text-lg mb-1">{session.inputSummary} ({session.analysisMode})</h4>
-                  <p className="text-sm text-gray-300">Run on: {new Date(session.timestamp).toLocaleString()}</p>
+                  <p className="text-sm text-gray-300">Run by: <span className="text-cyan-300">{MOCK_DIGITAL_IDENTITIES.find(id => id.id === session.identityId)?.name || session.identityId}</span> on: {new Date(session.timestamp).toLocaleString()}</p>
                   <p className="text-sm mt-1">
                     <strong>Status:</strong>{' '}
                     <span className={session.overallStatus === 'Success' ? 'text-green-400' : 'text-orange-400'}>{session.overallStatus}</span>
@@ -1843,17 +2359,6 @@ const QuantumEntanglementDebuggerView: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Global Debug Output (legacy placeholder for original component's state) */}
-      {/* Keeping this part to potentially render the original `result` state for compatibility.
-          In a full refactor, this would be removed or integrated into the new results view. */}
-      {/* {result && (
-        <div className="mt-4 p-4 bg-gray-900 rounded-lg">
-          <h3 className="text-xl font-semibold">Legacy Debugging Report</h3>
-          <p className="mt-2"><strong>Most Likely Error:</strong> {result.mostLikelyErrorSource} (Confidence: {(result.confidence * 100).toFixed(0)}%)</p>
-          <p className="mt-1"><strong>Suggested Fix:</strong> {result.suggestedFix}</p>
-        </div>
-      )} */}
     </div>
   );
 };
