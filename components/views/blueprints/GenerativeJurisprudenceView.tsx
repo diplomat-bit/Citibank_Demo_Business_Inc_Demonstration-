@@ -173,6 +173,7 @@ export interface ICaseData {
     filingDeadline?: string;
     status: 'active' | 'archived' | 'pending';
     createdByUserId: string; // For access control and audit
+    keywords?: string[]; // Added for search/agent context
 }
 
 /**
@@ -242,6 +243,7 @@ export interface IAIConfig {
     strictComplianceWithRules: boolean; // Should AI strictly adhere to rules or be more creative?
     modelParameters?: { [key: string]: any }; // Advanced LLM parameters
     customInstructions?: string; // User-defined additional instructions for the AI
+    temperature?: number; // Added to align with GenerationMetadata
 }
 
 /**
@@ -355,7 +357,7 @@ export interface IAuditLogEntry {
     resourceType: string; // e.g., "ICaseData", "ILegalBrief", "IUserContext"
     resourceId: string; // ID of the resource affected
     details: { [key: string]: any }; // Additional contextual information
-    outcome: 'success' | 'failure';
+    outcome: 'success' | 'failure' | 'warning';
     ipAddress?: string; // For security monitoring
     signature?: string; // Cryptographic signature for tamper-evidence (simulated)
 }
@@ -415,6 +417,7 @@ export interface IRiskAssessmentResult {
         mitigationStrategy?: string;
         relatedFactsIds?: string[];
         relatedPrecedentIds?: string[];
+        relatedStatutes?: string[]; // Added
     }[];
     summary: string; // AI's summary of the key risks
     actionableRecommendations?: string[];
@@ -456,6 +459,8 @@ export interface IJurisprudenceAgentTask {
     result?: any; // Output of the task (e.g., ILegalBrief.id)
     errorMessage?: string; // If task failed
     auditLogEntryIds?: string[]; // Chain of related audit logs
+    retries?: number; // Number of retries for the task
+    maxRetries?: number; // Max retries allowed
 }
 
 /**
@@ -466,7 +471,7 @@ export interface IAgentServiceTokenTransaction {
     transactionId: string;
     userId: string;
     agentId: string;
-    serviceType: 'brief_generation' | 'compliance_check' | 'research_query';
+    serviceType: 'brief_generation' | 'compliance_check' | 'research_query' | 'risk_assessment'; // Added risk_assessment
     resourceId: string; // e.g., briefId or caseId
     tokenAmount: number; // Amount of tokens consumed
     currencyType: 'GJ_AI_CREDIT' | 'USD_STABLE'; // Simulated token type
@@ -474,6 +479,89 @@ export interface IAgentServiceTokenTransaction {
     status: 'completed' | 'failed' | 'pending';
     auditLogEntryId: string; // Link to audit log
     signature: string; // Simulated cryptographic signature for transaction integrity
+}
+
+/**
+ * Represents a digital identity with cryptographic keys.
+ * Business value: Centralizes secure identity management, providing the foundation for cryptographic signatures, access control, and non-repudiation across the platform.
+ */
+export interface IDigitalIdentity {
+    id: string; // User or Agent ID
+    publicKey: string; // Simulated public key
+    privateKey: string; // Simulated private key (NEVER exposed in a real system)
+    ownerType: 'user' | 'agent' | 'service';
+    status: 'active' | 'revoked';
+    creationDate: string;
+    lastRotationDate: string;
+}
+
+/**
+ * Represents a user's or agent's token balance on the simulated programmable value rail.
+ * Business value: Enables micro-billing, transparent cost allocation, and flexible financial models for AI service consumption, ensuring economic viability and granular financial control.
+ */
+export interface IAccountBalance {
+    ownerId: string; // UserId or AgentId
+    currencyType: IAgentServiceTokenTransaction['currencyType'];
+    balance: number;
+    lastUpdated: string;
+}
+
+/**
+ * Represents a policy for routing programmable value transactions.
+ * Business value: Optimizes transaction processing by dynamically selecting the most efficient rail based on business rules, minimizing costs and latency while adhering to security requirements.
+ */
+export interface IRoutingPolicy {
+    id: string;
+    name: string;
+    description: string;
+    criteria: { [key: string]: any }; // e.g., { "costThreshold": 0.01, "latencyTargetMs": 500, "riskLevel": "low" }
+    defaultRail: 'fast' | 'secure' | 'standard';
+    alternativeRails: { name: string, priority: number, conditions: { [key: string]: any } }[];
+    isActive: boolean;
+}
+
+/**
+ * Represents an intelligent agent's monitoring observation.
+ * Business value: Provides real-time insights into system health, performance, and operational events, enabling proactive issue detection and ensuring continuous, reliable service delivery.
+ */
+export interface IAgentObservation {
+    id: string;
+    agentId: string;
+    timestamp: string;
+    type: 'system_event' | 'transaction_event' | 'security_alert' | 'performance_metric';
+    severity: 'info' | 'warning' | 'error' | 'critical';
+    message: string;
+    payload?: { [key: string]: any }; // Contextual data
+}
+
+/**
+ * Represents an agent's remediation action taken in response to an observation.
+ * Business value: Automates the correction of anomalies and system issues, minimizing downtime and human intervention, thereby increasing operational resilience and cost efficiency.
+ */
+export interface IAgentRemediation {
+    id: string;
+    agentId: string;
+    observationId: string;
+    timestamp: string;
+    actionType: 'retry_task' | 'escalate_alert' | 'adjust_parameter' | 'log_incident';
+    details: { [key: string]: any };
+    status: 'initiated' | 'completed' | 'failed';
+    auditLogEntryId: string;
+}
+
+/**
+ * Represents a governance policy that an agent enforces.
+ * Business value: Embeds compliance and regulatory standards directly into agent behavior, ensuring automated operations consistently adhere to legal and ethical guidelines, dramatically reducing compliance risk.
+ */
+export interface IGovernancePolicy {
+    id: string;
+    name: string;
+    description: string;
+    policyText: string;
+    appliesToAgentSkillIds: string[];
+    enforcementAction: 'block' | 'warn' | 'audit_log' | 'remediate';
+    severity: 'critical' | 'high' | 'medium' | 'low';
+    isActive: boolean;
 }
 
 // #endregion
@@ -528,7 +616,6 @@ export const MOCK_GUEST_USER_CONTEXT: IUserContext = {
     isAuthenticated: false,
 };
 
-
 export const MOCK_JURISDICTIONS: IJurisdiction[] = [
     {
         id: 'US-FED',
@@ -560,11 +647,11 @@ export const MOCK_JURISDICTIONS: IJurisdiction[] = [
         id: 'NY-STATE',
         name: 'New York State',
         country: 'USA',
-        courtSystemDescription: 'New York has a complex court structure, including Supreme Courts (trial courts for major civil/criminal), County Courts, Family Courts, Surrogatesâ€™ Courts, and Court of Claims, Appellate Divisions, and the Court of Appeals.',
+        courtSystemDescription: 'New York has a complex court structure, including Supreme Courts (trial courts for major civil/criminal), County Courts, Family Courts, Surrogates’ Courts, and Court of Claims, Appellate Divisions, and the Court of Appeals.',
         primaryStatuteBooks: ['New York Consolidated Laws', 'New York Civil Practice Law and Rules'],
         rulesOfProcedureId: 'NY-CPLR',
         rulesOfEvidenceId: 'NY-EVIDENCE',
-        uniqueLegalConcepts: ['New York Labor Law Â§ 240', 'Mortgage Foreclosure Procedures'],
+        uniqueLegalConcepts: ['New York Labor Law § 240', 'Mortgage Foreclosure Procedures'],
         appellateCourts: ['Appellate Divisions of the Supreme Court'],
         supremeCourtName: 'New York Court of Appeals',
         commonLawTradition: true,
@@ -611,13 +698,13 @@ export const MOCK_RULES_OF_PROCEDURE: IRulesOfProcedure[] = [
                 id: 'FRCP-8', title: 'General Rules of Pleading', text: '(a) Claim for Relief. A pleading that states a claim for relief must contain: (1) a short and plain statement of the grounds for the court\'s jurisdiction, unless the court already has jurisdiction and the claim needs no new jurisdictional support; (2) a short and plain statement of the claim showing that the pleader is entitled to relief; and (3) a demand for the relief sought, which may include relief in the alternative or different types of relief. (b) Defenses; Admissions and Denials. (1) In General. In responding to a pleading, a party must: (A) state in short and plain terms its defenses to each claim asserted against it; and (B) admit or deny the allegations made against it by an opposing party. (c) Affirmative Defenses.', keywords: ['pleading', 'claim for relief', 'defenses', 'admissions', 'denials']
             },
             {
-                id: 'FRCP-11', title: 'Signing Pleadings, Motions, and Other Papers; Representations to the Court; Sanctions', text: '(a) Signature. Every pleading, written motion, and other paper must be signed by at least one attorney of record in the attorneyâ€™s nameâ€”or by a party personally if the party is unrepresented. (b) Representations to the Court. By presenting to the court a pleading, written motion, or other paperâ€”whether by signing, filing, submitting, or later advocating itâ€”an attorney or unrepresented party certifies that to the best of the personâ€™s knowledge, information, and belief, formed after an inquiry reasonable under the circumstances: (1) it is not being presented for any improper purpose, such as to harass, cause unnecessary delay, or needlessly increase the cost of litigation; (2) the claims, defenses, and other legal contentions are warranted by existing law or by a nonfrivolous argument for extending, modifying, or reversing existing law or for establishing new law; (3) the factual contentions have evidentiary support or, if specifically so identified, will likely have evidentiary support after a reasonable opportunity for further investigation or discovery; and (4) the denials of factual contentions are warranted on the evidence or, if specifically so identified, are reasonably based on belief or a lack of information.', keywords: ['sanctions', 'pleading standards', 'good faith']
+                id: 'FRCP-11', title: 'Signing Pleadings, Motions, and Other Papers; Representations to the Court; Sanctions', text: '(a) Signature. Every pleading, written motion, and other paper must be signed by at least one attorney of record in the attorney’s name—or by a party personally if the party is unrepresented. (b) Representations to the Court. By presenting to the court a pleading, written motion, or other paper—whether by signing, filing, submitting, or later advocating it—an attorney or unrepresented party certifies that to the best of the person’s knowledge, information, and belief, formed after an inquiry reasonable under the circumstances: (1) it is not being presented for any improper purpose, such as to harass, cause unnecessary delay, or needlessly increase the cost of litigation; (2) the claims, defenses, and other legal contentions are warranted by existing law or by a nonfrivolous argument for extending, modifying, or reversing existing law or for establishing new law; (3) the factual contentions have evidentiary support or, if specifically so identified, will likely have evidentiary support after a reasonable opportunity for further investigation or discovery; and (4) the denials of factual contentions are warranted on the evidence or, if specifically so identified, are reasonably based on belief or a lack of information.', keywords: ['sanctions', 'pleading standards', 'good faith']
             },
             {
-                id: 'FRCP-26', title: 'Duty to Disclose; General Provisions Governing Discovery', text: '(a) Required Disclosures. (1) Initial Disclosure. Except as exempted by Rule 26(a)(1)(B) or as otherwise stipulated or ordered by the court, a party must, without awaiting a discovery request, provide to the other parties: (A) the name and, if known, the address and telephone number of each individual likely to have discoverable informationâ€”along with the subjects of that informationâ€”that the disclosing party may use to support its claims or defenses, unless the use would be solely for impeachment; (B) a copyâ€”or a description by category and locationâ€”of all documents, electronically stored information, and tangible things that the disclosing party has in its possession, custody, or control and may use to support its claims or defenses, unless the use would be solely for impeachment; (C) a computation of each category of damages claimed by the disclosing partyâ€”who must also make available for inspection and copying the documents or other evidentiary material, unless privileged or protected from disclosure, on which each computation is based, including materials bearing on the nature and extent of injuries suffered; and (D) for inspection and copying as under Rule 34, any insurance agreement under which an insurance business may be liable to satisfy all or part of a possible judgment in the action or to indemnify or reimburse for payments made to satisfy the judgment. (b) Scope of Discovery. Unless otherwise limited by court order, the scope of discovery is as follows: Parties may obtain discovery regarding any nonprivileged matter that is relevant to any party\'s claim or defense and proportional to the needs of the case, considering the importance of the issues at stake in the action, the amount in controversy, the partiesâ€™ relative access to relevant information, the partiesâ€™ resources, the importance of the discovery in resolving the issues, and whether the burden or expense of the proposed discovery outweighs its likely benefit. Information within this scope of discovery need not be admissible in evidence to be discoverable.', keywords: ['discovery', 'disclosure', 'scope of discovery', 'proportionality']
+                id: 'FRCP-26', title: 'Duty to Disclose; General Provisions Governing Discovery', text: '(a) Required Disclosures. (1) Initial Disclosure. Except as exempted by Rule 26(a)(1)(B) or as otherwise stipulated or ordered by the court, a party must, without awaiting a discovery request, provide to the other parties: (A) the name and, if known, the address and telephone number of each individual likely to have discoverable information—along with the subjects of that information—that the disclosing party may use to support its claims or defenses, unless the use would be solely for impeachment; (B) a copy—or a description by category and location—of all documents, electronically stored information, and tangible things that the disclosing party has in its possession, custody, or control and may use to support its claims or defenses, unless the use would be solely for impeachment; (C) a computation of each category of damages claimed by the disclosing party—who must also make available for inspection and copying the documents or other evidentiary material, unless privileged or protected from disclosure, on which each computation is based, including materials bearing on the nature and extent of injuries suffered; and (D) for inspection and copying as under Rule 34, any insurance agreement under which an insurance business may be liable to satisfy all or part of a possible judgment in the action or to indemnify or reimburse for payments made to satisfy the judgment. (b) Scope of Discovery. Unless otherwise limited by court order, the scope of discovery is as follows: Parties may obtain discovery regarding any nonprivileged matter that is relevant to any party\'s claim or defense and proportional to the needs of the case, considering the importance of the issues at stake in the action, the amount in controversy, the parties’ relative access to relevant information, the parties’ resources, the importance of the discovery in resolving the issues, and whether the burden or expense of the proposed discovery outweighs its likely benefit. Information within this scope of discovery need not be admissible in evidence to be discoverable.', keywords: ['discovery', 'disclosure', 'scope of discovery', 'proportionality']
             },
             {
-                id: 'FRCP-56', title: 'Summary Judgment', text: '(a) Motion for Summary Judgment or Partial Summary Judgment. A party may move for summary judgment, identifying each claim or defenseâ€”or the part of each claim or defenseâ€”on which summary judgment is sought. The court shall grant summary judgment if the movant shows that there is no genuine dispute as to any material fact and the movant is entitled to judgment as a matter of law. The court should state on the record the reasons for granting or denying the motion.', keywords: ['summary judgment', 'material fact', 'judgment as a matter of law']
+                id: 'FRCP-56', title: 'Summary Judgment', text: '(a) Motion for Summary Judgment or Partial Summary Judgment. A party may move for summary judgment, identifying each claim or defense—or the part of each claim or defense—on which summary judgment is sought. The court shall grant summary judgment if the movant shows that there is no genuine dispute as to any material fact and the movant is entitled to judgment as a matter of law. The court should state on the record the reasons for granting or denying the motion.', keywords: ['summary judgment', 'material fact', 'judgment as a matter of law']
             },
         ],
         amendmentLog: [
@@ -632,7 +719,7 @@ export const MOCK_RULES_OF_PROCEDURE: IRulesOfProcedure[] = [
         effectiveDate: '2024-01-01',
         sections: [
             {
-                id: 'CRC-2.100', title: 'Form of papers presented for filing', text: '(a) Application. The rules in this chapter apply to papers filed in the trial courts. (b) Paper size. Except for exhibits and as provided in rule 2.111, all papers must be on letter-size (8Â½- by 11-inch) paper.', keywords: ['form', 'filing', 'paper size']
+                id: 'CRC-2.100', title: 'Form of papers presented for filing', text: '(a) Application. The rules in this chapter apply to papers filed in the trial courts. (b) Paper size. Except for exhibits and as provided in rule 2.111, all papers must be on letter-size (8½- by 11-inch) paper.', keywords: ['form', 'filing', 'paper size']
             },
             {
                 id: 'CRC-3.1110', title: 'General format and filing of motions; two-page limit on memoranda in support of or opposition to demurrer', text: '(a) Required papers. A party filing a motion, except for a motion made during trial, must serve and file: (1) A notice of hearing on the motion; (2) The motion itself; (3) A memorandum of points and authorities in support of the motion; and (4) Evidence in support of the motion.', keywords: ['motions', 'filing', 'memorandum', 'evidence']
@@ -679,7 +766,7 @@ export const MOCK_RULES_OF_EVIDENCE: IRulesOfEvidence[] = [
                 id: 'FRE-802', title: 'The Rule Against Hearsay', text: 'Hearsay is not admissible unless any of the following provides otherwise: a federal statute; these rules; or other rules prescribed by the Supreme Court.', keywords: ['hearsay', 'admissibility']
             },
             {
-                id: 'FRE-803', title: 'Exceptions to the Rule Against Hearsayâ€”Regardless of Whether the Declarant Is Available as a Witness', text: 'The following are not excluded by the rule against hearsay, regardless of whether the declarant is available as a witness: (1) Present Sense Impression. (2) Excited Utterance. (3) Statement of Mental, Emotional, or Physical Condition. (4) Statement Made for Medical Diagnosis or Treatment. (5) Recorded Recollection. (6) Records of a Regularly Conducted Activity. (7) Absence of a Record of a Regularly Conducted Activity. (8) Public Records. (9) Public Records of Vital Statistics. (10) Absence of a Public Record. (11) Records of Religious Organizations Concerning Personal or Family History. (12) Certificates of Marriage, Baptism, and Similar Ceremonies. (13) Family Records. (14) Records of Documents That Affect an Interest in Property. (15) Statements in Documents That Affect an Interest in Property. (16) Statements in Ancient Documents. (17) Market Reports and Similar Commercial Publications. (18) Statements in Learned Treatises, Periodicals, or Pamphlets. (19) Reputation Concerning Personal or Family History. (20) Reputation Concerning Boundaries or General History. (21) Reputation Concerning Character. (22) Judgment of a Previous Conviction. (23) Other Exceptions. (24) [Transferred to Rule 807] .', keywords: ['hearsay exceptions', 'business records', 'public records']
+                id: 'FRE-803', title: 'Exceptions to the Rule Against Hearsay—Regardless of Whether the Declarant Is Available as a Witness', text: 'The following are not excluded by the rule against hearsay, regardless of whether the declarant is available as a witness: (1) Present Sense Impression. (2) Excited Utterance. (3) Statement of Mental, Emotional, or Physical Condition. (4) Statement Made for Medical Diagnosis or Treatment. (5) Recorded Recollection. (6) Records of a Regularly Conducted Activity. (7) Absence of a Record of a Regularly Conducted Activity. (8) Public Records. (9) Public Records of Vital Statistics. (10) Absence of a Public Record. (11) Records of Religious Organizations Concerning Personal or Family History. (12) Certificates of Marriage, Baptism, and Similar Ceremonies. (13) Family Records. (14) Records of Documents That Affect an Interest in Property. (15) Statements in Documents That Affect an Interest in Property. (16) Statements in Ancient Documents. (17) Market Reports and Similar Commercial Publications. (18) Statements in Learned Treatises, Periodicals, or Pamphlets. (19) Reputation Concerning Personal or Family History. (20) Reputation Concerning Boundaries or General History. (21) Reputation Concerning Character. (22) Judgment of a Previous Conviction. (23) Other Exceptions. (24) [Transferred to Rule 807] .', keywords: ['hearsay exceptions', 'business records', 'public records']
             },
         ],
         amendmentLog: [
@@ -706,6 +793,76 @@ export const MOCK_RULES_OF_EVIDENCE: IRulesOfEvidence[] = [
         amendmentLog: [
             { date: '2024-01-01', description: 'Annual updates and clarifications.' },
         ]
+    }
+];
+
+export const MOCK_STATUTES: IStatute[] = [
+    {
+        id: 'CA-COMM-2200',
+        name: 'California Commercial Code - Sales',
+        citation: 'Cal. Com. Code § 2200 et seq.',
+        jurisdiction: 'California State',
+        section: '2200',
+        fullText: 'This chapter applies to transactions in goods...',
+        effectiveDate: '1965-01-01',
+        keywords: ['contract', 'sales', 'goods', 'UCC'],
+        chapter: '2',
+        part: '2',
+        subsectionStructure: {
+            '2201': 'Formal Requirements; Statute of Frauds.',
+            '2202': 'Final Written Expression: Parol or Extrinsic Evidence.',
+            '2204': 'Formation in General.'
+        }
+    },
+    {
+        id: 'USC-33-1311',
+        name: 'Clean Water Act - Effluent Limitations',
+        citation: '33 U.S.C. § 1311',
+        jurisdiction: 'Federal',
+        section: '1311',
+        fullText: '(a) Illegality of pollutant discharges except in compliance with law...',
+        effectiveDate: '1972-10-18',
+        keywords: ['environmental', 'pollution', 'water', 'discharge', 'EPA'],
+        chapter: '26',
+        part: 'III',
+        subsectionStructure: {
+            '1311(a)': 'Prohibition of discharges',
+            '1311(b)': 'Effluent limitations'
+        },
+        enforcementBody: 'Environmental Protection Agency'
+    },
+    {
+        id: 'USC-42-7401',
+        name: 'Clean Air Act - Congressional Findings and Purposes',
+        citation: '42 U.S.C. § 7401',
+        jurisdiction: 'Federal',
+        section: '7401',
+        fullText: '(a) Findings of Congress. The Congress finds...',
+        effectiveDate: '1970-12-31',
+        keywords: ['environmental', 'pollution', 'air', 'EPA'],
+        chapter: '85',
+        part: 'A',
+        subsectionStructure: {
+            '7401(a)': 'Congressional Findings',
+            '7401(b)': 'Purposes'
+        },
+        enforcementBody: 'Environmental Protection Agency'
+    },
+    {
+        id: 'CA-EVIDENCE-CODE-1200',
+        name: 'California Evidence Code - Hearsay Rule',
+        citation: 'Cal. Evid. Code § 1200',
+        jurisdiction: 'California State',
+        section: '1200',
+        fullText: '"Hearsay evidence" is evidence of a statement that was made other than by a witness while testifying at the hearing and that is offered to prove the truth of the matter stated. Except as provided by law, hearsay evidence is inadmissible.',
+        effectiveDate: '1967-01-01',
+        keywords: ['evidence', 'hearsay', 'admissibility'],
+        chapter: '2',
+        part: '3',
+        subsectionStructure: {
+            '1200(a)': 'Definition of Hearsay Evidence',
+            '1200(b)': 'Inadmissibility of Hearsay Evidence'
+        }
     }
 ];
 
@@ -821,6 +978,7 @@ export const MOCK_AI_CONFIGS: IAIConfig[] = [
         levelOfDetail: 'specific',
         language: 'en-US',
         strictComplianceWithRules: true,
+        temperature: 0.7,
     },
     {
         id: 'aggressive-summary-judgment',
@@ -837,7 +995,8 @@ export const MOCK_AI_CONFIGS: IAIConfig[] = [
         levelOfDetail: 'exhaustive',
         language: 'en-US',
         strictComplianceWithRules: true,
-        customInstructions: 'Emphasize lack of evidence from opposing side. Assert conclusions boldly.'
+        customInstructions: 'Emphasize lack of evidence from opposing side. Assert conclusions boldly.',
+        temperature: 0.8,
     },
     {
         id: 'neutral-compliance-memo',
@@ -853,7 +1012,8 @@ export const MOCK_AI_CONFIGS: IAIConfig[] = [
         levelOfDetail: 'general',
         language: 'en-US',
         strictComplianceWithRules: true,
-        customInstructions: 'Provide only factual analysis without legal recommendations.'
+        customInstructions: 'Provide only factual analysis without legal recommendations.',
+        temperature: 0.5,
     }
 ];
 
@@ -888,6 +1048,7 @@ export const MOCK_CASES_DATA: ICaseData[] = [
         filingDeadline: '2024-06-30T17:00:00Z',
         status: 'active',
         createdByUserId: 'user-gj-123',
+        keywords: ['contract', 'breach', 'software', 'damages']
     },
     {
         id: 'case-002',
@@ -916,6 +1077,7 @@ export const MOCK_CASES_DATA: ICaseData[] = [
         stageOfLitigation: 'pre-litigation',
         status: 'active',
         createdByUserId: 'user-gj-123',
+        keywords: ['environmental', 'pollution', 'Clean Water Act', 'injunction']
     }
 ];
 
@@ -934,14 +1096,14 @@ export const MOCK_LEGAL_BRIEFS: ILegalBrief[] = [
                 id: 'sec-facts-001', title: 'II. Statement of Undisputed Facts', content: 'On January 10, 2023, the parties executed a Software Development Agreement ("Agreement") for the creation of custom enterprise software, with a delivery deadline of January 10, 2024 (Fact 1). Cyber Solutions failed to deliver the software by this date, instead delivering a non-functional version on March 15, 2024 (Fact 2). This delay and non-functionality constitute a material breach. See *Smith v. Jones*, 123 F.2d 456 (9th Cir. 1999) (holding substantial delay a material breach).', citations: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)']
             },
             {
-                id: 'sec-arg-001', title: 'III. Legal Argument', content: 'Under California contract law, a material breach occurs when a party fails to perform a substantial part of the contract (California Civil Code Â§ 123). The delivery of non-functional software over two months past the deadline clearly constitutes a material breach. Cyber Solutions\' claims of scope creep are without merit, as change orders were never formally executed as required by the Agreement.', citations: ['California Civil Code Â§ 123']
+                id: 'sec-arg-001', title: 'III. Legal Argument', content: 'Under California contract law, a material breach occurs when a party fails to perform a substantial part of the contract (California Civil Code § 123). The delivery of non-functional software over two months past the deadline clearly constitutes a material breach. Cyber Solutions\' claims of scope creep are without merit, as change orders were never formally executed as required by the Agreement.', citations: ['California Civil Code § 123']
             },
             {
                 id: 'sec-concl-001', title: 'IV. Conclusion', content: 'For the foregoing reasons, Plaintiff Tech Innovations Inc. respectfully requests that this Court grant its motion for summary judgment and award damages as requested.', citations: []
             }
         ],
         fullTextRaw: 'Full raw text of the brief...',
-        citationsList: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)', 'California Civil Code Â§ 123'],
+        citationsList: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)', 'California Civil Code § 123'],
         keywords: ['summary judgment', 'breach of contract', 'software', 'damages'],
         generationMetadata: {
             aiModel: 'JurisGen-GPT-4',
@@ -949,7 +1111,7 @@ export const MOCK_LEGAL_BRIEFS: ILegalBrief[] = [
             promptTokens: 2500,
             completionTokens: 1200,
             runtimeMs: 4500,
-            agentId: 'gj-agent-brief-v1'
+            agentId: 'gj-agent-main-v1'
         },
         versionHistoryId: 'brief-001-history',
         analysisSummary: 'This brief effectively leverages the Smith v. Jones precedent and directly addresses the core breach claims. Strong factual grounding.',
@@ -983,7 +1145,7 @@ export const MOCK_LEGAL_BRIEFS: ILegalBrief[] = [
             promptTokens: 1800,
             completionTokens: 900,
             runtimeMs: 3800,
-            agentId: 'gj-agent-brief-v1'
+            agentId: 'gj-agent-main-v1'
         },
         versionHistoryId: 'brief-002-history',
         analysisSummary: 'Well-structured complaint covering key jurisdictional and substantive elements. Consider adding more detail on environmental harm.',
@@ -1002,7 +1164,7 @@ export const MOCK_AUDIT_LOGS: IAuditLogEntry[] = [
         id: 'audit-1',
         timestamp: '2024-04-12T10:00:00Z',
         userId: 'user-gj-123',
-        agentId: 'gj-agent-brief-v1',
+        agentId: 'gj-agent-main-v1',
         action: 'BRIEF_GENERATED',
         resourceType: 'ILegalBrief',
         resourceId: 'brief-001-v1',
@@ -1203,7 +1365,7 @@ export const MOCK_LEGAL_CONCEPTS: ILegalConcept[] = [
         id: 'concept-2',
         name: 'Hearsay',
         description: 'An out-of-court statement offered in court to prove the truth of the matter asserted. Generally inadmissible as evidence unless it falls under an exception.',
-        relatedStatutes: [],
+        relatedStatutes: ['CA-EVIDENCE-CODE-1200', 'FRE'],
         relatedPrecedents: [],
         jurisdictions: ['US-FED', 'CA-STATE'],
         keywords: ['evidence', 'admissibility', 'statement'],
@@ -1278,7 +1440,7 @@ export const MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS: IAgentServiceTokenTransactio
     {
         transactionId: 'txn-1',
         userId: 'user-gj-123',
-        agentId: 'gj-agent-brief-v1',
+        agentId: 'gj-agent-main-v1',
         serviceType: 'brief_generation',
         resourceId: 'brief-001-v1',
         tokenAmount: 500,
@@ -1304,7 +1466,7 @@ export const MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS: IAgentServiceTokenTransactio
     {
         transactionId: 'txn-3',
         userId: 'user-gj-123',
-        agentId: 'gj-agent-brief-v1',
+        agentId: 'gj-agent-main-v1',
         serviceType: 'brief_generation',
         resourceId: 'brief-002-v1',
         tokenAmount: 400,
@@ -1315,6 +1477,83 @@ export const MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS: IAgentServiceTokenTransactio
         signature: 'txn-sig-3'
     },
 ];
+
+export const MOCK_DIGITAL_IDENTITIES: IDigitalIdentity[] = [
+    {
+        id: 'user-gj-123', publicKey: 'pk-user-gj-123', privateKey: 'sk-user-gj-123', ownerType: 'user',
+        status: 'active', creationDate: '2023-01-01T00:00:00Z', lastRotationDate: '2023-01-01T00:00:00Z'
+    },
+    {
+        id: 'user-gj-admin-456', publicKey: 'pk-user-gj-admin-456', privateKey: 'sk-user-gj-admin-456', ownerType: 'user',
+        status: 'active', creationDate: '2023-01-01T00:00:00Z', lastRotationDate: '2023-01-01T00:00:00Z'
+    },
+    {
+        id: 'user-gj-guest-789', publicKey: 'pk-user-gj-guest-789', privateKey: 'sk-user-gj-guest-789', ownerType: 'user',
+        status: 'active', creationDate: '2023-01-01T00:00:00Z', lastRotationDate: '2023-01-01T00:00:00Z'
+    },
+    {
+        id: 'gj-agent-main-v1', publicKey: 'pk-agent-main', privateKey: 'sk-agent-main', ownerType: 'agent',
+        status: 'active', creationDate: '2023-01-01T00:00:00Z', lastRotationDate: '2023-01-01T00:00:00Z'
+    },
+    {
+        id: 'gj-agent-compliance-v1', publicKey: 'pk-agent-compliance', privateKey: 'sk-agent-compliance', ownerType: 'agent',
+        status: 'active', creationDate: '2023-01-01T00:00:00Z', lastRotationDate: '2023-01-01T00:00:00Z'
+    },
+    {
+        id: 'gj-agent-risk-v1', publicKey: 'pk-agent-risk', privateKey: 'sk-agent-risk', ownerType: 'agent',
+        status: 'active', creationDate: '2023-01-01T00:00:00Z', lastRotationDate: '2023-01-01T00:00:00Z'
+    }
+];
+
+export const MOCK_ACCOUNT_BALANCES: IAccountBalance[] = [
+    { ownerId: 'user-gj-123', currencyType: 'GJ_AI_CREDIT', balance: 10000, lastUpdated: new Date().toISOString() },
+    { ownerId: 'user-gj-admin-456', currencyType: 'GJ_AI_CREDIT', balance: 50000, lastUpdated: new Date().toISOString() }, // Admin for testing agent funding
+    { ownerId: 'gj-agent-main-v1', currencyType: 'GJ_AI_CREDIT', balance: 0, lastUpdated: new Date().toISOString() }, // Agents typically spend, not hold
+    { ownerId: 'gj-agent-compliance-v1', currencyType: 'GJ_AI_CREDIT', balance: 0, lastUpdated: new Date().toISOString() },
+    { ownerId: 'gj-agent-risk-v1', currencyType: 'GJ_AI_CREDIT', balance: 0, lastUpdated: new Date().toISOString() },
+];
+
+export const MOCK_ROUTING_POLICIES: IRoutingPolicy[] = [
+    {
+        id: 'policy-default',
+        name: 'Default Transaction Routing',
+        description: 'Standard routing policy prioritizing cost-efficiency with balanced latency.',
+        criteria: { "costThreshold": 0.02, "latencyTargetMs": 1000, "riskLevel": "standard" },
+        defaultRail: 'standard',
+        alternativeRails: [
+            { name: 'fast', priority: 1, conditions: { "latencyCritical": true, "costTolerance": "high" } },
+            { name: 'secure', priority: 2, conditions: { "transactionValueGT": 10000, "securityRequirement": "high" } }
+        ],
+        isActive: true,
+    }
+];
+
+export const MOCK_AGENT_OBSERVATIONS: IAgentObservation[] = [];
+export const MOCK_AGENT_REMEDIATIONS: IAgentRemediation[] = [];
+export const MOCK_GOVERNANCE_POLICIES: IGovernancePolicy[] = [
+    {
+        id: 'gov-policy-cost-efficiency',
+        name: 'AI Service Cost Efficiency',
+        description: 'Ensures AI service consumption remains within budget. Triggers a warning if an agent\'s average task cost exceeds a threshold.',
+        policyText: 'Average GJ_AI_CREDIT per task must not exceed 500 for non-critical tasks.',
+        appliesToAgentSkillIds: ['skill-brief-draft', 'skill-research', 'skill-compliance-check', 'skill-risk-assess'],
+        enforcementAction: 'warn',
+        severity: 'medium',
+        isActive: true,
+    },
+    {
+        id: 'gov-policy-security-compliance',
+        name: 'Data Access Security Compliance',
+        description: 'Ensures agents do not access data without proper user authorization, especially sensitive client information.',
+        policyText: 'All data access by agents must pass user authorization checks and be cryptographically logged.',
+        appliesToAgentSkillIds: ['skill-research', 'skill-brief-draft', 'skill-compliance-check', 'skill-risk-assess'],
+        enforcementAction: 'block',
+        severity: 'critical',
+        isActive: true,
+    }
+];
+
+export const MOCK_AGENT_TASKS: IJurisprudenceAgentTask[] = [];
 
 // #endregion
 
@@ -1383,8 +1622,8 @@ export function checkUserAuthorization(user: IUserContext, requiredRoles: IUserC
  * @param action The action performed (e.g., 'BRIEF_GENERATED').
  * @param resourceType The type of resource involved (e.g., 'ILegalBrief').
  * @param resourceId The ID of the resource.
- * @param details Additional details about the action.
- * @param outcome The outcome of the action ('success' or 'failure').
+ * @param details Additional contextual information.
+ * @param outcome The outcome of the action ('success', 'failure', or 'warning').
  * @returns The created audit log entry.
  */
 export function logAgentAction(
@@ -1412,13 +1651,205 @@ export function logAgentAction(
 }
 
 /**
+ * Simulates a central authority for managing digital identities and their cryptographic keys.
+ * Business value: Establishes a robust digital identity foundation for all entities, enabling secure authentication, authorization, and cryptographic operations essential for trust and compliance.
+ */
+export class DigitalIdentityManager {
+    private identities: IDigitalIdentity[] = MOCK_DIGITAL_IDENTITIES;
+
+    /**
+     * Finds a digital identity by its ID.
+     * @param id The ID of the identity (user, agent, or service).
+     * @returns The IDigitalIdentity object or undefined if not found.
+     */
+    public getIdentity(id: string): IDigitalIdentity | undefined {
+        return this.identities.find(identity => identity.id === id);
+    }
+
+    /**
+     * Generates a new simulated digital identity.
+     * Business value: Facilitates the on-demand creation of secure identities for new users, agents, and services, streamlining onboarding and maintaining strong security posture.
+     * @param ownerId The ID of the owner.
+     * @param ownerType The type of owner.
+     * @returns The newly created IDigitalIdentity.
+     */
+    public createIdentity(ownerId: string, ownerType: IDigitalIdentity['ownerType']): IDigitalIdentity {
+        const newIdentity: IDigitalIdentity = {
+            id: ownerId,
+            publicKey: `pk-${ownerId}-${Date.now()}`,
+            privateKey: `sk-${ownerId}-${Date.now()}`, // Keep private for simulation, not for real exposure
+            ownerType: ownerType,
+            status: 'active',
+            creationDate: new Date().toISOString(),
+            lastRotationDate: new Date().toISOString()
+        };
+        this.identities.push(newIdentity);
+        logAgentAction('system', 'DIGITAL_IDENTITY_CREATED', 'IDigitalIdentity', ownerId, { ownerType }, 'success');
+        return newIdentity;
+    }
+
+    /**
+     * Simulates signing data with an entity's private key.
+     * Business value: Provides cryptographic proof of origin and integrity for all critical data and transactions, establishing non-repudiation and a verifiable audit trail.
+     * @param entityId The ID of the entity signing the data.
+     * @param data The data to sign.
+     * @returns A simulated cryptographic signature.
+     * @throws Error if the entity's identity is not found or is revoked.
+     */
+    public signData(entityId: string, data: any): string {
+        const identity = this.getIdentity(entityId);
+        if (!identity || identity.status === 'revoked') {
+            logAgentAction('system', 'SIGNATURE_FAILED', 'IDigitalIdentity', entityId, { reason: 'Identity not found or revoked' }, 'failure');
+            throw new Error(`Identity ${entityId} not found or revoked for signing.`);
+        }
+        // In a real system, this would use identity.privateKey
+        return simulateSignature({ signer: entityId, data: data, timestamp: new Date().toISOString() });
+    }
+
+    /**
+     * Simulates verifying a signature against an entity's public key.
+     * Business value: Ensures the authenticity and integrity of all incoming messages and instructions, protecting against tampering and spoofing, which is paramount for a secure financial system.
+     * @param entityId The ID of the entity that allegedly signed the data.
+     * @param originalData The original data that was signed.
+     * @param signature The signature to verify.
+     * @returns True if the signature is valid, false otherwise (simulated).
+     */
+    public verifySignature(entityId: string, originalData: any, signature: string): boolean {
+        const identity = this.getIdentity(entityId);
+        if (!identity || identity.status === 'revoked') {
+            logAgentAction('system', 'SIGNATURE_VERIFICATION_FAILED', 'IDigitalIdentity', entityId, { reason: 'Identity not found or revoked' }, 'failure');
+            return false; // Cannot verify if identity doesn't exist or is revoked
+        }
+        // In a real system, this would involve complex cryptographic verification using identity.publicKey
+        // For simulation, we check if the signature roughly matches what simulateSignature would produce
+        // A simple heuristic for mock: does it start with sim-sig and contain a part of entityId?
+        const expectedPartialSig = simulateSignature({ signer: entityId, data: originalData, timestamp: new Date().toISOString() }).substring(0, 10);
+        const isValid = signature.startsWith(`sim-sig-`) && signature.includes(entityId.substring(0, 5)) && signature.startsWith(expectedPartialSig.substring(0, 10)); // Very loose simulation
+        if (!isValid) {
+            logAgentAction('system', 'SIGNATURE_VERIFICATION_MISMATCH', 'IDigitalIdentity', entityId, { signature, expectedPartial: expectedPartialSig }, 'failure');
+        }
+        return isValid;
+    }
+}
+export const digitalIdentityManager = new DigitalIdentityManager();
+
+/**
+ * Manages token balances for users and agents on the programmable value rail.
+ * Business value: Provides a robust, auditable ledger for managing digital asset balances, enabling real-time settlement, transparent accounting, and the monetization of AI services.
+ */
+export class TokenLedger {
+    private balances: IAccountBalance[] = MOCK_ACCOUNT_BALANCES;
+    public transactions: IAgentServiceTokenTransaction[] = MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS; // Make public for orchestrator visibility
+
+    /**
+     * Retrieves the balance for a given owner and currency.
+     * @param ownerId The ID of the owner (user or agent).
+     * @param currencyType The type of currency.
+     * @returns The current balance, or 0 if not found.
+     */
+    public getBalance(ownerId: string, currencyType: IAgentServiceTokenTransaction['currencyType']): number {
+        return this.balances.find(b => b.ownerId === ownerId && b.currencyType === currencyType)?.balance || 0;
+    }
+
+    /**
+     * Processes a token transaction, ensuring atomicity and idempotency.
+     * Business value: Guarantees the integrity and reliability of all financial transactions, preventing double-spending and ensuring that every value movement is accurate and irreversible once confirmed.
+     * @param transaction The IAgentServiceTokenTransaction to process.
+     * @returns The updated transaction.
+     * @throws Error if the transaction ID is not unique (idempotency, if status is 'completed'), or if funds are insufficient.
+     */
+    public processTransaction(transaction: IAgentServiceTokenTransaction): IAgentServiceTokenTransaction {
+        // Idempotency check: if transaction already processed, return current balance without re-processing
+        const existingTxnIndex = this.transactions.findIndex(t => t.transactionId === transaction.transactionId);
+
+        if (existingTxnIndex !== -1) {
+            if (this.transactions[existingTxnIndex].status === 'completed') {
+                logAgentAction(transaction.userId || transaction.agentId, 'TOKEN_TRANSACTION_REPLAY_DETECTED', 'IAgentServiceTokenTransaction', transaction.transactionId, { details: 'Transaction already completed, returning existing state.', transaction }, 'success');
+                return this.transactions[existingTxnIndex];
+            } else if (this.transactions[existingTxnIndex].status === 'in_progress') {
+                logAgentAction(transaction.userId || transaction.agentId, 'TOKEN_TRANSACTION_IN_PROGRESS', 'IAgentServiceTokenTransaction', transaction.transactionId, { details: 'Transaction already in progress, waiting.', transaction }, 'warning');
+                throw new Error('Transaction already in progress.'); // Or implement a waiting mechanism
+            }
+        }
+
+        transaction.status = 'in_progress'; // Mark as in-progress during processing
+        if (existingTxnIndex !== -1) {
+            this.transactions[existingTxnIndex] = { ...this.transactions[existingTxnIndex], ...transaction };
+        } else {
+            this.transactions.push(transaction);
+        }
+
+        const debitAccount = this.balances.find(b => b.ownerId === transaction.userId && b.currencyType === transaction.currencyType);
+        const creditAccount = this.balances.find(b => b.ownerId === transaction.agentId && b.currencyType === transaction.currencyType);
+
+        if (!debitAccount) {
+            this.balances.push({ ownerId: transaction.userId, currencyType: transaction.currencyType, balance: 0, lastUpdated: new Date().toISOString() });
+            const newDebitAccount = this.balances.find(b => b.ownerId === transaction.userId && b.currencyType === transaction.currencyType);
+            if (newDebitAccount) newDebitAccount.balance -= transaction.tokenAmount; // Allow overdraft for initial user or for testing
+        } else {
+            if (debitAccount.balance < transaction.tokenAmount) {
+                transaction.status = 'failed';
+                logAgentAction(transaction.userId, 'TOKEN_TRANSACTION_FAILED', 'IAgentServiceTokenTransaction', transaction.transactionId, { reason: 'Insufficient funds', currentBalance: debitAccount.balance, required: transaction.tokenAmount }, 'failure');
+                throw new Error('Insufficient funds for transaction.');
+            }
+            debitAccount.balance -= transaction.tokenAmount;
+            debitAccount.lastUpdated = new Date().toISOString();
+        }
+
+        if (!creditAccount) {
+            this.balances.push({ ownerId: transaction.agentId, currencyType: transaction.currencyType, balance: transaction.tokenAmount, lastUpdated: new Date().toISOString() });
+        } else {
+            creditAccount.balance += transaction.tokenAmount;
+            creditAccount.lastUpdated = new Date().toISOString();
+        }
+
+        transaction.status = 'completed';
+        transaction.signature = digitalIdentityManager.signData(transaction.agentId, transaction); // Agent signs the completed transaction
+        this.transactions = this.transactions.map(t => t.transactionId === transaction.transactionId ? transaction : t); // Update in array
+
+        logAgentAction(transaction.userId || transaction.agentId, 'TOKEN_TRANSACTION_PROCESSED', 'IAgentServiceTokenTransaction', transaction.transactionId, { status: 'completed', newBalance: this.getBalance(transaction.userId, transaction.currencyType) }, 'success');
+
+        return transaction;
+    }
+
+    /**
+     * Audits the transaction history for a given owner.
+     * Business value: Provides complete transparency and traceability for all financial movements, crucial for regulatory compliance, internal audits, and conflict resolution.
+     * @param ownerId The ID of the owner.
+     * @returns An array of IAgentServiceTokenTransaction related to the owner.
+     */
+    public getTransactionHistory(ownerId: string): IAgentServiceTokenTransaction[] {
+        return this.transactions.filter(t => t.userId === ownerId || t.agentId === ownerId);
+    }
+
+    /**
+     * Initializes a user's token balance if they don't have one.
+     * Business value: Ensures every new user can immediately access AI services, facilitating seamless onboarding and user engagement.
+     * @param userId The ID of the user.
+     * @param initialAmount The initial amount to credit.
+     */
+    public initializeUserBalance(userId: string, initialAmount: number): void {
+        if (!this.balances.some(b => b.ownerId === userId && b.currencyType === 'GJ_AI_CREDIT')) {
+            this.balances.push({
+                ownerId: userId,
+                currencyType: 'GJ_AI_CREDIT',
+                balance: initialAmount,
+                lastUpdated: new Date().toISOString()
+            });
+            logAgentAction('system', 'USER_BALANCE_INITIALIZED', 'IAccountBalance', userId, { amount: initialAmount }, 'success');
+        }
+    }
+}
+export const tokenLedger = new TokenLedger();
+
+/**
  * Represents a simulated Generative Jurisprudence Agent.
  * Business value: Orchestrates complex legal AI workflows, integrating research, drafting, and compliance capabilities into an autonomous entity, driving end-to-end automation and efficiency.
  */
 export class GenerativeJurisprudenceAgent {
     public id: string;
     public name: string;
-    private availableSkills: IAgentSkill[];
+    public availableSkills: IAgentSkill[];
 
     /**
      * Constructs a new GenerativeJurisprudenceAgent.
@@ -1443,18 +1874,23 @@ export class GenerativeJurisprudenceAgent {
     }
 
     /**
-     * Simulates performing a token transaction for a service.
-     * Business value: Integrates with the token rail layer to manage AI resource consumption and billing transparently, enabling cost control and monetization of AI services.
+     * Simulates performing a token transaction for a service, utilizing the TokenLedger.
+     * Business value: Integrates with the token rail layer to manage AI resource consumption and billing transparently, enabling cost control and monetization of AI services. This function is idempotent and auditable.
      * @param userId The ID of the user requesting the service.
      * @param serviceType The type of service being performed.
      * @param resourceId The ID of the resource being processed.
      * @param tokenAmount The simulated token cost.
+     * @param transactionId Optional: An ID for idempotency (e.g., from a task).
      * @returns The generated token transaction.
      */
-    private performTokenTransaction(userId: string, serviceType: IAgentServiceTokenTransaction['serviceType'], resourceId: string, tokenAmount: number): IAgentServiceTokenTransaction {
-        const auditEntry = logAgentAction(userId, 'TOKEN_TRANSACTION_INITIATED', 'IAgentServiceTokenTransaction', '', { serviceType, resourceId, tokenAmount }, 'success');
+    public performTokenTransaction(userId: string, serviceType: IAgentServiceTokenTransaction['serviceType'], resourceId: string, tokenAmount: number, transactionId?: string): IAgentServiceTokenTransaction {
+        // Generate a unique transaction ID for idempotency if not provided
+        const newTxnId = transactionId || `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        const auditEntry = logAgentAction(userId, 'TOKEN_TRANSACTION_INITIATED', 'IAgentServiceTokenTransaction', newTxnId, { serviceType, resourceId, tokenAmount }, 'success');
+
         const transaction: IAgentServiceTokenTransaction = {
-            transactionId: `txn-${MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS.length + 1}-${Date.now()}`,
+            transactionId: newTxnId,
             userId,
             agentId: this.id,
             serviceType,
@@ -1462,14 +1898,18 @@ export class GenerativeJurisprudenceAgent {
             tokenAmount,
             currencyType: 'GJ_AI_CREDIT',
             timestamp: new Date().toISOString(),
-            status: 'completed',
+            status: 'pending', // Mark as pending before processing
             auditLogEntryId: auditEntry.id,
             signature: ''
         };
-        transaction.signature = simulateSignature(transaction);
-        MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS.push(transaction);
-        logAgentAction(userId, 'TOKEN_TRANSACTION_COMPLETED', 'IAgentServiceTokenTransaction', transaction.transactionId, { status: 'completed' }, 'success');
-        return transaction;
+
+        try {
+            return tokenLedger.processTransaction(transaction); // This will update transaction status to 'completed' and add signature
+        } catch (error: any) {
+            transaction.status = 'failed';
+            logAgentAction(userId, 'TOKEN_TRANSACTION_FAILED', 'IAgentServiceTokenTransaction', newTxnId, { error: error.message, transaction }, 'failure');
+            throw error; // Re-throw to indicate failure
+        }
     }
 
     /**
@@ -1478,26 +1918,25 @@ export class GenerativeJurisprudenceAgent {
      * @param caseData The ICaseData to base the brief on.
      * @param aiConfig The IAIConfig to guide generation.
      * @param user The IUserContext initiating the request.
+     * @param taskId Optional: The task ID for idempotency and linking.
      * @returns A promise resolving to the generated ILegalBrief.
      */
-    public async generateLegalBrief(caseData: ICaseData, aiConfig: IAIConfig, user: IUserContext): Promise<ILegalBrief> {
+    public async generateLegalBrief(caseData: ICaseData, aiConfig: IAIConfig, user: IUserContext, taskId?: string): Promise<ILegalBrief> {
         if (!checkUserAuthorization(user, ['attorney'], caseData.createdByUserId)) {
-            throw new Error('Unauthorized to generate brief for this case.');
+            const auditFailure = logAgentAction(user.userId, 'BRIEF_GENERATION_AUTH_FAILED', 'ILegalBrief', 'N/A', { caseId: caseData.id, reason: 'Unauthorized' }, 'failure');
+            throw new Error(`Unauthorized to generate brief for this case. Audit ID: ${auditFailure.id}`);
         }
 
-        const task: IJurisprudenceAgentTask = {
-            taskId: `task-brief-gen-${Date.now()}`,
-            agentId: this.id,
-            taskType: 'generate_brief',
-            caseId: caseData.id,
-            status: 'in_progress',
-            requestedByUserId: user.userId,
-            creationDate: new Date().toISOString(),
-            priority: 'high',
-            configuration: { aiConfigId: aiConfig.id },
-        };
-        const auditEntry = logAgentAction(user.userId, task.taskType, 'IJurisprudenceAgentTask', task.taskId, { caseId: caseData.id, aiConfigId: aiConfig.id }, 'success');
-        task.auditLogEntryIds = [auditEntry.id];
+        const briefSkill = this.getSkill('skill-brief-draft');
+        if (!briefSkill) {
+            throw new Error(`Agent ${this.id} lacks the "Brief Drafting" skill.`);
+        }
+
+        // Governance check: (simulated, could be more complex)
+        const costEfficiencyPolicy = MOCK_GOVERNANCE_POLICIES.find(p => p.id === 'gov-policy-cost-efficiency' && p.appliesToAgentSkillIds.includes(briefSkill.id));
+        if (costEfficiencyPolicy && aiConfig.lengthPreference === 'very-long' && costEfficiencyPolicy.enforcementAction === 'warn') {
+            logAgentAction(this.id, 'GOVERNANCE_WARNING', 'IAIConfig', aiConfig.id, { policy: costEfficiencyPolicy.name, message: 'Very long brief requested, potential for high token cost.' }, 'warning');
+        }
 
         console.log(`[Agent ${this.name}] Generating brief for case ${caseData.caseName} with config ${aiConfig.name}...`);
 
@@ -1505,19 +1944,20 @@ export class GenerativeJurisprudenceAgent {
         await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000)); // Simulate async AI processing
 
         const generatedSections: ILegalBriefSection[] = [
-            { id: 'sim-sec-intro', title: 'I. Introduction', content: `This brief is generated based on case ${caseData.caseName} and AI config ${aiConfig.name}.`, citations: [], sectionType: 'introduction' },
+            { id: `sim-sec-intro-${Date.now()}`, title: 'I. Introduction', content: `This brief is generated based on case ${caseData.caseName} and AI config ${aiConfig.name}.`, citations: [], sectionType: 'introduction' },
             {
-                id: 'sim-sec-facts', title: 'II. Statement of Facts', content: `Key facts include: ${caseData.facts.map(f => f.description).join('; ')}.`,
+                id: `sim-sec-facts-${Date.now()}`, title: 'II. Statement of Facts', content: `Key facts include: ${caseData.facts.map(f => f.description).join('; ')}.`,
                 citations: [], sectionType: 'statementOfFacts'
             },
             {
-                id: 'sim-sec-arg', title: 'III. Legal Argument', content: `Applying the law from jurisdiction ${caseData.jurisdictionId} and precedents like ${caseData.relevantPrecedentIds[0] || 'N/A'}, the argument supports the desired legal position: "${caseData.desiredLegalPosition}". Tone: ${aiConfig.tone}.`,
+                id: `sim-sec-arg-${Date.now()}`, title: 'III. Legal Argument', content: `Applying the law from jurisdiction ${caseData.jurisdictionId} and precedents like ${caseData.relevantPrecedentIds[0] || 'N/A'}, the argument supports the desired legal position: "${caseData.desiredLegalPosition}". Tone: ${aiConfig.tone}.`,
                 citations: ['Simulated Citation 1', 'Simulated Citation 2'], sectionType: 'legalArgument'
             },
-            { id: 'sim-sec-conc', title: 'IV. Conclusion', content: `For these reasons, the requested relief of "${caseData.reliefSought}" should be granted.`, citations: [], sectionType: 'conclusion' }
+            { id: `sim-sec-conc-${Date.now()}`, title: 'IV. Conclusion', content: `For these reasons, the requested relief of "${caseData.reliefSought}" should be granted.`, citations: [], sectionType: 'conclusion' }
         ];
 
         const newBriefId = `brief-${MOCK_LEGAL_BRIEFS.length + 1}-${Date.now()}`;
+        const estimatedTokens = 1000 + (aiConfig.lengthPreference === 'long' ? 500 : aiConfig.lengthPreference === 'very-long' ? 1000 : 0);
         const generatedBrief: ILegalBrief = {
             id: newBriefId,
             caseId: caseData.id,
@@ -1527,12 +1967,12 @@ export class GenerativeJurisprudenceAgent {
             sections: generatedSections,
             fullTextRaw: generatedSections.map(s => s.title + '\n' + s.content).join('\n\n'),
             citationsList: Array.from(new Set(generatedSections.flatMap(s => s.citations))),
-            keywords: [...caseData.keywords, ...aiConfig.name.split(' ').map(w => w.toLowerCase())], // Assuming caseData has keywords now
+            keywords: [...(caseData.keywords || []), ...aiConfig.name.split(' ').map(w => w.toLowerCase())], // Assuming caseData has keywords now
             generationMetadata: {
                 aiModel: 'JurisGen-GPT-4',
-                temperature: aiConfig.temperature || 0.7,
-                promptTokens: 3000, // Simulated
-                completionTokens: 1500, // Simulated
+                temperature: aiConfig.modelParameters?.temperature || aiConfig.temperature || 0.7,
+                promptTokens: Math.floor(estimatedTokens * 0.6), // Simulated
+                completionTokens: Math.floor(estimatedTokens * 0.4), // Simulated
                 runtimeMs: Math.floor(Math.random() * 2000) + 1000, // Simulated
                 agentId: this.id,
             },
@@ -1544,11 +1984,8 @@ export class GenerativeJurisprudenceAgent {
         };
 
         MOCK_LEGAL_BRIEFS.push(generatedBrief);
-        task.status = 'completed';
-        task.completionDate = new Date().toISOString();
-        task.result = { briefId: generatedBrief.id };
-        logAgentAction(user.userId, 'BRIEF_GENERATED', 'ILegalBrief', generatedBrief.id, { caseId: caseData.id, aiConfigId: aiConfig.id }, 'success');
-        this.performTokenTransaction(user.userId, 'brief_generation', generatedBrief.id, generatedBrief.generationMetadata.completionTokens / 3); // Simulate token cost
+        logAgentAction(user.userId, 'BRIEF_GENERATED', 'ILegalBrief', generatedBrief.id, { caseId: caseData.id, aiConfigId: aiConfig.id, agentId: this.id }, 'success');
+        this.performTokenTransaction(user.userId, 'brief_generation', generatedBrief.id, generatedBrief.generationMetadata.completionTokens / 3, taskId); // Simulate token cost
         return generatedBrief;
     }
 
@@ -1558,26 +1995,19 @@ export class GenerativeJurisprudenceAgent {
      * @param brief The ILegalBrief to check.
      * @param complianceRules The IComplianceRule[] to apply.
      * @param user The IUserContext initiating the request.
+     * @param taskId Optional: The task ID for idempotency and linking.
      * @returns A promise resolving to the IComplianceCheckReport.
      */
-    public async performComplianceCheck(brief: ILegalBrief, complianceRules: IComplianceRule[], user: IUserContext): Promise<IComplianceCheckReport> {
+    public async performComplianceCheck(brief: ILegalBrief, complianceRules: IComplianceRule[], user: IUserContext, taskId?: string): Promise<IComplianceCheckReport> {
         if (!checkUserAuthorization(user, ['attorney', 'compliance_officer'], brief.generatedByUserId)) {
-            throw new Error('Unauthorized to perform compliance check on this brief.');
+            const auditFailure = logAgentAction(user.userId, 'COMPLIANCE_CHECK_AUTH_FAILED', 'IComplianceCheckReport', 'N/A', { briefId: brief.id, reason: 'Unauthorized' }, 'failure');
+            throw new Error(`Unauthorized to perform compliance check on this brief. Audit ID: ${auditFailure.id}`);
         }
 
-        const task: IJurisprudenceAgentTask = {
-            taskId: `task-compliance-check-${Date.now()}`,
-            agentId: this.id,
-            taskType: 'check_compliance',
-            caseId: brief.caseId,
-            status: 'in_progress',
-            requestedByUserId: user.userId,
-            creationDate: new Date().toISOString(),
-            priority: 'medium',
-            configuration: { briefId: brief.id, rulesCount: complianceRules.length },
-        };
-        const auditEntry = logAgentAction(user.userId, task.taskType, 'IJurisprudenceAgentTask', task.taskId, { briefId: brief.id, rulesCount: complianceRules.length }, 'success');
-        task.auditLogEntryIds = [auditEntry.id];
+        const complianceSkill = this.getSkill('skill-compliance-check');
+        if (!complianceSkill) {
+            throw new Error(`Agent ${this.id} lacks the "Compliance Check" skill.`);
+        }
 
         console.log(`[Agent ${this.name}] Performing compliance check on brief ${brief.id}...`);
         await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500)); // Simulate async processing
@@ -1603,14 +2033,13 @@ export class GenerativeJurisprudenceAgent {
             status: findings.some(f => !f.isCompliant && f.severity === 'critical') ? 'non-compliant' : (findings.some(f => !f.isCompliant) ? 'pending_review' : 'compliant'),
             findings: findings,
             overallScore: Math.floor((findings.filter(f => f.isCompliant).length / findings.length) * 100),
+            reviewedByUserId: this.id, // Agent performed the review
+            reviewDate: new Date().toISOString()
         };
         MOCK_COMPLIANCE_REPORTS.push(report);
 
-        task.status = 'completed';
-        task.completionDate = new Date().toISOString();
-        task.result = { reportId: report.id };
-        logAgentAction(user.userId, 'COMPLIANCE_CHECK_PERFORMED', 'IComplianceCheckReport', report.id, { briefId: brief.id, status: report.status }, 'success');
-        this.performTokenTransaction(user.userId, 'compliance_check', report.id, complianceRules.length * 10); // Simulate token cost
+        logAgentAction(user.userId, 'COMPLIANCE_CHECK_PERFORMED', 'IComplianceCheckReport', report.id, { briefId: brief.id, status: report.status, agentId: this.id }, 'success');
+        this.performTokenTransaction(user.userId, 'compliance_check', report.id, complianceRules.length * 10, taskId); // Simulate token cost
         return report;
     }
 
@@ -1619,26 +2048,19 @@ export class GenerativeJurisprudenceAgent {
      * Business value: Proactively identifies potential legal vulnerabilities, enabling strategic adjustments and mitigating adverse outcomes, which can save millions in litigation costs.
      * @param caseData The ICaseData to assess.
      * @param user The IUserContext initiating the request.
+     * @param taskId Optional: The task ID for idempotency and linking.
      * @returns A promise resolving to the IRiskAssessmentResult.
      */
-    public async assessLegalRisk(caseData: ICaseData, user: IUserContext): Promise<IRiskAssessmentResult> {
+    public async assessLegalRisk(caseData: ICaseData, user: IUserContext, taskId?: string): Promise<IRiskAssessmentResult> {
         if (!checkUserAuthorization(user, ['attorney'], caseData.createdByUserId)) {
-            throw new Error('Unauthorized to assess risk for this case.');
+            const auditFailure = logAgentAction(user.userId, 'RISK_ASSESSMENT_AUTH_FAILED', 'IRiskAssessmentResult', 'N/A', { caseId: caseData.id, reason: 'Unauthorized' }, 'failure');
+            throw new Error(`Unauthorized to assess risk for this case. Audit ID: ${auditFailure.id}`);
         }
 
-        const task: IJurisprudenceAgentTask = {
-            taskId: `task-risk-assess-${Date.now()}`,
-            agentId: this.id,
-            taskType: 'assess_risk',
-            caseId: caseData.id,
-            status: 'in_progress',
-            requestedByUserId: user.userId,
-            creationDate: new Date().toISOString(),
-            priority: 'high',
-            configuration: { caseId: caseData.id },
-        };
-        const auditEntry = logAgentAction(user.userId, task.taskType, 'IJurisprudenceAgentTask', task.taskId, { caseId: caseData.id }, 'success');
-        task.auditLogEntryIds = [auditEntry.id];
+        const riskSkill = this.getSkill('skill-risk-assess');
+        if (!riskSkill) {
+            throw new Error(`Agent ${this.id} lacks the "Risk Assessment" skill.`);
+        }
 
         console.log(`[Agent ${this.name}] Assessing legal risk for case ${caseData.caseName}...`);
         await new Promise(resolve => setTimeout(resolve, Math.random() * 1500 + 800)); // Simulate async processing
@@ -1658,6 +2080,13 @@ export class GenerativeJurisprudenceAgent {
                 severity: overallRisk > 60 ? 'high' : 'medium',
                 mitigationStrategy: 'Conduct deeper research for recent, on-point authority.',
                 relatedPrecedentIds: caseData.relevantPrecedentIds
+            },
+            {
+                category: 'statutory_interpretation_ambiguity',
+                description: `Potential ambiguity in interpreting statutes like ${caseData.relevantStatuteIds[0] || 'N/A'} could introduce risk.`,
+                severity: overallRisk > 70 ? 'critical' : 'high',
+                mitigationStrategy: 'Obtain expert legal opinion on statutory interpretation.',
+                relatedStatutes: caseData.relevantStatuteIds
             }
         ];
 
@@ -1673,11 +2102,8 @@ export class GenerativeJurisprudenceAgent {
         };
         MOCK_RISK_ASSESSMENTS.push(assessment);
 
-        task.status = 'completed';
-        task.completionDate = new Date().toISOString();
-        task.result = { riskAssessmentId: assessment.id };
-        logAgentAction(user.userId, 'RISK_ASSESSED', 'IRiskAssessmentResult', assessment.id, { caseId: caseData.id, score: assessment.overallRiskScore }, 'success');
-        this.performTokenTransaction(user.userId, 'research_query', assessment.id, overallRisk * 5); // Simulate token cost
+        logAgentAction(user.userId, 'RISK_ASSESSED', 'IRiskAssessmentResult', assessment.id, { caseId: caseData.id, score: assessment.overallRiskScore, agentId: this.id }, 'success');
+        this.performTokenTransaction(user.userId, 'risk_assessment', assessment.id, overallRisk * 5, taskId); // Simulate token cost
         return assessment;
     }
 
@@ -1687,64 +2113,261 @@ export class GenerativeJurisprudenceAgent {
      * @param query The research query string.
      * @param jurisdictionId The ID of the primary jurisdiction for the query.
      * @param user The IUserContext initiating the request.
+     * @param taskId Optional: The task ID for idempotency and linking.
      * @returns A promise resolving to an array of relevant IPrecedent and IStatute.
      */
-    public async conductLegalResearch(query: string, jurisdictionId: string, user: IUserContext): Promise<(IPrecedent | IStatute)[]> {
+    public async conductLegalResearch(query: string, jurisdictionId: string, user: IUserContext, taskId?: string): Promise<(IPrecedent | IStatute)[]> {
         if (!checkUserAuthorization(user, ['attorney', 'paralegal'])) {
-            throw new Error('Unauthorized to conduct legal research.');
+            const auditFailure = logAgentAction(user.userId, 'RESEARCH_AUTH_FAILED', 'ResearchQuery', 'N/A', { query, reason: 'Unauthorized' }, 'failure');
+            throw new Error(`Unauthorized to conduct legal research. Audit ID: ${auditFailure.id}`);
         }
 
         const researchSkill = this.getSkill('skill-research');
         if (!researchSkill) {
-            throw new Error('Agent lacks the "Legal Research" skill.');
+            throw new Error(`Agent ${this.id} lacks the "Legal Research" skill.`);
         }
-
-        const task: IJurisprudenceAgentTask = {
-            taskId: `task-research-${Date.now()}`,
-            agentId: this.id,
-            taskType: 'research_precedents',
-            caseId: 'N/A', // Research may not be tied to a specific case initially
-            status: 'in_progress',
-            requestedByUserId: user.userId,
-            creationDate: new Date().toISOString(),
-            priority: 'low',
-            configuration: { query, jurisdictionId },
-        };
-        const auditEntry = logAgentAction(user.userId, task.taskType, 'IJurisprudenceAgentTask', task.taskId, { query, jurisdictionId }, 'success');
-        task.auditLogEntryIds = [auditEntry.id];
 
         console.log(`[Agent ${this.name}] Conducting legal research for query: "${query}" in ${jurisdictionId}...`);
         await new Promise(resolve => setTimeout(resolve, Math.random() * 3000 + 1000)); // Simulate research time
 
         // Filter mock data for simulation
         const relevantPrecedents = MOCK_PRECEDENTS.filter(p =>
-            p.jurisdiction.includes(jurisdictionId.split('-')[0]) || // Simple jurisdiction match
-            p.keywords.some(k => query.toLowerCase().includes(k)) ||
+            p.jurisdiction.toLowerCase().includes(jurisdictionId.split('-')[0].toLowerCase()) || // Simple jurisdiction match
+            p.keywords.some(k => query.toLowerCase().includes(k.toLowerCase())) ||
             p.summary.toLowerCase().includes(query.toLowerCase())
         ).slice(0, Math.floor(Math.random() * 3) + 1); // 1-3 results
 
         const relevantStatutes = MOCK_STATUTES.filter(s =>
-            s.jurisdiction.includes(jurisdictionId.split('-')[0]) ||
-            s.keywords.some(k => query.toLowerCase().includes(k)) ||
+            s.jurisdiction.toLowerCase().includes(jurisdictionId.split('-')[0].toLowerCase()) ||
+            s.keywords.some(k => query.toLowerCase().includes(k.toLowerCase())) ||
             s.fullText.toLowerCase().includes(query.toLowerCase())
         ).slice(0, Math.floor(Math.random() * 2) + 1); // 1-2 results
 
         const results = [...relevantPrecedents, ...relevantStatutes];
 
-        task.status = 'completed';
-        task.completionDate = new Date().toISOString();
-        task.result = { researchResultsCount: results.length, firstResultId: results[0]?.id };
-        logAgentAction(user.userId, 'LEGAL_RESEARCH_PERFORMED', 'ResearchQuery', query, { jurisdictionId, resultsCount: results.length }, 'success');
-        this.performTokenTransaction(user.userId, 'research_query', query, 200 + results.length * 50); // Simulate token cost
+        logAgentAction(user.userId, 'LEGAL_RESEARCH_PERFORMED', 'ResearchQuery', query, { jurisdictionId, resultsCount: results.length, agentId: this.id }, 'success');
+        this.performTokenTransaction(user.userId, 'research_query', query, 200 + results.length * 50, taskId); // Simulate token cost
         return results;
     }
 }
 
+
 /**
- * Instantiates the primary Generative Jurisprudence Agent with its available skills.
- * Business value: Centralizes the orchestration of AI-driven legal services, providing a single, powerful entry point for automated legal operations across the platform.
+ * Orchestrates tasks for various Generative Jurisprudence Agents, ensuring secure messaging and auditable execution.
+ * Business value: Provides a central command-and-control for all automated legal workflows, ensuring optimal resource allocation, fault tolerance, and end-to-end auditability across the agent network.
  */
-export const primaryJurisprudenceAgent = new GenerativeJurisprudenceAgent('gj-agent-main-v1', 'JurisGen Main Agent', MOCK_AGENT_SKILLS);
+export class AgentOrchestrator {
+    private tasks: IJurisprudenceAgentTask[] = MOCK_AGENT_TASKS;
+    private agentInstances: Map<string, GenerativeJurisprudenceAgent> = new Map();
+    private currentAgentIdCounter: number = 0; // For new agent IDs
+
+    /**
+     * Registers an agent with the orchestrator.
+     * @param agent The GenerativeJurisprudenceAgent instance.
+     */
+    public registerAgent(agent: GenerativeJurisprudenceAgent): void {
+        if (this.agentInstances.has(agent.id)) {
+            console.warn(`Agent ${agent.id} already registered.`);
+            return;
+        }
+        this.agentInstances.set(agent.id, agent);
+        logAgentAction('system', 'AGENT_REGISTERED', 'GenerativeJurisprudenceAgent', agent.id, { name: agent.name }, 'success');
+    }
+
+    /**
+     * Submits a task to be processed by an agent.
+     * Business value: Streamlines the initiation of complex AI tasks, providing a resilient and traceable pathway for automated legal operations, ensuring task completion and accountability.
+     * @param task The IJurisprudenceAgentTask to submit.
+     * @param senderUser The IUserContext submitting the task.
+     * @returns The submitted task with updated status.
+     * @throws Error if the target agent is not found or authorization fails.
+     */
+    public async submitTask(task: IJurisprudenceAgentTask, senderUser: IUserContext): Promise<IJurisprudenceAgentTask> {
+        if (!senderUser.isAuthenticated) {
+             logAgentAction(senderUser.userId, 'TASK_SUBMISSION_FAILED', 'IJurisprudenceAgentTask', 'N/A', { reason: 'Unauthenticated user', taskType: task.taskType }, 'failure');
+             throw new Error('Unauthenticated user cannot submit tasks.');
+        }
+
+        task.taskId = `task-${this.tasks.length + 1}-${Date.now()}`;
+        task.creationDate = new Date().toISOString();
+        task.requestedByUserId = senderUser.userId;
+        task.status = 'pending';
+        task.retries = 0;
+        task.maxRetries = 3; // Default retries
+
+        this.tasks.push(task);
+
+        const auditEntry = logAgentAction(senderUser.userId, 'TASK_SUBMITTED', 'IJurisprudenceAgentTask', task.taskId, { taskType: task.taskType, agentId: task.agentId }, 'success');
+        task.auditLogEntryIds = task.auditLogEntryIds ? [...task.auditLogEntryIds, auditEntry.id] : [auditEntry.id];
+
+        // Process immediately, but in a real system, this would be a background queue
+        setTimeout(() => this.processTask(task.taskId), 0); // Asynchronously process
+
+        return task;
+    }
+
+    /**
+     * Processes a single task by its ID.
+     * Business value: Ensures continuous and efficient execution of agent tasks, managing resource contention and providing fault-tolerant processing through retry mechanisms, increasing system reliability.
+     * @param taskId The ID of the task to process.
+     */
+    private async processTask(taskId: string): Promise<void> {
+        const taskIndex = this.tasks.findIndex(t => t.taskId === taskId);
+        if (taskIndex === -1) {
+            console.error(`Task ${taskId} not found.`);
+            return;
+        }
+
+        const task = this.tasks[taskIndex];
+        if (task.status === 'in_progress' || task.status === 'completed' || task.status === 'cancelled') {
+            return; // Already being processed or finished
+        }
+
+        const agent = this.agentInstances.get(task.agentId);
+        if (!agent) {
+            task.status = 'failed';
+            task.errorMessage = `Agent ${task.agentId} not found.`;
+            logAgentAction('system', 'TASK_PROCESSING_FAILED', 'IJurisprudenceAgentTask', task.taskId, { reason: task.errorMessage }, 'failure');
+            this.updateTask(task);
+            return;
+        }
+
+        task.status = 'in_progress';
+        task.startDate = new Date().toISOString();
+        logAgentAction('system', 'TASK_STARTED', 'IJurisprudenceAgentTask', task.taskId, { taskType: task.taskType, agentId: agent.id }, 'success');
+        this.updateTask(task);
+
+        try {
+            let result: any;
+            // For simulation, assume the requesting user is the primary user for agent methods
+            // In a real system, the orchestrator would pass a secure token or identity derived from `task.requestedByUserId`
+            const requestingUser = MOCK_USER_CONTEXT.userId === task.requestedByUserId ? MOCK_USER_CONTEXT :
+                                  MOCK_ADMIN_USER_CONTEXT.userId === task.requestedByUserId ? MOCK_ADMIN_USER_CONTEXT :
+                                  MOCK_GUEST_USER_CONTEXT.userId === task.requestedByUserId ? MOCK_GUEST_USER_CONTEXT :
+                                  MOCK_USER_CONTEXT; // Fallback
+
+            switch (task.taskType) {
+                case 'generate_brief':
+                    const caseData = MOCK_CASES_DATA.find(c => c.id === task.caseId);
+                    const aiConfig = MOCK_AI_CONFIGS.find(cfg => cfg.id === task.configuration.aiConfigId);
+                    if (!caseData || !aiConfig) throw new Error('Case data or AI config not found for brief generation.');
+                    result = await agent.generateLegalBrief(caseData, aiConfig, requestingUser, task.taskId);
+                    task.result = { briefId: result.id };
+                    break;
+                case 'check_compliance':
+                    const briefToCheck = MOCK_LEGAL_BRIEFS.find(b => b.id === task.configuration.briefId);
+                    if (!briefToCheck) throw new Error('Brief not found for compliance check.');
+                    result = await agent.performComplianceCheck(briefToCheck, MOCK_COMPLIANCE_RULES, requestingUser, task.taskId);
+                    task.result = { reportId: result.id };
+                    break;
+                case 'assess_risk':
+                    const caseToAssess = MOCK_CASES_DATA.find(c => c.id === task.caseId);
+                    if (!caseToAssess) throw new Error('Case not found for risk assessment.');
+                    result = await agent.assessLegalRisk(caseToAssess, requestingUser, task.taskId);
+                    task.result = { riskAssessmentId: result.id };
+                    break;
+                case 'research_precedents':
+                    result = await agent.conductLegalResearch(task.configuration.query, task.configuration.jurisdictionId, requestingUser, task.taskId);
+                    task.result = { researchResultsCount: result.length, firstResultId: result[0]?.id };
+                    break;
+                default:
+                    throw new Error(`Unknown task type: ${task.taskType}`);
+            }
+            task.status = 'completed';
+            task.completionDate = new Date().toISOString();
+            logAgentAction('system', 'TASK_COMPLETED', 'IJurisprudenceAgentTask', task.taskId, { taskType: task.taskType, agentId: agent.id, result: task.result }, 'success');
+
+        } catch (e: any) {
+            console.error(`Task ${task.taskId} failed:`, e);
+            if (task.retries < task.maxRetries) {
+                task.retries++;
+                task.status = 'pending'; // Re-queue for retry
+                task.errorMessage = `Retrying: ${e.message}`;
+                logAgentAction('system', 'TASK_RETRYING', 'IJurisprudenceAgentTask', task.taskId, { error: e.message, retryAttempt: task.retries }, 'warning');
+                // Exponential backoff simulation
+                setTimeout(() => this.processTask(task.taskId), 1000 * Math.pow(2, task.retries));
+            } else {
+                task.status = 'failed';
+                task.errorMessage = e.message;
+                logAgentAction('system', 'TASK_FAILED_PERMANENTLY', 'IJurisprudenceAgentTask', task.taskId, { taskType: task.taskType, agentId: agent.id, error: e.message }, 'failure');
+            }
+        } finally {
+            task.completionDate = task.completionDate || new Date().toISOString(); // Ensure completionDate is set
+            this.updateTask(task);
+        }
+    }
+
+    /**
+     * Helper to update task in the array and trigger UI refresh (if any).
+     * @param updatedTask The task with updated properties.
+     */
+    private updateTask(updatedTask: IJurisprudenceAgentTask): void {
+        const index = this.tasks.findIndex(t => t.taskId === updatedTask.taskId);
+        if (index !== -1) {
+            this.tasks[index] = updatedTask;
+        }
+        // In a real React application, this would typically be managed by a state setter from the component
+        // For this self-contained file, we'll let the UI poll or rely on parent state management if available.
+    }
+
+
+    /**
+     * Retrieves all tasks managed by the orchestrator.
+     * Business value: Provides comprehensive visibility into all ongoing and completed automated workflows, crucial for monitoring, auditing, and performance analysis.
+     * @returns An array of all IJurisprudenceAgentTask objects.
+     */
+    public getAllTasks(): IJurisprudenceAgentTask[] {
+        return this.tasks;
+    }
+
+    /**
+     * Creates a new specialized agent and registers it.
+     * @param name The name of the new agent.
+     * @param skills The skills the agent will possess.
+     * @returns The newly created GenerativeJurisprudenceAgent.
+     */
+    public createAndRegisterAgent(name: string, skills: IAgentSkill[]): GenerativeJurisprudenceAgent {
+        const newAgentId = `gj-agent-special-${++this.currentAgentIdCounter}`;
+        const newAgent = new GenerativeJurisprudenceAgent(newAgentId, name, skills);
+        this.registerAgent(newAgent);
+        digitalIdentityManager.createIdentity(newAgentId, 'agent'); // Create identity for new agent
+        return newAgent;
+    }
+}
+
+export const agentOrchestrator = new AgentOrchestrator();
+
+// Instantiate specialized agents and register them
+export const complianceAgent = agentOrchestrator.createAndRegisterAgent('JurisGen Compliance Agent', [
+    MOCK_AGENT_SKILLS.find(s => s.id === 'skill-compliance-check')! // Assuming skill exists
+]);
+
+export const riskAgent = agentOrchestrator.createAndRegisterAgent('JurisGen Risk Assessment Agent', [
+    {
+        id: 'skill-risk-assess',
+        name: 'Risk Assessment',
+        description: 'Analyzes case data to identify legal vulnerabilities and potential adverse outcomes.',
+        inputSchema: '{"type": "object", "properties": {"caseId": {"type": "string"}}}',
+        outputSchema: '{"type": "object", "properties": {"report": {"$ref": "#/definitions/IRiskAssessmentResult"}}}',
+        executionLogic: 'simulated_risk_engine',
+        isAutonomous: true,
+        requiredPermissions: ['read:casedata', 'write:riskreport'],
+        invocationCount: 200,
+        averageRuntimeMs: 900,
+    }
+]);
+
+// Update primary agent skills to include the new risk assessment skill if not already present
+// and register the primary agent with the orchestrator
+export const primaryJurisprudenceAgent = new GenerativeJurisprudenceAgent('gj-agent-main-v1', 'JurisGen Main Agent', [
+    ...MOCK_AGENT_SKILLS,
+    riskAgent.availableSkills[0] // Add the risk assessment skill from the specialized agent
+]);
+agentOrchestrator.registerAgent(primaryJurisprudenceAgent); // Register the main agent
+
+// Ensure initial user balance
+tokenLedger.initializeUserBalance(MOCK_USER_CONTEXT.userId, 10000);
+tokenLedger.initializeUserBalance(MOCK_ADMIN_USER_CONTEXT.userId, 50000); // Admin for testing agent funding
 
 // #endregion
 
@@ -1761,10 +2384,25 @@ export const GenerativeJurisprudenceView: React.FC = () => {
     const [researchResults, setResearchResults] = useState<(IPrecedent | IStatute)[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [researchQuery, setResearchQuery] = useState<string>('');
+    const [userBalance, setUserBalance] = useState<number>(0);
+    const [tasks, setTasks] = useState<IJurisprudenceAgentTask[]>([]);
     const currentUser = useUserContext();
 
+    // Effect to update user balance and tasks periodically
+    useEffect(() => {
+        const updateState = () => {
+            setUserBalance(tokenLedger.getBalance(currentUser.userId, 'GJ_AI_CREDIT'));
+            setTasks([...agentOrchestrator.getAllTasks()]);
+        };
+
+        updateState(); // Initial update
+        const intervalId = setInterval(updateState, 1000); // Update every second for demonstration
+        return () => clearInterval(intervalId);
+    }, [currentUser.userId]);
+
     /**
-     * Handles the generation of a legal brief.
+     * Submits a task to the orchestrator for legal brief generation.
      * Business value: Directly triggers the AI's brief generation capability, showcasing the system's ability to produce legal documents on demand.
      */
     const handleGenerateBrief = useCallback(async () => {
@@ -1775,11 +2413,35 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const brief = await primaryJurisprudenceAgent.generateLegalBrief(selectedCase, selectedAiConfig, currentUser);
+            const task: IJurisprudenceAgentTask = {
+                taskId: '', // Will be assigned by orchestrator
+                agentId: primaryJurisprudenceAgent.id,
+                taskType: 'generate_brief',
+                caseId: selectedCase.id,
+                requestedByUserId: currentUser.userId,
+                creationDate: '', // Will be assigned by orchestrator
+                priority: 'high',
+                configuration: { aiConfigId: selectedAiConfig.id },
+            };
+            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            console.log("Brief Generation Task Submitted:", submittedTask);
+            // Wait for task to complete for UI update
+            const brief = await new Promise<ILegalBrief | null>((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    const latestTask = agentOrchestrator.getAllTasks().find(t => t.taskId === submittedTask.taskId);
+                    if (latestTask?.status === 'completed' && latestTask.result?.briefId) {
+                        clearInterval(checkInterval);
+                        const generated = MOCK_LEGAL_BRIEFS.find(b => b.id === latestTask.result.briefId);
+                        resolve(generated || null);
+                    } else if (latestTask?.status === 'failed') {
+                        clearInterval(checkInterval);
+                        reject(new Error(latestTask.errorMessage || 'Brief generation task failed.'));
+                    }
+                }, 500);
+            });
             setGeneratedBrief(brief);
-            console.log("Brief Generated:", brief);
         } catch (err: any) {
-            setError(`Failed to generate brief: ${err.message}`);
+            setError(`Failed to submit brief generation task: ${err.message}`);
             console.error(err);
         } finally {
             setLoading(false);
@@ -1787,7 +2449,7 @@ export const GenerativeJurisprudenceView: React.FC = () => {
     }, [selectedCase, selectedAiConfig, currentUser]);
 
     /**
-     * Handles the initiation of a compliance check.
+     * Submits a task to the orchestrator for compliance check.
      * Business value: Demonstrates the automated compliance feature, ensuring generated briefs meet regulatory and internal guidelines before finalization.
      */
     const handleComplianceCheck = useCallback(async () => {
@@ -1798,11 +2460,36 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const report = await primaryJurisprudenceAgent.performComplianceCheck(generatedBrief, MOCK_COMPLIANCE_RULES, currentUser);
+            const task: IJurisprudenceAgentTask = {
+                taskId: '',
+                agentId: complianceAgent.id, // Delegate to specialized compliance agent
+                taskType: 'check_compliance',
+                caseId: generatedBrief.caseId,
+                requestedByUserId: currentUser.userId,
+                creationDate: '',
+                priority: 'medium',
+                configuration: { briefId: generatedBrief.id, rulesetIds: MOCK_COMPLIANCE_RULES.map(r => r.id) },
+            };
+            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            console.log("Compliance Check Task Submitted:", submittedTask);
+
+            // Wait for task to complete for UI update
+            const report = await new Promise<IComplianceCheckReport | null>((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    const latestTask = agentOrchestrator.getAllTasks().find(t => t.taskId === submittedTask.taskId);
+                    if (latestTask?.status === 'completed' && latestTask.result?.reportId) {
+                        clearInterval(checkInterval);
+                        const generated = MOCK_COMPLIANCE_REPORTS.find(r => r.id === latestTask.result.reportId);
+                        resolve(generated || null);
+                    } else if (latestTask?.status === 'failed') {
+                        clearInterval(checkInterval);
+                        reject(new Error(latestTask.errorMessage || 'Compliance check task failed.'));
+                    }
+                }, 500);
+            });
             setComplianceReport(report);
-            console.log("Compliance Report:", report);
         } catch (err: any) {
-            setError(`Failed to run compliance check: ${err.message}`);
+            setError(`Failed to submit compliance check task: ${err.message}`);
             console.error(err);
         } finally {
             setLoading(false);
@@ -1810,7 +2497,7 @@ export const GenerativeJurisprudenceView: React.FC = () => {
     }, [generatedBrief, currentUser]);
 
     /**
-     * Handles the initiation of a risk assessment.
+     * Submits a task to the orchestrator for risk assessment.
      * Business value: Showcases the AI's capability to proactively identify and categorize legal risks associated with a case, enabling informed strategic decisions.
      */
     const handleRiskAssessment = useCallback(async () => {
@@ -1821,11 +2508,36 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const assessment = await primaryJurisprudenceAgent.assessLegalRisk(selectedCase, currentUser);
+            const task: IJurisprudenceAgentTask = {
+                taskId: '',
+                agentId: riskAgent.id, // Delegate to specialized risk agent
+                taskType: 'assess_risk',
+                caseId: selectedCase.id,
+                requestedByUserId: currentUser.userId,
+                creationDate: '',
+                priority: 'high',
+                configuration: { caseId: selectedCase.id },
+            };
+            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            console.log("Risk Assessment Task Submitted:", submittedTask);
+
+            // Wait for task to complete for UI update
+            const assessment = await new Promise<IRiskAssessmentResult | null>((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    const latestTask = agentOrchestrator.getAllTasks().find(t => t.taskId === submittedTask.taskId);
+                    if (latestTask?.status === 'completed' && latestTask.result?.riskAssessmentId) {
+                        clearInterval(checkInterval);
+                        const generated = MOCK_RISK_ASSESSMENTS.find(a => a.id === latestTask.result.riskAssessmentId);
+                        resolve(generated || null);
+                    } else if (latestTask?.status === 'failed') {
+                        clearInterval(checkInterval);
+                        reject(new Error(latestTask.errorMessage || 'Risk assessment task failed.'));
+                    }
+                }, 500);
+            });
             setRiskAssessment(assessment);
-            console.log("Risk Assessment:", assessment);
         } catch (err: any) {
-            setError(`Failed to perform risk assessment: ${err.message}`);
+            setError(`Failed to submit risk assessment task: ${err.message}`);
             console.error(err);
         } finally {
             setLoading(false);
@@ -1833,7 +2545,7 @@ export const GenerativeJurisprudenceView: React.FC = () => {
     }, [selectedCase, currentUser]);
 
     /**
-     * Handles conducting legal research.
+     * Submits a task to the orchestrator for legal research.
      * Business value: Facilitates on-demand, targeted legal research, accelerating information gathering and supporting the AI's argument construction with relevant legal sources.
      */
     const handleLegalResearch = useCallback(async (query: string, jurisdictionId: string) => {
@@ -1844,16 +2556,52 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const results = await primaryJurisprudenceAgent.conductLegalResearch(query, jurisdictionId, currentUser);
-            setResearchResults(results);
-            console.log("Research Results:", results);
+            const task: IJurisprudenceAgentTask = {
+                taskId: '',
+                agentId: primaryJurisprudenceAgent.id, // Main agent can also do research
+                taskType: 'research_precedents',
+                caseId: selectedCase?.id || 'N/A',
+                requestedByUserId: currentUser.userId,
+                creationDate: '',
+                priority: 'low',
+                configuration: { query, jurisdictionId },
+            };
+            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            console.log("Legal Research Task Submitted:", submittedTask);
+
+            // Wait for task to complete for UI update
+            const results = await new Promise<(IPrecedent | IStatute)[] | null>((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    const latestTask = agentOrchestrator.getAllTasks().find(t => t.taskId === submittedTask.taskId);
+                    if (latestTask?.status === 'completed' && latestTask.result?.researchResultsCount !== undefined) {
+                        clearInterval(checkInterval);
+                        // In a real system, the results would be directly returned or stored.
+                        // For mock, we'll re-run the filtering based on the original query.
+                        const relevantPrecedents = MOCK_PRECEDENTS.filter(p =>
+                            p.jurisdiction.toLowerCase().includes(jurisdictionId.split('-')[0].toLowerCase()) ||
+                            p.keywords.some(k => query.toLowerCase().includes(k.toLowerCase())) ||
+                            p.summary.toLowerCase().includes(query.toLowerCase())
+                        );
+                        const relevantStatutes = MOCK_STATUTES.filter(s =>
+                            s.jurisdiction.toLowerCase().includes(jurisdictionId.split('-')[0].toLowerCase()) ||
+                            s.keywords.some(k => query.toLowerCase().includes(k.toLowerCase())) ||
+                            s.fullText.toLowerCase().includes(query.toLowerCase())
+                        );
+                        resolve([...relevantPrecedents.slice(0, 3), ...relevantStatutes.slice(0, 2)]);
+                    } else if (latestTask?.status === 'failed') {
+                        clearInterval(checkInterval);
+                        reject(new Error(latestTask.errorMessage || 'Legal research task failed.'));
+                    }
+                }, 500);
+            });
+            setResearchResults(results || []);
         } catch (err: any) {
-            setError(`Failed to conduct legal research: ${err.message}`);
+            setError(`Failed to submit legal research task: ${err.message}`);
             console.error(err);
         } finally {
             setLoading(false);
         }
-    }, [currentUser]);
+    }, [currentUser, selectedCase?.id]);
 
     /**
      * Provides a visual representation of an audit log entry.
@@ -1861,12 +2609,27 @@ export const GenerativeJurisprudenceView: React.FC = () => {
      */
     const renderAuditLogEntry = (entry: IAuditLogEntry) => (
         <div key={entry.id} className="p-2 border-b border-gray-200 text-sm text-gray-700">
-            <p><strong className="text-gray-900">{entry.timestamp}</strong> - <span className={entry.outcome === 'success' ? 'text-green-600' : 'text-red-600'}>{entry.outcome.toUpperCase()}</span>: {entry.action}</p>
+            <p><strong className="text-gray-900">{entry.timestamp.substring(11, 19)}</strong> - <span className={entry.outcome === 'success' ? 'text-green-600' : (entry.outcome === 'warning' ? 'text-orange-600' : 'text-red-600')}>{entry.outcome.toUpperCase()}</span>: {entry.action}</p>
             <p className="ml-2">User/Agent: {entry.userId || entry.agentId} | Resource: {entry.resourceType}:{entry.resourceId}</p>
             {entry.details && <p className="ml-2">Details: {JSON.stringify(entry.details)}</p>}
             {entry.signature && <p className="ml-2 text-xs text-gray-500">Signature: {entry.signature.substring(0, 30)}...</p>}
         </div>
     );
+
+    /**
+     * Provides a visual representation of an agent task.
+     * Business value: Offers real-time monitoring of automated workflows, enabling users to track progress, identify bottlenecks, and ensure the efficient allocation of AI resources.
+     */
+    const renderAgentTask = (task: IJurisprudenceAgentTask) => (
+        <div key={task.taskId} className={`p-2 border-b border-gray-200 text-sm ${task.status === 'failed' ? 'bg-red-50' : task.status === 'completed' ? 'bg-green-50' : 'bg-blue-50'}`}>
+            <p><strong>{task.creationDate.substring(11, 19)}</strong> - Task ID: {task.taskId} | Agent: {task.agentId}</p>
+            <p className="ml-2">Type: {task.taskType} | Status: <span className="font-semibold">{task.status.toUpperCase()}</span> | Priority: {task.priority}</p>
+            {task.errorMessage && <p className="ml-2 text-red-700">Error: {task.errorMessage}</p>}
+            {task.retries > 0 && <p className="ml-2 text-orange-700">Retries: {task.retries}/{task.maxRetries}</p>}
+            {task.result && <p className="ml-2">Result: {JSON.stringify(task.result)}</p>}
+        </div>
+    );
+
 
     return (
         <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
@@ -1882,6 +2645,7 @@ export const GenerativeJurisprudenceView: React.FC = () => {
                 <p><strong>Firm:</strong> {currentUser.firmName}</p>
                 <p><strong>Roles:</strong> {currentUser.roles.join(', ')}</p>
                 <p><strong>Authenticated:</strong> {currentUser.isAuthenticated ? 'Yes' : 'No'}</p>
+                <p className="mt-2 text-lg"><strong>GJ_AI_CREDIT Balance:</strong> <span className="text-blue-700 font-bold">{userBalance}</span></p>
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1960,18 +2724,20 @@ export const GenerativeJurisprudenceView: React.FC = () => {
                         type="text"
                         placeholder="Research Query (e.g., 'breach of contract')"
                         className="p-3 border border-gray-300 rounded-md flex-grow min-w-[200px]"
+                        value={researchQuery}
+                        onChange={(e) => setResearchQuery(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                handleLegalResearch(e.currentTarget.value, selectedCase?.jurisdictionId || MOCK_USER_CONTEXT.defaultJurisdictionId);
+                                handleLegalResearch(researchQuery, selectedCase?.jurisdictionId || MOCK_USER_CONTEXT.defaultJurisdictionId);
                             }
                         }}
                     />
                     <button
                         onClick={() => handleLegalResearch(
-                            (document.querySelector('input[placeholder="Research Query (e.g., \'breach of contract\')"]') as HTMLInputElement)?.value,
+                            researchQuery,
                             selectedCase?.jurisdictionId || MOCK_USER_CONTEXT.defaultJurisdictionId
                         )}
-                        disabled={loading || !currentUser.isAuthenticated}
+                        disabled={loading || !currentUser.isAuthenticated || !researchQuery}
                         className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 disabled:bg-purple-300 transition-colors"
                     >
                         {loading ? 'Researching...' : 'Conduct Legal Research'}
@@ -2065,6 +2831,17 @@ export const GenerativeJurisprudenceView: React.FC = () => {
                 </Card>
             )}
 
+            <Card title="Agent Orchestrator Task Queue" className="bg-white shadow-lg rounded-lg p-6">
+                <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-gray-50">
+                    {tasks.length === 0 ? (
+                        <p className="p-4 text-gray-600">No tasks in the queue.</p>
+                    ) : (
+                        tasks.slice().reverse().map(renderAgentTask) // Show most recent tasks first
+                    )}
+                </div>
+                <p className="mt-4 text-sm text-gray-600">Total Tasks: {tasks.length}</p>
+            </Card>
+
             <Card title="Simulated Audit Log (Recent Entries)" className="bg-white shadow-lg rounded-lg p-6">
                 <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-gray-50">
                     {MOCK_AUDIT_LOGS.slice(-10).reverse().map(renderAuditLogEntry)}
@@ -2074,15 +2851,15 @@ export const GenerativeJurisprudenceView: React.FC = () => {
 
             <Card title="Simulated Token Transactions (Recent Entries)" className="bg-white shadow-lg rounded-lg p-6">
                 <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-gray-50">
-                    {MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS.slice(-10).reverse().map(txn => (
+                    {tokenLedger.transactions.slice(-10).reverse().map(txn => (
                         <div key={txn.transactionId} className="p-2 border-b border-gray-200 text-sm text-gray-700">
-                            <p><strong className="text-gray-900">{txn.timestamp}</strong> - <span className="text-blue-600">{txn.serviceType.toUpperCase()}</span> by {txn.userId}: {txn.tokenAmount} {txn.currencyType}</p>
+                            <p><strong className="text-gray-900">{txn.timestamp.substring(11, 19)}</strong> - <span className="text-blue-600">{txn.serviceType.toUpperCase()}</span> by {txn.userId}: {txn.tokenAmount} {txn.currencyType}</p>
                             <p className="ml-2">Resource: {txn.resourceId} | Status: {txn.status}</p>
                             <p className="ml-2 text-xs text-gray-500">Signature: {txn.signature.substring(0, 30)}...</p>
                         </div>
                     ))}
                 </div>
-                <p className="mt-4 text-sm text-gray-600">Total Token Transactions: {MOCK_AGENT_SERVICE_TOKEN_TRANSACTIONS.length}</p>
+                <p className="mt-4 text-sm text-gray-600">Total Token Transactions: {tokenLedger.transactions.length}</p>
             </Card>
         </div>
     );
