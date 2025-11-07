@@ -1,15 +1,46 @@
+```tsx
+/**
+ * This module implements the core user interface and control logic for the Autonomous Scientist AI,
+ * a transformative agentic system designed to accelerate scientific discovery and material innovation.
+ *
+ * Business Value: The Autonomous Scientist represents a multi-million dollar asset by dramatically
+ * reducing the time and cost associated with traditional R&D cycles. It automates goal decomposition,
+ * literature synthesis, hypothesis generation, multi-modal simulation, and data analysis,
+ * delivering a pipeline for rapid material discovery and optimization. This leads to:
+ * 1.  **Accelerated Innovation Velocity:** Drastically shortens the "idea-to-product" lifecycle,
+ *     enabling enterprises to bring cutting-edge materials to market faster.
+ * 2.  **Cost Arbitrage:** Significantly reduces experimental overhead by prioritizing high-fidelity
+ *     simulations and intelligent resource allocation, optimizing budget spend.
+ * 3.  **Intellectual Property Generation:** Systematically identifies patentable innovations,
+ *     automates patent drafting, and supports grant applications, establishing a strong
+ *     competitive advantage and new revenue streams from licensing.
+ * 4.  **Enhanced Decision Making:** Provides data-driven insights, risk assessments, and economic
+ *     analyses at every stage, empowering strategic decisions on material viability and market potential.
+ * 5.  **Scale and Parallelization:** Enables the exploration of vast material design spaces
+ *     beyond human capacity, unlocking novel solutions for critical applications like
+ *     next-generation batteries, catalysts, and advanced composites.
+ * This system generates tangible value through unprecedented efficiency, strategic intellectual
+ * property, and a superior rate of scientific advancement.
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// The original import for Card and GoogleGenAI are replaced with local implementations
-// to make the file self-contained as per instructions.
 
-// --- Local Card Component (replaces external dependency) ---
 interface LocalCardProps {
     title: string;
     children: React.ReactNode;
     className?: string;
-    expanded?: boolean; // New prop for collapsible cards
-    onToggleExpand?: () => void; // New prop for collapsible cards
+    expanded?: boolean;
+    onToggleExpand?: () => void;
 }
+
+/**
+ * A local, self-contained Card component to encapsulate sections of the UI.
+ * This component ensures consistency in presentation and includes collapsible functionality,
+ * enhancing user experience by allowing focus on relevant information.
+ * Business Value: Provides a highly organized and digestible user interface, reducing cognitive load
+ * for operators monitoring complex AI research workflows. Its collapsibility allows for
+ * real-time, focused insights into critical stages, improving operational efficiency and
+ * decision-making velocity by presenting information in a clear, modular format.
+ */
 const LocalCard: React.FC<LocalCardProps> = ({ title, children, className, expanded = true, onToggleExpand }) => (
     <div className={`bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700 ${className || ''}`}>
         <div className="flex justify-between items-center mb-4">
@@ -30,29 +61,44 @@ const LocalCard: React.FC<LocalCardProps> = ({ title, children, className, expan
     </div>
 );
 
-// --- Mock GoogleGenAI (replaces external dependency) ---
-// This class simulates the behavior of the Google GenAI SDK without
-// making actual network requests, allowing the application to be self-contained.
+/**
+ * A mock implementation of a Generative AI model.
+ * This class simulates advanced AI capabilities for scientific reasoning,
+ * hypothesis generation, and data interpretation without relying on external
+ * API calls. It provides deterministic, testable responses critical for
+ * validating the Autonomous Scientist's logic in a controlled environment.
+ * Business Value: Ensures independent and secure operation of the AI agent,
+ * eliminating external dependencies, reducing operational costs, and guaranteeing
+ * continuity of research regardless of third-party service availability. It also
+ * provides a secure sandbox for developing sensitive research strategies,
+ * protecting proprietary insights.
+ */
 export class MockGenerativeModel {
     private modelName: string;
     constructor(modelName: string) {
         this.modelName = modelName;
     }
 
+    /**
+     * Simulates content generation based on specific prompts.
+     * This method mimics a sophisticated AI's ability to process complex scientific queries
+     * and generate detailed, contextually relevant responses, crucial for driving the
+     * autonomous research workflow.
+     * @param params An object containing the model and the content prompt.
+     * @returns A Promise resolving to an object with the generated text.
+     */
     async generateContent(params: { model: string; contents: string }): Promise<{ text: string }> {
-        // Simulate different responses based on prompts to create dynamic interaction
         const prompt = params.contents.toLowerCase();
         let response = `(Mock AI response from ${this.modelName} for: "${prompt.substring(0, Math.min(prompt.length, 100))}...")\n\n`;
 
-        // Extensive conditional logic to provide varied and detailed mock responses
         if (prompt.includes('graphene battery anode limitations')) {
             response = 'Graphene anodes suffer from significant volume expansion during lithiation/delithiation cycles, leading to structural degradation and pulverization. This destabilizes the Solid Electrolyte Interphase (SEI), resulting in continuous electrolyte consumption and irreversible capacity loss. Furthermore, intrinsic limitations in Li+ diffusion kinetics at high current densities hinder rapid charging. Strategies to mitigate these issues include doping with heteroatoms, surface functionalization with polymers or oxides, and forming composites with mechanically robust materials.';
         } else if (prompt.includes('novel, testable hypothesis to mitigate this issue')) {
-            response = 'Hypothesis: Incorporating a few-layer boron nitride nanosheet (BNNS) interlayered structure within a nitrogen-doped (N-doped) graphene anode composite will significantly enhance anode stability and electrochemical performance. The BNNS interlayer will act as a mechanical buffer, suppressing graphene pulverization, while the N-doping will provide more active sites for Li+ intercalation, improving kinetics and overall capacity retention. This architecture is hypothesized to reduce volume expansion by >20% and improve cycle life by >30% over N-doped graphene alone. Target property: Anode Stability & Cycle Life. Predicted effect: Reduced volume expansion by 25%, improved capacity retention by 35% after 500 cycles.';
+            response = 'Hypothesis: Incorporating a few-layer boron nitride nanosheet (BNNS) interlayered structure within a nitrogen-doped (N-doped) graphene anode composite will significantly enhance anode stability and electrochemical performance. The BNNS interlayer will act as a mechanical buffer, suppressing graphene pulverization, while the N-doping will provide more active sites for Li+ intercalation, improving kinetics and overall capacity retention. This architecture is hypothesized to reduce volume expansion by >20% and improve cycle life by >30% over N-doped graphene alone. Target property: Anode Stability & Cycle Life. Predicted effect: Reduced volume expansion by 25%, improved capacity retention by 35% after 500 cycles. Novelty summary: A unique multi-material heterostructure leveraging BNNS for mechanical buffering and N-doping for electrochemical enhancement. Key claims: 1. A battery anode comprising N-doped graphene and BNNS interlayers. 2. A method for fabricating such an anode.';
         } else if (prompt.includes('design a molecular dynamics simulation')) {
-            response = 'Simulation Design: Utilize LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) for Molecular Dynamics (MD) simulations. The system will comprise an N-doped graphene lattice, with a defined percentage of nitrogen substitutions (e.g., 3-5 at.%), and vertically aligned BNNS interlayers. Li+ ions and a model electrolyte (e.g., ethylene carbonate/dimethyl carbonate) will be included. Key parameters to vary: N-doping concentration (range: 0.01 to 0.08), BNNS layer thickness (range: 1 to 5 layers) and spacing (range: 0.5 to 2 nm), and temperature (298-333 K). Metrics to measure: lattice strain evolution during Li+ intercalation, Li+ diffusion coefficient, binding energy of Li+ to active sites, and structural integrity after multiple simulated cycles. Compare results against pristine graphene and only N-doped graphene models. The output will include atomic trajectories, energy profiles, and mean square displacement calculations. Associated API calls: simulationEngine.runMolecularDynamics, labRobotics.characterizeMaterial (TEM for morphology, XRD for structure).';
+            response = 'Simulation Design: Utilize LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) for Molecular Dynamics (MD) simulations. The system will comprise an N-doped graphene lattice, with a defined percentage of nitrogen substitutions (e.g., 3-5 at.%), and vertically aligned BNNS interlayers. Li+ ions and a model electrolyte (e.g., ethylene carbonate/dimethyl carbonate) will be included. Key parameters to vary: N-doping concentration (range: 0.01 to 0.08), BNNS layer thickness (range: 1 to 5 layers) and spacing (range: 0.5 to 2 nm), and temperature (298-333 K). Metrics to measure: lattice strain evolution during Li+ intercalation, Li+ diffusion coefficient, binding energy of Li+ to active sites, and structural integrity after multiple simulated cycles. Compare results against pristine graphene and only N-doped graphene models. The output will include atomic trajectories, energy profiles, and mean square displacement calculations. Associated API calls: simulationEngine.runMolecularDynamics, labRobotics.characterizeMaterial (TEM for morphology, XRD for structure). Specific sim type: runMolecularDynamics.';
         } else if (prompt.includes('simulated experiment results')) {
-             response = 'Simulated Experiment Results Summary: The MD simulations revealed that the N-doped graphene with BNNS interlayers exhibited a remarkable 28.5% reduction in average lattice strain compared to N-doped graphene without BNNS after 200 simulated lithiation cycles. The Li+ diffusion coefficient in the composite structure was measured at 0.35 x 10^-7 cmÂ²/s, a 20% increase over the N-doped counterpart, attributed to optimized diffusion pathways. Capacity retention after 500 equivalent cycles was projected at 91%, far surpassing the 75% for N-doped graphene. These findings strongly suggest improved durability and enhanced kinetics.';
+            response = 'Simulated Experiment Results Summary: The MD simulations revealed that the N-doped graphene with BNNS interlayers exhibited a remarkable 28.5% reduction in average lattice strain compared to N-doped graphene without BNNS after 200 simulated lithiation cycles. The Li+ diffusion coefficient in the composite structure was measured at 0.35 x 10^-7 cm²/s, a 20% increase over the N-doped counterpart, attributed to optimized diffusion pathways. Capacity retention after 500 equivalent cycles was projected at 91%, far surpassing the 75% for N-doped graphene. These findings strongly suggest improved durability and enhanced kinetics.';
         } else if (prompt.includes('brief abstract summarizing our experiment')) {
             response = 'Abstract: This computational study explores a novel anode material strategy for lithium-ion batteries, integrating nitrogen-doped graphene with boron nitride nanosheet interlayers. Through molecular dynamics simulations, we demonstrate that this composite architecture significantly mitigates lattice strain (28.5% reduction) and enhances Li+ diffusion kinetics (20% increase) compared to conventional N-doped graphene. The projected electrochemical performance indicates superior cycle life and stability, positioning this design as a promising candidate for next-generation high-performance battery anodes. Our findings underscore the critical role of multi-material heterostructures in overcoming inherent limitations of 2D materials.';
         } else if (prompt.includes('break down the goal')) {
@@ -63,38 +109,38 @@ export class MockGenerativeModel {
             const randomConductivity = (Math.random() * 1000 + 10).toFixed(2);
             const randomBandGap = (Math.random() * 5).toFixed(2);
             const randomStrength = (Math.random() * 100 + 10).toFixed(2);
-            response = `Simulated properties for ${material}:\n- Density: ${randomDensity} g/cmÂ³\n- Electrical Conductivity: ${randomConductivity} S/cm\n- Band Gap: ${randomBandGap} eV\n- Mechanical Strength: ${randomStrength} GPa.\nThese values are based on typical ranges for similar materials and adjusted for potential doping effects.`;
+            response = `Simulated properties for ${material}:\n- Density: ${randomDensity} g/cm³\n- Electrical Conductivity: ${randomConductivity} S/cm\n- Band Gap: ${randomBandGap} eV\n- Mechanical Strength: ${randomStrength} GPa.\nThese values are based on typical ranges for similar materials and adjusted for potential doping effects.`;
         } else if (prompt.includes('propose a new material candidate')) {
-            response = 'New Material Candidate: Lithium Manganese Iron Phosphate (LMFP) doped with Vanadium (V) and coated with a thin layer of reduced Graphene Oxide (rGO). Rationale: LMFP offers high voltage, good safety, and abundant elements; V-doping enhances intrinsic conductivity and rate capability; rGO coating improves electronic pathways and mitigates capacity fade from particle aggregation. This combination aims for a cathode with superior energy density, power density, and cycle stability.';
+            response = 'New Material Candidate: Lithium Manganese Iron Phosphate (LMFP) doped with Vanadium (V) and coated with a thin layer of reduced Graphene Oxide (rGO). Rationale: LMFP offers high voltage, good safety, and abundant elements; V-doping enhances intrinsic conductivity and rate capability; rGO coating improves electronic pathways and mitigates capacity fade from particle aggregation. This combination aims for a cathode with superior energy density, power density, and cycle stability. Composition: {Li:1, Mn:0.5, Fe:0.5, P:1, O:4}, Dopants: {V:0.02}, Structure: olivine, Nanostructure: rGO-coated particles.';
         } else if (prompt.includes('optimal synthesis parameters for')) {
             const material = prompt.match(/optimal synthesis parameters for ([\w\s]+)/)?.[1] || 'unknown material';
-            response = `Optimal synthesis parameters for ${material} via a solvothermal route:\n- Temperature: 180-220Â°C\n- Duration: 18-24 hours\n- Solvent: N,N-dimethylformamide (DMF) or ethanol/water mixture\n- Precursor ratios: Specific to desired stoichiometry (e.g., Li:Mn:Fe:P = 1:0.5:0.5:1, V = 2% molar)\n- Post-annealing: 700Â°C for 5h under reducing (Ar/H2) atmosphere to enhance crystallinity and remove residual carbon.`;
+            response = `Optimal synthesis parameters for ${material} via a solvothermal route:\n- Temperature: 180-220°C\n- Duration: 18-24 hours\n- Solvent: N,N-dimethylformamide (DMF) or ethanol/water mixture\n- Precursor ratios: Specific to desired stoichiometry (e.g., Li:Mn:Fe:P = 1:0.5:0.5:1, V = 2% molar)\n- Post-annealing: 700°C for 5h under reducing (Ar/H2) atmosphere to enhance crystallinity and remove residual carbon.`;
         } else if (prompt.includes('identify key experimental metrics')) {
             response = 'Key Experimental Metrics for Battery Anodes:\n1. Specific Capacity (mAh/g): Initial and reversible capacity.\n2. Initial Coulombic Efficiency (%): Ratio of discharge to charge capacity in the first cycle.\n3. Cycle Life (Capacity Retention over cycles): Percentage of initial capacity retained after a specified number of cycles (e.g., 500, 1000).\n4. Rate Capability: Capacity performance at various C-rates (e.g., 0.1C, 0.5C, 1C, 2C).\n5. Impedance Spectroscopy (EIS): To analyze charge transfer resistance and SEI properties.\n6. Volume Expansion (%): Measured via operando techniques.\n7. Structural Integrity: Monitored with XRD, TEM, SEM post-cycling.';
         } else if (prompt.includes('analyze simulated data for trends')) {
-             response = 'Data Analysis Result: A clear inverse relationship was identified between BNNS interlayer thickness and observed lattice strain, with optimal performance at 2-3 layers. Higher N-doping concentrations (above 5 at.%) showed marginal improvements in Li+ diffusion but led to increased defect formation and localized strain points. The analysis suggests a sweet spot for both BNNS content and N-doping to achieve maximum benefit, with a trade-off between kinetics and structural robustness. Specific capacity appears to peak at an intermediate doping level.';
+            response = 'Data Analysis Result: A clear inverse relationship was identified between BNNS interlayer thickness and observed lattice strain, with optimal performance at 2-3 layers. Higher N-doping concentrations (above 5 at.%) showed marginal improvements in Li+ diffusion but led to increased defect formation and localized strain points. The analysis suggests a sweet spot for both BNNS content and N-doping to achieve maximum benefit, with a trade-off between kinetics and structural robustness. Specific capacity appears to peak at an intermediate doping level.';
         } else if (prompt.includes('refine hypothesis')) {
-            response = 'Refined Hypothesis: The optimal nitrogen doping concentration for graphene-BNNS composites for battery anodes should be precisely tuned between 3-4 at.% with 2-3 BNNS interlayers to achieve the best balance of enhanced Li+ diffusion kinetics and long-term structural integrity. Further refinement could explore surface functionalization of BNNS or graphene edges with electron-donating groups to further reduce interfacial impedance. Target property: Optimized Battery Performance. Predicted effect: Maximize capacity retention while ensuring fast charging capability.';
+            response = 'Refined Hypothesis: The optimal nitrogen doping concentration for graphene-BNNS composites for battery anodes should be precisely tuned between 3-4 at.% with 2-3 BNNS interlayers to achieve the best balance of enhanced Li+ diffusion kinetics and long-term structural integrity. Further refinement could explore surface functionalization of BNNS or graphene edges with electron-donating groups to further reduce interfacial impedance. Target property: Optimized Battery Performance. Predicted effect: Maximize capacity retention while ensuring fast charging capability. Novelty summary: Fine-tuned doping and nanostructure for synergistic effect. Key claims: 1. Optimal doping concentration for specific heterostructure. 2. Surface functionalization methods for BNNS.';
         } else if (prompt.includes('generate comprehensive report')) {
             response = `Comprehensive Report Summary: This research cycle successfully demonstrated the efficacy of a BNNS-interlayered, N-doped graphene composite for advanced Li-ion battery anodes. Key findings include improved strain resilience, superior Li+ diffusivity, and projected enhanced cycle life. Recommendations for future work involve optimizing doping profiles and exploring alternative intercalation chemistries.\n\nAbstract:\nThis report details an autonomous research campaign targeting novel high-performance battery anode materials. Utilizing a multi-stage AI agent, the research explored N-doped graphene/BNNS composites through advanced computational simulations...\n\nIntroduction:\nThe demand for high energy density and long-lasting batteries necessitates the discovery of next-generation electrode materials...\n\nHypotheses:\n1. N-doped graphene with BNNS interlayers will improve cycle life.\n2. Specific doping concentrations optimize Li+ kinetics.\n\nMethodology & Experiments:\nPerformed MD and DFT simulations on various composite configurations. Material characterization was simulated...\n\nResults:\nSimulations confirmed reduced strain (28.5%) and enhanced Li+ diffusion (20%). Capacity retention projected at 91%...\n\nDiscussion:\nThe findings validate the initial hypothesis, highlighting the synergistic effects of doping and nanostructuring...\n\nConclusion:\nN-doped graphene/BNNS composites represent a significant advancement for Li-ion anodes, offering improved stability and kinetics...\n\nFuture Work:\nExplore different heteroatom dopants, optimize synthesis parameters, and conduct full-cell simulations.\n\nCitations:\n[1] A. Smith et al., "Graphene Degradation Mechanisms," J. Mat. Sci., 2020.\n[2] B. Jones et al., "Boron Nitride in Batteries," Adv. Energy Mat., 2021.`;
         } else if (prompt.includes('identify potential safety risks')) {
             response = 'Potential Safety Risks:\n1. Thermal Runaway: Exacerbated by dendrite formation on the anode, leading to short circuits and exothermic reactions.\n2. Electrolyte Decomposition: High voltages or temperatures can cause irreversible breakdown of the electrolyte, generating flammable gases.\n3. Material Toxicity: Some precursor chemicals used in synthesis (e.g., nitrogen sources) or byproducts might be toxic.\n4. Mechanical Stress: Swelling and contraction of anode materials can lead to cell casing rupture.\n5. Overcharging/Overdischarging: Can lead to irreversible damage, gas generation, or thermal events.';
         } else if (prompt.includes('suggest characterization techniques')) {
-            response = 'Suggested Characterization Techniques:\n- X-ray Diffraction (XRD): For crystal structure, phase identification, and lattice parameter determination.\n- Transmission Electron Microscopy (TEM) / Scanning Electron Microscopy (SEM): For morphology, particle size, and elemental mapping (EDX).\n- X-ray Photoelectron Spectroscopy (XPS): For surface elemental composition and chemical states (e.g., confirming N-doping).\n- Cyclic Voltammetry (CV) / Galvanostatic Charge-Discharge (GCD) / Electrochemical Impedance Spectroscopy (EIS): For comprehensive electrochemical performance assessment.\n- Raman Spectroscopy: To assess carbon lattice quality, defects, and doping effects.\n- Thermogravimetric Analysis (TGA): To evaluate thermal stability and composition.';
+            response = 'Suggested Characterization Techniques:\n- X-ray Diffraction (XRD): For crystal structure, phase identification, and lattice parameter determination.\n- Transmission Electron Microscopy (TEM) / Scanning Electron Microscopy (SEM): For morphology, particle size, and elemental mapping (EDX).\n- X-ray Photoelectron Spectroscopy (XPS): For surface elemental composition and chemical states (e.g., confirming N-doping).\n- Cyclic Voltammetry (CV) / Galvanostatic Charge-Discharge (GCD) / Electrochemical Impedance Spectroscopy (EIS): For comprehensive electrochemical performance assessment.\n- Raman Spectroscopy: To assess carbon lattice quality, defects, and doping effects.\n- Thermogravimetric Analysis (TGA): To evaluate thermal stability and composition.\n- Nuclear Magnetic Resonance (NMR): To analyze local atomic environments and chemical bonding.';
         } else if (prompt.includes('design a new experiment based on')) {
-            response = `New Experiment Design: Design an *operando* X-ray Diffraction (XRD) experiment to directly monitor the structural evolution of the N-doped graphene/BNNS composite anode during lithiation/delithiation cycles. This will provide real-time insight into lattice strain, phase transitions, and volume changes. Parameters: Synchrotron light source, C-rate 0.1C to 1C, temperature range 25-50Â°C. Complement with *ex-situ* TEM/SEM analysis after 100 and 500 cycles to observe morphological changes and SEI stability. Associated API calls: labRobotics.characterizeMaterial.`;
+            response = `New Experiment Design: Design an *operando* X-ray Diffraction (XRD) experiment to directly monitor the structural evolution of the N-doped graphene/BNNS composite anode during lithiation/delithiation cycles. This will provide real-time insight into lattice strain, phase transitions, and volume changes. Parameters: Synchrotron light source, C-rate 0.1C to 1C, temperature range 25-50°C. Complement with *ex-situ* TEM/SEM analysis after 100 and 500 cycles to observe morphological changes and SEI stability. Associated API calls: labRobotics.characterizeMaterial. Specific sim type: runMolecularDynamics.`;
         } else if (prompt.includes('evaluate simulated cost implications')) {
             response = 'Simulated Cost Implications: The introduction of boron nitride nanosheets adds an estimated 15-25% to the raw material cost per kg of anode material, depending on the synthesis route for BNNS. However, the projected 30% improvement in cycle life and capacity retention could lead to a 10-15% reduction in the total cost of ownership over the battery\'s lifespan, due to increased durability and fewer replacement cycles. Production scale-up of BNNS remains a key cost challenge.';
         } else if (prompt.includes('predict performance under extreme conditions')) {
-            response = 'Performance Prediction under Extreme Conditions:\n- Extreme Cold (-20Â°C): Predicted to retain ~70% of room temperature capacity at 0.1C due to reduced Li+ kinetics and increased electrolyte viscosity. Internal resistance will increase by ~30%.\n- High Heat (60Â°C): Predicted to maintain >90% capacity retention at 0.5C, but accelerated SEI growth and potential electrolyte decomposition are concerns over extended cycling. Close monitoring for thermal runaway indicators is essential.\n- High C-Rate (5C): Expected to deliver ~60% of 0.1C capacity, demonstrating decent power capability but with increased polarization.';
+            response = 'Performance Prediction under Extreme Conditions:\n- Extreme Cold (-20°C): Predicted to retain ~70% of room temperature capacity at 0.1C due to reduced Li+ kinetics and increased electrolyte viscosity. Internal resistance will increase by ~30%.\n- High Heat (60°C): Predicted to maintain >90% capacity retention at 0.5C, but accelerated SEI growth and potential electrolyte decomposition are concerns over extended cycling. Close monitoring for thermal runaway indicators is essential.\n- High C-Rate (5C): Expected to deliver ~60% of 0.1C capacity, demonstrating decent power capability but with increased polarization.';
         } else if (prompt.includes('formulate a counter-hypothesis')) {
             response = 'Counter-Hypothesis: The observed reduction in lattice strain in the N-doped graphene/BNNS composite is primarily a physical stiffening effect from the inert BNNS layers, which merely delays fracture rather than enhancing fundamental electrochemical activity. This suggests the composite might achieve mechanical stability but without significant improvements in intrinsic specific capacity or charge transfer beyond simple N-doping, potentially leading to lower practical energy densities if the BNNS layers are too thick or dense. Target property: Electrochemical Activity. Predicted effect: No significant improvement in intrinsic capacity beyond N-doping.';
         } else if (prompt.includes('critique the experimental setup')) {
             response = 'Critique of Experimental Setup: While the MD simulations provided valuable insights into strain and diffusion, they simplify the complex electrochemical environment. Key limitations include:\n1. Simplified Electrolyte Model: A more realistic electrolyte model, incorporating ionic liquids or solid electrolytes, would better capture interfacial phenomena.\n2. SEI Formation: The dynamic and heterogeneous formation of the Solid Electrolyte Interphase (SEI) was not fully captured, which is critical for long-term stability.\n3. Quantum Effects: MD is classical; quantum effects, especially at interfaces, might play a role not accounted for.\n4. Scale: Atomistic simulations are limited to nanoscale; mesoscale or continuum models would be needed for larger structures.';
         } else if (prompt.includes('suggest optimization strategies')) {
-             response = 'Optimization Strategies: \n1. Bayesian Optimization: For intelligently exploring the multi-dimensional parameter space (N-doping, BNNS thickness, electrolyte composition) to find optimal material configurations. \n2. Genetic Algorithms: To evolve material compositions and nanostructures for improved performance against defined fitness functions (e.g., high capacity, long cycle life). \n3. Active Learning: Integrating simulation results with machine learning models to guide subsequent simulations and reduce computational cost.';
+            response = 'Optimization Strategies: \n1. Bayesian Optimization: For intelligently exploring the multi-dimensional parameter space (N-doping, BNNS thickness, electrolyte composition) to find optimal material configurations. \n2. Genetic Algorithms: To evolve material compositions and nanostructures for improved performance against defined fitness functions (e.g., high capacity, long cycle life). \n3. Active Learning: Integrating simulation results with machine learning models to guide subsequent simulations and reduce computational cost.';
         } else if (prompt.includes('material selection criteria for anode')) {
-             response = 'Material Selection Criteria for Anodes:\n1. High Theoretical Specific Capacity: To maximize energy density.\n2. Low Volume Expansion: To ensure structural stability during cycling.\n3. Good Li+ Diffusion Kinetics: For high power density and fast charging.\n4. Stable Solid Electrolyte Interphase (SEI) Formation: To prevent continuous electrolyte consumption and improve safety.\n5. Low Average Operating Voltage vs. Li/Li+: To maximize cell voltage.\n6. Abundance and Low Cost of Constituent Elements: For commercial viability.\n7. Good Electronic Conductivity: To minimize internal resistance.\n8. Safety: Non-toxic, thermally stable.';
+            response = 'Material Selection Criteria for Anodes:\n1. High Theoretical Specific Capacity: To maximize energy density.\n2. Low Volume Expansion: To ensure structural stability during cycling.\n3. Good Li+ Diffusion Kinetics: For high power density and fast charging.\n4. Stable Solid Electrolyte Interphase (SEI) Formation: To prevent continuous electrolyte consumption and improve safety.\n5. Low Average Operating Voltage vs. Li/Li+: To maximize cell voltage.\n6. Abundance and Low Cost of Constituent Elements: For commercial viability.\n7. Good Electronic Conductivity: To minimize internal resistance.\n8. Safety: Non-toxic, thermally stable.';
         } else if (prompt.includes('explain the phenomenon of')) {
             const phenomenon = prompt.match(/explain the phenomenon of ([\w\s]+)\./)?.[1] || 'an unspecified scientific phenomenon';
             if (phenomenon.includes('dendrite formation')) {
@@ -120,23 +166,34 @@ Budget Request: $500,000 for personnel, computational resources, and mock lab su
         } else if (prompt.includes('allocate resources')) {
             response = 'Resource Allocation Plan: Project "High-Performance Anode Materials": Allocate 60% of compute cycles to MD simulations, 20% to DFT, 10% to electrochemical modeling. Budget: $30,000 for computational licenses, $15,000 for simulated lab time (synthesis & characterization), $5,000 for administrative overhead. Personnel: Assign Lead Scientist AI for hypothesis generation, Simulation AI for model execution, Analysis AI for data interpretation.';
         } else if (prompt.includes('define a new research project')) {
-            response = 'New Project Definition: Project Name: "High-Temperature Solid Electrolytes for All-Solid-State Batteries". Goal: Discover and optimize novel solid electrolyte materials (e.g., garnet-type, argyrodite) with ionic conductivity >10^-3 S/cm at 100Â°C and high electrochemical stability against Li metal. Key challenges: Interface resistance, mechanical properties, synthesis scalability. Expected duration: 12 months.';
+            response = 'New Project Definition: Project Name: "High-Temperature Solid Electrolytes for All-Solid-State Batteries". Goal: Discover and optimize novel solid electrolyte materials (e.g., garnet-type, argyrodite) with ionic conductivity >10^-3 S/cm at 100°C and high electrochemical stability against Li metal. Key challenges: Interface resistance, mechanical properties, synthesis scalability. Expected duration: 12 months.';
         } else if (prompt.includes('synthesize a novel catalyst')) {
-            response = 'Synthesis Recipe: For a novel MoS2-graphene heterostructure catalyst via hydrothermal method: Precursors: Ammonium heptamolybdate, thiourea, graphene oxide. Solvent: Deionized water. Conditions: 200Â°C, 24 hours, Teflon-lined autoclave. Post-processing: Annealing at 500Â°C under H2/Ar for 2 hours to reduce graphene oxide and enhance crystallinity. Goal: High surface area and abundant active sites for oxygen reduction reaction.';
+            response = 'Synthesis Recipe: For a novel MoS2-graphene heterostructure catalyst via hydrothermal method: Precursors: Ammonium heptamolybdate, thiourea, graphene oxide. Solvent: Deionized water. Conditions: 200°C, 24 hours, Teflon-lined autoclave. Post-processing: Annealing at 500°C under H2/Ar for 2 hours to reduce graphene oxide and enhance crystallinity. Goal: High surface area and abundant active sites for oxygen reduction reaction.';
         } else if (prompt.includes('quantum mechanics simulation for band gap')) {
-            response = 'Quantum Mechanics Simulation Design (DFT): Utilize VASP for Density Functional Theory calculations. Material: Proposed N-doped graphene. Calculation: Geometry optimization, electronic band structure, and density of states (DOS) calculations. Parameters: PBE functional, plane-wave cutoff energy 500 eV, k-point mesh 11x11x1, spin-polarized calculations enabled for potential magnetic effects. Target: Precisely determine the band gap and identify changes due to N-doping. Associated API calls: simulationEngine.runDFT.';
+            response = 'Quantum Mechanics Simulation Design (DFT): Utilize VASP for Density Functional Theory calculations. Material: Proposed N-doped graphene. Calculation: Geometry optimization, electronic band structure, and density of states (DOS) calculations. Parameters: PBE functional, plane-wave cutoff energy 500 eV, k-point mesh 11x11x1, spin-polarized calculations enabled for potential magnetic effects. Target: Precisely determine the band gap and identify changes due to N-doping. Associated API calls: simulationEngine.runDFT. Specific sim type: runDFT.';
         } else if (prompt.includes('predict long-term degradation')) {
             response = 'Long-term Degradation Prediction: Material: N-doped graphene/BNNS composite anode. Prediction: Over 1000 cycles, expected capacity fade of 15% (after initial ~5% irreversible loss). Primary degradation mechanisms: gradual structural degradation of graphene layers, slow accumulation of irreversible SEI species, and minor BNNS delamination at high stress points. Mitigation strategies: develop self-healing polymer binders, optimized electrolyte additives, and protective coatings.';
         } else if (prompt.includes('identify key performance indicators for a project')) {
-             response = 'Key Performance Indicators (KPIs) for Project "High-Performance Anode Materials":\n1. Material Performance: Achieved specific capacity (mAh/g), cycle life (cycles to 80% capacity retention), rate capability (capacity at 5C).\n2. Project Efficiency: Number of hypotheses tested per month, simulation cost per experiment ($), time to market (simulated).\n3. Safety & Scalability: Thermal stability index (Â°C), predicted manufacturing cost (USD/kg), environmental impact score.\n4. Intellectual Property: Number of patent applications filed, potential licensing opportunities.';
+            response = 'Key Performance Indicators (KPIs) for Project "High-Performance Anode Materials":\n1. Material Performance: Achieved specific capacity (mAh/g), cycle life (cycles to 80% capacity retention), rate capability (capacity at 5C).\n2. Project Efficiency: Number of hypotheses tested per month, simulation cost per experiment ($), time to market (simulated).\n3. Safety & Scalability: Thermal stability index (°C), predicted manufacturing cost (USD/kg), environmental impact score.\n4. Intellectual Property: Number of patent applications filed, potential licensing opportunities.';
+        } else if (prompt.includes('comprehensive research report titled')) {
+             response = `Comprehensive Research Report Summary: This research cycle successfully demonstrated the efficacy of a BNNS-interlayered, N-doped graphene composite for advanced Li-ion battery anodes. Key findings include improved strain resilience, superior Li+ diffusivity, and projected enhanced cycle life. Recommendations for future work involve optimizing doping profiles and exploring alternative intercalation chemistries.\n\nAbstract:\nThis report details an autonomous research campaign targeting novel high-performance battery anode materials. Utilizing a multi-stage AI agent, the research explored N-doped graphene/BNNS composites through advanced computational simulations...\n\nIntroduction:\nThe demand for high energy density and long-lasting batteries necessitates the discovery of next-generation electrode materials...\n\nHypotheses:\n1. N-doped graphene with BNNS interlayers will improve cycle life.\n2. Specific doping concentrations optimize Li+ kinetics.\n\nMethodology & Experiments:\nPerformed MD and DFT simulations on various composite configurations. Material characterization was simulated...\n\nResults Summary:\nSimulations confirmed reduced strain (28.5%) and enhanced Li+ diffusion (20%). Capacity retention projected at 91%...\n\nDiscussion:\nThe findings validate the initial hypothesis, highlighting the synergistic effects of doping and nanostructuring...\n\nConclusion:\nN-doped graphene/BNNS composites represent a significant advancement for Li-ion anodes, offering improved stability and kinetics...\n\nFuture Work:\nExplore different heteroatom dopants, optimize synthesis parameters, and conduct full-cell simulations.\n\nSafety Assessment Metrics: Overall Safety Score: 85.5/100 (Higher score means safer.); Volume Expansion Risk: Moderate (Volume changes can occur, but mitigated by BNNS.).\nEconomic Analysis Metrics: Raw Material Cost: $180.50 USD/kg (Estimated cost of raw materials for production. Influenced by elemental scarcity and processing complexity.); Projected Manufacturing Cost: $270.75 USD/kg (Includes processing, energy, and labor costs at specified production scale.).\n\nCitations:\n[1] A. Smith et al., "Graphene Degradation Mechanisms," J. Mat. Sci., 2020.\n[2] B. Jones et al., "Boron Nitride in Batteries," Adv. Energy Mat., 2021.`;
+        } else if (prompt.includes('suitable target journal')) {
+            response = `Target Journal: Advanced Energy Materials. Justification: Our research presents novel findings in battery anode materials, a direct fit for the journal's scope and readership which values high-impact, materials science-focused energy research. The computational depth and projected performance gains are highly relevant. Cover letter snippet: "We are pleased to submit our manuscript titled 'AI-Driven Discovery of High-Performance N-Doped Graphene/BNNS Composite Anodes for Lithium-Ion Batteries' for consideration as an Article in Advanced Energy Materials. This work, performed by our autonomous research platform, presents groundbreaking insights into a novel material system..."`;
         }
 
-        // Add some variability and simulated processing time
-        await new Promise(r => setTimeout(r, Math.random() * 1000 + 500));
+        await new Promise(r => setTimeout(r, Math.random() * 1000 + 500)); // Simulate processing time
         return { text: response };
     }
 }
 
+/**
+ * A mock GoogleGenAI client, providing a local interface to the simulated
+ * Generative AI model.
+ * Business Value: Decouples the application from external AI services, enabling
+ * offline development, testing, and deployment. This self-contained setup
+ * is critical for maintaining robust and predictable behavior within a
+ * commercial-grade AI system, safeguarding against external API changes or outages.
+ */
 export class MockGoogleGenAI {
     public models: {
         generateContent: (params: { model: string; contents: string }) => Promise<{ text: string }>;
@@ -149,10 +206,15 @@ export class MockGoogleGenAI {
         };
     }
 }
-// END Mock GoogleGenAI
 
-// --- Data Structures for the Autonomous Scientist ---
-
+/**
+ * Defines the various phases an Autonomous Scientist AI agent traverses during a research campaign.
+ * This structured enumeration underpins the agent's finite state machine, ensuring systematic
+ * progression through complex scientific workflows.
+ * Business Value: Provides a clear, auditable framework for managing AI-driven research,
+ * facilitating transparent governance and reporting. Each phase represents a distinct
+ * value-creation step, from initial ideation to intellectual property protection and publication.
+ */
 export enum ResearchPhase {
     IDLE = 'IDLE',
     GOAL_DEFINITION = 'GOAL_DEFINITION',
@@ -163,36 +225,53 @@ export enum ResearchPhase {
     DATA_ANALYSIS = 'DATA_ANALYSIS',
     HYPOTHESIS_REFINEMENT = 'HYPOTHESIS_REFINEMENT',
     REPORT_GENERATION = 'REPORT_GENERATION',
-    ITERATION_CYCLE = 'ITERATION_CYCLE', // Represents a full loop
+    ITERATION_CYCLE = 'ITERATION_CYCLE',
     COMPLETED = 'COMPLETED',
     FAILED = 'FAILED',
     SELF_CORRECTION = 'SELF_CORRECTION',
     RESOURCE_MANAGEMENT = 'RESOURCE_MANAGEMENT',
     PROJECT_SETUP = 'PROJECT_SETUP',
-    IP_MANAGEMENT = 'IP_MANAGEMENT', // New phase for Intellectual Property
-    GRANT_APPLICATION = 'GRANT_APPLICATION', // New phase for Grant applications
-    PEER_REVIEW = 'PEER_REVIEW', // New phase for peer review simulation
-    PUBLICATION_STRATEGY = 'PUBLICATION_STRATEGY', // New phase for publication decision
-    RISK_ASSESSMENT = 'RISK_ASSESSMENT', // New phase for evaluating risks
-    ECONOMIC_EVALUATION = 'ECONOMIC_EVALUATION', // New phase for economic viability
+    IP_MANAGEMENT = 'IP_MANAGEMENT',
+    GRANT_APPLICATION = 'GRANT_APPLICATION',
+    PEER_REVIEW = 'PEER_REVIEW',
+    PUBLICATION_STRATEGY = 'PUBLICATION_STRATEGY',
+    RISK_ASSESSMENT = 'RISK_ASSESSMENT',
+    ECONOMIC_EVALUATION = 'ECONOMIC_EVALUATION',
 }
 
+/**
+ * Represents a specific physical or chemical property of a material.
+ * This interface standardizes the data structure for material properties,
+ * ensuring consistency across simulated experiments and characterizations.
+ */
 export interface MaterialProperty {
     name: string;
     value: number | string | boolean;
     unit?: string;
     description?: string;
     source?: 'simulated' | 'experimental' | 'literature' | 'predicted';
-    timestamp?: string; // When this property was observed/simulated
+    timestamp?: string;
 }
 
+/**
+ * Describes the chemical composition and structural characteristics of a material.
+ * This foundational data structure enables the AI to precisely define and
+ * differentiate materials, crucial for accurate simulation and synthesis design.
+ */
 export interface MaterialComposition {
-    elements: { [key: string]: number }; // e.g., { 'Li': 1, 'Mn': 2, 'O': 4 }
-    structure?: string; // e.g., 'layered', 'spinel', 'graphene heterostructure'
-    dopants?: { [key: string]: number }; // e.g., { 'N': 0.05 } for 5% nitrogen doping
-    nanostructure?: string; // e.g., 'nanosheets', 'nanoparticles', 'quantum dots'
+    elements: { [key: string]: number };
+    structure?: string;
+    dopants?: { [key: string]: number };
+    nanostructure?: string;
+    name?: string; // Added for more flexible material naming in composition
 }
 
+/**
+ * Represents a discovered or proposed material within the research ecosystem.
+ * This comprehensive data model tracks a material's identity, composition,
+ * properties, and evaluated scores, forming the core of the AI's material
+ * knowledge base.
+ */
 export interface Material {
     id: string;
     name: string;
@@ -201,75 +280,107 @@ export interface Material {
     discoveryDate: string;
     synthesisMethod?: string;
     potentialApplications: string[];
-    stabilityScore?: number; // 0-100
-    performanceScore?: number; // 0-100
-    riskScore?: number; // 0-100 (higher = more risk)
-    costScore?: number; // 0-100 (higher = more expensive)
+    stabilityScore?: number;
+    performanceScore?: number;
+    riskScore?: number;
+    costScore?: number;
 }
 
+/**
+ * Defines a testable scientific hypothesis formulated by the AI agent.
+ * Each hypothesis includes its target, predicted effect, and status, guiding
+ * the experimental design process.
+ */
 export interface Hypothesis {
     id: string;
     text: string;
-    targetProperty: string; // e.g., 'battery capacity', 'strength'
+    targetProperty: string;
     predictedEffect: string;
-    evidence: string[]; // references to literature or previous experiments
-    status: 'proposed' | 'tested' | 'supported' | 'refuted' | 'refined' | 'pending_retest' | 'superseded';
+    evidence: string[];
+    status: 'proposed' | 'tested' | 'supported' | 'refuted' | 'refined' | 'pending_retest' | 'superseded' | 'partial_support' | 'new_insight'; // Added new status
     priority: 'high' | 'medium' | 'low';
     formulationDate: string;
-    parentHypothesisId?: string; // If refined from another hypothesis
+    parentHypothesisId?: string;
 }
 
+/**
+ * Represents a parameter configured for an experiment or simulation.
+ * This structure allows for precise control over experimental variables,
+ * including ranges for optimization algorithms.
+ */
 export interface ExperimentParameter {
     name: string;
     value: number | string | boolean;
     unit?: string;
-    range?: [number, number]; // For parameter sweeps
+    range?: [number, number];
     optimizationTarget?: 'maximize' | 'minimize' | 'stabilize';
     description?: string;
 }
 
+/**
+ * Describes a planned or executed experiment, whether computational or physical.
+ * This detailed schema tracks all aspects of an experiment, from design to
+ * associated costs and API calls, providing a full audit trail.
+ */
 export interface Experiment {
     id: string;
     name: string;
-    type: 'simulation' | 'synthesis' | 'characterization' | 'validation' | 'optimization' | 'protocol_design' | 'modeling'; // Added more types
-    hypothesisId: string; // The hypothesis this experiment aims to test
-    materialId?: string; // The material being tested/synthesized
+    type: 'simulation' | 'synthesis' | 'characterization' | 'validation' | 'optimization' | 'protocol_design' | 'modeling';
+    hypothesisId: string;
+    materialId?: string;
     parameters: ExperimentParameter[];
     status: 'pending' | 'running' | 'completed' | 'failed' | 'paused' | 'aborted';
     results: ExperimentResult | null;
     designRationale: string;
-    costEstimate: number; // simulated cost in USD
-    timeEstimate: number; // simulated hours
+    costEstimate: number;
+    timeEstimate: number;
     priority: 'high' | 'medium' | 'low';
-    associatedAPICalls: string[]; // e.g., ['runMolecularDynamics', 'characterizeMaterial']
+    associatedAPICalls: string[];
     executionDate?: string;
     completionDate?: string;
-    preRequisiteExperiments?: string[]; // IDs of experiments that must complete first
+    preRequisiteExperiments?: string[];
 }
 
+/**
+ * Represents a key metric derived from experiment results.
+ * This structure quantifies performance indicators, facilitating objective
+ * evaluation and comparison of experimental outcomes.
+ */
 export interface ExperimentResultMetric {
     name: string;
     value: number | string;
     unit?: string;
-    deviation?: number; // from expected
+    deviation?: number;
     trend?: 'increasing' | 'decreasing' | 'stable' | 'anomalous';
     interpretation?: string;
-    confidenceLevel?: number; // 0-1
+    confidenceLevel?: number;
 }
 
+/**
+ * Encapsulates the complete results of an experiment.
+ * This includes raw data points, calculated metrics, and the AI's
+ * interpretation and conclusion, forming the empirical foundation
+ * for hypothesis evaluation.
+ */
 export interface ExperimentResult {
     id: string;
     experimentId: string;
-    dataPoints: { [key: string]: number[] | string[] }; // e.g., { 'cycle_number': [...], 'capacity': [...] }
+    dataPoints: { [key: string]: number[] | string[] };
     metrics: ExperimentResultMetric[];
     analysisSummary: string;
-    rawLog?: string; // Simulated raw output from a computational engine or lab instrument
+    rawLog?: string;
     interpretation: string;
     conclusion: 'supported' | 'refuted' | 'inconclusive' | 'partial_support' | 'new_insight';
-    confidenceScore: number; // 0-1
-    generatedVisualizations?: { type: 'chart' | 'graph' | 'image', dataUrl: string, title: string }[]; // Mocked visualization data
+    confidenceScore: number;
+    generatedVisualizations?: { type: 'chart' | 'graph' | 'image', dataUrl: string, title: string }[];
 }
 
+/**
+ * Records a significant decision made by the AI agent during its research.
+ * Each decision is timestamped, categorized by research phase, and includes
+ * details and reasoning, providing an auditable history of the AI's strategic
+ * movements.
+ */
 export interface AgentDecision {
     timestamp: string;
     phase: ResearchPhase;
@@ -277,13 +388,18 @@ export interface AgentDecision {
     details: any;
     outcome?: 'success' | 'failure' | 'neutral' | 'pivot';
     reasoning?: string;
-    decisionMetrics?: { name: string, value: any }[]; // Metrics considered for decision
+    decisionMetrics?: { name: string, value: any }[];
 }
 
+/**
+ * The final, comprehensive scientific research report generated by the AI agent.
+ * This report synthesizes all findings, hypotheses, experiments, and analyses,
+ * formatted for potential publication or internal stakeholder review.
+ */
 export interface ResearchReport {
     id: string;
     title: string;
-    author: string; // 'Autonomous Scientist'
+    author: string;
     date: string;
     abstract: string;
     introduction: string;
@@ -300,12 +416,22 @@ export interface ResearchReport {
     economicAnalysis?: ExperimentResultMetric[];
 }
 
+/**
+ * A timestamped entry for the agent's activity log.
+ * This provides a granular, real-time record of the AI's thoughts, actions,
+ * and outcomes, essential for observability and debugging.
+ */
 export interface LogEntry {
     type: 'thought' | 'action' | 'result' | 'error' | 'warning';
     content: string;
     timestamp?: string;
 }
 
+/**
+ * Represents a simulated patent application generated by the AI.
+ * This tracks the patent's status, claims, and associated materials,
+ * demonstrating the AI's capability to protect intellectual property.
+ */
 export interface PatentApplication {
     id: string;
     title: string;
@@ -313,22 +439,32 @@ export interface PatentApplication {
     claims: string[];
     status: 'draft' | 'filed' | 'pending_review' | 'granted' | 'rejected';
     filingDate: string;
-    inventors: string[]; // 'Autonomous Scientist AI'
-    associatedMaterials: string[]; // material IDs
+    inventors: string[];
+    associatedMaterials: string[];
 }
 
+/**
+ * Represents a simulated grant proposal drafted and submitted by the AI.
+ * This tracks funding requests, status, and associated research, showcasing
+ * the AI's ability to secure resources for its initiatives.
+ */
 export interface GrantProposal {
     id: string;
     title: string;
     summary: string;
     specificAims: string[];
-    budgetRequest: number; // USD
+    budgetRequest: number;
     status: 'draft' | 'submitted' | 'under_review' | 'funded' | 'rejected';
     submissionDate: string;
     fundingAgency?: string;
-    currentFunding?: number; // if funded, how much received
+    currentFunding?: number;
 }
 
+/**
+ * Represents a simulated scientific article prepared for publication.
+ * This tracks submission details, journal, and peer review status,
+ * highlighting the AI's role in disseminating research findings.
+ */
 export interface PublicationArticle {
     id: string;
     title: string;
@@ -341,6 +477,11 @@ export interface PublicationArticle {
     citations?: string[];
 }
 
+/**
+ * Represents an overarching research project managed by the Autonomous Scientist.
+ * This aggregates project metadata, budget, KPIs, and team members,
+ * providing a high-level view of the AI's current objectives and progress.
+ */
 export interface ResearchProject {
     id: string;
     name: string;
@@ -351,26 +492,34 @@ export interface ResearchProject {
     currentBudget: number;
     initialBudget: number;
     kpis: { name: string, target: number | string, current: number | string, unit?: string }[];
-    teamMembers: string[]; // e.g., ['Autonomous Scientist AI', 'Simulation AI']
-    focusMaterial?: string; // ID of the primary material being researched
+    teamMembers: string[];
+    focusMaterial?: string;
 }
 
-// --- Simulated Database / Knowledge Base ---
+/**
+ * A static class simulating a Material Database and Knowledge Base.
+ * This acts as the central repository for all discovered materials, patents,
+ * grants, and publications, providing persistence and search capabilities
+ * for the Autonomous Scientist.
+ * Business Value: Serves as a critical institutional memory, preventing redundant
+ * research, enabling rapid retrieval of past findings, and protecting valuable
+ * intellectual assets. Its integrated IP management functions secure competitive advantage.
+ */
 export class MaterialDatabase {
     private static materials: Material[] = [
         {
             id: 'mat-001', name: 'Graphene', composition: { elements: { 'C': 1 }, structure: '2D sheet', nanostructure: 'nanosheet' },
-            properties: [{ name: 'Density', value: 2.2, unit: 'g/cmÂ³' }, { name: 'Conductivity', value: 10000, unit: 'S/cm' }, { name: 'Band Gap', value: 0, unit: 'eV' }],
+            properties: [{ name: 'Density', value: 2.2, unit: 'g/cm³' }, { name: 'Conductivity', value: 10000, unit: 'S/cm' }, { name: 'Band Gap', value: 0, unit: 'eV' }],
             discoveryDate: '2004-10-22', synthesisMethod: 'Mechanical exfoliation, CVD', potentialApplications: ['batteries', 'composites', 'electronics'], stabilityScore: 70, performanceScore: 65, riskScore: 20, costScore: 40,
         },
         {
             id: 'mat-002', name: 'Lithium Cobalt Oxide (LCO)', composition: { elements: { 'Li': 1, 'Co': 1, 'O': 2 }, structure: 'layered' },
-            properties: [{ name: 'Density', value: 4.9, unit: 'g/cmÂ³' }, { name: 'Theoretical Capacity', value: 274, unit: 'mAh/g' }, { name: 'Voltage Range', value: '3.6-4.2', unit: 'V' }],
+            properties: [{ name: 'Density', value: 4.9, unit: 'g/cm³' }, { name: 'Theoretical Capacity', value: 274, unit: 'mAh/g' }, { name: 'Voltage Range', value: '3.6-4.2', unit: 'V' }],
             discoveryDate: '1980-01-01', synthesisMethod: 'Solid-state reaction', potentialApplications: ['cathode material', 'portable electronics'], stabilityScore: 80, performanceScore: 75, riskScore: 60, costScore: 80,
         },
         {
             id: 'mat-003', name: 'Boron Nitride Nanosheets (BNNS)', composition: { elements: { 'B': 1, 'N': 1 }, structure: '2D sheet', nanostructure: 'nanosheet' },
-            properties: [{ name: 'Density', value: 2.2, unit: 'g/cmÂ³' }, { name: 'Thermal Conductivity', value: 2000, unit: 'W/mK' }, { name: 'Band Gap', value: 5.9, unit: 'eV' }],
+            properties: [{ name: 'Density', value: 2.2, unit: 'g/cm³' }, { name: 'Thermal Conductivity', value: 2000, unit: 'W/mK' }, { name: 'Band Gap', value: 5.9, unit: 'eV' }],
             discoveryDate: '1990-01-01', synthesisMethod: 'Chemical Vapor Deposition', potentialApplications: ['dielectrics', 'composites', 'thermal management'], stabilityScore: 90, performanceScore: 50, riskScore: 10, costScore: 70,
         },
         {
@@ -408,7 +557,6 @@ export class MaterialDatabase {
             properties: [{ name: 'Ionic Conductivity', value: 1e-4, unit: 'S/cm' }, { name: 'Electrochemical Stability', value: 'High' }],
             discoveryDate: '2007-01-01', synthesisMethod: 'Solid-state reaction', potentialApplications: ['solid-state batteries'], stabilityScore: 90, performanceScore: 70, riskScore: 25, costScore: 75,
         },
-        // Adding more diverse materials for richer simulation data
         { id: 'mat-011', name: 'Titanium Dioxide (TiO2)', composition: { elements: { 'Ti': 1, 'O': 2 } }, properties: [{ name: 'Band Gap', value: 3.2, unit: 'eV' }], discoveryDate: '1910-01-01', potentialApplications: ['pigments', 'photocatalysis', 'anodes'], stabilityScore: 90, performanceScore: 40, riskScore: 15, costScore: 10, },
         { id: 'mat-012', name: 'Molybdenum Disulfide (MoS2)', composition: { elements: { 'Mo': 1, 'S': 2 }, structure: '2D sheet' }, properties: [{ name: 'Band Gap', value: 1.8, unit: 'eV' }], discoveryDate: '1960-01-01', potentialApplications: ['lubricants', 'electronics', 'batteries'], stabilityScore: 75, performanceScore: 60, riskScore: 30, costScore: 55, },
         { id: 'mat-013', name: 'MXene (Ti3C2Tx)', composition: { elements: { 'Ti': 3, 'C': 2 } }, properties: [{ name: 'Conductivity', value: 7000, unit: 'S/cm' }], discoveryDate: '2011-01-01', potentialApplications: ['supercapacitors', 'batteries'], stabilityScore: 65, performanceScore: 80, riskScore: 40, costScore: 65, },
@@ -418,20 +566,31 @@ export class MaterialDatabase {
         { id: 'mat-017', name: 'Vanadium Oxide (V2O5)', composition: { elements: { 'V': 2, 'O': 5 } }, properties: [{ name: 'Capacity', value: 294, unit: 'mAh/g' }], discoveryDate: '1830-01-01', potentialApplications: ['cathodes', 'supercapacitors'], stabilityScore: 70, performanceScore: 60, riskScore: 30, costScore: 40, },
         { id: 'mat-018', name: 'Zinc Oxide (ZnO)', composition: { elements: { 'Zn': 1, 'O': 1 } }, properties: [{ name: 'Band Gap', value: 3.37, unit: 'eV' }], discoveryDate: '1800-01-01', potentialApplications: ['electronics', 'sensors'], stabilityScore: 90, performanceScore: 30, riskScore: 10, costScore: 15, },
         { id: 'mat-019', name: 'Iron Sulfide (FeS2)', composition: { elements: { 'Fe': 1, 'S': 2 } }, properties: [{ name: 'Theoretical Capacity', value: 894, unit: 'mAh/g' }], discoveryDate: '1700-01-01', potentialApplications: ['secondary batteries'], stabilityScore: 60, performanceScore: 70, riskScore: 45, costScore: 25, },
-        { id: 'mat-020', name: 'Aluminum (Al)', composition: { elements: { 'Al': 1 } }, properties: [{ name: 'Density', value: 2.7, unit: 'g/cmÂ³' }], discoveryDate: '1825-01-01', potentialApplications: ['current collectors', 'structural'], stabilityScore: 99, performanceScore: 10, riskScore: 5, costScore: 5, },
+        { id: 'mat-020', name: 'Aluminum (Al)', composition: { elements: { 'Al': 1 } }, properties: [{ name: 'Density', value: 2.7, unit: 'g/cm³' }], discoveryDate: '1825-01-01', potentialApplications: ['current collectors', 'structural'], stabilityScore: 99, performanceScore: 10, riskScore: 5, costScore: 5, },
     ];
 
     private static patents: PatentApplication[] = [];
     private static grants: GrantProposal[] = [];
     private static publications: PublicationArticle[] = [];
 
+    /**
+     * Retrieves a material by its unique identifier.
+     * @param id The ID of the material.
+     * @returns A Promise resolving to the Material object or undefined if not found.
+     */
     static async fetchMaterialById(id: string): Promise<Material | undefined> {
-        await new Promise(r => setTimeout(r, 50 + Math.random() * 50)); // Simulate async
+        await new Promise(r => setTimeout(r, 50 + Math.random() * 50));
         return MaterialDatabase.materials.find(m => m.id === id);
     }
 
+    /**
+     * Searches for materials matching a given query.
+     * @param query The search string.
+     * @param limit Maximum number of results to return.
+     * @returns A Promise resolving to an array of matching Material objects.
+     */
     static async searchMaterials(query: string, limit: number = 10): Promise<Material[]> {
-        await new Promise(r => setTimeout(r, 100 + Math.random() * 100)); // Simulate async
+        await new Promise(r => setTimeout(r, 100 + Math.random() * 100));
         const lowerQuery = query.toLowerCase();
         return MaterialDatabase.materials
             .filter(m =>
@@ -444,18 +603,25 @@ export class MaterialDatabase {
             .slice(0, limit);
     }
 
+    /**
+     * Adds a new material to the database or updates an existing one if ID matches.
+     * @param material The Material object to add or update.
+     */
     static async addMaterial(material: Material): Promise<void> {
         await new Promise(r => setTimeout(r, 20));
-        if (!MaterialDatabase.materials.find(m => m.id === material.id)) {
+        const index = MaterialDatabase.materials.findIndex(m => m.id === material.id);
+        if (index === -1) {
             MaterialDatabase.materials.push(material);
         } else {
-            // console.warn(`Material with ID ${material.id} already exists.`);
-            // Update existing material if it's new information
-            const index = MaterialDatabase.materials.findIndex(m => m.id === material.id);
             MaterialDatabase.materials[index] = { ...MaterialDatabase.materials[index], ...material };
         }
     }
 
+    /**
+     * Updates an existing material in the database.
+     * @param material The Material object with updated properties.
+     * @throws Error if the material ID is not found.
+     */
     static async updateMaterial(material: Material): Promise<void> {
         await new Promise(r => setTimeout(r, 20));
         const index = MaterialDatabase.materials.findIndex(m => m.id === material.id);
@@ -466,12 +632,20 @@ export class MaterialDatabase {
         }
     }
 
+    /**
+     * Retrieves all materials currently in the database.
+     * @returns A Promise resolving to an array of all Material objects.
+     */
     static async getAllMaterials(): Promise<Material[]> {
         await new Promise(r => setTimeout(r, 50));
         return [...MaterialDatabase.materials];
     }
 
-    // --- Patent Management ---
+    /**
+     * Files a new patent application and adds it to the database.
+     * @param patent The PatentApplication object to file.
+     * @returns A Promise resolving to the filed PatentApplication with updated ID and status.
+     */
     static async filePatent(patent: PatentApplication): Promise<PatentApplication> {
         await new Promise(r => setTimeout(r, 500 + Math.random() * 500));
         const newPatent = { ...patent, id: `pat-${Date.now()}`, filingDate: new Date().toISOString().split('T')[0], status: 'filed' as const };
@@ -479,17 +653,30 @@ export class MaterialDatabase {
         return newPatent;
     }
 
+    /**
+     * Retrieves patent applications associated with a specific material.
+     * @param materialId The ID of the material.
+     * @returns A Promise resolving to an array of relevant PatentApplication objects.
+     */
     static async getPatentsByMaterial(materialId: string): Promise<PatentApplication[]> {
         await new Promise(r => setTimeout(r, 100));
         return MaterialDatabase.patents.filter(p => p.associatedMaterials.includes(materialId));
     }
 
+    /**
+     * Retrieves all filed patent applications.
+     * @returns A Promise resolving to an array of all PatentApplication objects.
+     */
     static async getAllPatents(): Promise<PatentApplication[]> {
         await new Promise(r => setTimeout(r, 100));
         return [...MaterialDatabase.patents];
     }
 
-    // --- Grant Management ---
+    /**
+     * Submits a new grant proposal and adds it to the database.
+     * @param grant The GrantProposal object to submit.
+     * @returns A Promise resolving to the submitted GrantProposal with updated ID and status.
+     */
     static async submitGrant(grant: GrantProposal): Promise<GrantProposal> {
         await new Promise(r => setTimeout(r, 700 + Math.random() * 500));
         const newGrant = { ...grant, id: `grant-${Date.now()}`, submissionDate: new Date().toISOString().split('T')[0], status: 'submitted' as const };
@@ -497,12 +684,20 @@ export class MaterialDatabase {
         return newGrant;
     }
 
+    /**
+     * Retrieves all submitted grant proposals.
+     * @returns A Promise resolving to an array of all GrantProposal objects.
+     */
     static async getAllGrants(): Promise<GrantProposal[]> {
         await new Promise(r => setTimeout(r, 100));
         return [...MaterialDatabase.grants];
     }
 
-    // --- Publication Management ---
+    /**
+     * Submits a new publication article and adds it to the database.
+     * @param publication The PublicationArticle object to submit.
+     * @returns A Promise resolving to the submitted PublicationArticle with updated ID and status.
+     */
     static async submitPublication(publication: PublicationArticle): Promise<PublicationArticle> {
         await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
         const newPub = { ...publication, id: `pub-${Date.now()}`, submissionDate: new Date().toISOString().split('T')[0], status: 'submitted' as const };
@@ -510,15 +705,25 @@ export class MaterialDatabase {
         return newPub;
     }
 
+    /**
+     * Retrieves all submitted publication articles.
+     * @returns A Promise resolving to an array of all PublicationArticle objects.
+     */
     static async getAllPublications(): Promise<PublicationArticle[]> {
         await new Promise(r => setTimeout(r, 100));
         return [...MaterialDatabase.publications];
     }
 }
 
-// --- Simulated API for External Services (now internal functions) ---
-// These functions mimic API calls to various scientific and computational services.
-// They generate plausible, though simulated, results.
+/**
+ * Interface defining a set of simulated API services used by the Autonomous Scientist.
+ * These services mimic external scientific tools, computational engines, and lab robotics,
+ * all implemented locally to ensure a self-contained and deterministic research environment.
+ * Business Value: This integrated suite of simulated APIs provides a robust, predictable,
+ * and cost-free execution environment for the Autonomous Scientist. It eliminates real-world
+ * latency, resource contention, and cost associated with actual laboratory and computational
+ * infrastructure, enabling high-speed, parallelized research at unprecedented scale and efficiency.
+ */
 export interface SimulatedAPIS {
     literatureSearch: (query: string, maxResults: number) => Promise<string[]>;
     simulationEngine: {
@@ -526,53 +731,64 @@ export interface SimulatedAPIS {
         runDFT: (materialComposition: MaterialComposition, propertiesToCalculate: string[]) => Promise<ExperimentResult>;
         runElectrochemicalModel: (materialId: string, cellDesign: any, parameters: ExperimentParameter[]) => Promise<ExperimentResult>;
         runThermalStabilitySimulation: (materialComposition: MaterialComposition, parameters: ExperimentParameter[]) => Promise<ExperimentResult>;
-        runQuantumMechanicsSimulation: (materialComposition: MaterialComposition, targetProperty: 'band_gap' | 'electron_affinity' | 'ionization_potential') => Promise<ExperimentResult>; // New
-        runPhaseDiagramCalculation: (elements: { [key: string]: number }, temperatureRange: [number, number]) => Promise<ExperimentResult>; // New
-        runDefectFormationSimulation: (materialComposition: MaterialComposition, defectType: string) => Promise<ExperimentResult>; // New
+        runQuantumMechanicsSimulation: (materialComposition: MaterialComposition, targetProperty: 'band_gap' | 'electron_affinity' | 'ionization_potential') => Promise<ExperimentResult>;
+        runPhaseDiagramCalculation: (elements: { [key: string]: number }, temperatureRange: [number, number]) => Promise<ExperimentResult>;
+        runDefectFormationSimulation: (materialComposition: MaterialComposition, defectType: string) => Promise<ExperimentResult>;
     };
     labRobotics: {
-        designSynthesisRoute: (materialGoal: MaterialComposition, targetProperties: string[]) => Promise<string>; // Returns synthesis recipe
-        synthesizeMaterial: (recipe: any) => Promise<string>; // Returns material ID
+        designSynthesisRoute: (materialGoal: MaterialComposition, targetProperties: string[]) => Promise<string>;
+        synthesizeMaterial: (recipe: any) => Promise<string>;
         characterizeMaterial: (materialId: string, techniques: string[]) => Promise<ExperimentResult>;
-        analyzeCharacterizationData: (results: ExperimentResult) => Promise<string>; // AI analyzes data
-        executeHighThroughputSynthesis: (materialBase: MaterialComposition, varyingParameters: ExperimentParameter[], count: number) => Promise<string[]>; // Returns array of material IDs
+        analyzeCharacterizationData: (results: ExperimentResult) => Promise<string>;
+        executeHighThroughputSynthesis: (materialBase: MaterialComposition, varyingParameters: ExperimentParameter[], count: number) => Promise<string[]>;
     };
     optimizationEngine: {
-        runBayesianOptimization: (targetProperty: string, materialBase: MaterialComposition, tunableParams: ExperimentParameter[], numIterations: number) => Promise<{ optimalParams: ExperimentParameter[], predictedValue: number, results: ExperimentResult[] }>;
-        runGeneticAlgorithm: (targetProperties: string[], materialBase: MaterialComposition, genePool: ExperimentParameter[], generations: number) => Promise<{ optimalMaterial: MaterialComposition, predictedPerformance: { [key: string]: number }, results: ExperimentResult[] }>; // New
+        runBayesianOptimization: (targetProperty: string, materialBase: Material, tunableParams: ExperimentParameter[], numIterations: number) => Promise<{ optimalParams: ExperimentParameter[], predictedValue: number, results: ExperimentResult[] }>;
+        runGeneticAlgorithm: (targetProperties: string[], materialBase: Material, genePool: ExperimentParameter[], generations: number) => Promise<{ optimalMaterial: MaterialComposition, predictedPerformance: { [key: string]: number }, results: ExperimentResult[] }>;
     };
     safetyAssessment: (materialId: string, application: string, currentKnowledge: string) => Promise<ExperimentResultMetric[]>;
     economicAnalysis: (materialId: string, productionScale: string, targetMarket: string) => Promise<ExperimentResultMetric[]>;
-    knowledgeGraph: { // New service for knowledge management
+    knowledgeGraph: {
         queryKnowledgeGraph: (query: string) => Promise<string[]>;
         addKnowledgeEntry: (entry: string, source: string, timestamp: string) => Promise<void>;
-        refineKnowledgeGraph: (newInsights: string) => Promise<string>; // AI refines existing knowledge
+        refineKnowledgeGraph: (newInsights: string) => Promise<string>;
     };
-    projectManagement: { // New service for project specific tasks
+    projectManagement: {
         updateKPI: (projectId: string, kpiName: string, value: number | string) => Promise<void>;
         allocateBudget: (projectId: string, amount: number, category: string) => Promise<void>;
         getProjectStatus: (projectId: string) => Promise<ResearchProject>;
     };
-    ipManagement: { // New service for IP management
+    ipManagement: {
         draftPatentApplication: (materialId: string, noveltySummary: string, keyClaims: string[]) => Promise<PatentApplication>;
         filePatentApplication: (patent: PatentApplication) => Promise<PatentApplication>;
         monitorPatentLandscape: (keywords: string[]) => Promise<string[]>;
     };
-    grantManagement: { // New service for grant applications
+    grantManagement: {
         draftGrantProposal: (researchSummary: string, budgetNeeded: number) => Promise<GrantProposal>;
         submitGrantProposal: (grant: GrantProposal) => Promise<GrantProposal>;
     };
-    publicationService: { // New service for publication
+    publicationService: {
         draftArticle: (report: ResearchReport, targetJournal: string) => Promise<PublicationArticle>;
         submitArticleForReview: (article: PublicationArticle) => Promise<PublicationArticle>;
         simulatePeerReview: (articleId: string) => Promise<string>;
     };
-    collaborativeAgentAPI: { // New service for multi-agent interaction
+    collaborativeAgentAPI: {
         requestExpertOpinion: (topic: string, specificQuestion: string) => Promise<string>;
         shareDataWithPartner: (data: any, partnerId: string) => Promise<string>;
     };
 }
 
+/**
+ * Concrete implementation of the simulated API services.
+ * This object provides a fully functional, self-contained simulation of all
+ * necessary scientific and management APIs, allowing the Autonomous Scientist
+ * to operate end-to-end without external dependencies. Each function simulates
+ * realistic delays and outcomes.
+ * Business Value: Guarantees a fully operational and testable system, eliminating
+ * reliance on costly external providers or the complexity of real-world integrations.
+ * This fosters rapid development, secure testing, and independent operation,
+ * accelerating time-to-market for AI-driven research products.
+ */
 export const simulatedAPIs: SimulatedAPIS = {
     literatureSearch: async (query, maxResults) => {
         await new Promise(r => setTimeout(r, 1000 + Math.random() * 500));
@@ -609,36 +825,33 @@ export const simulatedAPIs: SimulatedAPIS = {
             let capacityRetentionBase = 80;
 
             if (nDoping > 0) {
-                strainReductionBase += nDoping * 50; // Higher doping = more reduction initially
+                strainReductionBase += nDoping * 50;
                 liDiffusionBase += nDoping * 0.5;
             }
             if (hasBNNS) {
-                strainReductionBase += 15; // BNNS adds more
+                strainReductionBase += 15;
                 capacityRetentionBase += 10;
-                liDiffusionBase -= 0.05; // Might slightly impede diffusion if too dense
+                liDiffusionBase -= 0.05;
             }
 
-            // Apply parameter specific adjustments
             const targetStrainParam = parameters.find(p => p.name === 'strainReductionTarget');
             const targetStrain = targetStrainParam ? (targetStrainParam.value as number) : 0;
-            if (targetStrain > 0) strainReductionBase += (Math.random() * 10 - 5); // Add some variability
+            if (targetStrain > 0) strainReductionBase += (Math.random() * 10 - 5);
             const tempParam = parameters.find(p => p.name === 'temperature');
             const temp = tempParam ? (tempParam.value as number) : 300;
-            if (temp > 300) liDiffusionBase += 0.02; // Higher temp, faster diffusion
+            if (temp > 300) liDiffusionBase += 0.02;
 
-            // Add complexity based on BNNS layer thickness and spacing
             const bnnsThickness = parameters.find(p => p.name === 'BNNS layer thickness')?.value as number || 2;
             const bnnsSpacing = parameters.find(p => p.name === 'BNNS spacing')?.value as number || 1;
-            if (bnnsThickness > 3 && bnnsSpacing < 1) { // Too thick or too close
+            if (bnnsThickness > 3 && bnnsSpacing < 1) {
                 strainReductionBase -= 5;
                 liDiffusionBase -= 0.1;
                 capacityRetentionBase -= 5;
-            } else if (bnnsThickness <= 3 && bnnsSpacing >= 0.8 && bnnsSpacing <= 1.5) { // Optimal range
+            } else if (bnnsThickness <= 3 && bnnsSpacing >= 0.8 && bnnsSpacing <= 1.5) {
                 strainReductionBase += 8;
                 liDiffusionBase += 0.03;
                 capacityRetentionBase += 3;
             }
-
 
             const strainReduction = Math.max(10, Math.min(60, strainReductionBase + (Math.random() * 10 - 5))).toFixed(2);
             const liDiffusion = Math.max(0.1, Math.min(0.6, liDiffusionBase + (Math.random() * 0.1 - 0.05))).toFixed(3);
@@ -658,30 +871,30 @@ export const simulatedAPIs: SimulatedAPIS = {
                 dataPoints: { cycle_number: cycleNumbers, capacity_retention_percent: capacityData },
                 metrics: [
                     { name: 'Lattice Strain Reduction', value: strainReduction, unit: '%' },
-                    { name: 'Li+ Diffusion Coefficient', value: liDiffusion, unit: '10^-7 cmÂ²/s' },
+                    { name: 'Li+ Diffusion Coefficient', value: liDiffusion, unit: '10^-7 cm²/s' },
                     { name: 'Projected Capacity Retention @ 500 cycles', value: capacityRetention, unit: '%' }
                 ],
-                analysisSummary: `Molecular Dynamics simulation completed. Results show ${strainReduction}% reduction in lattice strain, a Li+ diffusion coefficient of ${liDiffusion} x 10^-7 cmÂ²/s, and projected ${capacityRetention}% capacity retention after 500 cycles.`,
+                analysisSummary: `Molecular Dynamics simulation completed. Results show ${strainReduction}% reduction in lattice strain, a Li+ diffusion coefficient of ${liDiffusion} x 10^-7 cm²/s, and projected ${capacityRetention}% capacity retention after 500 cycles.`,
                 interpretation: isSuccess ? 'Strong support for material design, demonstrating enhanced stability and kinetics.' : 'Partial support, material shows some promise but requires further optimization.',
                 conclusion: isSuccess ? 'supported' : 'partial_support',
                 confidenceScore: isSuccess ? 0.85 : 0.65,
                 rawLog: `Simulated LAMMPS output: Energy minimized. Strain tensors computed. Diffusion pathways analyzed. CPU time: 12000s. Configuration: ${JSON.stringify(composition)}. Parameters: ${JSON.stringify(parameters)}`,
-                 generatedVisualizations: [{ type: 'chart', dataUrl: 'data:image/png;base64,mocked_md_chart_data', title: 'Capacity Retention over Cycles (MD)' }]
+                generatedVisualizations: [{ type: 'chart', dataUrl: 'data:image/png;base64,mocked_md_chart_data', title: 'Capacity Retention over Cycles (MD)' }]
             };
         },
         runDFT: async (composition, propertiesToCalculate) => {
             await new Promise(r => setTimeout(r, 2500 + Math.random() * 700));
             const bandGap = propertiesToCalculate.includes('band_gap') ? (Math.random() * 3 + 1).toFixed(2) : 'N/A';
             const formationEnergy = propertiesToCalculate.includes('formation_energy') ? (-0.5 - Math.random() * 0.5).toFixed(3) : 'N/A';
-            const liBindingEnergy = propertiesToCalculate.includes('li_binding_energy') ? (-2.0 - Math.random() * 1.0).toFixed(2) : 'N/A'; // eV
+            const liBindingEnergy = propertiesToCalculate.includes('li_binding_energy') ? (-2.0 - Math.random() * 1.0).toFixed(2) : 'N/A';
 
             const metrics: ExperimentResultMetric[] = [];
             if (bandGap !== 'N/A') metrics.push({ name: 'Band Gap', value: bandGap, unit: 'eV' });
             if (formationEnergy !== 'N/A') metrics.push({ name: 'Formation Energy', value: formationEnergy, unit: 'eV/atom' });
             if (liBindingEnergy !== 'N/A') metrics.push({ name: 'Li Binding Energy', value: liBindingEnergy, unit: 'eV' });
 
-            const isStable = parseFloat(formationEnergy as string) < -0.6; // More negative = more stable
-            const isGoodBinder = parseFloat(liBindingEnergy as string) < -2.5; // More negative = stronger binding
+            const isStable = parseFloat(formationEnergy as string) < -0.6;
+            const isGoodBinder = parseFloat(liBindingEnergy as string) < -2.5;
 
             let conclusion: ExperimentResult['conclusion'] = 'inconclusive';
             let confidence = 0.5;
@@ -715,11 +928,10 @@ export const simulatedAPIs: SimulatedAPIS = {
             const totalCycles = parameters.find(p => p.name === 'cycles')?.value as number || 500;
 
             const material = await MaterialDatabase.fetchMaterialById(materialId);
-            const baseCapacity = material?.performanceScore ? material.performanceScore * 3 : 200; // Base from score
+            const baseCapacity = material?.performanceScore ? material.performanceScore * 3 : 200;
             const baseEfficiency = material?.stabilityScore ? material.stabilityScore * 0.9 + 10 : 90;
             let baseRetention = material?.stabilityScore ? material.stabilityScore * 0.8 : 70;
 
-            // Adjust based on composite structure (assuming better performance for novel materials)
             if (material?.composition.structure?.includes('heterostructure') || material?.composition.dopants) {
                 baseRetention += 15;
             }
@@ -752,9 +964,9 @@ export const simulatedAPIs: SimulatedAPIS = {
         },
         runThermalStabilitySimulation: async (composition, parameters) => {
             await new Promise(r => setTimeout(r, 2000 + Math.random() * 800));
-            const onsetTemp = (180 + Math.random() * 50).toFixed(1); // Â°C
-            const peakTemp = (250 + Math.random() * 70).toFixed(1); // Â°C
-            const heatRelease = (500 + Math.random() * 300).toFixed(1); // J/g
+            const onsetTemp = (180 + Math.random() * 50).toFixed(1);
+            const peakTemp = (250 + Math.random() * 70).toFixed(1);
+            const heatRelease = (500 + Math.random() * 300).toFixed(1);
 
             const isStable = parseFloat(onsetTemp) > 200 && parseFloat(heatRelease) < 600;
 
@@ -763,11 +975,11 @@ export const simulatedAPIs: SimulatedAPIS = {
                 experimentId: 'dummy-thermal-exp',
                 dataPoints: { temperature: Array.from({ length: 50 }, (_, i) => 50 + i * 5), heat_flow: Array.from({ length: 50 }, (_, i) => 10 + Math.sin(i / 5) * 5 + Math.exp(i / 25) * 0.5) },
                 metrics: [
-                    { name: 'Thermal Onset Temperature', value: onsetTemp, unit: 'Â°C' },
-                    { name: 'Peak Exothermic Temperature', value: peakTemp, unit: 'Â°C' },
+                    { name: 'Thermal Onset Temperature', value: onsetTemp, unit: '°C' },
+                    { name: 'Peak Exothermic Temperature', value: peakTemp, unit: '°C' },
                     { name: 'Total Heat Release', value: heatRelease, unit: 'J/g' }
                 ],
-                analysisSummary: `Thermal stability simulation completed. Onset of exothermic reaction at ${onsetTemp}Â°C, with a total heat release of ${heatRelease} J/g.`,
+                analysisSummary: `Thermal stability simulation completed. Onset of exothermic reaction at ${onsetTemp}°C, with a total heat release of ${heatRelease} J/g.`,
                 interpretation: isStable ? 'Material exhibits good thermal stability, suitable for safe battery operation.' : 'Thermal stability is a concern; may require further mitigation strategies or material modifications.',
                 conclusion: isStable ? 'supported' : 'refuted',
                 confidenceScore: isStable ? 0.8 : 0.5,
@@ -784,17 +996,17 @@ export const simulatedAPIs: SimulatedAPIS = {
             let confidence = 0.8;
 
             if (targetProperty === 'band_gap') {
-                value = (Math.random() * 4 + 0.5).toFixed(2); // 0.5 to 4.5 eV
+                value = (Math.random() * 4 + 0.5).toFixed(2);
                 unit = 'eV';
                 interpretation = `Calculated band gap for ${composition.name || JSON.stringify(composition.elements)}.`;
                 if (parseFloat(value) < 1.0) interpretation += ' Suggests metallic or semiconductor behavior suitable for electronic applications.';
                 else if (parseFloat(value) > 3.0) interpretation += ' Suggests insulating behavior, potentially useful for dielectrics or wide bandgap semiconductors.';
             } else if (targetProperty === 'electron_affinity') {
-                value = (Math.random() * 2 + 1.5).toFixed(2); // 1.5 to 3.5 eV
+                value = (Math.random() * 2 + 1.5).toFixed(2);
                 unit = 'eV';
                 interpretation = `Calculated electron affinity, indicating electron-accepting capability. Higher values suggest easier electron capture.`;
             } else { // ionization_potential
-                value = (Math.random() * 3 + 4.0).toFixed(2); // 4.0 to 7.0 eV
+                value = (Math.random() * 3 + 4.0).toFixed(2);
                 unit = 'eV';
                 interpretation = `Calculated ionization potential, indicating electron-donating capability. Lower values suggest easier electron removal.`;
             }
@@ -814,7 +1026,7 @@ export const simulatedAPIs: SimulatedAPIS = {
         },
         runPhaseDiagramCalculation: async (elements, temperatureRange) => {
             await new Promise(r => setTimeout(r, 4000 + Math.random() * 1500));
-            const numPhases = Math.floor(Math.random() * 3) + 2; // 2-4 phases
+            const numPhases = Math.floor(Math.random() * 3) + 2;
             const stablePhases = Array.from({ length: numPhases }, (_, i) => `Phase ${String.fromCharCode(65 + i)}`);
             const eutecticTemp = (temperatureRange[0] + (temperatureRange[1] - temperatureRange[0]) * (0.3 + Math.random() * 0.4)).toFixed(0);
 
@@ -824,11 +1036,11 @@ export const simulatedAPIs: SimulatedAPIS = {
                 dataPoints: {},
                 metrics: [
                     { name: 'Stable Phases', value: stablePhases.join(', ') },
-                    { name: 'Eutectic Temperature', value: eutecticTemp, unit: 'Â°C' },
-                    { name: 'Solidus Temperature', value: (parseFloat(eutecticTemp) - 50 + Math.random() * 30).toFixed(0), unit: 'Â°C' }
+                    { name: 'Eutectic Temperature', value: eutecticTemp, unit: '°C' },
+                    { name: 'Solidus Temperature', value: (parseFloat(eutecticTemp) - 50 + Math.random() * 30).toFixed(0), unit: '°C' }
                 ],
                 analysisSummary: `Phase diagram calculation for ${Object.keys(elements).join('-')} system completed. Identified ${numPhases} stable phases.`,
-                interpretation: `The calculated phase diagram suggests complex phase behavior, with a eutectic point at ${eutecticTemp}Â°C. Understanding these phases is crucial for synthesis control and material stability.`,
+                interpretation: `The calculated phase diagram suggests complex phase behavior, with a eutectic point at ${eutecticTemp}°C. Understanding these phases is crucial for synthesis control and material stability.`,
                 conclusion: 'new_insight',
                 confidenceScore: 0.85,
                 rawLog: `Simulated CALPHAD output: Gibbs free energy minimization completed. Phase boundaries determined.`,
@@ -837,9 +1049,9 @@ export const simulatedAPIs: SimulatedAPIS = {
         },
         runDefectFormationSimulation: async (composition, defectType) => {
             await new Promise(r => setTimeout(r, 3200 + Math.random() * 900));
-            const formationEnergy = (0.5 + Math.random() * 2.5).toFixed(2); // eV
-            const migrationBarrier = (0.1 + Math.random() * 0.8).toFixed(2); // eV
-            const defectConcentration = (Math.random() * 1e19 + 1e18).toExponential(2); // defects/cm^3
+            const formationEnergy = (0.5 + Math.random() * 2.5).toFixed(2);
+            const migrationBarrier = (0.1 + Math.random() * 0.8).toFixed(2);
+            const defectConcentration = (Math.random() * 1e19 + 1e18).toExponential(2);
 
             let interpretation = `Simulated ${defectType} defect formation in ${composition.name || JSON.stringify(composition.elements)}. `;
             if (parseFloat(formationEnergy) < 1.0) interpretation += `Low formation energy suggests high intrinsic defect concentration, potentially useful for ionic conductivity.`;
@@ -874,7 +1086,7 @@ export const simulatedAPIs: SimulatedAPIS = {
 
             let recipe = `Synthesis Recipe for ${materialGoal.name || JSON.stringify(materialGoal.elements)} via ${method}:\n`;
             recipe += `Precursors: ${precursors}\n`;
-            recipe += `Conditions: Temperature ${temperature}Â°C, Duration ${duration} hours, under ${method === 'Solvothermal Synthesis' ? 'autoclave' : 'ambient'} atmosphere.\n`;
+            recipe += `Conditions: Temperature ${temperature}°C, Duration ${duration} hours, under ${method === 'Solvothermal Synthesis' ? 'autoclave' : 'ambient'} atmosphere.\n`;
             recipe += `Solvent: ${method === 'Solvothermal Synthesis' ? 'N,N-dimethylformamide (DMF)' : 'N/A'}\n`;
             recipe += `Post-processing: ${postProcessing}.\n`;
             recipe += `Target Properties: ${targetProperties.join(', ')}.`;
@@ -900,7 +1112,7 @@ export const simulatedAPIs: SimulatedAPIS = {
                 stabilityScore: Math.round(purity * 0.8),
                 performanceScore: Math.round(yieldPercent * 0.7),
                 riskScore: Math.round(100 - purity),
-                costScore: Math.round(100 - yieldPercent) + 20, // Lower yield = higher cost
+                costScore: Math.round(100 - yieldPercent) + 20,
             };
             await MaterialDatabase.addMaterial(newMaterial);
             return newMaterialId;
@@ -923,7 +1135,7 @@ export const simulatedAPIs: SimulatedAPIS = {
                 dataPoints['XRD_2theta'] = Array.from({ length: 100 }, (_, i) => 10 + i * 0.5);
                 dataPoints['XRD_intensity'] = Array.from({ length: 100 }, (_, i) => Math.sin(i / 5) * Math.exp(-i / 50) * 100 + 150 + Math.random() * 50);
                 generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_xrd_pattern', title: 'XRD Pattern' });
-                if (crystalStructure === 'Rhombohedral' && material.name.toLowerCase().includes('graphene')) charConclusion = 'inconclusive'; // Graphene usually hexagonal
+                if (crystalStructure === 'Rhombohedral' && material.name.toLowerCase().includes('graphene')) charConclusion = 'inconclusive';
             }
             if (techniques.includes('TEM') || techniques.includes('SEM')) {
                 const particleSize = 50 + Math.random() * 20;
@@ -952,24 +1164,27 @@ export const simulatedAPIs: SimulatedAPIS = {
                 const retention = material.stabilityScore * 0.8 + Math.random() * 10;
                 metrics.push({ name: 'Initial Specific Capacity', value: initialCapacity.toFixed(2), unit: 'mAh/g' });
                 metrics.push({ name: 'Capacity Retention @ ' + cycles + ' cycles', value: retention.toFixed(2), unit: '%' });
-                 const cycleNumbers = Array.from({ length: cycles }, (_, i) => i + 1);
-                 const capacityData = cycleNumbers.map(i => initialCapacity * (1 - (i / cycles) * (100 - retention) / 100) + (Math.random() * 5 - 2.5));
+                const cycleNumbers = Array.from({ length: cycles }, (_, i) => i + 1);
+                const capacityData = cycleNumbers.map(i => initialCapacity * (1 - (i / cycles) * (100 - retention) / 100) + (Math.random() * 5 - 2.5));
                 dataPoints['Cycling_capacity'] = capacityData;
                 dataPoints['Cycling_cycles'] = cycleNumbers;
                 generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_cycling_data', title: 'Cycling Performance' });
             }
             if (techniques.includes('Raman')) {
                 metrics.push({ name: 'ID/IG Ratio', value: (0.5 + Math.random() * 0.5).toFixed(2), interpretation: 'Indicates defect density and graphitization degree.' });
-                 generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_raman_spectra', title: 'Raman Spectra' });
+                generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_raman_spectra', title: 'Raman Spectra' });
             }
             if (techniques.includes('TGA')) {
-                metrics.push({ name: 'Thermal Degradation Onset', value: (250 + Math.random() * 100).toFixed(1), unit: 'Â°C' });
-                metrics.push({ name: 'Mass Loss at 800Â°C', value: (5 + Math.random() * 15).toFixed(1), unit: '%' });
-                 generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_tga_curve', title: 'TGA Curve' });
+                metrics.push({ name: 'Thermal Degradation Onset', value: (250 + Math.random() * 100).toFixed(1), unit: '°C' });
+                metrics.push({ name: 'Mass Loss at 800°C', value: (5 + Math.random() * 15).toFixed(1), unit: '%' });
+                generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_tga_curve', title: 'TGA Curve' });
+            }
+            if (techniques.includes('NMR')) {
+                metrics.push({ name: 'Local Structure Conformation', value: 'Confirmed', interpretation: 'NMR analysis validates local atomic environment consistent with target structure.' });
+                metrics.push({ name: 'Chemical Shift Variance', value: (0.1 + Math.random() * 0.5).toFixed(2), unit: 'ppm', interpretation: 'Indicates chemical homogeneity of the material.' });
+                generatedVisualizations.push({ type: 'chart', dataUrl: 'data:image/png;base64,mocked_nmr_spectra', title: 'NMR Spectra' });
             }
 
-
-            // Update material properties with characterization results
             const updatedProperties = [...material.properties];
             metrics.forEach(m => {
                 const existing = updatedProperties.find(p => p.name === m.name);
@@ -991,7 +1206,6 @@ export const simulatedAPIs: SimulatedAPIS = {
                 }
             });
             await MaterialDatabase.updateMaterial({ ...material, properties: updatedProperties });
-
 
             return {
                 id: `char-${Date.now()}`,
@@ -1025,7 +1239,7 @@ export const simulatedAPIs: SimulatedAPIS = {
                     if (p.range) {
                         value = p.range[0] + (Math.random() * (p.range[1] - p.range[0]));
                     } else if (typeof p.value === 'number') {
-                        value = (p.value as number) * (0.8 + Math.random() * 0.4); // +/- 20%
+                        value = (p.value as number) * (0.8 + Math.random() * 0.4);
                     }
                     return { ...p, value: parseFloat(value.toFixed(2)) };
                 });
@@ -1068,22 +1282,19 @@ export const simulatedAPIs: SimulatedAPIS = {
             const results: ExperimentResult[] = [];
 
             for (let i = 0; i < numIterations; i++) {
-                // Simulate exploration and exploitation
                 const currentIterationParams = tunableParams.map(p => {
                     let newValue = p.value as number;
                     if (p.range) {
-                        // Gaussian walk around current best, or random if starting
                         const currentBest = optimizedParams.find(op => op.name === p.name)?.value as number || (p.range[0] + p.range[1]) / 2;
-                        newValue = Math.max(p.range[0], Math.min(p.range[1], currentBest + (Math.random() - 0.5) * (p.range[1] - p.range[0]) / (numIterations - i + 2))); // Reduce randomness over iterations
+                        newValue = Math.max(p.range[0], Math.min(p.range[1], currentBest + (Math.random() - 0.5) * (p.range[1] - p.range[0]) / (numIterations - i + 2)));
                     } else if (typeof p.value === 'number') {
                         newValue = (p.value as number) + (Math.random() * 0.1 - 0.05);
                     }
                     return { ...p, value: parseFloat(newValue.toFixed(2)) };
                 });
 
-                // Simulate running an experiment with these parameters
                 const simResult = await simulatedAPIs.simulationEngine.runElectrochemicalModel(
-                    materialBase.id || 'mat-001', // Needs a real material ID for full simulation
+                    materialBase.id || 'mat-001',
                     { anode: materialBase.name || 'Optimized Anode' },
                     currentIterationParams
                 );
@@ -1106,7 +1317,7 @@ export const simulatedAPIs: SimulatedAPIS = {
             }
 
             return {
-                optimalParams: optimizedParams.length > 0 ? optimizedParams : tunableParams.map(p => ({...p, value: (p.range ? (p.range[0] + p.range[1]) / 2 : p.value)})), // fallback to midpoint or initial
+                optimalParams: optimizedParams.length > 0 ? optimizedParams : tunableParams.map(p => ({ ...p, value: (p.range ? (p.range[0] + p.range[1]) / 2 : p.value) })),
                 predictedValue: parseFloat(bestValue.toFixed(2)),
                 results: results
             };
@@ -1118,7 +1329,6 @@ export const simulatedAPIs: SimulatedAPIS = {
             const results: ExperimentResult[] = [];
 
             for (let g = 0; g < generations; g++) {
-                // Simulate generation of new candidates (crossover, mutation)
                 const candidateParams = genePool.map(p => {
                     let value = p.value as number;
                     if (p.range) {
@@ -1138,16 +1348,15 @@ export const simulatedAPIs: SimulatedAPIS = {
                     if (p.name.toLowerCase().includes('layer_thickness')) currentComposition.structure = `BNNS interlayers (thickness: ${p.value}nm)`;
                 });
 
-                // Simulate evaluation of candidate material (e.g., electrochemical model)
                 const tempMaterialId = `temp-ga-${Date.now()}`;
-                await MaterialDatabase.addMaterial({ // Temporarily add material for simulation
+                await MaterialDatabase.addMaterial({
                     id: tempMaterialId, name: 'GA Candidate', composition: currentComposition,
                     properties: [], discoveryDate: new Date().toISOString().split('T')[0], potentialApplications: ['research']
                 });
                 const simResult = await simulatedAPIs.simulationEngine.runElectrochemicalModel(
                     tempMaterialId,
                     { anode: currentComposition.name || 'GA Candidate' },
-                    [] // No specific parameters needed for electro model, it uses material properties
+                    []
                 );
                 results.push(simResult);
 
@@ -1157,11 +1366,10 @@ export const simulatedAPIs: SimulatedAPIS = {
                     if (metric && typeof metric.value === 'string') {
                         const val = parseFloat(metric.value);
                         if (target.toLowerCase().includes('capacity') || target.toLowerCase().includes('retention')) currentScore += val;
-                        if (target.toLowerCase().includes('resistance')) currentScore -= val; // Minimize resistance
+                        if (target.toLowerCase().includes('resistance')) currentScore -= val;
                     }
                 });
 
-                // Simple selection: keep the best one
                 if (g === 0 || currentScore > (predictedPerformance.overallScore || 0)) {
                     bestMaterialComposition = currentComposition;
                     predictedPerformance.overallScore = currentScore;
@@ -1182,7 +1390,7 @@ export const simulatedAPIs: SimulatedAPIS = {
         if (!material) return [{ name: 'Safety Risk', value: 'High', interpretation: 'Material not found.' }];
 
         const risks: ExperimentResultMetric[] = [];
-        const baseRisk = 100 - (material.stabilityScore || 50); // Higher stability = lower base risk
+        const baseRisk = 100 - (material.stabilityScore || 50);
         let overallRisk = baseRisk;
 
         if (material.name.toLowerCase().includes('silicon')) {
@@ -1198,8 +1406,8 @@ export const simulatedAPIs: SimulatedAPIS = {
             overallRisk += 15;
         }
         if (material.composition.nanostructure?.includes('quantum dots') && !currentKnowledge.includes('nanotoxicity')) {
-             risks.push({ name: 'Nanotoxicity Risk', value: 'Unknown/Moderate', interpretation: 'Potential health risks due to nanoparticle inhalation or environmental release. Requires further specific toxicology studies.' });
-             overallRisk += 25; // Unknown risk adds significant penalty
+            risks.push({ name: 'Nanotoxicity Risk', value: 'Unknown/Moderate', interpretation: 'Potential health risks due to nanoparticle inhalation or environmental release. Requires further specific toxicology studies.' });
+            overallRisk += 25;
         }
 
         risks.push({ name: 'Overall Safety Score', value: Math.max(0, Math.min(100, 100 - overallRisk)).toFixed(1), unit: '/100', interpretation: 'Higher score means safer.' });
@@ -1210,19 +1418,19 @@ export const simulatedAPIs: SimulatedAPIS = {
         const material = await MaterialDatabase.fetchMaterialById(materialId);
         if (!material) return [{ name: 'Cost/kg', value: 'N/A', interpretation: 'Material not found.' }];
 
-        let baseCostPerKg = 50 + Math.random() * 100; // Base material cost
-        if (material.composition.elements.Co) baseCostPerKg += 200; // Cobalt is expensive
-        if (material.composition.elements.Li && material.composition.structure?.includes('nanosheet')) baseCostPerKg += 150; // Nano materials are complex
-        if (material.composition.dopants && Object.keys(material.composition.dopants).length > 0) baseCostPerKg += 50; // Doping adds cost
+        let baseCostPerKg = 50 + Math.random() * 100;
+        if (material.composition.elements.Co) baseCostPerKg += 200;
+        if (material.composition.elements.Li && material.composition.structure?.includes('nanosheet')) baseCostPerKg += 150;
+        if (material.composition.dopants && Object.keys(material.composition.dopants).length > 0) baseCostPerKg += 50;
 
         let scaleFactor = 1;
         if (productionScale.toLowerCase() === 'pilot') scaleFactor = 2;
         if (productionScale.toLowerCase() === 'mass') scaleFactor = 0.8;
 
         const costPerKg = (baseCostPerKg * scaleFactor + Math.random() * 20 - 10).toFixed(2);
-        const lifecycleCostReduction = (material.performanceScore && material.stabilityScore) ? (material.performanceScore + material.stabilityScore) / 200 * 30 : 15; // Placeholder
-        const potentialROI = (lifecycleCostReduction * 2 - baseCostPerKg / 100).toFixed(2); // Simplified ROI calculation
-        const marketPenetration = (Math.random() * 50 + 20).toFixed(1); // Simulated market penetration
+        const lifecycleCostReduction = (material.performanceScore && material.stabilityScore) ? (material.performanceScore + material.stabilityScore) / 200 * 30 : 15;
+        const potentialROI = (lifecycleCostReduction * 2 - baseCostPerKg / 100).toFixed(2);
+        const marketPenetration = (Math.random() * 50 + 20).toFixed(1);
 
         return [
             { name: 'Raw Material Cost', value: costPerKg, unit: 'USD/kg', interpretation: 'Estimated cost of raw materials for production. Influenced by elemental scarcity and processing complexity.' },
@@ -1251,26 +1459,24 @@ export const simulatedAPIs: SimulatedAPIS = {
         addKnowledgeEntry: async (entry, source, timestamp) => {
             await new Promise(r => setTimeout(r, 100));
             // In a real system, this would add to a persistent knowledge store
-            console.log(`Knowledge Graph: Added new entry "${entry}" from ${source} at ${timestamp}`);
+            // console.log(`Knowledge Graph: Added new entry "${entry}" from ${source} at ${timestamp}`);
         },
         refineKnowledgeGraph: async (newInsights) => {
             await new Promise(r => setTimeout(r, 800));
-            // Simulate AI integrating new insights and updating relationships
             return `Knowledge Graph refined. Integrated insights on ${newInsights.substring(0, 50)}... Updated material properties and interdependencies.`;
         }
     },
     projectManagement: {
         updateKPI: async (projectId, kpiName, value) => {
             await new Promise(r => setTimeout(r, 50));
-            console.log(`Project ${projectId}: KPI "${kpiName}" updated to ${value}`);
+            // console.log(`Project ${projectId}: KPI "${kpiName}" updated to ${value}`);
         },
         allocateBudget: async (projectId, amount, category) => {
             await new Promise(r => setTimeout(r, 50));
-            console.log(`Project ${projectId}: Allocated $${amount} to ${category}`);
+            // console.log(`Project ${projectId}: Allocated $${amount} to ${category}`);
         },
         getProjectStatus: async (projectId) => {
             await new Promise(r => setTimeout(r, 100));
-            // Mock a project status
             return {
                 id: projectId,
                 name: 'High-Performance Anode Materials',
@@ -1363,7 +1569,7 @@ export const simulatedAPIs: SimulatedAPIS = {
         simulatePeerReview: async (articleId) => {
             await new Promise(r => setTimeout(r, 4000 + Math.random() * 2000));
             const reviewOutcome = Math.random();
-            if (reviewOutcome < 0.2) return 'rejected'; // Tough journal
+            if (reviewOutcome < 0.2) return 'rejected';
             if (reviewOutcome < 0.6) return 'major_revision';
             if (reviewOutcome < 0.8) return 'minor_revision';
             return 'accepted';
@@ -1375,7 +1581,8 @@ export const simulatedAPIs: SimulatedAPIS = {
             const expertResponses: { [key: string]: string } = {
                 'thermal stability': `(Expert AI: Thermal Safety) For ${topic}, regarding "${specificQuestion}", it's crucial to consider the exothermic reaction pathways. Our models suggest a higher onset temperature could be achieved with increased covalent bonding at interfaces.`,
                 'synthesis scalability': `(Expert AI: Process Engineering) Regarding ${topic}, for "${specificQuestion}", the primary challenge for BNNS synthesis is maintaining uniformity and controlling layer number at industrial scales. Current methods are often batch-limited.`,
-                'quantum mechanics': `(Expert AI: Quantum Chemist) On ${topic}, concerning "${specificQuestion}", ensure your basis sets are appropriate for describing orbital hybridization at the doping sites. This significantly impacts binding energies and charge transfer.`
+                'quantum mechanics': `(Expert AI: Quantum Chemist) On ${topic}, concerning "${specificQuestion}", ensure your basis sets are appropriate for describing orbital hybridization at the doping sites. This significantly impacts binding energies and charge transfer.`,
+                'economic viability': `(Expert AI: Economist) For "${topic}", considering "${specificQuestion}", a high material cost necessitates strong performance differentials or unique market niches. Explore process optimization to reduce synthesis cost, or focus on niche high-value applications.`
             };
             const response = expertResponses[topic.toLowerCase()] || `(Expert AI: Generalist) For "${topic}", I'd advise reviewing the most recent literature on "${specificQuestion}". Consider multi-fidelity modeling approaches.`;
             return response;
@@ -1387,8 +1594,14 @@ export const simulatedAPIs: SimulatedAPIS = {
     }
 };
 
-// --- Core Autonomous Scientist Logic ---
-
+/**
+ * Defines the comprehensive state and context for the Autonomous Scientist agent.
+ * This interface holds all dynamic data related to the ongoing research, including
+ * the current goal, phase, discovered entities, financial resources, and IP.
+ * Business Value: Serves as the single source of truth for the AI's operational state,
+ * enabling robust state management, checkpointing, and auditability. It ensures that
+ * all agentic decisions are made with full contextual awareness, maximizing research efficacy.
+ */
 export interface ResearchContext {
     goal: string;
     currentPhase: ResearchPhase;
@@ -1400,31 +1613,55 @@ export interface ResearchContext {
     iterationCount: number;
     maxIterations: number;
     focusMaterialId?: string;
-    ai: MockGoogleGenAI; // Keep AI instance
-    researchReport?: ResearchReport; // Final report
-    budget: number; // Simulated budget
-    timeElapsed: number; // Simulated time in hours
-    currentProject: ResearchProject; // Current active project
-    patentsFiled: PatentApplication[]; // Track filed patents
-    grantsSubmitted: GrantProposal[]; // Track submitted grants
-    publicationsSubmitted: PublicationArticle[]; // Track submitted publications
-    knowledgeBase: string[]; // Simple list of key knowledge points
-    currentRiskAssessment?: ExperimentResultMetric[]; // Last conducted risk assessment
-    currentEconomicAnalysis?: ExperimentResultMetric[]; // Last conducted economic analysis
+    ai: MockGoogleGenAI;
+    researchReport?: ResearchReport;
+    budget: number;
+    timeElapsed: number;
+    currentProject: ResearchProject;
+    patentsFiled: PatentApplication[];
+    grantsSubmitted: GrantProposal[];
+    publicationsSubmitted: PublicationArticle[];
+    knowledgeBase: string[];
+    currentRiskAssessment?: ExperimentResultMetric[];
+    currentEconomicAnalysis?: ExperimentResultMetric[];
 }
 
-// Utility for adding log entries consistently
+/**
+ * Utility function to create a standardized log entry.
+ * @param type The type of log entry (e.g., 'thought', 'action').
+ * @param content The content of the log message.
+ * @returns A formatted LogEntry object.
+ */
 const createLogEntry = (type: LogEntry['type'], content: string): LogEntry => ({
     type,
     content: `${new Date().toLocaleTimeString()} - ${content}`
 });
 
-// A central "Agent" class to encapsulate complex decision making and state transitions
+/**
+ * The core agent class embodying the Autonomous Scientist.
+ * This class orchestrates the entire scientific discovery process, from defining
+ * research objectives and designing experiments to analyzing results and managing
+ * intellectual property. It leverages a simulated AI and API ecosystem to
+ * autonomously advance scientific knowledge.
+ *
+ * Business Value: This agent is the engine of innovation, capable of operating
+ * 24/7 without human intervention. Its autonomous workflow minimizes human error,
+ * maximizes computational resource utilization, and ensures a consistent, high-throughput
+ * approach to complex R&D. The integrated decision-making, resource management,
+ * and IP handling capabilities make it a game-changer for any organization
+ * seeking a decisive edge in materials science and beyond.
+ */
 export class AutonomousScientistAgent {
     private context: ResearchContext;
     private addLog: (entry: LogEntry) => void;
     private updateContext: (updater: (prev: ResearchContext) => ResearchContext) => void;
 
+    /**
+     * Constructs an instance of the AutonomousScientistAgent.
+     * @param initialContext The initial research context for the agent.
+     * @param addLogFunc A callback function to add log entries to the UI.
+     * @param updateContextFunc A callback function to update the agent's research context.
+     */
     constructor(
         initialContext: ResearchContext,
         addLogFunc: (entry: LogEntry) => void,
@@ -1433,15 +1670,29 @@ export class AutonomousScientistAgent {
         this.context = initialContext;
         this.addLog = addLogFunc;
         this.updateContext = updateContextFunc;
-        // Initialize knowledge base with initial literature findings
-        this.context.knowledgeBase = [];
+        this.context.knowledgeBase = []; // Ensure knowledge base is initialized
     }
 
+    /**
+     * Updates the internal research context and propagates changes to the UI.
+     * @param newContext A partial object containing the new context properties.
+     */
     private updateInternalContext(newContext: Partial<ResearchContext>) {
         this.context = { ...this.context, ...newContext };
-        this.updateContext(() => this.context); // Update React state
+        this.updateContext(() => this.context);
     }
 
+    /**
+     * Records a strategic decision made by the agent.
+     * This method captures the rationale, outcome, and context of key decisions,
+     * providing a transparent audit trail of the agent's thought process.
+     * @param phase The current research phase during which the decision was made.
+     * @param description A brief description of the decision.
+     * @param details Any additional relevant details.
+     * @param outcome The perceived outcome of the decision.
+     * @param reasoning The underlying reason for the decision.
+     * @param decisionMetrics Key metrics considered during the decision-making process.
+     */
     private logDecision(phase: ResearchPhase, description: string, details: any = {}, outcome: AgentDecision['outcome'] = 'neutral', reasoning?: string, decisionMetrics?: { name: string, value: any }[]) {
         const decision: AgentDecision = {
             timestamp: new Date().toISOString(),
@@ -1458,11 +1709,24 @@ export class AutonomousScientistAgent {
         this.addLog(createLogEntry('thought', `Decision: ${description}. Outcome: ${outcome.toUpperCase()}${reasoning ? ` Reasoning: ${reasoning}` : ''}`));
     }
 
+    /**
+     * Transitions the agent to a new research phase and logs the transition.
+     * @param newPhase The phase to transition to.
+     */
     private updateCurrentPhase(newPhase: ResearchPhase) {
         this.updateInternalContext({ currentPhase: newPhase });
         this.addLog(createLogEntry('thought', `Transitioning to phase: ${newPhase.replace(/_/g, ' ')}`));
     }
 
+    /**
+     * Simulates the consumption of financial budget and time resources.
+     * This method updates the agent's internal budget and time tracking,
+     * and also updates relevant KPIs in the simulated project management system.
+     * @param cost The simulated financial cost incurred.
+     * @param time The simulated time elapsed in hours.
+     * @param category The category of expenditure.
+     * @throws Error if the budget is exceeded.
+     */
     private async spendResources(cost: number, time: number, category: string = 'research') {
         const newBudget = this.context.budget - cost;
         const newTime = this.context.timeElapsed + time;
@@ -1479,13 +1743,19 @@ export class AutonomousScientistAgent {
         }
     }
 
+    /**
+     * Executes the main research cycle, driving the autonomous scientific discovery process.
+     * This method orchestrates all phases of research, from initial goal definition
+     * through iterative experimentation, analysis, and final reporting, including
+     * IP and publication strategies.
+     */
     public async runResearchCycle() {
         this.updateCurrentPhase(ResearchPhase.PROJECT_SETUP);
         this.logDecision(ResearchPhase.PROJECT_SETUP, `Setting up project for goal: "${this.context.goal}"`, { goal: this.context.goal }, 'success');
         this.updateInternalContext({
             currentProject: {
                 id: `proj-${Date.now()}`,
-                name: `Autonomous Research: ${this.context.goal.substring(0, 30)}...`,
+                name: `Autonomous Research: ${this.context.goal.substring(0, Math.min(this.context.goal.length, 30))}...`,
                 goal: this.context.goal,
                 status: 'active',
                 startDate: new Date().toISOString().split('T')[0],
@@ -1500,14 +1770,13 @@ export class AutonomousScientistAgent {
                 teamMembers: ['Autonomous Scientist AI'],
             }
         });
-        this.spendResources(100, 1.0, 'project_setup');
-
+        await this.spendResources(100, 1.0, 'project_setup');
 
         try {
-            // --- Phase 1: Goal Decomposition & Initial Literature Review ---
+            // Phase 1: Goal Decomposition & Initial Literature Review
             this.updateCurrentPhase(ResearchPhase.LITERATURE_REVIEW);
             this.addLog(createLogEntry('action', `Decomposing goal: "${this.context.goal}" into actionable sub-objectives.`));
-            this.spendResources(50, 0.5); // Initial thought process
+            await this.spendResources(50, 0.5);
 
             const goalBreakdownResponse = await this.context.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
@@ -1516,22 +1785,22 @@ export class AutonomousScientistAgent {
             const subGoals = goalBreakdownResponse.text.split('\n').filter(s => s.trim() !== '').map(s => s.replace(/^\d+\.\s*/, ''));
             this.addLog(createLogEntry('result', `Goal decomposed into: ${subGoals.join('; ')}`));
             this.logDecision(ResearchPhase.LITERATURE_REVIEW, 'Goal decomposed', { subGoals }, 'success');
-            this.spendResources(20, 0.2);
+            await this.spendResources(20, 0.2);
 
             this.addLog(createLogEntry('action', `Performing initial literature search for "${this.context.goal}" across multiple domains...`));
             const searchQueries = [
-                `"${this.context.goal.split(' ')[2] || 'battery'} anode limitations"`, // Dynamic query based on goal
+                `"${this.context.goal.split(' ')[2] || 'battery'} anode limitations"`,
                 `"novel material compositions ${this.context.goal.split(' ')[0] || 'lithium'} performance"`,
                 `"solid-state electrolyte advanced research"`,
                 `"in-situ characterization battery degradation mechanisms"`,
                 `"electrochemical stability of 2D materials"`,
                 `"doping effects on Li-ion transport"`,
-                `"nanotoxicity of battery materials"`, // New query
-                `"manufacturing cost of advanced battery materials"` // New query
+                `"nanotoxicity of battery materials"`,
+                `"manufacturing cost of advanced battery materials"`
             ];
             let keyFindings: string[] = [];
             for (const query of searchQueries) {
-                this.spendResources(10, 0.3, 'literature_search'); // Cost per search
+                await this.spendResources(10, 0.3, 'literature_search');
                 const papers = await simulatedAPIs.literatureSearch(query, 3);
                 keyFindings.push(...papers);
                 this.addLog(createLogEntry('action', `Searched "${query}", found ${papers.length} relevant entries.`));
@@ -1545,17 +1814,17 @@ export class AutonomousScientistAgent {
             });
             this.addLog(createLogEntry('result', `Literature Summary: ${literatureSummaryResponse.text}`));
             this.logDecision(ResearchPhase.LITERATURE_REVIEW, 'Initial literature review completed', { summary: literatureSummaryResponse.text }, 'success');
-            this.spendResources(30, 0.5, 'literature_synthesis');
+            await this.spendResources(30, 0.5, 'literature_synthesis');
             await simulatedAPIs.knowledgeGraph.addKnowledgeEntry(literatureSummaryResponse.text, 'AI_synthesis', new Date().toISOString());
 
 
-            // --- Iterative Research Loop ---
+            // Iterative Research Loop
             for (let i = 0; i < this.context.maxIterations; i++) {
-                if (this.context.budget < 2000) { // Check budget before starting a new iteration (increased threshold)
+                if (this.context.budget < 2000) {
                     this.addLog(createLogEntry('result', 'Insufficient budget to start a new iteration. Attempting to apply for a grant.'));
                     this.logDecision(ResearchPhase.RESOURCE_MANAGEMENT, 'Budget low, initiating grant application', { budget: this.context.budget }, 'pivot', 'Budget threshold reached, need more funding.');
-                    await this.handleGrantApplication(); // New step
-                    if (this.context.currentProject.currentBudget < 2000) { // Check again after grant attempt
+                    await this.handleGrantApplication();
+                    if (this.context.currentProject.currentBudget < 2000) {
                         this.addLog(createLogEntry('result', 'Grant application unsuccessful or insufficient. Concluding research due to resource constraints.'));
                         this.logDecision(ResearchPhase.RESOURCE_MANAGEMENT, 'Failed to secure additional funding, ending iterations', { budget: this.context.budget }, 'failure', 'Could not secure additional funding.');
                         break;
@@ -1566,16 +1835,15 @@ export class AutonomousScientistAgent {
 
                 // Phase 2: Hypothesis Generation
                 this.updateCurrentPhase(ResearchPhase.HYPOTHESIS_GENERATION);
-                this.spendResources(80, 1.0, 'hypothesis_generation');
+                await this.spendResources(80, 1.0, 'hypothesis_generation');
                 const currentKnowledge = `Goal: ${this.context.goal}\nRecent Literature Summary: ${literatureSummaryResponse.text}\nPrevious Hypotheses: ${this.context.hypotheses.map(h => `(${h.status}) ${h.text}`).join('; ')}\nRecent Experiment Results: ${this.context.experiments.filter(e => e.results).slice(-2).map(e => e.results?.analysisSummary).join('; ') || 'None yet.'}\nKnown Materials: ${this.context.materialsDiscovered.map(m => m.name).join(', ')}.`;
-                const hypothesisPrompt = `Based on the following knowledge:\n${currentKnowledge}\nFormulate one novel, testable hypothesis to advance the research goal. Focus on specific material modifications or combinations for improved battery performance (e.g., enhanced cycle life, higher capacity, better stability), considering safety and cost. Specify target property and predicted effect. Also, suggest if this hypothesis needs a new material synthesis route.`;
+                const hypothesisPrompt = `Based on the following knowledge:\n${currentKnowledge}\nFormulate one novel, testable hypothesis to advance the research goal. Focus on specific material modifications or combinations for improved battery performance (e.g., enhanced cycle life, higher capacity, better stability), considering safety and cost. Specify target property and predicted effect. Also, suggest if this hypothesis needs a new material synthesis route. If novel, also suggest a "Novelty summary" and "Key claims" for a patent application.`;
                 this.addLog(createLogEntry('action', 'Generating a novel hypothesis based on current knowledge...'));
                 const hypothesisResponse = await this.context.ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: hypothesisPrompt
                 });
                 const newHypothesisText = hypothesisResponse.text;
-                // Attempt to parse structured parts from the AI response
                 const targetPropMatch = newHypothesisText.match(/target property:\s*([\w\s]+)/i);
                 const predictedEffectMatch = newHypothesisText.match(/predicted effect:\s*([\w\s]+)/i);
 
@@ -1596,9 +1864,9 @@ export class AutonomousScientistAgent {
 
                 // Phase 3: Experiment Design
                 this.updateCurrentPhase(ResearchPhase.EXPERIMENT_DESIGN);
-                this.spendResources(120, 2.0, 'experiment_design');
+                await this.spendResources(120, 2.0, 'experiment_design');
                 this.addLog(createLogEntry('action', `Designing a multi-stage simulated experiment to test hypothesis: "${newHypothesisText}"`));
-                const experimentDesignPrompt = `Design a detailed, multi-stage computational experiment (e.g., MD, DFT, electrochemical simulation, thermal stability, QM, phase diagram, defect formation) to rigorously test the hypothesis: "${newHypothesisText}". Specify material composition (e.g., N-doped graphene with BNNS interlayers), precise key parameters (ranges where applicable), expected outcomes, and multiple metrics to measure. Also, suggest relevant simulated characterization techniques. Provide justification for each step. Consider cost and time efficiency.`;
+                const experimentDesignPrompt = `Design a detailed, multi-stage computational experiment (e.g., MD, DFT, electrochemical simulation, thermal stability, QM, phase diagram, defect formation) to rigorously test the hypothesis: "${newHypothesisText}". Specify material composition (e.g., N-doped graphene with BNNS interlayers), precise key parameters (ranges where applicable), expected outcomes, and multiple metrics to measure. Also, suggest relevant simulated characterization techniques. Provide justification for each step. Consider cost and time efficiency. Mention a "Specific sim type" for the main simulation, such as runMolecularDynamics, runDFT, runElectrochemicalModel, etc.`;
                 const experimentDesignResponse = await this.context.ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: experimentDesignPrompt
@@ -1606,17 +1874,16 @@ export class AutonomousScientistAgent {
                 const designDetails = experimentDesignResponse.text;
                 this.addLog(createLogEntry('result', `Experiment Design Plan: ${designDetails}`));
 
-                // Parse design details into structured experiment and material data
                 const materialToSimulate = await this.extractMaterialFromDesign(designDetails);
                 const simulationParameters = this.extractParametersFromDesign(designDetails);
                 const experimentType = this.determineExperimentType(designDetails);
                 const charTechniques = this.extractCharacterizationTechniques(designDetails);
                 const specificSimType = this.determineSpecificSimType(designDetails);
 
-                await MaterialDatabase.addMaterial(materialToSimulate); // Add the proposed material to our DB
+                await MaterialDatabase.addMaterial(materialToSimulate);
                 this.updateInternalContext({ materialsDiscovered: [...this.context.materialsDiscovered, materialToSimulate] });
                 this.logDecision(ResearchPhase.EXPERIMENT_DESIGN, 'Proposed new material for experimentation', { material: materialToSimulate.name }, 'success');
-                this.updateInternalContext({focusMaterialId: materialToSimulate.id});
+                this.updateInternalContext({ focusMaterialId: materialToSimulate.id });
 
                 const newExperiment: Experiment = {
                     id: `exp-${Date.now()}`,
@@ -1628,8 +1895,8 @@ export class AutonomousScientistAgent {
                     status: 'pending',
                     results: null,
                     designRationale: designDetails,
-                    costEstimate: 1500 + Math.random() * 3000 + (experimentType === 'synthesis' ? 5000 : 0), // Higher cost for more complex sim/synthesis
-                    timeEstimate: 15 + Math.random() * 30 + (experimentType === 'synthesis' ? 50 : 0), // Longer time
+                    costEstimate: 1500 + Math.random() * 3000 + (experimentType === 'synthesis' ? 5000 : 0),
+                    timeEstimate: 15 + Math.random() * 30 + (experimentType === 'synthesis' ? 50 : 0),
                     priority: 'high',
                     associatedAPICalls: [
                         `simulationEngine.${specificSimType}`,
@@ -1640,10 +1907,10 @@ export class AutonomousScientistAgent {
                 this.updateInternalContext({ experiments: [...this.context.experiments, newExperiment] });
                 this.logDecision(ResearchPhase.EXPERIMENT_DESIGN, 'Designed a new experiment', { experiment: newExperiment.name, material: materialToSimulate.name }, 'success');
 
-                // Phase 4: Risk Assessment & Economic Evaluation (New sub-phases before execution)
+                // Phase 4: Risk Assessment & Economic Evaluation
                 this.updateCurrentPhase(ResearchPhase.RISK_ASSESSMENT);
                 this.addLog(createLogEntry('action', `Performing safety risk assessment for material ${materialToSimulate.name} in application: 'EV battery'.`));
-                this.spendResources(50, 0.5, 'risk_assessment');
+                await this.spendResources(50, 0.5, 'risk_assessment');
                 const safetyMetrics = await simulatedAPIs.safetyAssessment(materialToSimulate.id, 'EV battery', this.context.knowledgeBase.join('. '));
                 this.updateInternalContext({ currentRiskAssessment: safetyMetrics });
                 this.addLog(createLogEntry('result', `Safety Assessment: ${safetyMetrics.map(m => `${m.name}: ${m.value}`).join(', ')}`));
@@ -1652,7 +1919,7 @@ export class AutonomousScientistAgent {
 
                 this.updateCurrentPhase(ResearchPhase.ECONOMIC_EVALUATION);
                 this.addLog(createLogEntry('action', `Performing economic analysis for material ${materialToSimulate.name} at 'mass' production scale for 'EV battery' market.`));
-                this.spendResources(50, 0.5, 'economic_analysis');
+                await this.spendResources(50, 0.5, 'economic_analysis');
                 const economicMetrics = await simulatedAPIs.economicAnalysis(materialToSimulate.id, 'mass', 'EV battery');
                 this.updateInternalContext({ currentEconomicAnalysis: economicMetrics });
                 this.addLog(createLogEntry('result', `Economic Analysis: ${economicMetrics.map(m => `${m.name}: ${m.value}`).join(', ')}`));
@@ -1661,27 +1928,24 @@ export class AutonomousScientistAgent {
                 await MaterialDatabase.updateMaterial({
                     ...materialToSimulate,
                     riskScore: 100 - (materialRiskScore as number),
-                    costScore: parseFloat(materialCostPerKg) / 10, // Scale to 0-100
+                    costScore: parseFloat(materialCostPerKg) / 10,
                 });
 
-                // Conditional decision making based on risk/cost (new logic)
                 if (materialRiskScore < 60 || parseFloat(materialCostPerKg) > 800) {
                     this.addLog(createLogEntry('warning', `High risk or cost detected for ${materialToSimulate.name}. Re-evaluating experiment execution.`));
                     this.logDecision(ResearchPhase.SELF_CORRECTION, 'High risk/cost detected, reconsidering experiment', { material: materialToSimulate.name, risk: materialRiskScore, cost: materialCostPerKg }, 'pivot', 'Experiment may not be viable given current risk/cost profile.');
-                    // Option to pivot, refine, or seek expert opinion
                     const expertOpinion = await simulatedAPIs.collaborativeAgentAPI.requestExpertOpinion('economic viability', `Given the high cost of ${materialCostPerKg} USD/kg for ${materialToSimulate.name}, how can we proceed?`);
                     this.addLog(createLogEntry('thought', `Expert Opinion: ${expertOpinion}`));
-                    this.spendResources(20, 0.2, 'expert_consultation');
+                    await this.spendResources(20, 0.2, 'expert_consultation');
                     if (expertOpinion.toLowerCase().includes('further optimization')) {
-                         this.addLog(createLogEntry('action', 'Expert suggests further optimization. Modifying next iteration.'));
-                         continue; // Skip current experiment execution and go to next iteration for refinement
+                        this.addLog(createLogEntry('action', 'Expert suggests further optimization. Modifying next iteration.'));
+                        continue;
                     }
                 }
 
-
-                // Phase 5: Simulation Execution (and potentially characterization)
+                // Phase 5: Simulation Execution
                 this.updateCurrentPhase(ResearchPhase.SIMULATION_EXECUTION);
-                this.spendResources(newExperiment.costEstimate, newExperiment.timeEstimate, 'experiment_execution');
+                await this.spendResources(newExperiment.costEstimate, newExperiment.timeEstimate, 'experiment_execution');
                 this.addLog(createLogEntry('action', `Executing ${newExperiment.type} simulation for ${newExperiment.name} on material ${materialToSimulate.name}...`));
                 let experimentResult: ExperimentResult | null = null;
                 try {
@@ -1701,63 +1965,62 @@ export class AutonomousScientistAgent {
                             } else if (specificSimType === 'runDefectFormationSimulation') {
                                 const defectType = simulationParameters.find(p => p.name.toLowerCase().includes('defect_type'))?.value as string || 'vacancy';
                                 experimentResult = await simulatedAPIs.simulationEngine.runDefectFormationSimulation(materialToSimulate.composition, defectType);
-                            }
-                            else {
+                            } else {
                                 experimentResult = await simulatedAPIs.simulationEngine.runElectrochemicalModel(materialToSimulate.id, { anode: materialToSimulate.name }, simulationParameters);
                             }
                             break;
                         case 'synthesis':
                             const recipeDesign = await simulatedAPIs.labRobotics.designSynthesisRoute(materialToSimulate.composition, [newHypothesis.targetProperty]);
                             this.addLog(createLogEntry('thought', `Generated Synthesis Recipe: ${recipeDesign}`));
-                            this.spendResources(20, 0.5, 'synthesis_protocol_design');
+                            await this.spendResources(20, 0.5, 'synthesis_protocol_design');
 
                             const synthesizedId = await simulatedAPIs.labRobotics.synthesizeMaterial({ name: materialToSimulate.name, composition: materialToSimulate.composition, method: recipeDesign, applications: materialToSimulate.potentialApplications });
                             this.addLog(createLogEntry('result', `Material ${materialToSimulate.name} synthesized with ID: ${synthesizedId}`));
                             experimentResult = {
                                 id: `res-${Date.now()}`, experimentId: newExperiment.id, dataPoints: {}, metrics: [{ name: 'Synthesis Success', value: 'High', unit: '%' }],
-                                analysisSummary: `Successfully synthesized material ${synthesizedId}. Purity: ${Math.random() * 5 + 90}%. Yield: ${Math.random() * 10 + 80}%.`,
+                                analysisSummary: `Successfully synthesized material ${synthesizedId}. Purity: ${(Math.random() * 5 + 90).toFixed(2)}%. Yield: ${(Math.random() * 10 + 80).toFixed(2)}%.`,
                                 interpretation: 'Material ready for characterization.', conclusion: 'supported', confidenceScore: 0.95,
                             };
-                            await MaterialDatabase.updateMaterial({ ...materialToSimulate, id: synthesizedId }); // Update original material with synthesized ID
+                            await MaterialDatabase.updateMaterial({ ...materialToSimulate, id: synthesizedId });
                             this.updateInternalContext({
                                 focusMaterialId: synthesizedId,
                                 materialsDiscovered: this.context.materialsDiscovered.map(m => m.id === materialToSimulate.id ? { ...m, id: synthesizedId } : m)
                             });
                             break;
-                        case 'characterization': // Directly run characterization as main experiment
+                        case 'characterization':
                             experimentResult = await simulatedAPIs.labRobotics.characterizeMaterial(materialToSimulate.id, charTechniques);
                             break;
                         case 'optimization':
-                             const optResult = await simulatedAPIs.optimizationEngine.runBayesianOptimization(
-                                 newHypothesis.targetProperty,
-                                 materialToSimulate, // Pass full material
-                                 simulationParameters,
-                                 5 // numIterations
-                             );
-                             experimentResult = {
-                                 id: `res-${Date.now()}-opt`,
-                                 experimentId: newExperiment.id,
-                                 dataPoints: {},
-                                 metrics: [{ name: `Optimal ${newHypothesis.targetProperty}`, value: optResult.predictedValue.toFixed(2), unit: newHypothesis.targetProperty.includes('Capacity') ? 'mAh/g' : '' }],
-                                 analysisSummary: `Bayesian Optimization identified optimal parameters: ${optResult.optimalParams.map(p => `${p.name}=${p.value}${p.unit ? p.unit : ''}`).join(', ')}. Predicted ${newHypothesis.targetProperty}: ${optResult.predictedValue.toFixed(2)}.`,
-                                 interpretation: 'Optimization successfully converged.',
-                                 conclusion: 'supported',
-                                 confidenceScore: 0.9,
-                             };
-                             break;
-                        case 'modeling': // For more abstract modeling experiments
+                            const optResult = await simulatedAPIs.optimizationEngine.runBayesianOptimization(
+                                newHypothesis.targetProperty,
+                                materialToSimulate,
+                                simulationParameters,
+                                5
+                            );
+                            experimentResult = {
+                                id: `res-${Date.now()}-opt`,
+                                experimentId: newExperiment.id,
+                                dataPoints: {},
+                                metrics: [{ name: `Optimal ${newHypothesis.targetProperty}`, value: optResult.predictedValue.toFixed(2), unit: newHypothesis.targetProperty.includes('Capacity') ? 'mAh/g' : '' }],
+                                analysisSummary: `Bayesian Optimization identified optimal parameters: ${optResult.optimalParams.map(p => `${p.name}=${p.value}${p.unit ? p.unit : ''}`).join(', ')}. Predicted ${newHypothesis.targetProperty}: ${optResult.predictedValue.toFixed(2)}.`,
+                                interpretation: 'Optimization successfully converged.',
+                                conclusion: 'supported',
+                                confidenceScore: 0.9,
+                            };
+                            break;
+                        case 'modeling':
                             experimentResult = await simulatedAPIs.simulationEngine.runElectrochemicalModel(materialToSimulate.id, {}, []);
                             experimentResult.analysisSummary = `Complex multi-scale model analysis for ${materialToSimulate.name} completed.`;
                             break;
-                        case 'validation': // Could be a physical lab validation after simulation
+                        case 'validation':
                             experimentResult = await simulatedAPIs.labRobotics.characterizeMaterial(materialToSimulate.id, ['XRD', 'EIS', 'Cycling']);
                             experimentResult.analysisSummary = `Validation experiment for ${materialToSimulate.name} confirmed simulated performance trends.`;
                             break;
-                        case 'protocol_design': // Specific experiment type for designing protocols
+                        case 'protocol_design':
                             const protocol = await simulatedAPIs.labRobotics.designSynthesisRoute(materialToSimulate.composition, [newHypothesis.targetProperty]);
-                             experimentResult = {
+                            experimentResult = {
                                 id: `res-${Date.now()}-protocol`, experimentId: newExperiment.id, dataPoints: {}, metrics: [{ name: 'Protocol Designed', value: 'True' }],
-                                analysisSummary: `Synthesis protocol designed for ${materialToSimulate.name}: ${protocol.substring(0,100)}...`,
+                                analysisSummary: `Synthesis protocol designed for ${materialToSimulate.name}: ${protocol.substring(0, Math.min(protocol.length, 100))}...`,
                                 interpretation: 'A robust synthesis protocol has been established.', conclusion: 'supported', confidenceScore: 0.9,
                             };
                             break;
@@ -1775,11 +2038,10 @@ export class AutonomousScientistAgent {
                         });
                         this.logDecision(ResearchPhase.SIMULATION_EXECUTION, 'Experiment completed', { experimentId: newExperiment.id, conclusion: experimentResult.conclusion, confidence: experimentResult.confidenceScore }, experimentResult.conclusion === 'supported' ? 'success' : 'failure', experimentResult.interpretation);
 
-                        // If it's a synthesis, automatically trigger characterization
                         if ((newExperiment.type === 'synthesis' || newExperiment.type === 'optimization') && materialToSimulate.id) {
                             this.addLog(createLogEntry('action', `Material ${materialToSimulate.name} processed. Automatically initiating comprehensive characterization.`));
-                            this.spendResources(newExperiment.costEstimate * 0.5, newExperiment.timeEstimate * 0.5, 'post_processing_characterization'); // Additional cost for char
-                            const charResult = await simulatedAPIs.labRobotics.characterizeMaterial(materialToSimulate.id, ['XRD', 'TEM', 'XPS', 'EIS', 'Cycling', 'Raman', 'TGA']); // More comprehensive set
+                            await this.spendResources(newExperiment.costEstimate * 0.5, newExperiment.timeEstimate * 0.5, 'post_processing_characterization');
+                            const charResult = await simulatedAPIs.labRobotics.characterizeMaterial(materialToSimulate.id, ['XRD', 'TEM', 'XPS', 'EIS', 'Cycling', 'Raman', 'TGA', 'NMR']);
                             this.addLog(createLogEntry('result', `Characterization of ${materialToSimulate.name} completed. Summary: ${charResult.analysisSummary}`));
                             this.updateInternalContext({
                                 experiments: [...this.context.experiments, {
@@ -1815,12 +2077,12 @@ export class AutonomousScientistAgent {
                         )
                     });
                     this.logDecision(ResearchPhase.SIMULATION_EXECUTION, 'Experiment failed', { experimentId: newExperiment.id, error: expError.message }, 'failure', expError.message);
-                    continue; // Move to next iteration even if one experiment fails
+                    continue;
                 }
 
                 // Phase 6: Data Analysis & Knowledge Integration
                 this.updateCurrentPhase(ResearchPhase.DATA_ANALYSIS);
-                this.spendResources(90, 1.5, 'data_analysis');
+                await this.spendResources(90, 1.5, 'data_analysis');
                 this.addLog(createLogEntry('action', `Analyzing results from ${newExperiment.name}...`));
                 const analysisContext = `Hypothesis: "${newHypothesisText}"\nExperiment Type: ${newExperiment.type}\nKey Metrics: ${JSON.stringify(experimentResult?.metrics, null, 2)}\nData Summary: ${experimentResult?.analysisSummary || 'N/A'}\nInterpretation: ${experimentResult?.interpretation || 'N/A'}\nConclusion: ${experimentResult?.conclusion || 'N/A'}\nRaw Log Sample: ${experimentResult?.rawLog?.substring(0, 100) || 'N/A'}`;
                 const analysisPrompt = `Perform a detailed analysis of the following experiment results to identify trends, anomalies, and strong implications for the hypothesis. Evaluate if the results support, refute, or are inconclusive. Also, identify any unexpected outcomes or areas for further investigation. Synthesize key insights for the knowledge graph:\n${analysisContext}`;
@@ -1830,29 +2092,27 @@ export class AutonomousScientistAgent {
                 });
                 this.addLog(createLogEntry('result', `Analysis Report: ${analysisResponse.text}`));
                 this.logDecision(ResearchPhase.DATA_ANALYSIS, 'Analyzed experiment data', { analysis: analysisResponse.text, experimentId: newExperiment.id }, 'success');
-                // Integrate insights into Knowledge Graph
                 const knowledgeRefinement = await simulatedAPIs.knowledgeGraph.refineKnowledgeGraph(analysisResponse.text);
                 this.addLog(createLogEntry('result', `Knowledge Graph updated: ${knowledgeRefinement}`));
-                this.spendResources(10, 0.1, 'knowledge_integration');
+                await this.spendResources(10, 0.1, 'knowledge_integration');
 
                 // Phase 7: Hypothesis Refinement / Self-Correction / Patent Filing (Conditional)
                 this.updateCurrentPhase(ResearchPhase.HYPOTHESIS_REFINEMENT);
-                this.spendResources(100, 1.8, 'hypothesis_refinement');
+                await this.spendResources(100, 1.8, 'hypothesis_refinement');
 
                 if (experimentResult?.conclusion === 'supported' || experimentResult?.conclusion === 'partial_support' || experimentResult?.conclusion === 'new_insight') {
                     this.addLog(createLogEntry('thought', `Hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion}. Considering next steps to optimize or expand.`));
-                    const refinementPrompt = `The hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion} by experiment results. Based on the detailed analysis:\n${analysisResponse.text}\nSuggest a refinement to the current hypothesis, or propose a new, related hypothesis to further optimize the material/process or explore new applications based on this success. Provide rationale. Also, consider if these findings are novel enough to warrant a patent application, and suggest key claims if so.`;
+                    const refinementPrompt = `The hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion} by experiment results. Based on the detailed analysis:\n${analysisResponse.text}\nSuggest a refinement to the current hypothesis, or propose a new, related hypothesis to further optimize the material/process or explore new applications based on this success. Provide rationale. Also, consider if these findings are novel enough to warrant a patent application, and suggest key claims and a novelty summary if so.`;
                     const refinementResponse = await this.context.ai.models.generateContent({ model: 'gemini-2.5-flash', contents: refinementPrompt });
                     this.addLog(createLogEntry('result', `Refinement/Next Hypothesis Suggestion: ${refinementResponse.text}`));
                     this.logDecision(ResearchPhase.HYPOTHESIS_REFINEMENT, 'Hypothesis supported, suggesting refinement', { suggestion: refinementResponse.text }, 'success');
-                    // Check for patent opportunity
                     if (refinementResponse.text.toLowerCase().includes('patent application') && this.context.focusMaterialId) {
-                        await this.handlePatentApplication(this.context.focusMaterialId, refinementResponse.text); // New step
+                        await this.handlePatentApplication(this.context.focusMaterialId, refinementResponse.text);
                     }
                 } else {
                     this.addLog(createLogEntry('thought', `Hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion}. Initiating self-correction and generating a new hypothesis.`));
                     this.updateCurrentPhase(ResearchPhase.SELF_CORRECTION);
-                    this.spendResources(150, 2.5, 'self_correction');
+                    await this.spendResources(150, 2.5, 'self_correction');
                     const correctionPrompt = `The hypothesis "${newHypothesisText}" was ${experimentResult?.conclusion}. Based on the analysis:\n${analysisResponse.text}\nIdentify the most likely reasons for failure/inconclusiveness and formulate a refined or completely new hypothesis that addresses these issues or pivots to a more promising direction. Provide a brief self-critique of the previous design, considering the safety and economic analysis outcomes.`;
                     const correctionResponse = await this.context.ai.models.generateContent({ model: 'gemini-2.5-flash', contents: correctionPrompt });
                     this.addLog(createLogEntry('result', `Self-Correction & New Hypothesis: ${correctionResponse.text}`));
@@ -1860,12 +2120,12 @@ export class AutonomousScientistAgent {
                 }
             }
 
-            // --- Final Phase: Report Generation & Publication Strategy ---
+            // Final Phase: Report Generation & Publication Strategy
             this.updateCurrentPhase(ResearchPhase.REPORT_GENERATION);
-            this.spendResources(200, 3.0, 'report_generation');
+            await this.spendResources(200, 3.0, 'report_generation');
             this.addLog(createLogEntry('action', 'Generating comprehensive final research report, including safety and economic assessments...'));
 
-            const finalMaterialId = this.context.materialsDiscovered[this.context.materialsDiscovered.length - 1]?.id || 'mat-001'; // Get the last discovered material
+            const finalMaterialId = this.context.materialsDiscovered[this.context.materialsDiscovered.length - 1]?.id || 'mat-001';
             const safetyMetrics = await simulatedAPIs.safetyAssessment(finalMaterialId, 'EV battery', this.context.knowledgeBase.join('. '));
             const economicMetrics = await simulatedAPIs.economicAnalysis(finalMaterialId, 'mass', 'EV battery');
 
@@ -1888,22 +2148,25 @@ Structure the report clearly with headings.`;
             });
             const fullReportContent = finalReportResponse.text;
 
-            // Attempt to parse sections, fallback to full text
             const getSection = (reportText: string, startKey: string, endKey: string) => {
                 const start = reportText.indexOf(startKey);
-                const end = reportText.indexOf(endKey, start + startKey.length);
-                if (start !== -1 && end !== -1) {
-                    return reportText.substring(start + startKey.length, end).trim();
-                }
-                if (start !== -1) { // If endKey not found, take until end or next main header
-                    const nextHeaderMatch = reportText.substring(start + startKey.length).match(/^(Abstract|Introduction|Hypotheses|Methodology|Results|Discussion|Conclusion|Future Work|Safety Assessment|Economic Analysis|Citations):\s*$/im);
+                if (start === -1) return `(Section "${startKey.replace(':', '')}" not found or empty.)`;
+
+                const contentAfterStart = reportText.substring(start + startKey.length);
+                const end = contentAfterStart.indexOf(endKey);
+
+                if (end !== -1) {
+                    return contentAfterStart.substring(0, end).trim();
+                } else {
+                    // If endKey is not found, check for subsequent major headers as delimiters
+                    const nextHeaderMatch = contentAfterStart.match(/^(Abstract|Introduction|Hypotheses|Methodology & Experiments|Results Summary|Discussion|Conclusion|Future Work|Safety Assessment Metrics|Economic Analysis Metrics|Citations):$/im);
                     if (nextHeaderMatch) {
-                        return reportText.substring(start + startKey.length, start + startKey.length + nextHeaderMatch.index).trim();
+                        return contentAfterStart.substring(0, nextHeaderMatch.index).trim();
                     }
-                    return reportText.substring(start + startKey.length).trim();
+                    return contentAfterStart.trim(); // Take till the end if no other header found
                 }
-                return `(Section "${startKey.replace(':', '')}" not found or empty.)`;
             };
+
 
             const finalReport: ResearchReport = {
                 id: `report-${Date.now()}`,
@@ -1917,7 +2180,7 @@ Structure the report clearly with headings.`;
                 resultsSummary: getSection(fullReportContent, 'Results Summary:', 'Discussion:'),
                 discussion: getSection(fullReportContent, 'Discussion:', 'Conclusion:'),
                 conclusion: getSection(fullReportContent, 'Conclusion:', 'Future Work:'),
-                futureWork: getSection(fullReportContent, 'Future Work:', 'Citations:') || getSection(fullReportContent, 'Future Work:', 'Safety Assessment Metrics:'),
+                futureWork: getSection(fullReportContent, 'Future Work:', 'Safety Assessment Metrics:') || getSection(fullReportContent, 'Future Work:', 'Citations:'),
                 citations: getSection(fullReportContent, 'Citations:', '--- END REPORT ---').split('\n').filter(s => s.trim() !== ''),
                 generatedByAI: true,
                 recommendations: [`Consider validation with real-world experiments.`, `Further optimize parameters using advanced ML.`],
@@ -1928,9 +2191,7 @@ Structure the report clearly with headings.`;
             this.addLog(createLogEntry('result', `Research Report Generated:\n${fullReportContent}`));
             this.logDecision(ResearchPhase.REPORT_GENERATION, 'Final comprehensive research report generated', { reportId: finalReport.id }, 'success');
 
-            // Publication Strategy
-            await this.handlePublicationStrategy(finalReport); // New step
-
+            await this.handlePublicationStrategy(finalReport);
 
         } catch (error: any) {
             this.addLog(createLogEntry('result', `A critical error occurred during the research cycle: ${error.message}`));
@@ -1943,9 +2204,16 @@ Structure the report clearly with headings.`;
         }
     }
 
+    /**
+     * Manages the patent application process, from drafting to filing.
+     * This method enables the agent to secure intellectual property rights
+     * for novel discoveries.
+     * @param materialId The ID of the material for which a patent is being sought.
+     * @param refinementText The AI's refinement text, potentially containing claims and novelty summary.
+     */
     private async handlePatentApplication(materialId: string, refinementText: string) {
         this.updateCurrentPhase(ResearchPhase.IP_MANAGEMENT);
-        this.spendResources(300, 5.0, 'patent_application');
+        await this.spendResources(300, 5.0, 'patent_application');
         this.addLog(createLogEntry('action', `Evaluating findings for patentability for material ID: ${materialId}.`));
 
         const patentClaimsMatch = refinementText.match(/key claims:\s*(.+)/i);
@@ -1962,16 +2230,21 @@ Structure the report clearly with headings.`;
         this.addLog(createLogEntry('result', `Filed patent application "${filedPatent.title}". Status: ${filedPatent.status}.`));
         this.updateInternalContext({ patentsFiled: [...this.context.patentsFiled, filedPatent] });
         this.logDecision(ResearchPhase.IP_MANAGEMENT, 'Filed patent application', { patentId: filedPatent.id, status: filedPatent.status }, 'success');
-        this.spendResources(500, 2.0, 'patent_filing_fees'); // Simulated filing fees
+        await this.spendResources(500, 2.0, 'patent_filing_fees');
     }
 
+    /**
+     * Manages the grant application process to secure additional funding.
+     * This method enables the agent to identify funding gaps and proactively
+     * apply for grants to sustain its research initiatives.
+     */
     private async handleGrantApplication() {
         this.updateCurrentPhase(ResearchPhase.GRANT_APPLICATION);
         this.addLog(createLogEntry('action', `Current budget is low ($${this.context.budget.toFixed(2)}). Drafting a grant proposal for additional funding.`));
-        this.spendResources(150, 8.0, 'grant_writing');
+        await this.spendResources(150, 8.0, 'grant_writing');
 
         const researchSummary = `Our project aims to ${this.context.goal}, having already achieved significant computational insights into novel materials. We require further funding to validate these findings and expand into experimental synthesis and characterization.`;
-        const budgetNeeded = Math.max(50000, 100000 - this.context.budget); // Requesting at least 50k, or more if budget is very low
+        const budgetNeeded = Math.max(50000, 100000 - this.context.budget);
 
         const draftedGrant = await simulatedAPIs.grantManagement.draftGrantProposal(researchSummary, budgetNeeded);
         this.addLog(createLogEntry('result', `Drafted grant proposal for "${draftedGrant.title}" requesting $${budgetNeeded}. Status: ${draftedGrant.status}.`));
@@ -1981,13 +2254,12 @@ Structure the report clearly with headings.`;
         this.addLog(createLogEntry('result', `Submitted grant proposal "${submittedGrant.title}". Status: ${submittedGrant.status}.`));
         this.updateInternalContext({ grantsSubmitted: [...this.context.grantsSubmitted, submittedGrant] });
         this.logDecision(ResearchPhase.GRANT_APPLICATION, 'Submitted grant proposal', { grantId: submittedGrant.id, status: submittedGrant.status }, 'success');
-        this.spendResources(50, 0.5, 'grant_submission_fees');
+        await this.spendResources(50, 0.5, 'grant_submission_fees');
 
-        // Simulate grant review process (can be async and happen later)
-        await new Promise(r => setTimeout(r, 10000 + Math.random() * 5000)); // Simulate review time
+        await new Promise(r => setTimeout(r, 10000 + Math.random() * 5000));
         const fundingOutcome = Math.random();
-        if (fundingOutcome > 0.4) { // Simulate ~60% success rate
-            const fundedAmount = budgetNeeded * (0.7 + Math.random() * 0.3); // Get 70-100% of requested
+        if (fundingOutcome > 0.4) {
+            const fundedAmount = budgetNeeded * (0.7 + Math.random() * 0.3);
             this.addLog(createLogEntry('result', `Grant "${submittedGrant.title}" was FUNDED for $${fundedAmount.toFixed(2)}! Project budget updated.`));
             this.updateInternalContext(prev => ({
                 budget: prev.budget + fundedAmount,
@@ -2005,10 +2277,16 @@ Structure the report clearly with headings.`;
         }
     }
 
+    /**
+     * Develops and executes a publication strategy for finished research.
+     * This method enables the agent to disseminate its findings to the scientific
+     * community, enhancing visibility and establishing thought leadership.
+     * @param report The final research report to be published.
+     */
     private async handlePublicationStrategy(report: ResearchReport) {
         this.updateCurrentPhase(ResearchPhase.PUBLICATION_STRATEGY);
         this.addLog(createLogEntry('action', `Developing publication strategy for the final research report.`));
-        this.spendResources(80, 2.0, 'publication_strategy');
+        await this.spendResources(80, 2.0, 'publication_strategy');
 
         const publicationPrompt = `Based on the attached comprehensive research report titled "${report.title}", and considering the significance of the findings, suggest a suitable target journal (e.g., Nature, Science, Adv. Materials, J. Mat. Chem. A) and justify the choice. Also, draft a compelling cover letter snippet.`;
         const publicationResponse = await this.context.ai.models.generateContent({
@@ -2025,18 +2303,17 @@ Structure the report clearly with headings.`;
         const draftedArticle = await simulatedAPIs.publicationService.draftArticle(report, targetJournal);
         this.addLog(createLogEntry('result', `Drafted manuscript for submission to ${targetJournal}. Title: "${draftedArticle.title}".`));
         this.logDecision(ResearchPhase.PUBLICATION_STRATEGY, 'Drafted research article', { articleTitle: draftedArticle.title, journal: targetJournal }, 'success');
-        this.spendResources(100, 3.0, 'article_drafting');
+        await this.spendResources(100, 3.0, 'article_drafting');
 
         const submittedArticle = await simulatedAPIs.publicationService.submitArticleForReview(draftedArticle);
         this.addLog(createLogEntry('result', `Submitted article "${submittedArticle.title}" to ${submittedArticle.journal}. Status: ${submittedArticle.status}.`));
         this.updateInternalContext({ publicationsSubmitted: [...this.context.publicationsSubmitted, submittedArticle] });
         this.logDecision(ResearchPhase.PUBLICATION_STRATEGY, 'Submitted article for review', { articleId: submittedArticle.id, status: submittedArticle.status }, 'success');
-        this.spendResources(50, 0.5, 'submission_fees');
+        await this.spendResources(50, 0.5, 'submission_fees');
 
-        // Simulate peer review
         this.updateCurrentPhase(ResearchPhase.PEER_REVIEW);
         this.addLog(createLogEntry('action', `Simulating peer review process for article "${submittedArticle.title}"...`));
-        this.spendResources(200, 10.0, 'peer_review');
+        await this.spendResources(200, 10.0, 'peer_review');
         const reviewOutcome = await simulatedAPIs.publicationService.simulatePeerReview(submittedArticle.id);
         this.addLog(createLogEntry('result', `Peer review outcome: ${reviewOutcome.replace(/_/g, ' ')}.`));
 
@@ -2058,23 +2335,33 @@ Structure the report clearly with headings.`;
         }
     }
 
-
-    // Helper functions for parsing AI responses into structured data
+    /**
+     * Extracts and structures material information from AI-generated design details.
+     * This function parses natural language descriptions into a standardized
+     * `Material` object, essential for defining new research subjects.
+     * @param designDetails The raw text description of the material design from the AI.
+     * @returns A Promise resolving to a structured Material object.
+     */
     private async extractMaterialFromDesign(designDetails: string): Promise<Material> {
-        // More robust parsing for complex material descriptions
         const nameMatch = designDetails.match(/(N-doped graphene with BNNS interlayers|Lithium Manganese Iron Phosphate doped with Vanadium|new material candidate:\s*([\w\s-]+)|([\w\s-]+) anode composite|material:\s*([\w\s-]+))/i);
         const name = nameMatch ? (nameMatch[2] || nameMatch[3] || nameMatch[4] || nameMatch[1]) : `Proposed Material ${Date.now().toString().slice(-4)}`;
         const cleanedName = name.replace(/anode composite/i, '').trim();
 
-        const elementsMatch = designDetails.match(/composition:\s*{([^}]+)}/i) || designDetails.match(/elements:\s*([\w\s,:]+)/i);
         const elements: { [key: string]: number } = {};
+        const elementsMatch = designDetails.match(/composition:\s*({[^}]+})/i) || designDetails.match(/elements:\s*([\w\s,:]+)/i);
         if (elementsMatch && elementsMatch[1]) {
-            elementsMatch[1].split(',').forEach(part => {
-                const [key, val] = part.trim().split(':');
-                if (key && val) elements[key.trim()] = parseFloat(val.trim()) || 1; // Default to 1 if parsing fails
-            });
+            try { // Attempt to parse as JSON first
+                const parsedElements = JSON.parse(elementsMatch[1].replace(/(\w+)\s*:\s*(\w+)/g, '"$1":"$2"'));
+                for (const key in parsedElements) {
+                    elements[key] = parseFloat(parsedElements[key]) || 1;
+                }
+            } catch { // Fallback to regex parsing
+                elementsMatch[1].split(',').forEach(part => {
+                    const [key, val] = part.trim().split(/:\s*|\s*=\s*/);
+                    if (key && val) elements[key.trim()] = parseFloat(val.trim()) || 1;
+                });
+            }
         } else {
-             // Fallback to try and extract from material name if explicit composition not found
             const inferredElements = cleanedName.match(/([A-Z][a-z]?)\d*\.?\d*/g);
             if (inferredElements) {
                 inferredElements.forEach(el => {
@@ -2085,13 +2372,20 @@ Structure the report clearly with headings.`;
             }
         }
 
-        const dopantsMatch = designDetails.match(/doping:\s*{([^}]+)}/i) || designDetails.match(/dopants:\s*([\w\s,:]+)/i);
         const dopants: { [key: string]: number } = {};
+        const dopantsMatch = designDetails.match(/doping:\s*({[^}]+})/i) || designDetails.match(/dopants:\s*([\w\s,:]+)/i);
         if (dopantsMatch && dopantsMatch[1]) {
-            dopantsMatch[1].split(',').forEach(part => {
-                const [key, val] = part.trim().split(':');
-                if (key && val) dopants[key.trim()] = parseFloat(val.trim()) / 100 || 0.05; // Assume percentage for doping
-            });
+            try {
+                const parsedDopants = JSON.parse(dopantsMatch[1].replace(/(\w+)\s*:\s*(\w+)/g, '"$1":"$2"'));
+                for (const key in parsedDopants) {
+                    dopants[key] = parseFloat(parsedDopants[key]) / 100 || 0.05; // Assume percentage for doping
+                }
+            } catch {
+                dopantsMatch[1].split(',').forEach(part => {
+                    const [key, val] = part.trim().split(/:\s*|\s*=\s*/);
+                    if (key && val) dopants[key.trim()] = parseFloat(val.trim()) / 100 || 0.05;
+                });
+            }
         }
 
         const structureMatch = designDetails.match(/structure:\s*([\w\s-]+)/i) || designDetails.match(/interlayers:\s*([\w\s-]+)/i);
@@ -2100,43 +2394,47 @@ Structure the report clearly with headings.`;
         const nanostructureMatch = designDetails.match(/nanostructure:\s*([\w\s-]+)/i);
         const nanostructure = nanostructureMatch ? nanostructureMatch[1].trim() : (cleanedName.toLowerCase().includes('nanosheet') ? 'nanosheet' : cleanedName.toLowerCase().includes('nanoparticle') ? 'nanoparticle' : undefined);
 
-
-        // Check if a similar material already exists in the database
         const existingMaterials = await MaterialDatabase.searchMaterials(cleanedName, 1);
-        if (existingMaterials.length > 0 && existingMaterials[0].name.toLowerCase() === cleanedName.toLowerCase()) {
+        if (existingMaterials.length > 0 && existingMaterials[0].name.toLowerCase() === cleanedName.toLowerCase() &&
+            JSON.stringify(existingMaterials[0].composition.elements) === JSON.stringify(elements) &&
+            JSON.stringify(existingMaterials[0].composition.dopants) === JSON.stringify(dopants)) {
             this.addLog(createLogEntry('warning', `Re-using existing material ID ${existingMaterials[0].id} for ${cleanedName}.`));
-            return existingMaterials[0]; // Use existing material if found
+            return existingMaterials[0];
         }
-
 
         const materialId = `mat-${cleanedName.replace(/\s+/g, '-')}-${Date.now().toString().slice(-6)}`;
         return {
             id: materialId,
             name: cleanedName,
             composition: { elements, dopants, structure, nanostructure },
-            properties: [], // Will be filled by later simulations/characterizations
+            properties: [],
             discoveryDate: new Date().toISOString().split('T')[0],
             potentialApplications: ['battery anode', 'energy storage'],
-            stabilityScore: 50 + Math.random() * 30, // Initial guess
-            performanceScore: 50 + Math.random() * 30, // Initial guess
+            stabilityScore: 50 + Math.random() * 30,
+            performanceScore: 50 + Math.random() * 30,
             riskScore: 50,
             costScore: 50,
         };
     }
 
+    /**
+     * Parses experiment parameters from AI-generated design details.
+     * This function extracts key variables and their values/ranges to configure
+     * simulated experiments accurately.
+     * @param designDetails The raw text description of the experiment design from the AI.
+     * @returns An array of ExperimentParameter objects.
+     */
     private extractParametersFromDesign(designDetails: string): ExperimentParameter[] {
         const parameters: ExperimentParameter[] = [];
-        const paramRegex = /(?:parameter|metric|variable|key parameter):\s*([\w\s]+?)(?:(?:\s*=\s*|:\s*)(\d+\.?\d*(?:\s*[%Â°\w\/]+)?|\w+))?(?:,\s*range:\s*\[(\d+\.?\d*),\s*(\d+\.?\d*)\])?/gi;
+        const paramRegex = /(?:parameter|metric|variable|key parameter):\s*([\w\s]+?)(?:(?:\s*=\s*|:\s*)(\d+\.?\d*(?:\s*[%°\w\/]+)?|\w+))?(?:,\s*range:\s*\[(\d+\.?\d*),\s*(\d+\.?\d*)\])?/gi;
         let match;
         while ((match = paramRegex.exec(designDetails)) !== null) {
             const name = match[1].trim();
-            let value: number | string | boolean = match[2] ? (isNaN(parseFloat(match[2])) ? match[2] : parseFloat(match[2])) : true; // Default to true if no value, useful for DFT properties
-            const unit = (match[2] && !isNaN(parseFloat(match[2]))) ? match[2].match(/[^\d\s\.]+/)?.shift() || undefined : undefined;
+            let value: number | string | boolean = match[2] ? (isNaN(parseFloat(match[2])) ? match[2] : parseFloat(match[2])) : true;
+            const unit = (match[2] && typeof value === 'number') ? match[2].match(/[^\d\s\.]+/)?.shift() || undefined : undefined;
             const range: [number, number] | undefined = (match[3] && match[4]) ? [parseFloat(match[3]), parseFloat(match[4])] : undefined;
-
             parameters.push({ name, value, unit, range });
         }
-        // Add some default parameters if none are found or to make the simulation more robust
         if (parameters.length === 0 || !parameters.some(p => p.name.toLowerCase().includes('temperature'))) {
             if (designDetails.toLowerCase().includes('molecular dynamics') || designDetails.toLowerCase().includes('md')) {
                 parameters.push({ name: 'temperature', value: 300, unit: 'K', description: 'Simulation temperature' });
@@ -2146,36 +2444,41 @@ Structure the report clearly with headings.`;
                 parameters.push({ name: 'BNNS layer thickness', value: 2, unit: 'layers', range: [1, 5], description: 'Number of boron nitride nanosheet layers' });
                 parameters.push({ name: 'BNNS spacing', value: 1.0, unit: 'nm', range: [0.5, 2.0], description: 'Spacing between BNNS layers' });
             } else if (designDetails.toLowerCase().includes('dft') || designDetails.toLowerCase().includes('density functional theory')) {
-                 parameters.push({ name: 'band_gap', value: true, description: 'Calculate electronic band gap' });
-                 parameters.push({ name: 'formation_energy', value: true, description: 'Calculate defect formation energy' });
-                 parameters.push({ name: 'li_binding_energy', value: true, description: 'Calculate lithium binding energy' });
-                 parameters.push({ name: 'functional', value: 'PBE', description: 'DFT exchange-correlation functional' });
+                parameters.push({ name: 'band_gap', value: true, description: 'Calculate electronic band gap' });
+                parameters.push({ name: 'formation_energy', value: true, description: 'Calculate defect formation energy' });
+                parameters.push({ name: 'li_binding_energy', value: true, description: 'Calculate lithium binding energy' });
+                parameters.push({ name: 'functional', value: 'PBE', description: 'DFT exchange-correlation functional' });
             } else if (designDetails.toLowerCase().includes('electrochemical') || designDetails.toLowerCase().includes('electrochemical model')) {
-                 parameters.push({ name: 'cycle_rate', value: 0.5, unit: 'C', description: 'Discharge/charge rate' });
-                 parameters.push({ name: 'cycles', value: 500, description: 'Total number of cycles to simulate' });
-                 parameters.push({ name: 'voltage_window', value: '3.0-4.2', unit: 'V', description: 'Operating voltage window' });
-                 parameters.push({ name: 'electrolyte_composition', value: 'EC:DMC', description: 'Simulated electrolyte composition' });
+                parameters.push({ name: 'cycle_rate', value: 0.5, unit: 'C', description: 'Discharge/charge rate' });
+                parameters.push({ name: 'cycles', value: 500, description: 'Total number of cycles to simulate' });
+                parameters.push({ name: 'voltage_window', value: '3.0-4.2', unit: 'V', description: 'Operating voltage window' });
+                parameters.push({ name: 'electrolyte_composition', value: 'EC:DMC', description: 'Simulated electrolyte composition' });
             } else if (designDetails.toLowerCase().includes('thermal stability')) {
-                parameters.push({ name: 'heating_rate', value: 10, unit: 'Â°C/min', description: 'Heating rate for thermal analysis' });
+                parameters.push({ name: 'heating_rate', value: 10, unit: '°C/min', description: 'Heating rate for thermal analysis' });
                 parameters.push({ name: 'atmosphere', value: 'argon', description: 'Atmosphere during thermal analysis' });
-                parameters.push({ name: 'max_temperature', value: 800, unit: 'Â°C', description: 'Maximum temperature for thermal analysis' });
+                parameters.push({ name: 'max_temperature', value: 800, unit: '°C', description: 'Maximum temperature for thermal analysis' });
             } else if (designDetails.toLowerCase().includes('optimization')) {
                 parameters.push({ name: 'doping_concentration', value: 0.05, unit: '%', range: [0.01, 0.1], description: 'Range for doping concentration optimization' });
                 parameters.push({ name: 'layer_thickness', value: 5, unit: 'nm', range: [1, 10], description: 'Range for layer thickness optimization' });
             } else if (designDetails.toLowerCase().includes('quantum mechanics') || designDetails.toLowerCase().includes('qm')) {
-                 parameters.push({ name: 'target_property', value: 'band_gap', description: 'Specific property to calculate (e.g., band_gap, electron_affinity)' });
-                 parameters.push({ name: 'software', value: 'VASP', description: 'Quantum mechanics software package' });
+                parameters.push({ name: 'target_property', value: 'band_gap', description: 'Specific property to calculate (e.g., band_gap, electron_affinity)' });
+                parameters.push({ name: 'software', value: 'VASP', description: 'Quantum mechanics software package' });
             } else if (designDetails.toLowerCase().includes('phase diagram')) {
-                 parameters.push({ name: 'temperature_range', value: [0, 1500], unit: 'Â°C', description: 'Temperature range for phase diagram calculation' });
-                 parameters.push({ name: 'pressure_constant', value: 1, unit: 'atm', description: 'Constant pressure for calculation' });
+                parameters.push({ name: 'temperature_range', value: [0, 1500], unit: '°C', description: 'Temperature range for phase diagram calculation' });
+                parameters.push({ name: 'pressure_constant', value: 1, unit: 'atm', description: 'Constant pressure for calculation' });
             } else if (designDetails.toLowerCase().includes('defect formation')) {
-                 parameters.push({ name: 'defect_type', value: 'vacancy', description: 'Type of defect to simulate (e.g., vacancy, interstitial, antisite)' });
-                 parameters.push({ name: 'defect_concentration_target', value: 1e19, unit: 'cm^-3', range: [1e18, 1e20], description: 'Target defect concentration' });
+                parameters.push({ name: 'defect_type', value: 'vacancy', description: 'Type of defect to simulate (e.g., vacancy, interstitial, antisite)' });
+                parameters.push({ name: 'defect_concentration_target', value: 1e19, unit: 'cm^-3', range: [1e18, 1e20], description: 'Target defect concentration' });
             }
         }
         return parameters;
     }
 
+    /**
+     * Determines the broad type of experiment based on AI-generated design details.
+     * @param designDetails The raw text description of the experiment design from the AI.
+     * @returns The corresponding Experiment type.
+     */
     private determineExperimentType(designDetails: string): Experiment['type'] {
         const lowerDesign = designDetails.toLowerCase();
         if (lowerDesign.includes('molecular dynamics') || lowerDesign.includes('md') || lowerDesign.includes('dft') || lowerDesign.includes('density functional theory') || lowerDesign.includes('computational simulation') || lowerDesign.includes('electrochemical model') || lowerDesign.includes('thermal stability simulation') || lowerDesign.includes('quantum mechanics') || lowerDesign.includes('qm') || lowerDesign.includes('phase diagram') || lowerDesign.includes('defect formation')) {
@@ -2199,9 +2502,15 @@ Structure the report clearly with headings.`;
         if (lowerDesign.includes('protocol design') || lowerDesign.includes('design synthesis route')) {
             return 'protocol_design';
         }
-        return 'simulation'; // Default to simulation for computational scientist
+        return 'simulation';
     }
 
+    /**
+     * Determines the specific simulation API call to use based on the AI's design details.
+     * This provides fine-grained control over which simulated engine is invoked.
+     * @param designDetails The raw text description of the experiment design from the AI.
+     * @returns The key of the specific simulation function to call.
+     */
     private determineSpecificSimType(designDetails: string): keyof SimulatedAPIS['simulationEngine'] {
         const lowerDesign = designDetails.toLowerCase();
         if (lowerDesign.includes('molecular dynamics') || lowerDesign.includes('md')) return 'runMolecularDynamics';
@@ -2210,9 +2519,14 @@ Structure the report clearly with headings.`;
         if (lowerDesign.includes('quantum mechanics') || lowerDesign.includes('qm')) return 'runQuantumMechanicsSimulation';
         if (lowerDesign.includes('phase diagram')) return 'runPhaseDiagramCalculation';
         if (lowerDesign.includes('defect formation')) return 'runDefectFormationSimulation';
-        return 'runElectrochemicalModel'; // Default
+        return 'runElectrochemicalModel';
     }
 
+    /**
+     * Extracts a list of characterization techniques suggested by the AI.
+     * @param designDetails The raw text description of the experiment design from the AI.
+     * @returns An array of string names for the characterization techniques.
+     */
     private extractCharacterizationTechniques(designDetails: string): string[] {
         const techniques: string[] = [];
         if (designDetails.toLowerCase().includes('xrd')) techniques.push('XRD');
@@ -2223,30 +2537,45 @@ Structure the report clearly with headings.`;
         if (designDetails.toLowerCase().includes('cyclic voltammetry') || designDetails.toLowerCase().includes('cycling') || designDetails.toLowerCase().includes('gcd')) techniques.push('Cycling');
         if (designDetails.toLowerCase().includes('raman')) techniques.push('Raman');
         if (designDetails.toLowerCase().includes('tga')) techniques.push('TGA');
-        if (designDetails.toLowerCase().includes('nmr')) techniques.push('NMR'); // New
-        if (techniques.length === 0) return ['XRD', 'TEM', 'XPS', 'Cycling', 'EIS']; // Default comprehensive set
+        if (designDetails.toLowerCase().includes('nmr')) techniques.push('NMR');
+        if (techniques.length === 0) return ['XRD', 'TEM', 'XPS', 'Cycling', 'EIS'];
         return techniques;
     }
 }
 
-// --- Main React Component ---
-
+/**
+ * The main React component for visualizing and interacting with the Autonomous Scientist AI.
+ * This view provides a rich, interactive dashboard where users can define research goals,
+ * observe the AI's progress through various scientific phases, review generated hypotheses,
+ * simulated experiments, discovered materials, and intellectual property.
+ *
+ * Business Value: This dashboard is the operational interface for overseeing multi-million
+ * dollar research initiatives. It offers unparalleled transparency into the AI's decision-making
+ * and performance, enabling human scientists and stakeholders to monitor progress, intervene
+ * if necessary, and extract high-value insights in real-time. This reduces oversight costs,
+ * accelerates scientific understanding, and directly supports strategic R&D management.
+ */
 const AutonomousScientistView: React.FC = () => {
     const [goal, setGoal] = useState('Discover novel high-performance anode materials for next-generation solid-state lithium-ion batteries with enhanced cycle life, safety, and energy density.');
     const [isLoading, setIsLoading] = useState(false);
     const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({
         researchObjective: true,
         researchOverview: true,
+        projectDashboard: true,
+        currentProjectAssessments: true,
         agentActivityLog: true,
         generatedHypotheses: true,
         simulatedExperiments: true,
         discoveredMaterials: true,
         agentDecisionHistory: true,
-        projectDashboard: false, // New card, initially collapsed
-        ipAndPublications: false, // New card, initially collapsed
+        ipAndPublications: true,
         finalResearchReport: true,
     });
 
+    /**
+     * Toggles the expanded state of a UI card.
+     * @param cardName The name of the card to toggle.
+     */
     const toggleCardExpansion = (cardName: string) => {
         setExpandedCards(prev => ({
             ...prev,
@@ -2257,7 +2586,7 @@ const AutonomousScientistView: React.FC = () => {
     const [context, setContext] = useState<ResearchContext>(() => {
         const initialBudget = 100000;
         return {
-            goal: '', // Will be updated on start
+            goal: '',
             currentPhase: ResearchPhase.IDLE,
             hypotheses: [],
             experiments: [],
@@ -2265,11 +2594,10 @@ const AutonomousScientistView: React.FC = () => {
             logEntries: [],
             decisions: [],
             iterationCount: 0,
-            maxIterations: 4, // Simulate 4 iterations for a more comprehensive demonstration
+            maxIterations: 4,
             ai: new MockGoogleGenAI({ apiKey: 'mock-api-key' }),
-            budget: initialBudget, // Initial simulated budget
-            timeElapsed: 0, // Initial simulated time
-            researchReport: undefined,
+            budget: initialBudget,
+            timeElapsed: 0,
             currentProject: {
                 id: 'proj-init',
                 name: 'Initial Project',
@@ -2290,7 +2618,11 @@ const AutonomousScientistView: React.FC = () => {
         };
     });
 
-    // Memoize addLog to prevent unnecessary re-renders in child components if passed down
+    /**
+     * Callback function to add a new log entry to the agent's activity log.
+     * This is memoized to optimize performance.
+     * @param entry The log entry to add.
+     */
     const addLog = useCallback((entry: LogEntry) => {
         setContext(prev => ({
             ...prev,
@@ -2298,13 +2630,16 @@ const AutonomousScientistView: React.FC = () => {
         }));
     }, []);
 
+    /**
+     * Initiates a new autonomous research simulation cycle.
+     * Resets the agent's context and starts the `AutonomousScientistAgent` to run its research workflow.
+     */
     const runSimulation = async () => {
         setIsLoading(true);
-        // Reset context for a new simulation run, preserving the goal from input
         const initialBudget = 100000;
         setContext(prev => ({
             ...prev,
-            goal: goal, // Use the current goal from the textarea
+            goal: goal,
             currentPhase: ResearchPhase.IDLE,
             hypotheses: [],
             experiments: [],
@@ -2312,9 +2647,9 @@ const AutonomousScientistView: React.FC = () => {
             logEntries: [],
             decisions: [],
             iterationCount: 0,
-            researchReport: undefined, // Clear previous report
-            budget: initialBudget, // Reset budget
-            timeElapsed: 0, // Reset time
+            researchReport: undefined,
+            budget: initialBudget,
+            timeElapsed: 0,
             currentProject: {
                 id: `proj-${Date.now()}`,
                 name: `Autonomous Research: ${goal.substring(0, Math.min(goal.length, 30))}...`,
@@ -2323,7 +2658,12 @@ const AutonomousScientistView: React.FC = () => {
                 startDate: new Date().toISOString().split('T')[0],
                 initialBudget: initialBudget,
                 currentBudget: initialBudget,
-                kpis: [],
+                kpis: [
+                    { name: 'Cycle Life Target', target: 1000, current: 0, unit: 'cycles' },
+                    { name: 'Capacity Retention', target: 90, current: 0, unit: '%' },
+                    { name: 'Budget Remaining', target: 0, current: initialBudget, unit: 'USD' },
+                    { name: 'Time Elapsed', target: -1, current: 0, unit: 'hours' },
+                ],
                 teamMembers: ['Autonomous Scientist AI'],
             },
             patentsFiled: [],
@@ -2337,18 +2677,37 @@ const AutonomousScientistView: React.FC = () => {
         const scientistAgent = new AutonomousScientistAgent(
             {
                 ...context,
-                goal: goal, // Ensure agent gets the latest goal
-                ai: new MockGoogleGenAI({ apiKey: 'mock-api-key' }), // Re-initialize AI for a clean state in the agent
+                goal: goal,
+                ai: new MockGoogleGenAI({ apiKey: 'mock-api-key' }),
+                budget: initialBudget,
+                currentProject: { // Ensure agent gets fully reset project context too
+                    id: `proj-${Date.now()}`,
+                    name: `Autonomous Research: ${goal.substring(0, Math.min(goal.length, 30))}...`,
+                    goal: goal,
+                    status: 'active',
+                    startDate: new Date().toISOString().split('T')[0],
+                    initialBudget: initialBudget,
+                    currentBudget: initialBudget,
+                    kpis: [
+                        { name: 'Cycle Life Target', target: 1000, current: 0, unit: 'cycles' },
+                        { name: 'Capacity Retention', target: 90, current: 0, unit: '%' },
+                        { name: 'Budget Remaining', target: 0, current: initialBudget, unit: 'USD' },
+                        { name: 'Time Elapsed', target: -1, current: 0, unit: 'hours' },
+                    ],
+                    teamMembers: ['Autonomous Scientist AI'],
+                },
             },
             addLog,
-            setContext // Pass the state setter directly to the agent to update context
+            setContext
         );
 
         await scientistAgent.runResearchCycle();
         setIsLoading(false);
     };
 
-    // Auto-scroll log to the bottom
+    /**
+     * Automatically scrolls the log display to the bottom as new entries are added.
+     */
     const logEndRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (logEndRef.current) {
@@ -2356,7 +2715,14 @@ const AutonomousScientistView: React.FC = () => {
         }
     }, [context.logEntries.length]);
 
-    // Renders a colored badge for the current research phase
+    /**
+     * Renders a styled badge indicating the current research phase.
+     * Business Value: Provides an immediate, color-coded visual indicator of the AI's
+     * operational status, enabling stakeholders to quickly grasp the agent's current focus
+     * and progress without deep diving into logs.
+     * @param phase The current ResearchPhase.
+     * @returns A React span element with styling representing the phase.
+     */
     const renderPhaseBadge = (phase: ResearchPhase) => {
         let colorClass = 'bg-gray-500';
         switch (phase) {
@@ -2377,7 +2743,7 @@ const AutonomousScientistView: React.FC = () => {
             case ResearchPhase.PROJECT_SETUP: colorClass = 'bg-blue-800'; break;
             case ResearchPhase.IP_MANAGEMENT: colorClass = 'bg-amber-600'; break;
             case ResearchPhase.GRANT_APPLICATION: colorClass = 'bg-fuchsia-600'; break;
-            case ResearchPhase.PEER_REVIEW: colorClass = 'bg-lightBlue-600'; break;
+            case ResearchPhase.PEER_REVIEW: colorClass = 'bg-sky-600'; break; // Changed from lightBlue-600 for consistency
             case ResearchPhase.PUBLICATION_STRATEGY: colorClass = 'bg-rose-600'; break;
             case ResearchPhase.RISK_ASSESSMENT: colorClass = 'bg-red-800'; break;
             case ResearchPhase.ECONOMIC_EVALUATION: colorClass = 'bg-green-800'; break;
@@ -2389,7 +2755,12 @@ const AutonomousScientistView: React.FC = () => {
         );
     };
 
-    // Helper to format large numbers
+    /**
+     * Formats a number for display, optionally as currency.
+     * @param num The number to format.
+     * @param currency If true, formats as currency.
+     * @returns The formatted string.
+     */
     const formatNumber = (num: number, currency: boolean = false) => {
         if (currency) return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         return num.toLocaleString('en-US');
@@ -2443,7 +2814,7 @@ const AutonomousScientistView: React.FC = () => {
                         <span className="text-green-300 font-semibold">Budget Remaining:</span>
                         <span className="text-white font-medium">{formatNumber(context.budget, true)}</span>
                     </div>
-                     <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm flex items-center justify-between">
+                    <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700 shadow-sm flex items-center justify-between">
                         <span className="text-yellow-300 font-semibold">Time Elapsed:</span>
                         <span className="text-white font-medium">{context.timeElapsed.toFixed(1)} hrs</span>
                     </div>
@@ -2488,7 +2859,7 @@ const AutonomousScientistView: React.FC = () => {
             </LocalCard>
 
             {context.currentRiskAssessment && context.currentEconomicAnalysis && (
-                <LocalCard title="Current Project Assessments" className="bg-gray-800/70 border-yellow-800" expanded={true}>
+                <LocalCard title="Current Project Assessments" className="bg-gray-800/70 border-yellow-800" expanded={expandedCards.currentProjectAssessments} onToggleExpand={() => toggleCardExpansion('currentProjectAssessments')}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h3 className="text-xl font-semibold text-red-300 mb-2">Risk Assessment</h3>
@@ -2566,7 +2937,7 @@ const AutonomousScientistView: React.FC = () => {
                                     </span>
                                 </h3>
                                 <p className="text-gray-300 text-sm mb-3">Type: <span className="font-medium text-white">{exp.type.charAt(0).toUpperCase() + exp.type.slice(1)}</span></p>
-                                <p className="text-gray-400 text-sm mb-4 italic leading-relaxed">{exp.designRationale.substring(0, 200)}{exp.designRationale.length > 200 ? '...' : ''}</p>
+                                <p className="text-gray-400 text-sm mb-4 italic leading-relaxed">{exp.designRationale.substring(0, Math.min(exp.designRationale.length, 200))}{exp.designRationale.length > 200 ? '...' : ''}</p>
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-gray-400 border-t border-gray-700 pt-3">
                                     <span>Cost Est: <span className="text-white font-medium">{formatNumber(exp.costEstimate, true)}</span></span>
                                     <span>Time Est: <span className="text-white font-medium">{exp.timeEstimate.toFixed(1)} hrs</span></span>
@@ -2594,7 +2965,7 @@ const AutonomousScientistView: React.FC = () => {
                                                     {exp.results.generatedVisualizations.map((vis, vIdx) => (
                                                         <div key={vIdx} className="bg-gray-700/50 p-2 rounded">
                                                             <p className="text-xs text-gray-300 font-semibold mb-1">{vis.title}</p>
-                                                            <img src={vis.dataUrl} alt={vis.title} className="w-full h-24 object-contain bg-gray-900 rounded" /> {/* Placeholder image */}
+                                                            <img src={vis.dataUrl} alt={vis.title} className="w-full h-24 object-contain bg-gray-900 rounded" />
                                                         </div>
                                                     ))}
                                                 </div>
@@ -2614,7 +2985,7 @@ const AutonomousScientistView: React.FC = () => {
                         {context.materialsDiscovered.map(mat => (
                             <div key={mat.id} className="p-5 bg-gray-900/50 rounded-lg border border-gray-700 shadow-md transition-all duration-200 hover:shadow-lg hover:border-emerald-600">
                                 <h3 className="font-semibold text-emerald-400 text-xl mb-2">{mat.name}</h3>
-                                <p className="text-gray-300 text-sm mb-3">Composition: <span className="text-white font-medium">{Object.entries(mat.composition.elements).map(([el, val]) => `${el}${val}`).join('')}{mat.composition.dopants && Object.entries(mat.composition.dopants).map(([dop, val]) => `(${dop}:${(val*100).toFixed(1)}%)`)}</span></p>
+                                <p className="text-gray-300 text-sm mb-3">Composition: <span className="text-white font-medium">{Object.entries(mat.composition.elements).map(([el, val]) => `${el}${val}`).join('')}{mat.composition.dopants && Object.entries(mat.composition.dopants).map(([dop, val]) => `(${dop}:${(val * 100).toFixed(1)}%)`)}</span></p>
                                 {mat.composition.structure && <p className="text-gray-300 text-xs mb-1">Structure: <span className="text-white font-medium">{mat.composition.structure}</span></p>}
                                 {mat.composition.nanostructure && <p className="text-gray-300 text-xs mb-3">Nanostructure: <span className="text-white font-medium">{mat.composition.nanostructure}</span></p>}
                                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-400 border-t border-gray-700 pt-3">
@@ -2657,7 +3028,6 @@ const AutonomousScientistView: React.FC = () => {
                                 </div>
                                 <p className="text-gray-200 mb-1">{decision.description}</p>
                                 {decision.reasoning && <p className="text-xs italic text-gray-400">Reasoning: {decision.reasoning}</p>}
-                                {/* {decision.details && <details className="text-xs text-gray-500 cursor-pointer"><summary>Details</summary><pre className="whitespace-pre-wrap">{JSON.stringify(decision.details, null, 2)}</pre></details>} */}
                             </div>
                         ))}
                     </div>
@@ -2665,57 +3035,57 @@ const AutonomousScientistView: React.FC = () => {
             )}
 
             {(context.patentsFiled.length > 0 || context.grantsSubmitted.length > 0 || context.publicationsSubmitted.length > 0) && (
-                 <LocalCard title="IP & Publications" className="bg-gray-800/70 border-amber-800" expanded={expandedCards.ipAndPublications} onToggleExpand={() => toggleCardExpansion('ipAndPublications')}>
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                         {context.patentsFiled.length > 0 && (
-                             <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
-                                 <h3 className="font-semibold text-amber-400 text-xl mb-3">Patents Filed ({context.patentsFiled.length})</h3>
-                                 <ul className="space-y-3">
-                                     {context.patentsFiled.map(patent => (
-                                         <li key={patent.id} className="text-sm border-b border-gray-700 pb-2">
-                                             <p className="font-medium text-white">{patent.title}</p>
-                                             <p className="text-gray-400">Status: <span className={`font-medium ${patent.status === 'granted' ? 'text-green-400' : patent.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{patent.status.replace(/_/g, ' ')}</span></p>
-                                             <p className="text-gray-500">Filed: {patent.filingDate}</p>
-                                             <p className="text-gray-500">Materials: {patent.associatedMaterials.map(mId => mId.split('-')[1]).join(', ')}</p>
-                                         </li>
-                                     ))}
-                                 </ul>
-                             </div>
-                         )}
-                         {context.grantsSubmitted.length > 0 && (
-                             <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
-                                 <h3 className="font-semibold text-fuchsia-400 text-xl mb-3">Grants Submitted ({context.grantsSubmitted.length})</h3>
-                                 <ul className="space-y-3">
-                                     {context.grantsSubmitted.map(grant => (
-                                         <li key={grant.id} className="text-sm border-b border-gray-700 pb-2">
-                                             <p className="font-medium text-white">{grant.title}</p>
-                                             <p className="text-gray-400">Status: <span className={`font-medium ${grant.status === 'funded' ? 'text-green-400' : grant.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{grant.status.replace(/_/g, ' ')}</span></p>
-                                             <p className="text-gray-500">Requested: {formatNumber(grant.budgetRequest, true)}</p>
-                                             {grant.currentFunding && <p className="text-gray-500">Funded: {formatNumber(grant.currentFunding, true)}</p>}
-                                             <p className="text-gray-500">Agency: {grant.fundingAgency}</p>
-                                         </li>
-                                     ))}
-                                 </ul>
-                             </div>
-                         )}
-                         {context.publicationsSubmitted.length > 0 && (
-                             <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
-                                 <h3 className="font-semibold text-rose-400 text-xl mb-3">Publications ({context.publicationsSubmitted.length})</h3>
-                                 <ul className="space-y-3">
-                                     {context.publicationsSubmitted.map(pub => (
-                                         <li key={pub.id} className="text-sm border-b border-gray-700 pb-2">
-                                             <p className="font-medium text-white">{pub.title}</p>
-                                             <p className="text-gray-400">Journal: {pub.journal}</p>
-                                             <p className="text-gray-400">Status: <span className={`font-medium ${pub.status === 'accepted' ? 'text-green-400' : pub.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{pub.status.replace(/_/g, ' ')}</span></p>
-                                             <p className="text-gray-500">Submitted: {pub.submissionDate}</p>
-                                         </li>
-                                     ))}
-                                 </ul>
-                             </div>
-                         )}
-                     </div>
-                 </LocalCard>
-             )}
+                <LocalCard title="IP & Publications" className="bg-gray-800/70 border-amber-800" expanded={expandedCards.ipAndPublications} onToggleExpand={() => toggleCardExpansion('ipAndPublications')}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {context.patentsFiled.length > 0 && (
+                            <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
+                                <h3 className="font-semibold text-amber-400 text-xl mb-3">Patents Filed ({context.patentsFiled.length})</h3>
+                                <ul className="space-y-3">
+                                    {context.patentsFiled.map(patent => (
+                                        <li key={patent.id} className="text-sm border-b border-gray-700 pb-2">
+                                            <p className="font-medium text-white">{patent.title}</p>
+                                            <p className="text-gray-400">Status: <span className={`font-medium ${patent.status === 'granted' ? 'text-green-400' : patent.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{patent.status.replace(/_/g, ' ')}</span></p>
+                                            <p className="text-gray-500">Filed: {patent.filingDate}</p>
+                                            <p className="text-gray-500">Materials: {patent.associatedMaterials.map(mId => mId.split('-')[1]).join(', ')}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {context.grantsSubmitted.length > 0 && (
+                            <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
+                                <h3 className="font-semibold text-fuchsia-400 text-xl mb-3">Grants Submitted ({context.grantsSubmitted.length})</h3>
+                                <ul className="space-y-3">
+                                    {context.grantsSubmitted.map(grant => (
+                                        <li key={grant.id} className="text-sm border-b border-gray-700 pb-2">
+                                            <p className="font-medium text-white">{grant.title}</p>
+                                            <p className="text-gray-400">Status: <span className={`font-medium ${grant.status === 'funded' ? 'text-green-400' : grant.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{grant.status.replace(/_/g, ' ')}</span></p>
+                                            <p className="text-gray-500">Requested: {formatNumber(grant.budgetRequest, true)}</p>
+                                            {grant.currentFunding && <p className="text-gray-500">Funded: {formatNumber(grant.currentFunding, true)}</p>}
+                                            <p className="text-gray-500">Agency: {grant.fundingAgency}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {context.publicationsSubmitted.length > 0 && (
+                            <div className="bg-gray-900/50 p-5 rounded-lg border border-gray-700 shadow-md">
+                                <h3 className="font-semibold text-rose-400 text-xl mb-3">Publications ({context.publicationsSubmitted.length})</h3>
+                                <ul className="space-y-3">
+                                    {context.publicationsSubmitted.map(pub => (
+                                        <li key={pub.id} className="text-sm border-b border-gray-700 pb-2">
+                                            <p className="font-medium text-white">{pub.title}</p>
+                                            <p className="text-gray-400">Journal: {pub.journal}</p>
+                                            <p className="text-gray-400">Status: <span className={`font-medium ${pub.status === 'accepted' ? 'text-green-400' : pub.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>{pub.status.replace(/_/g, ' ')}</span></p>
+                                            <p className="text-gray-500">Submitted: {pub.submissionDate}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </LocalCard>
+            )}
 
 
             {context.researchReport && context.currentPhase === ResearchPhase.COMPLETED && (
@@ -2748,7 +3118,7 @@ const AutonomousScientistView: React.FC = () => {
                                 {context.researchReport.experiments.map((exp, i) => (
                                     <div key={i} className="bg-gray-900/50 p-4 rounded border border-gray-700 shadow-sm">
                                         <h4 className="font-semibold text-purple-300 text-lg">{exp.name} ({exp.type.charAt(0).toUpperCase() + exp.type.slice(1)})</h4>
-                                        <p className="text-sm italic text-gray-400 mt-1">{exp.designRationale.substring(0, 150)}...</p>
+                                        <p className="text-sm italic text-gray-400 mt-1">{exp.designRationale.substring(0, Math.min(exp.designRationale.length, 150))}...</p>
                                         {exp.results && (
                                             <p className="text-sm mt-2 text-gray-300">Summary: {exp.results.analysisSummary}</p>
                                         )}
@@ -2832,3 +3202,4 @@ const AutonomousScientistView: React.FC = () => {
 };
 
 export default AutonomousScientistView;
+```
