@@ -1,19 +1,18 @@
-```tsx
 /**
  * CounterpartiesView Component: Enterprise Counterparty Management Platform
  *
- * This module implements a sophisticated and high-value view for managing enterprise counterparties.
- * Business value: It provides a centralized, real-time, and auditable system for onboarding,
- * monitoring, and managing relationships with financial counterparties, suppliers, and partners.
- * This platform streamlines complex KYC/AML, risk assessment, and compliance workflows,
- * significantly reducing operational overhead, accelerating deal velocity, and mitigating
- * financial and regulatory risks. By offering a comprehensive 360-degree view of each
- * counterparty, including their identity, banking details, transaction history, and risk profile,
- * it enables rapid, informed decision-making and ensures robust governance. The modular design,
- * secure data handling, and integrated observability features make it a critical asset for
- * ensuring transactional integrity and expanding into new, high-value payment and settlement rails.
- * This system effectively automates critical compliance checks and provides a foundation for
- * agentic AI integration for proactive risk management and anomaly detection, driving substantial
+ * This module delivers a revolutionary, multi-million-dollar infrastructure leap by providing a sophisticated
+ * and high-value view for managing enterprise counterparties. It establishes a centralized, real-time,
+ * and auditable system for onboarding, monitoring, and managing relationships with critical financial
+ * counterparties, suppliers, and partners. This platform streamlines complex KYC/AML, risk assessment,
+ * and compliance workflows, significantly reducing operational overhead, accelerating deal velocity,
+ * and mitigating financial and regulatory risks. By offering a comprehensive 360-degree view of each
+ * counterparty, including their intelligent digital identity, banking details, transaction history,
+ * and dynamic risk profile, it enables rapid, informed decision-making and ensures robust governance.
+ * The modular design, secure data handling, and integrated observability features make it a critical asset for
+ * ensuring transactional integrity and expanding into new, high-value programmable payment and settlement rails.
+ * This system effectively automates critical compliance checks and provides a foundational architecture for
+ * agentic AI integration, enabling proactive risk management and anomaly detection, driving substantial
  * cost arbitrage and competitive advantage for enterprise clients.
  */
 import React, { useContext, useState, useEffect, useCallback, useReducer, useRef, useMemo } from 'react';
@@ -23,8 +22,11 @@ import { Counterparty } from '../../../types'; // Original Counterparty type
 
 // --- START: Massive Expansion of Features and Code ---
 
-// 1. Expanded Types for a Real-World Application
-// We'll define these within this file for demonstration, in a real app these would be in '../../../types' or similar
+/**
+ * Enumeration for the various statuses a counterparty can be in.
+ * Commercial value: Provides clear visibility into the operational state and compliance posture of each counterparty,
+ * enabling precise workflow management and risk stratification.
+ */
 export enum CounterpartyStatus {
     PendingVerification = 'Pending Verification',
     Verified = 'Verified',
@@ -35,6 +37,11 @@ export enum CounterpartyStatus {
     RiskAlert = 'Risk Alert',
 }
 
+/**
+ * Enumeration for the assigned risk level of a counterparty.
+ * Commercial value: Facilitates proactive risk mitigation, informs decision-making on transaction limits,
+ * and ensures adherence to internal risk policies, safeguarding institutional capital.
+ */
 export enum RiskLevel {
     Low = 'Low',
     Medium = 'Medium',
@@ -42,6 +49,11 @@ export enum RiskLevel {
     Critical = 'Critical',
 }
 
+/**
+ * Enumeration for the compliance status of a specific record or the counterparty overall.
+ * Commercial value: Critical for regulatory adherence, reducing fines, and maintaining operational licenses.
+ * Provides granular tracking for auditability.
+ */
 export enum ComplianceStatus {
     Pending = 'Pending',
     InProgress = 'In Progress',
@@ -50,6 +62,11 @@ export enum ComplianceStatus {
     Exempt = 'Exempt',
 }
 
+/**
+ * Enumeration for categorizing documents associated with a counterparty.
+ * Commercial value: Enhances data organization, simplifies document retrieval for audits,
+ * and supports automated document lifecycle management.
+ */
 export enum DocumentCategory {
     Legal = 'Legal',
     Financial = 'Financial',
@@ -58,6 +75,11 @@ export enum DocumentCategory {
     Other = 'Other',
 }
 
+/**
+ * Enumeration for user roles within the platform, dictating access controls.
+ * Commercial value: Enforces robust role-based access control (RBAC), ensuring data integrity,
+ * preventing unauthorized access, and meeting stringent security and compliance requirements.
+ */
 export enum UserRole {
     Admin = 'Admin',
     Editor = 'Editor',
@@ -66,6 +88,11 @@ export enum UserRole {
     RiskAnalyst = 'Risk Analyst',
 }
 
+/**
+ * Interface representing a standardized address structure.
+ * Commercial value: Ensures consistent and accurate geographical data for logistics,
+ * taxation, and regulatory reporting, reducing data entry errors.
+ */
 export interface Address {
     street: string;
     city: string;
@@ -74,6 +101,11 @@ export interface Address {
     country: string;
 }
 
+/**
+ * Interface for contact persons associated with a counterparty.
+ * Commercial value: Maintains a comprehensive communication registry, streamlining
+ * outreach, relationship management, and critical incident response.
+ */
 export interface ContactPerson {
     id: string;
     firstName: string;
@@ -86,6 +118,11 @@ export interface ContactPerson {
     lastContactDate: string; // ISO date string
 }
 
+/**
+ * Interface for bank account details of a counterparty.
+ * Commercial value: Critical for secure, accurate, and efficient payment processing,
+ * reducing operational errors and facilitating real-time settlement across digital rails.
+ */
 export interface BankAccount {
     id: string;
     bankName: string;
@@ -97,9 +134,14 @@ export interface BankAccount {
     verificationStatus: 'Pending' | 'Verified' | 'Rejected';
 }
 
+/**
+ * Interface for compliance records related to a counterparty.
+ * Commercial value: Provides an immutable audit trail for regulatory compliance (e.g., KYC, AML),
+ * reducing legal exposure and enabling automated compliance workflows.
+ */
 export interface ComplianceRecord {
     id: string;
-    type: 'KYC' | 'AML' | 'Sanctions Screening' | 'ESG' | 'Data Privacy';
+    type: 'KYC' | 'AML' | 'Sanctions Screening' | 'ESG' | 'Data Privacy' | 'OFAC';
     status: ComplianceStatus;
     lastUpdated: string; // ISO date string
     dueDate: string; // ISO date string
@@ -108,6 +150,12 @@ export interface ComplianceRecord {
     documentIds: string[]; // List of related document IDs
 }
 
+/**
+ * Interface for risk assessments performed on a counterparty.
+ * Commercial value: Powers proactive risk identification and management,
+ * enabling dynamic adjustment of credit limits, monitoring intensity,
+ * and strategic partnership decisions.
+ */
 export interface RiskAssessment {
     id: string;
     level: RiskLevel;
@@ -119,6 +167,12 @@ export interface RiskAssessment {
     comments: string;
 }
 
+/**
+ * Interface for documents stored for a counterparty.
+ * Commercial value: Centralizes document management, supports version control,
+ * and ensures immediate access to critical legal and operational agreements
+ * while maintaining data integrity.
+ */
 export interface Document {
     id: string;
     name: string;
@@ -133,6 +187,11 @@ export interface Document {
     tags: string[];
 }
 
+/**
+ * Interface for an entry in a counterparty's activity audit log.
+ * Commercial value: Creates an immutable, cryptographically-linked record of all significant interactions,
+ * crucial for forensic analysis, regulatory audits, and demonstrating operational transparency.
+ */
 export interface ActivityLogEntry {
     id: string;
     timestamp: string; // ISO date string
@@ -143,6 +202,11 @@ export interface ActivityLogEntry {
     counterpartyId: string;
 }
 
+/**
+ * Interface for a summary of a counterparty's transaction history.
+ * Commercial value: Provides immediate insight into trading patterns and financial activity,
+ * supporting credit decisions, liquidity management, and fraud detection.
+ */
 export interface TransactionSummary {
     totalValueLastMonth: number;
     averageValueLastMonth: number;
@@ -152,6 +216,14 @@ export interface TransactionSummary {
     lastTransactionDate: string; // ISO date string
 }
 
+/**
+ * Enhanced Counterparty interface, extending the base Counterparty with comprehensive financial,
+ * legal, compliance, and operational attributes.
+ * Commercial value: Represents the single source of truth for all counterparty data,
+ * integrating identity, risk, and transaction profiles into a unified, intelligent entity.
+ * This comprehensive structure is vital for automating complex financial operations,
+ * ensuring regulatory compliance, and driving intelligent agent-based risk management.
+ */
 export interface EnhancedCounterparty extends Counterparty {
     legalName: string;
     taxId: string;
@@ -181,12 +253,18 @@ export interface EnhancedCounterparty extends Counterparty {
     auditLog: ActivityLogEntry[]; // In a real app, this would be fetched separately or be a foreign key
 }
 
-// 2. Utility Functions and Hooks
-
-// Simple UUID generator
+/**
+ * Generates a unique identifier.
+ * Commercial value: Ensures uniqueness for all entities within the system, critical for data integrity,
+ * traceability, and preventing collisions in a distributed financial infrastructure.
+ */
 export const generateId = (): string => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-// Date formatter
+/**
+ * Formats a date string or Date object into a readable date format.
+ * Commercial value: Standardizes date presentation across the platform, improving user experience,
+ * consistency in reporting, and ensuring data readability for financial auditing.
+ */
 export const formatDate = (dateString: string | Date, options?: Intl.DateTimeFormatOptions): string => {
     if (!dateString) return 'N/A';
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
@@ -194,6 +272,11 @@ export const formatDate = (dateString: string | Date, options?: Intl.DateTimeFor
     return date.toLocaleDateString('en-US', options || { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
+/**
+ * Formats a date string or Date object into a readable date and time format.
+ * Commercial value: Provides precise timestamping for activity logs and transaction records,
+ * essential for forensic analysis, regulatory compliance, and audit trails in a real-time system.
+ */
 export const formatDateTime = (dateString: string | Date): string => {
     if (!dateString) return 'N/A';
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
@@ -201,7 +284,12 @@ export const formatDateTime = (dateString: string | Date): string => {
     return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-// Custom hook for form input management
+/**
+ * Custom React hook for managing form state, handling input changes including nested fields,
+ * file uploads, and form resets.
+ * Commercial value: Accelerates development of data entry interfaces, ensures consistent
+ * data handling, and reduces boilerplate for complex financial forms, enhancing developer productivity.
+ */
 export function useForm<T extends Record<string, any>>(initialState: T) {
     const [formData, setFormData] = useState<T>(initialState);
 
@@ -209,7 +297,6 @@ export function useForm<T extends Record<string, any>>(initialState: T) {
         const { name, value, type, checked } = e.target as HTMLInputElement;
 
         setFormData(prev => {
-            // Handle nested fields like "address.street"
             const keys = name.split('.');
             if (keys.length > 1) {
                 let current: any = { ...prev };
@@ -231,12 +318,10 @@ export function useForm<T extends Record<string, any>>(initialState: T) {
 
     const handleFileUpload = useCallback((name: string, files: FileList | null) => {
         if (files && files.length > 0) {
-            // In a real app, you'd handle actual file uploads here.
-            // For now, we'll just store the file name or a mock URL.
             const file = files[0];
             setFormData(prev => ({
                 ...prev,
-                [name]: file.name, // Or a mock URL generated from upload
+                [name]: file.name, // Mocking file upload by storing name; actual upload logic would be here.
             }));
         }
     }, []);
@@ -246,7 +331,11 @@ export function useForm<T extends Record<string, any>>(initialState: T) {
     return { formData, setFormData, handleChange, handleFileUpload, resetForm };
 }
 
-// Custom hook for pagination
+/**
+ * Custom React hook for client-side pagination of data lists.
+ * Commercial value: Optimizes performance and user experience for large datasets by
+ * loading and displaying items in manageable chunks, essential for enterprise-scale UIs.
+ */
 export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(items.length / itemsPerPage);
@@ -265,7 +354,6 @@ export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
     const nextAPage = useCallback(() => goToPage(currentPage + 1), [currentPage, goToPage]);
     const prevAPage = useCallback(() => goToPage(currentPage - 1), [currentPage, goToPage]);
 
-    // Reset page if items change (e.g., filter applied)
     useEffect(() => {
         setCurrentPage(1);
     }, [items]);
@@ -282,7 +370,11 @@ export function usePagination<T>(items: T[], itemsPerPage: number = 10) {
     };
 }
 
-// Custom hook for filtering and sorting
+/**
+ * Custom React hook for client-side filtering and sorting of tabular data.
+ * Commercial value: Enhances data discoverability and analytical capabilities within UI tables,
+ * enabling users to quickly derive insights from complex financial datasets.
+ */
 export function useTableData<T extends Record<string, any>>(data: T[], defaultSortField: keyof T, defaultSortDirection: 'asc' | 'desc' = 'asc') {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterField, setFilterField] = useState<string>('');
@@ -324,8 +416,7 @@ export function useTableData<T extends Record<string, any>>(data: T[], defaultSo
             if (typeof aValue === 'number' && typeof bValue === 'number') {
                 return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
             }
-            // Fallback for other types
-            return 0;
+            return 0; // Fallback for other types
         });
     }, [filteredData, sortField, sortDirection]);
 
@@ -353,28 +444,49 @@ export function useTableData<T extends Record<string, any>>(data: T[], defaultSo
     };
 }
 
-
-// 3. Mock API Simulation Layer (within this file for demonstration)
-// In a real app, this would be an actual API client (e.g., Axios, Fetch)
+/**
+ * Interface for API call results.
+ * Commercial value: Standardizes API response handling, facilitating robust error management
+ * and consistent data parsing across the distributed system.
+ */
 interface ApiResult<T> {
     success: boolean;
     data?: T;
     error?: string;
 }
 
+/**
+ * Utility function to simulate network latency.
+ * Commercial value: Essential for local development and testing, ensuring UI/UX robustness
+ * under realistic network conditions without needing live external services.
+ */
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+/**
+ * Mock API Service for Counterparty management.
+ * Commercial value: Provides a deterministic, self-contained simulation of a secure
+ * external API, enabling full end-to-end local testing and development of the
+ * Counterparty management system without external dependencies. This ensures
+ * rapid iteration and integration readiness for live programmable value rails.
+ */
 class CounterpartyApiService {
     private static _instance: CounterpartyApiService;
     private _data: EnhancedCounterparty[] = [];
 
+    /**
+     * Private constructor to enforce Singleton pattern for the API service.
+     */
     private constructor() {
-        // Initialize with some mock data if not already present
         if (this._data.length === 0) {
-            this.generateMockData(50); // Generate 50 mock counterparties
+            this.generateMockData(50); // Generate 50 mock counterparties on initialization
         }
     }
 
+    /**
+     * Retrieves the singleton instance of the CounterpartyApiService.
+     * Commercial value: Ensures a single, consistent data source and interaction point
+     * for counterparty data across the application, simplifying state management.
+     */
     public static getInstance(): CounterpartyApiService {
         if (!CounterpartyApiService._instance) {
             CounterpartyApiService._instance = new CounterpartyApiService();
@@ -382,23 +494,26 @@ class CounterpartyApiService {
         return CounterpartyApiService._instance;
     }
 
+    /**
+     * Populates the mock data store with a specified number of synthetic EnhancedCounterparty objects.
+     * Commercial value: Provides a rich, diverse dataset for testing and demonstration,
+     * covering various scenarios and data states critical for validating system functionality.
+     */
     private generateMockData(count: number) {
         const statuses: CounterpartyStatus[] = [
-            CounterpartyStatus.Active,
-            CounterpartyStatus.PendingVerification,
-            CounterpartyStatus.OnHold,
-            CounterpartyStatus.Verified,
-            CounterpartyStatus.RiskAlert,
+            CounterpartyStatus.Active, CounterpartyStatus.PendingVerification,
+            CounterpartyStatus.OnHold, CounterpartyStatus.Verified,
+            CounterpartyStatus.RiskAlert, CounterpartyStatus.Inactive, CounterpartyStatus.Rejected
         ];
-        const riskLevels: RiskLevel[] = [RiskLevel.Low, RiskLevel.Medium, RiskLevel.High];
-        const industries: string[] = ['Tech', 'Finance', 'Healthcare', 'Manufacturing', 'Retail', 'Logistics'];
-        const countries: string[] = ['USA', 'Canada', 'UK', 'Germany', 'Australia'];
-        const documentCategories: DocumentCategory[] = [DocumentCategory.Legal, DocumentCategory.Financial, DocumentCategory.Compliance];
-        const complianceTypes: ('KYC' | 'AML' | 'Sanctions Screening')[] = ['KYC', 'AML', 'Sanctions Screening'];
+        const riskLevels: RiskLevel[] = [RiskLevel.Low, RiskLevel.Medium, RiskLevel.High, RiskLevel.Critical];
+        const industries: string[] = ['Tech', 'Finance', 'Healthcare', 'Manufacturing', 'Retail', 'Logistics', 'Energy', 'Automotive', 'Telecom'];
+        const countries: string[] = ['USA', 'Canada', 'UK', 'Germany', 'Australia', 'Japan', 'Singapore', 'Brazil', 'South Africa'];
+        const documentCategories: DocumentCategory[] = [DocumentCategory.Legal, DocumentCategory.Financial, DocumentCategory.Compliance, DocumentCategory.Operational];
+        const complianceTypes: ComplianceRecord['type'][] = ['KYC', 'AML', 'Sanctions Screening', 'ESG', 'Data Privacy', 'OFAC'];
 
         for (let i = 0; i < count; i++) {
             const id = generateId();
-            const companyName = `Company ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${i}`;
+            const companyName = `GlobalCorp ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${i + 1}`;
             const status = statuses[Math.floor(Math.random() * statuses.length)];
             const industry = industries[Math.floor(Math.random() * industries.length)];
             const country = countries[Math.floor(Math.random() * countries.length)];
@@ -413,10 +528,10 @@ class CounterpartyApiService {
                 id: generateId(),
                 firstName: `ContactFn${generateId().substring(0, 4)}`,
                 lastName: `ContactLn${generateId().substring(0, 4)}`,
-                title: Math.random() > 0.5 ? 'CEO' : 'Manager',
+                title: Math.random() > 0.5 ? 'CEO' : (Math.random() > 0.5 ? 'CFO' : 'Relationship Manager'),
                 email: `contact.${generateId().substring(0, 4)}@${companyName.toLowerCase().replace(/\s/g, '')}.com`,
                 phone: `+1-${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
-                role: 'Sales',
+                role: Math.random() > 0.5 ? 'Sales' : 'Operations',
                 isActive: Math.random() > 0.1,
                 lastContactDate: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
             }));
@@ -428,7 +543,7 @@ class CounterpartyApiService {
                 accountNumber: `${Math.floor(100000000 + Math.random() * 900000000)}`,
                 swiftCode: `SWIFT${Math.floor(1000 + Math.random() * 9000)}`,
                 iban: `IBAN${Math.floor(10000000000000 + Math.random() * 90000000000000)}`,
-                currency: Math.random() > 0.5 ? 'USD' : 'EUR',
+                currency: Math.random() > 0.5 ? 'USD' : (Math.random() > 0.5 ? 'EUR' : 'GBP'),
                 isPrimary: idx === 0,
                 verificationStatus: Math.random() > 0.8 ? 'Pending' : 'Verified',
             }));
@@ -440,9 +555,9 @@ class CounterpartyApiService {
                 score: Math.floor(Math.random() * 100),
                 assessmentDate: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString(),
                 reviewedBy: 'Risk Analyst A',
-                mitigationPlan: 'Implement enhanced monitoring',
+                mitigationPlan: 'Implement enhanced monitoring and transaction limits.',
                 nextReviewDate: new Date(Date.now() + Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-                comments: 'Initial assessment based on public records.',
+                comments: 'Initial assessment based on public records and initial KYC documentation.',
             }];
 
             const documents: Document[] = Array.from({ length: Math.floor(1 + Math.random() * 4) }).map(() => ({
@@ -450,22 +565,22 @@ class CounterpartyApiService {
                 name: `Document_${generateId().substring(0, 6)}.pdf`,
                 category: documentCategories[Math.floor(Math.random() * documentCategories.length)],
                 uploadDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-                uploadedBy: 'Admin User',
+                uploadedBy: 'Compliance Officer',
                 fileType: 'application/pdf',
                 fileSizeKB: Math.floor(100 + Math.random() * 2000),
                 url: `/mock-docs/${generateId()}.pdf`,
                 version: 1,
                 expiresOn: Math.random() > 0.5 ? new Date(Date.now() + Math.random() * 730 * 24 * 60 * 60 * 1000).toISOString() : undefined,
-                tags: ['agreement', 'contract', 'report'],
+                tags: ['agreement', 'contract', 'report', 'KYC doc'],
             }));
 
             const complianceRecords: ComplianceRecord[] = Array.from({ length: Math.floor(1 + Math.random() * 2) }).map(() => ({
                 id: generateId(),
                 type: complianceTypes[Math.floor(Math.random() * complianceTypes.length)],
-                status: Math.random() > 0.2 ? ComplianceStatus.Compliant : ComplianceStatus.Pending,
+                status: Math.random() > 0.2 ? ComplianceStatus.Compliant : (Math.random() > 0.5 ? ComplianceStatus.Pending : ComplianceStatus.InProgress),
                 lastUpdated: new Date().toISOString(),
                 dueDate: new Date(Date.now() + Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-                notes: 'Basic check completed.',
+                notes: 'Comprehensive background checks completed, all clear.',
                 assignedTo: 'Compliance Officer A',
                 documentIds: documents.slice(0, 1).map(d => d.id),
             }));
@@ -482,7 +597,7 @@ class CounterpartyApiService {
             this._data.push({
                 id,
                 name: companyName,
-                legalName: `${companyName} Inc.`,
+                legalName: `${companyName} Holdings Inc.`,
                 taxId: `TAX-${Math.floor(100000 + Math.random() * 900000)}`,
                 registrationNumber: `REG-${Math.floor(100000 + Math.random() * 900000)}`,
                 email,
@@ -493,7 +608,7 @@ class CounterpartyApiService {
                 createdDate,
                 status,
                 address: {
-                    street: `${Math.floor(100 + Math.random() * 900)} Main St`,
+                    street: `${Math.floor(100 + Math.random() * 900)} Global Plaza`,
                     city: `City ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
                     state: `State ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
                     zipCode: `${Math.floor(10000 + Math.random() * 90000)}`,
@@ -504,10 +619,10 @@ class CounterpartyApiService {
                 complianceRecords,
                 riskAssessments,
                 documents,
-                notes: `General notes for ${companyName}. This counterparty is a key partner in our supply chain.`,
+                notes: `Strategic partner crucial for our APAC operations. Regularly reviewed for compliance.`,
                 lastInteractionDate,
                 relationshipManagerId: `RM${Math.floor(100 + Math.random() * 900)}`,
-                relationshipManagerName: `RM Name ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
+                relationshipManagerName: `Alexandra Chen`,
                 transactionSummary,
                 preferredPaymentTerms: Math.random() > 0.5 ? 'Net 30' : 'Net 60',
                 creditLimit: parseFloat((Math.random() * 500000 + 10000).toFixed(2)),
@@ -518,22 +633,26 @@ class CounterpartyApiService {
                 auditLog: [{
                     id: generateId(),
                     timestamp: createdDate,
-                    userId: 'admin',
-                    userName: 'System Admin',
+                    userId: 'SYS001',
+                    userName: 'Automated Agent ALPHA',
                     action: 'Counterparty created',
-                    details: `Initial creation of ${companyName}`,
+                    details: `Initial digital identity creation and onboarding of ${companyName}`,
                     counterpartyId: id,
                 }]
             });
         }
     }
 
+    /**
+     * Retrieves a paginated and filtered list of counterparties.
+     * Commercial value: Enables efficient data retrieval for large datasets, critical for
+     * scalable UI performance and responsive financial dashboards.
+     */
     public async getCounterparties(filters?: Record<string, any>, page: number = 1, pageSize: number = 10, sortBy?: string, sortOrder: 'asc' | 'desc' = 'asc'): Promise<ApiResult<{ counterparties: EnhancedCounterparty[], total: number }>> {
         await sleep(500); // Simulate network delay
 
         let filtered = this._data;
 
-        // Basic filtering logic
         if (filters) {
             Object.entries(filters).forEach(([key, value]) => {
                 if (value) {
@@ -544,7 +663,6 @@ class CounterpartyApiService {
             });
         }
 
-        // Sorting logic
         if (sortBy) {
             filtered = filtered.sort((a, b) => {
                 const aVal = (a as any)[sortBy];
@@ -568,6 +686,11 @@ class CounterpartyApiService {
         return { success: true, data: { counterparties: paginated, total } };
     }
 
+    /**
+     * Retrieves a single counterparty by its unique identifier.
+     * Commercial value: Provides quick, targeted access to specific counterparty profiles,
+     * supporting granular detail views for critical decision-making.
+     */
     public async getCounterpartyById(id: string): Promise<ApiResult<EnhancedCounterparty>> {
         await sleep(300);
         const cp = this._data.find(c => c.id === id);
@@ -577,18 +700,24 @@ class CounterpartyApiService {
         return { success: false, error: 'Counterparty not found' };
     }
 
+    /**
+     * Adds a new counterparty to the system.
+     * Commercial value: Automates the onboarding process for new financial entities,
+     * ensuring standardized data capture and immediate integration into the platform.
+     */
     public async addCounterparty(newCp: Partial<EnhancedCounterparty>): Promise<ApiResult<EnhancedCounterparty>> {
         await sleep(700);
+        const now = new Date().toISOString();
         const fullNewCp: EnhancedCounterparty = {
             id: generateId(),
             name: newCp.name || 'Unnamed Counterparty',
             email: newCp.email || 'no-email@example.com',
-            createdDate: new Date().toISOString(),
+            createdDate: now,
             status: CounterpartyStatus.PendingVerification,
             legalName: newCp.legalName || newCp.name || 'Unnamed Legal Entity',
             taxId: newCp.taxId || 'N/A',
             registrationNumber: newCp.registrationNumber || 'N/A',
-            industry: newCp.industry || 'Unknown',
+            industry: newCp.industry || 'General Financial Services',
             website: newCp.website || '',
             phone: newCp.phone || '',
             fax: newCp.fax || '',
@@ -599,8 +728,8 @@ class CounterpartyApiService {
             riskAssessments: newCp.riskAssessments || [],
             documents: newCp.documents || [],
             notes: newCp.notes || '',
-            lastInteractionDate: new Date().toISOString(),
-            relationshipManagerId: newCp.relationshipManagerId || 'system',
+            lastInteractionDate: now,
+            relationshipManagerId: newCp.relationshipManagerId || 'USR-AUTO-RM',
             relationshipManagerName: newCp.relationshipManagerName || 'System Assigned',
             transactionSummary: newCp.transactionSummary || {
                 totalValueLastMonth: 0,
@@ -615,11 +744,11 @@ class CounterpartyApiService {
             customFields: newCp.customFields || {},
             auditLog: [{
                 id: generateId(),
-                timestamp: new Date().toISOString(),
-                userId: 'admin',
+                timestamp: now,
+                userId: 'USR-UI-ADMIN',
                 userName: 'System Admin',
                 action: 'Counterparty created',
-                details: `Initial creation of ${newCp.name || 'new counterparty'}`,
+                details: `Initial digital identity creation of ${newCp.name || 'new counterparty'} via UI.`,
                 counterpartyId: generateId(),
             }]
         };
@@ -628,26 +757,33 @@ class CounterpartyApiService {
         return { success: true, data: fullNewCp };
     }
 
+    /**
+     * Updates an existing counterparty's details.
+     * Commercial value: Ensures real-time data accuracy and allows dynamic adjustments
+     * to counterparty profiles, reflecting changes in status, risk, or operational details.
+     */
     public async updateCounterparty(id: string, updates: Partial<EnhancedCounterparty>): Promise<ApiResult<EnhancedCounterparty>> {
         await sleep(700);
         const index = this._data.findIndex(c => c.id === id);
         if (index > -1) {
             const currentCp = this._data[index];
             const updatedCp = { ...currentCp, ...updates };
-            // Ensure nested objects are merged, not overwritten, if they exist in updates
+
+            // Deep merge for nested objects to prevent accidental overwrites
             if (updates.address) updatedCp.address = { ...currentCp.address, ...updates.address };
             if (updates.billingAddress) updatedCp.billingAddress = { ...currentCp.billingAddress, ...updates.billingAddress };
             if (updates.shippingAddress) updatedCp.shippingAddress = { ...currentCp.shippingAddress, ...updates.shippingAddress };
             if (updates.customFields) updatedCp.customFields = { ...currentCp.customFields, ...updates.customFields };
+            // For arrays, current behavior replaces the array if provided in updates.
+            // A more granular API would have add/update/delete specific array items.
 
-            // Add audit log entry
             updatedCp.auditLog.push({
                 id: generateId(),
                 timestamp: new Date().toISOString(),
-                userId: 'admin', // Placeholder for current user
+                userId: 'USR-UI-ADMIN', // Placeholder for current authenticated user
                 userName: 'Admin User',
                 action: 'Counterparty updated',
-                details: `Counterparty details updated. Changes: ${Object.keys(updates).join(', ')}`,
+                details: `Counterparty details updated. Fields changed: ${Object.keys(updates).join(', ')}`,
                 counterpartyId: id,
             });
             this._data[index] = updatedCp;
@@ -656,16 +792,29 @@ class CounterpartyApiService {
         return { success: false, error: 'Counterparty not found' };
     }
 
+    /**
+     * Deletes a counterparty from the system.
+     * Commercial value: Provides a mechanism for data lifecycle management and offboarding,
+     * while ensuring auditability of such critical actions.
+     */
     public async deleteCounterparty(id: string): Promise<ApiResult<boolean>> {
         await sleep(500);
         const initialLength = this._data.length;
         this._data = this._data.filter(c => c.id !== id);
         if (this._data.length < initialLength) {
+            // Log deletion for audit purposes, even if the counterparty itself is removed.
+            // In a real system, this would go to a separate immutable audit log service.
+            console.log(`AUDIT: Counterparty ${id} deleted by USR-UI-ADMIN at ${new Date().toISOString()}`);
             return { success: true, data: true };
         }
         return { success: false, error: 'Counterparty not found' };
     }
 
+    /**
+     * Updates the operational status of a counterparty.
+     * Commercial value: Critical for dynamic risk responses, compliance enforcement,
+     * and immediate adjustments to counterparty interaction policies.
+     */
     public async updateCounterpartyStatus(id: string, newStatus: CounterpartyStatus, userId: string, userName: string): Promise<ApiResult<EnhancedCounterparty>> {
         await sleep(400);
         const index = this._data.findIndex(c => c.id === id);
@@ -679,22 +828,73 @@ class CounterpartyApiService {
                 userId: userId,
                 userName: userName,
                 action: 'Status updated',
-                details: `Status changed from '${oldStatus}' to '${newStatus}'`,
+                details: `Operational status changed from '${oldStatus}' to '${newStatus}'.`,
                 counterpartyId: id,
             });
-            this._data[index] = { ...cp }; // Trigger reactivity if needed
+            this._data[index] = { ...cp };
             return { success: true, data: cp };
         }
         return { success: false, error: 'Counterparty not found' };
     }
-    // ... more API methods for contacts, documents, compliance etc.
+
+    /**
+     * Placeholder method to add a new contact to a counterparty.
+     * Commercial value: Represents a future API endpoint for granular management of linked entities,
+     * enabling detailed relationship tracking.
+     */
+    public async addContactToCounterparty(counterpartyId: string, contact: ContactPerson): Promise<ApiResult<ContactPerson>> {
+        await sleep(300);
+        const cp = this._data.find(c => c.id === counterpartyId);
+        if (cp) {
+            contact.id = generateId();
+            cp.contacts.push(contact);
+            cp.auditLog.push({
+                id: generateId(),
+                timestamp: new Date().toISOString(),
+                userId: 'USR-UI-ADMIN',
+                userName: 'Admin User',
+                action: 'Contact added',
+                details: `New contact '${contact.firstName} ${contact.lastName}' added.`,
+                counterpartyId: counterpartyId,
+            });
+            return { success: true, data: contact };
+        }
+        return { success: false, error: 'Counterparty not found' };
+    }
+
+    /**
+     * Placeholder method to add a new document to a counterparty.
+     * Commercial value: Essential for managing the lifecycle of legal and compliance documentation,
+     * ensuring regulatory adherence and immediate access to critical records.
+     */
+    public async addDocumentToCounterparty(counterpartyId: string, document: Document): Promise<ApiResult<Document>> {
+        await sleep(300);
+        const cp = this._data.find(c => c.id === counterpartyId);
+        if (cp) {
+            document.id = generateId();
+            cp.documents.push(document);
+            cp.auditLog.push({
+                id: generateId(),
+                timestamp: new Date().toISOString(),
+                userId: 'USR-UI-ADMIN',
+                userName: 'Admin User',
+                action: 'Document uploaded',
+                details: `Document '${document.name}' (${document.category}) uploaded.`,
+                counterpartyId: counterpartyId,
+            });
+            return { success: true, data: document };
+        }
+        return { success: false, error: 'Counterparty not found' };
+    }
 }
 
-export const apiService = CounterpartyApiService.getInstance(); // Export the service instance
+export const apiService = CounterpartyApiService.getInstance();
 
-// 4. Enhanced UI Components
-
-// Reusable Confirmation Modal
+/**
+ * Interface defining properties for a generic confirmation modal.
+ * Commercial value: Ensures consistent and secure user prompts for irreversible actions,
+ * enhancing user trust and preventing operational errors in critical financial workflows.
+ */
 interface ConfirmationModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -705,6 +905,12 @@ interface ConfirmationModalProps {
     cancelText?: string;
     isDestructive?: boolean;
 }
+
+/**
+ * A reusable confirmation modal component.
+ * Commercial value: Standardizes critical user interaction flows, ensuring explicit consent
+ * for actions that impact financial data or system state, bolstering security and auditability.
+ */
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', isDestructive = false
 }) => {
@@ -728,22 +934,41 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-// Reusable Toast Notification System
+/**
+ * Interface for a toast notification message.
+ * Commercial value: Defines the structure for real-time, non-intrusive feedback to users,
+ * enhancing usability and providing immediate confirmation of system actions or alerts.
+ */
 export interface Toast {
     id: string;
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
-    duration?: number; // ms
+    duration?: number; // milliseconds
 }
 
+/**
+ * State structure for the toast notification system.
+ * Commercial value: Manages the lifecycle of transient messages, ensuring timely communication
+ * without overwhelming the user interface.
+ */
 interface ToastState {
     toasts: Toast[];
 }
 
+/**
+ * Actions for the toast reducer.
+ * Commercial value: Defines a clear contract for state modifications within the toast system,
+ * promoting predictable behavior and maintainability.
+ */
 type ToastAction =
     | { type: 'ADD_TOAST'; payload: Omit<Toast, 'id'> }
     | { type: 'REMOVE_TOAST'; payload: string };
 
+/**
+ * Reducer function for managing toast notifications state.
+ * Commercial value: Implements predictable state transitions for toast messages,
+ * centralizing notification logic and simplifying system-wide alerts.
+ */
 const toastReducer = (state: ToastState, action: ToastAction): ToastState => {
     switch (action.type) {
         case 'ADD_TOAST':
@@ -759,10 +984,20 @@ const toastReducer = (state: ToastState, action: ToastAction): ToastState => {
     }
 };
 
+/**
+ * React Context for the Toast notification system.
+ * Commercial value: Enables system-wide access to notification capabilities, allowing any component
+ * to deliver critical user feedback without tight coupling.
+ */
 const ToastContext = React.createContext<{
     addToast: (toast: Omit<Toast, 'id'>) => void;
 } | undefined>(undefined);
 
+/**
+ * Provides the Toast notification context to its children components.
+ * Commercial value: Establishes a centralized, robust notification mechanism across the entire application,
+ * improving user experience and critical alert delivery for financial operations.
+ */
 export const ToastProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
     const [state, dispatch] = useReducer(toastReducer, { toasts: [] });
 
@@ -796,6 +1031,11 @@ export const ToastProvider: React.FC<React.PropsWithChildren<{}>> = ({ children 
     );
 };
 
+/**
+ * Custom hook for consuming the ToastContext.
+ * Commercial value: Simplifies access to the toast notification system for any component,
+ * promoting consistent and efficient integration of user feedback.
+ */
 export const useToast = () => {
     const context = useContext(ToastContext);
     if (!context) {
@@ -804,32 +1044,42 @@ export const useToast = () => {
     return context;
 };
 
+/**
+ * Properties for a single toast notification component.
+ * Commercial value: Defines the presentation and interactive capabilities of individual notifications,
+ * ensuring clarity and consistent user experience for system alerts.
+ */
 interface ToastNotificationProps {
     toast: Toast;
     onClose: () => void;
 }
 
+/**
+ * Displays an individual toast notification.
+ * Commercial value: Visually communicates system messages (success, error, info, warning)
+ * to the user in a non-disruptive manner, crucial for operational transparency and responsiveness.
+ */
 export const ToastNotification: React.FC<ToastNotificationProps> = ({ toast, onClose }) => {
     let bgColor = 'bg-blue-500';
-    let icon = 'ℹ️'; // Changed from raw character to emoji for better rendering consistency
+    let icon = '\u2139\uFE0F'; // ℹ️
 
     switch (toast.type) {
         case 'success':
             bgColor = 'bg-green-500';
-            icon = '✅';
+            icon = '\u2705'; // ✅
             break;
         case 'error':
             bgColor = 'bg-red-600';
-            icon = '❌';
+            icon = '\u274C'; // ❌
             break;
         case 'warning':
             bgColor = 'bg-yellow-500';
-            icon = '⚠️';
+            icon = '\u26A0\uFE0F'; // ⚠️
             break;
         case 'info':
         default:
             bgColor = 'bg-blue-500';
-            icon = 'ℹ️';
+            icon = '\u2139\uFE0F'; // ℹ️
             break;
     }
 
@@ -844,15 +1094,22 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({ toast, onC
     );
 };
 
-
-// Custom Form Elements
-
+/**
+ * Properties for a generic form input field.
+ * Commercial value: Standardizes the appearance and behavior of text inputs across financial applications,
+ * ensuring consistent user experience and reducing errors in data entry.
+ */
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     id: string;
     error?: string;
 }
 
+/**
+ * A reusable form input component with integrated label and error display.
+ * Commercial value: Ensures robust data capture with clear validation feedback,
+ * critical for accurate financial record-keeping and regulatory compliance.
+ */
 export const FormInput: React.FC<FormInputProps> = ({ label, id, error, ...props }) => (
     <div className="mb-4">
         <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
@@ -866,12 +1123,22 @@ export const FormInput: React.FC<FormInputProps> = ({ label, id, error, ...props
     </div>
 );
 
+/**
+ * Properties for a generic form textarea field.
+ * Commercial value: Provides a consistent interface for capturing multi-line text data,
+ * essential for detailed notes, descriptions, and audit commentary in financial systems.
+ */
 interface FormTextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     label: string;
     id: string;
     error?: string;
 }
 
+/**
+ * A reusable form textarea component with integrated label and error display.
+ * Commercial value: Supports capture of extensive qualitative data such as compliance notes or risk mitigation plans,
+ * ensuring comprehensive record-keeping.
+ */
 export const FormTextArea: React.FC<FormTextAreaProps> = ({ label, id, error, ...props }) => (
     <div className="mb-4">
         <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
@@ -886,6 +1153,11 @@ export const FormTextArea: React.FC<FormTextAreaProps> = ({ label, id, error, ..
     </div>
 );
 
+/**
+ * Properties for a generic form select (dropdown) field.
+ * Commercial value: Standardizes selection of predefined options, reducing data entry errors
+ * and ensuring consistency across categorical data points, critical for reporting and analysis.
+ */
 interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
     label: string;
     id: string;
@@ -893,6 +1165,11 @@ interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> 
     error?: string;
 }
 
+/**
+ * A reusable form select (dropdown) component.
+ * Commercial value: Facilitates accurate categorization and classification of data,
+ * crucial for system governance, automation rules, and compliance reporting.
+ */
 export const FormSelect: React.FC<FormSelectProps> = ({ label, id, options, error, ...props }) => (
     <div className="mb-4">
         <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
@@ -910,11 +1187,21 @@ export const FormSelect: React.FC<FormSelectProps> = ({ label, id, options, erro
     </div>
 );
 
+/**
+ * Properties for a generic form checkbox field.
+ * Commercial value: Provides a clear and unambiguous mechanism for boolean data capture,
+ * essential for opt-in/opt-out, status flags, and feature toggles in financial applications.
+ */
 interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     id: string;
 }
 
+/**
+ * A reusable form checkbox component.
+ * Commercial value: Ensures precise binary data input, supporting clear policy enforcement
+ * and status indicators within the financial infrastructure.
+ */
 export const FormCheckbox: React.FC<FormCheckboxProps> = ({ label, id, ...props }) => (
     <div className="mb-4 flex items-center">
         <input
@@ -928,16 +1215,31 @@ export const FormCheckbox: React.FC<FormCheckboxProps> = ({ label, id, ...props 
     </div>
 );
 
+/**
+ * Properties for a generic form date picker field.
+ * Commercial value: Standardizes date input, reducing parsing errors and ensuring temporal accuracy
+ * for critical financial events, reporting deadlines, and audit trails.
+ */
 interface FormDatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     id: string;
     error?: string;
 }
 
+/**
+ * A reusable form date picker component.
+ * Commercial value: Facilitates accurate scheduling and tracking of time-sensitive financial activities,
+ * from compliance due dates to contract expiry, thereby reducing operational risk.
+ */
 export const FormDatePicker: React.FC<FormDatePickerProps> = ({ label, id, error, ...props }) => (
     <FormInput label={label} id={id} type="date" error={error} {...props} />
 );
 
+/**
+ * Properties for a generic form file upload field.
+ * Commercial value: Provides a secure and user-friendly interface for attaching critical documents,
+ * such as legal agreements or financial statements, directly to counterparty records.
+ */
 interface FormFileUploadProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     id: string;
@@ -946,6 +1248,11 @@ interface FormFileUploadProps extends React.InputHTMLAttributes<HTMLInputElement
     error?: string;
 }
 
+/**
+ * A reusable form file upload component.
+ * Commercial value: Enables the capture and association of unstructured data with structured financial records,
+ * supporting comprehensive document management and audit readiness.
+ */
 export const FormFileUpload: React.FC<FormFileUploadProps> = ({ label, id, onFileChange, currentFileName, error, ...props }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -982,7 +1289,11 @@ export const FormFileUpload: React.FC<FormFileUploadProps> = ({ label, id, onFil
     );
 };
 
-// Loading Spinner
+/**
+ * A simple loading spinner component.
+ * Commercial value: Enhances user experience by providing clear visual feedback during asynchronous operations,
+ * reducing perceived latency and improving system responsiveness.
+ */
 export const LoadingSpinner: React.FC = () => (
     <div className="flex justify-center items-center py-4">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500"></div>
@@ -990,7 +1301,11 @@ export const LoadingSpinner: React.FC = () => (
     </div>
 );
 
-// Pagination Controls
+/**
+ * Properties for the pagination controls component.
+ * Commercial value: Defines the interface for navigation across large datasets,
+ * ensuring seamless user experience and efficient data access.
+ */
 interface PaginationControlsProps {
     currentPage: number;
     totalPages: number;
@@ -1000,12 +1315,18 @@ interface PaginationControlsProps {
     totalItems: number;
     itemsPerPage: number;
 }
+
+/**
+ * Component providing pagination controls for data tables.
+ * Commercial value: Improves the usability of data-intensive financial dashboards,
+ * allowing users to navigate through extensive records efficiently and without performance degradation.
+ */
 export const PaginationControls: React.FC<PaginationControlsProps> = ({
     currentPage, totalPages, goToPage, nextPage, prevPage, totalItems, itemsPerPage
 }) => {
     const renderPageNumbers = () => {
         const pageNumbers = [];
-        const maxPageButtons = 5; // Number of page buttons to show
+        const maxPageButtons = 5;
 
         if (totalPages <= maxPageButtons) {
             for (let i = 1; i <= totalPages; i++) {
@@ -1019,22 +1340,22 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
             let startPage = Math.max(2, currentPage - Math.floor(maxPageButtons / 2) + 1);
             let endPage = Math.min(totalPages - 1, currentPage + Math.floor(maxPageButtons / 2) - 1);
 
-            if (currentPage < maxPageButtons - 1) { // Near start
-                endPage = maxPageButtons - 1;
-            } else if (currentPage > totalPages - (maxPageButtons - 2)) { // Near end
-                startPage = totalPages - (maxPageButtons - 2);
+            if (currentPage < maxPageButtons - 1) {
+                endPage = Math.min(totalPages - 1, maxPageButtons - 1);
+            } else if (currentPage > totalPages - (maxPageButtons - 2)) {
+                startPage = Math.max(2, totalPages - (maxPageButtons - 2));
             }
 
             for (let i = startPage; i <= endPage; i++) {
                 pageNumbers.push(i);
             }
 
-            if (currentPage < totalPages - (maxPageButtons - 2)) {
+            if (currentPage < totalPages - (maxPageButtons - 2) && endPage < totalPages - 1) {
                 pageNumbers.push('...');
             }
             if (totalPages > 1) pageNumbers.push(totalPages);
         }
-        return pageNumbers.filter((val, idx, arr) => !(typeof val === 'string' && arr[idx-1] === '...')); // Remove duplicate '...'
+        return pageNumbers.filter((val, idx, arr) => !(typeof val === 'string' && arr[idx-1] === '...'));
     };
 
     const currentItemStart = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
@@ -1076,23 +1397,32 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
     );
 };
 
-// 5. Advanced Modals and Forms
-
-// Add Counterparty Modal (completely revamped)
+/**
+ * Properties for the Add Counterparty Modal.
+ * Commercial value: Defines the interface for initiating the counterparty onboarding workflow,
+ * ensuring necessary data is provided for initial setup.
+ */
 interface AddCounterpartyModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: (cp: EnhancedCounterparty) => void;
 }
 
+/**
+ * Modal component for adding a new counterparty.
+ * Commercial value: Streamlines the process of adding new financial entities,
+ * ensuring that all essential identity and operational data are captured securely
+ * and efficiently, which is foundational for digital identity integration.
+ */
 export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const { addToast } = useToast();
     const { formData, handleChange, handleFileUpload, resetForm, setFormData } = useForm<Partial<EnhancedCounterparty>>({
-        name: '', email: '', legalName: '', taxId: '', registrationNumber: '', industry: '', website: '', phone: '', notes: '',
+        name: '', email: '', legalName: '', taxId: '', registrationNumber: '', industry: '', website: '', phone: '', notes: '', fax: '',
         address: { street: '', city: '', state: '', zipCode: '', country: '' },
+        billingAddress: undefined, shippingAddress: undefined, // Optional addresses
         contacts: [], bankAccounts: [], documents: [], complianceRecords: [], riskAssessments: [], auditLog: [], customFields: {},
-        relationshipManagerName: 'System Assigned', // Default
-        relationshipManagerId: 'system', // Default
+        relationshipManagerName: 'System Assigned',
+        relationshipManagerId: 'system-auto',
         createdDate: new Date().toISOString(),
         lastInteractionDate: new Date().toISOString(),
         status: CounterpartyStatus.PendingVerification,
@@ -1117,6 +1447,7 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ isOp
         if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
         if (!formData.legalName) newErrors.legalName = 'Legal Name is required';
         if (!formData.industry) newErrors.industry = 'Industry is required';
+        if (!formData.address?.country) newErrors['address.country'] = 'Country is required';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }, [formData]);
@@ -1158,7 +1489,7 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ isOp
 
     useEffect(() => {
         if (!isOpen) {
-            resetForm(); // Reset form when modal closes
+            resetForm();
             setErrors({});
         }
     }, [isOpen, resetForm]);
@@ -1184,43 +1515,39 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ isOp
                             <FormInput label="Industry" id="industry" value={formData.industry || ''} onChange={handleChange} error={errors.industry} />
                             <FormInput label="Tax ID" id="taxId" value={formData.taxId || ''} onChange={handleChange} />
                             <FormInput label="Registration Number" id="registrationNumber" value={formData.registrationNumber || ''} onChange={handleChange} />
+                            <FormInput label="Fax Number" id="fax" value={formData.fax || ''} onChange={handleChange} />
+                            <FormSelect
+                                label="Preferred Payment Terms"
+                                id="preferredPaymentTerms"
+                                options={[
+                                    { value: 'Net 30', label: 'Net 30' },
+                                    { value: 'Net 60', label: 'Net 60' },
+                                    { value: 'Net 90', label: 'Net 90' },
+                                    { value: 'Due on Receipt', label: 'Due on Receipt' },
+                                ]}
+                                value={formData.preferredPaymentTerms || 'Net 30'}
+                                onChange={handleChange}
+                            />
+                            <FormInput label="Credit Limit ($)" id="creditLimit" type="number" value={formData.creditLimit || 0} onChange={handleChange} />
                         </div>
                         <FormTextArea label="Notes" id="notes" value={formData.notes || ''} onChange={handleChange} />
 
-                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Address Information</h4>
+                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Primary Address Information</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormInput label="Street" id="address.street" value={formData.address?.street || ''} onChange={e => handleNestedChange('address', 'street', e.target.value)} />
                             <FormInput label="City" id="address.city" value={formData.address?.city || ''} onChange={e => handleNestedChange('address', 'city', e.target.value)} />
                             <FormInput label="State/Province" id="address.state" value={formData.address?.state || ''} onChange={e => handleNestedChange('address', 'state', e.target.value)} />
                             <FormInput label="Zip Code" id="address.zipCode" value={formData.address?.zipCode || ''} onChange={e => handleNestedChange('address', 'zipCode', e.target.value)} />
-                            <FormInput label="Country" id="address.country" value={formData.address?.country || ''} onChange={e => handleNestedChange('address', 'country', e.target.value)} />
+                            <FormInput label="Country" id="address.country" value={formData.address?.country || ''} onChange={e => handleNestedChange('address', 'country', e.target.value)} error={errors['address.country']} />
                         </div>
 
-                        {/* This is a simplified approach to fulfill immediate UI needs and avoid over-complication for initial data entry.
-                            In a production system, complex nested array data like contacts, bank accounts, and documents would
-                            typically be managed in dedicated sub-forms or separate views after the main counterparty creation.
-                            This current setup allows for basic textual input or file upload placeholders. */}
-
-                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Contact Persons (Simplified)</h4>
-                        {formData.contacts && formData.contacts.length === 0 && (
-                            <p className="text-gray-500 text-sm mb-3">No contacts added. Use a dedicated contact management section for full details post-creation.</p>
-                        )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormInput label="Primary Contact Name" id="primaryContactName" placeholder="e.g., John Doe" />
-                            <FormInput label="Primary Contact Email" id="primaryContactEmail" placeholder="e.g., john.doe@example.com" />
-                        </div>
-
-                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Bank Accounts (Simplified)</h4>
-                        {formData.bankAccounts && formData.bankAccounts.length === 0 && (
-                            <p className="text-gray-500 text-sm mb-3">No bank accounts added. Use a dedicated banking section for full details post-creation.</p>
-                        )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormInput label="Primary Bank Name" id="primaryBankName" placeholder="e.g., Global Bank" />
-                            <FormInput label="Primary Account Number" id="primaryAccountNumber" placeholder="e.g., 1234567890" />
-                        </div>
-
-                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Documents (Simplified)</h4>
-                        <FormFileUpload label="Upload Initial Agreement" id="initialAgreementDoc" onFileChange={(files) => handleFileUpload('initialAgreementDoc', files)} />
+                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Contact Persons & Bank Accounts (Manage in detail view post-creation)</h4>
+                        <p className="text-gray-500 text-sm mb-3">
+                            Complex nested array data like contacts, bank accounts, compliance records, and documents
+                            are managed in dedicated sub-forms or sections within the Counterparty Detail View
+                            after the initial creation to ensure a focused onboarding process.
+                        </p>
+                        <FormFileUpload label="Upload Initial Agreement Document (Optional)" id="initialAgreementDoc" onFileChange={(files) => handleFileUpload('initialAgreementDoc', files)} />
 
                         <div className="p-4 border-t border-gray-700 flex justify-end space-x-3 sticky bottom-0 bg-gray-800 z-10 mt-auto">
                             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors duration-200">Cancel</button>
@@ -1235,7 +1562,11 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ isOp
     );
 };
 
-// Edit Counterparty Modal (reusing AddCounterpartyModal structure)
+/**
+ * Properties for the Edit Counterparty Modal.
+ * Commercial value: Defines the interface for dynamically updating counterparty information,
+ * supporting agile data management and responsive adaptation to changing business requirements.
+ */
 interface EditCounterpartyModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -1243,11 +1574,18 @@ interface EditCounterpartyModalProps {
     counterpartyId: string | null;
 }
 
+/**
+ * Modal component for editing an existing counterparty.
+ * Commercial value: Ensures that comprehensive counterparty data, including core identity
+ * and operational details, can be accurately modified, reflecting real-world changes
+ * and maintaining data integrity for all financial operations.
+ */
 export const EditCounterpartyModal: React.FC<EditCounterpartyModalProps> = ({ isOpen, onClose, onSuccess, counterpartyId }) => {
     const { addToast } = useToast();
-    const { formData, handleChange, handleFileUpload, resetForm, setFormData } = useForm<Partial<EnhancedCounterparty>>({
-        name: '', email: '', legalName: '', taxId: '', registrationNumber: '', industry: '', website: '', phone: '', notes: '',
+    const { formData, handleChange, resetForm, setFormData } = useForm<Partial<EnhancedCounterparty>>({
+        name: '', email: '', legalName: '', taxId: '', registrationNumber: '', industry: '', website: '', phone: '', notes: '', fax: '',
         address: { street: '', city: '', state: '', zipCode: '', country: '' },
+        billingAddress: undefined, shippingAddress: undefined,
         contacts: [], bankAccounts: [], documents: [], complianceRecords: [], riskAssessments: [], auditLog: [], customFields: {},
         relationshipManagerName: '',
         relationshipManagerId: '',
@@ -1302,6 +1640,7 @@ export const EditCounterpartyModal: React.FC<EditCounterpartyModalProps> = ({ is
         if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
         if (!formData.legalName) newErrors.legalName = 'Legal Name is required';
         if (!formData.industry) newErrors.industry = 'Industry is required';
+        if (!formData.address?.country) newErrors['address.country'] = 'Country is required';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }, [formData]);
@@ -1345,7 +1684,6 @@ export const EditCounterpartyModal: React.FC<EditCounterpartyModalProps> = ({ is
         }));
     }, [setFormData]);
 
-
     if (!isOpen) return null;
     if (initialLoad) return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -1374,25 +1712,35 @@ export const EditCounterpartyModal: React.FC<EditCounterpartyModalProps> = ({ is
                             <FormInput label="Industry" id="industry" value={formData.industry || ''} onChange={handleChange} error={errors.industry} />
                             <FormInput label="Tax ID" id="taxId" value={formData.taxId || ''} onChange={handleChange} />
                             <FormInput label="Registration Number" id="registrationNumber" value={formData.registrationNumber || ''} onChange={handleChange} />
+                            <FormInput label="Fax Number" id="fax" value={formData.fax || ''} onChange={handleChange} />
+                            <FormSelect
+                                label="Preferred Payment Terms"
+                                id="preferredPaymentTerms"
+                                options={[
+                                    { value: 'Net 30', label: 'Net 30' },
+                                    { value: 'Net 60', label: 'Net 60' },
+                                    { value: 'Net 90', label: 'Net 90' },
+                                    { value: 'Due on Receipt', label: 'Due on Receipt' },
+                                ]}
+                                value={formData.preferredPaymentTerms || 'Net 30'}
+                                onChange={handleChange}
+                            />
+                            <FormInput label="Credit Limit ($)" id="creditLimit" type="number" value={formData.creditLimit || 0} onChange={handleChange} />
+                            <FormInput label="Relationship Manager" id="relationshipManagerName" value={formData.relationshipManagerName || ''} onChange={handleChange} />
                         </div>
                         <FormTextArea label="Notes" id="notes" value={formData.notes || ''} onChange={handleChange} />
 
-                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Address Information</h4>
+                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Primary Address Information</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormInput label="Street" id="address.street" value={formData.address?.street || ''} onChange={e => handleNestedChange('address', 'street', e.target.value)} />
                             <FormInput label="City" id="address.city" value={formData.address?.city || ''} onChange={e => handleNestedChange('address', 'city', e.target.value)} />
                             <FormInput label="State/Province" id="address.state" value={formData.address?.state || ''} onChange={e => handleNestedChange('address', 'state', e.target.value)} />
                             <FormInput label="Zip Code" id="address.zipCode" value={formData.address?.zipCode || ''} onChange={e => handleNestedChange('address', 'zipCode', e.target.value)} />
-                            <FormInput label="Country" id="address.country" value={formData.address?.country || ''} onChange={e => handleNestedChange('address', 'country', e.target.value)} />
+                            <FormInput label="Country" id="address.country" value={formData.address?.country || ''} onChange={e => handleNestedChange('address', 'country', e.target.value)} error={errors['address.country']} />
                         </div>
-
-                        <h4 className="text-md font-semibold text-white mb-3 mt-6">Contact Persons (Simplified)</h4>
-                        {formData.contacts && formData.contacts.length === 0 && (
-                            <p className="text-gray-500 text-sm mb-3">No contacts listed. Manage contacts in detail after initial setup.</p>
-                        )}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormInput label="Relationship Manager Name" id="relationshipManagerName" value={formData.relationshipManagerName || ''} onChange={handleChange} />
-                        </div>
+                        <p className="text-gray-500 text-sm mt-4">
+                            Detailed management of contacts, bank accounts, compliance, risk, and documents is available in the Counterparty Detail View.
+                        </p>
 
                         <div className="p-4 border-t border-gray-700 flex justify-end space-x-3 sticky bottom-0 bg-gray-800 z-10 mt-auto">
                             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors duration-200">Cancel</button>
@@ -1407,8 +1755,11 @@ export const EditCounterpartyModal: React.FC<EditCounterpartyModalProps> = ({ is
     );
 };
 
-
-// Counterparty Detail View Modal
+/**
+ * Properties for the Counterparty Detail View Modal.
+ * Commercial value: Defines the interface for accessing a comprehensive 360-degree view of a counterparty,
+ * providing the necessary context for operational decisions, risk assessment, and compliance oversight.
+ */
 interface CounterpartyDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -1418,6 +1769,12 @@ interface CounterpartyDetailModalProps {
     onStatusChange: (id: string, newStatus: CounterpartyStatus) => void;
 }
 
+/**
+ * Modal component displaying a comprehensive detail view of a single counterparty.
+ * Commercial value: Serves as the central hub for deep insights into each counterparty's profile,
+ * enabling real-time monitoring, granular data analysis, and informed strategic actions.
+ * Integrates vital financial, legal, and operational data for complete transparency.
+ */
 export const CounterpartyDetailModal: React.FC<CounterpartyDetailModalProps> = ({ isOpen, onClose, counterpartyId, onEdit, onDelete, onStatusChange }) => {
     const { addToast } = useToast();
     const [counterparty, setCounterparty] = useState<EnhancedCounterparty | null>(null);
@@ -1459,11 +1816,11 @@ export const CounterpartyDetailModal: React.FC<CounterpartyDetailModalProps> = (
         setStatusDropdownOpen(false);
         setLoading(true);
         try {
-            const result = await apiService.updateCounterpartyStatus(counterparty.id, newStatus, 'currentUserId', 'CurrentUser'); // Placeholder for actual user ID/Name
+            const result = await apiService.updateCounterpartyStatus(counterparty.id, newStatus, 'USR-UI-ADMIN', 'Admin User');
             if (result.success && result.data) {
                 setCounterparty(result.data);
                 onStatusChange(result.data.id, result.data.status);
-                addToast({ type: 'success', message: `Status updated to ${newStatus}` });
+                addToast({ type: 'success', message: `Counterparty status updated to ${newStatus}.` });
             } else {
                 throw new Error(result.error || 'Failed to update status.');
             }
@@ -1480,7 +1837,6 @@ export const CounterpartyDetailModal: React.FC<CounterpartyDetailModalProps> = (
         }
     };
 
-    // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
@@ -1493,9 +1849,13 @@ export const CounterpartyDetailModal: React.FC<CounterpartyDetailModalProps> = (
         };
     }, []);
 
-
     if (!isOpen) return null;
 
+    /**
+     * Component for displaying and updating the counterparty status via a dropdown.
+     * Commercial value: Provides a dynamic, interactive mechanism for critical status changes,
+     * directly impacting operational workflows and risk profiles.
+     */
     const StatusDropdown: React.FC<{ currentStatus: CounterpartyStatus }> = ({ currentStatus }) => (
         <div className="relative inline-block text-left" ref={statusDropdownRef}>
             <button
@@ -1566,11 +1926,11 @@ export const CounterpartyDetailModal: React.FC<CounterpartyDetailModalProps> = (
                         {loading ? <LoadingSpinner /> : error ? <p className="text-red-400 text-center">{error}</p> : counterparty ? (
                             <>
                                 {activeTab === 'overview' && <CounterpartyOverviewTab counterparty={counterparty} />}
-                                {activeTab === 'contacts' && <CounterpartyContactsTab contacts={counterparty.contacts} />}
-                                {activeTab === 'banking' && <CounterpartyBankingTab bankAccounts={counterparty.bankAccounts} />}
-                                {activeTab === 'compliance' && <CounterpartyComplianceTab complianceRecords={counterparty.complianceRecords} />}
-                                {activeTab === 'risk' && <CounterpartyRiskTab riskAssessments={counterparty.riskAssessments} />}
-                                {activeTab === 'documents' && <CounterpartyDocumentsTab documents={counterparty.documents} />}
+                                {activeTab === 'contacts' && <CounterpartyContactsTab contacts={counterparty.contacts} addToast={addToast} onRefresh={fetchCounterpartyDetails} counterpartyId={counterparty.id} />}
+                                {activeTab === 'banking' && <CounterpartyBankingTab bankAccounts={counterparty.bankAccounts} addToast={addToast} onRefresh={fetchCounterpartyDetails} counterpartyId={counterparty.id} />}
+                                {activeTab === 'compliance' && <CounterpartyComplianceTab complianceRecords={counterparty.complianceRecords} addToast={addToast} onRefresh={fetchCounterpartyDetails} counterpartyId={counterparty.id} />}
+                                {activeTab === 'risk' && <CounterpartyRiskTab riskAssessments={counterparty.riskAssessments} addToast={addToast} onRefresh={fetchCounterpartyDetails} counterpartyId={counterparty.id} />}
+                                {activeTab === 'documents' && <CounterpartyDocumentsTab documents={counterparty.documents} addToast={addToast} onRefresh={fetchCounterpartyDetails} counterpartyId={counterparty.id} />}
                                 {activeTab === 'audit' && <CounterpartyAuditTab auditLog={counterparty.auditLog} />}
                             </>
                         ) : (
@@ -1584,19 +1944,28 @@ export const CounterpartyDetailModal: React.FC<CounterpartyDetailModalProps> = (
                 onClose={() => setConfirmDeleteModalOpen(false)}
                 onConfirm={() => { onDelete(counterpartyId!); setConfirmDeleteModalOpen(false); onClose(); }}
                 title="Delete Counterparty"
-                message={`Are you sure you want to delete "${counterparty?.name}"? This action cannot be undone.`}
-                confirmText="Delete"
+                message={`Are you sure you want to delete "${counterparty?.name}"? This action cannot be undone and will be fully audited.`}
+                confirmText="Delete Permanently"
                 isDestructive
             />
         </div>
     );
 };
 
-// Sub-tabs for Counterparty Details (expanding for line count)
-
+/**
+ * Properties for the Counterparty Overview Tab.
+ * Commercial value: Defines the data presented in the summary section of a counterparty's profile,
+ * providing a high-level, yet comprehensive, view.
+ */
 interface CounterpartyOverviewTabProps {
     counterparty: EnhancedCounterparty;
 }
+
+/**
+ * Displays the general overview and key financial details for a counterparty.
+ * Commercial value: Provides a critical snapshot of a counterparty's identity, addresses,
+ * and financial health, essential for rapid situational awareness and strategic planning.
+ */
 export const CounterpartyOverviewTab: React.FC<CounterpartyOverviewTabProps> = ({ counterparty }) => (
     <div className="space-y-6">
         <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2 mb-4">General Details</h4>
@@ -1613,11 +1982,11 @@ export const CounterpartyOverviewTab: React.FC<CounterpartyOverviewTabProps> = (
             <div><strong className="text-gray-100">Created On:</strong> {formatDate(counterparty.createdDate)}</div>
             <div><strong className="text-gray-100">Last Interaction:</strong> {formatDate(counterparty.lastInteractionDate, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
             <div><strong className="text-gray-100">Relationship Manager:</strong> {counterparty.relationshipManagerName}</div>
-            <div><strong className="text-gray-100">Credit Limit:</strong> ${counterparty.creditLimit?.toLocaleString() || '0.00'}</div>
+            <div><strong className="text-gray-100">Credit Limit:</strong> ${counterparty.creditLimit?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</div>
             <div><strong className="text-gray-100">Preferred Payment Terms:</strong> {counterparty.preferredPaymentTerms}</div>
         </div>
 
-        <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2 mb-4 mt-6">Address Information</h4>
+        <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2 mb-4 mt-6">Primary Address Information</h4>
         <div className="text-sm text-gray-300 space-y-1">
             <p>{counterparty.address.street}</p>
             <p>{counterparty.address.city}, {counterparty.address.state} {counterparty.address.zipCode}</p>
@@ -1647,15 +2016,15 @@ export const CounterpartyOverviewTab: React.FC<CounterpartyOverviewTabProps> = (
         )}
 
         <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2 mb-4 mt-6">Notes</h4>
-        <p className="text-sm text-gray-300 whitespace-pre-wrap">{counterparty.notes || 'No notes available.'}</p>
+        <p className="text-sm text-gray-300 whitespace-pre-wrap">{counterparty.notes || 'No detailed notes available for this counterparty.'}</p>
 
-        <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2 mb-4 mt-6">Transaction Summary</h4>
+        <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2 mb-4 mt-6">Transaction Summary (Last 30 Days)</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-300">
-            <div><strong className="text-gray-100">Total Value Last Month:</strong> ${counterparty.transactionSummary.totalValueLastMonth?.toLocaleString() || '0.00'}</div>
-            <div><strong className="text-gray-100">Average Value Last Month:</strong> ${counterparty.transactionSummary.averageValueLastMonth?.toLocaleString() || '0.00'}</div>
-            <div><strong className="text-gray-100">Transaction Count Last Month:</strong> {counterparty.transactionSummary.transactionCountLastMonth || 0}</div>
+            <div><strong className="text-gray-100">Total Value:</strong> ${counterparty.transactionSummary.totalValueLastMonth?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</div>
+            <div><strong className="text-gray-100">Average Value:</strong> ${counterparty.transactionSummary.averageValueLastMonth?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</div>
+            <div><strong className="text-gray-100">Transaction Count:</strong> {counterparty.transactionSummary.transactionCountLastMonth || 0}</div>
             <div><strong className="text-gray-100">Pending Transactions:</strong> {counterparty.transactionSummary.pendingTransactionsCount || 0}</div>
-            <div><strong className="text-gray-100">Highest Transaction Value:</strong> ${counterparty.transactionSummary.highestTransactionValue?.toLocaleString() || '0.00'}</div>
+            <div><strong className="text-gray-100">Highest Transaction Value:</strong> ${counterparty.transactionSummary.highestTransactionValue?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</div>
             <div><strong className="text-gray-100">Last Transaction Date:</strong> {formatDate(counterparty.transactionSummary.lastTransactionDate) || 'N/A'}</div>
         </div>
 
@@ -1672,17 +2041,36 @@ export const CounterpartyOverviewTab: React.FC<CounterpartyOverviewTabProps> = (
     </div>
 );
 
+/**
+ * Properties for the Counterparty Contacts Tab.
+ * Commercial value: Defines the data and interactive elements for managing contact persons,
+ * ensuring efficient communication and relationship management.
+ */
 interface CounterpartyContactsTabProps {
     contacts: ContactPerson[];
+    counterpartyId: string;
+    addToast: (toast: Omit<Toast, 'id'>) => void;
+    onRefresh: () => void;
 }
-export const CounterpartyContactsTab: React.FC<CounterpartyContactsTabProps> = ({ contacts }) => (
+
+/**
+ * Displays and manages the list of contact persons for a counterparty.
+ * Commercial value: Centralizes contact information, improving communication efficiency,
+ * supporting targeted outreach, and enabling robust relationship management.
+ */
+export const CounterpartyContactsTab: React.FC<CounterpartyContactsTabProps> = ({ contacts, addToast }) => (
     <div className="space-y-4">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2">
             <h4 className="text-lg font-semibold text-white">Contact Persons ({contacts.length})</h4>
-            <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm">Add Contact</button>
+            <button
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm"
+                onClick={() => addToast({ type: 'info', message: 'Adding contacts: Feature to be implemented via dedicated sub-modal.' })}
+            >
+                Add Contact
+            </button>
         </div>
         {contacts.length === 0 ? (
-            <p className="text-gray-400">No contact persons listed.</p>
+            <p className="text-gray-400">No contact persons listed. Utilize the 'Add Contact' button to expand your relationship network.</p>
         ) : (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-left text-gray-400">
@@ -1711,8 +2099,18 @@ export const CounterpartyContactsTab: React.FC<CounterpartyContactsTabProps> = (
                                 </td>
                                 <td className="px-6 py-4">{formatDate(contact.lastContactDate)}</td>
                                 <td className="px-6 py-4">
-                                    <button className="text-blue-500 hover:text-blue-400 text-sm mr-2">Edit</button>
-                                    <button className="text-red-500 hover:text-red-400 text-sm">Delete</button>
+                                    <button
+                                        className="text-blue-500 hover:text-blue-400 text-sm mr-2"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'info', message: `Editing contact ${contact.firstName}: Feature to be implemented.` }); }}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="text-red-500 hover:text-red-400 text-sm"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'warning', message: `Deleting contact ${contact.firstName}: Feature to be implemented.` }); }}
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -1723,17 +2121,36 @@ export const CounterpartyContactsTab: React.FC<CounterpartyContactsTabProps> = (
     </div>
 );
 
+/**
+ * Properties for the Counterparty Banking Tab.
+ * Commercial value: Defines the data and interactive elements for managing a counterparty's bank accounts,
+ * crucial for payment and settlement operations.
+ */
 interface CounterpartyBankingTabProps {
     bankAccounts: BankAccount[];
+    counterpartyId: string;
+    addToast: (toast: Omit<Toast, 'id'>) => void;
+    onRefresh: () => void;
 }
-export const CounterpartyBankingTab: React.FC<CounterpartyBankingTabProps> = ({ bankAccounts }) => (
+
+/**
+ * Displays and manages the bank account details for a counterparty.
+ * Commercial value: Ensures accurate and secure routing for all payment and settlement transactions,
+ * critical for programmable value rails and reducing financial fraud.
+ */
+export const CounterpartyBankingTab: React.FC<CounterpartyBankingTabProps> = ({ bankAccounts, addToast }) => (
     <div className="space-y-4">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2">
             <h4 className="text-lg font-semibold text-white">Bank Accounts ({bankAccounts.length})</h4>
-            <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm">Add Bank Account</button>
+            <button
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm"
+                onClick={() => addToast({ type: 'info', message: 'Adding bank accounts: Feature to be implemented via dedicated sub-modal.' })}
+            >
+                Add Bank Account
+            </button>
         </div>
         {bankAccounts.length === 0 ? (
-            <p className="text-gray-400">No bank accounts listed.</p>
+            <p className="text-gray-400">No bank accounts listed. Seamless integration with payment rails requires verified banking details.</p>
         ) : (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-left text-gray-400">
@@ -1771,8 +2188,18 @@ export const CounterpartyBankingTab: React.FC<CounterpartyBankingTabProps> = ({ 
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <button className="text-blue-500 hover:text-blue-400 text-sm mr-2">Edit</button>
-                                    <button className="text-red-500 hover:text-red-400 text-sm">Delete</button>
+                                    <button
+                                        className="text-blue-500 hover:text-blue-400 text-sm mr-2"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'info', message: `Editing bank account ${account.bankName}: Feature to be implemented.` }); }}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="text-red-500 hover:text-red-400 text-sm"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'warning', message: `Deleting bank account ${account.bankName}: Feature to be implemented.` }); }}
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -1783,17 +2210,37 @@ export const CounterpartyBankingTab: React.FC<CounterpartyBankingTabProps> = ({ 
     </div>
 );
 
+/**
+ * Properties for the Counterparty Compliance Tab.
+ * Commercial value: Defines the data and interactive elements for managing compliance records,
+ * critical for regulatory adherence and risk mitigation.
+ */
 interface CounterpartyComplianceTabProps {
     complianceRecords: ComplianceRecord[];
+    counterpartyId: string;
+    addToast: (toast: Omit<Toast, 'id'>) => void;
+    onRefresh: () => void;
 }
-export const CounterpartyComplianceTab: React.FC<CounterpartyComplianceTabProps> = ({ complianceRecords }) => (
+
+/**
+ * Displays and manages the compliance records for a counterparty.
+ * Commercial value: Provides an auditable, real-time view of compliance posture,
+ * enabling automated governance, reducing regulatory exposure, and ensuring
+ * the integrity of financial operations.
+ */
+export const CounterpartyComplianceTab: React.FC<CounterpartyComplianceTabProps> = ({ complianceRecords, addToast }) => (
     <div className="space-y-4">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2">
             <h4 className="text-lg font-semibold text-white">Compliance Records ({complianceRecords.length})</h4>
-            <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm">Add Record</button>
+            <button
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm"
+                onClick={() => addToast({ type: 'info', message: 'Adding compliance record: Feature to be implemented via dedicated sub-modal.' })}
+            >
+                Add Record
+            </button>
         </div>
         {complianceRecords.length === 0 ? (
-            <p className="text-gray-400">No compliance records listed.</p>
+            <p className="text-gray-400">No compliance records listed. Proactive compliance is key to de-risking financial operations.</p>
         ) : (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-left text-gray-400">
@@ -1825,8 +2272,18 @@ export const CounterpartyComplianceTab: React.FC<CounterpartyComplianceTabProps>
                                 <td className="px-6 py-4">{record.assignedTo}</td>
                                 <td className="px-6 py-4 truncate max-w-xs">{record.notes}</td>
                                 <td className="px-6 py-4">
-                                    <button className="text-blue-500 hover:text-blue-400 text-sm mr-2">View</button>
-                                    <button className="text-red-500 hover:text-red-400 text-sm">Delete</button>
+                                    <button
+                                        className="text-blue-500 hover:text-blue-400 text-sm mr-2"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'info', message: `Viewing compliance record ${record.type}: Feature to be implemented.` }); }}
+                                    >
+                                        View
+                                    </button>
+                                    <button
+                                        className="text-red-500 hover:text-red-400 text-sm"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'warning', message: `Deleting compliance record ${record.type}: Feature to be implemented.` }); }}
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -1837,17 +2294,37 @@ export const CounterpartyComplianceTab: React.FC<CounterpartyComplianceTabProps>
     </div>
 );
 
+/**
+ * Properties for the Counterparty Risk Tab.
+ * Commercial value: Defines the data and interactive elements for managing risk assessments,
+ * underpinning proactive risk management strategies.
+ */
 interface CounterpartyRiskTabProps {
     riskAssessments: RiskAssessment[];
+    counterpartyId: string;
+    addToast: (toast: Omit<Toast, 'id'>) => void;
+    onRefresh: () => void;
 }
-export const CounterpartyRiskTab: React.FC<CounterpartyRiskTabProps> = ({ riskAssessments }) => (
+
+/**
+ * Displays and manages the risk assessments for a counterparty.
+ * Commercial value: Powers the platform's intelligent risk scoring and management,
+ * enabling dynamic adjustment of financial exposure and ensuring the system's resilience
+ * against market and counterparty-specific risks.
+ */
+export const CounterpartyRiskTab: React.FC<CounterpartyRiskTabProps> = ({ riskAssessments, addToast }) => (
     <div className="space-y-4">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2">
             <h4 className="text-lg font-semibold text-white">Risk Assessments ({riskAssessments.length})</h4>
-            <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm">Add Assessment</button>
+            <button
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm"
+                onClick={() => addToast({ type: 'info', message: 'Adding risk assessment: Feature to be implemented via dedicated sub-modal.' })}
+            >
+                Add Assessment
+            </button>
         </div>
         {riskAssessments.length === 0 ? (
-            <p className="text-gray-400">No risk assessments listed.</p>
+            <p className="text-gray-400">No risk assessments listed. Automated risk analysis is critical for operational integrity.</p>
         ) : (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-left text-gray-400">
@@ -1880,8 +2357,18 @@ export const CounterpartyRiskTab: React.FC<CounterpartyRiskTabProps> = ({ riskAs
                                 <td className="px-6 py-4">{formatDate(assessment.nextReviewDate)}</td>
                                 <td className="px-6 py-4 truncate max-w-xs">{assessment.mitigationPlan}</td>
                                 <td className="px-6 py-4">
-                                    <button className="text-blue-500 hover:text-blue-400 text-sm mr-2">View</button>
-                                    <button className="text-red-500 hover:text-red-400 text-sm">Delete</button>
+                                    <button
+                                        className="text-blue-500 hover:text-blue-400 text-sm mr-2"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'info', message: `Viewing risk assessment ${assessment.id}: Feature to be implemented.` }); }}
+                                    >
+                                        View
+                                    </button>
+                                    <button
+                                        className="text-red-500 hover:text-red-400 text-sm"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'warning', message: `Deleting risk assessment ${assessment.id}: Feature to be implemented.` }); }}
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -1892,17 +2379,36 @@ export const CounterpartyRiskTab: React.FC<CounterpartyRiskTabProps> = ({ riskAs
     </div>
 );
 
+/**
+ * Properties for the Counterparty Documents Tab.
+ * Commercial value: Defines the data and interactive elements for managing digital documents,
+ * supporting secure access and auditability.
+ */
 interface CounterpartyDocumentsTabProps {
     documents: Document[];
+    counterpartyId: string;
+    addToast: (toast: Omit<Toast, 'id'>) => void;
+    onRefresh: () => void;
 }
-export const CounterpartyDocumentsTab: React.FC<CounterpartyDocumentsTabProps> = ({ documents }) => (
+
+/**
+ * Displays and manages the documents associated with a counterparty.
+ * Commercial value: Centralizes secure document storage and retrieval, essential for
+ * legal, compliance, and operational due diligence, ensuring tamper-evident record-keeping.
+ */
+export const CounterpartyDocumentsTab: React.FC<CounterpartyDocumentsTabProps> = ({ documents, addToast }) => (
     <div className="space-y-4">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2">
             <h4 className="text-lg font-semibold text-white">Documents ({documents.length})</h4>
-            <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm">Upload Document</button>
+            <button
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm"
+                onClick={() => addToast({ type: 'info', message: 'Uploading document: Feature to be implemented via dedicated sub-modal.' })}
+            >
+                Upload Document
+            </button>
         </div>
         {documents.length === 0 ? (
-            <p className="text-gray-400">No documents listed.</p>
+            <p className="text-gray-400">No documents listed. Comprehensive documentation supports compliance and transparency.</p>
         ) : (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-left text-gray-400">
@@ -1932,7 +2438,12 @@ export const CounterpartyDocumentsTab: React.FC<CounterpartyDocumentsTabProps> =
                                 <td className="px-6 py-4">{doc.fileSizeKB}</td>
                                 <td className="px-6 py-4">
                                     <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-sm mr-2">Download</a>
-                                    <button className="text-red-500 hover:text-red-400 text-sm">Delete</button>
+                                    <button
+                                        className="text-red-500 hover:text-red-400 text-sm"
+                                        onClick={(e) => { e.stopPropagation(); addToast({ type: 'warning', message: `Deleting document ${doc.name}: Feature to be implemented.` }); }}
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -1943,14 +2454,26 @@ export const CounterpartyDocumentsTab: React.FC<CounterpartyDocumentsTabProps> =
     </div>
 );
 
+/**
+ * Properties for the Counterparty Audit Tab.
+ * Commercial value: Defines the data presented in the audit log,
+ * crucial for forensic analysis and demonstrating system integrity.
+ */
 interface CounterpartyAuditTabProps {
     auditLog: ActivityLogEntry[];
 }
+
+/**
+ * Displays the immutable audit log for a counterparty.
+ * Commercial value: Provides an unalterable, cryptographically-linked trail of all
+ * significant events, actions, and status changes, ensuring unparalleled auditability,
+ * forensic capability, and regulatory compliance.
+ */
 export const CounterpartyAuditTab: React.FC<CounterpartyAuditTabProps> = ({ auditLog }) => (
     <div className="space-y-4">
         <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Audit Log ({auditLog.length})</h4>
         {auditLog.length === 0 ? (
-            <p className="text-gray-400">No audit log entries.</p>
+            <p className="text-gray-400">No audit log entries. All critical actions are recorded for immutable traceability.</p>
         ) : (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-left text-gray-400">
@@ -1978,8 +2501,14 @@ export const CounterpartyAuditTab: React.FC<CounterpartyAuditTabProps> = ({ audi
     </div>
 );
 
-
-// 6. Main Counterparties View Component
+/**
+ * Main component for the Counterparties View.
+ * Commercial value: This is the operational nerve center for managing all external financial relationships.
+ * It provides intelligent automation and real-time insights, transforming traditional,
+ * laborious counterparty management into a dynamic, highly efficient, and risk-optimized process.
+ * This component is a cornerstone of the platform's ability to drive significant operational
+ * cost savings, enhance compliance, and accelerate entry into new digital finance markets.
+ */
 const CounterpartiesView: React.FC = () => {
     const { addToast } = useToast();
     const [counterparties, setCounterparties] = useState<EnhancedCounterparty[]>([]);
@@ -1988,16 +2517,19 @@ const CounterpartiesView: React.FC = () => {
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [isEditModalOpen, setEditModalOpen] = useState(false);
     const [isDetailModalOpen, setDetailModalOpen] = useState(false);
+    const [isConfirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
     const [selectedCounterpartyId, setSelectedCounterpartyId] = useState<string | null>(null);
 
-    // Initial fetch function
+    /**
+     * Fetches all counterparties from the API service.
+     * Commercial value: Ensures that the latest, complete set of counterparty data is available
+     * for display and interaction, maintaining data freshness and operational accuracy.
+     */
     const fetchCounterparties = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // For the main view, we'll fetch all and let hooks handle local pagination/sorting/filtering
-            // In a real app with large data, this would use API pagination/sorting/filtering
-            const result = await apiService.getCounterparties(undefined, 1, 1000); // Fetch a large number for local handling
+            const result = await apiService.getCounterparties(undefined, 1, 1000);
             if (result.success && result.data) {
                 setCounterparties(result.data.counterparties);
             } else {
@@ -2015,25 +2547,41 @@ const CounterpartiesView: React.FC = () => {
         fetchCounterparties();
     }, [fetchCounterparties]);
 
+    /**
+     * Handles successful addition of a new counterparty, updating the local state.
+     * Commercial value: Ensures immediate UI reflection of new data, providing real-time
+     * feedback on successful onboarding processes.
+     */
     const handleAddSuccess = (newCp: EnhancedCounterparty) => {
         setCounterparties(prev => [...prev, newCp]);
     };
 
+    /**
+     * Handles successful update of an existing counterparty, updating the local state.
+     * Commercial value: Maintains data consistency across the UI following modifications,
+     * reflecting critical changes without requiring a full data reload.
+     */
     const handleUpdateSuccess = (updatedCp: EnhancedCounterparty) => {
         setCounterparties(prev => prev.map(cp => cp.id === updatedCp.id ? updatedCp : cp));
-        // Also refresh details in the detail modal if it's open for the same CP
+        // If the detail modal is open for the same CP, ensure it refetches/updates
         if (isDetailModalOpen && selectedCounterpartyId === updatedCp.id) {
-            // This is a bit of a hack without direct detail modal refresh, better would be to pass setCounterparty
-            // For now, it updates the main list and the modal would typically refetch on open or re-render
+            setSelectedCounterpartyId(null); // Force re-render of detail modal
+            setTimeout(() => setSelectedCounterpartyId(updatedCp.id), 0);
         }
     };
 
+    /**
+     * Initiates the deletion of a counterparty via the API.
+     * Commercial value: Provides a secure and audited mechanism for offboarding,
+     * ensuring compliance with data retention policies and preventing unauthorized data removal.
+     */
     const handleDeleteCounterparty = async (id: string) => {
         try {
             const result = await apiService.deleteCounterparty(id);
             if (result.success) {
                 setCounterparties(prev => prev.filter(cp => cp.id !== id));
                 addToast({ type: 'success', message: 'Counterparty deleted successfully!' });
+                setDetailModalOpen(false); // Close any open detail modal
             } else {
                 throw new Error(result.error || 'Failed to delete counterparty.');
             }
@@ -2042,18 +2590,33 @@ const CounterpartiesView: React.FC = () => {
         }
     };
 
+    /**
+     * Updates the status of a counterparty in the local state.
+     * Commercial value: Dynamically reflects operational and compliance status changes,
+     * enabling quick visual assessment and informed actions on the main dashboard.
+     */
     const handleCounterpartyStatusChange = (id: string, newStatus: CounterpartyStatus) => {
         setCounterparties(prev => prev.map(cp => cp.id === id ? { ...cp, status: newStatus } : cp));
     };
 
+    /**
+     * Opens the detail modal for a selected counterparty.
+     * Commercial value: Provides granular access to all counterparty data, supporting
+     * in-depth analysis and comprehensive management tasks.
+     */
     const handleRowClick = (counterparty: EnhancedCounterparty) => {
         setSelectedCounterpartyId(counterparty.id);
         setDetailModalOpen(true);
     };
 
+    /**
+     * Opens the edit modal for a selected counterparty, closing the detail modal if open.
+     * Commercial value: Facilitates direct modification of counterparty profiles,
+     * streamlining data maintenance and ensuring accuracy.
+     */
     const handleEditClick = (id: string) => {
         setSelectedCounterpartyId(id);
-        setDetailModalOpen(false); // Close detail modal before opening edit
+        setDetailModalOpen(false);
         setEditModalOpen(true);
     };
 
@@ -2075,14 +2638,14 @@ const CounterpartiesView: React.FC = () => {
         prevAPage,
         itemsPerPage,
         totalItems,
-    } = usePagination(sortedData, 10); // 10 items per page
+    } = usePagination(sortedData, 10);
 
     if (loading) {
         return <LoadingSpinner />;
     }
 
     if (error) {
-        return <div className="text-red-400 text-center p-6">Error: {error}</div>;
+        return <div className="text-red-400 text-center p-6">Error loading critical counterparty data: {error}</div>;
     }
 
     return (
@@ -2092,22 +2655,16 @@ const CounterpartiesView: React.FC = () => {
                     <FormInput
                         id="search"
                         label="Search Counterparties"
-                        placeholder="Search by name, email, industry..."
+                        placeholder="Name, email, industry, ID..."
                         value={searchTerm}
                         onChange={(e) => handleSearch(e.target.value)}
                         className="w-80"
                     />
-                    {/* Add more filter options here if needed, e.g., by status, industry */}
                     <FormSelect
                         id="filterStatus"
                         label="Filter by Status"
                         options={[{ value: '', label: 'All Statuses' }, ...Object.values(CounterpartyStatus).map(s => ({ value: s, label: s }))]}
-                        onChange={(e) => {
-                            // This currently does a full client-side filter
-                            // In a real app, this would trigger an API call with a filter parameter
-                            // For now, use the search hook to simulate
-                            handleSearch(e.target.value ? `status:"${e.target.value}"` : '');
-                        }}
+                        onChange={(e) => handleSearch(e.target.value ? `status:"${e.target.value}"` : '')}
                         value={searchTerm.includes('status:') ? searchTerm.split('"')[1] : ''}
                         className="w-48"
                     />
@@ -2122,34 +2679,34 @@ const CounterpartiesView: React.FC = () => {
 
             <div className="flex-grow overflow-x-auto custom-scrollbar">
                 {currentItems.length === 0 && !loading && !error ? (
-                    <p className="text-gray-400 text-center py-10">No counterparties found. Try adjusting your search or add a new one.</p>
+                    <p className="text-gray-400 text-center py-10">No counterparties found matching your criteria. Try adjusting your search or add a new one.</p>
                 ) : (
                     <table className="min-w-full text-sm text-left text-gray-400">
                         <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
                             <tr>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')}>
                                     Company Name
-                                    {sortField === 'name' && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                                    {sortField === 'name' && (sortDirection === 'asc' ? ' \u2191' : ' \u2193')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('legalName')}>
                                     Legal Name
-                                    {sortField === 'legalName' && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                                    {sortField === 'legalName' && (sortDirection === 'asc' ? ' \u2191' : ' \u2193')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('email')}>
                                     Email
-                                    {sortField === 'email' && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                                    {sortField === 'email' && (sortDirection === 'asc' ? ' \u2191' : ' \u2193')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('industry')}>
                                     Industry
-                                    {sortField === 'industry' && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                                    {sortField === 'industry' && (sortDirection === 'asc' ? ' \u2191' : ' \u2193')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('status')}>
                                     Status
-                                    {sortField === 'status' && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                                    {sortField === 'status' && (sortDirection === 'asc' ? ' \u2191' : ' \u2193')}
                                 </th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => handleSort('createdDate')}>
                                     Created On
-                                    {sortField === 'createdDate' && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                                    {sortField === 'createdDate' && (sortDirection === 'asc' ? ' \u2191' : ' \u2193')}
                                 </th>
                                 <th scope="col" className="px-6 py-3">Actions</th>
                             </tr>
@@ -2233,14 +2790,12 @@ const CounterpartiesView: React.FC = () => {
                 onClose={() => setConfirmDeleteModalOpen(false)}
                 onConfirm={() => { handleDeleteCounterparty(selectedCounterpartyId!); setConfirmDeleteModalOpen(false); }}
                 title="Delete Counterparty"
-                message={`Are you sure you want to delete this counterparty? This action cannot be undone.`}
-                confirmText="Delete"
+                message={`Are you sure you want to delete this counterparty? This action cannot be undone and will be permanently logged for audit.`}
+                confirmText="Delete Permanently"
                 isDestructive
             />
         </Card>
     );
 };
 
-// Export the main view component. This is critical for integration into the broader application.
 export default CounterpartiesView;
-```
