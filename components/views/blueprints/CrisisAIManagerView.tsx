@@ -1,6 +1,20 @@
+/**
+ * CrisisAIManagerView.tsx
+ *
+ * This module serves as the central control plane for enterprise crisis response, leveraging advanced AI agents
+ * to orchestrate, monitor, and execute strategic communications, legal actions, and financial remediations.
+ * It integrates real-time sentiment analysis, robust access controls, and a comprehensive audit trail to ensure
+ * rapid, compliant, and reputation-preserving responses.
+ *
+ * Business value: Transforms chaotic events into managed outcomes and safeguards billions in brand value and
+ * regulatory standing. By centralizing crisis management, it drastically reduces response times, minimizes
+ * financial penalties from non-compliance, protects brand reputation from negative sentiment, and optimizes
+ * resource allocation through AI-driven insights. This system provides a strategic advantage by allowing
+ * organizations to regain control swiftly during high-stakes situations, ensuring business continuity and
+ * protecting shareholder value.
+ */
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 
-// Existing types
 type CrisisType = 'DATA_BREACH' | 'PRODUCT_FAILURE' | 'EXECUTIVE_SCANDAL' | 'ENVIRONMENTAL_DISASTER' | 'FINANCIAL_MISCONDUCT' | 'SUPPLY_CHAIN_DISRUPTION' | 'CYBER_ATTACK' | 'PUBLIC_HEALTH_CRISIS';
 
 export interface CommsPackage {
@@ -15,8 +29,7 @@ export interface CommsPackage {
   videoScript?: string;
 }
 
-// NEW TYPES AND INTERFACES (Thousands of lines)
-export type UserRole = 'ADMIN' | 'CRISIS_MANAGER' | 'LEGAL_COUNSEL' | 'PR_SPECIALIST' | 'SUPPORT_MANAGER' | 'EXECUTIVE' | 'INCIDENT_RESPONDER' | 'ANALYST' | 'EDITOR' | 'VIEWER';
+export type UserRole = 'ADMIN' | 'CRISIS_MANAGER' | 'LEGAL_COUNSEL' | 'PR_SPECIALIST' | 'SUPPORT_MANAGER' | 'EXECUTIVE' | 'INCIDENT_RESPONDER' | 'ANALYST' | 'EDITOR' | 'VIEWER' | 'AI_AGENT';
 
 export interface UserProfile {
   id: string;
@@ -43,6 +56,29 @@ export interface Stakeholder {
 export type CrisisSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type CrisisStatus = 'IDENTIFIED' | 'ACTIVE' | 'MITIGATING' | 'REVIEW' | 'CLOSED';
 
+/**
+ * Interface representing a financial transaction or impact related to a crisis.
+ * This simulates interaction with a token rail layer for transparent financial operations.
+ *
+ * Business value: Provides an auditable trail for all financial movements, enabling
+ * precise tracking of costs, compensations, and penalties. This ensures financial
+ * transparency, supports regulatory compliance, and allows for rapid reconciliation
+ * with tokenized assets, minimizing fraud and improving liquidity management.
+ */
+export interface FinancialTransaction {
+  id: string;
+  timestamp: Date;
+  type: 'COMPENSATION_PAYOUT' | 'FINE_PAYMENT' | 'LOSS_RECORD' | 'REFUND' | 'RECONCILIATION';
+  amount: number;
+  currency: string; // e.g., 'USD', 'EUR', 'STABLE_COIN_XYZ'
+  status: 'PENDING' | 'SETTLED' | 'FAILED' | 'REVERSED';
+  recipientId?: string; // Could be a UserProfile ID or a vendor ID
+  initiatorId: string; // UserProfile ID or Agent ID
+  transactionHash?: string; // Simulated token rail transaction hash
+  notes?: string;
+  relatedCrisisId: string;
+}
+
 export interface Crisis {
   id: string;
   title: string;
@@ -62,6 +98,8 @@ export interface Crisis {
   sentimentHistory: SentimentReport[];
   legalReviews: LegalAnalysisResult[];
   approvalWorkflow: CommsApprovalEntry[];
+  financialTransactions: FinancialTransaction[]; // New field for financial impacts
+  agentActivityLogs: AgentLogEntry[]; // New field for AI agent interactions
 }
 
 export interface IncidentLogEntry {
@@ -138,6 +176,79 @@ export interface CrisisPlaybookEntry {
   notes?: string;
 }
 
+/**
+ * Type defining the various states an AI agent can be in.
+ * Business value: Essential for monitoring agent performance and resource allocation,
+ * ensuring AI systems are always operational and responsive during a crisis.
+ */
+export type AgentStatus = 'ACTIVE' | 'IDLE' | 'BUSY' | 'ERROR' | 'OFFLINE';
+
+/**
+ * Interface for an AI Agent.
+ * This represents a simulated autonomous agent within the crisis management system.
+ *
+ * Business value: Enables the orchestration of autonomous workflows for monitoring,
+ * anomaly detection, and automated remediation. This dramatically reduces human
+ * workload, accelerates response times, and ensures consistent execution of
+ * pre-defined protocols, saving millions in operational costs and minimizing errors.
+ */
+export interface AutonomousAgent {
+  id: string;
+  name: string;
+  type: 'MONITORING' | 'REMEDIATION' | 'COMMUNICATION' | 'LEGAL_ADVISOR' | 'FINANCIAL_RECONCILIATOR';
+  status: AgentStatus;
+  skills: string[]; // e.g., 'sentiment-analysis', 'data-breach-response', 'legal-compliance-check'
+  lastActivity: Date;
+  assignedCrisisId?: string;
+  configuration: { [key: string]: any }; // e.g., monitoring thresholds, communication templates
+  isActive: boolean;
+}
+
+/**
+ * Interface for logging actions taken by an AI agent.
+ * This provides an auditable trail of AI decisions and operations.
+ *
+ * Business value: Crucial for governance, compliance audits, and debugging.
+ * It ensures transparency in AI operations, builds trust, and allows for
+ * continuous improvement of agent behavior, validating the millions invested
+ * in AI automation.
+ */
+export interface AgentLogEntry {
+  id: string;
+  timestamp: Date;
+  agentId: string;
+  crisisId: string;
+  action: string; // e.g., 'Initiated sentiment analysis', 'Drafted press release', 'Flagged suspicious transaction'
+  details: string;
+  status: 'SUCCESS' | 'FAILURE' | 'IN_PROGRESS';
+  relatedArtifactId?: string; // e.g., CommsPackage ID, IncidentLogEntry ID
+}
+
+/**
+ * Interface for a global audit log entry.
+ * Provides a tamper-evident record of all significant system events and user/agent actions.
+ *
+ * Business value: Establishes a foundational layer of trust and accountability across the entire
+ * system. This audit trail is indispensable for regulatory compliance (e.g., SOX, GDPR),
+ * internal governance, forensic investigations, and dispute resolution, protecting the
+ * enterprise from significant legal and financial repercussions.
+ */
+export interface AuditLogEntry {
+  id: string;
+  timestamp: Date;
+  actorId: string; // UserProfile ID or AutonomousAgent ID
+  actorType: 'USER' | 'AGENT';
+  actionType: 'CREATE' | 'UPDATE' | 'DELETE' | 'VIEW' | 'APPROVE' | 'REJECT' | 'INITIATE' | 'SETTLE';
+  entityType: 'CRISIS' | 'COMMS_PACKAGE' | 'INCIDENT_LOG' | 'LEGAL_REVIEW' | 'SENTIMENT_REPORT' | 'USER' | 'SETTING' | 'FINANCIAL_TRANSACTION' | 'AGENT_CONFIG';
+  entityId: string;
+  description: string;
+  previousState?: any; // Snapshot of relevant fields before change
+  newState?: any; // Snapshot of relevant fields after change
+  // For tamper-evidence, in a real system this would involve cryptographic chaining
+  // previousHash?: string;
+  // currentHash?: string;
+}
+
 export interface CrisisSettings {
   autoGenerateComms: boolean;
   defaultApprovalWorkflow: UserRole[];
@@ -146,25 +257,34 @@ export interface CrisisSettings {
   defaultTemplates: {
     [key in CrisisType]?: CommsPackage;
   };
+  enabledAgents: {
+    [agentType in AutonomousAgent['type']]?: boolean;
+  };
 }
-
-// MOCK DATA GENERATORS (filling thousands of lines with helper functions)
 
 const generateMockId = (prefix: string = 'mock_'): string => `${prefix}${Math.random().toString(36).substring(2, 15)}`;
 
 export const mockUsers: UserProfile[] = [
-  { id: 'user_admin', name: 'Alice Admin', email: 'alice@example.com', role: 'ADMIN', isActive: true, lastLogin: new Date(), department: 'IT', permissions: { canManageUsers: true, canEditAll: true, canApproveComms: true } },
-  { id: 'user_cm', name: 'Bob CrisisManager', email: 'bob@example.com', role: 'CRISIS_MANAGER', isActive: true, lastLogin: new Date(), department: 'Operations', permissions: { canEditCrisis: true, canGenerateComms: true, canInitiateReview: true } },
-  { id: 'user_legal', name: 'Carol Legal', email: 'carol@example.com', role: 'LEGAL_COUNSEL', isActive: true, lastLogin: new Date(), department: 'Legal', permissions: { canReviewLegal: true, canApproveComms: true } },
-  { id: 'user_pr', name: 'David PR', email: 'david@example.com', role: 'PR_SPECIALIST', isActive: true, lastLogin: new Date(), department: 'Marketing', permissions: { canReviewComms: true, canEditComms: true } },
-  { id: 'user_exec', name: 'Eve Executive', email: 'eve@example.com', role: 'EXECUTIVE', isActive: true, lastLogin: new Date(), department: 'Executive', permissions: { canApproveComms: true, canViewAll: true } },
-  { id: 'user_ir', name: 'Frank IR', email: 'frank@example.com', role: 'INCIDENT_RESPONDER', isActive: true, lastLogin: new Date(), department: 'IT Security', permissions: { canAddIncidentLogs: true } },
-  { id: 'user_analyst', name: 'Grace Analyst', email: 'grace@example.com', role: 'ANALYST', isActive: true, lastLogin: new Date(), department: 'Data', permissions: { canViewReports: true } },
-  { id: 'user_editor', name: 'Henry Editor', email: 'henry@example.com', role: 'EDITOR', isActive: true, lastLogin: new Date(), department: 'Communications', permissions: { canEditComms: true, canGenerateComms: true } },
+  { id: 'user_admin', name: 'Alice Admin', email: 'alice@example.com', role: 'ADMIN', isActive: true, lastLogin: new Date(), department: 'IT', permissions: { canManageUsers: true, canEditAll: true, canApproveComms: true, canReviewLegal: true, canReviewComms: true, canGenerateComms: true, canEditCrisis: true, canAddIncidentLogs: true, canViewReports: true, canInitiateReview: true, canManageAgents: true, canInitiatePayments: true, canViewAuditLogs: true } },
+  { id: 'user_cm', name: 'Bob CrisisManager', email: 'bob@example.com', role: 'CRISIS_MANAGER', isActive: true, lastLogin: new Date(), department: 'Operations', permissions: { canEditCrisis: true, canGenerateComms: true, canInitiateReview: true, canViewReports: true, canViewAll: true, canAddIncidentLogs: true } },
+  { id: 'user_legal', name: 'Carol Legal', email: 'carol@example.com', role: 'LEGAL_COUNSEL', isActive: true, lastLogin: new Date(), department: 'Legal', permissions: { canReviewLegal: true, canApproveComms: true, canViewAll: true, canViewAuditLogs: true } },
+  { id: 'user_pr', name: 'David PR', email: 'david@example.com', role: 'PR_SPECIALIST', isActive: true, lastLogin: new Date(), department: 'Marketing', permissions: { canReviewComms: true, canEditComms: true, canGenerateComms: true, canViewReports: true, canViewAll: true } },
+  { id: 'user_exec', name: 'Eve Executive', email: 'eve@example.com', role: 'EXECUTIVE', isActive: true, lastLogin: new Date(), department: 'Executive', permissions: { canApproveComms: true, canViewAll: true, canViewReports: true, canViewAuditLogs: true, canInitiatePayments: true } },
+  { id: 'user_ir', name: 'Frank IR', email: 'frank@example.com', role: 'INCIDENT_RESPONDER', isActive: true, lastLogin: new Date(), department: 'IT Security', permissions: { canAddIncidentLogs: true, canViewAll: true } },
+  { id: 'user_analyst', name: 'Grace Analyst', email: 'grace@example.com', role: 'ANALYST', isActive: true, lastLogin: new Date(), department: 'Data', permissions: { canViewReports: true, canViewAll: true } },
+  { id: 'user_editor', name: 'Henry Editor', email: 'henry@example.com', role: 'EDITOR', isActive: true, lastLogin: new Date(), department: 'Communications', permissions: { canEditComms: true, canGenerateComms: true, canViewAll: true } },
   { id: 'user_viewer', name: 'Ivy Viewer', email: 'ivy@example.com', role: 'VIEWER', isActive: true, lastLogin: new Date(), department: 'General', permissions: { canViewAll: true, canEditCrisis: false } },
 ];
 
+export const mockAgents: AutonomousAgent[] = [
+  { id: 'agent_sentinel', name: 'Sentinel AI', type: 'MONITORING', status: 'ACTIVE', skills: ['sentiment-analysis', 'anomaly-detection'], lastActivity: new Date(), isActive: true, configuration: { threshold: 0.1, sources: ['twitter', 'news'] } },
+  { id: 'agent_comms_gen', name: 'CommsGen AI', type: 'COMMUNICATION', status: 'IDLE', skills: ['draft-press-release', 'generate-faq', 'social-media-drafting'], lastActivity: new Date(), isActive: true, configuration: { autoDraft: true, reviewRequired: true } },
+  { id: 'agent_legal_check', name: 'LegalCheck AI', type: 'LEGAL_ADVISOR', status: 'ACTIVE', skills: ['compliance-scan', 'risk-assessment'], lastActivity: new Date(), isActive: true, configuration: { autoScan: true, regulations: ['GDPR', 'CCPA'] } },
+  { id: 'agent_fin_recon', name: 'FinRecon AI', type: 'FINANCIAL_RECONCILIATOR', status: 'IDLE', skills: ['payout-processing', 'ledger-audit'], lastActivity: new Date(), isActive: false, configuration: { autoApprovePayouts: false, maxPayout: 10000 } },
+];
+
 export const getMockUser = (id: string): UserProfile | undefined => mockUsers.find(u => u.id === id);
+export const getMockAgent = (id: string): AutonomousAgent | undefined => mockAgents.find(a => a.id === id);
 
 export const mockStakeholders: Stakeholder[] = [
   { id: generateMockId('sh'), name: 'Key Customers', type: 'CUSTOMER', contactInfo: 'customer.support@example.com', sentimentImpact: -4, priority: 1, communicationChannels: ['email', 'web-statement'] },
@@ -181,7 +301,7 @@ export const generateMockIncidentLogEntry = (crisisId: string, reporterId: strin
   reportedByUserId: reporterId,
   severity: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)] as CrisisSeverity,
   actionTaken: `Alert acknowledged by Frank IR. Initial investigation started. System isolated.`,
-  status: ['OPEN', 'IN_PROGRESS', 'RESOLVED'][Math.floor(Math.random() * 3)] as any,
+  status: ['OPEN', 'IN_PROGRESS', 'RESOLVED'][Math.floor(Math.random() * 3)] as 'OPEN' | 'IN_PROGRESS' | 'RESOLVED',
   relatedArtifacts: Math.random() > 0.5 ? [`https://example.com/log_${generateMockId()}.txt`] : undefined,
 });
 
@@ -255,12 +375,54 @@ export const generateMockCommsPackage = (type: CrisisType, facts: string): Comms
   return comms;
 };
 
+export const generateMockFinancialTransaction = (crisisId: string, initiatorId: string, type: FinancialTransaction['type'] = 'COMPENSATION_PAYOUT'): FinancialTransaction => ({
+  id: generateMockId('ft'),
+  timestamp: new Date(),
+  type,
+  amount: Math.floor(Math.random() * 100000) + 1000,
+  currency: 'USD',
+  status: Math.random() > 0.8 ? 'FAILED' : 'SETTLED',
+  recipientId: generateMockId('recipient'),
+  initiatorId: initiatorId,
+  transactionHash: Math.random() > 0.2 ? `tx_${generateMockId('hash')}` : undefined,
+  notes: `Simulated ${type.replace(/_/g, ' ').toLowerCase()} for crisis management.`,
+  relatedCrisisId: crisisId,
+});
+
+export const generateMockAgentLogEntry = (crisisId: string, agent: AutonomousAgent, action: string, status: AgentLogEntry['status'] = 'SUCCESS', details?: string): AgentLogEntry => ({
+  id: generateMockId('agl'),
+  timestamp: new Date(),
+  agentId: agent.id,
+  crisisId: crisisId,
+  action: action,
+  details: details || `Agent ${agent.name} performed action: ${action}`,
+  status: status,
+  relatedArtifactId: Math.random() > 0.7 ? generateMockId() : undefined,
+});
+
+export const generateMockAuditLogEntry = (actorId: string, actorType: 'USER' | 'AGENT', actionType: AuditLogEntry['actionType'], entityType: AuditLogEntry['entityType'], entityId: string, description: string): AuditLogEntry => ({
+  id: generateMockId('audit'),
+  timestamp: new Date(),
+  actorId,
+  actorType,
+  actionType,
+  entityType,
+  entityId,
+  description,
+});
+
+
 export const generateMockCrisis = (id: string, type: CrisisType, facts: string, leadManagerId: string): Crisis => {
   const now = new Date();
   const incidentLogs = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => generateMockIncidentLogEntry(id, mockUsers[0].id));
   const sentimentHistory = Array.from({ length: Math.floor(Math.random() * 2) + 1 }, () => generateMockSentimentReport(id, mockUsers[6].id));
   const legalReviews = Math.random() > 0.5 ? [generateMockLegalAnalysis(id, mockUsers[2].id)] : [];
   const commsPackage = generateMockCommsPackage(type, facts);
+  const financialTransactions = Math.random() > 0.6 ? [generateMockFinancialTransaction(id, mockUsers[4].id)] : [];
+  const agentActivityLogs = [
+    generateMockAgentLogEntry(id, mockAgents[0], 'Initiated sentiment analysis', 'SUCCESS'),
+    generateMockAgentLogEntry(id, mockAgents[2], 'Performed initial legal compliance scan', 'SUCCESS'),
+  ];
   const approvalWorkflow: CommsApprovalEntry[] = [
     { id: generateMockId('appr'), commsPackageId: generateMockId('comm'), version: 1, status: 'DRAFT', requiredRole: 'CRISIS_MANAGER', reviewerId: '' },
     { id: generateMockId('appr'), commsPackageId: generateMockId('comm'), version: 1, status: 'PENDING_REVIEW', requiredRole: 'PR_SPECIALIST', reviewerId: mockUsers[3].id, reviewTimestamp: new Date(), comments: 'Looks good for initial draft.' },
@@ -286,6 +448,8 @@ export const generateMockCrisis = (id: string, type: CrisisType, facts: string, 
     sentimentHistory,
     legalReviews,
     approvalWorkflow,
+    financialTransactions,
+    agentActivityLogs,
   };
 };
 
@@ -301,10 +465,23 @@ export const mockCrisisSettings: CrisisSettings = {
       twitterThread: ["1/ Data breach detected.", "2/ Investigating."],
       supportScript: "DEFAULT DATA BREACH SUPPORT SCRIPT: I understand your concern about the data breach...",
     }
+  },
+  enabledAgents: {
+    MONITORING: true,
+    COMMUNICATION: true,
+    LEGAL_ADVISOR: true,
+    FINANCIAL_RECONCILIATOR: false,
   }
 };
 
-// UI UTILITY COMPONENTS (many more lines)
+/**
+ * CrisisStatusBadge: React.FC
+ *
+ * This UI utility component provides consistent, visually distinctive indicators for crisis statuses.
+ *
+ * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
+ */
 export const CrisisStatusBadge: React.FC<{ status: CrisisStatus }> = ({ status }) => {
   let colorClass = '';
   switch (status) {
@@ -318,6 +495,14 @@ export const CrisisStatusBadge: React.FC<{ status: CrisisStatus }> = ({ status }
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{status.replace(/_/g, ' ')}</span>;
 };
 
+/**
+ * CrisisSeverityBadge: React.FC
+ *
+ * This UI utility component provides consistent, visually distinctive indicators for crisis severity levels.
+ *
+ * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
+ */
 export const CrisisSeverityBadge: React.FC<{ severity: CrisisSeverity }> = ({ severity }) => {
   let colorClass = '';
   switch (severity) {
@@ -330,7 +515,15 @@ export const CrisisSeverityBadge: React.FC<{ severity: CrisisSeverity }> = ({ se
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{severity}</span>;
 };
 
-export const UserAvatar: React.FC<{ user: UserProfile, size?: number }> = ({ user, size = 32 }) => {
+/**
+ * UserAvatar: React.FC
+ *
+ * This UI utility component generates a distinct user avatar, typically displaying initials.
+ *
+ * Business value: Enhances user experience by providing quick visual identification of users,
+ * fostering collaboration and accountability within the crisis response team.
+ */
+export const UserAvatar: React.FC<{ user: UserProfile | AutonomousAgent, size?: number }> = ({ user, size = 32 }) => {
   const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
   const bgColor = useMemo(() => {
     const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
@@ -349,6 +542,14 @@ export const UserAvatar: React.FC<{ user: UserProfile, size?: number }> = ({ use
   );
 };
 
+/**
+ * CommsStatusBadge: React.FC
+ *
+ * This UI utility component provides consistent, visually distinctive indicators for communication package statuses.
+ *
+ * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
+ */
 export const CommsStatusBadge: React.FC<{ status: CommsStatus }> = ({ status }) => {
   let colorClass = '';
   switch (status) {
@@ -364,6 +565,14 @@ export const CommsStatusBadge: React.FC<{ status: CommsStatus }> = ({ status }) 
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{status.replace(/_/g, ' ')}</span>;
 };
 
+/**
+ * LegalRiskBadge: React.FC
+ *
+ * This UI utility component provides consistent, visually distinctive indicators for legal risk levels.
+ *
+ * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
+ */
 export const LegalRiskBadge: React.FC<{ risk: LegalRiskLevel }> = ({ risk }) => {
   let colorClass = '';
   switch (risk) {
@@ -376,7 +585,16 @@ export const LegalRiskBadge: React.FC<{ risk: LegalRiskLevel }> = ({ risk }) => 
   return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{risk}</span>;
 };
 
-// CHART COMPONENT (Simplified Mock for illustration, thousands of lines in real world)
+/**
+ * AnalyticsChart: React.FC
+ *
+ * This versatile component renders dynamic visualizations of various crisis-related data,
+ * presenting complex information in an easily digestible format.
+ *
+ * Business value: Transforms raw data into actionable insights, enabling faster pattern
+ * recognition, trend analysis, and data-driven decision-making for all stakeholders,
+ * thereby enhancing operational intelligence.
+ */
 interface ChartDataPoint {
   label: string;
   value: number;
@@ -390,27 +608,130 @@ export const AnalyticsChart: React.FC<{
   height?: number;
 }> = ({ title, data, type = 'bar', height = 200 }) => {
   const maxVal = Math.max(...data.map(d => Math.abs(d.value)));
-  const minVal = Math.min(...data.map(d => d.value));
+  const minVal = Math.min(...data.map(d => d.value)); // Used for line chart scaling
+
+  const renderBarChart = () => (
+    <div className="flex items-end justify-around" style={{ height: height }}>
+      {data.map((point, index) => (
+        <div key={index} className="flex flex-col items-center mx-1">
+          <div
+            className={`w-8 rounded-t-sm ${point.color || (point.value >= 0 ? 'bg-cyan-500' : 'bg-red-500')}`}
+            style={{ height: `${Math.max(0, point.value / maxVal * 80)}%` }} // Scale to 80% of height for bar
+          ></div>
+          <span className="text-xs mt-1 text-gray-300">{point.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderLineChart = () => {
+    if (data.length < 2) return <p className="text-center text-gray-400">Not enough data for line chart.</p>;
+
+    const points = data.map((point, index) => {
+      const x = (index / (data.length - 1)) * 100;
+      const y = ((point.value - minVal) / (maxVal - minVal)) * 100;
+      return `${x},${100 - y}`; // SVG coordinates (0,0) is top-left, we want (0,0) bottom-left
+    }).join(' ');
+
+    return (
+      <div className="relative" style={{ height: height }}>
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="url(#line-gradient)"
+            strokeWidth="2"
+            points={points}
+          />
+          <defs>
+            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#06b6d4" /> {/* cyan-500 */}
+              <stop offset="100%" stopColor="#a855f7" /> {/* purple-500 */}
+            </linearGradient>
+          </defs>
+          {data.map((point, index) => {
+            const x = (index / (data.length - 1)) * 100;
+            const y = ((point.value - minVal) / (maxVal - minVal)) * 100;
+            return (
+              <circle
+                key={index}
+                cx={x}
+                cy={100 - y}
+                r="2"
+                fill={point.color || (point.value >= 0 ? '#06b6d4' : '#ef4444')}
+                title={`${point.label}: ${point.value.toFixed(2)}`}
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-between text-xs text-gray-400">
+          <span>{maxVal.toFixed(1)}</span>
+          <span className="self-end">{minVal.toFixed(1)}</span>
+        </div>
+        <div className="absolute bottom-0 left-0 w-full flex justify-between text-xs text-gray-400 px-1">
+          {data.map((point, index) => (
+            <span key={index} className={index === 0 || index === data.length - 1 ? '' : 'hidden'}>{point.label}</span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPieChart = () => {
+    const total = data.reduce((sum, d) => sum + d.value, 0);
+    let cumulativeAngle = 0;
+    const slices = data.map((point, index) => {
+      const percentage = total === 0 ? 0 : point.value / total;
+      const angle = percentage * 360;
+      const largeArcFlag = angle > 180 ? 1 : 0;
+
+      const startAngle = cumulativeAngle;
+      cumulativeAngle += angle;
+      const endAngle = cumulativeAngle;
+
+      const x1 = 50 + 40 * Math.cos(Math.PI * (startAngle - 90) / 180);
+      const y1 = 50 + 40 * Math.sin(Math.PI * (startAngle - 90) / 180);
+      const x2 = 50 + 40 * Math.cos(Math.PI * (endAngle - 90) / 180);
+      const y2 = 50 + 40 * Math.sin(Math.PI * (endAngle - 90) / 180);
+
+      const pathData = total === 0
+        ? `M 50 50 L 50 10 A 40 40 0 1 1 49.99 10 Z` // Full circle grey if no data
+        : `M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+
+      return { pathData, color: point.color || `hsl(${index * (360 / data.length)}, 70%, 50%)`, label: point.label, value: point.value };
+    });
+
+    return (
+      <div className="relative flex items-center justify-center" style={{ height: height }}>
+        <svg className="w-full h-full" viewBox="0 0 100 100">
+          {slices.map((slice, index) => (
+            <path key={index} d={slice.pathData} fill={slice.color} stroke="#374151" strokeWidth="0.5" />
+          ))}
+          {total === 0 && <circle cx="50" cy="50" r="40" fill="#4b5563" />}
+        </svg>
+        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 space-y-1">
+          {slices.map((slice, index) => (
+            <div key={index} className="flex items-center text-sm text-gray-300">
+              <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: slice.color }}></span>
+              {slice.label}: {slice.value} ({total === 0 ? 0 : (slice.value / total * 100).toFixed(1)}%)
+            </div>
+          ))}
+          {total === 0 && <p className="text-sm text-gray-400">No data available.</p>}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="bg-gray-700 p-4 rounded-lg shadow-md mb-4">
       <h4 className="text-lg font-semibold mb-2">{title}</h4>
-      <div className="flex items-end justify-around" style={{ height: height }}>
-        {data.map((point, index) => (
-          <div key={index} className="flex flex-col items-center mx-1">
-            <div
-              className={`w-8 rounded-t-sm ${point.color || (point.value >= 0 ? 'bg-cyan-500' : 'bg-red-500')}`}
-              style={{ height: `${Math.max(0, point.value / maxVal * 80)}%` }} // Scale to 80% of height for bar
-            ></div>
-            <span className="text-xs mt-1 text-gray-300">{point.label}</span>
-          </div>
-        ))}
-      </div>
+      {data.length === 0 && <p className="text-center text-gray-400" style={{ height: height }}>No data available for this chart.</p>}
+      {type === 'bar' && renderBarChart()}
+      {type === 'line' && renderLineChart()}
+      {type === 'pie' && renderPieChart()}
     </div>
   );
 };
 
-// CONTEXT FOR GLOBAL STATE (simulating a Redux-like store within one file)
 interface CrisisContextType {
   currentCrisis: Crisis | null;
   setCurrentCrisis: React.Dispatch<React.SetStateAction<Crisis | null>>;
@@ -419,72 +740,121 @@ interface CrisisContextType {
   currentUser: UserProfile;
   setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
   settings: CrisisSettings;
-  updateSetting: (key: keyof CrisisSettings, value: any) => void;
-  // Add many more shared state and actions
+  updateSetting: (key: keyof CrisisSettings, value: any) => Promise<void>;
   addIncidentLogEntry: (entry: IncidentLogEntry) => Promise<void>;
   updateCrisisStatus: (crisisId: string, newStatus: CrisisStatus) => Promise<void>;
   addCommsPackageToCrisis: (crisisId: string, comms: CommsPackage) => Promise<void>;
   addLegalReviewToCrisis: (crisisId: string, review: LegalAnalysisResult) => Promise<void>;
   addSentimentReportToCrisis: (crisisId: string, report: SentimentReport) => Promise<void>;
   updateCommsApprovalStatus: (crisisId: string, commsPackageId: string, approvalEntryId: string, status: CommsStatus, reviewerId: string, comments?: string) => Promise<void>;
+  addFinancialTransactionToCrisis: (crisisId: string, transaction: Omit<FinancialTransaction, 'id' | 'timestamp' | 'relatedCrisisId'>) => Promise<void>;
+  addAgentLogEntryToCrisis: (crisisId: string, agentLog: Omit<AgentLogEntry, 'id' | 'timestamp' | 'crisisId'>) => Promise<void>;
+  allAgents: AutonomousAgent[];
+  updateAgentStatus: (agentId: string, status: AgentStatus, isActive?: boolean) => Promise<void>;
+  updateAgentConfig: (agentId: string, config: { [key: string]: any }) => Promise<void>;
+  globalAuditLogs: AuditLogEntry[];
+  addAuditLog: (log: Omit<AuditLogEntry, 'id' | 'timestamp'>) => Promise<void>;
 }
 
 export const CrisisContext = createContext<CrisisContextType | undefined>(undefined);
 
+/**
+ * CrisisProvider: React.FC
+ *
+ * This React context provider encapsulates the core state and business logic for managing all
+ * aspects of crisis response. It offers a centralized, reactive store for crisis data,
+ * user profiles, system settings, AI agents, and audit logs, enabling seamless data flow
+ * and consistent operations across the entire application.
+ *
+ * Business value: Ensures data integrity and real-time synchronization, critical for rapid
+ * decision-making in high-stakes environments, drastically reducing response times and
+ * associated financial and reputational damage. It provides a single source of truth for
+ * crisis-related information, enhancing collaboration and operational efficiency, thereby
+ * safeguarding billions in assets and reputation.
+ */
 export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentCrisis, setCurrentCrisis] = useState<Crisis | null>(null);
   const [allCrises, setAllCrises] = useState<Crisis[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile>(mockUsers[0]); // Default to Admin
   const [settings, setSettings] = useState<CrisisSettings>(mockCrisisSettings);
+  const [allAgents, setAllAgents] = useState<AutonomousAgent[]>(mockAgents);
+  const [globalAuditLogs, setGlobalAuditLogs] = useState<AuditLogEntry[]>([]);
 
-  // Simulate loading crises from an API on mount
   useEffect(() => {
-    // In a real app, this would be an API call
     const loadCrises = async () => {
-      await new Promise(res => setTimeout(res, 500)); // Simulate API latency
+      await new Promise(res => setTimeout(res, 500));
       const loadedCrises = [
         generateMockCrisis('crisis_001', 'DATA_BREACH', '50k user emails exposed, no passwords. Discovered 8am today.', mockUsers[1].id),
         generateMockCrisis('crisis_002', 'PRODUCT_FAILURE', 'Major software bug impacting 10% of users, critical functionality affected.', mockUsers[1].id),
         generateMockCrisis('crisis_003', 'EXECUTIVE_SCANDAL', 'CEO alleged of insider trading. Media reports surfacing.', mockUsers[1].id),
       ];
       setAllCrises(loadedCrises);
-      setCurrentCrisis(loadedCrises[0]); // Load first crisis by default
+      setCurrentCrisis(loadedCrises[0]);
+      // Populate initial audit logs from mock crises
+      const initialAuditLogs = loadedCrises.flatMap(crisis => [
+        generateMockAuditLogEntry(crisis.leadManagerId, 'USER', 'CREATE', 'CRISIS', crisis.id, `Crisis '${crisis.title}' identified.`),
+        ...crisis.agentActivityLogs.map(log => generateMockAuditLogEntry(log.agentId, 'AGENT', 'INITIATE', 'AGENT_CONFIG', log.id, log.details)),
+        ...crisis.legalReviews.map(review => generateMockAuditLogEntry(review.analyzedByUserId, 'USER', 'CREATE', 'LEGAL_REVIEW', review.id, review.summary)),
+        ...crisis.financialTransactions.map(tx => generateMockAuditLogEntry(tx.initiatorId, 'USER', 'SETTLE', 'FINANCIAL_TRANSACTION', tx.id, `Payment ${tx.status}: ${tx.amount} ${tx.currency}`)),
+      ]);
+      setGlobalAuditLogs(initialAuditLogs);
     };
     loadCrises();
   }, []);
 
-  const updateSetting = useCallback((key: keyof CrisisSettings, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-    // In a real app, persist this to backend
-    console.log(`Setting ${key} updated to ${value}`);
+  const addAuditLog = useCallback(async (log: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
+    return new Promise<void>(res => setTimeout(() => {
+      const newLog = { ...log, id: generateMockId('audit'), timestamp: new Date() };
+      setGlobalAuditLogs(prev => [...prev, newLog]);
+      console.log('Audit log added:', newLog);
+      res();
+    }, 100));
   }, []);
 
+  const updateSetting = useCallback(async (key: keyof CrisisSettings, value: any) => {
+    return new Promise<void>(async (res) => {
+      const prevSettings = { ...settings };
+      setSettings(prev => ({ ...prev, [key]: value }));
+      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'SETTING', key, `Setting '${key}' updated.`));
+      console.log(`Setting ${key} updated to ${value}`);
+      res();
+    });
+  }, [settings, addAuditLog, currentUser.id]);
+
   const addIncidentLogEntry = useCallback(async (entry: IncidentLogEntry) => {
-    return new Promise<void>(res => setTimeout(() => {
+    return new Promise<void>(async (res) => {
+      if (!currentCrisis) {
+        console.error('Cannot add incident log, no current crisis selected.');
+        return res();
+      }
+      const newEntry = { ...entry, id: generateMockId('inc') };
       setCurrentCrisis(prev => {
         if (!prev) return null;
         return {
           ...prev,
-          relatedIncidents: [...prev.relatedIncidents, { ...entry, id: generateMockId('inc') }],
+          relatedIncidents: [...prev.relatedIncidents, newEntry],
           lastUpdate: new Date(),
         };
       });
-      console.log('Incident log added:', entry);
+      setAllCrises(prev => prev.map(c => c.id === currentCrisis.id ? { ...c, relatedIncidents: [...c.relatedIncidents, newEntry], lastUpdate: new Date() } : c));
+      await addAuditLog(generateMockAuditLogEntry(entry.reportedByUserId, 'USER', 'CREATE', 'INCIDENT_LOG', newEntry.id, `Incident logged for crisis '${currentCrisis.title}': ${entry.description}`));
+      console.log('Incident log added:', newEntry);
       res();
-    }, 500));
-  }, []);
+    });
+  }, [currentCrisis, addAuditLog]);
 
   const updateCrisisStatus = useCallback(async (crisisId: string, newStatus: CrisisStatus) => {
-    return new Promise<void>(res => setTimeout(() => {
+    return new Promise<void>(async (res) => {
       setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, status: newStatus, lastUpdate: new Date() } : c));
       setCurrentCrisis(prev => prev?.id === crisisId ? { ...prev, status: newStatus, lastUpdate: new Date() } : prev);
+      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'CRISIS', crisisId, `Crisis status updated to '${newStatus}'.`));
       console.log(`Crisis ${crisisId} status updated to ${newStatus}`);
       res();
-    }, 500));
-  }, []);
+    });
+  }, [currentUser.id, addAuditLog]);
 
   const addCommsPackageToCrisis = useCallback(async (crisisId: string, comms: CommsPackage) => {
-    return new Promise<void>(res => setTimeout(() => {
+    return new Promise<void>(async (res) => {
       setCurrentCrisis(prev => {
         if (!prev || prev.id !== crisisId) return prev;
         const newCommsPackage = { ...comms, id: generateMockId('comms-pkg') };
@@ -498,13 +868,15 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           lastUpdate: new Date(),
         };
       });
+      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, generatedCommsPackages: [...c.generatedCommsPackages, { ...comms, id: generateMockId('comms-pkg') }], lastUpdate: new Date() } : c));
+      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'CREATE', 'COMMS_PACKAGE', crisisId, `New comms package generated for crisis '${crisisId}'.`));
       console.log(`Comms package added to crisis ${crisisId}`);
       res();
-    }, 500));
-  }, [currentUser.id]);
+    });
+  }, [currentUser.id, addAuditLog]);
 
   const addLegalReviewToCrisis = useCallback(async (crisisId: string, review: LegalAnalysisResult) => {
-    return new Promise<void>(res => setTimeout(() => {
+    return new Promise<void>(async (res) => {
       setCurrentCrisis(prev => {
         if (!prev || prev.id !== crisisId) return prev;
         return {
@@ -513,13 +885,15 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           lastUpdate: new Date(),
         };
       });
+      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, legalReviews: [...c.legalReviews, { ...review, id: generateMockId('legal') }], lastUpdate: new Date() } : c));
+      await addAuditLog(generateMockAuditLogEntry(review.analyzedByUserId, 'USER', 'CREATE', 'LEGAL_REVIEW', crisisId, `Legal review added for crisis '${crisisId}'. Risk: ${review.legalRiskLevel}`));
       console.log(`Legal review added to crisis ${crisisId}`);
       res();
-    }, 500));
-  }, []);
+    });
+  }, [addAuditLog]);
 
   const addSentimentReportToCrisis = useCallback(async (crisisId: string, report: SentimentReport) => {
-    return new Promise<void>(res => setTimeout(() => {
+    return new Promise<void>(async (res) => {
       setCurrentCrisis(prev => {
         if (!prev || prev.id !== crisisId) return prev;
         return {
@@ -528,13 +902,15 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           lastUpdate: new Date(),
         };
       });
+      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, sentimentHistory: [...c.sentimentHistory, { ...report, id: generateMockId('sent') }], lastUpdate: new Date() } : c));
+      await addAuditLog(generateMockAuditLogEntry(report.generatedByUserId, 'USER', 'CREATE', 'SENTIMENT_REPORT', crisisId, `New sentiment report generated for crisis '${crisisId}'. Overall sentiment: ${report.overallSentiment.toFixed(2)}`));
       console.log(`Sentiment report added to crisis ${crisisId}`);
       res();
-    }, 500));
-  }, []);
+    });
+  }, [addAuditLog]);
 
   const updateCommsApprovalStatus = useCallback(async (crisisId: string, commsPackageId: string, approvalEntryId: string, status: CommsStatus, reviewerId: string, comments?: string) => {
-    return new Promise<void>(res => setTimeout(() => {
+    return new Promise<void>(async (res) => {
       setCurrentCrisis(prev => {
         if (!prev || prev.id !== crisisId) return prev;
 
@@ -551,11 +927,9 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           return entry;
         });
 
-        // If approved, find the next approval step and set it to PENDING_REVIEW
         if (status === 'APPROVED') {
           const currentEntryIndex = updatedWorkflow.findIndex(entry => entry.id === approvalEntryId);
           if (currentEntryIndex !== -1) {
-            // Find the next role in the default approval workflow
             const currentRequiredRoleIndex = settings.defaultApprovalWorkflow.indexOf(updatedWorkflow[currentEntryIndex].requiredRole);
             if (currentRequiredRoleIndex !== -1 && currentRequiredRoleIndex < settings.defaultApprovalWorkflow.length - 1) {
               const nextRequiredRole = settings.defaultApprovalWorkflow[currentRequiredRoleIndex + 1];
@@ -563,34 +937,96 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               if (nextEntry) {
                 nextEntry.status = 'PENDING_REVIEW';
               } else {
-                // If no existing DRAFT entry, create a new one
                 updatedWorkflow.push({
                   id: generateMockId('appr'),
                   commsPackageId,
-                  version: updatedWorkflow[currentEntryIndex].version, // Use same version
+                  version: updatedWorkflow[currentEntryIndex].version,
                   status: 'PENDING_REVIEW',
                   requiredRole: nextRequiredRole,
-                  reviewerId: '', // Awaiting next reviewer
+                  reviewerId: '',
                 });
               }
             } else if (currentRequiredRoleIndex === settings.defaultApprovalWorkflow.length - 1) {
-              // All approvals complete, mark comms package as ready for publishing
-              // A real system would update the actual commsPackage status here
               console.log(`Comms package ${commsPackageId} for crisis ${crisisId} fully APPROVED.`);
             }
           }
         }
-
+        setAllCrises(prevAll => prevAll.map(c => c.id === crisisId ? { ...c, approvalWorkflow: updatedWorkflow, lastUpdate: new Date() } : c));
         return {
           ...prev,
           approvalWorkflow: updatedWorkflow,
           lastUpdate: new Date(),
         };
       });
+      await addAuditLog(generateMockAuditLogEntry(reviewerId, 'USER', status === 'APPROVED' ? 'APPROVE' : 'REJECT', 'COMMS_PACKAGE', commsPackageId, `Comms approval for package ${commsPackageId} set to '${status}'.`));
       console.log(`Comms approval entry ${approvalEntryId} status updated to ${status}`);
       res();
-    }, 500));
-  }, [settings.defaultApprovalWorkflow]);
+    });
+  }, [settings.defaultApprovalWorkflow, addAuditLog]);
+
+  const addFinancialTransactionToCrisis = useCallback(async (crisisId: string, transaction: Omit<FinancialTransaction, 'id' | 'timestamp' | 'relatedCrisisId'>) => {
+    return new Promise<void>(async (res) => {
+      const newTransaction: FinancialTransaction = {
+        ...transaction,
+        id: generateMockId('ft'),
+        timestamp: new Date(),
+        relatedCrisisId: crisisId,
+      };
+      setCurrentCrisis(prev => {
+        if (!prev || prev.id !== crisisId) return prev;
+        return {
+          ...prev,
+          financialTransactions: [...prev.financialTransactions, newTransaction],
+          lastUpdate: new Date(),
+        };
+      });
+      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, financialTransactions: [...c.financialTransactions, newTransaction], lastUpdate: new Date() } : c));
+      await addAuditLog(generateMockAuditLogEntry(newTransaction.initiatorId, 'USER', 'SETTLE', 'FINANCIAL_TRANSACTION', newTransaction.id, `Initiated financial transaction (${newTransaction.type}): ${newTransaction.amount} ${newTransaction.currency}. Status: ${newTransaction.status}`));
+      console.log(`Financial transaction added to crisis ${crisisId}:`, newTransaction);
+      res();
+    });
+  }, [addAuditLog]);
+
+  const addAgentLogEntryToCrisis = useCallback(async (crisisId: string, agentLog: Omit<AgentLogEntry, 'id' | 'timestamp' | 'crisisId'>) => {
+    return new Promise<void>(async (res) => {
+      const newAgentLog: AgentLogEntry = {
+        ...agentLog,
+        id: generateMockId('agl'),
+        timestamp: new Date(),
+        crisisId: crisisId,
+      };
+      setCurrentCrisis(prev => {
+        if (!prev || prev.id !== crisisId) return prev;
+        return {
+          ...prev,
+          agentActivityLogs: [...prev.agentActivityLogs, newAgentLog],
+          lastUpdate: new Date(),
+        };
+      });
+      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, agentActivityLogs: [...c.agentActivityLogs, newAgentLog], lastUpdate: new Date() } : c));
+      await addAuditLog(generateMockAuditLogEntry(newAgentLog.agentId, 'AGENT', 'INITIATE', 'AGENT_CONFIG', newAgentLog.id, `Agent ${newAgentLog.agentId} activity: ${newAgentLog.action}. Status: ${newAgentLog.status}`));
+      console.log(`Agent log added to crisis ${crisisId}:`, newAgentLog);
+      res();
+    });
+  }, [addAuditLog]);
+
+  const updateAgentStatus = useCallback(async (agentId: string, status: AgentStatus, isActive?: boolean) => {
+    return new Promise<void>(async (res) => {
+      setAllAgents(prev => prev.map(agent => agent.id === agentId ? { ...agent, status, isActive: isActive ?? agent.isActive, lastActivity: new Date() } : agent));
+      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'AGENT_CONFIG', agentId, `Agent ${agentId} status updated to '${status}'. IsActive: ${isActive}`));
+      console.log(`Agent ${agentId} status updated to ${status}`);
+      res();
+    });
+  }, [currentUser.id, addAuditLog]);
+
+  const updateAgentConfig = useCallback(async (agentId: string, config: { [key: string]: any }) => {
+    return new Promise<void>(async (res) => {
+      setAllAgents(prev => prev.map(agent => agent.id === agentId ? { ...agent, configuration: config, lastActivity: new Date() } : agent));
+      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'AGENT_CONFIG', agentId, `Agent ${agentId} configuration updated.`));
+      console.log(`Agent ${agentId} config updated:`, config);
+      res();
+    });
+  }, [currentUser.id, addAuditLog]);
 
   const value = useMemo(() => ({
     currentCrisis,
@@ -607,15 +1043,33 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     addLegalReviewToCrisis,
     addSentimentReportToCrisis,
     updateCommsApprovalStatus,
+    addFinancialTransactionToCrisis,
+    addAgentLogEntryToCrisis,
+    allAgents,
+    updateAgentStatus,
+    updateAgentConfig,
+    globalAuditLogs,
+    addAuditLog,
   }), [
     currentCrisis, allCrises, currentUser, settings, updateSetting, addIncidentLogEntry,
     updateCrisisStatus, addCommsPackageToCrisis, addLegalReviewToCrisis, addSentimentReportToCrisis,
-    updateCommsApprovalStatus
+    updateCommsApprovalStatus, addFinancialTransactionToCrisis, addAgentLogEntryToCrisis,
+    allAgents, updateAgentStatus, updateAgentConfig, globalAuditLogs, addAuditLog
   ]);
 
   return <CrisisContext.Provider value={value}>{children}</CrisisContext.Provider>;
 };
 
+/**
+ * useCrisisContext: Hook
+ *
+ * A custom React hook that provides simplified access to the `CrisisContext`, ensuring
+ * that components can easily interact with the global crisis management state.
+ *
+ * Business value: Promotes modularity and reduces boilerplate, accelerating development
+ * of new crisis response features and maintaining a clean, scalable codebase, thereby
+ * lowering maintenance costs and improving developer velocity.
+ */
 export const useCrisisContext = () => {
   const context = useContext(CrisisContext);
   if (context === undefined) {
@@ -624,10 +1078,18 @@ export const useCrisisContext = () => {
   return context;
 };
 
-// CHILD COMPONENTS (many hundreds of lines each)
-
+/**
+ * CrisisOverviewDashboard: React.FC
+ *
+ * This component provides a high-level, real-time overview of all active and historical crises,
+ * offering critical insights into their status, severity, and key metrics.
+ *
+ * Business value: Enables executive leadership and crisis managers to gain immediate situational
+ * awareness, prioritize resources effectively, and make informed strategic decisions to mitigate
+ * impact on brand, customers, and financial stability, ultimately safeguarding billions in value.
+ */
 export const CrisisOverviewDashboard: React.FC = () => {
-  const { currentCrisis, allCrises, currentUser, updateCrisisStatus } = useCrisisContext();
+  const { currentCrisis, allCrises, currentUser, updateCrisisStatus, setCurrentCrisis } = useCrisisContext();
   const [filterStatus, setFilterStatus] = useState<CrisisStatus | 'ALL'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -640,7 +1102,8 @@ export const CrisisOverviewDashboard: React.FC = () => {
       crises = crises.filter(c =>
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.type.toLowerCase().includes(searchTerm.toLowerCase())
+        c.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     return crises;
@@ -705,12 +1168,14 @@ export const CrisisOverviewDashboard: React.FC = () => {
             <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>
           ))}
         </select>
-        <button className="p-2 bg-purple-600 hover:bg-purple-700 rounded">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          New Crisis
-        </button>
+        {currentUser.permissions.canEditCrisis && (
+          <button className="p-2 bg-purple-600 hover:bg-purple-700 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            New Crisis
+          </button>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -743,12 +1208,12 @@ export const CrisisOverviewDashboard: React.FC = () => {
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
                   <button
-                    onClick={() => { useCrisisContext().setCurrentCrisis(crisis); }}
+                    onClick={() => { setCurrentCrisis(crisis); }}
                     className="text-cyan-500 hover:text-cyan-700 mr-2"
                   >
                     View
                   </button>
-                  {(currentUser.role === 'ADMIN' || currentUser.role === 'CRISIS_MANAGER') && crisis.status !== 'CLOSED' && (
+                  {(currentUser.permissions.canEditCrisis || currentUser.role === 'CRISIS_MANAGER') && crisis.status !== 'CLOSED' && (
                     <button
                       onClick={() => updateCrisisStatus(crisis.id, 'CLOSED')}
                       className="text-green-500 hover:text-green-700"
@@ -781,6 +1246,18 @@ export const CrisisOverviewDashboard: React.FC = () => {
   );
 };
 
+/**
+ * IncidentLogManager: React.FC
+ *
+ * This module facilitates the detailed logging and tracking of all incidents related to a crisis,
+ * from initial detection to resolution. It provides a structured interface for incident responders
+ * to record events, actions taken, and link relevant artifacts.
+ *
+ * Business value: Ensures comprehensive data capture for forensic analysis, regulatory compliance,
+ * and post-crisis learning, improving future preparedness and significantly reducing legal and
+ * operational risks. This component enhances accountability and traceability of all actions taken
+ * during an incident, vital for demonstrating diligence to regulators and stakeholders.
+ */
 export const IncidentLogManager: React.FC = () => {
   const { currentCrisis, addIncidentLogEntry, currentUser } = useCrisisContext();
   const [newLogDescription, setNewLogDescription] = useState('');
@@ -789,9 +1266,13 @@ export const IncidentLogManager: React.FC = () => {
 
   const handleAddLog = async () => {
     if (!currentCrisis || !newLogDescription) return;
+    if (!currentUser.permissions.canAddIncidentLogs) {
+      alert('You do not have permission to add incident logs.');
+      return;
+    }
     setIsAdding(true);
     const newEntry: IncidentLogEntry = {
-      id: generateMockId('inc'), // Temp ID, will be replaced by backend
+      id: generateMockId('inc'),
       timestamp: new Date(),
       description: newLogDescription,
       reportedByUserId: currentUser.id,
@@ -810,7 +1291,7 @@ export const IncidentLogManager: React.FC = () => {
     <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
       <h2 className="text-2xl font-bold mb-4">Incident Log for {currentCrisis.title}</h2>
 
-      {(currentUser.role === 'ADMIN' || currentUser.role === 'CRISIS_MANAGER' || currentUser.role === 'INCIDENT_RESPONDER') && (
+      {(currentUser.permissions.canAddIncidentLogs) && (
         <div className="mb-6 p-4 bg-gray-800 rounded-lg">
           <h3 className="text-xl font-semibold mb-2">Add New Incident Log Entry</h3>
           <textarea
@@ -879,18 +1360,32 @@ export const IncidentLogManager: React.FC = () => {
   );
 };
 
+/**
+ * StakeholderCommunicationManager: React.FC
+ *
+ * This component manages targeted communication strategies for diverse stakeholder groups during a crisis.
+ * It allows for the identification, segmentation, and customized messaging to customers, employees,
+ * investors, and regulators.
+ *
+ * Business value: Safeguards brand reputation and maintains trust by ensuring timely, accurate,
+ * and relevant communications, preventing panic, reducing negative sentiment, and minimizing
+ * long-term damage. By tailoring messages to specific audiences, it enhances the effectiveness
+ * of crisis response and protects key relationships, thereby preserving market value.
+ */
 export const StakeholderCommunicationManager: React.FC = () => {
-  const { currentCrisis } = useCrisisContext();
+  const { currentCrisis, currentUser } = useCrisisContext();
   const [filterType, setFilterType] = useState<'ALL' | Stakeholder['type']>('ALL');
 
   const filteredStakeholders = useMemo(() => {
     if (filterType === 'ALL') {
-      return mockStakeholders; // For simplicity, using mockStakeholders
+      return mockStakeholders;
     }
     return mockStakeholders.filter(s => s.type === filterType);
   }, [filterType]);
 
   if (!currentCrisis) return <p className="text-gray-400">Select a crisis to manage stakeholder communications.</p>;
+  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">You do not have permission to view stakeholder communications.</p>;
+
 
   return (
     <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
@@ -909,7 +1404,9 @@ export const StakeholderCommunicationManager: React.FC = () => {
             <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
           ))}
         </select>
-        <button className="ml-auto p-2 bg-cyan-600 hover:bg-cyan-700 rounded">Add New Stakeholder</button>
+        {(currentUser.permissions.canEditCrisis || currentUser.role === 'PR_SPECIALIST') && (
+          <button className="ml-auto p-2 bg-cyan-600 hover:bg-cyan-700 rounded">Add New Stakeholder</button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -928,7 +1425,9 @@ export const StakeholderCommunicationManager: React.FC = () => {
                 Sentiment Impact: {stakeholder.sentimentImpact > 0 ? '+' : ''}{stakeholder.sentimentImpact}
               </p>
               <p className="text-gray-400">Priority: {stakeholder.priority}</p>
-              <button className="mt-2 text-sm text-cyan-500 hover:text-cyan-700">Customize Comms</button>
+              {(currentUser.permissions.canEditComms || currentUser.role === 'PR_SPECIALIST') && (
+                <button className="mt-2 text-sm text-cyan-500 hover:text-cyan-700">Customize Comms</button>
+              )}
             </div>
           </div>
         ))}
@@ -938,35 +1437,67 @@ export const StakeholderCommunicationManager: React.FC = () => {
   );
 };
 
+/**
+ * LegalReviewDashboard: React.FC
+ *
+ * This dashboard provides a centralized view and management interface for all legal analyses
+ * pertaining to ongoing crises. It tracks potential risks, compliance requirements,
+ * recommended actions, and estimated financial liabilities.
+ *
+ * Business value: Proactively identifies and mitigates legal exposure, ensuring adherence
+ * to complex regulatory frameworks (e.g., GDPR, CCPA) and significantly reducing the risk
+ * of costly fines, litigation, and sanctions. It provides legal teams with the tools to
+ * manage and document compliance effectively, safeguarding the company's financial health
+ * and reputation.
+ */
 export const LegalReviewDashboard: React.FC = () => {
   const { currentCrisis, addLegalReviewToCrisis, currentUser } = useCrisisContext();
   const [isAddingReview, setIsAddingReview] = useState(false);
   const [newReviewSummary, setNewReviewSummary] = useState('');
   const [newReviewRisks, setNewReviewRisks] = useState(''); // Comma separated
+  const [newReviewActions, setNewReviewActions] = useState(''); // Comma separated
+  const [newReviewCompliance, setNewReviewCompliance] = useState(''); // Comma separated
+  const [newReviewRiskLevel, setNewReviewRiskLevel] = useState<LegalRiskLevel>('MEDIUM');
+  const [newSensitiveDataInvolved, setNewSensitiveDataInvolved] = useState(false);
+
 
   const handleAddReview = async () => {
     if (!currentCrisis || !newReviewSummary) return;
+    if (!currentUser.permissions.canReviewLegal) {
+      alert('You do not have permission to add legal reviews.');
+      return;
+    }
     setIsAddingReview(true);
     const mockReview = generateMockLegalAnalysis(currentCrisis.id, currentUser.id);
     const newReview: LegalAnalysisResult = {
       ...mockReview,
       summary: newReviewSummary,
       keyRisks: newReviewRisks.split(',').map(s => s.trim()).filter(Boolean),
+      recommendedActions: newReviewActions.split(',').map(s => s.trim()).filter(Boolean),
+      complianceRequirements: newReviewCompliance.split(',').map(s => s.trim()).filter(Boolean),
+      legalRiskLevel: newReviewRiskLevel,
+      sensitiveDataInvolved: newSensitiveDataInvolved,
       analyzedByUserId: currentUser.id,
     };
     await addLegalReviewToCrisis(newReview);
     setNewReviewSummary('');
     setNewReviewRisks('');
+    setNewReviewActions('');
+    setNewReviewCompliance('');
+    setNewReviewRiskLevel('MEDIUM');
+    setNewSensitiveDataInvolved(false);
     setIsAddingReview(false);
   };
 
   if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view legal reviews.</p>;
+  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">You do not have permission to view legal reviews.</p>;
+
 
   return (
     <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
       <h2 className="text-2xl font-bold mb-4">Legal Review for {currentCrisis.title}</h2>
 
-      {(currentUser.role === 'ADMIN' || currentUser.role === 'LEGAL_COUNSEL') && (
+      {(currentUser.permissions.canReviewLegal) && (
         <div className="mb-6 p-4 bg-gray-800 rounded-lg">
           <h3 className="text-xl font-semibold mb-2">Add New Legal Analysis</h3>
           <textarea
@@ -983,6 +1514,42 @@ export const LegalReviewDashboard: React.FC = () => {
             placeholder="Key risks (comma-separated, e.g., 'GDPR fines, reputational damage')"
             className="w-full p-2 mb-3 bg-gray-600 rounded text-white"
           />
+          <input
+            type="text"
+            value={newReviewActions}
+            onChange={e => setNewReviewActions(e.target.value)}
+            placeholder="Recommended actions (comma-separated, e.g., 'Engage external counsel')"
+            className="w-full p-2 mb-3 bg-gray-600 rounded text-white"
+          />
+          <input
+            type="text"
+            value={newReviewCompliance}
+            onChange={e => setNewReviewCompliance(e.target.value)}
+            placeholder="Compliance requirements (comma-separated, e.g., 'GDPR Article 33')"
+            className="w-full p-2 mb-3 bg-gray-600 rounded text-white"
+          />
+          <div className="flex items-center space-x-4 mb-3">
+            <label htmlFor="legal-risk-level" className="text-gray-300">Risk Level:</label>
+            <select
+              id="legal-risk-level"
+              value={newReviewRiskLevel}
+              onChange={e => setNewReviewRiskLevel(e.target.value as LegalRiskLevel)}
+              className="p-2 bg-gray-600 rounded"
+            >
+              {Object.values(LegalRiskLevel).map(level => (
+                <option key={level} value={level}>{level}</option>
+              ))}
+            </select>
+            <label className="inline-flex items-center text-gray-300 ml-auto">
+              <input
+                type="checkbox"
+                checked={newSensitiveDataInvolved}
+                onChange={e => setNewSensitiveDataInvolved(e.target.checked)}
+                className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
+              />
+              <span className="ml-2">Sensitive Data Involved</span>
+            </label>
+          </div>
           <button
             onClick={handleAddReview}
             disabled={isAddingReview || !newReviewSummary}
@@ -1040,19 +1607,59 @@ export const LegalReviewDashboard: React.FC = () => {
   );
 };
 
+/**
+ * SentimentMonitoringDashboard: React.FC
+ *
+ * This component offers real-time monitoring and analysis of public and internal sentiment
+ * surrounding a crisis, tracking trends, key themes, and mentions across various channels.
+ *
+ * Business value: Provides invaluable intelligence for public relations and marketing teams
+ * to craft effective messaging, counteract misinformation, and protect brand perception,
+ * directly impacting market valuation and customer loyalty. Real-time insights allow for
+ * agile communication adjustments, preventing cascading negative effects and preserving
+ * stakeholder trust.
+ */
 export const SentimentMonitoringDashboard: React.FC = () => {
-  const { currentCrisis, addSentimentReportToCrisis, currentUser, settings } = useCrisisContext();
+  const { currentCrisis, addSentimentReportToCrisis, currentUser, settings, allAgents, addAgentLogEntryToCrisis } = useCrisisContext();
   const [isGeneratingSentiment, setIsGeneratingSentiment] = useState(false);
 
   const handleGenerateReport = async () => {
     if (!currentCrisis) return;
+    if (!currentUser.permissions.canViewReports) {
+      alert('You do not have permission to generate sentiment reports.');
+      return;
+    }
     setIsGeneratingSentiment(true);
-    const newReport = generateMockSentimentReport(currentCrisis.id, currentUser.id);
+    const sentinelAgent = allAgents.find(a => a.id === 'agent_sentinel'); // Assume 'agent_sentinel' is the sentiment AI
+    const generatorId = sentinelAgent?.isActive ? sentinelAgent.id : currentUser.id;
+    const generatorType = sentinelAgent?.isActive ? 'AI_AGENT' : 'USER';
+
+    if (generatorType === 'AI_AGENT' && sentinelAgent) {
+      await addAgentLogEntryToCrisis(currentCrisis.id, {
+        agentId: sentinelAgent.id,
+        action: 'Initiated real-time sentiment analysis',
+        details: `Scanning social media and news for crisis ${currentCrisis.id}`,
+        status: 'IN_PROGRESS'
+      });
+    }
+
+    const newReport = generateMockSentimentReport(currentCrisis.id, generatorId);
     await addSentimentReportToCrisis(newReport);
+
+    if (generatorType === 'AI_AGENT' && sentinelAgent) {
+      await addAgentLogEntryToCrisis(currentCrisis.id, {
+        agentId: sentinelAgent.id,
+        action: 'Completed sentiment analysis',
+        details: `Overall sentiment: ${newReport.overallSentiment.toFixed(2)}`,
+        status: 'SUCCESS',
+        relatedArtifactId: newReport.id
+      });
+    }
     setIsGeneratingSentiment(false);
   };
 
   if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view sentiment reports.</p>;
+  if (!currentUser.permissions.canViewReports) return <p className="text-red-400">You do not have permission to view sentiment reports.</p>;
 
   const latestReport = currentCrisis.sentimentHistory.length > 0
     ? currentCrisis.sentimentHistory.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0]
@@ -1071,7 +1678,7 @@ export const SentimentMonitoringDashboard: React.FC = () => {
     <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
       <h2 className="text-2xl font-bold mb-4">Sentiment Monitoring for {currentCrisis.title}</h2>
 
-      {(currentUser.role === 'ADMIN' || currentUser.role === 'ANALYST' || currentUser.role === 'PR_SPECIALIST') && (
+      {(currentUser.permissions.canViewReports) && (
         <div className="mb-6 p-4 bg-gray-800 rounded-lg flex items-center justify-between">
           <div>
             <h3 className="text-xl font-semibold mb-1">Generate New Sentiment Report</h3>
@@ -1144,10 +1751,24 @@ export const SentimentMonitoringDashboard: React.FC = () => {
   );
 };
 
+/**
+ * CommsApprovalWorkflowPanel: React.FC
+ *
+ * This panel streamlines the critical, multi-stage approval process for all crisis communications,
+ * ensuring that every message is reviewed and sanctioned by relevant stakeholders (e.g., legal, PR,
+ * executive) before dissemination.
+ *
+ * Business value: Enforces strict governance and compliance, preventing premature or inaccurate
+ * communications that could exacerbate a crisis, leading to significant financial losses or
+ * regulatory penalties. It provides an auditable, controlled environment for communication
+ * sign-off, protecting brand reputation and legal standing.
+ */
 export const CommsApprovalWorkflowPanel: React.FC = () => {
   const { currentCrisis, currentUser, updateCommsApprovalStatus } = useCrisisContext();
 
   if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view comms approval workflow.</p>;
+  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">You do not have permission to view comms approval workflow.</p>;
+
 
   const commsPackages = currentCrisis.generatedCommsPackages;
 
@@ -1160,7 +1781,7 @@ export const CommsApprovalWorkflowPanel: React.FC = () => {
       ) : (
         <div className="space-y-6">
           {commsPackages.map((commsPackage, pkgIndex) => (
-            <div key={pkgIndex} className="bg-gray-800 p-5 rounded-lg shadow">
+            <div key={commsPackage.id} className="bg-gray-800 p-5 rounded-lg shadow">
               <h3 className="text-xl font-semibold mb-3 text-cyan-400">Comms Package #{pkgIndex + 1}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-900 p-3 rounded-md">
@@ -1177,12 +1798,12 @@ export const CommsApprovalWorkflowPanel: React.FC = () => {
                 <h4 className="text-lg font-semibold mb-2">Approval Steps:</h4>
                 <div className="space-y-3">
                   {currentCrisis.approvalWorkflow
-                    .filter(entry => entry.commsPackageId === commsPackage.id) // Filter by the actual comms package ID if available, otherwise mock
-                    .sort((a, b) => a.requiredRole.localeCompare(b.requiredRole)) // Simple sort for display
+                    .filter(entry => entry.commsPackageId === commsPackage.id)
+                    .sort((a, b) => a.requiredRole.localeCompare(b.requiredRole))
                     .map(entry => {
                       const reviewer = entry.reviewerId ? getMockUser(entry.reviewerId) : null;
-                      const canApprove = (currentUser.role === 'ADMIN' || currentUser.role === entry.requiredRole) && entry.status === 'PENDING_REVIEW';
-                      const isCurrentUserReviewer = currentUser.id === entry.reviewerId;
+                      const canApprove = (currentUser.permissions.canApproveComms || currentUser.role === entry.requiredRole) && entry.status === 'PENDING_REVIEW';
+                      // const isCurrentUserReviewer = currentUser.id === entry.reviewerId; // Logic for specific reviewer, not just role
 
                       return (
                         <div key={entry.id} className="flex items-center space-x-3 p-3 bg-gray-900 rounded-md">
@@ -1195,14 +1816,14 @@ export const CommsApprovalWorkflowPanel: React.FC = () => {
                               <button
                                 onClick={() => updateCommsApprovalStatus(currentCrisis.id, commsPackage.id!, entry.id, 'APPROVED', currentUser.id)}
                                 className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm disabled:opacity-50"
-                                disabled={currentUser.role !== 'ADMIN' && currentUser.role !== entry.requiredRole}
+                                disabled={!canApprove}
                               >
                                 Approve
                               </button>
                               <button
                                 onClick={() => updateCommsApprovalStatus(currentCrisis.id, commsPackage.id!, entry.id, 'REJECTED', currentUser.id, 'Changes required.')}
                                 className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm disabled:opacity-50"
-                                disabled={currentUser.role !== 'ADMIN' && currentUser.role !== entry.requiredRole}
+                                disabled={!canApprove}
                               >
                                 Reject
                               </button>
@@ -1226,8 +1847,340 @@ export const CommsApprovalWorkflowPanel: React.FC = () => {
   );
 };
 
+/**
+ * FinancialImpactAndPayoutManager: React.FC
+ *
+ * This component manages the tracking of financial impacts and the initiation of simulated payouts
+ * or transactions related to a crisis. It provides an interface to record losses, compensation events,
+ * and interact with the simulated token rail for settlement.
+ *
+ * Business value: Centralizes financial operations related to crisis management, ensuring all costs
+ * and compensations are accurately recorded and reconciled. By simulating token rail interactions,
+ * it demonstrates the ability to execute real-time, auditable payments, reducing financial overhead
+ * and enhancing transparency for regulatory and internal stakeholders. This capability is crucial
+ * for managing large-scale compensation programs and demonstrating fiscal responsibility.
+ */
+export const FinancialImpactAndPayoutManager: React.FC = () => {
+  const { currentCrisis, addFinancialTransactionToCrisis, currentUser } = useCrisisContext();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [transactionType, setTransactionType] = useState<FinancialTransaction['type']>('COMPENSATION_PAYOUT');
+  const [recipient, setRecipient] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const handleInitiatePayout = async () => {
+    if (!currentCrisis || !amount || !recipient || isNaN(parseFloat(amount))) return;
+    if (!currentUser.permissions.canInitiatePayments) {
+      alert('You do not have permission to initiate financial transactions.');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const transaction: Omit<FinancialTransaction, 'id' | 'timestamp' | 'relatedCrisisId'> = {
+        type: transactionType,
+        amount: parseFloat(amount),
+        currency: currency,
+        status: 'PENDING', // Will be updated to SETTLED/FAILED by the mock backend
+        recipientId: recipient,
+        initiatorId: currentUser.id,
+        notes: notes || `Payout initiated for crisis ${currentCrisis.title}`,
+      };
+      await addFinancialTransactionToCrisis(currentCrisis.id, transaction);
+      setAmount('');
+      setRecipient('');
+      setNotes('');
+      alert('Transaction initiated. Check logs for settlement status.');
+    } catch (error) {
+      alert('Failed to initiate transaction.');
+      console.error('Financial transaction error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to manage financial impacts.</p>;
+  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">You do not have permission to view financial impacts.</p>;
+
+  const sortedTransactions = [...currentCrisis.financialTransactions].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
+      <h2 className="text-2xl font-bold mb-4">Financial Impact & Payouts for {currentCrisis.title}</h2>
+
+      {currentUser.permissions.canInitiatePayments && (
+        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+          <h3 className="text-xl font-semibold mb-2">Initiate New Financial Transaction (Simulated Rail)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <input
+              type="number"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              placeholder="Amount (e.g., 1000.00)"
+              className="w-full p-2 bg-gray-600 rounded text-white"
+            />
+            <select
+              value={currency}
+              onChange={e => setCurrency(e.target.value)}
+              className="w-full p-2 bg-gray-600 rounded"
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="STABLE_COIN_XYZ">STABLE_COIN_XYZ</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <input
+              type="text"
+              value={recipient}
+              onChange={e => setRecipient(e.target.value)}
+              placeholder="Recipient ID/Account (e.g., customer_123)"
+              className="w-full p-2 bg-gray-600 rounded text-white"
+            />
+            <select
+              value={transactionType}
+              onChange={e => setTransactionType(e.target.value as FinancialTransaction['type'])}
+              className="w-full p-2 bg-gray-600 rounded"
+            >
+              <option value="COMPENSATION_PAYOUT">Compensation Payout</option>
+              <option value="FINE_PAYMENT">Fine Payment</option>
+              <option value="LOSS_RECORD">Record Loss</option>
+              <option value="REFUND">Refund</option>
+              <option value="RECONCILIATION">Reconciliation</option>
+            </select>
+          </div>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Notes for this transaction (optional)"
+            rows={2}
+            className="w-full p-2 mb-3 bg-gray-600 rounded text-white resize-y"
+          />
+          <button
+            onClick={handleInitiatePayout}
+            disabled={isProcessing || !amount || !recipient}
+            className="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded disabled:opacity-50"
+          >
+            {isProcessing ? 'Processing...' : 'Initiate Transaction'}
+          </button>
+        </div>
+      )}
+
+      {currentCrisis.financialTransactions.length === 0 ? (
+        <p className="text-gray-400">No financial transactions recorded for this crisis yet.</p>
+      ) : (
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold mb-3">Transaction History</h3>
+          {sortedTransactions.map(tx => (
+            <div key={tx.id} className="bg-gray-800 p-4 rounded-lg shadow">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-300">{tx.timestamp.toLocaleString()}</span>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    tx.status === 'SETTLED' ? 'bg-green-500' : tx.status === 'PENDING' ? 'bg-blue-500' : 'bg-red-500'
+                  }`}>{tx.status}</span>
+                  <span className="text-sm text-gray-400">Type: {tx.type.replace(/_/g, ' ')}</span>
+                </div>
+              </div>
+              <p className="text-white text-lg font-semibold mb-1">
+                {tx.amount.toLocaleString()} {tx.currency}
+              </p>
+              <p className="text-gray-400 text-sm">Recipient: {tx.recipientId || 'N/A'}</p>
+              {tx.notes && <p className="text-gray-500 text-sm italic mt-1">Notes: {tx.notes}</p>}
+              {tx.transactionHash && (
+                <p className="text-gray-500 text-xs mt-1">Transaction Hash: <span className="font-mono text-cyan-400">{tx.transactionHash}</span></p>
+              )}
+              <div className="flex items-center mt-2 text-xs text-gray-500">
+                Initiated by: {getMockUser(tx.initiatorId)?.name || getMockAgent(tx.initiatorId)?.name || 'Unknown'}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * AgentActivityMonitor: React.FC
+ *
+ * This component provides a real-time view of AI agent activity and logs within the context
+ * of a specific crisis. It displays actions taken by agents, their status, and details.
+ *
+ * Business value: Offers critical transparency into AI operations, enabling human oversight
+ * and validation of autonomous decisions during a crisis. This fosters trust in AI systems,
+ * assists in auditing automated responses, and allows for rapid intervention if an agent
+ * misbehaves or requires adjustment, protecting the enterprise from unintended AI actions.
+ */
+export const AgentActivityMonitor: React.FC = () => {
+  const { currentCrisis, currentUser } = useCrisisContext();
+
+  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view agent activity.</p>;
+  if (!currentUser.permissions.canViewAll && currentUser.role !== 'ANALYST') return <p className="text-red-400">You do not have permission to view agent activity logs.</p>;
+
+  const sortedAgentLogs = [...currentCrisis.agentActivityLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
+      <h2 className="text-2xl font-bold mb-4">AI Agent Activity for {currentCrisis.title}</h2>
+
+      {currentCrisis.agentActivityLogs.length === 0 ? (
+        <p className="text-gray-400">No AI agent activity logs recorded for this crisis yet.</p>
+      ) : (
+        <div className="space-y-4">
+          {sortedAgentLogs.map(log => {
+            const agent = getMockAgent(log.agentId);
+            return (
+              <div key={log.id} className="bg-gray-800 p-4 rounded-lg shadow">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-300">{log.timestamp.toLocaleString()}</span>
+                  <div className="flex items-center space-x-2">
+                    {agent && <UserAvatar user={agent} size={24} />}
+                    <span className="text-sm font-semibold text-white">{agent?.name || log.agentId}</span>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      log.status === 'SUCCESS' ? 'bg-green-500' : log.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-red-500'
+                    }`}>{log.status}</span>
+                  </div>
+                </div>
+                <p className="text-white text-md mb-2">{log.action}</p>
+                <p className="text-gray-400 text-sm">Details: {log.details}</p>
+                {log.relatedArtifactId && (
+                  <p className="text-gray-500 text-xs mt-1">Related Artifact: <span className="font-mono text-cyan-400">{log.relatedArtifactId}</span></p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * GlobalAuditLogViewer: React.FC
+ *
+ * This component provides a comprehensive, centralized viewer for all significant
+ * audit log entries across the entire crisis management system. It tracks actions
+ * by both human users and autonomous AI agents, including system changes, approvals,
+ * and data modifications.
+ *
+ * Business value: Establishes a foundational layer of trust and accountability across the entire
+ * system. This tamper-evident audit trail is indispensable for regulatory compliance (e.g., SOX, GDPR),
+ * internal governance, forensic investigations, and dispute resolution, protecting the
+ * enterprise from significant legal and financial repercussions and demonstrating robust
+ * operational controls.
+ */
+export const GlobalAuditLogViewer: React.FC = () => {
+  const { globalAuditLogs, currentUser } = useCrisisContext();
+  const [filterActorType, setFilterActorType] = useState<'ALL' | AuditLogEntry['actorType']>('ALL');
+  const [filterEntityType, setFilterEntityType] = useState<'ALL' | AuditLogEntry['entityType']>('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredLogs = useMemo(() => {
+    let logs = globalAuditLogs;
+    if (filterActorType !== 'ALL') {
+      logs = logs.filter(log => log.actorType === filterActorType);
+    }
+    if (filterEntityType !== 'ALL') {
+      logs = logs.filter(log => log.entityType === filterEntityType);
+    }
+    if (searchTerm) {
+      logs = logs.filter(log =>
+        log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.entityId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.actorId.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    return logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [globalAuditLogs, filterActorType, filterEntityType, searchTerm]);
+
+  if (!currentUser.permissions.canViewAuditLogs) {
+    return (
+      <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
+        <h2 className="text-2xl font-bold mb-4">Global Audit Log</h2>
+        <p className="text-red-400">You do not have permission to view audit logs.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
+      <h2 className="text-2xl font-bold mb-4">Global Audit Log</h2>
+
+      <div className="mb-4 flex items-center space-x-4">
+        <input
+          type="text"
+          placeholder="Search logs..."
+          className="p-2 bg-gray-600 rounded flex-grow"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+        />
+        <select
+          value={filterActorType}
+          onChange={e => setFilterActorType(e.target.value as 'ALL' | AuditLogEntry['actorType'])}
+          className="p-2 bg-gray-600 rounded"
+        >
+          <option value="ALL">All Actors</option>
+          <option value="USER">User</option>
+          <option value="AGENT">AI Agent</option>
+        </select>
+        <select
+          value={filterEntityType}
+          onChange={e => setFilterEntityType(e.target.value as 'ALL' | AuditLogEntry['entityType'])}
+          className="p-2 bg-gray-600 rounded"
+        >
+          <option value="ALL">All Entities</option>
+          {Object.values({} as { [key: string]: AuditLogEntry['entityType'] }).concat([
+            'CRISIS', 'COMMS_PACKAGE', 'INCIDENT_LOG', 'LEGAL_REVIEW', 'SENTIMENT_REPORT',
+            'USER', 'SETTING', 'FINANCIAL_TRANSACTION', 'AGENT_CONFIG'
+          ]).map(type => (
+            <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+          ))}
+        </select>
+      </div>
+
+      {filteredLogs.length === 0 ? (
+        <p className="text-gray-400">No audit logs found matching criteria.</p>
+      ) : (
+        <div className="space-y-4">
+          {filteredLogs.map(log => (
+            <div key={log.id} className="bg-gray-800 p-4 rounded-lg shadow">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-300">{log.timestamp.toLocaleString()}</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-600 text-white">{log.actorType}</span>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-cyan-600 text-white">{log.actionType}</span>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-600 text-white">{log.entityType.replace(/_/g, ' ')}</span>
+                </div>
+              </div>
+              <p className="text-white text-md mb-1">{log.description}</p>
+              <p className="text-gray-400 text-sm">Actor: {getMockUser(log.actorId)?.name || getMockAgent(log.actorId)?.name || log.actorId}</p>
+              <p className="text-gray-400 text-sm">Entity ID: <span className="font-mono text-cyan-400">{log.entityId}</span></p>
+              {/* Add previousState/newState for detailed diff if desired */}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+/**
+ * ReportingAndAnalyticsModule: React.FC
+ *
+ * This module delivers comprehensive analytics and reporting capabilities, summarizing crisis
+ * patterns, response effectiveness, and key performance indicators. It transforms raw operational
+ * data into actionable business intelligence.
+ *
+ * Business value: Facilitates continuous improvement in crisis preparedness and response,
+ * identifies systemic vulnerabilities, and provides auditable metrics for demonstrating
+ * compliance and operational excellence to boards and regulators. This drives strategic
+ * decision-making and justifies investments in crisis management infrastructure.
+ */
 export const ReportingAndAnalyticsModule: React.FC = () => {
-  const { allCrises, currentCrisis } = useCrisisContext();
+  const { allCrises, currentCrisis, currentUser } = useCrisisContext();
 
   const crisisTypeData = useMemo(() => {
     const counts = allCrises.reduce((acc, crisis) => {
@@ -1258,9 +2211,12 @@ export const ReportingAndAnalyticsModule: React.FC = () => {
   const commsGeneratedData = useMemo(() => {
     const dailyCounts: { [date: string]: number } = {};
     allCrises.forEach(crisis => {
-      crisis.generatedCommsPackages.forEach(() => {
-        const dateKey = new Date(crisis.lastUpdate).toISOString().split('T')[0]; // Use lastUpdate for simplicity
-        dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+      crisis.generatedCommsPackages.forEach(pkg => { // Iterate through each package
+        const approvalEntry = crisis.approvalWorkflow.find(entry => entry.commsPackageId === pkg.id && entry.status === 'PUBLISHED');
+        if (approvalEntry && approvalEntry.reviewTimestamp) {
+          const dateKey = new Date(approvalEntry.reviewTimestamp).toISOString().split('T')[0];
+          dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+        }
       });
     });
 
@@ -1270,24 +2226,33 @@ export const ReportingAndAnalyticsModule: React.FC = () => {
     }));
   }, [allCrises]);
 
+  if (!currentUser.permissions.canViewReports) {
+    return (
+      <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
+        <h2 className="text-2xl font-bold mb-4">Reporting and Analytics</h2>
+        <p className="text-red-400">You do not have permission to view reports and analytics.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
       <h2 className="text-2xl font-bold mb-4">Reporting and Analytics</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AnalyticsChart title="Crises by Type" data={crisisTypeData} type="pie" />
-        <AnalyticsChart title="Crises by Severity" data={crisisSeverityData} type="bar" />
+        <AnalyticsChart title="Crises by Type" data={crisisTypeData} type="pie" height={300} />
+        <AnalyticsChart title="Crises by Severity" data={crisisSeverityData} type="bar" height={300} />
       </div>
 
       <div className="mt-6">
-        <AnalyticsChart title="Communication Packages Generated Over Time" data={commsGeneratedData} type="line" height={300} />
+        <AnalyticsChart title="Communication Packages Published Over Time" data={commsGeneratedData} type="line" height={300} />
       </div>
 
       {currentCrisis && (
         <div className="mt-8 bg-gray-800 p-4 rounded-lg">
           <h3 className="text-xl font-semibold mb-3">Current Crisis ({currentCrisis.title}) Performance</h3>
           <p className="text-gray-300">
-            Time from Identification to Active: {(new Date(currentCrisis.identifiedAt).getTime() - currentCrisis.identifiedAt.getTime()) / (1000 * 60 * 60)}.  {/* Placeholder */}
+            Time from Identification to Active: {(new Date(currentCrisis.lastUpdate).getTime() - currentCrisis.identifiedAt.getTime()) / (1000 * 60 * 60)} hours.
           </p>
           <p className="text-gray-300">
             Number of Legal Reviews: {currentCrisis.legalReviews.length}
@@ -1295,16 +2260,31 @@ export const ReportingAndAnalyticsModule: React.FC = () => {
           <p className="text-gray-300">
             Average Sentiment Score: {currentCrisis.sentimentHistory.length > 0 ? (currentCrisis.sentimentHistory.reduce((sum, s) => sum + s.overallSentiment, 0) / currentCrisis.sentimentHistory.length).toFixed(2) : 'N/A'}
           </p>
+          <p className="text-gray-300">
+            Total Financial Impact: ${currentCrisis.financialTransactions.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+          </p>
         </div>
       )}
     </div>
   );
 };
 
+/**
+ * SystemSettingsPanel: React.FC
+ *
+ * This component offers a robust configuration interface for core crisis management parameters,
+ * including automation rules, default workflows, notification channels, and communication templates,
+ * and AI agent enablement.
+ *
+ * Business value: Empowers administrators to tailor the system to organizational needs, ensuring
+ * operational efficiency, consistency, and scalability, reducing manual overhead and accelerating
+ * response automation. This configurable framework ensures the system adapts to evolving business
+ * and regulatory landscapes, protecting initial investment and delivering long-term value.
+ */
 export const SystemSettingsPanel: React.FC = () => {
-  const { settings, updateSetting, currentUser } = useCrisisContext();
+  const { settings, updateSetting, currentUser, allAgents, updateAgentStatus, updateAgentConfig } = useCrisisContext();
 
-  if (currentUser.role !== 'ADMIN') {
+  if (!currentUser.permissions.canEditAll && currentUser.role !== 'ADMIN') {
     return (
       <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
         <h2 className="text-2xl font-bold mb-4">System Settings</h2>
@@ -1316,6 +2296,17 @@ export const SystemSettingsPanel: React.FC = () => {
   const handleWorkflowChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value as UserRole);
     updateSetting('defaultApprovalWorkflow', selectedOptions);
+  };
+
+  const handleAgentToggle = (agentId: string, isActive: boolean) => {
+    updateAgentStatus(agentId, isActive ? 'IDLE' : 'OFFLINE', isActive);
+  };
+
+  const handleAgentConfigChange = (agentId: string, key: string, value: any) => {
+    const agent = allAgents.find(a => a.id === agentId);
+    if (agent) {
+      updateAgentConfig(agentId, { ...agent.configuration, [key]: value });
+    }
   };
 
   return (
@@ -1399,24 +2390,91 @@ export const SystemSettingsPanel: React.FC = () => {
                 rows={2}
                 className="w-full p-2 mt-1 bg-gray-600 rounded text-white resize-y"
               />
-              {/* Could add more fields here like internalMemo, twitterThread etc. */}
             </div>
           ))}
         </div>
+
+        {currentUser.permissions.canManageAgents && (
+          <div className="p-3 bg-gray-800 rounded-lg">
+            <h3 className="text-xl font-semibold mb-2">Autonomous AI Agent Configuration</h3>
+            <p className="text-gray-400 mb-4">Manage and configure AI agents for automated crisis response.</p>
+            <div className="space-y-4">
+              {allAgents.map(agent => (
+                <div key={agent.id} className="p-3 bg-gray-900 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                  <div className="flex items-center mb-2 sm:mb-0">
+                    <input
+                      type="checkbox"
+                      checked={agent.isActive}
+                      onChange={e => handleAgentToggle(agent.id, e.target.checked)}
+                      className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-700 border-gray-500 rounded focus:ring-cyan-500 mr-3"
+                    />
+                    <span className="text-lg text-gray-300 font-semibold">{agent.name} ({agent.type.replace(/_/g, ' ')})</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-gray-400 ml-8 sm:ml-0">
+                    <span className={`px-2 py-1 rounded-full ${agent.status === 'ACTIVE' ? 'bg-green-600' : agent.status === 'IDLE' ? 'bg-blue-600' : 'bg-red-600'} text-white`}>{agent.status}</span>
+                    <span className="text-gray-500">Last Activity: {agent.lastActivity.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full sm:w-auto mt-3 sm:mt-0">
+                    {Object.entries(agent.configuration).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-end text-sm mt-1">
+                        <label className="text-gray-400 mr-2">{key}:</label>
+                        {typeof value === 'boolean' ? (
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={e => handleAgentConfigChange(agent.id, key, e.target.checked)}
+                            className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-500 rounded focus:ring-cyan-500"
+                          />
+                        ) : typeof value === 'number' ? (
+                          <input
+                            type="number"
+                            value={value}
+                            onChange={e => handleAgentConfigChange(agent.id, key, parseFloat(e.target.value))}
+                            className="p-1 w-24 bg-gray-700 rounded text-white"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={value}
+                            onChange={e => handleAgentConfigChange(agent.id, key, e.target.value)}
+                            className="p-1 w-32 bg-gray-700 rounded text-white"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
+/**
+ * UserManagementPanel: React.FC
+ *
+ * This panel provides a secure and centralized interface for administering user accounts,
+ * roles, and permissions within the crisis management system.
+ *
+ * Business value: Ensures granular control over access to sensitive information and critical
+ * functions, enforcing strict security protocols and compliance with internal and external
+ * governance requirements, safeguarding proprietary data and operational integrity.
+ * Streamlined user management reduces administrative overhead and enhances system security.
+ */
 export const UserManagementPanel: React.FC = () => {
-  const { currentUser } = useCrisisContext();
+  const { currentUser, setCurrentUser } = useCrisisContext();
   const [users, setUsers] = useState<UserProfile[]>(mockUsers);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
-  // In a real app, these would interact with a user API
   const handleSaveUser = (updatedUser: UserProfile) => {
     setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if (updatedUser.id === currentUser.id) {
+      setCurrentUser(updatedUser); // Update current user if self-editing
+    }
     setEditingUser(null);
     console.log('User saved:', updatedUser);
   };
@@ -1439,7 +2497,7 @@ export const UserManagementPanel: React.FC = () => {
     console.log('User added:', userWithId);
   };
 
-  if (currentUser.role !== 'ADMIN' && !currentUser.permissions.canManageUsers) {
+  if (!currentUser.permissions.canManageUsers) {
     return (
       <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
         <h2 className="text-2xl font-bold mb-4">User Management</h2>
@@ -1485,7 +2543,9 @@ export const UserManagementPanel: React.FC = () => {
                 </td>
                 <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
                   <button onClick={() => setEditingUser(user)} className="text-cyan-500 hover:text-cyan-700 mr-2">Edit</button>
-                  <button onClick={() => handleDeleteUser(user.id)} className="text-red-500 hover:text-red-700">Delete</button>
+                  {user.id !== currentUser.id && ( // Prevent deleting self
+                    <button onClick={() => handleDeleteUser(user.id)} className="text-red-500 hover:text-red-700">Delete</button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -1510,6 +2570,17 @@ export const UserManagementPanel: React.FC = () => {
   );
 };
 
+/**
+ * EditUserModal: React.FC
+ *
+ * This modal component provides a streamlined interface for modifying existing user profiles,
+ * including their name, email, role, department, activity status, and granular permissions.
+ *
+ * Business value: Simplifies user lifecycle management, reduces administrative burden, and
+ * enhances system security by ensuring accurate and appropriate access controls are maintained
+ * consistently. This minimizes human error in permission assignment, a critical factor for
+ * compliance and data protection.
+ */
 export const EditUserModal: React.FC<{ user: UserProfile; onSave: (user: UserProfile) => void; onClose: () => void }> = ({ user, onSave, onClose }) => {
   const [editedUser, setEditedUser] = useState(user);
 
@@ -1548,7 +2619,7 @@ export const EditUserModal: React.FC<{ user: UserProfile; onSave: (user: UserPro
           <div>
             <label className="block text-gray-300 text-sm mb-1">Role</label>
             <select name="role" value={editedUser.role} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white">
-              {Object.values(UserRole).map(role => (
+              {Object.values(UserRole).filter(role => role !== 'AI_AGENT').map(role => ( // Exclude AI_AGENT role for human users
                 <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
               ))}
             </select>
@@ -1588,6 +2659,18 @@ export const EditUserModal: React.FC<{ user: UserProfile; onSave: (user: UserPro
   );
 };
 
+/**
+ * AddUserModal: React.FC
+ *
+ * This modal component provides a streamlined interface for creating new user profiles,
+ * allowing assignment of name, email, department, activity status, and an initial role
+ * with default permissions.
+ *
+ * Business value: Simplifies user lifecycle management, reduces administrative burden,
+ * and enhances system security by ensuring accurate and appropriate access controls
+ * are maintained consistently. This minimizes human error in permission assignment,
+ * a critical factor for compliance and data protection.
+ */
 export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'lastLogin'>) => void; onClose: () => void }> = ({ onAdd, onClose }) => {
   const [newUser, setNewUser] = useState<Omit<UserProfile, 'id' | 'lastLogin'>>({
     name: '',
@@ -1596,17 +2679,10 @@ export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'la
     isActive: true,
     department: '',
     permissions: {
-      canViewAll: true,
-      canEditCrisis: false,
-      canGenerateComms: false,
-      canReviewLegal: false,
-      canReviewComms: false,
-      canApproveComms: false,
-      canAddIncidentLogs: false,
-      canViewReports: false,
-      canManageUsers: false,
-      canEditAll: false,
-      canInitiateReview: false
+      canViewAll: true, canEditCrisis: false, canGenerateComms: false, canReviewLegal: false,
+      canReviewComms: false, canApproveComms: false, canAddIncidentLogs: false,
+      canViewReports: false, canManageUsers: false, canEditAll: false, canInitiateReview: false,
+      canManageAgents: false, canInitiatePayments: false, canViewAuditLogs: false,
     }
   });
 
@@ -1634,27 +2710,28 @@ export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'la
     let defaultPermissions: UserProfile['permissions'] = {
       canViewAll: true, canEditCrisis: false, canGenerateComms: false, canReviewLegal: false,
       canReviewComms: false, canApproveComms: false, canAddIncidentLogs: false,
-      canViewReports: false, canManageUsers: false, canEditAll: false, canInitiateReview: false
+      canViewReports: false, canManageUsers: false, canEditAll: false, canInitiateReview: false,
+      canManageAgents: false, canInitiatePayments: false, canViewAuditLogs: false,
     };
 
     switch (selectedRole) {
       case 'ADMIN':
-        defaultPermissions = { ...defaultPermissions, canEditAll: true, canManageUsers: true, canApproveComms: true, canReviewLegal: true, canReviewComms: true, canGenerateComms: true, canEditCrisis: true, canAddIncidentLogs: true, canViewReports: true, canInitiateReview: true };
+        defaultPermissions = { ...defaultPermissions, canEditAll: true, canManageUsers: true, canApproveComms: true, canReviewLegal: true, canReviewComms: true, canGenerateComms: true, canEditCrisis: true, canAddIncidentLogs: true, canViewReports: true, canInitiateReview: true, canManageAgents: true, canInitiatePayments: true, canViewAuditLogs: true };
         break;
       case 'CRISIS_MANAGER':
-        defaultPermissions = { ...defaultPermissions, canEditCrisis: true, canGenerateComms: true, canInitiateReview: true, canViewReports: true };
+        defaultPermissions = { ...defaultPermissions, canEditCrisis: true, canGenerateComms: true, canInitiateReview: true, canViewReports: true, canViewAll: true, canAddIncidentLogs: true };
         break;
       case 'LEGAL_COUNSEL':
-        defaultPermissions = { ...defaultPermissions, canReviewLegal: true, canApproveComms: true };
+        defaultPermissions = { ...defaultPermissions, canReviewLegal: true, canApproveComms: true, canViewAll: true, canViewAuditLogs: true };
         break;
       case 'PR_SPECIALIST':
-        defaultPermissions = { ...defaultPermissions, canReviewComms: true, canGenerateComms: true, canViewReports: true };
+        defaultPermissions = { ...defaultPermissions, canReviewComms: true, canGenerateComms: true, canViewReports: true, canViewAll: true };
         break;
       case 'SUPPORT_MANAGER':
-        defaultPermissions = { ...defaultPermissions, canViewAll: true };
+        defaultPermissions = { ...defaultPermissions, canViewAll: true, canAddIncidentLogs: true };
         break;
       case 'EXECUTIVE':
-        defaultPermissions = { ...defaultPermissions, canApproveComms: true, canViewAll: true };
+        defaultPermissions = { ...defaultPermissions, canApproveComms: true, canViewAll: true, canViewReports: true, canViewAuditLogs: true, canInitiatePayments: true };
         break;
       case 'INCIDENT_RESPONDER':
         defaultPermissions = { ...defaultPermissions, canAddIncidentLogs: true, canViewAll: true };
@@ -1663,7 +2740,7 @@ export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'la
         defaultPermissions = { ...defaultPermissions, canViewReports: true, canViewAll: true };
         break;
       case 'EDITOR':
-        defaultPermissions = { ...defaultPermissions, canGenerateComms: true, canReviewComms: true };
+        defaultPermissions = { ...defaultPermissions, canGenerateComms: true, canReviewComms: true, canViewAll: true };
         break;
       case 'VIEWER':
       defaultPermissions = { ...defaultPermissions, canViewAll: true };
@@ -1690,7 +2767,7 @@ export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'la
           <div>
             <label className="block text-gray-300 text-sm mb-1">Role</label>
             <select name="role" value={newUser.role} onChange={handleRoleChange} className="w-full p-2 bg-gray-700 rounded text-white">
-              {Object.values(UserRole).map(role => (
+              {Object.values(UserRole).filter(role => role !== 'AI_AGENT').map(role => (
                 <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
               ))}
             </select>
@@ -1730,21 +2807,33 @@ export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'la
   );
 };
 
-// Main CrisisAIManagerView Component (expanded)
+/**
+ * CrisisAIManagerView: React.FC
+ *
+ * This is the main view component for the Crisis AI Management System, serving as the
+ * orchestrator for all child components and interactions. It provides the top-level
+ * navigation, crisis selection, and core AI-driven communication generation capabilities.
+ *
+ * Business value: This unified interface is the command center for all crisis response
+ * operations, streamlining workflows and enabling rapid, informed decision-making. By
+ * integrating AI capabilities, it reduces human error, accelerates critical tasks like
+ * communication drafting and sentiment analysis, and ensures consistent application
+ * of best practices, safeguarding brand reputation and significantly mitigating
+ * financial and legal risks.
+ */
 const CrisisAIManagerView: React.FC = () => {
-  const { currentCrisis, setCurrentCrisis, allCrises, currentUser, addCommsPackageToCrisis } = useCrisisContext();
+  const { currentCrisis, setCurrentCrisis, allCrises, currentUser, addCommsPackageToCrisis, settings, addAgentLogEntryToCrisis, allAgents } = useCrisisContext();
 
   const [crisisType, setCrisisType] = useState<CrisisType>(currentCrisis?.type || 'DATA_BREACH');
   const [facts, setFacts] = useState(currentCrisis?.description || '');
   const [isLoading, setIsLoading] = useState(false);
-  const [commsResult, setCommsResult] = useState<CommsPackage | null>(null); // Specific state for latest generated comms
-  const [activeTab, setActiveTab] = useState<'comms' | 'dashboard' | 'incidents' | 'stakeholders' | 'legal' | 'sentiment' | 'workflow' | 'reports' | 'settings' | 'users'>('dashboard');
+  const [commsResult, setCommsResult] = useState<CommsPackage | null>(null);
+  const [activeTab, setActiveTab] = useState<'comms' | 'dashboard' | 'incidents' | 'stakeholders' | 'legal' | 'sentiment' | 'workflow' | 'financial' | 'agent-activity' | 'reports' | 'settings' | 'users' | 'audit'>('dashboard');
 
   useEffect(() => {
     if (currentCrisis) {
       setCrisisType(currentCrisis.type);
       setFacts(currentCrisis.description);
-      // Display the latest comms package generated for the current crisis
       if (currentCrisis.generatedCommsPackages.length > 0) {
         setCommsResult(currentCrisis.generatedCommsPackages[currentCrisis.generatedCommsPackages.length - 1]);
       } else {
@@ -1762,35 +2851,66 @@ const CrisisAIManagerView: React.FC = () => {
       alert('Please select or create a crisis first.');
       return;
     }
+    if (!currentUser.permissions.canGenerateComms) {
+      alert('You do not have permission to generate communications.');
+      return;
+    }
     setIsLoading(true);
     setCommsResult(null);
-    // MOCK API call to generate comms
+
+    const commsGenAgent = allAgents.find(a => a.id === 'agent_comms_gen'); // Assume 'agent_comms_gen' is the comms AI
+    const generatorId = commsGenAgent?.isActive && settings.enabledAgents.COMMUNICATION ? commsGenAgent.id : currentUser.id;
+    const generatorType = commsGenAgent?.isActive && settings.enabledAgents.COMMUNICATION ? 'AI_AGENT' : 'USER';
+
+    if (generatorType === 'AI_AGENT' && commsGenAgent) {
+      await addAgentLogEntryToCrisis(currentCrisis.id, {
+        agentId: commsGenAgent.id,
+        action: 'Initiated comms package generation',
+        details: `Drafting for crisis type: ${crisisType}`,
+        status: 'IN_PROGRESS'
+      });
+    }
+
     const response: CommsPackage = await new Promise(res => setTimeout(() => res(generateMockCommsPackage(crisisType, facts)), 2000));
     setCommsResult(response);
-    await addCommsPackageToCrisis(currentCrisis.id, response); // Add to current crisis context
+    await addCommsPackageToCrisis(currentCrisis.id, response);
+
+    if (generatorType === 'AI_AGENT' && commsGenAgent) {
+      await addAgentLogEntryToCrisis(currentCrisis.id, {
+        agentId: commsGenAgent.id,
+        action: 'Completed comms package generation',
+        details: `Generated press release and twitter thread.`,
+        status: 'SUCCESS',
+        relatedArtifactId: response.id // Assuming addCommsPackageToCrisis returns the ID
+      });
+    }
     setIsLoading(false);
   };
 
   const handleSaveCrisisDetails = async () => {
     if (!currentCrisis) return;
-    setIsLoading(true); // Re-using loading for general actions
-    await new Promise(res => setTimeout(res, 1000)); // Simulate API call
+    if (!currentUser.permissions.canEditCrisis) {
+      alert('You do not have permission to edit crisis details.');
+      return;
+    }
+    setIsLoading(true);
+    await new Promise(res => setTimeout(res, 1000));
     setCurrentCrisis(prev => prev ? { ...prev, type: crisisType, description: facts, lastUpdate: new Date() } : null);
     setIsLoading(false);
     alert('Crisis details updated!');
   };
 
-  if (!currentUser) {
-    // Basic login/user selection for demonstration
+  if (!currentUser.id) {
     return (
       <div className="bg-gray-800 text-white p-6 rounded-lg min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Select User Role</h1>
           <select
-            value={currentUser.id}
+            value={''}
             onChange={e => useCrisisContext().setCurrentUser(mockUsers.find(u => u.id === e.target.value)!)}
             className="w-full max-w-xs p-2 mb-4 bg-gray-700 rounded"
           >
+            <option value="" disabled>Select a user...</option>
             {mockUsers.map(user => (
               <option key={user.id} value={user.id}>{user.name} ({user.role.replace(/_/g, ' ')})</option>
             ))}
@@ -1826,11 +2946,13 @@ const CrisisAIManagerView: React.FC = () => {
               </option>
             ))}
           </select>
-          <button className="p-2 bg-teal-600 hover:bg-teal-700 rounded">New Crisis</button>
+          {currentUser.permissions.canEditCrisis && (
+            <button className="p-2 bg-teal-600 hover:bg-teal-700 rounded">New Crisis</button>
+          )}
         </div>
 
         <div className="flex mb-6 border-b border-gray-700 overflow-x-auto">
-          {['dashboard', 'comms', 'incidents', 'stakeholders', 'legal', 'sentiment', 'workflow', 'reports', 'settings', 'users'].map(tab => (
+          {['dashboard', 'comms', 'incidents', 'stakeholders', 'legal', 'sentiment', 'workflow', 'financial', 'agent-activity', 'reports', 'settings', 'users', 'audit'].map(tab => (
             <button
               key={tab}
               className={`py-2 px-4 whitespace-nowrap ${activeTab === tab ? 'border-b-2 border-cyan-500 text-cyan-400' : 'text-gray-400 hover:text-white'}`}
@@ -1847,41 +2969,47 @@ const CrisisAIManagerView: React.FC = () => {
           {activeTab === 'comms' && (
             <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
               <h2 className="text-2xl font-bold mb-4">Crisis AI Communications Manager</h2>
-              <select value={crisisType} onChange={e => setCrisisType(e.target.value as CrisisType)} className="w-full p-2 mb-4 bg-gray-600 rounded">
-                {Object.values(CrisisType).map(type => (
-                  <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
-                ))}
-              </select>
-              <textarea
-                value={facts}
-                onChange={e => setFacts(e.target.value)}
-                placeholder="Enter key facts (e.g., '50k user emails exposed, no passwords. Discovered 8am today.')"
-                rows={4}
-                className="w-full p-2 mb-4 bg-gray-600 rounded text-white resize-y"
-              />
-              <div className="flex space-x-4 mb-4">
-                <button onClick={handleGenerateComms} disabled={isLoading || !currentCrisis} className="flex-grow p-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                  {isLoading ? 'Generating...' : 'Generate Unified Comms Package'}
-                </button>
-                <button onClick={handleSaveCrisisDetails} disabled={isLoading || !currentCrisis} className="flex-grow p-2 bg-yellow-600 hover:bg-yellow-700 rounded disabled:opacity-50">
-                  {isLoading ? 'Saving...' : 'Save Crisis Details'}
-                </button>
-              </div>
+              {currentUser.permissions.canGenerateComms ? (
+                <>
+                  <select value={crisisType} onChange={e => setCrisisType(e.target.value as CrisisType)} className="w-full p-2 mb-4 bg-gray-600 rounded">
+                    {Object.values(CrisisType).map(type => (
+                      <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+                    ))}
+                  </select>
+                  <textarea
+                    value={facts}
+                    onChange={e => setFacts(e.target.value)}
+                    placeholder="Enter key facts (e.g., '50k user emails exposed, no passwords. Discovered 8am today.')"
+                    rows={4}
+                    className="w-full p-2 mb-4 bg-gray-600 rounded text-white resize-y"
+                  />
+                  <div className="flex space-x-4 mb-4">
+                    <button onClick={handleGenerateComms} disabled={isLoading || !currentCrisis} className="flex-grow p-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
+                      {isLoading ? 'Generating...' : 'Generate Unified Comms Package'}
+                    </button>
+                    <button onClick={handleSaveCrisisDetails} disabled={isLoading || !currentCrisis} className="flex-grow p-2 bg-yellow-600 hover:bg-yellow-700 rounded disabled:opacity-50">
+                      {isLoading ? 'Saving...' : 'Save Crisis Details'}
+                    </button>
+                  </div>
 
-              {isLoading && <p className="mt-4 text-cyan-300">Analyzing legal precedent and sentiment... drafting response...</p>}
-              {commsResult && (
-                <div className="mt-6 border-t border-gray-600 pt-4">
-                  <h3 className="text-xl font-semibold mb-3">Latest Generated Communications Package</h3>
-                  {Object.entries(commsResult).map(([key, value]) => (
-                    <div key={key} className="mb-4">
-                      <h4 className="text-lg font-semibold mb-1 text-gray-300">{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</h4>
-                      <div className="bg-gray-800 p-4 rounded-lg shadow-inner">
-                        {Array.isArray(value) ? value.map((v, i) => <pre key={i} className="whitespace-pre-wrap text-sm text-gray-200 mb-1">{v}</pre>) : <pre className="whitespace-pre-wrap text-sm text-gray-200">{value as string}</pre>}
-                      </div>
+                  {isLoading && <p className="mt-4 text-cyan-300">Analyzing legal precedent and sentiment... drafting response...</p>}
+                  {commsResult && (
+                    <div className="mt-6 border-t border-gray-600 pt-4">
+                      <h3 className="text-xl font-semibold mb-3">Latest Generated Communications Package</h3>
+                      {Object.entries(commsResult).map(([key, value]) => (
+                        <div key={key} className="mb-4">
+                          <h4 className="text-lg font-semibold mb-1 text-gray-300">{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</h4>
+                          <div className="bg-gray-800 p-4 rounded-lg shadow-inner">
+                            {Array.isArray(value) ? value.map((v, i) => <pre key={i} className="whitespace-pre-wrap text-sm text-gray-200 mb-1">{v}</pre>) : <pre className="whitespace-pre-wrap text-sm text-gray-200">{value as string}</pre>}
+                          </div>
+                        </div>
+                      ))}
+                      <button className="w-full p-2 mt-4 bg-purple-600 hover:bg-purple-700 rounded" onClick={() => setActiveTab('workflow')}>Proceed to Approval Workflow</button>
                     </div>
-                  ))}
-                  <button className="w-full p-2 mt-4 bg-purple-600 hover:bg-purple-700 rounded" onClick={() => setActiveTab('workflow')}>Proceed to Approval Workflow</button>
-                </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-red-400">You do not have permission to generate communications.</p>
               )}
             </div>
           )}
@@ -1891,9 +3019,12 @@ const CrisisAIManagerView: React.FC = () => {
           {activeTab === 'legal' && <LegalReviewDashboard />}
           {activeTab === 'sentiment' && <SentimentMonitoringDashboard />}
           {activeTab === 'workflow' && <CommsApprovalWorkflowPanel />}
+          {activeTab === 'financial' && <FinancialImpactAndPayoutManager />}
+          {activeTab === 'agent-activity' && <AgentActivityMonitor />}
           {activeTab === 'reports' && <ReportingAndAnalyticsModule />}
           {activeTab === 'settings' && <SystemSettingsPanel />}
           {activeTab === 'users' && <UserManagementPanel />}
+          {activeTab === 'audit' && <GlobalAuditLogViewer />}
         </div>
       </div>
     </CrisisProvider>
