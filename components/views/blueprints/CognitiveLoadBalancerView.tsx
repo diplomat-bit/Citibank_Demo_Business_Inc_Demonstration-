@@ -1,21 +1,37 @@
+/**
+ * @module CognitiveLoadBalancerView
+ * @description This module implements the comprehensive dashboard for monitoring and managing the intricate balance of system resources and user cognitive load. It serves as the central control panel for the Money20/20 "build phase" architecture, integrating real-time insights from agentic AI systems, token rails, digital identity services, and real-time payments infrastructure.
+ *
+ * Business Value: This view is worth millions by providing a unified, real-time operational picture that prevents system bottlenecks, optimizes user experience, and ensures the continuous, high-performance flow of value. It enables proactive problem resolution, reduces operational costs through intelligent automation, safeguards revenue by maintaining transaction throughput, and enhances regulatory compliance through transparent monitoring. The adaptive cognitive load balancing ensures optimal feature engagement, leading to higher user retention and satisfaction, directly impacting profitability and market leadership.
+ */
 import React, { useState, useEffect } from 'react';
 
 /**
  * @interface CognitiveMetric
  * @description Defines the structure for a single cognitive load metric snapshot.
- * timestamp: ISO string of when the metric was recorded.
- * avgCognitiveLoad: Average cognitive load (0.0 to 1.0).
- * activeThrottles: List of feature names currently being throttled.
+ * This metric provides immediate insight into the user's interaction burden,
+ * a critical factor for maintaining user engagement and preventing fatigue.
+ * Business Value: Direct impact on user experience and retention by quantifying
+ * and allowing for the mitigation of feature complexity, leading to sustained
+ * platform usage and higher conversion rates.
  */
 interface CognitiveMetric {
+  /** The ISO string timestamp of when the metric was recorded. */
   timestamp: string;
+  /** The average cognitive load, ranging from 0.0 (minimal) to 1.0 (maximal). */
   avgCognitiveLoad: number; // 0.0 to 1.0
+  /** A list of feature names currently being throttled due to high load. */
   activeThrottles: string[]; // Feature names being throttled
 }
 
 /**
  * @enum FeatureCategory
- * @description Categorizes features for better management and policy application.
+ * @description Categorizes features for granular management and policy application.
+ * This categorization enables targeted load balancing and resource allocation,
+ * optimizing performance across diverse functional areas.
+ * Business Value: Allows for strategic resource allocation, ensuring high-priority
+ * or revenue-generating features maintain performance even under stress,
+ * directly protecting critical business operations.
  */
 export enum FeatureCategory {
   Analytics = 'Analytics',
@@ -38,11 +54,21 @@ export enum FeatureCategory {
   VirtualReality = 'Virtual Reality',
   AugmentedReality = 'Augmented Reality',
   Simulation = 'Simulation',
+  AgentAI = 'Agent AI', // New category for AI agents
+  TokenRails = 'Token Rails', // New category for Token Rails
+  Payments = 'Payments', // New category for Payments Infrastructure
+  Identity = 'Digital Identity', // New category for Digital Identity
+  Orchestration = 'Orchestration', // New category for System Orchestration
 }
 
 /**
  * @enum ThrottlingStrategy
- * @description Defines various strategies for applying throttling.
+ * @description Defines various sophisticated strategies for applying throttling.
+ * These strategies allow for adaptive, intelligent, and business-value-driven
+ * load management, moving beyond simple static limits.
+ * Business Value: Enables dynamic optimization of system resources and user experience,
+ * minimizing disruption during peak loads and maximizing throughput, thereby
+ * directly contributing to operational efficiency and user satisfaction.
  */
 export enum ThrottlingStrategy {
   StaticThreshold = 'Static Threshold',
@@ -55,11 +81,16 @@ export enum ThrottlingStrategy {
   FeatureDependency = 'Feature Dependency',
   RevenueImpact = 'Revenue Impact',
   ComplianceDriven = 'Compliance-Driven',
+  AgentDriven = 'Agent Driven', // New strategy: agents make throttling decisions
 }
 
 /**
  * @enum AlertSeverity
- * @description Levels of alert severity.
+ * @description Levels of alert severity, enabling rapid prioritization and response
+ * to operational anomalies and potential system degradation.
+ * Business Value: Critical for operational resilience, allowing teams to quickly
+ * focus on high-impact issues, minimize downtime, and prevent service disruptions,
+ * safeguarding revenue and brand reputation.
  */
 export enum AlertSeverity {
   Info = 'Info',
@@ -70,7 +101,12 @@ export enum AlertSeverity {
 
 /**
  * @enum UserSegment
- * @description Represents different user segments that might have distinct cognitive load profiles or throttling needs.
+ * @description Represents different user segments that might have distinct
+ * cognitive load profiles or throttling needs. Tailoring experiences to segments
+ * enhances personalization and targeted resource management.
+ * Business Value: Optimizes resource allocation based on user value or behavior,
+ * ensuring VIP users receive premium service, new users are guided, and
+ * specific business objectives tied to user groups are met.
  */
 export enum UserSegment {
   NewUser = 'New User',
@@ -88,62 +124,64 @@ export enum UserSegment {
 
 /**
  * @interface FeatureDefinition
- * @description Detailed definition of a feature within the application.
- * id: Unique identifier for the feature.
- * name: Display name of the feature.
- * description: A brief explanation of the feature.
- * category: Categorization of the feature.
- * cognitiveWeight: Estimated cognitive load impact of the feature (0.0 to 1.0, higher means more demanding).
- * baseThrottleThreshold: Default load threshold above which this feature *might* be throttled.
- * isActive: Whether the feature is currently enabled in the system.
- * dependencies: Other features this one depends on (for complex throttling).
- * impactMetrics: Metrics that quantify the business impact if this feature is throttled (e.g., 'conversion_rate', 'time_on_page').
- * recoveryTimeEstimate: Estimated time for user's cognitive load to recover after using this feature (in seconds).
- * lastUpdated: Timestamp of the last definition update.
- * ownerTeam: Team responsible for the feature.
- * rolloutStrategy: How the feature is rolled out (e.g., 'all_users', 'beta_testers').
+ * @description Detailed definition of a feature within the application, providing
+ * metadata essential for intelligent load balancing, impact assessment, and governance.
+ * Business Value: Facilitates granular control over individual system components,
+ * enabling precise performance tuning, cost optimization, and strategic decision-making
+ * regarding feature development and rollout, ultimately enhancing product-market fit.
  */
 export interface FeatureDefinition {
+  /** Unique identifier for the feature. */
   id: string;
+  /** Display name of the feature. */
   name: string;
+  /** A brief explanation of the feature. */
   description: string;
+  /** Categorization of the feature, aiding in policy application. */
   category: FeatureCategory;
+  /** Estimated cognitive load impact of the feature (0.0 to 1.0, higher means more demanding). */
   cognitiveWeight: number; // 0.0 - 1.0, higher means more demanding
+  /** Default load threshold above which this feature *might* be throttled. */
   baseThrottleThreshold: number; // e.g., 0.7
+  /** Whether the feature is currently enabled in the system. */
   isActive: boolean;
+  /** Other features this one depends on (for complex throttling). */
   dependencies: string[]; // IDs of other features it depends on
+  /** Metrics that quantify the business impact if this feature is throttled (e.g., 'conversion_rate', 'time_on_page'). */
   impactMetrics: { name: string; value: number }[];
+  /** Estimated time for user's cognitive load to recover after using this feature (in seconds). */
   recoveryTimeEstimate: number; // in seconds
+  /** Timestamp of the last definition update. */
   lastUpdated: string;
+  /** Team responsible for the feature. */
   ownerTeam: string;
+  /** How the feature is rolled out (e.g., 'all_users', 'beta_testers', 'segment_specific'). */
   rolloutStrategy: 'all_users' | 'beta_testers' | 'segment_specific';
 }
 
 /**
  * @interface ThrottlingPolicy
- * @description Defines a specific policy for throttling features.
- * id: Unique identifier for the policy.
- * name: Name of the policy.
- * description: Explanation of the policy.
- * strategy: The algorithm or method used for throttling.
- * targetFeatureIds: Features to which this policy applies.
- * userSegments: Which user segments this policy applies to.
- * thresholdConfig: Configuration for thresholds (e.g., dynamic range, static value).
- * activationConditions: Rules for when this policy becomes active (e.g., system load, time of day).
- * deactivationConditions: Rules for when this policy stops.
- * priority: Order of application if multiple policies could apply.
- * lastModifiedBy: User who last modified the policy.
- * lastModifiedDate: Timestamp of last modification.
- * efficacyMetrics: Metrics used to evaluate the policy's effectiveness (e.g., 'reduced_load_avg', 'user_retention_rate').
- * A/BTestGroup: Optional A/B test group identifier for policy evaluation.
+ * @description Defines a specific policy for throttling features. These policies
+ * are the algorithmic backbone of the load balancer, dictating when and how
+ * system resources are managed to prevent overload.
+ * Business Value: The core mechanism for ensuring system stability and performance
+ * under varying load conditions, directly preventing outages, managing operational costs
+ * by deferring non-critical workloads, and maintaining service quality for high-value operations.
  */
 export interface ThrottlingPolicy {
+  /** Unique identifier for the policy. */
   id: string;
+  /** Name of the policy. */
   name: string;
+  /** Explanation of the policy. */
   description: string;
+  /** The algorithm or method used for throttling. */
   strategy: ThrottlingStrategy;
+  /** Features to which this policy applies. */
   targetFeatureIds: string[];
+  /** Which user segments this policy applies to. */
   userSegments: UserSegment[];
+  /** Configuration for thresholds (e.g., dynamic range, static value). */
   thresholdConfig: {
     minLoad?: number; // For dynamic strategies
     maxLoad?: number; // For dynamic strategies
@@ -151,225 +189,646 @@ export interface ThrottlingPolicy {
     durationThreshold?: number; // How long load must be high (seconds)
     cooldownPeriod?: number; // How long to wait after de-throttling (seconds)
   };
+  /** Rules for when this policy becomes active (e.g., "system_cpu_gt_80", "time_of_day_between_9_17"). */
   activationConditions: string[]; // e.g., "system_cpu_gt_80", "time_of_day_between_9_17"
+  /** Rules for when this policy stops. */
   deactivationConditions: string[]; // e.g., "system_cpu_lt_60"
+  /** Order of application if multiple policies could apply (lower number means higher priority). */
   priority: number; // Lower number means higher priority
+  /** Indicates if the policy is currently active. */
   isActive: boolean;
+  /** User who last modified the policy. */
   lastModifiedBy: string;
+  /** Timestamp of last modification. */
   lastModifiedDate: string;
+  /** Metrics used to evaluate the policy's effectiveness (e.g., 'reduced_load_avg', 'user_retention_rate'). */
   efficacyMetrics: { name: string; targetValue: number }[];
+  /** Optional A/B test group identifier for policy evaluation. */
   A_BTestGroup?: string;
 }
 
 /**
  * @interface AlertDefinition
- * @description Defines rules for generating system alerts.
- * id: Unique identifier for the alert definition.
- * name: Name of the alert.
- * description: What the alert signifies.
- * severity: How critical the alert is.
- * condition: Logic for triggering the alert (e.g., "avgCognitiveLoad > 0.9 for 5 minutes").
- * targetFeatures: Features related to this alert.
- * targetUserSegments: User segments affected by this alert.
- * notificationChannels: How to notify (e.g., "email", "slack", "pagerduty").
- * isActive: Whether the alert rule is active.
- * debouncePeriod: How long to wait before re-triggering the same alert (seconds).
- * autoResolveCondition: Condition for automatic resolution.
+ * @description Defines rules for generating system alerts, acting as the sentinel
+ * for operational health and performance boundaries.
+ * Business Value: Minimizes mean-time-to-resolution (MTTR) for critical issues,
+ * preventing minor incidents from escalating into major outages, thus protecting
+ * revenue streams and preserving service availability.
  */
 export interface AlertDefinition {
+  /** Unique identifier for the alert definition. */
   id: string;
+  /** Name of the alert. */
   name: string;
+  /** What the alert signifies. */
   description: string;
+  /** How critical the alert is. */
   severity: AlertSeverity;
+  /** Logic for triggering the alert (e.g., "avgCognitiveLoad > 0.9 for 5 minutes"). */
   condition: string;
+  /** Features related to this alert. */
   targetFeatures: string[];
+  /** User segments affected by this alert. */
   targetUserSegments: UserSegment[];
+  /** How to notify (e.g., "email", "slack", "pagerduty"). */
   notificationChannels: string[];
+  /** Whether the alert rule is active. */
   isActive: boolean;
+  /** How long to wait before re-triggering the same alert (seconds). */
   debouncePeriod: number;
+  /** Condition for automatic resolution. */
   autoResolveCondition: string;
+  /** ID of an escalation policy to follow if the alert is not resolved promptly. */
   escalationPolicyId?: string; // ID of an escalation policy
 }
 
 /**
  * @interface AlertInstance
- * @description Represents an active or resolved alert.
- * id: Unique identifier for this specific alert instance.
- * definitionId: The ID of the AlertDefinition that triggered this instance.
- * timestamp: When the alert was triggered.
- * resolvedTimestamp: When the alert was resolved (if applicable).
- * status: Current status ('active', 'resolved', 'acknowledged').
- * triggeredValue: The value that caused the alert to trigger.
- * context: Additional data relevant to the alert (e.g., affected users, system state).
- * assignedTo: User or team assigned to handle the alert.
+ * @description Represents an active or resolved alert, providing a historical
+ * and current view of operational incidents.
+ * Business Value: Offers traceability and accountability for operational events,
+ * aiding in post-incident analysis and continuous improvement processes,
+ * which contributes to long-term system stability and trust.
  */
 export interface AlertInstance {
+  /** Unique identifier for this specific alert instance. */
   id: string;
+  /** The ID of the AlertDefinition that triggered this instance. */
   definitionId: string;
+  /** When the alert was triggered. */
   timestamp: string;
+  /** When the alert was resolved (if applicable). */
   resolvedTimestamp?: string;
+  /** Current status ('active', 'resolved', 'acknowledged'). */
   status: 'active' | 'resolved' | 'acknowledged';
+  /** The value that caused the alert to trigger. */
   triggeredValue: string;
+  /** Additional data relevant to the alert (e.g., affected users, system state). */
   context: Record<string, any>;
+  /** User or team assigned to handle the alert. */
   assignedTo?: string;
+  /** Historical notes or actions taken on this alert. */
   notes: string[];
 }
 
 /**
  * @interface SystemHealthMetric
- * @description Represents various system health metrics that can influence or be influenced by cognitive load and throttling.
- * timestamp: When the metric was recorded.
- * cpuUsage: CPU utilization percentage.
- * memoryUsage: Memory utilization percentage.
- * networkLatency: Average network latency in ms.
- * databaseConnections: Number of active database connections.
- * errorRate: Application error rate.
- * queueDepth: Depth of message queues.
- * activeUsers: Number of currently active users.
- * backgroundTasks: Number of running background tasks.
- * diskIO: Disk I/O operations per second.
- * apiCallRate: Rate of API calls per second.
+ * @description Represents various system health metrics that can influence or be influenced
+ * by cognitive load and throttling. This provides a holistic view of underlying infrastructure.
+ * Business Value: Ensures the foundational stability of the entire platform,
+ * preventing cascading failures and providing the necessary infrastructure context
+ * for optimizing high-level business logic, protecting performance and scalability.
  */
 export interface SystemHealthMetric {
+  /** When the metric was recorded. */
   timestamp: string;
+  /** CPU utilization percentage (0-100%). */
   cpuUsage: number; // 0-100%
+  /** Memory utilization percentage (0-100%). */
   memoryUsage: number; // 0-100%
+  /** Average network latency in milliseconds. */
   networkLatency: number; // ms
+  /** Number of active database connections. */
   databaseConnections: number;
+  /** Application error rate (errors per minute). */
   errorRate: number; // errors per minute
+  /** Depth of message queues, indicating processing backlog. */
   queueDepth: number;
+  /** Number of currently active users. */
   activeUsers: number;
+  /** Number of running background tasks. */
   backgroundTasks: number;
+  /** Disk I/O operations per second. */
   diskIO: number; // ops/sec
+  /** Rate of API calls per second. */
   apiCallRate: number; // calls/sec
 }
 
 /**
  * @interface UserInteractionLog
- * @description Logs specific user interactions, which can be correlated with cognitive load.
- * timestamp: Time of interaction.
- * userId: ID of the user.
- * featureId: ID of the feature interacted with.
- * interactionType: Type of interaction (e.g., 'click', 'input', 'view').
- * duration: Duration of interaction (ms).
- * cognitiveImpactEstimate: Estimated impact of this specific interaction on cognitive load.
- * relatedMetrics: Other relevant metrics at the time of interaction.
+ * @description Logs specific user interactions, crucial for correlating user behavior
+ * with observed cognitive load and feature engagement.
+ * Business Value: Provides empirical data for UX/UI improvements and feature prioritization,
+ * leading to a more intuitive and efficient user experience, which translates to
+ * increased feature adoption and user satisfaction.
  */
 export interface UserInteractionLog {
+  /** Time of interaction. */
   timestamp: string;
+  /** ID of the user. */
   userId: string;
+  /** ID of the feature interacted with. */
   featureId: string;
+  /** Type of interaction (e.g., 'click', 'input', 'view'). */
   interactionType: string;
+  /** Duration of interaction (milliseconds). */
   duration: number; // milliseconds
+  /** Estimated impact of this specific interaction on cognitive load. */
   cognitiveImpactEstimate: number;
+  /** Other relevant metrics at the time of interaction. */
   relatedMetrics: { metric: string; value: number }[];
 }
 
 /**
  * @interface HistoricalCognitiveData
  * @description Aggregated historical cognitive load data for reporting and analysis.
- * timestamp: Start of the aggregation period.
- * avgLoad: Average cognitive load during the period.
- * maxLoad: Maximum cognitive load during the period.
- * minLoad: Minimum cognitive load during the period.
- * activeThrottleDurations: Map of feature ID to total duration it was throttled in this period (seconds).
- * userSegmentBreakdown: Cognitive load metrics broken down by user segment.
- * featureContribution: Estimated contribution of each feature to the overall load.
+ * This historical perspective is vital for identifying trends, optimizing policies,
+ * and capacity planning.
+ * Business Value: Enables long-term strategic planning, resource forecasting,
+ * and validates the effectiveness of load balancing policies, ensuring continuous
+ * improvement in system performance and user experience, driving sustained growth.
  */
 export interface HistoricalCognitiveData {
+  /** Start of the aggregation period. */
   timestamp: string;
+  /** Average cognitive load during the period. */
   avgLoad: number;
+  /** Maximum cognitive load during the period. */
   maxLoad: number;
+  /** Minimum cognitive load during the period. */
   minLoad: number;
+  /** Map of feature ID to total duration it was throttled in this period (seconds). */
   activeThrottleDurations: Record<string, number>; // featureId -> seconds
+  /** Cognitive load metrics broken down by user segment. */
   userSegmentBreakdown: Record<UserSegment, { avgLoad: number; userCount: number }>;
+  /** Estimated contribution of each feature to the overall load. */
   featureContribution: Record<string, number>; // featureId -> estimated load contribution
 }
 
 /**
  * @interface PredictiveForecast
- * @description Forecasted cognitive load based on historical data and current trends.
- * timestamp: The time for which the forecast is made.
- * forecastedLoad: Predicted average cognitive load.
- * confidenceInterval: Upper and lower bounds of the prediction.
- * influencingFactors: Factors identified as strongly influencing the forecast.
- * recommendedActions: Proactive throttling suggestions.
+ * @description Forecasted cognitive load based on historical data and current trends,
+ * leveraging machine learning for proactive decision-making.
+ * Business Value: Transforms operations from reactive to proactive, allowing for
+ * pre-emptive resource scaling and policy adjustments, thereby preventing incidents
+ * before they occur and maintaining service levels even during predictable peak demand.
  */
 export interface PredictiveForecast {
+  /** The time for which the forecast is made. */
   timestamp: string;
+  /** Predicted average cognitive load. */
   forecastedLoad: number;
+  /** Upper and lower bounds of the prediction. */
   confidenceInterval: [number, number]; // [lower, upper]
+  /** Factors identified as strongly influencing the forecast. */
   influencingFactors: Record<string, number>; // factor -> influence score
+  /** Proactive throttling suggestions based on the forecast. */
   recommendedActions: { featureId: string; action: 'throttle' | 'ease'; rationale: string }[];
 }
 
 /**
  * @interface FeedbackLoopStatus
  * @description Status of the adaptive feedback loop for optimizing throttling policies.
- * lastEvaluationTimestamp: When the feedback loop last evaluated policies.
- * policiesEvaluated: IDs of policies evaluated.
- * proposedAdjustments: Suggested changes to policies based on evaluation.
- * efficacyScore: Overall score for current policies (0.0 - 1.0).
- * nextEvaluationDue: When the next evaluation is scheduled.
+ * This loop embodies the intelligent, self-optimizing nature of the load balancer.
+ * Business Value: Automates the continuous improvement of load balancing strategies,
+ * ensuring the system is always learning and adapting to new patterns, leading to
+ * maximized efficiency and resilience with minimal human intervention, reducing operational costs.
  */
 export interface FeedbackLoopStatus {
+  /** When the feedback loop last evaluated policies. */
   lastEvaluationTimestamp: string;
+  /** IDs of policies evaluated. */
   policiesEvaluated: string[];
+  /** Suggested changes to policies based on evaluation. */
   proposedAdjustments: Record<string, string>; // policyId -> suggested change
+  /** Overall score for current policies (0.0 - 1.0). */
   efficacyScore: number;
+  /** When the next evaluation is scheduled. */
   nextEvaluationDue: string;
+  /** A message indicating the current status or goal of the feedback loop. */
   statusMessage: string; // e.g., "Optimizing for user retention"
+  /** The primary optimization goal (e.g., "minimize_avg_load", "maximize_feature_usage"). */
   optimizationGoal: string; // e.g., "minimize_avg_load", "maximize_feature_usage"
 }
 
 /**
  * @interface UserProfile
  * @description Represents a user's profile with cognitive load relevant attributes.
- * userId: Unique user ID.
- * segment: The user's assigned segment.
- * onboardingCompletion: Percentage of onboarding completed.
- * engagementScore: How engaged the user is.
- * recentCognitiveLoadHistory: A brief history of cognitive load for this user.
- * preferredLanguage: User's preferred language.
- * customThrottlePreferences: User-specific throttling overrides (e.g., "never throttle feature X").
+ * This information helps in segment-specific load management and personalized experiences.
+ * Business Value: Enables highly personalized and optimized user experiences,
+ * increasing user satisfaction and feature adoption, and allows for differentiated
+ * service levels based on user segment or historical behavior.
  */
 export interface UserProfile {
+  /** Unique user ID. */
   userId: string;
+  /** The user's assigned segment. */
   segment: UserSegment;
+  /** Percentage of onboarding completed. */
   onboardingCompletion: number;
+  /** How engaged the user is. */
   engagementScore: number;
+  /** A brief history of cognitive load for this user. */
   recentCognitiveLoadHistory: CognitiveMetric[];
+  /** User's preferred language. */
   preferredLanguage: string;
+  /** User-specific throttling overrides (e.g., "never throttle feature X"). */
   customThrottlePreferences: Record<string, 'throttle' | 'ease' | 'default'>;
+  /** Current account status ('active', 'inactive', 'suspended'). */
   accountStatus: 'active' | 'inactive' | 'suspended';
+  /** Timestamp of the user's last activity. */
   lastActivity: string;
 }
 
 /**
  * @interface IntegrationConfig
- * @description Configuration for external system integrations.
- * id: Integration ID.
- * name: Integration name.
- * type: Type of integration (e.g., 'slack', 'datadog', 'jira').
- * status: Connection status.
- * settings: Specific settings for the integration (e.g., webhook URL).
- * lastTested: Timestamp of last successful test.
+ * @description Configuration for external system integrations, facilitating
+ * alerts, metrics, and data flow to external operational tools.
+ * Business Value: Ensures seamless interoperability with existing enterprise systems
+ * and monitoring tools, enabling a unified operational view, reducing manual effort,
+ * and accelerating incident response through automated notifications.
  */
 export interface IntegrationConfig {
+  /** Integration ID. */
   id: string;
+  /** Integration name. */
   name: string;
+  /** Type of integration (e.g., 'slack', 'datadog', 'jira'). */
   type: 'slack' | 'datadog' | 'jira' | 'email' | 'custom_webhook';
+  /** Connection status. */
   status: 'connected' | 'disconnected' | 'error';
+  /** Specific settings for the integration (e.g., webhook URL, API keys). */
   settings: Record<string, string>;
+  /** Timestamp of last successful test. */
   lastTested?: string;
+}
+
+/**
+ * @enum AgentCategory
+ * @description Categorizes AI agents by their primary function within the ecosystem.
+ * This segmentation helps in assigning roles, policies, and monitoring specific agent groups.
+ * Business Value: Streamlines the management and governance of diverse AI agents,
+ * ensuring they operate within their designated scopes and contribute effectively
+ * to system objectives, optimizing AI resource utilization and effectiveness.
+ */
+export enum AgentCategory {
+  Monitoring = 'Monitoring',
+  Remediation = 'Remediation',
+  Reconciliation = 'Reconciliation',
+  Orchestration = 'Orchestration',
+  FraudDetection = 'Fraud Detection',
+  Compliance = 'Compliance',
+  Reporting = 'Reporting',
+  DataAnalysis = 'Data Analysis',
+  CustomerSupport = 'Customer Support',
+  Security = 'Security',
+}
+
+/**
+ * @enum AgentSkill
+ * @description Defines the specific capabilities or skills an AI agent possesses.
+ * This granular definition allows for precise task assignment and skill-based routing.
+ * Business Value: Enables the efficient deployment and utilization of AI agents
+ * by matching tasks to specialized skills, accelerating automation, and increasing
+ * the accuracy and reliability of automated processes across the platform.
+ */
+export enum AgentSkill {
+  AnomalyDetection = 'Anomaly Detection',
+  SystemDiagnosis = 'System Diagnosis',
+  PolicyEnforcement = 'Policy Enforcement',
+  TransactionProcessing = 'Transaction Processing',
+  LedgerUpdate = 'Ledger Update',
+  IdentityVerification = 'Identity Verification',
+  RiskAssessment = 'Risk Assessment',
+  Communication = 'Communication',
+  DataAggregation = 'Data Aggregation',
+  SmartContractExecution = 'Smart Contract Execution',
+  ErrorHandling = 'Error Handling',
+  ResourceAllocation = 'Resource Allocation',
+  SentimentAnalysis = 'Sentiment Analysis',
+}
+
+/**
+ * @interface AgentDefinition
+ * @description Defines an autonomous AI agent within the system, including its
+ * purpose, capabilities, and operational parameters. Agents are key to the
+ * Money20/20 build phase architecture, enabling autonomous, intelligent operations.
+ * Business Value: Establishes a programmable, scalable workforce of intelligent
+ * agents that automate complex workflows, significantly reducing manual operational
+ * overhead, improving response times, and enabling new levels of system resilience and agility.
+ */
+export interface AgentDefinition {
+  /** Unique identifier for the agent. */
+  id: string;
+  /** Display name of the agent. */
+  name: string;
+  /** A brief explanation of the agent's primary function. */
+  description: string;
+  /** Primary category of the agent. */
+  category: AgentCategory;
+  /** List of skills the agent possesses. */
+  skills: AgentSkill[];
+  /** Current status of the agent ('active', 'idle', 'suspended', 'error'). */
+  status: 'active' | 'idle' | 'suspended' | 'error';
+  /** Configuration settings specific to the agent's operation. */
+  configuration: Record<string, any>;
+  /** Load threshold for the agent (e.g., maximum concurrent tasks). */
+  operationalLoadThreshold: number;
+  /** Timestamp of the last definition update. */
+  lastUpdated: string;
+  /** Owner team responsible for the agent. */
+  ownerTeam: string;
+  /** Role-based access control (RBAC) role assigned to the agent. */
+  rbacRole: string;
+}
+
+/**
+ * @interface AgentHealthMetric
+ * @description Real-time operational health and performance metrics for an individual AI agent.
+ * Monitoring these metrics ensures agents perform optimally and identifies potential issues.
+ * Business Value: Guarantees the continuous, efficient operation of AI agents,
+ * proactively identifying and resolving performance bottlenecks or failures,
+ * thereby maximizing the ROI from agentic automation and safeguarding automated processes.
+ */
+export interface AgentHealthMetric {
+  /** Timestamp of when the metric was recorded. */
+  timestamp: string;
+  /** ID of the agent this metric pertains to. */
+  agentId: string;
+  /** Current CPU usage percentage of the agent process. */
+  cpuUsage: number;
+  /** Current memory usage percentage of the agent process. */
+  memoryUsage: number;
+  /** Number of tasks currently being processed by the agent. */
+  activeTasks: number;
+  /** Rate of tasks processed per minute. */
+  taskThroughput: number;
+  /** Error rate of tasks processed by the agent. */
+  errorRate: number;
+  /** Average latency for task completion by the agent (in ms). */
+  avgTaskLatency: number;
+  /** A general health score (0.0 to 1.0, 1.0 being perfect). */
+  healthScore: number;
+}
+
+/**
+ * @enum TokenRailType
+ * @description Defines distinct types of token rails, such as fast settlement
+ * or batch processing, reflecting different operational characteristics and costs.
+ * Business Value: Supports multi-rail orchestration, enabling businesses to choose
+ * the most cost-effective and performance-appropriate rail for each transaction,
+ * optimizing financial operations and reducing transaction costs.
+ */
+export enum TokenRailType {
+  Fast = 'Fast Rail',
+  Batch = 'Batch Rail',
+  HighValue = 'High Value Rail',
+  Compliance = 'Compliance Rail',
+}
+
+/**
+ * @enum TokenTransactionStatus
+ * @description Describes the lifecycle status of a token transaction.
+ * This provides crucial visibility into the state of value movements.
+ * Business Value: Offers real-time transparency and auditability for all token movements,
+ * essential for financial reconciliation, fraud detection, and maintaining
+ * stakeholder trust in the integrity of the ledger.
+ */
+export enum TokenTransactionStatus {
+  Pending = 'Pending',
+  Confirmed = 'Confirmed',
+  Failed = 'Failed',
+  Reversed = 'Reversed',
+  Blocked = 'Blocked',
+  Expired = 'Expired',
+}
+
+/**
+ * @interface TokenRailMetrics
+ * @description Real-time operational metrics for a specific token rail,
+ * indicating its throughput, latency, and overall health.
+ * Business Value: Provides critical observability into the performance of financial
+ * rails, enabling dynamic load balancing and routing decisions to ensure optimal
+ * transaction speed and reliability, directly impacting real-time payment guarantees.
+ */
+export interface TokenRailMetrics {
+  /** Timestamp of when the metric was recorded. */
+  timestamp: string;
+  /** ID of the token rail. */
+  railId: string;
+  /** Type of the token rail. */
+  railType: TokenRailType;
+  /** Current transaction throughput rate (transactions per second). */
+  tps: number;
+  /** Average latency for transactions on this rail (in ms). */
+  avgLatency: number;
+  /** Current error rate for transactions on this rail. */
+  errorRate: number;
+  /** Depth of the transaction queue for this rail. */
+  queueDepth: number;
+  /** Current operational status ('operational', 'degraded', 'offline'). */
+  status: 'operational' | 'degraded' | 'offline';
+  /** Total value transacted through this rail in the last period. */
+  totalValueTransacted: number;
+}
+
+/**
+ * @interface TokenAccountSnapshot
+ * @description Represents a snapshot of a token account's balance and recent activity.
+ * This is a fundamental component of the token rail layer for auditing and reconciliation.
+ * Business Value: Provides an immutable, auditable record of token balances,
+ * enabling precise financial reporting, real-time liquidity management, and
+ * robust fraud prevention capabilities within the token rail ecosystem.
+ */
+export interface TokenAccountSnapshot {
+  /** Unique identifier for the account. */
+  accountId: string;
+  /** Current balance of tokens in the account. */
+  balance: number;
+  /** ISO string of the last transaction timestamp. */
+  lastTransactionTimestamp: string;
+  /** Total number of transactions processed for this account. */
+  transactionCount: number;
+  /** List of recent transactions (simplified for snapshot). */
+  recentTransactions: { txId: string; amount: number; status: TokenTransactionStatus }[];
+}
+
+/**
+ * @interface PaymentEngineStatus
+ * @description Provides the overall operational status and key metrics of the
+ * real-time payments infrastructure. This offers a high-level health check.
+ * Business Value: Ensures the seamless operation of critical payment workflows,
+ * minimizes potential revenue loss from payment processing issues, and allows
+ * for immediate intervention to maintain payment availability and speed.
+ */
+export interface PaymentEngineStatus {
+  /** Timestamp of the status update. */
+  timestamp: string;
+  /** Overall operational status ('online', 'partially_degraded', 'offline'). */
+  overallStatus: 'online' | 'partially_degraded' | 'offline';
+  /** Current payment request throughput (requests per second). */
+  requestsPerSecond: number;
+  /** Average processing latency for payment requests (in ms). */
+  avgProcessingLatency: number;
+  /** Rate of failed payment requests. */
+  failureRate: number;
+  /** Number of transactions currently in flight. */
+  inFlightTransactions: number;
+  /** Number of transactions flagged for review by fraud detection. */
+  flaggedTransactions: number;
+  /** Breakdown of status by individual payment rails. */
+  railStatuses: Record<string, 'operational' | 'degraded' | 'offline'>;
+}
+
+/**
+ * @interface PaymentRequestMetric
+ * @description Detailed metrics for individual payment requests or aggregated payment flows,
+ * essential for performance analysis and identifying bottlenecks.
+ * Business Value: Facilitates granular performance analysis of the payment system,
+ * enabling optimization of routing, cost reduction, and continuous improvement
+ * of the payment user experience, directly impacting financial throughput.
+ */
+export interface PaymentRequestMetric {
+  /** Timestamp of the metric recording. */
+  timestamp: string;
+  /** Unique ID of the payment request (or an aggregation ID). */
+  requestId: string;
+  /** Source of the payment. */
+  source: string;
+  /** Destination of the payment. */
+  destination: string;
+  /** Amount of the payment. */
+  amount: number;
+  /** Currency of the payment. */
+  currency: string;
+  /** Chosen token rail for the payment. */
+  chosenRail: TokenRailType;
+  /** Processing time of the payment (in ms). */
+  processingTime: number;
+  /** Final status of the payment. */
+  status: TokenTransactionStatus;
+  /** Risk score assigned by the fraud detection module. */
+  riskScore: number;
+  /** Reason for any payment flags or blocks. */
+  fraudReason?: string;
+}
+
+/**
+ * @interface IdentityServiceStatus
+ * @description Provides the operational status and key performance indicators for
+ * the digital identity and security services. This ensures robust authentication
+ * and authorization.
+ * Business Value: Upholds the security and integrity of the entire platform by
+ * ensuring identity services are robust and available, preventing unauthorized
+ * access, and protecting sensitive data and financial transactions.
+ */
+export interface IdentityServiceStatus {
+  /** Timestamp of the status update. */
+  timestamp: string;
+  /** Overall status ('operational', 'degraded', 'offline'). */
+  overallStatus: 'operational' | 'degraded' | 'offline';
+  /** Number of authentication requests per second. */
+  authRequestsPerSecond: number;
+  /** Average latency for authentication requests (in ms). */
+  avgAuthLatency: number;
+  /** Rate of failed authentication attempts. */
+  failedAuthRate: number;
+  /** Number of authorization checks per second. */
+  authzChecksPerSecond: number;
+  /** Number of active user sessions. */
+  activeSessions: number;
+  /** Status of cryptographic key management ('healthy', 'warning', 'critical'). */
+  keyManagementStatus: 'healthy' | 'warning' | 'critical';
+  /** A list of recent security incidents or anomalies detected. */
+  securityIncidents: string[];
+}
+
+/**
+ * @enum AuthEventType
+ * @description Defines categories of authentication and authorization events,
+ * crucial for audit logging and security monitoring.
+ * Business Value: Provides granular logging for security events, enabling
+ * sophisticated threat detection, forensic analysis, and compliance reporting,
+ * strengthening the overall security posture and reducing financial risk.
+ */
+export enum AuthEventType {
+  LoginSuccess = 'Login Success',
+  LoginFailure = 'Login Failure',
+  Logout = 'Logout',
+  PasswordChange = 'Password Change',
+  SessionStart = 'Session Start',
+  SessionEnd = 'Session End',
+  AccessGranted = 'Access Granted',
+  AccessDenied = 'Access Denied',
+  KeyGeneration = 'Key Generation',
+  KeyRotation = 'Key Rotation',
+  MFAAttempt = 'MFA Attempt',
+  MFAChallenge = 'MFA Challenge',
+  MFAFailure = 'MFA Failure',
+}
+
+/**
+ * @interface AuthLogEntry
+ * @description Represents a single entry in the authentication and authorization audit log.
+ * This log is tamper-evident and crucial for security and compliance.
+ * Business Value: Forms the bedrock of forensic capabilities and regulatory compliance,
+ * ensuring that every access decision and identity event is recorded, immutable,
+ * and verifiable, thereby meeting stringent security and audit requirements.
+ */
+export interface AuthLogEntry {
+  /** Unique ID for the log entry. */
+  id: string;
+  /** Timestamp of the event. */
+  timestamp: string;
+  /** Type of authentication/authorization event. */
+  eventType: AuthEventType;
+  /** ID of the user or agent involved. */
+  entityId: string;
+  /** Source IP address of the request. */
+  ipAddress: string;
+  /** Outcome of the event (e.g., 'success', 'failure', 'denied'). */
+  outcome: 'success' | 'failure' | 'denied' | 'info';
+  /** Detailed message about the event. */
+  message: string;
+  /** Relevant context for the event (e.g., feature accessed, reason for denial). */
+  context: Record<string, any>;
+  /** Hash of the previous log entry, ensuring tamper-evidence. */
+  previousHash: string;
+  /** Hash of this log entry for integrity verification. */
+  entryHash: string;
+}
+
+/**
+ * @interface EscalationPolicy
+ * @description Defines a process for escalating alerts to different teams or channels
+ * based on severity and time, ensuring critical issues are always addressed.
+ * Business Value: Guarantees that high-priority incidents receive prompt attention
+ * from the correct personnel, minimizing service disruption and potential financial loss
+ * by orchestrating a rapid and effective incident response.
+ */
+export interface EscalationPolicy {
+  /** Unique identifier for the escalation policy. */
+  id: string;
+  /** Name of the policy. */
+  name: string;
+  /** Description of the policy's purpose. */
+  description: string;
+  /** List of escalation steps, each with a delay and target. */
+  steps: {
+    delaySeconds: number; // Delay before this step is activated
+    targetType: 'channel' | 'team' | 'user'; // Type of target
+    targetIdentifier: string; // e.g., 'slack_channel_ops', 'on_call_team_1', 'user_john_doe'
+    notificationMessage: string; // Custom message for this step
+  }[];
+  /** Whether the policy is currently active. */
+  isActive: boolean;
+  /** Last modification timestamp. */
+  lastModifiedDate: string;
+  /** User who last modified the policy. */
+  lastModifiedBy: string;
 }
 
 // Utility Functions ---------------------------------------------------------------------------------------------------
 
 /**
  * @function generateUUID
- * @description Generates a simple UUID for IDs.
- * @returns {string} A unique identifier string.
+ * @description Generates a simple, universally unique identifier (UUIDv4).
+ * This function is critical for ensuring unique IDs across all system entities,
+ * from features and policies to transactions and agents, enabling robust data
+ * management and preventing collision issues.
+ * Business Value: Provides foundational uniqueness for all data entities,
+ * which is essential for database integrity, distributed system coordination,
+ * and reliable audit trails.
  */
 export const generateUUID = (): string => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -381,9 +840,11 @@ export const generateUUID = (): string => {
 
 /**
  * @function calculateAverage
- * @description Calculates the average of an array of numbers.
- * @param {number[]} data - Array of numbers.
- * @returns {number} The average.
+ * @description Calculates the average of an array of numbers. This utility is used
+ * across various metrics calculations to derive meaningful insights from raw data.
+ * Business Value: Provides a fundamental statistical aggregation, enabling
+ * quick summaries of performance and load data, which is vital for dashboard
+ * visualizations and automated decision-making.
  */
 export const calculateAverage = (data: number[]): number => {
   if (data.length === 0) return 0;
@@ -392,9 +853,12 @@ export const calculateAverage = (data: number[]): number => {
 
 /**
  * @function getLoadColorClass
- * @description Returns a Tailwind CSS class for load indication.
- * @param {number} load - The cognitive load value.
- * @returns {string} Tailwind CSS class.
+ * @description Returns a Tailwind CSS class for visual indication of load levels.
+ * This function provides immediate visual cues for system health, aiding rapid
+ * interpretation of dashboard data.
+ * Business Value: Enhances observability by providing intuitive visual indicators
+ * of system health, allowing operators to quickly identify problem areas and
+ * prioritize intervention, thereby reducing response times.
  */
 export const getLoadColorClass = (load: number): string => {
   if (load > 0.85) return 'text-red-500';
@@ -405,11 +869,13 @@ export const getLoadColorClass = (load: number): string => {
 
 /**
  * @function throttleFeature
- * @description Simulates throttling a feature and logging the event.
- * @param {string} featureId - ID of the feature to throttle.
- * @param {string} reason - Reason for throttling.
- * @param {UserSegment[]} affectedSegments - User segments affected.
- * @returns {void}
+ * @description Simulates throttling a feature and logging the event. In a production
+ * environment, this would trigger a sophisticated backend mechanism to reduce
+ * resource allocation or limit access to the specified feature.
+ * Business Value: Acts as a critical control mechanism for load balancing,
+ * allowing the system to gracefully degrade non-essential services during peak
+ * demand, protecting core functionality and ensuring overall system stability,
+ * safeguarding revenue and critical operations.
  */
 export const throttleFeature = (featureId: string, reason: string, affectedSegments: UserSegment[]): void => {
   console.log(`[ACTION] Throttling feature '${featureId}' due to: ${reason}. Affected segments: ${affectedSegments.join(', ')}`);
@@ -418,10 +884,12 @@ export const throttleFeature = (featureId: string, reason: string, affectedSegme
 
 /**
  * @function easeFeatureThrottle
- * @description Simulates easing a throttled feature.
- * @param {string} featureId - ID of the feature to ease.
- * @param {string} reason - Reason for easing.
- * @returns {void}
+ * @description Simulates easing a throttled feature. In a production environment,
+ * this would signal the backend to restore full functionality or increased
+ * resource allocation to the feature.
+ * Business Value: Restores full feature functionality when load conditions improve,
+ * ensuring users consistently receive the best possible experience and maximizing
+ * the utility of all platform features as resources become available.
  */
 export const easeFeatureThrottle = (featureId: string, reason: string): void => {
   console.log(`[ACTION] Easing throttle on feature '${featureId}' due to: ${reason}.`);
@@ -430,9 +898,10 @@ export const easeFeatureThrottle = (featureId: string, reason: string): void => 
 
 /**
  * @function formatDuration
- * @description Formats a duration in seconds into a human-readable string.
- * @param {number} seconds - Duration in seconds.
- * @returns {string} Human-readable duration string.
+ * @description Formats a duration in seconds into a human-readable string (e.g., 60s, 1.5m, 2.3h).
+ * This enhances the readability of time-based metrics and logs.
+ * Business Value: Improves the clarity and accessibility of time-related data for operators
+ * and analysts, facilitating quicker understanding of durations and trends without manual conversion.
  */
 export const formatDuration = (seconds: number): string => {
   if (seconds < 60) return `${seconds.toFixed(0)}s`;
@@ -444,14 +913,16 @@ export const formatDuration = (seconds: number): string => {
 
 /**
  * @function mockBackendAPI
- * @description A highly simplified mock API for simulating backend calls.
- * @param {string} endpoint - The API endpoint (e.g., 'features', 'policies').
- * @param {'GET' | 'POST' | 'PUT' | 'DELETE'} method - HTTP method.
- * @param {any} data - Request body data for POST/PUT.
- * @returns {Promise<any>} A promise resolving with mock data.
+ * @description A highly simplified mock API for simulating backend calls. This function
+ * is crucial for rapid frontend development and testing without requiring a live backend.
+ * In a real commercial-grade implementation, this would be replaced by actual API clients
+ * interacting with robust, authenticated microservices.
+ * Business Value: Accelerates development cycles and simplifies testing, enabling
+ * rapid iteration and validation of UI components and data flows against simulated
+ * real-world scenarios, thereby reducing time-to-market for new features and capabilities.
  */
 export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: any): Promise<any> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
       let result: any;
       switch (endpoint) {
@@ -467,7 +938,8 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               mockFeatures[index] = { ...mockFeatures[index], ...data, lastUpdated: new Date().toISOString() };
               result = mockFeatures[index];
             } else {
-              result = { error: 'Feature not found' };
+              reject(new Error('Feature not found'));
+              return;
             }
           }
           break;
@@ -483,7 +955,8 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               mockThrottlingPolicies[index] = { ...mockThrottlingPolicies[index], ...data, lastModifiedDate: new Date().toISOString() };
               result = mockThrottlingPolicies[index];
             } else {
-              result = { error: 'Policy not found' };
+              reject(new Error('Policy not found'));
+              return;
             }
           }
           break;
@@ -493,10 +966,46 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
             const newAlertDef = { ...data, id: generateUUID() };
             mockAlertDefinitions.push(newAlertDef);
             result = newAlertDef;
+          } else if (method === 'PUT' && data && data.id) {
+            const index = mockAlertDefinitions.findIndex(a => a.id === data.id);
+            if (index !== -1) {
+              mockAlertDefinitions[index] = { ...mockAlertDefinitions[index], ...data };
+              result = mockAlertDefinitions[index];
+            } else {
+              reject(new Error('Alert Definition not found'));
+              return;
+            }
           }
           break;
         case 'alerts/instances':
           result = mockAlertInstances;
+          if (method === 'PUT' && data && data.id) {
+            const index = mockAlertInstances.findIndex(a => a.id === data.id);
+            if (index !== -1) {
+              mockAlertInstances[index] = { ...mockAlertInstances[index], ...data };
+              result = mockAlertInstances[index];
+            } else {
+              reject(new Error('Alert Instance not found'));
+              return;
+            }
+          }
+          break;
+        case 'alerts/escalation_policies':
+          result = mockEscalationPolicies;
+          if (method === 'POST' && data) {
+            const newPolicy = { ...data, id: generateUUID(), lastModifiedDate: new Date().toISOString() };
+            mockEscalationPolicies.push(newPolicy);
+            result = newPolicy;
+          } else if (method === 'PUT' && data && data.id) {
+            const index = mockEscalationPolicies.findIndex(p => p.id === data.id);
+            if (index !== -1) {
+              mockEscalationPolicies[index] = { ...mockEscalationPolicies[index], ...data, lastModifiedDate: new Date().toISOString() };
+              result = mockEscalationPolicies[index];
+            } else {
+              reject(new Error('Escalation Policy not found'));
+              return;
+            }
+          }
           break;
         case 'users':
           result = mockUserProfiles;
@@ -507,6 +1016,15 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
             const newIntegration = { ...data, id: generateUUID(), status: 'disconnected' };
             mockIntegrationConfigs.push(newIntegration);
             result = newIntegration;
+          } else if (method === 'PUT' && data && data.id) {
+            const index = mockIntegrationConfigs.findIndex(i => i.id === data.id);
+            if (index !== -1) {
+              mockIntegrationConfigs[index] = { ...mockIntegrationConfigs[index], ...data };
+              result = mockIntegrationConfigs[index];
+            } else {
+              reject(new Error('Integration config not found'));
+              return;
+            }
           }
           break;
         case 'system_health':
@@ -521,8 +1039,58 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
         case 'feedback_loop':
           result = mockFeedbackLoopStatus;
           break;
+        case 'agents':
+          result = mockAgentDefinitions;
+          if (method === 'POST' && data) {
+            const newAgent = { ...data, id: generateUUID(), lastUpdated: new Date().toISOString() };
+            mockAgentDefinitions.push(newAgent);
+            result = newAgent;
+          } else if (method === 'PUT' && data && data.id) {
+            const index = mockAgentDefinitions.findIndex(a => a.id === data.id);
+            if (index !== -1) {
+              mockAgentDefinitions[index] = { ...mockAgentDefinitions[index], ...data, lastUpdated: new Date().toISOString() };
+              result = mockAgentDefinitions[index];
+            } else {
+              reject(new Error('Agent not found'));
+              return;
+            }
+          }
+          break;
+        case 'agents/health':
+          result = mockAgentHealthMetrics;
+          break;
+        case 'token_rails':
+          result = mockTokenRailMetrics;
+          break;
+        case 'token_accounts':
+          result = mockTokenAccountSnapshots;
+          break;
+        case 'payments/engine_status':
+          result = mockPaymentEngineStatus;
+          break;
+        case 'payments/requests':
+          result = mockPaymentRequestMetrics;
+          break;
+        case 'identity/status':
+          result = mockIdentityServiceStatus;
+          break;
+        case 'identity/auth_logs':
+          result = mockAuthLogEntries;
+          if (method === 'POST' && data) {
+            const newLog = {
+              ...data,
+              id: generateUUID(),
+              timestamp: new Date().toISOString(),
+              entryHash: generateUUID(), // Simplified hash
+              previousHash: mockAuthLogEntries.length > 0 ? mockAuthLogEntries[mockAuthLogEntries.length - 1].entryHash : 'genesis',
+            };
+            mockAuthLogEntries.push(newLog);
+            result = newLog;
+          }
+          break;
         default:
-          result = { message: 'Mock API endpoint not found', endpoint, method, data };
+          reject(new Error(`Mock API endpoint not found or not supported: ${endpoint}`));
+          return;
       }
       resolve(result);
     }, 500); // Simulate network latency
@@ -562,6 +1130,18 @@ export const mockFeatures: FeatureDefinition[] = [
   {
     id: 'feat_virtual_workspaces', name: 'Virtual Workspaces', description: 'Create isolated environments for specific projects.', category: FeatureCategory.Collaboration, cognitiveWeight: 0.85, baseThrottleThreshold: 0.82, isActive: true, dependencies: ['feat_realtime_collaboration'], impactMetrics: [{ name: 'team_focus', value: 0.91 }], recoveryTimeEstimate: 320, lastUpdated: '2023-01-24T13:00:00Z', ownerTeam: 'Productivity Suite', rolloutStrategy: 'all_users'
   },
+  {
+    id: 'feat_agent_orchestration', name: 'Agent Orchestration Console', description: 'Monitor and control AI agent workflows.', category: FeatureCategory.AgentAI, cognitiveWeight: 0.7, baseThrottleThreshold: 0.75, isActive: true, dependencies: [], impactMetrics: [{ name: 'agent_operational_efficiency', value: 0.95 }], recoveryTimeEstimate: 180, lastUpdated: '2023-03-01T09:00:00Z', ownerTeam: 'AI Platform', rolloutStrategy: 'all_users'
+  },
+  {
+    id: 'feat_token_rail_monitor', name: 'Token Rail Monitor', description: 'Observe real-time performance of token rails.', category: FeatureCategory.TokenRails, cognitiveWeight: 0.6, baseThrottleThreshold: 0.7, isActive: true, dependencies: [], impactMetrics: [{ name: 'financial_transaction_speed', value: 0.99 }], recoveryTimeEstimate: 120, lastUpdated: '2023-03-01T10:00:00Z', ownerTeam: 'Fintech Core', rolloutStrategy: 'all_users'
+  },
+  {
+    id: 'feat_payment_routing', name: 'Payment Routing Dashboard', description: 'Manage and visualize real-time payment routing.', category: FeatureCategory.Payments, cognitiveWeight: 0.8, baseThrottleThreshold: 0.85, isActive: true, dependencies: ['feat_token_rail_monitor'], impactMetrics: [{ name: 'payment_settlement_rate', value: 0.98 }], recoveryTimeEstimate: 240, lastUpdated: '2023-03-01T11:00:00Z', ownerTeam: 'Payments Engine', rolloutStrategy: 'all_users'
+  },
+  {
+    id: 'feat_identity_security', name: 'Identity & Security Controls', description: 'Configure digital identity and access policies.', category: FeatureCategory.Identity, cognitiveWeight: 0.9, baseThrottleThreshold: 0.9, isActive: true, dependencies: [], impactMetrics: [{ name: 'security_incident_reduction', value: 0.99 }], recoveryTimeEstimate: 300, lastUpdated: '2023-03-01T12:00:00Z', ownerTeam: 'Security Team', rolloutStrategy: 'all_users'
+  },
 ];
 
 export const mockThrottlingPolicies: ThrottlingPolicy[] = [
@@ -576,6 +1156,12 @@ export const mockThrottlingPolicies: ThrottlingPolicy[] = [
   },
   {
     id: 'policy_dev_environment', name: 'Development Environment Throttling', description: 'More aggressive throttling in dev environments to simulate production load.', strategy: ThrottlingStrategy.StaticThreshold, targetFeatureIds: mockFeatures.map(f => f.id), userSegments: [UserSegment.Developer], thresholdConfig: { staticLoadThreshold: 0.6, durationThreshold: 10, cooldownPeriod: 60 }, activationConditions: ['environment_is_development'], deactivationConditions: ['environment_is_production'], priority: 99, isActive: true, lastModifiedBy: 'dev_ops', lastModifiedDate: '2023-02-12T15:00:00Z', efficacyMetrics: []
+  },
+  {
+    id: 'policy_agent_overload', name: 'Agent Overload Protection', description: 'Throttles agent orchestration features if core agents are overloaded.', strategy: ThrottlingStrategy.AgentDriven, targetFeatureIds: ['feat_agent_orchestration'], userSegments: [], thresholdConfig: { staticLoadThreshold: 0.8, durationThreshold: 30 }, activationConditions: ['agent_health_score_lt_0.6', 'agent_active_tasks_gt_500'], deactivationConditions: ['agent_health_score_gt_0.7'], priority: 5, isActive: true, lastModifiedBy: 'ai_ops', lastModifiedDate: '2023-03-05T10:00:00Z', efficacyMetrics: [{ name: 'agent_stability', targetValue: 0.9 }]
+  },
+  {
+    id: 'policy_payment_rail_stress', name: 'Payment Rail Stress Throttling', description: 'Prioritizes critical payment rails during high system stress.', strategy: ThrottlingStrategy.CapacityBased, targetFeatureIds: ['feat_payment_routing'], userSegments: [], thresholdConfig: { staticLoadThreshold: 0.9, durationThreshold: 60 }, activationConditions: ['token_rail_latency_gt_200ms', 'payment_engine_failure_rate_gt_0.05'], deactivationConditions: ['token_rail_latency_lt_100ms', 'payment_engine_failure_rate_lt_0.01'], priority: 0, isActive: true, lastModifiedBy: 'fin_ops', lastModifiedDate: '2023-03-05T11:00:00Z', efficacyMetrics: [{ name: 'critical_payment_success_rate', targetValue: 0.999 }]
   },
 ];
 
@@ -592,6 +1178,15 @@ export const mockAlertDefinitions: AlertDefinition[] = [
   {
     id: 'alert_user_segment_distress', name: 'New User Segment Distress', description: 'New users experiencing sustained high cognitive load.', severity: AlertSeverity.Warning, condition: 'userSegment_NewUser_avgCognitiveLoad > 0.8 for 300s', targetFeatures: [], targetUserSegments: [UserSegment.NewUser], notificationChannels: ['email', 'slack'], isActive: true, debouncePeriod: 600, autoResolveCondition: 'userSegment_NewUser_avgCognitiveLoad < 0.7'
   },
+  {
+    id: 'alert_agent_critical_health', name: 'Agent Critical Health', description: 'An AI agent\'s health score dropped below critical levels.', severity: AlertSeverity.Critical, condition: 'agent_health_score_lt_0.5 for 60s AND agent_active_tasks_gt_0', targetFeatures: ['feat_agent_orchestration'], targetUserSegments: [], notificationChannels: ['email', 'slack', 'pagerduty'], isActive: true, debouncePeriod: 300, autoResolveCondition: 'agent_health_score_gt_0.7', escalationPolicyId: 'esc_policy_tier1'
+  },
+  {
+    id: 'alert_token_rail_degraded', name: 'Token Rail Degraded Performance', description: 'A critical token rail is experiencing high latency or errors.', severity: AlertSeverity.Emergency, condition: 'token_rail_avgLatency_gt_150ms OR token_rail_errorRate_gt_0.02', targetFeatures: ['feat_token_rail_monitor', 'feat_payment_routing'], targetUserSegments: [], notificationChannels: ['email', 'slack', 'pagerduty'], isActive: true, debouncePeriod: 180, autoResolveCondition: 'token_rail_avgLatency_lt_80ms AND token_rail_errorRate_lt_0.005', escalationPolicyId: 'esc_policy_tier2'
+  },
+  {
+    id: 'alert_auth_failure_spike', name: 'Authentication Failure Spike', description: 'Significant increase in failed login attempts, potential attack.', severity: AlertSeverity.Critical, condition: 'identity_failedAuthRate_gt_0.1 for 30s', targetFeatures: ['feat_identity_security'], targetUserSegments: [], notificationChannels: ['email', 'slack', 'pagerduty'], isActive: true, debouncePeriod: 60, autoResolveCondition: 'identity_failedAuthRate_lt_0.01', escalationPolicyId: 'esc_policy_tier2'
+  },
 ];
 
 export const mockAlertInstances: AlertInstance[] = [
@@ -604,6 +1199,28 @@ export const mockAlertInstances: AlertInstance[] = [
   {
     id: 'alert_inst_003', definitionId: 'alert_user_segment_distress', timestamp: '2023-03-02T11:15:00Z', status: 'acknowledged', triggeredValue: '0.81', context: { segment: 'New User', userCount: 200 }, assignedTo: 'product-team', notes: ['Monitoring impact of recent UI change.']
   },
+  {
+    id: 'alert_inst_004', definitionId: 'alert_token_rail_degraded', timestamp: '2023-03-05T14:00:00Z', status: 'active', triggeredValue: '180ms latency', context: { railId: 'rail_fast', tps: 1200, errorRate: 0.03 }, assignedTo: 'fin-ops', notes: ['Investigating upstream connectivity.']
+  },
+];
+
+export const mockEscalationPolicies: EscalationPolicy[] = [
+  {
+    id: 'esc_policy_tier1', name: 'Tier 1 Critical Incident Escalation', description: 'Immediate notification to on-call, then engineering lead.',
+    steps: [
+      { delaySeconds: 0, targetType: 'team', targetIdentifier: 'on_call_dev', notificationMessage: 'Critical Alert: {ALERT_NAME} - {ALERT_DESCRIPTION}' },
+      { delaySeconds: 300, targetType: 'user', targetIdentifier: 'engineering_lead_johndoe', notificationMessage: 'Escalation: {ALERT_NAME} unresolved after 5 minutes. Details: {ALERT_URL}' },
+    ],
+    isActive: true, lastModifiedDate: '2023-03-01T09:00:00Z', lastModifiedBy: 'admin'
+  },
+  {
+    id: 'esc_policy_tier2', name: 'Tier 2 Financial Incident Escalation', description: 'Immediate to fin-ops, then financial director.',
+    steps: [
+      { delaySeconds: 0, targetType: 'team', targetIdentifier: 'fin_ops_team', notificationMessage: 'EMERGENCY: Financial system alert: {ALERT_NAME} - {ALERT_DESCRIPTION}' },
+      { delaySeconds: 180, targetType: 'user', targetIdentifier: 'financial_director_janedoe', notificationMessage: 'URGENT ESCALATION: Financial critical alert {ALERT_NAME} unresolved.' },
+    ],
+    isActive: true, lastModifiedDate: '2023-03-01T09:15:00Z', lastModifiedBy: 'admin'
+  }
 ];
 
 export const mockSystemHealthMetrics: SystemHealthMetric[] = Array.from({ length: 20 }).map((_, i) => ({
@@ -637,6 +1254,7 @@ export const mockIntegrationConfigs: IntegrationConfig[] = [
   { id: 'int_pagerduty', name: 'PagerDuty On-Call', type: 'custom_webhook', status: 'connected', settings: { serviceKey: 'mock_key_pd' }, lastTested: '2023-03-01T08:05:00Z' },
   { id: 'int_datadog', name: 'Datadog Metrics', type: 'datadog', status: 'disconnected', settings: { apiKey: 'mock_key_dd' } },
   { id: 'int_email', name: 'Email Alerts', type: 'email', status: 'connected', settings: { smtpHost: 'smtp.mock.com', sender: 'alerts@mock.com' }, lastTested: '2023-03-01T08:10:00Z' },
+  { id: 'int_jira', name: 'Jira Incident Management', type: 'jira', status: 'connected', settings: { projectKey: 'PROJ', issueType: 'Task' }, lastTested: '2023-03-01T08:15:00Z' },
 ];
 
 export const mockHistoricalCognitiveData: HistoricalCognitiveData[] = Array.from({ length: 30 }).map((_, i) => {
@@ -671,6 +1289,9 @@ export const mockHistoricalCognitiveData: HistoricalCognitiveData[] = Array.from
       'feat_task_management': avgLoad * 0.1,
       'feat_reporting_dashboard': avgLoad * 0.15,
       'feat_ai_assistant': avgLoad * 0.2,
+      'feat_agent_orchestration': avgLoad * 0.05,
+      'feat_token_rail_monitor': avgLoad * 0.03,
+      'feat_payment_routing': avgLoad * 0.07,
     },
   };
 });
@@ -687,6 +1308,8 @@ export const mockPredictiveForecast: PredictiveForecast[] = Array.from({ length:
       'peak_hours_probability': Math.random(),
       'large_query_expected': Math.random() > 0.7 ? 1 : 0,
       'marketing_campaign_effect': Math.random() > 0.8 ? 0.5 : 0,
+      'scheduled_agent_run': Math.random() > 0.6 ? 0.2 : 0,
+      'expected_payment_volume': Math.random() * 0.3,
     },
     recommendedActions: forecastedLoad > 0.75 ? [{ featureId: 'feat_adv_analytics', action: 'throttle', rationale: 'Proactive reduction for forecasted peak.' }] : [],
   };
@@ -695,19 +1318,158 @@ export const mockPredictiveForecast: PredictiveForecast[] = Array.from({ length:
 export const mockFeedbackLoopStatus: FeedbackLoopStatus = {
   lastEvaluationTimestamp: new Date().toISOString(),
   policiesEvaluated: mockThrottlingPolicies.map(p => p.id),
-  proposedAdjustments: {},
+  proposedAdjustments: {
+    'policy_high_load_general': 'Adjust minLoad threshold to 0.88 for 1 hour due to sustained higher baseline.',
+    'policy_analytics_peak_hours': 'Extend peak hours by 30 minutes due to observed late-afternoon surge.'
+  },
   efficacyScore: 0.85,
   nextEvaluationDue: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-  statusMessage: 'Optimizing for balanced performance and user satisfaction.',
+  statusMessage: 'Optimizing for balanced performance and user satisfaction, with active monitoring of agent load.',
   optimizationGoal: 'balance_load_and_usage',
 };
+
+export const mockAgentDefinitions: AgentDefinition[] = [
+  {
+    id: 'agent_fraud_detector', name: 'Fraud Detection Agent', description: 'Monitors transactions for suspicious patterns.', category: AgentCategory.FraudDetection,
+    skills: [AgentSkill.AnomalyDetection, AgentSkill.RiskAssessment, AgentSkill.Communication], status: 'active',
+    configuration: { model_version: '2.1', sensitivity: 0.8 }, operationalLoadThreshold: 100, lastUpdated: '2023-03-01T13:00:00Z', ownerTeam: 'Security AI', rbacRole: 'fraud_analyst_agent'
+  },
+  {
+    id: 'agent_settlement_orch', name: 'Settlement Orchestration Agent', description: 'Manages multi-rail transaction settlement.', category: AgentCategory.Orchestration,
+    skills: [AgentSkill.TransactionProcessing, AgentSkill.SmartContractExecution, AgentSkill.ErrorHandling], status: 'active',
+    configuration: { primary_rail: 'rail_fast', fallback_rail: 'rail_batch' }, operationalLoadThreshold: 500, lastUpdated: '2023-03-01T14:00:00Z', ownerTeam: 'Payments Core', rbacRole: 'payment_orchestrator_agent'
+  },
+  {
+    id: 'agent_reconciliation', name: 'Ledger Reconciliation Agent', description: 'Periodically verifies ledger consistency.', category: AgentCategory.Reconciliation,
+    skills: [AgentSkill.LedgerUpdate, AgentSkill.DataAggregation, AgentSkill.Reporting], status: 'idle',
+    configuration: { schedule: 'daily_0200_utc', scope: 'all_accounts' }, operationalLoadThreshold: 50, lastUpdated: '2023-03-01T15:00:00Z', ownerTeam: 'Accounting Tech', rbacRole: 'finance_auditor_agent'
+  },
+  {
+    id: 'agent_system_monitor', name: 'System Monitoring Agent', description: 'Monitors overall system health and triggers alerts.', category: AgentCategory.Monitoring,
+    skills: [AgentSkill.AnomalyDetection, AgentSkill.SystemDiagnosis, AgentSkill.PolicyEnforcement], status: 'active',
+    configuration: { metrics_interval: 15 }, operationalLoadThreshold: 200, lastUpdated: '2023-03-01T16:00:00Z', ownerTeam: 'DevOps', rbacRole: 'ops_monitor_agent'
+  },
+];
+
+export const mockAgentHealthMetrics: AgentHealthMetric[] = Array.from({ length: 4 }).map((_, i) => ({
+  timestamp: new Date().toISOString(),
+  agentId: mockAgentDefinitions[i].id,
+  cpuUsage: Math.random() * 20 + 10,
+  memoryUsage: Math.random() * 15 + 20,
+  activeTasks: Math.floor(Math.random() * 50),
+  taskThroughput: Math.floor(Math.random() * 100),
+  errorRate: Math.random() * 0.01,
+  avgTaskLatency: Math.random() * 50 + 20,
+  healthScore: Math.random() * 0.2 + 0.7, // 0.7-0.9
+}));
+
+export const mockTokenRailMetrics: TokenRailMetrics[] = Array.from({ length: 3 }).map((_, i) => {
+  const railTypes = [TokenRailType.Fast, TokenRailType.Batch, TokenRailType.HighValue];
+  const statuses = ['operational', 'degraded', 'offline'] as const;
+  return {
+    timestamp: new Date().toISOString(),
+    railId: `rail_${railTypes[i].replace(/\s/g, '_').toLowerCase()}`,
+    railType: railTypes[i],
+    tps: Math.floor(Math.random() * 1000 + 500),
+    avgLatency: Math.random() * 100 + 50,
+    errorRate: Math.random() * 0.005,
+    queueDepth: Math.floor(Math.random() * 200),
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    totalValueTransacted: Math.random() * 10000000 + 500000,
+  };
+});
+
+export const mockTokenAccountSnapshots: TokenAccountSnapshot[] = Array.from({ length: 5 }).map((_, i) => ({
+  accountId: `acc_${generateUUID().substring(0, 8)}`,
+  balance: Math.random() * 1000000,
+  lastTransactionTimestamp: new Date(Date.now() - Math.random() * 3600 * 1000).toISOString(),
+  transactionCount: Math.floor(Math.random() * 1000),
+  recentTransactions: [
+    { txId: `tx_${generateUUID().substring(0, 8)}`, amount: Math.random() * 1000, status: TokenTransactionStatus.Confirmed },
+    { txId: `tx_${generateUUID().substring(0, 8)}`, amount: Math.random() * 500, status: TokenTransactionStatus.Pending },
+  ],
+}));
+
+export const mockPaymentEngineStatus: PaymentEngineStatus = {
+  timestamp: new Date().toISOString(),
+  overallStatus: 'online',
+  requestsPerSecond: Math.floor(Math.random() * 2000 + 1000),
+  avgProcessingLatency: Math.random() * 80 + 20,
+  failureRate: Math.random() * 0.002,
+  inFlightTransactions: Math.floor(Math.random() * 500),
+  flaggedTransactions: Math.floor(Math.random() * 10),
+  railStatuses: {
+    'rail_fast': 'operational',
+    'rail_batch': 'degraded',
+    'rail_high_value': 'operational',
+  },
+};
+
+export const mockPaymentRequestMetrics: PaymentRequestMetric[] = Array.from({ length: 20 }).map((_, i) => {
+  const rails = [TokenRailType.Fast, TokenRailType.Batch, TokenRailType.HighValue];
+  const statuses = [TokenTransactionStatus.Confirmed, TokenTransactionStatus.Failed, TokenTransactionStatus.Pending];
+  return {
+    timestamp: new Date(Date.now() - (19 - i) * 1000).toISOString(),
+    requestId: `pay_req_${generateUUID().substring(0, 8)}`,
+    source: `user_${Math.floor(Math.random() * 50) + 1}`,
+    destination: `merchant_${Math.floor(Math.random() * 10) + 1}`,
+    amount: Math.random() * 10000,
+    currency: 'USD',
+    chosenRail: rails[Math.floor(Math.random() * rails.length)],
+    processingTime: Math.random() * 200 + 50,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    riskScore: Math.random() * 0.1,
+    fraudReason: Math.random() > 0.95 ? 'High velocity transaction' : undefined,
+  };
+});
+
+export const mockIdentityServiceStatus: IdentityServiceStatus = {
+  timestamp: new Date().toISOString(),
+  overallStatus: 'operational',
+  authRequestsPerSecond: Math.floor(Math.random() * 500 + 200),
+  avgAuthLatency: Math.random() * 30 + 10,
+  failedAuthRate: Math.random() * 0.001,
+  authzChecksPerSecond: Math.floor(Math.random() * 800 + 300),
+  activeSessions: Math.floor(Math.random() * 10000 + 5000),
+  keyManagementStatus: 'healthy',
+  securityIncidents: [],
+};
+
+export const mockAuthLogEntries: AuthLogEntry[] = Array.from({ length: 20 }).map((_, i) => {
+  const eventTypes = Object.values(AuthEventType);
+  const outcomes = ['success', 'failure', 'denied', 'info'];
+  const entityId = i % 2 === 0 ? `user_${Math.floor(Math.random() * 50) + 1}` : `agent_${Math.floor(Math.random() * 4) + 1}`;
+  const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+  const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+
+  return {
+    id: `auth_log_${i + 1}`,
+    timestamp: new Date(Date.now() - (19 - i) * 10 * 1000).toISOString(),
+    eventType: eventType,
+    entityId: entityId,
+    ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+    outcome: outcome,
+    message: `${entityId} ${eventType} - ${outcome}`,
+    context: {
+      feature: Math.random() > 0.5 ? 'feat_identity_security' : 'feat_adv_analytics',
+      details: `Attempt from ${`192.168.1.${Math.floor(Math.random() * 255)}`}`
+    },
+    previousHash: 'genesis', // Simplified, will be updated by mockAPI POST
+    entryHash: `hash_${i + 1}`, // Simplified, will be updated by mockAPI POST
+  };
+});
+
 
 // Data Hooks (simulating data fetching and state management) ---------------------------------------------------------
 
 /**
  * @function useFeatureDefinitions
- * @description Hook to manage and fetch feature definitions.
- * @returns {{ features: FeatureDefinition[], loading: boolean, error: string | null, fetchFeatures: () => Promise<void>, addFeature: (feature: Partial<FeatureDefinition>) => Promise<void>, updateFeature: (feature: FeatureDefinition) => Promise<void> }}
+ * @description Hook to manage and fetch feature definitions. This centralizes
+ * the logic for interacting with the feature registry, ensuring consistency
+ * across the application.
+ * Business Value: Provides a single source of truth for feature metadata,
+ * crucial for dynamic UI rendering, policy application, and maintaining a
+ * synchronized understanding of system capabilities across engineering teams.
  */
 export const useFeatureDefinitions = () => {
   const [features, setFeatures] = useState<FeatureDefinition[]>([]);
@@ -773,8 +1535,13 @@ export const useFeatureDefinitions = () => {
 
 /**
  * @function useThrottlingPolicies
- * @description Hook to manage and fetch throttling policies.
- * @returns {{ policies: ThrottlingPolicy[], loading: boolean, error: string | null, fetchPolicies: () => Promise<void>, addPolicy: (policy: Partial<ThrottlingPolicy>) => Promise<void>, updatePolicy: (policy: ThrottlingPolicy) => Promise<void> }}
+ * @description Hook to manage and fetch throttling policies. This abstraction
+ * ensures that policy management is robust and scalable, supporting the dynamic
+ * nature of operational load.
+ * Business Value: Centralizes the management of system resilience policies,
+ * providing the tools to dynamically adapt to varying load conditions, prevent
+ * outages, and optimize resource utilization, thereby directly impacting system
+ * uptime and cost efficiency.
  */
 export const useThrottlingPolicies = () => {
   const [policies, setPolicies] = useState<ThrottlingPolicy[]>([]);
@@ -841,8 +1608,11 @@ export const useThrottlingPolicies = () => {
 
 /**
  * @function useAlerts
- * @description Hook to manage and fetch alert definitions and instances.
- * @returns {{ definitions: AlertDefinition[], instances: AlertInstance[], loading: boolean, error: string | null, fetchDefinitions: () => Promise<void>, fetchInstances: () => Promise<void>, createDefinition: (def: Partial<AlertDefinition>) => Promise<void>, updateInstance: (instance: AlertInstance) => Promise<void> }}
+ * @description Hook to manage and fetch alert definitions and instances. This ensures
+ * that operational alerts are consistently retrieved and managed throughout the UI.
+ * Business Value: Provides a robust framework for real-time incident awareness and
+ * management, accelerating response times to critical system events and minimizing
+ * the impact of operational disruptions on business continuity and revenue.
  */
 export const useAlerts = () => {
   const [definitions, setDefinitions] = useState<AlertDefinition[]>([]);
@@ -900,8 +1670,9 @@ export const useAlerts = () => {
 
   const updateInstance = async (instance: AlertInstance) => {
     try {
-      // Mock API doesn't support PUT for instances, so we'll just update local state
-      setInstances(prev => prev.map(i => i.id === instance.id ? instance : i));
+      const updatedInstance: AlertInstance = await mockBackendAPI('alerts/instances', 'PUT', instance);
+      setInstances(prev => prev.map(i => i.id === updatedInstance.id ? updatedInstance : i));
+      return updatedInstance;
     } catch (err: any) {
       setError(err.message || 'Failed to update alert instance.');
       throw err;
@@ -917,9 +1688,77 @@ export const useAlerts = () => {
 };
 
 /**
+ * @function useEscalationPolicies
+ * @description Hook to manage and fetch alert escalation policies. This provides
+ * the necessary data for configuring how critical incidents are handled.
+ * Business Value: Orchestrates a highly reliable incident response workflow,
+ * ensuring that no critical alert goes unaddressed and that the right personnel
+ * are engaged at the right time, minimizing MTTR and preserving operational integrity.
+ */
+export const useEscalationPolicies = () => {
+  const [policies, setPolicies] = useState<EscalationPolicy[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPolicies = async () => {
+    setLoading(true);
+    try {
+      const data: EscalationPolicy[] = await mockBackendAPI('alerts/escalation_policies', 'GET');
+      setPolicies(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch escalation policies.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addPolicy = async (policy: Partial<EscalationPolicy>) => {
+    try {
+      const newPolicy: EscalationPolicy = {
+        id: generateUUID(),
+        name: policy.name || 'New Escalation Policy',
+        description: policy.description || '',
+        steps: policy.steps || [],
+        isActive: policy.isActive !== undefined ? policy.isActive : true,
+        lastModifiedBy: 'admin',
+        lastModifiedDate: new Date().toISOString(),
+      };
+      const addedPolicy: EscalationPolicy = await mockBackendAPI('alerts/escalation_policies', 'POST', newPolicy);
+      setPolicies(prev => [...prev, addedPolicy]);
+      return addedPolicy;
+    } catch (err: any) {
+      setError(err.message || 'Failed to add escalation policy.');
+      throw err;
+    }
+  };
+
+  const updatePolicy = async (policy: EscalationPolicy) => {
+    try {
+      const updatedPolicy: EscalationPolicy = await mockBackendAPI('alerts/escalation_policies', 'PUT', policy);
+      setPolicies(prev => prev.map(p => p.id === updatedPolicy.id ? updatedPolicy : p));
+      return updatedPolicy;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update escalation policy.');
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
+
+  return { policies, loading, error, fetchPolicies, addPolicy, updatePolicy };
+};
+
+
+/**
  * @function useSystemHealth
  * @description Hook to fetch real-time and historical system health metrics.
- * @returns {{ currentMetrics: SystemHealthMetric | null, history: SystemHealthMetric[], loading: boolean, error: string | null }}
+ * This provides continuous visibility into the foundational infrastructure.
+ * Business Value: Acts as the pulse of the underlying system, enabling predictive
+ * maintenance, resource capacity planning, and proactive issue resolution,
+ * all contributing to maximized uptime and efficient resource utilization.
  */
 export const useSystemHealth = () => {
   const [currentMetrics, setCurrentMetrics] = useState<SystemHealthMetric | null>(null);
@@ -966,8 +1805,11 @@ export const useSystemHealth = () => {
 
 /**
  * @function useUserProfiles
- * @description Hook to manage and fetch user profiles.
- * @returns {{ users: UserProfile[], loading: boolean, error: string | null, fetchUsers: () => Promise<void> }}
+ * @description Hook to manage and fetch user profiles. This data informs
+ * user-segment-specific load balancing and experience personalization.
+ * Business Value: Provides the underlying data for segmenting and tailoring
+ * user experiences, leading to higher engagement, better retention, and the
+ * ability to offer differentiated services to high-value customer groups.
  */
 export const useUserProfiles = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -996,8 +1838,11 @@ export const useUserProfiles = () => {
 
 /**
  * @function useHistoricalData
- * @description Hook to fetch historical cognitive load data.
- * @returns {{ history: HistoricalCognitiveData[], loading: boolean, error: string | null, fetchHistoricalData: () => Promise<void> }}
+ * @description Hook to fetch historical cognitive load data. This aggregate view
+ * is crucial for trend analysis and long-term performance optimization.
+ * Business Value: Enables data-driven strategic decisions, capacity planning,
+ * and validation of load balancing policy effectiveness over time,
+ * ensuring continuous system improvement and optimized resource allocation.
  */
 export const useHistoricalData = () => {
   const [history, setHistory] = useState<HistoricalCognitiveData[]>([]);
@@ -1026,8 +1871,11 @@ export const useHistoricalData = () => {
 
 /**
  * @function usePredictiveAnalytics
- * @description Hook to fetch and manage predictive load forecasts.
- * @returns {{ forecast: PredictiveForecast[], loading: boolean, error: string | null, fetchForecast: () => Promise<void> }}
+ * @description Hook to fetch and manage predictive load forecasts. This empowers
+ * proactive decision-making and pre-emptive resource adjustments.
+ * Business Value: Shifts operational management from reactive to predictive,
+ * enabling proactive resource scaling and policy adjustments, thereby preventing
+ * incidents before they impact users and ensuring continuous optimal performance.
  */
 export const usePredictiveAnalytics = () => {
   const [forecast, setForecast] = useState<PredictiveForecast[]>([]);
@@ -1056,8 +1904,11 @@ export const usePredictiveAnalytics = () => {
 
 /**
  * @function useFeedbackLoop
- * @description Hook to fetch and manage feedback loop status.
- * @returns {{ status: FeedbackLoopStatus | null, loading: boolean, error: string | null, fetchStatus: () => Promise<void> }}
+ * @description Hook to fetch and manage feedback loop status. This provides
+ * transparency into the system's self-optimization capabilities.
+ * Business Value: Automates the continuous improvement of load balancing strategies,
+ * ensuring the system always adapts to new patterns, leading to maximized efficiency
+ * and resilience with minimal human intervention, reducing operational costs.
  */
 export const useFeedbackLoop = () => {
   const [status, setStatus] = useState<FeedbackLoopStatus | null>(null);
@@ -1086,8 +1937,11 @@ export const useFeedbackLoop = () => {
 
 /**
  * @function useIntegrationConfigs
- * @description Hook to manage and fetch integration configurations.
- * @returns {{ configs: IntegrationConfig[], loading: boolean, error: string | null, fetchConfigs: () => Promise<void>, addConfig: (config: Partial<IntegrationConfig>) => Promise<void>, updateConfig: (config: IntegrationConfig) => Promise<void> }}
+ * @description Hook to manage and fetch integration configurations. This centralizes
+ * the setup and monitoring of external system connections.
+ * Business Value: Ensures seamless interoperability with existing enterprise systems
+ * and monitoring tools, enabling a unified operational view, reducing manual effort,
+ * and accelerating incident response through automated notifications, protecting investments.
  */
 export const useIntegrationConfigs = () => {
   const [configs, setConfigs] = useState<IntegrationConfig[]>([]);
@@ -1128,9 +1982,9 @@ export const useIntegrationConfigs = () => {
 
   const updateConfig = async (config: IntegrationConfig) => {
     try {
-      // Mock API doesn't support PUT for integrations, simulating local update
-      setConfigs(prev => prev.map(c => c.id === config.id ? { ...c, ...config } : c));
-      return config;
+      const updatedConfig: IntegrationConfig = await mockBackendAPI('integrations', 'PUT', config);
+      setConfigs(prev => prev.map(c => c.id === updatedConfig.id ? updatedConfig : c));
+      return updatedConfig;
     } catch (err: any) {
       setError(err.message || 'Failed to update integration config.');
       throw err;
@@ -1144,12 +1998,280 @@ export const useIntegrationConfigs = () => {
   return { configs, loading, error, fetchConfigs, addConfig, updateConfig };
 };
 
+/**
+ * @function useAgents
+ * @description Hook to manage and fetch AI agent definitions and their health metrics.
+ * This provides continuous oversight of the autonomous workforce.
+ * Business Value: Ensures the health and optimal performance of agentic AI systems,
+ * which are foundational for automated workflows. Proactive monitoring prevents
+ * operational drift and ensures agents reliably execute critical business functions,
+ * maximizing ROI on AI investments.
+ */
+export const useAgents = () => {
+  const [definitions, setDefinitions] = useState<AgentDefinition[]>([]);
+  const [healthMetrics, setHealthMetrics] = useState<AgentHealthMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDefinitions = async () => {
+    setLoading(true);
+    try {
+      const data: AgentDefinition[] = await mockBackendAPI('agents', 'GET');
+      setDefinitions(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch agent definitions.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchHealthMetrics = async () => {
+    setLoading(true);
+    try {
+      const data: AgentHealthMetric[] = await mockBackendAPI('agents/health', 'GET');
+      setHealthMetrics(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch agent health metrics.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addAgent = async (agent: Partial<AgentDefinition>) => {
+    try {
+      const newAgent: AgentDefinition = {
+        id: generateUUID(),
+        name: agent.name || 'New Agent',
+        description: agent.description || '',
+        category: agent.category || AgentCategory.Monitoring,
+        skills: agent.skills || [],
+        status: agent.status || 'idle',
+        configuration: agent.configuration || {},
+        operationalLoadThreshold: agent.operationalLoadThreshold || 100,
+        lastUpdated: new Date().toISOString(),
+        ownerTeam: agent.ownerTeam || 'Unknown',
+        rbacRole: agent.rbacRole || 'default_agent_role',
+      };
+      const addedAgent: AgentDefinition = await mockBackendAPI('agents', 'POST', newAgent);
+      setDefinitions(prev => [...prev, addedAgent]);
+      return addedAgent;
+    } catch (err: any) {
+      setError(err.message || 'Failed to add agent.');
+      throw err;
+    }
+  };
+
+  const updateAgent = async (agent: AgentDefinition) => {
+    try {
+      const updatedAgent: AgentDefinition = await mockBackendAPI('agents', 'PUT', agent);
+      setDefinitions(prev => prev.map(a => a.id === updatedAgent.id ? updatedAgent : a));
+      return updatedAgent;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update agent.');
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    fetchDefinitions();
+    fetchHealthMetrics();
+
+    // Simulate real-time health updates
+    const interval = setInterval(fetchHealthMetrics, 10000); // Every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  return { definitions, healthMetrics, loading, error, fetchDefinitions, fetchHealthMetrics, addAgent, updateAgent };
+};
+
+/**
+ * @function useTokenRails
+ * @description Hook to manage and fetch token rail metrics and account snapshots.
+ * This provides crucial insight into the performance and state of the digital ledger.
+ * Business Value: Offers real-time financial observability into the token rail layer,
+ * ensuring transaction integrity, liquidity monitoring, and efficient routing,
+ * which are paramount for modern real-time payment systems and financial stability.
+ */
+export const useTokenRails = () => {
+  const [metrics, setMetrics] = useState<TokenRailMetrics[]>([]);
+  const [accounts, setAccounts] = useState<TokenAccountSnapshot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMetrics = async () => {
+    setLoading(true);
+    try {
+      const data: TokenRailMetrics[] = await mockBackendAPI('token_rails', 'GET');
+      setMetrics(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch token rail metrics.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAccounts = async () => {
+    setLoading(true);
+    try {
+      const data: TokenAccountSnapshot[] = await mockBackendAPI('token_accounts', 'GET');
+      setAccounts(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch token accounts.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+    fetchAccounts();
+
+    const interval = setInterval(fetchMetrics, 5000); // Update metrics every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  return { metrics, accounts, loading, error, fetchMetrics, fetchAccounts };
+};
+
+/**
+ * @function usePayments
+ * @description Hook to manage and fetch payment engine status and request metrics.
+ * This provides the operational view for the real-time payments infrastructure.
+ * Business Value: Critical for monitoring the health and performance of the
+ * real-time payments engine, enabling rapid fraud detection, transaction reconciliation,
+ * and ensuring high availability and low latency for all financial transfers,
+ * thereby securing and maximizing transaction revenue.
+ */
+export const usePayments = () => {
+  const [engineStatus, setEngineStatus] = useState<PaymentEngineStatus | null>(null);
+  const [requestMetrics, setRequestMetrics] = useState<PaymentRequestMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEngineStatus = async () => {
+    setLoading(true);
+    try {
+      const data: PaymentEngineStatus = await mockBackendAPI('payments/engine_status', 'GET');
+      setEngineStatus(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch payment engine status.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRequestMetrics = async () => {
+    setLoading(true);
+    try {
+      const data: PaymentRequestMetric[] = await mockBackendAPI('payments/requests', 'GET');
+      setRequestMetrics(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch payment request metrics.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEngineStatus();
+    fetchRequestMetrics();
+
+    const engineInterval = setInterval(fetchEngineStatus, 5000);
+    const requestInterval = setInterval(fetchRequestMetrics, 5000);
+    return () => {
+      clearInterval(engineInterval);
+      clearInterval(requestInterval);
+    };
+  }, []);
+
+  return { engineStatus, requestMetrics, loading, error, fetchEngineStatus, fetchRequestMetrics };
+};
+
+/**
+ * @function useIdentity
+ * @description Hook to manage and fetch identity service status and authentication logs.
+ * This provides a critical security and audit trail for user and agent access.
+ * Business Value: Establishes a robust security observability layer for digital identity,
+ * critical for preventing fraud, detecting unauthorized access, and ensuring compliance
+ * with data privacy and security regulations, thereby protecting the platform and its users.
+ */
+export const useIdentity = () => {
+  const [serviceStatus, setServiceStatus] = useState<IdentityServiceStatus | null>(null);
+  const [authLogs, setAuthLogs] = useState<AuthLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchServiceStatus = async () => {
+    setLoading(true);
+    try {
+      const data: IdentityServiceStatus = await mockBackendAPI('identity/status', 'GET');
+      setServiceStatus(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch identity service status.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAuthLogs = async () => {
+    setLoading(true);
+    try {
+      const data: AuthLogEntry[] = await mockBackendAPI('identity/auth_logs', 'GET');
+      setAuthLogs(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch authentication logs.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addAuthLogEntry = async (entry: Partial<AuthLogEntry>) => {
+    try {
+      const newLogEntry: AuthLogEntry = {
+        id: generateUUID(),
+        timestamp: new Date().toISOString(),
+        eventType: entry.eventType || AuthEventType.LoginSuccess,
+        entityId: entry.entityId || 'unknown',
+        ipAddress: entry.ipAddress || '0.0.0.0',
+        outcome: entry.outcome || 'info',
+        message: entry.message || '',
+        context: entry.context || {},
+        previousHash: 'placeholder', // Will be filled by mockBackendAPI
+        entryHash: 'placeholder', // Will be filled by mockBackendAPI
+      };
+      const addedLog: AuthLogEntry = await mockBackendAPI('identity/auth_logs', 'POST', newLogEntry);
+      setAuthLogs(prev => [...prev, addedLog]);
+      return addedLog;
+    } catch (err: any) {
+      setError(err.message || 'Failed to add auth log entry.');
+      throw err;
+    }
+  };
+
+  useEffect(() => {
+    fetchServiceStatus();
+    fetchAuthLogs();
+
+    const statusInterval = setInterval(fetchServiceStatus, 10000);
+    const logsInterval = setInterval(fetchAuthLogs, 5000);
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(logsInterval);
+    };
+  }, []);
+
+  return { serviceStatus, authLogs, loading, error, fetchServiceStatus, fetchAuthLogs, addAuthLogEntry };
+};
+
 // UI Components (Sub-views) -------------------------------------------------------------------------------------------
 
 /**
  * @const CognitiveLoadGauge
  * @description A visual gauge component for displaying current cognitive load.
- * @param {{ load: number }} props - The current cognitive load (0.0 to 1.0).
+ * This provides an immediate, intuitive understanding of the user experience burden.
+ * Business Value: Offers a quick, at-a-glance performance indicator critical for
+ * operational teams and stakeholders to assess user experience health, enabling
+ * rapid intervention to prevent user frustration and maintain engagement.
  */
 export const CognitiveLoadGauge: React.FC<{ load: number }> = ({ load }) => {
   const circumference = 2 * Math.PI * 45;
@@ -1200,8 +2322,11 @@ export const CognitiveLoadGauge: React.FC<{ load: number }> = ({ load }) => {
 
 /**
  * @const FeatureStatusCard
- * @description Displays the status of individual features, including their cognitive weight and current throttling status.
- * @param {{ feature: FeatureDefinition, isThrottled: boolean }} props
+ * @description Displays the status of individual features, including their cognitive weight
+ * and current throttling status. This provides detailed insight into feature-level performance.
+ * Business Value: Enables granular monitoring and management of each feature's operational
+ * status, allowing product and engineering teams to understand how individual components
+ * contribute to overall system load and user experience, facilitating targeted optimization.
  */
 export const FeatureStatusCard: React.FC<{ feature: FeatureDefinition; isThrottled: boolean }> = ({ feature, isThrottled }) => {
   const loadColor = getLoadColorClass(feature.cognitiveWeight);
@@ -1222,7 +2347,7 @@ export const FeatureStatusCard: React.FC<{ feature: FeatureDefinition; isThrottl
       <div className="mt-3">
         {isThrottled ? (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-600 text-white">
-            <span className="mr-1 animate-pulse">•</span> Throttled
+            <span className="mr-1 animate-pulse">â€¢</span> Throttled
           </span>
         ) : (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100">
@@ -1236,8 +2361,11 @@ export const FeatureStatusCard: React.FC<{ feature: FeatureDefinition; isThrottl
 
 /**
  * @const ThrottlingPoliciesTable
- * @description Displays a table of all defined throttling policies.
- * @param {{ policies: ThrottlingPolicy[], onEditPolicy: (policy: ThrottlingPolicy) => void }} props
+ * @description Displays a table of all defined throttling policies. This interface
+ * allows operators to review and manage the rules governing system load.
+ * Business Value: Provides a transparent and manageable interface for load balancing
+ * policies, enabling administrators to quickly audit, modify, and create new policies,
+ * ensuring agile response to changing operational demands and strategic priorities.
  */
 export const ThrottlingPoliciesTable: React.FC<{ policies: ThrottlingPolicy[]; onEditPolicy: (policy: ThrottlingPolicy) => void }> = ({ policies, onEditPolicy }) => {
   if (policies.length === 0) {
@@ -1288,8 +2416,11 @@ export const ThrottlingPoliciesTable: React.FC<{ policies: ThrottlingPolicy[]; o
 
 /**
  * @const AlertsList
- * @description Displays a list of active and recent alert instances.
- * @param {{ alerts: AlertInstance[], definitions: AlertDefinition[], onAcknowledge: (alert: AlertInstance) => void, onResolve: (alert: AlertInstance) => void }} props
+ * @description Displays a list of active and recent alert instances. This view
+ * is critical for incident monitoring and management.
+ * Business Value: Consolidates all operational warnings and critical alerts into a
+ * single, actionable view, empowering rapid incident response, reducing downtime,
+ * and minimizing financial and reputational damage.
  */
 export const AlertsList: React.FC<{ alerts: AlertInstance[]; definitions: AlertDefinition[]; onAcknowledge: (alert: AlertInstance) => void; onResolve: (alert: AlertInstance) => void }> = ({ alerts, definitions, onAcknowledge, onResolve }) => {
   if (alerts.length === 0) {
@@ -1364,8 +2495,12 @@ export const AlertsList: React.FC<{ alerts: AlertInstance[]; definitions: AlertD
 
 /**
  * @const SystemHealthSummaryCard
- * @description Displays key system health metrics in a card format.
- * @param {{ metrics: SystemHealthMetric | null }} props
+ * @description Displays key system health metrics in a concise card format.
+ * This provides an immediate overview of the underlying infrastructure's status.
+ * Business Value: Delivers a high-level, actionable summary of core system health,
+ * enabling operations teams and executives to quickly ascertain the stability
+ * of the entire platform and identify areas requiring immediate attention,
+ * protecting service uptime and user trust.
  */
 export const SystemHealthSummaryCard: React.FC<{ metrics: SystemHealthMetric | null }> = ({ metrics }) => {
   if (!metrics) {
@@ -1414,20 +2549,27 @@ export const SystemHealthSummaryCard: React.FC<{ metrics: SystemHealthMetric | n
 /**
  * @const DataPoint
  * @description Represents a single data point for a chart, used by mock chart components.
- * @property {string} name - The label for the data point (e.g., timestamp, category name).
- * @property {number} value - The numeric value of the data point.
+ * This simple structure allows for flexible visualization of various metrics.
+ * Business Value: Provides a standardized, digestible format for data visualization,
+ * enabling quick interpretation of trends and patterns across different operational
+ * datasets for informed decision-making.
  */
 interface DataPoint {
+  /** The label for the data point (e.g., timestamp, category name). */
   name: string;
+  /** The numeric value of the data point. */
   value: number;
   [key: string]: any; // Allow for additional properties like 'avgLoad', 'maxLoad'
 }
 
 /**
  * @const MockLineChart
- * @description A highly simplified mock line chart component.
- * In a real application, this would use a charting library like Recharts or Chart.js.
- * @param {{ data: DataPoint[], dataKeys: string[], title: string, xAxisLabel: string, yAxisLabel: string }} props
+ * @description A highly simplified mock line chart component for visualizing trends over time.
+ * In a real application, this would use a robust charting library like Recharts or Chart.js
+ * to provide interactive and high-fidelity data visualization.
+ * Business Value: Offers essential trend analysis capabilities, allowing operational teams
+ * to visualize performance metrics over time, identify anomalies, and understand system
+ * behavior patterns without the overhead of external charting library dependencies.
  */
 export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; title: string; xAxisLabel: string; yAxisLabel: string }> = ({ data, dataKeys, title, xAxisLabel, yAxisLabel }) => {
   if (!data || data.length === 0) {
@@ -1499,8 +2641,11 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
 
 /**
  * @const MockBarChart
- * @description A highly simplified mock bar chart component.
- * @param {{ data: DataPoint[], dataKey: string, title: string, xAxisLabel: string, yAxisLabel: string }} props
+ * @description A highly simplified mock bar chart component for comparing discrete values.
+ * Similar to the line chart, a real application would use a dedicated charting library.
+ * Business Value: Provides immediate comparative analysis of discrete data points,
+ * such as feature contributions or agent performance, aiding quick identification
+ * of top performers or critical bottlenecks without external dependencies.
  */
 export const MockBarChart: React.FC<{ data: DataPoint[]; dataKey: string; title: string; xAxisLabel: string; yAxisLabel: string }> = ({ data, dataKey, title, xAxisLabel, yAxisLabel }) => {
   if (!data || data.length === 0) {
@@ -1545,8 +2690,11 @@ export const MockBarChart: React.FC<{ data: DataPoint[]; dataKey: string; title:
 
 /**
  * @const PredictiveForecastCard
- * @description Displays the next forecasted cognitive load and recommended actions.
- * @param {{ forecast: PredictiveForecast | null }} props
+ * @description Displays the next forecasted cognitive load and recommended actions,
+ * empowering proactive operational adjustments.
+ * Business Value: Provides actionable intelligence for proactive resource management,
+ * enabling pre-emptive throttling or scaling to avoid anticipated load spikes,
+ * thereby preventing service disruptions and optimizing infrastructure costs.
  */
 export const PredictiveForecastCard: React.FC<{ forecast: PredictiveForecast | null }> = ({ forecast }) => {
   if (!forecast) {
@@ -1567,7 +2715,7 @@ export const PredictiveForecastCard: React.FC<{ forecast: PredictiveForecast | n
         <div className="text-right">
           {forecast.recommendedActions.length > 0 ? (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 text-red-100">
-              <span className="mr-1 animate-pulse">•</span> Action Recommended
+              <span className="mr-1 animate-pulse">â€¢</span> Action Recommended
             </span>
           ) : (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100">
@@ -1604,8 +2752,12 @@ export const PredictiveForecastCard: React.FC<{ forecast: PredictiveForecast | n
 
 /**
  * @const FeatureEditorForm
- * @description A form for editing or adding FeatureDefinition.
- * @param {{ feature?: FeatureDefinition; onSave: (feature: FeatureDefinition) => void; onCancel: () => void }} props
+ * @description A form for editing or adding FeatureDefinition. This administrative
+ * interface allows for comprehensive management of application features.
+ * Business Value: Streamlines feature lifecycle management, enabling product and
+ * engineering teams to define, configure, and update application features with
+ * precision, ensuring that operational parameters align with business objectives
+ * and user experience goals.
  */
 export const FeatureEditorForm: React.FC<{ feature?: FeatureDefinition; onSave: (feature: FeatureDefinition) => void; onCancel: () => void }> = ({ feature, onSave, onCancel }) => {
   const [formData, setFormData] = useState<FeatureDefinition>(
@@ -1747,8 +2899,11 @@ export const FeatureEditorForm: React.FC<{ feature?: FeatureDefinition; onSave: 
 
 /**
  * @const PolicyEditorForm
- * @description A form for editing or adding ThrottlingPolicy.
- * @param {{ policy?: ThrottlingPolicy; allFeatures: FeatureDefinition[]; onSave: (policy: ThrottlingPolicy) => void; onCancel: () => void }} props
+ * @description A form for editing or adding ThrottlingPolicy. This powerful interface
+ * enables administrators to fine-tune the system's dynamic load management rules.
+ * Business Value: Empowers administrators to precisely configure and deploy
+ * load balancing policies, directly influencing system performance, user experience,
+ * and operational costs, ensuring agility in response to evolving business needs.
  */
 export const PolicyEditorForm: React.FC<{ policy?: ThrottlingPolicy; allFeatures: FeatureDefinition[]; onSave: (policy: ThrottlingPolicy) => void; onCancel: () => void }> = ({ policy, allFeatures, onSave, onCancel }) => {
   const [formData, setFormData] = useState<ThrottlingPolicy>(
@@ -1898,8 +3053,11 @@ export const PolicyEditorForm: React.FC<{ policy?: ThrottlingPolicy; allFeatures
 
 /**
  * @const IntegrationConfigTable
- * @description Displays a table of all configured integrations.
- * @param {{ configs: IntegrationConfig[], onEditConfig: (config: IntegrationConfig) => void }} props
+ * @description Displays a table of all configured integrations, offering a centralized
+ * view for managing external system connections.
+ * Business Value: Provides transparent oversight and management of all critical
+ * third-party integrations, ensuring seamless data flow, reducing configuration errors,
+ * and maintaining the integrity of the integrated ecosystem, protecting business operations.
  */
 export const IntegrationConfigTable: React.FC<{ configs: IntegrationConfig[]; onEditConfig: (config: IntegrationConfig) => void }> = ({ configs, onEditConfig }) => {
   if (configs.length === 0) {
@@ -1962,8 +3120,11 @@ export const IntegrationConfigTable: React.FC<{ configs: IntegrationConfig[]; on
 
 /**
  * @const UserSegmentDistribution
- * @description Displays cognitive load distribution across user segments.
- * @param {{ historicalData: HistoricalCognitiveData[] }} props
+ * @description Displays cognitive load distribution across user segments. This visualization
+ * highlights how different user groups are impacted by system load.
+ * Business Value: Provides critical insights for user experience optimization and targeted
+ * resource allocation, enabling product teams to ensure high-value user segments receive
+ * optimal performance and drive tailored engagement strategies for various user groups.
  */
 export const UserSegmentDistribution: React.FC<{ historicalData: HistoricalCognitiveData[] }> = ({ historicalData }) => {
   if (historicalData.length === 0) {
@@ -1996,8 +3157,12 @@ export const UserSegmentDistribution: React.FC<{ historicalData: HistoricalCogni
 
 /**
  * @const FeedbackLoopStatusCard
- * @description Displays the status of the adaptive feedback loop.
- * @param {{ status: FeedbackLoopStatus | null }} props
+ * @description Displays the status of the adaptive feedback loop, highlighting
+ * its optimization goals and proposed adjustments.
+ * Business Value: Offers transparency into the system's autonomous self-optimization
+ * capabilities, assuring stakeholders that the platform is continually learning
+ * and adapting to improve efficiency, resilience, and user experience, thereby
+ * delivering sustained value and reducing operational overhead.
  */
 export const FeedbackLoopStatusCard: React.FC<{ status: FeedbackLoopStatus | null }> = ({ status }) => {
   if (!status) {
@@ -2050,26 +3215,249 @@ export const FeedbackLoopStatusCard: React.FC<{ status: FeedbackLoopStatus | nul
   );
 };
 
+/**
+ * @const AgentStatusTable
+ * @description Displays a table of all defined AI agents and their current health metrics.
+ * This provides essential oversight for the autonomous workforce.
+ * Business Value: Ensures the operational integrity and accountability of every AI agent,
+ * allowing for proactive management of the automated workforce, minimizing errors,
+ * and maximizing the efficiency of agentic workflows.
+ */
+export const AgentStatusTable: React.FC<{ agents: AgentDefinition[]; healthMetrics: AgentHealthMetric[]; onEditAgent: (agent: AgentDefinition) => void }> = ({ agents, healthMetrics, onEditAgent }) => {
+  if (agents.length === 0) {
+    return <p className="text-gray-400">No AI agents defined.</p>;
+  }
+
+  const getAgentHealth = (agentId: string) => healthMetrics.find(m => m.agentId === agentId);
+
+  const getHealthColor = (score: number | undefined) => {
+    if (score === undefined) return 'text-gray-400';
+    if (score > 0.8) return 'text-green-400';
+    if (score > 0.6) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-900/50">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Category</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Health Score</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Active Tasks</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800">
+          {agents.map(agent => {
+            const health = getAgentHealth(agent.id);
+            return (
+              <tr key={agent.id} className="hover:bg-gray-700">
+                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-white">{agent.name}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{agent.category}</td>
+                <td className="px-3 py-2 whitespace-nowrap">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${agent.status === 'active' ? 'bg-green-700 text-green-100' : agent.status === 'error' ? 'bg-red-700 text-red-100' : 'bg-yellow-600 text-yellow-100'}`}>
+                    {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+                  </span>
+                </td>
+                <td className={`px-3 py-2 whitespace-nowrap text-sm font-bold ${getHealthColor(health?.healthScore)}`}>
+                  {health ? (health.healthScore * 100).toFixed(1) + '%' : 'N/A'}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{health?.activeTasks || 0}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => onEditAgent(agent)}
+                    className="text-indigo-400 hover:text-indigo-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+/**
+ * @const TokenRailStatusCard
+ * @description Displays the real-time operational status and key metrics for a token rail.
+ * This provides immediate insight into the health of specific financial rails.
+ * Business Value: Ensures granular, real-time observability over each token rail,
+ * facilitating proactive load management and routing decisions to maintain optimal
+ * transaction speed, reliability, and security across all digital value movements.
+ */
+export const TokenRailStatusCard: React.FC<{ metric: TokenRailMetrics }> = ({ metric }) => {
+  const getStatusColor = (status: TokenRailMetrics['status']) => {
+    switch (status) {
+      case 'operational': return 'text-green-400';
+      case 'degraded': return 'text-yellow-400';
+      case 'offline': return 'text-red-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  return (
+    <div className="bg-gray-700 p-4 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold text-white mb-2">{metric.railType} ({metric.railId})</h3>
+      <p className={`text-sm font-medium ${getStatusColor(metric.status)} mb-2`}>Status: {metric.status.charAt(0).toUpperCase() + metric.status.slice(1)}</p>
+      <div className="text-sm text-gray-300 space-y-1">
+        <p>TPS: <span className="font-semibold text-blue-300">{metric.tps}</span></p>
+        <p>Avg Latency: <span className="font-semibold">{metric.avgLatency.toFixed(1)}ms</span></p>
+        <p>Error Rate: <span className="font-semibold">{(metric.errorRate * 100).toFixed(2)}%</span></p>
+        <p>Queue Depth: <span className="font-semibold">{metric.queueDepth}</span></p>
+        <p>Value Transacted: <span className="font-semibold text-indigo-300">${metric.totalValueTransacted.toLocaleString()}</span></p>
+      </div>
+      <p className="text-xs text-gray-500 mt-3 text-right">Last updated: {new Date(metric.timestamp).toLocaleTimeString()}</p>
+    </div>
+  );
+};
+
+/**
+ * @const PaymentEngineOverviewCard
+ * @description Displays a high-level overview of the payment engine's status,
+ * acting as a central health monitor for financial transactions.
+ * Business Value: Provides a critical, high-level overview of the entire payment
+ * processing system, enabling executive decision-makers and operations teams
+ * to quickly assess financial transaction health and respond to any systemic issues,
+ * protecting core revenue streams.
+ */
+export const PaymentEngineOverviewCard: React.FC<{ status: PaymentEngineStatus | null }> = ({ status }) => {
+  if (!status) {
+    return <div className="bg-gray-700 p-4 rounded-lg text-center text-gray-400">Loading payment engine status...</div>;
+  }
+
+  const getOverallStatusColor = (s: PaymentEngineStatus['overallStatus']) => {
+    switch (s) {
+      case 'online': return 'text-green-400';
+      case 'partially_degraded': return 'text-yellow-400';
+      case 'offline': return 'text-red-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
+      <h3 className="text-xl font-bold text-white mb-4">Payment Engine Overview</h3>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <p className="text-gray-400 text-sm">Overall Status:</p>
+          <p className={`text-2xl font-bold ${getOverallStatusColor(status.overallStatus)}`}>{status.overallStatus.replace(/_/g, ' ').toUpperCase()}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm text-gray-400">Requests/Sec: <span className="text-white font-semibold">{status.requestsPerSecond}</span></p>
+          <p className="text-sm text-gray-400">Avg Latency: <span className="text-white font-semibold">{status.avgProcessingLatency.toFixed(1)}ms</span></p>
+          <p className="text-sm text-gray-400">Failure Rate: <span className="text-red-400 font-semibold">{(status.failureRate * 100).toFixed(2)}%</span></p>
+        </div>
+      </div>
+      <div className="mt-4 border-t border-gray-600 pt-4">
+        <p className="text-sm font-semibold text-gray-300 mb-2">Key Metrics:</p>
+        <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
+          <div><span className="font-medium">In-Flight TXNs:</span> <span className="text-white">{status.inFlightTransactions}</span></div>
+          <div><span className="font-medium">Flagged TXNs:</span> <span className="text-orange-300">{status.flaggedTransactions}</span></div>
+          {Object.entries(status.railStatuses).map(([railId, railStatus]) => (
+            <div key={railId}>
+              <span className="font-medium">{railId}:</span> <span className={`${getOverallStatusColor(railStatus)}`}>{railStatus}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="text-xs text-gray-500 mt-4 text-right">Last updated: {new Date(status.timestamp).toLocaleTimeString()}</p>
+    </div>
+  );
+};
+
+/**
+ * @const AuthLogViewer
+ * @description Displays a stream of authentication and authorization log entries.
+ * This provides a critical security audit trail.
+ * Business Value: Serves as a tamper-evident record of all identity-related events,
+ * crucial for forensic analysis, audit compliance, and real-time security monitoring,
+ * protecting against unauthorized access and demonstrating regulatory adherence.
+ */
+export const AuthLogViewer: React.FC<{ logs: AuthLogEntry[] }> = ({ logs }) => {
+  if (logs.length === 0) {
+    return <p className="text-gray-400">No authentication logs available.</p>;
+  }
+
+  const getOutcomeColor = (outcome: AuthLogEntry['outcome']) => {
+    switch (outcome) {
+      case 'success': return 'text-green-400';
+      case 'failure': return 'text-red-400';
+      case 'denied': return 'text-orange-400';
+      case 'info': return 'text-blue-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const sortedLogs = [...logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  return (
+    <div className="overflow-x-auto max-h-96">
+      <table className="w-full text-left">
+        <thead className="bg-gray-900/70 sticky top-0">
+          <tr>
+            <th className="p-3">Time</th>
+            <th className="p-3">Event Type</th>
+            <th className="p-3">Entity ID</th>
+            <th className="p-3">IP Address</th>
+            <th className="p-3">Outcome</th>
+            <th className="p-3">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedLogs.slice(0, 20).map(log => (
+            <tr key={log.id} className="border-b border-gray-700 hover:bg-gray-700">
+              <td className="p-3 font-mono text-xs text-gray-300">{new Date(log.timestamp).toLocaleTimeString()}</td>
+              <td className="p-3 text-sm text-white">{log.eventType}</td>
+              <td className="p-3 text-sm text-gray-300">{log.entityId}</td>
+              <td className="p-3 text-sm text-gray-400">{log.ipAddress}</td>
+              <td className={`p-3 text-sm font-semibold ${getOutcomeColor(log.outcome)}`}>
+                {log.outcome.charAt(0).toUpperCase() + log.outcome.slice(1)}
+              </td>
+              <td className="p-3 text-sm text-gray-300">{log.message}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 // Main View Component -------------------------------------------------------------------------------------------------
 
 /**
  * @const CognitiveLoadBalancerView
- * @description The main dashboard for monitoring and managing cognitive load balancing.
+ * @description The main dashboard for monitoring and managing cognitive and operational load balancing.
  * This component integrates various sub-components and hooks to provide a comprehensive view
  * of real-time metrics, historical data, feature management, throttling policies, alerts,
- * system health, and predictive analytics.
+ * system health, predictive analytics, and specialized insights into agentic AI, token rails,
+ * real-time payments, and digital identity infrastructure.
+ * Business Value: This consolidated view is the command center for operational excellence.
+ * It provides a holistic, commercial-grade interface for managing the entire Money20/20
+ * build phase architecture, translating complex data into actionable insights that drive
+ * performance, security, and profitability. By enabling proactive management of both
+ * user experience and core financial infrastructure, it ensures uninterrupted service,
+ * optimized resource utilization, and enhanced regulatory compliance, directly
+ * contributing to multi-million dollar operational savings and new revenue opportunities.
  */
 const CognitiveLoadBalancerView: React.FC = () => {
   // Original state for real-time metrics
   const [metrics, setMetrics] = useState<CognitiveMetric[]>([]);
 
-  // State for managing feature/policy editing modals
+  // State for managing feature/policy/agent/integration editing modals
   const [showFeatureEditor, setShowFeatureEditor] = useState(false);
   const [editingFeature, setEditingFeature] = useState<FeatureDefinition | undefined>(undefined);
   const [showPolicyEditor, setShowPolicyEditor] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<ThrottlingPolicy | undefined>(undefined);
   const [showIntegrationEditor, setShowIntegrationEditor] = useState(false);
   const [editingIntegration, setEditingIntegration] = useState<IntegrationConfig | undefined>(undefined);
+  const [showAgentEditor, setShowAgentEditor] = useState(false);
+  const [editingAgent, setEditingAgent] = useState<AgentDefinition | undefined>(undefined);
 
   // Custom hooks for data management
   const { features, loading: featuresLoading, error: featuresError, fetchFeatures, addFeature, updateFeature } = useFeatureDefinitions();
@@ -2081,6 +3469,10 @@ const CognitiveLoadBalancerView: React.FC = () => {
   const { forecast: predictiveForecasts, loading: forecastLoading, error: forecastError } = usePredictiveAnalytics();
   const { status: feedbackLoopStatus, loading: feedbackLoading, error: feedbackError } = useFeedbackLoop();
   const { configs: integrationConfigs, loading: integrationLoading, error: integrationError, addConfig, updateConfig } = useIntegrationConfigs();
+  const { definitions: agentDefs, healthMetrics: agentHealth, loading: agentsLoading, error: agentsError, addAgent, updateAgent } = useAgents();
+  const { metrics: tokenRailMetrics, accounts: tokenAccounts, loading: tokenRailsLoading, error: tokenRailsError } = useTokenRails();
+  const { engineStatus: paymentEngineStatus, requestMetrics: paymentRequestMetrics, loading: paymentsLoading, error: paymentsError } = usePayments();
+  const { serviceStatus: identityServiceStatus, authLogs: authLogs, loading: identityLoading, error: identityError } = useIdentity();
 
 
   // MOCK WEBSOCKET for real-time cognitive metrics
@@ -2155,6 +3547,21 @@ const CognitiveLoadBalancerView: React.FC = () => {
     setEditingPolicy(undefined);
   };
 
+  const handleEditAgent = (agent: AgentDefinition) => {
+    setEditingAgent(agent);
+    setShowAgentEditor(true);
+  };
+
+  const handleSaveAgent = async (agent: AgentDefinition) => {
+    if (agent.id && agentDefs.some(a => a.id === agent.id)) {
+      await updateAgent(agent);
+    } else {
+      await addAgent(agent);
+    }
+    setShowAgentEditor(false);
+    setEditingAgent(undefined);
+  };
+
   const handleAcknowledgeAlert = (alert: AlertInstance) => {
     const updatedAlert = { ...alert, status: 'acknowledged', notes: [...alert.notes, `Acknowledged by UI at ${new Date().toISOString()}`] };
     updateAlertInstance(updatedAlert);
@@ -2210,17 +3617,23 @@ const CognitiveLoadBalancerView: React.FC = () => {
     })).filter(d => d.value > 0).sort((a, b) => b.value - a.value)
     : [];
 
+  const paymentTPSChartData: DataPoint[] = paymentRequestMetrics.slice(-20).map(m => ({
+    name: new Date(m.timestamp).toLocaleTimeString(),
+    'Amount': m.amount,
+    'Processing Time': m.processingTime,
+  }));
+
   return (
     <div className="bg-gray-800 text-white p-6 rounded-lg min-h-screen">
       <h1 className="text-4xl font-extrabold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">
-        Cognitive Load Balancer Dashboard
+        Cognitive & Operational Load Balancer Dashboard
       </h1>
       <p className="mb-8 text-gray-400 text-center text-lg">
-        Real-time monitoring and adaptive management of user cognitive load across features to optimize experience and system performance.
+        Unified real-time monitoring and adaptive management across user experience, agentic AI, token rails, digital identity, and real-time payments infrastructure.
       </p>
 
       {/* Overview Section */}
-      <section className="mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="mb-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <div className="bg-gray-900/50 p-6 rounded-lg shadow-xl flex flex-col items-center justify-center">
           <h2 className="text-xl font-bold mb-4 text-blue-300">Current Average Load</h2>
           <CognitiveLoadGauge load={currentAvgLoad} />
@@ -2233,7 +3646,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
             <ul className="list-disc list-inside text-lg text-orange-300 space-y-2">
               {currentThrottledFeatures.map((featureName, index) => (
                 <li key={index} className="flex items-center">
-                  <span className="animate-pulse mr-2 text-red-400">•</span>{featureName}
+                  <span className="animate-pulse mr-2 text-red-400">â€¢</span>{featureName}
                 </li>
               ))}
             </ul>
@@ -2243,6 +3656,41 @@ const CognitiveLoadBalancerView: React.FC = () => {
         </div>
 
         <SystemHealthSummaryCard metrics={systemHealth} />
+
+        <PaymentEngineOverviewCard status={paymentEngineStatus} />
+
+      </section>
+
+      {/* Financial Infrastructure Overview */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <h2 className="text-2xl font-bold mb-5 text-blue-300">Financial Infrastructure Health</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tokenRailMetrics.map(metric => (
+            <TokenRailStatusCard key={metric.railId} metric={metric} />
+          ))}
+          {identityServiceStatus && (
+            <div className="bg-gray-700 p-4 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold text-white mb-2">Identity Service</h3>
+              <p className={`text-sm font-medium ${identityServiceStatus.overallStatus === 'operational' ? 'text-green-400' : 'text-red-400'} mb-2`}>
+                Status: {identityServiceStatus.overallStatus.charAt(0).toUpperCase() + identityServiceStatus.overallStatus.slice(1)}
+              </p>
+              <div className="text-sm text-gray-300 space-y-1">
+                <p>Auth/Sec: <span className="font-semibold text-blue-300">{identityServiceStatus.authRequestsPerSecond}</span></p>
+                <p>Auth Latency: <span className="font-semibold">{identityServiceStatus.avgAuthLatency.toFixed(1)}ms</span></p>
+                <p>Failed Auth Rate: <span className="font-semibold">{(identityServiceStatus.failedAuthRate * 100).toFixed(2)}%</span></p>
+                <p>Active Sessions: <span className="font-semibold">{identityServiceStatus.activeSessions}</span></p>
+              </div>
+              <p className="text-xs text-gray-500 mt-3 text-right">Last updated: {new Date(identityServiceStatus.timestamp).toLocaleTimeString()}</p>
+            </div>
+          )}
+           <MockLineChart
+            data={paymentTPSChartData}
+            dataKeys={['Amount', 'Processing Time']}
+            title="Recent Payment Request Metrics"
+            xAxisLabel="Time"
+            yAxisLabel="Value / Time"
+          />
+        </div>
       </section>
 
       {/* Real-time Metrics Table */}
@@ -2370,6 +3818,144 @@ const CognitiveLoadBalancerView: React.FC = () => {
         )}
       </section>
 
+      {/* Agentic AI System Management */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-2xl font-bold text-blue-300">Agentic AI System</h2>
+          <button
+            onClick={() => { setEditingAgent(undefined); setShowAgentEditor(true); }}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            Add New Agent
+          </button>
+        </div>
+        {agentsLoading ? (
+          <p className="text-gray-400">Loading agents...</p>
+        ) : agentsError ? (
+          <p className="text-red-400">Error: {agentsError}</p>
+        ) : (
+          <AgentStatusTable agents={agentDefs} healthMetrics={agentHealth} onEditAgent={handleEditAgent} />
+        )}
+        {showAgentEditor && (
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            {/* AgentEditorForm would be here, similar to FeatureEditorForm */}
+            <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-2xl mx-auto my-4">
+              <h2 className="text-2xl font-bold text-white mb-6">{editingAgent ? 'Edit AI Agent' : 'Add New AI Agent'}</h2>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const target = e.target as typeof e.target & {
+                  name: { value: string };
+                  description: { value: string };
+                  category: { value: AgentCategory };
+                  status: { value: AgentDefinition['status'] };
+                  ownerTeam: { value: string };
+                  operationalLoadThreshold: { value: number };
+                  rbacRole: { value: string };
+                  skills: { selectedOptions: HTMLOptionElement[] };
+                };
+
+                const updatedAgent: AgentDefinition = {
+                  ...(editingAgent || {} as AgentDefinition), // Ensure all fields are initialized
+                  id: editingAgent?.id || generateUUID(),
+                  name: target.name.value,
+                  description: target.description.value,
+                  category: target.category.value,
+                  skills: Array.from(target.skills.selectedOptions).map(opt => opt.value as AgentSkill),
+                  status: target.status.value,
+                  configuration: editingAgent?.configuration || {}, // Keep existing or default
+                  operationalLoadThreshold: parseFloat(target.operationalLoadThreshold.value),
+                  lastUpdated: new Date().toISOString(),
+                  ownerTeam: target.ownerTeam.value,
+                  rbacRole: target.rbacRole.value,
+                };
+                await handleSaveAgent(updatedAgent);
+              }} className="space-y-4">
+                <div>
+                  <label htmlFor="agentName" className="block text-sm font-medium text-gray-300">Agent Name</label>
+                  <input
+                    type="text" id="agentName" name="name" defaultValue={editingAgent?.name || ''} required
+                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="agentDescription" className="block text-sm font-medium text-gray-300">Description</label>
+                  <textarea
+                    id="agentDescription" name="description" defaultValue={editingAgent?.description || ''} rows={2}
+                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="agentCategory" className="block text-sm font-medium text-gray-300">Category</label>
+                  <select
+                    id="agentCategory" name="category" defaultValue={editingAgent?.category || AgentCategory.Monitoring} required
+                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  >
+                    {Object.values(AgentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="agentSkills" className="block text-sm font-medium text-gray-300">Skills (Multi-select)</label>
+                  <select
+                    id="agentSkills" name="skills" multiple
+                    defaultValue={editingAgent?.skills || []}
+                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-32"
+                  >
+                    {Object.values(AgentSkill).map(skill => (<option key={skill} value={skill}>{skill}</option>))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="agentStatus" className="block text-sm font-medium text-gray-300">Status</label>
+                    <select
+                      id="agentStatus" name="status" defaultValue={editingAgent?.status || 'idle'} required
+                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      {['active', 'idle', 'suspended', 'error'].map(status => (<option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="operationalLoadThreshold" className="block text-sm font-medium text-gray-300">Operational Load Threshold</label>
+                    <input
+                      type="number" id="operationalLoadThreshold" name="operationalLoadThreshold" defaultValue={editingAgent?.operationalLoadThreshold || 100} required
+                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="ownerTeam" className="block text-sm font-medium text-gray-300">Owner Team</label>
+                  <input
+                    type="text" id="ownerTeam" name="ownerTeam" defaultValue={editingAgent?.ownerTeam || ''} required
+                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rbacRole" className="block text-sm font-medium text-gray-300">RBAC Role</label>
+                  <input
+                    type="text" id="rbacRole" name="rbacRole" defaultValue={editingAgent?.rbacRole || ''} required
+                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    type="button" onClick={() => { setShowAgentEditor(false); setEditingAgent(undefined); }}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Save Agent
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Alerting System */}
       <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
         <div className="flex justify-between items-center mb-5">
@@ -2387,6 +3973,18 @@ const CognitiveLoadBalancerView: React.FC = () => {
             onAcknowledge={handleAcknowledgeAlert}
             onResolve={handleResolveAlert}
           />
+        )}
+      </section>
+
+      {/* Identity & Security Audit Logs */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <h2 className="text-2xl font-bold mb-5 text-blue-300">Digital Identity & Security Audit Logs</h2>
+        {identityLoading ? (
+          <p className="text-gray-400">Loading identity logs...</p>
+        ) : identityError ? (
+          <p className="text-red-400">Error: {identityError}</p>
+        ) : (
+          <AuthLogViewer logs={authLogs} />
         )}
       </section>
 
@@ -2425,6 +4023,8 @@ const CognitiveLoadBalancerView: React.FC = () => {
                   smtpHost?: { value: string };
                   sender?: { value: string };
                   serviceKey?: { value: string };
+                  projectKey?: { value: string };
+                  issueType?: { value: string };
                 };
                 const newConfig: Partial<IntegrationConfig> = {
                   ...editingIntegration,
@@ -2437,6 +4037,8 @@ const CognitiveLoadBalancerView: React.FC = () => {
                 if (target.smtpHost) newConfig.settings!.smtpHost = target.smtpHost.value;
                 if (target.sender) newConfig.settings!.sender = target.sender.value;
                 if (target.serviceKey) newConfig.settings!.serviceKey = target.serviceKey.value;
+                if (target.projectKey) newConfig.settings!.projectKey = target.projectKey.value;
+                if (target.issueType) newConfig.settings!.issueType = target.issueType.value;
                 await handleSaveIntegration(newConfig as IntegrationConfig);
               }} className="space-y-4">
                 <div>
@@ -2459,7 +4061,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
                     <option value="custom_webhook">Custom Webhook</option>
                   </select>
                 </div>
-                {editingIntegration?.type === 'slack' && (
+                {(editingIntegration?.type === 'slack' || target.type.value === 'slack') && (
                   <div>
                     <label htmlFor="webhookUrl" className="block text-sm font-medium text-gray-300">Webhook URL</label>
                     <input
@@ -2468,7 +4070,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
                     />
                   </div>
                 )}
-                {editingIntegration?.type === 'datadog' && (
+                {(editingIntegration?.type === 'datadog' || target.type.value === 'datadog') && (
                   <div>
                     <label htmlFor="apiKey" className="block text-sm font-medium text-gray-300">API Key</label>
                     <input
@@ -2477,7 +4079,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
                     />
                   </div>
                 )}
-                {editingIntegration?.type === 'email' && (
+                {(editingIntegration?.type === 'email' || target.type.value === 'email') && (
                   <>
                     <div>
                       <label htmlFor="smtpHost" className="block text-sm font-medium text-gray-300">SMTP Host</label>
@@ -2495,7 +4097,25 @@ const CognitiveLoadBalancerView: React.FC = () => {
                     </div>
                   </>
                 )}
-                {editingIntegration?.type === 'custom_webhook' && (
+                {(editingIntegration?.type === 'jira' || target.type.value === 'jira') && (
+                  <>
+                    <div>
+                      <label htmlFor="projectKey" className="block text-sm font-medium text-gray-300">Jira Project Key</label>
+                      <input
+                        type="text" id="projectKey" name="projectKey" defaultValue={editingIntegration?.settings.projectKey || ''}
+                        className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="issueType" className="block text-sm font-medium text-gray-300">Jira Issue Type</label>
+                      <input
+                        type="text" id="issueType" name="issueType" defaultValue={editingIntegration?.settings.issueType || ''}
+                        className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      />
+                    </div>
+                  </>
+                )}
+                {(editingIntegration?.type === 'custom_webhook' || target.type.value === 'custom_webhook') && (
                   <div>
                     <label htmlFor="serviceKey" className="block text-sm font-medium text-gray-300">Service Key/Endpoint</label>
                     <input
@@ -2524,7 +4144,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
         )}
       </section>
 
-      {/* User Profiles Placeholder */}
+      {/* User Profiles Preview */}
       <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
         <h2 className="text-2xl font-bold mb-5 text-blue-300">User Profiles (Preview)</h2>
         {usersLoading ? (
@@ -2559,8 +4179,8 @@ const CognitiveLoadBalancerView: React.FC = () => {
       </section>
 
       <footer className="mt-10 text-center text-gray-500 text-sm">
-        <p>&copy; 2023 Cognitive Load Management System. All rights reserved.</p>
-        <p>Version 1.0.0 - Advanced Adaptive Cognitive Load Balancing</p>
+        <p>&copy; 2023 Cognitive & Operational Load Management System. All rights reserved.</p>
+        <p>Version 1.0.0 - Advanced Adaptive Multi-faceted Load Balancing</p>
       </footer>
     </div>
   );
