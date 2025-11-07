@@ -1,14 +1,11 @@
 /**
- * @module CognitiveLoadBalancerView
- * @description This module implements the comprehensive dashboard for monitoring and managing the intricate balance of system resources and user cognitive load. It serves as the central control panel for the Money20/20 "build phase" architecture, integrating real-time insights from agentic AI systems, token rails, digital identity services, and real-time payments infrastructure.
- *
+ * This module implements the comprehensive dashboard for monitoring and managing the intricate balance of system resources and user cognitive load. It serves as the central control panel for the Money20/20 "build phase" architecture, integrating real-time insights from agentic AI systems, token rails, digital identity services, and real-time payments infrastructure.
  * Business Value: This view is worth millions by providing a unified, real-time operational picture that prevents system bottlenecks, optimizes user experience, and ensures the continuous, high-performance flow of value. It enables proactive problem resolution, reduces operational costs through intelligent automation, safeguards revenue by maintaining transaction throughput, and enhances regulatory compliance through transparent monitoring. The adaptive cognitive load balancing ensures optimal feature engagement, leading to higher user retention and satisfaction, directly impacting profitability and market leadership.
  */
 import React, { useState, useEffect } from 'react';
 
 /**
- * @interface CognitiveMetric
- * @description Defines the structure for a single cognitive load metric snapshot.
+ * Defines the structure for a single cognitive load metric snapshot.
  * This metric provides immediate insight into the user's interaction burden,
  * a critical factor for maintaining user engagement and preventing fatigue.
  * Business Value: Direct impact on user experience and retention by quantifying
@@ -25,8 +22,7 @@ interface CognitiveMetric {
 }
 
 /**
- * @enum FeatureCategory
- * @description Categorizes features for granular management and policy application.
+ * Categorizes features for granular management and policy application.
  * This categorization enables targeted load balancing and resource allocation,
  * optimizing performance across diverse functional areas.
  * Business Value: Allows for strategic resource allocation, ensuring high-priority
@@ -62,8 +58,7 @@ export enum FeatureCategory {
 }
 
 /**
- * @enum ThrottlingStrategy
- * @description Defines various sophisticated strategies for applying throttling.
+ * Defines various sophisticated strategies for applying throttling.
  * These strategies allow for adaptive, intelligent, and business-value-driven
  * load management, moving beyond simple static limits.
  * Business Value: Enables dynamic optimization of system resources and user experience,
@@ -85,8 +80,7 @@ export enum ThrottlingStrategy {
 }
 
 /**
- * @enum AlertSeverity
- * @description Levels of alert severity, enabling rapid prioritization and response
+ * Levels of alert severity, enabling rapid prioritization and response
  * to operational anomalies and potential system degradation.
  * Business Value: Critical for operational resilience, allowing teams to quickly
  * focus on high-impact issues, minimize downtime, and prevent service disruptions,
@@ -100,8 +94,7 @@ export enum AlertSeverity {
 }
 
 /**
- * @enum UserSegment
- * @description Represents different user segments that might have distinct
+ * Represents different user segments that might have distinct
  * cognitive load profiles or throttling needs. Tailoring experiences to segments
  * enhances personalization and targeted resource management.
  * Business Value: Optimizes resource allocation based on user value or behavior,
@@ -123,8 +116,7 @@ export enum UserSegment {
 }
 
 /**
- * @interface FeatureDefinition
- * @description Detailed definition of a feature within the application, providing
+ * Detailed definition of a feature within the application, providing
  * metadata essential for intelligent load balancing, impact assessment, and governance.
  * Business Value: Facilitates granular control over individual system components,
  * enabling precise performance tuning, cost optimization, and strategic decision-making
@@ -160,8 +152,7 @@ export interface FeatureDefinition {
 }
 
 /**
- * @interface ThrottlingPolicy
- * @description Defines a specific policy for throttling features. These policies
+ * Defines a specific policy for throttling features. These policies
  * are the algorithmic backbone of the load balancer, dictating when and how
  * system resources are managed to prevent overload.
  * Business Value: The core mechanism for ensuring system stability and performance
@@ -208,8 +199,7 @@ export interface ThrottlingPolicy {
 }
 
 /**
- * @interface AlertDefinition
- * @description Defines rules for generating system alerts, acting as the sentinel
+ * Defines rules for generating system alerts, acting as the sentinel
  * for operational health and performance boundaries.
  * Business Value: Minimizes mean-time-to-resolution (MTTR) for critical issues,
  * preventing minor incidents from escalating into major outages, thus protecting
@@ -243,8 +233,7 @@ export interface AlertDefinition {
 }
 
 /**
- * @interface AlertInstance
- * @description Represents an active or resolved alert, providing a historical
+ * Represents an active or resolved alert, providing a historical
  * and current view of operational incidents.
  * Business Value: Offers traceability and accountability for operational events,
  * aiding in post-incident analysis and continuous improvement processes,
@@ -272,8 +261,7 @@ export interface AlertInstance {
 }
 
 /**
- * @interface SystemHealthMetric
- * @description Represents various system health metrics that can influence or be influenced
+ * Represents various system health metrics that can influence or be influenced
  * by cognitive load and throttling. This provides a holistic view of underlying infrastructure.
  * Business Value: Ensures the foundational stability of the entire platform,
  * preventing cascading failures and providing the necessary infrastructure context
@@ -305,8 +293,7 @@ export interface SystemHealthMetric {
 }
 
 /**
- * @interface UserInteractionLog
- * @description Logs specific user interactions, crucial for correlating user behavior
+ * Logs specific user interactions, crucial for correlating user behavior
  * with observed cognitive load and feature engagement.
  * Business Value: Provides empirical data for UX/UI improvements and feature prioritization,
  * leading to a more intuitive and efficient user experience, which translates to
@@ -330,8 +317,7 @@ export interface UserInteractionLog {
 }
 
 /**
- * @interface HistoricalCognitiveData
- * @description Aggregated historical cognitive load data for reporting and analysis.
+ * Aggregated historical cognitive load data for reporting and analysis.
  * This historical perspective is vital for identifying trends, optimizing policies,
  * and capacity planning.
  * Business Value: Enables long-term strategic planning, resource forecasting,
@@ -356,8 +342,7 @@ export interface HistoricalCognitiveData {
 }
 
 /**
- * @interface PredictiveForecast
- * @description Forecasted cognitive load based on historical data and current trends,
+ * Forecasted cognitive load based on historical data and current trends,
  * leveraging machine learning for proactive decision-making.
  * Business Value: Transforms operations from reactive to proactive, allowing for
  * pre-emptive resource scaling and policy adjustments, thereby preventing incidents
@@ -377,8 +362,7 @@ export interface PredictiveForecast {
 }
 
 /**
- * @interface FeedbackLoopStatus
- * @description Status of the adaptive feedback loop for optimizing throttling policies.
+ * Status of the adaptive feedback loop for optimizing throttling policies.
  * This loop embodies the intelligent, self-optimizing nature of the load balancer.
  * Business Value: Automates the continuous improvement of load balancing strategies,
  * ensuring the system is always learning and adapting to new patterns, leading to
@@ -402,8 +386,7 @@ export interface FeedbackLoopStatus {
 }
 
 /**
- * @interface UserProfile
- * @description Represents a user's profile with cognitive load relevant attributes.
+ * Represents a user's profile with cognitive load relevant attributes.
  * This information helps in segment-specific load management and personalized experiences.
  * Business Value: Enables highly personalized and optimized user experiences,
  * increasing user satisfaction and feature adoption, and allows for differentiated
@@ -428,11 +411,14 @@ export interface UserProfile {
   accountStatus: 'active' | 'inactive' | 'suspended';
   /** Timestamp of the user's last activity. */
   lastActivity: string;
+  /** Public cryptographic key for this user's digital identity. */
+  publicKey?: string;
+  /** A cryptographic signature to verify the integrity of the profile. */
+  profileSignature?: string;
 }
 
 /**
- * @interface IntegrationConfig
- * @description Configuration for external system integrations, facilitating
+ * Configuration for external system integrations, facilitating
  * alerts, metrics, and data flow to external operational tools.
  * Business Value: Ensures seamless interoperability with existing enterprise systems
  * and monitoring tools, enabling a unified operational view, reducing manual effort,
@@ -454,8 +440,7 @@ export interface IntegrationConfig {
 }
 
 /**
- * @enum AgentCategory
- * @description Categorizes AI agents by their primary function within the ecosystem.
+ * Categorizes AI agents by their primary function within the ecosystem.
  * This segmentation helps in assigning roles, policies, and monitoring specific agent groups.
  * Business Value: Streamlines the management and governance of diverse AI agents,
  * ensuring they operate within their designated scopes and contribute effectively
@@ -475,8 +460,7 @@ export enum AgentCategory {
 }
 
 /**
- * @enum AgentSkill
- * @description Defines the specific capabilities or skills an AI agent possesses.
+ * Defines the specific capabilities or skills an AI agent possesses.
  * This granular definition allows for precise task assignment and skill-based routing.
  * Business Value: Enables the efficient deployment and utilization of AI agents
  * by matching tasks to specialized skills, accelerating automation, and increasing
@@ -496,11 +480,11 @@ export enum AgentSkill {
   ErrorHandling = 'Error Handling',
   ResourceAllocation = 'Resource Allocation',
   SentimentAnalysis = 'Sentiment Analysis',
+  KeyManagement = 'Key Management', // New skill for identity agents
 }
 
 /**
- * @interface AgentDefinition
- * @description Defines an autonomous AI agent within the system, including its
+ * Defines an autonomous AI agent within the system, including its
  * purpose, capabilities, and operational parameters. Agents are key to the
  * Money20/20 build phase architecture, enabling autonomous, intelligent operations.
  * Business Value: Establishes a programmable, scalable workforce of intelligent
@@ -530,11 +514,12 @@ export interface AgentDefinition {
   ownerTeam: string;
   /** Role-based access control (RBAC) role assigned to the agent. */
   rbacRole: string;
+  /** Public cryptographic key for the agent's digital identity. */
+  publicKey?: string;
 }
 
 /**
- * @interface AgentHealthMetric
- * @description Real-time operational health and performance metrics for an individual AI agent.
+ * Real-time operational health and performance metrics for an individual AI agent.
  * Monitoring these metrics ensures agents perform optimally and identifies potential issues.
  * Business Value: Guarantees the continuous, efficient operation of AI agents,
  * proactively identifying and resolving performance bottlenecks or failures,
@@ -562,8 +547,7 @@ export interface AgentHealthMetric {
 }
 
 /**
- * @enum TokenRailType
- * @description Defines distinct types of token rails, such as fast settlement
+ * Defines distinct types of token rails, such as fast settlement
  * or batch processing, reflecting different operational characteristics and costs.
  * Business Value: Supports multi-rail orchestration, enabling businesses to choose
  * the most cost-effective and performance-appropriate rail for each transaction,
@@ -577,8 +561,7 @@ export enum TokenRailType {
 }
 
 /**
- * @enum TokenTransactionStatus
- * @description Describes the lifecycle status of a token transaction.
+ * Describes the lifecycle status of a token transaction.
  * This provides crucial visibility into the state of value movements.
  * Business Value: Offers real-time transparency and auditability for all token movements,
  * essential for financial reconciliation, fraud detection, and maintaining
@@ -594,8 +577,7 @@ export enum TokenTransactionStatus {
 }
 
 /**
- * @interface TokenRailMetrics
- * @description Real-time operational metrics for a specific token rail,
+ * Real-time operational metrics for a specific token rail,
  * indicating its throughput, latency, and overall health.
  * Business Value: Provides critical observability into the performance of financial
  * rails, enabling dynamic load balancing and routing decisions to ensure optimal
@@ -623,8 +605,7 @@ export interface TokenRailMetrics {
 }
 
 /**
- * @interface TokenAccountSnapshot
- * @description Represents a snapshot of a token account's balance and recent activity.
+ * Represents a snapshot of a token account's balance and recent activity.
  * This is a fundamental component of the token rail layer for auditing and reconciliation.
  * Business Value: Provides an immutable, auditable record of token balances,
  * enabling precise financial reporting, real-time liquidity management, and
@@ -644,8 +625,7 @@ export interface TokenAccountSnapshot {
 }
 
 /**
- * @interface PaymentEngineStatus
- * @description Provides the overall operational status and key metrics of the
+ * Provides the overall operational status and key metrics of the
  * real-time payments infrastructure. This offers a high-level health check.
  * Business Value: Ensures the seamless operation of critical payment workflows,
  * minimizes potential revenue loss from payment processing issues, and allows
@@ -671,8 +651,7 @@ export interface PaymentEngineStatus {
 }
 
 /**
- * @interface PaymentRequestMetric
- * @description Detailed metrics for individual payment requests or aggregated payment flows,
+ * Detailed metrics for individual payment requests or aggregated payment flows,
  * essential for performance analysis and identifying bottlenecks.
  * Business Value: Facilitates granular performance analysis of the payment system,
  * enabling optimization of routing, cost reduction, and continuous improvement
@@ -704,8 +683,7 @@ export interface PaymentRequestMetric {
 }
 
 /**
- * @interface IdentityServiceStatus
- * @description Provides the operational status and key performance indicators for
+ * Provides the operational status and key performance indicators for
  * the digital identity and security services. This ensures robust authentication
  * and authorization.
  * Business Value: Upholds the security and integrity of the entire platform by
@@ -734,8 +712,7 @@ export interface IdentityServiceStatus {
 }
 
 /**
- * @enum AuthEventType
- * @description Defines categories of authentication and authorization events,
+ * Defines categories of authentication and authorization events,
  * crucial for audit logging and security monitoring.
  * Business Value: Provides granular logging for security events, enabling
  * sophisticated threat detection, forensic analysis, and compliance reporting,
@@ -758,8 +735,7 @@ export enum AuthEventType {
 }
 
 /**
- * @interface AuthLogEntry
- * @description Represents a single entry in the authentication and authorization audit log.
+ * Represents a single entry in the authentication and authorization audit log.
  * This log is tamper-evident and crucial for security and compliance.
  * Business Value: Forms the bedrock of forensic capabilities and regulatory compliance,
  * ensuring that every access decision and identity event is recorded, immutable,
@@ -789,8 +765,7 @@ export interface AuthLogEntry {
 }
 
 /**
- * @interface EscalationPolicy
- * @description Defines a process for escalating alerts to different teams or channels
+ * Defines a process for escalating alerts to different teams or channels
  * based on severity and time, ensuring critical issues are always addressed.
  * Business Value: Guarantees that high-priority incidents receive prompt attention
  * from the correct personnel, minimizing service disruption and potential financial loss
@@ -821,8 +796,7 @@ export interface EscalationPolicy {
 // Utility Functions ---------------------------------------------------------------------------------------------------
 
 /**
- * @function generateUUID
- * @description Generates a simple, universally unique identifier (UUIDv4).
+ * Generates a simple, universally unique identifier (UUIDv4).
  * This function is critical for ensuring unique IDs across all system entities,
  * from features and policies to transactions and agents, enabling robust data
  * management and preventing collision issues.
@@ -839,8 +813,30 @@ export const generateUUID = (): string => {
 };
 
 /**
- * @function calculateAverage
- * @description Calculates the average of an array of numbers. This utility is used
+ * Generates a simple, non-cryptographic hash for data integrity simulation.
+ * This function is used to create a chained hash for audit logs, demonstrating
+ * tamper-evidence within the mock system.
+ * Business Value: Provides a foundational layer for simulating data integrity
+ * and immutability, critical for audit trails and compliance in financial systems,
+ * even without external cryptographic libraries.
+ */
+export const simpleDeterministicHash = (data: string, previousHash: string = 'genesis'): string => {
+  // For simulation, we combine data and previous hash to create a "chained" fingerprint.
+  // In a real system, this would be a robust cryptographic hash (e.g., SHA-256).
+  const combinedData = data + previousHash + 'salt_for_deterministic_seed'; // Add a fixed salt for deterministic behavior in mock
+  let hash = 0;
+  for (let i = 0; i < combinedData.length; i++) {
+    const char = combinedData.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  // Convert hash to a hex string for a more "hash-like" appearance, and prepend a fixed prefix.
+  return `mockhash-${(hash >>> 0).toString(16).padStart(8, '0')}-${generateUUID().split('-')[0]}`; // Blend with UUID segment for uniqueness
+};
+
+
+/**
+ * Calculates the average of an array of numbers. This utility is used
  * across various metrics calculations to derive meaningful insights from raw data.
  * Business Value: Provides a fundamental statistical aggregation, enabling
  * quick summaries of performance and load data, which is vital for dashboard
@@ -852,8 +848,7 @@ export const calculateAverage = (data: number[]): number => {
 };
 
 /**
- * @function getLoadColorClass
- * @description Returns a Tailwind CSS class for visual indication of load levels.
+ * Returns a Tailwind CSS class for visual indication of load levels.
  * This function provides immediate visual cues for system health, aiding rapid
  * interpretation of dashboard data.
  * Business Value: Enhances observability by providing intuitive visual indicators
@@ -868,8 +863,7 @@ export const getLoadColorClass = (load: number): string => {
 };
 
 /**
- * @function throttleFeature
- * @description Simulates throttling a feature and logging the event. In a production
+ * Simulates throttling a feature and logging the event. In a production
  * environment, this would trigger a sophisticated backend mechanism to reduce
  * resource allocation or limit access to the specified feature.
  * Business Value: Acts as a critical control mechanism for load balancing,
@@ -879,12 +873,10 @@ export const getLoadColorClass = (load: number): string => {
  */
 export const throttleFeature = (featureId: string, reason: string, affectedSegments: UserSegment[]): void => {
   console.log(`[ACTION] Throttling feature '${featureId}' due to: ${reason}. Affected segments: ${affectedSegments.join(', ')}`);
-  // In a real app, this would dispatch an action to a backend service.
 };
 
 /**
- * @function easeFeatureThrottle
- * @description Simulates easing a throttled feature. In a production environment,
+ * Simulates easing a throttled feature. In a production environment,
  * this would signal the backend to restore full functionality or increased
  * resource allocation to the feature.
  * Business Value: Restores full feature functionality when load conditions improve,
@@ -893,12 +885,10 @@ export const throttleFeature = (featureId: string, reason: string, affectedSegme
  */
 export const easeFeatureThrottle = (featureId: string, reason: string): void => {
   console.log(`[ACTION] Easing throttle on feature '${featureId}' due to: ${reason}.`);
-  // In a real app, this would dispatch an action to a backend service.
 };
 
 /**
- * @function formatDuration
- * @description Formats a duration in seconds into a human-readable string (e.g., 60s, 1.5m, 2.3h).
+ * Formats a duration in seconds into a human-readable string (e.g., 60s, 1.5m, 2.3h).
  * This enhances the readability of time-based metrics and logs.
  * Business Value: Improves the clarity and accessibility of time-related data for operators
  * and analysts, facilitating quicker understanding of durations and trends without manual conversion.
@@ -912,8 +902,7 @@ export const formatDuration = (seconds: number): string => {
 };
 
 /**
- * @function mockBackendAPI
- * @description A highly simplified mock API for simulating backend calls. This function
+ * A highly simplified mock API for simulating backend calls. This function
  * is crucial for rapid frontend development and testing without requiring a live backend.
  * In a real commercial-grade implementation, this would be replaced by actual API clients
  * interacting with robust, authenticated microservices.
@@ -927,8 +916,9 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
       let result: any;
       switch (endpoint) {
         case 'features':
-          result = mockFeatures;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockFeatures;
+          } else if (method === 'POST' && data) {
             const newFeature = { ...data, id: generateUUID(), lastUpdated: new Date().toISOString() };
             mockFeatures.push(newFeature);
             result = newFeature;
@@ -941,11 +931,20 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               reject(new Error('Feature not found'));
               return;
             }
+          } else if (method === 'DELETE' && data && data.id) {
+            const initialLength = mockFeatures.length;
+            mockFeatures = mockFeatures.filter(f => f.id !== data.id);
+            if (mockFeatures.length === initialLength) {
+              reject(new Error('Feature not found for deletion'));
+              return;
+            }
+            result = { success: true, id: data.id };
           }
           break;
         case 'policies':
-          result = mockThrottlingPolicies;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockThrottlingPolicies;
+          } else if (method === 'POST' && data) {
             const newPolicy = { ...data, id: generateUUID(), lastModifiedDate: new Date().toISOString() };
             mockThrottlingPolicies.push(newPolicy);
             result = newPolicy;
@@ -958,11 +957,20 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               reject(new Error('Policy not found'));
               return;
             }
+          } else if (method === 'DELETE' && data && data.id) {
+            const initialLength = mockThrottlingPolicies.length;
+            mockThrottlingPolicies = mockThrottlingPolicies.filter(p => p.id !== data.id);
+            if (mockThrottlingPolicies.length === initialLength) {
+              reject(new Error('Policy not found for deletion'));
+              return;
+            }
+            result = { success: true, id: data.id };
           }
           break;
         case 'alerts/definitions':
-          result = mockAlertDefinitions;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockAlertDefinitions;
+          } else if (method === 'POST' && data) {
             const newAlertDef = { ...data, id: generateUUID() };
             mockAlertDefinitions.push(newAlertDef);
             result = newAlertDef;
@@ -975,11 +983,20 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               reject(new Error('Alert Definition not found'));
               return;
             }
+          } else if (method === 'DELETE' && data && data.id) {
+            const initialLength = mockAlertDefinitions.length;
+            mockAlertDefinitions = mockAlertDefinitions.filter(d => d.id !== data.id);
+            if (mockAlertDefinitions.length === initialLength) {
+              reject(new Error('Alert Definition not found for deletion'));
+              return;
+            }
+            result = { success: true, id: data.id };
           }
           break;
         case 'alerts/instances':
-          result = mockAlertInstances;
-          if (method === 'PUT' && data && data.id) {
+          if (method === 'GET') {
+            result = mockAlertInstances;
+          } else if (method === 'PUT' && data && data.id) {
             const index = mockAlertInstances.findIndex(a => a.id === data.id);
             if (index !== -1) {
               mockAlertInstances[index] = { ...mockAlertInstances[index], ...data };
@@ -991,8 +1008,9 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
           }
           break;
         case 'alerts/escalation_policies':
-          result = mockEscalationPolicies;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockEscalationPolicies;
+          } else if (method === 'POST' && data) {
             const newPolicy = { ...data, id: generateUUID(), lastModifiedDate: new Date().toISOString() };
             mockEscalationPolicies.push(newPolicy);
             result = newPolicy;
@@ -1005,14 +1023,34 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               reject(new Error('Escalation Policy not found'));
               return;
             }
+          } else if (method === 'DELETE' && data && data.id) {
+            const initialLength = mockEscalationPolicies.length;
+            mockEscalationPolicies = mockEscalationPolicies.filter(p => p.id !== data.id);
+            if (mockEscalationPolicies.length === initialLength) {
+              reject(new Error('Escalation Policy not found for deletion'));
+              return;
+            }
+            result = { success: true, id: data.id };
           }
           break;
         case 'users':
-          result = mockUserProfiles;
+          if (method === 'GET') {
+            result = mockUserProfiles;
+          } else if (method === 'PUT' && data && data.id) { // Example for updating user keys
+            const index = mockUserProfiles.findIndex(u => u.userId === data.userId);
+            if (index !== -1) {
+              mockUserProfiles[index] = { ...mockUserProfiles[index], ...data };
+              result = mockUserProfiles[index];
+            } else {
+              reject(new Error('User profile not found'));
+              return;
+            }
+          }
           break;
         case 'integrations':
-          result = mockIntegrationConfigs;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockIntegrationConfigs;
+          } else if (method === 'POST' && data) {
             const newIntegration = { ...data, id: generateUUID(), status: 'disconnected' };
             mockIntegrationConfigs.push(newIntegration);
             result = newIntegration;
@@ -1025,6 +1063,14 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               reject(new Error('Integration config not found'));
               return;
             }
+          } else if (method === 'DELETE' && data && data.id) {
+            const initialLength = mockIntegrationConfigs.length;
+            mockIntegrationConfigs = mockIntegrationConfigs.filter(i => i.id !== data.id);
+            if (mockIntegrationConfigs.length === initialLength) {
+              reject(new Error('Integration config not found for deletion'));
+              return;
+            }
+            result = { success: true, id: data.id };
           }
           break;
         case 'system_health':
@@ -1040,8 +1086,9 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
           result = mockFeedbackLoopStatus;
           break;
         case 'agents':
-          result = mockAgentDefinitions;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockAgentDefinitions;
+          } else if (method === 'POST' && data) {
             const newAgent = { ...data, id: generateUUID(), lastUpdated: new Date().toISOString() };
             mockAgentDefinitions.push(newAgent);
             result = newAgent;
@@ -1054,6 +1101,14 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
               reject(new Error('Agent not found'));
               return;
             }
+          } else if (method === 'DELETE' && data && data.id) {
+            const initialLength = mockAgentDefinitions.length;
+            mockAgentDefinitions = mockAgentDefinitions.filter(a => a.id !== data.id);
+            if (mockAgentDefinitions.length === initialLength) {
+              reject(new Error('Agent not found for deletion'));
+              return;
+            }
+            result = { success: true, id: data.id };
           }
           break;
         case 'agents/health':
@@ -1069,20 +1124,39 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
           result = mockPaymentEngineStatus;
           break;
         case 'payments/requests':
-          result = mockPaymentRequestMetrics;
+          if (method === 'GET') {
+            result = mockPaymentRequestMetrics;
+          } else if (method === 'POST' && data) {
+            const newPayment = {
+              ...data,
+              requestId: `pay_req_${generateUUID().substring(0, 8)}`,
+              timestamp: new Date().toISOString(),
+              processingTime: Math.random() * 200 + 50,
+              status: Math.random() > 0.9 ? TokenTransactionStatus.Failed : TokenTransactionStatus.Confirmed,
+              riskScore: Math.random() * 0.1
+            };
+            mockPaymentRequestMetrics.push(newPayment);
+            result = newPayment;
+          }
           break;
         case 'identity/status':
           result = mockIdentityServiceStatus;
           break;
         case 'identity/auth_logs':
-          result = mockAuthLogEntries;
-          if (method === 'POST' && data) {
+          if (method === 'GET') {
+            result = mockAuthLogEntries;
+          } else if (method === 'POST' && data) {
+            const previousLog = mockAuthLogEntries.length > 0 ? mockAuthLogEntries[mockAuthLogEntries.length - 1] : null;
+            const previousHash = previousLog ? previousLog.entryHash : 'genesis_block_hash';
+            const logContent = JSON.stringify({ eventType: data.eventType, entityId: data.entityId, outcome: data.outcome, message: data.message, context: data.context });
+            const entryHash = simpleDeterministicHash(logContent, previousHash);
+
             const newLog = {
               ...data,
               id: generateUUID(),
               timestamp: new Date().toISOString(),
-              entryHash: generateUUID(), // Simplified hash
-              previousHash: mockAuthLogEntries.length > 0 ? mockAuthLogEntries[mockAuthLogEntries.length - 1].entryHash : 'genesis',
+              previousHash: previousHash,
+              entryHash: entryHash,
             };
             mockAuthLogEntries.push(newLog);
             result = newLog;
@@ -1099,7 +1173,7 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
 
 // Mock Data -----------------------------------------------------------------------------------------------------------
 
-export const mockFeatures: FeatureDefinition[] = [
+export let mockFeatures: FeatureDefinition[] = [
   {
     id: 'feat_adv_analytics', name: 'Advanced Analytics', description: 'Provides deep dive data analysis tools.', category: FeatureCategory.Analytics, cognitiveWeight: 0.9, baseThrottleThreshold: 0.8, isActive: true, dependencies: [], impactMetrics: [{ name: 'decision_quality', value: 0.8 }], recoveryTimeEstimate: 300, lastUpdated: '2023-01-15T10:00:00Z', ownerTeam: 'Data Science', rolloutStrategy: 'all_users'
   },
@@ -1144,7 +1218,7 @@ export const mockFeatures: FeatureDefinition[] = [
   },
 ];
 
-export const mockThrottlingPolicies: ThrottlingPolicy[] = [
+export let mockThrottlingPolicies: ThrottlingPolicy[] = [
   {
     id: 'policy_high_load_general', name: 'High Load General Throttling', description: 'Activates when overall cognitive load is very high, impacting high-weight features.', strategy: ThrottlingStrategy.DynamicAdaptive, targetFeatureIds: ['feat_adv_analytics', 'feat_realtime_collaboration', 'feat_ai_assistant', 'feat_virtual_workspaces'], userSegments: [UserSegment.ExperiencedUser, UserSegment.Manager], thresholdConfig: { minLoad: 0.85, maxLoad: 0.95, durationThreshold: 60, cooldownPeriod: 300 }, activationConditions: ['avgCognitiveLoad_gt_0.85_for_60s'], deactivationConditions: ['avgCognitiveLoad_lt_0.75_for_120s'], priority: 1, isActive: true, lastModifiedBy: 'admin', lastModifiedDate: '2023-02-01T09:00:00Z', efficacyMetrics: [{ name: 'reduced_avg_load', targetValue: 0.1 }]
   },
@@ -1165,7 +1239,7 @@ export const mockThrottlingPolicies: ThrottlingPolicy[] = [
   },
 ];
 
-export const mockAlertDefinitions: AlertDefinition[] = [
+export let mockAlertDefinitions: AlertDefinition[] = [
   {
     id: 'alert_critical_load', name: 'Critical Cognitive Load', description: 'Total average cognitive load exceeds critical threshold.', severity: AlertSeverity.Critical, condition: 'avgCognitiveLoad > 0.9 for 120s', targetFeatures: [], targetUserSegments: [], notificationChannels: ['email', 'slack', 'pagerduty'], isActive: true, debouncePeriod: 300, autoResolveCondition: 'avgCognitiveLoad < 0.8 for 300s', escalationPolicyId: 'esc_policy_tier1'
   },
@@ -1189,7 +1263,7 @@ export const mockAlertDefinitions: AlertDefinition[] = [
   },
 ];
 
-export const mockAlertInstances: AlertInstance[] = [
+export let mockAlertInstances: AlertInstance[] = [
   {
     id: 'alert_inst_001', definitionId: 'alert_critical_load', timestamp: '2023-03-01T10:00:00Z', status: 'active', triggeredValue: '0.92', context: { currentLoad: 0.92, activeThrottles: ['AdvancedAnalytics'] }, assignedTo: 'on-call-dev', notes: ['Investigating infrastructure capacity.']
   },
@@ -1204,7 +1278,7 @@ export const mockAlertInstances: AlertInstance[] = [
   },
 ];
 
-export const mockEscalationPolicies: EscalationPolicy[] = [
+export let mockEscalationPolicies: EscalationPolicy[] = [
   {
     id: 'esc_policy_tier1', name: 'Tier 1 Critical Incident Escalation', description: 'Immediate notification to on-call, then engineering lead.',
     steps: [
@@ -1237,7 +1311,7 @@ export const mockSystemHealthMetrics: SystemHealthMetric[] = Array.from({ length
   apiCallRate: Math.floor(Math.random() * 1000 + 500),
 }));
 
-export const mockUserProfiles: UserProfile[] = Array.from({ length: 50 }).map((_, i) => ({
+export let mockUserProfiles: UserProfile[] = Array.from({ length: 50 }).map((_, i) => ({
   userId: `user_${i + 1}`,
   segment: i % 3 === 0 ? UserSegment.NewUser : i % 5 === 0 ? UserSegment.Admin : UserSegment.ExperiencedUser,
   onboardingCompletion: i < 10 ? Math.floor(Math.random() * 90) : 100,
@@ -1247,9 +1321,11 @@ export const mockUserProfiles: UserProfile[] = Array.from({ length: 50 }).map((_
   customThrottlePreferences: i % 7 === 0 ? { 'feat_adv_analytics': 'ease' } : {},
   accountStatus: i % 10 === 0 ? 'suspended' : 'active',
   lastActivity: new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)).toISOString(),
+  publicKey: `mock_user_pubkey_${i + 1}`,
+  profileSignature: `mock_user_sig_${i + 1}`,
 }));
 
-export const mockIntegrationConfigs: IntegrationConfig[] = [
+export let mockIntegrationConfigs: IntegrationConfig[] = [
   { id: 'int_slack', name: 'Slack Notifications', type: 'slack', status: 'connected', settings: { webhookUrl: 'https://hooks.slack.com/services/mock/mock' }, lastTested: '2023-03-01T08:00:00Z' },
   { id: 'int_pagerduty', name: 'PagerDuty On-Call', type: 'custom_webhook', status: 'connected', settings: { serviceKey: 'mock_key_pd' }, lastTested: '2023-03-01T08:05:00Z' },
   { id: 'int_datadog', name: 'Datadog Metrics', type: 'datadog', status: 'disconnected', settings: { apiKey: 'mock_key_dd' } },
@@ -1328,30 +1404,35 @@ export const mockFeedbackLoopStatus: FeedbackLoopStatus = {
   optimizationGoal: 'balance_load_and_usage',
 };
 
-export const mockAgentDefinitions: AgentDefinition[] = [
+export let mockAgentDefinitions: AgentDefinition[] = [
   {
     id: 'agent_fraud_detector', name: 'Fraud Detection Agent', description: 'Monitors transactions for suspicious patterns.', category: AgentCategory.FraudDetection,
     skills: [AgentSkill.AnomalyDetection, AgentSkill.RiskAssessment, AgentSkill.Communication], status: 'active',
-    configuration: { model_version: '2.1', sensitivity: 0.8 }, operationalLoadThreshold: 100, lastUpdated: '2023-03-01T13:00:00Z', ownerTeam: 'Security AI', rbacRole: 'fraud_analyst_agent'
+    configuration: { model_version: '2.1', sensitivity: 0.8 }, operationalLoadThreshold: 100, lastUpdated: '2023-03-01T13:00:00Z', ownerTeam: 'Security AI', rbacRole: 'fraud_analyst_agent', publicKey: 'mock_agent_fraud_pubkey'
   },
   {
     id: 'agent_settlement_orch', name: 'Settlement Orchestration Agent', description: 'Manages multi-rail transaction settlement.', category: AgentCategory.Orchestration,
     skills: [AgentSkill.TransactionProcessing, AgentSkill.SmartContractExecution, AgentSkill.ErrorHandling], status: 'active',
-    configuration: { primary_rail: 'rail_fast', fallback_rail: 'rail_batch' }, operationalLoadThreshold: 500, lastUpdated: '2023-03-01T14:00:00Z', ownerTeam: 'Payments Core', rbacRole: 'payment_orchestrator_agent'
+    configuration: { primary_rail: 'rail_fast', fallback_rail: 'rail_batch' }, operationalLoadThreshold: 500, lastUpdated: '2023-03-01T14:00:00Z', ownerTeam: 'Payments Core', rbacRole: 'payment_orchestrator_agent', publicKey: 'mock_agent_settlement_pubkey'
   },
   {
     id: 'agent_reconciliation', name: 'Ledger Reconciliation Agent', description: 'Periodically verifies ledger consistency.', category: AgentCategory.Reconciliation,
     skills: [AgentSkill.LedgerUpdate, AgentSkill.DataAggregation, AgentSkill.Reporting], status: 'idle',
-    configuration: { schedule: 'daily_0200_utc', scope: 'all_accounts' }, operationalLoadThreshold: 50, lastUpdated: '2023-03-01T15:00:00Z', ownerTeam: 'Accounting Tech', rbacRole: 'finance_auditor_agent'
+    configuration: { schedule: 'daily_0200_utc', scope: 'all_accounts' }, operationalLoadThreshold: 50, lastUpdated: '2023-03-01T15:00:00Z', ownerTeam: 'Accounting Tech', rbacRole: 'finance_auditor_agent', publicKey: 'mock_agent_reconciliation_pubkey'
   },
   {
     id: 'agent_system_monitor', name: 'System Monitoring Agent', description: 'Monitors overall system health and triggers alerts.', category: AgentCategory.Monitoring,
     skills: [AgentSkill.AnomalyDetection, AgentSkill.SystemDiagnosis, AgentSkill.PolicyEnforcement], status: 'active',
-    configuration: { metrics_interval: 15 }, operationalLoadThreshold: 200, lastUpdated: '2023-03-01T16:00:00Z', ownerTeam: 'DevOps', rbacRole: 'ops_monitor_agent'
+    configuration: { metrics_interval: 15 }, operationalLoadThreshold: 200, lastUpdated: '2023-03-01T16:00:00Z', ownerTeam: 'DevOps', rbacRole: 'ops_monitor_agent', publicKey: 'mock_agent_monitor_pubkey'
+  },
+  {
+    id: 'agent_key_manager', name: 'Key Management Agent', description: 'Manages cryptographic keys for identities and services.', category: AgentCategory.Security,
+    skills: [AgentSkill.KeyManagement, AgentSkill.IdentityVerification, AgentSkill.PolicyEnforcement], status: 'active',
+    configuration: { rotation_policy: 'quarterly' }, operationalLoadThreshold: 50, lastUpdated: '2023-03-10T10:00:00Z', ownerTeam: 'Security AI', rbacRole: 'key_manager_agent', publicKey: 'mock_agent_key_manager_pubkey'
   },
 ];
 
-export const mockAgentHealthMetrics: AgentHealthMetric[] = Array.from({ length: 4 }).map((_, i) => ({
+export const mockAgentHealthMetrics: AgentHealthMetric[] = Array.from({ length: 5 }).map((_, i) => ({
   timestamp: new Date().toISOString(),
   agentId: mockAgentDefinitions[i].id,
   cpuUsage: Math.random() * 20 + 10,
@@ -1405,7 +1486,7 @@ export const mockPaymentEngineStatus: PaymentEngineStatus = {
   },
 };
 
-export const mockPaymentRequestMetrics: PaymentRequestMetric[] = Array.from({ length: 20 }).map((_, i) => {
+export let mockPaymentRequestMetrics: PaymentRequestMetric[] = Array.from({ length: 20 }).map((_, i) => {
   const rails = [TokenRailType.Fast, TokenRailType.Batch, TokenRailType.HighValue];
   const statuses = [TokenTransactionStatus.Confirmed, TokenTransactionStatus.Failed, TokenTransactionStatus.Pending];
   return {
@@ -1435,36 +1516,43 @@ export const mockIdentityServiceStatus: IdentityServiceStatus = {
   securityIncidents: [],
 };
 
-export const mockAuthLogEntries: AuthLogEntry[] = Array.from({ length: 20 }).map((_, i) => {
-  const eventTypes = Object.values(AuthEventType);
-  const outcomes = ['success', 'failure', 'denied', 'info'];
-  const entityId = i % 2 === 0 ? `user_${Math.floor(Math.random() * 50) + 1}` : `agent_${Math.floor(Math.random() * 4) + 1}`;
-  const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-  const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+// Initial setup for mockAuthLogEntries to have proper hash chaining
+export let mockAuthLogEntries: AuthLogEntry[] = [];
+(() => {
+  let previousHash = 'genesis_block_hash';
+  for (let i = 0; i < 20; i++) {
+    const eventTypes = Object.values(AuthEventType);
+    const outcomes = ['success', 'failure', 'denied', 'info'];
+    const entityId = i % 2 === 0 ? `user_${Math.floor(Math.random() * 50) + 1}` : `agent_${Math.floor(Math.random() * 5) + 1}`;
+    const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+    const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
 
-  return {
-    id: `auth_log_${i + 1}`,
-    timestamp: new Date(Date.now() - (19 - i) * 10 * 1000).toISOString(),
-    eventType: eventType,
-    entityId: entityId,
-    ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
-    outcome: outcome,
-    message: `${entityId} ${eventType} - ${outcome}`,
-    context: {
-      feature: Math.random() > 0.5 ? 'feat_identity_security' : 'feat_adv_analytics',
-      details: `Attempt from ${`192.168.1.${Math.floor(Math.random() * 255)}`}`
-    },
-    previousHash: 'genesis', // Simplified, will be updated by mockAPI POST
-    entryHash: `hash_${i + 1}`, // Simplified, will be updated by mockAPI POST
-  };
-});
+    const logEntry: Partial<AuthLogEntry> = {
+      id: `auth_log_${i + 1}`,
+      timestamp: new Date(Date.now() - (19 - i) * 10 * 1000).toISOString(),
+      eventType: eventType,
+      entityId: entityId,
+      ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+      outcome: outcome,
+      message: `${entityId} ${eventType} - ${outcome}`,
+      context: {
+        feature: Math.random() > 0.5 ? 'feat_identity_security' : 'feat_adv_analytics',
+        details: `Attempt from ${`192.168.1.${Math.floor(Math.random() * 255)}`}`
+      },
+    };
+    const logContent = JSON.stringify({ eventType: logEntry.eventType, entityId: logEntry.entityId, outcome: logEntry.outcome, message: logEntry.message, context: logEntry.context });
+    const entryHash = simpleDeterministicHash(logContent, previousHash);
+
+    mockAuthLogEntries.push({ ...logEntry as AuthLogEntry, previousHash, entryHash });
+    previousHash = entryHash; // Chain the hash
+  }
+})();
 
 
 // Data Hooks (simulating data fetching and state management) ---------------------------------------------------------
 
 /**
- * @function useFeatureDefinitions
- * @description Hook to manage and fetch feature definitions. This centralizes
+ * Hook to manage and fetch feature definitions. This centralizes
  * the logic for interacting with the feature registry, ensuring consistency
  * across the application.
  * Business Value: Provides a single source of truth for feature metadata,
@@ -1526,16 +1614,25 @@ export const useFeatureDefinitions = () => {
     }
   };
 
+  const deleteFeature = async (featureId: string) => {
+    try {
+      await mockBackendAPI('features', 'DELETE', { id: featureId });
+      setFeatures(prev => prev.filter(f => f.id !== featureId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete feature.');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchFeatures();
   }, []);
 
-  return { features, loading, error, fetchFeatures, addFeature, updateFeature };
+  return { features, loading, error, fetchFeatures, addFeature, updateFeature, deleteFeature };
 };
 
 /**
- * @function useThrottlingPolicies
- * @description Hook to manage and fetch throttling policies. This abstraction
+ * Hook to manage and fetch throttling policies. This abstraction
  * ensures that policy management is robust and scalable, supporting the dynamic
  * nature of operational load.
  * Business Value: Centralizes the management of system resilience policies,
@@ -1599,16 +1696,25 @@ export const useThrottlingPolicies = () => {
     }
   };
 
+  const deletePolicy = async (policyId: string) => {
+    try {
+      await mockBackendAPI('policies', 'DELETE', { id: policyId });
+      setPolicies(prev => prev.filter(p => p.id !== policyId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete policy.');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchPolicies();
   }, []);
 
-  return { policies, loading, error, fetchPolicies, addPolicy, updatePolicy };
+  return { policies, loading, error, fetchPolicies, addPolicy, updatePolicy, deletePolicy };
 };
 
 /**
- * @function useAlerts
- * @description Hook to manage and fetch alert definitions and instances. This ensures
+ * Hook to manage and fetch alert definitions and instances. This ensures
  * that operational alerts are consistently retrieved and managed throughout the UI.
  * Business Value: Provides a robust framework for real-time incident awareness and
  * management, accelerating response times to critical system events and minimizing
@@ -1668,6 +1774,27 @@ export const useAlerts = () => {
     }
   };
 
+  const updateDefinition = async (def: AlertDefinition) => {
+    try {
+      const updatedDef: AlertDefinition = await mockBackendAPI('alerts/definitions', 'PUT', def);
+      setDefinitions(prev => prev.map(d => d.id === updatedDef.id ? updatedDef : d));
+      return updatedDef;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update alert definition.');
+      throw err;
+    }
+  };
+
+  const deleteDefinition = async (definitionId: string) => {
+    try {
+      await mockBackendAPI('alerts/definitions', 'DELETE', { id: definitionId });
+      setDefinitions(prev => prev.filter(d => d.id !== definitionId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete alert definition.');
+      throw err;
+    }
+  };
+
   const updateInstance = async (instance: AlertInstance) => {
     try {
       const updatedInstance: AlertInstance = await mockBackendAPI('alerts/instances', 'PUT', instance);
@@ -1684,12 +1811,11 @@ export const useAlerts = () => {
     fetchInstances();
   }, []);
 
-  return { definitions, instances, loading, error, fetchDefinitions, fetchInstances, createDefinition, updateInstance };
+  return { definitions, instances, loading, error, fetchDefinitions, fetchInstances, createDefinition, updateDefinition, deleteDefinition, updateInstance };
 };
 
 /**
- * @function useEscalationPolicies
- * @description Hook to manage and fetch alert escalation policies. This provides
+ * Hook to manage and fetch alert escalation policies. This provides
  * the necessary data for configuring how critical incidents are handled.
  * Business Value: Orchestrates a highly reliable incident response workflow,
  * ensuring that no critical alert goes unaddressed and that the right personnel
@@ -1744,17 +1870,26 @@ export const useEscalationPolicies = () => {
     }
   };
 
+  const deletePolicy = async (policyId: string) => {
+    try {
+      await mockBackendAPI('alerts/escalation_policies', 'DELETE', { id: policyId });
+      setPolicies(prev => prev.filter(p => p.id !== policyId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete escalation policy.');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchPolicies();
   }, []);
 
-  return { policies, loading, error, fetchPolicies, addPolicy, updatePolicy };
+  return { policies, loading, error, fetchPolicies, addPolicy, updatePolicy, deletePolicy };
 };
 
 
 /**
- * @function useSystemHealth
- * @description Hook to fetch real-time and historical system health metrics.
+ * Hook to fetch real-time and historical system health metrics.
  * This provides continuous visibility into the foundational infrastructure.
  * Business Value: Acts as the pulse of the underlying system, enabling predictive
  * maintenance, resource capacity planning, and proactive issue resolution,
@@ -1804,8 +1939,7 @@ export const useSystemHealth = () => {
 };
 
 /**
- * @function useUserProfiles
- * @description Hook to manage and fetch user profiles. This data informs
+ * Hook to manage and fetch user profiles. This data informs
  * user-segment-specific load balancing and experience personalization.
  * Business Value: Provides the underlying data for segmenting and tailoring
  * user experiences, leading to higher engagement, better retention, and the
@@ -1829,16 +1963,39 @@ export const useUserProfiles = () => {
     }
   };
 
+  const updateUserProfile = async (profile: UserProfile) => {
+    try {
+      const updatedProfile: UserProfile = await mockBackendAPI('users', 'PUT', profile);
+      setUsers(prev => prev.map(u => u.userId === updatedProfile.userId ? updatedProfile : u));
+      return updatedProfile;
+    } catch (err: any) {
+      setError(err.message || 'Failed to update user profile.');
+      throw err;
+    }
+  };
+
+  // Simulate key generation for a user profile
+  const generateUserKeyPair = async (userId: string) => {
+    const user = users.find(u => u.userId === userId);
+    if (!user) {
+      throw new Error('User not found for key generation.');
+    }
+    // In a real system, this would securely generate an asymmetric key pair
+    const newPublicKey = `mock_user_pubkey_${generateUUID().substring(0, 8)}`;
+    const newSignature = `mock_user_signature_${generateUUID().substring(0, 8)}`; // Simulate signing the profile
+    const updatedUser = { ...user, publicKey: newPublicKey, profileSignature: newSignature };
+    return updateUserProfile(updatedUser);
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  return { users, loading, error, fetchUsers };
+  return { users, loading, error, fetchUsers, updateUserProfile, generateUserKeyPair };
 };
 
 /**
- * @function useHistoricalData
- * @description Hook to fetch historical cognitive load data. This aggregate view
+ * Hook to fetch historical cognitive load data. This aggregate view
  * is crucial for trend analysis and long-term performance optimization.
  * Business Value: Enables data-driven strategic decisions, capacity planning,
  * and validation of load balancing policy effectiveness over time,
@@ -1870,8 +2027,7 @@ export const useHistoricalData = () => {
 };
 
 /**
- * @function usePredictiveAnalytics
- * @description Hook to fetch and manage predictive load forecasts. This empowers
+ * Hook to fetch and manage predictive load forecasts. This empowers
  * proactive decision-making and pre-emptive resource adjustments.
  * Business Value: Shifts operational management from reactive to predictive,
  * enabling proactive resource scaling and policy adjustments, thereby preventing
@@ -1903,8 +2059,7 @@ export const usePredictiveAnalytics = () => {
 };
 
 /**
- * @function useFeedbackLoop
- * @description Hook to fetch and manage feedback loop status. This provides
+ * Hook to fetch and manage feedback loop status. This provides
  * transparency into the system's self-optimization capabilities.
  * Business Value: Automates the continuous improvement of load balancing strategies,
  * ensuring the system always adapts to new patterns, leading to maximized efficiency
@@ -1936,8 +2091,7 @@ export const useFeedbackLoop = () => {
 };
 
 /**
- * @function useIntegrationConfigs
- * @description Hook to manage and fetch integration configurations. This centralizes
+ * Hook to manage and fetch integration configurations. This centralizes
  * the setup and monitoring of external system connections.
  * Business Value: Ensures seamless interoperability with existing enterprise systems
  * and monitoring tools, enabling a unified operational view, reducing manual effort,
@@ -1991,16 +2145,25 @@ export const useIntegrationConfigs = () => {
     }
   };
 
+  const deleteConfig = async (configId: string) => {
+    try {
+      await mockBackendAPI('integrations', 'DELETE', { id: configId });
+      setConfigs(prev => prev.filter(c => c.id !== configId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete integration config.');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchConfigs();
   }, []);
 
-  return { configs, loading, error, fetchConfigs, addConfig, updateConfig };
+  return { configs, loading, error, fetchConfigs, addConfig, updateConfig, deleteConfig };
 };
 
 /**
- * @function useAgents
- * @description Hook to manage and fetch AI agent definitions and their health metrics.
+ * Hook to manage and fetch AI agent definitions and their health metrics.
  * This provides continuous oversight of the autonomous workforce.
  * Business Value: Ensures the health and optimal performance of agentic AI systems,
  * which are foundational for automated workflows. Proactive monitoring prevents
@@ -2051,6 +2214,7 @@ export const useAgents = () => {
         lastUpdated: new Date().toISOString(),
         ownerTeam: agent.ownerTeam || 'Unknown',
         rbacRole: agent.rbacRole || 'default_agent_role',
+        publicKey: `mock_agent_pubkey_${generateUUID().substring(0,8)}`, // Simulate key generation
       };
       const addedAgent: AgentDefinition = await mockBackendAPI('agents', 'POST', newAgent);
       setDefinitions(prev => [...prev, addedAgent]);
@@ -2072,6 +2236,16 @@ export const useAgents = () => {
     }
   };
 
+  const deleteAgent = async (agentId: string) => {
+    try {
+      await mockBackendAPI('agents', 'DELETE', { id: agentId });
+      setDefinitions(prev => prev.filter(a => a.id !== agentId));
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete agent.');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchDefinitions();
     fetchHealthMetrics();
@@ -2081,12 +2255,11 @@ export const useAgents = () => {
     return () => clearInterval(interval);
   }, []);
 
-  return { definitions, healthMetrics, loading, error, fetchDefinitions, fetchHealthMetrics, addAgent, updateAgent };
+  return { definitions, healthMetrics, loading, error, fetchDefinitions, fetchHealthMetrics, addAgent, updateAgent, deleteAgent };
 };
 
 /**
- * @function useTokenRails
- * @description Hook to manage and fetch token rail metrics and account snapshots.
+ * Hook to manage and fetch token rail metrics and account snapshots.
  * This provides crucial insight into the performance and state of the digital ledger.
  * Business Value: Offers real-time financial observability into the token rail layer,
  * ensuring transaction integrity, liquidity monitoring, and efficient routing,
@@ -2134,8 +2307,7 @@ export const useTokenRails = () => {
 };
 
 /**
- * @function usePayments
- * @description Hook to manage and fetch payment engine status and request metrics.
+ * Hook to manage and fetch payment engine status and request metrics.
  * This provides the operational view for the real-time payments infrastructure.
  * Business Value: Critical for monitoring the health and performance of the
  * real-time payments engine, enabling rapid fraud detection, transaction reconciliation,
@@ -2172,6 +2344,32 @@ export const usePayments = () => {
     }
   };
 
+  const createPaymentRequest = async (request: Partial<PaymentRequestMetric>) => {
+    try {
+      const newPayment: PaymentRequestMetric = {
+        requestId: generateUUID(),
+        timestamp: new Date().toISOString(),
+        source: request.source || 'simulated_sender',
+        destination: request.destination || 'simulated_receiver',
+        amount: request.amount || 0,
+        currency: request.currency || 'USD',
+        chosenRail: request.chosenRail || TokenRailType.Fast,
+        processingTime: Math.random() * 200 + 50, // Simulated
+        status: Math.random() > 0.95 ? TokenTransactionStatus.Failed : TokenTransactionStatus.Confirmed, // Simulated
+        riskScore: Math.random() * 0.1, // Simulated
+        fraudReason: Math.random() > 0.98 ? 'Suspicious pattern' : undefined, // Simulated
+        ...request,
+      };
+      const addedPayment: PaymentRequestMetric = await mockBackendAPI('payments/requests', 'POST', newPayment);
+      setRequestMetrics(prev => [...prev, addedPayment]);
+      return addedPayment;
+    } catch (err: any) {
+      setError(err.message || 'Failed to create payment request.');
+      throw err;
+    }
+  };
+
+
   useEffect(() => {
     fetchEngineStatus();
     fetchRequestMetrics();
@@ -2184,12 +2382,11 @@ export const usePayments = () => {
     };
   }, []);
 
-  return { engineStatus, requestMetrics, loading, error, fetchEngineStatus, fetchRequestMetrics };
+  return { engineStatus, requestMetrics, loading, error, fetchEngineStatus, fetchRequestMetrics, createPaymentRequest };
 };
 
 /**
- * @function useIdentity
- * @description Hook to manage and fetch identity service status and authentication logs.
+ * Hook to manage and fetch identity service status and authentication logs.
  * This provides a critical security and audit trail for user and agent access.
  * Business Value: Establishes a robust security observability layer for digital identity,
  * critical for preventing fraud, detecting unauthorized access, and ensuring compliance
@@ -2266,8 +2463,7 @@ export const useIdentity = () => {
 // UI Components (Sub-views) -------------------------------------------------------------------------------------------
 
 /**
- * @const CognitiveLoadGauge
- * @description A visual gauge component for displaying current cognitive load.
+ * A visual gauge component for displaying current cognitive load.
  * This provides an immediate, intuitive understanding of the user experience burden.
  * Business Value: Offers a quick, at-a-glance performance indicator critical for
  * operational teams and stakeholders to assess user experience health, enabling
@@ -2321,8 +2517,7 @@ export const CognitiveLoadGauge: React.FC<{ load: number }> = ({ load }) => {
 };
 
 /**
- * @const FeatureStatusCard
- * @description Displays the status of individual features, including their cognitive weight
+ * Displays the status of individual features, including their cognitive weight
  * and current throttling status. This provides detailed insight into feature-level performance.
  * Business Value: Enables granular monitoring and management of each feature's operational
  * status, allowing product and engineering teams to understand how individual components
@@ -2347,7 +2542,7 @@ export const FeatureStatusCard: React.FC<{ feature: FeatureDefinition; isThrottl
       <div className="mt-3">
         {isThrottled ? (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-600 text-white">
-            <span className="mr-1 animate-pulse">â€¢</span> Throttled
+            <span className="mr-1 animate-pulse">•</span> Throttled
           </span>
         ) : (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100">
@@ -2360,14 +2555,13 @@ export const FeatureStatusCard: React.FC<{ feature: FeatureDefinition; isThrottl
 };
 
 /**
- * @const ThrottlingPoliciesTable
- * @description Displays a table of all defined throttling policies. This interface
+ * Displays a table of all defined throttling policies. This interface
  * allows operators to review and manage the rules governing system load.
  * Business Value: Provides a transparent and manageable interface for load balancing
  * policies, enabling administrators to quickly audit, modify, and create new policies,
  * ensuring agile response to changing operational demands and strategic priorities.
  */
-export const ThrottlingPoliciesTable: React.FC<{ policies: ThrottlingPolicy[]; onEditPolicy: (policy: ThrottlingPolicy) => void }> = ({ policies, onEditPolicy }) => {
+export const ThrottlingPoliciesTable: React.FC<{ policies: ThrottlingPolicy[]; onEditPolicy: (policy: ThrottlingPolicy) => void; onDeletePolicy: (policyId: string) => void }> = ({ policies, onEditPolicy, onDeletePolicy }) => {
   if (policies.length === 0) {
     return <p className="text-gray-400">No throttling policies defined.</p>;
   }
@@ -2405,6 +2599,12 @@ export const ThrottlingPoliciesTable: React.FC<{ policies: ThrottlingPolicy[]; o
                 >
                   Edit
                 </button>
+                <button
+                  onClick={() => onDeletePolicy(policy.id)}
+                  className="text-red-400 hover:text-red-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
@@ -2415,8 +2615,7 @@ export const ThrottlingPoliciesTable: React.FC<{ policies: ThrottlingPolicy[]; o
 };
 
 /**
- * @const AlertsList
- * @description Displays a list of active and recent alert instances. This view
+ * Displays a list of active and recent alert instances. This view
  * is critical for incident monitoring and management.
  * Business Value: Consolidates all operational warnings and critical alerts into a
  * single, actionable view, empowering rapid incident response, reducing downtime,
@@ -2494,8 +2693,7 @@ export const AlertsList: React.FC<{ alerts: AlertInstance[]; definitions: AlertD
 };
 
 /**
- * @const SystemHealthSummaryCard
- * @description Displays key system health metrics in a concise card format.
+ * Displays key system health metrics in a concise card format.
  * This provides an immediate overview of the underlying infrastructure's status.
  * Business Value: Delivers a high-level, actionable summary of core system health,
  * enabling operations teams and executives to quickly ascertain the stability
@@ -2547,8 +2745,7 @@ export const SystemHealthSummaryCard: React.FC<{ metrics: SystemHealthMetric | n
 };
 
 /**
- * @const DataPoint
- * @description Represents a single data point for a chart, used by mock chart components.
+ * Represents a single data point for a chart, used by mock chart components.
  * This simple structure allows for flexible visualization of various metrics.
  * Business Value: Provides a standardized, digestible format for data visualization,
  * enabling quick interpretation of trends and patterns across different operational
@@ -2563,8 +2760,7 @@ interface DataPoint {
 }
 
 /**
- * @const MockLineChart
- * @description A highly simplified mock line chart component for visualizing trends over time.
+ * A highly simplified mock line chart component for visualizing trends over time.
  * In a real application, this would use a robust charting library like Recharts or Chart.js
  * to provide interactive and high-fidelity data visualization.
  * Business Value: Offers essential trend analysis capabilities, allowing operational teams
@@ -2576,7 +2772,6 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
     return <div className="bg-gray-800 p-4 rounded-lg text-center text-gray-400">No data for {title}.</div>;
   }
 
-  // Simple min/max for scaling
   const allValues = data.flatMap(d => dataKeys.map(key => d[key]));
   const minValue = Math.min(...allValues);
   const maxValue = Math.max(...allValues);
@@ -2595,11 +2790,9 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
       <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
       <div className="relative h-64 w-full">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute w-full h-full">
-          {/* Y-axis labels (simplified) */}
           <text x="0" y="5" className="text-xs fill-gray-400">{maxValue.toFixed(2)}</text>
           <text x="0" y="95" className="text-xs fill-gray-400">{minValue.toFixed(2)}</text>
 
-          {/* Lines */}
           {dataKeys.map((key, kIdx) => (
             <polyline
               key={key}
@@ -2609,7 +2802,6 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
               points={data.map((d, i) => `${scaleX(i)},${scaleY(d[key])}`).join(' ')}
             />
           ))}
-          {/* Points */}
           {dataKeys.map((key, kIdx) => (
             data.map((d, i) => (
               <circle
@@ -2640,8 +2832,7 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
 };
 
 /**
- * @const MockBarChart
- * @description A highly simplified mock bar chart component for comparing discrete values.
+ * A highly simplified mock bar chart component for comparing discrete values.
  * Similar to the line chart, a real application would use a dedicated charting library.
  * Business Value: Provides immediate comparative analysis of discrete data points,
  * such as feature contributions or agent performance, aiding quick identification
@@ -2675,7 +2866,7 @@ export const MockBarChart: React.FC<{ data: DataPoint[]; dataKey: string; title:
               className={`bg-blue-500 w-3/4 rounded-t-sm transition-all duration-500 ease-out`}
               style={{ height: `${scaleY(d[dataKey])}%` }}
             ></div>
-            <span className="text-xs text-gray-400 mt-1">{d.name.substring(0, 5)}...</span>
+            <span className="text-xs text-gray-400 mt-1">{d.name.substring(0, Math.min(d.name.length, 5))}...</span>
             <span className="text-xs text-gray-300">{d[dataKey].toFixed(2)}</span>
           </div>
         ))}
@@ -2689,8 +2880,7 @@ export const MockBarChart: React.FC<{ data: DataPoint[]; dataKey: string; title:
 };
 
 /**
- * @const PredictiveForecastCard
- * @description Displays the next forecasted cognitive load and recommended actions,
+ * Displays the next forecasted cognitive load and recommended actions,
  * empowering proactive operational adjustments.
  * Business Value: Provides actionable intelligence for proactive resource management,
  * enabling pre-emptive throttling or scaling to avoid anticipated load spikes,
@@ -2715,7 +2905,7 @@ export const PredictiveForecastCard: React.FC<{ forecast: PredictiveForecast | n
         <div className="text-right">
           {forecast.recommendedActions.length > 0 ? (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-600 text-red-100">
-              <span className="mr-1 animate-pulse">â€¢</span> Action Recommended
+              <span className="mr-1 animate-pulse">•</span> Action Recommended
             </span>
           ) : (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-700 text-green-100">
@@ -2751,8 +2941,7 @@ export const PredictiveForecastCard: React.FC<{ forecast: PredictiveForecast | n
 };
 
 /**
- * @const FeatureEditorForm
- * @description A form for editing or adding FeatureDefinition. This administrative
+ * A form for editing or adding FeatureDefinition. This administrative
  * interface allows for comprehensive management of application features.
  * Business Value: Streamlines feature lifecycle management, enabling product and
  * engineering teams to define, configure, and update application features with
@@ -2898,8 +3087,7 @@ export const FeatureEditorForm: React.FC<{ feature?: FeatureDefinition; onSave: 
 };
 
 /**
- * @const PolicyEditorForm
- * @description A form for editing or adding ThrottlingPolicy. This powerful interface
+ * A form for editing or adding ThrottlingPolicy. This powerful interface
  * enables administrators to fine-tune the system's dynamic load management rules.
  * Business Value: Empowers administrators to precisely configure and deploy
  * load balancing policies, directly influencing system performance, user experience,
@@ -2936,7 +3124,7 @@ export const PolicyEditorForm: React.FC<{ policy?: ThrottlingPolicy; allFeatures
     const value = Array.from(options).filter(option => option.selected).map(option => option.value);
     setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value as UserSegment[] | string[], // Type assertion for multi-selects
     }));
   };
 
@@ -3052,14 +3240,13 @@ export const PolicyEditorForm: React.FC<{ policy?: ThrottlingPolicy; allFeatures
 };
 
 /**
- * @const IntegrationConfigTable
- * @description Displays a table of all configured integrations, offering a centralized
+ * Displays a table of all configured integrations, offering a centralized
  * view for managing external system connections.
  * Business Value: Provides transparent oversight and management of all critical
  * third-party integrations, ensuring seamless data flow, reducing configuration errors,
  * and maintaining the integrity of the integrated ecosystem, protecting business operations.
  */
-export const IntegrationConfigTable: React.FC<{ configs: IntegrationConfig[]; onEditConfig: (config: IntegrationConfig) => void }> = ({ configs, onEditConfig }) => {
+export const IntegrationConfigTable: React.FC<{ configs: IntegrationConfig[]; onEditConfig: (config: IntegrationConfig) => void; onDeleteConfig: (configId: string) => void }> = ({ configs, onEditConfig, onDeleteConfig }) => {
   if (configs.length === 0) {
     return <p className="text-gray-400">No integrations configured.</p>;
   }
@@ -3104,10 +3291,10 @@ export const IntegrationConfigTable: React.FC<{ configs: IntegrationConfig[]; on
                   Edit
                 </button>
                 <button
-                  onClick={() => console.log(`Testing integration ${config.name}`)}
-                  className="text-blue-400 hover:text-blue-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={() => onDeleteConfig(config.id)}
+                  className="text-red-400 hover:text-red-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
-                  Test
+                  Delete
                 </button>
               </td>
             </tr>
@@ -3119,8 +3306,7 @@ export const IntegrationConfigTable: React.FC<{ configs: IntegrationConfig[]; on
 };
 
 /**
- * @const UserSegmentDistribution
- * @description Displays cognitive load distribution across user segments. This visualization
+ * Displays cognitive load distribution across user segments. This visualization
  * highlights how different user groups are impacted by system load.
  * Business Value: Provides critical insights for user experience optimization and targeted
  * resource allocation, enabling product teams to ensure high-value user segments receive
@@ -3131,7 +3317,6 @@ export const UserSegmentDistribution: React.FC<{ historicalData: HistoricalCogni
     return <p className="text-gray-400">No historical user segment data available.</p>;
   }
 
-  // Get latest segment breakdown for a snapshot
   const latestData = historicalData[historicalData.length - 1];
   const segmentDataPoints: DataPoint[] = Object.entries(latestData.userSegmentBreakdown).map(([segment, metrics]) => ({
     name: segment,
@@ -3156,8 +3341,7 @@ export const UserSegmentDistribution: React.FC<{ historicalData: HistoricalCogni
 };
 
 /**
- * @const FeedbackLoopStatusCard
- * @description Displays the status of the adaptive feedback loop, highlighting
+ * Displays the status of the adaptive feedback loop, highlighting
  * its optimization goals and proposed adjustments.
  * Business Value: Offers transparency into the system's autonomous self-optimization
  * capabilities, assuring stakeholders that the platform is continually learning
@@ -3216,14 +3400,13 @@ export const FeedbackLoopStatusCard: React.FC<{ status: FeedbackLoopStatus | nul
 };
 
 /**
- * @const AgentStatusTable
- * @description Displays a table of all defined AI agents and their current health metrics.
+ * Displays a table of all defined AI agents and their current health metrics.
  * This provides essential oversight for the autonomous workforce.
  * Business Value: Ensures the operational integrity and accountability of every AI agent,
  * allowing for proactive management of the automated workforce, minimizing errors,
  * and maximizing the efficiency of agentic workflows.
  */
-export const AgentStatusTable: React.FC<{ agents: AgentDefinition[]; healthMetrics: AgentHealthMetric[]; onEditAgent: (agent: AgentDefinition) => void }> = ({ agents, healthMetrics, onEditAgent }) => {
+export const AgentStatusTable: React.FC<{ agents: AgentDefinition[]; healthMetrics: AgentHealthMetric[]; onEditAgent: (agent: AgentDefinition) => void; onDeleteAgent: (agentId: string) => void }> = ({ agents, healthMetrics, onEditAgent, onDeleteAgent }) => {
   if (agents.length === 0) {
     return <p className="text-gray-400">No AI agents defined.</p>;
   }
@@ -3273,6 +3456,12 @@ export const AgentStatusTable: React.FC<{ agents: AgentDefinition[]; healthMetri
                   >
                     Edit
                   </button>
+                  <button
+                    onClick={() => onDeleteAgent(agent.id)}
+                    className="text-red-400 hover:text-red-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             );
@@ -3284,8 +3473,7 @@ export const AgentStatusTable: React.FC<{ agents: AgentDefinition[]; healthMetri
 };
 
 /**
- * @const TokenRailStatusCard
- * @description Displays the real-time operational status and key metrics for a token rail.
+ * Displays the real-time operational status and key metrics for a token rail.
  * This provides immediate insight into the health of specific financial rails.
  * Business Value: Ensures granular, real-time observability over each token rail,
  * facilitating proactive load management and routing decisions to maintain optimal
@@ -3318,8 +3506,7 @@ export const TokenRailStatusCard: React.FC<{ metric: TokenRailMetrics }> = ({ me
 };
 
 /**
- * @const PaymentEngineOverviewCard
- * @description Displays a high-level overview of the payment engine's status,
+ * Displays a high-level overview of the payment engine's status,
  * acting as a central health monitor for financial transactions.
  * Business Value: Provides a critical, high-level overview of the entire payment
  * processing system, enabling executive decision-makers and operations teams
@@ -3372,8 +3559,7 @@ export const PaymentEngineOverviewCard: React.FC<{ status: PaymentEngineStatus |
 };
 
 /**
- * @const AuthLogViewer
- * @description Displays a stream of authentication and authorization log entries.
+ * Displays a stream of authentication and authorization log entries.
  * This provides a critical security audit trail.
  * Business Value: Serves as a tamper-evident record of all identity-related events,
  * crucial for forensic analysis, audit compliance, and real-time security monitoring,
@@ -3407,6 +3593,7 @@ export const AuthLogViewer: React.FC<{ logs: AuthLogEntry[] }> = ({ logs }) => {
             <th className="p-3">IP Address</th>
             <th className="p-3">Outcome</th>
             <th className="p-3">Message</th>
+            <th className="p-3">Hash</th>
           </tr>
         </thead>
         <tbody>
@@ -3420,6 +3607,7 @@ export const AuthLogViewer: React.FC<{ logs: AuthLogEntry[] }> = ({ logs }) => {
                 {log.outcome.charAt(0).toUpperCase() + log.outcome.slice(1)}
               </td>
               <td className="p-3 text-sm text-gray-300">{log.message}</td>
+              <td className="p-3 text-sm font-mono text-gray-500">{log.entryHash.substring(0, 10)}...</td>
             </tr>
           ))}
         </tbody>
@@ -3428,11 +3616,826 @@ export const AuthLogViewer: React.FC<{ logs: AuthLogEntry[] }> = ({ logs }) => {
   );
 };
 
+/**
+ * Form for editing or adding AgentDefinition.
+ * This form centralizes the configuration and lifecycle management for individual AI agents.
+ * Business Value: Empowers administrators to precisely define and manage AI agents,
+ * ensuring they are configured to meet specific business objectives, operate securely,
+ * and integrate seamlessly into automated workflows.
+ */
+export const AgentEditorForm: React.FC<{ agent?: AgentDefinition; onSave: (agent: AgentDefinition) => void; onCancel: () => void }> = ({ agent, onSave, onCancel }) => {
+  const [formData, setFormData] = useState<AgentDefinition>(
+    agent || {
+      id: generateUUID(), name: '', description: '', category: AgentCategory.Monitoring,
+      skills: [], status: 'idle', configuration: {}, operationalLoadThreshold: 100,
+      lastUpdated: new Date().toISOString(), ownerTeam: '', rbacRole: '', publicKey: `mock_agent_pubkey_${generateUUID().substring(0,8)}`
+    }
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? parseFloat(value) : value,
+    }));
+  };
+
+  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, options } = e.target;
+    const value = Array.from(options).filter(option => option.selected).map(option => option.value);
+    setFormData(prev => ({
+      ...prev,
+      [name]: value as AgentSkill[],
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ ...formData, lastUpdated: new Date().toISOString() });
+  };
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-2xl mx-auto my-4">
+      <h2 className="text-2xl font-bold text-white mb-6">{agent ? 'Edit AI Agent' : 'Add New AI Agent'}</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="agentName" className="block text-sm font-medium text-gray-300">Agent Name</label>
+          <input
+            type="text" id="agentName" name="name" value={formData.name} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="agentDescription" className="block text-sm font-medium text-gray-300">Description</label>
+          <textarea
+            id="agentDescription" name="description" value={formData.description} onChange={handleChange} rows={2}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="agentCategory" className="block text-sm font-medium text-gray-300">Category</label>
+          <select
+            id="agentCategory" name="category" value={formData.category} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            {Object.values(AgentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="agentSkills" className="block text-sm font-medium text-gray-300">Skills (Multi-select)</label>
+          <select
+            id="agentSkills" name="skills" multiple
+            value={formData.skills} onChange={handleMultiSelectChange}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-32"
+          >
+            {Object.values(AgentSkill).map(skill => (<option key={skill} value={skill}>{skill}</option>))}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="agentStatus" className="block text-sm font-medium text-gray-300">Status</label>
+            <select
+              id="agentStatus" name="status" value={formData.status} onChange={handleChange} required
+              className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              {['active', 'idle', 'suspended', 'error'].map(status => (<option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="operationalLoadThreshold" className="block text-sm font-medium text-gray-300">Operational Load Threshold</label>
+            <input
+              type="number" id="operationalLoadThreshold" name="operationalLoadThreshold" value={formData.operationalLoadThreshold} onChange={handleChange} required
+              className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="ownerTeam" className="block text-sm font-medium text-gray-300">Owner Team</label>
+          <input
+            type="text" id="ownerTeam" name="ownerTeam" value={formData.ownerTeam} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="rbacRole" className="block text-sm font-medium text-gray-300">RBAC Role</label>
+          <input
+            type="text" id="rbacRole" name="rbacRole" value={formData.rbacRole} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div className="flex justify-end space-x-3 mt-6">
+          <button
+            type="button" onClick={onCancel}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Save Agent
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+/**
+ * Form for editing or adding IntegrationConfig.
+ * This component provides a robust interface for configuring and managing external system integrations.
+ * Business Value: Streamlines the process of integrating with critical external services,
+ * reducing manual configuration errors and ensuring consistent connectivity across the platform,
+ * thereby enhancing operational efficiency and reliability.
+ */
+export const IntegrationConfigEditorForm: React.FC<{ config?: IntegrationConfig; onSave: (config: IntegrationConfig) => void; onCancel: () => void }> = ({ config, onSave, onCancel }) => {
+  const [formData, setFormData] = useState<IntegrationConfig>(
+    config || {
+      id: generateUUID(), name: '', type: 'custom_webhook', status: 'disconnected', settings: {}
+    }
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name === 'type') {
+      setFormData(prev => ({ ...prev, [name]: value as IntegrationConfig['type'], settings: {} })); // Reset settings on type change
+    } else if (name.startsWith('settings.')) {
+      const settingKey = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        settings: { ...prev.settings, [settingKey]: value },
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-lg mx-auto my-4">
+      <h2 className="text-2xl font-bold text-white mb-6">
+        {config ? 'Edit Integration' : 'Add New Integration'}
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="integrationName" className="block text-sm font-medium text-gray-300">Integration Name</label>
+          <input
+            type="text" id="integrationName" name="name" value={formData.name} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="integrationType" className="block text-sm font-medium text-gray-300">Type</label>
+          <select
+            id="integrationType" name="type" value={formData.type} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option value="slack">Slack</option>
+            <option value="datadog">Datadog</option>
+            <option value="jira">Jira</option>
+            <option value="email">Email</option>
+            <option value="custom_webhook">Custom Webhook</option>
+          </select>
+        </div>
+        {formData.type === 'slack' && (
+          <div>
+            <label htmlFor="settings.webhookUrl" className="block text-sm font-medium text-gray-300">Webhook URL</label>
+            <input
+              type="url" id="settings.webhookUrl" name="settings.webhookUrl" value={formData.settings.webhookUrl || ''} onChange={handleChange}
+              className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        )}
+        {formData.type === 'datadog' && (
+          <div>
+            <label htmlFor="settings.apiKey" className="block text-sm font-medium text-gray-300">API Key</label>
+            <input
+              type="text" id="settings.apiKey" name="settings.apiKey" value={formData.settings.apiKey || ''} onChange={handleChange}
+              className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        )}
+        {formData.type === 'email' && (
+          <>
+            <div>
+              <label htmlFor="settings.smtpHost" className="block text-sm font-medium text-gray-300">SMTP Host</label>
+              <input
+                type="text" id="settings.smtpHost" name="settings.smtpHost" value={formData.settings.smtpHost || ''} onChange={handleChange}
+                className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="settings.sender" className="block text-sm font-medium text-gray-300">Sender Email</label>
+              <input
+                type="email" id="settings.sender" name="settings.sender" value={formData.settings.sender || ''} onChange={handleChange}
+                className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </>
+        )}
+        {formData.type === 'jira' && (
+          <>
+            <div>
+              <label htmlFor="settings.projectKey" className="block text-sm font-medium text-gray-300">Jira Project Key</label>
+              <input
+                type="text" id="settings.projectKey" name="settings.projectKey" value={formData.settings.projectKey || ''} onChange={handleChange}
+                className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="settings.issueType" className="block text-sm font-medium text-gray-300">Jira Issue Type</label>
+              <input
+                type="text" id="settings.issueType" name="settings.issueType" value={formData.settings.issueType || ''} onChange={handleChange}
+                className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+          </>
+        )}
+        {formData.type === 'custom_webhook' && (
+          <div>
+            <label htmlFor="settings.serviceKey" className="block text-sm font-medium text-gray-300">Service Key/Endpoint</label>
+            <input
+              type="text" id="settings.serviceKey" name="settings.serviceKey" value={formData.settings.serviceKey || ''} onChange={handleChange}
+              className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        )}
+        <div className="flex justify-end space-x-3 mt-6">
+          <button
+            type="button" onClick={onCancel}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Save Integration
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+/**
+ * Displays a table of token accounts and their current balances.
+ * This component offers transparent visibility into the digital ledger's state.
+ * Business Value: Provides an essential overview of liquidity and asset distribution
+ * within the token rail system, critical for financial reporting, risk management,
+ * and ensuring the transparency and auditability of all digital assets.
+ */
+export const TokenAccountsTable: React.FC<{ accounts: TokenAccountSnapshot[] }> = ({ accounts }) => {
+  if (accounts.length === 0) {
+    return <p className="text-gray-400">No token accounts available.</p>;
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-900/50">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Account ID</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Balance</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Last Transaction</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Txn Count</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800">
+          {accounts.map(account => (
+            <tr key={account.accountId} className="hover:bg-gray-700">
+              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-white">{account.accountId}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-green-300">${account.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{new Date(account.lastTransactionTimestamp).toLocaleString()}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{account.transactionCount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+/**
+ * Displays a table of recent payment requests.
+ * This provides detailed insights into the flow and status of individual payment transactions.
+ * Business Value: Offers granular traceability for payment operations, enabling rapid
+ * issue diagnosis, reconciliation, and fraud investigation, thereby enhancing trust
+ * and operational efficiency in real-time payment processing.
+ */
+export const PaymentRequestsTable: React.FC<{ requests: PaymentRequestMetric[] }> = ({ requests }) => {
+  if (requests.length === 0) {
+    return <p className="text-gray-400">No payment requests available.</p>;
+  }
+
+  const getStatusColor = (status: TokenTransactionStatus) => {
+    switch (status) {
+      case TokenTransactionStatus.Confirmed: return 'text-green-400';
+      case TokenTransactionStatus.Failed: return 'text-red-400';
+      case TokenTransactionStatus.Blocked: return 'text-orange-400';
+      case TokenTransactionStatus.Pending: return 'text-yellow-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const sortedRequests = [...requests].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  return (
+    <div className="overflow-x-auto max-h-96">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-900/70 sticky top-0">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Request ID</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rail</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Risk Score</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Processing Time</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800">
+          {sortedRequests.slice(0, 20).map(req => (
+            <tr key={req.requestId} className="hover:bg-gray-700">
+              <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-300">{new Date(req.timestamp).toLocaleTimeString()}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-white">{req.requestId}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-green-300">{req.amount.toLocaleString('en-US', { style: 'currency', currency: req.currency })}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{req.chosenRail}</td>
+              <td className={`px-3 py-2 whitespace-nowrap text-sm font-semibold ${getStatusColor(req.status)}`}>
+                {req.status} {req.fraudReason && <span className="text-red-500 text-xs">({req.fraudReason})</span>}
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-yellow-300">{(req.riskScore * 100).toFixed(1)}%</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{req.processingTime.toFixed(0)}ms</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+/**
+ * Form for editing or adding AlertDefinition.
+ * This component provides a streamlined interface for defining and managing alert rules.
+ * Business Value: Enables real-time customization of incident detection, ensuring that
+ * operational alerts are tailored to critical thresholds and business priorities,
+ * thereby minimizing false positives and accelerating response to genuine threats.
+ */
+export const AlertDefinitionEditorForm: React.FC<{ definition?: AlertDefinition; onSave: (def: AlertDefinition) => void; onCancel: () => void; allFeatures: FeatureDefinition[] }> = ({ definition, onSave, onCancel, allFeatures }) => {
+  const [formData, setFormData] = useState<AlertDefinition>(
+    definition || {
+      id: generateUUID(), name: '', description: '', severity: AlertSeverity.Warning, condition: '',
+      targetFeatures: [], targetUserSegments: [], notificationChannels: ['email'], isActive: true,
+      debouncePeriod: 300, autoResolveCondition: '',
+    }
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? parseFloat(value) : value,
+    }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, options } = e.target;
+    const value = Array.from(options).filter(option => option.selected).map(option => option.value);
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-2xl mx-auto my-4">
+      <h2 className="text-2xl font-bold text-white mb-6">{definition ? 'Edit Alert Definition' : 'Add New Alert Definition'}</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-300">Alert Name</label>
+          <input
+            type="text" id="name" name="name" value={formData.name} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
+          <textarea
+            id="description" name="description" value={formData.description} onChange={handleChange} rows={2}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="severity" className="block text-sm font-medium text-gray-300">Severity</label>
+          <select
+            id="severity" name="severity" value={formData.severity} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            {Object.values(AlertSeverity).map(s => (<option key={s} value={s}>{s}</option>))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="condition" className="block text-sm font-medium text-gray-300">Condition (e.g., 'avgCognitiveLoad > 0.9 for 120s')</label>
+          <input
+            type="text" id="condition" name="condition" value={formData.condition} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="autoResolveCondition" className="block text-sm font-medium text-gray-300">Auto Resolve Condition</label>
+          <input
+            type="text" id="autoResolveCondition" name="autoResolveCondition" value={formData.autoResolveCondition} onChange={handleChange}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="targetFeatures" className="block text-sm font-medium text-gray-300">Target Features (Multi-select)</label>
+          <select
+            id="targetFeatures" name="targetFeatures" multiple value={formData.targetFeatures} onChange={handleMultiSelectChange}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-32"
+          >
+            {allFeatures.map(feat => (<option key={feat.id} value={feat.id}>{feat.name}</option>))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="notificationChannels" className="block text-sm font-medium text-gray-300">Notification Channels (Multi-select)</label>
+          <select
+            id="notificationChannels" name="notificationChannels" multiple value={formData.notificationChannels} onChange={handleMultiSelectChange}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-24"
+          >
+            {['email', 'slack', 'pagerduty', 'custom_webhook'].map(channel => (<option key={channel} value={channel}>{channel}</option>))}
+          </select>
+        </div>
+        <div className="flex items-center">
+          <input
+            id="isActive" name="isActive" type="checkbox" checked={formData.isActive} onChange={handleCheckboxChange}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded"
+          />
+          <label htmlFor="isActive" className="ml-2 block text-sm text-gray-300">Is Active</label>
+        </div>
+        <div className="flex justify-end space-x-3 mt-6">
+          <button
+            type="button" onClick={onCancel}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Save Definition
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+
+/**
+ * Form for editing or adding EscalationPolicy.
+ * This component provides a robust interface for defining and managing critical incident escalation workflows.
+ * Business Value: Ensures that critical alerts are escalated according to predefined rules,
+ * minimizing mean-time-to-resolution (MTTR) and protecting core business operations from prolonged disruption,
+ * thereby safeguarding revenue and brand reputation.
+ */
+export const EscalationPolicyEditorForm: React.FC<{ policy?: EscalationPolicy; onSave: (policy: EscalationPolicy) => void; onCancel: () => void }> = ({ policy, onSave, onCancel }) => {
+  const [formData, setFormData] = useState<EscalationPolicy>(
+    policy || {
+      id: generateUUID(), name: '', description: '', steps: [], isActive: true,
+      lastModifiedBy: 'admin', lastModifiedDate: new Date().toISOString(),
+    }
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? parseFloat(value) : value,
+    }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleStepChange = (index: number, field: string, value: any) => {
+    const newSteps = [...formData.steps];
+    newSteps[index] = { ...newSteps[index], [field]: value };
+    setFormData(prev => ({ ...prev, steps: newSteps }));
+  };
+
+  const addStep = () => {
+    setFormData(prev => ({
+      ...prev,
+      steps: [...prev.steps, { delaySeconds: 0, targetType: 'channel', targetIdentifier: '', notificationMessage: '' }]
+    }));
+  };
+
+  const removeStep = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      steps: prev.steps.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({ ...formData, lastModifiedDate: new Date().toISOString() });
+  };
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-2xl mx-auto my-4">
+      <h2 className="text-2xl font-bold text-white mb-6">{policy ? 'Edit Escalation Policy' : 'Add New Escalation Policy'}</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-300">Policy Name</label>
+          <input
+            type="text" id="name" name="name" value={formData.name} onChange={handleChange} required
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-300">Description</label>
+          <textarea
+            id="description" name="description" value={formData.description} onChange={handleChange} rows={2}
+            className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div className="border-t border-gray-600 pt-4">
+          <h3 className="text-lg font-bold text-gray-300 mb-4">Escalation Steps</h3>
+          {formData.steps.map((step, index) => (
+            <div key={index} className="bg-gray-800 p-4 rounded-md mb-3 space-y-2">
+              <div className="flex justify-between items-center">
+                <h4 className="text-md font-semibold text-white">Step {index + 1}</h4>
+                <button type="button" onClick={() => removeStep(index)} className="text-red-400 hover:text-red-600 text-sm">Remove</button>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Delay (seconds)</label>
+                <input
+                  type="number" value={step.delaySeconds} onChange={(e) => handleStepChange(index, 'delaySeconds', parseInt(e.target.value))}
+                  className="mt-1 block w-full bg-gray-900 border-gray-600 rounded-md shadow-sm text-white sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Target Type</label>
+                <select
+                  value={step.targetType} onChange={(e) => handleStepChange(index, 'targetType', e.target.value as 'channel' | 'team' | 'user')}
+                  className="mt-1 block w-full bg-gray-900 border-gray-600 rounded-md shadow-sm text-white sm:text-sm"
+                >
+                  <option value="channel">Channel</option>
+                  <option value="team">Team</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Target Identifier</label>
+                <input
+                  type="text" value={step.targetIdentifier} onChange={(e) => handleStepChange(index, 'targetIdentifier', e.target.value)}
+                  className="mt-1 block w-full bg-gray-900 border-gray-600 rounded-md shadow-sm text-white sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300">Notification Message</label>
+                <textarea
+                  value={step.notificationMessage} onChange={(e) => handleStepChange(index, 'notificationMessage', e.target.value)} rows={1}
+                  className="mt-1 block w-full bg-gray-900 border-gray-600 rounded-md shadow-sm text-white sm:text-sm"
+                />
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={addStep} className="mt-2 text-indigo-400 hover:text-indigo-600">
+            + Add Escalation Step
+          </button>
+        </div>
+
+        <div className="flex items-center mt-4">
+          <input
+            id="isActive" name="isActive" type="checkbox" checked={formData.isActive} onChange={handleCheckboxChange}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded"
+          />
+          <label htmlFor="isActive" className="ml-2 block text-sm text-gray-300">Is Active</label>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <button
+            type="button" onClick={onCancel}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Save Policy
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+
+/**
+ * Displays a table of all defined alert definitions.
+ * This table enables administrators to review, edit, and create new alert rules,
+ * ensuring the system's operational health is continuously monitored with precision.
+ * Business Value: Provides central oversight for the platform's anomaly detection
+ * and incident management strategy, directly impacting uptime, reducing critical
+ * response times, and ensuring compliance with operational SLAs.
+ */
+export const AlertDefinitionsTable: React.FC<{ definitions: AlertDefinition[]; onEditDefinition: (def: AlertDefinition) => void; onDeleteDefinition: (defId: string) => void }> = ({ definitions, onEditDefinition, onDeleteDefinition }) => {
+  if (definitions.length === 0) {
+    return <p className="text-gray-400">No alert definitions defined.</p>;
+  }
+
+  const getSeverityColor = (severity: AlertSeverity) => {
+    switch (severity) {
+      case AlertSeverity.Critical: return 'text-red-400';
+      case AlertSeverity.Emergency: return 'text-purple-400';
+      case AlertSeverity.Warning: return 'text-yellow-400';
+      case AlertSeverity.Info: return 'text-blue-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-900/50">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Severity</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Condition</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800">
+          {definitions.map(def => (
+            <tr key={def.id} className="hover:bg-gray-700">
+              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-white">{def.name}</td>
+              <td className={`px-3 py-2 whitespace-nowrap text-sm font-semibold ${getSeverityColor(def.severity)}`}>{def.severity}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{def.condition}</td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${def.isActive ? 'bg-green-700 text-green-100' : 'bg-red-700 text-red-100'}`}>
+                  {def.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => onEditDefinition(def)}
+                  className="text-indigo-400 hover:text-indigo-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDeleteDefinition(def.id)}
+                  className="text-red-400 hover:text-red-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+
+/**
+ * Displays a table of all defined escalation policies.
+ * This component offers a comprehensive overview and management interface for critical incident response plans.
+ * Business Value: Provides transparent governance over crisis management, ensuring that
+ * every critical incident follows a predefined escalation path to minimize disruption
+ * and protect the platform's continuity and financial stability.
+ */
+export const EscalationPoliciesTable: React.FC<{ policies: EscalationPolicy[]; onEditPolicy: (policy: EscalationPolicy) => void; onDeletePolicy: (policyId: string) => void }> = ({ policies, onEditPolicy, onDeletePolicy }) => {
+  if (policies.length === 0) {
+    return <p className="text-gray-400">No escalation policies defined.</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-900/50">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Steps</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800">
+          {policies.map(policy => (
+            <tr key={policy.id} className="hover:bg-gray-700">
+              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-white">{policy.name}</td>
+              <td className="px-3 py-2 text-sm text-gray-300 truncate max-w-xs">{policy.description}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{policy.steps.length} steps</td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${policy.isActive ? 'bg-green-700 text-green-100' : 'bg-red-700 text-red-100'}`}>
+                  {policy.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => onEditPolicy(policy)}
+                  className="text-indigo-400 hover:text-indigo-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDeletePolicy(policy.id)}
+                  className="text-red-400 hover:text-red-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+
+/**
+ * Displays a detailed table of user profiles.
+ * This table provides a centralized view for managing user data, segments, and identity attributes.
+ * Business Value: Facilitates granular control over user management, supporting segment-specific
+ * personalization, compliance with data regulations, and targeted marketing efforts,
+ * thereby increasing user lifetime value and platform adoption.
+ */
+export const UserProfileTable: React.FC<{ users: UserProfile[]; onGenerateKeyPair: (userId: string) => void }> = ({ users, onGenerateKeyPair }) => {
+  if (users.length === 0) {
+    return <p className="text-gray-400">No user profiles available.</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-gray-900/50">
+          <tr>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">User ID</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Segment</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Engagement</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Public Key</th>
+            <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800">
+          {users.map(user => (
+            <tr key={user.userId} className="hover:bg-gray-700">
+              <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-white">{user.userId}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{user.segment}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-blue-300">{(user.engagementScore * 100).toFixed(0)}%</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">{user.accountStatus}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-sm font-mono text-gray-500">{user.publicKey ? `${user.publicKey.substring(0, 15)}...` : 'N/A'}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  onClick={() => onGenerateKeyPair(user.userId)}
+                  className="text-green-400 hover:text-green-600 ml-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  Generate Key
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+
 // Main View Component -------------------------------------------------------------------------------------------------
 
 /**
- * @const CognitiveLoadBalancerView
- * @description The main dashboard for monitoring and managing cognitive and operational load balancing.
+ * The main dashboard for monitoring and managing cognitive and operational load balancing.
  * This component integrates various sub-components and hooks to provide a comprehensive view
  * of real-time metrics, historical data, feature management, throttling policies, alerts,
  * system health, predictive analytics, and specialized insights into agentic AI, token rails,
@@ -3449,7 +4452,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   // Original state for real-time metrics
   const [metrics, setMetrics] = useState<CognitiveMetric[]>([]);
 
-  // State for managing feature/policy/agent/integration editing modals
+  // State for managing editing modals
   const [showFeatureEditor, setShowFeatureEditor] = useState(false);
   const [editingFeature, setEditingFeature] = useState<FeatureDefinition | undefined>(undefined);
   const [showPolicyEditor, setShowPolicyEditor] = useState(false);
@@ -3458,21 +4461,27 @@ const CognitiveLoadBalancerView: React.FC = () => {
   const [editingIntegration, setEditingIntegration] = useState<IntegrationConfig | undefined>(undefined);
   const [showAgentEditor, setShowAgentEditor] = useState(false);
   const [editingAgent, setEditingAgent] = useState<AgentDefinition | undefined>(undefined);
+  const [showAlertDefinitionEditor, setShowAlertDefinitionEditor] = useState(false);
+  const [editingAlertDefinition, setEditingAlertDefinition] = useState<AlertDefinition | undefined>(undefined);
+  const [showEscalationPolicyEditor, setShowEscalationPolicyEditor] = useState(false);
+  const [editingEscalationPolicy, setEditingEscalationPolicy] = useState<EscalationPolicy | undefined>(undefined);
+
 
   // Custom hooks for data management
-  const { features, loading: featuresLoading, error: featuresError, fetchFeatures, addFeature, updateFeature } = useFeatureDefinitions();
-  const { policies, loading: policiesLoading, error: policiesError, fetchPolicies, addPolicy, updatePolicy } = useThrottlingPolicies();
-  const { definitions: alertDefs, instances: alertInstances, loading: alertsLoading, error: alertsError, fetchInstances: fetchAlertInstances, updateInstance: updateAlertInstance } = useAlerts();
+  const { features, loading: featuresLoading, error: featuresError, fetchFeatures, addFeature, updateFeature, deleteFeature } = useFeatureDefinitions();
+  const { policies, loading: policiesLoading, error: policiesError, fetchPolicies, addPolicy, updatePolicy, deletePolicy } = useThrottlingPolicies();
+  const { definitions: alertDefs, instances: alertInstances, loading: alertsLoading, error: alertsError, fetchInstances: fetchAlertInstances, updateInstance: updateAlertInstance, createDefinition: createAlertDefinition, updateDefinition: updateAlertDefinition, deleteDefinition: deleteAlertDefinition } = useAlerts();
+  const { policies: escalationPolicies, loading: escalationPoliciesLoading, error: escalationPoliciesError, fetchPolicies: fetchEscalationPolicies, addPolicy: addEscalationPolicy, updatePolicy: updateEscalationPolicy, deletePolicy: deleteEscalationPolicy } = useEscalationPolicies();
   const { currentMetrics: systemHealth, history: systemHealthHistory, loading: systemHealthLoading, error: systemHealthError } = useSystemHealth();
-  const { users, loading: usersLoading, error: usersError } = useUserProfiles();
+  const { users, loading: usersLoading, error: usersError, generateUserKeyPair } = useUserProfiles();
   const { history: historicalCognitiveData, loading: historicalLoading, error: historicalError } = useHistoricalData();
   const { forecast: predictiveForecasts, loading: forecastLoading, error: forecastError } = usePredictiveAnalytics();
   const { status: feedbackLoopStatus, loading: feedbackLoading, error: feedbackError } = useFeedbackLoop();
-  const { configs: integrationConfigs, loading: integrationLoading, error: integrationError, addConfig, updateConfig } = useIntegrationConfigs();
-  const { definitions: agentDefs, healthMetrics: agentHealth, loading: agentsLoading, error: agentsError, addAgent, updateAgent } = useAgents();
+  const { configs: integrationConfigs, loading: integrationLoading, error: integrationError, addConfig, updateConfig, deleteConfig } = useIntegrationConfigs();
+  const { definitions: agentDefs, healthMetrics: agentHealth, loading: agentsLoading, error: agentsError, addAgent, updateAgent, deleteAgent } = useAgents();
   const { metrics: tokenRailMetrics, accounts: tokenAccounts, loading: tokenRailsLoading, error: tokenRailsError } = useTokenRails();
-  const { engineStatus: paymentEngineStatus, requestMetrics: paymentRequestMetrics, loading: paymentsLoading, error: paymentsError } = usePayments();
-  const { serviceStatus: identityServiceStatus, authLogs: authLogs, loading: identityLoading, error: identityError } = useIdentity();
+  const { engineStatus: paymentEngineStatus, requestMetrics: paymentRequestMetrics, loading: paymentsLoading, error: paymentsError, createPaymentRequest } = usePayments();
+  const { serviceStatus: identityServiceStatus, authLogs: authLogs, loading: identityLoading, error: identityError, addAuthLogEntry } = useIdentity();
 
 
   // MOCK WEBSOCKET for real-time cognitive metrics
@@ -3482,24 +4491,24 @@ const CognitiveLoadBalancerView: React.FC = () => {
       const throttles: string[] = [];
       const currentTimestamp = new Date().toISOString();
 
+      const currentFeatures = features; // Use the latest features from the hook
+      const currentPolicies = policies; // Use the latest policies from the hook
+
       // Simulate throttling based on policies and current load
-      const activePolicies = policies.filter(p => p.isActive);
+      const activePolicies = currentPolicies.filter(p => p.isActive);
       activePolicies.forEach(policy => {
-        // Simple logic: if current load is above policy threshold, consider throttling features
-        const featureNames = policy.targetFeatureIds.map(fid => features.find(f => f.id === fid)?.name || fid);
+        const featureNames = policy.targetFeatureIds.map(fid => currentFeatures.find(f => f.id === fid)?.name || fid);
         if (load > (policy.thresholdConfig.staticLoadThreshold || 0.75)) {
           featureNames.forEach(fn => {
             if (!throttles.includes(fn)) {
               throttles.push(fn);
-              throttleFeature(features.find(f => f.name === fn)?.id || fn, `Policy '${policy.name}'`, policy.userSegments);
+              throttleFeature(currentFeatures.find(f => f.name === fn)?.id || fn, `Policy '${policy.name}'`, policy.userSegments);
             }
           });
         } else if (throttles.some(t => featureNames.includes(t))) {
           featureNames.forEach(fn => {
             if (throttles.includes(fn) && load < (policy.thresholdConfig.staticLoadThreshold || 0.75) - 0.1) {
-              // Simulate easing if load drops significantly
-              // In a real system, this would be more stateful
-              easeFeatureThrottle(features.find(f => f.name === fn)?.id || fn, `Load dropped below policy '${policy.name}' threshold.`);
+              easeFeatureThrottle(currentFeatures.find(f => f.name === fn)?.id || fn, `Load dropped below policy '${policy.name}' threshold.`);
             }
           });
         }
@@ -3572,6 +4581,36 @@ const CognitiveLoadBalancerView: React.FC = () => {
     updateAlertInstance(updatedAlert);
   };
 
+  const handleEditAlertDefinition = (def: AlertDefinition) => {
+    setEditingAlertDefinition(def);
+    setShowAlertDefinitionEditor(true);
+  };
+
+  const handleSaveAlertDefinition = async (def: AlertDefinition) => {
+    if (def.id && alertDefs.some(d => d.id === def.id)) {
+      await updateAlertDefinition(def);
+    } else {
+      await createAlertDefinition(def);
+    }
+    setShowAlertDefinitionEditor(false);
+    setEditingAlertDefinition(undefined);
+  };
+
+  const handleEditEscalationPolicy = (policy: EscalationPolicy) => {
+    setEditingEscalationPolicy(policy);
+    setShowEscalationPolicyEditor(true);
+  };
+
+  const handleSaveEscalationPolicy = async (policy: EscalationPolicy) => {
+    if (policy.id && escalationPolicies.some(p => p.id === policy.id)) {
+      await updateEscalationPolicy(policy);
+    } else {
+      await addEscalationPolicy(policy);
+    }
+    setShowEscalationPolicyEditor(false);
+    setEditingEscalationPolicy(undefined);
+  };
+
   const handleEditIntegration = (config: IntegrationConfig) => {
     setEditingIntegration(config);
     setShowIntegrationEditor(true);
@@ -3586,6 +4625,30 @@ const CognitiveLoadBalancerView: React.FC = () => {
     setShowIntegrationEditor(false);
     setEditingIntegration(undefined);
   };
+
+  const handleTriggerTestPayment = async () => {
+    try {
+      const newPayment = await createPaymentRequest({
+        source: `user_${Math.floor(Math.random() * 50) + 1}`,
+        destination: `merchant_${Math.floor(Math.random() * 10) + 1}`,
+        amount: Math.random() * 5000 + 100,
+        currency: 'USD',
+        chosenRail: Math.random() > 0.5 ? TokenRailType.Fast : TokenRailType.Batch,
+      });
+      addAuthLogEntry({
+        eventType: AuthEventType.TransactionProcessing,
+        entityId: newPayment.source,
+        ipAddress: 'simulated-ip',
+        outcome: 'info',
+        message: `Simulated payment request initiated: ${newPayment.requestId}`,
+        context: { amount: newPayment.amount, currency: newPayment.currency, rail: newPayment.chosenRail }
+      });
+      alert(`Simulated payment request ${newPayment.requestId} sent! Status: ${newPayment.status}`);
+    } catch (err: any) {
+      alert(`Failed to send simulated payment: ${err.message}`);
+    }
+  };
+
 
   // Derived state for dashboard
   const currentAvgLoad = metrics.length > 0 ? metrics[0].avgCognitiveLoad : 0;
@@ -3645,121 +4708,26 @@ const CognitiveLoadBalancerView: React.FC = () => {
           {currentThrottledFeatures.length > 0 ? (
             <ul className="list-disc list-inside text-lg text-orange-300 space-y-2">
               {currentThrottledFeatures.map((featureName, index) => (
-                <li key={index} className="flex items-center">
-                  <span className="animate-pulse mr-2 text-red-400">â€¢</span>{featureName}
-                </li>
+                                <li key={index}>{features.find(f => f.id === featureName)?.name || featureName}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-green-400 text-lg">No features currently throttled. Load is optimal.</p>
+            <p className="text-lg text-green-300">No features currently throttled.</p>
           )}
         </div>
 
         <SystemHealthSummaryCard metrics={systemHealth} />
-
         <PaymentEngineOverviewCard status={paymentEngineStatus} />
-
-      </section>
-
-      {/* Financial Infrastructure Overview */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold mb-5 text-blue-300">Financial Infrastructure Health</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tokenRailMetrics.map(metric => (
-            <TokenRailStatusCard key={metric.railId} metric={metric} />
-          ))}
-          {identityServiceStatus && (
-            <div className="bg-gray-700 p-4 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-white mb-2">Identity Service</h3>
-              <p className={`text-sm font-medium ${identityServiceStatus.overallStatus === 'operational' ? 'text-green-400' : 'text-red-400'} mb-2`}>
-                Status: {identityServiceStatus.overallStatus.charAt(0).toUpperCase() + identityServiceStatus.overallStatus.slice(1)}
-              </p>
-              <div className="text-sm text-gray-300 space-y-1">
-                <p>Auth/Sec: <span className="font-semibold text-blue-300">{identityServiceStatus.authRequestsPerSecond}</span></p>
-                <p>Auth Latency: <span className="font-semibold">{identityServiceStatus.avgAuthLatency.toFixed(1)}ms</span></p>
-                <p>Failed Auth Rate: <span className="font-semibold">{(identityServiceStatus.failedAuthRate * 100).toFixed(2)}%</span></p>
-                <p>Active Sessions: <span className="font-semibold">{identityServiceStatus.activeSessions}</span></p>
-              </div>
-              <p className="text-xs text-gray-500 mt-3 text-right">Last updated: {new Date(identityServiceStatus.timestamp).toLocaleTimeString()}</p>
-            </div>
-          )}
-           <MockLineChart
-            data={paymentTPSChartData}
-            dataKeys={['Amount', 'Processing Time']}
-            title="Recent Payment Request Metrics"
-            xAxisLabel="Time"
-            yAxisLabel="Value / Time"
-          />
-        </div>
-      </section>
-
-      {/* Real-time Metrics Table */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold mb-5 text-blue-300">Real-time Cognitive Load Stream</h2>
-        <div className="overflow-x-auto max-h-96">
-          <table className="w-full text-left">
-            <thead className="bg-gray-900/70 sticky top-0">
-              <tr>
-                <th className="p-3">Time</th>
-                <th className="p-3">Avg. Cognitive Load</th>
-                <th className="p-3">Throttled Features</th>
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.map(m => (
-                <tr key={m.timestamp} className="border-b border-gray-700 hover:bg-gray-700">
-                  <td className="p-3 font-mono text-sm text-gray-300">{new Date(m.timestamp).toLocaleTimeString()}</td>
-                  <td className={`p-3 font-bold ${getLoadColorClass(m.avgCognitiveLoad)}`}>
-                    {(m.avgCognitiveLoad * 100).toFixed(1)}%
-                  </td>
-                  <td className="p-3 text-gray-300">{m.activeThrottles.join(', ') || 'None'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Analytics & Insights */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold mb-5 text-blue-300">Analytics & Insights</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <MockLineChart
-            data={historicalLoadDataForChart}
-            dataKeys={['Avg. Load', 'Max Load']}
-            title="Historical Average Cognitive Load"
-            xAxisLabel="Date"
-            yAxisLabel="Load (%)"
-          />
-          <MockLineChart
-            data={systemCpuDataForChart}
-            dataKeys={['CPU Usage', 'Memory Usage']}
-            title="System Resource Utilization"
-            xAxisLabel="Time"
-            yAxisLabel="Usage (%)"
-          />
-          <PredictiveForecastCard forecast={predictiveForecasts.length > 0 ? predictiveForecasts[0] : null} />
-          <UserSegmentDistribution historicalData={historicalCognitiveData} />
-          <MockBarChart
-            data={featureContributionDataForChart}
-            dataKey="value"
-            title="Feature Cognitive Load Contribution (Latest)"
-            xAxisLabel="Feature"
-            yAxisLabel="Contribution (%)"
-          />
-          <FeedbackLoopStatusCard status={feedbackLoopStatus} />
-        </div>
       </section>
 
       {/* Feature Management */}
       <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold text-blue-300">Feature Definitions</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">Feature Management</h2>
           <button
             onClick={() => { setEditingFeature(undefined); setShowFeatureEditor(true); }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Add New Feature
           </button>
         </div>
@@ -3770,32 +4738,32 @@ const CognitiveLoadBalancerView: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map(feature => (
-              <div key={feature.id} onClick={() => handleEditFeature(feature)} className="cursor-pointer">
-                <FeatureStatusCard feature={feature} isThrottled={currentThrottledFeatures.includes(feature.name)} />
-              </div>
+              <FeatureStatusCard
+                key={feature.id}
+                feature={feature}
+                isThrottled={currentThrottledFeatures.includes(feature.name)}
+              />
             ))}
           </div>
         )}
-        {showFeatureEditor && (
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <FeatureEditorForm
-              feature={editingFeature}
-              onSave={handleSaveFeature}
-              onCancel={() => { setShowFeatureEditor(false); setEditingFeature(undefined); }}
-            />
-          </div>
-        )}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={() => { setShowFeatureEditor(true); }}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md shadow-md text-sm font-medium mr-2"
+          >
+            Manage Features
+          </button>
+        </div>
       </section>
 
-      {/* Throttling Policies Management */}
+      {/* Throttling Policy Management */}
       <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold text-blue-300">Throttling Policies</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">Throttling Policy Management</h2>
           <button
             onClick={() => { setEditingPolicy(undefined); setShowPolicyEditor(true); }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Add New Policy
           </button>
         </div>
@@ -3804,163 +4772,18 @@ const CognitiveLoadBalancerView: React.FC = () => {
         ) : policiesError ? (
           <p className="text-red-400">Error: {policiesError}</p>
         ) : (
-          <ThrottlingPoliciesTable policies={policies} onEditPolicy={handleEditPolicy} />
-        )}
-        {showPolicyEditor && (
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <PolicyEditorForm
-              policy={editingPolicy}
-              allFeatures={features}
-              onSave={handleSavePolicy}
-              onCancel={() => { setShowPolicyEditor(false); setEditingPolicy(undefined); }}
-            />
-          </div>
+          <ThrottlingPoliciesTable
+            policies={policies}
+            onEditPolicy={handleEditPolicy}
+            onDeletePolicy={deletePolicy}
+          />
         )}
       </section>
 
-      {/* Agentic AI System Management */}
+      {/* Alerts & Escalation Management */}
       <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold text-blue-300">Agentic AI System</h2>
-          <button
-            onClick={() => { setEditingAgent(undefined); setShowAgentEditor(true); }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            Add New Agent
-          </button>
-        </div>
-        {agentsLoading ? (
-          <p className="text-gray-400">Loading agents...</p>
-        ) : agentsError ? (
-          <p className="text-red-400">Error: {agentsError}</p>
-        ) : (
-          <AgentStatusTable agents={agentDefs} healthMetrics={agentHealth} onEditAgent={handleEditAgent} />
-        )}
-        {showAgentEditor && (
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            {/* AgentEditorForm would be here, similar to FeatureEditorForm */}
-            <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-2xl mx-auto my-4">
-              <h2 className="text-2xl font-bold text-white mb-6">{editingAgent ? 'Edit AI Agent' : 'Add New AI Agent'}</h2>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const target = e.target as typeof e.target & {
-                  name: { value: string };
-                  description: { value: string };
-                  category: { value: AgentCategory };
-                  status: { value: AgentDefinition['status'] };
-                  ownerTeam: { value: string };
-                  operationalLoadThreshold: { value: number };
-                  rbacRole: { value: string };
-                  skills: { selectedOptions: HTMLOptionElement[] };
-                };
-
-                const updatedAgent: AgentDefinition = {
-                  ...(editingAgent || {} as AgentDefinition), // Ensure all fields are initialized
-                  id: editingAgent?.id || generateUUID(),
-                  name: target.name.value,
-                  description: target.description.value,
-                  category: target.category.value,
-                  skills: Array.from(target.skills.selectedOptions).map(opt => opt.value as AgentSkill),
-                  status: target.status.value,
-                  configuration: editingAgent?.configuration || {}, // Keep existing or default
-                  operationalLoadThreshold: parseFloat(target.operationalLoadThreshold.value),
-                  lastUpdated: new Date().toISOString(),
-                  ownerTeam: target.ownerTeam.value,
-                  rbacRole: target.rbacRole.value,
-                };
-                await handleSaveAgent(updatedAgent);
-              }} className="space-y-4">
-                <div>
-                  <label htmlFor="agentName" className="block text-sm font-medium text-gray-300">Agent Name</label>
-                  <input
-                    type="text" id="agentName" name="name" defaultValue={editingAgent?.name || ''} required
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="agentDescription" className="block text-sm font-medium text-gray-300">Description</label>
-                  <textarea
-                    id="agentDescription" name="description" defaultValue={editingAgent?.description || ''} rows={2}
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="agentCategory" className="block text-sm font-medium text-gray-300">Category</label>
-                  <select
-                    id="agentCategory" name="category" defaultValue={editingAgent?.category || AgentCategory.Monitoring} required
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  >
-                    {Object.values(AgentCategory).map(cat => (<option key={cat} value={cat}>{cat}</option>))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="agentSkills" className="block text-sm font-medium text-gray-300">Skills (Multi-select)</label>
-                  <select
-                    id="agentSkills" name="skills" multiple
-                    defaultValue={editingAgent?.skills || []}
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-32"
-                  >
-                    {Object.values(AgentSkill).map(skill => (<option key={skill} value={skill}>{skill}</option>))}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="agentStatus" className="block text-sm font-medium text-gray-300">Status</label>
-                    <select
-                      id="agentStatus" name="status" defaultValue={editingAgent?.status || 'idle'} required
-                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    >
-                      {['active', 'idle', 'suspended', 'error'].map(status => (<option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>))}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="operationalLoadThreshold" className="block text-sm font-medium text-gray-300">Operational Load Threshold</label>
-                    <input
-                      type="number" id="operationalLoadThreshold" name="operationalLoadThreshold" defaultValue={editingAgent?.operationalLoadThreshold || 100} required
-                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="ownerTeam" className="block text-sm font-medium text-gray-300">Owner Team</label>
-                  <input
-                    type="text" id="ownerTeam" name="ownerTeam" defaultValue={editingAgent?.ownerTeam || ''} required
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="rbacRole" className="block text-sm font-medium text-gray-300">RBAC Role</label>
-                  <input
-                    type="text" id="rbacRole" name="rbacRole" defaultValue={editingAgent?.rbacRole || ''} required
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button
-                    type="button" onClick={() => { setShowAgentEditor(false); setEditingAgent(undefined); }}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Save Agent
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Alerting System */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold text-blue-300">Active Alerts</h2>
-          {/* Add alert definition button here if needed */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">Active & Recent Alerts</h2>
         </div>
         {alertsLoading ? (
           <p className="text-gray-400">Loading alerts...</p>
@@ -3974,29 +4797,227 @@ const CognitiveLoadBalancerView: React.FC = () => {
             onResolve={handleResolveAlert}
           />
         )}
-      </section>
 
-      {/* Identity & Security Audit Logs */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold mb-5 text-blue-300">Digital Identity & Security Audit Logs</h2>
-        {identityLoading ? (
-          <p className="text-gray-400">Loading identity logs...</p>
-        ) : identityError ? (
-          <p className="text-red-400">Error: {identityError}</p>
+        <div className="flex justify-between items-center mt-8 mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">Alert Definitions</h2>
+          <button
+            onClick={() => { setEditingAlertDefinition(undefined); setShowAlertDefinitionEditor(true); }}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
+          >
+            Add New Alert Definition
+          </button>
+        </div>
+        {alertsLoading ? (
+          <p className="text-gray-400">Loading alert definitions...</p>
+        ) : alertsError ? (
+          <p className="text-red-400">Error: {alertsError}</p>
         ) : (
-          <AuthLogViewer logs={authLogs} />
+          <AlertDefinitionsTable
+            definitions={alertDefs}
+            onEditDefinition={handleEditAlertDefinition}
+            onDeleteDefinition={deleteAlertDefinition}
+          />
+        )}
+
+        <div className="flex justify-between items-center mt-8 mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">Escalation Policies</h2>
+          <button
+            onClick={() => { setEditingEscalationPolicy(undefined); setShowEscalationPolicyEditor(true); }}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
+          >
+            Add New Escalation Policy
+          </button>
+        </div>
+        {escalationPoliciesLoading ? (
+          <p className="text-gray-400">Loading escalation policies...</p>
+        ) : escalationPoliciesError ? (
+          <p className="text-red-400">Error: {escalationPoliciesError}</p>
+        ) : (
+          <EscalationPoliciesTable
+            policies={escalationPolicies}
+            onEditPolicy={handleEditEscalationPolicy}
+            onDeletePolicy={deleteEscalationPolicy}
+          />
         )}
       </section>
 
-      {/* Integrations Management */}
+      {/* System Health & Performance */}
       <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-2xl font-bold text-blue-300">Integrations</h2>
+        <h2 className="text-2xl font-bold text-blue-300 mb-6">System Health & Performance</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <MockLineChart
+            data={historicalLoadDataForChart}
+            dataKeys={['Avg. Load', 'Max Load']}
+            title="Historical Cognitive Load"
+            xAxisLabel="Date"
+            yAxisLabel="Load %"
+          />
+          <MockLineChart
+            data={systemCpuDataForChart}
+            dataKeys={['CPU Usage', 'Memory Usage']}
+            title="System Resource Utilization"
+            xAxisLabel="Time"
+            yAxisLabel="Usage %"
+          />
+          <MockBarChart
+            data={featureContributionDataForChart}
+            dataKey="value"
+            title="Feature Load Contribution (Latest)"
+            xAxisLabel="Feature"
+            yAxisLabel="Contribution"
+          />
+          <UserSegmentDistribution historicalData={historicalCognitiveData} />
+        </div>
+      </section>
+
+      {/* Predictive Analytics & Feedback Loop */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <h2 className="text-2xl font-bold text-blue-300 mb-6">Predictive Analytics & Adaptive Control</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PredictiveForecastCard forecast={predictiveForecasts.length > 0 ? predictiveForecasts[0] : null} />
+          <MockLineChart
+            data={forecastedLoadDataForChart}
+            dataKeys={['Forecasted Load', 'Upper Bound', 'Lower Bound']}
+            title="Cognitive Load Forecast"
+            xAxisLabel="Time (Next 24h)"
+            yAxisLabel="Load %"
+          />
+          <div className="lg:col-span-2">
+            <FeedbackLoopStatusCard status={feedbackLoopStatus} />
+          </div>
+        </div>
+      </section>
+
+      {/* AI Agent Management */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">AI Agent Management</h2>
+          <button
+            onClick={() => { setEditingAgent(undefined); setShowAgentEditor(true); }}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
+          >
+            Add New Agent
+          </button>
+        </div>
+        {agentsLoading ? (
+          <p className="text-gray-400">Loading AI agents...</p>
+        ) : agentsError ? (
+          <p className="text-red-400">Error: {agentsError}</p>
+        ) : (
+          <AgentStatusTable
+            agents={agentDefs}
+            healthMetrics={agentHealth}
+            onEditAgent={handleEditAgent}
+            onDeleteAgent={deleteAgent}
+          />
+        )}
+      </section>
+
+      {/* Token Rails & Real-time Payments Infrastructure */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <h2 className="text-2xl font-bold text-blue-300 mb-6">Token Rails & Real-time Payments</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {tokenRailsLoading ? (
+            <p className="text-gray-400">Loading token rail metrics...</p>
+          ) : tokenRailsError ? (
+            <p className="text-red-400">Error: {tokenRailsError}</p>
+          ) : (
+            tokenRailMetrics.map(metric => (
+              <TokenRailStatusCard key={metric.railId} metric={metric} />
+            ))
+          )}
+        </div>
+        <h3 className="text-xl font-bold text-gray-300 mb-4">Recent Payment Requests</h3>
+        {paymentsLoading ? (
+          <p className="text-gray-400">Loading payment requests...</p>
+        ) : paymentsError ? (
+          <p className="text-red-400">Error: {paymentsError}</p>
+        ) : (
+          <PaymentRequestsTable requests={paymentRequestMetrics} />
+        )}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={handleTriggerTestPayment}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md shadow-md text-sm font-medium"
+          >
+            Simulate New Payment
+          </button>
+        </div>
+        <h3 className="text-xl font-bold text-gray-300 mb-4 mt-8">Token Account Snapshots</h3>
+        {tokenRailsLoading ? (
+          <p className="text-gray-400">Loading token accounts...</p>
+        ) : tokenRailsError ? (
+          <p className="text-red-400">Error: {tokenRailsError}</p>
+        ) : (
+          <TokenAccountsTable accounts={tokenAccounts} />
+        )}
+      </section>
+
+      {/* Digital Identity & Security Services */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <h2 className="text-2xl font-bold text-blue-300 mb-6">Digital Identity & Security Services</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold text-white mb-4">Identity Service Status</h3>
+            {identityLoading ? (
+              <p className="text-gray-400">Loading identity status...</p>
+            ) : identityError ? (
+              <p className="text-red-400">Error: {identityError}</p>
+            ) : identityServiceStatus ? (
+              <>
+                <p className="text-gray-400">Overall Status: <span className={`font-semibold ${identityServiceStatus.overallStatus === 'operational' ? 'text-green-400' : 'text-red-400'}`}>{identityServiceStatus.overallStatus.replace(/_/g, ' ').toUpperCase()}</span></p>
+                <p className="text-gray-400">Auth Requests/Sec: <span className="text-white font-semibold">{identityServiceStatus.authRequestsPerSecond}</span></p>
+                <p className="text-gray-400">Avg Auth Latency: <span className="text-white font-semibold">{identityServiceStatus.avgAuthLatency.toFixed(1)}ms</span></p>
+                <p className="text-gray-400">Failed Auth Rate: <span className="text-red-400 font-semibold">{(identityServiceStatus.failedAuthRate * 100).toFixed(2)}%</span></p>
+                <p className="text-gray-400">Active Sessions: <span className="text-white font-semibold">{identityServiceStatus.activeSessions}</span></p>
+                <p className="text-gray-400">Key Management: <span className={`font-semibold ${identityServiceStatus.keyManagementStatus === 'healthy' ? 'text-green-400' : 'text-red-400'}`}>{identityServiceStatus.keyManagementStatus}</span></p>
+                <p className="text-xs text-gray-500 mt-4 text-right">Last updated: {new Date(identityServiceStatus.timestamp).toLocaleTimeString()}</p>
+              </>
+            ) : <p className="text-gray-400">No identity service status available.</p>}
+          </div>
+          <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold text-white mb-4">Audit & Authentication Logs</h3>
+            {identityLoading ? (
+              <p className="text-gray-400">Loading auth logs...</p>
+            ) : identityError ? (
+              <p className="text-red-400">Error: {identityError}</p>
+            ) : (
+              <AuthLogViewer logs={authLogs} />
+            )}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => addAuthLogEntry({ eventType: AuthEventType.LoginSuccess, entityId: `user_${Math.floor(Math.random() * 50) + 1}`, outcome: 'success', message: 'Simulated successful login' })}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md text-sm font-medium mr-2"
+              >
+                Simulate Login Success
+              </button>
+              <button
+                onClick={() => addAuthLogEntry({ eventType: AuthEventType.LoginFailure, entityId: `user_${Math.floor(Math.random() * 50) + 1}`, outcome: 'failure', message: 'Simulated failed login attempt', context: { reason: 'bad_password' } })}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-md text-sm font-medium"
+              >
+                Simulate Login Failure
+              </button>
+            </div>
+          </div>
+        </div>
+        <h3 className="text-xl font-bold text-gray-300 mb-4 mt-8">User Profiles & Digital Identity Keys</h3>
+        {usersLoading ? (
+          <p className="text-gray-400">Loading user profiles...</p>
+        ) : usersError ? (
+          <p className="text-red-400">Error: {usersError}</p>
+        ) : (
+          <UserProfileTable users={users} onGenerateKeyPair={generateUserKeyPair} />
+        )}
+      </section>
+
+      {/* Integration Configuration */}
+      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-300">Integration Configuration</h2>
           <button
             onClick={() => { setEditingIntegration(undefined); setShowIntegrationEditor(true); }}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             Add New Integration
           </button>
         </div>
@@ -4005,183 +5026,72 @@ const CognitiveLoadBalancerView: React.FC = () => {
         ) : integrationError ? (
           <p className="text-red-400">Error: {integrationError}</p>
         ) : (
-          <IntegrationConfigTable configs={integrationConfigs} onEditConfig={handleEditIntegration} />
-        )}
-        {showIntegrationEditor && (
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-700 p-6 rounded-lg shadow-xl max-w-lg mx-auto my-4">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {editingIntegration ? 'Edit Integration' : 'Add New Integration'}
-              </h2>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const target = e.target as typeof e.target & {
-                  name: { value: string };
-                  type: { value: IntegrationConfig['type'] };
-                  webhookUrl?: { value: string };
-                  apiKey?: { value: string };
-                  smtpHost?: { value: string };
-                  sender?: { value: string };
-                  serviceKey?: { value: string };
-                  projectKey?: { value: string };
-                  issueType?: { value: string };
-                };
-                const newConfig: Partial<IntegrationConfig> = {
-                  ...editingIntegration,
-                  name: target.name.value,
-                  type: target.type.value,
-                  settings: {},
-                };
-                if (target.webhookUrl) newConfig.settings!.webhookUrl = target.webhookUrl.value;
-                if (target.apiKey) newConfig.settings!.apiKey = target.apiKey.value;
-                if (target.smtpHost) newConfig.settings!.smtpHost = target.smtpHost.value;
-                if (target.sender) newConfig.settings!.sender = target.sender.value;
-                if (target.serviceKey) newConfig.settings!.serviceKey = target.serviceKey.value;
-                if (target.projectKey) newConfig.settings!.projectKey = target.projectKey.value;
-                if (target.issueType) newConfig.settings!.issueType = target.issueType.value;
-                await handleSaveIntegration(newConfig as IntegrationConfig);
-              }} className="space-y-4">
-                <div>
-                  <label htmlFor="integrationName" className="block text-sm font-medium text-gray-300">Integration Name</label>
-                  <input
-                    type="text" id="integrationName" name="name" defaultValue={editingIntegration?.name || ''} required
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="integrationType" className="block text-sm font-medium text-gray-300">Type</label>
-                  <select
-                    id="integrationType" name="type" defaultValue={editingIntegration?.type || 'custom_webhook'} required
-                    className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  >
-                    <option value="slack">Slack</option>
-                    <option value="datadog">Datadog</option>
-                    <option value="jira">Jira</option>
-                    <option value="email">Email</option>
-                    <option value="custom_webhook">Custom Webhook</option>
-                  </select>
-                </div>
-                {(editingIntegration?.type === 'slack' || target.type.value === 'slack') && (
-                  <div>
-                    <label htmlFor="webhookUrl" className="block text-sm font-medium text-gray-300">Webhook URL</label>
-                    <input
-                      type="url" id="webhookUrl" name="webhookUrl" defaultValue={editingIntegration?.settings.webhookUrl || ''}
-                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                )}
-                {(editingIntegration?.type === 'datadog' || target.type.value === 'datadog') && (
-                  <div>
-                    <label htmlFor="apiKey" className="block text-sm font-medium text-gray-300">API Key</label>
-                    <input
-                      type="text" id="apiKey" name="apiKey" defaultValue={editingIntegration?.settings.apiKey || ''}
-                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                )}
-                {(editingIntegration?.type === 'email' || target.type.value === 'email') && (
-                  <>
-                    <div>
-                      <label htmlFor="smtpHost" className="block text-sm font-medium text-gray-300">SMTP Host</label>
-                      <input
-                        type="text" id="smtpHost" name="smtpHost" defaultValue={editingIntegration?.settings.smtpHost || ''}
-                        className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="sender" className="block text-sm font-medium text-gray-300">Sender Email</label>
-                      <input
-                        type="email" id="sender" name="sender" defaultValue={editingIntegration?.settings.sender || ''}
-                        className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                  </>
-                )}
-                {(editingIntegration?.type === 'jira' || target.type.value === 'jira') && (
-                  <>
-                    <div>
-                      <label htmlFor="projectKey" className="block text-sm font-medium text-gray-300">Jira Project Key</label>
-                      <input
-                        type="text" id="projectKey" name="projectKey" defaultValue={editingIntegration?.settings.projectKey || ''}
-                        className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="issueType" className="block text-sm font-medium text-gray-300">Jira Issue Type</label>
-                      <input
-                        type="text" id="issueType" name="issueType" defaultValue={editingIntegration?.settings.issueType || ''}
-                        className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                  </>
-                )}
-                {(editingIntegration?.type === 'custom_webhook' || target.type.value === 'custom_webhook') && (
-                  <div>
-                    <label htmlFor="serviceKey" className="block text-sm font-medium text-gray-300">Service Key/Endpoint</label>
-                    <input
-                      type="text" id="serviceKey" name="serviceKey" defaultValue={editingIntegration?.settings.serviceKey || ''}
-                      className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                )}
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button
-                    type="button" onClick={() => { setShowIntegrationEditor(false); setEditingIntegration(undefined); }}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-200 bg-gray-600 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Save Integration
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <IntegrationConfigTable
+            configs={integrationConfigs}
+            onEditConfig={handleEditIntegration}
+            onDeleteConfig={deleteConfig}
+          />
         )}
       </section>
 
-      {/* User Profiles Preview */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold mb-5 text-blue-300">User Profiles (Preview)</h2>
-        {usersLoading ? (
-          <p className="text-gray-400">Loading user profiles...</p>
-        ) : usersError ? (
-          <p className="text-red-400">Error: {usersError}</p>
-        ) : (
-          <div className="overflow-x-auto max-h-80">
-            <table className="w-full text-left">
-              <thead className="bg-gray-900/70 sticky top-0">
-                <tr>
-                  <th className="p-3">User ID</th>
-                  <th className="p-3">Segment</th>
-                  <th className="p-3">Engagement Score</th>
-                  <th className="p-3">Last Activity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.slice(0, 10).map(user => ( // Showing only a few for brevity
-                  <tr key={user.userId} className="border-b border-gray-700 hover:bg-gray-700">
-                    <td className="p-3 text-sm font-medium text-white">{user.userId}</td>
-                    <td className="p-3 text-sm text-gray-300">{user.segment}</td>
-                    <td className="p-3 text-sm text-gray-300">{(user.engagementScore * 100).toFixed(0)}%</td>
-                    <td className="p-3 text-sm text-gray-300">{new Date(user.lastActivity).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="text-right text-gray-500 mt-2 text-sm">...and {users.length - 10} more users.</p>
-          </div>
-        )}
-      </section>
 
-      <footer className="mt-10 text-center text-gray-500 text-sm">
-        <p>&copy; 2023 Cognitive & Operational Load Management System. All rights reserved.</p>
-        <p>Version 1.0.0 - Advanced Adaptive Multi-faceted Load Balancing</p>
-      </footer>
+      {/* Modals for editing */}
+      {showFeatureEditor && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+          <FeatureEditorForm
+            feature={editingFeature}
+            onSave={handleSaveFeature}
+            onCancel={() => { setShowFeatureEditor(false); setEditingFeature(undefined); }}
+          />
+        </div>
+      )}
+      {showPolicyEditor && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+          <PolicyEditorForm
+            policy={editingPolicy}
+            allFeatures={features}
+            onSave={handleSavePolicy}
+            onCancel={() => { setShowPolicyEditor(false); setEditingPolicy(undefined); }}
+          />
+        </div>
+      )}
+      {showAgentEditor && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+          <AgentEditorForm
+            agent={editingAgent}
+            onSave={handleSaveAgent}
+            onCancel={() => { setShowAgentEditor(false); setEditingAgent(undefined); }}
+          />
+        </div>
+      )}
+      {showAlertDefinitionEditor && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+          <AlertDefinitionEditorForm
+            definition={editingAlertDefinition}
+            allFeatures={features}
+            onSave={handleSaveAlertDefinition}
+            onCancel={() => { setShowAlertDefinitionEditor(false); setEditingAlertDefinition(undefined); }}
+          />
+        </div>
+      )}
+      {showEscalationPolicyEditor && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+          <EscalationPolicyEditorForm
+            policy={editingEscalationPolicy}
+            onSave={handleSaveEscalationPolicy}
+            onCancel={() => { setShowEscalationPolicyEditor(false); setEditingEscalationPolicy(undefined); }}
+          />
+        </div>
+      )}
+      {showIntegrationEditor && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+          <IntegrationConfigEditorForm
+            config={editingIntegration}
+            onSave={handleSaveIntegration}
+            onCancel={() => { setShowIntegrationEditor(false); setEditingIntegration(undefined); }}
+          />
+        </div>
+      )}
     </div>
   );
 };
