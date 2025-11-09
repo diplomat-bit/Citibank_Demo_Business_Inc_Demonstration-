@@ -1,4 +1,4 @@
-```typescript
+
 // components/InvestmentsView.tsx
 // RE-ENACTED & EXPANDED: This component has been resurrected from its deprecated state.
 // It is now the "CapitalVista," a full-featured celestial observatory for wealth.
@@ -1480,4 +1480,3 @@ const InvestmentsView: React.FC = () => {
 };
 
 export default InvestmentsView;
-```
