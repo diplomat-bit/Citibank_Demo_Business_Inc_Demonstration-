@@ -1,8 +1,8 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import Card from '../../Card';
 import { DataContext } from '../../../context/DataContext';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
+import { GoogleGenAI } from '@google/genai';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface KPI {
   name: string;
@@ -66,7 +66,7 @@ interface SimulationResponse {
   projectedTimeSeries: TimeSeriesPoint[];
 }
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_FALLBACK');
+const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 const ImpactSeverityIndicator: React.FC<{ severity: 'low' | 'medium' | 'high' | 'neutral' | 'critical' }> = ({ severity }) => {
@@ -95,7 +95,7 @@ const ImpactSeverityIndicator: React.FC<{ severity: 'low' | 'medium' | 'high' | 
 const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
     const isPositiveChange = kpi.changePercentage >= 0;
     const changeColorClass = kpi.changePercentage === 0 ? 'text-gray-400' : isPositiveChange ? 'text-green-400' : 'text-red-400';
-    const changeArrow = kpi.changePercentage === 0 ? '↔︎' : isPositiveChange ? '↑' : '↓';
+    const changeArrow = kpi.changePercentage === 0 ? 'â†”ï¸Ž' : isPositiveChange ? 'â†‘' : 'â†“';
     const unitDisplay = kpi.unit === '$' ? '$' : kpi.unit === '%' ? '%' : kpi.unit;
 
     return (
@@ -465,14 +465,12 @@ Generate realistic numerical values and narrative based on the prompt and curren
                                 </defs>
                                 <XAxis dataKey="month" stroke="#9ca3af" unit="m" fontSize={12} />
                                 <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(tick) => `$${(tick / 1000).toLocaleString('en-US', { maximumFractionDigits: 0 })}k`} />
-                                <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" opacity={0.5}/>
                                 <Tooltip
                                     contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.9)', borderColor: '#4b5563', borderRadius: '8px', padding: '10px' }}
                                     labelStyle={{ color: '#e5e7eb', fontWeight: 'bold' }}
                                     itemStyle={{ color: '#d1d5db' }}
                                     formatter={(value: number, name: string) => [`$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, name]}
                                 />
-                                <Legend wrapperStyle={{ color: '#e5e7eb', fontSize: '12px', paddingTop: '10px' }} />
                                 <Area type="monotone" dataKey="netWorth" stackId="1" stroke="#8884d8" fill="url(#colorNetWorth)" name="Net Worth" />
                                 <Area type="monotone" dataKey="savingsBalance" stackId="1" stroke="#82ca9d" fill="url(#colorSavings)" name="Savings" />
                                 <Area type="monotone" dataKey="investmentValue" stackId="1" stroke="#fbbf24" fill="url(#colorInvestments)" name="Investments" />
