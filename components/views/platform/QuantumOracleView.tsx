@@ -66,9 +66,6 @@ interface SimulationResponse {
   projectedTimeSeries: TimeSeriesPoint[];
 }
 
-const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
 const ImpactSeverityIndicator: React.FC<{ severity: 'low' | 'medium' | 'high' | 'neutral' | 'critical' }> = ({ severity }) => {
     let colorsClass;
     switch (severity) {
@@ -95,7 +92,7 @@ const ImpactSeverityIndicator: React.FC<{ severity: 'low' | 'medium' | 'high' | 
 const KPICard: React.FC<{ kpi: KPI }> = ({ kpi }) => {
     const isPositiveChange = kpi.changePercentage >= 0;
     const changeColorClass = kpi.changePercentage === 0 ? 'text-gray-400' : isPositiveChange ? 'text-green-400' : 'text-red-400';
-    const changeArrow = kpi.changePercentage === 0 ? 'â†”ï¸Ž' : isPositiveChange ? 'â†‘' : 'â†“';
+    const changeArrow = kpi.changePercentage === 0 ? 'â†’' : isPositiveChange ? 'â†‘' : 'â†“';
     const unitDisplay = kpi.unit === '$' ? '$' : kpi.unit === '%' ? '%' : kpi.unit;
 
     return (
@@ -280,13 +277,19 @@ Generate realistic numerical values and narrative based on the prompt and curren
         setError(null);
         setResult(null);
 
-        if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+        if (!apiKey) {
             setError("Gemini API Key is not configured. Please set NEXT_PUBLIC_GEMINI_API_KEY in your environment variables.");
             setIsLoading(false);
             return;
         }
 
         try {
+            // Initialize GoogleGenAI and the model here, after checking for the API key
+            const genAI = new GoogleGenAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
             const requestBody: SimulationRequest = {
                 prompt,
                 parameters: { durationMonths: duration, amountUSD: amount },
