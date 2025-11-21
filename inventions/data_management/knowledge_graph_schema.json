@@ -1,0 +1,423 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CircuitKnowledgeGraph",
+  "description": "Formal schema for representing a semiconductor circuit design, its constraints, and layout state as a multi-modal knowledge graph for AI-driven physical design. This schema captures the 'State (S)' of the Markov Decision Process for the Reinforcement Learning agent.",
+  "type": "object",
+  "required": [
+    "design_info",
+    "cells",
+    "nets",
+    "constraints",
+    "pdk_info"
+  ],
+  "properties": {
+    "design_info": {
+      "type": "object",
+      "description": "General metadata about the circuit design, analogous to global context for AI models.",
+      "required": ["design_name", "creation_timestamp"],
+      "properties": {
+        "design_name": {
+          "type": "string",
+          "description": "Unique identifier for the circuit design (e.g., 'RISC_V_Core_A1')."
+        },
+        "creation_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp indicating when this knowledge graph representation was generated."
+        },
+        "source_netlist_path": {
+          "type": "string",
+          "description": "File path to the original logical netlist (e.g., Verilog, VHDL)."
+        },
+        "source_sdc_path": {
+          "type": "string",
+          "description": "File path to the original SDC (Synopsys Design Constraints) file."
+        },
+        "current_layout_stage": {
+          "type": "string",
+          "enum": ["unplaced", "floorplanned", "placed", "routed", "final_optimized"],
+          "description": "The current stage of physical design represented by this graph instance."
+        }
+      }
+    },
+    "cells": {
+      "type": "array",
+      "description": "A collection of all standard cells, IP blocks (macros), and I/O ports within the circuit. These are the 'nodes' (V) in the netlist hypergraph.",
+      "items": {
+        "type": "object",
+        "required": ["cell_id", "name", "type", "model_name", "area_um2", "pins"],
+        "properties": {
+          "cell_id": {
+            "type": "string",
+            "description": "A unique identifier for this cell instance (e.g., 'U_ADDER_0', 'M_RAM_INST')."
+          },
+          "name": {
+            "type": "string",
+            "description": "The instance name as defined in the netlist."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["standard_cell", "macro", "io_pad", "filler_cell", "tie_cell", "port"],
+            "description": "Categorization of the cell instance."
+          },
+          "model_name": {
+            "type": "string",
+            "description": "The library cell name or IP block name (e.g., 'NAND2X1', 'FFD_X2', 'DP_RAM_128x16')."
+          },
+          "area_um2": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Physical area of the cell in square micrometers (µm²)."
+          },
+          "pins": {
+            "type": "array",
+            "description": "A list of pins belonging to this cell, capturing connectivity and physical attributes.",
+            "items": {
+              "type": "object",
+              "required": ["pin_name", "direction", "type"],
+              "properties": {
+                "pin_name": {
+                  "type": "string",
+                  "description": "Name of the pin (e.g., 'A1', 'B', 'CLK', 'Q', 'VDD')."
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": ["input", "output", "inout", "power", "ground"],
+                  "description": "Directionality of the pin."
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["digital_signal", "analog_signal", "clock_signal", "reset_signal", "power_rail", "ground_rail", "test_signal"],
+                  "description": "Functional type of the pin."
+                },
+                "offset_from_origin_um": {
+                  "type": "array",
+                  "items": {"type": "number"},
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "description": "Relative (x,y) offset of the pin's physical port from the cell's origin in micrometers."
+                },
+                "layer_preference": {
+                  "type": "string",
+                  "description": "Preferred metal layer for routing connections to this pin (e.g., 'M1', 'M2')."
+                }
+              }
+            }
+          },
+          "placement_info": {
+            "type": "object",
+            "description": "Physical placement details of the cell. Absence implies the cell is unplaced (e.g., in floorplanning phase).",
+            "properties": {
+              "x_um": {"type": "number", "description": "X-coordinate of the cell's origin in micrometers, typically bottom-left."},
+              "y_um": {"type": "number", "description": "Y-coordinate of the cell's origin in micrometers."},
+              "orientation": {
+                "type": "string",
+                "enum": ["R0", "R90", "R180", "R270", "MX", "MY", "MXR90", "MYR90"],
+                "description": "Physical orientation of the cell (e.g., R0: no rotation, MX: mirrored along X-axis)."
+              },
+              "is_fixed": {
+                "type": "boolean",
+                "description": "True if the cell's placement is fixed and cannot be changed by the AI (e.g., hard IP blocks, I/O pads)."
+              },
+              "tier": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "For 3D-ICs, indicates the silicon tier this cell resides on (0-indexed)."
+              }
+            }
+          },
+          "timing_characteristics": {
+            "type": "object",
+            "description": "Cell-specific timing data.",
+            "properties": {
+              "intrinsic_delay_ps": {"type": "number", "minimum": 0, "description": "Internal propagation delay in picoseconds."},
+              "setup_time_ps": {"type": "number", "minimum": 0, "description": "Setup time for sequential cells in picoseconds."},
+              "hold_time_ps": {"type": "number", "minimum": 0, "description": "Hold time for sequential cells in picoseconds."}
+            }
+          },
+          "power_characteristics": {
+            "type": "object",
+            "description": "Cell-specific power data.",
+            "properties": {
+              "static_power_nw": {"type": "number", "minimum": 0, "description": "Static (leakage) power consumption in nanowatts (nW)."},
+              "dynamic_power_per_toggle_fJ": {"type": "number", "minimum": 0, "description": "Dynamic power consumption per logic transition in femtojoules (fJ)."}
+            }
+          }
+        }
+      }
+    },
+    "nets": {
+      "type": "array",
+      "description": "A collection of all nets (interconnections) in the circuit. These are the 'hyperedges' (E) in the netlist hypergraph.",
+      "items": {
+        "type": "object",
+        "required": ["net_id", "name", "connected_pins"],
+        "properties": {
+          "net_id": {
+            "type": "string",
+            "description": "A unique identifier for this net instance (e.g., 'N_DATA_0', 'N_CLK_MAIN')."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the net as defined in the netlist."
+          },
+          "connected_pins": {
+            "type": "array",
+            "description": "List of (cell_id, pin_name) tuples representing all pins connected by this net.",
+            "items": {
+              "type": "object",
+              "required": ["cell_id", "pin_name"],
+              "properties": {
+                "cell_id": {"type": "string", "description": "ID of the cell instance connected to this net."},
+                "pin_name": {"type": "string", "description": "Name of the pin on that cell connected to this net."}
+              }
+            },
+            "minItems": 2,
+            "description": "A net must connect at least two pins for signal propagation."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["signal", "clock", "reset", "power_distribution", "ground_distribution", "test_net"],
+            "description": "Functional type of the net, influencing routing priority and rules."
+          },
+          "criticality_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Normalized score (0 to 1) indicating the timing or functional criticality of the net. Higher values indicate more critical nets."
+          },
+          "fanout": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The number of pins driven by this net (excluding the driver itself)."
+          },
+          "estimated_capacitance_fF": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Pre-routing estimated net capacitance in femtofarads (fF)."
+          },
+          "estimated_wirelength_um": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Pre-routing estimated wirelength (e.g., Half-Perimeter Wirelength) in micrometers (µm)."
+          },
+          "routing_info": {
+            "type": "object",
+            "description": "Actual routing path segments for the net. Present only after routing stages.",
+            "properties": {
+              "segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["start_coord_um", "end_coord_um", "layer"],
+                  "properties": {
+                    "start_coord_um": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2, "description": "Start (x,y) coordinates of the segment."},
+                    "end_coord_um": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2, "description": "End (x,y) coordinates of the segment."},
+                    "layer": {"type": "string", "description": "Metal layer name of the segment (e.g., 'M1', 'M2')."},
+                    "width_um": {"type": "number", "minimum": 0, "description": "Width of the routing segment in micrometers."}
+                  }
+                }
+              },
+              "total_wirelength_um": {"type": "number", "minimum": 0, "description": "Sum of all segment lengths."},
+              "total_capacitance_fF": {"type": "number", "minimum": 0, "description": "Calculated capacitance from actual routing."},
+              "total_resistance_ohm": {"type": "number", "minimum": 0, "description": "Calculated resistance from actual routing."}
+            }
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Design-level performance targets and physical constraints, translating human intent into quantifiable metrics for the AI's reward function.",
+      "required": [
+        "target_frequency_ghz",
+        "power_budget_mw",
+        "area_budget_mm2",
+        "max_junction_temp_c"
+      ],
+      "properties": {
+        "target_frequency_ghz": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Desired operating clock frequency in Gigahertz."
+        },
+        "target_clock_period_ns": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Derived target clock period in nanoseconds (1 / target_frequency_ghz)."
+        },
+        "power_budget_mw": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum allowed total power consumption in milliwatts."
+        },
+        "area_budget_mm2": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum allowed total die area in square millimeters."
+        },
+        "max_junction_temp_c": {
+          "type": "number",
+          "description": "Maximum allowed junction temperature in degrees Celsius to ensure reliability."
+        },
+        "timing_constraints": {
+          "type": "object",
+          "description": "Specific timing requirements.",
+          "properties": {
+            "min_setup_slack_ps": {"type": "number", "description": "Minimum required positive setup slack across all paths in picoseconds."},
+            "min_hold_slack_ps": {"type": "number", "description": "Minimum required positive hold slack across all paths in picoseconds."},
+            "max_clock_skew_ps": {"type": "number", "minimum": 0, "description": "Maximum allowed clock skew between any two flip-flops in picoseconds."}
+          }
+        },
+        "signal_integrity_constraints": {
+          "type": "object",
+          "description": "Constraints related to signal integrity to prevent functional errors.",
+          "properties": {
+            "max_crosstalk_voltage_mv": {"type": "number", "minimum": 0, "description": "Maximum allowed induced noise voltage from crosstalk in millivolts."},
+            "min_noise_margin_mv": {"type": "number", "minimum": 0, "description": "Minimum required noise margin for robust signal operation in millivolts."}
+          }
+        },
+        "drc_lvs_tolerance": {
+          "type": "object",
+          "description": "Rules and tolerance for Design Rule Checking (DRC) and Layout Versus Schematic (LVS).",
+          "properties": {
+            "max_allowed_drc_violations": {"type": "integer", "minimum": 0, "description": "Maximum allowed non-critical DRC violations (ideally 0 for sign-off)."},
+            "critical_drc_categories": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "List of DRC violation categories that are considered critical and must have zero instances."
+            },
+            "allow_lvs_mismatches": {"type": "boolean", "description": "True if minor LVS mismatches are temporarily tolerated during early iterations."}
+          }
+        },
+        "io_placement_directives": {
+          "type": "array",
+          "description": "Guidance for the placement of I/O pads or top-level ports.",
+          "items": {
+            "type": "object",
+            "required": ["port_name", "location_hint"],
+            "properties": {
+              "port_name": {"type": "string", "description": "Name of the I/O port."},
+              "location_hint": {
+                "type": "string",
+                "enum": ["top", "bottom", "left", "right", "corner_nw", "corner_ne", "corner_sw", "corner_se", "specific_coordinate"],
+                "description": "General or specific location hint."
+              },
+              "x_um": {"type": "number", "description": "Specific X-coordinate if 'specific_coordinate' is used."},
+              "y_um": {"type": "number", "description": "Specific Y-coordinate if 'specific_coordinate' is used."}
+            }
+          }
+        },
+        "floorplan_directives": {
+          "type": "array",
+          "description": "High-level floorplan guidance for partitioning and block arrangement.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "block_id": {"type": "string", "description": "Identifier for a logical block or partition."},
+              "target_aspect_ratio_min": {"type": "number", "minimum": 0},
+              "target_aspect_ratio_max": {"type": "number", "minimum": 0},
+              "relative_placement_to_block_id": {"type": "string", "description": "ID of another block this one should be placed relative to."},
+              "relative_position_hint": {"type": "string", "enum": ["north", "south", "east", "west", "abut"]}
+            }
+          }
+        },
+        "advanced_packaging_constraints": {
+          "type": "object",
+          "description": "Specific constraints for 3D-ICs and chiplet-based systems.",
+          "properties": {
+            "is_3d_ic": {"type": "boolean", "description": "Indicates if the design is a 3D Integrated Circuit."},
+            "num_tiers": {"type": "integer", "minimum": 1, "description": "Number of silicon tiers for 3D-IC designs."},
+            "target_tsv_density_per_mm2": {"type": "number", "minimum": 0, "description": "Desired Through-Silicon Via density for 3D-ICs."},
+            "is_chiplet_based": {"type": "boolean", "description": "Indicates if the design uses chiplets on an interposer."},
+            "interposer_design_target": {
+              "type": "object",
+              "properties": {
+                "interposer_size_mm2": {"type": "number", "minimum": 0, "description": "Target area for the interposer."},
+                "max_inter_chiplet_latency_ps": {"type": "number", "minimum": 0, "description": "Maximum allowed latency between chiplets on the interposer."}
+              }
+            }
+          }
+        }
+      }
+    },
+    "pdk_info": {
+      "type": "object",
+      "description": "Process Design Kit (PDK) information, essential for understanding manufacturing capabilities and design rules.",
+      "required": ["process_node_nm", "metal_layers", "drc_rules"],
+      "properties": {
+        "process_node_nm": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Technology node in nanometers (e.g., 7, 5, 3). A critical parameter for scaling and performance expectations."
+        },
+        "metal_layers": {
+          "type": "array",
+          "description": "Properties for each available metal layer for routing.",
+          "items": {
+            "type": "object",
+            "required": ["layer_name", "type", "thickness_nm", "resistivity_ohm_um", "capacitance_ff_um_per_unit_length"],
+            "properties": {
+              "layer_name": {"type": "string", "description": "Official name of the metal layer (e.g., 'M1', 'M2', 'BEOL_TOP_METAL')."},
+              "type": {
+                "type": "string",
+                "enum": ["interconnect", "power", "ground"],
+                "description": "Purpose of the metal layer."
+              },
+              "thickness_nm": {"type": "number", "minimum": 0, "description": "Thickness of the metal layer in nanometers."},
+              "resistivity_ohm_um": {"type": "number", "minimum": 0, "description": "Resistivity of the metal material in Ohm-micrometers."},
+              "capacitance_ff_um_per_unit_length": {"type": "number", "minimum": 0, "description": "Typical capacitance per unit length in femtofarads per micrometer."},
+              "max_current_density_ma_um": {"type": "number", "minimum": 0, "description": "Maximum allowed current density for this layer in mA/µm."}
+            }
+          }
+        },
+        "drc_rules": {
+          "type": "object",
+          "description": "Key Design Rule Check (DRC) parameters, critical for manufacturability.",
+          "properties": {
+            "min_spacing_um": {
+              "type": "object",
+              "description": "Minimum spacing rules, keyed by layer name or rule category.",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "default": {"type": "number", "minimum": 0, "description": "Default minimum spacing for the layer in micrometers."},
+                  "wire_to_wire": {"type": "number", "minimum": 0},
+                  "via_to_wire": {"type": "number", "minimum": 0},
+                  "via_to_via": {"type": "number", "minimum": 0}
+                },
+                "minProperties": 1
+              }
+            },
+            "min_width_um": {
+              "type": "object",
+              "description": "Minimum width for features on a given layer, keyed by layer name.",
+              "additionalProperties": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "via_rules": {
+              "type": "object",
+              "description": "Rules governing via structures.",
+              "properties": {
+                "min_via_size_um": {"type": "number", "minimum": 0},
+                "min_enclosure_um": {"type": "number", "minimum": 0, "description": "Minimum metal overlap around a via."}
+              }
+            },
+            "density_rules": {
+              "type": "object",
+              "description": "Metal density rules to avoid manufacturing defects.",
+              "properties": {
+                "min_density_percent": {"type": "number", "minimum": 0, "maximum": 100},
+                "max_density_percent": {"type": "number", "minimum": 0, "maximum": 100},
+                "window_size_um": {"type": "number", "minimum": 0}
+              }
+            }
+          },
+          "minProperties": 1
+        }
+      }
+    }
+  }
+}
