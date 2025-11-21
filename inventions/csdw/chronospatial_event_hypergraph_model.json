@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chronospatial Event Hypergraph Model",
+  "description": "Specifies the JSON schema for representing spatiotemporal events, their attributes, and causal hyperedges within the Chronospatial Data Weave (CSDW). This schema defines the foundational data structures for an immutable and verifiable record of observable reality.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of the Chronospatial Event Hypergraph Schema.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "networkId": {
+      "type": "string",
+      "description": "Unique identifier for this specific Chronospatial Data Weave instance or a segment thereof (e.g., 'Earth_CSDW_Global', 'Mars_Colony_CSDW')."
+    },
+    "events": {
+      "type": "array",
+      "description": "A collection of immutable spatiotemporal events, serving as the nodes of the hypergraph. Each event captures a specific occurrence in space and time.",
+      "items": {
+        "$ref": "#/definitions/Event"
+      },
+      "uniqueItems": true
+    },
+    "hyperedges": {
+      "type": "array",
+      "description": "A collection of causal hyperedges, linking multiple events to represent complex causal relationships. These define the dynamic interactions within the observed reality.",
+      "items": {
+        "$ref": "#/definitions/Hyperedge"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": ["schemaVersion", "networkId", "events", "hyperedges"],
+  "definitions": {
+    "Event": {
+      "type": "object",
+      "description": "Represents a single, cryptographically immutable spatiotemporal event.",
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "description": "A universally unique identifier (UUIDv4 recommended) for this specific event. Must be unique within the entire CSDW.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The precise ISO 8601 UTC timestamp of when the event occurred. Crucial for spatiotemporal ordering and hash generation (e.g., '2045-10-27T14:30:00.000Z')."
+        },
+        "coordinates": {
+          "type": "object",
+          "description": "Spatiotemporal coordinates of the event's occurrence. Supports various reference frames for multi-planetary scope.",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "description": "Geographical latitude in degrees (for planetary bodies)."
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "description": "Geographical longitude in degrees (for planetary bodies)."
+            },
+            "altitude": {
+              "type": "number",
+              "description": "Altitude or depth relative to a datum (e.g., mean sea level, planetary surface), in meters."
+            },
+            "x": { "type": "number", "description": "X-coordinate in a specified Cartesian system." },
+            "y": { "type": "number", "description": "Y-coordinate in a specified Cartesian system." },
+            "z": { "type": "number", "description": "Z-coordinate in a specified Cartesian system." },
+            "spatialRefSystem": {
+              "type": "string",
+              "description": "Identifier for the spatial reference system (e.g., 'WGS84', 'J2000', 'MarsDatum', 'GalacticCartesian').",
+              "examples": ["WGS84", "MarsDatum"]
+            }
+          },
+          "oneOf": [
+            { "required": ["latitude", "longitude", "spatialRefSystem"] },
+            { "required": ["x", "y", "z", "spatialRefSystem"] }
+          ],
+          "required": ["spatialRefSystem"]
+        },
+        "eventType": {
+          "type": "string",
+          "description": "Categorical type of the event, indicating its nature (e.g., 'SensorReading', 'FinancialTransaction', 'AIActionCompletion', 'EnvironmentalChange', 'HumanInteraction')."
+        },
+        "data": {
+          "type": "object",
+          "description": "Arbitrary JSON data payload containing all specific, non-structural details of the event. This can be highly varied (e.g., sensor values, transaction specifics, action parameters, observations).",
+          "additionalProperties": true
+        },
+        "predecessorEventHashes": {
+          "type": "array",
+          "description": "An array of cryptographic hashes of directly causally preceding events. This forms the immutable chain of causality for historical reconstruction and integrity verification. An empty array signifies a genesis event.",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{64}$",
+            "description": "SHA-256 hash of a preceding event."
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "zeroKnowledgeProof": {
+          "type": "string",
+          "description": "Optional: A serialized zero-knowledge proof (ZKP) string that verifies certain properties of the event's 'data' without revealing the underlying information. This ensures privacy while maintaining verifiability."
+        },
+        "eventHash": {
+          "type": "string",
+          "description": "The cryptographic hash (SHA-256) of this event. Computed from a canonical serialization of 'eventId', 'timestamp', 'coordinates', 'eventType', 'data', and 'predecessorEventHashes'. This hash guarantees the event's immutability and tamper-detection.",
+          "pattern": "^[0-9a-fA-F]{64}$"
+        }
+      },
+      "required": ["eventId", "timestamp", "coordinates", "eventType", "data", "predecessorEventHashes", "eventHash"]
+    },
+    "Hyperedge": {
+      "type": "object",
+      "description": "Represents a verifiable causal relationship or complex linkage between multiple events within the CSDW. Unlike simple directed edges, hyperedges can connect an arbitrary number of source and target events.",
+      "properties": {
+        "hyperedgeId": {
+          "type": "string",
+          "description": "A universally unique identifier (UUIDv4 recommended) for this specific hyperedge. Must be unique within the CSDW.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        },
+        "causalType": {
+          "type": "string",
+          "description": "The semantic type of the causal relationship (e.g., 'DirectConsequence', 'EnablingCondition', 'CorrelatedOutcome', 'FeedbackLoop', 'ResourceFlow')."
+        },
+        "sourceEventIds": {
+          "type": "array",
+          "description": "An array of 'eventId's that are considered causal 'sources' or 'inputs' for this relationship. These events precede the causal link.",
+          "items": { "type": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "targetEventIds": {
+          "type": "array",
+          "description": "An array of 'eventId's that are considered 'effects' or 'outputs' resulting from this relationship. These events follow the causal link.",
+          "items": { "type": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "causalStrength": {
+          "type": "number",
+          "description": "A quantifiable measure (0.0 to 1.0) representing the inferred strength or probability of this causal link. Can be derived from probabilistic models or expert systems.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Optional: Additional descriptive or analytical metadata about the hyperedge (e.g., model confidence, inferred mechanism, responsible agent).",
+          "additionalProperties": true
+        },
+        "hyperedgeHash": {
+          "type": "string",
+          "description": "The cryptographic hash (SHA-256) of this hyperedge. Computed from a canonical serialization of 'hyperedgeId', 'causalType', 'sourceEventIds', 'targetEventIds', 'causalStrength', and 'metadata'. Ensures the hyperedge's immutability.",
+          "pattern": "^[0-9a-fA-F]{64}$"
+        }
+      },
+      "required": ["hyperedgeId", "causalType", "sourceEventIds", "targetEventIds", "causalStrength", "hyperedgeHash"]
+    }
+  }
+}
