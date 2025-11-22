@@ -11050,5 +11050,3 @@ components:
           type: integer
           nullable: true
           description: "Optional: Number of seconds to wait before retrying the request (for rate limiting)."
-
-# End of OpenAPI Specification
