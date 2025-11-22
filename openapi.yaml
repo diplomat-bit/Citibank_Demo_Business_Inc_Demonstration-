@@ -1,5 +1,6 @@
 openapi: 3.1.0
 info:
+  version: '1.0'
   title: "Demo Bank API: The Quantum Core - Publisher Edition"
   description: |
     Welcome to the **Quantum Core 3.0**, the pinnacle of financial technology, meticulously engineered to power the Demo Bank experience. This is far more than a mere set of endpoints; it is the living, breathing neural network of a next-generation financial ecosystem, poised to redefine digital banking for a global audience.
@@ -8,10 +9,10 @@ info:
     
     This comprehensive specification unveils the secure and high-performance protocols to connect with and command the core functionalities of Demo Bank. Empower yourself to architect and deploy the future of finance, with an infrastructure designed for exponential scalability, impenetrable security, real-time intelligence, and seamless global integration. As your most ambitious visions crystallize, our platform's unparalleled capabilities will not just meet them—they will amplify them. This is finance, reimagined, limitless, and brought to life by AI.
 servers:
-  - url: "https://api.demobank.com/v1"
-    description: "Production API server"
-  - url: "https://sandbox.demobank.com/v1"
-    description: "Sandbox environment for testing"
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/JOCALL3_1/jamesburvelocallaghaniiiapi/1.0
+
 tags:
   - name: "Users & Identity Management"
     description: "Comprehensive management of user profiles, advanced biometric authentication, multi-factor security, and digital identity verification (KYC/AML)."
