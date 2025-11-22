@@ -11017,37 +11017,3 @@ components:
                 retryAfterSeconds: 60
                 timestamp: "2024-07-22T08:00:00Z"
 
-  schemas:
-    Error:
-      type: object
-      required:
-        - code
-        - message
-        - timestamp
-      properties:
-        code:
-          type: string
-          example: "INVALID_INPUT"
-          description: "A unique error code identifying the type of error."
-        message:
-          type: string
-          example: "One or more fields in the request body are invalid."
-          description: "A human-readable message describing the error."
-        details:
-          type: array
-          items:
-            type: object
-            properties:
-              field: {type: string, example: "email"}
-              error: {type: string, example: "Invalid email format."}
-          nullable: true
-          description: "Optional: Specific details about validation errors or other issues."
-        timestamp:
-          type: string
-          format: date-time
-          example: "2024-07-22T08:00:00Z"
-          description: "The time at which the error occurred."
-        retryAfterSeconds:
-          type: integer
-          nullable: true
-          description: "Optional: Number of seconds to wait before retrying the request (for rate limiting)."
