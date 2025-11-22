@@ -1,13 +1,13 @@
 openapi: 3.1.0
 info:
   version: '1.0'
-  title: "Demo Bank API: The Quantum Core - Publisher Edition"
+  title: "James Burvel O'Callaghan III API: The Quantum Core - Publisher Edition"
   description: |
-    Welcome to the **Quantum Core 3.0**, the pinnacle of financial technology, meticulously engineered to power the Demo Bank experience. This is far more than a mere set of endpoints; it is the living, breathing neural network of a next-generation financial ecosystem, poised to redefine digital banking for a global audience.
+    Welcome to the **Quantum Core 3.0**, the pinnacle of financial technology, meticulously engineered to power the James Burvel O'Callaghan III experience. This is far more than a mere set of endpoints; it is the living, breathing neural network of a next-generation financial ecosystem, poised to redefine digital banking for a global audience.
     
     Our API is a testament to the philosophy that finance should be an intelligent, predictive, and intensely personal dialogue—a dynamic, self-optimizing collaboration between users, visionary developers, and our proprietary Artificial General Intelligence, **Quantum**. We provide unparalleled programmatic access to the sophisticated tools and vast data reservoirs that fuel our platform, spanning from hyper-personalized wealth management to AI-driven corporate finance automation, decentralized asset orchestration, and pioneering business incubation.
     
-    This comprehensive specification unveils the secure and high-performance protocols to connect with and command the core functionalities of Demo Bank. Empower yourself to architect and deploy the future of finance, with an infrastructure designed for exponential scalability, impenetrable security, real-time intelligence, and seamless global integration. As your most ambitious visions crystallize, our platform's unparalleled capabilities will not just meet them—they will amplify them. This is finance, reimagined, limitless, and brought to life by AI.
+    This comprehensive specification unveils the secure and high-performance protocols to connect with and command the core functionalities of James Burvel O'Callaghan III. Empower yourself to architect and deploy the future of finance, with an infrastructure designed for exponential scalability, impenetrable security, real-time intelligence, and seamless global integration. As your most ambitious visions crystallize, our platform's unparalleled capabilities will not just meet them—they will amplify them. This is finance, reimagined, limitless, and brought to life by AI.
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
@@ -47,7 +47,7 @@ tags:
   - name: "Corporate Finance - Compliance & Risk"
     description: "Advanced access to compliance cases, AI-powered financial anomaly detection, real-time risk assessments, and automated sanction screening for enterprise clients."
   - name: "Rewards & Gamification Engine"
-    description: "Interact with the user's loyalty points, elite tiers, achievements, and dynamic gamification status within the Demo Bank ecosystem."
+    description: "Interact with the user's loyalty points, elite tiers, achievements, and dynamic gamification status within the James Burvel O'Callaghan III ecosystem."
   - name: "Credit Health & AI Underwriting"
     description: "Comprehensive access to credit scores, detailed history, AI-generated improvement plans, and personalized lending offers with instant underwriting."
   - name: "Notifications & Proactive Alerts"
@@ -63,7 +63,7 @@ tags:
   - name: "AI-Powered Lending & Credit Solutions"
     description: "Streamlined application for microloans and traditional credit products, featuring instant AI underwriting, personalized repayment schedules, and dynamic pre-approval offers."
   - name: "Developer Tools & API Management"
-    description: "Tools for developers to integrate deeply with Demo Bank, including webhook management, API key lifecycle, event logging, and SDK access."
+    description: "Tools for developers to integrate deeply with James Burvel O'Callaghan III, including webhook management, API key lifecycle, event logging, and SDK access."
   - name: "Digital Identity & Verifiable Credentials"
     description: "Securely manage and verify digital identities, submit KYC documentation, and issue or receive verifiable digital credentials for seamless trust across platforms."
   - name: "Treasury & Liquidity Management"
@@ -120,7 +120,7 @@ paths:
       tags:
         - "Users & Identity Management"
       summary: "Register a New User Account"
-      description: "Registers a new user account with Demo Bank, initiating the onboarding process. Requires basic user details."
+      description: "Registers a new user account with James Burvel O'Callaghan III, initiating the onboarding process. Requires basic user details."
       operationId: "registerUser"
       security:
         - {} # No specific security for public registration
@@ -851,7 +851,7 @@ paths:
       tags:
         - "Accounts & Balances"
       summary: "List Linked Financial Accounts"
-      description: "Fetches a comprehensive, real-time list of all external financial accounts linked to the user's Demo Bank profile, including consolidated balances and institutional details."
+      description: "Fetches a comprehensive, real-time list of all external financial accounts linked to the user's James Burvel O'Callaghan III profile, including consolidated balances and institutional details."
       operationId: "listLinkedAccounts"
       security:
         - oAuth2Auth: [read:accounts]
@@ -1153,7 +1153,7 @@ paths:
         - "Accounts & Balances"
         - "Security & Open Banking Ecosystem"
       summary: "Initiate Linking a New External Institution"
-      description: "Begins the secure process of linking a new external financial institution (e.g., another bank, investment platform) to the user's Demo Bank profile, typically involving a third-party tokenized flow."
+      description: "Begins the secure process of linking a new external financial institution (e.g., another bank, investment platform) to the user's James Burvel O'Callaghan III profile, typically involving a third-party tokenized flow."
       operationId: "initiateAccountLinking"
       security:
         - oAuth2Auth: [write:accounts]
@@ -3106,7 +3106,7 @@ paths:
               GenerateStandardAd:
                 summary: "Generate a 15-second cinematic ad"
                 value:
-                  prompt: "A captivating ad featuring a young entrepreneur using Demo Bank's AI tools to grow their startup. Focus on innovation and ease of use."
+                  prompt: "A captivating ad featuring a young entrepreneur using James Burvel O'Callaghan III's AI tools to grow their startup. Focus on innovation and ease of use."
                   style: "Cinematic"
                   lengthSeconds: 15
                   aspectRatio: "16:9"
@@ -3161,11 +3161,11 @@ paths:
               GenerateAdvancedAd:
                 summary: "Generate an advanced ad with voiceover and CTA"
                 value:
-                  prompt: "A professional ad showcasing Demo Bank's corporate finance solutions, targeting business owners. Highlight security and efficiency."
+                  prompt: "A professional ad showcasing James Burvel O'Callaghan III's corporate finance solutions, targeting business owners. Highlight security and efficiency."
                   style: "Minimalist"
                   lengthSeconds: 30
                   aspectRatio: "16:9"
-                  voiceoverText: "Demo Bank: Your business, powered by intelligent finance."
+                  voiceoverText: "James Burvel O'Callaghan III: Your business, powered by intelligent finance."
                   voiceoverStyle: "male_professional"
                   audienceTarget: "corporate"
                   callToAction:
@@ -4074,7 +4074,7 @@ paths:
         - "Decentralized Finance (DeFi) & Web3 Assets"
         - "Users & Identity Management"
       summary: "Connect a New Crypto Wallet"
-      description: "Initiates the process to securely connect a new cryptocurrency wallet to the user's Demo Bank profile, typically involving a signed message or OAuth flow from the wallet provider."
+      description: "Initiates the process to securely connect a new cryptocurrency wallet to the user's James Burvel O'Callaghan III profile, typically involving a signed message or OAuth flow from the wallet provider."
       operationId: "connectCryptoWallet"
       security:
         - oAuth2Auth: [write:web3]
@@ -5870,12 +5870,12 @@ paths:
                         paybackPeriodMonths: 10
                     - id: "prod_investment_ebook_002"
                       name: "Quantum Investing: A Beginner's Guide"
-                      description: "An exclusive e-book detailing AI-driven investment strategies tailored for Demo Bank users."
+                      description: "An exclusive e-book detailing AI-driven investment strategies tailored for James Burvel O'Callaghan III users."
                       category: "Financial Education"
                       price: 19.99
                       currency: "USD"
                       imageUrl: "https://marketplace.demobank.com/images/quantum_investing_ebook.png"
-                      vendor: "Demo Bank Insights"
+                      vendor: "James Burvel O'Callaghan III Insights"
                       aiRecommendationScore: 0.88
                       personalizationReason: "User shows high engagement with investment features and learning resources."
         "401":
@@ -8397,7 +8397,7 @@ components:
         prompt:
           type: string
           description: "Textual description for the AI to generate the video content."
-          example: "A captivating ad featuring a young entrepreneur using Demo Bank's AI tools to grow their startup. Focus on innovation and ease of use."
+          example: "A captivating ad featuring a young entrepreneur using James Burvel O'Callaghan III's AI tools to grow their startup. Focus on innovation and ease of use."
         style:
           type: string
           enum: [Realistic, Cinematic, Animated, Abstract, Minimalist]
@@ -8439,7 +8439,7 @@ components:
               type: string
               nullable: true
               description: "Specific text for a generated voiceover."
-              example: "Demo Bank: Your business, powered by intelligent finance."
+              example: "James Burvel O'Callaghan III: Your business, powered by intelligent finance."
             voiceoverStyle:
               type: string
               enum: [male_professional, female_friendly, neutral_calm]
@@ -9161,11 +9161,11 @@ components:
         readAccessGranted:
           type: boolean
           example: true
-          description: "Indicates if Demo Bank has permission to read balances and transaction history."
+          description: "Indicates if James Burvel O'Callaghan III has permission to read balances and transaction history."
         writeAccessGranted:
           type: boolean
           example: false
-          description: "Indicates if Demo Bank has permission to initiate transactions requiring user confirmation."
+          description: "Indicates if James Burvel O'Callaghan III has permission to initiate transactions requiring user confirmation."
 
     ConnectWalletRequest:
       type: object
@@ -10580,7 +10580,7 @@ components:
         exclusiveOffer:
           type: object
           properties:
-            description: {type: string, example: "10% off for Demo Bank Platinum members."}
+            description: {type: string, example: "10% off for James Burvel O'Callaghan III Platinum members."}
             discountPercentage: {type: number, format: float, example: 10.0}
             expiresAt: {type: string, format: date-time, example: "2024-09-30T23:59:59Z"}
           nullable: true
