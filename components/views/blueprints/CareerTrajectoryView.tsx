@@ -1,4 +1,4 @@
-```typescript
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Card from '../../Card'; // Keep existing import for Card
 import { GoogleGenAI, Type } from "@google/genai"; // Keep existing import for GoogleGenAI
@@ -7881,5 +7881,3 @@ export const CareerTrajectoryView: React.FC = () => {
 };
 
 export default CareerTrajectoryView;
-
-```
