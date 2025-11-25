@@ -1,3545 +1,3765 @@
-/**
- * CrisisAIManagerView.tsx
- *
- * This module delivers a revolutionary, multi-million-dollar infrastructure leap, serving as the central control plane for enterprise crisis response.
- * It leverages advanced AI agents to autonomously orchestrate, monitor, and execute strategic communications, legal actions, and financial remediations
- * across a unified digital finance architecture. By integrating real-time sentiment analysis, robust digital identity, programmable value rails,
- * and a cryptographically secured audit trail, this system transforms chaotic events into managed outcomes.
- *
- * Business value: This platform safeguards billions in brand value and regulatory standing by providing unparalleled speed, precision, and compliance.
- * It drastically reduces response times, minimizes financial penalties from non-compliance, protects brand reputation from negative sentiment,
- * and optimizes resource allocation through AI-driven insights. It is a strategic advantage, allowing organizations to regain control swiftly
- * during high-stakes situations, ensuring business continuity, and protecting shareholder value. The integration of programmable value rails
- * allows for real-time, auditable financial operations, demonstrating a robust, next-generation financial backbone.
+Expected "}" but found "style"
+3653|                <strong>[{new Date(entry.timestamp).toLocaleTimeString()}] {entry.agentName} ({entry.agentId}):</strong> {entry.action} - <pre style={{ display: 'inline' }}>{JSON.stringify(entry.details).substring(0, 100)}...</pre>
+3654|                <br /><span style={{ color: '#999' }}>Signature: {entry.signature.substring(0, 15)}...{entry.signature.slice(-15)}</span>
+3655|                {entry.previousEntryHash && <br /><span style={{ color: '#aaa' }}>Prev Hash: {entry.previousEntryHash.substring(0, 15)}...{entry.previousEntryHash.slice(-15)}</span>}
+   |                                                        ^
+3656|              </div>
+3657|            ))}
+
+    at failureErrorWithLog (/home/jamesburvelocallaghaniii/oknot/node_modules/esbuild/lib/main.js:1472:15)
+    at /home/jamesburvelocallaghaniii/oknot/node_modules/esbuild/lib/main.js:755:50
+    at responseCallbacks.<computed> (/home/jamesburvelocallaghaniii/oknot/node_modules/esbuild/lib/main.js:622:9)
+    at handleIncomingPacket (/home/jamesburvelocallaghaniii/oknot/node_modules/esbuild/lib/main.js:677:12)
+    at Socket.readFromStdout (/home/jamesburvelocallaghaniii/oknot/node_modules/esbuild/lib/main.js:600:7)
+    at Socket.emit (node:events:524:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)/**
+ * This module implements the Emergent Strategy Wargamer View, a high-fidelity business simulation
+ * that allows decision-makers to test strategic directives in a dynamic, AI-driven market environment.
+ * Business Value: This simulation provides a safe, accelerated, and deterministic sandbox for
+ * exploring complex strategic choices in the FinTech and AI sectors. It enables executive teams
+ * to refine their "agentic" decision-making frameworks, evaluate the impact of "token rails"
+ * and "digital identity" integration on market dynamics, and optimize "real-time payments"
+ * infrastructure investments. By modeling competitor reactions and market shifts, it helps
+ * identify high-ROI initiatives, mitigate risks, and uncover emergent strategies that can yield
+ * millions in competitive advantage, revenue growth, and operational efficiency without real-world
+ * expenditure or consequence. It's an indispensable tool for strategic planning, talent development,
+ * and pre-validating innovative business models at scale, representing a revolutionary,
+ * multi-million-dollar infrastructure leap towards the next trillion-dollar financial backbone.
  */
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 
-export type CrisisType = 'DATA_BREACH' | 'PRODUCT_FAILURE' | 'EXECUTIVE_SCANDAL' | 'ENVIRONMENTAL_DISASTER' | 'FINANCIAL_MISCONDUCT' | 'SUPPLY_CHAIN_DISRUPTION' | 'CYBER_ATTACK' | 'PUBLIC_HEALTH_CRISIS';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+// Vending uuid and sha256 implementations to ensure no external dependencies.
+// This ensures the system is self-contained and production-ready without external package installations.
 
-export interface CommsPackage {
-  pressRelease: string;
-  internalMemo: string;
-  twitterThread: string[];
-  supportScript: string;
-  faqDocument?: string;
-  webStatement?: string;
-  ceoStatement?: string;
-  socialMediaGraphics?: string[]; // URLs or base64
-  videoScript?: string;
-  id?: string; // Add ID to CommsPackage for direct referencing
+/**
+ * Generates a universally unique identifier (UUID) compliant with RFC 4122 version 4.
+ * This function is self-contained, ensuring no external dependencies for UUID generation.
+ * Business Value: Provides unique identifiers critical for transactional integrity,
+ * audit trail traceability, and robust data management across the financial infrastructure.
+ */
+export const generateUUID = (): string => {
+  let d = new Date().getTime();
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+    d += performance.now(); // Use high-precision timer if available
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+};
+
+/**
+ * Simulates a cryptographic signature using a simple SHA256-like hashing mechanism.
+ * This is a minimal, self-contained implementation for demonstration and simulation purposes,
+ * abstracting complex cryptographic libraries to meet the 'no external dependencies' mandate.
+ * Business Value: Provides a conceptual foundation for data integrity, transaction verification,
+ * and tamper-evident logging, crucial for secure digital finance operations.
+ * In a production system, this would be replaced by actual Web Crypto API or Node.js crypto.
+ * @param str The input string to hash.
+ * @returns A simulated SHA256 hash string.
+ */
+export const simulateSha256 = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(16).padStart(8, '0'); // Return a simple hex string
+};
+
+// Use the vendored implementations
+export const simulateSignature = (data: string): string => simulateSha256(data);
+
+/**
+ * Defines a numeric range, typically used for minimum and maximum values.
+ * Business Value: Essential for parameterizing dynamic system behaviors,
+ * such as market growth rates, allowing for flexible and realistic simulations.
+ */
+export type ValueRange = [number, number]; // [min, max]
+
+/**
+ * Generates a random number within a specified range and with a given number of decimal places.
+ * Business Value: Crucial for simulating realistic, yet controlled, variability in market conditions,
+ * financial outcomes, and agent behaviors, enhancing the fidelity of the wargame.
+ * @param min - The minimum value for the random number.
+ * @param max - The maximum value for the random number.
+ * @param decimals - The number of decimal places to round the result to.
+ * @returns A random number within the specified range.
+ */
+export const generateRandomNumber = (min: number, max: number, decimals: number = 0): number => {
+  const factor = Math.pow(10, decimals);
+  return Math.round((Math.random() * (max - min) + min) * factor) / factor;
+};
+
+/**
+ * Formats a numeric amount as a currency string.
+ * Business Value: Enhances user readability and comprehension of financial data
+ * within the simulation, making complex reports more accessible to decision-makers.
+ * @param amount - The numeric amount to format.
+ * @param currency - The currency symbol to prepend (default is '$').
+ * @returns A formatted currency string.
+ */
+export const formatCurrency = (amount: number, currency: string = '$'): string => {
+  return `${currency}${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+};
+
+/**
+ * Returns an emoji representing market sentiment based on a given score.
+ * Business Value: Provides quick, at-a-glance visualization of complex market
+ * emotions, allowing rapid interpretation of global market health and its
+ * potential impact on strategic decisions.
+ * @param sentiment - The sentiment score (0-100).
+ * @returns An emoji corresponding to the sentiment level.
+ */
+export const getMarketSentimentEmoji = (sentiment: number): string => {
+  if (sentiment > 80) return '🚀';
+  if (sentiment > 60) return '😊';
+  if (sentiment > 40) return '😐';
+  if (sentiment > 20) return '😟';
+  return '📉';
+};
+
+/**
+ * Picks a random item from a list based on associated weights.
+ * Business Value: Enables realistic simulation of probabilistic outcomes,
+ * such as competitor strategy shifts or market event occurrences, based on
+ * predefined likelihoods.
+ * @template T - The type of the item.
+ * @param items - An array of objects, each containing an item and its weight.
+ * @returns A randomly selected item.
+ */
+export const weightedRandomPick = <T,>(items: Array<{ item: T, weight: number }>): T => {
+  const totalWeight = items.reduce((sum, { weight }) => sum + weight, 0);
+  let random = Math.random() * totalWeight;
+  for (const { item, weight } of items) {
+    if (random < weight) {
+      return item;
+    }
+    random -= weight;
+  }
+  return items[0].item; // Fallback in case of edge issues
+};
+
+/**
+ * Calculates the status of a Key Performance Indicator (KPI) relative to a target.
+ * Business Value: Provides immediate strategic feedback, highlighting areas of
+ * strong performance or concern, which is critical for agile decision-making
+ * and resource reallocation to maximize ROI.
+ * @param value - The current value of the KPI.
+ * @param target - The target value for the KPI.
+ * @param higherIsBetter - A boolean indicating if a higher value is better (default is true).
+ * @returns 'good', 'neutral', or 'bad' based on comparison.
+ */
+export const calculateKPI = (value: number, target: number, higherIsBetter: boolean = true): 'good' | 'neutral' | 'bad' => {
+  if (value === target) return 'neutral';
+  if (higherIsBetter) {
+    return value > target ? 'good' : 'bad';
+  } else {
+    return value < target ? 'good' : 'bad';
+  }
+};
+
+/**
+ * Calculates the percentage growth rate between a current and previous value.
+ * Business Value: Fundamental for tracking financial and operational performance
+ * trends, identifying areas of rapid expansion or contraction, and assessing
+ * the effectiveness of strategic initiatives over time.
+ * @param current - The current value.
+ * @param previous - The previous value.
+ * @returns The growth rate as a percentage.
+ */
+export const calculateGrowthRate = (current: number, previous: number): number => {
+  if (previous === 0) return current > 0 ? Infinity : 0;
+  return ((current - previous) / previous) * 100;
+};
+
+/**
+ * Represents a secure, auditable message between agents.
+ * Business Value: Forms the backbone of secure inter-agent communication,
+ * ensuring integrity, authentication, and a verifiable audit trail for all
+ * automated decisions and interactions across the financial infrastructure.
+ */
+export interface AgentMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  type: string; // e.g., 'COMMAND', 'OBSERVATION', 'ALERT'
+  payload: any;
+  timestamp: number;
+  signature: string; // Signed by sender's private key
+  nonce: number; // For replay protection
 }
 
-export type UserRole = 'ADMIN' | 'CRISIS_MANAGER' | 'LEGAL_COUNSEL' | 'PR_SPECIALIST' | 'SUPPORT_MANAGER' | 'EXECUTIVE' | 'INCIDENT_RESPONDER' | 'ANALYST' | 'EDITOR' | 'VIEWER' | 'AI_AGENT';
+/**
+ * Defines the allocation percentages for different departmental budgets.
+ * Business Value: This structure is critical for operational efficiency and strategic focus,
+ * directly impacting cost structures and competitive positioning. Strategic allocation
+ * is key to optimizing spend for maximum return on investment.
+ */
+export interface ResourceAllocation {
+  rd: number; // R&D budget percentage
+  marketing: number; // Marketing budget percentage
+  sales: number; // Sales budget percentage
+  operations: number; // Operations efficiency budget percentage
+  hr: number; // HR & Talent budget percentage
+  customerService: number; // Customer Service budget percentage
+  capitalInvestment: number; // Capital expenditure percentage
+}
 
 /**
- * UserProfile: Interface
- *
- * This interface defines the digital identity of human users within the system, encapsulating
- * their roles, permissions, and cryptographic public keys for secure authentication and authorization.
- *
- * Business value: Serves as the bedrock of access control and accountability, enabling fine-grained
- * permission management crucial for regulatory compliance and safeguarding sensitive financial and
- * operational data. Cryptographic key management ensures non-repudiation and integrity of user actions,
- * building an unimpeachable trust layer for all interactions.
+ * Represents a specific feature of a product line, detailing its development and market impact.
+ * Business Value: Features drive product differentiation, customer satisfaction, and innovation leadership,
+ * directly influencing market share and revenue potential. This models the ROI of product enhancements.
  */
-export interface UserProfile {
+export interface ProductFeature {
   id: string;
   name: string;
-  email: string;
-  role: UserRole;
-  isActive: boolean;
-  lastLogin: Date;
-  department: string;
-  permissions: { [key: string]: boolean }; // e.g., { 'canApproveComms': true, 'canEditCrisis': false }
-  publicKey?: string; // Simulated cryptographic public key for digital identity
+  developmentCost: number;
+  developmentTimeYears: number;
+  marketImpact: ValueRange; // Range for potential market share boost
+  customerSatisfactionBoost: ValueRange;
+  innovationScore: number; // 0-100
+  status: 'planned' | 'developing' | 'launched' | 'obsolete';
+  launchYear?: number;
 }
 
 /**
- * Stakeholder: Interface
- *
- * This interface represents key entities external to the organization who are impacted by or
- * have an interest in crisis events. It allows for detailed segmentation and targeted communication strategies.
- *
- * Business value: Enables precise management of external relationships during high-stress situations,
- * mitigating reputational damage and maintaining investor, customer, and public trust.
- * Strategic communication reduces volatility and protects market valuation.
+ * Defines a product line within a company's portfolio, including its financial performance,
+ * features, and market positioning.
+ * Business Value: Product lines are the primary revenue generators,
+ * and their management directly impacts a company's financial health and market standing.
+ * This object enables granular analysis of product portfolio strategy.
  */
-export interface Stakeholder {
+export interface ProductLine {
   id: string;
   name: string;
-  type: 'CUSTOMER' | 'EMPLOYEE' | 'INVESTOR' | 'MEDIA' | 'REGULATOR' | 'PARTNER' | 'PUBLIC' | 'GOVERNMENT';
-  contactInfo: string; // email, phone, etc.
-  keyMessage?: string; // specific message for this stakeholder group
-  sentimentImpact: number; // -5 (very negative) to 5 (very positive)
-  priority: number; // 1 (highest) to 5 (lowest)
-  communicationChannels: string[]; // e.g., ['email', 'press-release', 'social-media']
+  type: 'AI_Platform' | 'FinTech_App' | 'Data_Analytics' | 'Consulting_Service' | 'Tokenized_Asset_Service';
+  baseCost: number; // Per unit/customer operational cost
+  basePrice: number;
+  marketShare: number; // Market share for this specific product line
+  customerCount: number;
+  revenue: number;
+  profit: number;
+  features: ProductFeature[];
+  innovationLevel: number; // 0-100, impacts adoption
+  qualityScore: number; // 0-100
+  lifecycleStage: 'introduction' | 'growth' | 'maturity' | 'decline';
+  targetMarketSegmentIds: string[];
 }
 
-export type CrisisSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type CrisisStatus = 'IDENTIFIED' | 'ACTIVE' | 'MITIGATING' | 'REVIEW' | 'CLOSED';
-
 /**
- * FinancialRail: Interface
- *
- * Defines a simulated programmable value rail for financial transactions. Each rail
- * offers different performance characteristics and cost structures.
- *
- * Business value: Enables optimal routing of financial settlements based on dynamic
- * business requirements (e.g., speed, cost, security), maximizing operational efficiency
- * and minimizing transaction costs in a multi-rail digital finance ecosystem.
- * This directly impacts profitability and liquidity management.
+ * Describes a distinct market segment, including its size, growth potential,
+ * and sensitivities.
+ * Business Value: Understanding market segments is crucial for targeted strategies,
+ * efficient resource allocation, and maximizing market penetration, enabling
+ * precise identification of high-value customer bases.
  */
-export interface FinancialRail {
+export interface MarketSegment {
   id: string;
   name: string;
-  latencyMs: number;
-  costPerTransaction: number;
-  securityLevel: 'LOW' | 'MEDIUM' | 'HIGH';
-  maxDailyVolume: number; // Simulated capacity
-  status: 'OPERATIONAL' | 'DEGRADED' | 'OFFLINE';
+  totalSize: number; // Total potential customers/revenue in this segment
+  growthRate: ValueRange; // Annual growth rate range
+  sensitivityToPrice: number; // 0-1, higher means more price-sensitive
+  sensitivityToInnovation: number; // 0-1, higher means more innovation-driven
+  currentPlayerPenetration: number; // Player's share of this segment
+  competitorPenetration: { [competitorId: string]: number };
+  customerLoyalty: number; // 0-100
 }
 
 /**
- * FinancialTransaction: Interface
- *
- * Represents a financial movement or impact related to a crisis, integrated with
- * a simulated programmable token rail layer for transparent and auditable operations.
- * Includes details for multi-rail routing and risk assessment.
- *
- * Business value: Provides an auditable trail for all financial movements, enabling
- * precise tracking of costs, compensations, and penalties. This ensures financial
- * transparency, supports regulatory compliance, and allows for rapid reconciliation
- * with tokenized assets, minimizing fraud and improving liquidity management.
- * The integration with programmable rails signifies an advanced, real-time settlement capability.
+ * Represents a competitor's profile, including their strategic approach, market performance,
+ * and recent actions.
+ * Business Value: Competitive intelligence is vital for anticipating market shifts
+ * and formulating effective counter-strategies, safeguarding market position and
+ * identifying opportunities for strategic advantage.
  */
-export interface FinancialTransaction {
+export interface CompetitorProfile {
   id: string;
-  timestamp: Date;
-  type: 'COMPENSATION_PAYOUT' | 'FINE_PAYMENT' | 'LOSS_RECORD' | 'REFUND' | 'RECONCILIATION' | 'TOKEN_MINT' | 'TOKEN_BURN' | 'TRANSFER';
-  amount: number;
-  currency: string; // e.g., 'USD', 'EUR', 'STABLE_COIN_XYZ'
-  status: 'PENDING' | 'SETTLED' | 'FAILED' | 'REVERSED' | 'BLOCKED';
-  recipientId?: string; // Could be a UserProfile ID or a vendor ID, or a mock account ID
-  senderId?: string; // For transfers, from which account/user
-  initiatorId: string; // UserProfile ID or Agent ID
-  transactionHash?: string; // Simulated token rail transaction hash
-  notes?: string;
-  relatedCrisisId: string;
-  railUsed?: string; // ID of the FinancialRail used
-  settlementFee?: number;
-  riskScore?: number; // 0-100, higher is riskier
-  signature?: string; // Simulated cryptographic signature
-}
-
-/**
- * Account: Interface
- *
- * Represents a financial account within the simulated ledger system, holding balances
- * in various currencies. Essential for tracking asset movement and real-time validation.
- *
- * Business value: Provides the core ledger functionality for the programmable token rail,
- * enabling real-time balance validation and atomic settlement. This forms the foundation
- * for efficient and transparent value transfer, crucial for next-generation financial products.
- */
-export interface Account {
-  id: string;
-  ownerId: string; // UserProfile or Agent ID
-  accountType: 'FIAT' | 'TOKEN';
-  balances: { [currency: string]: number };
-  publicKey?: string; // Simulated cryptographic public key
-}
-
-export interface Crisis {
-  id: string;
-  title: string;
-  type: CrisisType;
+  name: string;
   description: string;
-  severity: CrisisSeverity;
-  status: CrisisStatus;
-  identifiedAt: Date;
-  lastUpdate: Date;
-  estimatedResolutionTime?: Date;
-  impactedAreas: string[]; // e.g., ['Customer Data', 'Product Performance', 'Brand Reputation']
-  tags: string[]; // e.g., ['GDPR', 'Supply Chain', 'Financial']
-  leadManagerId: string; // UserProfile ID
-  assignedTeamIds: string[]; // UserProfile IDs
-  generatedCommsPackages: CommsPackage[];
-  relatedIncidents: IncidentLogEntry[];
-  sentimentHistory: SentimentReport[];
-  legalReviews: LegalAnalysisResult[];
-  approvalWorkflow: CommsApprovalEntry[];
-  financialTransactions: FinancialTransaction[]; // New field for financial impacts
-  agentActivityLogs: AgentLogEntry[]; // New field for AI agent interactions
-}
-
-export interface IncidentLogEntry {
-  id: string;
-  timestamp: Date;
-  description: string;
-  reportedByUserId: string;
-  severity: CrisisSeverity;
-  actionTaken: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
-  relatedArtifacts?: string[]; // URLs to documents, screenshots
-}
-
-export type LegalRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-
-export interface LegalAnalysisResult {
-  id: string;
-  timestamp: Date;
-  analyzedByUserId: string;
-  summary: string;
-  keyRisks: string[];
-  recommendedActions: string[];
-  complianceRequirements: string[]; // e.g., ['GDPR Article 33', 'CCPA Section 1798.82']
-  potentialFinesMin?: number;
-  potentialFinesMax?: number;
-  legalRiskLevel: LegalRiskLevel;
-  sensitiveDataInvolved: boolean;
-}
-
-export interface SentimentDataPoint {
-  timestamp: Date;
-  score: number; // -1 (negative) to 1 (positive)
-  source: string; // e.g., 'Twitter', 'News', 'Internal Forums'
-  keywords: string[];
-  volume: number; // number of mentions
-}
-
-export interface SentimentReport {
-  id: string;
-  timestamp: Date;
-  generatedByUserId: string;
-  overallSentiment: number; // aggregated score
-  sentimentTrend: SentimentDataPoint[];
-  keyThemes: string[];
-  topNegativeMentions: string[];
-  topPositiveMentions: string[];
-  recommendedPRActions: string[];
-  sourceBreakdown: { source: string; percentage: number; }[];
-}
-
-export type CommsStatus = 'DRAFT' | 'PENDING_REVIEW' | 'IN_REVIEW' | 'REJECTED' | 'APPROVED' | 'PUBLISHED' | 'ARCHIVED';
-
-export interface CommsApprovalEntry {
-  id: string;
-  commsPackageId: string;
-  version: number;
-  status: CommsStatus;
-  reviewerId: string; // UserProfile ID
-  reviewTimestamp?: Date;
-  comments?: string;
-  requiredRole: UserRole;
-  signature?: string; // Simulated cryptographic signature of approval
-}
-
-export interface CrisisPlaybookEntry {
-  id: string;
-  crisisType: CrisisType;
-  step: number;
-  title: string;
-  description: string;
-  responsibleRoles: UserRole[];
-  estimatedDurationMinutes: number;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
-  completionDate?: Date;
-  notes?: string;
+  marketShare: number;
+  financialStrength: number; // 0-100
+  innovationFocus: number; // 0-100
+  marketingAggression: number; // 0-100
+  strategy: 'innovate' | 'cost_leadership' | 'market_capture' | 'niche_focus' | 'adapt_to_player' | 'disruptive_innovation';
+  productOfferings: { id: string; name: string; type: ProductLine['type'] }[];
+  recentActions: string[];
+  identityId: string; // Link to an AgentIdentity
 }
 
 /**
- * AgentStatus: Type
- *
- * Defines the various operational states an AI agent can be in, reflecting its current activity or health.
- *
- * Business value: Essential for monitoring agent performance and resource allocation,
- * ensuring AI systems are always operational and responsive during a crisis, minimizing downtime
- * and maximizing automated response capabilities.
+ * Defines the player's strategic decisions for a given year.
+ * Business Value: This directive is the core mechanism for guiding the company,
+ * impacting all aspects from R&D to market positioning. It is the player's
+ * primary interface to assert agentic control over the simulation.
  */
-export type AgentStatus = 'ACTIVE' | 'IDLE' | 'BUSY' | 'ERROR' | 'OFFLINE';
+export interface PlayerStrategicDirective {
+  overallFocus: 'innovation' | 'cost_reduction' | 'market_expansion' | 'customer_retention' | 'risk_management' | 'digital_asset_focus';
+  resourceAllocation: ResourceAllocation;
+  newProductDevelopment: {
+    name: string;
+    type: ProductLine['type'];
+    targetMarketSegmentIds: string[];
+    featuresToDevelop: string[]; // IDs of features
+  }[];
+  marketingCampaigns: {
+    name: string;
+    targetSegmentIds: string[];
+    budget: number; // Absolute budget
+    message: string;
+  }[];
+  pricingAdjustments: {
+    productId: string;
+    newPrice: number;
+  }[];
+  hrInitiatives: 'training' | 'hiring' | 'downsizing' | 'none';
+  riskMitigation: string[]; // e.g., ['cybersecurity_investment', 'regulatory_compliance']
+  targetAcquisitions: string[]; // Competitor IDs
+  divestProductLines: string[]; // Product IDs
+  tokenRailOptimization: {
+    preferredRailType: 'fast' | 'batch' | 'internal';
+    maxLatencyTolerance: number; // in simulated years
+    maxFeePercentage: number;
+  } | null;
+}
 
 /**
- * AutonomousAgent: Interface
- *
- * Represents a simulated intelligent agent that autonomously operates within the crisis management system,
- * equipped with specific skills and a cryptographic public key for secure communication and identification.
- *
- * Business value: Enables the orchestration of autonomous workflows for monitoring, anomaly detection,
- * and automated remediation. This dramatically reduces human workload, accelerates response times,
- * and ensures consistent execution of pre-defined protocols, saving millions in operational costs and minimizing errors.
- * Digital identity for agents ensures auditable, non-repudiable actions within the financial ecosystem.
+ * Summarizes the company's financial performance over a period.
+ * Business Value: The income statement is crucial for assessing profitability and operational efficiency,
+ * providing a clear picture of revenue generation and cost management, vital for investor relations.
  */
-export interface AutonomousAgent {
+export interface FinancialStatement {
+  revenue: number;
+  cogs: number; // Cost of Goods Sold
+  grossProfit: number;
+  rdExpenses: number;
+  marketingExpenses: number;
+  salesExpenses: number;
+  operationsExpenses: number;
+  hrExpenses: number;
+  customerServiceExpenses: number;
+  depreciation: number;
+  operatingProfit: number;
+  interestExpenses: number;
+  taxes: number;
+  netProfit: number;
+}
+
+/**
+ * Provides a snapshot of the company's assets, liabilities, and equity at a specific point in time.
+ * Business Value: The balance sheet is fundamental for understanding financial stability and capital structure,
+ * indispensable for strategic asset management and risk assessment.
+ */
+export interface BalanceSheet {
+  cash: number;
+  accountsReceivable: number;
+  inventory: number;
+  fixedAssets: number;
+  digitalAssets: number; // New: Value of tokenized assets
+  totalAssets: number;
+  accountsPayable: number;
+  shortTermDebt: number;
+  longTermDebt: number;
+  totalLiabilities: number;
+  equity: number;
+  totalLiabilitiesAndEquity: number;
+}
+
+/**
+ * Reports the cash generated and used by a company over a period, categorized by operating,
+ * investing, and financing activities.
+ * Business Value: The cash flow statement is vital for assessing
+ * liquidity and solvency, providing insights beyond accrual accounting,
+ * ensuring the company's ability to meet its obligations and fund growth.
+ */
+export interface CashFlowStatement {
+  operatingActivities: number;
+  investingActivities: number;
+  financingActivities: number;
+  netChangeInCash: number;
+  beginningCash: number;
+  endingCash: number;
+}
+
+/**
+ * Represents the current state of a wargame company, including its financials,
+ * product portfolio, and strategic attributes.
+ * Business Value: This comprehensive snapshot enables
+ * granular analysis of performance and strategic impact, acting as the
+ * central data model for all company-level simulations.
+ */
+export interface WargameCompanyState {
   id: string;
   name: string;
-  type: 'MONITORING' | 'REMEDIATION' | 'COMMUNICATION' | 'LEGAL_ADVISOR' | 'FINANCIAL_RECONCILIATOR' | 'GOVERNANCE_AUDITOR';
-  status: AgentStatus;
-  skills: string[]; // e.g., 'sentiment-analysis', 'data-breach-response', 'legal-compliance-check'
-  lastActivity: Date;
-  assignedCrisisId?: string;
-  configuration: { [key: string]: any }; // e.g., monitoring thresholds, communication templates
-  isActive: boolean;
-  publicKey?: string; // Simulated cryptographic public key for digital identity
+  yearEstablished: number;
+  cash: number;
+  tokenBalances: { [tokenId: string]: number }; // New: Balances of various tokens
+  marketShare: number;
+  revenue: number;
+  profit: number;
+  employeeCount: number;
+  rdBudget: number;
+  marketingBudget: number;
+  salesBudget: number;
+  operationsBudget: number;
+  hrBudget: number;
+  customerServiceBudget: number;
+  capitalInvestmentBudget: number;
+  brandReputation: number; // 0-100
+  customerSatisfaction: number; // 0-100
+  productLines: ProductLine[];
+  strategicFocus: PlayerStrategicDirective['overallFocus'];
+  financials: {
+    incomeStatement: FinancialStatement;
+    balanceSheet: BalanceSheet;
+    cashFlowStatement: CashFlowStatement;
+  };
+  identityId: string; // Link to an AgentIdentity
 }
 
 /**
- * AgentLogEntry: Interface
- *
- * Records actions taken by an AI agent, providing an auditable trail of AI decisions and operations.
- * Each entry is linked to a crisis and provides operational transparency.
- *
- * Business value: Crucial for governance, compliance audits, and debugging.
- * It ensures transparency in AI operations, builds trust, and allows for
- * continuous improvement of agent behavior, validating the millions invested
- * in AI automation. It forms a key part of the platform's overall observability.
+ * Contains a summary of events and outcomes at the end of a simulation year.
+ * Business Value: Year-end reports are crucial for performance review, identifying key trends,
+ * and informing future strategic adjustments. They provide a high-level summary for
+ * executive analysis and strategic recalibration.
  */
-export interface AgentLogEntry {
-  id: string;
-  timestamp: Date;
-  agentId: string;
-  crisisId: string;
-  action: string; // e.g., 'Initiated sentiment analysis', 'Drafted press release', 'Flagged suspicious transaction'
-  details: string;
-  status: 'SUCCESS' | 'FAILURE' | 'IN_PROGRESS';
-  relatedArtifactId?: string; // e.g., CommsPackage ID, IncidentLogEntry ID
+export interface YearEndReport {
+  year: number;
+  companyState: WargameCompanyState;
+  competitorActions: string[];
+  marketNewsEvents: string[];
+  playerDecisionsSummary: PlayerStrategicDirective;
+  kpis: {
+    marketShareGrowth: number;
+    revenueGrowth: number;
+    profitMargin: number;
+    customerAcquisitionCost: number; // hypothetical
+    customerRetentionRate: number; // hypothetical
+    innovationIndex: number; // hypothetical
+    employeeMorale: number; // hypothetical
+    transactionEfficiencyScore?: number; // New KPI for payment infra
+    digitalAssetExposure?: number; // New KPI for digital asset focus
+  };
+  keyInsights: string[];
+  recommendations: string[];
 }
 
 /**
- * AuditLogEntry: Interface
- *
- * Provides a tamper-evident record of all significant system events and user/agent actions.
- * For true tamper-evidence, this would involve cryptographic chaining, symbolized here by `signature` and implicit chaining.
- *
- * Business value: Establishes a foundational layer of trust and accountability across the entire
- * system. This audit trail is indispensable for regulatory compliance (e.g., SOX, GDPR),
- * internal governance, forensic investigations, and dispute resolution, protecting the
- * enterprise from significant legal and financial repercussions. It ensures every action is traceable.
+ * Captures the entire state of the wargame at any given point.
+ * Business Value: This global state object orchestrates all simulation elements,
+ * providing the context for decision-making and outcome analysis. It is the
+ * single source of truth for the entire simulated financial ecosystem.
+ */
+export interface GameState {
+  currentYear: number;
+  playerCompany: WargameCompanyState;
+  competitors: CompetitorProfile[];
+  marketSegments: MarketSegment[];
+  historicalReports: YearEndReport[];
+  globalMarketSentiment: number; // 0-100
+  auditLog: AuditLogEntry[]; // Centralized audit log for all agentic actions
+  seededIdentities: { [id: string]: AgentIdentity }; // Store all agent identities
+  agentMessages: AgentMessage[]; // Internal message bus for agents
+}
+
+/**
+ * Represents a digital identity for an agent (player or competitor).
+ * Business Value: Essential for attributing actions and decisions, and for simulated secure
+ * transactions within the token rails layer. This is the foundation of the Digital Identity and Trust Layer,
+ * ensuring strong authentication and authorization.
+ */
+export interface AgentIdentity {
+  id: string;
+  name: string;
+  role: 'Player' | 'Competitor' | 'System' | 'Auditor' | 'Regulator';
+  publicKey: string; // Simulated public key (e.g., a hash string)
+  signingKey: string; // Simulated private key (e.g., another hash string). NEVER STORE IN REAL SYSTEM.
+  createdAt: number; // Timestamp
+}
+
+/**
+ * Records an auditable action taken by an agent within the simulation.
+ * Business Value: This is crucial for governance, transparency, and understanding the causal
+ * chain of events, simulating tamper-evident properties through hashing and chaining.
+ * It ensures full auditability, a critical requirement for enterprise financial systems.
  */
 export interface AuditLogEntry {
   id: string;
-  timestamp: Date;
-  actorId: string; // UserProfile ID or AutonomousAgent ID
-  actorType: 'USER' | 'AGENT';
-  actionType: 'CREATE' | 'UPDATE' | 'DELETE' | 'VIEW' | 'APPROVE' | 'REJECT' | 'INITIATE' | 'SETTLE' | 'CONFIG_UPDATE' | 'TRIGGER_ACTION' | 'AUTHENTICATE';
-  entityType: 'CRISIS' | 'COMMS_PACKAGE' | 'INCIDENT_LOG' | 'LEGAL_REVIEW' | 'SENTIMENT_REPORT' | 'USER' | 'SETTING' | 'FINANCIAL_TRANSACTION' | 'AGENT_CONFIG' | 'ACCOUNT' | 'FINANCIAL_RAIL';
-  entityId: string;
-  description: string;
-  previousState?: any; // Snapshot of relevant fields before change
-  newState?: any; // Snapshot of relevant fields after change
-  signature?: string; // Simulated cryptographic signature of the action
+  timestamp: number;
+  agentId: string; // ID of the agent (player, competitor, or system)
+  agentName: string;
+  action: string; // e.g., 'SetStrategicFocus', 'LaunchProduct', 'ProcessPayment'
+  details: any; // Structured details of the action
+  signature: string; // Simulated cryptographic signature of the action details
+  previousEntryHash?: string; // For cryptographic chaining of the audit log
 }
 
 /**
- * CrisisSettings: Interface
- *
- * Defines system-wide configuration parameters for the crisis management platform,
- * including automation rules, default workflows, and AI agent enablement.
- *
- * Business value: Empowers administrators to tailor the system to organizational needs,
- * ensuring operational efficiency, consistency, and scalability, reducing manual overhead
- * and accelerating response automation. This configurable framework ensures the system
- * adapts to evolving business and regulatory landscapes, protecting initial investment and delivering long-term value.
+ * Defines a simulated financial transaction within the game's payment infrastructure.
+ * Business Value: This interface enables conceptual modeling of token rail interactions, including
+ * various transaction types and simulated costs. It's a key component of the Real-Time Settlement
+ * and Payments Engine, allowing for analysis of transactional efficiency.
  */
-export interface CrisisSettings {
-  autoGenerateComms: boolean;
-  defaultApprovalWorkflow: UserRole[];
-  notificationChannels: string[]; // e.g., ['email', 'slack', 'sms']
-  sentimentMonitorIntervalMinutes: number;
-  defaultTemplates: {
-    [key in CrisisType]?: CommsPackage;
-  };
-  enabledAgents: {
-    [agentType in AutonomousAgent['type']]?: boolean;
-  };
-  financialRailsConfig: {
-    defaultRail: string;
-    riskThreshold: number; // 0-100, transactions above this are flagged
-  };
+export interface PaymentTransaction {
+  id: string;
+  idempotencyKey: string; // Ensures unique transaction processing
+  senderId: string;
+  receiverId: string;
+  amount: number;
+  currency: string;
+  tokenId?: string; // If transacting in tokens
+  type: 'budget_allocation' | 'product_sale' | 'acquisition' | 'divestment' | 'payroll' | 'marketing_spend' | 'token_mint' | 'token_burn' | 'token_transfer';
+  railUsed: 'rail_fast' | 'rail_batch' | 'internal_ledger' | 'programmable_token_rail';
+  processingFee: number;
+  settlementTime: number; // in simulated years/turns
+  riskScore: number; // 0-100, higher is riskier
+  status: 'pending' | 'settled' | 'failed' | 'flagged';
+  timestamp: number;
+  signature: string; // Signature from the sender, for authentication
 }
 
 /**
- * generateMockId: Function
- *
- * Generates a cryptographically-sounding, unique mock ID using a UUID-like format.
- * This simulates robust, globally unique identifiers for all system entities.
- *
- * Business value: Ensures data integrity and uniqueness across distributed systems,
- * essential for reliable tracking of transactions, events, and entities. This forms
- * a fundamental building block for auditable and traceable financial infrastructure.
+ * Represents a programmable token definition.
+ * Business Value: Allows for the simulation of various digital assets with distinct properties,
+ * enabling strategic experimentation with tokenized value propositions and their market impact.
  */
-export const generateMockId = (prefix: string = 'mock_'): string => {
-  const uuidPart = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-  return `${prefix}${uuidPart}`;
-};
-
-/**
- * generateMockCryptoKey: Function
- *
- * Generates a simulated cryptographic public key, representing the digital identity
- * credential for users and agents.
- *
- * Business value: Essential for implementing digital identity and trust, enabling
- * secure authentication, signed instructions, and non-repudiation across the platform.
- * This capability forms the backbone for compliant and trustworthy financial operations.
- */
-export const generateMockCryptoKey = (): string => {
-  const hex = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-  return `0x${hex}`;
-};
-
-/**
- * simulateSignature: Function
- *
- * Simulates a cryptographic signature for a given message and actor ID.
- * In a real system, this would involve actual private key operations.
- *
- * Business value: Enables the simulation of cryptographically signed instructions,
- * a cornerstone of security and non-repudiation in digital finance. This ensures
- * that every critical action is verifiable and attributable, essential for auditability
- * and regulatory compliance.
- */
-export const simulateSignature = (actorId: string, message: string): string => {
-  const hash = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
-  return `SIG_${actorId.substring(0, 5)}_${message.length}_${hash}`;
-};
-
-export const mockUsers: UserProfile[] = [
-  { id: 'user_admin', name: 'Alice Admin', email: 'alice@example.com', role: 'ADMIN', isActive: true, lastLogin: new Date(), department: 'IT', permissions: { canManageUsers: true, canEditAll: true, canApproveComms: true, canReviewLegal: true, canReviewComms: true, canGenerateComms: true, canEditCrisis: true, canAddIncidentLogs: true, canViewReports: true, canInitiateReview: true, canManageAgents: true, canInitiatePayments: true, canViewAuditLogs: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_cm', name: 'Bob CrisisManager', email: 'bob@example.com', role: 'CRISIS_MANAGER', isActive: true, lastLogin: new Date(), department: 'Operations', permissions: { canEditCrisis: true, canGenerateComms: true, canInitiateReview: true, canViewReports: true, canViewAll: true, canAddIncidentLogs: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_legal', name: 'Carol Legal', email: 'carol@example.com', role: 'LEGAL_COUNSEL', isActive: true, lastLogin: new Date(), department: 'Legal', permissions: { canReviewLegal: true, canApproveComms: true, canViewAll: true, canViewAuditLogs: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_pr', name: 'David PR', email: 'david@example.com', role: 'PR_SPECIALIST', isActive: true, lastLogin: new Date(), department: 'Marketing', permissions: { canReviewComms: true, canEditComms: true, canGenerateComms: true, canViewReports: true, canViewAll: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_exec', name: 'Eve Executive', email: 'eve@example.com', role: 'EXECUTIVE', isActive: true, lastLogin: new Date(), department: 'Executive', permissions: { canApproveComms: true, canViewAll: true, canViewReports: true, canViewAuditLogs: true, canInitiatePayments: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_ir', name: 'Frank IR', email: 'frank@example.com', role: 'INCIDENT_RESPONDER', isActive: true, lastLogin: new Date(), department: 'IT Security', permissions: { canAddIncidentLogs: true, canViewAll: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_analyst', name: 'Grace Analyst', email: 'grace@example.com', role: 'ANALYST', isActive: true, lastLogin: new Date(), department: 'Data', permissions: { canViewReports: true, canViewAll: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_editor', name: 'Henry Editor', email: 'henry@example.com', role: 'EDITOR', isActive: true, lastLogin: new Date(), department: 'Communications', permissions: { canEditComms: true, canGenerateComms: true, canViewAll: true }, publicKey: generateMockCryptoKey() },
-  { id: 'user_viewer', name: 'Ivy Viewer', email: 'ivy@example.com', role: 'VIEWER', isActive: true, lastLogin: new Date(), department: 'General', permissions: { canViewAll: true, canEditCrisis: false }, publicKey: generateMockCryptoKey() },
-];
-
-export const mockAgents: AutonomousAgent[] = [
-  { id: 'agent_sentinel', name: 'Sentinel AI', type: 'MONITORING', status: 'ACTIVE', skills: ['sentiment-analysis', 'anomaly-detection'], lastActivity: new Date(), isActive: true, configuration: { threshold: 0.1, sources: ['twitter', 'news'], scanIntervalMs: 30000 }, publicKey: generateMockCryptoKey() },
-  { id: 'agent_comms_gen', name: 'CommsGen AI', type: 'COMMUNICATION', status: 'IDLE', skills: ['draft-press-release', 'generate-faq', 'social-media-drafting'], lastActivity: new Date(), isActive: true, configuration: { autoDraft: true, reviewRequired: true }, publicKey: generateMockCryptoKey() },
-  { id: 'agent_legal_check', name: 'LegalCheck AI', type: 'LEGAL_ADVISOR', status: 'ACTIVE', skills: ['compliance-scan', 'risk-assessment'], lastActivity: new Date(), isActive: true, configuration: { autoScan: true, regulations: ['GDPR', 'CCPA'], scanDelayMs: 20000 }, publicKey: generateMockCryptoKey() },
-  { id: 'agent_fin_recon', name: 'FinRecon AI', type: 'FINANCIAL_RECONCILIATOR', status: 'IDLE', skills: ['payout-processing', 'ledger-audit', 'risk-scoring'], lastActivity: new Date(), isActive: false, configuration: { autoApprovePayouts: false, maxPayout: 10000, riskTolerance: 50 }, publicKey: generateMockCryptoKey() },
-  { id: 'agent_governance', name: 'GovGuard AI', type: 'GOVERNANCE_AUDITOR', status: 'ACTIVE', skills: ['policy-enforcement', 'audit-validation'], lastActivity: new Date(), isActive: true, configuration: { auditFrequencyHours: 1 }, publicKey: generateMockCryptoKey() },
-];
-
-export const mockFinancialRails: FinancialRail[] = [
-  { id: 'rail_fast', name: 'FastSettlementNet', latencyMs: 50, costPerTransaction: 0.05, securityLevel: 'MEDIUM', maxDailyVolume: 10000000, status: 'OPERATIONAL' },
-  { id: 'rail_secure', name: 'SecureValueChain', latencyMs: 500, costPerTransaction: 0.25, securityLevel: 'HIGH', maxDailyVolume: 5000000, status: 'OPERATIONAL' },
-  { id: 'rail_lowcost', name: 'EcoPayerLink', latencyMs: 200, costPerTransaction: 0.01, securityLevel: 'LOW', maxDailyVolume: 20000000, status: 'OPERATIONAL' },
-];
-
-export const getMockUser = (id: string): UserProfile | undefined => mockUsers.find(u => u.id === id);
-export const getMockAgent = (id: string): AutonomousAgent | undefined => mockAgents.find(a => a.id === id);
-export const getMockRail = (id: string): FinancialRail | undefined => mockFinancialRails.find(r => r.id === id);
-
-export const mockStakeholders: Stakeholder[] = [
-  { id: generateMockId('sh'), name: 'Key Customers', type: 'CUSTOMER', contactInfo: 'customer.support@example.com', sentimentImpact: -4, priority: 1, communicationChannels: ['email', 'web-statement'] },
-  { id: generateMockId('sh'), name: 'All Employees', type: 'EMPLOYEE', contactInfo: 'internal@example.com', sentimentImpact: -3, priority: 1, communicationChannels: ['internal-memo', 'slack'] },
-  { id: generateMockId('sh'), name: 'Shareholders', type: 'INVESTOR', contactInfo: 'ir@example.com', sentimentImpact: -5, priority: 1, communicationChannels: ['investor-relations-update'] },
-  { id: generateMockId('sh'), name: 'Tech Press', type: 'MEDIA', contactInfo: 'tech@press.com', sentimentImpact: -4, priority: 2, communicationChannels: ['press-release', 'media-briefing'] },
-  { id: generateMockId('sh'), name: 'GDPR Authority', type: 'REGULATOR', contactInfo: 'gdpr@gov.eu', sentimentImpact: -5, priority: 1, communicationChannels: ['regulatory-filing'] },
-];
-
-export const generateMockIncidentLogEntry = (crisisId: string, reporterId: string): IncidentLogEntry => ({
-  id: generateMockId('inc'),
-  timestamp: new Date(Date.now() - Math.random() * 86400000 * 7), // within last 7 days
-  description: `Automated alert: Unusual activity detected on server ${Math.floor(Math.random() * 100)}.`,
-  reportedByUserId: reporterId,
-  severity: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)] as CrisisSeverity,
-  actionTaken: `Alert acknowledged by Frank IR. Initial investigation started. System isolated.`,
-  status: ['OPEN', 'IN_PROGRESS', 'RESOLVED'][Math.floor(Math.random() * 3)] as 'OPEN' | 'IN_PROGRESS' | 'RESOLVED',
-  relatedArtifacts: Math.random() > 0.5 ? [`https://example.com/log_${generateMockId()}.txt`] : undefined,
-});
-
-export const generateMockLegalAnalysis = (crisisId: string, analystId: string): LegalAnalysisResult => ({
-  id: generateMockId('legal'),
-  timestamp: new Date(),
-  analyzedByUserId: analystId,
-  summary: 'Preliminary legal assessment indicates potential for regulatory fines and reputational damage.',
-  keyRisks: ['Data privacy violations', 'Breach of contract', 'Shareholder lawsuits', 'Regulatory non-compliance'],
-  recommendedActions: ['Engage external counsel', 'Notify affected parties within 72 hours', 'Preserve all relevant data'],
-  complianceRequirements: ['GDPR Article 33', 'CCPA Section 1798.82'],
-  potentialFinesMin: Math.floor(Math.random() * 100000) * 100,
-  potentialFinesMax: Math.floor(Math.random() * 5000000) * 100,
-  legalRiskLevel: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)] as LegalRiskLevel,
-  sensitiveDataInvolved: Math.random() > 0.3,
-});
-
-export const generateMockSentimentReport = (crisisId: string, generatorId: string): SentimentReport => {
-  const now = new Date();
-  const dataPoints: SentimentDataPoint[] = [];
-  for (let i = 0; i < 24; i++) {
-    dataPoints.push({
-      timestamp: new Date(now.getTime() - i * 3600 * 1000),
-      score: Math.random() * 2 - 1, // -1 to 1
-      source: ['Twitter', 'News', 'Forums'][Math.floor(Math.random() * 3)],
-      keywords: ['data breach', 'company X', 'security', 'hack'][Math.floor(Math.random() * 4)].split(' '),
-      volume: Math.floor(Math.random() * 1000),
-    });
-  }
-
-  const overallSentiment = dataPoints.reduce((sum, dp) => sum + dp.score, 0) / dataPoints.length;
-
-  return {
-    id: generateMockId('sent'),
-    timestamp: now,
-    generatedByUserId: generatorId,
-    overallSentiment,
-    sentimentTrend: dataPoints.reverse(),
-    keyThemes: ['data security', 'customer trust', 'system vulnerability'],
-    topNegativeMentions: ['"Unacceptable data breach!"', '"Losing trust in company X."', '"Why no immediate response?"'],
-    topPositiveMentions: ['"Appreciate the transparency."', '"Hope they fix it soon."', '"Good to see a quick update."'],
-    recommendedPRActions: ['Issue detailed FAQ', 'Monitor social media for keywords', 'Engage influencers for positive messaging'],
-    sourceBreakdown: [
-      { source: 'Twitter', percentage: Math.random() * 40 + 20 }, // 20-60%
-      { source: 'News', percentage: Math.random() * 20 + 10 },    // 10-30%
-      { source: 'Forums', percentage: Math.random() * 10 + 5 },   // 5-15%
-    ].map(s => ({ ...s, percentage: parseFloat(s.percentage.toFixed(2)) })),
+export interface ProgrammableToken {
+  id: string;
+  name: string;
+  symbol: string;
+  supply: number;
+  maxSupply: number | null;
+  issuerId: string; // AgentIdentity ID
+  properties: {
+    transferable: boolean;
+    divisible: boolean;
+    fungible: boolean;
+    programmableRulesId?: string; // Link to a rules engine policy
   };
-};
-
-export const generateMockCommsPackage = (type: CrisisType, facts: string): CommsPackage => {
-  const commsId = generateMockId('comms-pkg');
-  const comms: CommsPackage = {
-    id: commsId,
-    pressRelease: `FOR IMMEDIATE RELEASE: [Company] Addresses ${type.replace(/_/g, ' ')} Incident. Key facts: ${facts}. Acknowledging responsibility and outlining immediate steps to rectify the situation and support affected parties. This proactive communication safeguards brand integrity and rebuilds trust.`,
-    internalMemo: `Team, This morning we identified a ${type.replace(/_/g, ' ')} incident. Here is what you need to know and our immediate next steps to ensure business continuity and protect our stakeholders. Confidential for internal use. Key facts: ${facts}.`,
-    twitterThread: [
-      `1/ We recently identified a ${type.replace(/_/g, ' ')} incident. We are taking immediate action to address it and will provide further updates swiftly. #Transparency #Commitment`,
-      `2/ Our investigation is ongoing, and we are working with leading experts to secure our systems and data. Customer trust is our highest priority.`,
-      `3/ We understand the concern and will communicate directly with any affected parties. For more information, please visit our official statement. [Link]`,
-    ],
-    supportScript: `Thank you for calling. I understand you have questions about the recent ${type.replace(/_/g, ' ')} notification. I can confirm we are actively investigating and will provide detailed information directly to affected customers. Your patience is appreciated. Key facts: ${facts}.`,
-    faqDocument: `FAQ for ${type.replace(/_/g, ' ')}:\nQ: What happened?\nA: [Company] identified a ${type.replace(/_/g, ' ')} on [Date]. We are working to understand the full impact and will update this document regularly.\nQ: Am I affected?\nA: We are directly notifying all potentially affected individuals.`,
-    webStatement: `Official Website Statement: We deeply regret to inform you of a recent ${type.replace(/_/g, ' ')} incident. Our dedicated teams are working around the clock to resolve this, uphold our commitment to security, and restore full confidence.`,
-    ceoStatement: `A personal message from our CEO regarding the ${type.replace(/_/g, ' ')}: "We take full responsibility for this incident. Our absolute priority is to support our customers and reinforce the security of our platform. We are committed to transparency and will emerge stronger from this challenge."`,
-  };
-  if (Math.random() > 0.7) {
-    comms.socialMediaGraphics = [`https://example.com/graphic_${generateMockId()}.png`, `https://example.com/graphic_${generateMockId()}.jpg`];
-  }
-  if (Math.random() > 0.8) {
-    comms.videoScript = `(CEO on screen, somber tone) Hello, I'm [CEO Name], and I want to personally address the recent ${type.replace(/_/g, ' ')}. We are fully engaged in resolving this...`;
-  }
-  return comms;
-};
-
-/**
- * calculateRiskScore: Function
- *
- * Simulates a dynamic risk scoring mechanism for financial transactions based on amount and type.
- * This heuristic function provides a basic level of predictive routing logic.
- *
- * Business value: Enables real-time risk assessment for financial transactions, allowing the system
- * to flag or block high-risk transfers, preventing fraud and financial losses. This protective
- * capability enhances the integrity of the programmable value rails and safeguards billions in assets.
- */
-export const calculateRiskScore = (amount: number, type: FinancialTransaction['type']): number => {
-  let score = 0;
-  if (amount > 50000) score += 30;
-  if (amount > 250000) score += 40;
-  if (type === 'COMPENSATION_PAYOUT' || type === 'REFUND') score += 10;
-  if (type === 'FINE_PAYMENT') score += 5;
-  if (Math.random() < 0.1) score += Math.floor(Math.random() * 20); // Random spikes
-  return Math.min(score, 100);
-};
-
-export const generateMockFinancialTransaction = (crisisId: string, initiatorId: string, type: FinancialTransaction['type'] = 'COMPENSATION_PAYOUT', senderId?: string, recipientId?: string): FinancialTransaction => {
-  const amount = Math.floor(Math.random() * 100000) + 1000;
-  const riskScore = calculateRiskScore(amount, type);
-  const railUsed = mockFinancialRails[Math.floor(Math.random() * mockFinancialRails.length)].id;
-  const settlementFee = getMockRail(railUsed)?.costPerTransaction || 0.05;
-
-  return {
-    id: generateMockId('ft'),
-    timestamp: new Date(),
-    type,
-    amount,
-    currency: 'USD',
-    status: riskScore > 70 ? 'BLOCKED' : (Math.random() > 0.8 ? 'FAILED' : 'SETTLED'),
-    recipientId: recipientId || generateMockId('acc_'),
-    senderId: senderId || generateMockId('acc_'),
-    initiatorId: initiatorId,
-    transactionHash: Math.random() > 0.2 ? `tx_${generateMockId('hash')}` : undefined,
-    notes: `Simulated ${type.replace(/_/g, ' ').toLowerCase()} for crisis management.`,
-    relatedCrisisId: crisisId,
-    railUsed,
-    settlementFee,
-    riskScore,
-    signature: simulateSignature(initiatorId, `Transaction ${type} ${amount} ${crisisId}`)
-  };
-};
-
-export const generateMockAgentLogEntry = (crisisId: string, agent: AutonomousAgent, action: string, status: AgentLogEntry['status'] = 'SUCCESS', details?: string, relatedArtifactId?: string): AgentLogEntry => ({
-  id: generateMockId('agl'),
-  timestamp: new Date(),
-  agentId: agent.id,
-  crisisId: crisisId,
-  action: action,
-  details: details || `Agent ${agent.name} performed action: ${action}`,
-  status: status,
-  relatedArtifactId: relatedArtifactId || (Math.random() > 0.7 ? generateMockId() : undefined),
-});
-
-export const generateMockAuditLogEntry = (actorId: string, actorType: 'USER' | 'AGENT', actionType: AuditLogEntry['actionType'], entityType: AuditLogEntry['entityType'], entityId: string, description: string): AuditLogEntry => ({
-  id: generateMockId('audit'),
-  timestamp: new Date(),
-  actorId,
-  actorType,
-  actionType,
-  entityType,
-  entityId,
-  description,
-  signature: simulateSignature(actorId, `${actionType}-${entityType}-${entityId}-${description}`)
-});
-
-export const generateMockCrisis = (id: string, type: CrisisType, facts: string, leadManagerId: string): Crisis => {
-  const now = new Date();
-  const incidentLogs = Array.from({ length: Math.floor(Math.random() * 3) + 1 }, () => generateMockIncidentLogEntry(id, mockUsers[0].id));
-  const sentimentHistory = Array.from({ length: Math.floor(Math.random() * 2) + 1 }, () => generateMockSentimentReport(id, mockAgents[0].id)); // Agent generates sentiment
-  const legalReviews = Math.random() > 0.5 ? [generateMockLegalAnalysis(id, mockAgents[2].id)] : []; // Agent generates legal review
-  const commsPackage = generateMockCommsPackage(type, facts);
-  const financialTransactions = Math.random() > 0.6 ? [generateMockFinancialTransaction(id, mockUsers[4].id, 'COMPENSATION_PAYOUT', generateMockId('acc'), generateMockId('acc'))] : [];
-  const agentActivityLogs = [
-    generateMockAgentLogEntry(id, mockAgents[0], 'Initiated real-time sentiment analysis', 'SUCCESS', undefined, generateMockId('sent')),
-    generateMockAgentLogEntry(id, mockAgents[2], 'Performed initial legal compliance scan', 'SUCCESS', undefined, generateMockId('legal')),
-  ];
-  const approvalWorkflow: CommsApprovalEntry[] = [
-    { id: generateMockId('appr'), commsPackageId: commsPackage.id!, version: 1, status: 'DRAFT', requiredRole: 'CRISIS_MANAGER', reviewerId: '' },
-    { id: generateMockId('appr'), commsPackageId: commsPackage.id!, version: 1, status: 'PENDING_REVIEW', requiredRole: 'PR_SPECIALIST', reviewerId: mockUsers[3].id, reviewTimestamp: new Date(), comments: 'Looks good for initial draft.' },
-    { id: generateMockId('appr'), commsPackageId: commsPackage.id!, version: 1, status: 'PENDING_REVIEW', requiredRole: 'LEGAL_COUNSEL', reviewerId: mockUsers[2].id },
-    { id: generateMockId('appr'), commsPackageId: commsPackage.id!, version: 1, status: 'PENDING_REVIEW', requiredRole: 'EXECUTIVE', reviewerId: mockUsers[4].id },
-  ];
-
-  return {
-    id,
-    title: `Crisis: ${type.replace(/_/g, ' ')}`,
-    type,
-    description: `Initial facts: ${facts}. A major incident has occurred impacting company operations. Leveraging AI for rapid response.`,
-    severity: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)] as CrisisSeverity,
-    status: 'ACTIVE',
-    identifiedAt: now,
-    lastUpdate: now,
-    impactedAreas: ['Customer Trust', 'Brand Reputation', 'Operations', 'Financial Stability'],
-    tags: ['Urgent', 'Public Facing', 'AI-Managed'],
-    leadManagerId,
-    assignedTeamIds: ['user_cm', 'user_legal', 'user_pr', 'user_ir'],
-    generatedCommsPackages: [commsPackage],
-    relatedIncidents: incidentLogs,
-    sentimentHistory,
-    legalReviews,
-    approvalWorkflow,
-    financialTransactions,
-    agentActivityLogs,
-  };
-};
-
-export const mockCrisisSettings: CrisisSettings = {
-  autoGenerateComms: true,
-  defaultApprovalWorkflow: ['CRISIS_MANAGER', 'PR_SPECIALIST', 'LEGAL_COUNSEL', 'EXECUTIVE'],
-  notificationChannels: ['email', 'slack'],
-  sentimentMonitorIntervalMinutes: 30,
-  defaultTemplates: {
-    DATA_BREACH: {
-      pressRelease: "DEFAULT DATA BREACH PRESS RELEASE: [Company] acknowledges a security incident affecting [Number] customers, acting swiftly to mitigate impact and reinforce security protocols. This ensures regulatory compliance and customer trust.",
-      internalMemo: "DEFAULT DATA BREACH INTERNAL MEMO: Team, we're facing a data breach. Follow protocol. AI agents are assisting with impact assessment and communication drafting to expedite response.",
-      twitterThread: ["1/ Data breach detected. Immediate action initiated.", "2/ Investigating. Prioritizing data security.", "3/ Updates to follow."],
-      supportScript: "DEFAULT DATA BREACH SUPPORT SCRIPT: I understand your concern about the data breach. Our teams are fully engaged. Please refer to our official statement for latest information.",
-    }
-  },
-  enabledAgents: {
-    MONITORING: true,
-    COMMUNICATION: true,
-    LEGAL_ADVISOR: true,
-    FINANCIAL_RECONCILIATOR: true, // Enable by default
-    GOVERNANCE_AUDITOR: true,
-  },
-  financialRailsConfig: {
-    defaultRail: 'rail_fast',
-    riskThreshold: 60, // Transactions with risk score > 60 are flagged/blocked
-  }
-};
-
-export const mockAccounts: Account[] = [
-  { id: 'account_company_main', ownerId: 'user_admin', accountType: 'FIAT', balances: { 'USD': 10000000, 'EUR': 500000 }, publicKey: generateMockCryptoKey() },
-  { id: 'account_customer_comp', ownerId: 'user_exec', accountType: 'FIAT', balances: { 'USD': 500000, 'STABLE_COIN_XYZ': 100000 }, publicKey: generateMockCryptoKey() },
-  { id: 'account_vendor_a', ownerId: generateMockId('vendor'), accountType: 'FIAT', balances: { 'USD': 100000 }, publicKey: generateMockCryptoKey() },
-  { id: 'account_agent_ops', ownerId: 'agent_fin_recon', accountType: 'TOKEN', balances: { 'STABLE_COIN_XYZ': 50000 }, publicKey: generateMockCryptoKey() },
-];
-
-/**
- * CrisisStatusBadge: React.FC
- *
- * This UI utility component provides consistent, visually distinctive indicators for crisis statuses.
- *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
- * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
- */
-export const CrisisStatusBadge: React.FC<{ status: CrisisStatus }> = ({ status }) => {
-  let colorClass = '';
-  switch (status) {
-    case 'IDENTIFIED': colorClass = 'bg-blue-600'; break;
-    case 'ACTIVE': colorClass = 'bg-red-600 animate-pulse'; break;
-    case 'MITIGATING': colorClass = 'bg-yellow-600'; break;
-    case 'REVIEW': colorClass = 'bg-purple-600'; break;
-    case 'CLOSED': colorClass = 'bg-green-600'; break;
-    default: colorClass = 'bg-gray-500';
-  }
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{status.replace(/_/g, ' ')}</span>;
-};
-
-/**
- * CrisisSeverityBadge: React.FC
- *
- * This UI utility component provides consistent, visually distinctive indicators for crisis severity levels.
- *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
- * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
- */
-export const CrisisSeverityBadge: React.FC<{ severity: CrisisSeverity }> = ({ severity }) => {
-  let colorClass = '';
-  switch (severity) {
-    case 'LOW': colorClass = 'bg-green-500'; break;
-    case 'MEDIUM': colorClass = 'bg-yellow-500'; break;
-    case 'HIGH': colorClass = 'bg-orange-500'; break;
-    case 'CRITICAL': colorClass = 'bg-red-700'; break;
-    default: colorClass = 'bg-gray-500';
-  }
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{severity}</span>;
-};
-
-/**
- * UserAvatar: React.FC
- *
- * This UI utility component generates a distinct user avatar, typically displaying initials,
- * for both human users and AI agents.
- *
- * Business value: Enhances user experience by providing quick visual identification of users
- * and agents, fostering collaboration and accountability within the crisis response team.
- * Clear visual representation improves operational clarity.
- */
-export const UserAvatar: React.FC<{ user: UserProfile | AutonomousAgent, size?: number }> = ({ user, size = 32 }) => {
-  const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-  const bgColor = useMemo(() => {
-    const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-teal-500', 'bg-indigo-500'];
-    const hash = Array.from(user.id).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
-  }, [user.id]);
-
-  return (
-    <div
-      className={`rounded-full flex items-center justify-center text-white font-bold ${bgColor}`}
-      style={{ width: size, height: size, fontSize: size / 2.5 }}
-      title={user.name}
-    >
-      {initials}
-    </div>
-  );
-};
-
-/**
- * CommsStatusBadge: React.FC
- *
- * This UI utility component provides consistent, visually distinctive indicators for communication package statuses.
- *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
- * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
- */
-export const CommsStatusBadge: React.FC<{ status: CommsStatus }> = ({ status }) => {
-  let colorClass = '';
-  switch (status) {
-    case 'DRAFT': colorClass = 'bg-gray-500'; break;
-    case 'PENDING_REVIEW': colorClass = 'bg-blue-500'; break;
-    case 'IN_REVIEW': colorClass = 'bg-yellow-500'; break;
-    case 'REJECTED': colorClass = 'bg-red-600'; break;
-    case 'APPROVED': colorClass = 'bg-green-600'; break;
-    case 'PUBLISHED': colorClass = 'bg-purple-600'; break;
-    case 'ARCHIVED': colorClass = 'bg-gray-700'; break;
-    default: colorClass = 'bg-gray-500';
-  }
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{status.replace(/_/g, ' ')}</span>;
-};
-
-/**
- * LegalRiskBadge: React.FC
- *
- * This UI utility component provides consistent, visually distinctive indicators for legal risk levels.
- *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
- * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
- */
-export const LegalRiskBadge: React.FC<{ risk: LegalRiskLevel }> = ({ risk }) => {
-  let colorClass = '';
-  switch (risk) {
-    case 'LOW': colorClass = 'bg-green-500'; break;
-    case 'MEDIUM': colorClass = 'bg-yellow-500'; break;
-    case 'HIGH': colorClass = 'bg-orange-500'; break;
-    case 'CRITICAL': colorClass = 'bg-red-700'; break;
-    default: colorClass = 'bg-gray-500';
-  }
-  return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass} text-white`}>{risk}</span>;
-};
-
-/**
- * AnalyticsChart: React.FC
- *
- * This versatile component renders dynamic visualizations of various crisis-related data,
- * presenting complex information in an easily digestible format.
- *
- * Business value: Transforms raw data into actionable insights, enabling faster pattern
- * recognition, trend analysis, and data-driven decision-making for all stakeholders,
- * thereby enhancing operational intelligence. This directly contributes to faster, more
- * effective crisis resolution and improved post-crisis strategic planning.
- */
-interface ChartDataPoint {
-  label: string;
-  value: number;
-  color?: string;
+  createdAt: number;
 }
 
-export const AnalyticsChart: React.FC<{
-  title: string;
-  data: ChartDataPoint[];
-  type?: 'bar' | 'line' | 'pie';
-  height?: number;
-}> = ({ title, data, type = 'bar', height = 200 }) => {
-  const maxVal = Math.max(...data.map(d => Math.abs(d.value)));
-  const minVal = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
-
-  const renderBarChart = () => (
-    <div className="flex items-end justify-around" style={{ height: height }}>
-      {data.map((point, index) => (
-        <div key={index} className="flex flex-col items-center mx-1">
-          <div
-            className={`w-8 rounded-t-sm ${point.color || (point.value >= 0 ? 'bg-cyan-500' : 'bg-red-500')}`}
-            style={{ height: `${Math.max(0, point.value / maxVal * 80)}%` }} // Scale to 80% of height for bar
-          ></div>
-          <span className="text-xs mt-1 text-gray-300">{point.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderLineChart = () => {
-    if (data.length < 2) return <p className="text-center text-gray-400">Not enough data for line chart.</p>;
-
-    const effectiveMin = minVal < 0 ? minVal : 0; // Ensure chart shows below 0 if values are negative
-    const range = maxVal - effectiveMin;
-
-    const points = data.map((point, index) => {
-      const x = (index / (data.length - 1)) * 100;
-      const y = ((point.value - effectiveMin) / range) * 100;
-      return `${x},${100 - y}`; // SVG coordinates (0,0) is top-left, we want (0,0) bottom-left
-    }).join(' ');
-
-    return (
-      <div className="relative" style={{ height: height }}>
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <polyline
-            fill="none"
-            stroke="url(#line-gradient)"
-            strokeWidth="2"
-            points={points}
-          />
-          <defs>
-            <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#06b6d4" /> {/* cyan-500 */}
-              <stop offset="100%" stopColor="#a855f7" /> {/* purple-500 */}
-            </linearGradient>
-          </defs>
-          {data.map((point, index) => {
-            const x = (index / (data.length - 1)) * 100;
-            const y = ((point.value - effectiveMin) / range) * 100;
-            return (
-              <circle
-                key={index}
-                cx={x}
-                cy={100 - y}
-                r="2"
-                fill={point.color || (point.value >= 0 ? '#06b6d4' : '#ef4444')}
-                title={`${point.label}: ${point.value.toFixed(2)}`}
-              />
-            );
-          })}
-        </svg>
-        <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-between text-xs text-gray-400">
-          <span>{maxVal.toFixed(1)}</span>
-          <span className="self-end">{minVal.toFixed(1)}</span>
-        </div>
-        <div className="absolute bottom-0 left-0 w-full flex justify-between text-xs text-gray-400 px-1">
-          {data.map((point, index) => (
-            <span key={index} className={index === 0 || index === data.length - 1 ? '' : 'hidden'}>{point.label}</span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderPieChart = () => {
-    const total = data.reduce((sum, d) => sum + d.value, 0);
-    let cumulativeAngle = 0;
-    const slices = data.map((point, index) => {
-      const percentage = total === 0 ? 0 : point.value / total;
-      const angle = percentage * 360;
-      const largeArcFlag = angle > 180 ? 1 : 0;
-
-      const startAngle = cumulativeAngle;
-      cumulativeAngle += angle;
-      const endAngle = cumulativeAngle;
-
-      const x1 = 50 + 40 * Math.cos(Math.PI * (startAngle - 90) / 180);
-      const y1 = 50 + 40 * Math.sin(Math.PI * (startAngle - 90) / 180);
-      const x2 = 50 + 40 * Math.cos(Math.PI * (endAngle - 90) / 180);
-      const y2 = 50 + 40 * Math.sin(Math.PI * (endAngle - 90) / 180);
-
-      const pathData = total === 0
-        ? `M 50 50 L 50 10 A 40 40 0 1 1 49.99 10 Z` // Full circle grey if no data
-        : `M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-
-      return { pathData, color: point.color || `hsl(${index * (360 / data.length)}, 70%, 50%)`, label: point.label, value: point.value };
-    });
-
-    return (
-      <div className="relative flex items-center justify-center" style={{ height: height }}>
-        <svg className="w-full h-full" viewBox="0 0 100 100">
-          {slices.map((slice, index) => (
-            <path key={index} d={slice.pathData} fill={slice.color} stroke="#374151" strokeWidth="0.5" />
-          ))}
-          {total === 0 && <circle cx="50" cy="50" r="40" fill="#4b5563" />}
-        </svg>
-        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 space-y-1">
-          {slices.map((slice, index) => (
-            <div key={index} className="flex items-center text-sm text-gray-300">
-              <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: slice.color }}></span>
-              {slice.label}: {slice.value} ({total === 0 ? 0 : (slice.value / total * 100).toFixed(1)}%)
-            </div>
-          ))}
-          {total === 0 && <p className="text-sm text-gray-400">No data available.</p>}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="bg-gray-700 p-4 rounded-lg shadow-md mb-4">
-      <h4 className="text-lg font-semibold mb-2">{title}</h4>
-      {data.length === 0 && <p className="text-center text-gray-400" style={{ height: height }}>No data available for this chart.</p>}
-      {type === 'bar' && renderBarChart()}
-      {type === 'line' && renderLineChart()}
-      {type === 'pie' && renderPieChart()}
-    </div>
-  );
-};
-
-export interface CrisisContextType {
-  currentCrisis: Crisis | null;
-  setCurrentCrisis: React.Dispatch<React.SetStateAction<Crisis | null>>;
-  allCrises: Crisis[];
-  setAllCrises: React.Dispatch<React.SetStateAction<Crisis[]>>;
-  currentUser: UserProfile;
-  setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
-  settings: CrisisSettings;
-  updateSetting: (key: keyof CrisisSettings, value: any) => Promise<void>;
-  addIncidentLogEntry: (entry: IncidentLogEntry) => Promise<void>;
-  updateCrisisStatus: (crisisId: string, newStatus: CrisisStatus) => Promise<void>;
-  addCommsPackageToCrisis: (crisisId: string, comms: CommsPackage) => Promise<void>;
-  addLegalReviewToCrisis: (crisisId: string, review: LegalAnalysisResult) => Promise<void>;
-  addSentimentReportToCrisis: (crisisId: string, report: SentimentReport) => Promise<void>;
-  updateCommsApprovalStatus: (crisisId: string, commsPackageId: string, approvalEntryId: string, status: CommsStatus, reviewerId: string, comments?: string) => Promise<void>;
-  addFinancialTransactionToCrisis: (crisisId: string, transaction: Omit<FinancialTransaction, 'id' | 'timestamp' | 'relatedCrisisId' | 'riskScore' | 'railUsed' | 'settlementFee' | 'signature'>, selectedRailId?: string) => Promise<void>;
-  addAgentLogEntryToCrisis: (crisisId: string, agentLog: Omit<AgentLogEntry, 'id' | 'timestamp' | 'crisisId'>) => Promise<void>;
-  allAgents: AutonomousAgent[];
-  updateAgentStatus: (agentId: string, status: AgentStatus, isActive?: boolean) => Promise<void>;
-  updateAgentConfig: (agentId: string, config: { [key: string]: any }) => Promise<void>;
-  globalAuditLogs: AuditLogEntry[];
-  addAuditLog: (log: Omit<AuditLogEntry, 'id' | 'timestamp' | 'signature'>) => Promise<void>;
-  mockAccountsState: Account[];
-  updateAccountBalance: (accountId: string, currency: string, amount: number) => Promise<void>;
-  mockFinancialRailsState: FinancialRail[];
-}
-
-export const CrisisContext = createContext<CrisisContextType | undefined>(undefined);
-
 /**
- * CrisisProvider: React.FC
- *
- * This React context provider encapsulates the core state and business logic for managing all
- * aspects of crisis response. It offers a centralized, reactive store for crisis data,
- * user profiles, system settings, AI agents, financial accounts, and cryptographically
- * secured audit logs, enabling seamless data flow and consistent operations across the
- * entire application. It also orchestrates autonomous agent activities and simulates
- * real-time financial settlements.
- *
- * Business value: Ensures data integrity and real-time synchronization, critical for rapid
- * decision-making in high-stakes environments, drastically reducing response times and
- * associated financial and reputational damage. It provides a single source of truth for
- * crisis-related information, enhancing collaboration and operational efficiency, thereby
- * safeguarding billions in assets and reputation. The integrated agent intelligence and
- * programmable value rails represent a future-proof foundation for digital finance.
+ * Manages the issuance, transfer, and burning of simulated digital tokens.
+ * Business Value: This is the core of the Programmable Token Rail Layer,
+ * demonstrating how digital value can be created, moved, and managed on-chain.
+ * It provides a highly auditable and transparent ledger for all token operations,
+ * critical for trust and compliance in digital finance.
  */
-export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentCrisis, setCurrentCrisis] = useState<Crisis | null>(null);
-  const [allCrises, setAllCrises] = useState<Crisis[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserProfile>(mockUsers[0]); // Default to Admin
-  const [settings, setSettings] = useState<CrisisSettings>(mockCrisisSettings);
-  const [allAgents, setAllAgents] = useState<AutonomousAgent[]>(mockAgents);
-  const [globalAuditLogs, setGlobalAuditLogs] = useState<AuditLogEntry[]>([]);
-  const [mockAccountsState, setMockAccountsState] = useState<Account[]>(mockAccounts);
-  const [mockFinancialRailsState] = useState<FinancialRail[]>(mockFinancialRails);
-
-  const addAuditLog = useCallback(async (log: Omit<AuditLogEntry, 'id' | 'timestamp' | 'signature'>) => {
-    return new Promise<void>(res => setTimeout(() => {
-      const newLog = { ...log, id: generateMockId('audit'), timestamp: new Date(), signature: simulateSignature(log.actorId, log.description) };
-      setGlobalAuditLogs(prev => [...prev, newLog]);
-      console.log('Audit log added:', newLog);
-      res();
-    }, 100)); // Simulate minimal network/disk latency
-  }, []);
-
-  const updateAccountBalance = useCallback(async (accountId: string, currency: string, amount: number) => {
-    return new Promise<void>(async (res) => {
-      setMockAccountsState(prev => prev.map(acc => {
-        if (acc.id === accountId) {
-          const newBalances = { ...acc.balances, [currency]: (acc.balances[currency] || 0) + amount };
-          addAuditLog(generateMockAuditLogEntry(
-            currentUser.id,
-            'USER',
-            'UPDATE',
-            'ACCOUNT',
-            accountId,
-            `Account ${accountId} balance updated: ${amount} ${currency}.`
-          ));
-          return { ...acc, balances: newBalances };
-        }
-        return acc;
-      }));
-      res();
-    });
-  }, [addAuditLog, currentUser.id]);
-
-  useEffect(() => {
-    const loadCrises = async () => {
-      await new Promise(res => setTimeout(res, 500));
-      const loadedCrises = [
-        generateMockCrisis('crisis_001', 'DATA_BREACH', '50k user emails exposed, no passwords. Discovered 8am today.', mockUsers[1].id),
-        generateMockCrisis('crisis_002', 'PRODUCT_FAILURE', 'Major software bug impacting 10% of users, critical functionality affected.', mockUsers[1].id),
-        generateMockCrisis('crisis_003', 'EXECUTIVE_SCANDAL', 'CEO alleged of insider trading. Media reports surfacing.', mockUsers[1].id),
-      ];
-      setAllCrises(loadedCrises);
-      setCurrentCrisis(loadedCrises[0]);
-      const initialAuditLogs = loadedCrises.flatMap(crisis => [
-        generateMockAuditLogEntry(crisis.leadManagerId, 'USER', 'CREATE', 'CRISIS', crisis.id, `Crisis '${crisis.title}' identified.`),
-        ...crisis.agentActivityLogs.map(log => generateMockAuditLogEntry(log.agentId, 'AGENT', 'TRIGGER_ACTION', 'AGENT_CONFIG', log.id, log.details)),
-        ...crisis.legalReviews.map(review => generateMockAuditLogEntry(review.analyzedByUserId, 'AGENT', 'CREATE', 'LEGAL_REVIEW', review.id, review.summary)),
-        ...crisis.financialTransactions.map(tx => generateMockAuditLogEntry(tx.initiatorId, 'USER', 'SETTLE', 'FINANCIAL_TRANSACTION', tx.id, `Payment ${tx.status}: ${tx.amount} ${tx.currency}`)),
-      ]);
-      setGlobalAuditLogs(initialAuditLogs);
-    };
-    loadCrises();
-  }, []);
+export class TokenRailSimulator {
+  private tokenLedger: { [agentId: string]: { [tokenId: string]: number } } = {};
+  private tokens: { [id: string]: ProgrammableToken } = {};
+  private rulesEngine: SettlementRulesEngine;
 
   /**
-   * simulateAgentActivity: Function
-   *
-   * Orchestrates the autonomous actions of AI agents based on their configuration and system events.
-   * This function runs periodically, allowing agents to observe the system and execute skills.
-   *
-   * Business value: Drives intelligent automation across the platform, ensuring proactive monitoring,
-   * rapid response generation, and continuous compliance checks without human intervention,
-   * dramatically reducing operational costs and enhancing system resilience.
+   * Initializes the TokenRailSimulator with a rules engine for programmable policies.
+   * @param rulesEngine - The rules engine for settlement policies.
    */
-  const simulateAgentActivity = useCallback(async () => {
-    if (!currentCrisis) return;
+  constructor(rulesEngine: SettlementRulesEngine) {
+    this.rulesEngine = rulesEngine;
+    // Seed an initial token (e.g., 'NXG' for Nexus Gold)
+    const initialToken: ProgrammableToken = {
+      id: 'NXG_TOKEN',
+      name: 'Nexus Gold Token',
+      symbol: 'NXG',
+      supply: 1000000000,
+      maxSupply: 1000000000,
+      issuerId: 'system_internal',
+      properties: {
+        transferable: true,
+        divisible: true,
+        fungible: true,
+        programmableRulesId: 'standard_settlement_policy',
+      },
+      createdAt: Date.now(),
+    };
+    this.tokens[initialToken.id] = initialToken;
+    this.tokenLedger['system_internal'] = { [initialToken.id]: initialToken.supply }; // Initial supply held by system
+  }
 
-    const crisisId = currentCrisis.id;
-    const now = new Date();
-
-    // Monitoring Agent (Sentinel AI)
-    const sentinelAgent = allAgents.find(a => a.id === 'agent_sentinel' && a.isActive && settings.enabledAgents.MONITORING);
-    if (sentinelAgent && now.getTime() - sentinelAgent.lastActivity.getTime() > (settings.sentimentMonitorIntervalMinutes * 60 * 1000)) {
-      setAllAgents(prev => prev.map(a => a.id === sentinelAgent.id ? { ...a, status: 'BUSY', lastActivity: now } : a));
-      await addAgentLogEntryToCrisis(crisisId, { agentId: sentinelAgent.id, action: 'Initiating sentiment analysis', details: `Scanning social media for crisis ${crisisId}`, status: 'IN_PROGRESS' });
-      const newReport = generateMockSentimentReport(crisisId, sentinelAgent.id);
-      await addSentimentReportToCrisis(crisisId, newReport);
-      await addAgentLogEntryToCrisis(crisisId, { agentId: sentinelAgent.id, action: 'Completed sentiment analysis', details: `Overall sentiment: ${newReport.overallSentiment.toFixed(2)}`, status: 'SUCCESS', relatedArtifactId: newReport.id });
-      setAllAgents(prev => prev.map(a => a.id === sentinelAgent.id ? { ...a, status: 'ACTIVE', lastActivity: new Date() } : a));
+  /**
+   * Issues new tokens to an account.
+   * Business Value: Simulates the creation of new digital value,
+   * enabling scenarios like central bank digital currency (CBDC) issuance
+   * or the creation of stablecoins within the financial infrastructure.
+   * @param issuerId The ID of the agent issuing the tokens.
+   * @param receiverId The ID of the agent to receive the new tokens.
+   * @param tokenId The ID of the token to issue.
+   * @param amount The amount of tokens to issue.
+   * @returns True if issuance successful, false otherwise.
+   */
+  public issueTokens(issuerId: string, receiverId: string, tokenId: string, amount: number): boolean {
+    const token = this.tokens[tokenId];
+    if (!token || amount <= 0 || (token.maxSupply !== null && token.supply + amount > token.maxSupply)) {
+      return false;
     }
 
-    // Legal Advisor Agent (LegalCheck AI)
-    const legalAgent = allAgents.find(a => a.id === 'agent_legal_check' && a.isActive && settings.enabledAgents.LEGAL_ADVISOR);
-    if (legalAgent && currentCrisis.legalReviews.length === 0 && now.getTime() - legalAgent.lastActivity.getTime() > (legalAgent.configuration.scanDelayMs || 20000)) {
-      setAllAgents(prev => prev.map(a => a.id === legalAgent.id ? { ...a, status: 'BUSY', lastActivity: now } : a));
-      await addAgentLogEntryToCrisis(crisisId, { agentId: legalAgent.id, action: 'Initiating legal compliance scan', details: `Reviewing crisis for compliance risks`, status: 'IN_PROGRESS' });
-      const newLegalReview = generateMockLegalAnalysis(crisisId, legalAgent.id);
-      await addLegalReviewToCrisis(crisisId, newLegalReview);
-      await addAgentLogEntryToCrisis(crisisId, { agentId: legalAgent.id, action: 'Completed legal compliance scan', details: `Risk Level: ${newLegalReview.legalRiskLevel}`, status: 'SUCCESS', relatedArtifactId: newLegalReview.id });
-      setAllAgents(prev => prev.map(a => a.id === legalAgent.id ? { ...a, status: 'ACTIVE', lastActivity: new Date() } : a));
+    // Apply programmable rules (e.g., only issuer can mint)
+    const rule = this.rulesEngine.getPolicy(token.properties.programmableRulesId || 'default');
+    if (rule && rule.mintingAuthority !== issuerId && token.issuerId !== issuerId) {
+      return false; // Unauthorized issuer
     }
 
-    // Communication Agent (CommsGen AI) - Auto-generate initial comms
-    const commsAgent = allAgents.find(a => a.id === 'agent_comms_gen' && a.isActive && settings.enabledAgents.COMMUNICATION);
-    if (commsAgent && settings.autoGenerateComms && currentCrisis.generatedCommsPackages.length === 0) {
-      setAllAgents(prev => prev.map(a => a.id === commsAgent.id ? { ...a, status: 'BUSY', lastActivity: now } : a));
-      await addAgentLogEntryToCrisis(crisisId, { agentId: commsAgent.id, action: 'Auto-generating initial comms package', details: `Crisis type: ${currentCrisis.type}`, status: 'IN_PROGRESS' });
-      const newComms = generateMockCommsPackage(currentCrisis.type, currentCrisis.description);
-      await addCommsPackageToCrisis(crisisId, newComms);
-      await addAgentLogEntryToCrisis(crisisId, { agentId: commsAgent.id, action: 'Finished auto-generating comms package', details: `Comms package ${newComms.id} drafted.`, status: 'SUCCESS', relatedArtifactId: newComms.id });
-      setAllAgents(prev => prev.map(a => a.id === commsAgent.id ? { ...a, status: 'IDLE', lastActivity: new Date() } : a));
+    this.tokenLedger[receiverId] = this.tokenLedger[receiverId] || {};
+    this.tokenLedger[receiverId][tokenId] = (this.tokenLedger[receiverId][tokenId] || 0) + amount;
+    token.supply += amount;
+    return true;
+  }
+
+  /**
+   * Transfers tokens between accounts.
+   * Business Value: Models the fundamental movement of value on a digital ledger,
+   * demonstrating real-time gross settlement capabilities and ensuring atomic transfers.
+   * @param senderId The ID of the sending agent.
+   * @param receiverId The ID of the receiving agent.
+   * @param tokenId The ID of the token to transfer.
+   * @param amount The amount of tokens to transfer.
+   * @returns True if transfer successful, false otherwise.
+   */
+  public transferTokens(senderId: string, receiverId: string, tokenId: string, amount: number): boolean {
+    const token = this.tokens[tokenId];
+    if (!token || !token.properties.transferable || amount <= 0) {
+      return false;
+    }
+    if ((this.tokenLedger[senderId]?.[tokenId] || 0) < amount) {
+      return false; // Insufficient balance
     }
 
-    // Financial Reconciliator Agent (FinRecon AI) - Process pending payouts
-    const finReconAgent = allAgents.find(a => a.id === 'agent_fin_recon' && a.isActive && settings.enabledAgents.FINANCIAL_RECONCILIATOR);
-    if (finReconAgent && finReconAgent.configuration.autoApprovePayouts) {
-      const pendingTxs = currentCrisis.financialTransactions.filter(tx => tx.status === 'PENDING');
-      for (const tx of pendingTxs) {
-        if (tx.amount <= finReconAgent.configuration.maxPayout && tx.riskScore! <= finReconAgent.configuration.riskTolerance) {
-          setAllAgents(prev => prev.map(a => a.id === finReconAgent.id ? { ...a, status: 'BUSY', lastActivity: now } : a));
-          await addAgentLogEntryToCrisis(crisisId, { agentId: finReconAgent.id, action: `Auto-processing financial transaction ${tx.id}`, details: `Amount: ${tx.amount}`, status: 'IN_PROGRESS' });
-          // Simulate settlement success
-          await updateFinancialTransactionStatus(crisisId, tx.id, 'SETTLED', finReconAgent.id);
-          await addAgentLogEntryToCrisis(crisisId, { agentId: finReconAgent.id, action: `Financial transaction ${tx.id} settled`, details: `Amount: ${tx.amount}`, status: 'SUCCESS', relatedArtifactId: tx.id });
-          setAllAgents(prev => prev.map(a => a.id === finReconAgent.id ? { ...a, status: 'IDLE', lastActivity: new Date() } : a));
+    // Apply programmable rules
+    const rule = this.rulesEngine.getPolicy(token.properties.programmableRulesId || 'default');
+    if (rule && rule.transferRestrictions?.senderRoles && !rule.transferRestrictions.senderRoles.includes(senderId)) {
+      return false; // Sender not authorized by rule
+    }
+
+    this.tokenLedger[senderId][tokenId] -= amount;
+    this.tokenLedger[receiverId] = this.tokenLedger[receiverId] || {};
+    this.tokenLedger[receiverId][tokenId] = (this.tokenLedger[receiverId][tokenId] || 0) + amount;
+    return true;
+  }
+
+  /**
+   * Burns tokens from an account.
+   * Business Value: Simulates the reduction of token supply, managing scarcity
+   * and enabling mechanisms like fee burning or token redemption.
+   * @param burnerId The ID of the agent burning the tokens.
+   * @param tokenId The ID of the token to burn.
+   * @param amount The amount of tokens to burn.
+   * @returns True if burning successful, false otherwise.
+   */
+  public burnTokens(burnerId: string, tokenId: string, amount: number): boolean {
+    const token = this.tokens[tokenId];
+    if (!token || amount <= 0) {
+      return false;
+    }
+    if ((this.tokenLedger[burnerId]?.[tokenId] || 0) < amount) {
+      return false; // Insufficient balance
+    }
+
+    // Apply programmable rules
+    const rule = this.rulesEngine.getPolicy(token.properties.programmableRulesId || 'default');
+    if (rule && rule.burningAuthority !== burnerId && token.issuerId !== burnerId) {
+      return false; // Unauthorized burner
+    }
+
+    this.tokenLedger[burnerId][tokenId] -= amount;
+    token.supply -= amount;
+    return true;
+  }
+
+  /**
+   * Retrieves an agent's token balance.
+   * @param agentId The ID of the agent.
+   * @param tokenId The ID of the token.
+   * @returns The balance of the specified token for the agent.
+   */
+  public getBalance(agentId: string, tokenId: string): number {
+    return this.tokenLedger[agentId]?.[tokenId] || 0;
+  }
+
+  /**
+   * Adds a new programmable token definition.
+   * @param token The token definition to add.
+   * @returns True if added, false if ID already exists.
+   */
+  public addTokenDefinition(token: ProgrammableToken): boolean {
+    if (this.tokens[token.id]) return false;
+    this.tokens[token.id] = token;
+    return true;
+  }
+
+  /**
+   * Retrieves all defined programmable tokens.
+   * @returns An array of all programmable token definitions.
+   */
+  public getAllTokens(): ProgrammableToken[] {
+    return Object.values(this.tokens);
+  }
+}
+
+/**
+ * Defines a policy for the programmable settlement rules engine.
+ * Business Value: Enables flexible and dynamic control over transaction conditions,
+ * crucial for compliance, risk management, and automating complex financial products.
+ */
+export interface SettlementPolicy {
+  id: string;
+  name: string;
+  maxAmount?: number;
+  minAmount?: number;
+  allowedRailTypes?: PaymentTransaction['railUsed'][];
+  allowedSenderRoles?: AgentIdentity['role'][];
+  allowedReceiverRoles?: AgentIdentity['role'][];
+  transferRestrictions?: {
+    senderRoles?: string[];
+    receiverRoles?: string[];
+  };
+  mintingAuthority?: string;
+  burningAuthority?: string;
+  // Add more policy parameters as needed
+}
+
+/**
+ * Implements a rules engine for programmable settlement policies.
+ * Business Value: This module is critical for enforcing compliance, automating
+ * complex financial logic, and ensuring transactions adhere to predefined
+ * business rules, enhancing the integrity and trustworthiness of the financial system.
+ */
+export class SettlementRulesEngine {
+  private policies: { [id: string]: SettlementPolicy } = {};
+
+  constructor() {
+    this.addPolicy({
+      id: 'default',
+      name: 'Default Settlement Policy',
+      maxAmount: Infinity,
+      minAmount: 0,
+      allowedRailTypes: ['rail_fast', 'rail_batch', 'internal_ledger', 'programmable_token_rail'],
+      allowedSenderRoles: ['Player', 'Competitor', 'System'],
+      allowedReceiverRoles: ['Player', 'Competitor', 'System'],
+    });
+    this.addPolicy({
+      id: 'high_value_policy',
+      name: 'High Value Transaction Policy',
+      minAmount: 1000000,
+      allowedRailTypes: ['rail_fast', 'programmable_token_rail'],
+      allowedSenderRoles: ['Player', 'Competitor'],
+      allowedReceiverRoles: ['Player', 'Competitor'],
+    });
+    this.addPolicy({
+      id: 'standard_settlement_policy',
+      name: 'Standard Token Settlement Policy',
+      transferRestrictions: { senderRoles: ['Player', 'Competitor', 'System'], receiverRoles: ['Player', 'Competitor', 'System'] },
+      mintingAuthority: 'system_internal',
+      burningAuthority: 'system_internal',
+    });
+  }
+
+  /**
+   * Adds a new settlement policy to the engine.
+   * @param policy The policy to add.
+   * @returns True if added, false if ID already exists.
+   */
+  public addPolicy(policy: SettlementPolicy): boolean {
+    if (this.policies[policy.id]) return false;
+    this.policies[policy.id] = policy;
+    return true;
+  }
+
+  /**
+   * Retrieves a settlement policy by its ID.
+   * @param id The ID of the policy.
+   * @returns The SettlementPolicy if found, otherwise undefined.
+   */
+  public getPolicy(id: string): SettlementPolicy | undefined {
+    return this.policies[id];
+  }
+
+  /**
+   * Validates a transaction against a specific policy.
+   * Business Value: Ensures all financial transactions comply with predefined governance rules,
+   * minimizing risks, preventing unauthorized actions, and maintaining regulatory adherence.
+   * @param transaction The transaction to validate.
+   * @param policyId The ID of the policy to use for validation.
+   * @param senderRole The role of the sender.
+   * @param receiverRole The role of the receiver.
+   * @returns True if the transaction is valid according to the policy, false otherwise.
+   */
+  public validateTransaction(
+    transaction: PaymentTransaction,
+    policyId: string = 'default',
+    senderRole: AgentIdentity['role'],
+    receiverRole: AgentIdentity['role']
+  ): boolean {
+    const policy = this.getPolicy(policyId);
+    if (!policy) return false;
+
+    if (policy.minAmount !== undefined && transaction.amount < policy.minAmount) return false;
+    if (policy.maxAmount !== undefined && transaction.amount > policy.maxAmount) return false;
+    if (policy.allowedRailTypes && !policy.allowedRailTypes.includes(transaction.railUsed)) return false;
+    if (policy.allowedSenderRoles && !policy.allowedSenderRoles.includes(senderRole)) return false;
+    if (policy.allowedReceiverRoles && !policy.allowedReceiverRoles.includes(receiverRole)) return false;
+
+    return true;
+  }
+}
+
+/**
+ * Calculates a risk score for a given transaction.
+ * Business Value: Provides real-time risk assessment, enabling the system to flag
+ * suspicious transactions, prevent fraud, and enforce dynamic risk-based controls,
+ * protecting the integrity of the financial infrastructure.
+ */
+export class TransactionRiskScorer {
+  /**
+   * Scores a payment transaction based on various heuristics.
+   * @param transaction The payment transaction to score.
+   * @returns A risk score between 0 (low risk) and 100 (high risk).
+   */
+  public scoreTransaction(transaction: PaymentTransaction): number {
+    let score = 0;
+
+    // Rule 1: Large amounts increase risk
+    if (transaction.amount > 1000000) score += 30;
+    else if (transaction.amount > 100000) score += 15;
+
+    // Rule 2: Certain transaction types are inherently riskier
+    if (transaction.type === 'acquisition' || transaction.type === 'divestment' || transaction.type === 'token_burn') score += 20;
+
+    // Rule 3: Fast rails might imply urgency, sometimes associated with higher risk (simplified heuristic)
+    if (transaction.railUsed === 'rail_fast') score += 5;
+
+    // Rule 4: Suspicious sender/receiver patterns (simplified)
+    // In a real system, this would involve historical data, identity reputation, etc.
+    if (transaction.senderId === 'system_buyer' && transaction.receiverId === 'system_internal' && transaction.amount > 5000000) score += 40; // Example
+    if (transaction.senderId === transaction.receiverId && transaction.amount > 0) score += 10; // Self-transfer of value
+
+    // Rule 5: Lack of specific token ID for token-related types (if expected)
+    if (['token_mint', 'token_burn', 'token_transfer'].includes(transaction.type) && !transaction.tokenId) score += 25;
+
+    // Clamp score
+    return Math.min(100, score);
+  }
+}
+
+/**
+ * Simulates the underlying payments infrastructure and token rail layer.
+ * Business Value: This component allows the Wargamer to model the impact of
+ * varying payment rail efficiencies, costs, and transactional guarantees on
+ * overall business performance. By abstracting the complexities of real-time
+ * gross settlement (RTGS) vs. batch processing, and internal ledger movements,
+ * it enables strategic decision-making around payment infrastructure investments,
+ * liquidity management, and optimizing transaction costs. It's a critical tool
+ * for understanding how payment choices affect cash flow, operational overhead,
+ * and customer experience in a multi-rail, tokenized future. It serves as a
+ * core pillar for the real-time settlement engine, ensuring secure, auditable,
+ * and efficient value transfer, a revolutionary step in financial infrastructure.
+ */
+export class PaymentProcessorSimulator {
+  private transactions: PaymentTransaction[] = [];
+  private processedIdempotencyKeys: Set<string> = new Set();
+  private fees: { [rail: string]: number } = {
+    'rail_fast': 0.01, // 1% fee for fast rail
+    'rail_batch': 0.001, // 0.1% fee for batch rail
+    'internal_ledger': 0.0001, // 0.01% for internal ledger (very efficient)
+    'programmable_token_rail': 0.0005, // 0.05% for token rails (balanced)
+  };
+  private latencies: { [rail: string]: number } = {
+    'rail_fast': 0.1, // Settles within current turn (fast)
+    'rail_batch': 0.5, // Might take half a turn or more
+    'internal_ledger': 0.05, // Instant within the simulation context
+    'programmable_token_rail': 0.08, // Very fast
+  };
+  private tokenRailSimulator: TokenRailSimulator;
+  private rulesEngine: SettlementRulesEngine;
+  private riskScorer: TransactionRiskScorer;
+  private identityService: IdentityService; // Reference to the identity service
+
+  /**
+   * Constructs the PaymentProcessorSimulator.
+   * @param tokenRailSimulator - The simulator for programmable tokens.
+   * @param rulesEngine - The engine for settlement policies.
+   * @param identityService - The service for managing agent identities.
+   */
+  constructor(tokenRailSimulator: TokenRailSimulator, rulesEngine: SettlementRulesEngine, identityService: IdentityService) {
+    this.tokenRailSimulator = tokenRailSimulator;
+    this.rulesEngine = rulesEngine;
+    this.riskScorer = new TransactionRiskScorer();
+    this.identityService = identityService;
+  }
+
+  /**
+   * Processes a simulated payment, choosing the best rail based on transaction type, amount,
+   * player optimization directive, and risk. Ensures idempotency and applies governance rules.
+   * Business Value: This method is the core of the real-time settlement engine, providing
+   * optimized, secure, and policy-compliant value transfer. Its predictive routing and
+   * fraud detection capabilities mitigate financial risk and enhance transactional efficiency,
+   * saving millions in processing costs and preventing losses.
+   * @param senderId - The ID of the sending agent.
+   * @param receiverId - The ID of the receiving agent.
+   * @param amount - The amount of the transaction.
+   * @param type - The type of payment (e.g., 'budget_allocation').
+   * @param currentYear - The current simulation year.
+   * @param playerOptimization - Player's directive for rail optimization.
+   * @param idempotencyKey - A unique key to ensure the transaction is processed only once.
+   * @param tokenId - Optional, the ID of the token being transacted.
+   * @param signature - Simulated signature of the sender.
+   * @returns The created payment transaction.
+   * @throws Error if transaction validation fails or sender identity is invalid.
+   */
+  public processPayment(
+    senderId: string,
+    receiverId: string,
+    amount: number,
+    type: PaymentTransaction['type'],
+    currentYear: number,
+    playerOptimization: PlayerStrategicDirective['tokenRailOptimization'] | null,
+    idempotencyKey: string = generateUUID(), // Default to a new UUID if not provided
+    tokenId?: string,
+    signature?: string
+  ): PaymentTransaction {
+    // 1. Idempotency Check
+    if (this.processedIdempotencyKeys.has(idempotencyKey)) {
+      const existingTx = this.transactions.find(tx => tx.idempotencyKey === idempotencyKey);
+      if (existingTx) {
+        console.warn(`[IDEMPOTENCY_WARNING] Transaction with idempotency key ${idempotencyKey} already processed. Returning existing transaction.`);
+        return existingTx;
+      }
+    }
+
+    // 2. Identity and Signature Verification (Conceptual)
+    const senderIdentity = this.identityService.getIdentity(senderId);
+    if (!senderIdentity) throw new Error(`Sender identity ${senderId} not found.`);
+    if (signature && !this.identityService.verifySignature(JSON.stringify({ senderId, receiverId, amount, type, idempotencyKey, tokenId }), signature, senderIdentity.publicKey)) {
+      throw new Error(`Invalid signature for transaction from ${senderId}.`);
+    }
+
+    // 3. Predictive Routing & Rail Selection
+    let railUsed: PaymentTransaction['railUsed'] = 'internal_ledger';
+    const availableRails: PaymentTransaction['railUsed'][] = ['rail_fast', 'rail_batch', 'internal_ledger', 'programmable_token_rail'];
+
+    // Player optimization directive overrides default heuristics
+    if (playerOptimization) {
+      const preferredRail = availableRails.find(r => r.includes(playerOptimization.preferredRailType));
+      if (preferredRail) railUsed = preferredRail;
+    } else {
+      // Default heuristic-based routing
+      if (type === 'acquisition' || type === 'divestment' || amount > 5000000) {
+        railUsed = weightedRandomPick([
+          { item: 'rail_fast', weight: 0.7 },
+          { item: 'programmable_token_rail', weight: 0.2 },
+          { item: 'rail_batch', weight: 0.1 }
+        ]);
+      } else if (type === 'marketing_spend' || type === 'product_sale' || amount > 100000) {
+        railUsed = weightedRandomPick([
+          { item: 'rail_fast', weight: 0.3 },
+          { item: 'rail_batch', weight: 0.5 },
+          { item: 'programmable_token_rail', weight: 0.2 }
+        ]);
+      } else {
+        railUsed = weightedRandomPick([
+          { item: 'internal_ledger', weight: 0.6 },
+          { item: 'rail_batch', weight: 0.3 },
+          { item: 'programmable_token_rail', weight: 0.1 }
+        ]);
+      }
+    }
+
+    const processingFee = amount * this.fees[railUsed];
+    const settlementTime = this.latencies[railUsed];
+
+    const transaction: PaymentTransaction = {
+      id: generateUUID(),
+      idempotencyKey,
+      senderId,
+      receiverId,
+      amount,
+      currency: '$',
+      tokenId,
+      type,
+      railUsed,
+      processingFee,
+      settlementTime,
+      riskScore: 0, // Will be calculated next
+      status: 'pending', // Starts as pending
+      timestamp: Date.now(),
+      signature: signature || this.identityService.signData(JSON.stringify({ senderId, receiverId, amount, type, idempotencyKey, tokenId }), senderIdentity.signingKey),
+    };
+
+    // 4. Risk Scoring & Fraud Detection
+    transaction.riskScore = this.riskScorer.scoreTransaction(transaction);
+    if (transaction.riskScore > 60) { // High risk threshold
+      transaction.status = 'flagged';
+      console.warn(`[RISK_ALERT] Transaction ${transaction.id} flagged with high risk score (${transaction.riskScore}) from ${senderId} to ${receiverId}. Status set to FLAGGED.`);
+      // In a real system, this would trigger manual review, block funds, etc.
+      // For simulation, we'll let it pass but flag it.
+    }
+
+    // 5. Governance Policy Validation
+    const receiverIdentity = this.identityService.getIdentity(receiverId);
+    if (!receiverIdentity) throw new Error(`Receiver identity ${receiverId} not found.`);
+
+    let policyId = 'default';
+    if (transaction.amount >= 1000000) policyId = 'high_value_policy'; // Example policy selection
+
+    if (!this.rulesEngine.validateTransaction(transaction, policyId, senderIdentity.role, receiverIdentity.role)) {
+      transaction.status = 'failed';
+      console.error(`[POLICY_VIOLATION] Transaction ${transaction.id} failed policy validation. Status set to FAILED.`);
+      return transaction;
+    }
+
+    // 6. Execute Transaction (Conceptual Balance Update and Token Operations)
+    // For direct cash transactions:
+    // This is a simulation, so we assume a central ledger for cash, which `WargameCompanyState` acts as.
+    // Real implementation would interact with a distributed ledger.
+    // Token operations handled by TokenRailSimulator.
+
+    if (tokenId) {
+      if (type === 'token_transfer') {
+        if (!this.tokenRailSimulator.transferTokens(senderId, receiverId, tokenId, amount)) {
+          transaction.status = 'failed';
+          console.error(`[TOKEN_TRANSFER_FAILED] Could not transfer ${amount} ${tokenId} from ${senderId} to ${receiverId}.`);
+          return transaction;
+        }
+      } else if (type === 'token_mint') {
+        if (!this.tokenRailSimulator.issueTokens(senderId, receiverId, tokenId, amount)) {
+          transaction.status = 'failed';
+          console.error(`[TOKEN_MINT_FAILED] Could not mint ${amount} ${tokenId} for ${receiverId} by ${senderId}.`);
+          return transaction;
+        }
+      } else if (type === 'token_burn') {
+        if (!this.tokenRailSimulator.burnTokens(senderId, tokenId, amount)) {
+          transaction.status = 'failed';
+          console.error(`[TOKEN_BURN_FAILED] Could not burn ${amount} ${tokenId} by ${senderId}.`);
+          return transaction;
         }
       }
     }
-
-    // Governance Auditor Agent (GovGuard AI)
-    const govAgent = allAgents.find(a => a.id === 'agent_governance' && a.isActive && settings.enabledAgents.GOVERNANCE_AUDITOR);
-    if (govAgent && now.getTime() - govAgent.lastActivity.getTime() > (govAgent.configuration.auditFrequencyHours * 60 * 60 * 1000)) {
-      setAllAgents(prev => prev.map(a => a.id === govAgent.id ? { ...a, status: 'BUSY', lastActivity: now } : a));
-      await addAgentLogEntryToCrisis(crisisId, { agentId: govAgent.id, action: 'Initiating system-wide audit log review', details: `Checking for policy compliance and anomalies`, status: 'IN_PROGRESS' });
-      // Simulate audit
-      const complianceChecks = Math.random() > 0.1 ? 'All compliance checks passed.' : 'Minor policy deviation detected in comms workflow.';
-      await addAgentLogEntryToCrisis(crisisId, { agentId: govAgent.id, action: 'Completed system audit', details: complianceChecks, status: 'SUCCESS', relatedArtifactId: generateMockId('audit-report') });
-      setAllAgents(prev => prev.map(a => a.id === govAgent.id ? { ...a, status: 'ACTIVE', lastActivity: new Date() } : a));
+    // Assume success for now if not flagged or failed by policy/token ops
+    if (transaction.status === 'pending') {
+      transaction.status = 'settled';
     }
 
-  }, [currentCrisis, allAgents, settings, addAgentLogEntryToCrisis, addSentimentReportToCrisis, addLegalReviewToCrisis, addCommsPackageToCrisis]);
+    this.transactions.push(transaction);
+    this.processedIdempotencyKeys.add(idempotencyKey); // Mark key as processed
+    return transaction;
+  }
 
-  useEffect(() => {
-    const agentInterval = setInterval(() => {
-      simulateAgentActivity();
-    }, 5000); // Check agent activity every 5 seconds
-    return () => clearInterval(agentInterval);
-  }, [simulateAgentActivity]);
+  /**
+   * Retrieves all simulated transactions.
+   * @returns An array of all processed payment transactions.
+   */
+  public getTransactions(): PaymentTransaction[] {
+    return this.transactions;
+  }
 
-  const updateSetting = useCallback(async (key: keyof CrisisSettings, value: any) => {
-    return new Promise<void>(async (res) => {
-      const prevSettings = { ...settings };
-      setSettings(prev => ({ ...prev, [key]: value }));
-      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'CONFIG_UPDATE', 'SETTING', key as string, `Setting '${key}' updated from '${JSON.stringify(prevSettings[key])}' to '${JSON.stringify(value)}'.`));
-      console.log(`Setting ${key} updated to ${value}`);
-      res();
-    });
-  }, [settings, addAuditLog, currentUser.id]);
+  /**
+   * Calculates the overall transaction efficiency score based on processed payments.
+   * Business Value: This metric provides critical feedback on the performance of the
+   * payment infrastructure and the strategic choices made regarding rail utilization.
+   * A high efficiency score indicates optimized transaction routing, minimized fees,
+   * and swift settlements, directly translating to improved cash flow, reduced operational
+   * costs, and better financial agility for the company, saving potentially millions in
+   * avoidable transaction costs and enhancing liquidity.
+   * @returns An average efficiency score (0-100).
+   */
+  public calculateEfficiencyScore(): number {
+    if (this.transactions.length === 0) return 100;
 
-  const addIncidentLogEntry = useCallback(async (entry: IncidentLogEntry) => {
-    return new Promise<void>(async (res) => {
-      if (!currentCrisis) {
-        console.error('Cannot add incident log, no current crisis selected.');
-        return res();
+    let totalScore = 0;
+    this.transactions.forEach(tx => {
+      if (tx.status === 'failed' || tx.status === 'flagged') {
+        totalScore -= 50; // Significant penalty for failed/flagged transactions
+        return;
       }
-      const newEntry = { ...entry, id: generateMockId('inc') };
-      setCurrentCrisis(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          relatedIncidents: [...prev.relatedIncidents, newEntry],
-          lastUpdate: new Date(),
-        };
-      });
-      setAllCrises(prev => prev.map(c => c.id === currentCrisis.id ? { ...c, relatedIncidents: [...c.relatedIncidents, newEntry], lastUpdate: new Date() } : c));
-      await addAuditLog(generateMockAuditLogEntry(entry.reportedByUserId, 'USER', 'CREATE', 'INCIDENT_LOG', newEntry.id, `Incident logged for crisis '${currentCrisis.title}': ${entry.description}`));
-      console.log('Incident log added:', newEntry);
-      res();
+      // Reward low fees and fast settlement, penalize risk
+      const feeImpact = 1 - (tx.processingFee / (tx.amount || 1)); // Higher for lower fees, avoid div by zero
+      const speedImpact = 1 - (tx.settlementTime / 1); // Max settlement time 1 year, lower is better
+      const riskImpact = 1 - (tx.riskScore / 100); // Higher for lower risk
+
+      totalScore += (feeImpact * 0.5 + speedImpact * 0.3 + riskImpact * 0.2) * 100;
     });
-  }, [currentCrisis, addAuditLog]);
 
-  const updateCrisisStatus = useCallback(async (crisisId: string, newStatus: CrisisStatus) => {
-    return new Promise<void>(async (res) => {
-      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, status: newStatus, lastUpdate: new Date() } : c));
-      setCurrentCrisis(prev => prev?.id === crisisId ? { ...prev, status: newStatus, lastUpdate: new Date() } : prev);
-      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'CRISIS', crisisId, `Crisis status updated to '${newStatus}'.`));
-      console.log(`Crisis ${crisisId} status updated to ${newStatus}`);
-      res();
+    return Math.max(0, totalScore / this.transactions.length); // Ensure score is not negative
+  }
+}
+
+/**
+ * Provides identity management services for agents within the financial ecosystem.
+ * Business Value: This is the core of the Digital Identity and Trust Layer,
+ * responsible for generating, managing, authenticating, and authorizing identities.
+ * It underpins all security and compliance, ensuring that every action and transaction
+ * is attributable to a verified entity, crucial for a secure and auditable financial backbone.
+ */
+export class IdentityService {
+  private identities: { [id: string]: AgentIdentity } = {};
+
+  /**
+   * Constructs the IdentityService with initial seeded identities.
+   * @param seededIdentities - Pre-generated digital identities for all agents.
+   */
+  constructor(seededIdentities: { [id: string]: AgentIdentity }) {
+    this.identities = seededIdentities;
+  }
+
+  /**
+   * Retrieves an agent's identity.
+   * @param id - The ID of the agent.
+   * @returns The AgentIdentity object, or undefined if not found.
+   */
+  public getIdentity(id: string): AgentIdentity | undefined {
+    return this.identities[id];
+  }
+
+  /**
+   * Authenticates an entity by verifying a signed message.
+   * Business Value: Crucial for preventing unauthorized access and ensuring
+   * that all instructions originate from a legitimate source.
+   * @param data - The original data that was signed.
+   * @param signature - The signature to verify.
+   * @param publicKey - The public key of the signer.
+   * @returns True if the signature is valid, false otherwise.
+   */
+  public verifySignature(data: string, signature: string, publicKey: string): boolean {
+    const signerIdentity = Object.values(this.identities).find(id => id.publicKey === publicKey);
+    if (!signerIdentity) return false;
+
+    // In a real system, this would use the public key to verify.
+    // For this simulation, we simulate by re-hashing with the 'signingKey'
+    // which is a stand-in for a private key in this mock.
+    const expectedSignature = simulateSignature(data + signerIdentity.signingKey);
+    return expectedSignature === signature;
+  }
+
+  /**
+   * Authorizes an action based on an agent's role and requested permissions.
+   * Business Value: Enforces role-based access control, preventing agents from
+   * performing actions outside their defined scope, a fundamental security and
+   * governance control for financial systems.
+   * @param agentId - The ID of the agent requesting authorization.
+   * @param requiredRoles - An array of roles that are allowed to perform the action.
+   * @returns True if the agent is authorized, false otherwise.
+   */
+  public authorizeAction(agentId: string, requiredRoles: AgentIdentity['role'][]): boolean {
+    const agent = this.identities[agentId];
+    if (!agent) return false;
+    return requiredRoles.includes(agent.role);
+  }
+
+  /**
+   * Signs a piece of data using an agent's simulated signing key.
+   * Business Value: Ensures the integrity and authenticity of data and commands,
+   * providing non-repudiation for all agent-driven actions within the system.
+   * @param data - The data to sign.
+   * @param signingKey - The simulated private signing key.
+   * @returns A simulated cryptographic signature.
+   */
+  public signData(data: string, signingKey: string): string {
+    return simulateSignature(data + signingKey);
+  }
+}
+
+/**
+ * Manages inter-agent communication within the simulation.
+ * Business Value: Provides a secure, auditable, and ordered channel for agents
+ * to exchange information and commands. This internal messaging layer is critical
+ * for coordinating distributed intelligent automation across the financial platform,
+ * ensuring seamless and compliant operation.
+ */
+export class AgentMessageBus {
+  private messages: AgentMessage[] = [];
+  private messageNonce: { [agentId: string]: number } = {};
+  private identityService: IdentityService;
+
+  /**
+   * Constructs the AgentMessageBus.
+   * @param identityService - The identity service for signature verification.
+   */
+  constructor(identityService: IdentityService) {
+    this.identityService = identityService;
+  }
+
+  /**
+   * Sends a message from one agent to another.
+   * Ensures message integrity and replay protection.
+   * @param senderId - The ID of the sending agent.
+   * @param receiverId - The ID of the receiving agent.
+   * @param type - The type of message (e.g., 'COMMAND', 'OBSERVATION').
+   * @param payload - The message payload.
+   * @returns The sent AgentMessage if successful, null otherwise.
+   */
+  public sendMessage(senderId: string, receiverId: string, type: string, payload: any): AgentMessage | null {
+    const sender = this.identityService.getIdentity(senderId);
+    if (!sender) {
+      console.error(`AgentMessageBus: Sender identity ${senderId} not found.`);
+      return null;
+    }
+
+    const nonce = (this.messageNonce[senderId] || 0) + 1;
+    const dataToSign = JSON.stringify({ senderId, receiverId, type, payload, timestamp: Date.now(), nonce });
+    const signature = this.identityService.signData(dataToSign, sender.signingKey);
+
+    const message: AgentMessage = {
+      id: generateUUID(),
+      senderId,
+      receiverId,
+      type,
+      payload,
+      timestamp: Date.now(),
+      signature,
+      nonce,
+    };
+    this.messages.push(message);
+    this.messageNonce[senderId] = nonce;
+    return message;
+  }
+
+  /**
+   * Retrieves messages for a specific receiver, clearing them from the bus after retrieval.
+   * @param receiverId - The ID of the agent receiving messages.
+   * @returns An array of AgentMessage objects.
+   */
+  public getMessagesForAgent(receiverId: string): AgentMessage[] {
+    const receivedMessages = this.messages.filter(msg => msg.receiverId === receiverId);
+    this.messages = this.messages.filter(msg => msg.receiverId !== receiverId); // Clear messages after retrieval
+
+    // Verify signatures and nonces for retrieved messages
+    return receivedMessages.filter(msg => {
+      const sender = this.identityService.getIdentity(msg.senderId);
+      if (!sender) return false;
+
+      const dataToVerify = JSON.stringify({ senderId: msg.senderId, receiverId: msg.receiverId, type: msg.type, payload: msg.payload, timestamp: msg.timestamp, nonce: msg.nonce });
+      const isValid = this.identityService.verifySignature(dataToVerify, msg.signature, sender.publicKey);
+
+      // Simple replay protection: check if nonce is sequential (conceptual)
+      // In a real system, this would be more robust.
+      const lastNonce = this.messageNonce[msg.senderId];
+      const isReplay = lastNonce && msg.nonce <= lastNonce; // If we sent a message, the nonce should be greater
+      if (isReplay && msg.nonce !== lastNonce) { // Allow same nonce if it's the last one, to support retry if message was not received
+        console.warn(`[REPLAY_ATTACK_DETECTED] Message ${msg.id} from ${msg.senderId} has an old nonce.`);
+        return false;
+      }
+
+      return isValid;
     });
-  }, [currentUser.id, addAuditLog]);
+  }
 
-  const addCommsPackageToCrisis = useCallback(async (crisisId: string, comms: CommsPackage) => {
-    return new Promise<void>(async (res) => {
-      const newCommsPackage = { ...comms, id: comms.id || generateMockId('comms-pkg') }; // Use existing ID if provided (from agent)
-      setCurrentCrisis(prev => {
-        if (!prev || prev.id !== crisisId) return prev;
-        const newApprovalEntry: CommsApprovalEntry = {
-          id: generateMockId('appr'),
-          commsPackageId: newCommsPackage.id!,
-          version: (prev.generatedCommsPackages.length + 1),
-          status: 'PENDING_REVIEW', // Automatically move to pending review
-          requiredRole: settings.defaultApprovalWorkflow[0] || 'CRISIS_MANAGER', // First role in workflow
-          reviewerId: '',
-        };
-        return {
-          ...prev,
-          generatedCommsPackages: [...prev.generatedCommsPackages, newCommsPackage],
-          approvalWorkflow: [...prev.approvalWorkflow, newApprovalEntry],
-          lastUpdate: new Date(),
-        };
-      });
-      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, generatedCommsPackages: [...c.generatedCommsPackages, newCommsPackage], lastUpdate: new Date() } : c));
-      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'CREATE', 'COMMS_PACKAGE', newCommsPackage.id!, `New comms package generated for crisis '${crisisId}'.`));
-      console.log(`Comms package added to crisis ${crisisId}`);
-      res();
+  /**
+   * Gets all messages currently on the bus (for audit/observability).
+   * @returns An array of all AgentMessage objects.
+   */
+  public getAllMessages(): AgentMessage[] {
+    return this.messages;
+  }
+}
+
+
+/**
+ * Generates initial digital identities for the player and core competitors.
+ * Business Value: This is the foundation of the digital identity layer, enabling attributed
+ * actions and simulated secure communication/transactions. It's the cornerstone for
+ * authentication, authorization, and auditability across the platform.
+ * @returns An object containing all seeded AgentIdentity instances.
+ */
+export const generateSeededIdentities = (): { [id: string]: AgentIdentity } => {
+  const identities: { [id: string]: AgentIdentity } = {};
+
+  const createIdentity = (name: string, role: AgentIdentity['role']): AgentIdentity => {
+    const id = `${role.toLowerCase()}_${name.toLowerCase().replace(/\s/g, '_').replace('.', '')}`;
+    const publicKey = simulateSignature(id + name + role + Date.now().toString() + generateRandomNumber(0, 100000)); // Simple mock key
+    const signingKey = simulateSignature(publicKey + 'private_seed' + Date.now().toString() + generateRandomNumber(0, 100000)); // Simple mock key
+    return { id, name, role, publicKey, signingKey, createdAt: Date.now() };
+  };
+
+  const playerIdentity = createIdentity('Nexus Innovations', 'Player');
+  identities[playerIdentity.id] = playerIdentity;
+
+  const comp1Identity = createIdentity('FinFuture Inc.', 'Competitor');
+  identities[comp1Identity.id] = comp1Identity;
+
+  const comp2Identity = createIdentity('Innovatech Solutions', 'Competitor');
+  identities[comp2Identity.id] = comp2Identity;
+
+  const comp3Identity = createIdentity('CustomerCare Co.', 'Competitor');
+  identities[comp3Identity.id] = comp3Identity;
+
+  // Add system identities for audit logging of non-agent events
+  identities['system_internal'] = createIdentity('Internal System', 'System');
+  identities['system_rd_dept'] = createIdentity('R&D Department', 'System');
+  identities['system_marketing_agency'] = createIdentity('Marketing Agency', 'System');
+  identities['system_sales_commission'] = createIdentity('Sales Commission', 'System');
+  identities['system_operations'] = createIdentity('Operations Department', 'System');
+  identities['system_hr_dept'] = createIdentity('HR Department', 'System');
+  identities['system_customer_service'] = createIdentity('Customer Service Department', 'System');
+  identities['system_buyer'] = createIdentity('Market Buyer', 'System');
+  identities['system_market_event'] = createIdentity('Market Event System', 'System');
+  identities['system_report_generator'] = createIdentity('Report Generator', 'System');
+  identities['system_auditor'] = createIdentity('Compliance Auditor', 'Auditor');
+
+
+  return identities;
+};
+
+/**
+ * Generates the initial set of competitor profiles for the simulation.
+ * Business Value: Each competitor is endowed with a unique strategy and market attributes,
+ * designed to interact dynamically with the player's decisions. This provides a realistic
+ * competitive landscape for strategic testing.
+ * @param seededIdentities - Pre-generated digital identities for all agents.
+ * @returns An array of CompetitorProfile objects.
+ */
+export const generateInitialCompetitors = (seededIdentities: { [id: string]: AgentIdentity }): CompetitorProfile[] => [
+  {
+    id: 'comp1_finfuture',
+    name: 'FinFuture Inc.',
+    description: 'A large, established fintech player known for broad market reach and aggressive marketing.',
+    marketShare: 35,
+    financialStrength: 85,
+    innovationFocus: 60,
+    marketingAggression: 90,
+    strategy: 'market_capture',
+    productOfferings: [
+      { id: 'prod_aiwallet', name: 'AI Wallet', type: 'FinTech_App' },
+      { id: 'prod_corpfinance', name: 'Corporate Finance Suite', type: 'AI_Platform' },
+    ],
+    recentActions: [],
+    identityId: seededIdentities['competitor_finfuture_inc'].id,
+  },
+  {
+    id: 'comp2_innovatech',
+    name: 'Innovatech Solutions',
+    description: 'A challenger focused on bleeding-edge AI and data analytics, often first to market with new tech.',
+    marketShare: 15,
+    financialStrength: 60,
+    innovationFocus: 95,
+    marketingAggression: 50,
+    strategy: 'innovate',
+    productOfferings: [
+      { id: 'prod_datapredict', name: 'Data Predictor AI', type: 'Data_Analytics' },
+      { id: 'prod_edgeai', name: 'Edge AI Platform', type: 'AI_Platform' },
+      { id: 'prod_tokenized_securities', name: 'Tokenized Securities Platform', type: 'Tokenized_Asset_Service' },
+    ],
+    recentActions: [],
+    identityId: seededIdentities['competitor_innovatech_solutions'].id,
+  },
+  {
+    id: 'comp3_customercare',
+    name: 'CustomerCare Co.',
+    description: 'Known for exceptional customer service and strong loyalty, targets specific niche segments.',
+    marketShare: 10,
+    financialStrength: 70,
+    innovationFocus: 40,
+    marketingAggression: 60,
+    strategy: 'niche_focus',
+    productOfferings: [
+      { id: 'prod_loyaltyapp', name: 'Loyalty Rewards App', type: 'FinTech_App' },
+      { id: 'prod_smesupport', name: 'SME Consulting', type: 'Consulting_Service' },
+    ],
+    recentActions: [],
+    identityId: seededIdentities['competitor_customercare_co'].id,
+  },
+];
+
+/**
+ * Initializes the market segments that comprise the overall market.
+ * Business Value: These segments have distinct characteristics and growth profiles,
+ * influencing the effectiveness of product and marketing strategies. They enable
+ * precise market targeting and segmentation analysis for optimal resource deployment.
+ * @returns An array of MarketSegment objects.
+ */
+export const generateInitialMarketSegments = (): MarketSegment[] => [
+  {
+    id: 'segment_consumer_mass',
+    name: 'Mass Market Consumers',
+    totalSize: 50000000,
+    growthRate: [0.03, 0.07],
+    sensitivityToPrice: 0.7,
+    sensitivityToInnovation: 0.3,
+    currentPlayerPenetration: 0.05,
+    competitorPenetration: {
+      'comp1_finfuture': 0.30,
+      'comp2_innovatech': 0.05,
+      'comp3_customercare': 0.08,
+    },
+    customerLoyalty: 60,
+  },
+  {
+    id: 'segment_enterprise_smb',
+    name: 'Small & Medium Businesses',
+    totalSize: 5000000,
+    growthRate: [0.05, 0.10],
+    sensitivityToPrice: 0.5,
+    sensitivityToInnovation: 0.6,
+    currentPlayerPenetration: 0.02,
+    competitorPenetration: {
+      'comp1_finfuture': 0.15,
+      'comp2_innovatech': 0.10,
+      'comp3_customercare': 0.05,
+    },
+    customerLoyalty: 70,
+  },
+  {
+    id: 'segment_enterprise_large',
+    name: 'Large Enterprises',
+    totalSize: 500000,
+    growthRate: [0.02, 0.05],
+    sensitivityToPrice: 0.3,
+    sensitivityToInnovation: 0.8,
+    currentPlayerPenetration: 0.01,
+    competitorPenetration: {
+      'comp1_finfuture': 0.10,
+      'comp2_innovatech': 0.20,
+      'comp3_customercare': 0.02,
+    },
+    customerLoyalty: 80,
+  },
+  {
+    id: 'segment_developer_api',
+    name: 'Developer & API Integrators',
+    totalSize: 1000000,
+    growthRate: [0.08, 0.15],
+    sensitivityToPrice: 0.4,
+    sensitivityToInnovation: 0.9,
+    currentPlayerPenetration: 0.005,
+    competitorPenetration: {
+      'comp1_finfuture': 0.05,
+      'comp2_innovatech': 0.15,
+      'comp3_customercare': 0.01,
+    },
+    customerLoyalty: 75,
+  },
+  {
+    id: 'segment_digital_asset_investors',
+    name: 'Digital Asset Investors',
+    totalSize: 100000, // Niche, but high value
+    growthRate: [0.10, 0.25],
+    sensitivityToPrice: 0.2,
+    sensitivityToInnovation: 0.95,
+    currentPlayerPenetration: 0.001,
+    competitorPenetration: {
+      'comp2_innovatech': 0.08,
+    },
+    customerLoyalty: 85,
+  },
+];
+
+/**
+ * Creates the initial state for the player's company, Nexus Innovations.
+ * Business Value: This baseline configuration defines the starting resources, products,
+ * and financial position for the wargame. It represents the initial investment profile
+ * and strategic setup for a multi-million dollar venture.
+ * @param playerIdentity - The digital identity of the player's company.
+ * @returns A WargameCompanyState object representing the player's company.
+ */
+export const generateInitialPlayerCompany = (playerIdentity: AgentIdentity): WargameCompanyState => {
+  const initialProductFeatures: ProductFeature[] = [
+    {
+      id: 'core_data_analytics_v1',
+      name: 'Basic Data Analytics',
+      developmentCost: 500000,
+      developmentTimeYears: 0,
+      marketImpact: [0.01, 0.02],
+      customerSatisfactionBoost: [5, 10],
+      innovationScore: 40,
+      status: 'launched',
+      launchYear: 2024,
+    },
+    {
+      id: 'core_fintech_app_v1',
+      name: 'Basic Budgeting App',
+      developmentCost: 750000,
+      developmentTimeYears: 0,
+      marketImpact: [0.015, 0.025],
+      customerSatisfactionBoost: [7, 12],
+      innovationScore: 50,
+      status: 'launched',
+      launchYear: 2024,
+    },
+    {
+      id: 'next_gen_ai_feature_a',
+      name: 'Predictive Spending AI (Planned)',
+      developmentCost: 2000000,
+      developmentTimeYears: 2,
+      marketImpact: [0.03, 0.06],
+      customerSatisfactionBoost: [15, 25],
+      innovationScore: 80,
+      status: 'planned',
+    },
+    {
+      id: 'enterprise_api_integration_feature_b',
+      name: 'Enterprise API Gateway (Planned)',
+      developmentCost: 1500000,
+      developmentTimeYears: 1,
+      marketImpact: [0.02, 0.04],
+      customerSatisfactionBoost: [10, 20],
+      innovationScore: 70,
+      status: 'planned',
+    },
+    {
+      id: 'programmable_asset_tokenization_v1',
+      name: 'Programmable Asset Tokenization Module',
+      developmentCost: 3000000,
+      developmentTimeYears: 3,
+      marketImpact: [0.05, 0.10],
+      customerSatisfactionBoost: [20, 30],
+      innovationScore: 90,
+      status: 'planned',
+    },
+  ];
+
+  const initialProductLines: ProductLine[] = [
+    {
+      id: 'player_fintech_suite',
+      name: 'FinTech Suite Basic',
+      type: 'FinTech_App',
+      baseCost: 5,
+      basePrice: 15,
+      marketShare: 0.05,
+      customerCount: 100000,
+      revenue: 1500000,
+      profit: 750000,
+      features: initialProductFeatures.filter(f => f.id.includes('fintech')),
+      innovationLevel: 55,
+      qualityScore: 70,
+      lifecycleStage: 'growth',
+      targetMarketSegmentIds: ['segment_consumer_mass'],
+    },
+    {
+      id: 'player_data_analytics',
+      name: 'Data Insights Platform',
+      type: 'Data_Analytics',
+      baseCost: 20,
+      basePrice: 50,
+      marketShare: 0.02,
+      customerCount: 10000,
+      revenue: 500000,
+      profit: 200000,
+      features: initialProductFeatures.filter(f => f.id.includes('data_analytics')),
+      innovationLevel: 60,
+      qualityScore: 75,
+      lifecycleStage: 'introduction',
+      targetMarketSegmentIds: ['segment_enterprise_smb', 'segment_developer_api'],
+    },
+  ];
+
+  const initialIncomeStatement: FinancialStatement = {
+    revenue: 2000000,
+    cogs: 800000,
+    grossProfit: 1200000,
+    rdExpenses: 200000,
+    marketingExpenses: 300000,
+    salesExpenses: 150000,
+    operationsExpenses: 100000,
+    hrExpenses: 200000,
+    customerServiceExpenses: 50000,
+    depreciation: 50000,
+    operatingProfit: 150000,
+    interestExpenses: 20000,
+    taxes: 30000,
+    netProfit: 100000,
+  };
+
+  const initialBalanceSheet: BalanceSheet = {
+    cash: 5000000,
+    accountsReceivable: 100000,
+    inventory: 0,
+    fixedAssets: 1000000,
+    digitalAssets: 0, // No digital assets initially
+    totalAssets: 6100000,
+    accountsPayable: 50000,
+    shortTermDebt: 200000,
+    longTermDebt: 1000000,
+    totalLiabilities: 1250000,
+    equity: 4850000,
+    totalLiabilitiesAndEquity: 6100000,
+  };
+
+  const initialCashFlowStatement: CashFlowStatement = {
+    operatingActivities: 100000,
+    investingActivities: -50000,
+    financingActivities: 0,
+    netChangeInCash: 50000,
+    beginningCash: 4950000,
+    endingCash: 5000000,
+  };
+
+  return {
+    id: 'player_company',
+    name: 'Nexus Innovations',
+    yearEstablished: 2024,
+    cash: 5000000,
+    tokenBalances: {
+      'NXG_TOKEN': 0 // Player starts with 0 NXG tokens
+    },
+    marketShare: 0.07, // 7% initial total market share
+    revenue: 2000000,
+    profit: 100000,
+    employeeCount: 150,
+    rdBudget: 200000,
+    marketingBudget: 300000,
+    salesBudget: 150000,
+    operationsBudget: 100000,
+    hrBudget: 200000,
+    customerServiceBudget: 50000,
+    capitalInvestmentBudget: 0,
+    brandReputation: 65,
+    customerSatisfaction: 70,
+    productLines: initialProductLines,
+    strategicFocus: 'innovation',
+    financials: {
+      incomeStatement: initialIncomeStatement,
+      balanceSheet: initialBalanceSheet,
+      cashFlowStatement: initialCashFlowStatement,
+    },
+    identityId: playerIdentity.id,
+  };
+};
+
+/**
+ * Assembles the complete initial game state, including player company,
+ * competitors, market segments, and global conditions.
+ * Business Value: This function provides the deterministic starting point
+ * for the entire wargame simulation, critical for reproducible analysis
+ * and controlled experimentation. It is the blueprint for launching a
+ * multi-million dollar simulation.
+ * @returns A GameState object for the start of the simulation.
+ */
+export const getInitialGameState = (): GameState => {
+  const seededIdentities = generateSeededIdentities();
+  const playerIdentity = seededIdentities['player_nexus_innovations'];
+  const initialPlayerCompany = generateInitialPlayerCompany(playerIdentity);
+
+  return {
+    currentYear: 2024,
+    playerCompany: initialPlayerCompany,
+    competitors: generateInitialCompetitors(seededIdentities),
+    marketSegments: generateInitialMarketSegments(),
+    historicalReports: [],
+    globalMarketSentiment: 60,
+    auditLog: [],
+    seededIdentities,
+    agentMessages: [], // Initialize empty message bus
+  };
+};
+
+/**
+ * The core simulation engine for the Emergent Strategy Wargamer.
+ * Business Value: This engine is the strategic brain of the simulation, orchestrating
+ * complex market dynamics, competitor interactions, and financial flows. It offers
+ * a high-performance, deterministic environment for 'build phase' architecture testing.
+ * By integrating agentic AI (competitors), conceptual token rails (payment processing),
+ * and digital identity (audit logging), it enables granular analysis of strategic
+ * decisions. It empowers businesses to model multi-million dollar investments,
+ * predict market reactions, and validate new FinTech product launches with unparalleled
+ * analytical depth and speed, significantly de-risking real-world deployments and
+ * accelerating time-to-market for innovative financial solutions. This is a revolutionary
+ * infrastructure component.
+ */
+export class SimulationEngine {
+  private gameState: GameState;
+  private currentDirective: PlayerStrategicDirective | null = null;
+  private paymentProcessor: PaymentProcessorSimulator;
+  private tokenRailSimulator: TokenRailSimulator;
+  private rulesEngine: SettlementRulesEngine;
+  private identityService: IdentityService;
+  private agentMessageBus: AgentMessageBus;
+
+  /**
+   * Constructs the simulation engine with an initial game state.
+   * @param initialState - The starting state of the game.
+   */
+  constructor(initialState: GameState) {
+    this.gameState = JSON.parse(JSON.stringify(initialState)); // Deep copy to prevent mutations
+    this.identityService = new IdentityService(this.gameState.seededIdentities);
+    this.rulesEngine = new SettlementRulesEngine();
+    this.tokenRailSimulator = new TokenRailSimulator(this.rulesEngine);
+    this.paymentProcessor = new PaymentProcessorSimulator(this.tokenRailSimulator, this.rulesEngine, this.identityService);
+    this.agentMessageBus = new AgentMessageBus(this.identityService);
+
+    // Initial token issuance for the system, if not already done in TokenRailSimulator constructor
+    if (this.tokenRailSimulator.getBalance('system_internal', 'NXG_TOKEN') === 0) {
+      this.tokenRailSimulator.issueTokens(this.gameState.seededIdentities['system_internal'].id, this.gameState.seededIdentities['system_internal'].id, 'NXG_TOKEN', 1000000000);
+    }
+  }
+
+  /**
+   * Sets the strategic directive provided by the player for the upcoming year.
+   * @param directive - The player's strategic decisions.
+   */
+  public setPlayerDirective(directive: PlayerStrategicDirective) {
+    this.currentDirective = directive;
+  }
+
+  /**
+   * Advances the simulation by one year, processing all strategic directives,
+   * market dynamics, and financial calculations. This method orchestrates the
+   * entire agentic ecosystem for a single operational cycle.
+   * Business Value: This core function simulates an entire year of complex financial
+   * operations, market interactions, and agentic decision-making in minutes. It provides
+   * a rapid feedback loop for strategic validation, allowing for agile adaptation
+   * and optimization of multi-million dollar business models, dramatically reducing
+   * time-to-market and risk.
+   * @returns A Promise that resolves with the YearEndReport for the completed year.
+   * @throws Error if a player directive is not set before advancing.
+   */
+  public async advanceYear(): Promise<YearEndReport> {
+    if (!this.currentDirective) {
+      throw new Error('Player strategic directive must be set before advancing year.');
+    }
+
+    const prevCompanyState = JSON.parse(JSON.stringify(this.gameState.playerCompany));
+    const prevCompetitorStates = JSON.parse(JSON.stringify(this.gameState.competitors));
+    const prevMarketSegments = JSON.parse(JSON.stringify(this.gameState.marketSegments));
+    const currentYear = this.gameState.currentYear + 1;
+
+    // 1. Record Player's Strategic Directive to Audit Log
+    this.recordAuditLog(
+      this.gameState.playerCompany.identityId,
+      'SetStrategicDirective',
+      { year: currentYear, directive: this.currentDirective },
+      this.gameState.auditLog.length > 0 ? this.gameState.auditLog[this.gameState.auditLog.length - 1].signature : 'GENESIS'
+    );
+
+    // 2. Apply Player's Strategic Directive and simulate immediate financial impacts
+    this.applyPlayerStrategy(this.gameState.playerCompany, this.currentDirective, currentYear);
+
+    // 3. Simulate R&D Outcomes, including associated payments
+    this.simulateRD(this.gameState.playerCompany, currentYear);
+
+    // 4. Simulate Agentic Competitor Actions & AI
+    const competitorActions = this.simulateAgenticCompetitorStrategy(this.gameState.competitors, this.gameState.playerCompany, this.gameState.marketSegments, currentYear);
+
+    // 5. Simulate Market Dynamics & Customer Behavior
+    this.simulateMarketDynamics(this.gameState.playerCompany, this.gameState.competitors, this.gameState.marketSegments, this.currentDirective, this.gameState.globalMarketSentiment, currentYear);
+
+    // 6. Simulate Marketing & Sales Effectiveness, including associated payments
+    this.simulateMarketingAndSales(this.gameState.playerCompany, this.currentDirective, this.gameState.marketSegments, currentYear);
+
+    // 7. Simulate Operations and HR, including associated payments
+    this.simulateOperationsAndHR(this.gameState.playerCompany, this.currentDirective, currentYear);
+
+    // 8. Generate Random News and Global Events
+    const marketNewsEvents = this.generateMarketNewsEvents(currentYear);
+    this.applyGlobalEvents(marketNewsEvents);
+
+    // 9. Calculate Financials
+    this.calculateAllFinancials(this.gameState.playerCompany, currentYear);
+
+    // 10. Update Global Game State
+    this.gameState.currentYear++;
+    this.gameState.globalMarketSentiment = generateRandomNumber(
+      Math.max(0, this.gameState.globalMarketSentiment - 10),
+      Math.min(100, this.gameState.globalMarketSentiment + 10),
+      0
+    );
+    this.gameState.agentMessages = this.agentMessageBus.getAllMessages(); // Clear bus or get current snapshot
+
+    // 11. Generate Year-End Report
+    const yearEndReport = this.generateYearEndReport(
+      prevCompanyState,
+      prevCompetitorStates,
+      prevMarketSegments,
+      this.gameState.playerCompany,
+      competitorActions,
+      marketNewsEvents,
+      this.currentDirective
+    );
+    this.gameState.historicalReports.push(yearEndReport);
+
+    // Reset directive for next year
+    this.currentDirective = null;
+    return yearEndReport;
+  }
+
+  /**
+   * Records an action to the centralized audit log, ensuring cryptographic chaining.
+   * Business Value: Guarantees tamper-evident traceability for every event,
+   * critical for regulatory compliance, internal governance, and forensic analysis,
+   * forming an immutable record of all system operations.
+   * @param agentId - The ID of the agent performing the action.
+   * @param action - A descriptive name of the action.
+   * @param details - An object containing specific details of the action.
+   * @param previousEntryHash - The hash of the previous audit log entry for chaining.
+   */
+  private recordAuditLog(agentId: string, action: string, details: any, previousEntryHash: string | undefined = undefined) {
+    const agent = this.gameState.seededIdentities[agentId];
+    if (!agent) {
+      console.error(`AuditLog: Agent with ID ${agentId} not found.`);
+      return;
+    }
+    const dataToSign = JSON.stringify({ timestamp: Date.now(), agentId, action, details, previousEntryHash });
+    const signature = this.identityService.signData(dataToSign, agent.signingKey); // Simulated private key signing
+    this.gameState.auditLog.push({
+      id: generateUUID(),
+      timestamp: Date.now(),
+      agentId,
+      agentName: agent.name,
+      action,
+      details,
+      signature,
+      previousEntryHash,
     });
-  }, [currentUser.id, settings.defaultApprovalWorkflow, addAuditLog]);
+  }
 
-  const addLegalReviewToCrisis = useCallback(async (crisisId: string, review: LegalAnalysisResult) => {
-    return new Promise<void>(async (res) => {
-      const newReview = { ...review, id: generateMockId('legal') };
-      setCurrentCrisis(prev => {
-        if (!prev || prev.id !== crisisId) return prev;
-        return {
-          ...prev,
-          legalReviews: [...prev.legalReviews, newReview],
-          lastUpdate: new Date(),
-        };
-      });
-      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, legalReviews: [...c.legalReviews, newReview], lastUpdate: new Date() } : c));
-      const actorType = getMockUser(review.analyzedByUserId) ? 'USER' : 'AGENT';
-      await addAuditLog(generateMockAuditLogEntry(review.analyzedByUserId, actorType, 'CREATE', 'LEGAL_REVIEW', newReview.id, `Legal review added for crisis '${crisisId}'. Risk: ${newReview.legalRiskLevel}`));
-      console.log(`Legal review added to crisis ${crisisId}`);
-      res();
-    });
-  }, [addAuditLog]);
+  /**
+   * Applies the player's strategic directive, impacting the company's financials
+   * and product portfolio. All financial changes are routed through the payment processor.
+   * Business Value: Translates high-level strategic decisions into actionable financial
+   * and operational changes, demonstrating the direct impact of leadership choices
+   * on the company's P&L and balance sheet via the secure payment rails.
+   * @param company - The player's company state.
+   * @param directive - The player's strategic decisions.
+   * @param currentYear - The current simulation year.
+   */
+  private applyPlayerStrategy(company: WargameCompanyState, directive: PlayerStrategicDirective, currentYear: number) {
+    if (!this.identityService.authorizeAction(company.identityId, ['Player'])) {
+      this.recordAuditLog(company.identityId, 'UnauthorizedStrategyAttempt', { year: currentYear, directive: directive });
+      console.warn(`Unauthorized attempt by ${company.name} to apply strategy.`);
+      return;
+    }
+    company.strategicFocus = directive.overallFocus;
 
-  const addSentimentReportToCrisis = useCallback(async (crisisId: string, report: SentimentReport) => {
-    return new Promise<void>(async (res) => {
-      const newReport = { ...report, id: generateMockId('sent') };
-      setCurrentCrisis(prev => {
-        if (!prev || prev.id !== crisisId) return prev;
-        return {
-          ...prev,
-          sentimentHistory: [...prev.sentimentHistory, newReport],
-          lastUpdate: new Date(),
-        };
-      });
-      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, sentimentHistory: [...c.sentimentHistory, newReport], lastUpdate: new Date() } : c));
-      const actorType = getMockUser(report.generatedByUserId) ? 'USER' : 'AGENT';
-      await addAuditLog(generateMockAuditLogEntry(report.generatedByUserId, actorType, 'CREATE', 'SENTIMENT_REPORT', newReport.id, `New sentiment report generated for crisis '${crisisId}'. Overall sentiment: ${newReport.overallSentiment.toFixed(2)}`));
-      console.log(`Sentiment report added to crisis ${crisisId}`);
-      res();
-    });
-  }, [addAuditLog]);
+    // Allocate budgets based on percentages
+    const totalBudgetForAllocation = company.cash * 0.2; // Example: 20% of cash as annual operational budget
 
-  const updateCommsApprovalStatus = useCallback(async (crisisId: string, commsPackageId: string, approvalEntryId: string, status: CommsStatus, reviewerId: string, comments?: string) => {
-    return new Promise<void>(async (res) => {
-      setCurrentCrisis(prev => {
-        if (!prev || prev.id !== crisisId) return prev;
+    const budgetAllocation: ResourceAllocation = {
+      rd: totalBudgetForAllocation * (directive.resourceAllocation.rd / 100),
+      marketing: totalBudgetForAllocation * (directive.resourceAllocation.marketing / 100),
+      sales: totalBudgetForAllocation * (directive.resourceAllocation.sales / 100),
+      operations: totalBudgetForAllocation * (directive.resourceAllocation.operations / 100),
+      hr: totalBudgetForAllocation * (directive.resourceAllocation.hr / 100),
+      customerService: totalBudgetForAllocation * (directive.resourceAllocation.customerService / 100),
+      capitalInvestment: totalBudgetForAllocation * (directive.resourceAllocation.capitalInvestment / 100),
+    };
 
-        const updatedWorkflow = prev.approvalWorkflow.map(entry => {
-          if (entry.id === approvalEntryId) {
-            const signature = simulateSignature(reviewerId, `${status} comms ${commsPackageId}`);
-            return {
-              ...entry,
-              status,
-              reviewerId,
-              reviewTimestamp: new Date(),
-              comments: comments || entry.comments,
-              signature,
-            };
-          }
-          return entry;
+    company.rdBudget = budgetAllocation.rd;
+    company.marketingBudget = budgetAllocation.marketing;
+    company.salesBudget = budgetAllocation.sales;
+    company.operationsBudget = budgetAllocation.operations;
+    company.hrBudget = budgetAllocation.hr;
+    company.customerServiceBudget = budgetAllocation.customerService;
+    company.capitalInvestmentBudget = budgetAllocation.capitalInvestment;
+
+    // Deduct total budget from cash (initial allocation) via payment processor
+    if (totalBudgetForAllocation > 0) {
+      try {
+        const paymentTx = this.paymentProcessor.processPayment(
+          company.identityId,
+          'system_internal', // Representing internal budget allocation
+          totalBudgetForAllocation,
+          'budget_allocation',
+          currentYear,
+          directive.tokenRailOptimization
+        );
+        if (paymentTx.status === 'settled') {
+          company.cash -= totalBudgetForAllocation + paymentTx.processingFee;
+          this.recordAuditLog(company.identityId, 'BudgetAllocation', { year: currentYear, totalBudget: totalBudgetForAllocation, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+        } else {
+          this.recordAuditLog(company.identityId, 'BudgetAllocationFailed', { year: currentYear, totalBudget: totalBudgetForAllocation, reason: `Payment failed: ${paymentTx.status}` }, paymentTx.signature);
+        }
+      } catch (e: any) {
+        this.recordAuditLog(company.identityId, 'BudgetAllocationError', { year: currentYear, totalBudget: totalBudgetForAllocation, error: e.message });
+      }
+    }
+
+    // Handle new product development (initial setup, actual launch happens after dev time)
+    directive.newProductDevelopment.forEach(newProd => {
+      const existingProduct = company.productLines.find(p => p.name === newProd.name);
+      if (!existingProduct) {
+        const productBaseCost = generateRandomNumber(10, 30);
+        const productBasePrice = generateRandomNumber(40, 100);
+        const newFeatures: ProductFeature[] = [];
+        newProd.featuresToDevelop.forEach(featureId => {
+          newFeatures.push({
+            id: `${newProd.name}_${featureId}`,
+            name: `Feature: ${featureId}`,
+            developmentCost: generateRandomNumber(100000, 1000000),
+            developmentTimeYears: generateRandomNumber(1, 3, 0),
+            marketImpact: [0.01, 0.05],
+            customerSatisfactionBoost: [5, 15],
+            innovationScore: generateRandomNumber(60, 95),
+            status: 'planned', // New features start as planned
+          });
         });
 
-        // If approved, find the next step in the workflow
-        if (status === 'APPROVED') {
-          const currentEntryIndex = updatedWorkflow.findIndex(entry => entry.id === approvalEntryId);
-          if (currentEntryIndex !== -1) {
-            const currentRequiredRoleIndex = settings.defaultApprovalWorkflow.indexOf(updatedWorkflow[currentEntryIndex].requiredRole);
-            if (currentRequiredRoleIndex !== -1 && currentRequiredRoleIndex < settings.defaultApprovalWorkflow.length - 1) {
-              const nextRequiredRole = settings.defaultApprovalWorkflow[currentRequiredRoleIndex + 1];
-              // Check if an approval entry for this role already exists for this comms package
-              const existingNextEntry = updatedWorkflow.find(entry => entry.commsPackageId === commsPackageId && entry.requiredRole === nextRequiredRole);
+        const newProductLine: ProductLine = {
+          id: `prod_${newProd.name.toLowerCase().replace(/\s/g, '_')}_${generateUUID().substring(0, 4)}`,
+          name: newProd.name,
+          type: newProd.type,
+          baseCost: productBaseCost,
+          basePrice: productBasePrice,
+          marketShare: 0,
+          customerCount: 0,
+          revenue: 0,
+          profit: 0,
+          features: newFeatures,
+          innovationLevel: generateRandomNumber(50, 70),
+          qualityScore: generateRandomNumber(60, 80),
+          lifecycleStage: 'introduction',
+          targetMarketSegmentIds: newProd.targetMarketSegmentIds,
+        };
+        company.productLines.push(newProductLine);
+        this.recordAuditLog(company.identityId, 'PlannedNewProduct', { productId: newProductLine.id, productName: newProductLine.name, features: newFeatures.map(f => f.id) });
+        // Agent message to R&D department
+        this.agentMessageBus.sendMessage(company.identityId, 'system_rd_dept', 'COMMAND', { action: 'StartNewProductDevelopment', productId: newProductLine.id, features: newFeatures.map(f => f.id) });
+      }
+    });
 
-              if (existingNextEntry) {
-                // If it exists, update its status to PENDING_REVIEW if it was DRAFT
-                if (existingNextEntry.status === 'DRAFT') {
-                  existingNextEntry.status = 'PENDING_REVIEW';
-                }
-              } else {
-                // Otherwise, add a new approval entry for the next role
-                updatedWorkflow.push({
-                  id: generateMockId('appr'),
-                  commsPackageId,
-                  version: updatedWorkflow[currentEntryIndex].version,
-                  status: 'PENDING_REVIEW',
-                  requiredRole: nextRequiredRole,
-                  reviewerId: '',
-                });
-              }
-            } else if (currentRequiredRoleIndex === settings.defaultApprovalWorkflow.length - 1) {
-              // Last step, mark comms package as published
-              const updatedCommsPackages = prev.generatedCommsPackages.map(pkg =>
-                pkg.id === commsPackageId ? { ...pkg, status: 'PUBLISHED' } as CommsPackage : pkg
-              );
-              prev.generatedCommsPackages = updatedCommsPackages; // Update in previous state directly
-              console.log(`Comms package ${commsPackageId} for crisis ${crisisId} fully APPROVED and PUBLISHED.`);
-            }
+    // Handle pricing adjustments
+    directive.pricingAdjustments.forEach(adjustment => {
+      const product = company.productLines.find(p => p.id === adjustment.productId);
+      if (product) {
+        const oldPrice = product.basePrice;
+        product.basePrice = adjustment.newPrice;
+        // Impact customer satisfaction/market share immediately (simplified)
+        const priceChangeEffect = (adjustment.newPrice - oldPrice) / oldPrice;
+        product.customerCount *= (1 - priceChangeEffect * 0.1); // Small immediate effect
+        this.recordAuditLog(company.identityId, 'AdjustedProductPricing', { productId: product.id, oldPrice, newPrice: adjustment.newPrice });
+      }
+    });
+
+    // Handle divest product lines
+    directive.divestProductLines.forEach(productId => {
+      const productToDivest = company.productLines.find(p => p.id === productId);
+      if (productToDivest) {
+        company.productLines = company.productLines.filter(p => p.id !== productId);
+        // Simulate cash inflow from divestment via payment processor
+        const divestmentAmount = generateRandomNumber(500000, 2000000);
+        try {
+          const paymentTx = this.paymentProcessor.processPayment(
+            'system_buyer', // Conceptual buyer
+            company.identityId,
+            divestmentAmount,
+            'divestment',
+            currentYear,
+            directive.tokenRailOptimization
+          );
+          if (paymentTx.status === 'settled') {
+            company.cash += divestmentAmount - paymentTx.processingFee;
+            this.recordAuditLog(company.identityId, 'DivestedProductLine', { productId, amount: divestmentAmount, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+          } else {
+            this.recordAuditLog(company.identityId, 'DivestmentFailed', { productId, amount: divestmentAmount, reason: `Payment failed: ${paymentTx.status}` }, paymentTx.signature);
+          }
+        } catch (e: any) {
+          this.recordAuditLog(company.identityId, 'DivestmentError', { productId, amount: divestmentAmount, error: e.message });
+        }
+      }
+    });
+
+    // Handle target acquisitions (simplified - just remove competitor)
+    directive.targetAcquisitions.forEach(competitorId => {
+      const acquiredComp = this.gameState.competitors.find(c => c.id === competitorId);
+      if (acquiredComp) {
+        this.gameState.competitors = this.gameState.competitors.filter(c => c.id !== competitorId);
+        // Simulate cash outflow for acquisition via payment processor
+        const acquisitionCost = generateRandomNumber(10000000, 50000000);
+        try {
+          const paymentTx = this.paymentProcessor.processPayment(
+            company.identityId,
+            acquiredComp.identityId,
+            acquisitionCost,
+            'acquisition',
+            currentYear,
+            directive.tokenRailOptimization
+          );
+          if (paymentTx.status === 'settled') {
+            company.cash -= acquisitionCost + paymentTx.processingFee;
+            company.brandReputation = Math.min(100, company.brandReputation + generateRandomNumber(5, 15));
+            // Add acquired products to player's portfolio (simplified)
+            acquiredComp.productOfferings.forEach(p => {
+              company.productLines.push({
+                id: `acquired_${p.id}_${generateUUID().substring(0, 4)}`,
+                name: `Acquired ${p.name} from ${acquiredComp.name}`,
+                type: p.type,
+                baseCost: generateRandomNumber(5, 20),
+                basePrice: generateRandomNumber(20, 80),
+                marketShare: generateRandomNumber(0.01, 0.03),
+                customerCount: generateRandomNumber(50000, 200000),
+                revenue: generateRandomNumber(1000000, 5000000),
+                profit: generateRandomNumber(200000, 1000000),
+                features: [], // Simplified: no specific features for acquired products initially
+                innovationLevel: generateRandomNumber(40, 70),
+                qualityScore: generateRandomNumber(60, 80),
+                lifecycleStage: 'maturity',
+                targetMarketSegmentIds: this.gameState.marketSegments.map(s => s.id), // All segments for simplicity
+              });
+            });
+            this.recordAuditLog(company.identityId, 'AcquiredCompetitor', { competitorId, cost: acquisitionCost, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+          } else {
+            this.recordAuditLog(company.identityId, 'AcquisitionFailed', { competitorId, cost: acquisitionCost, reason: `Payment failed: ${paymentTx.status}` }, paymentTx.signature);
+          }
+        } catch (e: any) {
+          this.recordAuditLog(company.identityId, 'AcquisitionError', { competitorId, cost: acquisitionCost, error: e.message });
+        }
+      }
+    });
+
+    // Handle Digital Asset Focus (e.g., minting initial NXG for internal use or market)
+    if (directive.overallFocus === 'digital_asset_focus') {
+      const mintAmount = generateRandomNumber(100000, 500000); // Mint some NXG tokens
+      try {
+        const paymentTx = this.paymentProcessor.processPayment(
+          company.identityId, // Company issues to itself
+          company.identityId,
+          mintAmount,
+          'token_mint',
+          currentYear,
+          directive.tokenRailOptimization,
+          generateUUID(),
+          'NXG_TOKEN'
+        );
+        if (paymentTx.status === 'settled') {
+          company.tokenBalances['NXG_TOKEN'] = (company.tokenBalances['NXG_TOKEN'] || 0) + mintAmount - paymentTx.processingFee;
+          this.recordAuditLog(company.identityId, 'MintedNXGTokens', { amount: mintAmount, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+        } else {
+          this.recordAuditLog(company.identityId, 'MintNXGTokensFailed', { amount: mintAmount, reason: `Payment failed: ${paymentTx.status}` }, paymentTx.signature);
+        }
+      } catch (e: any) {
+        this.recordAuditLog(company.identityId, 'MintNXGTokensError', { amount: mintAmount, error: e.message });
+      }
+    }
+  }
+
+  /**
+   * Simulates the R&D activities for the company, including feature development
+   * and overall innovation. R&D expenses are processed through the payment processor.
+   * Business Value: Models the critical investment in innovation, demonstrating how
+   * R&D spend translates into new products and features that drive competitive advantage
+   * and long-term market value.
+   * @param company - The player's company state.
+   * @param currentYear - The current simulation year.
+   */
+  private simulateRD(company: WargameCompanyState, currentYear: number) {
+    const actualRDCost = company.rdBudget * generateRandomNumber(0.8, 1.2); // Actual spend fluctuates
+
+    // Process R&D budget payment
+    if (actualRDCost > 0) {
+      try {
+        const paymentTx = this.paymentProcessor.processPayment(
+          company.identityId,
+          'system_rd_dept', // Conceptual R&D department
+          actualRDCost,
+          'budget_allocation',
+          currentYear,
+          this.currentDirective?.tokenRailOptimization // Use player's optimization directive
+        );
+        if (paymentTx.status === 'settled') {
+          company.cash -= actualRDCost + paymentTx.processingFee;
+          this.recordAuditLog(company.identityId, 'RDBudgetSpend', { amount: actualRDCost, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+        } else {
+          this.recordAuditLog(company.identityId, 'RDBudgetSpendFailed', { amount: actualRDCost, reason: `Payment failed: ${paymentTx.status}` }, paymentTx.signature);
+        }
+      } catch (e: any) {
+        this.recordAuditLog(company.identityId, 'RDBudgetSpendError', { amount: actualRDCost, error: e.message });
+      }
+    }
+
+    company.productLines.forEach(product => {
+      product.features.forEach(feature => {
+        if (feature.status === 'planned') {
+          // If a feature is planned and R&D budget is sufficient, start developing
+          if (actualRDCost > feature.developmentCost / feature.developmentTimeYears / 2) { // Simple heuristic
+            feature.status = 'developing';
+            this.recordAuditLog(company.identityId, 'ProductFeatureDevelopmentStarted', { productId: product.id, featureId: feature.id });
+            this.agentMessageBus.sendMessage(company.identityId, 'system_rd_dept', 'COMMAND', { action: 'StartFeatureDevelopment', productId: product.id, featureId: feature.id });
+          }
+        } else if (feature.status === 'developing') {
+          feature.developmentTimeYears--;
+          if (feature.developmentTimeYears <= 0) {
+            feature.status = 'launched';
+            feature.launchYear = currentYear;
+            // Apply innovation and quality boosts from the new feature
+            product.innovationLevel = Math.min(100, product.innovationLevel + generateRandomNumber(feature.marketImpact[0] * 50, feature.marketImpact[1] * 50));
+            product.qualityScore = Math.min(100, product.qualityScore + generateRandomNumber(feature.customerSatisfactionBoost[0], feature.customerSatisfactionBoost[1]));
+            company.customerSatisfaction = Math.min(100, company.customerSatisfaction + generateRandomNumber(feature.customerSatisfactionBoost[0] / 2, feature.customerSatisfactionBoost[1] / 2));
+            this.recordAuditLog(company.identityId, 'ProductFeatureLaunched', { productId: product.id, featureId: feature.id, launchYear: feature.launchYear });
+            // Send message to marketing to promote the new feature
+            this.agentMessageBus.sendMessage(company.identityId, 'system_marketing_agency', 'COMMAND', { action: 'PromoteNewFeature', productId: product.id, featureId: feature.id });
           }
         }
-        setAllCrises(prevAll => prevAll.map(c => c.id === crisisId ? { ...c, approvalWorkflow: updatedWorkflow, lastUpdate: new Date() } : c));
-        return {
-          ...prev,
-          approvalWorkflow: updatedWorkflow,
-          lastUpdate: new Date(),
-        };
       });
-      await addAuditLog(generateMockAuditLogEntry(reviewerId, 'USER', status === 'APPROVED' ? 'APPROVE' : 'REJECT', 'COMMS_PACKAGE', commsPackageId, `Comms approval for package ${commsPackageId} set to '${status}'.`));
-      console.log(`Comms approval entry ${approvalEntryId} status updated to ${status}`);
-      res();
+      // Boost overall product innovation based on general R&D budget
+      product.innovationLevel = Math.min(100, product.innovationLevel + (actualRDCost / 1000000) * generateRandomNumber(0.1, 0.5));
     });
-  }, [settings.defaultApprovalWorkflow, addAuditLog]);
+  }
 
-  const updateFinancialTransactionStatus = useCallback(async (crisisId: string, transactionId: string, newStatus: FinancialTransaction['status'], actorId: string) => {
-    return new Promise<void>(async (res) => {
-      setAllCrises(prevCrises => prevCrises.map(crisis => {
-        if (crisis.id === crisisId) {
-          const updatedTransactions = crisis.financialTransactions.map(tx => {
-            if (tx.id === transactionId) {
-              const actorType = getMockUser(actorId) ? 'USER' : 'AGENT';
-              addAuditLog(generateMockAuditLogEntry(actorId, actorType, 'UPDATE', 'FINANCIAL_TRANSACTION', transactionId, `Transaction ${transactionId} status updated to '${newStatus}'.`));
-              return { ...tx, status: newStatus, signature: simulateSignature(actorId, `Update Tx ${transactionId} to ${newStatus}`) };
+  /**
+   * Simulates the effectiveness of marketing and sales efforts, impacting market share
+   * and customer acquisition. Marketing and sales budgets are processed thro investments, linking
+   * budget allocatioates the ROI of marketing and sales investments, linking
+   * budget allocation to market penetration, brand reputation, and customer growth,
+   * critical for optimizing * @param directive - The player's strategic decisions.
+  's company state.
+   * @param directive - The player's strategic decisions.
+   * @param marketSegments - The current market segments.
+   * @param curren(company: WargameCompanyState, directive: 
+  private simulateMarketingAndSales(company: WargameCompanyState, directive: PlayerStrategicDirective, marketSegments: MarketSegment[], currentYear: number) {
+    con1.2);
+    const actualSalesSpend = company.salesBudget * generateRNumber(0.8, 1.2);
+    const actualSalesSpend = company.salesBudget * generateRandomNumber(0.8, 1.2)
+      try {
+        const paymentTx = this.paymentProcesMarketingSpend > 0) {
+      try {
+        const paymentTx = this.paymentProcessor.processPayment(
+          company.identityId,
+          'system_ma          currentYear,
+          directive.tokenR          'marketing_spend',
+          currentYear,
+          directive.tokenRailOptimization
+        );
+        if (paymentTx.status === 'settled') {
+          crecordAuditLog(company.identityId, 'MarketingBudgetSpend', { amount: actualMarketingSpend, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+        }
+      } catch (e: any) {
+        this.recordAuditLog(company.identityId, 'MarketingBudgetSpendError', { amount: actualMarketingSpend, error: e.message });
+      }
+    }
+    // Process sales budget payment
+    if (actualSalesSpend > 0) {
+      try {
+        const paymentTx = this.paymentProcessor.processPayment(
+          company.identityId,
+          'system_sales_commission',
+          actualSalesSpend,
+          'budget_allocation', // Could be 'sales_commission'
+          currentYear,
+          directive.tokenRailOptimization
+        );
+        if (paymentTx.status === 'settled') {
+          company.cash -= actualSalesSpend + paymentTx.processingFee;
+          this.recordAuditLog(company.identityId, 'SalesBudgetSpend', { amount: actualSalesSpend, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+        }
+      } catch (e: any) {
+        this.recordAuditLog(company.identityId, 'SalesBudgetSpendError', { amount: actualSalesSpend, error: e.message });
+      }
+    }
+
+    let totalBrandReputationBoost = 0;
+
+    // Apply general marketing budget effects
+    totalBrandReputationBoost += (actualMarketingSpend / 1000000) * generateRandomNumber(1, 3);
+    company.brandReputation = Math.min(100, company.brandReputation + totalBrandReputationBoost);
+    company.customerSatisfaction = Math.min(100, company.customerSatisfaction + (actualMarketingSpend / 1000000) * generateRandomNumber(0.5, 1));
+
+    // Apply specific marketing campaign effects
+    directive.marketingCampaigns.forEach(campaign => {
+      const effectiveBudget = campaign.budget * generateRandomNumber(0.8, 1.2);
+      campaign.targetSegmentIds.forEach(segmentId => {
+        const segment = marketSegments.find(s => s.id === segmentId);
+        if (segment) {
+          const campaignEffect = (effectiveBudget / 100000) * generateRandomNumber(0.001, 0.005); // Small market share gain per 100k budget
+          segment.currentPlayerPenetration = Math.min(1, segment.currentPlayerPenetration + campaignEffect);
+          company.brandReputation = Math.min(100, company.brandReputation + campaignEffect * 100);
+          this.recordAuditLog(company.identityId, 'MarketingCampaignLaunch', { campaignName: campaign.name, targetSegment: segment.name, budget: effectiveBudget });
+          this.agentMessageBus.sendMessage(company.identityId, 'system_marketing_agency', 'COMMAND', { action: 'ExecuteCampaign', campaignName: campaign.name, targetSegment: segment.name });
+        }
+      });
+    });
+
+    // Sales efforts translate to direct customer acquisition
+    company.productLines.forEach(product => {
+      product.targetMarketSegmentIds.forEach(segmentId => {
+        const segment = marketSegments.find(s => s.id === segmentId);
+        if (segment) {
+          const acquisitionRate = (actualSalesSpend / 1000000) * generateRandomNumber(0.01, 0.05) * segment.sensitivityToPrice * (company.brandReputation / 100) * (product.innovationLevel / 100);
+          const potentialCustomers = segment.totalSize * (1 - segment.currentPlayerPenetration); // Customers not yet acquired by player
+          const newCustomers = Math.min(potentialCustomers, potentialCustomers * acquisitionRate);
+          product.customerCount += newCustomers;
+          segment.currentPlayerPenetration += newCustomers / segment.totalSize; // Update segment penetration
+          company.customerSatisfaction = Math.min(100, company.customerSatisfaction + (actualSalesSpend / 1000000) * generateRandomNumber(0.1, 0.3));
+          if (newCustomers > 0) {
+            this.recordAuditLog(company.identityId, 'CustomerAcquisition', { productId: product.id, segmentId: segment.id, newCustomers: Math.round(newCustomers) });
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Simulates the impact of operations and HR decisions on efficiency and employee morale.
+   * Budgets for these departments are processed via the payment processor.
+   * Business Value: Links operational and human capital investments to tangible outcomes
+   * like cost reduction, quality improvement, and employee engagement, highlighting
+   * the strategic importance of internal efficiency for overall profitability.
+   * @param company - The player's company state.
+   * @param directive - The player's strategic decisions.
+   * @param currentYear - The current simulation year.
+   */
+  private simulateOperationsAndHR(company: WargameCompanyState, directive: PlayerStrategicDirective, currentYear: number) {
+    const actualOperationsSpend = company.operationsBudget * generateRandomNumber(0.8, 1.2);
+    const actualHRSpend = company.hrBudget * generateRandomNumber(0.8, 1.2);
+    const actualCustomerServiceSpend = company.customerServiceBudget * generateRandomNumber(0.8, 1.2);
+
+    // Process budget payments
+    [
+      { amount: actualOperationsSpend, type: 'budget_allocation', recipient: 'system_operations', auditAction: 'OperationalSpend' },
+      { amount: actualHRSpend, type: 'payroll', recipient: 'system_hr_dept', auditAction: 'PayrollExpense' },
+      { amount: actualCustomerServiceSpend, type: 'budget_allocation', recipient: 'system_customer_service', auditAction: 'CustomerServiceSpend' },
+    ].forEach(({ amount, type, recipient, auditAction }) => {
+      if (amount > 0) {
+        try {
+          const paymentTx = this.paymentProcessor.processPayment(company.identityId, recipient, amount, type, currentYear, directive.tokenRailOptimization);
+          if (paymentTx.status === 'settled') {
+            company.cash -= amount + paymentTx.processingFee;
+            this.recordAuditLog(company.identityId, auditAction, { department: recipient, amount, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
+          } else {
+            this.recordAuditLog(company.identityId, `${auditAction}Failed`, { department: recipient, amount, reason: `Payment failed: ${paymentTx.status}` }, paymentTx.signature);
+          }
+        } catch (e: any) {
+          this.recordAuditLog(company.identityId, `${auditAction}Error`, { department: recipient, amount, error: e.message });
+        }
+      }
+    });
+
+    // Operational efficiency impacts COGS and quality
+    company.productLines.forEach(product => {
+      product.baseCost *= (1 - (actualOperationsSpend / 1000000) * generateRandomNumber(0.01, 0.03)); // Reduce cost
+      product.qualityScore = Math.min(100, product.qualityScore + (actualOperationsSpend / 1000000) * generateRandomNumber(0.5, 1.5));
+    });
+
+    // HR initiatives
+    switch (directive.hrInitiatives) {
+      case 'hiring':
+        company.employeeCount = Math.round(company.employeeCount * generateRandomNumber(1.05, 1.15));
+        company.customerSatisfaction = Math.min(100, company.customerSatisfaction + generateRandomNumber(2, 5));
+        company.brandReputation = Math.min(100, company.brandReputation + generateRandomNumber(1, 3));
+        this.recordAuditLog(company.identityId, 'HRInitiative', { initiative: 'hiring', employeeChange: company.employeeCount - this.gameState.playerCompany.employeeCount });
+        this.agentMessageBus.sendMessage(company.identityId, 'system_hr_dept', 'COMMAND', { action: 'ExecuteHiringDrive' });
+        break;
+      case 'training':
+        company.customerSatisfaction = Math.min(100, company.customerSatisfaction + generateRandomNumber(3, 7));
+        company.productLines.forEach(p => p.qualityScore = Math.min(100, p.qualityScore + generateRandomNumber(2, 5)));
+        this.recordAuditLog(company.identityId, 'HRInitiative', { initiative: 'training' });
+        this.agentMessageBus.sendMessage(company.identityId, 'system_hr_dept', 'COMMAND', { action: 'ImplementTrainingProgram' });
+        break;
+      case 'downsizing':
+        company.employeeCount = Math.round(company.employeeCount * generateRandomNumber(0.85, 0.95));
+        company.customerSatisfaction = Math.max(0, company.customerSatisfaction - generateRandomNumber(5, 10));
+        company.brandReputation = Math.max(0, company.brandReputation - generateRandomNumber(3, 7));
+        this.recordAuditLog(company.identityId, 'HRInitiative', { initiative: 'downsizing', employeeChange: company.employeeCount - this.gameState.playerCompany.employeeCount });
+        this.agentMessageBus.sendMessage(company.identityId, 'system_hr_dept', 'COMMAND', { action: 'ImplementDownsizingPlan' });
+        break;
+      case 'none':
+      default:
+        // Stable
+        break;
+    }
+
+    // Customer service budget impacts satisfaction
+    company.customerSatisfaction = Math.min(100, company.customerSatisfaction + (actualCustomerServiceSpend / 500000) * generateRandomNumber(0.5, 2));
+  }
+
+  /**
+   * Simulates the actions of competitor agents, with their strategies adapting
+   * to market conditions and player actions. This is the core of the Agentic Intelligence Layer.
+   * Business Value: Provides a dynamic and realistic competitive environment,
+   * enabling the simulation of multi-agent interactions. Competitor AI observes,
+   * decides, and acts, reflecting the complex, adaptive nature of real-world markets
+   * and offering invaluable insights into strategic competitive dynamics.
+   * @param competitors - The array of competitor profiles.
+   * @param playerCompany - The player's company state.
+   * @param marketSegments - The current market segments.
+   * @param currentYear - The current simulation year.
+   * @returns A list of actions taken by competitors.
+   */
+  private simulateAgenticCompetitorStrategy(competitors: CompetitorProfile[], playerCompany: WargameCompanyState, marketSegments: MarketSegment[], currentYear: number): string[] {
+    const actions: string[] = [];
+
+    competitors.forEach(comp => {
+      const rand = Math.random();
+      comp.recentActions = []; // Clear previous actions
+
+      // Agentic Behavior: Observe, Decide, Act
+      // Monitoring Skill: Observe system events, transactions, and operational signals.
+      const playerMarketShareGrowth = calculateGrowthRate(playerCompany.marketShare, this.gameState.historicalReports[this.gameState.historicalReports.length - 1]?.companyState.marketShare || playerCompany.marketShare);
+      const playerInnovationLevel = playerCompany.productLines.reduce((sum, p) => sum + p.innovationLevel, 0) / (playerCompany.productLines.length || 1);
+      const playerCash = playerCompany.cash;
+
+      let effectiveStrategy = comp.strategy;
+
+      // Decision Logic: Based on embedded logic or learned patterns (heuristics here)
+      // Remediation Skill: Correct detected anomalies (e.g., losing market share)
+      if (playerMarketShareGrowth > 5 && playerCompany.marketShare > comp.marketShare && rand < 0.4) {
+        // Player is significantly outperforming, competitor might shift focus to counter
+        effectiveStrategy = weightedRandomPick([
+          { item: 'market_capture', weight: 0.6 },
+          { item: 'innovate', weight: 0.3 },
+          { item: 'cost_leadership', weight: 0.1 }
+        ]);
+        comp.recentActions.push(`${comp.name} detected Nexus Innovations' rapid market growth and shifted to a more aggressive strategy.`);
+        this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'PlayerOutperformance' });
+        this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'OBSERVATION', { type: 'PlayerMarketGrowth', value: playerMarketShareGrowth });
+      } else if (playerInnovationLevel > comp.innovationFocus * 1.2 && rand < 0.3) {
+        // Player has a highly innovative product, competitor counters with innovation
+        effectiveStrategy = 'innovate';
+        comp.recentActions.push(`${comp.name} pivoted to 'innovation' to match Nexus Innovations' technological advancements.`);
+        this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'PlayerInnovation' });
+        this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'OBSERVATION', { type: 'PlayerInnovationLead', value: playerInnovationLevel });
+      } else if (comp.marketShare < 5 && rand < 0.2 && comp.strategy !== 'niche_focus') {
+        // Competitor is struggling, might try a niche focus as remediation
+        effectiveStrategy = 'niche_focus';
+        comp.recentActions.push(`${comp.name} adopted a 'niche focus' strategy in response to declining market share.`);
+        this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'MarketShareDecline' });
+        this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'COMMAND', { action: 'ShiftToNicheStrategy' });
+      } else if (playerCompany.strategicFocus === 'digital_asset_focus' && rand < 0.2 && !comp.productOfferings.some(p => p.type === 'Tokenized_Asset_Service')) {
+        // Competitor responds to player's digital asset focus
+        effectiveStrategy = 'disruptive_innovation'; // Or 'innovate' with a specific focus
+        comp.recentActions.push(`${comp.name} initiated R&D into tokenized asset services to counter Nexus Innovations' digital asset strategy.`);
+        this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'PlayerDigitalAssetFocus' });
+        this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'COMMAND', { action: 'R&D_DigitalAssets' });
+      }
+
+
+      let actionTaken = '';
+      // Act: Perform actions based on decided strategy
+      switch (effectiveStrategy) {
+        case 'innovate':
+          if (rand < 0.4) {
+            actionTaken = `${comp.name} launched a new AI-driven feature for their leading product.`;
+            comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(5, 10));
+            comp.marketShare += generateRandomNumber(0.005, 0.015);
+            playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.001, 0.005));
+          } else if (rand < 0.7) {
+            actionTaken = `${comp.name} announced a major investment in next-gen R&D, committing ${formatCurrency(generateRandomNumber(1000000, 5000000))} to future products.`;
+            comp.financialStrength = Math.max(0, comp.financialStrength - generateRandomNumber(2, 5)); // Cost of investment
+            comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(2, 5));
+          } else {
+            actionTaken = `${comp.name} filed several new patents in AI.`;
+            comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(1, 3));
+          }
+          break;
+        case 'cost_leadership':
+          if (rand < 0.5) {
+            const priceReduction = generateRandomNumber(5, 15, 0);
+            actionTaken = `${comp.name} reduced prices across their core product lines by ${priceReduction}%.`;
+            comp.marketShare += generateRandomNumber(0.008, 0.02);
+            playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.003, 0.01));
+            playerCompany.productLines.forEach(p => p.basePrice *= generateRandomNumber(0.98, 1.02)); // Player might react
+          } else {
+            actionTaken = `${comp.name} announced new operational efficiency initiatives, expecting to save ${formatCurrency(generateRandomNumber(500000, 2000000))} annually.`;
+            comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(1, 3));
+          }
+          break;
+        case 'market_capture':
+          if (rand < 0.6) {
+            actionTaken = `${comp.name} launched an aggressive new marketing campaign targeting new customer segments.`;
+            comp.marketingAggression = Math.min(100, comp.marketingAggression + generateRandomNumber(5, 10));
+            comp.marketShare += generateRandomNumber(0.01, 0.03);
+            playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.005, 0.015));
+          } else {
+            actionTaken = `${comp.name} expanded into a new geographical market, increasing their global footprint.`;
+            comp.marketShare += generateRandomNumber(0.005, 0.01);
+          }
+          break;
+        case 'niche_focus':
+          if (rand < 0.5) {
+            const nicheSegment = weightedRandomPick(marketSegments.filter(s => s.name.includes('Small') || s.name.includes('Developer') || s.name.includes('Digital Asset')).map(s => ({ item: s, weight: 1 })));
+            if (nicheSegment) {
+              actionTaken = `${comp.name} intensified focus on the ${nicheSegment.name} segment with tailored offerings.`;
+              comp.marketShare += generateRandomNumber(0.002, 0.008); // Smaller gains, but solidifies position
+              playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.0005, 0.002));
             }
-            return tx;
-          });
-          return { ...crisis, financialTransactions: updatedTransactions, lastUpdate: new Date() };
+          } else {
+            actionTaken = `${comp.name} enhanced customer support for their specialized clientele.`;
+            comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(1, 2));
+          }
+          break;
+        case 'adapt_to_player': // A new strategy type for highly reactive AI
+          // This strategy makes the competitor directly mimic or counter player's primary focus
+          switch (playerCompany.strategicFocus) {
+            case 'innovation':
+              if (rand < 0.7) {
+                actionTaken = `${comp.name} directly countered player's innovation focus by accelerating their own R&D.`;
+                comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(7, 12));
+              } else {
+                actionTaken = `${comp.name} attempted to poach key R&D talent from the player.`;
+              }
+              break;
+            case 'market_expansion':
+              if (rand < 0.7) {
+                actionTaken = `${comp.name} launched a defensive marketing campaign in player's target segments.`;
+                comp.marketingAggression = Math.min(100, comp.marketingAggression + generateRandomNumber(8, 15));
+                playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.002, 0.008));
+              } else {
+                actionTaken = `${comp.name} strategically lowered prices to defend market share.`;
+                playerCompany.productLines.forEach(p => p.basePrice *= 0.99); // Slight price pressure
+              }
+              break;
+            case 'cost_reduction':
+              if (rand < 0.7) {
+                actionTaken = `${comp.name} intensified operational efficiency programs to maintain cost competitiveness.`;
+                comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(3, 7));
+              } else {
+                actionTaken = `${comp.name} invested in automation to further reduce COGS.`;
+              }
+              break;
+            case 'digital_asset_focus':
+              if (rand < 0.7) {
+                actionTaken = `${comp.name} launched a competing tokenized asset service to capture the digital asset market segment.`;
+                comp.productOfferings.push({ id: `comp_token_asset_${generateUUID().substring(0, 4)}`, name: `Competitor Token Platform ${comp.name}`, type: 'Tokenized_Asset_Service' });
+                comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(10, 20));
+              } else {
+                actionTaken = `${comp.name} partnered with a blockchain firm to explore digital asset integration.`;
+              }
+              break;
+            default:
+              actionTaken = `${comp.name} observed player's strategy and made a general market adjustment.`;
+              break;
+          }
+          break;
+        case 'disruptive_innovation':
+          if (rand < 0.6) {
+            actionTaken = `${comp.name} unveiled a groundbreaking AI solution that could redefine a market segment.`;
+            comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(10, 25));
+            comp.marketShare += generateRandomNumber(0.02, 0.05);
+            playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.005, 0.01));
+          } else {
+            actionTaken = `${comp.name} formed a strategic alliance with an emerging tech giant, pooling R&D resources.`;
+            comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(5, 10));
+          }
+          break;
+      }
+      if (actionTaken) {
+        comp.recentActions.push(actionTaken);
+        actions.push(`${comp.name}: ${actionTaken}`);
+        // Governance Context: Enforcing policy compliance. Not explicitly shown here but
+        // this would be where an agent's actions are checked against predefined policies.
+        this.recordAuditLog(comp.identityId, 'CompetitorAction', { competitorName: comp.name, action: actionTaken, strategy: effectiveStrategy }, this.agentMessageBus.getAllMessages().find(m => m.senderId === comp.identityId)?.signature);
+      }
+      comp.marketShare = Math.max(0, Math.min(100, comp.marketShare + generateRandomNumber(-0.5, 0.5))); // General fluctuation
+    });
+
+    // Recalculate player market share based on competitor movement
+    const totalCompetitorShare = competitors.reduce((sum, c) => sum + c.marketShare, 0);
+    playerCompany.marketShare = 100 - totalCompetitorShare - generateRandomNumber(5, 15); // Assume some unclaimed or smaller player share
+
+    // Ensure total market share doesn't exceed 100% (simple normalization)
+    const totalCurrentShare = playerCompany.marketShare + totalCompetitorShare;
+    if (totalCurrentShare > 100) {
+      const overflow = totalCurrentShare - 100;
+      playerCompany.marketShare -= overflow * 0.5;
+      competitors.forEach(c => c.marketShare -= overflow * 0.5 / competitors.length);
+    }
+    playerCompany.marketShare = Math.max(0, playerCompany.marketShare);
+
+    return actions;
+  }
+
+  /**
+   * Simulates market dynamics, including segment growth, customer churn,
+   * acquisition, and competitor penetration adjustments.
+   * Business Value: Models the complex interplay of market forces, customer behavior,
+   * and competitive pressures. This dynamic simulation allows for stress-testing
+   * strategies against evolving market realities and predicting future demand.
+   * @param company - The player's company state.
+   * @param competitors - The array of competitor profiles.
+   * @param marketSegments - The current market segments.
+   * @param directive - The player's strategic decisions.
+   * @param globalSentiment - The current global market sentiment.
+   * @param currentYear - The current simulation year.
+   */
+  private simulateMarketDynamics(company: WargameCompanyState, competitors: CompetitorProfile[], marketSegments: MarketSegment[], directive: PlayerStrategicDirective, globalSentiment: number, currentYear: number) {
+    marketSegments.forEach(segment => {
+      // Segment growth
+      segment.totalSize = Math.round(segment.totalSize * (1 + generateRandomNumber(segment.growthRate[0], segment.growthRate[1])));
+
+      // General churn and acquisition dynamics
+      let playerNetChange = 0;
+      let totalSegmentPenetration = 0;
+
+      // Player's market share in this segment
+      const playerProductIdsInSegment = company.productLines
+        .filter(p => p.targetMarketSegmentIds.includes(segment.id))
+        .map(p => p.id);
+
+      let playerSegmentCustomers = company.productLines
+        .filter(p => playerProductIdsInSegment.includes(p.id))
+        .reduce((sum, p) => sum + p.customerCount, 0);
+
+      // Churn (based on satisfaction, quality, competitor activity)
+      const churnRate = (100 - company.customerSatisfaction) / 200 + (100 - segment.customerLoyalty) / 300 + generateRandomNumber(0.01, 0.03);
+      const churnedCustomers = playerSegmentCustomers * churnRate;
+      playerNetChange -= churnedCustomers;
+      if (churnedCustomers > 0) {
+        this.recordAuditLog(company.identityId, 'CustomerChurn', { segmentId: segment.id, churnedCustomers: Math.round(churnedCustomers) });
+      }
+
+      // New acquisitions (from market growth, marketing campaigns, innovation)
+      const innovationPull = (company.productLines.filter(p => playerProductIdsInSegment.includes(p.id)).reduce((sum, p) => sum + p.innovationLevel, 0) / (playerProductIdsInSegment.length || 1)) / 100;
+      const marketingPush = (directive.marketingCampaigns.filter(c => c.targetSegmentIds.includes(segment.id)).reduce((sum, c) => sum + c.budget, 0) / 1000000);
+      const salesEfficiency = (company.salesBudget / 1000000);
+
+      const acquisitionRate = (innovationPull * segment.sensitivityToInnovation * 0.02) + (marketingPush * 0.01) + (salesEfficiency * 0.005) + (globalSentiment / 100 * 0.005);
+      const potentialNewCustomers = Math.max(0, segment.totalSize - playerSegmentCustomers - Object.values(segment.competitorPenetration).reduce((a, b) => a + b, 0) * segment.totalSize);
+      const newCustomers = potentialNewCustomers * acquisitionRate;
+      playerNetChange += newCustomers;
+
+      // Apply net change to products in segment (distribute proportionally)
+      const totalInitialCustomerCountForSegment = company.productLines
+        .filter(p => playerProductIdsInSegment.includes(p.id))
+        .reduce((sum, p) => sum + p.customerCount, 0);
+
+      if (totalInitialCustomerCountForSegment > 0) {
+        company.productLines.forEach(product => {
+          if (playerProductIdsInSegment.includes(product.id)) {
+            const proportion = product.customerCount / totalInitialCustomerCountForSegment;
+            product.customerCount = Math.max(0, product.customerCount + (playerNetChange * proportion));
+            product.customerCount = Math.round(product.customerCount);
+          }
+        });
+      } else if (playerNetChange > 0 && company.productLines.length > 0) {
+        // If no products initially, but gain customers, assign to a random product
+        const productToAssign = company.productLines.find(p => p.targetMarketSegmentIds.includes(segment.id)) || company.productLines[0];
+        if (productToAssign) productToAssign.customerCount += Math.round(playerNetChange);
+      }
+
+
+      // Update segment penetration based on new customer counts
+      playerSegmentCustomers = company.productLines
+        .filter(p => playerProductIdsInSegment.includes(p.id))
+        .reduce((sum, p) => sum + p.customerCount, 0);
+      segment.currentPlayerPenetration = Math.min(1, playerSegmentCustomers / segment.totalSize);
+
+      // Competitor segment penetration changes (simplified)
+      for (const compId in segment.competitorPenetration) {
+        segment.competitorPenetration[compId] = Math.max(0, Math.min(1, segment.competitorPenetration[compId] + generateRandomNumber(-0.005, 0.005)));
+      }
+
+      totalSegmentPenetration = segment.currentPlayerPenetration + Object.values(segment.competitorPenetration).reduce((a, b) => a + b, 0);
+      // Normalize if over 100%
+      if (totalSegmentPenetration > 1.0) {
+        const excess = totalSegmentPenetration - 1.0;
+        segment.currentPlayerPenetration = Math.max(0, segment.currentPlayerPenetration - excess / (Object.keys(segment.competitorPenetration).length + 1));
+        for (const compId in segment.competitorPenetration) {
+          segment.competitorPenetration[compId] = Math.max(0, segment.competitorPenetration[compId] - excess / (Object.keys(segment.competitorPenetration).length + 1));
         }
-        return crisis;
-      }));
-      setCurrentCrisis(prevCurrent => {
-        if (prevCurrent?.id === crisisId) {
-          const updatedTransactions = prevCurrent.financialTransactions.map(tx =>
-            tx.id === transactionId ? { ...tx, status: newStatus, signature: simulateSignature(actorId, `Update Tx ${transactionId} to ${newStatus}`) } : tx
+      }
+      segment.currentPlayerPenetration = Math.max(0, segment.currentPlayerPenetration);
+      for (const compId in segment.competitorPenetration) {
+        segment.competitorPenetration[compId] = Math.max(0, segment.competitorPenetration[compId]);
+      }
+    });
+
+    // Update overall company market share based on product performance and segment penetration
+    let newOverallMarketShare = 0;
+    company.productLines.forEach(product => {
+      product.revenue = product.customerCount * product.basePrice;
+      product.profit = product.customerCount * (product.basePrice - product.baseCost);
+      if (product.customerCount > 0 && product.revenue > 0) {
+        // Simulate payment for each product sale
+        try {
+          this.paymentProcessor.processPayment(
+            product.id, // Conceptual product ID as sender
+            company.identityId,
+            product.revenue,
+            'product_sale',
+            currentYear,
+            directive.tokenRailOptimization,
+            generateUUID() // New idempotency key for each sale transaction
           );
-          return { ...prevCurrent, financialTransactions: updatedTransactions, lastUpdate: new Date() };
-        }
-        return prevCurrent;
-      });
-      res();
-    });
-  }, [addAuditLog]);
-
-  const addFinancialTransactionToCrisis = useCallback(async (crisisId: string, transaction: Omit<FinancialTransaction, 'id' | 'timestamp' | 'relatedCrisisId' | 'riskScore' | 'railUsed' | 'settlementFee' | 'signature'>, selectedRailId?: string) => {
-    return new Promise<void>(async (res) => {
-      const riskScore = calculateRiskScore(transaction.amount, transaction.type);
-      const railToUse = getMockRail(selectedRailId || settings.financialRailsConfig.defaultRail);
-
-      if (!railToUse) {
-        console.error('Invalid financial rail selected.');
-        await addAuditLog(generateMockAuditLogEntry(transaction.initiatorId, 'USER', 'INITIATE', 'FINANCIAL_TRANSACTION', generateMockId('ft_temp'), `Failed to initiate transaction: Invalid rail.`));
-        return res();
-      }
-
-      const initialStatus: FinancialTransaction['status'] = riskScore > settings.financialRailsConfig.riskThreshold ? 'BLOCKED' : 'PENDING';
-
-      const newTransaction: FinancialTransaction = {
-        ...transaction,
-        id: generateMockId('ft'),
-        timestamp: new Date(),
-        relatedCrisisId: crisisId,
-        riskScore,
-        railUsed: railToUse.id,
-        settlementFee: railToUse.costPerTransaction,
-        status: initialStatus,
-        signature: simulateSignature(transaction.initiatorId, `Initiate Tx ${transaction.type} ${transaction.amount} on ${railToUse.name}`)
-      };
-
-      // Simulate balance validation
-      const senderAccount = mockAccountsState.find(acc => acc.ownerId === newTransaction.senderId);
-      if (newTransaction.senderId && senderAccount && (senderAccount.balances[newTransaction.currency] || 0) < newTransaction.amount && newTransaction.type !== 'LOSS_RECORD') {
-        newTransaction.status = 'FAILED';
-        newTransaction.notes = `Failed: Insufficient funds in sender account ${senderAccount.id}.`;
-        await addAuditLog(generateMockAuditLogEntry(newTransaction.initiatorId, 'USER', 'SETTLE', 'FINANCIAL_TRANSACTION', newTransaction.id, `Financial transaction FAILED (Insufficient funds): ${newTransaction.amount} ${newTransaction.currency}.`));
-      } else {
-        // Deduct from sender if it's not a 'TOKEN_MINT' or 'LOSS_RECORD'
-        if (newTransaction.senderId && newTransaction.type !== 'TOKEN_MINT' && newTransaction.type !== 'LOSS_RECORD') {
-          await updateAccountBalance(newTransaction.senderId, newTransaction.currency, -newTransaction.amount);
-        }
-        // Add to recipient if it's not 'TOKEN_BURN' or 'LOSS_RECORD'
-        if (newTransaction.recipientId && newTransaction.type !== 'TOKEN_BURN' && newTransaction.type !== 'LOSS_RECORD') {
-          await updateAccountBalance(newTransaction.recipientId, newTransaction.currency, newTransaction.amount);
+        } catch (e: any) {
+          this.recordAuditLog(company.identityId, 'ProductSaleError', { productId: product.id, revenue: product.revenue, error: e.message });
         }
       }
 
-      setCurrentCrisis(prev => {
-        if (!prev || prev.id !== crisisId) return prev;
-        return {
-          ...prev,
-          financialTransactions: [...prev.financialTransactions, newTransaction],
-          lastUpdate: new Date(),
-        };
-      });
-      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, financialTransactions: [...c.financialTransactions, newTransaction], lastUpdate: new Date() } : c));
-      await addAuditLog(generateMockAuditLogEntry(newTransaction.initiatorId, 'USER', 'INITIATE', 'FINANCIAL_TRANSACTION', newTransaction.id, `Initiated financial transaction (${newTransaction.type}): ${newTransaction.amount} ${newTransaction.currency}. Status: ${newTransaction.status}. Rail: ${railToUse.name}. Risk: ${newTransaction.riskScore}`));
-      console.log(`Financial transaction added to crisis ${crisisId}:`, newTransaction);
-      res();
+      const productImpactOnMarketShare = product.customerCount / (marketSegments.reduce((sum, s) => sum + s.totalSize, 0) / (company.productLines.length || 1)); // Very simplified
+      newOverallMarketShare += productImpactOnMarketShare;
     });
-  }, [addAuditLog, settings.financialRailsConfig, mockAccountsState, updateAccountBalance]);
 
-  const addAgentLogEntryToCrisis = useCallback(async (crisisId: string, agentLog: Omit<AgentLogEntry, 'id' | 'timestamp' | 'crisisId'>) => {
-    return new Promise<void>(async (res) => {
-      const newAgentLog: AgentLogEntry = {
-        ...agentLog,
-        id: generateMockId('agl'),
-        timestamp: new Date(),
-        crisisId: crisisId,
-      };
-      setCurrentCrisis(prev => {
-        if (!prev || prev.id !== crisisId) return prev;
-        return {
-          ...prev,
-          agentActivityLogs: [...prev.agentActivityLogs, newAgentLog],
-          lastUpdate: new Date(),
-        };
-      });
-      setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, agentActivityLogs: [...c.agentActivityLogs, newAgentLog], lastUpdate: new Date() } : c));
-      await addAuditLog(generateMockAuditLogEntry(newAgentLog.agentId, 'AGENT', 'TRIGGER_ACTION', 'AGENT_CONFIG', newAgentLog.id, `Agent ${newAgentLog.agentId} activity: ${newAgentLog.action}. Status: ${newAgentLog.status}`));
-      console.log(`Agent log added to crisis ${crisisId}:`, newAgentLog);
-      res();
+    company.marketShare = newOverallMarketShare * 100; // Convert to percentage
+    company.marketShare = Math.max(0, Math.min(100, company.marketShare)); // Clamp
+
+    // Global sentiment impacts customer satisfaction and brand reputation
+    company.customerSatisfaction = Math.min(100, company.customerSatisfaction + (globalSentiment - 50) / 10);
+    company.brandReputation = Math.min(100, company.brandReputation + (globalSentiment - 50) / 15);
+  }
+
+  /**
+   * Generates random market news and global events that can impact the simulation.
+   * Business Value: These events introduce an element of unpredictability and risk,
+   * simulating external market shocks and opportunities that test the resilience
+   * and adaptability of strategic plans, preparing decision-makers for real-world volatility.
+   * @param currentYear - The current simulation year.
+   * @returns A list of market news event descriptions.
+   */
+  private generateMarketNewsEvents(currentYear: number): string[] {
+    const events: string[] = [];
+    const eventProb = Math.random();
+
+    if (eventProb < 0.1) {
+      events.push(`Major Tech Breakthrough: A new quantum computing standard could disrupt current AI infrastructure within 3-5 years. This could make existing AI platforms obsolete, leading to a scramble for new R&D and potential acquisitions.`);
+      this.gameState.globalMarketSentiment = Math.max(0, this.gameState.globalMarketSentiment - generateRandomNumber(10, 20));
+      this.recordAuditLog('system_market_event', 'TechDisruptionWarning', { type: 'QuantumComputing', year: currentYear });
+    } else if (eventProb < 0.2) {
+      events.push(`Global Economic Boom: Analysts predict significant growth, boosting consumer spending power and enterprise investment across all sectors.`);
+      this.gameState.globalMarketSentiment = Math.min(100, this.gameState.globalMarketSentiment + generateRandomNumber(10, 20));
+      this.recordAuditLog('system_market_event', 'EconomicBoom', { impact: 'Positive', year: currentYear });
+    } else if (eventProb < 0.3) {
+      events.push(`New Regulatory Scrutiny: Governments are increasing oversight on data privacy and AI ethics in the FinTech sector, potentially increasing compliance costs and delaying new product launches.`);
+      this.gameState.globalMarketSentiment = Math.max(0, this.gameState.globalMarketSentiment - generateRandomNumber(5, 10));
+      this.recordAuditLog('system_market_event', 'RegulatoryScrutiny', { sector: 'FinTech/AI', year: currentYear });
+    } else if (eventProb < 0.4) {
+      events.push(`Talent Shortage Crisis: The demand for AI engineers and data scientists continues to outpace supply, driving up salaries and making talent acquisition a critical challenge.`);
+      this.recordAuditLog('system_market_event', 'TalentShortage', { field: 'AI/Data Science', year: currentYear });
+    } else if (eventProb < 0.5) {
+      events.push(`Major Cybersecurity Incident: A prominent tech firm suffered a data breach, compromising millions of customer records. This incident raises industry-wide concerns about digital identity security and trust.`);
+      this.gameState.playerCompany.brandReputation = Math.max(0, this.gameState.playerCompany.brandReputation - generateRandomNumber(3, 7)); // Player might get affected
+      this.gameState.globalMarketSentiment = Math.max(0, this.gameState.globalMarketSentiment - generateRandomNumber(5, 10));
+      this.recordAuditLog('system_market_event', 'CybersecurityBreach', { industryImpact: 'Negative', year: currentYear });
+    } else if (eventProb < 0.6) {
+      events.push(`Consumer Trust Rebound: Public confidence in digital finance solutions, especially those leveraging secure token rails and verifiable digital identities, is at an all-time high.`);
+      this.gameState.globalMarketSentiment = Math.min(100, this.gameState.globalMarketSentiment + generateRandomNumber(5, 10));
+      this.recordAuditLog('system_market_event', 'ConsumerTrustSurge', { focus: 'DigitalFinance', year: currentYear });
+    } else if (eventProb < 0.7) {
+      events.push(`Rise of New Market Segment: "Green Finance" initiatives are gaining traction, driven by investor demand for sustainable and ethically-aligned financial products, creating new revenue opportunities.`);
+      this.recordAuditLog('system_market_event', 'NewMarketOpportunity', { segment: 'Green Finance', year: currentYear });
+    } else if (eventProb < 0.8) {
+      events.push(`Blockchain Interoperability Standard: A new standard for cross-chain communication emerges, dramatically increasing the utility and liquidity of tokenized assets.`);
+      this.gameState.globalMarketSentiment = Math.min(100, this.gameState.globalMarketSentiment + generateRandomNumber(8, 12));
+      this.recordAuditLog('system_market_event', 'BlockchainStandard', { type: 'Interoperability', year: currentYear });
+    } else {
+      events.push(`Routine Market Fluctuations: General stability observed, with minor shifts in sector performance and no significant external shocks.`);
+      this.recordAuditLog('system_market_event', 'MarketStability', { description: 'Minor fluctuations', year: currentYear });
+    }
+
+    return events;
+  }
+
+  /**
+   * Applies direct state changes based on global events, if any.
+   * Business Value: This method serves as a crucial integration point for
+   * real-world external factors, allowing the simulation to react to
+   * unpredictable events and model their direct consequences on the financial ecosystem.
+   * @param events - A list of market news events.
+   */
+  private applyGlobalEvents(events: string[]) {
+    // This method is primarily for direct state changes due to events
+    // Most event impacts are already integrated into the `generateMarketNewsEvents`
+    // and `simulateMarketDynamics` where globalSentiment is used.
+    // Additional direct impacts could be added here if needed, e.g.,
+    // if a specific event forces a direct change to a company's budget or product status.
+    // Example: If a "cybersecurity incident" event, a company might incur a direct cost or reputation hit
+  }
+
+  /**
+   * Recalculates all financial statements for the company based on the current year's activities.
+   * Business Value: This provides a comprehensive financial overview and updates cash reserves,
+   * critical for assessing profitability, liquidity, and overall financial health, mirroring
+   * real-world financial reporting.
+   * @param company - The player's company state.
+   * @param currentYear - The current simulation year.
+   */
+  private calculateAllFinancials(company: WargameCompanyState, currentYear: number) {
+    let totalRevenue = 0;
+    let totalCogs = 0;
+    company.productLines.forEach(p => {
+      totalRevenue += p.revenue;
+      totalCogs += p.customerCount * p.baseCost;
     });
-  }, [addAuditLog]);
 
-  const updateAgentStatus = useCallback(async (agentId: string, status: AgentStatus, isActive?: boolean) => {
-    return new Promise<void>(async (res) => {
-      setAllAgents(prev => prev.map(agent => agent.id === agentId ? { ...agent, status, isActive: isActive ?? agent.isActive, lastActivity: new Date() } : agent));
-      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'AGENT_CONFIG', agentId, `Agent ${agentId} status updated to '${status}'. IsActive: ${isActive}`));
-      console.log(`Agent ${agentId} status updated to ${status}`);
-      res();
-    });
-  }, [currentUser.id, addAuditLog]);
+    const incomeStatement: FinancialStatement = {
+      revenue: totalRevenue,
+      cogs: totalCogs,
+      grossProfit: totalRevenue - totalCogs,
+      rdExpenses: company.rdBudget,
+      marketingExpenses: company.marketingBudget,
+      salesExpenses: company.salesBudget,
+      operationsExpenses: company.operationsBudget,
+      hrExpenses: company.hrBudget,
+      customerServiceExpenses: company.customerServiceBudget,
+      depreciation: generateRandomNumber(50000, 100000), // Simplified
+      operatingProfit: 0,
+      interestExpenses: generateRandomNumber(10000, 30000), // Simplified
+      taxes: 0,
+      netProfit: 0,
+    };
+    incomeStatement.operatingProfit = incomeStatement.grossProfit - incomeStatement.rdExpenses - incomeStatement.marketingExpenses - incomeStatement.salesExpenses - incomeStatement.operationsExpenses - incomeStatement.hrExpenses - incomeStatement.customerServiceExpenses - incomeStatement.depreciation;
+    incomeStatement.taxes = incomeStatement.operatingProfit > 0 ? incomeStatement.operatingProfit * generateRandomNumber(0.2, 0.3) : 0;
+    incomeStatement.netProfit = incomeStatement.operatingProfit - incomeStatement.interestExpenses - incomeStatement.taxes;
 
-  const updateAgentConfig = useCallback(async (agentId: string, config: { [key: string]: any }) => {
-    return new Promise<void>(async (res) => {
-      setAllAgents(prev => prev.map(agent => agent.id === agentId ? { ...agent, configuration: config, lastActivity: new Date() } : agent));
-      await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'CONFIG_UPDATE', 'AGENT_CONFIG', agentId, `Agent ${agentId} configuration updated.`));
-      console.log(`Agent ${agentId} config updated:`, config);
-      res();
-    });
-  }, [currentUser.id, addAuditLog]);
+    // Update company cash based on net profit (simplified - ignoring full cash flow)
+    company.cash += incomeStatement.netProfit - incomeStatement.capitalInvestmentBudget;
+    company.cash = Math.max(0, company.cash); // Cannot go below zero
 
-  const value = useMemo(() => ({
-    currentCrisis,
-    setCurrentCrisis,
-    allCrises,
-    setAllCrises,
-    currentUser,
-    setCurrentUser,
-    settings,
-    updateSetting,
-    addIncidentLogEntry,
-    updateCrisisStatus,
-    addCommsPackageToCrisis,
-    addLegalReviewToCrisis,
-    addSentimentReportToCrisis,
-    updateCommsApprovalStatus,
-    addFinancialTransactionToCrisis,
-    addAgentLogEntryToCrisis,
-    allAgents,
-    updateAgentStatus,
-    updateAgentConfig,
-    globalAuditLogs,
-    addAuditLog,
-    mockAccountsState,
-    updateAccountBalance,
-    mockFinancialRailsState,
-  }), [
-    currentCrisis, allCrises, currentUser, settings, updateSetting, addIncidentLogEntry,
-    updateCrisisStatus, addCommsPackageToCrisis, addLegalReviewToCrisis, addSentimentReportToCrisis,
-    updateCommsApprovalStatus, addFinancialTransactionToCrisis, addAgentLogEntryToCrisis,
-    allAgents, updateAgentStatus, updateAgentConfig, globalAuditLogs, addAuditLog,
-    mockAccountsState, updateAccountBalance, mockFinancialRailsState
+    // Update company revenue and profit directly
+    company.revenue = incomeStatement.revenue;
+    company.profit = incomeStatement.netProfit;
+
+    // Calculate digital asset value (simplified: NXG_TOKEN value is fixed $1 for now)
+    const digitalAssetValue = (company.tokenBalances['NXG_TOKEN'] || 0) * 1; // 1 NXG = $1
+
+    // Simplified Balance Sheet Update
+    const balanceSheet: BalanceSheet = {
+      ...company.financials.balanceSheet, // Start with previous year's balance sheet
+      cash: company.cash,
+      accountsReceivable: totalRevenue * generateRandomNumber(0.05, 0.1), // 5-10% of revenue outstanding
+      fixedAssets: company.financials.balanceSheet.fixedAssets + company.capitalInvestmentBudget - incomeStatement.depreciation,
+      digitalAssets: digitalAssetValue,
+    };
+    balanceSheet.totalAssets = balanceSheet.cash + balanceSheet.accountsReceivable + balanceSheet.inventory + balanceSheet.fixedAssets + balanceSheet.digitalAssets;
+    balanceSheet.accountsPayable = totalCogs * generateRandomNumber(0.02, 0.05); // 2-5% of COGS outstanding
+    balanceSheet.shortTermDebt = company.financials.balanceSheet.shortTermDebt * generateRandomNumber(0.95, 1.05);
+    balanceSheet.longTermDebt = company.financials.balanceSheet.longTermDebt * generateRandomNumber(0.98, 1.02);
+    balanceSheet.totalLiabilities = balanceSheet.accountsPayable + balanceSheet.shortTermDebt + balanceSheet.longTermDebt;
+    balanceSheet.equity = balanceSheet.totalAssets - balanceSheet.totalLiabilities;
+    balanceSheet.totalLiabilitiesAndEquity = balanceSheet.totalLiabilities + balanceSheet.equity;
+
+
+    // Simplified Cash Flow Statement
+    const cashFlowStatement: CashFlowStatement = {
+      beginningCash: company.financials.balanceSheet.cash,
+      operatingActivities: incomeStatement.netProfit // Simplified: Net profit as a proxy
+        + incomeStatement.depreciation // Add back non-cash expenses
+        + (balanceSheet.accountsPayable - company.financials.balanceSheet.accountsPayable) // Change in AP
+        - (balanceSheet.accountsReceivable - company.financials.balanceSheet.accountsReceivable), // Change in AR
+      investingActivities: -company.capitalInvestmentBudget,
+      financingActivities: generateRandomNumber(-50000, 50000), // Simple debt repayment/issuance
+      netChangeInCash: 0,
+      endingCash: 0,
+    };
+    cashFlowStatement.netChangeInCash = cashFlowStatement.operatingActivities + cashFlowStatement.investingActivities + cashFlowStatement.financingActivities;
+    cashFlowStatement.endingCash = cashFlowStatement.beginningCash + cashFlowStatement.netChangeInCash;
+
+    company.financials = { incomeStatement, balanceSheet, cashFlowStatement };
+    this.recordAuditLog(company.identityId, 'FinancialsCalculated', { year: currentYear, netProfit: company.profit, cash: company.cash, digitalAssetValue }, this.gameState.auditLog[this.gameState.auditLog.length - 1]?.signature);
+  }
+
+  /**
+   * Generates a detailed year-end report summarizing the year's performance,
+   * insights, and recommendations.
+   * Business Value: This comprehensive report provides an executive-level summary
+   * that links strategic decisions to tangible business outcomes, offering actionable
+   * insights and recommendations for future planning. It highlights financial growth,
+   * market position, and operational efficiency, demonstrating the system's ability
+   * to inform multi-million dollar business strategies.
+   * @param prevCompany - The company state from the previous year.
+   * @param prevCompetitors - The competitor states from the previous year.
+   * @param prevMarketSegments - The market segments from the previous year.
+   * @param currentCompany - The company state at the end of the current year.
+   * @param competitorActions - A summary of competitor activities.
+   * @param marketNewsEvents - A list of market news and events.
+   * @param directive - The player's strategic decisions for the year.
+   * @returns A complete YearEndReport object.
+   */
+  private generateYearEndReport(
+    prevCompany: WargameCompanyState,
+    prevCompetitors: CompetitorProfile[],
+    prevMarketSegments: MarketSegment[],
+    currentCompany: WargameCompanyState,
+    competitorActions: string[],
+    marketNewsEvents: string[],
+    directive: PlayerStrategicDirective
+  ): YearEndReport {
+    const marketShareGrowth = calculateGrowthRate(currentCompany.marketShare, prevCompany.marketShare);
+    const revenueGrowth = calculateGrowthRate(currentCompany.revenue, prevCompany.revenue);
+    const profitMargin = (currentCompany.revenue === 0) ? 0 : (currentCompany.profit / currentCompany.revenue) * 100;
+    const previousCustomerCount = prevCompany.productLines.reduce((sum, p) => sum + p.customerCount, 0);
+    const currentCustomerCount = currentCompany.productLines.reduce((sum, p) => sum + p.customerCount, 0);
+    const newCustomersAcquired = currentCustomerCount - previousCustomerCount;
+    const customerAcquisitionCost = newCustomersAcquired > 0 ? (currentCompany.marketingBudget + currentCompany.salesBudget) / newCustomersAcquired : 0;
+    const customerRetentionRate = Math.min(100, currentCompany.customerSatisfaction + generateRandomNumber(50, 80)); // Simplified
+    const innovationIndex = currentCompany.productLines.reduce((sum, p) => sum + p.innovationLevel, 0) / (currentCompany.productLines.length || 1);
+    const employeeMorale = currentCompany.customerSatisfaction; // Proxy for now
+    const transactionEfficiencyScore = this.paymentProcessor.calculateEfficiencyScore();
+    const digitalAssetExposure = (currentCompany.financials.balanceSheet.digitalAssets / currentCompany.financials.balanceSheet.totalAssets) * 100 || 0;
+
+
+    const keyInsights: string[] = [];
+    const recommendations: string[] = [];
+
+    if (marketShareGrowth > 5) keyInsights.push('Significant market share growth achieved, outperforming competitors and expanding market presence.');
+    else if (marketShareGrowth < -2) keyInsights.push('Market share declined, indicating strong competitor pressure or ineffective strategy. Re-evaluation is critical.');
+
+    if (profitMargin > 10) keyInsights.push('Healthy profit margins reflect efficient operations and strong pricing power, driving robust financial performance.');
+    else if (profitMargin < 2) keyInsights.push('Low profit margins suggest cost issues or intense price competition, requiring urgent operational review.');
+
+    if (innovationIndex > 70) keyInsights.push('Strong innovation pipeline driving future growth potential and maintaining a competitive edge in rapidly evolving markets.');
+    else if (innovationIndex < 50) keyInsights.push('Innovation lagging, risking obsolescence in a dynamic market. Immediate investment in R&D and new features is advised.');
+
+    if (currentCompany.cash < 0) keyInsights.push('Critical: Company is out of cash and requires immediate financing. Operations may be severely impacted.');
+    if (currentCompany.cash < 1000000 && prevCompany.cash >= 1000000) recommendations.push('Consider securing additional funding or divesting non-core assets to improve liquidity and avoid financial distress.');
+    if (transactionEfficiencyScore < 70) recommendations.push('Review payment rail usage: transaction efficiency is low, suggesting higher costs or slower settlements. Optimize routing policies.');
+    if (directive.overallFocus === 'digital_asset_focus' && digitalAssetExposure < 1) recommendations.push('Your digital asset strategy is not yielding sufficient exposure. Consider more aggressive token issuance or market penetration efforts.');
+
+
+    // Recommendations based on insights
+    if (marketShareGrowth < 0 && directive.overallFocus !== 'market_expansion') {
+      recommendations.push('Re-evaluate strategic focus: Market expansion initiatives may be necessary to counter competitor gains and reclaim market share.');
+    }
+    if (currentCompany.customerSatisfaction < 60 && directive.hrInitiatives !== 'training' && directive.overallFocus !== 'customer_retention') {
+      recommendations.push('Invest in customer service training and product quality to boost satisfaction and reduce churn, aligning with customer retention goals.');
+    }
+    if (currentCompany.rdBudget < 100000 && directive.overallFocus === 'innovation') {
+      recommendations.push('Increase R&D allocation to align with innovation focus and remain competitive, ensuring a robust product pipeline.');
+    }
+    if (directive.riskMitigation.length === 0 && this.gameState.globalMarketSentiment < 40) {
+      recommendations.push('Strengthen risk mitigation strategies; global market sentiment is low, indicating potential volatility and increased external risks.');
+    }
+
+
+    this.recordAuditLog('system_report_generator', 'YearEndReportGenerated', { year: this.gameState.currentYear, summaryKpis: { marketShareGrowth, profitMargin } });
+
+    return {
+      year: this.gameState.currentYear,
+      companyState: JSON.parse(JSON.stringify(currentCompany)),
+      competitorActions,
+      marketNewsEvents,
+      playerDecisionsSummary: directive,
+      kpis: {
+        marketShareGrowth,
+        revenueGrowth,
+        profitMargin,
+        customerAcquisitionCost,
+        customerRetentionRate,
+        innovationIndex,
+        employeeMorale,
+        transactionEfficiencyScore,
+        digitalAssetExposure,
+      },
+      keyInsights,
+      recommendations,
+    };
+  }
+
+  /**
+   * Provides access to the current game state.
+   * @returns The current GameState object.
+   */
+  public getGameState(): GameState {
+    return this.gameState;
+  }
+}
+
+/**
+ * React component for inputting the player's strategic decisions for the upcoming year.
+ * Business Value: This interactive form is the primary control panel for the "agentic AI"
+ * (player as agent) in the simulation. It centralizes all strategic leversâ€”resource allocation,
+ * product development, marketing, pricing, HR, and risk managementâ€”into a single, intuitive
+ * interface. By enabling rapid iteration on strategic directives, it streamlines the process
+ * of planning and decision-making, allowing leaders to quickly model multi-million dollar
+ * portfolio shifts and market interventions. Its clear feedback on resource distribution
+ * ensures optimal utilization of capital, directly contributing to financial prudence
+ * and maximized ROI from strategic initiatives.
+ */
+export const StrategyInputForm: React.FC<{
+  currentStrategy: PlayerStrategicDirective | null;
+  onStrategyChange: (strategy: PlayerStrategicDirective) => void;
+  companyCash: number;
+  productLines: ProductLine[];
+  marketSegments: MarketSegment[];
+  competitors: CompetitorProfile[];
+}> = ({ currentStrategy, onStrategyChange, companyCash, productLines, marketSegments, competitors }) => {
+  const [overallFocus, setOverallFocus] = useState<PlayerStrategicDirective['overallFocus']>(currentStrategy?.overallFocus || 'innovation');
+  const [rdAllocation, setRdAllocation] = useState(currentStrategy?.resourceAllocation.rd || 25);
+  const [marketingAllocation, setMarketingAllocation] = useState(currentStrategy?.resourceAllocation.marketing || 25);
+  const [salesAllocation, setSalesAllocation] = useState(currentStrategy?.resourceAllocation.sales || 15);
+  const [operationsAllocation, setOperationsAllocation] = useState(currentStrategy?.resourceAllocation.operations || 10);
+  const [hrAllocation, setHrAllocation] = useState(currentStrategy?.resourceAllocation.hr || 10);
+  const [customerServiceAllocation, setCustomerServiceAllocation] = useState(currentStrategy?.resourceAllocation.customerService || 5);
+  const [capitalInvestmentAllocation, setCapitalInvestmentAllocation] = useState(currentStrategy?.resourceAllocation.capitalInvestment || 5);
+
+  const [newProductDevelopment, setNewProductDevelopment] = useState<PlayerStrategicDirective['newProductDevelopment']>(currentStrategy?.newProductDevelopment || []);
+  const [marketingCampaigns, setMarketingCampaigns] = useState<PlayerStrategicDirective['marketingCampaigns']>(currentStrategy?.marketingCampaigns || []);
+  const [pricingAdjustments, setPricingAdjustments] = useState<PlayerStrategicDirective['pricingAdjustments']>(currentStrategy?.pricingAdjustments || []);
+  const [hrInitiatives, setHrInitiatives] = useState<PlayerStrategicDirective['hrInitiatives']>(currentStrategy?.hrInitiatives || 'none');
+  const [riskMitigation, setRiskMitigation] = useState<string[]>(currentStrategy?.riskMitigation || []);
+  const [targetAcquisitions, setTargetAcquisitions] = useState<string[]>(currentStrategy?.targetAcquisitions || []);
+  const [divestProductLines, setDivestProductLines] = useState<string[]>(currentStrategy?.divestProductLines || []);
+  const [tokenRailOptimization, setTokenRailOptimization] = useState<PlayerStrategicDirective['tokenRailOptimization']>(currentStrategy?.tokenRailOptimization || {
+    preferredRailType: 'internal',
+    maxLatencyTolerance: 0.1,
+    maxFeePercentage: 0.001,
+  });
+
+
+  const totalAllocation = useMemo(() => {
+    return rdAllocation + marketingAllocation + salesAllocation + operationsAllocation + hrAllocation + customerServiceAllocation + capitalInvestmentAllocation;
+  }, [rdAllocation, marketingAllocation, salesAllocation, operationsAllocation, hrAllocation, customerServiceAllocation, capitalInvestmentAllocation]);
+
+  useEffect(() => {
+    // If allocations exceed 100%, adjust proportionally or flag an error
+    if (totalAllocation > 100) {
+      // Simple proportional scaling back to 100
+      const scaleFactor = 100 / totalAllocation;
+      setRdAllocation(prev => Math.round(prev * scaleFactor));
+      setMarketingAllocation(prev => Math.round(prev * scaleFactor));
+      setSalesAllocation(prev => Math.round(prev * scaleFactor));
+      setOperationsAllocation(prev => Math.round(prev * scaleFactor));
+      setHrAllocation(prev => Math.round(prev * scaleFactor));
+      setCustomerServiceAllocation(prev => Math.round(prev * scaleFactor));
+      setCapitalInvestmentAllocation(prev => Math.round(prev * scaleFactor));
+    }
+  }, [totalAllocation]); // Only re-run if totalAllocation changes
+
+  const handleAllocationChange = useCallback((setter: React.Dispatch<React.SetStateAction<number>>, value: number) => {
+    setter(Math.max(0, Math.min(100, value)));
+  }, []);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (totalAllocation !== 100) {
+      alert(`Resource allocations must sum to 100%. Current: ${totalAllocation}%`);
+      return;
+    }
+
+    const newDirective: PlayerStrategicDirective = {
+      overallFocus,
+      resourceAllocation: {
+        rd: rdAllocation,
+        marketing: marketingAllocation,
+        sales: salesAllocation,
+        operations: operationsAllocation,
+        hr: hrAllocation,
+        customerService: customerServiceAllocation,
+        capitalInvestment: capitalInvestmentAllocation,
+      },
+      newProductDevelopment,
+      marketingCampaigns,
+      pricingAdjustments,
+      hrInitiatives,
+      riskMitigation,
+      targetAcquisitions,
+      divestProductLines,
+      tokenRailOptimization,
+    };
+    onStrategyChange(newDirective);
+  }, [
+    overallFocus, rdAllocation, marketingAllocation, salesAllocation, operationsAllocation, hrAllocation, customerServiceAllocation, capitalInvestmentAllocation,
+    newProductDevelopment, marketingCampaigns, pricingAdjustments, hrInitiatives, riskMitigation, targetAcquisitions, divestProductLines,
+    totalAllocation, onStrategyChange, tokenRailOptimization
   ]);
 
-  return <CrisisContext.Provider value={value}>{children}</CrisisContext.Provider>;
-};
+  // Helper for adding/updating single new product development entry for simplicity
+  const handleNewProductChange = useCallback((field: string, value: any) => {
+    setNewProductDevelopment(prev => {
+      const existing = prev[0] || { name: '', type: 'FinTech_App', targetMarketSegmentIds: [], featuresToDevelop: [] };
+      return [{ ...existing, [field]: value }];
+    });
+  }, []);
 
-/**
- * useCrisisContext: Hook
- *
- * A custom React hook that provides simplified access to the `CrisisContext`, ensuring
- * that components can easily interact with the global crisis management state.
- *
- * Business value: Promotes modularity and reduces boilerplate, accelerating development
- * of new crisis response features and maintaining a clean, scalable codebase, thereby
- * lowering maintenance costs and improving developer velocity.
- */
-export const useCrisisContext = () => {
-  const context = useContext(CrisisContext);
-  if (context === undefined) {
-    throw new Error('useCrisisContext must be used within a CrisisProvider');
-  }
-  return context;
-};
+  // Helper for adding/updating single marketing campaign entry for simplicity
+  const handleMarketingCampaignChange = useCallback((field: string, value: any) => {
+    setMarketingCampaigns(prev => {
+      const existing = prev[0] || { name: '', targetSegmentIds: [], budget: 0, message: '' };
+      return [{ ...existing, [field]: value }];
+    });
+  }, []);
 
-/**
- * CrisisOverviewDashboard: React.FC
- *
- * This component provides a high-level, real-time overview of all active and historical crises,
- * offering critical insights into their status, severity, and key metrics.
- *
- * Business value: Enables executive leadership and crisis managers to gain immediate situational
- * awareness, prioritize resources effectively, and make informed strategic decisions to mitigate
- * impact on brand, customers, and financial stability, ultimately safeguarding billions in value.
- */
-export const CrisisOverviewDashboard: React.FC = () => {
-  const { currentCrisis, allCrises, currentUser, updateCrisisStatus, setCurrentCrisis } = useCrisisContext();
-  const [filterStatus, setFilterStatus] = useState<CrisisStatus | 'ALL'>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
+  // Helper for adding/updating single pricing adjustment entry for simplicity
+  const handlePricingAdjustmentChange = useCallback((field: string, value: any) => {
+    setPricingAdjustments(prev => {
+      const existing = prev[0] || { productId: '', newPrice: 0 };
+      return [{ ...existing, [field]: value }];
+    });
+  }, []);
 
-  const filteredCrises = useMemo(() => {
-    let crises = allCrises;
-    if (filterStatus !== 'ALL') {
-      crises = crises.filter(c => c.status === filterStatus);
-    }
-    if (searchTerm) {
-      crises = crises.filter(c =>
-        c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-    return crises;
-  }, [allCrises, filterStatus, searchTerm]);
-
-  const stats = useMemo(() => {
-    const active = allCrises.filter(c => c.status === 'ACTIVE').length;
-    const critical = allCrises.filter(c => c.severity === 'CRITICAL' && c.status !== 'CLOSED').length;
-    const closed = allCrises.filter(c => c.status === 'CLOSED').length;
-    const total = allCrises.length;
-    return { active, critical, closed, total };
-  }, [allCrises]);
-
-  if (!currentUser) return <p className="text-red-400">Authentication required. Please log in.</p>;
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-3xl font-bold mb-4 flex items-center">
-        Crisis Management Dashboard
-        {currentCrisis && (
-          <span className="ml-4 text-xl text-gray-400">
-            - Current: {currentCrisis.title}
-            <CrisisSeverityBadge severity={currentCrisis.severity} />
-          </span>
-        )}
-      </h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-gray-300">Total Crises</p>
-          <p className="text-4xl font-bold text-cyan-400">{stats.total}</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-gray-300">Active Crises</p>
-          <p className="text-4xl font-bold text-red-400">{stats.active}</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-gray-300">Critical Alerts</p>
-          <p className="text-4xl font-bold text-orange-400">{stats.critical}</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-gray-300">Closed Crises</p>
-          <p className="text-4xl font-bold text-green-400">{stats.closed}</p>
-        </div>
-      </div>
-
-      <div className="mb-4 flex items-center space-x-4">
-        <input
-          type="text"
-          placeholder="Search crises..."
-          className="p-2 bg-gray-600 rounded flex-grow"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
-        <select
-          value={filterStatus}
-          onChange={e => setFilterStatus(e.target.value as CrisisStatus | 'ALL')}
-          className="p-2 bg-gray-600 rounded"
-        >
-          <option value="ALL">All Statuses</option>
-          {Object.values(CrisisStatus).map(status => (
-            <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>
-          ))}
-        </select>
-        {currentUser.permissions.canEditCrisis && (
-          <button className="p-2 bg-purple-600 hover:bg-purple-700 rounded">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            New Crisis
-          </button>
-        )}
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-600">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Severity</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Last Update</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Lead</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {filteredCrises.map(crisis => (
-              <tr key={crisis.id} className={currentCrisis?.id === crisis.id ? 'bg-gray-800' : ''}>
-                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-white">{crisis.title}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{crisis.type.replace(/_/g, ' ')}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm">
-                  <CrisisSeverityBadge severity={crisis.severity} />
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm">
-                  <CrisisStatusBadge status={crisis.status} />
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{crisis.lastUpdate.toLocaleString()}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm">
-                  {getMockUser(crisis.leadManagerId) ? <UserAvatar user={getMockUser(crisis.leadManagerId)!} size={24} /> : 'N/A'}
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => { setCurrentCrisis(crisis); }}
-                    className="text-cyan-500 hover:text-cyan-700 mr-2"
-                  >
-                    View
-                  </button>
-                  {(currentUser.permissions.canEditCrisis || currentUser.role === 'CRISIS_MANAGER') && crisis.status !== 'CLOSED' && (
-                    <button
-                      onClick={() => updateCrisisStatus(crisis.id, 'CLOSED')}
-                      className="text-green-500 hover:text-green-700"
-                    >
-                      Close
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold mb-3">Recent Incident Alerts</h3>
-        <ul className="space-y-3">
-          {currentCrisis?.relatedIncidents.slice(0, 5).map(incident => (
-            <li key={incident.id} className="bg-gray-800 p-3 rounded-lg flex items-center space-x-3">
-              <span className="text-sm font-semibold text-red-400">[NEW ALERT]</span>
-              <span className="text-gray-300 text-sm">{incident.timestamp.toLocaleString()}</span>
-              <p className="text-white flex-grow">{incident.description}</p>
-              <CrisisSeverityBadge severity={incident.severity} />
-            </li>
-          ))}
-          {!currentCrisis?.relatedIncidents.length && <p className="text-gray-400">No recent incidents for this crisis.</p>}
-        </ul>
-      </div>
-    </div>
-  );
-};
-
-/**
- * IncidentLogManager: React.FC
- *
- * This module facilitates the detailed logging and tracking of all incidents related to a crisis,
- * from initial detection to resolution. It provides a structured interface for incident responders
- * to record events, actions taken, and link relevant artifacts.
- *
- * Business value: Ensures comprehensive data capture for forensic analysis, regulatory compliance,
- * and post-crisis learning, improving future preparedness and significantly reducing legal and
- * operational risks. This component enhances accountability and traceability of all actions taken
- * during an incident, vital for demonstrating diligence to regulators and stakeholders.
- */
-export const IncidentLogManager: React.FC = () => {
-  const { currentCrisis, addIncidentLogEntry, currentUser } = useCrisisContext();
-  const [newLogDescription, setNewLogDescription] = useState('');
-  const [newLogSeverity, setNewLogSeverity] = useState<CrisisSeverity>('MEDIUM');
-  const [isAdding, setIsAdding] = useState(false);
-
-  const handleAddLog = async () => {
-    if (!currentCrisis || !newLogDescription) return;
-    if (!currentUser.permissions.canAddIncidentLogs) {
-      alert('Access denied: You do not have permission to add incident logs. Contact your administrator.');
-      return;
-    }
-    setIsAdding(true);
-    const newEntry: IncidentLogEntry = {
-      id: generateMockId('inc'),
-      timestamp: new Date(),
-      description: newLogDescription,
-      reportedByUserId: currentUser.id,
-      severity: newLogSeverity,
-      actionTaken: 'No immediate action logged.',
-      status: 'OPEN',
-    };
-    await addIncidentLogEntry(newEntry);
-    setNewLogDescription('');
-    setIsAdding(false);
+  // Basic styling for demo
+  const formStyle: React.CSSProperties = {
+    fontFamily: 'Arial, sans-serif',
+    maxWidth: '800px',
+    margin: '20px auto',
+    padding: '20px',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    backgroundColor: '#f9f9f9',
   };
 
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to manage incidents.</p>;
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: '20px',
+    padding: '15px',
+    border: '1px solid #eee',
+    borderRadius: '5px',
+    backgroundColor: '#fff',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: 'calc(100% - 10px)',
+    padding: '8px',
+    margin: '5px 0',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontWeight: 'bold',
+    display: 'block',
+    marginBottom: '5px',
+    marginTop: '10px',
+  };
+
+  const sliderContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '10px',
+  };
+
+  const sliderLabelStyle: React.CSSProperties = {
+    flex: '2',
+    marginRight: '10px',
+  };
+
+  const sliderInputStyle: React.CSSProperties = {
+    flex: '3',
+    marginRight: '10px',
+  };
+
+  const sliderValueStyle: React.CSSProperties = {
+    flex: '1',
+    textAlign: 'right',
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    backgroundColor: '#007bff',
+    color: 'white',
+    padding: '10px 15px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    marginTop: '20px',
+    width: '100%',
+  };
+
+  const errorStyle: React.CSSProperties = {
+    color: 'red',
+    marginTop: '10px',
+  };
 
   return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Incident Log for {currentCrisis.title}</h2>
+    <form onSubmit={handleSubmit} style={formStyle}>
+      <h2>Player Strategic Directive</h2>
+      <p>Current Cash: {formatCurrency(companyCash)}</p>
 
-      {(currentUser.permissions.canAddIncidentLogs) && (
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Add New Incident Log Entry</h3>
-          <textarea
-            value={newLogDescription}
-            onChange={e => setNewLogDescription(e.target.value)}
-            placeholder="Describe the incident (e.g., 'Server outage in EU-central region impacting 10% of users')."
-            rows={3}
-            className="w-full p-2 mb-3 bg-gray-600 rounded text-white resize-y"
-          />
-          <div className="flex items-center space-x-3 mb-3">
-            <label htmlFor="log-severity" className="text-gray-300">Severity:</label>
-            <select
-              id="log-severity"
-              value={newLogSeverity}
-              onChange={e => setNewLogSeverity(e.target.value as CrisisSeverity)}
-              className="p-2 bg-gray-600 rounded"
-            >
-              {Object.values(CrisisSeverity).map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <button
-              onClick={handleAddLog}
-              disabled={isAdding || !newLogDescription}
-              className="ml-auto p-2 bg-purple-600 hover:bg-purple-700 rounded disabled:opacity-50"
-            >
-              {isAdding ? 'Adding...' : 'Add Log Entry'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {currentCrisis.relatedIncidents.length === 0 ? (
-        <p className="text-gray-400">No incident logs recorded for this crisis yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {currentCrisis.relatedIncidents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map(log => (
-            <div key={log.id} className="bg-gray-800 p-4 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-300">{log.timestamp.toLocaleString()}</span>
-                <div className="flex items-center space-x-2">
-                  <CrisisSeverityBadge severity={log.severity} />
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    log.status === 'OPEN' ? 'bg-red-500' : log.status === 'IN_PROGRESS' ? 'bg-yellow-500' : 'bg-green-500'
-                  }`}>{log.status.replace(/_/g, ' ')}</span>
-                </div>
-              </div>
-              <p className="text-white text-md mb-2">{log.description}</p>
-              <p className="text-gray-400 text-sm">Action Taken: {log.actionTaken}</p>
-              <div className="flex items-center mt-2 text-xs text-gray-500">
-                Reported by: {getMockUser(log.reportedByUserId)?.name || 'Unknown'}
-                {log.relatedArtifacts && log.relatedArtifacts.length > 0 && (
-                  <span className="ml-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {log.relatedArtifacts.length} Artifacts
-                  </span>
-                )}
-              </div>
-            </div>
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Overall Strategic Focus:</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          {['innovation', 'cost_reduction', 'market_expansion', 'customer_retention', 'risk_management', 'digital_asset_focus'].map(focus => (
+            <label key={focus} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="overallFocus"
+                value={focus}
+                checked={overallFocus === focus}
+                onChange={(e) => setOverallFocus(e.target.value as PlayerStrategicDirective['overallFocus'])}
+                style={{ marginRight: '5px' }}
+              />
+              {focus.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+            </label>
           ))}
         </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * StakeholderCommunicationManager: React.FC
- *
- * This component manages targeted communication strategies for diverse stakeholder groups during a crisis.
- * It allows for the identification, segmentation, and customized messaging to customers, employees,
- * investors, and regulators.
- *
- * Business value: Safeguards brand reputation and maintains trust by ensuring timely, accurate,
- * and relevant communications, preventing panic, reducing negative sentiment, and minimizing
- * long-term damage. By tailoring messages to specific audiences, it enhances the effectiveness
- * of crisis response and protects key relationships, thereby preserving market value.
- */
-export const StakeholderCommunicationManager: React.FC = () => {
-  const { currentCrisis, currentUser } = useCrisisContext();
-  const [filterType, setFilterType] = useState<'ALL' | Stakeholder['type']>('ALL');
-
-  const filteredStakeholders = useMemo(() => {
-    if (filterType === 'ALL') {
-      return mockStakeholders;
-    }
-    return mockStakeholders.filter(s => s.type === filterType);
-  }, [filterType]);
-
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to manage stakeholder communications.</p>;
-  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">Access denied: You do not have permission to view stakeholder communications.</p>;
-
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Stakeholder Communication for {currentCrisis.title}</h2>
-
-      <div className="mb-4 flex items-center space-x-3">
-        <label htmlFor="stakeholder-type" className="text-gray-300">Filter by Type:</label>
-        <select
-          id="stakeholder-type"
-          value={filterType}
-          onChange={e => setFilterType(e.target.value as 'ALL' | Stakeholder['type'])}
-          className="p-2 bg-gray-600 rounded"
-        >
-          <option value="ALL">All Types</option>
-          {Object.values(mockStakeholders.reduce((acc, s) => ({ ...acc, [s.type]: s.type }), {} as { [key: string]: Stakeholder['type'] })).map(type => (
-            <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
-          ))}
-        </select>
-        {(currentUser.permissions.canEditCrisis || currentUser.role === 'PR_SPECIALIST') && (
-          <button className="ml-auto p-2 bg-cyan-600 hover:bg-cyan-700 rounded">Add New Stakeholder</button>
-        )}
       </div>
 
-      <div className="space-y-4">
-        {filteredStakeholders.map(stakeholder => (
-          <div key={stakeholder.id} className="bg-gray-800 p-4 rounded-lg shadow flex justify-between items-start">
-            <div>
-              <h3 className="text-xl font-semibold text-white">{stakeholder.name} ({stakeholder.type.replace(/_/g, ' ')})</h3>
-              <p className="text-gray-300">Contact: {stakeholder.contactInfo}</p>
-              {stakeholder.keyMessage && <p className="text-gray-400 mt-2 italic">"{stakeholder.keyMessage}"</p>}
-              <div className="mt-2 text-sm text-gray-500">
-                Channels: {stakeholder.communicationChannels.join(', ')}
-              </div>
-            </div>
-            <div className="text-right">
-              <p className={`font-bold ${stakeholder.sentimentImpact < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                Sentiment Impact: {stakeholder.sentimentImpact > 0 ? '+' : ''}{stakeholder.sentimentImpact}
-              </p>
-              <p className="text-gray-400">Priority: {stakeholder.priority}</p>
-              {(currentUser.permissions.canEditComms || currentUser.role === 'PR_SPECIALIST') && (
-                <button className="mt-2 text-sm text-cyan-500 hover:text-cyan-700">Customize Comms</button>
-              )}
-            </div>
+      <div style={sectionStyle}>
+        <h3 style={{ marginTop: 0 }}>Resource Allocation (Total: {totalAllocation}%)</h3>
+        {totalAllocation !== 100 && (
+          <p style={errorStyle}>Total allocation must be 100%.</p>
+        )}
+        {[
+          { label: 'R&D', value: rdAllocation, setter: setRdAllocation },
+          { label: 'Marketing', value: marketingAllocation, setter: setMarketingAllocation },
+          { label: 'Sales', value: salesAllocation, setter: setSalesAllocation },
+          { label: 'Operations', value: operationsAllocation, setter: setOperationsAllocation },
+          { label: 'HR & Talent', value: hrAllocation, setter: setHrAllocation },
+          { label: 'Customer Service', value: customerServiceAllocation, setter: setCustomerServiceAllocation },
+          { label: 'Capital Investment', value: capitalInvestmentAllocation, setter: setCapitalInvestmentAllocation },
+        ].map(({ label, value, setter }) => (
+          <div key={label} style={sliderContainerStyle}>
+            <label style={sliderLabelStyle}>{label}:</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={value}
+              onChange={(e) => handleAllocationChange(setter, parseInt(e.target.value))}
+              style={sliderInputStyle}
+            />
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={value}
+              onChange={(e) => handleAllocationChange(setter, parseInt(e.target.value))}
+              style={{ ...sliderValueStyle, width: '50px' }}
+            />%
           </div>
         ))}
-        {filteredStakeholders.length === 0 && <p className="text-gray-400">No stakeholders found for selected filter.</p>}
       </div>
-    </div>
-  );
-};
 
-/**
- * LegalReviewDashboard: React.FC
- *
- * This dashboard provides a centralized view and management interface for all legal analyses
- * pertaining to ongoing crises. It tracks potential risks, compliance requirements,
- * recommended actions, and estimated financial liabilities.
- *
- * Business value: Proactively identifies and mitigates legal exposure, ensuring adherence
- * to complex regulatory frameworks (e.g., GDPR, CCPA) and significantly reducing the risk
- * of costly fines, litigation, and sanctions. It provides legal teams with the tools to
- * manage and document compliance effectively, safeguarding the company's financial health
- * and reputation.
- */
-export const LegalReviewDashboard: React.FC = () => {
-  const { currentCrisis, addLegalReviewToCrisis, currentUser } = useCrisisContext();
-  const [isAddingReview, setIsAddingReview] = useState(false);
-  const [newReviewSummary, setNewReviewSummary] = useState('');
-  const [newReviewRisks, setNewReviewRisks] = useState(''); // Comma separated
-  const [newReviewActions, setNewReviewActions] = useState(''); // Comma separated
-  const [newReviewCompliance, setNewReviewCompliance] = useState(''); // Comma separated
-  const [newReviewRiskLevel, setNewReviewRiskLevel] = useState<LegalRiskLevel>('MEDIUM');
-  const [newSensitiveDataInvolved, setNewSensitiveDataInvolved] = useState(false);
+      <div style={sectionStyle}>
+        <h3 style={{ marginTop: 0 }}>New Product Development (Simplified: one entry at a time)</h3>
+        <label style={labelStyle}>Product Name:</label>
+        <input
+          type="text"
+          value={newProductDevelopment[0]?.name || ''}
+          onChange={(e) => handleNewProductChange('name', e.target.value)}
+          placeholder="e.g., Quantum FinTech AI"
+          style={inputStyle}
+        />
+        <label style={labelStyle}>Product Type:</label>
+        <select
+          value={newProductDevelopment[0]?.type || 'FinTech_App'}
+          onChange={(e) => handleNewProductChange('type', e.target.value as ProductLine['type'])}
+          style={inputStyle}
+        >
+          <option value="AI_Platform">AI Platform</option>
+          <option value="FinTech_App">FinTech App</option>
+          <option value="Data_Analytics">Data Analytics</option>
+          <option value="Consulting_Service">Consulting Service</option>
+          <option value="Tokenized_Asset_Service">Tokenized Asset Service</option>
+        </select>
+        <label style={labelStyle}>Target Market Segments:</label>
+        <select
+          multiple
+          value={newProductDevelopment[0]?.targetMarketSegmentIds || []}
+          onChange={(e) => handleNewProductChange('targetMarketSegmentIds', Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ ...inputStyle, height: '80px' }}
+        >
+          {marketSegments.map(segment => (
+            <option key={segment.id} value={segment.id}>{segment.name}</option>
+          ))}
+        </select>
+        <label style={labelStyle}>Features to Develop (e.g., predictive_ai, real_time_analytics):</label>
+        <input
+          type="text"
+          value={newProductDevelopment[0]?.featuresToDevelop.join(', ') || ''}
+          onChange={(e) => handleNewProductChange('featuresToDevelop', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+          placeholder="Comma separated feature IDs"
+          style={inputStyle}
+        />
+        {/* Placeholder for adding more products; for simplicity, only one is managed in this demo */}
+      </div>
 
+      <div style={sectionStyle}>
+        <h3 style={{ marginTop: 0 }}>Marketing Campaigns (Simplified: one entry at a time)</h3>
+        <label style={labelStyle}>Campaign Name:</label>
+        <input
+          type="text"
+          value={marketingCampaigns[0]?.name || ''}
+          onChange={(e) => handleMarketingCampaignChange('name', e.target.value)}
+          placeholder="e.g., New Customer Onboarding Drive"
+          style={inputStyle}
+        />
+        <label style={labelStyle}>Target Market Segments:</label>
+        <select
+          multiple
+          value={marketingCampaigns[0]?.targetSegmentIds || []}
+          onChange={(e) => handleMarketingCampaignChange('targetSegmentIds', Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ ...inputStyle, height: '80px' }}
+        >
+          {marketSegments.map(segment => (
+            <option key={segment.id} value={segment.id}>{segment.name}</option>
+          ))}
+        </select>
+        <label style={labelStyle}>Budget ({formatCurrency(companyCash)} available):</label>
+        <input
+          type="number"
+          value={marketingCampaigns[0]?.budget || 0}
+          onChange={(e) => handleMarketingCampaignChange('budget', parseInt(e.target.value) || 0)}
+          min="0"
+          max={companyCash}
+          style={inputStyle}
+        />
+        <label style={labelStyle}>Message:</label>
+        <textarea
+          value={marketingCampaigns[0]?.message || ''}
+          onChange={(e) => handleMarketingCampaignChange('message', e.target.value)}
+          placeholder="e.g., 'Revolutionizing your finance with AI!'"
+          style={{ ...inputStyle, height: '60px' }}
+        />
+        {/* Placeholder for adding more campaigns */}
+      </div>
 
-  const handleAddReview = async () => {
-    if (!currentCrisis || !newReviewSummary) return;
-    if (!currentUser.permissions.canReviewLegal) {
-      alert('Access denied: You do not have permission to add legal reviews. Contact your administrator.');
-      return;
-    }
-    setIsAddingReview(true);
-    const mockReview = generateMockLegalAnalysis(currentCrisis.id, currentUser.id);
-    const newReview: LegalAnalysisResult = {
-      ...mockReview,
-      summary: newReviewSummary,
-      keyRisks: newReviewRisks.split(',').map(s => s.trim()).filter(Boolean),
-      recommendedActions: newReviewActions.split(',').map(s => s.trim()).filter(Boolean),
-      complianceRequirements: newReviewCompliance.split(',').map(s => s.trim()).filter(Boolean),
-      legalRiskLevel: newReviewRiskLevel,
-      sensitiveDataInvolved: newSensitiveDataInvolved,
-      analyzedByUserId: currentUser.id,
-    };
-    await addLegalReviewToCrisis(newReview);
-    setNewReviewSummary('');
-    setNewReviewRisks('');
-    setNewReviewActions('');
-    setNewReviewCompliance('');
-    setNewReviewRiskLevel('MEDIUM');
-    setNewSensitiveDataInvolved(false);
-    setIsAddingReview(false);
-  };
+      <div style={sectionStyle}>
+        <h3 style={{ marginTop: 0 }}>Pricing Adjustments (Simplified: one entry at a time)</h3>
+        <label style={labelStyle}>Product to Adjust:</label>
+        <select
+          value={pricingAdjustments[0]?.productId || ''}
+          onChange={(e) => handlePricingAdjustmentChange('productId', e.target.value)}
+          style={inputStyle}
+        >
+          <option value="">-- Select Product --</option>
+          {productLines.map(product => (
+            <option key={product.id} value={product.id}>{product.name} (Current: {formatCurrency(product.basePrice)})</option>
+          ))}
+        </select>
+        <label style={labelStyle}>New Price:</label>
+        <input
+          type="number"
+          value={pricingAdjustments[0]?.newPrice || 0}
+          onChange={(e) => handlePricingAdjustmentChange('newPrice', parseFloat(e.target.value) || 0)}
+          min="0"
+          step="0.01"
+          style={inputStyle}
+        />
+        {/* Placeholder for adding more pricing adjustments */}
+      </div>
 
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view legal reviews.</p>;
-  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">Access denied: You do not have permission to view legal reviews.</p>;
-
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Legal Review for {currentCrisis.title}</h2>
-
-      {(currentUser.permissions.canReviewLegal) && (
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Add New Legal Analysis</h3>
-          <textarea
-            value={newReviewSummary}
-            onChange={e => setNewReviewSummary(e.target.value)}
-            placeholder="Summarize the legal analysis..."
-            rows={3}
-            className="w-full p-2 mb-3 bg-gray-600 rounded text-white resize-y"
-          />
-          <input
-            type="text"
-            value={newReviewRisks}
-            onChange={e => setNewReviewRisks(e.target.value)}
-            placeholder="Key risks (comma-separated, e.g., 'GDPR fines, reputational damage')"
-            className="w-full p-2 mb-3 bg-gray-600 rounded text-white"
-          />
-          <input
-            type="text"
-            value={newReviewActions}
-            onChange={e => setNewReviewActions(e.target.value)}
-            placeholder="Recommended actions (comma-separated, e.g., 'Engage external counsel')"
-            className="w-full p-2 mb-3 bg-gray-600 rounded text-white"
-          />
-          <input
-            type="text"
-            value={newReviewCompliance}
-            onChange={e => setNewReviewCompliance(e.target.value)}
-            placeholder="Compliance requirements (comma-separated, e.g., 'GDPR Article 33')"
-            className="w-full p-2 mb-3 bg-gray-600 rounded text-white"
-          />
-          <div className="flex items-center space-x-4 mb-3">
-            <label htmlFor="legal-risk-level" className="text-gray-300">Risk Level:</label>
-            <select
-              id="legal-risk-level"
-              value={newReviewRiskLevel}
-              onChange={e => setNewReviewRiskLevel(e.target.value as LegalRiskLevel)}
-              className="p-2 bg-gray-600 rounded"
-            >
-              {Object.values(LegalRiskLevel).map(level => (
-                <option key={level} value={level}>{level}</option>
-              ))}
-            </select>
-            <label className="inline-flex items-center text-gray-300 ml-auto">
+      <div style={sectionStyle}>
+        <label style={labelStyle}>HR Initiatives:</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          {['training', 'hiring', 'downsizing', 'none'].map(initiative => (
+            <label key={initiative} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
               <input
-                type="checkbox"
-                checked={newSensitiveDataInvolved}
-                onChange={e => setNewSensitiveDataInvolved(e.target.checked)}
-                className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
+                type="radio"
+                name="hrInitiatives"
+                value={initiative}
+                checked={hrInitiatives === initiative}
+                onChange={(e) => setHrInitiatives(e.target.value as PlayerStrategicDirective['hrInitiatives'])}
+                style={{ marginRight: '5px' }}
               />
-              <span className="ml-2">Sensitive Data Involved</span>
+              {initiative.charAt(0).toUpperCase() + initiative.slice(1)}
             </label>
-          </div>
-          <button
-            onClick={handleAddReview}
-            disabled={isAddingReview || !newReviewSummary}
-            className="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded disabled:opacity-50"
-          >
-            {isAddingReview ? 'Adding...' : 'Add Legal Review'}
-          </button>
-        </div>
-      )}
-
-      {currentCrisis.legalReviews.length === 0 ? (
-        <p className="text-gray-400">No legal reviews available for this crisis yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {currentCrisis.legalReviews.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map(review => (
-            <div key={review.id} className="bg-gray-800 p-4 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-300">{review.timestamp.toLocaleString()}</span>
-                <div className="flex items-center space-x-2">
-                  <LegalRiskBadge risk={review.legalRiskLevel} />
-                  {review.sensitiveDataInvolved && (
-                    <span className="text-red-400 text-xs font-semibold">Sensitive Data Involved</span>
-                  )}
-                </div>
-              </div>
-              <p className="text-white text-md font-semibold mb-1">{review.summary}</p>
-              {review.keyRisks.length > 0 && (
-                <p className="text-gray-400 text-sm mb-1">
-                  <span className="font-semibold">Key Risks:</span> {review.keyRisks.join(', ')}
-                </p>
-              )}
-              {review.recommendedActions.length > 0 && (
-                <p className="text-gray-400 text-sm mb-1">
-                  <span className="font-semibold">Recommended Actions:</span> {review.recommendedActions.join(', ')}
-                </p>
-              )}
-              {review.complianceRequirements.length > 0 && (
-                <p className="text-gray-400 text-sm mb-1">
-                  <span className="font-semibold">Compliance:</span> {review.complianceRequirements.join(', ')}
-                </p>
-              )}
-              {review.potentialFinesMin && review.potentialFinesMax && (
-                <p className="text-gray-400 text-sm">
-                  <span className="font-semibold">Potential Fines:</span> ${review.potentialFinesMin.toLocaleString()} - ${review.potentialFinesMax.toLocaleString()}
-                </p>
-              )}
-              <div className="flex items-center mt-2 text-xs text-gray-500">
-                Analyzed by: {getMockUser(review.analyzedByUserId)?.name || getMockAgent(review.analyzedByUserId)?.name || 'Unknown'}
-              </div>
-            </div>
           ))}
         </div>
-      )}
-    </div>
+      </div>
+
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Risk Mitigation Strategies (select all that apply):</label>
+        <select
+          multiple
+          value={riskMitigation}
+          onChange={(e) => setRiskMitigation(Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ ...inputStyle, height: '100px' }}
+        >
+          <option value="cybersecurity_investment">Cybersecurity Investment</option>
+          <option value="regulatory_compliance">Enhanced Regulatory Compliance</option>
+          <option value="diversity_initiatives">Diversity & Inclusion Initiatives</option>
+          <option value="supply_chain_resilience">Supply Chain Resilience</option>
+          <option value="geopolitical_monitoring">Geopolitical Monitoring</option>
+          <option value="market_diversification">Market Diversification</option>
+          <option value="decentralized_governance">Decentralized Governance Adoption</option>
+          <option value="multi_signature_protocols">Multi-Signature Protocols</option>
+        </select>
+      </div>
+
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Target Acquisitions (select competitor IDs):</label>
+        <select
+          multiple
+          value={targetAcquisitions}
+          onChange={(e) => setTargetAcquisitions(Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ ...inputStyle, height: '80px' }}
+        >
+          {competitors.map(comp => (
+            <option key={comp.id} value={comp.id}>{comp.name}</option>
+          ))}
+        </select>
+        <p style={{ fontSize: '0.8em', color: '#666' }}>Note: Acquisitions are very costly and will significantly deplete cash.</p>
+      </div>
+
+      <div style={sectionStyle}>
+        <label style={labelStyle}>Divest Product Lines (select product IDs to sell off):</label>
+        <select
+          multiple
+          value={divestProductLines}
+          onChange={(e) => setDivestProductLines(Array.from(e.target.selectedOptions, option => option.value))}
+          style={{ ...inputStyle, height: '80px' }}
+        >
+          {productLines.map(product => (
+            <option key={product.id} value={product.id}>{product.name}</option>
+          ))}
+        </select>
+        <p style={{ fontSize: '0.8em', color: '#666' }}>Note: Divestment generates cash but may reduce market presence.</p>
+      </div>
+
+      <div style={sectionStyle}>
+        <h3 style={{ marginTop: 0 }}>Token Rail Optimization</h3>
+        <label style={labelStyle}>Preferred Rail Type:</label>
+        <select
+          value={tokenRailOptimization?.preferredRailType || 'internal'}
+          onChange={(e) => setTokenRailOptimization(prev => ({ ...prev, preferredRailType: e.target.value as any }))}
+          style={inputStyle}
+        >
+          <option value="fast">Fast Rail (higher fee, low latency)</option>
+          <option value="batch">Batch Rail (lower fee, high latency)</option>
+          <option value="internal">Internal Ledger (lowest fee, lowest latency)</option>
+        </select>
+        <label style={labelStyle}>Max Latency Tolerance (Simulated Years):</label>
+        <input
+          type="number"
+          value={tokenRailOptimization?.maxLatencyTolerance || 0.1}
+          onChange={(e) => setTokenRailOptimization(prev => ({ ...prev, maxLatencyTolerance: parseFloat(e.target.value) || 0 }))}
+          min="0"
+          step="0.01"
+          style={inputStyle}
+        />
+        <label style={labelStyle}>Max Fee Percentage (%):</label>
+        <input
+          type="number"
+          value={(tokenRailOptimization?.maxFeePercentage || 0.001) * 100}
+          onChange={(e) => setTokenRailOptimization(prev => ({ ...prev, maxFeePercentage: (parseFloat(e.target.value) || 0) / 100 }))}
+          min="0"
+          step="0.001"
+          max="100"
+          style={inputStyle}
+        />%
+        <p style={{ fontSize: '0.8em', color: '#666' }}>Note: These settings influence how the payment processor chooses transaction rails.</p>
+      </div>
+
+      <button type="submit" style={buttonStyle}>Submit Strategic Directive</button>
+    </form>
   );
 };
 
 /**
- * SentimentMonitoringDashboard: React.FC
- *
- * This component offers real-time monitoring and analysis of public and internal sentiment
- * surrounding a crisis, tracking trends, key themes, and mentions across various channels.
- *
- * Business value: Provides invaluable intelligence for public relations and marketing teams
- * to craft effective messaging, counteract misinformation, and protect brand perception,
- * directly impacting market valuation and customer loyalty. Real-time insights allow for
- * agile communication adjustments, preventing cascading negative effects and preserving
- * stakeholder trust.
+ * React component to display the current state of the wargame.
+ * Business Value: This dashboard provides a consolidated, real-time view of the simulation's
+ * most critical metrics and state variables. It's an executive-level summary that allows
+ * decision-makers to quickly grasp company performance, market conditions, and competitive
+ * landscape. By visualizing complex data pointsâ€”financials, market share, product health,
+ * and global sentimentâ€”it facilitates rapid situational awareness and supports agile
+ * strategic adjustments. This visual feedback loop is invaluable for learning, enabling
+ * teams to understand the direct consequences of their 'agentic' actions and refine their
+ * strategic thinking without the lag and cost of real-world experimentation. This forms
+ * the observability layer of the financial infrastructure.
  */
-export const SentimentMonitoringDashboard: React.FC = () => {
-  const { currentCrisis, addSentimentReportToCrisis, currentUser, settings, allAgents, addAgentLogEntryToCrisis } = useCrisisContext();
-  const [isGeneratingSentiment, setIsGeneratingSentiment] = useState(false);
+export const WargameDashboard: React.FC<{ gameState: GameState; onAdvanceYear: (directive: PlayerStrategicDirective) => Promise<YearEndReport | void>; onResetGame: () => void }> = ({ gameState, onAdvanceYear, onResetGame }) => {
+  const [playerDirective, setPlayerDirective] = useState<PlayerStrategicDirective | null>(null);
+  const [report, setReport] = useState<YearEndReport | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGenerateReport = async () => {
-    if (!currentCrisis) return;
-    if (!currentUser.permissions.canViewReports) {
-      alert('Access denied: You do not have permission to generate sentiment reports. Contact your administrator.');
+  const handleAdvanceYear = useCallback(async () => {
+    if (!playerDirective) {
+      alert('Please set your strategic directive before advancing the year.');
       return;
     }
-    setIsGeneratingSentiment(true);
-    const sentinelAgent = allAgents.find(a => a.id === 'agent_sentinel'); // Assume 'agent_sentinel' is the sentiment AI
-    const generatorId = (sentinelAgent?.isActive && settings.enabledAgents.MONITORING) ? sentinelAgent.id : currentUser.id;
-    const generatorType = (sentinelAgent?.isActive && settings.enabledAgents.MONITORING) ? 'AI_AGENT' : 'USER';
-
-    if (generatorType === 'AI_AGENT' && sentinelAgent) {
-      await addAgentLogEntryToCrisis(currentCrisis.id, {
-        agentId: sentinelAgent.id,
-        action: 'Initiated real-time sentiment analysis',
-        details: `Scanning social media and news for crisis ${currentCrisis.id}`,
-        status: 'IN_PROGRESS'
-      });
+    setLoading(true);
+    setError(null);
+    try {
+      // The onAdvanceYear prop already handles setting the directive and advancing the year.
+      const yearEndReport = await onAdvanceYear(playerDirective);
+      setReport(yearEndReport);
+      setPlayerDirective(null); // Reset directive after year advance
+    } catch (e: any) {
+      setError(e.message || 'An error occurred during simulation.');
+    } finally {
+      setLoading(false);
     }
+  }, [playerDirective, onAdvanceYear]);
 
-    const newReport = generateMockSentimentReport(currentCrisis.id, generatorId);
-    await addSentimentReportToCrisis(newReport);
+  const currentCompany = gameState.playerCompany;
+  const globalSentimentEmoji = getMarketSentimentEmoji(gameState.globalMarketSentiment);
 
-    if (generatorType === 'AI_AGENT' && sentinelAgent) {
-      await addAgentLogEntryToCrisis(currentCrisis.id, {
-        agentId: sentinelAgent.id,
-        action: 'Completed sentiment analysis',
-        details: `Overall sentiment: ${newReport.overallSentiment.toFixed(2)}`,
-        status: 'SUCCESS',
-        relatedArtifactId: newReport.id
-      });
-    }
-    setIsGeneratingSentiment(false);
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    padding: '20px',
+    margin: '10px 0',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
   };
 
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view sentiment reports.</p>;
-  if (!currentUser.permissions.canViewReports) return <p className="text-red-400">Access denied: You do not have permission to view sentiment reports.</p>;
+  const headerStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+    paddingBottom: '10px',
+    borderBottom: '1px solid #eee',
+  };
 
-  const latestReport = currentCrisis.sentimentHistory.length > 0
-    ? currentCrisis.sentimentHistory.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0]
-    : null;
+  const kpiValueStyle: React.CSSProperties = {
+    fontSize: '1.2em',
+    fontWeight: 'bold',
+    color: '#333',
+  };
 
-  const sentimentChartData = latestReport?.sentimentTrend
-    .slice(0, 12) // Last 12 hours/data points
-    .reverse()
-    .map(dp => ({
-      label: new Date(dp.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      value: dp.score,
-      color: dp.score >= 0.1 ? 'bg-green-500' : dp.score <= -0.1 ? 'bg-red-500' : 'bg-gray-500',
-    })) || [];
+  const kpiLabelStyle: React.CSSProperties = {
+    fontSize: '0.9em',
+    color: '#666',
+  };
+
+  const kpiGridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: '15px',
+    marginBottom: '20px',
+  };
+
+  const productLineCardStyle: React.CSSProperties = {
+    border: '1px solid #f0f0f0',
+    borderRadius: '6px',
+    padding: '10px',
+    marginBottom: '10px',
+    backgroundColor: '#fdfdfd',
+  };
+
+  const competitorCardStyle: React.CSSProperties = {
+    border: '1px solid #e0e0e0',
+    borderRadius: '6px',
+    padding: '10px',
+    marginBottom: '10px',
+    backgroundColor: '#f8f8f8',
+  };
+
+  const marketSegmentCardStyle: React.CSSProperties = {
+    border: '1px solid #e9e9e9',
+    borderRadius: '6px',
+    padding: '10px',
+    marginBottom: '10px',
+    backgroundColor: '#fafafa',
+  };
 
   return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Sentiment Monitoring for {currentCrisis.title}</h2>
+    <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '20px auto', padding: '20px', backgroundColor: '#f0f2f5', borderRadius: '10px' }}>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>Emergent Strategy Wargamer View</h1>
 
-      {(currentUser.permissions.canViewReports) && (
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-semibold mb-1">Generate New Sentiment Report</h3>
-            <p className="text-gray-400 text-sm">Last updated {latestReport?.timestamp.toLocaleString() || 'N/A'}</p>
-          </div>
+      <div style={headerStyle}>
+        <h2 style={{ margin: 0 }}>Year: {gameState.currentYear}</h2>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={onResetGame} style={{ padding: '10px 15px', borderRadius: '5px', border: '1px solid #ccc', backgroundColor: '#f0f0f0', cursor: 'pointer' }}>Reset Game</button>
           <button
-            onClick={handleGenerateReport}
-            disabled={isGeneratingSentiment}
-            className="p-2 bg-green-600 hover:bg-green-700 rounded disabled:opacity-50"
+            onClick={handleAdvanceYear}
+            disabled={loading}
+            style={{ padding: '10px 15px', borderRadius: '5px', border: 'none', backgroundColor: '#28a745', color: 'white', cursor: loading ? 'not-allowed' : 'pointer' }}
           >
-            {isGeneratingSentiment ? 'Analyzing...' : `Analyze Real-time Data (every ${settings.sentimentMonitorIntervalMinutes} min)`}
+            {loading ? 'Advancing Year...' : 'Advance Year'}
           </button>
+        </div>
+      </div>
+
+      {error && <p style={errorStyle}>Error: {error}</p>}
+
+      <StrategyInputForm
+        currentStrategy={playerDirective}
+        onStrategyChange={setPlayerDirective}
+        companyCash={currentCompany.cash}
+        productLines={currentCompany.productLines}
+        marketSegments={gameState.marketSegments}
+        competitors={gameState.competitors}
+      />
+
+      {report && (
+        <div style={{ ...cardStyle, borderLeft: '5px solid #007bff' }}>
+          <h3>Year {report.year} End Report</h3>
+          <p><strong>Key Insights:</strong></p>
+          <ul>
+            {report.keyInsights.map((insight, i) => <li key={i}>{insight}</li>)}
+          </ul>
+          <p><strong>Recommendations:</strong></p>
+          <ul>
+            {report.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
+          </ul>
+          <div style={kpiGridStyle}>
+            <div>
+              <div style={kpiValueStyle}>{report.kpis.marketShareGrowth.toFixed(2)}%</div>
+              <div style={kpiLabelStyle}>Market Share Growth</div>
+            </div>
+            <div>
+              <div style={kpiValueStyle}>{report.kpis.revenueGrowth.toFixed(2)}%</div>
+              <div style={kpiLabelStyle}>Revenue Growth</div>
+            </div>
+            <div>
+              <div style={kpiValueStyle}>{report.kpis.profitMargin.toFixed(2)}%</div>
+              <div style={kpiLabelStyle}>Profit Margin</div>
+            </div>
+            <div>
+              <div style={kpiValueStyle}>{formatCurrency(report.kpis.customerAcquisitionCost)}</div>
+              <div style={kpiLabelStyle}>CAC (per new customer)</div>
+            </div>
+            <div>
+              <div style={kpiValueStyle}>{report.kpis.customerRetentionRate.toFixed(2)}%</div>
+              <div style={kpiLabelStyle}>Customer Retention Rate</div>
+            </div>
+            <div>
+              <div style={kpiValueStyle}>{report.kpis.innovationIndex.toFixed(2)}</div>
+              <div style={kpiLabelStyle}>Innovation Index</div>
+            </div>
+            <div>
+              <div style={kpiValueStyle}>{report.kpis.employeeMorale.toFixed(2)}</div>
+              <div style={kpiLabelStyle}>Employee Morale</div>
+            </div>
+            {report.kpis.transactionEfficiencyScore !== undefined && (
+              <div>
+                <div style={kpiValueStyle}>{report.kpis.transactionEfficiencyScore.toFixed(2)}</div>
+                <div style={kpiLabelStyle}>Transaction Efficiency Score</div>
+              </div>
+            )}
+            {report.kpis.digitalAssetExposure !== undefined && (
+              <div>
+                <div style={kpiValueStyle}>{report.kpis.digitalAssetExposure.toFixed(2)}%</div>
+                <div style={kpiLabelStyle}>Digital Asset Exposure</div>
+              </div>
+            )}
+          </div>
+          <p><strong>Competitor Actions:</strong></p>
+          <ul>
+            {report.competitorActions.map((action, i) => <li key={i}>{action}</li>)}
+          </ul>
+          <p><strong>Market News:</strong></p>
+          <ul>
+            {report.marketNewsEvents.map((news, i) => <li key={i}>{news}</li>)}
+          </ul>
         </div>
       )}
 
-      {latestReport ? (
-        <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-800 p-4 rounded-lg text-center">
-              <p className="text-gray-300">Overall Sentiment</p>
-              <p className={`text-5xl font-bold ${latestReport.overallSentiment > 0.1 ? 'text-green-400' : latestReport.overallSentiment < -0.1 ? 'text-red-400' : 'text-gray-400'}`}>
-                {latestReport.overallSentiment.toFixed(2)}
-              </p>
-            </div>
-            <div className="bg-gray-800 p-4 rounded-lg text-center">
-              <p className="text-gray-300">Total Mentions (24h)</p>
-              <p className="text-4xl font-bold text-cyan-400">
-                {latestReport.sentimentTrend.reduce((sum, dp) => sum + dp.volume, 0).toLocaleString()}
-              </p>
-            </div>
-            <div className="bg-gray-800 p-4 rounded-lg text-center">
-              <p className="text-gray-300">Key Themes</p>
-              <p className="text-xl font-bold text-white">{latestReport.keyThemes.join(', ')}</p>
-            </div>
+      <div style={cardStyle}>
+        <h3>Your Company: {currentCompany.name}</h3>
+        <div style={kpiGridStyle}>
+          <div>
+            <div style={kpiValueStyle}>{formatCurrency(currentCompany.cash)}</div>
+            <div style={kpiLabelStyle}>Cash</div>
           </div>
-
-          <AnalyticsChart title="Sentiment Trend (Past 12 data points)" data={sentimentChartData} type="line" height={250} />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-3">Top Negative Mentions</h3>
-              <ul className="space-y-2 bg-gray-800 p-4 rounded-lg">
-                {latestReport.topNegativeMentions.map((mention, i) => (
-                  <li key={i} className="text-red-300 text-sm">"{mention}"</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-3">Top Positive Mentions</h3>
-              <ul className="space-y-2 bg-gray-800 p-4 rounded-lg">
-                {latestReport.topPositiveMentions.map((mention, i) => (
-                  <li key={i} className="text-green-300 text-sm">"{mention}"</li>
-                ))}
-              </ul>
-            </div>
+          <div>
+            <div style={kpiValueStyle}>{currentCompany.marketShare.toFixed(2)}%</div>
+            <div style={kpiLabelStyle}>Total Market Share</div>
           </div>
-          <div className="mt-6">
-            <h3 className="text-xl font-semibold mb-3">Recommended PR Actions</h3>
-            <ul className="space-y-2 list-disc list-inside bg-gray-800 p-4 rounded-lg">
-              {latestReport.recommendedPRActions.map((action, i) => (
-                <li key={i} className="text-gray-300 text-sm">{action}</li>
+          <div>
+            <div style={kpiValueStyle}>{formatCurrency(currentCompany.revenue)}</div>
+            <div style={kpiLabelStyle}>Revenue</div>
+          </div>
+          <div>
+            <div style={kpiValueStyle}>{formatCurrency(currentCompany.profit)}</div>
+            <div style={kpiLabelStyle}>Profit</div>
+          </div>
+          <div>
+            <div style={kpiValueStyle}>{currentCompany.employeeCount}</div>
+            <div style={kpiLabelStyle}>Employees</div>
+          </div>
+          <div>
+            <div style={kpiValueStyle}>{currentCompany.brandReputation.toFixed(0)}</div>
+            <div style={kpiLabelStyle}>Brand Reputation</div>
+          </div>
+          <div>
+            <div style={kpiValueStyle}>{currentCompany.customerSatisfaction.toFixed(0)}</div>
+            <div style={kpiLabelStyle}>Customer Satisfaction</div>
+          </div>
+          <div>
+            <div style={kpiValueStyle}>{currentCompany.strategicFocus.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</div>
+            <div style={kpiLabelStyle}>Strategic Focus</div>
+          </div>
+        </div>
+
+        <h4>Your Product Lines:</h4>
+        {currentCompany.productLines.length === 0 && <p>No product lines launched yet.</p>}
+        {currentCompany.productLines.map(product => (
+          <div key={product.id} style={productLineCardStyle}>
+            <strong>{product.name}</strong> ({product.type})
+            <ul>
+              <li>Customers: {product.customerCount.toLocaleString()}</li>
+              <li>Market Share (Product): {product.marketShare.toFixed(2)}%</li>
+              <li>Revenue: {formatCurrency(product.revenue)}</li>
+              <li>Profit: {formatCurrency(product.profit)}</li>
+              <li>Innovation: {product.innovationLevel.toFixed(0)}</li>
+              <li>Quality: {product.qualityScore.toFixed(0)}</li>
+              <li>Lifecycle: {product.lifecycleStage}</li>
+              <li>Target Segments: {product.targetMarketSegmentIds.map(id => gameState.marketSegments.find(s => s.id === id)?.name || id).join(', ')}</li>
+            </ul>
+            <h5>Features:</h5>
+            <ul>
+              {product.features.length === 0 && <li>No features</li>}
+              {product.features.map(feature => (
+                <li key={feature.id}>
+                  {feature.name} (Status: {feature.status}, Innovation: {feature.innovationScore})
+                </li>
               ))}
             </ul>
           </div>
-        </div>
-      ) : (
-        <p className="text-gray-400">No sentiment reports generated for this crisis yet. Automated agents may generate one soon.</p>
-      )}
-    </div>
-  );
-};
+        ))}
 
-/**
- * CommsApprovalWorkflowPanel: React.FC
- *
- * This panel streamlines the critical, multi-stage approval process for all crisis communications,
- * ensuring that every message is reviewed and sanctioned by relevant stakeholders (e.g., legal, PR,
- * executive) before dissemination. Approvals are cryptographically signed to ensure non-repudiation.
- *
- * Business value: Enforces strict governance and compliance, preventing premature or inaccurate
- * communications that could exacerbate a crisis, leading to significant financial losses or
- * regulatory penalties. It provides an auditable, controlled environment for communication
- * sign-off, protecting brand reputation and legal standing.
- */
-export const CommsApprovalWorkflowPanel: React.FC = () => {
-  const { currentCrisis, currentUser, updateCommsApprovalStatus, settings } = useCrisisContext();
-
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view comms approval workflow.</p>;
-  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">Access denied: You do not have permission to view comms approval workflow.</p>;
-
-  const commsPackages = currentCrisis.generatedCommsPackages;
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Comms Approval Workflow for {currentCrisis.title}</h2>
-
-      {commsPackages.length === 0 ? (
-        <p className="text-gray-400">No communication packages generated yet for this crisis. Automated agents may draft one.</p>
-      ) : (
-        <div className="space-y-6">
-          {commsPackages.map((commsPackage, pkgIndex) => (
-            <div key={commsPackage.id} className="bg-gray-800 p-5 rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-3 text-cyan-400">Comms Package #{pkgIndex + 1} (ID: {commsPackage.id})</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-900 p-3 rounded-md">
-                  <h4 className="font-medium text-gray-300 mb-1">Press Release</h4>
-                  <pre className="text-sm text-gray-400 whitespace-pre-wrap max-h-40 overflow-y-auto">{commsPackage.pressRelease}</pre>
-                </div>
-                <div className="bg-gray-900 p-3 rounded-md">
-                  <h4 className="font-medium text-gray-300 mb-1">Twitter Thread (Snippet)</h4>
-                  <pre className="text-sm text-gray-400 whitespace-pre-wrap max-h-40 overflow-y-auto">{commsPackage.twitterThread[0]}...</pre>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold mb-2">Approval Steps:</h4>
-                <div className="space-y-3">
-                  {settings.defaultApprovalWorkflow.map((requiredRole, roleIndex) => {
-                    const entryForRole = currentCrisis.approvalWorkflow
-                      .filter(entry => entry.commsPackageId === commsPackage.id && entry.requiredRole === requiredRole)
-                      .sort((a,b) => (a.reviewTimestamp?.getTime() || 0) - (b.reviewTimestamp?.getTime() || 0)) // Take the latest one if multiple for a role
-                      .pop(); // Get the last entry for this role (most recent attempt)
-
-                    const previousRoleApproved = roleIndex === 0 || currentCrisis.approvalWorkflow.some(e =>
-                      e.commsPackageId === commsPackage.id && e.requiredRole === settings.defaultApprovalWorkflow[roleIndex - 1] && e.status === 'APPROVED'
-                    );
-
-                    const currentStatus = entryForRole?.status || 'DRAFT';
-                    const reviewer = entryForRole?.reviewerId ? getMockUser(entryForRole.reviewerId) : null;
-                    const canApprove = (currentUser.permissions.canApproveComms || currentUser.role === requiredRole) && currentStatus === 'PENDING_REVIEW' && previousRoleApproved;
-
-                    return (
-                      <div key={requiredRole} className={`flex items-center space-x-3 p-3 bg-gray-900 rounded-md ${!previousRoleApproved && roleIndex > 0 ? 'opacity-50 grayscale' : ''}`}>
-                        <CommsStatusBadge status={currentStatus} />
-                        <span className="text-gray-300 flex-grow">
-                          {requiredRole.replace(/_/g, ' ')} Review ({reviewer?.name || 'Awaiting review'})
-                        </span>
-                        {currentStatus === 'PENDING_REVIEW' && canApprove && (
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => updateCommsApprovalStatus(currentCrisis.id, commsPackage.id!, entryForRole?.id || generateMockId('temp-appr'), 'APPROVED', currentUser.id)}
-                              className="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm disabled:opacity-50"
-                              disabled={!canApprove}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => updateCommsApprovalStatus(currentCrisis.id, commsPackage.id!, entryForRole?.id || generateMockId('temp-appr'), 'REJECTED', currentUser.id, 'Changes required.')}
-                              className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm disabled:opacity-50"
-                              disabled={!canApprove}
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                        {(currentStatus === 'APPROVED' || currentStatus === 'REJECTED') && (
-                          <span className="text-xs text-gray-500">
-                            {currentStatus} by {reviewer?.name} at {entryForRole?.reviewTimestamp?.toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+        <h4>Your Token Balances:</h4>
+        {Object.keys(currentCompany.tokenBalances).length === 0 && <p>No tokens held yet.</p>}
+        <ul>
+          {Object.entries(currentCompany.tokenBalances).map(([tokenId, balance]) => (
+            <li key={tokenId}>{tokenId}: {balance.toLocaleString()}</li>
           ))}
-        </div>
-      )}
-    </div>
-  );
-};
+        </ul>
 
-/**
- * FinancialImpactAndPayoutManager: React.FC
- *
- * This component manages the tracking of financial impacts and the initiation of simulated payouts
- * or transactions related to a crisis. It provides an interface to record losses, compensation events,
- * and interact with the simulated token rail for settlement, including multi-rail routing and risk scoring.
- * Displays real-time account balances and transaction history.
- *
- * Business value: Centralizes financial operations related to crisis management, ensuring all costs
- * and compensations are accurately recorded and reconciled. By simulating token rail interactions,
- * it demonstrates the ability to execute real-time, auditable payments, reducing financial overhead
- * and enhancing transparency for regulatory and internal stakeholders. This capability is crucial
- * for managing large-scale compensation programs and demonstrating fiscal responsibility,
- * while predictive routing optimizes for cost, latency, and security.
- */
-export const FinancialImpactAndPayoutManager: React.FC = () => {
-  const { currentCrisis, addFinancialTransactionToCrisis, currentUser, mockAccountsState, mockFinancialRailsState, settings } = useCrisisContext();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('USD');
-  const [transactionType, setTransactionType] = useState<FinancialTransaction['type']>('COMPENSATION_PAYOUT');
-  const [recipientId, setRecipientId] = useState('');
-  const [senderId, setSenderId] = useState(''); // New field for sender
-  const [notes, setNotes] = useState('');
-  const [selectedRail, setSelectedRail] = useState(settings.financialRailsConfig.defaultRail);
-
-  const handleInitiatePayout = async () => {
-    if (!currentCrisis || !amount || isNaN(parseFloat(amount))) return;
-    if (!currentUser.permissions.canInitiatePayments) {
-      alert('Access denied: You do not have permission to initiate financial transactions. Contact your administrator.');
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      const transaction: Omit<FinancialTransaction, 'id' | 'timestamp' | 'relatedCrisisId' | 'riskScore' | 'railUsed' | 'settlementFee' | 'signature'> = {
-        type: transactionType,
-        amount: parseFloat(amount),
-        currency: currency,
-        status: 'PENDING',
-        recipientId: recipientId || undefined,
-        senderId: senderId || undefined,
-        initiatorId: currentUser.id,
-        notes: notes || `Payout initiated for crisis ${currentCrisis.title}`,
-      };
-      await addFinancialTransactionToCrisis(currentCrisis.id, transaction, selectedRail);
-      setAmount('');
-      setRecipientId('');
-      setSenderId('');
-      setNotes('');
-      alert('Transaction initiated. Check logs for settlement status and audit trail.');
-    } catch (error) {
-      alert('Failed to initiate transaction.');
-      console.error('Financial transaction error:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to manage financial impacts.</p>;
-  if (!currentUser.permissions.canViewAll) return <p className="text-red-400">Access denied: You do not have permission to view financial impacts.</p>;
-
-  const sortedTransactions = [...currentCrisis.financialTransactions].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  const companyMainAccount = mockAccountsState.find(acc => acc.id === 'account_company_main');
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Financial Impact & Payouts for {currentCrisis.title}</h2>
-
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-300">Company Main Account</h3>
-          <p className="text-2xl font-bold text-cyan-400">{companyMainAccount?.balances['USD']?.toLocaleString() || 'N/A'} USD</p>
-          <p className="text-sm text-gray-500">Other: {companyMainAccount?.balances['EUR']?.toLocaleString() || 'N/A'} EUR</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-300">Customer Compensation Pool</h3>
-          <p className="text-2xl font-bold text-green-400">{mockAccountsState.find(a => a.id === 'account_customer_comp')?.balances['USD']?.toLocaleString() || 'N/A'} USD</p>
-          <p className="text-sm text-gray-500">Tokenized: {mockAccountsState.find(a => a.id === 'account_customer_comp')?.balances['STABLE_COIN_XYZ']?.toLocaleString() || 'N/A'} SCZ</p>
-        </div>
-        <div className="bg-gray-800 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-300">Total Recorded Loss</h3>
-          <p className="text-2xl font-bold text-red-400">${currentCrisis.financialTransactions.filter(tx => tx.type === 'LOSS_RECORD').reduce((sum, tx) => sum + tx.amount, 0).toLocaleString()}</p>
-        </div>
+        <h4>Financials:</h4>
+        <details>
+          <summary>Income Statement</summary>
+          <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
+            Revenue: {formatCurrency(currentCompany.financials.incomeStatement.revenue)}
+            <br />COGS: {formatCurrency(currentCompany.financials.incomeStatement.cogs)}
+            <br />Gross Profit: {formatCurrency(currentCompany.financials.incomeStatement.grossProfit)}
+            <br />- R&D Expenses: {formatCurrency(currentCompany.financials.incomeStatement.rdExpenses)}
+            <br />- Marketing Expenses: {formatCurrency(currentCompany.financials.incomeStatement.marketingExpenses)}
+            <br />- Sales Expenses: {formatCurrency(currentCompany.financials.incomeStatement.salesExpenses)}
+            <br />- Operations Expenses: {formatCurrency(currentCompany.financials.incomeStatement.operationsExpenses)}
+            <br />- HR Expenses: {formatCurrency(currentCompany.financials.incomeStatement.hrExpenses)}
+            <br />- Customer Service Expenses: {formatCurrency(currentCompany.financials.incomeStatement.customerServiceExpenses)}
+            <br />- Depreciation: {formatCurrency(currentCompany.financials.incomeStatement.depreciation)}
+            <br />Operating Profit: {formatCurrency(currentCompany.financials.incomeStatement.operatingProfit)}
+            <br />- Interest Expenses: {formatCurrency(currentCompany.financials.incomeStatement.interestExpenses)}
+            <br />- Taxes: {formatCurrency(currentCompany.financials.incomeStatement.taxes)}
+            <br /><strong>Net Profit: {formatCurrency(currentCompany.financials.incomeStatement.netProfit)}</strong>
+          </pre>
+        </details>
+        <details>
+          <summary>Balance Sheet</summary>
+          <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
+            Cash: {formatCurrency(currentCompany.financials.balanceSheet.cash)}
+            <br />Accounts Receivable: {formatCurrency(currentCompany.financials.balanceSheet.accountsReceivable)}
+            <br />Fixed Assets: {formatCurrency(currentCompany.financials.balanceSheet.fixedAssets)}
+            <br />Digital Assets (Tokens): {formatCurrency(currentCompany.financials.balanceSheet.digitalAssets)}
+            <br />Total Assets: {formatCurrency(currentCompany.financials.balanceSheet.totalAssets)}
+            <br />Accounts Payable: {formatCurrency(currentCompany.financials.balanceSheet.accountsPayable)}
+            <br />Short Term Debt: {formatCurrency(currentCompany.financials.balanceSheet.shortTermDebt)}
+            <br />Long Term Debt: {formatCurrency(currentCompany.financials.balanceSheet.longTermDebt)}
+            <br />Total Liabilities: {formatCurrency(currentCompany.financials.balanceSheet.totalLiabilities)}
+            <br />Equity: {formatCurrency(currentCompany.financials.balanceSheet.equity)}
+            <br />Total Liabilities & Equity: {formatCurrency(currentCompany.financials.balanceSheet.totalLiabilitiesAndEquity)}
+          </pre>
+        </details>
+        <details>
+          <summary>Cash Flow Statement</summary>
+          <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
+            Beginning Cash: {formatCurrency(currentCompany.financials.cashFlowStatement.beginningCash)}
+            <br />Operating Activities: {formatCurrency(currentCompany.financials.cashFlowStatement.operatingActivities)}
+            <br />Investing Activities: {formatCurrency(currentCompany.financials.cashFlowStatement.investingActivities)}
+            <br />Financing Activities: {formatCurrency(currentCompany.financials.cashFlowStatement.financingActivities)}
+            <br />Net Change In Cash: {formatCurrency(currentCompany.financials.cashFlowStatement.netChangeInCash)}
+            <br />Ending Cash: {formatCurrency(currentCompany.financials.cashFlowStatement.endingCash)}
+          </pre>
+        </details>
       </div>
 
-      {currentUser.permissions.canInitiatePayments && (
-        <div className="mb-6 p-4 bg-gray-800 rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Initiate New Financial Transaction (Programmable Rail)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <input
-              type="number"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              placeholder="Amount (e.g., 1000.00)"
-              className="w-full p-2 bg-gray-600 rounded text-white"
-            />
-            <select
-              value={currency}
-              onChange={e => setCurrency(e.target.value)}
-              className="w-full p-2 bg-gray-600 rounded"
-            >
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="STABLE_COIN_XYZ">STABLE_COIN_XYZ (Token)</option>
-            </select>
+      <div style={cardStyle}>
+        <h3>Competitors:</h3>
+        {gameState.competitors.map(comp => (
+          <div key={comp.id} style={competitorCardStyle}>
+            <strong>{comp.name}</strong> ({comp.description})
+            <ul>
+              <li>Market Share: {comp.marketShare.toFixed(2)}%</li>
+              <li>Strategy: {comp.strategy.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</li>
+              <li>Innovation Focus: {comp.innovationFocus}</li>
+              <li>Marketing Aggression: {comp.marketingAggression}</li>
+              <li>Recent Actions: {comp.recentActions.length > 0 ? comp.recentActions.join('; ') : 'None'}</li>
+            </ul>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <input
-              type="text"
-              value={senderId}
-              onChange={e => setSenderId(e.target.value)}
-              placeholder="Sender ID/Account (e.g., account_company_main)"
-              className="w-full p-2 bg-gray-600 rounded text-white"
-            />
-            <input
-              type="text"
-              value={recipientId}
-              onChange={e => setRecipientId(e.target.value)}
-              placeholder="Recipient ID/Account (e.g., customer_123 or account_customer_comp)"
-              className="w-full p-2 bg-gray-600 rounded text-white"
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <select
-              value={transactionType}
-              onChange={e => setTransactionType(e.target.value as FinancialTransaction['type'])}
-              className="w-full p-2 bg-gray-600 rounded"
-            >
-              <option value="COMPENSATION_PAYOUT">Compensation Payout</option>
-              <option value="FINE_PAYMENT">Fine Payment</option>
-              <option value="LOSS_RECORD">Record Loss</option>
-              <option value="REFUND">Refund</option>
-              <option value="RECONCILIATION">Reconciliation</option>
-              <option value="TOKEN_MINT">Token Mint</option>
-              <option value="TOKEN_BURN">Token Burn</option>
-              <option value="TRANSFER">Transfer</option>
-            </select>
-            <select
-              value={selectedRail}
-              onChange={e => setSelectedRail(e.target.value)}
-              className="w-full p-2 bg-gray-600 rounded"
-            >
-              {mockFinancialRailsState.map(rail => (
-                <option key={rail.id} value={rail.id}>{rail.name} (Latency: {rail.latencyMs}ms, Cost: {rail.costPerTransaction} {currency})</option>
-              ))}
-            </select>
-          </div>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Notes for this transaction (optional)"
-            rows={2}
-            className="w-full p-2 mb-3 bg-gray-600 rounded text-white resize-y"
-          />
-          <button
-            onClick={handleInitiatePayout}
-            disabled={isProcessing || !amount || (!recipientId && transactionType !== 'TOKEN_BURN') || (!senderId && transactionType !== 'TOKEN_MINT' && transactionType !== 'LOSS_RECORD')}
-            className="w-full p-2 bg-purple-600 hover:bg-purple-700 rounded disabled:opacity-50"
-          >
-            {isProcessing ? 'Processing...' : 'Initiate Transaction'}
-          </button>
-        </div>
-      )}
-
-      {currentCrisis.financialTransactions.length === 0 ? (
-        <p className="text-gray-400">No financial transactions recorded for this crisis yet.</p>
-      ) : (
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold mb-3">Transaction History</h3>
-          {sortedTransactions.map(tx => (
-            <div key={tx.id} className="bg-gray-800 p-4 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-300">{tx.timestamp.toLocaleString()}</span>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    tx.status === 'SETTLED' ? 'bg-green-500' : tx.status === 'PENDING' ? 'bg-blue-500' : tx.status === 'BLOCKED' ? 'bg-orange-500' : 'bg-red-500'
-                  }`}>{tx.status}</span>
-                  <span className="text-sm text-gray-400">Type: {tx.type.replace(/_/g, ' ')}</span>
-                  {tx.riskScore !== undefined && <span className={`px-2 py-1 text-xs font-medium rounded-full ${tx.riskScore > settings.financialRailsConfig.riskThreshold ? 'bg-red-700' : 'bg-gray-600'}`}>Risk: {tx.riskScore}</span>}
-                </div>
-              </div>
-              <p className="text-white text-lg font-semibold mb-1">
-                {tx.amount.toLocaleString()} {tx.currency}
-              </p>
-              {(tx.senderId || tx.recipientId) && <p className="text-gray-400 text-sm">
-                {tx.senderId ? `From: ${tx.senderId}` : ''} {tx.senderId && tx.recipientId ? ' | ' : ''} {tx.recipientId ? `To: ${tx.recipientId}` : ''}
-              </p>}
-              {tx.notes && <p className="text-gray-500 text-sm italic mt-1">Notes: {tx.notes}</p>}
-              {tx.railUsed && <p className="text-gray-500 text-xs mt-1">Rail: {getMockRail(tx.railUsed)?.name || tx.railUsed} (Fee: {tx.settlementFee?.toFixed(2) || 'N/A'} {tx.currency})</p>}
-              {tx.transactionHash && (
-                <p className="text-gray-500 text-xs mt-1">Transaction Hash: <span className="font-mono text-cyan-400">{tx.transactionHash}</span></p>
-              )}
-              {tx.signature && (
-                <p className="text-gray-500 text-xs mt-1">Signature: <span className="font-mono text-gray-400 truncate">{tx.signature}</span></p>
-              )}
-              <div className="flex items-center mt-2 text-xs text-gray-500">
-                Initiated by: {getMockUser(tx.initiatorId)?.name || getMockAgent(tx.initiatorId)?.name || 'Unknown'}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * AgentActivityMonitor: React.FC
- *
- * This component provides a real-time view of AI agent activity and logs within the context
- * of a specific crisis. It displays actions taken by agents, their status, and details,
- * offering comprehensive oversight of the Agentic Intelligence Layer.
- *
- * Business value: Offers critical transparency into AI operations, enabling human oversight
- * and validation of autonomous decisions during a crisis. This fosters trust in AI systems,
- * assists in auditing automated responses, and allows for rapid intervention if an agent
- * misbehaves or requires adjustment, protecting the enterprise from unintended AI actions
- * and demonstrating intelligent automation capabilities to stakeholders.
- */
-export const AgentActivityMonitor: React.FC = () => {
-  const { currentCrisis, currentUser } = useCrisisContext();
-
-  if (!currentCrisis) return <p className="text-gray-400">Select a crisis to view agent activity.</p>;
-  if (!currentUser.permissions.canViewAll && currentUser.role !== 'ANALYST') return <p className="text-red-400">Access denied: You do not have permission to view agent activity logs.</p>;
-
-  const sortedAgentLogs = [...currentCrisis.agentActivityLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">AI Agent Activity for {currentCrisis.title}</h2>
-
-      {currentCrisis.agentActivityLogs.length === 0 ? (
-        <p className="text-gray-400">No AI agent activity logs recorded for this crisis yet. Agents may initiate actions based on system events.</p>
-      ) : (
-        <div className="space-y-4">
-          {sortedAgentLogs.map(log => {
-            const agent = getMockAgent(log.agentId);
-            return (
-              <div key={log.id} className="bg-gray-800 p-4 rounded-lg shadow">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-300">{log.timestamp.toLocaleString()}</span>
-                  <div className="flex items-center space-x-2">
-                    {agent && <UserAvatar user={agent} size={24} />}
-                    <span className="text-sm font-semibold text-white">{agent?.name || log.agentId}</span>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      log.status === 'SUCCESS' ? 'bg-green-500' : log.status === 'IN_PROGRESS' ? 'bg-blue-500' : 'bg-red-500'
-                    }`}>{log.status}</span>
-                  </div>
-                </div>
-                <p className="text-white text-md mb-2">{log.action}</p>
-                <p className="text-gray-400 text-sm">Details: {log.details}</p>
-                {log.relatedArtifactId && (
-                  <p className="text-gray-500 text-xs mt-1">Related Artifact: <span className="font-mono text-cyan-400">{log.relatedArtifactId}</span></p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * GlobalAuditLogViewer: React.FC
- *
- * This component provides a comprehensive, centralized viewer for all significant
- * audit log entries across the entire crisis management system. It tracks actions
- * by both human users and autonomous AI agents, including system changes, approvals,
- * and data modifications. Each entry is cryptographically signed for tamper-evidence.
- *
- * Business value: Establishes a foundational layer of trust and accountability across the entire
- * system. This tamper-evident audit trail is indispensable for regulatory compliance (e.g., SOX, GDPR),
- * internal governance, forensic investigations, and dispute resolution, protecting the
- * enterprise from significant legal and financial repercussions and demonstrating robust
- * operational controls, a hallmark of next-generation financial infrastructure.
- */
-export const GlobalAuditLogViewer: React.FC = () => {
-  const { globalAuditLogs, currentUser } = useCrisisContext();
-  const [filterActorType, setFilterActorType] = useState<'ALL' | AuditLogEntry['actorType']>('ALL');
-  const [filterEntityType, setFilterEntityType] = useState<'ALL' | AuditLogEntry['entityType']>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredLogs = useMemo(() => {
-    let logs = globalAuditLogs;
-    if (filterActorType !== 'ALL') {
-      logs = logs.filter(log => log.actorType === filterActorType);
-    }
-    if (filterEntityType !== 'ALL') {
-      logs = logs.filter(log => log.entityType === filterEntityType);
-    }
-    if (searchTerm) {
-      logs = logs.filter(log =>
-        log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.entityId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.actorId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (log.signature && log.signature.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-    return logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  }, [globalAuditLogs, filterActorType, filterEntityType, searchTerm]);
-
-  if (!currentUser.permissions.canViewAuditLogs) {
-    return (
-      <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-        <h2 className="text-2xl font-bold mb-4">Global Audit Log</h2>
-        <p className="text-red-400">Access denied: You do not have permission to view audit logs. Contact your administrator.</p>
-      </div>
-    );
-  }
-
-  const allEntityTypes = useMemo(() => {
-    const types = new Set<AuditLogEntry['entityType']>();
-    globalAuditLogs.forEach(log => types.add(log.entityType));
-    return Array.from(types).sort();
-  }, [globalAuditLogs]);
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Global Audit Log</h2>
-
-      <div className="mb-4 flex flex-wrap gap-4">
-        <input
-          type="text"
-          placeholder="Search logs by description, ID, actor, or signature..."
-          className="p-2 bg-gray-600 rounded flex-grow min-w-[200px]"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
-        <select
-          value={filterActorType}
-          onChange={e => setFilterActorType(e.target.value as 'ALL' | AuditLogEntry['actorType'])}
-          className="p-2 bg-gray-600 rounded min-w-[120px]"
-        >
-          <option value="ALL">All Actors</option>
-          <option value="USER">User</option>
-          <option value="AGENT">AI Agent</option>
-        </select>
-        <select
-          value={filterEntityType}
-          onChange={e => setFilterEntityType(e.target.value as 'ALL' | AuditLogEntry['entityType'])}
-          className="p-2 bg-gray-600 rounded min-w-[150px]"
-        >
-          <option value="ALL">All Entities</option>
-          {allEntityTypes.map(type => (
-            <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
-          ))}
-        </select>
-      </div>
-
-      {filteredLogs.length === 0 ? (
-        <p className="text-gray-400">No audit logs found matching criteria.</p>
-      ) : (
-        <div className="space-y-4">
-          {filteredLogs.map(log => (
-            <div key={log.id} className="bg-gray-800 p-4 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-300">{log.timestamp.toLocaleString()}</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-600 text-white">{log.actorType}</span>
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-cyan-600 text-white">{log.actionType}</span>
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-600 text-white">{log.entityType.replace(/_/g, ' ')}</span>
-                </div>
-              </div>
-              <p className="text-white text-md mb-1">{log.description}</p>
-              <p className="text-gray-400 text-sm">Actor: {getMockUser(log.actorId)?.name || getMockAgent(log.actorId)?.name || log.actorId}</p>
-              <p className="text-gray-400 text-sm">Entity ID: <span className="font-mono text-cyan-400">{log.entityId}</span></p>
-              {log.signature && <p className="text-gray-500 text-xs mt-1">Signature: <span className="font-mono text-gray-400 break-all">{log.signature}</span></p>}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-
-/**
- * ReportingAndAnalyticsModule: React.FC
- *
- * This module delivers comprehensive analytics and reporting capabilities, summarizing crisis
- * patterns, response effectiveness, and key performance indicators. It transforms raw operational
- * data into actionable business intelligence.
- *
- * Business value: Facilitates continuous improvement in crisis preparedness and response,
- * identifies systemic vulnerabilities, and provides auditable metrics for demonstrating
- * compliance and operational excellence to boards and regulators. This drives strategic
- * decision-making and justifies investments in crisis management infrastructure.
- */
-export const ReportingAndAnalyticsModule: React.FC = () => {
-  const { allCrises, currentCrisis, currentUser } = useCrisisContext();
-
-  const crisisTypeData = useMemo(() => {
-    const counts = allCrises.reduce((acc, crisis) => {
-      acc[crisis.type] = (acc[crisis.type] || 0) + 1;
-      return acc;
-    }, {} as { [key in CrisisType]?: number });
-
-    return Object.entries(counts).map(([type, value]) => ({
-      label: type.replace(/_/g, ' '),
-      value: value!,
-      color: ['bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-cyan-500'][Math.floor(Math.random() * 6)]
-    }));
-  }, [allCrises]);
-
-  const crisisSeverityData = useMemo(() => {
-    const counts = allCrises.reduce((acc, crisis) => {
-      acc[crisis.severity] = (acc[crisis.severity] || 0) + 1;
-      return acc;
-    }, {} as { [key in CrisisSeverity]?: number });
-
-    return Object.entries(counts).map(([severity, value]) => ({
-      label: severity,
-      value: value!,
-      color: { 'LOW': 'bg-green-500', 'MEDIUM': 'bg-yellow-500', 'HIGH': 'bg-orange-500', 'CRITICAL': 'bg-red-700' }[severity as CrisisSeverity]
-    }));
-  }, [allCrises]);
-
-  const commsPublishedData = useMemo(() => {
-    const dailyCounts: { [date: string]: number } = {};
-    allCrises.forEach(crisis => {
-      crisis.approvalWorkflow.forEach(entry => {
-        if (entry.status === 'APPROVED' && entry.reviewTimestamp) { // Simplified to APPROVED for published count
-          const dateKey = new Date(entry.reviewTimestamp).toISOString().split('T')[0];
-          dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
-        }
-      });
-    });
-
-    return Object.entries(dailyCounts).sort(([dateA], [dateB]) => dateA.localeCompare(dateB)).map(([date, value]) => ({
-      label: new Date(date).toLocaleDateString(),
-      value: value,
-    }));
-  }, [allCrises]);
-
-  if (!currentUser.permissions.canViewReports) {
-    return (
-      <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-        <h2 className="text-2xl font-bold mb-4">Reporting and Analytics</h2>
-        <p className="text-red-400">Access denied: You do not have permission to view reports and analytics. Contact your administrator.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">Reporting and Analytics</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AnalyticsChart title="Crises by Type" data={crisisTypeData} type="pie" height={300} />
-        <AnalyticsChart title="Crises by Severity" data={crisisSeverityData} type="bar" height={300} />
-      </div>
-
-      <div className="mt-6">
-        <AnalyticsChart title="Communication Packages Approved Over Time" data={commsPublishedData} type="line" height={300} />
-      </div>
-
-      {currentCrisis && (
-        <div className="mt-8 bg-gray-800 p-4 rounded-lg">
-          <h3 className="text-xl font-semibold mb-3">Current Crisis ({currentCrisis.title}) Performance</h3>
-          <p className="text-gray-300">
-            Time from Identification to Active: {(new Date(currentCrisis.lastUpdate).getTime() - currentCrisis.identifiedAt.getTime()) / (1000 * 60 * 60)} hours.
-          </p>
-          <p className="text-gray-300">
-            Number of Legal Reviews: {currentCrisis.legalReviews.length}
-          </p>
-          <p className="text-gray-300">
-            Average Sentiment Score: {currentCrisis.sentimentHistory.length > 0 ? (currentCrisis.sentimentHistory.reduce((sum, s) => sum + s.overallSentiment, 0) / currentCrisis.sentimentHistory.length).toFixed(2) : 'N/A'}
-          </p>
-          <p className="text-gray-300">
-            Total Financial Impact: ${currentCrisis.financialTransactions.reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * SystemSettingsPanel: React.FC
- *
- * This component offers a robust configuration interface for core crisis management parameters,
- * including automation rules, default workflows, notification channels, communication templates,
- * AI agent enablement, and financial rail configuration.
- *
- * Business value: Empowers administrators to tailor the system to organizational needs, ensuring
- * operational efficiency, consistency, and scalability, reducing manual overhead and accelerating
- * response automation. This configurable framework ensures the system adapts to evolving business
- * and regulatory landscapes, protecting initial investment and delivering long-term value.
- */
-export const SystemSettingsPanel: React.FC = () => {
-  const { settings, updateSetting, currentUser, allAgents, updateAgentStatus, updateAgentConfig, mockFinancialRailsState } = useCrisisContext();
-
-  if (!currentUser.permissions.canEditAll && currentUser.role !== 'ADMIN') {
-    return (
-      <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-        <h2 className="text-2xl font-bold mb-4">System Settings</h2>
-        <p className="text-red-400">Access denied: You do not have permission to view or modify system settings. Contact your administrator.</p>
-      </div>
-    );
-  }
-
-  const handleWorkflowChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value as UserRole);
-    updateSetting('defaultApprovalWorkflow', selectedOptions);
-  };
-
-  const handleAgentToggle = (agentId: string, isActive: boolean) => {
-    updateAgentStatus(agentId, isActive ? 'IDLE' : 'OFFLINE', isActive);
-  };
-
-  const handleAgentConfigChange = (agentId: string, key: string, value: any) => {
-    const agent = allAgents.find(a => a.id === agentId);
-    if (agent) {
-      const parsedValue = typeof agent.configuration[key] === 'number' ? parseFloat(value) : value;
-      updateAgentConfig(agentId, { ...agent.configuration, [key]: parsedValue });
-    }
-  };
-
-  const handleFinancialRailsConfigChange = (key: keyof CrisisSettings['financialRailsConfig'], value: any) => {
-    updateSetting('financialRailsConfig', { ...settings.financialRailsConfig, [key]: value });
-  };
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">System Settings</h2>
-
-      <div className="space-y-6">
-        <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
-          <label htmlFor="autoGenerateComms" className="text-lg text-gray-300">Auto-Generate Initial Comms</label>
-          <input
-            type="checkbox"
-            id="autoGenerateComms"
-            checked={settings.autoGenerateComms}
-            onChange={e => updateSetting('autoGenerateComms', e.target.checked)}
-            className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
-          />
-        </div>
-
-        <div className="p-3 bg-gray-800 rounded-lg">
-          <label htmlFor="sentimentMonitorInterval" className="block text-lg text-gray-300 mb-2">Sentiment Monitor Interval (minutes)</label>
-          <input
-            type="number"
-            id="sentimentMonitorInterval"
-            value={settings.sentimentMonitorIntervalMinutes}
-            onChange={e => updateSetting('sentimentMonitorIntervalMinutes', parseInt(e.target.value) || 0)}
-            min="5"
-            max="1440"
-            className="w-full p-2 bg-gray-600 rounded text-white"
-          />
-        </div>
-
-        <div className="p-3 bg-gray-800 rounded-lg">
-          <label htmlFor="defaultApprovalWorkflow" className="block text-lg text-gray-300 mb-2">Default Comms Approval Workflow</label>
-          <select
-            id="defaultApprovalWorkflow"
-            multiple
-            value={settings.defaultApprovalWorkflow}
-            onChange={handleWorkflowChange}
-            className="w-full p-2 bg-gray-600 rounded text-white min-h-[150px]"
-            size={5}
-          >
-            {Object.values(UserRole).filter(role => role !== 'AI_AGENT').map(role => (
-              <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
-            ))}
-          </select>
-          <p className="text-sm text-gray-400 mt-2">Select roles in the order they should approve communications.</p>
-        </div>
-
-        <div className="p-3 bg-gray-800 rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Notification Channels</h3>
-          <div className="flex flex-wrap gap-4">
-            {['email', 'slack', 'sms', 'teams'].map(channel => (
-              <label key={channel} className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  checked={settings.notificationChannels.includes(channel)}
-                  onChange={e => {
-                    const newChannels = e.target.checked
-                      ? [...settings.notificationChannels, channel]
-                      : settings.notificationChannels.filter(c => c !== channel);
-                    updateSetting('notificationChannels', newChannels);
-                  }}
-                  className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
-                />
-                <span className="ml-2 text-gray-300">{channel.charAt(0).toUpperCase() + channel.slice(1)}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="p-3 bg-gray-800 rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Default Comms Templates</h3>
-          <p className="text-gray-400 mb-4">Customize boilerplate for specific crisis types.</p>
-          {Object.values(CrisisType).map(type => (
-            <div key={type} className="mb-4">
-              <h4 className="font-semibold text-gray-200">{type.replace(/_/g, ' ')} Template</h4>
-              <textarea
-                value={settings.defaultTemplates[type]?.pressRelease || ''}
-                onChange={e => updateSetting('defaultTemplates', { ...settings.defaultTemplates, [type]: { ...settings.defaultTemplates[type], pressRelease: e.target.value } })}
-                placeholder={`Default Press Release for ${type.replace(/_/g, ' ')}...`}
-                rows={2}
-                className="w-full p-2 mt-1 bg-gray-600 rounded text-white resize-y"
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="p-3 bg-gray-800 rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Financial Rails Configuration</h3>
-          <div className="mb-3">
-            <label htmlFor="defaultFinancialRail" className="block text-lg text-gray-300 mb-2">Default Settlement Rail</label>
-            <select
-              id="defaultFinancialRail"
-              value={settings.financialRailsConfig.defaultRail}
-              onChange={e => handleFinancialRailsConfigChange('defaultRail', e.target.value)}
-              className="w-full p-2 bg-gray-600 rounded text-white"
-            >
-              {mockFinancialRailsState.map(rail => (
-                <option key={rail.id} value={rail.id}>{rail.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="financialRiskThreshold" className="block text-lg text-gray-300 mb-2">Transaction Risk Threshold (0-100)</label>
-            <input
-              type="number"
-              id="financialRiskThreshold"
-              value={settings.financialRailsConfig.riskThreshold}
-              onChange={e => handleFinancialRailsConfigChange('riskThreshold', parseInt(e.target.value) || 0)}
-              min="0"
-              max="100"
-              className="w-full p-2 bg-gray-600 rounded text-white"
-            />
-            <p className="text-sm text-gray-400 mt-1">Transactions with a risk score above this threshold will be flagged or blocked.</p>
-          </div>
-        </div>
-
-        {currentUser.permissions.canManageAgents && (
-          <div className="p-3 bg-gray-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-2">Autonomous AI Agent Configuration</h3>
-            <p className="text-gray-400 mb-4">Manage and configure AI agents for automated crisis response and governance.</p>
-            <div className="space-y-4">
-              {allAgents.map(agent => (
-                <div key={agent.id} className="p-3 bg-gray-900 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between">
-                  <div className="flex items-center mb-2 sm:mb-0">
-                    <input
-                      type="checkbox"
-                      checked={agent.isActive}
-                      onChange={e => handleAgentToggle(agent.id, e.target.checked)}
-                      className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-700 border-gray-500 rounded focus:ring-cyan-500 mr-3"
-                    />
-                    <span className="text-lg text-gray-300 font-semibold">{agent.name} ({agent.type.replace(/_/g, ' ')})</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-400 ml-8 sm:ml-0">
-                    <span className={`px-2 py-1 rounded-full ${agent.status === 'ACTIVE' ? 'bg-green-600' : agent.status === 'IDLE' ? 'bg-blue-600' : agent.status === 'BUSY' ? 'bg-yellow-600' : 'bg-red-600'} text-white`}>{agent.status}</span>
-                    <span className="text-gray-500">Last Activity: {agent.lastActivity.toLocaleString()}</span>
-                  </div>
-                  <div className="w-full sm:w-auto mt-3 sm:mt-0">
-                    {Object.entries(agent.configuration).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-end text-sm mt-1">
-                        <label className="text-gray-400 mr-2">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</label>
-                        {typeof value === 'boolean' ? (
-                          <input
-                            type="checkbox"
-                            checked={value}
-                            onChange={e => handleAgentConfigChange(agent.id, key, e.target.checked)}
-                            className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-500 rounded focus:ring-cyan-500"
-                          />
-                        ) : typeof value === 'number' ? (
-                          <input
-                            type="number"
-                            value={value}
-                            onChange={e => handleAgentConfigChange(agent.id, key, parseFloat(e.target.value))}
-                            className="p-1 w-24 bg-gray-700 rounded text-white"
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={value}
-                            onChange={e => handleAgentConfigChange(agent.id, key, e.target.value)}
-                            className="p-1 w-32 bg-gray-700 rounded text-white"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/**
- * UserManagementPanel: React.FC
- *
- * This panel provides a secure and centralized interface for administering user accounts,
- * roles, and permissions within the crisis management system, forming a key component of the
- * Digital Identity and Trust Layer.
- *
- * Business value: Ensures granular control over access to sensitive information and critical
- * functions, enforcing strict security protocols and compliance with internal and external
- * governance requirements, safeguarding proprietary data and operational integrity.
- * Streamlined user management reduces administrative overhead and enhances system security,
- * directly protecting enterprise assets and reputation.
- */
-export const UserManagementPanel: React.FC = () => {
-  const { currentUser, setCurrentUser, addAuditLog } = useCrisisContext();
-  const [users, setUsers] = useState<UserProfile[]>(mockUsers);
-  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
-
-  const handleSaveUser = (updatedUser: UserProfile) => {
-    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-    if (updatedUser.id === currentUser.id) {
-      setCurrentUser(updatedUser); // Update current user if self-editing
-    }
-    addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'USER', updatedUser.id, `User '${updatedUser.name}' profile updated.`));
-    setEditingUser(null);
-    console.log('User saved:', updatedUser);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'DELETE', 'USER', userId, `User with ID '${userId}' deleted.`));
-      console.log('User deleted:', userId);
-    }
-  };
-
-  const handleAddUser = (newUser: Omit<UserProfile, 'id' | 'lastLogin'>) => {
-    const userWithId: UserProfile = {
-      ...newUser,
-      id: generateMockId('user'),
-      lastLogin: new Date(),
-      publicKey: generateMockCryptoKey(), // Assign a public key for digital identity
-    };
-    setUsers(prev => [...prev, userWithId]);
-    addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'CREATE', 'USER', userWithId.id, `New user '${userWithId.name}' created with role '${userWithId.role}'.`));
-    setShowAddUserModal(false);
-    console.log('User added:', userWithId);
-  };
-
-  if (!currentUser.permissions.canManageUsers) {
-    return (
-      <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-        <h2 className="text-2xl font-bold mb-4">User Management</h2>
-        <p className="text-red-400">Access denied: You do not have permission to manage users. Contact your administrator.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-      <h2 className="text-2xl font-bold mb-4">User Management</h2>
-
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setShowAddUserModal(true)}
-          className="p-2 bg-purple-600 hover:bg-purple-700 rounded"
-        >
-          Add New User
-        </button>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-600">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Role</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Last Login</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {users.map(user => (
-              <tr key={user.id}>
-                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-white">{user.name}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{user.email}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{user.role.replace(/_/g, ' ')}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {user.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{user.lastLogin.toLocaleString()}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
-                  <button onClick={() => setEditingUser(user)} className="text-cyan-500 hover:text-cyan-700 mr-2">Edit</button>
-                  {user.id !== currentUser.id && ( // Prevent deleting self
-                    <button onClick={() => handleDeleteUser(user.id)} className="text-red-500 hover:text-red-700">Delete</button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {editingUser && (
-        <EditUserModal
-          user={editingUser}
-          onSave={handleSaveUser}
-          onClose={() => setEditingUser(null)}
-        />
-      )}
-      {showAddUserModal && (
-        <AddUserModal
-          onAdd={handleAddUser}
-          onClose={() => setShowAddUserModal(false)}
-        />
-      )}
-    </div>
-  );
-};
-
-/**
- * EditUserModal: React.FC
- *
- * This modal component provides a streamlined interface for modifying existing user profiles,
- * including their name, email, role, department, activity status, and granular permissions.
- *
- * Business value: Simplifies user lifecycle management, reduces administrative burden, and
- * enhances system security by ensuring accurate and appropriate access controls are maintained
- * consistently. This minimizes human error in permission assignment, a critical factor for
- * compliance and data protection.
- */
-export const EditUserModal: React.FC<{ user: UserProfile; onSave: (user: UserProfile) => void; onClose: () => void }> = ({ user, onSave, onClose }) => {
-  const [editedUser, setEditedUser] = useState(user);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
-    setEditedUser(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handlePermissionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setEditedUser(prev => ({
-      ...prev,
-      permissions: {
-        ...prev.permissions,
-        [name]: checked,
-      },
-    }));
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-lg">
-        <h3 className="text-2xl font-bold mb-4">Edit User: {user.name}</h3>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Name</label>
-            <input type="text" name="name" value={editedUser.name} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white" />
-          </div>
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Email</label>
-            <input type="email" name="email" value={editedUser.email} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white" />
-          </div>
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Role</label>
-            <select name="role" value={editedUser.role} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white">
-              {Object.values(UserRole).filter(role => role !== 'AI_AGENT').map(role => ( // Exclude AI_AGENT role for human users
-                <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Department</label>
-            <input type="text" name="department" value={editedUser.department} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white" />
-          </div>
-          <div className="flex items-center">
-            <input type="checkbox" name="isActive" checked={editedUser.isActive} onChange={handleChange} className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500" />
-            <label className="ml-2 text-gray-300">Active</label>
-          </div>
-          <div className="border-t border-gray-700 pt-3">
-            <h4 className="text-lg font-semibold text-gray-300 mb-2">Permissions</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.keys(user.permissions).map(perm => (
-                <label key={perm} className="inline-flex items-center text-gray-300">
-                  <input
-                    type="checkbox"
-                    name={perm}
-                    checked={editedUser.permissions[perm] || false}
-                    onChange={handlePermissionsChange}
-                    className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
-                  />
-                  <span className="ml-2 text-sm">{perm.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end space-x-3">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white">Cancel</button>
-          <button onClick={() => onSave(editedUser)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded text-white">Save Changes</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * AddUserModal: React.FC
- *
- * This modal component provides a streamlined interface for creating new user profiles,
- * allowing assignment of name, email, department, activity status, and an initial role
- * with default permissions. It also assigns a cryptographic public key for digital identity.
- *
- * Business value: Simplifies user lifecycle management, reduces administrative burden,
- * and enhances system security by ensuring accurate and appropriate access controls
- * are maintained consistently. This minimizes human error in permission assignment,
- * a critical factor for compliance and data protection.
- */
-export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'lastLogin'>) => void; onClose: () => void }> = ({ onAdd, onClose }) => {
-  const [newUser, setNewUser] = useState<Omit<UserProfile, 'id' | 'lastLogin'>>({
-    name: '',
-    email: '',
-    role: 'VIEWER',
-    isActive: true,
-    department: '',
-    permissions: {
-      canViewAll: true, canEditCrisis: false, canGenerateComms: false, canReviewLegal: false,
-      canReviewComms: false, canApproveComms: false, canAddIncidentLogs: false,
-      canViewReports: false, canManageUsers: false, canEditAll: false, canInitiateReview: false,
-      canManageAgents: false, canInitiatePayments: false, canViewAuditLogs: false,
-    }
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
-    setNewUser(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handlePermissionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setNewUser(prev => ({
-      ...prev,
-      permissions: {
-        ...prev.permissions,
-        [name]: checked,
-      },
-    }));
-  };
-
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedRole = e.target.value as UserRole;
-    let defaultPermissions: UserProfile['permissions'] = {
-      canViewAll: true, canEditCrisis: false, canGenerateComms: false, canReviewLegal: false,
-      canReviewComms: false, canApproveComms: false, canAddIncidentLogs: false,
-      canViewReports: false, canManageUsers: false, canEditAll: false, canInitiateReview: false,
-      canManageAgents: false, canInitiatePayments: false, canViewAuditLogs: false,
-    };
-
-    switch (selectedRole) {
-      case 'ADMIN':
-        defaultPermissions = { ...defaultPermissions, canEditAll: true, canManageUsers: true, canApproveComms: true, canReviewLegal: true, canReviewComms: true, canGenerateComms: true, canEditCrisis: true, canAddIncidentLogs: true, canViewReports: true, canInitiateReview: true, canManageAgents: true, canInitiatePayments: true, canViewAuditLogs: true };
-        break;
-      case 'CRISIS_MANAGER':
-        defaultPermissions = { ...defaultPermissions, canEditCrisis: true, canGenerateComms: true, canInitiateReview: true, canViewReports: true, canViewAll: true, canAddIncidentLogs: true };
-        break;
-      case 'LEGAL_COUNSEL':
-        defaultPermissions = { ...defaultPermissions, canReviewLegal: true, canApproveComms: true, canViewAll: true, canViewAuditLogs: true };
-        break;
-      case 'PR_SPECIALIST':
-        defaultPermissions = { ...defaultPermissions, canReviewComms: true, canGenerateComms: true, canViewReports: true, canViewAll: true };
-        break;
-      case 'SUPPORT_MANAGER':
-        defaultPermissions = { ...defaultPermissions, canViewAll: true, canAddIncidentLogs: true };
-        break;
-      case 'EXECUTIVE':
-        defaultPermissions = { ...defaultPermissions, canApproveComms: true, canViewAll: true, canViewReports: true, canViewAuditLogs: true, canInitiatePayments: true };
-        break;
-      case 'INCIDENT_RESPONDER':
-        defaultPermissions = { ...defaultPermissions, canAddIncidentLogs: true, canViewAll: true };
-        break;
-      case 'ANALYST':
-        defaultPermissions = { ...defaultPermissions, canViewReports: true, canViewAll: true };
-        break;
-      case 'EDITOR':
-        defaultPermissions = { ...defaultPermissions, canGenerateComms: true, canReviewComms: true, canViewAll: true };
-        break;
-      case 'VIEWER':
-      defaultPermissions = { ...defaultPermissions, canViewAll: true };
-      break;
-    }
-    setNewUser(prev => ({ ...prev, role: selectedRole, permissions: defaultPermissions }));
-  };
-
-  const isDisabled = !newUser.name || !newUser.email || !newUser.department;
-
-  return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-lg">
-        <h3 className="text-2xl font-bold mb-4">Add New User</h3>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Name</label>
-            <input type="text" name="name" value={newUser.name} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white" />
-          </div>
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Email</label>
-            <input type="email" name="email" value={newUser.email} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white" />
-          </div>
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Role</label>
-            <select name="role" value={newUser.role} onChange={handleRoleChange} className="w-full p-2 bg-gray-700 rounded text-white">
-              {Object.values(UserRole).filter(role => role !== 'AI_AGENT').map(role => (
-                <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-300 text-sm mb-1">Department</label>
-            <input type="text" name="department" value={newUser.department} onChange={handleChange} className="w-full p-2 bg-gray-700 rounded text-white" />
-          </div>
-          <div className="flex items-center">
-            <input type="checkbox" name="isActive" checked={newUser.isActive} onChange={handleChange} className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500" />
-            <label className="ml-2 text-gray-300">Active</label>
-          </div>
-          <div className="border-t border-gray-700 pt-3">
-            <h4 className="text-lg font-semibold text-gray-300 mb-2">Permissions</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.keys(newUser.permissions).map(perm => (
-                <label key={perm} className="inline-flex items-center text-gray-300">
-                  <input
-                    type="checkbox"
-                    name={perm}
-                    checked={newUser.permissions[perm] || false}
-                    onChange={handlePermissionsChange}
-                    className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-600 border-gray-500 rounded focus:ring-cyan-500"
-                  />
-                  <span className="ml-2 text-sm">{perm.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end space-x-3">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white">Cancel</button>
-          <button onClick={() => onAdd(newUser)} disabled={isDisabled} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded text-white disabled:opacity-50">Add User</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * CrisisAIManagerView: React.FC
- *
- * This is the main view component for the Crisis AI Management System, serving as the
- * orchestrator for all child components and interactions. It provides the top-level
- * navigation, crisis selection, and core AI-driven communication generation capabilities.
- *
- * Business value: This unified interface is the command center for all crisis response
- * operations, streamlining workflows and enabling rapid, informed decision-making. By
- * integrating AI capabilities, it reduces human error, accelerates critical tasks like
- * communication drafting and sentiment analysis, and ensures consistent application
- * of best practices, safeguarding brand reputation and significantly mitigating
- * financial and legal risks.
- */
-const CrisisAIManagerView: React.FC = () => {
-  const { currentCrisis, setCurrentCrisis, allCrises, currentUser, addCommsPackageToCrisis, settings, addAgentLogEntryToCrisis, allAgents } = useCrisisContext();
-
-  const [crisisType, setCrisisType] = useState<CrisisType>(currentCrisis?.type || 'DATA_BREACH');
-  const [facts, setFacts] = useState(currentCrisis?.description || '');
-  const [isLoading, setIsLoading] = useState(false);
-  const [commsResult, setCommsResult] = useState<CommsPackage | null>(null);
-  const [activeTab, setActiveTab] = useState<'comms' | 'dashboard' | 'incidents' | 'stakeholders' | 'legal' | 'sentiment' | 'workflow' | 'financial' | 'agent-activity' | 'reports' | 'settings' | 'users' | 'audit'>('dashboard');
-
-  useEffect(() => {
-    if (currentCrisis) {
-      setCrisisType(currentCrisis.type);
-      setFacts(currentCrisis.description);
-      if (currentCrisis.generatedCommsPackages.length > 0) {
-        setCommsResult(currentCrisis.generatedCommsPackages[currentCrisis.generatedCommsPackages.length - 1]);
-      } else {
-        setCommsResult(null);
-      }
-    } else {
-      setCrisisType('DATA_BREACH');
-      setFacts('');
-      setCommsResult(null);
-    }
-  }, [currentCrisis]);
-
-  const handleGenerateComms = async () => {
-    if (!currentCrisis) {
-      alert('Please select or create a crisis first.');
-      return;
-    }
-    if (!currentUser.permissions.canGenerateComms) {
-      alert('Access denied: You do not have permission to generate communications. Contact your administrator.');
-      return;
-    }
-    setIsLoading(true);
-    setCommsResult(null);
-
-    const commsGenAgent = allAgents.find(a => a.id === 'agent_comms_gen'); // Assume 'agent_comms_gen' is the comms AI
-    const generatorId = (commsGenAgent?.isActive && settings.enabledAgents.COMMUNICATION) ? commsGenAgent.id : currentUser.id;
-    const generatorType = (commsGenAgent?.isActive && settings.enabledAgents.COMMUNICATION) ? 'AI_AGENT' : 'USER';
-
-    if (generatorType === 'AI_AGENT' && commsGenAgent) {
-      await addAgentLogEntryToCrisis(currentCrisis.id, {
-        agentId: commsGenAgent.id,
-        action: 'Initiated comms package generation',
-        details: `Drafting for crisis type: ${crisisType}`,
-        status: 'IN_PROGRESS'
-      });
-    }
-
-    const response: CommsPackage = await new Promise(res => setTimeout(() => res(generateMockCommsPackage(crisisType, facts)), 2000));
-    setCommsResult(response);
-    await addCommsPackageToCrisis(currentCrisis.id, response);
-
-    if (generatorType === 'AI_AGENT' && commsGenAgent) {
-      await addAgentLogEntryToCrisis(currentCrisis.id, {
-        agentId: commsGenAgent.id,
-        action: 'Completed comms package generation',
-        details: `Generated press release and twitter thread.`,
-        status: 'SUCCESS',
-        relatedArtifactId: response.id // Assuming addCommsPackageToCrisis returns the ID
-      });
-    }
-    setIsLoading(false);
-  };
-
-  const handleSaveCrisisDetails = async () => {
-    if (!currentCrisis) return;
-    if (!currentUser.permissions.canEditCrisis) {
-      alert('Access denied: You do not have permission to edit crisis details. Contact your administrator.');
-      return;
-    }
-    setIsLoading(true);
-    await new Promise(res => setTimeout(res, 1000));
-    setCurrentCrisis(prev => prev ? { ...prev, type: crisisType, description: facts, lastUpdate: new Date() } : null);
-    setIsLoading(false);
-    alert('Crisis details updated!');
-  };
-
-  // Initial user selection logic moved outside CrisisProvider to avoid rendering issues
-  // with useContext before provider is ready. This is a common pattern for initial auth/user setup.
-  if (!currentUser.id) {
-    return (
-      <div className="bg-gray-800 text-white p-6 rounded-lg min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Select User Role</h1>
-          <select
-            value={''}
-            onChange={e => setCurrentUser(mockUsers.find(u => u.id === e.target.value)!)} // Access setCurrentUser directly from context (this is within CrisisProvider now)
-            className="w-full max-w-xs p-2 mb-4 bg-gray-700 rounded"
-          >
-            <option value="" disabled>Select a user...</option>
-            {mockUsers.map(user => (
-              <option key={user.id} value={user.id}>{user.name} ({user.role.replace(/_/g, ' ')})</option>
-            ))}
-          </select>
-          <p>Please select a user to proceed.</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-gray-800 text-white p-6 rounded-lg min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
-        <h1 className="text-3xl font-bold">Crisis AI Management System</h1>
-        <div className="flex items-center space-x-3">
-          <span className="text-gray-400">Logged in as:</span>
-          <UserAvatar user={currentUser} />
-          <span className="font-semibold">{currentUser.name} ({currentUser.role.replace(/_/g, ' ')})</span>
-        </div>
-      </div>
-
-      <div className="flex mb-6 space-x-2">
-        <select
-          value={currentCrisis?.id || ''}
-          onChange={e => setCurrentCrisis(allCrises.find(c => c.id === e.target.value) || null)}
-          className="p-2 bg-gray-700 rounded text-white flex-grow"
-        >
-          <option value="">Select or Create Crisis</option>
-          {allCrises.map(crisis => (
-            <option key={crisis.id} value={crisis.id}>
-              {crisis.title} - {crisis.status.replace(/_/g, ' ')}
-            </option>
-          ))}
-        </select>
-        {currentUser.permissions.canEditCrisis && (
-          <button className="p-2 bg-teal-600 hover:bg-teal-700 rounded">New Crisis</button>
-        )}
-      </div>
-
-      <div className="flex mb-6 border-b border-gray-700 overflow-x-auto">
-        {['dashboard', 'comms', 'incidents', 'stakeholders', 'legal', 'sentiment', 'workflow', 'financial', 'agent-activity', 'reports', 'settings', 'users', 'audit'].map(tab => (
-          <button
-            key={tab}
-            className={`py-2 px-4 whitespace-nowrap ${activeTab === tab ? 'border-b-2 border-cyan-500 text-cyan-400' : 'text-gray-400 hover:text-white'}`}
-            onClick={() => setActiveTab(tab as any)}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/_/g, ' ')}
-          </button>
         ))}
       </div>
 
-      <div className="flex-grow">
-        {activeTab === 'dashboard' && <CrisisOverviewDashboard />}
-
-        {activeTab === 'comms' && (
-          <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
-            <h2 className="text-2xl font-bold mb-4">Crisis AI Communications Manager</h2>
-            {currentUser.permissions.canGenerateComms ? (
-              <>
-                <select value={crisisType} onChange={e => setCrisisType(e.target.value as CrisisType)} className="w-full p-2 mb-4 bg-gray-600 rounded">
-                  {Object.values(CrisisType).map(type => (
-                    <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+      <div style={cardStyle}>
+        <h3>Market Segments:</h3>
+        {gameState.marketSegments.map(segment => (
+          <div key={segment.id} style={marketSegmentCardStyle}>
+            <strong>{segment.name}</strong>
+            <ul>
+              <li>Total Size: {segment.totalSize.toLocaleString()}</li>
+              <li>Growth Rate: {(segment.growthRate[0] * 100).toFixed(1)}% - {(segment.growthRate[1] * 100).toFixed(1)}%</li>
+              <li>Your Penetration: {(segment.currentPlayerPenetration * 100).toFixed(2)}%</li>
+              <li>Competitor Penetration:
+                <ul>
+                  {Object.entries(segment.competitorPenetration).map(([id, penetration]) => (
+                    <li key={id}>{(gameState.competitors.find(c => c.id === id)?.name || id)}: {(penetration * 100).toFixed(2)}%</li>
                   ))}
-                </select>
-                <textarea
-                  value={facts}
-                  onChange={e => setFacts(e.target.value)}
-                  placeholder="Enter key facts (e.g., '50k user emails exposed, no passwords. Discovered 8am today.')"
-                  rows={4}
-                  className="w-full p-2 mb-4 bg-gray-600 rounded text-white resize-y"
-                />
-                <div className="flex space-x-4 mb-4">
-                  <button onClick={handleGenerateComms} disabled={isLoading || !currentCrisis} className="flex-grow p-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Generating...' : 'Generate Unified Comms Package'}
-                  </button>
-                  <button onClick={handleSaveCrisisDetails} disabled={isLoading || !currentCrisis} className="flex-grow p-2 bg-yellow-600 hover:bg-yellow-700 rounded disabled:opacity-50">
-                    {isLoading ? 'Saving...' : 'Save Crisis Details'}
-                  </button>
-                </div>
-
-                {isLoading && <p className="mt-4 text-cyan-300">Analyzing legal precedent and sentiment... drafting response...</p>}
-                {commsResult && (
-                  <div className="mt-6 border-t border-gray-600 pt-4">
-                    <h3 className="text-xl font-semibold mb-3">Latest Generated Communications Package</h3>
-                    {Object.entries(commsResult).map(([key, value]) => (
-                      <div key={key} className="mb-4">
-                        <h4 className="text-lg font-semibold mb-1 text-gray-300">{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</h4>
-                        <div className="bg-gray-800 p-4 rounded-lg shadow-inner">
-                          {Array.isArray(value) ? value.map((v, i) => <pre key={i} className="whitespace-pre-wrap text-sm text-gray-200 mb-1">{v}</pre>) : <pre className="whitespace-pre-wrap text-sm text-gray-200">{value as string}</pre>}
-                        </div>
-                      </div>
-                    ))}
-                    <button className="w-full p-2 mt-4 bg-purple-600 hover:bg-purple-700 rounded" onClick={() => setActiveTab('workflow')}>Proceed to Approval Workflow</button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="text-red-400">Access denied: You do not have permission to generate communications.</p>
-            )}
+                </ul>
+              </li>
+            </ul>
           </div>
-        )}
-
-        {activeTab === 'incidents' && <IncidentLogManager />}
-        {activeTab === 'stakeholders' && <StakeholderCommunicationManager />}
-        {activeTab === 'legal' && <LegalReviewDashboard />}
-        {activeTab === 'sentiment' && <SentimentMonitoringDashboard />}
-        {activeTab === 'workflow' && <CommsApprovalWorkflowPanel />}
-        {activeTab === 'financial' && <FinancialImpactAndPayoutManager />}
-        {activeTab === 'agent-activity' && <AgentActivityMonitor />}
-        {activeTab === 'reports' && <ReportingAndAnalyticsModule />}
-        {activeTab === 'settings' && <SystemSettingsPanel />}
-        {activeTab === 'users' && <UserManagementPanel />}
-        {activeTab === 'audit' && <GlobalAuditLogViewer />}
+        ))}
       </div>
+
+      <div style={cardStyle}>
+        <h3>Global Market Sentiment: {gameState.globalMarketSentiment.toFixed(0)} {globalSentimentEmoji}</h3>
+        <p style={{ fontSize: '0.9em', color: '#666' }}>Influences customer behavior and overall market receptivity.</p>
+      </div>
+
+      <details style={cardStyle}>
+        <summary><h3>Audit Log ({gameState.auditLog.length} entries)</h3></summary>
+        <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '5px', backgroundColor: '#fdfdfd' }}>
+          {gameState.auditLog.slice().reverse().map(entry => (
+            <div key={entry.id} style={{ borderBottom: '1px dashed #eee', padding: '8px 0', fontSize: '0.85em' }}>
+              <strong>[{new Date(entry.timestamp).toLocaleTimeString()}] {entry.agentName} ({entry.agentId}):</strong> {entry.action} - <pre style={{ display: 'inline' }}>{JSON.stringify(entry.details).substring(0, 100)}...</pre>
+              <br /><span style={{ color: '#999' }}>Signature: {entry.signature.substring(0, 15)}...{entry.signature.slice(-15)}</span>
+              {entry.previousEntryHash && (
+                <>
+                  <br />
+                  <span style={{ color: '#aaa' }}>
+                    Prev Hash: {entry.previousEntryHash.substring(0, 15)}...{entry.previousEntryHash.slice(-15)}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </details>
+
+      <details style={cardStyle}>
+        <summary><h3>Agent Messages ({gameState.agentMessages.length} entries)</h3></summary>
+        <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '5px', backgroundColor: '#fdfdfd' }}>
+          {gameState.agentMessages.slice().reverse().map(message => (
+            <div key={message.id} style={{ borderBottom: '1px dashed #eee', padding: '8px 0', fontSize: '0.85em' }}>
+              <strong>[{new Date(message.timestamp).toLocaleTimeString()}] {message.senderId} {'->'} {message.receiverId} ({message.type}):</strong> <pre style={{ display: 'inline' }}>{JSON.stringify(message.payload).substring(0, 100)}...</pre>
+              <br /><span style={{ color: '#999' }}>Nonce: {message.nonce}, Signature: {message.signature.substring(0, 15)}...</span>
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 };
 
-export default CrisisAIManagerView;
+/**
+ * Main application component to initialize and manage the Wargamer simulation.
+ * Business Value: This component acts as the orchestrator for the entire simulation, holding the
+ * central game state and providing the interface to interact with the simulation engine.
+ * It is the entry point for the revolutionary financial infrastructure simulation, demonstrating
+ * its end-to-end functionality and immense strategic value.
+ */
+// This is the entire corrected section for the end of the file.
+
+const EmergentStrategyWargamer: React.FC = () => {
+  const [simulationEngine, setSimulationEngine] = useState<SimulationEngine | null>(null);
+  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize the game state and simulation engine
+  useEffect(() => {
+    const initializeGame = () => {
+      console.log("Initializing game state...");
+      const initialGameState = getInitialGameState();
+      const engine = new SimulationEngine(initialGameState);
+      setSimulationEngine(engine);
+      setGameState(engine.getGameState());
+      setLoading(false);
+      console.log("Game initialized.", initialGameState);
+    };
+    initializeGame();
+  }, []); // Run once on component mount
+
+  const handleAdvanceYear = useCallback(async (directive: PlayerStrategicDirective): Promise<YearEndReport | void> => {
+    if (!simulationEngine) return;
+    try {
+      // Set the directive for the current year
+      simulationEngine.setPlayerDirective(directive);
+      const report = await simulationEngine.advanceYear();
+      setGameState(simulationEngine.getGameState()); // Update UI with new state
+      return report;
+    } catch (error) {
+      console.error("Error advancing year:", error);
+      throw error;
+    }
+  }, [simulationEngine]);
+
+  const handleResetGame = useCallback(() => {
+    setLoading(true);
+    const initialGameState = getInitialGameState();
+    const newEngine = new SimulationEngine(initialGameState);
+    setSimulationEngine(newEngine);
+    setGameState(newEngine.getGameState());
+    setLoading(false);
+    console.log("Game reset to initial state.");
+  }, []);
+
+  if (loading || !gameState || !simulationEngine) {
+    return <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', padding: '50px' }}>Loading Emergent Strategy Wargamer...</div>;
+  }
+
+  return (
+    <WargameDashboard
+      gameState={gameState}
+      onAdvanceYear={handleAdvanceYear}
+      onResetGame={handleResetGame}
+    />
+  );
+};
+
+export default EmergentStrategyWargamer;
