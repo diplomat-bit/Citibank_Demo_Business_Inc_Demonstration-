@@ -756,7 +756,7 @@ export class IntegrationService {
  */
 export class IdentityAndAccessService {
   private static instance: IdentityAndAccessService;
-  private userRoles: Map<string, string> = new Map();
+  public userRoles: Map<string, string> = new Map();
   private userKeys: Map<string, { publicKey: string; privateKey: string }> = new Map();
   private accessLog: { timestamp: number; userId: string; action: string; authorized: boolean }[] = [];
 
@@ -2778,8 +2778,7 @@ interface MeetingSettingsEditorProps {
 /**
  * Provides a UI for editing user preferences and integration settings.
  * Business impact: Centralizes user configuration, allowing personalized control over
- * AI behavior, automation triggers, and integration points. This empowers users to
- * optimize their workflow, enhancing productivity and job satisfaction.
+ * AI behavior, automation triggers, and integration points, thereby enhancing productivity and job satisfaction.
  * @param {MeetingSettingsEditorProps} props - The props for the component.
  * @returns {JSX.Element} The rendered settings editor.
  */
