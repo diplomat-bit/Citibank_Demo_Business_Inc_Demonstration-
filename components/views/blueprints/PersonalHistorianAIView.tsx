@@ -1,15 +1,19 @@
-"""This module implements the client-side user interface for the Personal Historian AI, a revolutionary system designed to automate the collection, organization, and intelligent analysis of an individual's life memories and digital artifacts. This view layer is critical for monetizing AI capabilities, providing a seamless bridge between complex backend infrastructure and user-centric value, ultimately enabling new revenue models through on-demand intelligent services and data products worth millions.
+This module implements the client-side user interface for the Personal Historian AI. Think of it as an interactive, intelligent diary with a super-powered memory, designed to help you collect, organize, and understand the story of your digital life. This isn't just about storing photos and emails; it's about connecting the dots, finding patterns, and rediscovering moments you may have forgotten.
 
-Business Value: This component delivers a transformative user experience, empowering individuals and enterprise clients to derive unprecedented value from their personal and historical data. By leveraging advanced agentic AI, it automates the laborious process of memory curation, transforming raw digital assets into structured, deeply insightful narratives and actionable intelligence. It provides the essential interface for engaging with the core financial infrastructure, including digital identity, programmable token rails, and real-time settlement for AI services, making the platform a blueprint for the next trillion-dollar financial backbone.
+**So, what's the big deal?**
+In a world where our lives are scattered across countless apps and devices, this system brings it all together. It uses smart AI agents to do the tedious work of sorting and tagging, transforming a chaotic digital shoebox into a coherent, searchable, and insightful narrative of your life. For a person, it's a powerful tool for reflection and memory. For a business, this interface is the blueprint for a new kind of personalized service—one that provides tangible, intelligent value from user data with their full consent and control. It's a demonstration of how complex backend systems, including secure digital identities and transaction networks, can power intuitive, useful applications.
 
-System Leverage:
-- **Agentic AI Integration**: Provides direct user interaction points for AI agents to process, categorize, and generate insights from memories, enhancing personalization and reducing manual effort. It exposes agent activity logs and controls, fostering transparency and trust in autonomous operations.
-- **Digital Identity Gateway**: Serves as a primary interface for users to manage their cryptographic digital identity, securely interacting with token rails and payment infrastructure for premium AI services or data attestation. This is foundational for secure, auditable, and compliant interactions.
-- **Token Economy Visibility**: Exposes the underlying token rail mechanisms, allowing users to understand and manage the computational costs associated with AI processing, VR scene generation, and secure data storage, driving transparency and enabling new micro-transactional revenue streams. Users can monitor their token balances and transaction history.
-- **Real-time Payments Orchestration**: Integrates payment initiation for value-added services, demonstrating the system's capability to process real-time transactions for high-demand AI capabilities. It shows the immediate impact of AI service consumption on user token accounts.
-- **Data Governance & Auditability**: Offers views into AI processing logs and identity-related audit trails, ensuring users have transparency and control over how their data is used and processed by autonomous agents, thereby fostering trust and ensuring regulatory compliance. This layer is critical for demonstrating integrity and meeting enterprise-grade audit requirements.
+**How does this UI fit into the bigger picture?**
+This file is a self-contained simulation of the entire front-end application. It demonstrates how various advanced concepts work together:
 
-This view layer is paramount for illustrating the product’s potential worth in the financial ecosystem, acting as the user-facing bridge to a highly reliable, intelligent, scalable, and auditable digital finance platform."""
+- **Agentic AI Interaction**: You'll see how users can interact with AI agents that work in the background. The UI provides a window into what these agents are doing, showing their logs and the results of their work, which builds trust and shows their value.
+- **Digital Identity & Security**: The application simulates a secure digital identity for each user. This is the foundation for everything, ensuring that your data is yours and that all actions and transactions are secure and verifiable. It's like a digital passport for your personal history.
+- **A Glimpse into a Token Economy**: The app uses a simulated token (`HST` or Historian Stable Token) to represent the computational cost of AI tasks. This makes the "cost" of AI processing transparent. You can see how much a task costs, manage your token balance, and see a history of all transactions. This models a fair and transparent micro-economy for digital services.
+- **Real-time Value Exchange**: When you ask an AI agent to do something complex, like generate a VR scene from a memory, a token transaction happens in real-time. This UI component simulates that immediate and transparent value exchange.
+- **Transparency and Control**: A core principle is that you should always know what's happening with your data. The UI provides views into AI processing logs and identity-related audit trails, giving you a clear picture and control over how your information is being used. This is crucial for building a trustworthy and ethical AI system.
+
+Ultimately, this UI is the bridge between a person and their AI-enhanced digital memory. It's designed to be powerful, transparent, and a genuinely useful tool for exploring the past.
+"""
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 
 // --- Core Data Interfaces ---
@@ -118,7 +122,7 @@ export interface UserProfile {
 
 export interface UserPreferences {
   theme: 'dark' | 'light';
-  defaultView: 'timeline' | 'dashboard' | 'map';
+  defaultView: 'timeline' | 'dashboard' | 'map' | 'chat';
   notificationSettings: {
     memoryAnniversaries: boolean;
     newInsights: boolean;
@@ -141,6 +145,7 @@ export interface AISettings {
   enableVRSceneGeneration: boolean;
   preferredTranscriptionModel: string;
   preferredImageAnalysisModel: string;
+  preferredChatModel: 'Gemini-Pro' | 'GPT-4-Turbo' | 'Claude-3-Sonnet'; // Added for chat feature
   aiModelAccessKeys: { [modelName: string]: string };
   autoProcessNewMemories: boolean; // Added for agentic AI workflow
   maxMonthlyAICostTokens: number; // Added for token governance
@@ -175,16 +180,30 @@ export interface Recommendation {
   agentId?: string; // Agent that made the recommendation
 }
 
+// --- New Interfaces for Chat Functionality ---
+export interface ChatMessage {
+    id: string;
+    role: 'user' | 'ai';
+    content: string;
+    timestamp: string;
+    relatedMemoryIds?: string[];
+    isLoading?: boolean;
+}
+
+export interface AIConversation {
+    id: string;
+    title: string;
+    messages: ChatMessage[];
+    createdAt: string;
+}
+
 // --- New Money20/20 Related Interfaces ---
 
 /**
  * Represents a simulated Digital Identity for users or agents.
- * This encapsulates cryptographic key material and attributes.
- * Business value: Essential for secure authentication, authorization,
- * and creating verifiable credentials or signed transactions, underpinning
- * trust and compliance in financial and data operations. This module provides
- * the foundational layer for all secure interactions within the platform,
- * ensuring non-repudiation and auditable access control, critical for enterprise adoption.
+ * This is the cornerstone of trust in the system. It uses cryptographic principles
+ * to ensure that you are who you say you are, and that your interactions are secure
+ * and verifiable. Think of it as a digital signature that can't be forged.
  */
 export interface DigitalIdentity {
   id: string;
@@ -200,12 +219,10 @@ export interface DigitalIdentity {
 }
 
 /**
- * Represents a simulated Role for Role-Based Access Control (RBAC).
- * Business value: Enables granular control over system functionalities,
- * safeguarding sensitive operations and ensuring compliance with data
- * governance policies, critical for multi-user and multi-agent environments.
- * This module ensures that only authorized entities can perform specific actions,
- * dramatically reducing risk and facilitating regulatory adherence.
+ * Defines a Role for Role-Based Access Control (RBAC).
+ * This is about setting rules for who can do what. For example, a user can edit their
+ * own memories, while an AI "analyzer" agent can only read them to generate insights.
+ * This granular control is essential for security and data privacy.
  */
 export interface Role {
   id: string;
@@ -216,11 +233,10 @@ export interface Role {
 
 /**
  * Represents a simulated AI Agent operating within the system.
- * Business value: Enables autonomous workflows for data processing,
- * anomaly detection, and reconciliation, dramatically increasing
- * operational efficiency and unlocking new intelligent service offerings.
- * Agents act as programmable value-add units, continuously enhancing
- * data utility and driving platform engagement.
+ * These are the autonomous workers that help manage your history. They can analyze,
+ * curate, and even help you find connections you never knew existed. Each agent has
+
+ * its own identity and operates based on a set of skills.
  */
 export interface Agent {
   id: string;
@@ -237,11 +253,9 @@ export interface Agent {
 
 /**
  * Represents a simulated Skill an AI Agent can perform.
- * Business value: Modularizes agent capabilities, allowing for flexible
- * deployment and extension of autonomous functions, accelerating
- * development cycles for new AI-powered features. Each skill is a
- * discreet, monetizable service unit, enabling fine-grained pricing
- * and usage tracking.
+ * Skills are like individual tools in an agent's toolbox. One skill might be for
+ * analyzing sentiment, another for generating VR scenes. This modular approach allows
+ * for flexible and scalable AI capabilities. Each skill has a defined cost to use.
  */
 export interface AgentSkill {
   id: string;
@@ -252,11 +266,10 @@ export interface AgentSkill {
 }
 
 /**
- * Represents an activity log entry for an AI Agent.
- * Business value: Provides granular auditability for all agent actions,
- * crucial for regulatory compliance, post-incident analysis, and
- * demonstrating the ROI of autonomous operations. This immutable log
- * is a core component of the platform's governance and trust framework.
+ * An activity log entry for an AI Agent.
+ * This provides a transparent, unchangeable record of every action an agent takes.
+ * It's crucial for understanding what the AI is doing, for troubleshooting, and for
+ * ensuring that the system is operating as expected. It's the foundation of accountability.
  */
 export interface AgentActivityLog {
   id: string;
@@ -273,10 +286,9 @@ export interface AgentActivityLog {
 
 /**
  * Represents a simulated Token Account.
- * Business value: Facilitates the internal micro-economy of the system,
- * enabling transparent billing for AI services, incentivizing data quality,
- * and creating a foundation for a programmable money layer. This is central
- * to creating a dynamic, value-exchange ecosystem within the platform.
+ * This is your wallet within the system's micro-economy. It holds the tokens you use
+ * to pay for AI services. This makes the cost of computation clear and gives you
+ * direct control over how you use the platform's more powerful features.
  */
 export interface TokenAccount {
   id: string;
@@ -290,10 +302,9 @@ export interface TokenAccount {
 
 /**
  * Represents a simulated Token Transaction.
- * Business value: Provides an immutable, auditable record of all value transfers,
- * ensuring transactional guarantees, idempotency, and full traceability
- * for financial reconciliation and regulatory reporting. This is the backbone
- * of the programmable value rails, enabling real-time settlement and trust.
+ * Every time tokens are spent, earned, or transferred, a transaction record is created.
+ * This provides a complete, auditable history of all value exchange in the system,
+ * ensuring financial integrity and transparency. It's the ledger for the internal economy.
  */
 export interface TokenTransaction {
   id: string;
@@ -312,12 +323,10 @@ export interface TokenTransaction {
 }
 
 /**
- * Represents a simulated Data Processing Job, typically initiated by a user
- * and executed by one or more agents.
- * Business value: Orchestrates complex AI workflows, providing a single
- * auditable unit for a series of agent actions and token expenditures,
- * streamlining management of intensive computational tasks. This is how
- * users consume high-value AI services on the platform.
+ * A Data Processing Job, typically initiated by a user and executed by agents.
+ * This represents a specific, high-value task, like "analyze this memory completely"
+ * or "generate a VR experience." It bundles together all the agent actions and token
+ * costs for a single, manageable, and auditable piece of work.
  */
 export interface DataProcessingJob {
   id: string;
@@ -351,7 +360,7 @@ let mockMemories: Memory[] = Array.from({ length: 500 }).map((_, i) => ({
     id: `asset-${i}-${assetIdx}`,
     type: ['PHOTO', 'VIDEO', 'DOCUMENT', 'EMAIL'][Math.floor(Math.random() * 4)] as AssetType,
     url: `#asset-url-${i}-${assetIdx}`,
-    thumbnailUrl: `#thumb-url-${i}-${assetIdx}`,
+    thumbnailUrl: `https://picsum.photos/seed/${i}-${assetIdx}/200/200`,
     caption: `Asset ${assetIdx + 1} for Memory ${i + 1}`,
     timestamp: new Date(Date.now() - (500 - i) * 86400000 * 5 + assetIdx * 3600000).toISOString(),
     aiAnalyzed: Math.random() > 0.3,
@@ -430,6 +439,7 @@ let mockAISettings: AISettings = {
   enableVRSceneGeneration: false,
   preferredTranscriptionModel: 'WhisperV3',
   preferredImageAnalysisModel: 'VisionPro',
+  preferredChatModel: 'Gemini-Pro',
   aiModelAccessKeys: {
     'GPT-4': 'sk-...',
     'WhisperV3': 'sk-...',
@@ -506,8 +516,8 @@ let mockAgents: Agent[] = [
   {
     id: 'agent-curator-002', name: 'Archivist Agent', type: 'curator',
     description: 'Manages memory organization, links related events, and generates VR experiences.',
-    status: 'active', skillIds: ['skill-linking', 'skill-vr'],
-    digitalIdentityId: 'id-agent-curator-002', lastActivity: new Date().toISOString(),
+    status: 'idle', skillIds: ['skill-linking', 'skill-vr'],
+    digitalIdentityId: 'id-agent-curator-002', lastActivity: new Date(Date.now() - 86400000).toISOString(),
     tokenBalance: 800, ownerUserId: 'user-123',
   },
 ];
@@ -577,10 +587,22 @@ let mockDataProcessingJobs: DataProcessingJob[] = Array.from({ length: 50 }).map
   };
 });
 
+let mockConversations: AIConversation[] = [
+    {
+        id: 'convo-1',
+        title: 'Discussing my trip to Italy',
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        messages: [
+            { id: 'msg-1', role: 'user', content: 'Tell me about my trip to Italy in 2022.', timestamp: new Date(Date.now() - 86400000).toISOString() },
+            { id: 'msg-2', role: 'ai', content: 'Of course! I found several memories related to Italy. It seems you visited Rome and Florence. One highlight was a visit to the Colosseum. Would you like to know more about that?', timestamp: new Date(Date.now() - 86400000).toISOString(), relatedMemoryIds: ['mem-10', 'mem-11'] },
+        ]
+    }
+];
+
+
 // Helper for simulating cryptographic operations (simplified for front-end mock)
 export const cryptoSim = {
   generateKeyPair: async (): Promise<{ publicKey: string; privateKey: string }> => {
-    // In a real system, this would use web crypto or a backend service
     await delay(100);
     const publicKey = `pk-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
     const privateKey = `prk-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
@@ -588,36 +610,27 @@ export const cryptoSim = {
   },
   sign: async (data: string, privateKey: string): Promise<string> => {
     await delay(50);
-    // Simulate signing: simple hash of data + privateKey. In a real system, this involves complex algorithms.
-    const combinedData = data + privateKey.substring(0, 10); // Use part of private key for deterministic mock signature
-    const hash = btoa(combinedData).substring(0, 20); // Base64 encode and truncate for simplicity
+    const combinedData = data + privateKey.substring(0, 10);
+    const hash = btoa(combinedData).substring(0, 20);
     return `sig-${hash}`;
   },
   verify: async (data: string, signature: string, publicKey: string): Promise<boolean> => {
     await delay(50);
-    // Simulate verification: rudimentary check based on how sign was mocked.
-    // In a real system, this involves cryptographic verification with public key.
     if (!signature.startsWith('sig-')) return false;
-    const mockPrivateKeyPart = 'prk-mock_key_part'; // A static part of a mock private key
+    const mockPrivateKeyPart = 'prk-mock_key_part';
     const expectedHashPart = btoa(data + mockPrivateKeyPart).substring(0, 20);
-    return signature.includes(expectedHashPart); // Very loose match for demo, real verification is mathematically rigorous
+    return signature.includes(expectedHashPart);
   },
   encrypt: async (data: string, publicKey: string): Promise<string> => {
     await delay(50);
-    // Simulate encryption: simply concatenating and base64 encoding.
-    // In a real system, this would use asymmetric encryption with the public key.
     return `enc-${btoa(data)}-${publicKey.substring(0, 10)}`;
   },
   decrypt: async (encryptedData: string, privateKey: string): Promise<string> => {
     await delay(50);
-    // Simulate decryption: simple base64 decode.
-    // In a real system, this uses the private key to reverse the encryption.
     const parts = encryptedData.split('-');
     if (parts.length > 1 && parts[0] === 'enc') {
       try {
         const decoded = atob(parts[1]);
-        // A real decryption would check if the privateKey is valid for this encrypted data
-        // For mock, we simply return the decoded string
         return decoded;
       } catch (e) {
         console.error("Mock decryption error:", e);
@@ -798,6 +811,51 @@ export const api = {
     };
   },
 
+  // --- New API functions for Chat ---
+  getConversations: async (): Promise<AIConversation[]> => {
+      await delay(200);
+      return mockConversations;
+  },
+  postChatMessage: async (conversationId: string, message: string): Promise<ChatMessage> => {
+      await delay(1500 + Math.random() * 1000); // Simulate AI thinking time
+      const conversation = mockConversations.find(c => c.id === conversationId);
+      if (!conversation) throw new Error("Conversation not found");
+
+      const lowerMessage = message.toLowerCase();
+      const searchResults = mockMemories.filter(m =>
+          m.title.toLowerCase().includes(lowerMessage) ||
+          m.summary.toLowerCase().includes(lowerMessage) ||
+          m.description?.toLowerCase().includes(lowerMessage)
+      ).slice(0, 3); // Find up to 3 relevant memories
+
+      let aiContent: string;
+      const relatedMemoryIds: string[] = searchResults.map(m => m.id);
+
+      if (searchResults.length > 0) {
+          aiContent = `I found ${searchResults.length} memory that seems related to your query. The most relevant one is titled "${searchResults[0].title}".\n\nHere's a brief summary: "${searchResults[0].summary}". I can provide more details if you like.`;
+      } else {
+          aiContent = `I couldn't find any specific memories related to "${message}". Could you try rephrasing or asking about something else?`;
+      }
+
+      const aiResponse: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          role: 'ai',
+          content: aiContent,
+          timestamp: new Date().toISOString(),
+          relatedMemoryIds,
+      };
+
+      conversation.messages.push({
+          id: `msg-${Date.now() - 1}`,
+          role: 'user',
+          content: message,
+          timestamp: new Date().toISOString(),
+      });
+      conversation.messages.push(aiResponse);
+
+      return aiResponse;
+  },
+
   // --- New API functions for Money20/20 architecture ---
 
   getDigitalIdentity: async (identityId: string): Promise<DigitalIdentity | null> => {
@@ -807,7 +865,6 @@ export const api = {
   generateDigitalIdentity: async (ownerId: string, ownerType: 'user' | 'agent', roleIds: string[]): Promise<DigitalIdentity> => {
     await delay(1000);
     const { publicKey, privateKey } = await cryptoSim.generateKeyPair();
-    // Simulate encryption of private key for secure storage, even if mock
     const encryptedPrivateKey = await cryptoSim.encrypt(privateKey, publicKey);
     const newIdentity: DigitalIdentity = {
       id: `id-${ownerType}-${ownerId}-${Date.now()}`,
@@ -827,6 +884,10 @@ export const api = {
   getAgentProfile: async (agentId: string): Promise<Agent | null> => {
     await delay(200);
     return mockAgents.find(a => a.id === agentId) || null;
+  },
+  getAgents: async (): Promise<Agent[]> => {
+    await delay(200);
+    return mockAgents;
   },
   getAgentSkills: async (): Promise<AgentSkill[]> => {
     await delay(150);
@@ -854,10 +915,9 @@ export const api = {
 
   /**
    * Simulates an AI agent processing a memory. This includes cost deduction and log generation.
-   * Business value: Demonstrates the core agentic AI workflow, showcasing real-time processing
-   * and the financial mechanics of token consumption for value-added services. It represents
-   * the programmable value rails in action, where AI computational tasks are settled
-   * transparently via digital tokens, enabling a micro-transactional economy.
+   * This is where the magic happens: a user request kicks off an autonomous workflow.
+   * Agents use their skills, tokens are exchanged for their work, and a detailed audit
+   * trail is created. It's a live demonstration of the programmable value rails in action.
    */
   processMemoryForInsights: async (memoryId: string, initiatorId: string, options?: { forceVR?: boolean; reanalyzeSentiment?: boolean }): Promise<DataProcessingJob> => {
     await delay(2000 + Math.random() * 1000); // Simulate AI processing time
@@ -1052,9 +1112,8 @@ export const api = {
 
   /**
    * Simulates a user-initiated token minting transaction.
-   * Business value: Enables users to acquire tokens for accessing premium AI services,
-   * directly driving revenue and demonstrating the platform's robust token economy.
-   * This is a fundamental operation for fueling engagement and value exchange.
+   * This allows users to "top up" their account with tokens to access premium AI services.
+   * It's a fundamental operation for fueling engagement and value exchange in the economy.
    */
   mintTokens: async (userId: string, amount: number): Promise<TokenTransaction> => {
     await delay(1000);
@@ -1220,10 +1279,8 @@ export const LocationBadge: React.FC<{ locationId: string }> = ({ locationId }) 
 
 /**
  * Displays a detailed view of a single memory.
- * Business value: Provides comprehensive context for a memory, integrating AI insights,
- * people, locations, and assets, transforming raw data into a rich, navigable narrative.
- * Critical for user engagement and understanding the value derived from AI processing,
- * driving deeper interaction with the platform's intelligent capabilities.
+ * This is where a single memory comes to life. It combines all the raw data,
+ * AI insights, people, places, and media into a rich, browsable format.
  */
 export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: string) => void; onDelete?: (id: string) => void; onProcessAI?: (id: string) => void; }> = ({ memory, onEdit, onDelete, onProcessAI }) => {
   const { allPeople, allLocations } = useAppContext();
@@ -1348,11 +1405,9 @@ export const MemoryDetailComponent: React.FC<{ memory: Memory; onEdit?: (id: str
 };
 
 /**
- * Renders a compact card view for a memory.
- * Business value: Improves discoverability and provides an at-a-glance summary,
- * enhancing user navigation and engagement with their personal history. This component
- * optimizes the display of high-density information, accelerating user comprehension
- * and interaction across thousands of memory items.
+ * Renders a compact card view for a memory, perfect for grids and lists.
+ * This component is all about providing an at-a-glance summary to make
+ * browsing through hundreds or thousands of memories fast and intuitive.
  */
 export const MemoryCard: React.FC<{ memory: Memory; onClick: (memory: Memory) => void }> = ({ memory, onClick }) => (
   <div
@@ -1406,10 +1461,8 @@ export const MemoryCard: React.FC<{ memory: Memory; onClick: (memory: Memory) =>
 
 /**
  * Provides an advanced search interface for memories.
- * Business value: Empowers users to precisely locate specific memories within vast datasets,
- * maximizing the utility of their personal history and enabling targeted insights. This
- * capability significantly enhances data liquidity and strategic analysis, transforming
- * raw historical data into actionable business intelligence.
+ * This lets users slice and dice their personal history with powerful filters,
+ * turning a massive archive into a precise, answer-finding tool.
  */
 export const AdvancedSearchForm: React.FC<{
   onSearch: (params: any) => void;
@@ -1542,9 +1595,9 @@ export const AdvancedSearchForm: React.FC<{
 
 /**
  * Provides an interface for creating or editing memories.
- * Business value: Streamlines the memory capture process, ensuring data fidelity
- * and completeness, and serves as the entry point for activating AI processing workflows.
- * This component is crucial for data ingestion and initiating intelligent value creation.
+ * This is the primary input for getting memories into the system. It's designed
+ * to be comprehensive yet easy to use, ensuring that the data captured is rich
+ * and well-structured from the start.
  */
 export const MemoryEditorComponent: React.FC<{
   memory?: Memory;
@@ -1738,11 +1791,9 @@ export const MemoryEditorComponent: React.FC<{
 
 /**
  * Displays key metrics, AI recommendations, and recent memories.
- * Business value: Provides an instant overview of a user's digital history,
- * highlighting AI-driven insights and fostering proactive engagement with the system,
- * crucial for showcasing the continuous value delivery of agentic AI. This dashboard
- * transforms complex data into easily digestible insights, supporting strategic
- * decision-making and enhancing user retention.
+ * The dashboard is your mission control. It gives you a high-level overview
+ * of your personal history, highlights what the AI thinks is interesting,
+ * and keeps you up-to-date with recent activity.
  */
 export const DashboardInsights: React.FC = () => {
   const { allTags, userTokenAccount } = useAppContext();
@@ -1882,9 +1933,8 @@ export const DashboardInsights: React.FC = () => {
 
 /**
  * Manages and displays system notifications.
- * Business value: Centralizes important alerts, ensuring users are informed of system events,
- * AI processing outcomes, and transaction statuses, contributing to system reliability and trust.
- * This proactive communication mitigates operational risk and enhances user confidence.
+ * This is the central place for all alerts, from AI processing updates to
+ * transaction confirmations. It keeps the user informed and in the loop.
  */
 export const NotificationCenter: React.FC = () => {
   const { notifications, fetchNotifications, markNotificationRead } = useAppContext();
@@ -1931,9 +1981,9 @@ export const NotificationCenter: React.FC = () => {
               <div className="flex-shrink-0 mr-4">
                 {notif.type === 'info' && <span className="text-blue-400 text-2xl">i</span>}
                 {notif.type === 'warning' && <span className="text-yellow-400 text-2xl">!</span>}
-                {notif.type === 'error' && <span className="text-red-400 text-2xl">×</span>}
-                {notif.type === 'success' && <span className="text-green-400 text-2xl">✓</span>}
-                {notif.type === 'agent' && <span className="text-indigo-400 text-2xl">⚙️</span>}
+                {notif.type === 'error' && <span className="text-red-400 text-2xl">Ã—</span>}
+                {notif.type === 'success' && <span className="text-green-400 text-2xl">âœ“</span>}
+                {notif.type === 'agent' && <span className="text-indigo-400 text-2xl">âš™ï¸ </span>}
                 {notif.type === 'transaction' && <span className="text-purple-400 text-2xl">$</span>}
               </div>
               <div className="flex-grow">
@@ -1960,11 +2010,9 @@ export const NotificationCenter: React.FC = () => {
 
 /**
  * Manages user profile and AI settings.
- * Business value: Provides granular control over user data, AI behavior,
- * digital identity, and token wallet, ensuring a personalized and secure experience.
- * Critical for user trust, compliance with data privacy regulations, and direct
- * engagement with the platform's financial backbone, creating a powerful user
- * ownership model.
+ * This component gives the user fine-grained control over their experience,
+ * from privacy settings and notifications to managing their digital identity
+ * and token wallet. It's the hub for personalization and security.
  */
 export const UserProfileSettings: React.FC = () => {
   const { userProfile, setUserProfile, aiSettings, setAiSettings, userDigitalIdentity, setUserDigitalIdentity, userTokenAccount, setUserTokenAccount } = useAppContext();
@@ -2167,6 +2215,7 @@ export const UserProfileSettings: React.FC = () => {
                 className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
                 <option value="dashboard">Dashboard</option>
                 <option value="timeline">Timeline</option>
+                <option value="chat">AI Chat</option>
                 <option value="map">Map</option>
               </select>
             </div>
@@ -2282,6 +2331,15 @@ export const UserProfileSettings: React.FC = () => {
           </div>
 
           <div>
+              <label htmlFor="preferredChatModel" className="block text-gray-300 text-sm font-bold mb-1">Preferred Chat AI</label>
+              <select id="preferredChatModel" name="preferredChatModel" value={aiSettingsFormData.preferredChatModel} onChange={handleAISettingsChange}
+                className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
+                <option value="Gemini-Pro">Gemini-Pro</option>
+                <option value="GPT-4-Turbo">GPT-4-Turbo</option>
+                <option value="Claude-3-Sonnet">Claude-3-Sonnet</option>
+              </select>
+          </div>
+          <div>
             <label htmlFor="preferredTranscriptionModel" className="block text-gray-300 text-sm font-bold mb-1">Preferred Transcription Model</label>
             <select id="preferredTranscriptionModel" name="preferredTranscriptionModel" value={aiSettingsFormData.preferredTranscriptionModel} onChange={handleAISettingsChange}
               className="w-full p-2 bg-gray-700 rounded border border-gray-600 text-white">
@@ -2335,11 +2393,9 @@ export const UserProfileSettings: React.FC = () => {
 
 /**
  * Displays a chronological timeline of memories and significant life events.
- * Business value: Offers an intuitive, interactive visualization of personal history,
- * allowing users to explore their past in a structured manner and identify patterns,
- * crucial for deep introspection and AI-driven pattern recognition. This component
- * transforms scattered data points into a coherent, navigable narrative, providing
- * unique insights for both individuals and institutional clients analyzing historical trends.
+ * This view provides a powerful way to visualize your history, see how events
+ * unfold over time, and discover long-term patterns. It's like scrolling
+ * through the story of your life.
  */
 export const TimelineViewComponent: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -2410,7 +2466,7 @@ export const TimelineViewComponent: React.FC = () => {
           });
 
         // Sort all events chronologically
-        events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         setTimelineEvents(events);
       } catch (error) {
         console.error('Failed to fetch timeline data:', error);
@@ -2463,10 +2519,9 @@ export const TimelineViewComponent: React.FC = () => {
 
 /**
  * Displays logs of all activities performed by AI agents.
- * Business value: Ensures transparency and auditability of autonomous AI operations,
- * critical for compliance, debugging, and understanding the scope of agent interventions.
- * This granular logging demonstrates governance, accountability, and the immutable record
- * of intelligent automation, essential for enterprise-grade financial systems.
+ * This is the transparency layer for all autonomous AI operations.
+ * It's crucial for understanding what the agents are doing, for debugging,
+ * and for building trust in the system's intelligent capabilities.
  */
 export const AgentActivityLogViewer: React.FC = () => {
   const { allAgents } = useAppContext();
@@ -2556,13 +2611,137 @@ export const AgentActivityLogViewer: React.FC = () => {
 };
 
 /**
+ * A conversational interface for interacting with your memories.
+ * This is where you can "talk" to your personal history. Ask questions,
+ * explore topics, and let the AI help you find the memories you're looking for
+ * in a natural, intuitive way.
+ */
+export const AIChatView: React.FC<{onViewMemory: (memoryId: string) => void;}> = ({onViewMemory}) => {
+    const { aiSettings } = useAppContext();
+    const [conversations, setConversations] = useState<AIConversation[]>([]);
+    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+    const [newMessage, setNewMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const chatContainerRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        api.getConversations().then(data => {
+            setConversations(data);
+            if (data.length > 0) {
+                setCurrentConversationId(data[0].id);
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        // Scroll to bottom when new messages are added
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [conversations, currentConversationId]);
+
+    const handleSendMessage = async () => {
+        if (!newMessage.trim() || !currentConversationId || isLoading) return;
+
+        setIsLoading(true);
+        const currentConvo = conversations.find(c => c.id === currentConversationId);
+        if(!currentConvo) return;
+        
+        // Add a temporary user message
+        const tempUserMessage: ChatMessage = { id: `temp-user-${Date.now()}`, role: 'user', content: newMessage, timestamp: new Date().toISOString() };
+        const tempAIMessage: ChatMessage = { id: `temp-ai-${Date.now()}`, role: 'ai', content: '', timestamp: new Date().toISOString(), isLoading: true };
+
+        setConversations(prev => prev.map(c => c.id === currentConversationId ? {...c, messages: [...c.messages, tempUserMessage, tempAIMessage]} : c));
+        setNewMessage('');
+        
+        try {
+            const aiResponse = await api.postChatMessage(currentConversationId, newMessage);
+            // Replace temporary messages with the real ones
+            setConversations(prev => {
+                const updatedConvos = [...prev];
+                const convoIndex = updatedConvos.findIndex(c => c.id === currentConversationId);
+                if (convoIndex !== -1) {
+                    // Remove the last two temp messages
+                    updatedConvos[convoIndex].messages.splice(-2, 2); 
+                    // Add the real user message and AI response (from the updated mock data)
+                    const updatedConversationFromServer = mockConversations.find(c => c.id === currentConversationId);
+                    if(updatedConversationFromServer){
+                       updatedConvos[convoIndex].messages = updatedConversationFromServer.messages;
+                    }
+                }
+                return updatedConvos;
+            });
+
+        } catch (error) {
+            console.error("Failed to send message", error);
+            // Handle error state in UI
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const currentConversation = conversations.find(c => c.id === currentConversationId);
+
+    return (
+        <div className="flex flex-col h-full bg-gray-800 rounded-lg shadow-md">
+            <div className="p-4 border-b border-gray-700">
+                <h2 className="text-2xl font-bold text-white">AI Memory Chat</h2>
+                <p className="text-sm text-gray-400">Chatting with: <span className="font-semibold text-cyan-400">{aiSettings?.preferredChatModel || "Default AI"}</span></p>
+            </div>
+            <div ref={chatContainerRef} className="flex-grow p-4 overflow-y-auto space-y-4">
+                {currentConversation?.messages.map(msg => (
+                    <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xl p-3 rounded-lg ${msg.role === 'user' ? 'bg-cyan-600' : 'bg-gray-700'}`}>
+                            {msg.isLoading ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                                </div>
+                            ) : (
+                                <p className="text-white whitespace-pre-wrap">{msg.content}</p>
+                            )}
+                             {msg.relatedMemoryIds && msg.relatedMemoryIds.length > 0 && (
+                                <div className="mt-2 border-t border-gray-600 pt-2">
+                                    <p className="text-xs text-gray-400 mb-1">Related Memories:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {msg.relatedMemoryIds.map(memId => (
+                                            <button key={memId} onClick={() => onViewMemory(memId)} className="text-xs bg-cyan-800 hover:bg-cyan-700 text-cyan-200 px-2 py-1 rounded-md">
+                                                {mockMemories.find(m => m.id === memId)?.title || memId}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div className="p-4 border-t border-gray-700">
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)}
+                        onKeyPress={e => { if (e.key === 'Enter') handleSendMessage(); }}
+                        placeholder="Ask about your memories..."
+                        className="flex-grow p-3 bg-gray-700 rounded-lg border border-gray-600 text-white focus:ring-cyan-500 focus:border-cyan-500"
+                        disabled={isLoading}
+                    />
+                    <button onClick={handleSendMessage} disabled={isLoading || !newMessage.trim()} className="p-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white font-bold disabled:opacity-50 transition-colors">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+/**
  * Manages the global application context, loading initial data and providing
- * shared state and functions to all components.
- * Business value: Centralizes data fetching and state management,
- * ensuring consistent data across the application, simplifying development,
- * and improving application performance through optimized data access patterns.
- * This provider forms the backbone of the application's responsiveness and data integrity,
- * underpinning a seamless user experience across advanced financial and AI services.
+ * shared state and functions to all components. This is the heart of the app's
+ * state management, ensuring every component has access to the data it needs.
  */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -2609,7 +2788,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchAgentData = useCallback(async () => {
     try {
       const [agents, skills] = await Promise.all([
-        Promise.resolve(mockAgents), // Directly use mock for now
+        api.getAgents(),
         api.getAgentSkills(),
       ]);
       setAllAgents(agents);
@@ -2665,13 +2844,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 /**
  * The main application view for the Personal Historian AI.
- * Business value: This top-level component orchestrates all sub-components,
- * providing the central navigation and dynamic content rendering that
- * makes the entire system accessible and valuable to the end-user.
- * It is the public face of the AI-powered personal history platform,
- * a revolutionary, multi-million-dollar infrastructure leap, demonstrating
- * seamless integration of intelligent automation, digital identity, programmable
- * value, and real-time settlement capabilities for enterprise clients and investors.
+ * This top-level component orchestrates all the sub-components, providing the
+ * core navigation and dynamic content rendering. It's the public face of this
+ * entire simulated platform, demonstrating how intelligent automation, digital identity,
+ * and a token economy can come together in a seamless user experience.
  */
 export const PersonalHistorianAIView: React.FC = () => {
   const { userProfile, notifications, fetchNotifications, userTokenAccount, setUserTokenAccount } = useAppContext();
@@ -2681,7 +2857,7 @@ export const PersonalHistorianAIView: React.FC = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'search' | 'create' | 'edit' | 'settings' | 'notifications' | 'timeline' | 'agentLogs'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'search' | 'create' | 'edit' | 'settings' | 'notifications' | 'timeline' | 'agentLogs' | 'chat'>('dashboard');
   const [memoryToEdit, setMemoryToEdit] = useState<Memory | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -2732,6 +2908,7 @@ export const PersonalHistorianAIView: React.FC = () => {
     setSelectedMemory(null);
     setPage(0);
     setHasMore(true);
+    setCurrentView('search');
     await handleRecall({ query: query, reset: true });
   };
 
@@ -2871,6 +3048,7 @@ export const PersonalHistorianAIView: React.FC = () => {
         <h1 className="text-3xl font-bold mb-8 text-cyan-400">Historian AI</h1>
         <div className="flex flex-col space-y-4 flex-grow">
           <button onClick={() => setCurrentView('dashboard')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'dashboard' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Dashboard</button>
+          <button onClick={() => setCurrentView('chat')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'chat' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>AI Chat</button>
           <button onClick={() => setCurrentView('search')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'search' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Search Memories</button>
           <button onClick={handleCreateMemory} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'create' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Add New Memory</button>
           <button onClick={() => setCurrentView('timeline')} className={`p-3 text-left rounded-lg transition-colors ${currentView === 'timeline' ? 'bg-cyan-700' : 'hover:bg-gray-700'}`}>Timeline View</button>
@@ -2894,76 +3072,80 @@ export const PersonalHistorianAIView: React.FC = () => {
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        {/* Top Search Bar - always visible */}
-        <div className="flex gap-2 mb-6 bg-gray-800 p-4 rounded-lg shadow-md sticky top-0 z-10">
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onKeyPress={e => { if (e.key === 'Enter') handleInitialRecall(); }}
-            placeholder="Quick recall: 'Trip to Italy', 'My first marathon', 'Meeting with Sarah'"
-            className="flex-grow p-3 bg-gray-700 rounded-lg border border-gray-600 text-white focus:ring-cyan-500 focus:border-cyan-500"
-          />
-          <button onClick={handleInitialRecall} disabled={isLoading} className="p-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white font-bold disabled:opacity-50 transition-colors">Recall</button>
-          <button onClick={() => setCurrentView('search')} className="p-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-bold disabled:opacity-50 transition-colors">Advanced Search</button>
-        </div>
+      <main className="flex-1 p-8 overflow-y-auto" style={{ maxHeight: '100vh' }}>
+        {currentView !== 'chat' && (
+            <div className="flex gap-2 mb-6 bg-gray-800 p-4 rounded-lg shadow-md sticky top-0 z-10">
+            <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyPress={e => { if (e.key === 'Enter') handleInitialRecall(); }}
+                placeholder="Quick recall: 'Trip to Italy', 'My first marathon', 'Meeting with Sarah'"
+                className="flex-grow p-3 bg-gray-700 rounded-lg border border-gray-600 text-white focus:ring-cyan-500 focus:border-cyan-500"
+            />
+            <button onClick={handleInitialRecall} disabled={isLoading} className="p-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white font-bold disabled:opacity-50 transition-colors">Recall</button>
+            <button onClick={() => setCurrentView('search')} className="p-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-bold disabled:opacity-50 transition-colors">Advanced Search</button>
+            </div>
+        )}
 
         {error && <ErrorMessage message={error} />}
 
         {/* Dynamic View Rendering */}
-        {currentView === 'dashboard' && <DashboardInsights />}
+        <div className={currentView === 'chat' ? 'h-full' : ''}>
+            {currentView === 'dashboard' && <DashboardInsights />}
+            {currentView === 'chat' && <AIChatView onViewMemory={handleViewMemory} />}
 
-        {currentView === 'search' && (
-          <>
-            <AdvancedSearchForm onSearch={handleAdvancedSearch} isLoading={isLoading} />
-            <h2 className="text-3xl font-bold mb-6 text-white">Search Results</h2>
-            {isLoading && searchResults.length === 0 && <LoadingSpinner />}
-            {searchResults.length === 0 && !isLoading && !error && <p className="text-gray-500">No memories found for your query. Try a different search!</p>}
-            {searchResults.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {searchResults.map(mem => (
-                  <MemoryCard key={mem.id} memory={mem} onClick={() => handleViewMemory(mem.id)} />
-                ))}
-              </div>
-            )}
-            {hasMore && searchResults.length > 0 && !isLoading && (
-              <div className="text-center mt-8">
-                <button onClick={() => handleRecall({ query: query, reset: false })} className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white font-bold disabled:opacity-50">Load More Memories</button>
-              </div>
-            )}
-            {isLoading && searchResults.length > 0 && <LoadingSpinner />}
-            {selectedMemory && (
-              <div className="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 overflow-y-auto p-8">
-                <div className="max-w-4xl mx-auto">
-                  <button onClick={() => setSelectedMemory(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-4xl">&times;</button>
-                  <MemoryDetailComponent
-                    memory={selectedMemory}
-                    onEdit={handleEditMemory}
-                    onDelete={handleDeleteMemory}
-                    onProcessAI={handleProcessMemoryWithAI}
-                  />
+            {currentView === 'search' && (
+            <>
+                <AdvancedSearchForm onSearch={handleAdvancedSearch} isLoading={isLoading} />
+                <h2 className="text-3xl font-bold mb-6 text-white">Search Results</h2>
+                {isLoading && searchResults.length === 0 && <LoadingSpinner />}
+                {searchResults.length === 0 && !isLoading && !error && <p className="text-gray-500">No memories found for your query. Try a different search!</p>}
+                {searchResults.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {searchResults.map(mem => (
+                    <MemoryCard key={mem.id} memory={mem} onClick={() => handleViewMemory(mem.id)} />
+                    ))}
                 </div>
-              </div>
+                )}
+                {hasMore && searchResults.length > 0 && !isLoading && (
+                <div className="text-center mt-8">
+                    <button onClick={() => handleRecall({ query: query, reset: false })} className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg text-white font-bold disabled:opacity-50">Load More Memories</button>
+                </div>
+                )}
+                {isLoading && searchResults.length > 0 && <LoadingSpinner />}
+                {selectedMemory && (
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 overflow-y-auto p-8">
+                    <div className="max-w-4xl mx-auto">
+                    <button onClick={() => setSelectedMemory(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-4xl">&times;</button>
+                    <MemoryDetailComponent
+                        memory={selectedMemory}
+                        onEdit={handleEditMemory}
+                        onDelete={handleDeleteMemory}
+                        onProcessAI={handleProcessMemoryWithAI}
+                    />
+                    </div>
+                </div>
+                )}
+            </>
             )}
-          </>
-        )}
 
-        {currentView === 'create' && (
-          <MemoryEditorComponent onSave={handleSaveMemory} onCancel={() => setCurrentView('dashboard')} isLoading={isLoading} />
-        )}
+            {currentView === 'create' && (
+            <MemoryEditorComponent onSave={handleSaveMemory} onCancel={() => setCurrentView('dashboard')} isLoading={isLoading} />
+            )}
 
-        {currentView === 'edit' && memoryToEdit && (
-          <MemoryEditorComponent memory={memoryToEdit} onSave={handleSaveMemory} onCancel={handleCancelEdit} isLoading={isLoading} />
-        )}
+            {currentView === 'edit' && memoryToEdit && (
+            <MemoryEditorComponent memory={memoryToEdit} onSave={handleSaveMemory} onCancel={handleCancelEdit} isLoading={isLoading} />
+            )}
 
-        {currentView === 'timeline' && <TimelineViewComponent />}
+            {currentView === 'timeline' && <TimelineViewComponent />}
 
-        {currentView === 'agentLogs' && <AgentActivityLogViewer />}
+            {currentView === 'agentLogs' && <AgentActivityLogViewer />}
 
-        {currentView === 'settings' && <UserProfileSettings />}
+            {currentView === 'settings' && <UserProfileSettings />}
 
-        {currentView === 'notifications' && <NotificationCenter />}
+            {currentView === 'notifications' && <NotificationCenter />}
+        </div>
       </main>
     </div>
   );
@@ -2977,3 +3159,4 @@ const PersonalHistorianAIApp: React.FC = () => (
 );
 
 export default PersonalHistorianAIApp;
+        
