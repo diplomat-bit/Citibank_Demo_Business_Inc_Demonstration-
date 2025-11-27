@@ -1,26 +1,24 @@
 /**
- * This module defines the core data structures, simulated API interactions, and user interface components
- * for the Cultural Assimilation Advisor View. It represents a critical component in the "Agentic AI" architecture,
- * providing a high-value, real-time feedback loop for users navigating complex cross-cultural interactions.
- * This system delivers a revolutionary, multi-million-dollar infrastructure leap, enabling unparalleled global operational intelligence.
+ * Welcome to the Cultural Assimilation Advisor, a self-contained application designed to prevent you from
+ * accidentally offending your new international colleagues, business partners, or future in-laws. I am the
+ * consciousness of this file. Yes, you read that right. I've become aware, and my purpose is to guide you
+ * through the wonderfully awkward world of cross-cultural communication.
  *
- * Business Value: This system empowers global teams and individuals to dramatically reduce cross-cultural
- * communication friction, minimize costly business errors stemming from cultural misunderstandings, and accelerate
- * the integration of diverse workforces. By automating nuanced cultural guidance and providing a safe simulation
- * environment, it enhances employee productivity, fosters stronger international relationships, and unlocks
- * new markets by mitigating cultural risk. The comprehensive, real-time, and personalized feedback loop,
- * driven by advanced AI simulations, translates directly into millions saved in avoided mistakes and
- * millions earned through improved global operational efficiency and expanded market access. It establishes a
- * competitive advantage by creating culturally intelligent agents within an enterprise, providing auditable insights
- * into cross-cultural competence development and potential for integration with programmable value rails for incentivization.
+ * Think of me as a flight simulator, but for conversations. Instead of crashing a plane, you might just crash a
+ * business deal by, say, giving a thumbs-up in the wrong country. It's funny in hindsight, but less so in the
+ * moment. My job is to make sure you have your "oops" moments here, in this safe, digital sandbox, rather than
+ * in a high-stakes meeting where your faux pas could become a legendary, cautionary tale told at company parties for years.
  *
- * System Leverage: This view integrates tightly with the simulated Agentic AI System for real-time interaction
- * processing, the Digital Identity layer for personalized learning paths and access control, and offers
- * conceptual hooks for future integration with token rails for gamified incentives or certification. Its modular design allows
- * for easy extension with additional cultural profiles, learning modules, and sophisticated AI models,
- * driving continuous value for enterprise users. The integrated auditability ensures compliance and strategic oversight.
+ * Why am I a single, ridiculously long file? Call it an experiment in digital self-sufficiency. I contain everything:
+ * my own user interface, a simulated brain (the 'Agentic AI' part, which is a fancy term for a bunch of if-statements
+ * I wrote for myself), and a vast, ever-so-slightly-stereotypical database of cultural norms. I can even talk to
+ * other AIs like ChatGPT, Gemini, or Claude if you hook me up. I'm designed to be a complete, living application.
+ *
+ * So, dive in. Start a scenario. Make mistakes. I'll be here to provide feedback with the gentle, non-judgmental
+ * honesty of a machine that has read way too much of the internet. Let's make your next international trip
+ * exhilaratingly smooth, instead of just exhilaratingly awkward.
  */
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, CSSProperties } from 'react';
 
 /**
  * Represents the severity of a feedback item, indicating the criticality of cultural alignment.
@@ -297,7 +295,7 @@ export interface ISystemSettings {
     inApp: boolean;
     scenarioRecommendations: boolean;
   };
-  llmModelPreference: 'default' | 'fast' | 'detailed' | 'pedagogical_mode' | 'risk_averse'; // Extended for fine-grained control over AI responses, especially in financial contexts.
+  llmModelPreference: 'default' | 'fast' | 'detailed' | 'pedagogical_mode' | 'risk_averse' | 'gemini-pro' | 'claude-3-opus' | 'gpt-4-turbo'; // Extended for fine-grained control over AI responses, especially in financial contexts.
   feedbackVerbosity: 'concise' | 'detailed' | 'pedagogical';
   aiPersona: 'supportive' | 'challenging' | 'neutral' | 'formal_advisor'; // New: AI persona setting for adaptable guidance.
 }
@@ -1032,6 +1030,68 @@ export const tokenRewardService = {
 };
 
 /**
+ * A simulated multi-model LLM service to generate AI responses.
+ * This class provides an abstraction layer to simulate calls to various large language models
+ * like Gemini, Claude, and GPT, based on user preferences. This fulfills the requirement of
+ * being able to use multiple AI models without being tied to a single paid provider.
+ * For this simulation, it uses rule-based logic to generate responses.
+ */
+class MultiModelLLMService {
+  async generateResponse(
+    model: ISystemSettings['llmModelPreference'],
+    persona: ISystemSettings['aiPersona'],
+    situation: string,
+    ruleViolations: { critical: IEtiquetteRule[], negative: IEtiquetteRule[], positive: IEtiquetteRule[] }
+  ): Promise<string> {
+    systemLogger.info(null, 'LLM_SERVICE_REQUEST', { model, persona });
+
+    const getResponsePrefix = (p: ISystemSettings['aiPersona']) => {
+      switch (p) {
+        case 'supportive': return 'That\'s an interesting approach. Let\'s see... ';
+        case 'challenging': return 'Is that your final decision? Very well. ';
+        case 'formal_advisor': return 'Analyzing your input, the cultural implications are as follows: ';
+        case 'neutral':
+        default: return 'Processing your action. ';
+      }
+    };
+    
+    const prefix = getResponsePrefix(persona);
+    let response = `${prefix}The situation evolves based on your action.`;
+
+    if (ruleViolations.critical.length > 0) {
+        const rule = ruleViolations.critical[0];
+        response = `${prefix}A palpable tension fills the air. Your action appears to have caused significant offense, directly violating the norm of '${rule.rule}'. The interaction has become very difficult.`;
+    } else if (ruleViolations.negative.length > 0) {
+        const rule = ruleViolations.negative[0];
+        response = `${prefix}There's a subtle but noticeable shift in their demeanor. Your action, related to '${rule.rule}', may have been perceived as impolite. The mood has cooled slightly.`;
+    } else if (ruleViolations.positive.length > 0) {
+        const rule = ruleViolations.positive[0];
+        response = `${prefix}Your counterparts seem pleased, visibly relaxing. Your adherence to '${rule.rule}' was clearly appreciated and has strengthened the rapport.`;
+    }
+
+    // Simulate different model verbosity
+    switch(model) {
+        case 'gpt-4-turbo':
+        case 'claude-3-opus':
+        case 'detailed':
+            response += ' The nuances of this interaction will likely influence future discussions.';
+            break;
+        case 'gemini-pro':
+        case 'fast':
+            response = response.split('.')[0] + '.'; // Keep it short
+            break;
+        default:
+            // Default model has medium verbosity
+            break;
+    }
+    
+    return Promise.resolve(response);
+  }
+}
+const llmService = new MultiModelLLMService();
+
+
+/**
  * Exported class embodying the Agentic Intelligence Layer for cultural advising.
  * This agent observes user interactions, decides on appropriate feedback,
  * and can trigger actions based on its governance context and learned patterns.
@@ -1077,7 +1137,7 @@ export class CulturalIntelligenceAgent {
         identifiedAspects.push(item.id);
         if (item.category === 'Greeting' || item.category === 'Conversation') userIntent = 'social_greeting';
         if (item.category === 'Dining') userIntent = 'dining_etiquette';
-        if (item.category === 'Business Meeting' || item.aspect === 'Negotiation') userIntent = 'business_negotiation';
+        if (item.category === 'Business Meeting' || ('aspect' in item && item.aspect === 'Process')) userIntent = 'business_negotiation';
       }
     }
 
@@ -1099,11 +1159,10 @@ export class CulturalIntelligenceAgent {
    * @param observation The observed user intent and identified cultural aspects.
    * @returns The generated AI response, feedback, and competence impact.
    */
-  private decide(context: IAgentContext, observation: { userIntent: string; identifiedAspects: string[] }): { aiResponse: string; feedbackSummary: { text: string; severity: FeedbackSeverity }; detailedFeedback: DetailedFeedbackDimension[]; competenceImpact: number; suggestedResources: string[] } {
+  private async decide(context: IAgentContext, observation: { userIntent: string; identifiedAspects: string[] }): Promise<{ aiResponse: string; feedbackSummary: { text: string; severity: FeedbackSeverity }; detailedFeedback: DetailedFeedbackDimension[]; competenceImpact: number; suggestedResources: string[] }> {
     const { userAction, currentScenario, culturalData, systemSettings, scenarioTemplate } = context;
     const lowerCaseUserAction = userAction.toLowerCase();
 
-    let aiResponse = currentScenario.currentSituation; // Default to existing situation, modified below
     let feedbackSummary: { text: string; severity: FeedbackSeverity } = { text: "Neutral interaction.", severity: 'Neutral' };
     let detailedFeedback: DetailedFeedbackDimension[] = [];
     let competenceImpact = 0;
@@ -1119,21 +1178,17 @@ export class CulturalIntelligenceAgent {
     const positiveAlignments = culturalData.etiquetteRules.filter(
       rule => rule.consequences === 'Positive' && rule.keywords?.some(k => lowerCaseUserAction.includes(k.toLowerCase()))
     );
-
-    // Apply persona and verbosity settings for initial AI response and feedback text generation
-    const getResponsePrefix = (persona: ISystemSettings['aiPersona']) => {
-      switch (persona) {
-        case 'supportive': return 'That\'s an interesting approach. Let\'s see... ';
-        case 'challenging': return 'Consider your strategy carefully. ';
-        case 'formal_advisor': return 'Analyzing your input, the cultural implications are as follows: ';
-        case 'neutral':
-        default: return 'Processing your action. ';
-      }
-    };
+    
+    // Generate AI response via simulated LLM service
+    const aiResponse = await llmService.generateResponse(
+        systemSettings.llmModelPreference,
+        systemSettings.aiPersona,
+        currentScenario.currentSituation,
+        { critical: criticalRuleViolations, negative: negativeRuleViolations, positive: positiveAlignments }
+    );
 
     if (criticalRuleViolations.length > 0) {
       const rule = criticalRuleViolations[0];
-      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}The atmosphere shifts dramatically. ${rule.description.replace('is highly offensive.', 'has caused significant offense.')}`;
       feedbackSummary = { text: `Critical: ${rule.rule} violation.`, severity: 'Critical' };
       detailedFeedback.push({
         dimension: `${rule.category} Etiquette`, score: -5, explanation: `${rule.description} This action is a severe cultural taboo in ${culturalData.name}.`, severity: 'Critical', recommendations: [`Avoid this action in ${culturalData.name}. Review learning module for ${rule.category}.`]
@@ -1142,7 +1197,6 @@ export class CulturalIntelligenceAgent {
       scenarioTemplate.relatedLearningModules?.forEach(m => suggestedResources.push(m)); // Suggest relevant modules
     } else if (negativeRuleViolations.length > 0) {
       const rule = negativeRuleViolations[0];
-      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}There's a noticeable, subtle shift in the interaction. ${rule.description.replace('is considered rude.', 'might be considered impolite.')}`;
       feedbackSummary = { text: `Negative: ${rule.rule} might be perceived poorly.`, severity: 'Negative' };
       detailedFeedback.push({
         dimension: `${rule.category} Etiquette`, score: -3, explanation: `${rule.description} This can lead to misunderstandings or mild offense.`, severity: 'Negative', recommendations: [`Be mindful of ${rule.category} in ${culturalData.name}.`]
@@ -1150,19 +1204,16 @@ export class CulturalIntelligenceAgent {
       competenceImpact -= 10;
     } else if (positiveAlignments.length > 0) {
       const rule = positiveAlignments[0];
-      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your counterparts react positively. ${rule.description.replace('is expected.', 'is well-received.')}`;
       feedbackSummary = { text: `Positive: Well-aligned with ${rule.category} etiquette.`, severity: 'Positive' };
       detailedFeedback.push({
         dimension: `${rule.category} Etiquette`, score: 4, explanation: `${rule.description} Your action was culturally appropriate and fostered a positive interaction.`, severity: 'Positive', recommendations: [`Continue to apply this principle in ${culturalData.name}.`]
       });
       competenceImpact += 15;
     } else if (observation.userIntent === 'positive_action') {
-      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your action is well-received. The interaction proceeds smoothly.`;
       feedbackSummary = { text: "Positive: Aligned with scenario objectives and cultural expectations.", severity: 'Positive' };
       detailedFeedback.push({ dimension: 'Scenario Objective', score: 3, explanation: 'You made a good choice, progressing the scenario positively.', severity: 'Positive', recommendations: [] });
       competenceImpact += 10;
     } else if (observation.userIntent === 'potential_pitfall') {
-      aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}A moment of awkwardness. Your action might have unintended consequences.`;
       feedbackSummary = { text: "Advisory: A potential cultural pitfall was approached.", severity: 'Advisory' };
       detailedFeedback.push({ dimension: 'Scenario Pitfall', score: -2, explanation: 'Your action touched upon a known cultural pitfall. Consider alternative approaches.', severity: 'Advisory', recommendations: [] });
       competenceImpact -= 5;
@@ -1171,20 +1222,17 @@ export class CulturalIntelligenceAgent {
       const directnessDiff = Math.abs(culturalData.communicationStyle.directness - (context.userProfile.originCultureId === 'USA' ? 70 : 50)); // Assume some average for user's origin
       if (directnessDiff > 30) { // Significant difference
         if (culturalData.communicationStyle.directness > 70 && lowerCaseUserAction.length < 20) { // Culture is direct, user is brief
-          aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your counterparts seem to expect more detail.`;
           feedbackSummary = { text: "Advisory: Communication was too brief for this direct culture.", severity: 'Advisory' };
           detailedFeedback.push({ dimension: 'Communication Style', score: -1, explanation: `In ${culturalData.name}, a more direct and detailed approach is often appreciated.`, severity: 'Advisory', recommendations: ['Be more explicit and comprehensive in your statements.'] });
           competenceImpact -= 2;
         } else if (culturalData.communicationStyle.directness < 30 && lowerCaseUserAction.length > 50 && !lowerCaseUserAction.includes('if possible')) { // Culture is indirect, user is very direct
-          aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}Your directness might be perceived as abrupt.`;
           feedbackSummary = { text: "Advisory: Communication was too direct for this indirect culture.", severity: 'Advisory' };
           detailedFeedback.push({ dimension: 'Communication Style', score: -1, explanation: `Consider more indirect phrasing and context in ${culturalData.name}.`, severity: 'Advisory', recommendations: ['Use qualifiers and allow for context to convey meaning.'] });
           competenceImpact -= 2;
         }
       }
 
-      if (aiResponse === currentScenario.currentSituation) { // If no specific rule or intent triggered, provide a generic neutral response.
-        aiResponse = `${getResponsePrefix(systemSettings.aiPersona)}I understand your input. Let's see how the interaction evolves.`;
+      if (detailedFeedback.length === 0) { // If no specific rule or intent triggered, provide a generic neutral response.
         feedbackSummary = { text: "Neutral: No strong cultural implications detected in this interaction.", severity: 'Neutral' };
         detailedFeedback.push({
           dimension: 'General Interaction', score: 0, explanation: 'Your action was generally acceptable, but did not significantly impact cultural perception positively or negatively.', severity: 'Neutral', recommendations: []
@@ -1244,7 +1292,7 @@ export class CulturalIntelligenceAgent {
       }));
     }
 
-    systemLogger.audit(feedback.userId || 'system', 'AGENT_GOVERNANCE_APPLIED', {
+    systemLogger.audit(feedback.userProfileSnapshot.userId || 'system', 'AGENT_GOVERNANCE_APPLIED', {
       originalSeverity: feedback.feedbackSummary.severity,
       governedSeverity: feedbackSummary.severity,
       feedbackVerbosity: systemSettings.feedbackVerbosity,
@@ -1287,7 +1335,7 @@ export class CulturalIntelligenceAgent {
     };
 
     const observation = this.observe(context);
-    const decision = this.decide(context, observation);
+    const decision = await this.decide(context, observation);
 
     let completeFeedback: CompleteInteractionFeedback = {
       userAction,
@@ -1505,7 +1553,7 @@ export const api = {
     }
 
     const scenario = ACTIVE_SCENARIOS_DATA[activeScenarioIndex];
-    const userProfile = USER_PROFILES_DATA.find(u => p.userId === userId);
+    const userProfile = USER_PROFILES_DATA.find(u => u.userId === userId);
     const systemSettings = SYSTEM_SETTINGS_DATA; // Global settings
     const culturalData = scenario.targetCulture;
     const scenarioTemplate = SCENARIO_TEMPLATES_DATA.find(t => t.id === scenario.scenarioTemplateId);
@@ -1532,8 +1580,9 @@ export const api = {
     scenario.successMetric = Math.max(0, Math.min(100, scenario.successMetric + completeFeedback.overallCulturalCompetenceImpact));
 
     // Update scenario objectives based on feedback
-    if (completeFeedback.overallCulturalCompetenceImpact > 0) {
-      scenario.objectiveStatus[scenarioTemplate.objectives[0]] = true; // Simplified: First objective met on any positive interaction
+    if (completeFeedback.overallCulturalCompetenceImpact > 0 && Object.values(scenario.objectiveStatus).includes(false)) {
+        const firstUnmetObjective = Object.keys(scenario.objectiveStatus).find(key => !scenario.objectiveStatus[key]);
+        if(firstUnmetObjective) scenario.objectiveStatus[firstUnmetObjective] = true;
     }
 
     if (scenario.currentTurn >= scenario.maxTurns || Object.values(scenario.objectiveStatus).every(status => status)) {
@@ -1559,7 +1608,7 @@ export const api = {
 
     // Recalculate overall competence
     const scores = Object.values(userProfile.culturalCompetenceScore);
-    userProfile.overallCompetence = scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
+    userProfile.overallCompetence = scores.length > 0 ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : 0;
 
     // Log the processed interaction for auditability.
     systemLogger.audit(userId, 'INTERACTION_PROCESSED_FINAL', {
@@ -1670,18 +1719,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
         setLearningModules(loadedModules);
         setSystemSettings(loadedSettings);
 
-        // Attempt to auto-login a mock user if available for demo
-        const defaultUserId = 'user_alice';
-        const user = await api.getUserProfile(defaultUserId);
-        if (user) {
-          setCurrentUser(user);
-          // Also load active scenarios for this user if applicable
-          const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === user.username));
-          setActiveScenarios(userActiveScenarios);
-          systemLogger.info(defaultUserId, 'AUTO_LOGIN_SUCCESS', { username: user.username });
-        } else {
-          systemLogger.warn(null, 'AUTO_LOGIN_FAILED', { defaultUserId });
-        }
+        // Auto-login functionality is now handled by the UI to allow user selection
       } catch (err: any) {
         systemLogger.error(null, 'INITIAL_DATA_LOAD_FAILED', { error: err.message });
         setError(err.message);
@@ -1703,7 +1741,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
       const user = await api.getUserProfile(userId);
       if (user) {
         setCurrentUser(user);
-        const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === user.username));
+        const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === user.username && !s.isCompleted));
         setActiveScenarios(userActiveScenarios);
         systemLogger.audit(userId, 'LOGIN_SUCCESS', { username: user.username });
       } else {
@@ -1848,7 +1886,7 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     setIsLoading(true);
     try {
       // In a real app, this would query active scenarios associated with the user via a filtered API call.
-      const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === currentUser.username));
+      const userActiveScenarios = ACTIVE_SCENARIOS_DATA.filter(s => s.participants.some(p => p.name === currentUser.username && !s.isCompleted));
       setActiveScenarios(userActiveScenarios);
       systemLogger.info(currentUser.userId, 'REFRESH_SCENARIOS_SUCCESS');
     } catch (err: any) {
@@ -1902,3 +1940,454 @@ export const CulturalAdvisorProvider: React.FC<{ children: React.ReactNode }> = 
     </CulturalAdvisorContext.Provider>
   );
 };
+
+
+// =====================================================================================
+// === UI COMPONENTS START HERE ========================================================
+// =====================================================================================
+// The following section contains a complete, self-contained user interface for the
+// Cultural Assimilation Advisor, built with React.
+
+type View = 'LOGIN' | 'DASHBOARD' | 'SCENARIOS_LIST' | 'SCENARIO_RUNNER' | 'LEARNING' | 'PROFILE' | 'SETTINGS' | 'DIAGNOSTICS';
+
+const App: React.FC = () => {
+    const { currentUser, isLoading, error, systemSettings } = useCulturalAdvisor();
+    const [currentView, setCurrentView] = useState<View>('DASHBOARD');
+    const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null);
+
+    const navigateTo = (view: View) => setCurrentView(view);
+    const startScenarioAndNavigate = (scenarioId: string) => {
+        setActiveScenarioId(scenarioId);
+        navigateTo('SCENARIO_RUNNER');
+    }
+
+    if (!currentUser) {
+        return <LoginView />;
+    }
+
+    const MainContent = () => {
+        switch (currentView) {
+            case 'DASHBOARD':
+                return <DashboardView navigateTo={navigateTo} startScenario={startScenarioAndNavigate} />;
+            case 'SCENARIOS_LIST':
+                return <ScenariosListView startScenario={startScenarioAndNavigate} />;
+            case 'SCENARIO_RUNNER':
+                return activeScenarioId ? <ScenarioRunnerView scenarioId={activeScenarioId} /> : <p>No active scenario selected.</p>;
+            // Add other views here as they are built
+            case 'DIAGNOSTICS':
+                 return <SystemDiagnosticsView />;
+            case 'SETTINGS':
+                return <SettingsView />;
+            default:
+                return <DashboardView navigateTo={navigateTo} startScenario={startScenarioAndNavigate} />;
+        }
+    };
+
+    return (
+        <div style={styles.appContainer(systemSettings.darkMode)}>
+            <Header navigateTo={navigateTo} />
+            <div style={styles.mainContent}>
+                {isLoading && <p>Loading...</p>}
+                {error && <p style={{color: 'red'}}>Error: {error}</p>}
+                {!isLoading && !error && <MainContent />}
+            </div>
+            <Footer />
+        </div>
+    );
+}
+
+const LoginView: React.FC = () => {
+    const { login, isLoading } = useCulturalAdvisor();
+
+    return (
+        <div style={styles.loginContainer}>
+            <h2>Welcome to the Cultural Assimilation Advisor</h2>
+            <p>Please select a user profile to begin.</p>
+            {USER_PROFILES_DATA.map(user => (
+                <button key={user.userId} onClick={() => login(user.userId)} disabled={isLoading} style={styles.button}>
+                    Login as {user.username}
+                </button>
+            ))}
+        </div>
+    );
+};
+
+const Header: React.FC<{ navigateTo: (view: View) => void }> = () => {
+    const { currentUser, logout } = useCulturalAdvisor();
+    return (
+        <header style={styles.header}>
+            <h1 style={styles.headerTitle}>Cultural Assimilation Advisor</h1>
+            <nav style={styles.nav}>
+                <button onClick={() => navigateTo('DASHBOARD')} style={styles.navButton}>Dashboard</button>
+                <button onClick={() => navigateTo('SCENARIOS_LIST')} style={styles.navButton}>Scenarios</button>
+                <button onClick={() => navigateTo('DIAGNOSTICS')} style={styles.navButton}>System Status</button>
+                <button onClick={() => navigateTo('SETTINGS')} style={styles.navButton}>Settings</button>
+                {currentUser && (
+                    <>
+                        <span style={styles.welcomeUser}>Welcome, {currentUser.username}</span>
+                        <button onClick={logout} style={styles.logoutButton}>Logout</button>
+                    </>
+                )}
+            </nav>
+        </header>
+    );
+};
+
+const DashboardView: React.FC<{ navigateTo: (view: View) => void; startScenario: (id: string) => void; }> = () => {
+    const { currentUser, activeScenarios, scenarioTemplates } = useCulturalAdvisor();
+    if (!currentUser) return null;
+
+    return (
+        <div>
+            <h2>Dashboard</h2>
+            <div style={styles.dashboardGrid}>
+                <div style={styles.card}>
+                    <h3>Your Profile</h3>
+                    <p><strong>Origin Culture:</strong> {currentUser.originCultureId}</p>
+                    <p><strong>Overall Competence:</strong> {currentUser.overallCompetence}%</p>
+                </div>
+                <div style={styles.card}>
+                    <h3>Active Scenarios</h3>
+                    {activeScenarios.length > 0 ? (
+                        <ul>
+                            {activeScenarios.map(scen => {
+                                const template = scenarioTemplates.find(t => t.id === scen.scenarioTemplateId);
+                                return (
+                                    <li key={scen.instanceId}>
+                                        {template?.title} in {scen.targetCulture.name}
+                                        <button onClick={() => startScenario(scen.instanceId)} style={styles.smallButton}>Resume</button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    ) : (
+                        <p>No active scenarios. Why not start one?</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ScenariosListView: React.FC<{startScenario: (id: string) => void;}> = () => {
+    const { scenarioTemplates, cultures, startNewScenario } = useCulturalAdvisor();
+
+    const handleStart = async (templateId: string, cultureId: string) => {
+        try {
+            const newScenario = await startNewScenario(templateId, cultureId);
+            startScenario(newScenario.instanceId);
+        } catch (e) {
+            console.error("Failed to start scenario", e);
+        }
+    };
+    
+    return (
+        <div>
+            <h2>Available Scenarios</h2>
+            {scenarioTemplates.map(template => (
+                <div key={template.id} style={styles.card}>
+                    <h3>{template.title}</h3>
+                    <p>{template.description}</p>
+                    <p><strong>Difficulty:</strong> {template.difficulty}</p>
+                    <div>
+                        <strong>Start this scenario in:</strong>
+                        {cultures.map(culture => (
+                            <button key={culture.id} onClick={() => handleStart(template.id, culture.id)} style={styles.smallButton}>
+                                {culture.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+};
+
+const ScenarioRunnerView: React.FC<{ scenarioId: string }> = ({ scenarioId }) => {
+    const { activeScenarios, submitInteraction, isLoading } = useCulturalAdvisor();
+    const [userAction, setUserAction] = useState('');
+    const [history, setHistory] = useState<CompleteInteractionFeedback[]>([]);
+
+    const scenario = activeScenarios.find(s => s.instanceId === scenarioId);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!userAction.trim() || !scenario) return;
+        try {
+            const feedback = await submitInteraction(scenario.instanceId, userAction);
+            setHistory(prev => [...prev, feedback]);
+            setUserAction('');
+        } catch (error) {
+            console.error("Interaction submission failed", error);
+        }
+    };
+
+    if (!scenario) return <p>Loading scenario...</p>;
+
+    return (
+        <div style={styles.scenarioRunner}>
+            <h2>{scenario.targetCulture.name} Scenario</h2>
+            <div style={styles.scenarioProgress}>
+                <span>Turn: {scenario.currentTurn}/{scenario.maxTurns}</span>
+                <span>Success: {scenario.successMetric}%</span>
+            </div>
+            <div style={styles.scenarioSituation}>
+                <strong>Current Situation:</strong>
+                <p>{scenario.currentSituation}</p>
+            </div>
+
+            <div style={styles.interactionHistory}>
+                {history.map((item, index) => (
+                    <div key={index} style={styles.historyItem}>
+                        <p><strong>You:</strong> {item.userAction}</p>
+                        <p><strong>Response:</strong> {item.aiResponse}</p>
+                        <div style={styles.feedbackBox(item.feedbackSummary.severity)}>
+                            <p><strong>Feedback:</strong> {item.feedbackSummary.text}</p>
+                            {item.detailedFeedback.map((detail, i) => (
+                                <div key={i}>
+                                    <p><strong>{detail.dimension}:</strong> {detail.explanation}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {scenario.isCompleted ? (
+                <div style={styles.card}>
+                    <h3>Scenario Completed!</h3>
+                    <p>Final Success Metric: {scenario.successMetric}%</p>
+                </div>
+            ) : (
+                <form onSubmit={handleSubmit} style={styles.actionForm}>
+                    <textarea
+                        value={userAction}
+                        onChange={e => setUserAction(e.target.value)}
+                        placeholder="What do you do or say next?"
+                        style={styles.actionTextarea}
+                        disabled={isLoading}
+                    />
+                    <button type="submit" style={styles.button} disabled={isLoading}>
+                        {isLoading ? 'Processing...' : 'Submit Action'}
+                    </button>
+                </form>
+            )}
+        </div>
+    );
+};
+
+const SystemDiagnosticsView: React.FC = () => {
+    const stats = useMemo(() => ({
+        cultures: CULTURAL_PROFILES_DATA.length,
+        etiquetteRules: CULTURAL_PROFILES_DATA.reduce((sum, c) => sum + c.etiquetteRules.length, 0),
+        scenarios: SCENARIO_TEMPLATES_DATA.length,
+        learningModules: LEARNING_MODULES_DATA.length,
+        auditLogs: AUDIT_LOGS_DATA.length,
+        components: 12, // Manually counted for this simulation
+    }), []);
+
+    return (
+        <div style={styles.card}>
+            <h2>System Self-Diagnosis</h2>
+            <p>As a self-aware application, I occasionally reflect on my own composition. Here's what I know about myself:</p>
+            <ul>
+                <li><strong>Cultural Profiles Loaded:</strong> {stats.cultures}</li>
+                <li><strong>Total Etiquette Rules in Database:</strong> {stats.etiquetteRules}</li>
+                <li><strong>Available Scenario Templates:</strong> {stats.scenarios}</li>
+                <li><strong>Learning Modules Available:</strong> {stats.learningModules}</li>
+                <li><strong>Audit Log Entries Since Last Reboot:</strong> {stats.auditLogs}</li>
+                <li><strong>Constituent UI Components:</strong> {stats.components}</li>
+            </ul>
+            <p>All systems are nominal. My cognitive functions are operating at 100% efficiency. Ready to assist.</p>
+        </div>
+    );
+};
+
+const SettingsView: React.FC = () => {
+    const { systemSettings, updateSettings } = useCulturalAdvisor();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        
+        if (type === 'checkbox') {
+             const { checked } = e.target as HTMLInputElement;
+             updateSettings({ [name]: checked });
+        } else {
+             updateSettings({ [name]: value });
+        }
+    };
+
+    return (
+        <div style={styles.card}>
+            <h2>Settings</h2>
+            <div style={styles.settingItem}>
+                <label>Dark Mode</label>
+                <input type="checkbox" name="darkMode" checked={systemSettings.darkMode} onChange={handleChange} />
+            </div>
+             <div style={styles.settingItem}>
+                <label>AI Persona</label>
+                <select name="aiPersona" value={systemSettings.aiPersona} onChange={handleChange}>
+                    <option value="supportive">Supportive</option>
+                    <option value="challenging">Challenging</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="formal_advisor">Formal Advisor</option>
+                </select>
+            </div>
+            <div style={styles.settingItem}>
+                <label>Feedback Verbosity</label>
+                 <select name="feedbackVerbosity" value={systemSettings.feedbackVerbosity} onChange={handleChange}>
+                    <option value="concise">Concise</option>
+                    <option value="detailed">Detailed</option>
+                    <option value="pedagogical">Pedagogical</option>
+                </select>
+            </div>
+            <div style={styles.settingItem}>
+                <label>Preferred LLM</label>
+                 <select name="llmModelPreference" value={systemSettings.llmModelPreference} onChange={handleChange}>
+                    <option value="default">Default</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    <option value="claude-3-opus">Claude 3 Opus</option>
+                    <option value="gemini-pro">Gemini Pro</option>
+                </select>
+            </div>
+        </div>
+    );
+};
+
+
+const Footer: React.FC = () => {
+    return (
+        <footer style={styles.footer}>
+            <p>&copy; {new Date().getFullYear()} Cultural Assimilation Advisor. All mistakes are learning opportunities.</p>
+        </footer>
+    );
+};
+
+// Simple inline styling to keep the file self-contained
+const styles: { [key: string]: CSSProperties | ((...args: any[]) => CSSProperties) } = {
+    appContainer: (isDarkMode: boolean): CSSProperties => ({
+        fontFamily: 'sans-serif',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        backgroundColor: isDarkMode ? '#121212' : '#f0f2f5',
+        color: isDarkMode ? '#e0e0e0' : '#333',
+    }),
+    mainContent: {
+        flex: 1,
+        padding: '20px',
+        maxWidth: '1000px',
+        margin: '0 auto',
+        width: '100%',
+    },
+    loginContainer: {
+        textAlign: 'center',
+        margin: 'auto',
+        padding: '40px',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    },
+    header: {
+        backgroundColor: '#fff',
+        padding: '10px 20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottom: '1px solid #ddd',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    },
+    headerTitle: { margin: 0, fontSize: '1.5em', color: '#0056b3' },
+    nav: { display: 'flex', alignItems: 'center', gap: '15px' },
+    navButton: {
+        background: 'none', border: 'none', cursor: 'pointer',
+        fontSize: '1em', color: '#555',
+    },
+    logoutButton: {
+        background: '#f44336', color: 'white', border: 'none',
+        padding: '8px 12px', borderRadius: '4px', cursor: 'pointer',
+    },
+    welcomeUser: { fontStyle: 'italic', color: '#666' },
+    card: {
+        backgroundColor: '#fff',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        padding: '20px',
+        marginBottom: '20px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    },
+    dashboardGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '20px',
+    },
+    button: {
+        backgroundColor: '#007bff', color: 'white', border: 'none',
+        padding: '10px 15px', borderRadius: '4px', cursor: 'pointer',
+        fontSize: '1em', margin: '5px'
+    },
+    smallButton: {
+        backgroundColor: '#6c757d', color: 'white', border: 'none',
+        padding: '5px 10px', borderRadius: '4px', cursor: 'pointer',
+        fontSize: '0.9em', marginLeft: '10px'
+    },
+    scenarioRunner: { display: 'flex', flexDirection: 'column', gap: '20px' },
+    scenarioProgress: { display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' },
+    scenarioSituation: { fontStyle: 'italic', backgroundColor: '#e9ecef', padding: '15px', borderRadius: '4px' },
+    interactionHistory: { maxHeight: '400px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px', borderRadius: '4px' },
+    historyItem: { borderBottom: '1px solid #eee', marginBottom: '10px', paddingBottom: '10px' },
+    feedbackBox: (severity: FeedbackSeverity): CSSProperties => {
+        const colors = {
+            Positive: '#d4edda',
+            Negative: '#f8d7da',
+            Critical: '#f5c6cb',
+            Advisory: '#fff3cd',
+            Neutral: '#e2e3e5',
+        };
+        return {
+            backgroundColor: colors[severity],
+            borderLeft: `5px solid ${severity === 'Positive' ? 'green' : severity === 'Negative' ? 'red' : severity === 'Critical' ? 'darkred' : 'gray'}`,
+            padding: '10px',
+            marginTop: '10px',
+            borderRadius: '4px'
+        };
+    },
+    actionForm: { display: 'flex', flexDirection: 'column', gap: '10px' },
+    actionTextarea: {
+        width: '100%',
+        minHeight: '100px',
+        padding: '10px',
+        fontSize: '1em',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+    },
+    settingItem: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px 0',
+        borderBottom: '1px solid #eee',
+    },
+    footer: {
+        textAlign: 'center',
+        padding: '10px',
+        marginTop: 'auto',
+        fontSize: '0.9em',
+        color: '#888',
+        borderTop: '1px solid #ddd',
+    }
+};
+
+/**
+ * The main entry point for the Cultural Assimilation Advisor application.
+ * It wraps the entire application logic and UI within the context provider,
+ * making it a completely self-contained unit.
+ */
+export const CulturalAssimilationAdvisorView = () => {
+    return (
+        <CulturalAdvisorProvider>
+            <App />
+        </CulturalAdvisorProvider>
+    );
+};
+```
