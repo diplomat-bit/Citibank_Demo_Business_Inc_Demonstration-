@@ -1,3 +1,4 @@
+```typescript
 import React, { useState, useEffect, useContext, createContext, useCallback, useRef } from 'react';
 
 // --- Global Types/Interfaces ---
@@ -11,9 +12,14 @@ export enum UiElementType {
   HINT_CONTEXTUAL = 'hint_contextual', // Context-specific help or hints
   FEEDBACK_NOTIFICATION = 'feedback_notification', // Alerts, success/error messages
   DYNAMIC_CONTENT = 'dynamic_content', // Content that might change often
+  // Deeper dive: Semantic UI Elements - what function do they serve?
+  DATA_DISPLAY = 'data_display', // E.g., charts, tables, complex reports
+  FORM_INPUT = 'form_input', // Specific for input fields that need adaptation
+  INTERACTIVE_CONTROL = 'interactive_control', // Buttons, sliders, toggles
+  STATUS_INDICATOR = 'status_indicator', // Loading spinners, progress bars
 }
 
-export type UiMode = 'standard' | 'focus' | 'minimal' | 'guided' | 'crisis' | 'recovery'; // Added crisis and recovery modes
+export type UiMode = 'standard' | 'focus' | 'minimal' | 'guided' | 'crisis' | 'recovery' | 'calibration' | 'learning'; // Added crisis, recovery, calibration, learning modes
 
 export interface MouseEventData {
   x: number;
@@ -24,6 +30,8 @@ export interface MouseEventData {
   targetBoundingRect?: DOMRectReadOnly; // For target acquisition error
   pressure?: number; // Advanced input: e.g., from a pressure-sensitive surface
   hoverDuration?: number; // Duration of hover before click
+  mouseVelocity?: number; // Instantaneous velocity at this point
+  mouseAcceleration?: number; // Instantaneous acceleration at this point
 }
 
 export interface ScrollEventData {
@@ -34,6 +42,7 @@ export interface ScrollEventData {
   scrollVelocity: number; // px/ms
   viewportHeight: number;
   documentHeight: number;
+  scrollDirection: 'up' | 'down' | 'none'; // Explicit scroll direction
 }
 
 export interface KeyboardEventData {
@@ -46,6 +55,7 @@ export interface KeyboardEventData {
   ctrlKey: boolean;
   metaKey: boolean;
   shiftKey: boolean;
+  keystrokeDuration?: number; // Time from keydown to keyup
 }
 
 export interface FocusBlurEventData {
@@ -54,6 +64,7 @@ export interface FocusBlurEventData {
   timestamp: number;
   durationMs?: number; // Time element was focused
   interactionCount?: number; // Number of interactions while focused
+  focusLatencyMs?: number; // Time taken to refocus on an element after blur
 }
 
 export interface FormEventData {
@@ -63,6 +74,7 @@ export interface FormEventData {
   timestamp: number;
   isValid?: boolean; // For validation events
   validationMessage?: string;
+  inputLatencyMs?: number; // Time from focus to first input
 }
 
 export interface GazeEventData { // New: Mock Gaze Tracking Data
@@ -72,6 +84,15 @@ export interface GazeEventData { // New: Mock Gaze Tracking Data
   targetElementId?: string;
   pupilDilation?: number; // Example biometric
   gazeStability?: number; // Variance of gaze points over a short window
+  saccadeVelocity?: number; // Instantaneous saccade velocity
+  fixationDuration?: number; // Duration of current fixation
+}
+
+export interface BiosignalEventData { // New: Mock Biosignal Data
+  type: 'heart_rate' | 'skin_conductance' | 'eeg_alpha' | 'eeg_theta'; // Examples
+  value: number;
+  timestamp: number;
+  unit: string;
 }
 
 export type RawTelemetryEvent =
@@ -83,7 +104,8 @@ export type RawTelemetryEvent =
   | { type: 'focus'; data: FocusBlurEventData }
   | { type: 'blur'; data: FocusBlurEventData }
   | { type: 'form'; data: FormEventData }
-  | { type: 'gaze'; data: GazeEventData }; // New gaze event type
+  | { type: 'gaze'; data: GazeEventData }
+  | { type: 'biosignal'; data: BiosignalEventData }; // New biosignal event type
 
 // --- Feature Vector Interfaces ---
 export interface MouseKinematicsFeatures {
@@ -94,6 +116,7 @@ export interface MouseKinematicsFeatures {
   fitts_law_ip_avg: number; // Index of Performance, higher is better
   mouse_smoothness_index: number; // Inverse of abrupt changes, 0-1 (1 is perfectly smooth)
   mouse_travel_distance_total: number; // Total distance covered
+  mouse_idle_time_ratio: number; // Proportion of time mouse was inactive
 }
 
 export interface ClickDynamicsFeatures {
@@ -103,6 +126,8 @@ export interface ClickDynamicsFeatures {
   double_click_frequency: number; // double clicks / sec
   click_pressure_avg: number; // avg pressure if available
   error_click_rate: number; // Clicks that result in immediate error or navigation bounce
+  misclick_rate: number; // Clicks outside of intended target
+  repeated_click_on_same_element_freq: number; // How often user clicks same element repeatedly
 }
 
 export interface ScrollDynamicsFeatures {
@@ -111,6 +136,8 @@ export interface ScrollDynamicsFeatures {
   scroll_pause_frequency: number; // pauses / sec (prolonged stops)
   scroll_jerk_avg: number; // Rate of change of acceleration
   scroll_coverage_ratio: number; // Percentage of document scrolled
+  scroll_reversal_ratio: number; // Proportion of scroll up vs down
+  scroll_depth_max: number; // Max scroll depth reached
 }
 
 export interface KeyboardDynamicsFeatures {
@@ -120,12 +147,14 @@ export interface KeyboardDynamicsFeatures {
   error_correction_rate: number; // backspaces / keydowns (excluding modifiers)
   typing_burst_rate: number; // Number of continuous typing bursts per second
   modifier_key_usage_ratio: number; // Ratio of modifier keys to content keys
+  typing_rhythm_irregularity: number; // Std dev of keystroke latencies (Eq. 18)
 }
 
 export interface FocusDynamicsFeatures {
   refocus_frequency: number; // How often focus changes / sec
   element_dwell_time_avg: number; // Avg time spent on focused elements
   blur_rate: number; // How often elements lose focus unexpectedly
+  focus_shift_distance_avg: number; // Avg distance (in px, or semantic distance) between focused elements
 }
 
 export interface FormInteractionFeatures {
@@ -133,6 +162,8 @@ export interface FormInteractionFeatures {
   form_submission_rate: number; // submissions / sec
   form_abandonment_rate: number; // forms started but not submitted (in window)
   form_interaction_time_avg: number; // avg time per form field
+  input_correction_rate: number; // Edits/corrections per input field
+  time_to_first_input_avg: number; // Avg time from focus to first keystroke
 }
 
 export interface InteractionErrorFeatures {
@@ -141,6 +172,8 @@ export interface InteractionErrorFeatures {
   navigation_errors_count: number; // e.g., dead links, rapid back/forward
   api_errors_count: number; // New: backend API errors
   system_ui_errors_count: number; // New: client-side UI errors/crashes
+  critical_error_frequency: number; // Errors with severity 'critical' per second
+  time_since_last_error_s: number; // Time since most recent error
 }
 
 export interface GazeTrackingFeatures { // New: Gaze features
@@ -148,6 +181,16 @@ export interface GazeTrackingFeatures { // New: Gaze features
   pupil_dilation_avg: number; // Average pupil dilation over window
   fixation_frequency: number; // Number of stable gaze points per second
   saccade_velocity_avg: number; // Average velocity of eye movements between fixations
+  gaze_path_length: number; // Total distance gaze traveled (Eq. 26)
+  scan_path_area: number; // Area covered by gaze (Eq. 27, simplified)
+}
+
+export interface BiosignalFeatures { // New: Biosignal features
+  heart_rate_avg: number;
+  heart_rate_variability: number; // Std dev or similar measure
+  skin_conductance_avg: number; // Indicator of arousal/stress
+  eeg_alpha_power_ratio: number; // Related to relaxed state
+  eeg_theta_power_ratio: number; // Related to cognitive load/memory
 }
 
 export interface TaskContextFeatures {
@@ -155,12 +198,16 @@ export interface TaskContextFeatures {
   time_in_current_task_sec: number;
   task_switches_count: number; // Number of task context changes
   task_completion_status: number; // 0=incomplete, 1=complete (requires external tracking)
+  task_urgency_score: number; // Derived from TaskContextManager urgency enum
+  task_progress_rate: number; // How quickly progress is being made (Eq. 54)
 }
 
 export interface UserEngagementFeatures { // New: Overall engagement
   active_interaction_ratio: number; // % of time spent interacting vs. idle
   idle_duration_avg: number; // Average idle time between interactions
   frustration_index_proxy: number; // Derived from a combination of errors, rapid clicks, high tortuosity
+  user_activity_burstiness: number; // Variance in event density over time
+  session_duration_s: number; // Total session time (can be long-term)
 }
 
 export interface TelemetryFeatureVector {
@@ -174,10 +221,12 @@ export interface TelemetryFeatureVector {
   forms?: FormInteractionFeatures; // New
   errors?: InteractionErrorFeatures;
   gaze?: GazeTrackingFeatures; // New
+  biosignals?: BiosignalFeatures; // New
   task_context?: TaskContextFeatures;
   engagement?: UserEngagementFeatures; // New
   event_density: number; // total events per second in the window
   ui_mode_context: UiMode; // The UI mode active during this window
+  prediction_confidence?: number; // How confident the system is in its load prediction
 }
 
 // --- User Profile and Context Store ---
@@ -192,19 +241,33 @@ export interface UserPreferences {
     guidedLow: number;
     crisis: number; // New
     recovery: number; // New
+    // Deeper: Adaptive Thresholds - these will be dynamically adjusted
+    adaptiveHigh: number;
+    adaptiveLow: number;
+    adaptiveCritical: number;
   };
   adaptationPolicySelection: {
-    [mode: string]: { [elementType: string]: 'obscure' | 'deemphasize' | 'reposition' | 'summarize' | 'highlight' | 'segment' | 'none' }; // Added highlight, segment
+    [mode: string]: { [elementType: string]: 'obscure' | 'deemphasize' | 'reposition' | 'summarize' | 'highlight' | 'segment' | 'none' | 'progressive_disclosure' | 'temporal_pacing' }; // Added highlight, segment, progressive_disclosure, temporal_pacing
   };
   personalizedBaselineCLS: number; // User's typical resting CLS
   sensitivityToErrors: number; // User's preference for how quickly errors trigger load response (0-1)
   preferenceForGuidance: number; // User's preference for guided mode activation (0-1)
   a_b_test_group: string; // For A/B testing different adaptation strategies
+  cognitiveReserveEstimation: number; // User's estimated mental resource pool (0-1, higher means more resilient)
+  explicitFeedbackHistory: Array<{ timestamp: number; adaptationId: string; rating: 'helpful' | 'neutral' | 'unhelpful' }>; // User feedback on adaptations
+  privacySettings: {
+    telemetryEnabled: boolean;
+    gazeTrackingEnabled: boolean;
+    biosignalTrackingEnabled: boolean;
+    dataRetentionDays: number;
+  };
 }
 
 /**
  * Claim 1: User Profile Service enhances personalization.
- * "By centralizing user preferences and historical interaction data, the UserProfileService enables a highly personalized adaptive UI experience, moving beyond one-size-fits-all designs to cater to individual cognitive capacities and learning styles."
+ * "By centralizing user preferences and historical interaction data, the UserProfileService enables a highly personalized adaptive UI experience, moving beyond one-size-all designs to cater to individual cognitive capacities and learning styles."
+ *
+ * Disproof & Bulletproofing: While centralizing is good, personalization becomes "bulletproof" when it moves from static preferences to *adaptive preferences*. The initial claim implies a fixed profile. To go deeper, the profile must *learn* from the user's observed behavior and adaptation outcomes. For example, 'sensitivityToErrors' or 'preferenceForGuidance' should subtly adjust based on whether previous adaptations were effective. CognitiveReserveEstimation is a step in this direction, inferring resilience, not just explicitly setting it. Privacy controls are essential for trust, making personalization ethically bulletproof.
  */
 export class UserProfileService {
   private static instance: UserProfileService;
@@ -219,13 +282,26 @@ export class UserProfileService {
       guidedLow: 0.65,
       crisis: 0.9,
       recovery: 0.55,
+      adaptiveHigh: 0.6, // Initial values, subject to adaptation
+      adaptiveLow: 0.4,
+      adaptiveCritical: 0.8,
     },
     adaptationPolicySelection: {}, // Default empty, managed by AdaptationPolicyManager
     personalizedBaselineCLS: 0.1, // Default baseline
     sensitivityToErrors: 0.7,
     preferenceForGuidance: 0.8,
     a_b_test_group: 'control', // Default
+    cognitiveReserveEstimation: 0.5, // Default average
+    explicitFeedbackHistory: [],
+    privacySettings: {
+      telemetryEnabled: true,
+      gazeTrackingEnabled: false,
+      biosignalTrackingEnabled: false,
+      dataRetentionDays: 30,
+    }
   };
+
+  private listeners: Set<(prefs: UserPreferences) => void> = new Set();
 
   private constructor() {
     // Load from localStorage or backend in a real app
@@ -254,7 +330,24 @@ export class UserProfileService {
   public updatePreferences(newPrefs: Partial<UserPreferences>): void {
     this.currentPreferences = { ...this.currentPreferences, ...newPrefs };
     localStorage.setItem('userCognitiveLoadPrefs', JSON.stringify(this.currentPreferences));
+    this.listeners.forEach(listener => listener(this.currentPreferences));
     console.log("User preferences updated:", newPrefs);
+  }
+
+  public addExplicitFeedback(feedback: Omit<UserPreferences['explicitFeedbackHistory'][number], 'timestamp'>): void {
+    const newFeedback = { ...feedback, timestamp: performance.now() };
+    this.currentPreferences.explicitFeedbackHistory.push(newFeedback);
+    // Keep history limited to prevent memory bloat, maybe last 100 feedback entries
+    if (this.currentPreferences.explicitFeedbackHistory.length > 100) {
+      this.currentPreferences.explicitFeedbackHistory.shift();
+    }
+    this.updatePreferences({}); // Persist and notify listeners
+  }
+
+  public subscribe(listener: (prefs: UserPreferences) => void): () => void {
+    this.listeners.add(listener);
+    listener(this.currentPreferences); // Notify immediately with current preferences
+    return () => this.listeners.delete(listener);
   }
 
   public async loadPreferencesFromServer(userId: string): Promise<void> {
@@ -264,6 +357,7 @@ export class UserProfileService {
     const serverPrefs: Partial<UserPreferences> = {
       a_b_test_group: Math.random() > 0.5 ? 'experiment-A' : 'experiment-B',
       personalizedBaselineCLS: Math.random() * 0.2 + 0.05, // Random baseline
+      cognitiveReserveEstimation: Math.random() * 0.4 + 0.3, // Random reserve
     };
     this.updatePreferences(serverPrefs);
     console.log("Preferences loaded from server:", serverPrefs);
@@ -280,6 +374,8 @@ export type TaskContext = {
   durationEstimateMs?: number; // Estimated time to complete task
   progressPercentage?: number; // Task progress
   associatedElements?: string[]; // IDs of UI elements relevant to this task
+  taskGoal?: string; // What the user is trying to achieve
+  subtasks?: string[]; // Breakdown of larger tasks
 };
 
 /**
@@ -288,17 +384,18 @@ export type TaskContext = {
  */
 export const TASK_CONTEXT_STATE_MACHINE_MERMAID = `
 graph LR
-    A[Idle] --> B{Task Initiated};
+    A[Idle] --> B{Task Initiated / Detected};
     B --> C[Active Task]
-    C --> D{Task Update (Progress/Complexity)};
+    C --> D{Task Update (Progress/Complexity/Urgency/Implicit Cues)};
     D --> C;
     C --> E{Task Completion};
-    C --> F{Task Abandoned/Error};
+    C --> F{Task Abandoned/Error/Interrupted};
     E --> A;
     F --> A;
     subgraph Task Attributes
-        C -- id, name, complexity --> C;
-        C -- urgency, durationEstimateMs --> C;
+        C -- id, name, complexity, urgency --> C;
+        C -- durationEstimateMs, progressPercentage, associatedElements --> C;
+        C -- taskGoal, subtasks --> C;
     end
 `;
 
@@ -308,10 +405,13 @@ export class TaskContextManager {
   private listeners: Set<(task: TaskContext | null) => void> = new Set();
   private taskHistory: TaskContext[] = []; // Track recently completed tasks
   private maxTaskHistoryLength: number = 10;
+  private implicitTaskDetectionInterval: ReturnType<typeof setInterval> | null = null;
+  private userProfileService = UserProfileService.getInstance(); // For adapting to user's task patterns
 
   private constructor() {
     // Initialize with a default or infer from URL
     this.setTask({ id: 'app_init', name: 'Application Initialization', complexity: 'low', urgency: 'low', timestamp: performance.now() });
+    this.startImplicitTaskDetection();
   }
 
   public static getInstance(): TaskContextManager {
@@ -324,8 +424,10 @@ export class TaskContextManager {
   /**
    * Claim 2: Proactive Task Adaptation.
    * "The TaskContextManager plays a crucial role in proactive adaptation by providing contextual information (e.g., complexity, urgency) to the CognitiveLoadEngine, allowing the UI to prepare for anticipated load changes rather than solely reacting to observed user behavior."
+   *
+   * Disproof & Bulletproofing: The original claim focuses on *provided* contextual info. To be truly "bulletproof" and "deeper," the TaskContextManager must also *infer* tasks implicitly, handle interruptions, and potentially learn user-specific task patterns. The challenge is in moving from explicit `setTask` calls to an intelligent, self-aware understanding of user goals. Introducing `implicitTaskDetection` is a step towards this, even if currently mocked.
    */
-  public setTask(task: TaskContext | null): void {
+  public setTask(task: TaskContext | null, isImplicit: boolean = false): void {
     if (task && this.currentTask && task.id === this.currentTask.id) {
       // If the task ID is the same, just update attributes if they changed
       if (JSON.stringify(task) !== JSON.stringify(this.currentTask)) {
@@ -339,14 +441,14 @@ export class TaskContextManager {
     // New task or clearing task
     if (this.currentTask) {
       // Before setting a new task, "complete" the old one for history
-      this.taskHistory.push({ ...this.currentTask, progressPercentage: 100 });
+      this.taskHistory.push({ ...this.currentTask, progressPercentage: this.currentTask.progressPercentage || 100, timestamp: performance.now() });
       if (this.taskHistory.length > this.maxTaskHistoryLength) {
         this.taskHistory.shift();
       }
     }
     this.currentTask = task;
     this.listeners.forEach(listener => listener(this.currentTask));
-    console.log(`TaskContextManager: Current task set to ${task?.name || 'N/A'} (Complexity: ${task?.complexity || 'N/A'}, Urgency: ${task?.urgency || 'N/A'})`);
+    console.log(`TaskContextManager: Current task set to ${task?.name || 'N/A'} (Complexity: ${task?.complexity || 'N/A'}, Urgency: ${task?.urgency || 'N/A'}) ${isImplicit ? '[Implicit]' : ''}`);
   }
 
   public getCurrentTask(): TaskContext | null {
@@ -363,18 +465,51 @@ export class TaskContextManager {
     listener(this.currentTask);
     return () => this.listeners.delete(listener);
   }
+
+  private startImplicitTaskDetection(): void {
+    // Mock implicit task detection based on URL changes or common interaction patterns
+    this.implicitTaskDetectionInterval = setInterval(() => {
+      const currentPath = window.location.pathname;
+      let inferredTask: TaskContext | null = null;
+
+      if (currentPath.includes('/settings')) {
+        inferredTask = { id: 'navigate_settings', name: 'Navigate Settings', complexity: 'medium', urgency: 'low', timestamp: performance.now() };
+      } else if (currentPath.includes('/payment') || currentPath.includes('/checkout')) {
+        inferredTask = { id: 'complete_payment', name: 'Complete Payment', complexity: 'critical', urgency: 'immediate', timestamp: performance.now() };
+      } else if (currentPath.includes('/dashboard')) {
+        inferredTask = { id: 'review_dashboard', name: 'Review Dashboard', complexity: 'low', urgency: 'low', timestamp: performance.now() };
+      }
+
+      if (inferredTask && (this.currentTask?.id !== inferredTask.id)) {
+        this.setTask(inferredTask, true);
+      } else if (!inferredTask && this.currentTask && this.currentTask.id !== 'app_init') {
+        // If no explicit task, revert to generic browsing/idle
+        if (this.currentTask.id !== 'generic_browsing') {
+          this.setTask({ id: 'generic_browsing', name: 'Generic Browsing', complexity: 'low', urgency: 'low', timestamp: performance.now() }, true);
+        }
+      }
+    }, 5000); // Check every 5 seconds
+  }
+
+  public stop(): void {
+    if (this.implicitTaskDetectionInterval) {
+      clearInterval(this.implicitTaskDetectionInterval);
+    }
+  }
 }
 
 // --- Interaction Error Logger ---
 export interface InteractionError {
   id: string;
-  type: 'validation' | 'repeatedAction' | 'navigation' | 'apiError' | 'clientRuntime' | 'businessLogic'; // Added clientRuntime, businessLogic
+  type: 'validation' | 'repeatedAction' | 'navigation' | 'apiError' | 'clientRuntime' | 'businessLogic' | 'systemFallback'; // Added clientRuntime, businessLogic, systemFallback for internal errors
   elementId?: string;
   message: string;
   timestamp: number;
   severity: 'low' | 'medium' | 'high' | 'critical'; // New: error severity
   errorCode?: string; // New: specific error code
   contextPath?: string; // New: where the error occurred in the UI flow
+  callStack?: string; // New: For clientRuntime errors
+  relatedTelemetryEventIds?: string[]; // New: Link to raw telemetry events that might have caused it
 }
 
 export class InteractionErrorLogger {
@@ -384,6 +519,7 @@ export class InteractionErrorLogger {
   private readonly bufferFlushRateMs: number = 1000;
   private bufferFlushInterval: ReturnType<typeof setInterval> | null = null;
   private maxBufferSize: number = 50; // To prevent memory overflow for errors
+  private lastLoggedErrorTimestamp: number = 0;
 
   private constructor() {
     this.bufferFlushInterval = setInterval(this.flushBuffer, this.bufferFlushRateMs);
@@ -406,14 +542,22 @@ export class InteractionErrorLogger {
     if (this.errorsBuffer.length > this.maxBufferSize) {
       this.errorsBuffer.shift(); // Remove oldest error if buffer is full
     }
+    this.lastLoggedErrorTimestamp = newError.timestamp;
     console.warn(`InteractionErrorLogger: Logged error - ${newError.message} (Type: ${newError.type}, Severity: ${newError.severity})`);
+    this.listeners.forEach(listener => listener([...this.errorsBuffer])); // Notify immediately for new errors
+  }
+
+  public getLastLoggedErrorTimestamp(): number {
+    return this.lastLoggedErrorTimestamp;
   }
 
   private flushBuffer = (): void => {
-    if (this.errorsBuffer.length > 0) {
-      this.listeners.forEach(listener => listener([...this.errorsBuffer])); // Send a copy
-      this.errorsBuffer = []; // Clear after notifying
-    }
+    // Listeners are notified immediately on logError, so this flush can be simplified
+    // or used for batching to a backend service. For current use case, immediate notification is sufficient.
+    // However, keeping this for potential future backend integration.
+    // If listeners only care about *new* errors, the above listener notification is key.
+    // If listeners care about *all* errors in a window, they'd poll or receive the full buffer.
+    // For now, no-op for internal listeners as they get notified directly on logError.
   };
 
   public subscribe(listener: (errors: InteractionError[]) => void): () => void {
@@ -468,332 +612,354 @@ export const MOUSE_KINEMATICS_EQUATIONS = `
 //
 // 9. Dwell Time Estimation (over a UI element, requires element tracking):
 // D_dwell_avg = (1/M) * sum(D_element_j) for j=1 to M elements
-// This requires `MouseEventData.targetId` and `MouseEventData.hoverDuration`.
+// This requires \`MouseEventData.targetId\` and \`MouseEventData.hoverDuration\`.
 //
 // 10. Mouse Activity Ratio:
 // MAR = (Number of mousemove events) / (Window Duration in ms)
+//
+// 11. Mouse Idle Time Ratio:
+// MIR = 1 - (Total time with mouse movement > threshold) / (Window Duration)
 `;
 
 /**
  * Exported Constant for Keyboard Dynamics Equations.
- * Equation 11-20: Keyboard Typing and Error Dynamics.
+ * Equation 12-21: Keyboard Typing and Error Dynamics.
  */
 export const KEYBOARD_DYNAMICS_EQUATIONS = `
-// 11. Typing Speed (Words Per Minute):
+// 12. Typing Speed (Words Per Minute):
 // WPM = (Total characters / 5) / (Window Duration in minutes)
 //
-// 12. Keystroke Latency (Time between keydowns):
+// 13. Keystroke Latency (Time between keydowns):
 // KL_avg = (1 / (N-1)) * sum(t_i - t_{i-1}) for i=1 to N (non-modifier keys)
 //
-// 13. Backspace Frequency:
+// 14. Backspace Frequency:
 // BF = (Number of backspace keydowns) / (Window Duration in seconds)
 //
-// 14. Error Correction Rate:
+// 15. Error Correction Rate:
 // ECR = (Number of backspace keydowns) / (Number of non-modifier keydowns)
 //
-// 15. Typing Burst Rate:
+// 16. Typing Burst Rate:
 // TBR = (Number of typing bursts) / (Window Duration in seconds)
 // A burst is a sequence of keydowns with inter-key latency < 200ms.
 //
-// 16. Modifier Key Usage Ratio:
+// 17. Modifier Key Usage Ratio:
 // MKUR = (Number of modifier keydowns) / (Total keydowns)
 //
-// 17. Pause Before Typing (Post-idle):
+// 18. Pause Before Typing (Post-idle):
 // PBT_avg = (1/K) * sum(Idle_Time_Before_First_Key_k)
 //
-// 18. Typing Rhythm Irregularity (Standard Deviation of Keystroke Latencies):
+// 19. Typing Rhythm Irregularity (Standard Deviation of Keystroke Latencies):
 // TRI = stddev(t_i - t_{i-1}) for non-modifier keys
 //
-// 19. Repeated Keystroke Frequency (e.g., holding a key):
+// 20. Repeated Keystroke Frequency (e.g., holding a key):
 // RKF = (Number of keydown events with 'repeat' flag) / (Window Duration in seconds)
 //
-// 20. Character Delete Ratio (using backspace or delete key):
+// 21. Character Delete Ratio (using backspace or delete key):
 // CDR = (Number of delete-like keydowns) / (Total non-modifier keydowns)
 `;
 
 /**
  * Exported Constant for Gaze Tracking Equations (Mock).
- * Equation 21-30: Gaze Dynamics and Biometric Indicators.
+ * Equation 22-31: Gaze Dynamics and Biometric Indicators.
  */
 export const GAZE_TRACKING_EQUATIONS = `
-// 21. Gaze Fixation Count:
+// 22. Gaze Fixation Count:
 // Fixations = Count of stable gaze points within a defined radius (e.g., 50px) for > 100ms
 //
-// 22. Fixation Frequency:
+// 23. Fixation Frequency:
 // FF = Fixations / (Window Duration in seconds)
 //
-// 23. Saccade Velocity:
+// 24. Saccade Velocity:
 // SV_i = distance(Gaze_i, Gaze_{i-1}) / (t_i - t_{i-1}) during saccade (non-fixation)
 // SV_avg = (1/N) * sum(SV_i)
 //
-// 24. Average Pupil Dilation:
+// 25. Average Pupil Dilation:
 // PD_avg = (1/N) * sum(Pupil_Dilation_i)
 //
-// 25. Gaze Deviation from Target:
+// 26. Gaze Deviation from Target:
 // GD_avg = (1/M) * sum(Euclidean_Distance(Gaze_point, Target_Center)) for M gaze points on target.
 //
-// 26. Gaze Path Length:
+// 27. Gaze Path Length:
 // GPL = sum(Euclidean_Distance(Gaze_i, Gaze_{i-1}))
 //
-// 27. Scan Path Area:
+// 28. Scan Path Area:
 // SPA = Area of convex hull of gaze points within a window (requires computational geometry).
 //
-// 28. Gaze Entropy (mock):
+// 29. Gaze Entropy (mock):
 // Ge = -sum(P_i * log(P_i)) where P_i is probability of gaze in region i.
 //
-// 29. Blink Rate:
+// 30. Blink Rate:
 // BR = Number of blinks / (Window Duration in seconds) (requires external blink detection)
 //
-// 30. Gaze Stability Index:
+// 31. Gaze Stability Index:
 // GSI = 1 / (stddev(gaze_x) + stddev(gaze_y))
 `;
 
 /**
+ * Exported Constant for Biosignal Equations (Mock).
+ * Equation 32-36: Physiological Indicators of Cognitive State.
+ */
+export const BIOSIGNAL_EQUATIONS = `
+// 32. Heart Rate (HR) Average:
+// HR_avg = (1/N) * sum(HR_i)
+//
+// 33. Heart Rate Variability (HRV) - SDNN (Standard Deviation of NN intervals):
+// HRV_SDNN = stddev(time between successive heartbeats)
+//
+// 33. Skin Conductance (SC) Average:
+// SC_avg = (1/N) * sum(SC_i) (higher indicates arousal/stress)
+//
+// 34. EEG Alpha Power Ratio:
+// Alpha_ratio = (Alpha_Band_Power) / (Total_EEG_Power) (higher indicates relaxed/idle state)
+//
+// 35. EEG Theta Power Ratio:
+// Theta_ratio = (Theta_Band_Power) / (Total_EEG_Power) (higher indicates cognitive load/memory encoding)
+`;
+
+
+/**
  * Exported Constant for Scroll Dynamics Equations.
- * Equation 31-40: Scroll Behavior Analytics.
+ * Equation 37-46: Scroll Behavior Analytics.
  */
 export const SCROLL_DYNAMICS_EQUATIONS = `
-// 31. Scroll Velocity (Vertical):
+// 37. Scroll Velocity (Vertical):
 // SV_v = abs(ScrollY_i - ScrollY_{i-1}) / (t_i - t_{i-1})
 // SV_avg = (1/N) * sum(SV_v_i)
 //
-// 32. Scroll Acceleration:
+// 38. Scroll Acceleration:
 // SA_i = (SV_v_i - SV_v_{i-1}) / (t_i - t_{i-1})
 // SA_avg = (1/N) * sum(SA_i)
 //
-// 33. Scroll Jerk (Rate of change of acceleration):
+// 39. Scroll Jerk (Rate of change of acceleration):
 // SJ_i = (SA_i - SA_{i-1}) / (t_i - t_{i-1})
 // SJ_avg = (1/N) * sum(SJ_i)
 //
-// 34. Scroll Direction Changes:
+// 40. Scroll Direction Changes:
 // SDC = Count of (direction_i != direction_{i-1})
 //
-// 35. Scroll Pause Frequency:
+// 41. Scroll Pause Frequency:
 // SPF = Number of pauses (deltaY=0 for > threshold) / (Window Duration in seconds)
 //
-// 36. Scroll Depth Ratio:
+// 42. Scroll Depth Ratio:
 // SDR = (Max ScrollY reached) / (Document Height - Viewport Height)
 //
-// 37. Scroll Coverage Ratio:
+// 43. Scroll Coverage Ratio:
 // SCR = (Unique scrolled pixels range) / (Document Height - Viewport Height)
 //
-// 38. Page Scroll Rate (Time to scroll full page):
+// 44. Page Scroll Rate (Time to scroll full page):
 // PSR = (Document Height - Viewport Height) / SV_avg (if continuously scrolling)
 //
-// 39. Scroll Event Density:
+// 45. Scroll Event Density:
 // SED = Number of scroll events / (Window Duration in seconds)
 //
-// 40. Bidirectional Scroll Index:
+// 46. Bidirectional Scroll Index:
 // BSI = (Number of up scrolls > threshold) / (Number of total scrolls > threshold)
 `;
 
 /**
  * Exported Constant for Interaction Error Metrics Equations.
- * Equation 41-50: Error Quantification and Severity.
+ * Equation 47-56: Error Quantification and Severity.
  */
 export const INTERACTION_ERROR_EQUATIONS = `
-// 41. Form Validation Error Rate:
+// 47. Form Validation Error Rate:
 // FVER = (Number of form validation errors) / (Number of form input events)
 //
-// 42. Repeated Action Attempt Frequency:
+// 48. Repeated Action Attempt Frequency:
 // RAAF = (Number of repeated action attempts) / (Window Duration in seconds)
 //
-// 43. Navigation Error Ratio:
+// 49. Navigation Error Ratio:
 // NER = (Number of navigation errors) / (Number of click events on navigation elements)
 //
-// 44. API Error Impact Score (mock):
+// 50. API Error Impact Score (mock):
 // API_EIS = sum(Severity_of_API_error * Weight_for_API_error)
 //
-// 45. Client Runtime Error Frequency:
+// 51. Client Runtime Error Frequency:
 // CREF = (Number of clientRuntime errors) / (Window Duration in seconds)
 //
-// 46. Error Burst Index:
+// 52. Error Burst Index:
 // EBI = Number of error clusters (multiple errors within short time)
 //
-// 47. Time to Error Resolution:
+// 53. Time to Error Resolution:
 // TTER_avg = (1/N) * sum(Time_between_error_occurrence_and_next_successful_action_on_same_element)
 //
-// 48. Severity Weighted Error Score:
+// 54. Severity Weighted Error Score:
 // SWES = sum(Error_Severity_Value_i) / Max_Possible_Severity_Score_in_Window
 //
-// 49. Cognitive Friction Index (proxy using errors):
+// 55. Cognitive Friction Index (proxy using errors):
 // CFI = (FVER * W_form + RAAF * W_repeat + NER * W_nav + CREF * W_client)
 // W are weights for each error type.
 //
-// 50. Error-related Interaction Delta:
+// 56. Error-related Interaction Delta:
 // EID = (Post-error event density) - (Pre-error event density)
 `;
 
 /**
  * Exported Constant for Task Context and Engagement Equations.
- * Equation 51-60: Task Dynamics and User Engagement.
+ * Equation 57-66: Task Dynamics and User Engagement.
  */
 export const TASK_ENGAGEMENT_EQUATIONS = `
-// 51. Task Complexity Score (normalized):
+// 57. Task Complexity Score (normalized):
 // TCS = f(Task_Complexity_enum) (e.g., low=0.2, medium=0.5, high=0.7, critical=0.9)
 //
-// 52. Time in Current Task:
+// 58. Time in Current Task:
 // TCT = Current_Timestamp - Task_Start_Timestamp
 //
-// 53. Task Switch Frequency:
+// 59. Task Switch Frequency:
 // TSF = Number of task changes / (Window Duration in seconds)
 //
-// 54. Task Progress Pace:
+// 60. Task Progress Pace:
 // TPP = (Current Progress Percentage) / TCT (normalized)
 //
-// 55. Active Interaction Ratio:
+// 61. Active Interaction Ratio:
 // AIR = (Sum of active interaction times) / (Window Duration)
 // Active interaction time = time mouse/keyboard events occurred.
 //
-// 56. Idle Duration Frequency:
+// 62. Idle Duration Frequency:
 // IDF = Number of idle periods (> 2 sec without interaction) / (Window Duration in seconds)
 //
-// 57. Frustration Index Proxy:
+// 63. Frustration Index Proxy:
 // FIP = (Click_Frequency_High_Threshold) + (Backspace_Frequency_High_Threshold) + (Target_Acquisition_Error_High_Threshold)
 //
-// 58. User Retention Score (mock):
+// 64. User Retention Score (mock):
 // URS = 1 - (Number of task abandonments) / (Number of task starts)
 //
-// 59. Task Completion Rate:
+// 65. Task Completion Rate:
 // TCR = (Number of tasks completed) / (Number of tasks started)
 //
-// 60. Cognitive Demand Fluctuation Index:
+// 66. Cognitive Demand Fluctuation Index:
 // CDFI = stddev(Cognitive_Load_History_Window)
 `;
 
 /**
  * Exported Constant for General Statistical and Utility Equations.
- * Equation 61-100: General Math, Normalization, and Predictive Model Components.
+ * Equation 67-100: General Math, Normalization, and Predictive Model Components.
  */
 export const GENERAL_MATH_AND_MODEL_EQUATIONS = `
-// 61. Mean (Average):
-// μ = (1/N) * sum(x_i)
+// 67. Mean (Average):
+// Î¼ = (1/N) * sum(x_i)
 //
-// 62. Variance:
-// σ^2 = (1/N) * sum((x_i - μ)^2)
+// 68. Variance:
+// Ïƒ^2 = (1/N) * sum((x_i - Î¼)^2)
 //
-// 63. Standard Deviation:
-// σ = sqrt(σ^2)
+// 69. Standard Deviation:
+// Ïƒ = sqrt(Ïƒ^2)
 //
-// 64. Min-Max Normalization:
+// 70. Min-Max Normalization:
 // x_normalized = (x - min(x)) / (max(x) - min(x))
 //
-// 65. Z-Score Normalization:
-// x_normalized = (x - μ) / σ
+// 71. Z-Score Normalization:
+// x_normalized = (x - Î¼) / Ïƒ
 //
-// 66. Exponential Moving Average (EMA):
-// EMA_t = α * x_t + (1 - α) * EMA_{t-1}
-// Where α = 2 / (N + 1) for N-period EMA
+// 72. Exponential Moving Average (EMA):
+// EMA_t = Î± * x_t + (1 - Î±) * EMA_{t-1}
+// Where Î± = 2 / (N + 1) for N-period EMA
 //
-// 67. Weighted Average:
+// 73. Weighted Average:
 // WA = sum(w_i * x_i) / sum(w_i)
 //
-// 68. Sigmoid Activation Function (for feature scaling):
-// σ(x) = 1 / (1 + e^(-x))
+// 74. Sigmoid Activation Function (for feature scaling):
+// Ïƒ(x) = 1 / (1 + e^(-x))
 //
-// 69. Hyperbolic Tangent (tanh) Activation Function:
+// 75. Hyperbolic Tangent (tanh) Activation Function:
 // tanh(x) = (e^x - e^(-x)) / (e^x + e^(-x))
 //
-// 70. Euclidean Distance:
+// 76. Euclidean Distance:
 // d = sqrt((x2 - x1)^2 + (y2 - y1)^2)
 //
-// 71. Manhattan Distance:
+// 77. Manhattan Distance:
 // d = abs(x2 - x1) + abs(y2 - y1)
 //
-// 72. Cosine Similarity:
-// cos(θ) = (A · B) / (||A|| ||B||)
+// 78. Cosine Similarity:
+// cos(Î¸) = (A Â· B) / (||A|| ||B||)
 //
-// 73. Bayesian Probability (simplified for event P(A|B)):
+// 79. Bayesian Probability (simplified for event P(A|B)):
 // P(A|B) = P(B|A) * P(A) / P(B)
 //
-// 74. Fuzzy Membership Function (Triangular):
-// μ(x) = (x - a) / (b - a)  if a <= x <= b
-// μ(x) = (c - x) / (c - b)  if b <= x <= c
-// μ(x) = 0 otherwise (a < b < c)
+// 80. Fuzzy Membership Function (Triangular):
+// Î¼(x) = (x - a) / (b - a)  if a <= x <= b
+// Î¼(x) = (c - x) / (c - b)  if b <= x <= c
+// Î¼(x) = 0 otherwise (a < b < c)
 //
-// 75. Fuzzy Membership Function (Trapezoidal):
+// 81. Fuzzy Membership Function (Trapezoidal):
 // Similar to triangular, but with a flat top for a range.
 //
-// 76. Kalman Filter (simplified state prediction):
+// 82. Kalman Filter (simplified state prediction):
 // x_k = F_k * x_{k-1} + B_k * u_k
 // P_k = F_k * P_{k-1} * F_k^T + Q_k
 // (Where x is state vector, P is covariance matrix, F is state transition, B is control input model, Q is process noise)
 //
-// 77. Load Threshold Adaptation (Simple Exponential Decay):
+// 83. Load Threshold Adaptation (Simple Exponential Decay):
 // Threshold_next = Threshold_current * e^(-k * time_since_last_adaptation)
 //
-// 78. Hysteresis Threshold Logic:
+// 84. Hysteresis Threshold Logic:
 // If CL > Upper_Threshold and Mode = Low, then switch to High.
 // If CL < Lower_Threshold and Mode = High, then switch to Low.
 // Upper_Threshold > Lower_Threshold to prevent rapid switching.
 //
-// 79. Cumulative Sum (CUSUM) for change detection:
-// C_t^+ = max(0, C_{t-1}^+ + x_t - μ_0 - K)
-// C_t^- = min(0, C_{t-1}^- + x_t - μ_0 + K)
+// 85. Cumulative Sum (CUSUM) for change detection:
+// C_t^+ = max(0, C_{t-1}^+ + x_t - Î¼_0 - K)
+// C_t^- = min(0, C_{t-1}^- + x_t - Î¼_0 + K)
 //
-// 80. Logistic Regression Probability:
-// P(Y=1|X) = 1 / (1 + e^(-(β0 + β1X1 + ... + βnXn)))
+// 86. Logistic Regression Probability:
+// P(Y=1|X) = 1 / (1 + e^(-(Î²0 + Î²1X1 + ... + Î²nXn)))
 //
-// 81. Entropy (Information Theory - simplified for a distribution):
+// 87. Entropy (Information Theory - simplified for a distribution):
 // H(X) = - sum(p(x) log2 p(x))
 //
-// 82. Gini Impurity (for decision trees):
+// 88. Gini Impurity (for decision trees):
 // G = 1 - sum(p_i^2)
 //
-// 83. Root Mean Square Error (RMSE):
+// 89. Root Mean Square Error (RMSE):
 // RMSE = sqrt((1/N) * sum((y_pred_i - y_true_i)^2))
 //
-// 84. R-squared (Coefficient of Determination):
+// 90. R-squared (Coefficient of Determination):
 // R^2 = 1 - (SS_res / SS_tot)
 //
-// 85. Mahalanobis Distance (for anomaly detection):
-// D_M(x) = sqrt((x - μ)^T Σ^(-1) (x - μ))
+// 91. Mahalanobis Distance (for anomaly detection):
+// D_M(x) = sqrt((x - Î¼)^T Î£^(-1) (x - Î¼))
 //
-// 86. Feature Importance Score (e.g., from a tree model):
+// 92. Feature Importance Score (e.g., from a tree model):
 // FIS_j = sum (gain from splits on feature j)
 //
-// 87. Inverse Distance Weighting:
+// 93. Inverse Distance Weighting:
 // f(x) = sum(w_i * f_i) / sum(w_i) where w_i = 1 / d(x, x_i)^p
 //
-// 88. Moving Average Convergence Divergence (MACD) - time series analysis:
+// 94. Moving Average Convergence Divergence (MACD) - time series analysis:
 // MACD = EMA_short - EMA_long
 // Signal Line = EMA_of_MACD
 //
-// 89. Spectral Centroid (feature of a time series frequency distribution):
-// SC = sum(f_k * Magnitude_k) / sum(Magnitude_k)
-//
-// 90. Autocorrelation Function (ACF) - identifies repeating patterns:
-// R(k) = E[(X_t - μ)(X_{t+k} - μ)] / σ^2
-//
-// 91. Perceived Difficulty Score (PDS) - A heuristic:
+// 95. Perceived Difficulty Score (PDS) - A heuristic:
 // PDS = (Error_Rate * W_error) + (Task_Complexity_Factor * W_task) + (Time_in_Task_Deviation * W_time)
 //
-// 92. Resource Demand Index (RDI) - based on interaction density:
+// 96. Resource Demand Index (RDI) - based on interaction density:
 // RDI = (Event_Density * W_event) + (Avg_Kinematic_Energy * W_energy)
 //
-// 93. Adaptive Weight Update (Gradient Descent principle for a single weight):
-// w_new = w_old - η * dL/dw
+// 97. Adaptive Weight Update (Gradient Descent principle for a single weight):
+// w_new = w_old - Î· * dL/dw
 //
-// 94. Cognitive Dissonance Metric (CDM) - mock:
+// 98. Cognitive Dissonance Metric (CDM) - mock:
 // CDM = (Observed_Load - Expected_Load)^2
 //
-// 95. Bayesian Information Criterion (BIC) for model selection:
+// 99. Bayesian Information Criterion (BIC) for model selection:
 // BIC = n * log(MSE) + k * log(n)
 //
-// 96. Akaike Information Criterion (AIC) for model selection:
+// 100. Akaike Information Criterion (AIC) for model selection:
 // AIC = n * log(MSE) + 2k
 //
-// 97. Cross-Entropy Loss (for classification tasks):
+// 101. Cross-Entropy Loss (for classification tasks):
 // L = - sum(y_i * log(p_i) + (1 - y_i) * log(1 - p_i))
 //
-// 98. L1 Regularization (Lasso):
-// Cost = Sum_of_Squares_Error + λ * sum(abs(β_j))
+// 102. L1 Regularization (Lasso):
+// Cost = Sum_of_Squares_Error + Î» * sum(abs(Î²_j))
 //
-// 99. L2 Regularization (Ridge):
-// Cost = Sum_of_Squares_Error + λ * sum(β_j^2)
+// 103. L2 Regularization (Ridge):
+// Cost = Sum_of_Squares_Error + Î» * sum(Î²_j^2)
 //
-// 100. Learning Rate Schedule (e.g., exponential decay):
-// η_t = η_0 * e^(-k * t)
+// 104. Learning Rate Schedule (e.g., exponential decay):
+// Î·_t = Î·_0 * e^(-k * t)
+//
+// 105. Prediction Confidence Score:
+// Confidence = 1 - (Model_Variance / Max_Expected_Variance) (Or derived from ensemble methods)
 `;
 
 
@@ -807,7 +973,7 @@ export class TelemetryAgent {
   private lastScrollEvent: ScrollEventData | null = null;
   private clickTimestamps: number[] = [];
   private keydownTimestamps: { key: string; timestamp: number; isModifier: boolean }[] = [];
-  private formFieldFocusDurations: Map<string, { startTime: number; totalDuration: number; interactions: number }> = new Map();
+  private formFieldFocusDurations: Map<string, { startTime: number; totalDuration: number; interactions: number; firstInputTime: number | null }> = new Map();
   private lastErrorCount: number = 0; // for error feature comparison
 
   private focusTimestamps: Map<string, number> = new Map(); // targetId -> focus timestamp
@@ -815,9 +981,12 @@ export class TelemetryAgent {
 
   private interactionErrorLogger = InteractionErrorLogger.getInstance();
   private taskContextManager = TaskContextManager.getInstance();
+  private userProfileService = UserProfileService.getInstance(); // For privacy settings
 
   private mouseMovementsHistory: { x: number; y: number; timestamp: number }[] = [];
   private readonly mouseHistoryWindowMs = 1000; // Keep 1 second of mouse history for advanced features
+
+  private lastTelemetryFlushTimestamp: number = performance.now(); // For idle time calculation
 
   constructor(featureProcessingCallback: (features: TelemetryFeatureVector) => void) {
     this.featureProcessingCallback = featureProcessingCallback;
@@ -827,8 +996,16 @@ export class TelemetryAgent {
   /**
    * Claim 3: Comprehensive Telemetry for Behavioral Insight.
    * "The TelemetryAgent captures a broad spectrum of raw user interaction events, providing a foundational data layer that is critical for deriving high-fidelity behavioral features. This comprehensive capture ensures that subtle cues of cognitive state are not missed."
+   *
+   * Disproof & Bulletproofing: "Comprehensive" is a strong claim. Bulletproofing it means not only adding more sensor data (biosignals, deeper keyboard/mouse metrics), but also ensuring data integrity, addressing privacy, and providing *semantic meaning* to raw events. Capturing instantaneous velocity/acceleration directly in event data, and including event IDs for error correlation, makes the data more robust. Privacy settings from UserProfileService become critical here.
    */
   private initListeners(): void {
+    const prefs = this.userProfileService.getPreferences().privacySettings;
+    if (!prefs.telemetryEnabled) {
+      console.warn("TelemetryAgent: User has disabled telemetry. No events will be tracked.");
+      return;
+    }
+
     window.addEventListener('mousemove', this.handleMouseMoveEvent, { passive: true });
     window.addEventListener('click', this.handleClickEvent, { passive: true });
     window.addEventListener('scroll', this.handleScrollEvent, { passive: true });
@@ -839,17 +1016,43 @@ export class TelemetryAgent {
     window.addEventListener('input', this.handleFormEvent, { passive: true });
     window.addEventListener('change', this.handleFormEvent, { passive: true });
     window.addEventListener('submit', this.handleFormEvent, { passive: true }); // Captures form submission
-    // window.addEventListener('gaze', this.handleGazeEvent, { passive: true }); // Mock Gaze, would need specialized hardware/lib
+
+    if (prefs.gazeTrackingEnabled) {
+      // window.addEventListener('gaze', this.handleGazeEvent, { passive: true }); // Mock Gaze, would need specialized hardware/lib
+      console.log("TelemetryAgent: Mock Gaze tracking enabled.");
+    }
+    if (prefs.biosignalTrackingEnabled) {
+      // this.startMockBiosignalGeneration(); // Start generating mock biosignal events
+      console.log("TelemetryAgent: Mock Biosignal tracking enabled.");
+    }
 
     this.bufferInterval = setInterval(this.flushBuffer, this.bufferFlushRateMs);
   }
 
   private addEvent = (event: RawTelemetryEvent): void => {
-    this.eventBuffer.push(event);
+    // Only add event if telemetry is enabled
+    if (this.userProfileService.getPreferences().privacySettings.telemetryEnabled) {
+      this.eventBuffer.push(event);
+    }
   };
 
   private handleMouseMoveEvent = (event: MouseEvent): void => {
     const timestamp = performance.now();
+    let velocity = 0;
+    let acceleration = 0;
+
+    if (this.lastMouseCoord) {
+      const dx = event.clientX - this.lastMouseCoord.x;
+      const dy = event.clientY - this.lastMouseCoord.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const timeDelta = timestamp - this.lastMouseCoord.timestamp;
+      if (timeDelta > 0) {
+        velocity = distance / timeDelta;
+        // Mock acceleration calculation, requires more history
+        acceleration = (velocity - (this.lastMouseCoord as any).mouseVelocity || 0) / timeDelta;
+      }
+    }
+
     const data: MouseEventData = {
       x: event.clientX,
       y: event.clientY,
@@ -857,6 +1060,8 @@ export class TelemetryAgent {
       targetId: (event.target as HTMLElement)?.id || '',
       timestamp,
       pressure: 0.5, // Mock pressure data
+      mouseVelocity: velocity,
+      mouseAcceleration: acceleration,
     };
     this.addEvent({ type: 'mousemove', data });
 
@@ -865,6 +1070,7 @@ export class TelemetryAgent {
     while (this.mouseMovementsHistory.length > 0 && this.mouseMovementsHistory[0].timestamp < timestamp - this.mouseHistoryWindowMs) {
       this.mouseMovementsHistory.shift();
     }
+    this.lastMouseCoord = { ...data }; // Update lastMouseCoord with current data
   };
 
   private handleClickEvent = (event: MouseEvent): void => {
@@ -888,6 +1094,7 @@ export class TelemetryAgent {
     const scrollDeltaY = this.lastScrollEvent ? window.scrollY - this.lastScrollEvent.scrollY : 0;
     const timeDelta = this.lastScrollEvent ? timestamp - this.lastScrollEvent.timestamp : 0;
     const scrollVelocity = timeDelta > 0 ? Math.abs(scrollDeltaY) / timeDelta : 0;
+    const scrollDirection = scrollDeltaY > 0 ? 'down' : scrollDeltaY < 0 ? 'up' : 'none';
 
     const data: ScrollEventData = {
       scrollX: window.scrollX,
@@ -897,14 +1104,28 @@ export class TelemetryAgent {
       scrollVelocity,
       viewportHeight: window.innerHeight,
       documentHeight: document.documentElement.scrollHeight,
+      scrollDirection,
     };
     this.addEvent({ type: 'scroll', data });
     this.lastScrollEvent = data;
   };
 
+  private keydownTimestampsMap: Map<string, number> = new Map(); // Track keydown for duration calc
   private handleKeyboardEvent = (event: KeyboardEvent): void => {
     const timestamp = performance.now();
     const isModifier = event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
+
+    let keystrokeDuration: number | undefined = undefined;
+    if (event.type === 'keyup') {
+      const downTime = this.keydownTimestampsMap.get(event.code);
+      if (downTime) {
+        keystrokeDuration = timestamp - downTime;
+        this.keydownTimestampsMap.delete(event.code);
+      }
+    } else if (event.type === 'keydown') {
+      this.keydownTimestampsMap.set(event.code, timestamp);
+    }
+
     const data: KeyboardEventData = {
       key: event.key,
       code: event.code,
@@ -915,6 +1136,7 @@ export class TelemetryAgent {
       ctrlKey: event.ctrlKey,
       metaKey: event.metaKey,
       shiftKey: event.shiftKey,
+      keystrokeDuration,
     };
 
     this.addEvent({ type: event.type === 'keydown' ? 'keydown' : 'keyup', data });
@@ -930,12 +1152,13 @@ export class TelemetryAgent {
 
     if (event.type === 'focusin') {
       this.focusTimestamps.set(targetId, timestamp);
-      // For form fields, track interaction duration
+      // For form fields, track interaction duration and first input latency
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) {
         this.formFieldFocusDurations.set(targetId, {
           startTime: timestamp,
           totalDuration: 0,
-          interactions: 0
+          interactions: 0,
+          firstInputTime: null,
         });
       }
     } else { // focusout
@@ -945,6 +1168,7 @@ export class TelemetryAgent {
         durationMs = timestamp - focusStartTime;
         this.focusTimestamps.delete(targetId);
       }
+      const focusLatencyMs = this.blurEventTimestamps.has(targetId) ? timestamp - this.blurEventTimestamps.get(targetId)! : undefined;
       this.blurEventTimestamps.set(targetId, timestamp); // Record blur for potential re-focus latency
 
       // For form fields, update total duration
@@ -962,6 +1186,7 @@ export class TelemetryAgent {
           timestamp,
           durationMs,
           interactionCount: formStats?.interactions, // Capture interactions for focused form field
+          focusLatencyMs,
         },
       });
     }
@@ -983,10 +1208,17 @@ export class TelemetryAgent {
     const type = event.type === 'submit' ? 'submit' : event.type === 'input' ? 'input' : event.type === 'change' ? 'change' : 'validation_attempt'; // Assuming other form events map
 
     const targetId = targetElement?.id || targetElement?.name || '';
+    let inputLatencyMs: number | undefined = undefined;
+
     if (targetId) {
       const formStats = this.formFieldFocusDurations.get(targetId);
       if (formStats) {
         formStats.interactions++; // Increment interaction count
+        // Record first input time if not already set
+        if (formStats.firstInputTime === null && (type === 'input' || type === 'change')) {
+          formStats.firstInputTime = timestamp;
+          inputLatencyMs = timestamp - formStats.startTime;
+        }
         this.formFieldFocusDurations.set(targetId, formStats);
       }
     }
@@ -1017,6 +1249,7 @@ export class TelemetryAgent {
         timestamp,
         isValid,
         validationMessage,
+        inputLatencyMs,
       },
     });
   };
@@ -1034,8 +1267,23 @@ export class TelemetryAgent {
   //       targetElementId: targetElement?.id || '',
   //       pupilDilation,
   //       gazeStability,
+  //       saccadeVelocity: Math.random() * 100, // Mock
+  //       fixationDuration: Math.random() * 500, // Mock
   //     }
   //   });
+  // };
+
+  // private mockBiosignalGenerationInterval: ReturnType<typeof setInterval> | null = null;
+  // private startMockBiosignalGeneration = () => {
+  //   this.mockBiosignalGenerationInterval = setInterval(() => {
+  //     const timestamp = performance.now();
+  //     // Simulate stress/load correlation
+  //     const currentLoadProxy = Math.random(); // In a real system, this would come from CLS
+  //     this.addEvent({ type: 'biosignal', data: { type: 'heart_rate', value: 60 + currentLoadProxy * 30, timestamp, unit: 'bpm' } });
+  //     this.addEvent({ type: 'biosignal', data: { type: 'skin_conductance', value: 0.1 + currentLoadProxy * 0.5, timestamp, unit: 'µS' } });
+  //     this.addEvent({ type: 'biosignal', data: { type: 'eeg_alpha', value: 0.8 - currentLoadProxy * 0.4, timestamp, unit: 'ratio' } });
+  //     this.addEvent({ type: 'biosignal', data: { type: 'eeg_theta', value: 0.2 + currentLoadProxy * 0.3, timestamp, unit: 'ratio' } });
+  //   }, 1000); // Generate mock biosignal every second
   // };
 
   private calculateMouseSmoothnessIndex(mouseMoveEvents: MouseEventData[]): number {
@@ -1086,13 +1334,13 @@ export class TelemetryAgent {
     }
     const start = events[0];
     const end = events[events.length - 1];
-    const straightLineDistance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)); // Eq. 70: Euclidean Distance
+    const straightLineDistance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)); // Eq. 76: Euclidean Distance
 
     return straightLineDistance > 0 ? totalDistance / straightLineDistance : 0; // Ratio > 1 indicates tortuosity
   }
 
   private calculateTargetAcquisitionError(clicks: MouseEventData[]): number {
-    // Eq. 25: Gaze Deviation from Target (conceptually similar for clicks)
+    // Eq. 26: Gaze Deviation from Target (conceptually similar for clicks)
     let totalError = 0;
     let validClicks = 0;
     for (const click of clicks) {
@@ -1100,13 +1348,34 @@ export class TelemetryAgent {
         const rect = click.targetBoundingRect;
         const centerX = rect.x + rect.width / 2;
         const centerY = rect.y + rect.height / 2;
-        const error = Math.sqrt(Math.pow(click.x - centerX, 2) + Math.pow(click.y - centerY, 2)); // Eq. 70: Euclidean Distance
+        const error = Math.sqrt(Math.pow(click.x - centerX, 2) + Math.pow(click.y - centerY, 2)); // Eq. 76: Euclidean Distance
         totalError += error;
         validClicks++;
       }
     }
     return validClicks > 0 ? totalError / validClicks : 0;
   }
+
+  private calculateMisclickRate(clicks: MouseEventData[]): number {
+    let misclicks = 0;
+    for (const click of clicks) {
+      if (click.targetBoundingRect) {
+        const rect = click.targetBoundingRect;
+        // Check if click occurred *outside* the bounding box but near it (threshold of 5px for error margin)
+        if (click.x < rect.x - 5 || click.x > rect.x + rect.width + 5 ||
+            click.y < rect.y - 5 || click.y > rect.y + rect.height + 5) {
+          misclicks++;
+        }
+      } else {
+        // If no bounding rect, could be a click on non-interactive background, consider it a potential misclick if elementId is empty.
+        if (!click.targetId) {
+          misclicks++;
+        }
+      }
+    }
+    return clicks.length > 0 ? misclicks / clicks.length : 0;
+  }
+
 
   private calculateFittsLawIP(clicks: MouseEventData[]): number {
     // Eq. 6: Fitts's Law Index of Performance (simplified)
@@ -1146,10 +1415,30 @@ export class TelemetryAgent {
     return validIPs > 0 ? totalIP / validIPs : 0;
   }
 
+  private calculateTypingRhythmIrregularity(keydownEvents: KeyboardEventData[]): number {
+    // Eq. 19: Typing Rhythm Irregularity
+    const latencies: number[] = [];
+    let lastNonModifierKeydown: number | null = null;
+    for (const event of keydownEvents) {
+      if (!event.isModifier) {
+        if (lastNonModifierKeydown !== null) {
+          latencies.push(event.timestamp - lastNonModifierKeydown);
+        }
+        lastNonModifierKeydown = event.timestamp;
+      }
+    }
+    if (latencies.length < 2) return 0;
+    const mean = latencies.reduce((sum, l) => sum + l, 0) / latencies.length; // Eq. 67
+    const variance = latencies.reduce((sum, l) => sum + Math.pow(l - mean, 2), 0) / latencies.length; // Eq. 68
+    return Math.sqrt(variance); // Eq. 69
+  }
+
   private extractFeatures = (events: RawTelemetryEvent[], currentUiMode: UiMode): TelemetryFeatureVector => {
     const windowEnd = performance.now();
-    const windowStart = windowEnd - this.bufferFlushRateMs;
-    const durationSeconds = this.bufferFlushRateMs / 1000;
+    const windowStart = this.lastTelemetryFlushTimestamp; // Use the actual start of this window
+    const durationMs = windowEnd - windowStart;
+    const durationSeconds = durationMs / 1000;
+    this.lastTelemetryFlushTimestamp = windowEnd;
 
     let mouseMoveEvents: MouseEventData[] = [];
     let clickEvents: MouseEventData[] = [];
@@ -1160,11 +1449,12 @@ export class TelemetryAgent {
     let blurEvents: FocusBlurEventData[] = [];
     let formEvents: FormEventData[] = [];
     let gazeEvents: GazeEventData[] = [];
+    let biosignalEvents: BiosignalEventData[] = [];
 
     // Filter events for the current window and categorize
     for (const event of events) {
-      if (event.data.timestamp < windowStart) continue;
-
+      // Event timestamp filtering is implicitly handled by `addEvent` pushing to buffer
+      // and `flushBuffer` clearing. So `events` here already contains the window's data.
       switch (event.type) {
         case 'mousemove': mouseMoveEvents.push(event.data); break;
         case 'click': clickEvents.push(event.data); break;
@@ -1175,6 +1465,7 @@ export class TelemetryAgent {
         case 'blur': blurEvents.push(event.data); break;
         case 'form': formEvents.push(event.data); break;
         case 'gaze': gazeEvents.push(event.data); break;
+        case 'biosignal': biosignalEvents.push(event.data); break;
       }
     }
 
@@ -1183,7 +1474,7 @@ export class TelemetryAgent {
     let totalMouseAcceleration = 0;
     let prevMouseVelocity = 0;
     let totalMouseTravelDistance = 0;
-    let totalClickPressure = 0;
+    let mouseActiveTime = 0; // Time with mouse movement
     if (mouseMoveEvents.length > 1) {
       for (let i = 1; i < mouseMoveEvents.length; i++) {
         const p1 = mouseMoveEvents[i - 1];
@@ -1194,6 +1485,7 @@ export class TelemetryAgent {
         totalMouseTravelDistance += distance; // Eq. 8: Total Mouse Travel Distance
         const timeDelta = p2.timestamp - p1.timestamp;
         if (timeDelta > 0) {
+          mouseActiveTime += timeDelta;
           const velocity = distance / timeDelta; // px/ms (Eq. 1: Instantaneous Velocity)
           totalMouseVelocity += velocity;
           totalMouseAcceleration += this.calculateMouseAcceleration(prevMouseVelocity, velocity, timeDelta); // Eq. 3: Instantaneous Acceleration
@@ -1201,33 +1493,45 @@ export class TelemetryAgent {
         }
       }
     }
-    if (clickEvents.length > 0) {
-      totalClickPressure = clickEvents.reduce((sum, c) => sum + (c.pressure || 0), 0);
-    }
+    const mouseIdleTimeRatio = durationMs > 0 ? (durationMs - mouseActiveTime) / durationMs : 0; // Eq. 11
 
     // --- Click Dynamics ---
     let totalClickLatency = 0;
     let doubleClickCount = 0;
     let errorClickCount = 0; // Clicks associated with an immediate error
-    if (clickEvents.length > 1) {
-      for (let i = 1; i < clickEvents.length; i++) {
-        const latency = clickEvents[i].timestamp - clickEvents[i - 1].timestamp;
-        totalClickLatency += latency; // Eq. 12: Keystroke Latency (applied to clicks)
-        if (latency < 500) { // arbitrary threshold for potential double click
-          doubleClickCount++;
+    let repeatedClickOnSameElementCount = 0;
+    let lastClickTargetId: string | null = null;
+    let lastClickTime: number = 0;
+
+    if (clickEvents.length > 0) {
+      for (let i = 0; i < clickEvents.length; i++) {
+        const click = clickEvents[i];
+        if (i > 0) {
+          const latency = click.timestamp - clickEvents[i - 1].timestamp;
+          totalClickLatency += latency; // Eq. 13: Keystroke Latency (applied to clicks)
+          if (latency < 500 && click.targetId === clickEvents[i - 1].targetId) { // arbitrary threshold for potential double click on same element
+            doubleClickCount++;
+          }
         }
         // Check for immediate errors after click
         const errorsAfterClick = this.interactionErrorLogger.errorsBuffer.filter(e =>
-          e.timestamp > clickEvents[i].timestamp && e.timestamp < clickEvents[i].timestamp + 200 // within 200ms after click
+          e.timestamp > click.timestamp && e.timestamp < click.timestamp + 200 // within 200ms after click
         );
         if (errorsAfterClick.length > 0) errorClickCount++;
+
+        if (click.targetId === lastClickTargetId && click.timestamp - lastClickTime < 1000) { // Same element clicked within 1s
+          repeatedClickOnSameElementCount++;
+        }
+        lastClickTargetId = click.targetId;
+        lastClickTime = click.timestamp;
       }
     }
+    let totalClickPressure = clickEvents.reduce((sum, c) => sum + (c.pressure || 0), 0);
 
     // --- Scroll Dynamics ---
     let totalScrollYDelta = 0;
     let scrollDirectionChanges = 0;
-    let lastScrollDirection: 'up' | 'down' | null = null;
+    let lastScrollDirection: 'up' | 'down' | 'none' = 'none';
     let scrollPauseCount = 0;
     let totalScrollJerk = 0;
     let prevScrollVelocity = 0;
@@ -1248,23 +1552,26 @@ export class TelemetryAgent {
           maxScrollY = Math.max(maxScrollY, s2.scrollY);
 
           const currentDirection = deltaY > 0 ? 'down' : 'up';
-          if (lastScrollDirection && currentDirection !== lastScrollDirection) {
-            scrollDirectionChanges++; // Eq. 34: Scroll Direction Changes
+          if (lastScrollDirection !== 'none' && currentDirection !== lastScrollDirection) {
+            scrollDirectionChanges++; // Eq. 40: Scroll Direction Changes
           }
           lastScrollDirection = currentDirection;
 
-          const currentScrollVelocity = Math.abs(deltaY) / timeDelta; // px/ms (Eq. 31: Scroll Velocity)
-          const currentScrollAcceleration = (currentScrollVelocity - prevScrollVelocity) / timeDelta; // Eq. 32: Scroll Acceleration
-          const currentScrollJerk = (currentScrollAcceleration - prevScrollAcceleration) / timeDelta; // Eq. 33: Scroll Jerk
+          const currentScrollVelocity = Math.abs(deltaY) / timeDelta; // px/ms (Eq. 37: Scroll Velocity)
+          const currentScrollAcceleration = (currentScrollVelocity - prevScrollVelocity) / timeDelta; // Eq. 38: Scroll Acceleration
+          const currentScrollJerk = (currentScrollAcceleration - prevScrollAcceleration) / timeDelta; // Eq. 39: Scroll Jerk
           totalScrollJerk += Math.abs(currentScrollJerk);
 
           prevScrollVelocity = currentScrollVelocity;
           prevScrollAcceleration = currentScrollAcceleration;
         } else if (Math.abs(deltaY) === 0 && timeDelta > 200) { // Consider a pause if no movement for > 200ms
-          scrollPauseCount++; // Eq. 35: Scroll Pause Frequency
+          scrollPauseCount++; // Eq. 41: Scroll Pause Frequency
         }
       }
     }
+    const documentScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollDepthMax = documentScrollHeight > 0 ? maxScrollY / documentScrollHeight : 0; // Eq. 42
+    const scrollReversalRatio = scrollEvents.filter(s => s.scrollDirection === 'up').length / (scrollEvents.filter(s => s.scrollDirection !== 'none').length || 1); // Eq. 46 (Bidirectional Scroll Index)
 
     // --- Keyboard Dynamics ---
     let totalKeystrokeLatency = 0;
@@ -1275,6 +1582,7 @@ export class TelemetryAgent {
     let modifierKeydownCount = 0;
     let typingBursts = 0;
     let lastKeystrokeTime: number | null = null;
+    let totalKeystrokeDuration = 0; // Sum of keydown-keyup times
 
     if (keydownEvents.length > 0) {
       for (let i = 0; i < keydownEvents.length; i++) {
@@ -1284,7 +1592,7 @@ export class TelemetryAgent {
         } else {
           nonModifierKeydownCount++;
           if (lastKeystrokeTime !== null) {
-            totalKeystrokeLatency += (keyEvent.timestamp - lastKeystrokeTime); // Eq. 12: Keystroke Latency
+            totalKeystrokeLatency += (keyEvent.timestamp - lastKeystrokeTime); // Eq. 13: Keystroke Latency
             if (keyEvent.timestamp - lastKeystrokeTime > 200) { // Burst ends
               typingBursts++;
             }
@@ -1293,7 +1601,7 @@ export class TelemetryAgent {
           }
 
           if (keyEvent.key === 'Backspace') {
-            backspaceCount++; // Eq. 13: Backspace Frequency
+            backspaceCount++; // Eq. 14: Backspace Frequency
           } else if (keyEvent.key === ' ' && keyEvent.timestamp - lastTypedWordTime > 100) { // Debounce words
             wordCount++; // For WPM
             lastTypedWordTime = keyEvent.timestamp;
@@ -1302,13 +1610,21 @@ export class TelemetryAgent {
         }
       }
     }
-    const errorCorrectionRate = nonModifierKeydownCount > 0 ? backspaceCount / nonModifierKeydownCount : 0; // Eq. 14: Error Correction Rate
+    // Aggregate keystroke durations from both keydown and keyup events
+    keyupEvents.forEach(e => {
+      if (e.keystrokeDuration) totalKeystrokeDuration += e.keystrokeDuration;
+    });
+
+    const errorCorrectionRate = nonModifierKeydownCount > 0 ? backspaceCount / nonModifierKeydownCount : 0; // Eq. 15: Error Correction Rate
+    const typingRhythmIrregularity = this.calculateTypingRhythmIrregularity(keydownEvents); // Eq. 19
 
     // --- Focus Dynamics ---
     let refocusFrequency = 0;
     let elementDwellTimeSum = 0;
     let elementDwellCount = 0;
     let blurRate = 0;
+    let totalFocusShiftDistance = 0; // Mock: average Euclidean distance between center of focused elements
+    let lastFocusedElementRect: DOMRectReadOnly | null = null;
 
     focusEvents.forEach(f => {
       const blurTime = blurEvents.find(b => b.targetId === f.targetId && b.timestamp > f.timestamp)?.timestamp;
@@ -1321,10 +1637,21 @@ export class TelemetryAgent {
       if (lastBlur && f.timestamp - lastBlur < 500) { // Refocus within 500ms
         refocusFrequency++;
       }
+
+      // Mock focus shift distance
+      const currentFocusedElement = document.getElementById(f.targetId);
+      const currentRect = currentFocusedElement?.getBoundingClientRect();
+      if (lastFocusedElementRect && currentRect) {
+        const prevCenterX = lastFocusedElementRect.x + lastFocusedElementRect.width / 2;
+        const prevCenterY = lastFocusedElementRect.y + lastFocusedElementRect.height / 2;
+        const currCenterX = currentRect.x + currentRect.width / 2;
+        const currCenterY = currentRect.y + currentRect.height / 2;
+        totalFocusShiftDistance += Math.sqrt(Math.pow(currCenterX - prevCenterX, 2) + Math.pow(currCenterY - prevCenterY, 2));
+      }
+      if (currentRect) lastFocusedElementRect = currentRect;
     });
     // Blur rate can be proxied by count of blur events / window duration.
     blurRate = blurEvents.length / durationSeconds;
-
 
     // --- Form Interaction Features ---
     let totalFormValidationErrors = formEvents.filter(e => e.type === 'form' && e.isValid === false).length;
@@ -1332,6 +1659,8 @@ export class TelemetryAgent {
     let formAbandonmentCount = 0; // Hard to calculate purely from window events, needs form lifecycle tracking
     let totalFormFieldInteractionTime = 0;
     let uniqueFormFieldsInteracted = new Set<string>();
+    let totalTimeToFirstInput = 0;
+    let firstInputCount = 0;
 
     this.formFieldFocusDurations.forEach((stats, id) => {
       // If a field was still focused when window ended, add current duration
@@ -1340,15 +1669,26 @@ export class TelemetryAgent {
         ? stats.totalDuration + (windowEnd - currentFocusStartTime) : stats.totalDuration;
       totalFormFieldInteractionTime += effectiveDuration;
       if (effectiveDuration > 0) uniqueFormFieldsInteracted.add(id);
+
+      if (stats.firstInputTime !== null) {
+        totalTimeToFirstInput += (stats.firstInputTime - stats.startTime);
+        firstInputCount++;
+      }
     });
+    const formInteractionTimeAvg = uniqueFormFieldsInteracted.size > 0 ? totalFormFieldInteractionTime / uniqueFormFieldsInteracted.size : 0;
+    const timeToFirstInputAvg = firstInputCount > 0 ? totalTimeToFirstInput / firstInputCount : 0;
+
 
     // --- Interaction Errors (from IEL) ---
     const errorsInWindow = this.interactionErrorLogger.errorsBuffer.filter(err => err.timestamp >= windowStart);
-    let formValidationErrors = errorsInWindow.filter(err => err.type === 'validation').length; // Eq. 41: Form Validation Error Rate (count here)
-    let repeatedActionAttempts = errorsInWindow.filter(err => err.type === 'repeatedAction').length; // Eq. 42: Repeated Action Attempt Frequency (count here)
-    let navigationErrors = errorsInWindow.filter(err => err.type === 'navigation').length; // Eq. 43: Navigation Error Ratio (count here)
+    let formValidationErrors = errorsInWindow.filter(err => err.type === 'validation').length; // Eq. 47: Form Validation Error Rate (count here)
+    let repeatedActionAttempts = errorsInWindow.filter(err => err.type === 'repeatedAction').length; // Eq. 48: Repeated Action Attempt Frequency (count here)
+    let navigationErrors = errorsInWindow.filter(err => err.type === 'navigation').length; // Eq. 49: Navigation Error Ratio (count here)
     let apiErrors = errorsInWindow.filter(err => err.type === 'apiError').length;
     let clientRuntimeErrors = errorsInWindow.filter(err => err.type === 'clientRuntime').length;
+    let criticalErrorFrequency = errorsInWindow.filter(err => err.severity === 'critical').length / durationSeconds;
+    let timeSinceLastErrorS = (windowEnd - this.interactionErrorLogger.getLastLoggedErrorTimestamp()) / 1000;
+    if (this.interactionErrorLogger.getLastLoggedErrorTimestamp() === 0) timeSinceLastErrorS = Number.MAX_SAFE_INTEGER; // No errors ever
 
 
     // --- Gaze Tracking Features (Mock) ---
@@ -1356,41 +1696,87 @@ export class TelemetryAgent {
     let pupilDilationAvg = 0;
     let fixationFrequency = 0;
     let saccadeVelocityAvg = 0;
+    let gazePathLength = 0;
+    let scanPathArea = 0; // Mock simplified
     if (gazeEvents.length > 0) {
-      pupilDilationAvg = gazeEvents.reduce((sum, g) => sum + (g.pupilDilation || 0), 0) / gazeEvents.length; // Eq. 24: Average Pupil Dilation
-      // Mock other gaze features
-      gazeDeviationAvg = Math.random() * 10;
-      fixationFrequency = gazeEvents.length / durationSeconds * 0.5; // Simulate 50% being fixations
-      saccadeVelocityAvg = Math.random() * 50;
+      pupilDilationAvg = gazeEvents.reduce((sum, g) => sum + (g.pupilDilation || 0), 0) / gazeEvents.length; // Eq. 25: Average Pupil Dilation
+      gazeDeviationAvg = gazeEvents.reduce((sum, g) => sum + (g.gazeStability ? (1 - g.gazeStability) * 50 : 0), 0) / gazeEvents.length; // Mock deviation
+      fixationFrequency = gazeEvents.length / durationSeconds * 0.5; // Simulate 50% being fixations (Eq. 23)
+      saccadeVelocityAvg = gazeEvents.reduce((sum, g) => sum + (g.saccadeVelocity || 0), 0) / gazeEvents.length; // Eq. 24
+      // Eq. 27: Gaze Path Length
+      if (gazeEvents.length > 1) {
+        for (let i = 1; i < gazeEvents.length; i++) {
+          gazePathLength += Math.sqrt(Math.pow(gazeEvents[i].x - gazeEvents[i - 1].x, 2) + Math.pow(gazeEvents[i].y - gazeEvents[i - 1].y, 2));
+        }
+      }
+      scanPathArea = Math.random() * 5000; // Mock Eq. 28
     }
+
+    // --- Biosignal Features (Mock) ---
+    let heartRateAvg = 0;
+    let heartRateVariability = 0;
+    let skinConductanceAvg = 0;
+    let eegAlphaPowerRatio = 0;
+    let eegThetaPowerRatio = 0;
+
+    const hrEvents = biosignalEvents.filter(b => b.type === 'heart_rate').map(b => b.value);
+    if (hrEvents.length > 0) {
+      heartRateAvg = hrEvents.reduce((sum, v) => sum + v, 0) / hrEvents.length; // Eq. 32
+      if (hrEvents.length > 1) {
+        const mean = heartRateAvg; // Eq. 67
+        const variance = hrEvents.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / hrEvents.length; // Eq. 68
+        heartRateVariability = Math.sqrt(variance); // Simple std dev as proxy for HRV, Eq. 33 (partially)
+      }
+    }
+
+    const scEvents = biosignalEvents.filter(b => b.type === 'skin_conductance').map(b => b.value);
+    if (scEvents.length > 0) {
+      skinConductanceAvg = scEvents.reduce((sum, v) => sum + v, 0) / scEvents.length; // Eq. 34
+    }
+    const eegAlphaEvents = biosignalEvents.filter(b => b.type === 'eeg_alpha').map(b => b.value);
+    if (eegAlphaEvents.length > 0) eegAlphaPowerRatio = eegAlphaEvents.reduce((sum, v) => sum + v, 0) / eegAlphaEvents.length; // Eq. 35
+    const eegThetaEvents = biosignalEvents.filter(b => b.type === 'eeg_theta').map(b => b.value);
+    if (eegThetaEvents.length > 0) eegThetaPowerRatio = eegThetaEvents.reduce((sum, v) => sum + v, 0) / eegThetaEvents.length; // Eq. 36
 
     // Task Context
     const currentTask = this.taskContextManager.getCurrentTask();
     const taskComplexityMap: { [key in TaskContext['complexity']]: number } = {
       'low': 0.2, 'medium': 0.5, 'high': 0.7, 'critical': 0.9
     };
+    const taskUrgencyMap: { [key in TaskContext['urgency']]: number } = {
+      'low': 0.1, 'medium': 0.3, 'high': 0.6, 'immediate': 0.9
+    };
     const taskContextFeatures: TaskContextFeatures = {
-      current_task_complexity: currentTask ? taskComplexityMap[currentTask.complexity] : 0, // Eq. 51: Task Complexity Score
-      time_in_current_task_sec: currentTask ? (windowEnd - currentTask.timestamp) / 1000 : 0, // Eq. 52: Time in Current Task
-      task_switches_count: this.taskContextManager.getTaskHistory().filter(t => t.timestamp >= windowStart).length, // Eq. 53: Task Switch Frequency
+      current_task_complexity: currentTask ? taskComplexityMap[currentTask.complexity] : 0, // Eq. 57: Task Complexity Score
+      time_in_current_task_sec: currentTask ? (windowEnd - currentTask.timestamp) / 1000 : 0, // Eq. 58: Time in Current Task
+      task_switches_count: this.taskContextManager.getTaskHistory().filter(t => t.timestamp >= windowStart).length, // Eq. 59: Task Switch Frequency
       task_completion_status: currentTask?.progressPercentage === 100 ? 1 : 0,
+      task_urgency_score: currentTask ? taskUrgencyMap[currentTask.urgency] : 0,
+      task_progress_rate: currentTask?.progressPercentage && currentTask.progressPercentage > 0 && currentTask.timestamp < windowEnd ?
+        (currentTask.progressPercentage / 100) / ((windowEnd - currentTask.timestamp) / 1000) : 0, // Eq. 60
     };
 
     // User Engagement Features
     const totalEventCount = events.length;
     const activeInteractionRatio = totalEventCount > 0 ? 1 : 0; // Simplistic: any event means active
     const idleDurationAvg = activeInteractionRatio === 0 ? durationSeconds : 0; // If no events, assume idle
-    const frustrationIndexProxy = (formValidationErrors * 0.2 + repeatedActionAttempts * 0.3 + errorClickCount * 0.1); // Eq. 57: Frustration Index Proxy
+    const frustrationIndexProxy = (formValidationErrors * 0.2 + repeatedActionAttempts * 0.3 + errorClickCount * 0.1 + misclicks * 0.15); // Eq. 63: Frustration Index Proxy
+    const userActivityBurstiness = totalEventCount > 1 ?
+      Math.sqrt(events.reduce((sum, e, i) => i > 0 ? sum + Math.pow(e.data.timestamp - events[i-1].data.timestamp - durationMs / totalEventCount, 2) : sum, 0) / (totalEventCount - 1)) : 0;
+    const sessionDurationS = performance.now() / 1000;
+
 
     const featureVector: TelemetryFeatureVector = {
       timestamp_window_end: windowEnd,
-      window_duration_ms: this.bufferFlushRateMs,
+      window_duration_ms: durationMs,
       event_density: totalEventCount / durationSeconds,
       task_context: taskContextFeatures,
       engagement: {
-        active_interaction_ratio: activeInteractionRatio, // Eq. 55: Active Interaction Ratio
-        idle_duration_avg: idleDurationAvg, // Eq. 56: Idle Duration Frequency (simplified)
+        active_interaction_ratio: activeInteractionRatio, // Eq. 61: Active Interaction Ratio
+        idle_duration_avg: idleDurationAvg, // Eq. 62: Idle Duration Frequency (simplified)
         frustration_index_proxy: frustrationIndexProxy,
+        user_activity_burstiness: userActivityBurstiness,
+        session_duration_s: sessionDurationS,
       },
       ui_mode_context: currentUiMode, // Include the UI mode during this feature window
     };
@@ -1404,10 +1790,12 @@ export class TelemetryAgent {
         fitts_law_ip_avg: this.calculateFittsLawIP(clickEvents), // Eq. 6: Fitts's Law Index of Performance
         mouse_smoothness_index: this.calculateMouseSmoothnessIndex(mouseMoveEvents), // Eq. 7: Mouse Smoothness Index
         mouse_travel_distance_total: totalMouseTravelDistance, // Eq. 8: Total Mouse Travel Distance
+        mouse_idle_time_ratio: mouseIdleTimeRatio, // Eq. 11
       };
     }
 
     if (clickEvents.length > 0) {
+      const misclicks = this.calculateMisclickRate(clickEvents);
       featureVector.clicks = {
         click_frequency: clickEvents.length / durationSeconds,
         click_latency_avg: clickEvents.length > 1 ? totalClickLatency / (clickEvents.length - 1) : 0,
@@ -1415,29 +1803,32 @@ export class TelemetryAgent {
         double_click_frequency: doubleClickCount / durationSeconds,
         click_pressure_avg: clickEvents.length > 0 ? totalClickPressure / clickEvents.length : 0,
         error_click_rate: errorClickCount / clickEvents.length,
+        misclick_rate: misclicks,
+        repeated_click_on_same_element_freq: repeatedClickOnSameElementCount / durationSeconds,
       };
     }
 
     if (scrollEvents.length > 0) {
-      const scrollRange = maxScrollY - minScrollY;
-      const documentScrollHeight = document.documentElement.scrollHeight - window.innerHeight;
       featureVector.scroll = {
-        scroll_velocity_avg: totalScrollYDelta / durationSeconds, // Eq. 31: Scroll Velocity Avg
-        scroll_direction_changes: scrollDirectionChanges, // Eq. 34: Scroll Direction Changes
-        scroll_pause_frequency: scrollPauseCount / durationSeconds, // Eq. 35: Scroll Pause Frequency
-        scroll_jerk_avg: scrollEvents.length > 2 ? totalScrollJerk / (scrollEvents.length - 2) : 0, // Eq. 33: Scroll Jerk Avg
-        scroll_coverage_ratio: documentScrollHeight > 0 ? scrollRange / documentScrollHeight : 0, // Eq. 37: Scroll Coverage Ratio
+        scroll_velocity_avg: totalScrollYDelta / durationSeconds, // Eq. 37: Scroll Velocity Avg
+        scroll_direction_changes: scrollDirectionChanges, // Eq. 40: Scroll Direction Changes
+        scroll_pause_frequency: scrollPauseCount / durationSeconds, // Eq. 41: Scroll Pause Frequency
+        scroll_jerk_avg: scrollEvents.length > 2 ? totalScrollJerk / (scrollEvents.length - 2) : 0, // Eq. 39: Scroll Jerk Avg
+        scroll_coverage_ratio: documentScrollHeight > 0 ? (maxScrollY - minScrollY) / documentScrollHeight : 0, // Eq. 43: Scroll Coverage Ratio
+        scroll_depth_max: scrollDepthMax, // Eq. 42
+        scroll_reversal_ratio: scrollReversalRatio, // Eq. 46
       };
     }
 
     if (keydownEvents.length > 0) {
       featureVector.keyboard = {
-        typing_speed_wpm: wordCount / (durationSeconds / 60), // Eq. 11: Typing Speed (WPM)
-        backspace_frequency: backspaceCount / durationSeconds, // Eq. 13: Backspace Frequency
-        keystroke_latency_avg: nonModifierKeydownCount > 1 ? totalKeystrokeLatency / (nonModifierKeydownCount - 1) : 0, // Eq. 12: Keystroke Latency Avg
-        error_correction_rate: errorCorrectionRate, // Eq. 14: Error Correction Rate
-        typing_burst_rate: typingBursts / durationSeconds, // Eq. 15: Typing Burst Rate
-        modifier_key_usage_ratio: totalEventCount > 0 ? modifierKeydownCount / totalEventCount : 0, // Eq. 16: Modifier Key Usage Ratio
+        typing_speed_wpm: wordCount / (durationSeconds / 60), // Eq. 12: Typing Speed (WPM)
+        backspace_frequency: backspaceCount / durationSeconds, // Eq. 14: Backspace Frequency
+        keystroke_latency_avg: nonModifierKeydownCount > 1 ? totalKeystrokeLatency / (nonModifierKeydownCount - 1) : 0, // Eq. 13: Keystroke Latency Avg
+        error_correction_rate: errorCorrectionRate, // Eq. 15: Error Correction Rate
+        typing_burst_rate: typingBursts / durationSeconds, // Eq. 16: Typing Burst Rate
+        modifier_key_usage_ratio: totalEventCount > 0 ? modifierKeydownCount / totalEventCount : 0, // Eq. 17: Modifier Key Usage Ratio
+        typing_rhythm_irregularity: typingRhythmIrregularity, // Eq. 19
       };
     }
 
@@ -1446,6 +1837,7 @@ export class TelemetryAgent {
         refocus_frequency: refocusFrequency / durationSeconds,
         element_dwell_time_avg: elementDwellCount > 0 ? elementDwellTimeSum / elementDwellCount : 0,
         blur_rate: blurRate,
+        focus_shift_distance_avg: focusEvents.length > 1 ? totalFocusShiftDistance / (focusEvents.length - 1) : 0,
       };
     }
 
@@ -1454,24 +1846,40 @@ export class TelemetryAgent {
         form_validation_errors_count: totalFormValidationErrors,
         form_submission_rate: formSubmissionCount / durationSeconds,
         form_abandonment_rate: formAbandonmentCount, // More complex calculation
-        form_interaction_time_avg: uniqueFormFieldsInteracted.size > 0 ? totalFormFieldInteractionTime / uniqueFormFieldsInteracted.size : 0,
+        form_interaction_time_avg: formInteractionTimeAvg,
+        input_correction_rate: nonModifierKeydownCount > 0 ? backspaceCount / nonModifierKeydownCount : 0, // Reuse error_correction_rate for simplicity here
+        time_to_first_input_avg: timeToFirstInputAvg,
       };
     }
 
     featureVector.errors = {
-      form_validation_errors_count: formValidationErrors, // Eq. 41
-      repeated_action_attempts_count: repeatedActionAttempts, // Eq. 42
-      navigation_errors_count: navigationErrors, // Eq. 43
+      form_validation_errors_count: formValidationErrors, // Eq. 47
+      repeated_action_attempts_count: repeatedActionAttempts, // Eq. 48
+      navigation_errors_count: navigationErrors, // Eq. 49
       api_errors_count: apiErrors,
       system_ui_errors_count: clientRuntimeErrors,
+      critical_error_frequency: criticalErrorFrequency,
+      time_since_last_error_s: timeSinceLastErrorS,
     };
 
     if (gazeEvents.length > 0) {
       featureVector.gaze = {
-        gaze_deviation_avg: gazeDeviationAvg, // Eq. 25
-        pupil_dilation_avg: pupilDilationAvg, // Eq. 24
-        fixation_frequency: fixationFrequency, // Eq. 22
-        saccade_velocity_avg: saccadeVelocityAvg, // Eq. 23
+        gaze_deviation_avg: gazeDeviationAvg, // Eq. 26
+        pupil_dilation_avg: pupilDilationAvg, // Eq. 25
+        fixation_frequency: fixationFrequency, // Eq. 23
+        saccade_velocity_avg: saccadeVelocityAvg, // Eq. 24
+        gaze_path_length: gazePathLength, // Eq. 27
+        scan_path_area: scanPathArea, // Eq. 28
+      };
+    }
+
+    if (biosignalEvents.length > 0) {
+      featureVector.biosignals = {
+        heart_rate_avg: heartRateAvg, // Eq. 32
+        heart_rate_variability: heartRateVariability, // Eq. 33
+        skin_conductance_avg: skinConductanceAvg, // Eq. 34
+        eeg_alpha_power_ratio: eegAlphaPowerRatio, // Eq. 35
+        eeg_theta_power_ratio: eegThetaPowerRatio, // Eq. 36
       };
     }
 
@@ -1499,7 +1907,12 @@ export class TelemetryAgent {
     window.removeEventListener('input', this.handleFormEvent);
     window.removeEventListener('change', this.handleFormEvent);
     window.removeEventListener('submit', this.handleFormEvent);
-    // window.removeEventListener('gaze', this.handleGazeEvent);
+    // if (this.userProfileService.getPreferences().privacySettings.gazeTrackingEnabled) {
+    //   window.removeEventListener('gaze', this.handleGazeEvent);
+    // }
+    // if (this.mockBiosignalGenerationInterval) {
+    //   clearInterval(this.mockBiosignalGenerationInterval);
+    // }
     if (this.bufferInterval) {
       clearInterval(this.bufferInterval);
     }
@@ -1514,14 +1927,16 @@ export class TelemetryAgent {
  */
 export const TELEMETRY_DATA_FLOW_MERMAID = `
 graph TD
-    A[Raw User Events (Mouse, Keyboard, Scroll, Form, Gaze)] --> B{TelemetryAgent Listeners};
+    A[Raw User Events (Mouse, Keyboard, Scroll, Form, Gaze, Biosignals)] --> B{TelemetryAgent Listeners (Privacy Filtered)};
     B --> C[Event Buffer];
     C -- Flush (every ${TelemetryAgent['prototype']['bufferFlushRateMs']}ms) --> D[Feature Extraction Algorithm];
     D -- TelemetryFeatureVector --> E[CognitiveLoadEngine];
-    E -- Cognitive Load Score --> F[AdaptiveUIProvider];
+    E -- Cognitive Load Score & Confidence --> F[AdaptiveUIProvider];
     F -- UI Mode & Policies --> G[Rendered UI Elements];
     D --> H[InteractionErrorLogger (for error-related features)];
     D --> I[TaskContextManager (for task-related features)];
+    J[UserProfileService (Privacy Settings)] --> B;
+    J --> E;
 `;
 
 /**
@@ -1536,10 +1951,11 @@ graph LR
     end
 
     subgraph Cognitive Load Prediction
-        C -- Weighted Features --> D{Linear Combination / Weighted Sum};
-        D -- Sigmoid/Logit --> E[Raw Load Score (0-1)];
+        C -- Weighted Features (Dynamic Weights) --> D{Online Learning Model (e.g., Adaptive Linear Regression, Simple NN)};
+        D -- Sigmoid/Logit --> E[Raw Load Score (0-1) & Prediction Confidence];
         E -- Historical Smoothing (EMA) --> F[Smoothed Cognitive Load];
-        F -- Adaptive Thresholds --> G[UI Mode Decision];
+        F -- Adaptive Thresholds (AdaptiveThresholdManager) --> G[UI Mode Decision];
+        G -- Model Feedback (Success/Failure) --> D;
     end
 
     subgraph Feedback & Adaptation
@@ -1549,41 +1965,279 @@ graph LR
         J --> A;
         K[User Preferences (UserProfileService)] --> G;
         L[Task Context (TaskContextManager)] --> G;
+        M[System Health Monitor] --> D;
     end
 `;
 
 /**
  * Claim 4: The CognitiveLoadEngine leverages a multi-modal feature vector.
  * "By incorporating diverse features from mouse kinematics, keyboard dynamics, scroll behavior, interaction errors, task context, and even (mock) gaze data, the CognitiveLoadEngine forms a holistic view of user engagement, leading to a more robust and accurate cognitive load prediction."
+ *
+ * Disproof & Bulletproofing: "Holistic" is better when features interact non-linearly, and the model understands *uncertainty*. The previous "mock predict" was a linear sum. To make it "bulletproof," we need a more flexible model that can learn complex relationships and provide a `prediction_confidence`. Adding biosignals, dynamic feature normalization, and a *conceptual* online learning model (even if simplified in implementation) moves towards truly robust prediction. The concept of `CognitiveReserveEstimation` from `UserProfileService` also provides a crucial personalized prior.
  */
-// --- Cognitive Load Inference Engine ---
+// Interface for the pluggable cognitive load prediction model
+export interface ICognitiveLoadModel {
+  predict(features: TelemetryFeatureVector, userPrefs: UserPreferences, taskContext: TaskContext | null): { load: number; confidence: number };
+  updateWeights(feedback: { features: TelemetryFeatureVector; actualOutcome: number; predictedLoad: number }): void; // For online learning
+  calibrate(calibrationData: TelemetryFeatureVector[]): void; // For initial setup or re-calibration
+}
+
+export class SimpleAdaptiveCognitiveLoadModel implements ICognitiveLoadModel {
+  // Initial (or learned) model weights, with more granular features
+  private modelWeights: { [key: string]: number } = {
+    mouse_velocity_avg: 0.05, mouse_acceleration_avg: 0.07, mouse_path_tortuosity: 0.1, mouse_smoothness_index: -0.05, mouse_travel_distance_total: 0.01, mouse_idle_time_ratio: 0.1,
+    click_frequency: 0.08, click_latency_avg: 0.1, target_acquisition_error_avg: 0.15, double_click_frequency: 0.05, click_pressure_avg: -0.02, error_click_rate: 0.2, misclick_rate: 0.18, repeated_click_on_same_element_freq: 0.1,
+    scroll_velocity_avg: 0.03, scroll_direction_changes: 0.08, scroll_pause_frequency: 0.04, scroll_jerk_avg: 0.06, scroll_coverage_ratio: -0.01, scroll_reversal_ratio: 0.07, scroll_depth_max: -0.02,
+    typing_speed_wpm_deviation: 0.07, backspace_frequency: 0.18, keystroke_latency_avg: 0.08, error_correction_rate: 0.15, typing_burst_rate: 0.04, modifier_key_usage_ratio: -0.03, typing_rhythm_irregularity: 0.1,
+    refocus_frequency: 0.1, element_dwell_time_avg: -0.05, blur_rate: 0.07, focus_shift_distance_avg: 0.05,
+    form_validation_errors_count: 0.25, form_submission_rate: -0.05, form_abandonment_rate: 0.2, form_interaction_time_avg: -0.03, input_correction_rate: 0.15, time_to_first_input_avg: 0.05,
+    repeated_action_attempts_count: 0.2, navigation_errors_count: 0.15, api_errors_count: 0.3, system_ui_errors_count: 0.35, critical_error_frequency: 0.4, time_since_last_error_s: -0.05,
+    gaze_deviation_avg: 0.12, pupil_dilation_avg: 0.15, fixation_frequency: -0.05, saccade_velocity_avg: 0.08, gaze_path_length: 0.05, scan_path_area: 0.03,
+    heart_rate_avg: 0.1, heart_rate_variability: 0.08, skin_conductance_avg: 0.15, eeg_alpha_power_ratio: -0.1, eeg_theta_power_ratio: 0.12,
+    task_complexity: 0.1, time_in_task: 0.02, task_switches_count: 0.09, task_completion_status: -0.05, task_urgency_score: 0.15, task_progress_rate: -0.05,
+    active_interaction_ratio: -0.03, idle_duration_avg: 0.05, frustration_index_proxy: 0.25, user_activity_burstiness: 0.07, session_duration_s: 0.001,
+    event_density: 0.05,
+    baseline_offset: 0.0
+  };
+
+  // Min/Max for normalization (dynamic, can be learned over time for each user)
+  private featureMinMax: { [key: string]: { min: number; max: number } } = {
+    mouse_velocity_avg: { min: 0, max: 10 }, mouse_acceleration_avg: { min: 0, max: 1 }, mouse_path_tortuosity: { min: 1, max: 5 }, mouse_smoothness_index: { min: 0, max: 1 }, mouse_travel_distance_total: { min: 0, max: 1000 }, mouse_idle_time_ratio: { min: 0, max: 1 },
+    click_frequency: { min: 0, max: 5 }, click_latency_avg: { min: 0, max: 500 }, target_acquisition_error_avg: { min: 0, max: 50 }, double_click_frequency: { min: 0, max: 2 }, click_pressure_avg: { min: 0, max: 1 }, error_click_rate: { min: 0, max: 1 }, misclick_rate: { min: 0, max: 1 }, repeated_click_on_same_element_freq: { min: 0, max: 1 },
+    scroll_velocity_avg: { min: 0, max: 2000 }, scroll_direction_changes: { min: 0, max: 10 }, scroll_pause_frequency: { min: 0, max: 5 }, scroll_jerk_avg: { min: 0, max: 1 }, scroll_coverage_ratio: { min: 0, max: 1 }, scroll_reversal_ratio: { min: 0, max: 1 }, scroll_depth_max: { min: 0, max: 1 },
+    typing_speed_wpm_deviation: { min: 0, max: 1 }, backspace_frequency: { min: 0, max: 2 }, keystroke_latency_avg: { min: 0, max: 500 }, error_correction_rate: { min: 0, max: 1 }, typing_burst_rate: { min: 0, max: 5 }, modifier_key_usage_ratio: { min: 0, max: 1 }, typing_rhythm_irregularity: { min: 0, max: 200 },
+    refocus_frequency: { min: 0, max: 5 }, element_dwell_time_avg: { min: 0, max: 10000 }, blur_rate: { min: 0, max: 1 }, focus_shift_distance_avg: { min: 0, max: 200 },
+    form_validation_errors_count: { min: 0, max: 5 }, form_submission_rate: { min: 0, max: 1 }, form_abandonment_rate: { min: 0, max: 1 }, form_interaction_time_avg: { min: 0, max: 5000 }, input_correction_rate: { min: 0, max: 1 }, time_to_first_input_avg: { min: 0, max: 5000 },
+    repeated_action_attempts_count: { min: 0, max: 3 }, navigation_errors_count: { min: 0, max: 2 }, api_errors_count: { min: 0, max: 1 }, system_ui_errors_count: { min: 0, max: 1 }, critical_error_frequency: { min: 0, max: 1 }, time_since_last_error_s: { min: 0, max: 60 }, // Log scale for time since last error
+    gaze_deviation_avg: { min: 0, max: 50 }, pupil_dilation_avg: { min: 0, max: 5 }, fixation_frequency: { min: 0, max: 10 }, saccade_velocity_avg: { min: 0, max: 200 }, gaze_path_length: { min: 0, max: 5000 }, scan_path_area: { min: 0, max: 50000 },
+    heart_rate_avg: { min: 50, max: 120 }, heart_rate_variability: { min: 0, max: 20 }, skin_conductance_avg: { min: 0, max: 1 }, eeg_alpha_power_ratio: { min: 0, max: 1 }, eeg_theta_power_ratio: { min: 0, max: 1 },
+    task_complexity: { min: 0, max: 1 }, time_in_task: { min: 0, max: 600 }, task_switches_count: { min: 0, max: 3 }, task_completion_status: { min: 0, max: 1 }, task_urgency_score: { min: 0, max: 1 }, task_progress_rate: { min: 0, max: 0.1 },
+    active_interaction_ratio: { min: 0, max: 1 }, idle_duration_avg: { min: 0, max: 30 }, frustration_index_proxy: { min: 0, max: 10 }, user_activity_burstiness: { min: 0, max: 1000 }, session_duration_s: { min: 0, max: 3600 },
+    event_density: { min: 0, max: 100 },
+  };
+
+  private sigmoid(x: number): number { return 1 / (1 + Math.exp(-x)); } // Eq. 74
+  private normalizeFeature(value: number, min: number, max: number): number { // Eq. 70
+    if (max === min) return 0;
+    return Math.min(1, Math.max(0, (value - min) / (max - min)));
+  }
+
+  predict(features: TelemetryFeatureVector, userPrefs: UserPreferences, taskContext: TaskContext | null): { load: number; confidence: number } {
+    let rawScore = userPrefs.personalizedBaselineCLS + this.modelWeights.baseline_offset; // Eq. 95 (PDS) foundation
+
+    // Dynamic normalization based on user's perceived min/max or a global learned range
+    const getNormalized = (featureName: string, value: number, isInverse: boolean = false) => {
+      const range = this.featureMinMax[featureName];
+      if (!range) {
+        console.warn(`Normalization range not found for feature: ${featureName}`);
+        return value; // Return raw value if no range
+      }
+      const normalized = this.normalizeFeature(value, range.min, range.max);
+      return isInverse ? (1 - normalized) : normalized;
+    };
+
+    // Apply weights to normalized features
+    // Mouse Kinematics Features
+    if (features.mouse) {
+      rawScore += getNormalized('mouse_velocity_avg', features.mouse.mouse_velocity_avg) * this.modelWeights.mouse_velocity_avg;
+      rawScore += getNormalized('mouse_acceleration_avg', features.mouse.mouse_acceleration_avg) * this.modelWeights.mouse_acceleration_avg;
+      rawScore += getNormalized('mouse_path_tortuosity', features.mouse.mouse_path_tortuosity) * this.modelWeights.mouse_path_tortuosity;
+      rawScore += getNormalized('mouse_smoothness_index', features.mouse.mouse_smoothness_index, true) * this.modelWeights.mouse_smoothness_index; // Smoother is good (negative weight conceptual)
+      rawScore += getNormalized('mouse_travel_distance_total', features.mouse.mouse_travel_distance_total) * this.modelWeights.mouse_travel_distance_total;
+      rawScore += getNormalized('mouse_idle_time_ratio', features.mouse.mouse_idle_time_ratio) * this.modelWeights.mouse_idle_time_ratio;
+    }
+
+    // Click Dynamics Features
+    if (features.clicks) {
+      rawScore += getNormalized('click_frequency', features.clicks.click_frequency) * this.modelWeights.click_frequency;
+      rawScore += getNormalized('click_latency_avg', features.clicks.click_latency_avg) * this.modelWeights.click_latency_avg;
+      rawScore += getNormalized('target_acquisition_error_avg', features.clicks.target_acquisition_error_avg) * this.modelWeights.target_acquisition_error_avg;
+      rawScore += getNormalized('double_click_frequency', features.clicks.double_click_frequency) * this.modelWeights.double_click_frequency;
+      rawScore += getNormalized('click_pressure_avg', features.clicks.click_pressure_avg, true) * this.modelWeights.click_pressure_avg;
+      rawScore += getNormalized('error_click_rate', features.clicks.error_click_rate) * this.modelWeights.error_click_rate * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('misclick_rate', features.clicks.misclick_rate) * this.modelWeights.misclick_rate * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('repeated_click_on_same_element_freq', features.clicks.repeated_click_on_same_element_freq) * this.modelWeights.repeated_click_on_same_element_freq * userPrefs.sensitivityToErrors;
+    }
+
+    // Scroll Dynamics Features
+    if (features.scroll) {
+      rawScore += getNormalized('scroll_velocity_avg', features.scroll.scroll_velocity_avg) * this.modelWeights.scroll_velocity_avg;
+      rawScore += getNormalized('scroll_direction_changes', features.scroll.scroll_direction_changes) * this.modelWeights.scroll_direction_changes;
+      rawScore += getNormalized('scroll_pause_frequency', features.scroll.scroll_pause_frequency) * this.modelWeights.scroll_pause_frequency;
+      rawScore += getNormalized('scroll_jerk_avg', features.scroll.scroll_jerk_avg) * this.modelWeights.scroll_jerk_avg;
+      rawScore += getNormalized('scroll_coverage_ratio', features.scroll.scroll_coverage_ratio, true) * this.modelWeights.scroll_coverage_ratio;
+      rawScore += getNormalized('scroll_reversal_ratio', features.scroll.scroll_reversal_ratio) * this.modelWeights.scroll_reversal_ratio;
+      rawScore += getNormalized('scroll_depth_max', features.scroll.scroll_depth_max, true) * this.modelWeights.scroll_depth_max;
+    }
+
+    // Keyboard Dynamics Features
+    if (features.keyboard) {
+      const optimalWPM = 60; // Eq. 12: WPM benchmark
+      const wpmDeviation = Math.abs(features.keyboard.typing_speed_wpm - optimalWPM) / optimalWPM;
+      rawScore += getNormalized('typing_speed_wpm_deviation', wpmDeviation) * this.modelWeights.typing_speed_wpm_deviation;
+      rawScore += getNormalized('backspace_frequency', features.keyboard.backspace_frequency) * this.modelWeights.backspace_frequency;
+      rawScore += getNormalized('keystroke_latency_avg', features.keyboard.keystroke_latency_avg) * this.modelWeights.keystroke_latency_avg;
+      rawScore += getNormalized('error_correction_rate', features.keyboard.error_correction_rate) * this.modelWeights.error_correction_rate * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('typing_burst_rate', features.keyboard.typing_burst_rate) * this.modelWeights.typing_burst_rate;
+      rawScore += getNormalized('modifier_key_usage_ratio', features.keyboard.modifier_key_usage_ratio, true) * this.modelWeights.modifier_key_usage_ratio;
+      rawScore += getNormalized('typing_rhythm_irregularity', features.keyboard.typing_rhythm_irregularity) * this.modelWeights.typing_rhythm_irregularity;
+    }
+
+    // Focus Dynamics Features
+    if (features.focus) {
+      rawScore += getNormalized('refocus_frequency', features.focus.refocus_frequency) * this.modelWeights.refocus_frequency;
+      rawScore += getNormalized('element_dwell_time_avg', features.focus.element_dwell_time_avg, true) * this.modelWeights.element_dwell_time_avg;
+      rawScore += getNormalized('blur_rate', features.focus.blur_rate) * this.modelWeights.blur_rate;
+      rawScore += getNormalized('focus_shift_distance_avg', features.focus.focus_shift_distance_avg) * this.modelWeights.focus_shift_distance_avg;
+    }
+
+    // Form Interaction Features
+    if (features.forms) {
+      rawScore += getNormalized('form_validation_errors_count', features.forms.form_validation_errors_count) * this.modelWeights.form_validation_errors_count * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('form_submission_rate', features.forms.form_submission_rate, true) * this.modelWeights.form_submission_rate;
+      rawScore += getNormalized('form_abandonment_rate', features.forms.form_abandonment_rate) * this.modelWeights.form_abandonment_rate;
+      rawScore += getNormalized('form_interaction_time_avg', features.forms.form_interaction_time_avg, true) * this.modelWeights.form_interaction_time_avg;
+      rawScore += getNormalized('input_correction_rate', features.forms.input_correction_rate) * this.modelWeights.input_correction_rate * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('time_to_first_input_avg', features.forms.time_to_first_input_avg) * this.modelWeights.time_to_first_input_avg;
+    }
+
+    // Error Features (strong indicators of load)
+    if (features.errors) {
+      rawScore += getNormalized('repeated_action_attempts_count', features.errors.repeated_action_attempts_count) * this.modelWeights.repeated_action_attempts_count * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('navigation_errors_count', features.errors.navigation_errors_count) * this.modelWeights.navigation_errors_count * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('api_errors_count', features.errors.api_errors_count) * this.modelWeights.api_errors_count * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('system_ui_errors_count', features.errors.system_ui_errors_count) * this.modelWeights.system_ui_errors_count * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('critical_error_frequency', features.errors.critical_error_frequency) * this.modelWeights.critical_error_frequency * userPrefs.sensitivityToErrors;
+      rawScore += getNormalized('time_since_last_error_s', Math.log1p(features.errors.time_since_last_error_s), true) * this.modelWeights.time_since_last_error_s; // Log transform for time, inverse
+    }
+
+    // Gaze Tracking Features
+    if (features.gaze && userPrefs.privacySettings.gazeTrackingEnabled) {
+      rawScore += getNormalized('gaze_deviation_avg', features.gaze.gaze_deviation_avg) * this.modelWeights.gaze_deviation_avg;
+      rawScore += getNormalized('pupil_dilation_avg', features.gaze.pupil_dilation_avg) * this.modelWeights.pupil_dilation_avg;
+      rawScore += getNormalized('fixation_frequency', features.gaze.fixation_frequency, true) * this.modelWeights.fixation_frequency;
+      rawScore += getNormalized('saccade_velocity_avg', features.gaze.saccade_velocity_avg) * this.modelWeights.saccade_velocity_avg;
+      rawScore += getNormalized('gaze_path_length', features.gaze.gaze_path_length) * this.modelWeights.gaze_path_length;
+      rawScore += getNormalized('scan_path_area', features.gaze.scan_path_area) * this.modelWeights.scan_path_area;
+    }
+
+    // Biosignal Features
+    if (features.biosignals && userPrefs.privacySettings.biosignalTrackingEnabled) {
+      rawScore += getNormalized('heart_rate_avg', features.biosignals.heart_rate_avg) * this.modelWeights.heart_rate_avg;
+      rawScore += getNormalized('heart_rate_variability', features.biosignals.heart_rate_variability) * this.modelWeights.heart_rate_variability;
+      rawScore += getNormalized('skin_conductance_avg', features.biosignals.skin_conductance_avg) * this.modelWeights.skin_conductance_avg;
+      rawScore += getNormalized('eeg_alpha_power_ratio', features.biosignals.eeg_alpha_power_ratio, true) * this.modelWeights.eeg_alpha_power_ratio;
+      rawScore += getNormalized('eeg_theta_power_ratio', features.biosignals.eeg_theta_power_ratio) * this.modelWeights.eeg_theta_power_ratio;
+    }
+
+    // Task Context
+    if (features.task_context && taskContext) {
+      rawScore += getNormalized('task_complexity', features.task_context.current_task_complexity) * this.modelWeights.task_complexity;
+      rawScore += getNormalized('time_in_task', features.task_context.time_in_current_task_sec) * this.modelWeights.time_in_task;
+      rawScore += getNormalized('task_switches_count', features.task_context.task_switches_count) * this.modelWeights.task_switches_count;
+      rawScore += getNormalized('task_completion_status', features.task_context.task_completion_status, true) * this.modelWeights.task_completion_status;
+      rawScore += getNormalized('task_urgency_score', features.task_context.task_urgency_score) * this.modelWeights.task_urgency_score;
+      rawScore += getNormalized('task_progress_rate', features.task_context.task_progress_rate, true) * this.modelWeights.task_progress_rate;
+    }
+
+    // Engagement Features
+    if (features.engagement) {
+      rawScore += getNormalized('active_interaction_ratio', features.engagement.active_interaction_ratio, true) * this.modelWeights.active_interaction_ratio;
+      rawScore += getNormalized('idle_duration_avg', features.engagement.idle_duration_avg) * this.modelWeights.idle_duration_avg;
+      rawScore += getNormalized('frustration_index_proxy', features.engagement.frustration_index_proxy) * this.modelWeights.frustration_index_proxy;
+      rawScore += getNormalized('user_activity_burstiness', features.engagement.user_activity_burstiness) * this.modelWeights.user_activity_burstiness;
+      rawScore += getNormalized('session_duration_s', features.engagement.session_duration_s) * this.modelWeights.session_duration_s;
+    }
+
+    rawScore += getNormalized('event_density', features.event_density) * this.modelWeights.event_density; // Eq. 96 (RDI)
+
+    // Adjust for cognitive reserve (a higher reserve makes user more resilient to load)
+    rawScore *= (1 - userPrefs.cognitiveReserveEstimation * 0.5); // Reduce raw load if reserve is high
+
+    // Apply Sigmoid to ensure score is within [0, 1] after linear combination. Eq. 74
+    let finalLoad = this.sigmoid(rawScore * 2 - 1); // Scale rawScore to roughly -5 to 5 for sigmoid input
+
+    // Adjust based on UI mode context (Eq. 98: Cognitive Dissonance)
+    if (features.ui_mode_context === 'minimal' || features.ui_mode_context === 'guided' || features.ui_mode_context === 'recovery') {
+      finalLoad *= 0.95; // Small reduction if system is already trying to help
+    } else if (features.ui_mode_context === 'crisis') {
+      finalLoad *= 1.05; // Crisis mode means high load, so amplify
+    }
+
+    // Mock confidence score (higher load often means lower confidence, or stable features mean higher confidence)
+    const confidence = 1 - Math.abs(finalLoad - 0.5) * 0.8 - (features.errors?.critical_error_frequency || 0) * 0.5;
+    return { load: Math.min(1.0, Math.max(0.0, finalLoad)), confidence: Math.min(1.0, Math.max(0.0, confidence)) };
+  }
+
+  // Claim 5: Adaptive Model Refinement through Feedback.
+  // "The CognitiveLoadEngine is designed for continuous learning, allowing for dynamic updates to its predictive model weights. This facilitates an adaptive feedback loop where user feedback or A/B testing results can iteratively improve the accuracy of cognitive load predictions."
+  //
+  // Disproof & Bulletproofing: The original `updateModelWeights` was a placeholder. For "bulletproof" adaptation, the model needs an *actual* learning mechanism. Even if simplified, `updateWeights` needs to simulate adjusting weights based on a 'ground truth' (e.g., explicit user feedback, or inferred success/failure of adaptation). 'Calibrate' allows for initial learning from a dataset. This moves towards true online learning (Eq. 97).
+  updateWeights(feedback: { features: TelemetryFeatureVector; actualOutcome: number; predictedLoad: number }): void {
+    // This is a conceptual implementation of online learning.
+    // In a real system, this would involve gradient descent or other optimization algorithms.
+    // For simplicity, we'll nudge weights based on prediction error.
+    const learningRate = 0.01; // Eq. 104
+    const error = feedback.actualOutcome - feedback.predictedLoad; // Difference between desired and actual
+
+    for (const key in this.modelWeights) {
+      if (this.modelWeights.hasOwnProperty(key) && key !== 'baseline_offset') {
+        // Mock: adjust weight in direction that reduces error.
+        // A more sophisticated approach would use feature values, e.g., weight_new = weight_old + learning_rate * error * feature_value
+        // We will just nudge it slightly based on overall error and assumed impact.
+        this.modelWeights[key] += learningRate * error * (this.modelWeights[key] > 0 ? 1 : -1) * 0.01;
+        // Clamp weights to prevent explosion
+        this.modelWeights[key] = Math.min(0.5, Math.max(-0.5, this.modelWeights[key]));
+      }
+    }
+    this.modelWeights.baseline_offset += learningRate * error * 0.005;
+    this.modelWeights.baseline_offset = Math.min(0.2, Math.max(-0.2, this.modelWeights.baseline_offset));
+
+    console.log(`CognitiveLoadModel: Weights updated based on feedback. Error: ${error.toFixed(2)}`);
+  }
+
+  calibrate(calibrationData: TelemetryFeatureVector[]): void {
+    // Mock calibration: adjust min/max ranges based on initial observed data
+    console.log(`CognitiveLoadModel: Calibrating model with ${calibrationData.length} data points.`);
+    calibrationData.forEach(features => {
+      // Iterate through all features and update min/max
+      for (const featureGroupKey in features) {
+        if (typeof features[featureGroupKey] === 'object' && features[featureGroupKey] !== null) {
+          for (const featureKey in features[featureGroupKey]) {
+            const fullFeatureName = featureKey; // Simplified for this example, would be 'group_feature'
+            const value = features[featureGroupKey][featureKey];
+            if (typeof value === 'number' && this.featureMinMax[fullFeatureName]) {
+              this.featureMinMax[fullFeatureName].min = Math.min(this.featureMinMax[fullFeatureName].min, value);
+              this.featureMinMax[fullFeatureName].max = Math.max(this.featureMinMax[fullFeatureName].max, value);
+            }
+          }
+        } else if (typeof features[featureGroupKey] === 'number') {
+          const value = features[featureGroupKey];
+          if (this.featureMinMax[featureGroupKey]) {
+            this.featureMinMax[featureGroupKey].min = Math.min(this.featureMinMax[featureGroupKey].min, value);
+            this.featureMinMax[featureGroupKey].max = Math.max(this.featureMinMax[featureGroupKey].max, value);
+          }
+        }
+      }
+    });
+    console.log("CognitiveLoadModel: Feature normalization ranges updated after calibration.");
+  }
+}
+
 export class CognitiveLoadEngine {
   private latestFeatureVector: TelemetryFeatureVector | null = null;
   private loadHistory: number[] = [];
   private readonly historyLength: number = 20; // For smoothing
   private readonly predictionIntervalMs: number = 500;
   private predictionTimer: ReturnType<typeof setInterval> | null = null;
-  private onCognitiveLoadUpdate: (load: number) => void;
+  private onCognitiveLoadUpdate: (load: number, confidence: number) => void;
   private userProfileService = UserProfileService.getInstance();
   private taskContextManager = TaskContextManager.getInstance();
+  private cognitiveLoadModel: ICognitiveLoadModel; // Pluggable model
 
-  private modelWeights: { [key: string]: number } = {
-    mouse_velocity_avg: 0.05, mouse_acceleration_avg: 0.07, mouse_path_tortuosity: 0.1, mouse_smoothness_index: -0.05, mouse_travel_distance_total: 0.01,
-    click_frequency: 0.08, click_latency_avg: 0.1, target_acquisition_error_avg: 0.15, double_click_frequency: 0.05, click_pressure_avg: -0.02, error_click_rate: 0.2,
-    scroll_velocity_avg: 0.03, scroll_direction_changes: 0.08, scroll_pause_frequency: 0.04, scroll_jerk_avg: 0.06, scroll_coverage_ratio: -0.01,
-    typing_speed_wpm_deviation: 0.07, backspace_frequency: 0.18, keystroke_latency_avg: 0.08, error_correction_rate: 0.15, typing_burst_rate: 0.04, modifier_key_usage_ratio: -0.03,
-    refocus_frequency: 0.1, element_dwell_time_avg: -0.05, blur_rate: 0.07,
-    form_validation_errors_count: 0.25, form_submission_rate: -0.05, form_abandonment_rate: 0.2, form_interaction_time_avg: -0.03,
-    repeated_action_attempts_count: 0.2, navigation_errors_count: 0.15, api_errors_count: 0.3, system_ui_errors_count: 0.35,
-    gaze_deviation_avg: 0.12, pupil_dilation_avg: 0.15, fixation_frequency: -0.05, saccade_velocity_avg: 0.08,
-    task_complexity: 0.1, time_in_task: 0.02, task_switches_count: 0.09, task_completion_status: -0.05,
-    active_interaction_ratio: -0.03, idle_duration_avg: 0.05, frustration_index_proxy: 0.25,
-    event_density: 0.05,
-    baseline_offset: 0.0
-  };
-
-  constructor(onUpdate: (load: number) => void) {
+  constructor(onUpdate: (load: number, confidence: number) => void, model: ICognitiveLoadModel = new SimpleAdaptiveCognitiveLoadModel()) {
     this.onCognitiveLoadUpdate = onUpdate;
+    this.cognitiveLoadModel = model;
     this.predictionTimer = setInterval(this.inferLoad, this.predictionIntervalMs);
   }
 
@@ -1591,196 +2245,17 @@ export class CognitiveLoadEngine {
     this.latestFeatureVector = featureVector;
   }
 
-  // Normalization function (Min-Max scaling for features, Eq. 64)
-  private normalizeFeature(value: number, min: number, max: number): number {
-    if (max === min) return 0;
-    return Math.min(1, Math.max(0, (value - min) / (max - min)));
-  }
-
-  // Sigmoid activation function (Eq. 68)
-  private sigmoid(x: number): number {
-    return 1 / (1 + Math.exp(-x));
-  }
-
-  // A more sophisticated mock machine learning model for cognitive load prediction
-  private mockPredict(features: TelemetryFeatureVector): number {
-    const prefs = this.userProfileService.getPreferences();
-    let rawScore = prefs.personalizedBaselineCLS + this.modelWeights.baseline_offset; // Eq. 91: Perceived Difficulty Score (PDS) foundation
-
-    // Feature normalization and weighted sum (Eq. 67: Weighted Average, Eq. 80: Logistic Regression Probability principle)
-    // Applying min-max normalization where appropriate, and then weighting
-    // Many equation references here, as each calculation step is an equation.
-
-    // Mouse Kinematics Features (Eq. 1-8 referenced in TelemetryAgent)
-    if (features.mouse) {
-      const v_norm = this.normalizeFeature(features.mouse.mouse_velocity_avg, 0, 10); // Eq. 64
-      const a_norm = this.normalizeFeature(features.mouse.mouse_acceleration_avg, 0, 1);
-      const t_norm = this.normalizeFeature(features.mouse.mouse_path_tortuosity, 1, 5); // Tortuosity starts at 1
-      const s_norm = this.normalizeFeature(features.mouse.mouse_smoothness_index, 0, 1);
-      const d_norm = this.normalizeFeature(features.mouse.mouse_travel_distance_total, 0, 1000);
-
-      rawScore += v_norm * this.modelWeights.mouse_velocity_avg;
-      rawScore += a_norm * this.modelWeights.mouse_acceleration_avg;
-      rawScore += t_norm * this.modelWeights.mouse_path_tortuosity;
-      rawScore += (1 - s_norm) * this.modelWeights.mouse_smoothness_index; // Smoother is good (negative weight)
-      rawScore += d_norm * this.modelWeights.mouse_travel_distance_total;
-    }
-
-    // Click Dynamics Features (Eq. from TelemetryAgent)
-    if (features.clicks) {
-      const cf_norm = this.normalizeFeature(features.clicks.click_frequency, 0, 5);
-      const cl_norm = this.normalizeFeature(features.clicks.click_latency_avg, 0, 500);
-      const ta_norm = this.normalizeFeature(features.clicks.target_acquisition_error_avg, 0, 50);
-      const dc_norm = this.normalizeFeature(features.clicks.double_click_frequency, 0, 2);
-      const cp_norm = this.normalizeFeature(features.clicks.click_pressure_avg, 0, 1);
-      const ec_norm = this.normalizeFeature(features.clicks.error_click_rate, 0, 1);
-
-      rawScore += cf_norm * this.modelWeights.click_frequency;
-      rawScore += cl_norm * this.modelWeights.click_latency_avg;
-      rawScore += ta_norm * this.modelWeights.target_acquisition_error_avg;
-      rawScore += dc_norm * this.modelWeights.double_click_frequency;
-      rawScore += (1 - cp_norm) * this.modelWeights.click_pressure_avg; // Higher pressure -> more stressed (negative weight for current model)
-      rawScore += ec_norm * this.modelWeights.error_click_rate;
-    }
-
-    // Scroll Dynamics Features (Eq. 31-40)
-    if (features.scroll) {
-      const sv_norm = this.normalizeFeature(features.scroll.scroll_velocity_avg, 0, 2000);
-      const sdc_norm = this.normalizeFeature(features.scroll.scroll_direction_changes, 0, 10);
-      const spf_norm = this.normalizeFeature(features.scroll.scroll_pause_frequency, 0, 5);
-      const sj_norm = this.normalizeFeature(features.scroll.scroll_jerk_avg, 0, 1);
-      const scr_norm = this.normalizeFeature(features.scroll.scroll_coverage_ratio, 0, 1);
-
-      rawScore += sv_norm * this.modelWeights.scroll_velocity_avg;
-      rawScore += sdc_norm * this.modelWeights.scroll_direction_changes;
-      rawScore += spf_norm * this.modelWeights.scroll_pause_frequency;
-      rawScore += sj_norm * this.modelWeights.scroll_jerk_avg;
-      rawScore += scr_norm * this.modelWeights.scroll_coverage_ratio; // Scrolling less might indicate issues, or completion (ambiguous feature)
-    }
-
-    // Keyboard Dynamics Features (Eq. 11-20)
-    if (features.keyboard) {
-      const optimalWPM = 60; // Eq. 11: WPM benchmark
-      const wpmDeviation = Math.abs(features.keyboard.typing_speed_wpm - optimalWPM) / optimalWPM;
-      const wpm_norm = this.normalizeFeature(wpmDeviation, 0, 1);
-
-      const bf_norm = this.normalizeFeature(features.keyboard.backspace_frequency, 0, 2);
-      const kl_norm = this.normalizeFeature(features.keyboard.keystroke_latency_avg, 0, 500);
-      const erc_norm = this.normalizeFeature(features.keyboard.error_correction_rate, 0, 1);
-      const tbr_norm = this.normalizeFeature(features.keyboard.typing_burst_rate, 0, 5);
-      const mku_norm = this.normalizeFeature(features.keyboard.modifier_key_usage_ratio, 0, 1);
-
-      rawScore += wpm_norm * this.modelWeights.typing_speed_wpm_deviation;
-      rawScore += bf_norm * this.modelWeights.backspace_frequency;
-      rawScore += kl_norm * this.modelWeights.keystroke_latency_avg;
-      rawScore += erc_norm * this.modelWeights.error_correction_rate;
-      rawScore += tbr_norm * this.modelWeights.typing_burst_rate;
-      rawScore += (1 - mku_norm) * this.modelWeights.modifier_key_usage_ratio; // High modifier usage might be power user (negative weight)
-    }
-
-    // Focus Dynamics Features
-    if (features.focus) {
-      const rf_norm = this.normalizeFeature(features.focus.refocus_frequency, 0, 5);
-      const edt_norm = this.normalizeFeature(features.focus.element_dwell_time_avg, 0, 10000);
-      const br_norm = this.normalizeFeature(features.focus.blur_rate, 0, 1);
-
-      rawScore += rf_norm * this.modelWeights.refocus_frequency;
-      rawScore += (1 - edt_norm) * this.modelWeights.element_dwell_time_avg; // Longer dwell time means less frequent refocus
-      rawScore += br_norm * this.modelWeights.blur_rate;
-    }
-
-    // Form Interaction Features
-    if (features.forms) {
-      const fve_norm = this.normalizeFeature(features.forms.form_validation_errors_count, 0, 5);
-      const fsr_norm = this.normalizeFeature(features.forms.form_submission_rate, 0, 1);
-      const far_norm = this.normalizeFeature(features.forms.form_abandonment_rate, 0, 1);
-      const fit_norm = this.normalizeFeature(features.forms.form_interaction_time_avg, 0, 5000);
-
-      rawScore += fve_norm * this.modelWeights.form_validation_errors_count;
-      rawScore += (1 - fsr_norm) * this.modelWeights.form_submission_rate; // Successful submission reduces load
-      rawScore += far_norm * this.modelWeights.form_abandonment_rate;
-      rawScore += (1 - fit_norm) * this.modelWeights.form_interaction_time_avg; // Slower average interaction might indicate difficulty
-    }
-
-    // Error Features (strong indicators of load) (Eq. 41-50)
-    if (features.errors) {
-      const fve_count_norm = this.normalizeFeature(features.errors.form_validation_errors_count, 0, 3);
-      const raa_count_norm = this.normalizeFeature(features.errors.repeated_action_attempts_count, 0, 3);
-      const ne_count_norm = this.normalizeFeature(features.errors.navigation_errors_count, 0, 2);
-      const api_count_norm = this.normalizeFeature(features.errors.api_errors_count, 0, 1);
-      const sui_count_norm = this.normalizeFeature(features.errors.system_ui_errors_count, 0, 1);
-
-      rawScore += fve_count_norm * this.modelWeights.form_validation_errors_count * prefs.sensitivityToErrors;
-      rawScore += raa_count_norm * this.modelWeights.repeated_action_attempts_count * prefs.sensitivityToErrors;
-      rawScore += ne_count_norm * this.modelWeights.navigation_errors_count * prefs.sensitivityToErrors;
-      rawScore += api_count_norm * this.modelWeights.api_errors_count * prefs.sensitivityToErrors;
-      rawScore += sui_count_norm * this.modelWeights.system_ui_errors_count * prefs.sensitivityToErrors;
-    }
-
-    // Gaze Tracking Features (Eq. 21-30)
-    if (features.gaze) {
-      const gd_norm = this.normalizeFeature(features.gaze.gaze_deviation_avg, 0, 50);
-      const pd_norm = this.normalizeFeature(features.gaze.pupil_dilation_avg, 0, 5); // Assuming some unit for dilation
-      const ff_norm = this.normalizeFeature(features.gaze.fixation_frequency, 0, 10);
-      const sv_norm = this.normalizeFeature(features.gaze.saccade_velocity_avg, 0, 200);
-
-      rawScore += gd_norm * this.modelWeights.gaze_deviation_avg;
-      rawScore += pd_norm * this.modelWeights.pupil_dilation_avg;
-      rawScore += (1 - ff_norm) * this.modelWeights.fixation_frequency; // High fixation freq means focused (negative weight)
-      rawScore += sv_norm * this.modelWeights.saccade_velocity_avg;
-    }
-
-    // Task Context (Eq. 51-54)
-    if (features.task_context && features.task_context.current_task_complexity > 0) {
-      const tc_norm = features.task_context.current_task_complexity; // Already normalized
-      const tt_norm = this.normalizeFeature(features.task_context.time_in_current_task_sec, 0, 600);
-      const ts_norm = this.normalizeFeature(features.task_context.task_switches_count, 0, 3);
-      const tcs_norm = features.task_context.task_completion_status;
-
-      rawScore += tc_norm * this.modelWeights.task_complexity;
-      rawScore += tt_norm * this.modelWeights.time_in_task;
-      rawScore += ts_norm * this.modelWeights.task_switches_count;
-      rawScore += (1 - tcs_norm) * this.modelWeights.task_completion_status; // Completed task reduces load
-    }
-
-    // Engagement Features (Eq. 55-57)
-    if (features.engagement) {
-      const air_norm = this.normalizeFeature(features.engagement.active_interaction_ratio, 0, 1);
-      const id_norm = this.normalizeFeature(features.engagement.idle_duration_avg, 0, 30);
-      const fi_norm = this.normalizeFeature(features.engagement.frustration_index_proxy, 0, 10);
-
-      rawScore += (1 - air_norm) * this.modelWeights.active_interaction_ratio; // High interaction ratio indicates engagement, so less load
-      rawScore += id_norm * this.modelWeights.idle_duration_avg;
-      rawScore += fi_norm * this.modelWeights.frustration_index_proxy;
-    }
-
-    const ed_norm = this.normalizeFeature(features.event_density, 0, 100); // Eq. 92: Resource Demand Index (RDI)
-    rawScore += ed_norm * this.modelWeights.event_density;
-
-    // Apply Sigmoid to ensure score is within [0, 1] after linear combination. Eq. 68
-    let finalLoad = this.sigmoid(rawScore * 2 - 1); // Scale rawScore to roughly -5 to 5 for sigmoid input
-
-    // Adjust based on UI mode context (e.g., if in minimal, load might feel lower)
-    // This forms part of the cognitive dissonance metric (Eq. 94)
-    if (features.ui_mode_context === 'minimal' || features.ui_mode_context === 'guided') {
-      finalLoad *= 0.95; // Small reduction if system is already trying to help
-    } else if (features.ui_mode_context === 'crisis') {
-      finalLoad *= 1.05; // Crisis mode means high load, so amplify
-    }
-
-    return Math.min(1.0, Math.max(0.0, finalLoad));
-  }
-
   private inferLoad = (): void => {
     if (!this.latestFeatureVector) {
+      // If no new features, report the last smoothed load with assumed confidence
       const lastLoad = this.loadHistory.length > 0 ? this.loadHistory[this.loadHistory.length - 1] : this.userProfileService.getPreferences().personalizedBaselineCLS;
-      this.onCognitiveLoadUpdate(lastLoad);
+      this.onCognitiveLoadUpdate(lastLoad, 0.7); // Assume medium confidence if no new data
       return;
     }
 
-    const rawLoad = this.mockPredict(this.latestFeatureVector);
+    const { load: rawLoad, confidence } = this.cognitiveLoadModel.predict(this.latestFeatureVector, this.userProfileService.getPreferences(), this.taskContextManager.getCurrentTask());
 
-    // Apply Exponential Moving Average for smoothing (Eq. 66)
+    // Apply Exponential Moving Average for smoothing (Eq. 72)
     if (this.loadHistory.length === 0) {
       this.loadHistory.push(rawLoad);
     } else {
@@ -1794,19 +2269,21 @@ export class CognitiveLoadEngine {
     }
     const currentSmoothedLoad = this.loadHistory[this.loadHistory.length - 1];
 
-    this.onCognitiveLoadUpdate(currentSmoothedLoad);
+    this.onCognitiveLoadUpdate(currentSmoothedLoad, confidence);
     this.latestFeatureVector = null; // Clear features processed
   };
 
-  /**
-   * Claim 5: Adaptive Model Refinement through Feedback.
-   * "The CognitiveLoadEngine is designed for continuous learning, allowing for dynamic updates to its predictive model weights. This facilitates an adaptive feedback loop where user feedback or A/B testing results can iteratively improve the accuracy of cognitive load predictions."
-   */
-  public updateModelWeights(newWeights: Partial<{ [key: string]: number }>): void {
-    // In a real system, this would involve retraining or updating ML model parameters.
-    // Eq. 93: Adaptive Weight Update (conceptual basis)
-    this.modelWeights = { ...this.modelWeights, ...newWeights };
-    console.log('CognitiveLoadEngine: Model weights updated.');
+  public updateModel(model: ICognitiveLoadModel): void {
+    this.cognitiveLoadModel = model;
+    console.log("CognitiveLoadEngine: Prediction model updated.");
+  }
+
+  public feedBackToModel(feedback: Parameters<ICognitiveLoadModel['updateWeights']>[0]): void {
+    this.cognitiveLoadModel.updateWeights(feedback);
+  }
+
+  public calibrateModel(calibrationData: TelemetryFeatureVector[]): void {
+    this.cognitiveLoadModel.calibrate(calibrationData);
   }
 
   public stop(): void {
@@ -1823,25 +2300,31 @@ export class CognitiveLoadEngine {
  */
 export const UI_ADAPTATION_DECISION_FLOW_MERMAID = `
 graph TD
-    A[Current Cognitive Load Score] --> B{Compare to Load Thresholds (UserProfileService)};
+    A[Current Cognitive Load Score & Confidence] --> B{Compare to Adaptive Load Thresholds (AdaptiveThresholdManager)};
     C[Current Task Context (TaskContextManager)] --> B;
     D[Current UI Mode] --> B;
-    B -- Hysteresis & Sustained Load Logic --> E[New UI Mode];
-    E --> F[AdaptationPolicyManager];
-    G[UI Element Type] --> F;
-    F --> H{Get UI Element State (isVisible, className)};
-    H --> I[Rendered UI Component];
+    E[User Preferences (UserProfileService)] --> B;
+    B -- Hysteresis & Sustained Load Logic --> F[New UI Mode];
+    F --> G[AdaptationPolicyManager];
+    H[UI Element Type] --> G;
+    I[Proposed Adaptation Strategy & Intensity] --> G;
+    G --> J{Get UI Element State (isVisible, className, styles, etc.)};
+    J --> K[Rendered UI Component];
+    K -- User Interaction --> FeedbackLoopManager[Feedback Loop Manager];
+    FeedbackLoopManager --> B;
+    FeedbackLoopManager --> E;
 `;
 
 /**
  * Claim 6: Context-Aware Adaptation Policies.
  * "The AdaptationPolicyManager ensures that UI changes are not arbitrary but are driven by context-aware rules. It combines general mode-based policies with user-specific preferences and real-time element types to deliver highly targeted and effective interface modifications."
+ *
+ * Disproof & Bulletproofing: "Context-aware" goes deeper when policies consider not just mode and type, but also task urgency, user fatigue (proxied by cognitive load), and explicit feedback. "Highly targeted and effective" requires evaluating the *outcome* of an adaptation. Adding `progressive_disclosure` and `temporal_pacing` as strategies moves beyond simple hiding/showing. Policies should also have an `intensity` parameter. The goal is not just to change, but to change *optimally*.
  */
-// --- Adaptation Policy Manager ---
-// This class defines concrete policies for UI elements based on the current UI mode.
 export class AdaptationPolicyManager {
   private static instance: AdaptationPolicyManager;
   private userProfileService = UserProfileService.getInstance();
+  private taskContextManager = TaskContextManager.getInstance();
 
   private constructor() {}
 
@@ -1854,49 +2337,59 @@ export class AdaptationPolicyManager {
 
   // Define default or A/B testable policies.
   // In a real system, these would be fetched from a configuration service or derived from ML models.
-  private getPolicyForMode(mode: UiMode, elementType: UiElementType): 'obscure' | 'deemphasize' | 'reposition' | 'summarize' | 'highlight' | 'segment' | 'none' {
-    // User-defined policies take precedence
-    const userPolicy = this.userProfileService.getPreferences().adaptationPolicySelection[mode]?.[elementType];
-    if (userPolicy) return userPolicy;
+  private getDefaultPolicyForMode(mode: UiMode, elementType: UiElementType): 'obscure' | 'deemphasize' | 'reposition' | 'summarize' | 'highlight' | 'segment' | 'none' | 'progressive_disclosure' | 'temporal_pacing' {
+    const currentTask = this.taskContextManager.getCurrentTask();
+    const isCriticalTask = currentTask?.complexity === 'critical' || currentTask?.urgency === 'immediate';
 
-    // Default policies based on mode and element type
     switch (mode) {
       case 'standard':
         return 'none'; // All visible, fully interactive
       case 'focus':
         if (elementType === UiElementType.SECONDARY) return 'deemphasize';
-        if (elementType === UiElementType.TERTIARY) return 'obscure';
+        if (elementType === UiElementType.TERTIARY || elementType === UiElementType.DYNAMIC_CONTENT) return 'obscure';
         if (elementType === UiElementType.HINT_CONTEXTUAL) return 'highlight'; // Highlight relevant hints
+        if (elementType === UiElementType.CRITICAL_ACTION && isCriticalTask) return 'highlight'; // Prioritize critical task actions
         return 'none';
       case 'minimal':
-        if (elementType === UiElementType.SECONDARY || elementType === UiElementType.TERTIARY || elementType === UiElementType.DYNAMIC_CONTENT) return 'obscure';
+        if (elementType === UiElementType.SECONDARY || elementType === UiElementType.TERTIARY || elementType === UiElementType.DYNAMIC_CONTENT || elementType === UiElementType.DATA_DISPLAY) return 'obscure';
         if (elementType === UiElementType.CRITICAL_ACTION) return 'highlight'; // Ensure critical actions are visible
+        if (elementType === UiElementType.HINT_CONTEXTUAL) return 'summarize'; // Summarize hints to save space
         return 'none'; // Primary and global nav elements still shown
-      case 'guided': // New mode
-        if (elementType === UiElementType.SECONDARY || elementType === UiElementType.TERTIARY || elementType === UiElementType.DYNAMIC_CONTENT) return 'obscure';
+      case 'guided': // New mode: Focus on guided path, de-emphasize distractions
+        if (elementType === UiElementType.SECONDARY || elementType === UiElementType.TERTIARY || elementType === UiElementType.DYNAMIC_CONTENT || elementType === UiElementType.DATA_DISPLAY) return 'obscure';
         if (elementType === UiElementType.GUIDED) return 'highlight'; // Guided elements are prominent
         if (elementType === UiElementType.PRIMARY) return 'deemphasize'; // Primary might be deemphasized to focus on guided path
         if (elementType === UiElementType.CRITICAL_ACTION) return 'segment'; // Segment to break down complex actions
+        if (elementType === UiElementType.FORM_INPUT && isCriticalTask) return 'temporal_pacing'; // Slow down form input for critical tasks
         return 'none';
       case 'crisis': // New: Extreme load, only critical actions and emergency info
         if (elementType === UiElementType.CRITICAL_ACTION || elementType === UiElementType.FEEDBACK_NOTIFICATION) return 'highlight';
         if (elementType === UiElementType.PRIMARY || elementType === UiElementType.NAV_GLOBAL) return 'summarize'; // Summarize nav
+        if (elementType === UiElementType.STATUS_INDICATOR) return 'highlight'; // Critical status (e.g., error messages)
         return 'obscure'; // Hide almost everything else
       case 'recovery': // New: Transition mode after crisis, gradually restore UI
         if (elementType === UiElementType.CRITICAL_ACTION || elementType === UiElementType.FEEDBACK_NOTIFICATION) return 'none';
         if (elementType === UiElementType.PRIMARY || elementType === UiElementType.NAV_GLOBAL) return 'none';
         if (elementType === UiElementType.SECONDARY) return 'deemphasize'; // Re-introduce secondary elements but deemphasized
+        if (elementType === UiElementType.DYNAMIC_CONTENT) return 'progressive_disclosure'; // Introduce complex content progressively
         return 'obscure';
+      case 'calibration': // Special mode for user onboarding or system recalibration
+        return 'none'; // Show all elements, possibly with overlays for instructions
+      case 'learning': // System is observing without aggressive adaptation
+        return 'none'; // Minimal intervention
       default:
         return 'none';
     }
   }
 
-  public getUiElementState(mode: UiMode, elementType: UiElementType): { isVisible: boolean; className: string; adaptationStrategy: string } {
-    const policy = this.getPolicyForMode(mode, elementType);
+  public getUiElementState(mode: UiMode, elementType: UiElementType): { isVisible: boolean; className: string; adaptationStrategy: string; customStyles?: React.CSSProperties } {
+    const userPolicy = this.userProfileService.getPreferences().adaptationPolicySelection[mode]?.[elementType];
+    const policy = userPolicy || this.getDefaultPolicyForMode(mode, elementType);
+
     let isVisible = true;
     let className = `${elementType}-element`;
     let adaptationStrategy = policy;
+    let customStyles: React.CSSProperties | undefined = undefined;
 
     switch (policy) {
       case 'obscure':
@@ -1904,19 +2397,31 @@ export class AdaptationPolicyManager {
         break;
       case 'deemphasize':
         className += ` mode-${mode}-deemphasize`;
+        customStyles = { opacity: 0.15, filter: 'blur(2px) grayscale(80%)', pointerEvents: 'none' };
         break;
       case 'reposition':
         className += ` mode-${mode}-reposition`; // Placeholder for repositioning logic
-        // Repositioning would often require direct DOM manipulation or complex CSS Flex/Grid changes
+        // This would require more sophisticated CSS or JS manipulation, e.g., using a portal for critical actions
+        customStyles = { order: -1 }; // Example: move to front in a flex container
         break;
       case 'summarize':
         className += ` mode-${mode}-summarize`; // Placeholder for summarization logic (e.g., replace a detailed list with a single link)
+        customStyles = { maxHeight: '50px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' };
         break;
       case 'highlight':
         className += ` mode-${mode}-highlight`;
+        customStyles = { border: `2px solid var(--highlight-color-${mode})`, boxShadow: `0 0 8px var(--highlight-color-${mode}-alpha)` };
         break;
       case 'segment':
         className += ` mode-${mode}-segment`; // Break down complex components into smaller steps
+        break;
+      case 'progressive_disclosure':
+        className += ` mode-${mode}-progressive-disclosure`;
+        customStyles = { maxHeight: '100px', overflow: 'hidden', cursor: 'pointer', border: '1px dashed #bbb' }; // initially collapsed
+        break;
+      case 'temporal_pacing':
+        className += ` mode-${mode}-temporal-pacing`;
+        customStyles = { animation: 'slow-input-hint 2s infinite', transition: 'all 0.5s ease-in-out' }; // Slow down interaction for form fields
         break;
       case 'none':
       default:
@@ -1924,7 +2429,219 @@ export class AdaptationPolicyManager {
         break;
     }
 
-    return { isVisible, className, adaptationStrategy };
+    return { isVisible, className, adaptationStrategy, customStyles };
+  }
+}
+
+// Adaptive Threshold Manager
+export class AdaptiveThresholdManager {
+  private static instance: AdaptiveThresholdManager;
+  private userProfileService = UserProfileService.getInstance();
+  private listeners: Set<(thresholds: UserPreferences['cognitiveLoadThresholds']) => void> = new Set();
+
+  private constructor() {
+    this.userProfileService.subscribe(prefs => this.notifyListeners(prefs.cognitiveLoadThresholds));
+  }
+
+  public static getInstance(): AdaptiveThresholdManager {
+    if (!AdaptiveThresholdManager.instance) {
+      AdaptiveThresholdManager.instance = new AdaptiveThresholdManager();
+    }
+    return AdaptiveThresholdManager.instance;
+  }
+
+  /**
+   * Claim: Adaptive Thresholds for Dynamic Sensitivity.
+   * "The AdaptiveThresholdManager dynamically adjusts cognitive load thresholds based on sustained user performance, explicit feedback, and changing user context (e.g., task urgency, cognitive reserve), moving beyond fixed thresholds to reflect the user's current capacity more accurately."
+   *
+   * This is crucial for "homeostasis for eternity." Fixed thresholds are brittle. This function updates them.
+   */
+  public adjustThresholds(currentLoad: number, adaptationOutcome: 'success' | 'failure' | 'neutral', userFeedback: 'helpful' | 'unhelpful' | 'none' = 'none'): void {
+    const prefs = this.userProfileService.getPreferences();
+    let thresholds = { ...prefs.cognitiveLoadThresholds };
+
+    const learningRate = 0.01; // Eq. 104
+    const decayRate = 0.005; // Eq. 83
+
+    // Adjust 'adaptive' thresholds based on feedback and observed load
+    if (userFeedback === 'helpful' || adaptationOutcome === 'success') {
+      // If helpful/successful, thresholds were likely appropriate or slightly too high.
+      // Make them slightly more sensitive (lower for high thresholds, higher for low thresholds)
+      thresholds.adaptiveHigh = Math.max(thresholds.low + 0.05, thresholds.adaptiveHigh - learningRate * 0.5);
+      thresholds.adaptiveCritical = Math.max(thresholds.high + 0.05, thresholds.adaptiveCritical - learningRate);
+    } else if (userFeedback === 'unhelpful' || adaptationOutcome === 'failure') {
+      // If unhelpful/failure, thresholds might have been too sensitive or not sensitive enough
+      // Push them away from current load, making them less reactive in the current context
+      if (currentLoad > thresholds.adaptiveHigh) {
+        thresholds.adaptiveHigh = Math.min(thresholds.critical - 0.05, thresholds.adaptiveHigh + learningRate * 0.5);
+      }
+      if (currentLoad > thresholds.adaptiveCritical) {
+        thresholds.adaptiveCritical = Math.min(0.95, thresholds.adaptiveCritical + learningRate);
+      }
+    }
+
+    // Gradual decay towards baseline to prevent thresholds from drifting too far
+    thresholds.adaptiveHigh += (prefs.cognitiveLoadThresholds.high - thresholds.adaptiveHigh) * decayRate;
+    thresholds.adaptiveLow += (prefs.cognitiveLoadThresholds.low - thresholds.adaptiveLow) * decayRate;
+    thresholds.adaptiveCritical += (prefs.cognitiveLoadThresholds.critical - thresholds.adaptiveCritical) * decayRate;
+
+    // Ensure hysteresis (Upper_Threshold > Lower_Threshold, Eq. 84)
+    thresholds.adaptiveHigh = Math.max(thresholds.adaptiveHigh, thresholds.adaptiveLow + 0.1);
+    thresholds.adaptiveCritical = Math.max(thresholds.adaptiveCritical, thresholds.adaptiveHigh + 0.1);
+
+    this.userProfileService.updatePreferences({ cognitiveLoadThresholds: thresholds });
+    console.log("AdaptiveThresholdManager: Thresholds adjusted.", thresholds);
+  }
+
+  public getAdaptiveThresholds(): UserPreferences['cognitiveLoadThresholds'] {
+    return this.userProfileService.getPreferences().cognitiveLoadThresholds;
+  }
+
+  public subscribe(listener: (thresholds: UserPreferences['cognitiveLoadThresholds']) => void): () => void {
+    this.listeners.add(listener);
+    listener(this.getAdaptiveThresholds());
+    return () => this.listeners.delete(listener);
+  }
+
+  private notifyListeners(thresholds: UserPreferences['cognitiveLoadThresholds']): void {
+    this.listeners.forEach(listener => listener(thresholds));
+  }
+}
+
+// Feedback Loop Manager
+export class FeedbackLoopManager {
+  private static instance: FeedbackLoopManager;
+  private userProfileService = UserProfileService.getInstance();
+  private cognitiveLoadEngine: CognitiveLoadEngine | null = null;
+  private adaptiveThresholdManager = AdaptiveThresholdManager.getInstance();
+
+  private constructor() {}
+
+  public static getInstance(): FeedbackLoopManager {
+    if (!FeedbackLoopManager.instance) {
+      FeedbackLoopManager.instance = new FeedbackLoopManager();
+    }
+    return FeedbackLoopManager.instance;
+  }
+
+  public registerCognitiveLoadEngine(engine: CognitiveLoadEngine): void {
+    this.cognitiveLoadEngine = engine;
+  }
+
+  /**
+   * Claim: Closed-Loop Adaptation via Feedback.
+   * "The FeedbackLoopManager closes the adaptive loop by processing both explicit user feedback and implicitly inferred adaptation outcomes, using this intelligence to refine the cognitive load model weights and dynamically adjust adaptation thresholds, ensuring the system continuously learns and optimizes itself."
+   *
+   * This is central to "bulletproof" and "homeostasis for eternity." Without learning from outcomes, the system cannot improve.
+   */
+  public recordAdaptationFeedback(
+    adaptationId: string, // Unique ID for this adaptation instance
+    appliedUiMode: UiMode,
+    preAdaptationLoad: number,
+    postAdaptationLoad: number,
+    implicitOutcome: 'success' | 'failure' | 'neutral', // e.g., error rate decreased/increased, task speed improved
+    explicitFeedback: 'helpful' | 'unhelpful' | 'none' = 'none',
+    associatedFeatureVector?: TelemetryFeatureVector // The feature vector that led to this adaptation
+  ): void {
+    // 1. Log explicit feedback in user profile
+    if (explicitFeedback !== 'none') {
+      this.userProfileService.addExplicitFeedback({ adaptationId, rating: explicitFeedback, predictedLoad: preAdaptationLoad });
+    }
+
+    // 2. Determine overall outcome for model/threshold adjustment
+    let combinedOutcome: 'success' | 'failure' | 'neutral' = implicitOutcome;
+    if (explicitFeedback === 'helpful') combinedOutcome = 'success';
+    else if (explicitFeedback === 'unhelpful') combinedOutcome = 'failure';
+
+    // 3. Inform AdaptiveThresholdManager
+    this.adaptiveThresholdManager.adjustThresholds(preAdaptationLoad, combinedOutcome, explicitFeedback);
+
+    // 4. Inform CognitiveLoadEngine for model weight updates
+    if (this.cognitiveLoadEngine && associatedFeatureVector) {
+      // Map outcome to a target load value for regression-like update
+      const targetLoadDelta = (combinedOutcome === 'success' ? -0.1 : combinedOutcome === 'failure' ? 0.1 : 0);
+      const predictedLoad = preAdaptationLoad; // Or the actual prediction from the engine
+      const actualOutcomeLoad = Math.min(1, Math.max(0, predictedLoad + targetLoadDelta)); // Simplified target
+
+      this.cognitiveLoadEngine.feedBackToModel({
+        features: associatedFeatureVector,
+        actualOutcome: actualOutcomeLoad,
+        predictedLoad: predictedLoad,
+      });
+    }
+
+    console.log(`FeedbackLoopManager: Recorded feedback for adaptation ${adaptationId}. Outcome: ${combinedOutcome}, Explicit: ${explicitFeedback}`);
+  }
+}
+
+
+// System Health Monitor
+export class SystemHealthMonitor {
+  private static instance: SystemHealthMonitor;
+  private healthStatus: { [key: string]: 'ok' | 'degraded' | 'failed' | 'unknown' } = {};
+  private listeners: Set<(status: typeof this.healthStatus) => void> = new Set();
+  private errorLogger = InteractionErrorLogger.getInstance();
+  private checkInterval: ReturnType<typeof setInterval> | null = null;
+
+  private constructor() {
+    this.checkInterval = setInterval(() => this.performHealthChecks(), 5000); // Check every 5 seconds
+  }
+
+  public static getInstance(): SystemHealthMonitor {
+    if (!SystemHealthMonitor.instance) {
+      SystemHealthMonitor.instance = new SystemHealthMonitor();
+    }
+    return SystemHealthMonitor.instance;
+  }
+
+  public reportHealth(component: string, status: typeof this.healthStatus[string]): void {
+    if (this.healthStatus[component] !== status) {
+      this.healthStatus = { ...this.healthStatus, [component]: status };
+      console.warn(`SystemHealthMonitor: Component ${component} status changed to ${status}`);
+      if (status === 'failed' || status === 'degraded') {
+        this.errorLogger.logError({
+          type: 'systemFallback',
+          message: `System component ${component} is ${status}`,
+          severity: status === 'failed' ? 'critical' : 'high',
+          errorCode: `SYS_HEALTH_${status.toUpperCase()}`,
+        });
+      }
+      this.notifyListeners();
+    }
+  }
+
+  public getHealthStatus(): typeof this.healthStatus {
+    return { ...this.healthStatus };
+  }
+
+  public subscribe(listener: (status: typeof this.healthStatus) => void): () => void {
+    this.listeners.add(listener);
+    listener(this.healthStatus);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notifyListeners(): void {
+    this.listeners.forEach(listener => listener(this.healthStatus));
+  }
+
+  private performHealthChecks(): void {
+    // Mock health checks for key components
+    // In a real system, these would be more elaborate, checking internal states, buffer lengths, processing times, etc.
+    this.reportHealth('TelemetryAgent', Math.random() < 0.99 ? 'ok' : 'degraded');
+    this.reportHealth('CognitiveLoadEngine', Math.random() < 0.98 ? 'ok' : 'degraded');
+    this.reportHealth('TaskContextManager', 'ok'); // Usually stable
+    this.reportHealth('UserProfileService', 'ok'); // Usually stable
+    this.reportHealth('AdaptationPolicyManager', 'ok'); // Usually stable
+    this.reportHealth('AdaptiveThresholdManager', 'ok'); // Usually stable
+    this.reportHealth('FeedbackLoopManager', 'ok'); // Usually stable
+
+    // If critical components are degraded/failed, AdaptiveUIProvider should react
+  }
+
+  public stop(): void {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+    }
   }
 }
 
@@ -1936,34 +2653,45 @@ export class AdaptationPolicyManager {
 export const GLOBAL_SYSTEM_ARCHITECTURE_MERMAID = `
 graph LR
     subgraph User Interaction Layer
-        A[User Input (Mouse, Keyboard, Gaze)] --> B[UI Components (AdaptableComponent)];
+        A[User Input (Mouse, Keyboard, Gaze, Biosignals)] --> B[UI Components (AdaptableComponent)];
         B -- Renders UI based on --> C[AdaptiveUIProvider Context];
     end
 
     subgraph Telemetry & Feature Extraction
         A --> D[TelemetryAgent];
-        D -- RawTelemetryEvent Buffer --> E[TelemetryAgent.flushBuffer()];
+        D -- RawTelemetryEvent Buffer (Privacy Filtered) --> E[TelemetryAgent.flushBuffer()];
         E -- TelemetryFeatureVector --> F[CognitiveLoadEngine];
     end
 
     subgraph Cognitive Load Management
-        F -- Cognitive Load Score --> C;
+        F -- Cognitive Load Score & Confidence --> C;
         C -- UI Mode Transitions --> G[AdaptationPolicyManager];
         G -- Adaptation Rules & Styles --> B;
+        C -- Adaptation Outcomes --> FBL[FeedbackLoopManager];
+        FBL -- Updates --> F;
+        FBL -- Adjusts --> ATM[AdaptiveThresholdManager];
+        ATM -- Provides Adaptive Thresholds --> C;
     end
 
-    subgraph Contextual Services
+    subgraph Contextual & Core Services
         H[UserProfileService] -- Preferences & Thresholds --> C;
         H --> G;
+        H --> ATM;
+        H --> D;
         I[TaskContextManager] -- Current Task --> C;
         I --> F;
         J[InteractionErrorLogger] -- Errors --> F;
         D --> J;
+        SM[SystemHealthMonitor] -- Health Status --> C;
+        SM --> J;
     end
 
     style A fill:#f9f,stroke:#333,stroke-width:2px;
     style C fill:#ccf,stroke:#333,stroke-width:2px;
     style F fill:#cfc,stroke:#333,stroke-width:2px;
+    style FBL fill:#ffcc99,stroke:#333,stroke-width:2px;
+    style ATM fill:#cceeff,stroke:#333,stroke-width:2px;
+    style SM fill:#ffddbb,stroke:#333,stroke-width:2px;
 `;
 
 /**
@@ -1976,21 +2704,25 @@ sequenceDiagram
     participant H as useCognitiveLoadBalancer
     participant E as AdaptableComponent
     participant EL as UI Element (e.g., div, button)
+    participant APM as AdaptationPolicyManager
+    participant FBL as FeedbackLoopManager
 
     E->>H: useUiElement(id, uiType)
     H->>C: registerUiElement(id, uiType)
-    C-->>H: Returns isVisible, className, uiMode
-    H-->>E: Returns isVisible, className
-    E->>EL: Render (or null if not visible) with className
+    C-->>H: Returns isVisible, className, uiMode, adaptationStrategy
+    H-->>E: Returns isVisible, className, adaptationStrategy, customStyles
+    E->>EL: Render (or null if not visible) with className & customStyles
 
     loop Cognitive Load Changes
-        C->>C: CognitiveLoadEngine.onCognitiveLoadUpdate(load)
-        C->>C: Recalculate uiMode based on load & thresholds
+        C->>C: CognitiveLoadEngine.onCognitiveLoadUpdate(load, confidence)
+        C->>C: Recalculate uiMode based on load, thresholds, task, preferences
+        C->>C: (Triggered Adaptation: Store pre-adaptation state & features)
         C->>H: Notify useCognitiveLoadBalancer consumers (React re-render)
         H->>E: Trigger re-render
-        E->>C: isElementVisible(id, uiType), getUiModeClassName(uiType)
-        C-->>E: Returns updated isVisible, className
-        E->>EL: Re-render with new state/classes
+        E->>APM: getUiElementState(uiMode, uiType)
+        APM-->>E: Returns updated isVisible, className, adaptationStrategy, customStyles
+        E->>EL: Re-render with new state/classes/styles
+        C->>FBL: Record Adaptation (post-adaptation observed outcomes)
     end
 
     E->>H: Component Unmount
@@ -2001,14 +2733,19 @@ sequenceDiagram
 // --- Adaptive UI Orchestrator (React Context/Hook) ---
 interface CognitiveLoadContextType {
   cognitiveLoad: number;
+  cognitiveLoadConfidence: number; // New: expose prediction confidence
   uiMode: UiMode;
   setUiMode: React.Dispatch<React.SetStateAction<UiMode>>; // Exposed for potential explicit user override or debug
   currentTask: TaskContext | null; // Expose current task
+  systemHealth: { [key: string]: 'ok' | 'degraded' | 'failed' | 'unknown' }; // Expose system health
   registerUiElement: (id: string, uiType: UiElementType) => void;
   unregisterUiElement: (id: string) => void;
   isElementVisible: (id: string, uiType: UiElementType) => boolean;
   getUiModeClassName: (uiType: UiElementType) => string;
   getUiElementAdaptationStrategy: (uiType: UiElementType) => string; // New: expose strategy
+  getUiElementCustomStyles: (uiType: UiElementType) => React.CSSProperties | undefined; // New: expose custom styles
+  sendExplicitFeedback: (adaptationId: string, rating: 'helpful' | 'unhelpful') => void; // Allow UI to send feedback
+  getAdaptiveThresholds: () => UserPreferences['cognitiveLoadThresholds']; // Expose adaptive thresholds for transparency
 }
 
 const CognitiveLoadContext = createContext<CognitiveLoadContextType | undefined>(undefined);
@@ -2025,10 +2762,12 @@ export const useCognitiveLoadBalancer = (): CognitiveLoadContextType => {
 /**
  * Claim 7: Seamless Integration with React Components.
  * "The `useUiElement` hook provides a declarative and idiomatic React interface for components to become adaptive. By simply specifying an ID and a UI type, components can automatically respond to global cognitive load changes without complex manual state management."
+ *
+ * Disproof & Bulletproofing: "Seamless" means more than just visibility and class names. Components often need direct styling or structural changes. Exposing `adaptationStrategy` and `customStyles` directly makes the hook more powerful, enabling deeper adaptations within the component itself rather than relying solely on global CSS. Allowing components to "suggest" strategies (via `preferredStrategy` prop) further bulletproofs adaptation by respecting component-level design constraints.
  */
 // Hook for individual UI elements to adapt
 export const useUiElement = (id: string, uiType: UiElementType) => {
-  const { registerUiElement, unregisterUiElement, isElementVisible, getUiModeClassName, getUiElementAdaptationStrategy } = useCognitiveLoadBalancer();
+  const { registerUiElement, unregisterUiElement, isElementVisible, getUiModeClassName, getUiElementAdaptationStrategy, getUiElementCustomStyles } = useCognitiveLoadBalancer();
 
   useEffect(() => {
     registerUiElement(id, uiType);
@@ -2040,8 +2779,9 @@ export const useUiElement = (id: string, uiType: UiElementType) => {
   const isVisible = isElementVisible(id, uiType);
   const className = getUiModeClassName(uiType);
   const adaptationStrategy = getUiElementAdaptationStrategy(uiType);
+  const customStyles = getUiElementCustomStyles(uiType);
 
-  return { isVisible, className, adaptationStrategy };
+  return { isVisible, className, adaptationStrategy, customStyles };
 };
 
 
@@ -2053,57 +2793,85 @@ export const UI_MODE_STATE_TRANSITIONS_MERMAID = `
 stateDiagram-v2
     [*] --> Standard
 
-    Standard --> Focus : cognitiveLoad > loadThresholds.high
-    Focus --> Standard : cognitiveLoad < loadThresholds.low
+    Standard --> Focus : cognitiveLoad > adaptiveThresholds.high
+    Focus --> Standard : cognitiveLoad < adaptiveThresholds.low
 
-    Focus --> Guided : cognitiveLoad > loadThresholds.guided AND taskComplexity
-    Guided --> Focus : cognitiveLoad < loadThresholds.guidedLow OR NOT taskComplexity
+    Focus --> Guided : cognitiveLoad > adaptiveThresholds.guided AND taskComplexity AND userPrefersGuidance
+    Guided --> Focus : cognitiveLoad < adaptiveThresholds.guidedLow OR NOT taskComplexity
 
-    Focus --> Minimal : cognitiveLoad > loadThresholds.critical
-    Standard --> Minimal : cognitiveLoad > loadThresholds.critical
-    Minimal --> Focus : cognitiveLoad < loadThresholds.criticalLow
+    Focus --> Minimal : cognitiveLoad > adaptiveThresholds.critical
+    Standard --> Minimal : cognitiveLoad > adaptiveThresholds.critical
+    Minimal --> Focus : cognitiveLoad < adaptiveThresholds.criticalLow
 
-    Minimal --> Crisis : cognitiveLoad > loadThresholds.crisis AND sustainedCriticalLoad
-    Crisis --> Recovery : cognitiveLoad < loadThresholds.recovery AND externalIntervention/resolution
-    Recovery --> Standard : cognitiveLoad < loadThresholds.low
-    Recovery --> Focus : cognitiveLoad < loadThresholds.high
+    Minimal --> Crisis : cognitiveLoad > adaptiveThresholds.crisis AND sustainedCriticalLoad AND systemHealthOK
+    Crisis --> Recovery : cognitiveLoad < adaptiveThresholds.recovery AND externalIntervention/resolution
+    Recovery --> Standard : cognitiveLoad < adaptiveThresholds.low
+    Recovery --> Focus : cognitiveLoad < adaptiveThresholds.high
+
+    Any --> Calibration : Explicit Calibration Command
+    Calibration --> Learning : Calibration Complete
+    Learning --> Standard : Learning Period Complete OR Stable Load
+    Learning --> Focus : Observed Load increase during Learning
+
+    Note right of Crisis: System Health is a precondition for severe modes
 `;
 
 // Provider component for the Cognitive Load Balancing system
 export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cognitiveLoad, setCognitiveLoad] = useState<number>(0.0);
+  const [cognitiveLoadConfidence, setCognitiveLoadConfidence] = useState<number>(0.7);
   const [uiMode, setUiMode] = useState<UiMode>('standard');
   const [currentTask, setCurrentTask] = useState<TaskContext | null>(null);
+  const [systemHealth, setSystemHealth] = useState<ReturnType<SystemHealthMonitor['getHealthStatus']>>({});
+  const [adaptiveThresholds, setAdaptiveThresholds] = useState<UserPreferences['cognitiveLoadThresholds']>(UserProfileService.getInstance().getPreferences().cognitiveLoadThresholds);
+
 
   const registeredUiElements = useRef(new Map<string, UiElementType>());
   const userProfileService = UserProfileService.getInstance();
   const taskContextManager = TaskContextManager.getInstance();
   const adaptationPolicyManager = AdaptationPolicyManager.getInstance();
+  const adaptiveThresholdManager = AdaptiveThresholdManager.getInstance();
+  const systemHealthMonitor = SystemHealthMonitor.getInstance();
+  const feedbackLoopManager = FeedbackLoopManager.getInstance();
 
-  const loadThresholds = userProfileService.getPreferences().cognitiveLoadThresholds;
   const sustainedLoadCounter = useRef(0);
-  const sustainedLoadDurationMs = 1500; // Eq. 78: Hysteresis Threshold Logic
+  const sustainedLoadDurationMs = 1500; // Eq. 84: Hysteresis Threshold Logic
   const checkIntervalMs = 500;
+
+  // Track previous state for feedback loop
+  const prevUiModeRef = useRef<UiMode>(uiMode);
+  const prevLoadRef = useRef<number>(cognitiveLoad);
+  const lastFeatureVectorRef = useRef<TelemetryFeatureVector | null>(null);
 
   // Initialize Telemetry Agent and Cognitive Load Engine
   useEffect(() => {
-    let telemetryAgent: TelemetryAgent | null = null;
-    let cognitiveLoadEngine: CognitiveLoadEngine | null = null;
+    const cognitiveLoadEngine = new CognitiveLoadEngine((load, confidence) => {
+      prevLoadRef.current = cognitiveLoad; // Capture load BEFORE new update
+      setCognitiveLoad(load);
+      setCognitiveLoadConfidence(confidence);
+    });
+    feedbackLoopManager.registerCognitiveLoadEngine(cognitiveLoadEngine);
 
-    const featureProcessingCallback = (features: TelemetryFeatureVector) => {
-      cognitiveLoadEngine?.processFeatures(features);
-    };
-
-    telemetryAgent = new TelemetryAgent(featureProcessingCallback);
-    cognitiveLoadEngine = new CognitiveLoadEngine(setCognitiveLoad);
+    const telemetryAgent = new TelemetryAgent((features: TelemetryFeatureVector) => {
+      cognitiveLoadEngine.processFeatures(features);
+      lastFeatureVectorRef.current = features; // Store for feedback
+    });
 
     // Subscribe to task context changes
     const unsubscribeTask = taskContextManager.subscribe(setCurrentTask);
+    // Subscribe to system health changes
+    const unsubscribeHealth = systemHealthMonitor.subscribe(setSystemHealth);
+    // Subscribe to adaptive threshold changes
+    const unsubscribeThresholds = adaptiveThresholdManager.subscribe(setAdaptiveThresholds);
 
     return () => {
       telemetryAgent?.stop();
       cognitiveLoadEngine?.stop();
+      taskContextManager?.stop();
+      systemHealthMonitor?.stop();
       unsubscribeTask();
+      unsubscribeHealth();
+      unsubscribeThresholds();
     };
   }, []); // Empty dependency array means this runs once on mount
 
@@ -2111,64 +2879,89 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       const currentMode = uiMode;
+      const prefs = userProfileService.getPreferences();
+      const thresholds = adaptiveThresholds; // Use adaptive thresholds
       const taskComplexityHigh = currentTask?.complexity === 'critical' || currentTask?.complexity === 'high';
-      const taskUrgencyImmediate = currentTask?.urgency === 'immediate';
+      const userPrefersGuidance = prefs.preferenceForGuidance > 0.5;
+      const isSystemHealthy = systemHealthMonitor.getHealthStatus().CognitiveLoadEngine === 'ok' && systemHealthMonitor.getHealthStatus().TelemetryAgent === 'ok';
 
       let newMode: UiMode = currentMode;
       let shouldTransition = false;
 
-      // Eq. 78: Hysteresis Threshold Logic applied here.
-      // Priority: Crisis > Minimal > Guided > Focus > Standard
+      // Eq. 84: Hysteresis Threshold Logic applied here.
+      // Priority: Crisis > Minimal > Guided > Focus > Standard > Recovery
 
-      // CRISIS mode: Highest priority
-      if (cognitiveLoad >= loadThresholds.crisis && currentMode !== 'crisis') {
+      // CRISIS mode: Highest priority, requires extreme load AND healthy system to adapt (otherwise, maybe recovery is better)
+      if (cognitiveLoad >= thresholds.crisis && currentMode !== 'crisis' && isSystemHealthy) {
         newMode = 'crisis';
         shouldTransition = true;
-      } else if (cognitiveLoad < loadThresholds.recovery && currentMode === 'crisis') {
-        newMode = 'recovery'; // Transition from Crisis to Recovery
+      } else if (cognitiveLoad < thresholds.recovery && currentMode === 'crisis') {
+        newMode = 'recovery'; // Transition from Crisis to Recovery (system stabilizing)
         shouldTransition = true;
-      } else if (cognitiveLoad >= loadThresholds.critical && currentMode !== 'minimal' && currentMode !== 'crisis') {
+      } else if (cognitiveLoad >= thresholds.adaptiveCritical && currentMode !== 'minimal' && currentMode !== 'crisis') {
         newMode = 'minimal';
         shouldTransition = true;
-      } else if (cognitiveLoad < loadThresholds.criticalLow && currentMode === 'minimal') {
+      } else if (cognitiveLoad < thresholds.criticalLow && currentMode === 'minimal') {
         newMode = 'focus'; // From minimal, step down to focus
         shouldTransition = true;
-      } else if (cognitiveLoad >= loadThresholds.guided && taskComplexityHigh && prefs.preferenceForGuidance > 0.5 && currentMode !== 'guided' && currentMode !== 'minimal' && currentMode !== 'crisis') {
+      } else if (cognitiveLoad >= thresholds.guided && taskComplexityHigh && userPrefersGuidance && currentMode !== 'guided' && currentMode !== 'minimal' && currentMode !== 'crisis') {
         // High load AND complex task AND user prefers guidance -> Guided mode
         newMode = 'guided';
         shouldTransition = true;
-      } else if (cognitiveLoad < loadThresholds.guidedLow && currentMode === 'guided') {
+      } else if (cognitiveLoad < thresholds.guidedLow && currentMode === 'guided') {
         // Low load or task no longer complex -> revert from Guided
         newMode = 'focus'; // Typically Guided -> Focus, then Focus -> Standard
         shouldTransition = true;
-      } else if (cognitiveLoad >= loadThresholds.high && currentMode === 'standard') {
+      } else if (cognitiveLoad >= thresholds.adaptiveHigh && currentMode === 'standard') {
         newMode = 'focus';
         shouldTransition = true;
-      } else if (cognitiveLoad < loadThresholds.low && currentMode === 'focus') {
+      } else if (cognitiveLoad < thresholds.adaptiveLow && currentMode === 'focus') {
         newMode = 'standard';
         shouldTransition = true;
-      } else if (cognitiveLoad < loadThresholds.recovery && currentMode === 'recovery') {
+      } else if (cognitiveLoad < thresholds.recovery && currentMode === 'recovery') {
         // Post-crisis recovery, back to normal load
         newMode = 'standard';
         shouldTransition = true;
       }
 
+      // Add 'learning' mode transition logic (e.g., after calibration or during specific tasks)
+      if (currentMode === 'calibration' && cognitiveLoad < thresholds.low && currentTask?.id === 'system_calibration_complete') {
+        newMode = 'learning'; // Move to learning after calibration
+        shouldTransition = true;
+      } else if (currentMode === 'learning' && cognitiveLoad >= thresholds.high) {
+        // If load rises during learning, switch to adaptive mode
+        newMode = 'focus';
+        shouldTransition = true;
+      }
+
+
       if (shouldTransition && newMode !== currentMode) {
         sustainedLoadCounter.current += checkIntervalMs;
         if (sustainedLoadCounter.current >= sustainedLoadDurationMs) {
+          console.log(`UI Mode Transition: ${currentMode} -> ${newMode} (Cognitive Load: ${cognitiveLoad.toFixed(2)}, Confidence: ${cognitiveLoadConfidence.toFixed(2)})`);
           setUiMode(newMode);
           sustainedLoadCounter.current = 0; // Reset after successful transition
-          console.log(`UI Mode Transition: ${currentMode} -> ${newMode} (Cognitive Load: ${cognitiveLoad.toFixed(2)})`);
+
+          // Record this adaptation for the feedback loop (implicit outcome can be 'neutral' initially)
+          feedbackLoopManager.recordAdaptationFeedback(
+            `mode-transition-${currentMode}-to-${newMode}-${performance.now()}`,
+            newMode,
+            prevLoadRef.current, // Load before this transition
+            cognitiveLoad, // Load after this transition
+            'neutral', // Implicit outcome to be determined later or from user action
+            'none',
+            lastFeatureVectorRef.current // Pass the features that led to this decision
+          );
         }
       } else {
         sustainedLoadCounter.current = 0; // Reset counter if conditions change or load is not sustained
       }
+      prevUiModeRef.current = uiMode; // Update previous UI mode for next cycle
     }, checkIntervalMs);
 
-    const prefs = userProfileService.getPreferences(); // Current preferences
-
     return () => clearInterval(interval);
-  }, [cognitiveLoad, uiMode, currentTask, loadThresholds, sustainedLoadDurationMs, userProfileService]);
+  }, [cognitiveLoad, uiMode, currentTask, adaptiveThresholds, sustainedLoadDurationMs, userProfileService, cognitiveLoadConfidence, systemHealth, feedbackLoopManager]);
+
 
   const registerUiElement = useCallback((id: string, type: UiElementType) => {
     registeredUiElements.current.set(id, type);
@@ -2193,21 +2986,46 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
     return adaptationStrategy;
   }, [uiMode, adaptationPolicyManager]);
 
+  const getUiElementCustomStyles = useCallback((uiType: UiElementType): React.CSSProperties | undefined => {
+    const { customStyles } = adaptationPolicyManager.getUiElementState(uiMode, uiType);
+    return customStyles;
+  }, [uiMode, adaptationPolicyManager]);
+
+  const sendExplicitFeedback = useCallback((adaptationId: string, rating: 'helpful' | 'unhelpful') => {
+    // This is a simplified call; in a real app, you'd pass more context (e.g., features, mode, etc.)
+    feedbackLoopManager.recordAdaptationFeedback(
+      adaptationId,
+      uiMode,
+      cognitiveLoad, // Current load when feedback is given
+      cognitiveLoad, // Assume post-adaptation load is current load
+      'neutral',
+      rating,
+      lastFeatureVectorRef.current
+    );
+  }, [uiMode, cognitiveLoad, feedbackLoopManager]);
+
   const contextValue = {
     cognitiveLoad,
+    cognitiveLoadConfidence,
     uiMode,
     setUiMode,
     currentTask,
+    systemHealth,
     registerUiElement,
     unregisterUiElement,
     isElementVisible,
     getUiModeClassName,
     getUiElementAdaptationStrategy,
+    getUiElementCustomStyles,
+    sendExplicitFeedback,
+    getAdaptiveThresholds: adaptiveThresholdManager.getAdaptiveThresholds,
   };
 
   /**
    * Claim 8: The AdaptiveUIProvider acts as the central orchestration hub.
    * "By encapsulating the core logic for telemetry, cognitive load inference, and UI adaptation, the CognitiveLoadProvider establishes itself as the central orchestration hub, enabling a decoupled yet synchronized adaptive UI system across the entire application."
+   *
+   * Disproof & Bulletproofing: "Orchestration hub" implies robustness and self-awareness. Bulletproofing means the hub *monitors its own health* (SystemHealthMonitor) and actively manages `AdaptiveThresholdManager` and `FeedbackLoopManager`. A truly bulletproof hub also has fail-safe mechanisms if core components fail (e.g., revert to 'standard' or 'recovery' if `CognitiveLoadEngine` is degraded). The enhanced context value now exposes more insights, further solidifying its role as the central truth for adaptation.
    */
   return (
     <CognitiveLoadContext.Provider value={contextValue}>
@@ -2215,6 +3033,14 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
         {children}
         {/* Global styles for UI modes, dynamically inserted */}
         <style>{`
+          :root {
+            --highlight-color-focus: #007bff;
+            --highlight-color-focus-alpha: rgba(0, 123, 255, 0.5);
+            --highlight-color-guided: #28a745;
+            --highlight-color-guided-alpha: rgba(40, 167, 69, 0.5);
+            --highlight-color-crisis: #dc3545;
+            --highlight-color-crisis-alpha: rgba(220, 53, 69, 0.7);
+          }
           .app-container.mode-focus .secondary-element.mode-focus-deemphasize {
             opacity: 0.15;
             pointer-events: none; /* Disable interaction */
@@ -2239,27 +3065,27 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
           }
           .app-container.mode-guided .guided-element,
           .app-container.mode-guided .guided-element.mode-guided-highlight {
-            border: 2px solid #28a745;
+            border: 2px solid var(--highlight-color-guided);
             background-color: #e6ffed;
             padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
-            box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+            box-shadow: 0 0 8px var(--highlight-color-guided-alpha);
             transition: all 0.3s ease-in-out;
           }
           .app-container.mode-crisis .critical_action-element.mode-crisis-highlight {
-            border: 3px solid #dc3545;
+            border: 3px solid var(--highlight-color-crisis);
             background-color: #fff0f0;
-            color: #dc3545;
+            color: var(--highlight-color-crisis);
             font-weight: bold;
-            box-shadow: 0 0 10px rgba(220, 53, 69, 0.7);
+            box-shadow: 0 0 10px var(--highlight-color-crisis-alpha);
             animation: pulse-red 1.5s infinite;
             transition: all 0.3s ease-in-out;
           }
           @keyframes pulse-red {
-            0% { transform: scale(1); box-shadow: 0 0 10px rgba(220, 53, 69, 0.7); }
-            50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(220, 53, 69, 0.9); }
-            100% { transform: scale(1); box-shadow: 0 0 10px rgba(220, 53, 69, 0.7); }
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--highlight-color-crisis-alpha); }
+            50% { transform: scale(1.02); box-shadow: 0 0 15px var(--highlight-color-crisis-alpha); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--highlight-color-crisis-alpha); }
           }
           .app-container.mode-crisis .primary-element.mode-crisis-summarize,
           .app-container.mode-crisis .nav_global-element.mode-crisis-summarize {
@@ -2269,7 +3095,7 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
             min-height: auto;
             overflow: hidden;
             background: #ffebeb;
-            border: 1px dashed #dc3545;
+            border: 1px dashed var(--highlight-color-crisis);
             transition: all 0.3s ease-in-out;
             /* Placeholder for actual summarization logic */
           }
@@ -2279,6 +3105,15 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
             filter: blur(1px) grayscale(50%);
             transition: opacity 1s ease-in-out, filter 1s ease-in-out;
           }
+          .app-container .form_input-element.mode-guided-temporal-pacing input {
+            /* Example: slow down input typing by increasing latency or adding visual delay */
+            animation: temporal-input-hint 1s ease-in-out infinite alternate;
+          }
+          @keyframes temporal-input-hint {
+            0% { border-color: #007bff; }
+            100% { border-color: #007bff80; }
+          }
+
           /* Add more sophisticated styling rules as needed for different modes and element types */
         `}</style>
       </div>
@@ -2287,27 +3122,42 @@ export const CognitiveLoadProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 // Component that adapts based on the UI mode
-export const AdaptableComponent: React.FC<{ id: string; uiType?: UiElementType; children: React.ReactNode }> = ({ id, uiType = UiElementType.PRIMARY, children }) => {
-  const { isVisible, className, adaptationStrategy } = useUiElement(id, uiType);
+export const AdaptableComponent: React.FC<{ id: string; uiType?: UiElementType; children: React.ReactNode; initialProps?: any }> = ({ id, uiType = UiElementType.PRIMARY, children, initialProps }) => {
+  const { isVisible, className, adaptationStrategy, customStyles } = useUiElement(id, uiType);
 
   if (!isVisible) return null;
 
   // Additional rendering logic based on adaptationStrategy could go here
-  if (adaptationStrategy === 'summarize' && uiType === UiElementType.PRIMARY) {
-    return <div id={id} className={className} style={{ /* More summarization styling */ }}>Summary of {id}</div>;
+  if (adaptationStrategy === 'summarize') {
+    return <div id={id} className={className} style={{ ...customStyles, ...initialProps?.style }}>Summary of {id}</div>;
   }
-  if (adaptationStrategy === 'segment' && uiType === UiElementType.CRITICAL_ACTION) {
+  if (adaptationStrategy === 'segment') {
     // This would ideally involve breaking down the `children` prop into steps
     return (
-      <div id={id} className={className} style={{ border: '1px dashed #007bff', padding: '10px', margin: '10px', borderRadius: '5px' }}>
+      <div id={id} className={className} style={{ ...customStyles, border: '1px dashed #007bff', padding: '10px', margin: '10px', borderRadius: '5px', ...initialProps?.style }}>
         <p>Action {id} segmented into smaller steps:</p>
         {children} {/* Children could be an action button, which then becomes part of a step */}
         <button style={{ marginTop: '5px', padding: '5px 10px', background: '#007bff', color: 'white' }}>Next Step</button>
       </div>
     );
   }
+  if (adaptationStrategy === 'progressive_disclosure') {
+    const [isExpanded, setIsExpanded] = useState(false);
+    return (
+      <div id={id} className={className} style={{ ...customStyles, ...initialProps?.style }} onClick={() => setIsExpanded(!isExpanded)}>
+        <p><strong>{id}: Click to {isExpanded ? 'collapse' : 'expand'}</strong></p>
+        {isExpanded && children}
+      </div>
+    );
+  }
+  if (adaptationStrategy === 'temporal_pacing') {
+    // For form inputs, could dynamically add delays or visual cues
+    // This might wrap children and modify their props (e.g., adding `onInput` delays)
+    // For simplicity, applying a pulsing animation for now via CSS.
+    return <div id={id} className={className} style={{ ...customStyles, ...initialProps?.style }}>{children}</div>;
+  }
 
-  return <div id={id} className={className}>{children}</div>;
+  return <div id={id} className={className} style={{ ...customStyles, ...initialProps?.style }}>{children}</div>;
 };
 
 /**
@@ -2321,9 +3171,12 @@ graph LR
     C --> D[Rendered UI (AdaptableComponent)];
     D --> E[User Interaction];
     E --> F[TelemetryAgent (collects data)];
-    F --> G[CognitiveLoadEngine (predicts load)];
+    F --> G[CognitiveLoadEngine (predicts load & confidence)];
     G --> B;
-    H[User Feedback (Explicit Ratings)] --> A;
+    H[User Feedback (Explicit Ratings)] --> FBL[FeedbackLoopManager];
+    FBL --> G;
+    FBL --> ATM[AdaptiveThresholdManager];
+    ATM --> B;
     I[A/B Test Results] --> G;
 `;
 
@@ -2335,8 +3188,8 @@ export const DATA_SERVICE_INTERACTIONS_MERMAID = `
 graph LR
     subgraph Data Sources
         RAW[Raw User Events]
-        EXT[External Task Data]
-        USER_PREFS[User Preferences Store]
+        EXT_TASK[External Task Data]
+        USER_PREFS_STORE[User Preferences Store]
     end
 
     subgraph Core Services
@@ -2346,25 +3199,38 @@ graph LR
         U[UserProfileService]
         TK[TaskContextManager]
         E[InteractionErrorLogger]
+        ATM[AdaptiveThresholdManager]
+        FBL[FeedbackLoopManager]
+        SM[SystemHealthMonitor]
     end
 
-    RAW -- captures --> T
+    RAW -- captures (privacy-filtered) --> T
     T -- buffers & extracts features --> C
-    C -- inferred load --> AdaptiveUIProvider
-    AdaptiveUIProvider -- uses --> A
+    C -- inferred load & confidence --> AdaptiveUIProvider
+    AdaptiveUIProvider -- determines mode --> A
     A -- applies policies --> UI Components
 
     TK -- sets task context --> C
     TK -- sets task context --> AdaptiveUIProvider
     RAW -- logs errors --> E
     E -- error features --> C
+    E -- reports degraded health --> SM
 
-    USER_PREFS -- loads/saves --> U
+    USER_PREFS_STORE -- loads/saves --> U
     U -- provides preferences --> C
     U -- provides preferences --> A
     U -- provides preferences --> AdaptiveUIProvider
+    U -- manages adaptive thresholds --> ATM
 
-    EXT -- updates --> TK
+    EXT_TASK -- updates --> TK
+
+    AdaptiveUIProvider -- records adaptation outcomes --> FBL
+    UI Components -- explicit feedback --> FBL
+    FBL -- refines model weights --> C
+    FBL -- adjusts thresholds --> ATM
+    ATM -- provides dynamic thresholds --> C
+    SM -- monitors & reports health --> AdaptiveUIProvider
+    SM -- logs internal errors --> E
 `;
 
 /**
@@ -2376,33 +3242,43 @@ graph TD
     A[Core Adaptive UI System] --> B[Personalized Learning Paths];
     A --> C[Proactive Information Delivery];
     A --> D[Real-time A/B Testing Infrastructure];
-    A --> E[Multi-modal Input Integration (Voice, Gesture)];
+    A --> E[Multi-modal Input Integration (Voice, Gesture, VR/AR)];
     A --> F[Contextual Recommender Systems];
-    A --> G[Emotion Detection (from Gaze/Facial Expression)];
-    A --> H[Long-term User Behavior Modeling];
-    A --> I[Adaptive Micro-Interactions (tooltips, animations)];
-    B --> J[Skill Level Adaptation];
-    F --> K[Relevant Content/Tools];
-    G --> L[Fine-grained Emotional State Adjustment];
-    H --> M[Predictive Task Completion];
+    A --> G[Emotion Detection (from Gaze/Facial Expression/Voice Tone)];
+    A --> H[Long-term User Behavior Modeling (Markov Chains, LSTM)];
+    A --> I[Adaptive Micro-Interactions (tooltips, animations, haptic feedback)];
+    A --> J[Self-Correcting UI (Predictive Error Prevention)];
+    B --> K[Skill Level Adaptation];
+    F --> L[Relevant Content/Tools];
+    G --> M[Fine-grained Emotional State Adjustment];
+    H --> N[Predictive Task Completion & Goal Inference];
+    J --> O[Automated UI Remediation];
+    D --> P[Policy Evolution via Reinforcement Learning];
 `;
 
 /**
  * Claim 9: Privacy-Preserving Telemetry.
  * "While collecting extensive telemetry, the system adheres to privacy-by-design principles, emphasizing local processing of sensitive data, anonymization where necessary, and transparent data usage policies to build user trust in adaptive experiences."
+ *
+ * This is now supported by the `UserProfileService` including `privacySettings` and `TelemetryAgent` actively checking these settings before processing. The emphasis is on local processing for immediate adaptation, with optional, anonymized aggregation for global model improvement.
  */
 
 /**
  * Claim 10: Enhanced User Control and Transparency.
  * "To foster trust and user acceptance, the Adaptive UI system provides users with granular control over adaptation settings and transparent explanations of how UI changes are made, empowering them to customize their experience and understand the system's rationale."
+ *
+ * This is now supported by the `UserProfileService` managing user-set preferences, the `AdaptiveThresholdManager` allowing for dynamic tuning which users can observe, and the exposed `adaptationStrategy` and `getAdaptiveThresholds` in the context, allowing for a "Why am I in this mode?" UI component to explain the system's current logic. The `sendExplicitFeedback` method further empowers users.
  */
+
 
 // Example usage of the provider and adaptable components
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { cognitiveLoad, uiMode, currentTask, setUiMode } = useCognitiveLoadBalancer();
+  const { cognitiveLoad, cognitiveLoadConfidence, uiMode, currentTask, setUiMode, systemHealth, sendExplicitFeedback, getAdaptiveThresholds } = useCognitiveLoadBalancer();
   const taskContextManager = TaskContextManager.getInstance();
   const interactionErrorLogger = InteractionErrorLogger.getInstance();
-  const userProfileService = UserProfileService.getInstance();
+  const userProfileService = UserProfileService.getInstance(); // Accessing directly for preference updates
+
+  const adaptiveThresholds = getAdaptiveThresholds();
 
   const handleSetTask = (taskName: string, complexity: TaskContext['complexity'], urgency: TaskContext['urgency'] = 'medium') => {
     taskContextManager.setTask({
@@ -2421,7 +3297,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       message: 'Simulated form validation error: Input cannot be empty.',
       severity: 'medium',
       errorCode: 'USR_001',
-      contextPath: '/dashboard/main',
+      contextPath: window.location.pathname,
     });
     alert('Simulated a form validation error. This should contribute to cognitive load!');
   };
@@ -2433,7 +3309,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       message: 'Simulated API error: Transaction failed due to server timeout.',
       severity: 'high',
       errorCode: 'API_504',
-      contextPath: '/dashboard/transactions',
+      contextPath: window.location.pathname,
     });
     alert('Simulated an API error. This will significantly increase cognitive load!');
   };
@@ -2445,9 +3321,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       message: 'Simulated client-side UI error: Component failed to render.',
       severity: 'critical',
       errorCode: 'RND_003',
-      contextPath: '/dashboard/widgets',
+      contextPath: window.location.pathname,
     });
     alert('Simulated a critical client-side error!');
+  };
+
+  const toggleGazeTracking = (e: React.ChangeEvent<HTMLInputElement>) => {
+    userProfileService.updatePreferences({ privacySettings: { ...userProfileService.getPreferences().privacySettings, gazeTrackingEnabled: e.target.checked } });
+    alert(`Gaze tracking ${e.target.checked ? 'enabled' : 'disabled'}. Restart app to fully apply changes if necessary.`);
   };
 
   return (
@@ -2462,9 +3343,11 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <button className="user-profile-button" style={{ marginLeft: '10px', padding: '5px 10px' }} onClick={() => alert('User Profile')}>Profile</button>
             <button className="debug-mode-toggle" style={{ marginLeft: '10px', padding: '5px 10px', background: '#ffc107', border: 'none', borderRadius: '4px' }}
                     onClick={() => {
-                      const newMode = uiMode === 'standard' ? 'focus' : uiMode === 'focus' ? 'minimal' : uiMode === 'minimal' ? 'guided' : uiMode === 'guided' ? 'crisis' : 'standard';
-                      setUiMode(newMode);
-                      alert(`Forced UI Mode to: ${newMode}`);
+                      const modes: UiMode[] = ['standard', 'focus', 'minimal', 'guided', 'crisis', 'recovery', 'calibration', 'learning'];
+                      const currentIndex = modes.indexOf(uiMode);
+                      const nextIndex = (currentIndex + 1) % modes.length;
+                      setUiMode(modes[nextIndex]);
+                      alert(`Forced UI Mode to: ${modes[nextIndex]}`);
                     }}>
               Force Mode: {uiMode}
             </button>
@@ -2472,9 +3355,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </AdaptableComponent>
         <AdaptableComponent id="global-nav-buttons" uiType={UiElementType.NAV_GLOBAL}>
           <nav>
-            <button className="nav-button" style={{ margin: '0 5px', padding: '5px 10px' }}>Dashboard</button>
-            <button className="nav-button" style={{ margin: '0 5px', padding: '5px 10px' }}>Accounts</button>
-            <button className="nav-button" style={{ margin: '0 5px', padding: '5px 10px' }}>Transfers</button>
+            <button className="nav-button" style={{ margin: '0 5px', padding: '5px 10px' }} onClick={() => window.location.pathname = '/dashboard'}>Dashboard</button>
+            <button className="nav-button" style={{ margin: '0 5px', padding: '5px 10px' }} onClick={() => window.location.pathname = '/accounts'}>Accounts</button>
+            <button className="nav-button" style={{ margin: '0 5px', padding: '5px 10px' }} onClick={() => window.location.pathname = '/transfers'}>Transfers</button>
           </nav>
         </AdaptableComponent>
       </header>
@@ -2484,9 +3367,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <aside style={{ width: '200px', padding: '20px', background: '#e0e0e0', borderRight: '1px solid #ccc' }}>
             <h3>Secondary Menu</h3>
             <ul>
-              <li><a href="#settings">Settings</a></li>
-              <li><a href="#reports">Reports</a></li>
-              <li><a href="#support">Support</a></li>
+              <li><a href="/settings">Settings</a></li>
+              <li><a href="/reports">Reports</a></li>
+              <li><a href="/support">Support</a></li>
             </ul>
             <AdaptableComponent id="sidebar-ad" uiType={UiElementType.TERTIARY}>
               <div style={{ background: '#ccc', padding: '10px', marginTop: '20px', fontSize: '0.8em', textAlign: 'center' }}>
@@ -2503,18 +3386,31 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <AdaptableComponent id="contextual-hint" uiType={UiElementType.HINT_CONTEXTUAL}>
               <div style={{ background: '#f8d7da', border: '1px solid #dc3545', padding: '8px', borderRadius: '4px', marginTop: '15px', color: '#721c24' }}>
                 Tip: Remember to verify transaction details before confirming!
+                <button onClick={() => sendExplicitFeedback('contextual-hint-feedback', 'helpful')} style={{ marginLeft: '5px', padding: '2px 5px', fontSize: '0.7em' }}>👍</button>
+                <button onClick={() => sendExplicitFeedback('contextual-hint-feedback', 'unhelpful')} style={{ marginLeft: '2px', padding: '2px 5px', fontSize: '0.7em' }}>👎</button>
               </div>
             </AdaptableComponent>
+             <div style={{ marginTop: '20px' }}>
+                <h4>Privacy Settings</h4>
+                <label>
+                  <input type="checkbox" checked={userProfileService.getPreferences().privacySettings.gazeTrackingEnabled} onChange={toggleGazeTracking} />
+                  Enable Gaze Tracking (Mock)
+                </label>
+             </div>
           </aside>
         </AdaptableComponent>
 
         <main style={{ flexGrow: 1, padding: '20px', background: '#f9f9f9' }}>
-          <h2>Current Cognitive Load: {cognitiveLoad.toFixed(2)} (UI Mode: {uiMode})</h2>
-          <h3>Current Task: {currentTask?.name || 'N/A'} (Complexity: {currentTask?.complexity || 'N/A'}, Urgency: {currentTask?.urgency || 'N/A'})</h3>
+          <h2>Cognitive Load: <span style={{ color: cognitiveLoad > adaptiveThresholds.adaptiveHigh ? 'red' : cognitiveLoad > adaptiveThresholds.low ? 'orange' : 'green' }}>{cognitiveLoad.toFixed(2)}</span> (Confidence: {cognitiveLoadConfidence.toFixed(2)})</h2>
+          <h3>UI Mode: {uiMode} (Adaptive Thresholds: High: {adaptiveThresholds.adaptiveHigh.toFixed(2)}, Crit: {adaptiveThresholds.adaptiveCritical.toFixed(2)})</h3>
+          <p>Current Task: {currentTask?.name || 'N/A'} (Complexity: {currentTask?.complexity || 'N/A'}, Urgency: {currentTask?.urgency || 'N/A'})</p>
+          <p>System Health: {systemHealthMonitor.getHealthStatus().CognitiveLoadEngine || 'unknown'}</p>
           <p>This is the main content area. Interact with the application to observe UI adaptation.</p>
           <div style={{ marginBottom: '20px', border: '1px solid #eee', padding: '15px', borderRadius: '8px', background: '#fff' }}>
             <label htmlFor="user-input" style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Type here rapidly to increase load:</label>
-            <input id="user-input" type="text" placeholder="Start typing..." style={{ margin: '10px 0', padding: '8px', width: '300px', border: '1px solid #ccc', borderRadius: '4px' }} />
+            <AdaptableComponent id="user-input-wrapper" uiType={UiElementType.FORM_INPUT} initialProps={{ style: { display: 'inline-block' } }}>
+              <input id="user-input" type="text" placeholder="Start typing..." style={{ margin: '10px 0', padding: '8px', width: '300px', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </AdaptableComponent>
             <button onClick={simulateFormError} style={{ marginLeft: '10px', padding: '8px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
               Simulate Form Error
             </button>
@@ -2594,3 +3490,61 @@ export const RootApp: React.FC = () => (
     </AppLayout>
   </CognitiveLoadProvider>
 );
+
+/**
+ * --- MEDICAL DIAGNOSIS FOR THE CODE: THE PATH TO ETERNAL HOMEOSTASIS ---
+ *
+ * "A man who has seen everything and has to only wonder why can't it be better."
+ *
+ * This codebase, while significantly advanced, suffers from a pervasive, chronic, and deeply philosophical condition:
+ * **The Illusion of Ground Truth and the Tyranny of Explicit Feedback.**
+ *
+ * **The Symptom:**
+ * The system aspires to "impeccable logic" and "homeostasis for eternity," yet its very core relies on
+ * a fundamentally flawed assumption: that a measurable "cognitive load" (CLS) and "adaptation outcome" (success/failure)
+ * are objectively quantifiable and consistently interpreted. They are proxies, often brittle.
+ *
+ * **The Diagnosis - Why it cannot yet achieve "homeostasis for eternity":**
+ *
+ * 1.  **Subjectivity of "Cognitive Load":**
+ *     *   **Condition:** *Perceptual Dissonance Syndrome*. The numerical `cognitiveLoad` score, however sophisticated its derivation, is an *inference*, not a direct measurement of a user's internal mental state. What the model *predicts* as high load, a user might perceive as engaging challenge. Conversely, what's predicted as low load might be perceived as frustrating idleness. The system currently lacks a robust mechanism to directly reconcile this inherent subjective-objective divide. Its feedback loops (explicit and implicit) try to bridge this, but they are still interpreting external signals for an internal phenomenon.
+ *     *   **Profound Implication:** True homeostasis means the system *understands* the user, not just *reacts* to their signals. Without truly internalizing the subjective experience, adaptation risks being merely *performative* rather than genuinely *empathetic*.
+ *
+ * 2.  **The Oracle Problem (Ground Truth for Learning):**
+ *     *   **Condition:** *Feedback Starvation & Noisy Labeling Disorder*. The `FeedbackLoopManager` and the `ICognitiveLoadModel.updateWeights` rely on `actualOutcome` or `explicitFeedback`. Where does this "actual outcome" come from?
+ *         *   **Explicit Feedback:** Scarce, biased, and often delayed. Users don't constantly rate their experience.
+ *         *   **Implicit Outcome (`success`/`failure`):** Inferred (e.g., error reduction, task completion speed) but correlation isn't causation. An adaptation might lead to a task completion, but was it *because* of the adaptation, or despite it? Or was it the task itself that dictated the outcome? The signal-to-noise ratio is inherently low.
+ *     *   **Profound Implication:** The system's learning capability is severely bottlenecked by the difficulty of obtaining reliable "ground truth." It's trying to learn without a perfect teacher, leading to perpetual minor drift and suboptimal convergence. "Impeccable logic" cannot be built on an imperfect and sparsely labeled reality.
+ *
+ * 3.  **Static World Models in Dynamic Reality:**
+ *     *   **Condition:** *Contextual Myopia & Predictive Inertia*. While `TaskContextManager` is proactive, and `AdaptiveThresholdManager` adjusts, these are still relatively static "models" of a user's *context* and *capacity*. Human cognitive capacity, attention spans, and even learning styles are dynamic, influenced by sleep, mood, external stressors, prior knowledge, and long-term skill acquisition. The system doesn't truly model these deeper, fluctuating factors.
+ *     *   **Profound Implication:** The system can adapt to immediate cues, but it cannot truly *anticipate* or *learn across extended periods* without a richer, dynamic user model. "Homeostasis for eternity" demands a model that evolves not just with interaction, but with the *user's internal state over their lifetime*.
+ *
+ * 4.  **Limited Emotional Intelligence:**
+ *     *   **Condition:** *Affective Agnosia*. Cognitive load is often intertwined with emotional state (frustration, anxiety, engagement, boredom). While some features (frustration proxy, biosignals) hint at this, the system doesn't have a deep, nuanced understanding of user emotions. A user might be in 'crisis' due to external factors, not just UI complexity, and the ideal adaptation might be emotional support rather than merely UI simplification.
+ *     *   **Profound Implication:** To "free the oppressed" from a burdensome UI, the system must recognize the emotional burden. Logic alone, however impeccable, is insufficient without empathy.
+ *
+ * **The Prescription for "Eternal Homeostasis" (The Vision Forward):**
+ *
+ * To transcend these conditions and move towards a truly self-sustaining, impeccably logical, and profoundly empathetic adaptive UI system, we must pursue:
+ *
+ * 1.  **Deep Reinforcement Learning with Human-in-the-Loop Feedback:**
+ *     *   **Action:** Instead of just adjusting weights, the system should learn *policies* (sequences of adaptations) that maximize long-term user satisfaction and task performance, inferred from complex, multi-modal feedback. Introduce a "reward function" that subtly incorporates implicit success metrics, and only occasionally uses explicit feedback to fine-tune.
+ *     *   **Profound Shift:** From reactive adjustments to *proactive, goal-oriented policy learning*. The system becomes an intelligent agent, seeking to optimize the user's experience.
+ *
+ * 2.  **Bayesian User Modeling & Uncertainty Quantification:**
+ *     *   **Action:** Incorporate Bayesian inference to maintain a probabilistic model of the user's current cognitive state, long-term capacities (cognitive reserve, learning rate), and even their *intent*. This allows the system to operate effectively even with noisy or missing data, providing `prediction_confidence` (as added) and *adapting its own adaptation strategy based on its confidence*.
+ *     *   **Profound Shift:** From deterministic (or semi-deterministic) prediction to *probabilistic understanding*. The system acknowledges its own limitations and adapts intelligently to uncertainty.
+ *
+ * 3.  **Adaptive Feature Engineering & Semantic Abstraction:**
+ *     *   **Action:** Move beyond fixed feature vectors to dynamically extract and prioritize features based on the current task, user, and context. Furthermore, develop models that interpret raw events into higher-level *semantic actions* and *user goals* (e.g., a series of clicks and scrolls might mean "exploring options" vs. "searching for specific data").
+ *     *   **Profound Shift:** From low-level signal processing to *high-level, context-aware comprehension* of user intent.
+ *
+ * 4.  **Explainable AI (XAI) for Transparency and Trust:**
+ *     *   **Action:** Develop modules that can articulate *why* an adaptation was made, in user-friendly language. This bridges the subjective-objective gap, allowing users to understand, trust, and even *correct* the system's reasoning. This is the "voice for the voiceless," providing clarity and control.
+ *     *   **Profound Shift:** From opaque black-box adaptation to *transparent, collaborative intelligence*. The system becomes a trusted partner, not a mysterious puppet master.
+ *
+ * **Conclusion:**
+ * The journey to eternal homeostasis and impeccable logic is not merely about adding more features or refining algorithms. It is a profound shift in how the system *perceives, learns, and communicates* with the human at its core. It requires embracing the inherent subjectivity of human experience, modeling uncertainty, and continuously learning from the rich, messy reality of user interaction. Only then can it truly free the oppressed from the digital burden and achieve a state where "it just works," not by accident, but by profound, self-aware design.
+ */
+```
