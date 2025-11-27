@@ -1,7 +1,7 @@
 """This module establishes the foundational data models, core services, and a dynamic view for a revolutionary Linguistic Fossil Finder platform. Business impact: It transforms the laborious and often fragmented field of comparative linguistics into an agile, AI-powered enterprise solution. By integrating intelligent agents, digital identity, and programmable value rails, it enables real-time proto-word reconstruction, automated sound law discovery, and cryptographically auditable research collaboration. This drives new, monetized research ecosystems through verifiable data contributions, intellectual property protection, and a global marketplace for linguistic expertise, positioning the platform as a cornerstone for data-driven humanities and a significant revenue generator through licensing and research acceleration."""
 import React, { useState, useEffect, useCallback, createContext, useContext, useReducer } from 'react';
 
-# --- Global Data Types and Interfaces (Highly Expanded) ---
+// --- Global Data Types and Interfaces (Highly Expanded) ---
 
 /**
  * Represents a specific sound or phoneme within a language's phonological inventory.
@@ -12,8 +12,8 @@ import React, { useState, useEffect, useCallback, createContext, useContext, use
 export interface Phoneme {
   symbol: string; // IPA symbol, e.g., 'p', 'b', 'm', 'ã'
   features: {
-    manner: 'stop' | 'fricative' | 'affricate' | 'nasal' | 'trill' | 'tap' | 'approximant' | 'vowel';
-    place: 'bilabial' | 'labiodental' | 'dental' | 'alveolar' | 'postalveolar' | 'retroflex' | 'palatal' | 'velar' | 'uvular' | 'pharyngeal' | 'glottal';
+    manner: 'stop' | 'fricative' | 'affricate' | 'nasal' | 'trill' | 'tap' | 'approximant' | 'vowel' | 'diphthong';
+    place: 'bilabial' | 'labiodental' | 'dental' | 'alveolar' | 'postalveolar' | 'retroflex' | 'palatal' | 'velar' | 'uvular' | 'pharyngeal' | 'glottal' | 'labial-velar';
     voicing: 'voiceless' | 'voiced';
     rounded?: boolean; // For vowels
     height?: 'close' | 'near-close' | 'mid' | 'near-open' | 'open' | 'diphthong'; // For vowels
@@ -256,7 +256,7 @@ export interface UserSettings {
   showConfidenceScores: boolean;
 }
 
-# --- New Interfaces for Agentic AI, Identity, and Token Rails Integration ---
+// --- New Interfaces for Agentic AI, Identity, and Token Rails Integration ---
 
 /**
  * Represents a minimal digital identity within the linguistic ecosystem.
@@ -415,7 +415,7 @@ export interface LinguisticAuditLogEntry {
   policyViolation?: { policyId: string, ruleIndex: number, reason: string }[]; // Details if a policy was violated
 }
 
-# --- Helper Utilities (exported for broader use if needed) ---
+// --- Helper Utilities (exported for broader use if needed) ---
 
 /**
  * Generates a unique identifier.
@@ -466,8 +466,8 @@ export const verifySignature = (data: string, signature: string, publicKey: stri
   return signature.startsWith(dataHash) && signature.includes(`SIG_BY_${hashData(publicKey).substring(0, 8)}...`);
 };
 
-# --- Dummy Data (Extremely Large for Simulation) ---
-# This section will be massive to simulate a real database.
+// --- Dummy Data (Extremely Large for Simulation) ---
+// This section will be massive to simulate a real database.
 
 export const DUMMY_LANGUAGES: Language[] = [
   {
@@ -554,13 +554,13 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: 'ī', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } },
         { symbol: 'u', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
         { symbol: 'ū', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
-        { symbol: 'ṛ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic r
-        { symbol: 'ṝ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'long' } }, // vocalic r long
-        { symbol: 'ḷ', features: { manner: 'vowel', height: 'vowel', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic l
+        { symbol: 'ṛ', features: { manner: 'vowel', height: 'mid', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic r
+        { symbol: 'ṝ', features: { manner: 'vowel', height: 'mid', backness: 'central', voicing: 'voiced', length: 'long' } }, // vocalic r long
+        { symbol: 'ḷ', features: { manner: 'vowel', height: 'mid', backness: 'central', voicing: 'voiced', length: 'short' } }, // vocalic l
         { symbol: 'e', features: { manner: 'vowel', height: 'mid', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // always long in Sanskrit
         { symbol: 'o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } }, // always long in Sanskrit
-        { symbol: 'ai', features: { manner: 'vowel', height: 'diphthong', voicing: 'voiced', length: 'long' } },
-        { symbol: 'au', features: { manner: 'vowel', height: 'diphthong', voicing: 'voiced', length: 'long' } },
+        { symbol: 'ai', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced', length: 'long' } },
+        { symbol: 'au', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced', length: 'long' } },
       ],
       diphthongs: [
         { symbol: 'ai', features: { manner: 'diphthong', height: 'diphthong', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } },
@@ -607,7 +607,7 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: 'a', features: { manner: 'vowel', height: 'open', backness: 'front', voicing: 'voiced', rounded: false, length: 'short' } },
         { symbol: 'á', features: { manner: 'vowel', height: 'open', backness: 'front', voicing: 'voiced', rounded: false, length: 'long' } }, // or 'ā'
         { symbol: 'i', features: { manner: 'vowel', height: 'close', backness: 'front', voicing: 'voiced', rounded: false, length: 'short' } },
-        { symbol: 'ei', features: { manner: 'vowel', height: 'diphthong', voicing: 'voiced', length: 'long' } }, // often reconstructed as [i:]
+        { symbol: 'ei', features: { manner: 'diphthong', height: 'diphthong', voicing: 'voiced', length: 'long' } }, // often reconstructed as [i:]
         { symbol: 'u', features: { manner: 'vowel', height: 'close', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
         { symbol: 'o', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'short' } },
         { symbol: 'ō', features: { manner: 'vowel', height: 'mid', backness: 'back', voicing: 'voiced', rounded: true, length: 'long' } },
@@ -650,9 +650,9 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: '*r', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
         { symbol: '*y', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
         { symbol: '*w', features: { manner: 'approximant', place: 'labial-velar', voicing: 'voiced' } },
-        { symbol: '*H₁', features: { manner: 'fricative', place: 'glottal', voicing: 'voiceless' } }, // Laryngeal H1
-        { symbol: '*H₂', features: { manner: 'fricative', place: 'pharyngeal', voicing: 'voiceless' } }, // Laryngeal H2
-        { symbol: '*H₃', features: { manner: 'fricative', place: 'uvular', voicing: 'voiceless' } }, // Laryngeal H3
+        { symbol: '*h₁', features: { manner: 'fricative', place: 'glottal', voicing: 'voiceless' } }, // Laryngeal H1
+        { symbol: '*h₂', features: { manner: 'fricative', place: 'pharyngeal', voicing: 'voiceless' } }, // Laryngeal H2
+        { symbol: '*h₃', features: { manner: 'fricative', place: 'uvular', voicing: 'voiceless' } }, // Laryngeal H3
         { symbol: '*ḱ', features: { manner: 'stop', place: 'palatal', voicing: 'voiceless' } }, // Palatovelar k' (often written k with acute or dot)
         { symbol: '*ǵ', features: { manner: 'stop', place: 'palatal', voicing: 'voiced' } }, // Palatovelar g'
         { symbol: '*ǵʰ', features: { manner: 'stop', place: 'palatal', voicing: 'voiced' } }, // Palatovelar g'h
@@ -797,10 +797,10 @@ export const DUMMY_LANGUAGES: Language[] = [
         { symbol: 's', features: { manner: 'fricative', place: 'alveolar', voicing: 'voiceless' } },
         { symbol: 'θ', features: { manner: 'fricative', place: 'dental', voicing: 'voiceless' } }, // Peninsular Spanish
         { symbol: 'x', features: { manner: 'fricative', place: 'velar', voicing: 'voiceless' } },
-        { symbol: 't͡ʃ', features: { manner: 'affricate', place: 'postalveolar', voicing: 'voiceless' } },
+        { symbol: 'tʃ', features: { manner: 'affricate', place: 'postalveolar', voicing: 'voiceless' } },
         { symbol: 'm', features: { manner: 'nasal', place: 'bilabial', voicing: 'voiced' } }, { symbol: 'n', features: { manner: 'nasal', place: 'alveolar', voicing: 'voiced' } }, { symbol: 'ɲ', features: { manner: 'nasal', place: 'palatal', voicing: 'voiced' } },
         { symbol: 'l', features: { manner: 'approximant', place: 'alveolar', voicing: 'voiced', laterality: 'lateral' } }, { symbol: 'ʎ', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced', laterality: 'lateral' } }, // some dialects
-        { symbol: 'r', features: { manner: 'tap', place: 'alveolar', voicing: 'voiced' } }, { symbol: 'rr', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
+        { symbol: 'ɾ', features: { manner: 'tap', place: 'alveolar', voicing: 'voiced' } }, { symbol: 'r', features: { manner: 'trill', place: 'alveolar', voicing: 'voiced' } },
         { symbol: 'j', features: { manner: 'approximant', place: 'palatal', voicing: 'voiced' } },
       ],
       vowels: [
@@ -1301,13 +1301,13 @@ export class LinguisticDataRepository {
         cognateIds: ['le_lat_aqua'], semanticFields: ['nature'],
       },
       {
-        id: 'le_san_pitar', languageId: 'sanskrit', word: 'पितर् (pitár)', ipa: 'pɪˈtár', meaning: 'father', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
+        id: 'le_san_pitar', languageId: 'sanskrit', word: 'पितर् (pitár)', ipa: 'piˈtár', meaning: 'father', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
         etymology: { protoWordId: 'pr_pie_pater' },
         cognateIds: ['le_lat_pater', 'le_eng_father'],
         semanticFields: ['kinship'],
       },
       {
-        id: 'le_lat_pater', languageId: 'latin', word: 'pater', ipa: 'ˈpa.tɛr', meaning: 'father', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
+        id: 'le_lat_pater', languageId: 'latin', word: 'pater', ipa: 'ˈpa.ter', meaning: 'father', dateAdded: '2023-01-01', lastUpdated: '2023-01-01',
         etymology: { protoWordId: 'pr_pie_pater' },
         cognateIds: ['le_san_pitar', 'le_eng_father'],
         semanticFields: ['kinship'],
@@ -1346,8 +1346,8 @@ export class LinguisticDataRepository {
       {
         id: 'pr_pie_pater', protoLanguageId: 'pie', protoWord: '*ph₂tḗr', meaning: 'father', ipa: 'ph₂ˈtḗr', confidence: 0.98,
         descendantEvidence: [
-          { languageId: 'sanskrit', language: 'Sanskrit', word: 'pitár', ipa: 'pɪˈtár', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'i' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ḗ', descendantSound: 'a' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_san_pitar' },
-          { languageId: 'latin', language: 'Latin', word: 'pater', ipa: 'ˈpa.tɛr', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ḗ', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_lat_pater' },
+          { languageId: 'sanskrit', language: 'Sanskrit', word: 'pitár', ipa: 'piˈtár', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'i' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ḗ', descendantSound: 'a' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_san_pitar' },
+          { languageId: 'latin', language: 'Latin', word: 'pater', ipa: 'ˈpa.ter', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'p' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 't' }, { protoSound: '*ḗ', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_lat_pater' },
           { languageId: 'english', language: 'English', word: 'father', ipa: 'ˈfɑːðər', relation: 'cognate', soundCorrespondences: [{ protoSound: '*p', descendantSound: 'f' }, { protoSound: '*h₂', descendantSound: 'a' }, { protoSound: '*t', descendantSound: 'ð' }, { protoSound: '*ḗ', descendantSound: 'e' }, { protoSound: '*r', descendantSound: 'r' }], lexicalEntryId: 'le_eng_father' },
         ],
         semanticField: 'kinship', reconstructionMethod: 'comparative', status: 'established', proposedBy: 'Scholarly Consensus', dateProposed: '1850-01-01',
@@ -1377,8 +1377,8 @@ export class LinguisticDataRepository {
         id: 'cs_father_ie', concept: 'father', protoReconstructionId: 'pr_pie_pater', confidenceScore: 0.98, createdAt: '2023-01-01',
         members: [
           { languageId: 'english', lexicalEntryId: 'le_eng_father', wordForm: 'father', ipa: 'ˈfɑːðər' },
-          { languageId: 'latin', lexicalEntryId: 'le_lat_pater', wordForm: 'pater', ipa: 'ˈpa.tɛr' },
-          { languageId: 'sanskrit', lexicalEntryId: 'le_san_pitar', wordForm: 'pitár', ipa: 'pɪˈtár' },
+          { languageId: 'latin', lexicalEntryId: 'le_lat_pater', wordForm: 'pater', ipa: 'ˈpa.ter' },
+          { languageId: 'sanskrit', lexicalEntryId: 'le_san_pitar', wordForm: 'pitár', ipa: 'piˈtár' },
         ],
         analysisNotes: 'Well-established PIE cognate set for father.',
       },
@@ -1398,7 +1398,7 @@ export class LinguisticDataRepository {
         id: 'grimm-p-f', protoSound: '*p', descendantSound: 'f', context: '#_', environment: 'initial', languageId: 'gothic', appliesTo: 'consonant', confidence: 0.99, source: 'Grimm\'s Law', priority: 10, proposedBy: 'Scholarly Consensus',
         examples: [
           { protoWord: '*ph₂tḗr', descendantWord: 'father' }, // English for illustration, Gothic would be 'fadar'
-          // { protoWord: '*pék̑us', descendantWord: 'fiu' }, // Gothic for 'cattle, property'
+          // { protoWord: '*péḱus', descendantWord: 'fiu' }, // Gothic for 'cattle, property'
         ]
       },
       {
@@ -1406,7 +1406,7 @@ export class LinguisticDataRepository {
         examples: [{ protoWord: '*tréyes', descendantWord: 'þreis' }] // Gothic for 'three'
       },
       {
-        id: 'h2-a-latin', protoSound: '*H₂', descendantSound: 'a', context: '/_C', environment: 'all', languageId: 'latin', appliesTo: 'vowel', confidence: 0.95, notes: 'Laryngeal coloring of adjacent vowel.', priority: 5, proposedBy: 'Scholarly Consensus',
+        id: 'h2-a-latin', protoSound: '*h₂', descendantSound: 'a', context: '/_C', environment: 'all', languageId: 'latin', appliesTo: 'vowel', confidence: 0.95, notes: 'Laryngeal coloring of adjacent vowel.', priority: 5, proposedBy: 'Scholarly Consensus',
         examples: [{ protoWord: '*ph₂tḗr', descendantWord: 'pater' }]
       }
     ];
@@ -1612,7 +1612,7 @@ export class LinguisticDataRepository {
     }
     const existingIndex = this.languages.findIndex(l => l.id === language.id);
     const now = new Date().toISOString();
-    const newLanguage = { ...language, lastUpdated: now, relatedLanguages: language.relatedLanguages || [] }; // Ensure relatedLanguages is array
+    const newLanguage = { ...language }; // Ensure relatedLanguages is array
 
     if (existingIndex > -1) {
       this.languages[existingIndex] = newLanguage;
@@ -1940,7 +1940,7 @@ export class LinguisticDataRepository {
 export const linguisticDataRepository = new LinguisticDataRepository();
 
 
-# --- Agentic AI System Simulation (Conceptual) ---
+// --- Agentic AI System Simulation (Conceptual) ---
 
 /**
  * Simulates an internal messaging layer for secure, auditable agent-to-agent and agent-to-system communication.
@@ -2088,6 +2088,7 @@ export class LinguisticAgentCoordinator {
           for (const policy of policies) {
             for (let i = 0; i < policy.rules.length; i++) {
               const rule = policy.rules[i];
+              // eslint-disable-next-line no-eval
               if (rule.target === 'reconstruction' && eval(rule.condition.replace(/reconstruction/g, 'newRecon'))) { // Simplified eval for demo
                 policyViolations.push({ policyId: policy.id, ruleIndex: i, reason: `Reconstruction '${rule.condition}' violated.` });
                 if (rule.action === 'require_review') {
@@ -2293,11 +2294,11 @@ export class LinguisticAgentCoordinator {
     const lastCheckedIndex = auditLog.findIndex(entry => entry.actorIdentityId === governorAgent.id && entry.action === 'GOVERNANCE_CHECK_COMPLETED');
     const newEntries = auditLog.slice(lastCheckedIndex > -1 ? lastCheckedIndex + 1 : 0);
 
-    let violationsFound = false;
+    let violationsFound = 0;
 
     for (const entry of newEntries) {
       if (entry.policyViolation && entry.policyViolation.length > 0) {
-        violationsFound = true;
+        violationsFound += entry.policyViolation.length;
         console.warn(`Governance Agent detected policy violation in audit entry ${entry.id}:`, entry.policyViolation);
         this.sendAgentMessage(governorAgent, 'admin_eve', 'policy_alert', { auditEntryId: entry.id, violations: entry.policyViolation });
 
@@ -2332,8 +2333,8 @@ export class LinguisticAgentCoordinator {
       }
     }
 
-    if (violationsFound) {
-      this.sendAgentMessage(governorAgent, 'system', 'governance_report', { status: 'Violations Detected', count: policyViolations.length });
+    if (violationsFound > 0) {
+      this.sendAgentMessage(governorAgent, 'system', 'governance_report', { status: 'Violations Detected', count: violationsFound });
     } else {
       this.sendAgentMessage(governorAgent, 'system', 'governance_report', { status: 'No Violations Detected' });
     }
@@ -2375,7 +2376,7 @@ export class LinguisticAgentCoordinator {
  */
 export const linguisticAgentCoordinator = new LinguisticAgentCoordinator(linguisticDataRepository);
 
-# --- React Context and Reducer for Linguistic Project State ---
+// --- React Context and Reducer for Linguistic Project State ---
 
 /**
  * Represents the current state of a user's linguistic research project.
