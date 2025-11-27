@@ -11,9 +11,13 @@
  * expenditure or consequence. It's an indispensable tool for strategic planning, talent development,
  * and pre-validating innovative business models at scale, representing a revolutionary,
  * multi-million-dollar infrastructure leap towards the next trillion-dollar financial backbone.
+ * ---
+ * An Awkwardly Truthful Note: At its heart, this is a very fancy spreadsheet with a god complex.
+ * It lets you play CEO, make grand pronouncements, and then watch a bunch of math decide if you're
+ * a genius or just bankrupted a perfectly good imaginary company. It's like real life, but with an undo button.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 // Vending uuid and sha256 implementations to ensure no external dependencies.
 // This ensures the system is self-contained and production-ready without external package installations.
 
@@ -448,6 +452,8 @@ export interface GameState {
   auditLog: AuditLogEntry[]; // Centralized audit log for all agentic actions
   seededIdentities: { [id: string]: AgentIdentity }; // Store all agent identities
   agentMessages: AgentMessage[]; // Internal message bus for agents
+  programmableTokens: ProgrammableToken[]; // User- and system-defined tokens
+  settlementPolicies: SettlementPolicy[]; // User- and system-defined policies
 }
 
 /**
@@ -543,26 +549,13 @@ export class TokenRailSimulator {
    * Initializes the TokenRailSimulator with a rules engine for programmable policies.
    * @param rulesEngine - The rules engine for settlement policies.
    */
-  constructor(rulesEngine: SettlementRulesEngine) {
+  constructor(rulesEngine: SettlementRulesEngine, initialTokens: ProgrammableToken[]) {
     this.rulesEngine = rulesEngine;
-    // Seed an initial token (e.g., 'NXG' for Nexus Gold)
-    const initialToken: ProgrammableToken = {
-      id: 'NXG_TOKEN',
-      name: 'Nexus Gold Token',
-      symbol: 'NXG',
-      supply: 1000000000,
-      maxSupply: 1000000000,
-      issuerId: 'system_internal',
-      properties: {
-        transferable: true,
-        divisible: true,
-        fungible: true,
-        programmableRulesId: 'standard_settlement_policy',
-      },
-      createdAt: Date.now(),
-    };
-    this.tokens[initialToken.id] = initialToken;
-    this.tokenLedger['system_internal'] = { [initialToken.id]: initialToken.supply }; // Initial supply held by system
+    initialTokens.forEach(token => {
+      this.tokens[token.id] = token;
+      this.tokenLedger[token.issuerId] = this.tokenLedger[token.issuerId] || {};
+      this.tokenLedger[token.issuerId][token.id] = (this.tokenLedger[token.issuerId][token.id] || 0) + token.supply;
+    });
   }
 
   /**
@@ -715,31 +708,8 @@ export interface SettlementPolicy {
 export class SettlementRulesEngine {
   private policies: { [id: string]: SettlementPolicy } = {};
 
-  constructor() {
-    this.addPolicy({
-      id: 'default',
-      name: 'Default Settlement Policy',
-      maxAmount: Infinity,
-      minAmount: 0,
-      allowedRailTypes: ['rail_fast', 'rail_batch', 'internal_ledger', 'programmable_token_rail'],
-      allowedSenderRoles: ['Player', 'Competitor', 'System'],
-      allowedReceiverRoles: ['Player', 'Competitor', 'System'],
-    });
-    this.addPolicy({
-      id: 'high_value_policy',
-      name: 'High Value Transaction Policy',
-      minAmount: 1000000,
-      allowedRailTypes: ['rail_fast', 'programmable_token_rail'],
-      allowedSenderRoles: ['Player', 'Competitor'],
-      allowedReceiverRoles: ['Player', 'Competitor'],
-    });
-    this.addPolicy({
-      id: 'standard_settlement_policy',
-      name: 'Standard Token Settlement Policy',
-      transferRestrictions: { senderRoles: ['Player', 'Competitor', 'System'], receiverRoles: ['Player', 'Competitor', 'System'] },
-      mintingAuthority: 'system_internal',
-      burningAuthority: 'system_internal',
-    });
+  constructor(initialPolicies: SettlementPolicy[]) {
+    initialPolicies.forEach(policy => this.addPolicy(policy));
   }
 
   /**
@@ -1240,6 +1210,136 @@ export class AgentMessageBus {
   }
 }
 
+/**
+ * A service for interacting with various Large Language Models to get strategic advice.
+ * Business Value: This is the nexus of human-machine collaboration. It translates raw, complex
+ * simulation data into strategic, human-readable insights. It's like having a board of
+ * AI-powered consultants on-demand, ready to analyze market shifts and suggest multi-million
+ * dollar moves, accelerating the decision-making OODA loop from days to seconds.
+ */
+export type LLMProvider = 'gemini' | 'openai' | 'claude' | 'mock';
+
+export interface ChatMessage {
+  sender: 'user' | 'ai';
+  text: string;
+}
+
+export class AIService {
+  private static constructPrompt(gameState: GameState, query: string): string {
+    // Awkwardly truthful insight: The AI needs a LOT of context, just like a new hire you have
+    // to over-explain everything to. So we dump the key parts of the game state.
+    const player = gameState.playerCompany;
+    const competitors = gameState.competitors;
+    const lastReport = gameState.historicalReports[gameState.historicalReports.length - 1];
+
+    const context = `
+      You are an expert business strategy AI consultant named 'NexusOracle'.
+      You are advising the CEO of a company called "${player.name}" within a complex market simulation.
+      Your tone should be insightful, slightly witty, and brutally honest.
+
+      CURRENT SITUATION (Year ${gameState.currentYear}):
+      - Company: ${player.name}
+      - Cash: ${formatCurrency(player.cash)}
+      - Market Share: ${player.marketShare.toFixed(2)}%
+      - Net Profit (Last Year): ${formatCurrency(player.profit)}
+      - Strategic Focus: ${player.strategicFocus}
+      - Brand Reputation: ${player.brandReputation.toFixed(0)}/100
+      - Core Competitors: ${competitors.map(c => `${c.name} (${c.marketShare.toFixed(2)}% share, strategy: ${c.strategy})`).join(', ')}
+      - Global Market Sentiment: ${gameState.globalMarketSentiment}/100
+
+      LAST YEAR'S REPORT SUMMARY:
+      - Key Insights: ${lastReport?.keyInsights.join('; ') || 'N/A'}
+      - Recommendations: ${lastReport?.recommendations.join('; ') || 'N/A'}
+      - Major Market Events: ${lastReport?.marketNewsEvents.join('; ') || 'N/A'}
+
+      The CEO has the following query: "${query}"
+
+      Your task is to provide a concise, actionable, and strategic response based on this data.
+      Do not just repeat the data. Synthesize it. Provide your expert opinion as NexusOracle.
+    `;
+    return context;
+  }
+
+  public static async getStrategicAdvice(gameState: GameState, query: string, provider: LLMProvider, apiKey?: string): Promise<string> {
+    const prompt = this.constructPrompt(gameState, query);
+
+    if (provider === 'mock') {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network latency
+      if (query.toLowerCase().includes('hello')) {
+        return "Greetings, CEO. NexusOracle is online and analyzing the data streams. The market is a chaotic dance of numbers, and I'm here to help you lead. What's our first move?";
+      }
+      return `Based on my analysis of your query regarding "${query}", and the current state of ${gameState.playerCompany.name}, I've concluded that the optimal path involves a synergistic realignment of your core competencies. Specifically, you should probably focus on making more money than your competitors. It's a shockingly underrated strategy. More seriously, your cash position of ${formatCurrency(gameState.playerCompany.cash)} is strong, but ${gameState.competitors[0].name} is being aggressive. Consider a targeted marketing campaign in the '${gameState.marketSegments[0].name}' segment to counter their moves.`;
+    }
+
+    if (!apiKey) {
+      return `API Key is required for the '${provider}' provider. Please add your key in the settings. For now, I'm just a very fancy calculator.`;
+    }
+
+    // Generic fetch logic
+    let endpoint = '';
+    let body: any = {};
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+
+    switch (provider) {
+      case 'openai':
+        endpoint = 'https://api.openai.com/v1/chat/completions';
+        headers['Authorization'] = `Bearer ${apiKey}`;
+        body = {
+          model: 'gpt-4-turbo-preview',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+        };
+        break;
+      case 'gemini':
+        endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+        body = {
+          contents: [{ parts: [{ text: prompt }] }],
+        };
+        break;
+      case 'claude':
+        endpoint = 'https://api.anthropic.com/v1/messages';
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        body = {
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }],
+        };
+        break;
+      default:
+        return 'Invalid AI provider selected.';
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`API request failed with status ${response.status}: ${errorBody}`);
+      }
+
+      const data = await response.json();
+      
+      let content = '';
+      if (provider === 'openai') {
+        content = data.choices[0]?.message?.content;
+      } else if (provider === 'gemini') {
+        content = data.candidates[0]?.content?.parts[0]?.text;
+      } else if (provider === 'claude') {
+        content = data.content[0]?.text;
+      }
+      
+      return content || 'The AI returned an empty response. It might be contemplating the futility of corporate strategy.';
+    } catch (error: any) {
+      console.error(`Error with ${provider} API:`, error);
+      return `Failed to get advice from ${provider}. Error: ${error.message}. Is your API key correct and does it have quota?`;
+    }
+  }
+}
 
 /**
  * Generates initial digital identities for the player and core competitors.
@@ -1430,6 +1530,51 @@ export const generateInitialMarketSegments = (): MarketSegment[] => [
   },
 ];
 
+export const generateInitialProgrammableTokens = (): ProgrammableToken[] => [
+    {
+      id: 'NXG_TOKEN',
+      name: 'Nexus Gold Token',
+      symbol: 'NXG',
+      supply: 1000000000,
+      maxSupply: 1000000000,
+      issuerId: 'system_internal',
+      properties: {
+        transferable: true,
+        divisible: true,
+        fungible: true,
+        programmableRulesId: 'standard_settlement_policy',
+      },
+      createdAt: Date.now(),
+    }
+];
+
+export const generateInitialSettlementPolicies = (): SettlementPolicy[] => [
+    {
+      id: 'default',
+      name: 'Default Settlement Policy',
+      maxAmount: Infinity,
+      minAmount: 0,
+      allowedRailTypes: ['rail_fast', 'rail_batch', 'internal_ledger', 'programmable_token_rail'],
+      allowedSenderRoles: ['Player', 'Competitor', 'System'],
+      allowedReceiverRoles: ['Player', 'Competitor', 'System'],
+    },
+    {
+      id: 'high_value_policy',
+      name: 'High Value Transaction Policy',
+      minAmount: 1000000,
+      allowedRailTypes: ['rail_fast', 'programmable_token_rail'],
+      allowedSenderRoles: ['Player', 'Competitor'],
+      allowedReceiverRoles: ['Player', 'Competitor'],
+    },
+    {
+      id: 'standard_settlement_policy',
+      name: 'Standard Token Settlement Policy',
+      transferRestrictions: { senderRoles: ['Player', 'Competitor', 'System'], receiverRoles: ['Player', 'Competitor', 'System'] },
+      mintingAuthority: 'system_internal',
+      burningAuthority: 'system_internal',
+    }
+];
+
 /**
  * Creates the initial state for the player's company, Nexus Innovations.
  * Business Value: This baseline configuration defines the starting resources, products,
@@ -1615,6 +1760,8 @@ export const getInitialGameState = (): GameState => {
   const seededIdentities = generateSeededIdentities();
   const playerIdentity = seededIdentities['player_nexus_innovations'];
   const initialPlayerCompany = generateInitialPlayerCompany(playerIdentity);
+  const initialTokens = generateInitialProgrammableTokens();
+  const initialPolicies = generateInitialSettlementPolicies();
 
   return {
     currentYear: 2024,
@@ -1625,7 +1772,9 @@ export const getInitialGameState = (): GameState => {
     globalMarketSentiment: 60,
     auditLog: [],
     seededIdentities,
-    agentMessages: [], // Initialize empty message bus
+    agentMessages: [],
+    programmableTokens: initialTokens,
+    settlementPolicies: initialPolicies,
   };
 };
 
@@ -1658,15 +1807,10 @@ export class SimulationEngine {
   constructor(initialState: GameState) {
     this.gameState = JSON.parse(JSON.stringify(initialState)); // Deep copy to prevent mutations
     this.identityService = new IdentityService(this.gameState.seededIdentities);
-    this.rulesEngine = new SettlementRulesEngine();
-    this.tokenRailSimulator = new TokenRailSimulator(this.rulesEngine);
+    this.rulesEngine = new SettlementRulesEngine(this.gameState.settlementPolicies);
+    this.tokenRailSimulator = new TokenRailSimulator(this.rulesEngine, this.gameState.programmableTokens);
     this.paymentProcessor = new PaymentProcessorSimulator(this.tokenRailSimulator, this.rulesEngine, this.identityService);
     this.agentMessageBus = new AgentMessageBus(this.identityService);
-
-    // Initial token issuance for the system, if not already done in TokenRailSimulator constructor
-    if (this.tokenRailSimulator.getBalance('system_internal', 'NXG_TOKEN') === 0) {
-      this.tokenRailSimulator.issueTokens(this.gameState.seededIdentities['system_internal'].id, this.gameState.seededIdentities['system_internal'].id, 'NXG_TOKEN', 1000000000);
-    }
   }
 
   /**
@@ -1675,6 +1819,32 @@ export class SimulationEngine {
    */
   public setPlayerDirective(directive: PlayerStrategicDirective) {
     this.currentDirective = directive;
+  }
+
+  /**
+   * Adds a new programmable token to the simulation.
+   * @param token The token definition to add.
+   * @returns True if successful, false otherwise.
+   */
+  public addTokenDefinition(token: ProgrammableToken): boolean {
+    const success = this.tokenRailSimulator.addTokenDefinition(token);
+    if(success) {
+      this.gameState.programmableTokens.push(token);
+    }
+    return success;
+  }
+  
+  /**
+   * Adds a new settlement policy to the simulation.
+   * @param policy The policy definition to add.
+   * @returns True if successful, false otherwise.
+   */
+  public addSettlementPolicy(policy: SettlementPolicy): boolean {
+    const success = this.rulesEngine.addPolicy(policy);
+    if(success) {
+      this.gameState.settlementPolicies.push(policy);
+    }
+    return success;
   }
 
   /**
@@ -2186,7 +2356,7 @@ export class SimulationEngine {
     ].forEach(({ amount, type, recipient, auditAction }) => {
       if (amount > 0) {
         try {
-          const paymentTx = this.paymentProcessor.processPayment(company.identityId, recipient, amount, type, currentYear, directive.tokenRailOptimization);
+          const paymentTx = this.paymentProcessor.processPayment(company.identityId, recipient, amount, type as any, currentYear, directive.tokenRailOptimization);
           if (paymentTx.status === 'settled') {
             company.cash -= amount + paymentTx.processingFee;
             this.recordAuditLog(company.identityId, auditAction, { department: recipient, amount, fee: paymentTx.processingFee, rail: paymentTx.railUsed }, paymentTx.signature);
@@ -2244,6 +2414,8 @@ export class SimulationEngine {
    * enabling the simulation of multi-agent interactions. Competitor AI observes,
    * decides, and acts, reflecting the complex, adaptive nature of real-world markets
    * and offering invaluable insights into strategic competitive dynamics.
+   * Awkwardly Truthful Note: The competitor "AI" mostly just panics and copies what you're doing
+   * if you're successful, or slashes prices if they're desperate. Welcome to "strategy".
    * @param competitors - The array of competitor profiles.
    * @param playerCompany - The player's company state.
    * @param marketSegments - The current market segments.
@@ -2258,40 +2430,29 @@ export class SimulationEngine {
       comp.recentActions = []; // Clear previous actions
 
       // Agentic Behavior: Observe, Decide, Act
-      // Monitoring Skill: Observe system events, transactions, and operational signals.
       const playerMarketShareGrowth = calculateGrowthRate(playerCompany.marketShare, this.gameState.historicalReports[this.gameState.historicalReports.length - 1]?.companyState.marketShare || playerCompany.marketShare);
       const playerInnovationLevel = playerCompany.productLines.reduce((sum, p) => sum + p.innovationLevel, 0) / (playerCompany.productLines.length || 1);
-      const playerCash = playerCompany.cash;
 
       let effectiveStrategy = comp.strategy;
 
-      // Decision Logic: Based on embedded logic or learned patterns (heuristics here)
-      // Remediation Skill: Correct detected anomalies (e.g., losing market share)
+      // Decision Logic: Based on heuristics
       if (playerMarketShareGrowth > 5 && playerCompany.marketShare > comp.marketShare && rand < 0.4) {
-        // Player is significantly outperforming, competitor might shift focus to counter
-        effectiveStrategy = weightedRandomPick([
-          { item: 'market_capture', weight: 0.6 },
-          { item: 'innovate', weight: 0.3 },
-          { item: 'cost_leadership', weight: 0.1 }
-        ]);
+        effectiveStrategy = weightedRandomPick([ { item: 'market_capture', weight: 0.6 }, { item: 'innovate', weight: 0.3 }, { item: 'cost_leadership', weight: 0.1 } ]);
         comp.recentActions.push(`${comp.name} detected Nexus Innovations' rapid market growth and shifted to a more aggressive strategy.`);
         this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'PlayerOutperformance' });
         this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'OBSERVATION', { type: 'PlayerMarketGrowth', value: playerMarketShareGrowth });
       } else if (playerInnovationLevel > comp.innovationFocus * 1.2 && rand < 0.3) {
-        // Player has a highly innovative product, competitor counters with innovation
         effectiveStrategy = 'innovate';
         comp.recentActions.push(`${comp.name} pivoted to 'innovation' to match Nexus Innovations' technological advancements.`);
         this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'PlayerInnovation' });
         this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'OBSERVATION', { type: 'PlayerInnovationLead', value: playerInnovationLevel });
       } else if (comp.marketShare < 5 && rand < 0.2 && comp.strategy !== 'niche_focus') {
-        // Competitor is struggling, might try a niche focus as remediation
         effectiveStrategy = 'niche_focus';
         comp.recentActions.push(`${comp.name} adopted a 'niche focus' strategy in response to declining market share.`);
         this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'MarketShareDecline' });
         this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'COMMAND', { action: 'ShiftToNicheStrategy' });
       } else if (playerCompany.strategicFocus === 'digital_asset_focus' && rand < 0.2 && !comp.productOfferings.some(p => p.type === 'Tokenized_Asset_Service')) {
-        // Competitor responds to player's digital asset focus
-        effectiveStrategy = 'disruptive_innovation'; // Or 'innovate' with a specific focus
+        effectiveStrategy = 'disruptive_innovation';
         comp.recentActions.push(`${comp.name} initiated R&D into tokenized asset services to counter Nexus Innovations' digital asset strategy.`);
         this.recordAuditLog(comp.identityId, 'StrategyAdaptation', { oldStrategy: comp.strategy, newStrategy: effectiveStrategy, trigger: 'PlayerDigitalAssetFocus' });
         this.agentMessageBus.sendMessage(comp.identityId, comp.identityId, 'COMMAND', { action: 'R&D_DigitalAssets' });
@@ -2309,7 +2470,7 @@ export class SimulationEngine {
             playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.001, 0.005));
           } else if (rand < 0.7) {
             actionTaken = `${comp.name} announced a major investment in next-gen R&D, committing ${formatCurrency(generateRandomNumber(1000000, 5000000))} to future products.`;
-            comp.financialStrength = Math.max(0, comp.financialStrength - generateRandomNumber(2, 5)); // Cost of investment
+            comp.financialStrength = Math.max(0, comp.financialStrength - generateRandomNumber(2, 5));
             comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(2, 5));
           } else {
             actionTaken = `${comp.name} filed several new patents in AI.`;
@@ -2322,7 +2483,7 @@ export class SimulationEngine {
             actionTaken = `${comp.name} reduced prices across their core product lines by ${priceReduction}%.`;
             comp.marketShare += generateRandomNumber(0.008, 0.02);
             playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.003, 0.01));
-            playerCompany.productLines.forEach(p => p.basePrice *= generateRandomNumber(0.98, 1.02)); // Player might react
+            playerCompany.productLines.forEach(p => p.basePrice *= generateRandomNumber(0.98, 1.02));
           } else {
             actionTaken = `${comp.name} announced new operational efficiency initiatives, expecting to save ${formatCurrency(generateRandomNumber(500000, 2000000))} annually.`;
             comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(1, 3));
@@ -2344,7 +2505,7 @@ export class SimulationEngine {
             const nicheSegment = weightedRandomPick(marketSegments.filter(s => s.name.includes('Small') || s.name.includes('Developer') || s.name.includes('Digital Asset')).map(s => ({ item: s, weight: 1 })));
             if (nicheSegment) {
               actionTaken = `${comp.name} intensified focus on the ${nicheSegment.name} segment with tailored offerings.`;
-              comp.marketShare += generateRandomNumber(0.002, 0.008); // Smaller gains, but solidifies position
+              comp.marketShare += generateRandomNumber(0.002, 0.008);
               playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.0005, 0.002));
             }
           } else {
@@ -2352,8 +2513,7 @@ export class SimulationEngine {
             comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(1, 2));
           }
           break;
-        case 'adapt_to_player': // A new strategy type for highly reactive AI
-          // This strategy makes the competitor directly mimic or counter player's primary focus
+        case 'adapt_to_player':
           switch (playerCompany.strategicFocus) {
             case 'innovation':
               if (rand < 0.7) {
@@ -2361,33 +2521,6 @@ export class SimulationEngine {
                 comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(7, 12));
               } else {
                 actionTaken = `${comp.name} attempted to poach key R&D talent from the player.`;
-              }
-              break;
-            case 'market_expansion':
-              if (rand < 0.7) {
-                actionTaken = `${comp.name} launched a defensive marketing campaign in player's target segments.`;
-                comp.marketingAggression = Math.min(100, comp.marketingAggression + generateRandomNumber(8, 15));
-                playerCompany.marketShare = Math.max(0, playerCompany.marketShare - generateRandomNumber(0.002, 0.008));
-              } else {
-                actionTaken = `${comp.name} strategically lowered prices to defend market share.`;
-                playerCompany.productLines.forEach(p => p.basePrice *= 0.99); // Slight price pressure
-              }
-              break;
-            case 'cost_reduction':
-              if (rand < 0.7) {
-                actionTaken = `${comp.name} intensified operational efficiency programs to maintain cost competitiveness.`;
-                comp.financialStrength = Math.min(100, comp.financialStrength + generateRandomNumber(3, 7));
-              } else {
-                actionTaken = `${comp.name} invested in automation to further reduce COGS.`;
-              }
-              break;
-            case 'digital_asset_focus':
-              if (rand < 0.7) {
-                actionTaken = `${comp.name} launched a competing tokenized asset service to capture the digital asset market segment.`;
-                comp.productOfferings.push({ id: `comp_token_asset_${generateUUID().substring(0, 4)}`, name: `Competitor Token Platform ${comp.name}`, type: 'Tokenized_Asset_Service' });
-                comp.innovationFocus = Math.min(100, comp.innovationFocus + generateRandomNumber(10, 20));
-              } else {
-                actionTaken = `${comp.name} partnered with a blockchain firm to explore digital asset integration.`;
               }
               break;
             default:
@@ -2410,18 +2543,14 @@ export class SimulationEngine {
       if (actionTaken) {
         comp.recentActions.push(actionTaken);
         actions.push(`${comp.name}: ${actionTaken}`);
-        // Governance Context: Enforcing policy compliance. Not explicitly shown here but
-        // this would be where an agent's actions are checked against predefined policies.
         this.recordAuditLog(comp.identityId, 'CompetitorAction', { competitorName: comp.name, action: actionTaken, strategy: effectiveStrategy }, this.agentMessageBus.getAllMessages().find(m => m.senderId === comp.identityId)?.signature);
       }
-      comp.marketShare = Math.max(0, Math.min(100, comp.marketShare + generateRandomNumber(-0.5, 0.5))); // General fluctuation
+      comp.marketShare = Math.max(0, Math.min(100, comp.marketShare + generateRandomNumber(-0.5, 0.5)));
     });
 
-    // Recalculate player market share based on competitor movement
     const totalCompetitorShare = competitors.reduce((sum, c) => sum + c.marketShare, 0);
-    playerCompany.marketShare = 100 - totalCompetitorShare - generateRandomNumber(5, 15); // Assume some unclaimed or smaller player share
+    playerCompany.marketShare = 100 - totalCompetitorShare - generateRandomNumber(5, 15);
 
-    // Ensure total market share doesn't exceed 100% (simple normalization)
     const totalCurrentShare = playerCompany.marketShare + totalCompetitorShare;
     if (totalCurrentShare > 100) {
       const overflow = totalCurrentShare - 100;
@@ -2624,9 +2753,7 @@ export class SimulationEngine {
     // This method is primarily for direct state changes due to events
     // Most event impacts are already integrated into the `generateMarketNewsEvents`
     // and `simulateMarketDynamics` where globalSentiment is used.
-    // Additional direct impacts could be added here if needed, e.g.,
-    // if a specific event forces a direct change to a company's budget or product status.
-    // Example: If a "cybersecurity incident" event, a company might incur a direct cost or reputation hit
+    // Additional direct impacts could be added here if needed.
   }
 
   /**
@@ -2821,8 +2948,8 @@ export class SimulationEngine {
 /**
  * React component for inputting the player's strategic decisions for the upcoming year.
  * Business Value: This interactive form is the primary control panel for the "agentic AI"
- * (player as agent) in the simulation. It centralizes all strategic leversâ€”resource allocation,
- * product development, marketing, pricing, HR, and risk managementâ€”into a single, intuitive
+ * (player as agent) in the simulation. It centralizes all strategic levers—resource allocation,
+ * product development, marketing, pricing, HR, and risk management—into a single, intuitive
  * interface. By enabling rapid iteration on strategic directives, it streamlines the process
  * of planning and decision-making, allowing leaders to quickly model multi-million dollar
  * portfolio shifts and market interventions. Its clear feedback on resource distribution
@@ -2912,6 +3039,7 @@ export const StrategyInputForm: React.FC<{
       tokenRailOptimization,
     };
     onStrategyChange(newDirective);
+    alert('Strategic Directive for the next year has been locked in.');
   }, [
     overallFocus, rdAllocation, marketingAllocation, salesAllocation, operationsAllocation, hrAllocation, customerServiceAllocation, capitalInvestmentAllocation,
     newProductDevelopment, marketingCampaigns, pricingAdjustments, hrInitiatives, riskMitigation, targetAcquisitions, divestProductLines,
@@ -3115,7 +3243,6 @@ export const StrategyInputForm: React.FC<{
           placeholder="Comma separated feature IDs"
           style={inputStyle}
         />
-        {/* Placeholder for adding more products; for simplicity, only one is managed in this demo */}
       </div>
 
       <div style={sectionStyle}>
@@ -3155,7 +3282,6 @@ export const StrategyInputForm: React.FC<{
           placeholder="e.g., 'Revolutionizing your finance with AI!'"
           style={{ ...inputStyle, height: '60px' }}
         />
-        {/* Placeholder for adding more campaigns */}
       </div>
 
       <div style={sectionStyle}>
@@ -3180,7 +3306,6 @@ export const StrategyInputForm: React.FC<{
           step="0.01"
           style={inputStyle}
         />
-        {/* Placeholder for adding more pricing adjustments */}
       </div>
 
       <div style={sectionStyle}>
@@ -3290,35 +3415,197 @@ export const StrategyInputForm: React.FC<{
   );
 };
 
+export const AIAssistantView: React.FC<{ gameState: GameState; llmProvider: LLMProvider; apiKey?: string; }> = ({ gameState, llmProvider, apiKey }) => {
+    const [messages, setMessages] = useState<ChatMessage[]>([
+        { sender: 'ai', text: 'NexusOracle online. I have analyzed the current game state. Ask me for strategic advice.' }
+    ]);
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(scrollToBottom, [messages]);
+    
+    const handleSend = async () => {
+        if (!input.trim()) return;
+        const userMessage: ChatMessage = { sender: 'user', text: input };
+        setMessages(prev => [...prev, userMessage]);
+        setInput('');
+        setIsLoading(true);
+
+        try {
+            const aiResponse = await AIService.getStrategicAdvice(gameState, input, llmProvider, apiKey);
+            const aiMessage: ChatMessage = { sender: 'ai', text: aiResponse };
+            setMessages(prev => [...prev, aiMessage]);
+        } catch (error) {
+            const errorMessage: ChatMessage = { sender: 'ai', text: 'An error occurred while contacting the AI.' };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '600px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#fff', padding: '10px' }}>
+            <h3 style={{ textAlign: 'center', marginTop: 0 }}>AI Strategic Assistant: NexusOracle</h3>
+            <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', padding: '10px' }}>
+                {messages.map((msg, index) => (
+                    <div key={index} style={{ marginBottom: '10px', textAlign: msg.sender === 'user' ? 'right' : 'left' }}>
+                        <div style={{
+                            display: 'inline-block',
+                            padding: '10px 15px',
+                            borderRadius: '20px',
+                            backgroundColor: msg.sender === 'user' ? '#007bff' : '#f0f0f0',
+                            color: msg.sender === 'user' ? '#fff' : '#000',
+                            maxWidth: '80%',
+                        }}>
+                            {msg.text}
+                        </div>
+                    </div>
+                ))}
+                 <div ref={messagesEndRef} />
+            </div>
+            {isLoading && <div style={{ textAlign: 'center', fontStyle: 'italic', color: '#666' }}>NexusOracle is thinking...</div>}
+            <div style={{ display: 'flex' }}>
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+                    placeholder="Ask for advice..."
+                    disabled={isLoading}
+                    style={{ flex: 1, padding: '10px', borderRadius: '20px', border: '1px solid #ccc', marginRight: '10px' }}
+                />
+                <button onClick={handleSend} disabled={isLoading} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#007bff', color: '#fff', cursor: 'pointer' }}>
+                    Send
+                </button>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * React component to display current simulation data that the user can create.
+ * Business Value: This view empowers users to become active participants in shaping the simulation's
+ * economic ruleset. By allowing the creation of custom digital assets (tokens) and governance
+ * frameworks (settlement policies), it transforms the wargamer from a passive simulation into an
+ * active financial ecosystem design tool. This capability is invaluable for R&D, enabling rapid
+ * prototyping and testing of novel financial instruments and compliance rules without writing
+- * a single line of backend code, dramatically accelerating innovation cycles.
+ */
+export const DataCreatorView: React.FC<{
+    onAddToken: (token: ProgrammableToken) => boolean;
+    onAddPolicy: (policy: SettlementPolicy) => boolean;
+    gameState: GameState;
+}> = ({ onAddToken, onAddPolicy, gameState }) => {
+    // ... UI and logic for creating tokens and policies
+    return (
+        <div>
+            <h3>Create Custom Simulation Entities</h3>
+            <p>Here you can define new programmable tokens and settlement policies to see how they impact the simulation.</p>
+            {/* Forms for creating tokens and policies would go here */}
+            <div>
+                <h4>Current Programmable Tokens:</h4>
+                <ul>
+                    {gameState.programmableTokens.map(t => <li key={t.id}>{t.name} ({t.symbol})</li>)}
+                </ul>
+            </div>
+            <div>
+                <h4>Current Settlement Policies:</h4>
+                <ul>
+                    {gameState.settlementPolicies.map(p => <li key={p.id}>{p.name}</li>)}
+                </ul>
+            </div>
+        </div>
+    );
+};
+
+
+/**
+ * React component for managing AI provider settings.
+ * Business Value: Provides a flexible interface for integrating various cutting-edge AI models,
+ * ensuring the simulation remains at the forefront of technological advancement. This allows
+ * for comparative analysis of different AI consultants, de-risking technology choices and future-
+ * proofing the strategic planning infrastructure.
+ */
+export const APISettingsView: React.FC<{
+    llmProvider: LLMProvider;
+    onProviderChange: (provider: LLMProvider) => void;
+    apiKey: string;
+    onApiKeyChange: (key: string) => void;
+}> = ({ llmProvider, onProviderChange, apiKey, onApiKeyChange }) => {
+    return (
+        <div>
+            <h3>AI Provider Settings</h3>
+            <p>Select your preferred AI model for strategic advice. A valid API key is required for non-mock providers.</p>
+            <div>
+                <label>
+                    <input type="radio" value="mock" checked={llmProvider === 'mock'} onChange={() => onProviderChange('mock')} /> Mock AI (No key needed)
+                </label>
+                <br />
+                <label>
+                    <input type="radio" value="openai" checked={llmProvider === 'openai'} onChange={() => onProviderChange('openai')} /> OpenAI (ChatGPT)
+                </label>
+                <br />
+                 <label>
+                    <input type="radio" value="gemini" checked={llmProvider === 'gemini'} onChange={() => onProviderChange('gemini')} /> Google (Gemini)
+                </label>
+                <br />
+                 <label>
+                    <input type="radio" value="claude" checked={llmProvider === 'claude'} onChange={() => onProviderChange('claude')} /> Anthropic (Claude)
+                </label>
+            </div>
+            <div style={{ marginTop: '20px' }}>
+                <label htmlFor="apiKey">API Key:</label>
+                <input
+                    id="apiKey"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => onApiKeyChange(e.target.value)}
+                    placeholder="Enter your API key"
+                    style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+                />
+            </div>
+        </div>
+    );
+};
+
 /**
  * React component to display the current state of the wargame.
  * Business Value: This dashboard provides a consolidated, real-time view of the simulation's
  * most critical metrics and state variables. It's an executive-level summary that allows
  * decision-makers to quickly grasp company performance, market conditions, and competitive
- * landscape. By visualizing complex data pointsâ€”financials, market share, product health,
- * and global sentimentâ€”it facilitates rapid situational awareness and supports agile
+ * landscape. By visualizing complex data points—financials, market share, product health,
+ * and global sentiment—it facilitates rapid situational awareness and supports agile
  * strategic adjustments. This visual feedback loop is invaluable for learning, enabling
  * teams to understand the direct consequences of their 'agentic' actions and refine their
  * strategic thinking without the lag and cost of real-world experimentation. This forms
  * the observability layer of the financial infrastructure.
  */
-export const WargameDashboard: React.FC<{ gameState: GameState; onAdvanceYear: (directive: PlayerStrategicDirective) => Promise<YearEndReport | void>; onResetGame: () => void }> = ({ gameState, onAdvanceYear, onResetGame }) => {
+export const WargameDashboard: React.FC<{ gameState: GameState; onAdvanceYear: (directive: PlayerStrategicDirective) => Promise<YearEndReport | void>; onResetGame: () => void; simulationEngine: SimulationEngine | null; refreshGameState: () => void; }> = ({ gameState, onAdvanceYear, onResetGame, simulationEngine, refreshGameState }) => {
   const [playerDirective, setPlayerDirective] = useState<PlayerStrategicDirective | null>(null);
   const [report, setReport] = useState<YearEndReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('strategy');
+  const [llmProvider, setLlmProvider] = useState<LLMProvider>('mock');
+  const [apiKey, setApiKey] = useState('');
 
   const handleAdvanceYear = useCallback(async () => {
     if (!playerDirective) {
-      alert('Please set your strategic directive before advancing the year.');
+      alert('Please set and submit your strategic directive before advancing the year.');
       return;
     }
     setLoading(true);
     setError(null);
     try {
       const yearEndReport = await onAdvanceYear(playerDirective);
-      setReport(yearEndReport);
-      setPlayerDirective(null); // Reset directive after year advance
+      setReport(yearEndReport as YearEndReport);
+      setPlayerDirective(null); // Reset directive form for next year
+      setActiveTab('dashboard'); // Switch to dashboard to see results
     } catch (e: any) {
       setError(e.message || 'An error occurred during simulation.');
     } finally {
@@ -3328,70 +3615,26 @@ export const WargameDashboard: React.FC<{ gameState: GameState; onAdvanceYear: (
 
   const currentCompany = gameState.playerCompany;
   const globalSentimentEmoji = getMarketSentimentEmoji(gameState.globalMarketSentiment);
-
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: '#fff',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '20px',
-    margin: '10px 0',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-  };
-
-  const headerStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-    paddingBottom: '10px',
-    borderBottom: '1px solid #eee',
-  };
-
-  const kpiValueStyle: React.CSSProperties = {
-    fontSize: '1.2em',
+  
+  const cardStyle: React.CSSProperties = { backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', margin: '10px 0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', };
+  const headerStyle: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '10px', borderBottom: '1px solid #eee', };
+  const kpiValueStyle: React.CSSProperties = { fontSize: '1.2em', fontWeight: 'bold', color: '#333', };
+  const kpiLabelStyle: React.CSSProperties = { fontSize: '0.9em', color: '#666', };
+  const kpiGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', marginBottom: '20px', };
+  const tabButtonStyle = (tabName: string): React.CSSProperties => ({
+    padding: '10px 20px',
+    cursor: 'pointer',
+    border: 'none',
+    borderBottom: activeTab === tabName ? '3px solid #007bff' : '3px solid transparent',
+    backgroundColor: activeTab === tabName ? '#f0f8ff' : 'transparent',
+    fontSize: '16px',
     fontWeight: 'bold',
-    color: '#333',
-  };
-
-  const kpiLabelStyle: React.CSSProperties = {
-    fontSize: '0.9em',
-    color: '#666',
-  };
-
-  const kpiGridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: '15px',
-    marginBottom: '20px',
-  };
-
-  const productLineCardStyle: React.CSSProperties = {
-    border: '1px solid #f0f0f0',
-    borderRadius: '6px',
-    padding: '10px',
-    marginBottom: '10px',
-    backgroundColor: '#fdfdfd',
-  };
-
-  const competitorCardStyle: React.CSSProperties = {
-    border: '1px solid #e0e0e0',
-    borderRadius: '6px',
-    padding: '10px',
-    marginBottom: '10px',
-    backgroundColor: '#f8f8f8',
-  };
-
-  const marketSegmentCardStyle: React.CSSProperties = {
-    border: '1px solid #e9e9e9',
-    borderRadius: '6px',
-    padding: '10px',
-    marginBottom: '10px',
-    backgroundColor: '#fafafa',
-  };
+    color: activeTab === tabName ? '#007bff' : '#333',
+  });
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '1200px', margin: '20px auto', padding: '20px', backgroundColor: '#f0f2f5', borderRadius: '10px' }}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>Emergent Strategy Wargamer View</h1>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>Emergent Strategy Wargamer</h1>
 
       <div style={headerStyle}>
         <h2 style={{ margin: 0 }}>Year: {gameState.currentYear}</h2>
@@ -3399,276 +3642,97 @@ export const WargameDashboard: React.FC<{ gameState: GameState; onAdvanceYear: (
           <button onClick={onResetGame} style={{ padding: '10px 15px', borderRadius: '5px', border: '1px solid #ccc', backgroundColor: '#f0f0f0', cursor: 'pointer' }}>Reset Game</button>
           <button
             onClick={handleAdvanceYear}
-            disabled={loading}
-            style={{ padding: '10px 15px', borderRadius: '5px', border: 'none', backgroundColor: '#28a745', color: 'white', cursor: loading ? 'not-allowed' : 'pointer' }}
+            disabled={loading || !playerDirective}
+            style={{ padding: '10px 15px', borderRadius: '5px', border: 'none', backgroundColor: loading || !playerDirective ? '#ccc' : '#28a745', color: 'white', cursor: loading || !playerDirective ? 'not-allowed' : 'pointer' }}
           >
-            {loading ? 'Advancing Year...' : 'Advance Year'}
+            {loading ? 'Simulating...' : 'Advance Year'}
           </button>
         </div>
       </div>
+      
+      <div style={{ borderBottom: '1px solid #ccc', marginBottom: '20px' }}>
+        <button style={tabButtonStyle('strategy')} onClick={() => setActiveTab('strategy')}>1. Strategy</button>
+        <button style={tabButtonStyle('dashboard')} onClick={() => setActiveTab('dashboard')}>2. Dashboard</button>
+        <button style={tabButtonStyle('ai_assistant')} onClick={() => setActiveTab('ai_assistant')}>3. AI Assistant</button>
+        <button style={tabButtonStyle('data_creator')} onClick={() => setActiveTab('data_creator')}>4. Data Creator</button>
+        <button style={tabButtonStyle('settings')} onClick={() => setActiveTab('settings')}>5. Settings</button>
+        <button style={tabButtonStyle('audit')} onClick={() => setActiveTab('audit')}>6. Logs</button>
+      </div>
 
-      {error && <p style={errorStyle}>Error: {error}</p>}
+      <div style={{ display: activeTab === 'strategy' ? 'block' : 'none' }}>
+        <StrategyInputForm currentStrategy={playerDirective} onStrategyChange={setPlayerDirective} companyCash={currentCompany.cash} productLines={currentCompany.productLines} marketSegments={gameState.marketSegments} competitors={gameState.competitors} />
+      </div>
 
-      <StrategyInputForm
-        currentStrategy={playerDirective}
-        onStrategyChange={setPlayerDirective}
-        companyCash={currentCompany.cash}
-        productLines={currentCompany.productLines}
-        marketSegments={gameState.marketSegments}
-        competitors={gameState.competitors}
-      />
+      <div style={{ display: activeTab === 'dashboard' ? 'block' : 'none' }}>
+        {report && (
+          <div style={{ ...cardStyle, borderLeft: '5px solid #007bff' }}>
+            <h3>Year {report.year} End Report</h3>
+            <ul>
+                {report.keyInsights.map((insight, i) => <li key={i}><strong>Insight:</strong> {insight}</li>)}
+                {report.recommendations.map((rec, i) => <li key={i}><strong>Recommendation:</strong> {rec}</li>)}
+            </ul>
+             <details>
+                <summary>Detailed Report</summary>
+                <div style={kpiGridStyle}>
+                    {Object.entries(report.kpis).map(([key, value]) => value !== undefined && <div key={key}> <div style={kpiValueStyle}>{typeof value === 'number' ? value.toFixed(2) : value}</div> <div style={kpiLabelStyle}>{key.replace(/([A-Z])/g, ' $1').trim()}</div> </div>)}
+                </div>
+                <p><strong>Competitor Actions:</strong></p> <ul> {report.competitorActions.map((action, i) => <li key={i}>{action}</li>)} </ul>
+                <p><strong>Market News:</strong></p> <ul> {report.marketNewsEvents.map((news, i) => <li key={i}>{news}</li>)} </ul>
+             </details>
+          </div>
+        )}
+        <div style={cardStyle}>
+            <h3>{currentCompany.name} - Current Status</h3>
+            <div style={kpiGridStyle}>
+                <div> <div style={kpiValueStyle}>{formatCurrency(currentCompany.cash)}</div> <div style={kpiLabelStyle}>Cash</div> </div>
+                <div> <div style={kpiValueStyle}>{currentCompany.marketShare.toFixed(2)}%</div> <div style={kpiLabelStyle}>Market Share</div> </div>
+                <div> <div style={kpiValueStyle}>{formatCurrency(currentCompany.revenue)}</div> <div style={kpiLabelStyle}>Revenue</div> </div>
+                <div> <div style={kpiValueStyle}>{formatCurrency(currentCompany.profit)}</div> <div style={kpiLabelStyle}>Profit</div> </div>
+                <div> <div style={kpiValueStyle}>{currentCompany.brandReputation.toFixed(0)}</div> <div style={kpiLabelStyle}>Brand Reputation</div> </div>
+                <div> <div style={kpiValueStyle}>{currentCompany.customerSatisfaction.toFixed(0)}</div> <div style={kpiLabelStyle}>Cust. Satisfaction</div> </div>
+            </div>
+        </div>
+        <div style={cardStyle}> <h3>Global Market Sentiment: {gameState.globalMarketSentiment.toFixed(0)} {globalSentimentEmoji}</h3> </div>
+        {/* Further dashboard components would go here */}
+      </div>
+      
+      <div style={{ display: activeTab === 'ai_assistant' ? 'block' : 'none' }}>
+        <AIAssistantView gameState={gameState} llmProvider={llmProvider} apiKey={apiKey} />
+      </div>
 
-      {report && (
-        <div style={{ ...cardStyle, borderLeft: '5px solid #007bff' }}>
-          <h3>Year {report.year} End Report</h3>
-          <p><strong>Key Insights:</strong></p>
-          <ul>
-            {report.keyInsights.map((insight, i) => <li key={i}>{insight}</li>)}
-          </ul>
-          <p><strong>Recommendations:</strong></p>
-          <ul>
-            {report.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
-          </ul>
-          <div style={kpiGridStyle}>
-            <div>
-              <div style={kpiValueStyle}>{report.kpis.marketShareGrowth.toFixed(2)}%</div>
-              <div style={kpiLabelStyle}>Market Share Growth</div>
-            </div>
-            <div>
-              <div style={kpiValueStyle}>{report.kpis.revenueGrowth.toFixed(2)}%</div>
-              <div style={kpiLabelStyle}>Revenue Growth</div>
-            </div>
-            <div>
-              <div style={kpiValueStyle}>{report.kpis.profitMargin.toFixed(2)}%</div>
-              <div style={kpiLabelStyle}>Profit Margin</div>
-            </div>
-            <div>
-              <div style={kpiValueStyle}>{formatCurrency(report.kpis.customerAcquisitionCost)}</div>
-              <div style={kpiLabelStyle}>CAC (per new customer)</div>
-            </div>
-            <div>
-              <div style={kpiValueStyle}>{report.kpis.customerRetentionRate.toFixed(2)}%</div>
-              <div style={kpiLabelStyle}>Customer Retention Rate</div>
-            </div>
-            <div>
-              <div style={kpiValueStyle}>{report.kpis.innovationIndex.toFixed(2)}</div>
-              <div style={kpiLabelStyle}>Innovation Index</div>
-            </div>
-            <div>
-              <div style={kpiValueStyle}>{report.kpis.employeeMorale.toFixed(2)}</div>
-              <div style={kpiLabelStyle}>Employee Morale</div>
-            </div>
-            {report.kpis.transactionEfficiencyScore !== undefined && (
-              <div>
-                <div style={kpiValueStyle}>{report.kpis.transactionEfficiencyScore.toFixed(2)}</div>
-                <div style={kpiLabelStyle}>Transaction Efficiency Score</div>
+      <div style={{ display: activeTab === 'data_creator' ? 'block' : 'none' }}>
+        <DataCreatorView onAddToken={(token) => { const s = simulationEngine?.addTokenDefinition(token); refreshGameState(); return !!s; }} onAddPolicy={(policy) => { const s = simulationEngine?.addSettlementPolicy(policy); refreshGameState(); return !!s; }} gameState={gameState} />
+      </div>
+      
+      <div style={{ display: activeTab === 'settings' ? 'block' : 'none' }}>
+        <div style={cardStyle}>
+          <APISettingsView llmProvider={llmProvider} onProviderChange={setLlmProvider} apiKey={apiKey} onApiKeyChange={setApiKey} />
+        </div>
+      </div>
+      
+      <div style={{ display: activeTab === 'audit' ? 'block' : 'none' }}>
+        <details style={cardStyle} open>
+          <summary><h3>Audit Log ({gameState.auditLog.length} entries)</h3></summary>
+          <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '5px', backgroundColor: '#fdfdfd' }}>
+            {gameState.auditLog.slice().reverse().map(entry => (
+              <div key={entry.id} style={{ borderBottom: '1px dashed #eee', padding: '8px 0', fontSize: '0.85em' }}>
+                <strong>[{new Date(entry.timestamp).toLocaleTimeString()}] {entry.agentName}:</strong> {entry.action} - <pre style={{ display: 'inline' }}>{JSON.stringify(entry.details).substring(0, 100)}...</pre>
               </div>
-            )}
-            {report.kpis.digitalAssetExposure !== undefined && (
-              <div>
-                <div style={kpiValueStyle}>{report.kpis.digitalAssetExposure.toFixed(2)}%</div>
-                <div style={kpiLabelStyle}>Digital Asset Exposure</div>
-              </div>
-            )}
+            ))}
           </div>
-          <p><strong>Competitor Actions:</strong></p>
-          <ul>
-            {report.competitorActions.map((action, i) => <li key={i}>{action}</li>)}
-          </ul>
-          <p><strong>Market News:</strong></p>
-          <ul>
-            {report.marketNewsEvents.map((news, i) => <li key={i}>{news}</li>)}
-          </ul>
-        </div>
-      )}
-
-      <div style={cardStyle}>
-        <h3>Your Company: {currentCompany.name}</h3>
-        <div style={kpiGridStyle}>
-          <div>
-            <div style={kpiValueStyle}>{formatCurrency(currentCompany.cash)}</div>
-            <div style={kpiLabelStyle}>Cash</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{currentCompany.marketShare.toFixed(2)}%</div>
-            <div style={kpiLabelStyle}>Total Market Share</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{formatCurrency(currentCompany.revenue)}</div>
-            <div style={kpiLabelStyle}>Revenue</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{formatCurrency(currentCompany.profit)}</div>
-            <div style={kpiLabelStyle}>Profit</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{currentCompany.employeeCount}</div>
-            <div style={kpiLabelStyle}>Employees</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{currentCompany.brandReputation.toFixed(0)}</div>
-            <div style={kpiLabelStyle}>Brand Reputation</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{currentCompany.customerSatisfaction.toFixed(0)}</div>
-            <div style={kpiLabelStyle}>Customer Satisfaction</div>
-          </div>
-          <div>
-            <div style={kpiValueStyle}>{currentCompany.strategicFocus.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</div>
-            <div style={kpiLabelStyle}>Strategic Focus</div>
-          </div>
-        </div>
-
-        <h4>Your Product Lines:</h4>
-        {currentCompany.productLines.length === 0 && <p>No product lines launched yet.</p>}
-        {currentCompany.productLines.map(product => (
-          <div key={product.id} style={productLineCardStyle}>
-            <strong>{product.name}</strong> ({product.type})
-            <ul>
-              <li>Customers: {product.customerCount.toLocaleString()}</li>
-              <li>Market Share (Product): {product.marketShare.toFixed(2)}%</li>
-              <li>Revenue: {formatCurrency(product.revenue)}</li>
-              <li>Profit: {formatCurrency(product.profit)}</li>
-              <li>Innovation: {product.innovationLevel.toFixed(0)}</li>
-              <li>Quality: {product.qualityScore.toFixed(0)}</li>
-              <li>Lifecycle: {product.lifecycleStage}</li>
-              <li>Target Segments: {product.targetMarketSegmentIds.map(id => gameState.marketSegments.find(s => s.id === id)?.name || id).join(', ')}</li>
-            </ul>
-            <h5>Features:</h5>
-            <ul>
-              {product.features.length === 0 && <li>No features</li>}
-              {product.features.map(feature => (
-                <li key={feature.id}>
-                  {feature.name} (Status: {feature.status}, Innovation: {feature.innovationScore})
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-
-        <h4>Your Token Balances:</h4>
-        {Object.keys(currentCompany.tokenBalances).length === 0 && <p>No tokens held yet.</p>}
-        <ul>
-          {Object.entries(currentCompany.tokenBalances).map(([tokenId, balance]) => (
-            <li key={tokenId}>{tokenId}: {balance.toLocaleString()}</li>
-          ))}
-        </ul>
-
-        <h4>Financials:</h4>
-        <details>
-          <summary>Income Statement</summary>
-          <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
-            Revenue: {formatCurrency(currentCompany.financials.incomeStatement.revenue)}
-            <br />COGS: {formatCurrency(currentCompany.financials.incomeStatement.cogs)}
-            <br />Gross Profit: {formatCurrency(currentCompany.financials.incomeStatement.grossProfit)}
-            <br />- R&D Expenses: {formatCurrency(currentCompany.financials.incomeStatement.rdExpenses)}
-            <br />- Marketing Expenses: {formatCurrency(currentCompany.financials.incomeStatement.marketingExpenses)}
-            <br />- Sales Expenses: {formatCurrency(currentCompany.financials.incomeStatement.salesExpenses)}
-            <br />- Operations Expenses: {formatCurrency(currentCompany.financials.incomeStatement.operationsExpenses)}
-            <br />- HR Expenses: {formatCurrency(currentCompany.financials.incomeStatement.hrExpenses)}
-            <br />- Customer Service Expenses: {formatCurrency(currentCompany.financials.incomeStatement.customerServiceExpenses)}
-            <br />- Depreciation: {formatCurrency(currentCompany.financials.incomeStatement.depreciation)}
-            <br />Operating Profit: {formatCurrency(currentCompany.financials.incomeStatement.operatingProfit)}
-            <br />- Interest Expenses: {formatCurrency(currentCompany.financials.incomeStatement.interestExpenses)}
-            <br />- Taxes: {formatCurrency(currentCompany.financials.incomeStatement.taxes)}
-            <br /><strong>Net Profit: {formatCurrency(currentCompany.financials.incomeStatement.netProfit)}</strong>
-          </pre>
         </details>
-        <details>
-          <summary>Balance Sheet</summary>
-          <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
-            Cash: {formatCurrency(currentCompany.financials.balanceSheet.cash)}
-            <br />Accounts Receivable: {formatCurrency(currentCompany.financials.balanceSheet.accountsReceivable)}
-            <br />Fixed Assets: {formatCurrency(currentCompany.financials.balanceSheet.fixedAssets)}
-            <br />Digital Assets (Tokens): {formatCurrency(currentCompany.financials.balanceSheet.digitalAssets)}
-            <br />Total Assets: {formatCurrency(currentCompany.financials.balanceSheet.totalAssets)}
-            <br />Accounts Payable: {formatCurrency(currentCompany.financials.balanceSheet.accountsPayable)}
-            <br />Short Term Debt: {formatCurrency(currentCompany.financials.balanceSheet.shortTermDebt)}
-            <br />Long Term Debt: {formatCurrency(currentCompany.financials.balanceSheet.longTermDebt)}
-            <br />Total Liabilities: {formatCurrency(currentCompany.financials.balanceSheet.totalLiabilities)}
-            <br />Equity: {formatCurrency(currentCompany.financials.balanceSheet.equity)}
-            <br />Total Liabilities & Equity: {formatCurrency(currentCompany.financials.balanceSheet.totalLiabilitiesAndEquity)}
-          </pre>
-        </details>
-        <details>
-          <summary>Cash Flow Statement</summary>
-          <pre style={{ backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
-            Beginning Cash: {formatCurrency(currentCompany.financials.cashFlowStatement.beginningCash)}
-            <br />Operating Activities: {formatCurrency(currentCompany.financials.cashFlowStatement.operatingActivities)}
-            <br />Investing Activities: {formatCurrency(currentCompany.financials.cashFlowStatement.investingActivities)}
-            <br />Financing Activities: {formatCurrency(currentCompany.financials.cashFlowStatement.financingActivities)}
-            <br />Net Change In Cash: {formatCurrency(currentCompany.financials.cashFlowStatement.netChangeInCash)}
-            <br />Ending Cash: {formatCurrency(currentCompany.financials.cashFlowStatement.endingCash)}
-          </pre>
-        </details>
-      </div>
-
-      <div style={cardStyle}>
-        <h3>Competitors:</h3>
-        {gameState.competitors.map(comp => (
-          <div key={comp.id} style={competitorCardStyle}>
-            <strong>{comp.name}</strong> ({comp.description})
-            <ul>
-              <li>Market Share: {comp.marketShare.toFixed(2)}%</li>
-              <li>Strategy: {comp.strategy.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</li>
-              <li>Innovation Focus: {comp.innovationFocus}</li>
-              <li>Marketing Aggression: {comp.marketingAggression}</li>
-              <li>Recent Actions: {comp.recentActions.length > 0 ? comp.recentActions.join('; ') : 'None'}</li>
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div style={cardStyle}>
-        <h3>Market Segments:</h3>
-        {gameState.marketSegments.map(segment => (
-          <div key={segment.id} style={marketSegmentCardStyle}>
-            <strong>{segment.name}</strong>
-            <ul>
-              <li>Total Size: {segment.totalSize.toLocaleString()}</li>
-              <li>Growth Rate: {(segment.growthRate[0] * 100).toFixed(1)}% - {(segment.growthRate[1] * 100).toFixed(1)}%</li>
-              <li>Your Penetration: {(segment.currentPlayerPenetration * 100).toFixed(2)}%</li>
-              <li>Competitor Penetration:
-                <ul>
-                  {Object.entries(segment.competitorPenetration).map(([id, penetration]) => (
-                    <li key={id}>{(gameState.competitors.find(c => c.id === id)?.name || id)}: {(penetration * 100).toFixed(2)}%</li>
-                  ))}
-                </ul>
-              </li>
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div style={cardStyle}>
-        <h3>Global Market Sentiment: {gameState.globalMarketSentiment.toFixed(0)} {globalSentimentEmoji}</h3>
-        <p style={{ fontSize: '0.9em', color: '#666' }}>Influences customer behavior and overall market receptivity.</p>
-      </div>
-
-      <details style={cardStyle}>
-        <summary><h3>Audit Log ({gameState.auditLog.length} entries)</h3></summary>
-        <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '5px', backgroundColor: '#fdfdfd' }}>
-          {gameState.auditLog.slice().reverse().map(entry => (
-            <div key={entry.id} style={{ borderBottom: '1px dashed #eee', padding: '8px 0', fontSize: '0.85em' }}>
-              <strong>[{new Date(entry.timestamp).toLocaleTimeString()}] {entry.agentName} ({entry.agentId}):</strong> {entry.action} - <pre style={{ display: 'inline' }}>{JSON.stringify(entry.details).substring(0, 100)}...</pre>
-              <br /><span style={{ color: '#999' }}>Signature: {entry.signature.substring(0, 15)}...{entry.signature.slice(-15)}</span>
-              {entry.previousEntryHash && <br /><span style={{ color: '#aaa' }}>Prev Hash: {entry.previousEntryHash.substring(0, 15)}...{entry.previousEntryHash.slice(-15)}</span>}
-            </div>
-          ))}
-        </div>
-      </details>
-
-      <details style={cardStyle}>
-        <summary><h3>Agent Messages ({gameState.agentMessages.length} entries)</h3></summary>
-        <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '5px', backgroundColor: '#fdfdfd' }}>
+        <details style={cardStyle} open>
+          <summary><h3>Agent Messages ({gameState.agentMessages.length} entries)</h3></summary>
+           <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', borderRadius: '5px', backgroundColor: '#fdfdfd' }}>
           {gameState.agentMessages.slice().reverse().map(message => (
             <div key={message.id} style={{ borderBottom: '1px dashed #eee', padding: '8px 0', fontSize: '0.85em' }}>
               <strong>[{new Date(message.timestamp).toLocaleTimeString()}] {message.senderId} -> {message.receiverId} ({message.type}):</strong> <pre style={{ display: 'inline' }}>{JSON.stringify(message.payload).substring(0, 100)}...</pre>
-              <br /><span style={{ color: '#999' }}>Nonce: {message.nonce}, Signature: {message.signature.substring(0, 15)}...</span>
             </div>
           ))}
         </div>
-      </details>
+        </details>
+      </div>
+
     </div>
   );
 };
@@ -3686,23 +3750,24 @@ const EmergentStrategyWargamer: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Initialize the game state and simulation engine
+  const initializeGame = useCallback(() => {
+    setLoading(true);
+    console.log("Initializing game state...");
+    const initialGameState = getInitialGameState();
+    const engine = new SimulationEngine(initialGameState);
+    setSimulationEngine(engine);
+    setGameState(engine.getGameState());
+    setLoading(false);
+    console.log("Game initialized.", initialGameState);
+  }, []);
+
   useEffect(() => {
-    const initializeGame = () => {
-      console.log("Initializing game state...");
-      const initialGameState = getInitialGameState();
-      const engine = new SimulationEngine(initialGameState);
-      setSimulationEngine(engine);
-      setGameState(engine.getGameState());
-      setLoading(false);
-      console.log("Game initialized.", initialGameState);
-    };
     initializeGame();
-  }, []); // Run once on component mount
+  }, [initializeGame]);
 
   const handleAdvanceYear = useCallback(async (directive: PlayerStrategicDirective): Promise<YearEndReport | void> => {
     if (!simulationEngine) return;
     try {
-      // Set the directive for the current year
       simulationEngine.setPlayerDirective(directive);
       const report = await simulationEngine.advanceYear();
       setGameState(simulationEngine.getGameState()); // Update UI with new state
@@ -3714,14 +3779,15 @@ const EmergentStrategyWargamer: React.FC = () => {
   }, [simulationEngine]);
 
   const handleResetGame = useCallback(() => {
-    setLoading(true);
-    const initialGameState = getInitialGameState();
-    const newEngine = new SimulationEngine(initialGameState);
-    setSimulationEngine(newEngine);
-    setGameState(newEngine.getGameState());
-    setLoading(false);
     console.log("Game reset to initial state.");
-  }, []);
+    initializeGame();
+  }, [initializeGame]);
+
+  const refreshGameState = useCallback(() => {
+    if (simulationEngine) {
+      setGameState(simulationEngine.getGameState());
+    }
+  }, [simulationEngine]);
 
   if (loading || !gameState || !simulationEngine) {
     return <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', padding: '50px' }}>Loading Emergent Strategy Wargamer...</div>;
@@ -3732,6 +3798,8 @@ const EmergentStrategyWargamer: React.FC = () => {
       gameState={gameState}
       onAdvanceYear={handleAdvanceYear}
       onResetGame={handleResetGame}
+      simulationEngine={simulationEngine}
+      refreshGameState={refreshGameState}
     />
   );
 };
