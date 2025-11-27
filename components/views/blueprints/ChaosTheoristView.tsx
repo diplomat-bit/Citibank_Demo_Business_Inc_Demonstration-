@@ -3,7 +3,9 @@
  * a critical component within a commercial-grade financial infrastructure. It establishes
  * the core data models, intelligent automation interfaces, and real-time operational
  * constructs required for modeling complex financial and systemic environments, identifying
- * strategic leverage points, and executing automated interventions.
+ * strategic leverage points, and executing automated interventions. This file has been expanded
+ * to function as a self-contained, comprehensive application, integrating all necessary UI,
+ * state management, API mocking, and interactive AI assistance to fully realize its purpose.
  *
  * Business Value: This file is the intellectual bedrock that transforms reactive
  * operations into a proactive, intelligent, and scalable management paradigm. By precisely
@@ -23,11 +25,14 @@
  * 4.  **Absolute Security & Auditability:** Establishing cryptographic integrity for
  *     digital identities, transactions, and audit trails, building an unassailable
  *     foundation of trust and transparency essential for global financial leadership.
+ * 5.  **Interactive AI-Driven Analysis:** An integrated AI assistant provides natural language
+ *     access to complex system data, accelerating insight generation and democratizing
+ *     access to sophisticated analytical tools.
  * This module is a blueprint for the next generation of financial control systems,
  * driving unprecedented foresight, efficiency, and resilience.
  */
 
-import React, { useState, useEffect, useCallback, useReducer, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useReducer, createContext, useContext, useRef } from 'react';
 
 // --- Global Type Definitions and Interfaces (START) ---
 
@@ -737,6 +742,17 @@ export interface AgentTask {
   actualImpact?: string;
 }
 
+/**
+ * Represents a message in the AI chat interface.
+ */
+export interface ChatMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'ai';
+  timestamp: Timestamp;
+  aiModel?: 'Gemini' | 'ChatGPT' | 'Claude' | 'System';
+}
+
 // --- Global Type Definitions and Interfaces (END) ---
 
 // --- Chaos Theorist View Components (START) ---
@@ -808,7 +824,9 @@ export interface AppState {
   isLoading: {
     systems: boolean;
     simulations: boolean;
+    scenarios: boolean;
     agents: boolean;
+    agentTasks: boolean;
     tokenRails: boolean;
     identities: boolean;
   };
@@ -822,6 +840,13 @@ export interface AppState {
       criticalAlerts: boolean;
       simulationUpdates: boolean;
     };
+  };
+  /** State for the AI Chat interface. */
+  chat: {
+    isOpen: boolean;
+    messages: ChatMessage[];
+    isThinking: boolean;
+    currentModel: 'Gemini' | 'ChatGPT' | 'Claude';
   };
 }
 
@@ -864,7 +889,11 @@ export type AppAction =
   | { type: 'UPDATE_DIGITAL_IDENTITY'; payload: DigitalIdentity }
   | { type: 'SET_LOADING'; payload: { key: keyof AppState['isLoading']; value: boolean } }
   | { type: 'SET_GLOBAL_ERROR'; payload: string | null }
-  | { type: 'SET_USER_PREFERENCE'; payload: { key: keyof AppState['userPreferences']; value: any } }; // Generic for nested preferences
+  | { type: 'SET_USER_PREFERENCE'; payload: { key: keyof AppState['userPreferences']; value: any } }
+  | { type: 'TOGGLE_CHAT' }
+  | { type: 'ADD_CHAT_MESSAGE'; payload: ChatMessage }
+  | { type: 'SET_CHAT_THINKING'; payload: boolean }
+  | { type: 'SET_CHAT_MODEL'; payload: 'Gemini' | 'ChatGPT' | 'Claude' };
 
 /**
  * Initial state for the Chaos Theorist View application.
@@ -887,7 +916,9 @@ export const initialAppState: AppState = {
   isLoading: {
     systems: false,
     simulations: false,
+    scenarios: false,
     agents: false,
+    agentTasks: false,
     tokenRails: false,
     identities: false,
   },
@@ -899,6 +930,12 @@ export const initialAppState: AppState = {
       criticalAlerts: true,
       simulationUpdates: true,
     },
+  },
+  chat: {
+    isOpen: false,
+    messages: [],
+    isThinking: false,
+    currentModel: 'Gemini',
   },
 };
 
@@ -1009,8 +1046,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_GLOBAL_ERROR':
       return { ...state, globalError: action.payload };
     case 'SET_USER_PREFERENCE':
-      // This allows updating top-level preferences or specific nested ones if the key implies it
-      // For deeper nested updates, a more complex payload or action type might be needed.
       return {
         ...state,
         userPreferences: {
@@ -1018,6 +1053,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           [action.payload.key]: action.payload.value,
         },
       };
+    case 'TOGGLE_CHAT':
+      return { ...state, chat: { ...state.chat, isOpen: !state.chat.isOpen } };
+    case 'ADD_CHAT_MESSAGE':
+      return { ...state, chat: { ...state.chat, messages: [...state.chat.messages, action.payload] } };
+    case 'SET_CHAT_THINKING':
+      return { ...state, chat: { ...state.chat, isThinking: action.payload } };
+    case 'SET_CHAT_MODEL':
+      return { ...state, chat: { ...state.chat, currentModel: action.payload } };
     default:
       return state;
   }
@@ -1861,7 +1904,10 @@ const mockSystemsData: ChaoticSystemDefinition[] = [
         currentValue: 2.8,
         unit: '%',
         target: { min: 2.5, max: 3.5, unit: '%' },
-        history: [],
+        history: Array.from({ length: 12 }, (_, i) => ({
+          timestamp: new Date(Date.now() - (12 - i) * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          value: 2.5 + Math.random() * 0.8 - 0.2
+        })),
         alertThresholds: { critical: { operator: '<', value: 1.0 } },
         isDerived: true,
         derivationMethod: 'weighted average of national GDPs',
@@ -1875,7 +1921,10 @@ const mockSystemsData: ChaoticSystemDefinition[] = [
         currentValue: 0.65,
         unit: 'probability',
         target: { max: 0.3, unit: 'probability' },
-        history: [],
+        history: Array.from({ length: 12 }, (_, i) => ({
+          timestamp: new Date(Date.now() - (12 - i) * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          value: 0.4 + Math.random() * 0.3
+        })),
         alertThresholds: { warning: { operator: '>', value: 0.5 }, critical: { operator: '>', value: 0.8 } },
         isDerived: true,
         derivationMethod: 'proprietary AI model',
@@ -1920,7 +1969,7 @@ const mockSystemsData: ChaoticSystemDefinition[] = [
     securityClassification: 'restricted',
     complianceStandards: ['GDPR', 'PCI-DSS'],
     contentHash: 'abc123def456',
-    monitoringAgents: [], // Will be populated by agent mocks
+    monitoringAgents: ['agent-quantbot-001'],
   },
   {
     id: 'supply-chain-resilience-v1',
@@ -1965,7 +2014,10 @@ const mockSystemsData: ChaoticSystemDefinition[] = [
         currentValue: 30,
         unit: 'days',
         target: { max: 25, unit: 'days' },
-        history: [],
+        history: Array.from({ length: 12 }, (_, i) => ({
+            timestamp: new Date(Date.now() - (12 - i) * 30 * 24 * 60 * 60 * 1000).toISOString(),
+            value: 28 + Math.random() * 5
+        })),
         alertThresholds: { warning: { operator: '>', value: 35 }, critical: { operator: '>', value: 45 } },
         isDerived: true,
         derivationMethod: 'logistics network analytics',
@@ -1986,7 +2038,7 @@ const mockSystemsData: ChaoticSystemDefinition[] = [
     securityClassification: 'confidential',
     complianceStandards: ['ISO 28000'],
     contentHash: 'def789ghi012',
-    monitoringAgents: [],
+    monitoringAgents: ['agent-supplychain-optimus-001'],
   },
 ];
 
@@ -2186,9 +2238,46 @@ const mockDigitalIdentities: DigitalIdentity[] = [
   },
 ];
 
+const mockScenariosData: SimulationScenario[] = [
+  {
+    id: 'scenario-market-stress-test',
+    name: 'Market Stress Test',
+    description: 'Simulates a sudden 20% drop in major stock indices and evaluates systemic risk.',
+    systemId: 'financial-market-stability-v1',
+    createdBy: 'sysadmin-001',
+    createdAt: '2024-01-20T00:00:00Z',
+    lastModified: '2024-01-20T00:00:00Z',
+    initialConditions: [{ parameterId: 'commodity-price-volatility', value: 70 }],
+    plannedInterventions: [{ leveragePointId: 'lp-001', timing: 'on_condition', conditionExpression: 'systemic-risk-index > 0.8' }],
+    expectedOutcomes: ['Systemic risk index should not exceed 0.9', 'GDP growth should recover within 2 quarters'],
+    keyMetricsToMonitor: ['systemic-risk-index', 'global-gdp-growth'],
+    status: 'active',
+    tags: ['stress-test', 'finance'],
+    simulationRuns: [],
+    systemSchemaVersion: '1.0'
+  },
+  {
+    id: 'scenario-port-closure',
+    name: 'Major Port Closure',
+    description: 'Simulates the closure of a top 5 global shipping port for 30 days.',
+    systemId: 'supply-chain-resilience-v1',
+    createdBy: 'ops-lead-001',
+    createdAt: '2024-02-10T00:00:00Z',
+    lastModified: '2024-02-10T00:00:00Z',
+    initialConditions: [{ parameterId: 'port-efficiency', value: 8 }], // 8 days turnaround
+    plannedInterventions: [],
+    expectedOutcomes: ['Assess impact on delivery lead times', 'Identify alternative routing opportunities'],
+    keyMetricsToMonitor: ['delivery-lead-time'],
+    status: 'active',
+    tags: ['supply-chain', 'disruption'],
+    simulationRuns: [],
+    systemSchemaVersion: '1.0'
+  }
+];
+
 
 export const systemsApiService = new MockSystemsApiService('http://localhost:3001/api/systems', mockSystemsData, mockLeveragePointsData);
-export const simulationsApiService = new MockSimulationsApiService('http://localhost:3001/api/simulations'); // Initialize with empty data for simplicity
+export const simulationsApiService = new MockSimulationsApiService('http://localhost:3001/api/simulations', [], mockScenariosData);
 export const agentsApiService = new MockAgentsApiService('http://localhost:3001/api/agents', mockAgentsData, [], mockAgentsData[0].skills.concat(mockAgentsData[1].skills));
 export const tokenRailApiService = new MockTokenRailApiService('http://localhost:3001/api/token-rail', mockTokenDefsData);
 export const identityApiService = new MockIdentityApiService('http://localhost:3001/api/identity', mockDigitalIdentities);
@@ -2251,19 +2340,20 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
     );
   }, []);
 
-  const handleSave = useCallback(async (parameterId: string, value: number | string | boolean) => {
+  const handleSave = useCallback(async (parameterId: string) => {
     try {
-      await onParameterUpdate(system.id, parameterId, value);
-      // State will be re-fetched and updated via the parent component after successful save
+        const paramToSave = localParameters.find(p => p.id === parameterId);
+        if (!paramToSave) return;
+        await onParameterUpdate(system.id, parameterId, paramToSave.currentValue);
     } catch (error: any) {
       onUpdateError(`Failed to update parameter: ${error.message}`);
       // Revert local change on error
       setLocalParameters(system.parameters);
     }
-  }, [system.id, system.parameters, onParameterUpdate, onUpdateError]);
+  }, [system.id, system.parameters, localParameters, onParameterUpdate, onUpdateError]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Parameters</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {localParameters.map((param) => (
@@ -2279,6 +2369,7 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
                   max={param.maxValue}
                   step={param.step}
                   onChange={(e) => handleChange(param.id, parseFloat(e.target.value))}
+                  onBlur={() => handleSave(param.id)}
                   className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   disabled={isUpdating}
                 />
@@ -2287,7 +2378,10 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
                 <input
                   type="checkbox"
                   checked={Boolean(param.currentValue)}
-                  onChange={(e) => handleChange(param.id, e.target.checked)}
+                  onChange={(e) => {
+                      handleChange(param.id, e.target.checked);
+                      handleSave(param.id);
+                  }}
                   className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
                   disabled={isUpdating}
                 />
@@ -2297,6 +2391,7 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
                   type="text"
                   value={String(param.currentValue)}
                   onChange={(e) => handleChange(param.id, e.target.value)}
+                  onBlur={() => handleSave(param.id)}
                   className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   disabled={isUpdating}
                 />
@@ -2304,7 +2399,10 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
               {param.dataType === 'enum' && param.enumValues && (
                 <select
                   value={String(param.currentValue)}
-                  onChange={(e) => handleChange(param.id, e.target.value)}
+                  onChange={(e) => {
+                      handleChange(param.id, e.target.value);
+                      handleSave(param.id);
+                  }}
                   className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   disabled={isUpdating}
                 >
@@ -2313,13 +2411,6 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
                   ))}
                 </select>
               )}
-              <button
-                onClick={() => handleSave(param.id, param.currentValue)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                disabled={isUpdating}
-              >
-                Save
-              </button>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Security Level: <span className={`font-semibold ${param.securityLevel === 'high' ? 'text-red-500' : param.securityLevel === 'medium' ? 'text-yellow-500' : 'text-green-500'}`}>{param.securityLevel}</span>
@@ -2336,7 +2427,7 @@ const SystemParametersManager: React.FC<SystemParametersManagerProps> = ({
  */
 interface LeveragePointsDisplayProps {
   leveragePoints: LeveragePoint[];
-  onProposeIntervention: (lpId: string, systemId: SystemIdentifier) => void;
+  onProposeIntervention: (lpId: string) => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -2351,14 +2442,14 @@ const LeveragePointsDisplay: React.FC<LeveragePointsDisplayProps> = ({
   if (error) return <ErrorDisplay message={error} />;
   if (leveragePoints.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6 text-center text-gray-600 dark:text-gray-300">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center text-gray-600 dark:text-gray-300">
         No leverage points identified for this system.
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Identified Leverage Points</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {leveragePoints.map((lp) => (
@@ -2373,7 +2464,7 @@ const LeveragePointsDisplay: React.FC<LeveragePointsDisplayProps> = ({
               <li><strong>Risks:</strong> {lp.risks.map(r => `${r.category} (${r.severity})`).join(', ')}</li>
             </ul>
             <button
-              onClick={() => onProposeIntervention(lp.id, 'current-system-id')} // Placeholder for current system ID
+              onClick={() => onProposeIntervention(lp.id)}
               className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             >
               Propose Intervention
@@ -2384,6 +2475,90 @@ const LeveragePointsDisplay: React.FC<LeveragePointsDisplayProps> = ({
     </div>
   );
 };
+
+/**
+ * A very simple line chart component for displaying time-series data.
+ *
+ * Business Value: Visualizations are critical for rapidly understanding complex data. This
+ * component translates raw time-series metric data into an intuitive visual format,
+ * allowing analysts to spot trends, anomalies, and patterns at a glance. This accelerates
+ * insight generation and improves decision-making speed and quality.
+ */
+const SimpleLineChart: React.FC<{ data: { timestamp: Timestamp; value: number }[], label: string, unit: string }> = ({ data, label, unit }) => {
+  if (!data || data.length < 2) {
+    return <div className="text-center text-gray-500">Not enough data to display chart.</div>;
+  }
+
+  const width = 300;
+  const height = 150;
+  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+  const values = data.map(d => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  
+  const timestamps = data.map(d => new Date(d.timestamp).getTime());
+  const minTime = Math.min(...timestamps);
+  const maxTime = Math.max(...timestamps);
+
+  const getX = (time: number) => margin.left + ((time - minTime) / (maxTime - minTime)) * (width - margin.left - margin.right);
+  const getY = (value: number) => height - margin.bottom - ((value - minVal) / (maxVal - minVal)) * (height - margin.top - margin.bottom);
+
+  const path = data.map((d, i) => {
+    const x = getX(new Date(d.timestamp).getTime());
+    const y = getY(d.value);
+    return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+      <text x={width / 2} y={margin.top / 2} textAnchor="middle" className="text-xs font-semibold fill-current text-gray-800 dark:text-gray-200">{label}</text>
+      
+      {/* Y Axis */}
+      <line x1={margin.left} y1={margin.top} x2={margin.left} y2={height - margin.bottom} className="stroke-current text-gray-300 dark:text-gray-600" />
+      <text x={margin.left - 5} y={margin.top} textAnchor="end" dominantBaseline="middle" className="text-xs fill-current text-gray-500">{maxVal.toFixed(1)}</text>
+      <text x={margin.left - 5} y={height - margin.bottom} textAnchor="end" dominantBaseline="middle" className="text-xs fill-current text-gray-500">{minVal.toFixed(1)}</text>
+
+      {/* X Axis */}
+      <line x1={margin.left} y1={height - margin.bottom} x2={width - margin.right} y2={height - margin.bottom} className="stroke-current text-gray-300 dark:text-gray-600" />
+      <text x={margin.left} y={height - margin.bottom + 15} textAnchor="start" className="text-xs fill-current text-gray-500">{new Date(minTime).toLocaleDateString()}</text>
+      <text x={width - margin.right} y={height - margin.bottom + 15} textAnchor="end" className="text-xs fill-current text-gray-500">{new Date(maxTime).toLocaleDateString()}</text>
+
+      <path d={path} fill="none" className="stroke-indigo-500" strokeWidth="2" />
+    </svg>
+  );
+};
+
+
+/**
+ * A dashboard for viewing system metrics and their historical data.
+ */
+const MetricsDashboard: React.FC<{ metrics: SystemMetric[] }> = ({ metrics }) => {
+  return (
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Metrics</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {metrics.map((metric) => (
+          <div key={metric.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+            <h4 className="font-medium text-lg text-gray-800 dark:text-gray-100">{metric.name} ({metric.unit})</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{metric.description}</p>
+            <div className="mt-2">
+              <p><strong>Current Value:</strong> <span className="font-semibold">{metric.currentValue}</span></p>
+            </div>
+            <div className="mt-4">
+              <SimpleLineChart 
+                data={metric.history.filter(h => typeof h.value === 'number') as { timestamp: Timestamp, value: number }[]} 
+                label={`${metric.name} History`}
+                unit={metric.unit}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
 /**
  * Main System Detail View component.
@@ -2398,193 +2573,142 @@ const LeveragePointsDisplay: React.FC<LeveragePointsDisplayProps> = ({
  */
 interface SystemDetailViewProps {
   systemId: SystemIdentifier;
-  currentUser: UserIdentifier;
-  onSystemUpdated: (system: ChaoticSystemDefinition) => void;
-  onLeveragePointProposed: (lpId: string, systemId: SystemIdentifier) => void;
-  onError: (error: Error) => void;
 }
 
-const SystemDetailView: React.FC<SystemDetailViewProps> = ({
-  systemId,
-  currentUser,
-  onSystemUpdated,
-  onLeveragePointProposed,
-  onError,
-}) => {
-  const [system, setSystem] = useState<ChaoticSystemDefinition | null>(null);
-  const [leveragePoints, setLeveragePoints] = useState<LeveragePoint[]>([]);
-  const [loadingSystem, setLoadingSystem] = useState(true);
-  const [loadingLeveragePoints, setLoadingLeveragePoints] = useState(false);
-  const [updatingParameter, setUpdatingParameter] = useState(false);
-  const [systemError, setSystemError] = useState<string | null>(null);
-  const [leveragePointsError, setLeveragePointsError] = useState<string | null>(null);
-  const [parameterUpdateError, setParameterUpdateError] = useState<string | null>(null);
+const SystemDetailView: React.FC<SystemDetailViewProps> = ({ systemId }) => {
+    const { state, dispatch, onError, onInterventionSuccess } = useApplication();
+    const system = state.systems.find(s => s.id === systemId);
 
-  const fetchSystemData = useCallback(async () => {
-    setLoadingSystem(true);
-    setSystemError(null);
-    try {
-      const fetchedSystem = await systemsApiService.getSystemById(systemId);
-      setSystem(fetchedSystem);
-      onSystemUpdated(fetchedSystem); // Notify parent of system update
-    } catch (error: any) {
-      setSystemError(`Failed to load system: ${error.message}`);
-      onError(error);
-    } finally {
-      setLoadingSystem(false);
+    const [leveragePoints, setLeveragePoints] = useState<LeveragePoint[]>([]);
+    const [loadingLeveragePoints, setLoadingLeveragePoints] = useState(false);
+    const [updatingParameter, setUpdatingParameter] = useState(false);
+    const [leveragePointsError, setLeveragePointsError] = useState<string | null>(null);
+    const [parameterUpdateError, setParameterUpdateError] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState('Parameters');
+
+    const fetchLeveragePoints = useCallback(async () => {
+        setLoadingLeveragePoints(true);
+        setLeveragePointsError(null);
+        try {
+            const fetchedLeveragePoints = await systemsApiService.identifyLeveragePoints(systemId);
+            setLeveragePoints(fetchedLeveragePoints);
+        } catch (error: any) {
+            setLeveragePointsError(`Failed to identify leverage points: ${error.message}`);
+            onError?.(error);
+        } finally {
+            setLoadingLeveragePoints(false);
+        }
+    }, [systemId, onError]);
+
+    useEffect(() => {
+        fetchLeveragePoints();
+    }, [fetchLeveragePoints]);
+
+    const handleParameterUpdate = useCallback(async (
+        sysId: SystemIdentifier,
+        paramId: string,
+        value: number | string | boolean
+    ) => {
+        setParameterUpdateError(null);
+        setUpdatingParameter(true);
+        try {
+            await systemsApiService.updateSystemParameter(sysId, paramId, value);
+            // Re-fetch the whole system to ensure state consistency
+            const updatedSystem = await systemsApiService.getSystemById(sysId);
+            dispatch({ type: 'UPDATE_SYSTEM', payload: updatedSystem });
+            return updatedSystem.parameters.find(p => p.id === paramId)!;
+        } catch (error: any) {
+            setParameterUpdateError(error.message);
+            onError?.(error);
+            throw error;
+        } finally {
+            setUpdatingParameter(false);
+        }
+    }, [dispatch, onError]);
+
+    const handleProposeIntervention = useCallback((lpId: string) => {
+        onInterventionSuccess?.(lpId, systemId);
+        alert(`Intervention ${lpId} proposed for system ${systemId}. This would open a task creation modal.`);
+    }, [systemId, onInterventionSuccess]);
+
+    if (!system) {
+        return <ErrorDisplay message={`System with ID ${systemId} not found.`} />;
     }
-  }, [systemId, onSystemUpdated, onError]);
 
-  const fetchLeveragePoints = useCallback(async () => {
-    setLoadingLeveragePoints(true);
-    setLeveragePointsError(null);
-    try {
-      const fetchedLeveragePoints = await systemsApiService.identifyLeveragePoints(systemId);
-      setLeveragePoints(fetchedLeveragePoints);
-    } catch (error: any) {
-      setLeveragePointsError(`Failed to identify leverage points: ${error.message}`);
-      onError(error);
-    } finally {
-      setLoadingLeveragePoints(false);
-    }
-  }, [systemId, onError]);
+    const tabs = ['Parameters', 'Metrics', 'Leverage Points', 'Simulations', 'Agents'];
 
-  useEffect(() => {
-    fetchSystemData();
-    fetchLeveragePoints(); // Fetch leverage points when system changes
-  }, [fetchSystemData, fetchLeveragePoints]);
-
-  const handleParameterUpdate = useCallback(async (
-    sysId: SystemIdentifier,
-    paramId: string,
-    value: number | string | boolean
-  ) => {
-    setParameterUpdateError(null);
-    setUpdatingParameter(true);
-    try {
-      const updatedParam = await systemsApiService.updateSystemParameter(sysId, paramId, value);
-      // Re-fetch system to get the updated parameter and ensure consistency
-      await fetchSystemData();
-      return updatedParam;
-    } catch (error: any) {
-      setParameterUpdateError(error.message);
-      onError(error);
-      throw error; // Re-throw to allow component to handle local state revert
-    } finally {
-      setUpdatingParameter(false);
-    }
-  }, [fetchSystemData, onError]);
-
-  const handleProposeIntervention = useCallback((lpId: string) => {
-    if (systemId) {
-      onLeveragePointProposed(lpId, systemId);
-      // In a real app, this would likely trigger a modal or a task creation flow.
-      alert(`Intervention ${lpId} proposed for system ${systemId}.`);
-    }
-  }, [systemId, onLeveragePointProposed]);
-
-  if (loadingSystem) {
-    return <LoadingSpinner />;
-  }
-
-  if (systemError) {
-    return <ErrorDisplay message={systemError} onRetry={fetchSystemData} />;
-  }
-
-  if (!system) {
     return (
-      <div className="p-6 text-center text-gray-600 dark:text-gray-300">
-        No system selected or data available.
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{system.name}</h2>
-        <p className="text-gray-700 dark:text-gray-300">{system.description}</p>
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <span><strong>ID:</strong> {system.id}</span>
-          <span><strong>Status:</strong> <span className={`font-semibold ${system.status === 'Active' ? 'text-green-500' : 'text-yellow-500'}`}>{system.status}</span></span>
-          <span><strong>Version:</strong> {system.modelVersion}</span>
-          <span><strong>Last Modified:</strong> {new Date(system.lastModified).toLocaleString()}</span>
-        </div>
-      </div>
-
-      {parameterUpdateError && <ErrorDisplay message={`Parameter update failed: ${parameterUpdateError}`} />}
-      <SystemParametersManager
-        system={system}
-        onParameterUpdate={handleParameterUpdate}
-        isUpdating={updatingParameter}
-        onUpdateError={setParameterUpdateError}
-      />
-
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">System Metrics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {system.metrics.map((metric) => (
-            <div key={metric.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
-              <h4 className="font-medium text-lg text-gray-800 dark:text-gray-100">{metric.name} ({metric.unit})</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{metric.description}</p>
-              <div className="mt-2">
-                <p><strong>Current Value:</strong> <span className="font-semibold">{metric.currentValue}</span></p>
-                {metric.target && (
-                  <p><strong>Target:</strong> {metric.target.min !== undefined && metric.target.max !== undefined
-                    ? `${metric.target.min} - ${metric.target.max}`
-                    : metric.target.value !== undefined
-                      ? `${metric.target.value}` : 'N/A'} {metric.target.unit}
-                  </p>
-                )}
-                {metric.alertThresholds && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Alerts: Warning {metric.alertThresholds.warning?.operator} {metric.alertThresholds.warning?.value},
-                    Critical {metric.alertThresholds.critical?.operator} {metric.alertThresholds.critical?.value}
-                  </p>
-                )}
-              </div>
+        <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
+            <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{system.name}</h2>
+                <p className="text-gray-700 dark:text-gray-300">{system.description}</p>
+                <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <span><strong>ID:</strong> {system.id}</span>
+                    <span><strong>Status:</strong> <span className={`font-semibold ${system.status === 'Active' ? 'text-green-500' : 'text-yellow-500'}`}>{system.status}</span></span>
+                    <span><strong>Version:</strong> {system.modelVersion}</span>
+                    <span><strong>Last Modified:</strong> {new Date(system.lastModified).toLocaleString()}</span>
+                </div>
             </div>
-          ))}
+
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`${
+                                activeTab === tab
+                                    ? 'border-indigo-500 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-500'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+            
+            {parameterUpdateError && <ErrorDisplay message={`Parameter update failed: ${parameterUpdateError}`} />}
+
+            <div className="space-y-6">
+                {activeTab === 'Parameters' && (
+                    <SystemParametersManager
+                        system={system}
+                        onParameterUpdate={handleParameterUpdate}
+                        isUpdating={updatingParameter}
+                        onUpdateError={setParameterUpdateError}
+                    />
+                )}
+
+                {activeTab === 'Metrics' && <MetricsDashboard metrics={system.metrics} />}
+
+                {activeTab === 'Leverage Points' && (
+                    <LeveragePointsDisplay
+                        leveragePoints={leveragePoints}
+                        onProposeIntervention={handleProposeIntervention}
+                        isLoading={loadingLeveragePoints}
+                        error={leveragePointsError}
+                    />
+                )}
+
+                {activeTab === 'Simulations' && (
+                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Simulation Dashboard</h3>
+                        <p className="text-gray-700 dark:text-gray-300">Full simulation management UI would be rendered here.</p>
+                    </div>
+                )}
+                
+                {activeTab === 'Agents' && (
+                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Agent Orchestration</h3>
+                        <p className="text-gray-700 dark:text-gray-300">Full agent management UI for agents monitoring "{system.name}" would be rendered here.</p>
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
-
-      <LeveragePointsDisplay
-        leveragePoints={leveragePoints}
-        onProposeIntervention={handleProposeIntervention}
-        isLoading={loadingLeveragePoints}
-        error={leveragePointsError}
-      />
-
-      {/* Placeholder for Simulation Controls / History */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Simulation Controls</h3>
-        <p className="text-gray-700 dark:text-gray-300">
-          This section would contain tools to run simulations, view historical runs, and analyze scenarios for {system.name}.
-        </p>
-        <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
-          Run New Simulation
-        </button>
-        <button className="ml-4 mt-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-          View Simulation History
-        </button>
-      </div>
-
-      {/* Placeholder for Agent Orchestration */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Agent Orchestration</h3>
-        <p className="text-gray-700 dark:text-gray-300">
-          This section would allow for assigning intelligent agents to monitor and manage {system.name}, as well as define automated tasks.
-        </p>
-        <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          Assign Agent
-        </button>
-        <button className="ml-4 mt-4 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-          View Agent Tasks
-        </button>
-      </div>
-    </div>
-  );
+    );
 };
+
 
 /**
  * Sidebar component for navigating between different chaotic systems.
@@ -2657,6 +2781,126 @@ const SystemSidebar: React.FC<SystemSidebarProps> = ({
 };
 
 /**
+ * AI Chat Window component. Provides an interactive, natural language interface for system analysis.
+ *
+ * Business Value: This component democratizes access to complex system data by allowing users
+ * to ask questions in plain English. It significantly reduces the time to insight, automates
+ * routine data retrieval, and empowers non-technical stakeholders to engage with sophisticated
+ * financial models. This enhances collaboration, accelerates decision-making, and maximizes
+ * the value derived from the underlying data infrastructure.
+ */
+const AIChatWindow: React.FC = () => {
+  const { state, dispatch } = useApplication();
+  const { chat, selectedSystemId, systems } = state;
+  const [userInput, setUserInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chat.messages]);
+  
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userInput.trim() || chat.isThinking) return;
+
+    const userMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      text: userInput,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+    };
+    dispatch({ type: 'ADD_CHAT_MESSAGE', payload: userMessage });
+    dispatch({ type: 'SET_CHAT_THINKING', payload: true });
+
+    // Mock AI Response
+    setTimeout(() => {
+        let aiText = `I am the ${chat.currentModel} model. I am not fully implemented. You asked: "${userInput}".`;
+        
+        const currentSystem = systems.find(s => s.id === selectedSystemId);
+
+        if (currentSystem) {
+            if (userInput.toLowerCase().includes('summarize')) {
+                aiText = `The current system is "${currentSystem.name}". It models "${currentSystem.description}". It has ${currentSystem.parameters.length} parameters and ${currentSystem.metrics.length} metrics. Its current status is ${currentSystem.status}.`;
+            } else if (userInput.toLowerCase().includes('risk')) {
+                 aiText = `The "Financial Systemic Risk Index" for "${currentSystem.name}" is currently at ${currentSystem.metrics.find(m=>m.id === 'systemic-risk-index')?.currentValue ?? 'N/A'}. High risk is a concern.`;
+            }
+        } else {
+             if (userInput.toLowerCase().includes('hello')) {
+                 aiText = "Hello! How can I assist you with the chaotic systems today? Please select a system to get started.";
+             }
+        }
+
+      const aiMessage: ChatMessage = {
+        id: `msg-${Date.now() + 1}`,
+        text: aiText,
+        sender: 'ai',
+        timestamp: new Date().toISOString(),
+        aiModel: chat.currentModel,
+      };
+      dispatch({ type: 'ADD_CHAT_MESSAGE', payload: aiMessage });
+      dispatch({ type: 'SET_CHAT_THINKING', payload: false });
+    }, 1500);
+
+    setUserInput('');
+  };
+
+  if (!chat.isOpen) return null;
+
+  return (
+    <div className="fixed bottom-20 right-8 w-96 h-[60vh] bg-white dark:bg-gray-800 shadow-2xl rounded-lg flex flex-col z-50">
+      <header className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+        <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">AI Analyst Assistant</h3>
+            <select
+                value={chat.currentModel}
+                onChange={(e) => dispatch({ type: 'SET_CHAT_MODEL', payload: e.target.value as 'Gemini' | 'ChatGPT' | 'Claude' })}
+                className="text-xs bg-transparent dark:bg-gray-800 border-none p-0 focus:ring-0"
+            >
+                <option>Gemini</option>
+                <option>ChatGPT</option>
+                <option>Claude</option>
+            </select>
+        </div>
+        <button onClick={() => dispatch({ type: 'TOGGLE_CHAT' })} className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">&times;</button>
+      </header>
+      <div className="flex-1 p-4 overflow-y-auto">
+        {chat.messages.map(msg => (
+          <div key={msg.id} className={`flex mb-4 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`p-3 rounded-lg max-w-xs ${msg.sender === 'user' ? 'bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}>
+              <p className="text-sm">{msg.text}</p>
+              {msg.sender === 'ai' && msg.aiModel && <p className="text-xs mt-1 opacity-60">via {msg.aiModel}</p>}
+            </div>
+          </div>
+        ))}
+        {chat.isThinking && (
+            <div className="flex justify-start mb-4">
+                <div className="p-3 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                    <div className="flex items-center space-x-1">
+                        <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-0"></span>
+                        <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-150"></span>
+                        <span className="w-2 h-2 bg-gray-500 rounded-full animate-pulse delay-300"></span>
+                    </div>
+                </div>
+            </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      <form onSubmit={handleSendMessage} className="p-4 border-t dark:border-gray-700">
+        <input
+          type="text"
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          placeholder="Ask about the system..."
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          disabled={chat.isThinking}
+        />
+      </form>
+    </div>
+  );
+};
+
+
+/**
  * The main Chaos Theorist View component. This orchestrates all sub-components,
  * fetches initial data, and manages global state.
  *
@@ -2671,14 +2915,14 @@ const SystemSidebar: React.FC<SystemSidebarProps> = ({
 export const ChaosTheoristView: React.FC<ChaosTheoristViewProps> = (props) => {
   return (
     <ApplicationProvider {...props}>
-      <ChaosTheoristViewInternal />
+      <ChaosTheoristViewInternal initialSystemId={props.initialSystemId}/>
     </ApplicationProvider>
   );
 };
 
 // Internal component to consume context
-const ChaosTheoristViewInternal: React.FC = () => {
-  const { state, dispatch, serviceConfig, currentUser, accessibleSystems, onInterventionSuccess, onError } = useApplication();
+const ChaosTheoristViewInternal: React.FC<{initialSystemId?: SystemIdentifier}> = ({initialSystemId}) => {
+  const { state, dispatch, accessibleSystems, onError } = useApplication();
   const { selectedSystemId, systems, isLoading, globalError, userPreferences } = state;
 
   const toggleDarkMode = useCallback(() => {
@@ -2693,49 +2937,31 @@ const ChaosTheoristViewInternal: React.FC = () => {
       dispatch({ type: 'SET_GLOBAL_ERROR', payload: null });
       try {
         const fetchedSystems = await systemsApiService.getSystems();
-        // Filter systems based on accessibleSystems prop
         const userAccessibleSystems = fetchedSystems.filter(sys => accessibleSystems.includes(sys.id));
         dispatch({ type: 'SET_SYSTEMS', payload: userAccessibleSystems });
-        if (props.initialSystemId && userAccessibleSystems.some(s => s.id === props.initialSystemId)) {
-          dispatch({ type: 'SET_SELECTED_SYSTEM', payload: props.initialSystemId });
+        if (initialSystemId && userAccessibleSystems.some(s => s.id === initialSystemId)) {
+          dispatch({ type: 'SET_SELECTED_SYSTEM', payload: initialSystemId });
         } else if (userAccessibleSystems.length > 0) {
           dispatch({ type: 'SET_SELECTED_SYSTEM', payload: userAccessibleSystems[0].id });
         }
       } catch (error: any) {
-        dispatch({ type: 'SET_GLOBAL_ERROR', payload: `Failed to load initial systems: ${error.message}` });
+        const errorMessage = `Failed to load initial systems: ${error.message}`;
+        dispatch({ type: 'SET_GLOBAL_ERROR', payload: errorMessage });
         onError?.(error);
       } finally {
         dispatch({ type: 'SET_LOADING', payload: { key: 'systems', value: false } });
       }
     };
     fetchInitialData();
-  }, [dispatch, accessibleSystems, onError]);
+  }, [dispatch, accessibleSystems, onError, initialSystemId]);
 
   const handleSelectSystem = useCallback((id: SystemIdentifier | null) => {
     dispatch({ type: 'SET_SELECTED_SYSTEM', payload: id });
   }, [dispatch]);
 
-  const handleSystemUpdated = useCallback((updatedSystem: ChaoticSystemDefinition) => {
-    dispatch({ type: 'UPDATE_SYSTEM', payload: updatedSystem });
-  }, [dispatch]);
-
-  const handleLeveragePointProposed = useCallback((lpId: string, systemId: SystemIdentifier) => {
-    onInterventionSuccess?.(lpId, systemId);
-    // Potentially trigger a modal for task creation or confirmation here
-  }, [onInterventionSuccess]);
-
-  const handleGlobalError = useCallback((error: Error) => {
-    dispatch({ type: 'SET_GLOBAL_ERROR', payload: error.message });
-    onError?.(error);
-  }, [dispatch, onError]);
-
   // Apply dark mode preference on mount
   useEffect(() => {
-    if (userPreferences.darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', userPreferences.darkMode);
   }, [userPreferences.darkMode]);
 
   return (
@@ -2747,8 +2973,8 @@ const ChaosTheoristViewInternal: React.FC = () => {
         isLoading={isLoading.systems}
         error={globalError}
       />
-      <div className="flex-1 overflow-auto">
-        <header className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="flex-1 flex flex-col">
+        <header className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 z-10">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Chaos Theorist View</h1>
           <div className="flex items-center space-x-4">
             <button onClick={toggleDarkMode} className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -2758,7 +2984,7 @@ const ChaosTheoristViewInternal: React.FC = () => {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
               )}
             </button>
-            <span className="text-gray-700 dark:text-gray-300">Welcome, {currentUser}</span>
+            <span className="text-gray-700 dark:text-gray-300">Welcome, {useApplication().currentUser}</span>
             <button
               onClick={() => alert('Logout action')}
               className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
@@ -2767,23 +2993,25 @@ const ChaosTheoristViewInternal: React.FC = () => {
             </button>
           </div>
         </header>
-        <main className="p-4">
-          {globalError && <ErrorDisplay message={globalError} onRetry={() => { /* Reload systems */ }} />}
+        <main className="flex-1 overflow-auto relative">
+          {globalError && !isLoading.systems && <div className="p-4"><ErrorDisplay message={globalError} onRetry={() => { /* Reload systems */ }} /></div>}
           {isLoading.systems && <LoadingSpinner />}
-          {selectedSystemId && !isLoading.systems && (
-            <SystemDetailView
-              systemId={selectedSystemId}
-              currentUser={currentUser}
-              onSystemUpdated={handleSystemUpdated}
-              onLeveragePointProposed={handleLeveragePointProposed}
-              onError={handleGlobalError}
-            />
-          )}
+          {selectedSystemId && !isLoading.systems && <SystemDetailView systemId={selectedSystemId} />}
           {!selectedSystemId && !isLoading.systems && !globalError && (
             <div className="text-center p-8 text-gray-600 dark:text-gray-300">
               Please select a system from the sidebar to begin analysis.
             </div>
           )}
+          
+          <AIChatWindow />
+
+          <button
+            onClick={() => dispatch({type: 'TOGGLE_CHAT'})}
+            className="fixed bottom-8 right-8 bg-indigo-600 text-white rounded-full p-4 shadow-lg hover:bg-indigo-700 transition-transform hover:scale-110 z-40"
+            aria-label="Toggle AI Assistant"
+          >
+             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+          </button>
         </main>
       </div>
     </div>
