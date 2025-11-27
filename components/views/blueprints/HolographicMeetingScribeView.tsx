@@ -314,8 +314,8 @@ const MOCK_ACTIONS = ["Lead new marketing campaign for Q4", "Finalize product ro
 const MOCK_DECISIONS = ["Approved Q4 marketing budget", "Prioritized Feature A over Feature B for next sprint", "Agreed to postpone hiring until Q1", "Decided on new team lead for project Alpha", "Mandated cryptographic signing for all key decisions"];
 const MOCK_EMOTIONS = ['joy', 'sadness', 'anger', 'fear', 'surprise'];
 const MOCK_INTENTS = ['question', 'statement', 'action_proposal', 'clarification', 'agreement', 'disagreement', 'policy_query', 'risk_assessment'];
-const MOCK_STATUSES = ['open', 'in_progress', 'completed', 'deferred'];
-const MOCK_PRIORITIES = ['low', 'medium', 'high', 'critical'];
+const MOCK_STATUSES: ('open' | 'in_progress' | 'completed' | 'deferred')[] = ['open', 'in_progress', 'completed', 'deferred'];
+const MOCK_PRIORITIES: ('low' | 'medium' | 'high' | 'critical')[] = ['low', 'medium', 'high', 'critical'];
 const MOCK_COMPLIANCE_ISSUES = ["Potential policy violation detected in discussion about data handling.", "Unassigned critical action item past due.", "Resource allocation discrepancy identified."];
 
 /**
@@ -370,7 +370,7 @@ export const formatDateTime = (timestamp: number): string => new Date(timestamp)
 export const formatDuration = (seconds: number): string => {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
+  const s = Math.round(seconds % 60);
   return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
 };
 
@@ -575,8 +575,8 @@ export const proposeRemediation = async (anomaly: ComplianceInsight): Promise<st
  */
 export const generateMockMindMapGLB = async (summary: MeetingSummaryExtended): Promise<string> => {
   await simulateAILoad(2500);
-  const uniqueTopics = Array.from(new Set(summary.topics.map(t => t.name))).join('_');
-  const uniqueParticipants = Array.from(new Set(summary.participants.map(p => p.name))).join('_');
+  const uniqueTopics = Array.from(new Set(summary.topics?.map(t => t.name))).join('_');
+  const uniqueParticipants = Array.from(new Set(summary.participants?.map(p => p.name))).join('_');
   return `/mock/3d/meeting_mind_map_${uniqueTopics.substring(0, Math.min(uniqueTopics.length, 10))}_${uniqueParticipants.substring(0, Math.min(uniqueParticipants.length, 10))}.glb`;
 };
 
@@ -834,7 +834,9 @@ export class IdentityAndAccessService {
     await simulateAILoad(100);
     const privateKey = this.userKeys.get(entityId)?.privateKey;
     if (!privateKey) throw new Error(`Private key not found for ${entityId}`);
-    const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+    const dataToSign = { ...data };
+    delete dataToSign.signature; // Don't sign the signature itself
+    const dataString = typeof dataToSign === 'string' ? dataToSign : JSON.stringify(dataToSign);
     return btoa(`${privateKey}:${dataString}`);
   }
 
@@ -853,7 +855,9 @@ export class IdentityAndAccessService {
     try {
       const publicKey = this.userKeys.get(entityId)?.publicKey;
       if (!publicKey) return false;
-      const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+      const dataToVerify = { ...data };
+      delete dataToVerify.signature;
+      const dataString = typeof dataToVerify === 'string' ? dataToVerify : JSON.stringify(dataToVerify);
       const expectedSignaturePrefix = btoa(`PRIVKEY-${entityId}`);
       return signature.startsWith(expectedSignaturePrefix) && atob(signature).includes(dataString);
     } catch (e) {
@@ -1050,8 +1054,8 @@ export class PaymentSimulationService {
         status: 'pending',
         createdAt: Date.now(),
         relatedActionItemId,
-        signature: await IdentityAndAccessService.getInstance().signData(sourceParticipantId, { requestId, sourceParticipantId, targetParticipantId, amount, currency })
       };
+      paymentRequest.signature = await IdentityAndAccessService.getInstance().signData(sourceParticipantId, { requestId, sourceParticipantId, targetParticipantId, amount, currency })
       this.paymentRequests.set(requestId, paymentRequest);
       this.transactionLog.push({ type: 'create_request', timestamp: Date.now(), ...paymentRequest });
       AgentCommunicationService.getInstance().publish('payment_status_update', paymentRequest);
@@ -1211,7 +1215,7 @@ export class MeetingDataService {
       const date = Date.now() - (i * 7 * 24 * 60 * 60 * 1000) - getRandomNumber(0, 3 * 24 * 60 * 60 * 1000);
       const duration = Math.floor(getRandomNumber(30, 120) * 60);
       const hostName = getRandomItem(MOCK_PARTICIPANT_NAMES);
-      const keyTopics = Array.from({ length: getRandomNumber(2, 4) }, () => getRandomItem(MOCK_TOPICS));
+      const keyTopics = Array.from({ length: Math.floor(getRandomNumber(2, 4)) }, () => getRandomItem(MOCK_TOPICS));
       const overallSentimentScore = getRandomNumber(-0.5, 0.8);
       const actionItemsCount = Math.floor(getRandomNumber(0, 5));
       const complianceIssuesCount = Math.floor(getRandomNumber(0, 2));
@@ -1450,7 +1454,7 @@ export class MeetingDataService {
         const newDecision: DecisionRecord = {
           id: generateId(),
           summary: segment.text.replace(/we decided|the decision is/gi, '').trim(),
-          participantsInvolvedIds: Array.from(participantsMap.keys()).slice(0, getRandomNumber(2, 4)),
+          participantsInvolvedIds: Array.from(participantsMap.keys()).slice(0, Math.floor(getRandomNumber(2, 4))),
           decidedBy: segment.participantId,
           timestamp: segment.timestamp,
           rationale: "Automatically extracted from transcript.",
@@ -1541,7 +1545,7 @@ export class MeetingDataService {
       actionItems,
       decisions,
       topics,
-      mindMapUrl: await generateMockMindMapGLB({} as MeetingSummaryExtended),
+      mindMapUrl: '',
       spatialObjects: mockSpatialObjects,
       overallSentiment,
       documentLinks: [
@@ -1609,7 +1613,7 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
   const identityService = IdentityAndAccessService.getInstance();
   const paymentService = PaymentSimulationService.getInstance();
 
-  const participants: ParticipantDetailedInfo[] = MOCK_PARTICIPANT_NAMES.slice(0, getRandomNumber(3, 6)).map(name => {
+  const participants: ParticipantDetailedInfo[] = MOCK_PARTICIPANT_NAMES.slice(0, Math.floor(getRandomNumber(3, 6))).map(name => {
     const id = `user-${name.replace(/\s/g, '').toLowerCase()}`;
     if (!identityService.userRoles.has(id)) {
       identityService.userRoles.set(id, getRandomItem(MOCK_ROLES));
@@ -1713,7 +1717,7 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
   }
 
   const actionItems: ActionItemExtended[] = [];
-  MOCK_ACTIONS.slice(0, getRandomNumber(2, 5)).forEach(async task => {
+  MOCK_ACTIONS.slice(0, Math.floor(getRandomNumber(2, 5))).forEach(async task => {
     const assignee = getRandomItem(participants);
     const creator = getRandomItem(participants);
     const item: ActionItemExtended = {
@@ -1733,11 +1737,11 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
   });
 
   const decisions: DecisionRecord[] = [];
-  MOCK_DECISIONS.slice(0, getRandomNumber(1, 3)).forEach(async summary => {
+  MOCK_DECISIONS.slice(0, Math.floor(getRandomNumber(1, 3))).forEach(async summary => {
     const decision: DecisionRecord = {
       id: generateId(),
       summary: summary,
-      participantsInvolvedIds: participants.slice(0, getRandomNumber(2, participants.length)).map(p => p.id),
+      participantsInvolvedIds: participants.slice(0, Math.floor(getRandomNumber(2, participants.length))).map(p => p.id),
       decidedBy: getRandomItem(participants).id,
       timestamp: startTime + getRandomNumber(0, totalDuration),
       rationale: "Based on team consensus and data analysis.",
@@ -1747,11 +1751,11 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
   });
 
   const topics: TopicInsight[] = [];
-  MOCK_TOPICS.slice(0, getRandomNumber(3, 7)).forEach(name => {
+  MOCK_TOPICS.slice(0, Math.floor(getRandomNumber(3, 7))).forEach(name => {
     topics.push({
       id: generateId(),
       name: name,
-      keywords: Array.from({ length: getRandomNumber(2, 5) }, () => `keyword-${generateId().substring(0, 5)}`),
+      keywords: Array.from({ length: Math.floor(getRandomNumber(2, 5)) }, () => `keyword-${generateId().substring(0, 5)}`),
       relevanceScore: getRandomNumber(0.6, 0.95),
       summary: `Detailed discussion on ${name} with key stakeholders.`,
       sentiment: { average: getRandomNumber(-0.2, 0.8), trend: getRandomItem(['rising', 'falling', 'stable']) },
@@ -1803,9 +1807,12 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
     `Action item to ${getRandomItem(MOCK_ACTIONS)} assigned to ${getRandomItem(participants).name}.`,
     `Next steps include a deep-dive into ${getRandomItem(MOCK_TOPICS)} next week.`,
   ];
-
+  
+  const tempSummaryForAIGen: MeetingSummaryExtended = {
+    metadata, participants, transcriptSegments, actionItems, decisions, topics, mindMapUrl: '', spatialObjects, overallSentiment: overallMeetingSentiment, keyTakeaways, aiSummary: '', recommendations: [], complianceInsights, agentActivityLogs, paymentRequests
+  }
   const aiSummary = await generateAISummary(transcriptSegments);
-  const recommendations = await generateAIRecommendations({} as MeetingSummaryExtended);
+  const recommendations = await generateAIRecommendations(tempSummaryForAIGen);
 
   if (generateExtendedData && actionItems.length > 0) {
     const actionWithPayment = getRandomItem(actionItems);
@@ -1832,12 +1839,12 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
     actionItems,
     decisions,
     topics,
-    mindMapUrl: await generateMockMindMapGLB({} as MeetingSummaryExtended),
+    mindMapUrl: '',
     spatialObjects,
     overallSentiment: overallMeetingSentiment,
     documentLinks: [
       { title: "Quarterly Report Q3", url: "https://example.com/reports/Q3_report.pdf", accessedBy: [participants[0].id] },
-      { title: "Marketing Strategy Doc", url: "https://example.com/docs/marketing_strategy.docx", accessedBy: [participants[1].id] },
+      { title: "Marketing Strategy Doc", url: "https://example.com/docs/marketing_strategy.docx", accessedBy: [participants[1]?.id || participants[0].id] },
     ],
     keyTakeaways,
     aiSummary,
@@ -1851,7 +1858,6 @@ export const generateMockMeetingSummary = async (baseTime: number = Date.now(), 
     paymentRequests,
   };
 
-  fullSummary.recommendations = await generateAIRecommendations(fullSummary);
   fullSummary.mindMapUrl = await generateMockMindMapGLB(fullSummary);
   fullSummary.spatialObjects.push({
     id: generateId(), type: '3d_model', label: 'Meeting Room Environment', position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 }, metadata: { modelUrl: await generateMockSpatialSceneGLB(fullSummary) }
@@ -1879,7 +1885,7 @@ interface MeetingDetailsHeaderProps {
  */
 export const MeetingDetailsHeader: React.FC<MeetingDetailsHeaderProps> = ({ metadata, participants, overallSentiment, durationSeconds }) => {
   const avgSentimentColor = overallSentiment.averageScore > 0.3 ? 'text-green-400' : overallSentiment.averageScore < -0.3 ? 'text-red-400' : 'text-yellow-400';
-  const sentimentEmoji = overallSentiment.averageScore > 0.3 ? '😀' : overallSentiment.averageScore < -0.3 ? '😞' : '😐';
+  const sentimentEmoji = overallSentiment.averageScore > 0.3 ? '😊' : overallSentiment.averageScore < -0.3 ? '😟' : '😐';
 
   return (
     <div className="bg-gray-700 p-4 rounded-lg shadow-inner mb-6 border border-gray-600">
@@ -2188,7 +2194,7 @@ export const ActionItemsListManager: React.FC<ActionItemsListManagerProps> = ({
                 ))}
               </select>
               <button onClick={() => onDeleteActionItem(item.id)} className="text-red-400 hover:text-red-500 transition duration-200 p-1" title="Delete Action Item" disabled={!hasPermission}>
-                ✖
+                ✕
               </button>
             </div>
           </li>
@@ -2345,9 +2351,7 @@ export const SignatureVerifier: React.FC<SignatureVerifierProps> = ({ entityId, 
   const handleVerify = useCallback(async () => {
     setIsLoading(true);
     try {
-      const dataToVerify = { ...data };
-      delete dataToVerify.signature;
-      const verified = await identityService.verifySignature(entityId, dataToVerify, signature);
+      const verified = await identityService.verifySignature(entityId, data, signature);
       setIsValid(verified);
     } catch (e) {
       setIsValid(false);
@@ -3399,14 +3403,14 @@ const HolographicMeetingScribeView: React.FC = () => {
    * @param {Omit<ActionItemExtended, 'id' | 'createdAt' | 'signature'>} newItem - The new action item details.
    */
   const handleAddActionItem = useCallback(async (newItem: Omit<ActionItemExtended, 'id' | 'createdAt' | 'signature'>) => {
-    setResult(async prev => {
+    const newActionItem: ActionItemExtended = {
+      ...newItem,
+      id: generateId(),
+      createdAt: Date.now(),
+    };
+    newActionItem.signature = await identityService.signData(newActionItem.createdBy, newActionItem);
+    setResult(prev => {
       if (!prev) return prev;
-      const newActionItem: ActionItemExtended = {
-        ...newItem,
-        id: generateId(),
-        createdAt: Date.now(),
-      };
-      newActionItem.signature = await identityService.signData(newActionItem.createdBy, newActionItem);
       return {
         ...prev,
         actionItems: [...prev.actionItems, newActionItem],
@@ -3423,7 +3427,7 @@ const HolographicMeetingScribeView: React.FC = () => {
    * @param {Partial<ActionItemExtended>} updates - The updates to apply.
    */
   const handleUpdateActionItem = useCallback(async (id: string, updates: Partial<ActionItemExtended>) => {
-    setResult(async prev => {
+    setResult(prev => {
       if (!prev) return prev;
       const updatedActionItems = prev.actionItems.map(item =>
         item.id === id ? { ...item, ...updates, updatedAt: Date.now() } : item
@@ -3431,27 +3435,29 @@ const HolographicMeetingScribeView: React.FC = () => {
 
       const updatedItem = updatedActionItems.find(item => item.id === id);
       if (updatedItem && updatedItem.status === 'completed' && !updatedItem.paymentRequestId && userPreferences?.autoProcessPayments) {
-        try {
-          const paymentRequest = await paymentService.createPaymentRequest(
-            updatedItem.createdBy,
-            updatedItem.assigneeId,
-            getRandomNumber(20, 200),
-            'USD_T',
-            updatedItem.id
-          );
-          agentCommService.publish('payment_auto_created', { actionItemId: updatedItem.id, requestId: paymentRequest.id });
-          return {
-            ...prev,
-            actionItems: updatedActionItems.map(item =>
-              item.id === id ? { ...item, paymentRequestId: paymentRequest.id } : item
-            ),
-            paymentRequests: [...prev.paymentRequests, paymentRequest],
-          };
-        } catch (e: any) {
-          setError(`Failed to auto-create payment: ${e.message}`);
-        }
+        paymentService.createPaymentRequest(
+          updatedItem.createdBy,
+          updatedItem.assigneeId,
+          getRandomNumber(20, 200),
+          'USD_T',
+          updatedItem.id
+        ).then(paymentRequest => {
+            agentCommService.publish('payment_auto_created', { actionItemId: updatedItem.id, requestId: paymentRequest.id });
+            setResult(p => {
+              if(!p) return p;
+              return {
+                ...p,
+                actionItems: p.actionItems.map(item =>
+                  item.id === id ? { ...item, paymentRequestId: paymentRequest.id } : item
+                ),
+                paymentRequests: [...p.paymentRequests, paymentRequest],
+              };
+            });
+        }).catch(e => {
+            setError(`Failed to auto-create payment: ${e.message}`);
+        });
       }
-
+      
       return {
         ...prev,
         actionItems: updatedActionItems,
@@ -3483,14 +3489,14 @@ const HolographicMeetingScribeView: React.FC = () => {
    * @param {Omit<DecisionRecord, 'id' | 'timestamp' | 'signature'>} newDecision - The new decision details.
    */
   const handleAddDecision = useCallback(async (newDecision: Omit<DecisionRecord, 'id' | 'timestamp' | 'signature'>) => {
-    setResult(async prev => {
+    const decision: DecisionRecord = {
+      ...newDecision,
+      id: generateId(),
+      timestamp: Date.now(),
+    };
+    decision.signature = await identityService.signData(decision.decidedBy, decision);
+    setResult(prev => {
       if (!prev) return prev;
-      const decision: DecisionRecord = {
-        ...newDecision,
-        id: generateId(),
-        timestamp: Date.now(),
-      };
-      decision.signature = await identityService.signData(decision.decidedBy, decision);
       return {
         ...prev,
         decisions: [...prev.decisions, decision],
@@ -3734,7 +3740,7 @@ const HolographicMeetingScribeView: React.FC = () => {
         </button>
         <button
           onClick={() => setShowSettings(true)}
-          className={`px-6 py-3 text-lg font-medium transition-colors duration-200 ${activeTab === 'settings' ? 'border-b-4 border-cyan-500 text-cyan-300' : 'text-gray-400 hover:text-gray-200'}`}
+          className={`px-6 py-3 text-lg font-medium transition-colors duration-200 text-gray-400 hover:text-gray-200`}
           disabled={isLoading}
         >
           Settings
