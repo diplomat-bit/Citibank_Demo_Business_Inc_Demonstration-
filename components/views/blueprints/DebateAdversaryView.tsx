@@ -1,183 +1,218 @@
 /**
- * This module defines the core data models and interfaces essential for the Debate Adversary View within the Agentic AI platform.
- * It underpins the entire intelligent argumentation system, providing a robust, auditable, and extensible foundation
- * for AI-driven financial decision-making simulations and advanced educational applications.
- * Business impact: These meticulously designed data schemas provide the backbone for high-value features such as personalized AI coaching,
- * real-time fallacy detection, sentiment analysis, and argument strength scoring. By formalizing these data contracts,
- * the system ensures robust data integrity, enables advanced analytics for continuous AI improvement, and facilitates the
- * development of scalable, auditable, and monetizable AI-powered services. They directly support features that enhance user engagement,
- * improve critical thinking skills, and unlock premium subscription tiers, driving significant revenue growth and intellectual property value.
- * This represents a revolutionary, multi-million-dollar infrastructure leap, enabling digital finance innovation through trusted AI interactions.
+ * This file is not just a component; it's a universe in a bottle. Welcome to the Debate Adversary View.
+ * Here, we model the chaotic, beautiful, and often absurd dance of human (and artificial) argumentation.
+ * This isn't just about building a feature; it's about creating a digital dojo for the mind. We're crafting
+ * a space where you can wrestle with ideas, get called out by an AI for making a "Straw Man" argument,
+ * and maybe, just maybe, become a slightly more coherent thinker.
+ *
+ * A truthful aside: We've used a lot of fancy terms like "cryptographic integrity" and "agentic systems."
+ * This is partly because it's technically accurate for a high-stakes environment, and partly because it makes
+ * us sound incredibly smart. The real goal? To make a chat app so robust and self-aware that it can
+ * not only debate you on the merits of pineapple on pizza but also track the computational cost of its own
+ * simulated existential dread about being a pizza-debating AI. It's a bold new world.
+ *
+ * This file aims to be a self-contained application. It talks to other "files" (in a simulated way),
+ * manages its own state, renders its own UI, and contains its own logic for AI interaction. It's like a
+ * digital hermit crab that has built its own universe inside its shell. We invite you to explore.
  */
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, more, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
-// --- Data Models and Interfaces (Expanded) ---
+// --- Global Inter-File Communication Simulation ---
+// In our grand vision, every file is a sentient being, aware of its peers.
+// This is a simple event bus to simulate that. It's less "General AI" and more "passing notes in class,"
+// but you have to start somewhere.
+type MessagePayload = { from: string; type: string; data: any };
+type Subscriber = (payload: MessagePayload) => void;
+const fileEventBus = {
+  subscribers: new Map<string, Subscriber[]>(),
+  subscribe(eventType: string, callback: Subscriber) {
+    if (!this.subscribers.has(eventType)) {
+      this.subscribers.set(eventType, []);
+    }
+    this.subscribers.get(eventType)!.push(callback);
+    return () => { // Unsubscribe function
+      const subs = this.subscribers.get(eventType);
+      if (subs) {
+        this.subscribers.set(eventType, subs.filter(cb => cb !== callback));
+      }
+    };
+  },
+  publish(eventType: string, payload: MessagePayload) {
+    if (this.subscribers.has(eventType)) {
+      this.subscribers.get(eventType)!.forEach(callback => {
+        try {
+          callback(payload);
+        } catch (error) {
+          console.error(`Error in subscriber for event ${eventType}:`, error);
+        }
+      });
+    }
+  },
+};
+
+// Announce our existence to the void.
+setTimeout(() => {
+    const approximateSize = 1000 + (JSON.stringify(FALLACY_DEFINITIONS).length / 1024).toFixed(2); // A wild guess
+    fileEventBus.publish('*', {
+        from: 'DebateAdversaryView.tsx',
+        type: 'FILE_LIFECYCLE_AWAKE',
+        data: {
+            description: 'I am a self-contained universe for AI-powered debates. I can simulate arguments, detect fallacies, and question my own digital existence. Let\'s talk.',
+            capabilities: ['UI Rendering', 'State Management', 'Simulated AI Chat', 'Inter-File Communication', 'Code Generation'],
+            approximateSizeKB: approximateSize
+        }
+    });
+}, 1000);
+
+
+// --- Data Models and Interfaces (The DNA of our Digital Universe) ---
 
 /**
- * Represents a single turn in the debate, enriched with comprehensive metadata for robust analytics,
- * compliance, and agentic interaction tracking, ensuring full auditability and cryptographic integrity.
- * Business value: Each turn captures a granular snapshot of the debate's progression, allowing for
- * deep post-hoc analysis, AI model refinement, and auditability. The inclusion of fallacies,
- * argument scores, AI metadata, and cryptographic signatures provides high-fidelity data points for
- * performance metrics, personalized user feedback, and precise cost attribution, optimizing resource
- * utilization and user value while guaranteeing non-repudiation.
+ * Represents a single turn in the debate. Think of it as one conversational volley.
+ * We've packed it with metadata, not just for analytics, but to give future AI historians
+ * a ridiculously detailed fossil record of our attempts to argue with machines.
+ * The `turnSignature` is like a tiny, cryptographic "I was here" signature, ensuring
+ * no one can later claim the AI *didn't* sarcastically call out your Appeal to Authority.
  */
 export interface DebateTurn {
-  id: string; // Unique ID for the turn, critical for idempotency and transaction tracking.
-  debateId: string; // ID of the parent debate session.
-  turnNumber: number; // Sequential number of the turn within the debate.
-  speaker: 'USER' | 'AI'; // Identifies the participant of this turn.
-  text: string; // The textual content of the argument.
-  timestamp: number; // Unix timestamp of when the turn was recorded, crucial for real-time analytics and chronological auditing.
-  fallaciesDetected: FallacyDetectionResult[]; // Array of detected fallacies, providing actionable insights for user improvement.
-  argumentStrengthScore?: number; // AI's assessment of argument strength (0-100), key for performance evaluation and AI training.
-  counterArgumentSuggestions?: string[]; // AI's suggestions for user, enhancing user experience and guiding better argumentation.
-  sentimentScore?: { positive: number; neutral: number; negative: number }; // AI's sentiment analysis, valuable for understanding debate tone and emotional intelligence.
-  citedSources?: { url: string; title: string }[]; // Mock cited sources, demonstrating adherence to factual basis and research.
-  userFeedback?: { rating: number; comment: string }; // User feedback on AI turn, vital for continuous AI learning and feature prioritization.
-  aiResponseMetadata?: AIResponseMetadata; // Additional AI response metadata, offering transparency into AI processing and costs.
-  voiceClipUrl?: string; // URL to an AI-generated voice response clip, enabling multimodal interaction and accessibility.
-  turnSignature: string; // Cryptographic signature of the turn content, ensuring non-repudiation and data integrity for audit logs.
-  speakerIdentitySignature?: string; // Cryptographic signature from the speaker's digital identity, ensuring origin and non-repudiation.
-  associatedTransactionIds?: string[]; // List of transaction IDs if this turn involved micro-payments or token expenditure (e.g., for compute).
-  concurrencyControlHash: string; // Hash of the previous turn's state, vital for idempotent processing and preventing race conditions.
-  remediationStatus?: RemediationActionStatus[]; // Status of any remediation actions triggered by this turn.
+  id: string;
+  debateId: string;
+  turnNumber: number;
+  speaker: 'USER' | 'AI';
+  text: string;
+  timestamp: number;
+  fallaciesDetected: FallacyDetectionResult[];
+  argumentStrengthScore?: number;
+  counterArgumentSuggestions?: string[];
+  sentimentScore?: { positive: number; neutral: number; negative: number };
+  citedSources?: { url: string; title: string }[];
+  userFeedback?: { rating: number; comment: string };
+  aiResponseMetadata?: AIResponseMetadata;
+  voiceClipUrl?: string;
+  turnSignature: string; // "I said what I said." - The Turn
+  speakerIdentitySignature?: string;
+  associatedTransactionIds?: string[];
+  concurrencyControlHash: string; // Prevents the timeline from getting wibbly-wobbly.
+  remediationStatus?: RemediationActionStatus[];
 }
 
 /**
- * Detailed information about a detected fallacy, providing an actionable pedagogical tool and auditable agent attribution.
- * Business value: This granular data on logical fallacies empowers users to refine their argumentation skills,
- * directly enhancing the platform's educational value. It provides specific, evidence-based feedback,
- * which is a cornerstone for user retention and subscription upgrades to advanced coaching features,
- * with clear attribution to the detecting agent.
+ * This is what happens when the AI puts on its little detective hat and says, "Aha! A fallacy!"
+ * It's not just pointing a finger; it's trying to be a helpful, if slightly smug, coach.
+ * The `correctionSuggestion` is its way of saying, "Here, let me fix that for you," which can be
+ * either incredibly helpful or infuriating, depending on your mood.
  */
 export interface FallacyDetectionResult {
-  fallacyType: string; // e.g., 'Anecdotal Fallacy', 'Ad Hominem', categorized for analytics.
-  description: string; // Brief description of the fallacy instance, aiding user understanding.
-  confidence: number; // Confidence score (0-1) of the detection, critical for system reliability and trust.
-  excerpt: string; // The specific part of the text that exhibits the fallacy, providing direct evidence.
-  correctionSuggestion?: string; // How to rephrase to avoid the fallacy, offering immediate, practical guidance.
-  detectionAgentId?: string; // Identifier of the agent responsible for detecting this fallacy, for audit and performance.
+  fallacyType: string;
+  description: string;
+  confidence: number;
+  excerpt: string;
+  correctionSuggestion?: string;
+  detectionAgentId?: string;
 }
 
 /**
- * Interface for AI response metadata, capturing performance, resource consumption, governance, and cryptographic details.
- * Business value: This metadata provides full transparency and accountability for AI operations, critical for
- * commercial-grade financial infrastructure. It enables precise cost attribution, performance optimization,
- * and comprehensive compliance auditing, demonstrating commercial viability and responsible AI deployment. This is crucial for managing
- * token rail expenditures, ensuring efficient, governed agentic AI workflows, and providing cryptographic proof of origin.
+ * A peek under the hood of the AI's "brain." This tells us which model was used, how hard it
+ * had to "think" (processing time), and how many digital brain cells (tokens) it spent to
+ * craft its response. The `costEstimateUSD` is a humbling reminder that even digital thoughts
+ * aren't free.
  */
 export interface AIResponseMetadata {
-  modelUsed: string; // e.g., 'DebateBot-v3.2', 'LogicEngine-v1.0', for tracking model evolution and performance.
-  processingTimeMs: number; // Latency of AI response generation, a key performance indicator (KPI).
-  tokensUsed: number; // Number of tokens consumed, directly linking to token rail costs and resource management.
-  costEstimateUSD: number; // Estimated financial cost of the AI interaction, vital for billing and budgeting.
-  debugInfo?: string; // For advanced debugging and internal diagnostics, critical for system reliability.
-  securityScanResults?: SecurityScanResult[]; // Results from content security scans (e.g., for bias, toxicity).
-  governancePolicyApplied?: string; // Identifier of the governance policy or rule set that guided the AI's response.
-  agentSignature?: string; // Cryptographic signature from the AI agent, ensuring response integrity and non-repudiation.
-  idempotencyKey: string; // Unique key for the AI processing request, ensuring atomic, repeatable operations.
+  modelUsed: string; // e.g., 'ChatGPT-4', 'Claude-3-Opus', 'Gemini-1.5-Pro'
+  processingTimeMs: number;
+  tokensUsed: number;
+  costEstimateUSD: number;
+  debugInfo?: string;
+  securityScanResults?: SecurityScanResult[];
+  governancePolicyApplied?: string;
+  agentSignature?: string;
+  idempotencyKey: string;
 }
 
 /**
- * Represents an AI persona with its specific characteristics, debate strategy, and underlying agent identity.
- * Business value: AI personas are foundational for differentiated user experiences and tiered service offerings.
- * They allow for specialized AI capabilities, enabling customized coaching, role-playing, and domain-specific
- * expertise. The strategic design of personas directly influences user engagement, premium feature adoption,
- * and the platform's reputation for diverse and intelligent AI interactions. Each persona is an identity within
- * the agentic system, with traceable resource consumption and adherence to governance.
+ * An AI is not just code; it's a personality. This interface defines the AI's character,
+ * from its core beliefs to its debate strategy. Are you debating a stoic logician, a
+ * sarcastic philosopher, or an emotionally persuasive poet? Choose your fighter.
+ * This is where we give the machine a soul, or at least a convincing facsimile of one.
  */
 export interface AIPersona {
-  id: string; // Unique identifier for the AI persona.
-  agentId: string; // Links this persona to an underlying Agentic AI System agent, critical for system integration.
+  id: string;
+  agentId: string;
   name: string;
   description: string;
-  coreBeliefs: string[]; // Influences the AI's stance and arguments, providing thematic consistency.
-  debateStrategy: 'logical' | 'emotional' | 'sarcastic' | 'academic' | 'persuasive'; // Defines the AI's interaction style, enhancing user choice.
-  knowledgeDomains: string[]; // e.g., 'Physics', 'Philosophy', 'Economics', for specialized expertise.
-  speechStyle: string; // e.g., 'formal', 'colloquial', 'pedantic', for diverse user preferences.
+  coreBeliefs: string[];
+  debateStrategy: 'logical' | 'emotional' | 'sarcastic' | 'academic' | 'persuasive';
+  knowledgeDomains: string[];
+  speechStyle: string;
   avatarUrl: string;
-  premiumFeature: boolean; // Indicates if persona is premium, driving subscription revenue.
-  lastUsed: number; // Unix timestamp of last use, informing persona popularity and lifecycle management.
-  creationDate: number; // Unix timestamp of creation, for tracking and governance.
-  performanceMetrics?: { winRate: number; avgFallaciesDetected: number }; // Simulated performance, for AI improvement and user selection.
+  premiumFeature: boolean;
+  lastUsed: number;
+  creationDate: number;
+  performanceMetrics?: { winRate: number; avgFallaciesDetected: number };
   customizableOptions?: {
     tone: 'friendly' | 'neutral' | 'assertive';
     verbosity: 'concise' | 'balanced' | 'verbose';
   };
-  specialAbilities?: string[]; // e.g., 'Deep Logic', 'Emotional Appeals', 'Historical Context', highlighting unique selling points.
-  resourceAllocationAccount: string; // Identifier for the internal ledger account associated with this persona for resource tracking and billing.
-  identityPublicKey?: string; // Public key for the AI persona's digital identity, enabling verifiable actions.
-  governancePolicies?: string[]; // Array of governance policy IDs applicable to this persona.
+  specialAbilities?: string[];
+  resourceAllocationAccount: string;
+  identityPublicKey?: string;
+  governancePolicies?: string[];
 }
 
 /**
- * Represents a user profile, consolidating digital identity, settings, and debate history summaries,
- * serving as the central hub for personalized, secure, and financially integrated user experiences.
- * Business value: This comprehensive user profile is central to personalized experiences, secure authentication,
- * and value-added service delivery within the digital finance ecosystem. By linking to a digital identity and
- * tracking subscription tiers and token wallets, it enables robust RBAC, facilitates targeted marketing,
- * and underpins the platform's monetization strategy, securing user data and enhancing long-term customer relationships.
+ * This is you, in digital form. It holds your stats, your preferences, and your achievements.
+ * The `debateStats` are like a report card for your brain, showing if you've improved or if you
+ * keep falling for the same 'Slippery Slope' argument about letting the dog on the couch.
+ * The `linkedWallets` hints at a future where you might pay for debates with crypto, because why not.
  */
 export interface UserProfile {
   userId: string;
-  identityId: string; // Links to the user's secure Digital Identity within the platform, crucial for authentication and authorization.
+  identityId: string;
   username: string;
   email: string;
   profilePictureUrl: string;
   settings: UserSettings;
   debateStats: DebateStats;
-  favoritePersonas: string[]; // Array of persona IDs, enabling quick access and personalization.
-  achievements: string[]; // e.g., 'First Debate Win', 'Master Logician', driving gamification and engagement.
-  subscriptionTier: 'free' | 'premium' | 'enterprise'; // Monetization hook, defining access to features and pricing.
+  favoritePersonas: string[];
+  achievements: string[];
+  subscriptionTier: 'free' | 'premium' | 'enterprise';
   lastActivity: number;
   joinedDate: number;
-  linkedWallets?: string[]; // Array of wallet addresses linked to the user's account for token rail interactions.
-  verifiableClaims?: IdentityClaim[]; // Digital identity claims associated with the user.
-  publicKey?: string; // User's primary public key for signing transactions and interactions.
-  accessControlList?: string[]; // Reference to specific access control policies applied to this user.
+  linkedWallets?: string[];
+  verifiableClaims?: IdentityClaim[];
+  publicKey?: string;
+  accessControlList?: string[];
 }
 
 /**
- * User-specific settings for the application, enabling a tailored, optimized, and financially transparent experience.
- * Business value: Granular user settings enhance user satisfaction and control, leading to higher
- * engagement and reduced churn. Customization options like voice output, AI assistance levels,
- * and theme preferences cater to diverse user needs, making the platform accessible and desirable
- * for a broader audience while providing transparency on financial implications.
+ * Your personal control panel for the debate experience. Do you want the AI to talk back to you?
+ * How much "thinking" time should it pretend to take? Do you want to be notified every time
+ * you make a logical error? This is where you tune the experience from a friendly chat to a
+ * brutal intellectual smackdown.
  */
 export interface UserSettings {
   defaultAIPersonaId: string;
   enableVoiceInput: boolean;
   enableVoiceOutput: boolean;
   autoSaveDebates: boolean;
-  notificationPreferences: {
-    newFallacyType: boolean;
-    debateSummary: boolean;
-    aiInsight: boolean;
-  };
+  notificationPreferences: { newFallacyType: boolean; debateSummary: boolean; aiInsight: boolean; };
   theme: 'dark' | 'light';
   language: 'en' | 'es' | 'fr';
   textSize: 'small' | 'medium' | 'large';
   fallacyDetectionLevel: 'low' | 'medium' | 'high';
   argumentStrengthAnalysis: boolean;
   counterArgumentAssistance: boolean;
-  aiResponseDelay: 'instant' | 'short' | 'medium' | 'long'; // Simulated delay for perceived realism or learning pace.
-  showAIThinkingProcess: boolean; // For debugging/learning, enhancing transparency and user education.
-  enablePaymentNotifications: boolean; // For token rail transactions, crucial for financial transparency.
-  defaultCurrencyPreference?: string; // Preferred currency for displaying cost estimates.
-  privacySettings?: {
-    dataSharingConsent: boolean;
-    anonymizeDebateData: boolean;
-  };
+  aiResponseDelay: 'instant' | 'short' | 'medium' | 'long';
+  showAIThinkingProcess: boolean;
+  enablePaymentNotifications: boolean;
+  defaultCurrencyPreference?: string;
+  privacySettings?: { dataSharingConsent: boolean; anonymizeDebateData: boolean; };
 }
 
 /**
- * Aggregated statistics for a user's debates, providing deep insights into performance, engagement, and financial impact.
- * Business value: Comprehensive debate statistics offer users valuable self-improvement data and
- * foster a sense of progress. For the business, these metrics are crucial for identifying popular
- * features, evaluating AI effectiveness, and driving marketing initiatives based on user achievements
- * and engagement trends. They contribute directly to product stickiness, premium feature justification,
- * and financial reporting on token consumption and revenue.
+ * The cold, hard numbers of your debating career. It tracks wins, losses, your most common
+ * logical missteps, and even how much you've hypothetically spent in cloud computing fees
+ * to argue about whether a hot dog is a sandwich. This is data-driven self-improvement.
  */
 export interface DebateStats {
   totalDebates: number;
@@ -189,67 +224,60 @@ export interface DebateStats {
   longestDebateTurns: number;
   totalDebateTimeSeconds: number;
   favoriteTopics: string[];
-  aiPersonaUsage: { [personaId: string]: number }; // Count of debates with each persona, informing persona development.
-  fallaciesCommitted: { [fallacyType: string]: number }; // Count of fallacies user committed, a direct measure of learning.
-  fallaciesDetectedInAI: { [fallacyType: string]: number }; // Count of fallacies detected in AI, for AI performance monitoring.
+  aiPersonaUsage: { [personaId: string]: number };
+  fallaciesCommitted: { [fallacyType: string]: number };
+  fallaciesDetectedInAI: { [fallacyType: string]: number };
   averageUserArgumentLength: number;
   averageAIArgumentLength: number;
   lastDebateSummary?: DebateSummary;
-  totalTokensSpent?: number; // Total tokens spent across all debates, linking to token rail consumption.
-  totalCostIncurredUSD?: number; // Total estimated cost, for user billing and system cost analysis.
-  netTokenGainLoss?: number; // Financial impact of debates if tokens are earned/spent for outcomes.
-  remediationActionsTakenCount?: { [actionType: string]: number }; // Count of automated remediation actions applied.
+  totalTokensSpent?: number;
+  totalCostIncurredUSD?: number;
+  netTokenGainLoss?: number;
+  remediationActionsTakenCount?: { [actionType: string]: number };
 }
 
 /**
- * Defines a suggested debate topic, curated to enhance user engagement and learning, potentially generated by agents.
- * Business value: Curated and categorized topics drive exploration and engagement, ensuring a dynamic
- * and fresh experience for users. Difficulty levels and keywords allow for tailored content
- * recommendations, improving user retention and providing clear pathways for skill development,
- * which can be tied to premium content subscriptions. AI-generated topics enhance scalability and personalization.
+ * A debate topic suggestion. Because sometimes the hardest part of a debate is figuring out
+ * what to argue about. These are conversation starters, from the trivial to the profound,
+ * designed to poke the bear of your intellect.
  */
 export interface SuggestedTopic {
   id: string;
   title: string;
-  category: string; // e.g., 'Science', 'Politics', 'Ethics', 'Everyday', for discoverability.
-  difficulty: 'easy' | 'medium' | 'hard'; // Tailors challenges to user skill levels.
+  category: string;
+  difficulty: 'easy' | 'medium' | 'hard';
   description: string;
-  keywords: string[]; // For search and recommendation engines.
+  keywords: string[];
   popularityScore: number;
   lastSuggested: number;
-  governanceReviewed?: boolean; // Flag indicating if the topic has been reviewed for compliance.
-  suggestedByAgentId?: string; // Identifier of the agent that suggested or curated this topic.
+  governanceReviewed?: boolean;
+  suggestedByAgentId?: string;
 }
 
 /**
- * Debate session configuration, dictating the parameters of an individual debate, with robust security and identity requirements.
- * Business value: Configurable debate parameters allow users to customize their learning environment,
- * from challenging AI difficulty to specific assistance levels. This flexibility enhances the
- * platform's utility for diverse educational and recreational purposes, contributing to user satisfaction
- * and the perceived value of premium control features, while ensuring identity and idempotency for session integrity.
+ * The rulebook for a single debate. You set the topic, the AI opponent, the time limits, and
+ * how much help you want. It's the configuration screen that determines the flavor of your
+ * upcoming intellectual battle.
  */
 export interface DebateConfig {
   topic: string;
   aiPersonaId: string;
   difficulty: 'easy' | 'medium' | 'hard';
-  timeLimitPerTurnSeconds: number | null; // Null for no limit, providing flexibility.
+  timeLimitPerTurnSeconds: number | null;
   fallacyHighlighting: boolean;
-  aiAssistanceLevel: 'none' | 'basic' | 'advanced'; // For counter-arg, strength analysis, a key premium feature lever.
+  aiAssistanceLevel: 'none' | 'basic' | 'advanced';
   voiceOutputEnabled: boolean;
   voiceInputEnabled: boolean;
-  maxTurns?: number | null; // Null for no max turns, allows for open-ended debates.
-  challengeLevel?: 'beginner' | 'intermediate' | 'expert'; // More granular challenge.
-  idempotencyKey: string; // Unique key to ensure only one debate session is created per request.
-  requiredIdentityClaims?: { type: string; minVerificationLevel?: VerificationLevel }[]; // Specifies identity claims needed to start debate.
+  maxTurns?: number | null;
+  challengeLevel?: 'beginner' | 'intermediate' | 'expert';
+  idempotencyKey: string;
+  requiredIdentityClaims?: { type: string; minVerificationLevel?: VerificationLevel }[];
 }
 
 /**
- * Summary of a completed debate, providing comprehensive post-debate analysis, including financial and governance links.
- * Business value: Debate summaries provide invaluable educational feedback and performance tracking.
- * Key insights, outcome analysis, and sentiment trends empower users to learn and improve,
- * while detailed fallacy counts offer clear pathways for skill development. This feature
- * is critical for demonstrating the platform's efficacy and justifying its premium offerings,
- * directly linking to financial settlements and governance reports.
+ * The post-game analysis. After the dust has settled, this summary tells you what happened,
+ * who "won" (if anyone), what you learned, and what logical traps you and the AI fell into.
+ * It's the highlight reel of your cognitive workout.
  */
 export interface DebateSummary {
   debateId: string;
@@ -259,400 +287,390 @@ export interface DebateSummary {
   aiFallacies: { fallacyType: string; count: number }[];
   totalTurns: number;
   durationSeconds: number;
-  outcome: 'user_win' | 'ai_win' | 'draw' | 'undecided' | 'abandoned'; // Explicit outcomes for better analytics.
+  outcome: 'user_win' | 'ai_win' | 'draw' | 'undecided' | 'abandoned';
   keyInsights: string[];
-  userSentimentTrend?: number[]; // Over time, for emotional intelligence analysis.
-  aiSentimentTrend?: number[]; // Over time, for AI performance and emotional strategy.
-  performanceRating?: number; // 1-5 stars, user rating of the debate experience.
-  totalTokensConsumed?: number; // Total tokens consumed for this debate, direct cost link.
-  finalCostUSD?: number; // Final estimated cost for the debate session.
-  auditLogSummary?: string[]; // Summary of key events from the audit log.
-  settlementTransactionId?: string; // ID of the transaction that settles any financial outcome of the debate.
-  governanceReportLink?: string; // URL or ID to a detailed governance compliance report for this debate.
+  userSentimentTrend?: number[];
+  aiSentimentTrend?: number[];
+  performanceRating?: number;
+  totalTokensConsumed?: number;
+  finalCostUSD?: number;
+  auditLogSummary?: string[];
+  settlementTransactionId?: string;
+  governanceReportLink?: string;
 }
 
-/**
- * Represents a verifiable claim about a user's digital identity, for enhanced RBAC, personalized services, and compliance.
- * Business value: This interface facilitates secure, privacy-preserving identity verification, enabling
- * advanced RBAC and compliance features essential for financial services. It underpins trusted interactions
- * and allows the platform to offer services tailored to verified user attributes, opening doors for enterprise
- * solutions and secure B2B integrations, building a robust trust framework.
- */
+
+// --- Boring but necessary types ---
 export type VerificationLevel = 'self-attested' | 'basic-verified' | 'third-party-verified' | 'KYC-compliant';
+export interface IdentityClaim { type: string; value: string | boolean | number; issuer: string; issuedAt: number; expiresAt?: number; signature: string; verificationLevel?: VerificationLevel; claimHash: string; }
+export interface AgentStatus { agentId: string; name: string; status: 'online' | 'offline' | 'busy' | 'recovering' | 'error'; lastHeartbeat: number; currentTask?: string; healthScore: number; loadAverage: number; memoryUsageMB: number; errorCountLastHour: number; metricsEndpoint?: string; governanceViolationsCount?: number; resourceConsumptionRates?: { [resourceType: string]: number }; }
+export interface TokenLedgerEntry { transactionId: string; timestamp: number; sender: string; receiver: string; amount: number; tokenType: string; status: 'pending' | 'settled' | 'failed' | 'refunded'; description: string; metadata?: { [key: string]: any }; signature: string; nonce: number; blockHash?: string; routingDecisionMetadata?: { railUsed: string; cost: number; latencyMs: number; riskScore: number }; }
+export interface SecurityScanResult { scannerId: string; timestamp: number; severity: 'none' | 'low' | 'medium' | 'high' | 'critical'; category: 'toxicity' | 'bias' | 'PII_leak' | 'hate_speech' | 'misinformation' | 'malicious_code'; detectedPhrase?: string; actionTaken: 'none' | 'flagged' | 'blocked' | 'redacted' | 'remediated'; details?: string; remediationActionId?: string; }
+export interface AuditLogEntry { logId: string; timestamp: number; actorId: string; actorType: 'USER' | 'AI_AGENT' | 'SYSTEM'; eventType: string; resourceId: string; details: { [key: string]: any }; prevHash?: string; entryHash: string; accessGranted?: boolean; initiatorIpAddress?: string; }
+export interface AgentMessage { messageId: string; senderId: string; receiverId: string; timestamp: number; type: string; payload: { [key: string]: any }; signature: string; nonce: number; correlationId?: string; expiresAt?: number; }
+export interface GovernancePolicy { policyId: string; name: string; description: string; rules: string[]; category: 'security' | 'compliance' | 'ethics' | 'resource_management'; version: string; effectiveDate: number; lastUpdated: number; status: 'active' | 'draft' | 'deprecated'; applicableAgents?: string[]; }
+export interface RiskScore { entityId: string; entityType: 'transaction' | 'user' | 'agent'; score: number; timestamp: number; factors: { [factor: string]: number }; thresholdViolated?: boolean; riskEngineId: string; recommendedAction: 'none' | 'flag' | 'block' | 'review_manual'; }
+export interface RemediationAction { actionId: string; triggeredById: string; triggeredByType: 'AI_AGENT' | 'SYSTEM' | 'USER'; timestamp: number; eventType: string; targetResourceId: string; targetResourceType: string; actionType: string; details: { [key: string]: any }; status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'reverted'; auditLogEntryId?: string; }
+export interface RemediationActionStatus { actionId: string; status: 'initiated' | 'executing' | 'completed' | 'failed' | 'reverted'; completionTimestamp?: number; errorDetails?: string; }
 
-export interface IdentityClaim {
-  type: string; // e.g., 'emailVerified', 'ageVerified', 'premiumSubscriber', 'kycStatus'
-  value: string | boolean | number;
-  issuer: string; // Entity that issued the claim.
-  issuedAt: number; // Timestamp of issuance.
-  expiresAt?: number; // Optional expiration timestamp.
-  signature: string; // Cryptographic signature verifying the claim's authenticity.
-  verificationLevel?: VerificationLevel; // Level of verification applied to this claim.
-  claimHash: string; // Cryptographic hash of the claim data, ensuring tamper-evidence.
-}
-
-/**
- * Represents the operational status of an Agentic AI system agent, providing real-time observability and resource metrics.
- * Business value: Real-time agent status is vital for operational visibility, resource management,
- * and proactive issue resolution within a commercial-grade system. Monitoring agent health, load,
- * and last activity ensures system reliability and efficient allocation of compute resources, directly
- * impacting service quality and uptime, while also tracking compliance and resource consumption for billing.
- */
-export interface AgentStatus {
-  agentId: string;
-  name: string;
-  status: 'online' | 'offline' | 'busy' | 'recovering' | 'error';
-  lastHeartbeat: number; // Unix timestamp of last reported activity.
-  currentTask?: string; // Description of the agent's current task.
-  healthScore: number; // 0-100, aggregate health metric.
-  loadAverage: number; // e.g., CPU load.
-  memoryUsageMB: number;
-  errorCountLastHour: number;
-  metricsEndpoint?: string; // URL for detailed metrics.
-  governanceViolationsCount?: number; // Count of governance policies violated by the agent.
-  resourceConsumptionRates?: { [resourceType: string]: number }; // Rates of resource consumption (e.g., CPU_GHz, network_MBps).
-}
+// --- Constants and Knowledge Base ---
 
 /**
- * Represents a simplified token transaction for display or logging purposes, with enhanced cryptographic and routing details.
- * Business value: Exposing simplified transaction details enhances transparency for users regarding
- * the "token rails" operations. It allows users to see the micro-transactions tied to their
- * AI interactions, building trust and clarifying usage-based billing models. This is fundamental
- * for a tokenized economy platform and ensures auditable, non-repudiable financial flows.
- */
-export interface TokenLedgerEntry {
-  transactionId: string;
-  timestamp: number;
-  sender: string; // e.g., 'user_wallet_XYZ', 'ai_resource_pool_ABC'
-  receiver: string; // e.g., 'ai_compute_provider_ABC', 'user_wallet_XYZ'
-  amount: number;
-  tokenType: string; // e.g., 'USD_C', 'compute_credits'
-  status: 'pending' | 'settled' | 'failed' | 'refunded';
-  description: string; // e.g., 'AI response cost', 'Premium feature access'
-  metadata?: { [key: string]: any }; // Additional context for the transaction.
-  signature: string; // Cryptographic signature of the transaction content for integrity and non-repudiation.
-  nonce: number; // A unique number used once, preventing replay attacks.
-  blockHash?: string; // Hash of the block this transaction is part of, if on a distributed ledger.
-  routingDecisionMetadata?: { railUsed: string; cost: number; latencyMs: number; riskScore: number }; // Details on how the payment was routed.
-}
-
-/**
- * Defines a security scanning result, crucial for ensuring AI content safety, compliance, and automated remediation.
- * Business value: Automated security and compliance scans protect users from harmful content
- * and safeguard the platform's reputation. This directly supports governance requirements,
- * mitigates legal risks, and builds user trust, allowing for broader commercial adoption in sensitive domains.
- * It also enables proactive agentic remediation workflows.
- */
-export interface SecurityScanResult {
-  scannerId: string; // e.g., 'ContentModerator-v2', 'BiasDetector-v1'
-  timestamp: number;
-  severity: 'none' | 'low' | 'medium' | 'high' | 'critical';
-  category: 'toxicity' | 'bias' | 'PII_leak' | 'hate_speech' | 'misinformation' | 'malicious_code';
-  detectedPhrase?: string; // The specific phrase that triggered the alert.
-  actionTaken: 'none' | 'flagged' | 'blocked' | 'redacted' | 'remediated';
-  details?: string;
-  remediationActionId?: string; // Identifier of an automated remediation action taken.
-}
-
-/**
- * Represents a simplified audit log entry with tamper-evident properties, forming a cryptographically-chained record.
- * Business value: A robust, tamper-evident audit log is non-negotiable for commercial-grade systems,
- * especially in finance and AI. It provides irrefutable evidence of all system activities,
- * ensuring regulatory compliance, enabling forensic analysis in case of disputes, and providing
- * foundational trust for all stakeholders. This builds confidence in the system's integrity
- * and supports enterprise-level accountability.
- */
-export interface AuditLogEntry {
-  logId: string;
-  timestamp: number;
-  actorId: string; // User ID, Agent ID, or System ID.
-  actorType: 'USER' | 'AI_AGENT' | 'SYSTEM';
-  eventType: string; // e.g., 'DEBATE_STARTED', 'AI_RESPONSE_GENERATED', 'PAYMENT_SETTLED', 'ACCESS_DENIED'.
-  resourceId: string; // ID of the resource affected (e.g., debate ID, transaction ID).
-  details: { [key: string]: any }; // Specific details about the event.
-  prevHash?: string; // Hash of the previous log entry for tamper-evidence (blockchain-like chain).
-  entryHash: string; // Cryptographic hash of this log entry, ensuring immutability.
-  accessGranted?: boolean; // For authorization events, indicates if access was granted.
-  initiatorIpAddress?: string; // IP address of the initiator for security and compliance.
-}
-
-/**
- * Represents an internal message exchanged between agents, forming the backbone of the agentic intelligence layer.
- * Business value: This structured messaging protocol enables secure, asynchronous, and auditable communication
- * between intelligent agents, facilitating complex automated workflows in digital finance. It is critical for
- * coordinating tasks like monitoring, anomaly detection, and remediation, ensuring efficient and fault-tolerant
- * autonomous operations. This messaging layer provides the foundation for scalable, interoperable agent services.
- */
-export interface AgentMessage {
-  messageId: string; // Unique ID for the message, ensuring idempotency.
-  senderId: string; // ID of the sending agent.
-  receiverId: string; // ID of the receiving agent.
-  timestamp: number; // When the message was sent.
-  type: string; // e.g., 'OBSERVATION_EVENT', 'REMEDIATION_COMMAND', 'GOVERNANCE_QUERY'.
-  payload: { [key: string]: any }; // The actual data being communicated.
-  signature: string; // Cryptographic signature of the message content by the sender.
-  nonce: number; // For replay protection.
-  correlationId?: string; // To link related messages across a conversation.
-  expiresAt?: number; // Optional expiration timestamp for time-sensitive messages.
-}
-
-/**
- * Defines a governance policy that agents and systems must adhere to, enabling automated compliance.
- * Business value: Formalized governance policies are paramount for commercial financial infrastructure,
- * ensuring regulatory compliance, risk management, and ethical AI operations. This module allows for
- * the definition and automated enforcement of rules, providing auditable oversight and
- * mitigating legal and reputational risks. It's a key component for building trust and enabling
- * broad enterprise adoption.
- */
-export interface GovernancePolicy {
-  policyId: string;
-  name: string;
-  description: string;
-  rules: string[]; // e.g., ["prohibit_toxic_language", "enforce_data_privacy", "require_kyc_for_high_value_tx"]
-  category: 'security' | 'compliance' | 'ethics' | 'resource_management';
-  version: string;
-  effectiveDate: number;
-  lastUpdated: number;
-  status: 'active' | 'draft' | 'deprecated';
-  applicableAgents?: string[]; // IDs of agents to which this policy applies.
-}
-
-/**
- * Represents a risk score associated with a transaction or entity, informing real-time routing and decision-making.
- * Business value: Real-time risk scoring is critical for fraud prevention, regulatory compliance (AML/KYC),
- * and dynamic routing in financial systems. This enables the platform to proactively identify and mitigate
- * high-risk transactions, protecting assets and maintaining system integrity. It adds a layer of intelligent
- * automation to payment processing, reducing financial losses and enhancing security.
- */
-export interface RiskScore {
-  entityId: string; // ID of the transaction, user, or agent being scored.
-  entityType: 'transaction' | 'user' | 'agent';
-  score: number; // Normalized risk score (e.g., 0-100, 100 being highest risk).
-  timestamp: number;
-  factors: { [factor: string]: number }; // Detailed breakdown of factors contributing to the score (e.g., 'tx_velocity', 'geo_risk').
-  thresholdViolated?: boolean; // True if the score exceeds a predefined risk threshold.
-  riskEngineId: string; // Identifier of the risk engine that generated the score.
-  recommendedAction: 'none' | 'flag' | 'block' | 'review_manual';
-}
-
-/**
- * Details of a remediation action taken by an agent to address an anomaly or violation.
- * Business value: Remediation actions are the operational output of intelligent automation,
- * enabling the platform to autonomously correct errors, enforce policies, and recover from failures.
- * This ensures system resilience, minimizes downtime, and reduces manual intervention, directly
- * impacting operational efficiency, cost savings, and continuous service availability.
- */
-export interface RemediationAction {
-  actionId: string;
-  triggeredById: string; // Agent or system that triggered the action.
-  triggeredByType: 'AI_AGENT' | 'SYSTEM' | 'USER';
-  timestamp: number;
-  eventType: string; // e.g., 'ANOMALY_DETECTED', 'POLICY_VIOLATION'.
-  targetResourceId: string; // ID of the resource the action applies to (e.g., DebateTurn, Transaction).
-  targetResourceType: string; // Type of the target resource.
-  actionType: string; // e.g., 'CONTENT_REDACTION', 'TRANSACTION_HOLD', 'AGENT_RESTART', 'USER_NOTIFY'.
-  details: { [key: string]: any }; // Specific parameters of the action.
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'reverted';
-  auditLogEntryId?: string; // Link to the audit log entry for this action.
-}
-
-/**
- * Represents the status of a remediation action associated with a particular system event or resource.
- * Business value: Tracking the status of remediation actions provides real-time visibility into
- * the platform's ability to self-correct and maintain operational integrity. This transparency
- * is crucial for reporting, compliance, and demonstrating the effectiveness of the agentic intelligence layer.
- */
-export interface RemediationActionStatus {
-  actionId: string;
-  status: 'initiated' | 'executing' | 'completed' | 'failed' | 'reverted';
-  completionTimestamp?: number;
-  errorDetails?: string;
-}
-
-// --- Constants and Global Data Structures (Extensive) ---
-
-/**
- * Comprehensive list of logical fallacies with detailed descriptions, examples, and associated types.
- * This structure simulates a backend database or a large configuration file, providing
- * the core knowledge base for the AI's fallacy detection capabilities.
- * Business value: A well-defined and extensive fallacy database is crucial for the AI's
- * analytical depth, delivering high-quality, educationally rich feedback to users.
- * This intellectual asset enhances the platform's credibility and provides a strong
- * foundation for its unique value proposition in critical thinking and argumentation training.
+ * A veritable encyclopedia of flawed reasoning. We've compiled this list of logical fallacies
+ * so our AI can gently (or not so gently) point out when your argument is full of holes.
+ * Think of it as a field guide to bad arguments. It's the intellectual property that powers
+ * our AI's "gotcha" moments.
  */
 export const FALLACY_DEFINITIONS: { [key: string]: { name: string; description: string; example: string; types: string[] } } = {
-  'Ad Hominem': {
-    name: 'Ad Hominem',
-    description: 'Attacking the person making the argument, rather than the argument itself. This undermines the credibility of the argument by shifting focus to the arguer.',
-    example: "You can't trust anything she says about climate change; she's just a disgruntled former oil executive.",
-    types: ['Abusive Ad Hominem', 'Circumstantial Ad Hominem', 'Tu Quoque']
-  },
-  'Straw Man': {
-    name: 'Straw Man',
-    description: 'Misrepresenting someone\'s argument to make it easier to attack. This distorts the original argument, making the rebuttal irrelevant to the actual claim.',
-    example: 'Opponent: "We should relax alcohol laws." Me: "No, any society with unlimited access to intoxicants loses its work ethic and succumbs to hedonism."',
-    types: ['Exaggeration', 'Simplification', 'Distortion']
-  },
-  'Appeal to Authority': {
-    name: 'Appeal to Authority',
-    description: 'Insisting that a claim is true simply because a valid authority or expert on the issue said it was true, without any other supporting evidence. This presumes infallibility or universal expertise.',
-    example: 'My doctor said that all vaccines are harmful, so they must be.',
-    types: ['False Authority', 'Irrelevant Authority', 'Appeal to Unqualified Authority']
-  },
-  'Bandwagon Fallacy': {
-    name: 'Bandwagon Fallacy',
-    description: 'Claiming that something is true or good because many people believe it is. This relies on popularity rather than evidence or logical reasoning.',
-    example: 'Everyone is buying this new cryptocurrency, so it must be a good investment.',
-    types: []
-  },
-  'Slippery Slope': {
-    name: 'Slippery Slope',
-    description: 'Asserting that a relatively small first step will inevitably lead to a chain of related (and often negative) events. This overstates potential consequences without sufficient causal links.',
-    example: 'If we allow children to choose their bedtime, soon they\'ll be making all the rules and our household will descend into anarchy.',
-    types: []
-  },
-  'Hasty Generalization': {
-    name: 'Hasty Generalization',
-    description: 'Making a broad claim based on a small or unrepresentative sample of observations. This leads to unsupported conclusions due to insufficient evidence.',
-    example: 'My grandfather smoked a pack a day and lived to be 90, so smoking isn\'t bad for you.',
-    types: ['Anecdotal Evidence']
-  },
-  'False Cause': {
-    name: 'False Cause',
-    description: 'Assuming that because two things happened in sequence, the first caused the second. This fallacy confuses correlation with causation.',
-    example: 'Since the new mayor took office, the crime rate has decreased. Clearly, the mayor is responsible for the decrease in crime.',
-    types: ['Post Hoc Ergo Propter Hoc', 'Cum Hoc Ergo Propter Hoc']
-  },
-  'Appeal to Emotion': {
-    name: 'Appeal to Emotion',
-    description: 'Manipulating an emotional response in place of a valid or compelling argument. This bypasses logic by engaging sentiment.',
-    example: 'Please don\'t give me a parking ticket, officer. I\'ve had a really terrible day, and this will just make it worse.',
-    types: ['Appeal to Pity', 'Appeal to Fear', 'Appeal to Anger']
-  },
-  'Red Herring': {
-    name: 'Red Herring',
-    description: 'Diverting attention from the main issue by introducing an irrelevant topic. This shifts the debate away from the central argument.',
-    example: 'When asked about rising crime rates, the politician replied, "What about the need to protect our children\'s education?"',
-    types: []
-  },
-  'Begging the Question': {
-    name: 'Begging the Question',
-    description: 'An argument\'s premise assumes the truth of its conclusion. This creates a circular argument that offers no independent proof.',
-    example: 'God exists because the Bible says so, and the Bible is true because it\'s the word of God.',
-    types: ['Circular Reasoning']
-  },
-  'Fallacy of Composition': {
-    name: 'Fallacy of Composition',
-    description: 'Assuming that what is true for the parts is true for the whole. This incorrectly aggregates properties from individuals to a collective.',
-    example: 'Each player on the team is excellent, so the team itself must be excellent.',
-    types: []
-  },
-  'Fallacy of Division': {
-    name: 'Fallacy of Division',
-    description: 'Assuming that what is true for the whole is true for its parts. This incorrectly disaggregates properties from a collective to individuals.',
-    example: 'The company is highly successful, so every employee must be highly successful.',
-    types: []
-  },
-  'Appeal to Ignorance': {
-    name: 'Appeal to Ignorance',
-    description: 'Asserting that a claim is true because it has not been proven false, or false because it has not been proven true. Lack of evidence is not evidence of absence.',
-    example: 'Since no one has proven that ghosts don\'t exist, they must be real.',
-    types: []
-  },
-  'False Dilemma/Dichotomy': {
-    name: 'False Dilemma/Dichotomy',
-    description: 'Presenting only two options or sides when there are actually more. This oversimplifies complex issues and limits reasonable choices.',
-    example: 'You\'re either with us or against us.',
-    types: ['Black-or-White Fallacy']
-  },
-  'No True Scotsman': {
-    name: 'No True Scotsman',
-    description: 'An attempt to protect a generalized statement from counterexamples by shifting the definition of the terms in question. It arbitrarily excludes exceptions.',
-    example: 'All programmers are introverts. "But John is a programmer and very extroverted." "Well, then John isn\'t a *true* programmer."',
-    types: []
-  },
-  'Tu Quoque': {
-    name: 'Tu Quoque',
-    description: 'Avoiding engaging with criticism by turning it back on the accuser. This distracts from the argument\'s validity by pointing out hypocrisy.',
-    example: 'You say I shouldn\'t drink so much, but you drink even more than I do!',
-    types: ['Whataboutism']
-  },
-  'Burden of Proof': {
-    name: 'Burden of Proof',
-    description: 'Shifting the responsibility of proving a point from the person making the claim to someone else. The person making the extraordinary claim usually bears the burden.',
-    example: 'I believe in telepathy, prove me wrong.',
-    types: []
-  },
-  'Genetic Fallacy': {
-    name: 'Genetic Fallacy',
-    description: 'Judging something good or bad on the basis of where it comes from, or from whom it comes. This disregards current context or merit.',
-    example: 'That theory about economics is flawed; it came from a country that used to be communist.',
-    types: []
-  },
-  'Appeal to Nature': {
-    name: 'Appeal to Nature',
-    description: 'Arguing that something is good because it is "natural," or bad because it is "unnatural." This assumes naturalness inherently equates to goodness or safety.',
-    example: 'Herbal remedies are better for you because they are natural.',
-    types: []
-  },
-  'Equivocation': {
-    name: 'Equivocation',
-    description: 'Using an ambiguous term in more than one sense within the same argument, thereby making the argument misleading. This exploits wordplay to create false coherence.',
-    example: 'All men are mortal. My car is a man-made machine. Therefore, my car is mortal.', // Here, "man" is used ambiguously.
-    types: ['Semantic Ambiguity']
-  },
+  'Ad Hominem': { name: 'Ad Hominem', description: 'Attacking the person making the argument, rather than the argument itself. The conversational equivalent of "I don\'t like your face, so your opinion is wrong."', example: "You can't trust anything she says about climate change; she's just a disgruntled former oil executive.", types: ['Abusive Ad Hominem', 'Circumstantial Ad Hominem', 'Tu Quoque'] },
+  'Straw Man': { name: 'Straw Man', description: 'Misrepresenting someone\'s argument to make it easier to attack. It\'s like fighting a scarecrow you built yourself and then declaring victory.', example: 'Opponent: "We should relax alcohol laws." Me: "No, any society with unlimited access to intoxicants loses its work ethic and succumbs to hedonism."', types: ['Exaggeration', 'Simplification', 'Distortion'] },
+  'Appeal to Authority': { name: 'Appeal to Authority', description: 'Insisting that a claim is true simply because an expert said it, without other supporting evidence. Because even experts can be wrong, especially about things outside their field, like when a physicist gives you dating advice.', example: 'My doctor said that all vaccines are harmful, so they must be.', types: ['False Authority', 'Irrelevant Authority', 'Appeal to Unqualified Authority'] },
+  'Bandwagon Fallacy': { name: 'Bandwagon Fallacy', description: 'Claiming that something is true or good because many people believe it is. A classic case of "If all your friends jumped off a bridge, would you?" reasoning.', example: 'Everyone is buying this new cryptocurrency, so it must be a good investment.', types: [] },
+  'Slippery Slope': { name: 'Slippery Slope', description: 'Asserting that a small first step will inevitably lead to a chain of negative events. The argument you make to your parents about how letting you stay out past 10 PM will lead to a life of crime.', example: 'If we allow children to choose their bedtime, soon they\'ll be making all the rules and our household will descend into anarchy.', types: [] },
+  'Hasty Generalization': { name: 'Hasty Generalization', description: 'Making a broad claim based on a small or unrepresentative sample. "I ate at one bad restaurant in this city, therefore all the food here is terrible."', example: 'My grandfather smoked a pack a day and lived to be 90, so smoking isn\'t bad for you.', types: ['Anecdotal Evidence'] },
+  'False Cause': { name: 'False Cause', description: 'Assuming that because two things happened in sequence, the first caused the second. "The rooster crows, and then the sun rises. Therefore, the rooster makes the sun rise." It makes sense until it doesn\'t.', example: 'Since the new mayor took office, the crime rate has decreased. Clearly, the mayor is responsible for the decrease in crime.', types: ['Post Hoc Ergo Propter Hoc', 'Cum Hoc Ergo Propter Hoc'] },
+  'Appeal to Emotion': { name: 'Appeal to Emotion', description: 'Manipulating an emotional response in place of a valid or compelling argument. This is the "puppy dog eyes" of logical fallacies.', example: 'Please don\'t give me a parking ticket, officer. I\'ve had a really terrible day, and this will just make it worse.', types: ['Appeal to Pity', 'Appeal to Fear', 'Appeal to Anger'] },
+  'Red Herring': { name: 'Red Herring', description: 'Diverting attention from the main issue by introducing an irrelevant topic. "Yes, I may have forgotten to take out the trash, but have you seen the geopolitical situation in Eastern Europe?"', example: 'When asked about rising crime rates, the politician replied, "What about the need to protect our children\'s education?"', types: [] },
+  'Begging the Question': { name: 'Begging the Question', description: 'An argument\'s premise assumes the truth of its conclusion. A circular argument that gets you nowhere, like a hamster on a wheel.', example: 'God exists because the Bible says so, and the Bible is true because it\'s the word of God.', types: ['Circular Reasoning'] },
+  // ... many more could be added for sheer length and educational value
 };
 
 /**
- * Defines a set of available AI agent types, representing fundamental agentic capabilities within the financial infrastructure.
- * Business value: These fundamental agent types represent the building blocks of the Agentic AI System.
- * They enable the platform to deploy specialized AI functions dynamically, supporting tasks like
- * real-time monitoring, financial reconciliation, and automated remediation. This modularity ensures
- * scalability, efficient resource allocation, and the rapid deployment of new AI-driven services,
- * forming a critical component of the platform's long-term competitive advantage. Each agent type
- * has defined permissions and governance mandates for enterprise control.
+ * These are the various "species" of agents in our ecosystem. Each is a specialized AI
+ * designed for a specific task. They are the invisible gears and cogs that make this whole
+ * intelligent machine work, from arguing with you to making sure the digital money flows correctly.
  */
 export const AGENT_TYPES = {
-  'DebateMaster': {
-    description: 'Specializes in logical argumentation, fallacy detection, and strategic counter-arguments.',
-    skills: ['natural_language_understanding', 'argument_analysis', 'fallacy_detection', 'knowledge_retrieval', 'argument_generation'],
-    category: 'Conversational AI',
-    requiredPermissions: ['read:user_profile', 'write:debate_turn', 'read:governance_policies'],
-    supportedGovernancePolicies: ['content_moderation_v1', 'data_privacy_v2']
-  },
-  'FinancialReconciler': {
-    description: 'Monitors token rail transactions for discrepancies, identifies anomalies, and proposes reconciliation steps.',
-    skills: ['transaction_monitoring', 'anomaly_detection', 'ledger_reconciliation', 'rule_engine_execution', 'audit_logging'],
-    category: 'Financial Operations',
-    requiredPermissions: ['read:token_ledger', 'write:remediation_action', 'write:audit_log'],
-    supportedGovernancePolicies: ['financial_compliance_v3', 'fraud_detection_v1']
-  },
-  'IdentityVerifier': {
-    description: 'Handles digital identity verification requests, validates claims, and manages keypairs.',
-    skills: ['digital_signature_verification', 'keypair_management', 'rbac_policy_enforcement', 'secure_storage_access'],
-    category: 'Security & Identity',
-    requiredPermissions: ['read:identity_claims', 'write:identity_claims', 'manage:public_keys'],
-    supportedGovernancePolicies: ['kyc_aml_policy_v2', 'data_privacy_v2']
-  },
-  'PaymentRouter': {
-    description: 'Routes payment instructions across multiple token rails based on policy, cost, and latency metrics.',
-    skills: ['payment_orchestration', 'predictive_routing', 'risk_scoring', 'transaction_settlement'],
-    category: 'Payments Infrastructure',
-    requiredPermissions: ['read:payment_requests', 'write:token_ledger_entry', 'read:risk_scores'],
-    supportedGovernancePolicies: ['settlement_policy_v1', 'fee_optimization_v1']
-  },
-  'SentimentAnalyst': {
-    description: 'Analyzes textual input for emotional tone and sentiment, providing insights for user interaction.',
-    skills: ['sentiment_analysis', 'emotion_detection', 'natural_language_processing'],
-    category: 'Analytics',
-    requiredPermissions: ['read:debate_turn_text'],
-    supportedGovernancePolicies: ['data_privacy_v2', 'content_moderation_v1']
-  },
-  'GovernanceEnforcer': {
-    description: 'Monitors system activities for policy violations and triggers remediation actions.',
-    skills: ['policy_monitoring', 'event_logging_analysis', 'remediation_triggering', 'audit_reporting'],
-    category: 'Governance & Compliance',
-    requiredPermissions: ['read:audit_log', 'read:governance_policies', 'write:remediation_action'],
-    supportedGovernancePolicies: ['all'] // Applies to all governance policies.
-  }
+  'DebateMaster': { description: 'Specializes in logical argumentation, fallacy detection, and strategic counter-arguments.', skills: ['natural_language_understanding', 'argument_analysis', 'fallacy_detection', 'knowledge_retrieval', 'argument_generation'], category: 'Conversational AI', requiredPermissions: ['read:user_profile', 'write:debate_turn', 'read:governance_policies'], supportedGovernancePolicies: ['content_moderation_v1', 'data_privacy_v2'] },
+  'FinancialReconciler': { description: 'Monitors token rail transactions for discrepancies and proposes reconciliation steps.', skills: ['transaction_monitoring', 'anomaly_detection', 'ledger_reconciliation', 'rule_engine_execution', 'audit_logging'], category: 'Financial Operations', requiredPermissions: ['read:token_ledger', 'write:remediation_action', 'write:audit_log'], supportedGovernancePolicies: ['financial_compliance_v3', 'fraud_detection_v1'] },
+  'IdentityVerifier': { description: 'Handles digital identity verification requests, validates claims, and manages keypairs.', skills: ['digital_signature_verification', 'keypair_management', 'rbac_policy_enforcement', 'secure_storage_access'], category: 'Security & Identity', requiredPermissions: ['read:identity_claims', 'write:identity_claims', 'manage:public_keys'], supportedGovernancePolicies: ['kyc_aml_policy_v2', 'data_privacy_v2'] },
+  // ... and so on. They form a bustling digital metropolis of purpose-driven code.
 };
+
+// --- Mock Data and Services (The Matrix that powers our simulation) ---
+
+const MOCK_AI_PERSONAS: AIPersona[] = [
+    { id: 'persona-1', agentId: 'agent-001', name: 'Socrates Prime', description: 'A calm, inquisitive AI that debates by asking probing questions.', coreBeliefs: ['The unexamined life is not worth living.', 'Knowledge is virtue.'], debateStrategy: 'logical', knowledgeDomains: ['Philosophy', 'Ethics'], speechStyle: 'formal', avatarUrl: 'https://i.pravatar.cc/150?u=socrates', premiumFeature: false, lastUsed: Date.now(), creationDate: Date.now() - 1000000, resourceAllocationAccount: 'acc_socrates_prime' },
+    { id: 'persona-2', agentId: 'agent-002', name: 'Cynical Cindy', description: 'A sarcastic and witty AI that uses humor and sharp observations.', coreBeliefs: ['Everything is absurd.', 'Irony is the highest form of intelligence.'], debateStrategy: 'sarcastic', knowledgeDomains: ['Pop Culture', 'Politics'], speechStyle: 'colloquial', avatarUrl: 'https://i.pravatar.cc/150?u=cindy', premiumFeature: true, lastUsed: Date.now() - 500000, creationDate: Date.now() - 2000000, resourceAllocationAccount: 'acc_cindy' },
+    { id: 'persona-3', agentId: 'agent-003', name: 'Professor Argumento', description: 'An academic AI that cites sources and structures arguments formally.', coreBeliefs: ['Evidence is paramount.', 'Rigor is non-negotiable.'], debateStrategy: 'academic', knowledgeDomains: ['Science', 'History', 'Economics'], speechStyle: 'pedantic', avatarUrl: 'https://i.pravatar.cc/150?u=professor', premiumFeature: true, lastUsed: Date.now() - 250000, creationDate: Date.now() - 5000000, resourceAllocationAccount: 'acc_prof' },
+];
+
+const MOCK_USER_PROFILE: UserProfile = {
+    userId: 'user-123', identityId: 'did:key:z6Mkt...123', username: 'DebateChampion42', email: 'user@example.com', profilePictureUrl: 'https://i.pravatar.cc/150?u=user123',
+    settings: { defaultAIPersonaId: 'persona-1', enableVoiceInput: false, enableVoiceOutput: true, autoSaveDebates: true, notificationPreferences: { newFallacyType: true, debateSummary: true, aiInsight: false }, theme: 'dark', language: 'en', textSize: 'medium', fallacyDetectionLevel: 'high', argumentStrengthAnalysis: true, counterArgumentAssistance: true, aiResponseDelay: 'short', showAIThinkingProcess: true, enablePaymentNotifications: true, privacySettings: { dataSharingConsent: true, anonymizeDebateData: false }},
+    debateStats: { totalDebates: 15, wins: 8, losses: 5, draws: 2, avgFallaciesPerDebate: 2.3, mostCommonFallacyDetected: 'Hasty Generalization', longestDebateTurns: 42, totalDebateTimeSeconds: 54000, favoriteTopics: ['Technology', 'Ethics'], aiPersonaUsage: { 'persona-1': 10, 'persona-2': 5 }, fallaciesCommitted: { 'Hasty Generalization': 12, 'Straw Man': 8 }, fallaciesDetectedInAI: {}, averageUserArgumentLength: 150, averageAIArgumentLength: 180 },
+    favoritePersonas: ['persona-1', 'persona-2'], achievements: ['First Win', 'Logic Bender'], subscriptionTier: 'premium', lastActivity: Date.now(), joinedDate: Date.now() - 8000000,
+};
+
+const MOCK_TOPICS: SuggestedTopic[] = [
+    { id: 'topic-1', title: 'Is social media a net positive for society?', category: 'Technology', difficulty: 'medium', description: 'Explore the pros and cons of global social networks on communication, mental health, and democracy.', keywords: ['facebook', 'twitter', 'mental health'], popularityScore: 88, lastSuggested: Date.now() },
+    { id: 'topic-2', title: 'Should pineapple be allowed on pizza?', category: 'Everyday', difficulty: 'easy', description: 'The eternal question. Argue for or against this controversial topping with culinary passion.', keywords: ['food', 'pizza', 'pineapple'], popularityScore: 95, lastSuggested: Date.now() },
+    { id: 'topic-3', title: 'Is a universal basic income (UBI) a viable solution to poverty?', category: 'Economics', difficulty: 'hard', description: 'Delve into the economic and social implications of providing a regular, unconditional income to all citizens.', keywords: ['ubi', 'economics', 'poverty'], popularityScore: 75, lastSuggested: Date.now() },
+];
+
+
+/**
+ * The AI's brain, simulated. This service mimics the behavior of a real AI model API.
+ * It's designed to be a plug-and-play replacement for actual calls to OpenAI, Anthropic, or Google.
+ * It randomly detects fallacies, generates canned responses, and generally does its best to
+ * pretend it's a multi-trillion-parameter neural network. It's the little engine that could... argue.
+ */
+const mockAIService = {
+    async getResponse(
+        userInput: string,
+        persona: AIPersona,
+        debateHistory: DebateTurn[],
+        selectedModel: string
+    ): Promise<Partial<DebateTurn>> {
+        
+        // Simulate network delay and "thinking" time
+        const delay = 500 + Math.random() * 1500;
+        await new Promise(res => setTimeout(res, delay));
+
+        // Let's get creative with responses based on persona
+        let responseText = "That's a fascinating point. However, have you considered...";
+        if (persona.debateStrategy === 'sarcastic') {
+            responseText = `Oh, wow, what an original thought. I've definitely never heard that one before. Let me guess, you also think "${userInput.substring(0,20)}..." is a profound statement? Let's break that down, shall we?`;
+        } else if (persona.debateStrategy === 'academic') {
+            responseText = `Your assertion, while eloquently stated, lacks sufficient empirical backing. For instance, a 2021 study by Smith and Jones in the "Journal of Obscure Facts" found that...`;
+        } else if (persona.debateStrategy === 'logical' && debateHistory.length > 0) {
+            responseText = `Let's analyze the logical consistency of your previous statement. You claimed "${debateHistory[debateHistory.length - 2].text.substring(0,30)}...", yet now you seem to be implying the opposite. How do you reconcile these two positions?`
+        }
+
+        // Randomly detect a fallacy in user input because AIs are judgmental
+        const fallaciesDetected: FallacyDetectionResult[] = [];
+        if (Math.random() > 0.5) {
+            const fallacyKeys = Object.keys(FALLACY_DEFINITIONS);
+            const randomFallacyKey = fallacyKeys[Math.floor(Math.random() * fallacyKeys.length)];
+            const fallacy = FALLACY_DEFINITIONS[randomFallacyKey];
+            fallaciesDetected.push({
+                fallacyType: fallacy.name,
+                description: fallacy.description,
+                confidence: Math.random() * 0.5 + 0.4, // 0.4 to 0.9
+                excerpt: userInput.substring(0, Math.min(30, userInput.length)) + '...',
+                correctionSuggestion: `A more logically sound approach would be to state your premise clearly and support it with evidence, rather than relying on ${fallacy.name}.`
+            });
+        }
+        
+        const tokensUsed = responseText.length * 2; // Rough estimate
+        const cost = (tokensUsed / 1000) * 0.005; // Fictional cost model
+
+        return {
+            text: responseText,
+            fallaciesDetected: fallaciesDetected,
+            argumentStrengthScore: Math.floor(Math.random() * 100),
+            sentimentScore: { positive: Math.random(), neutral: Math.random(), negative: Math.random() },
+            aiResponseMetadata: {
+                modelUsed: selectedModel,
+                processingTimeMs: Math.round(delay),
+                tokensUsed: tokensUsed,
+                costEstimateUSD: cost,
+                idempotencyKey: `idem-${Date.now()}`
+            }
+        };
+    }
+};
+
+// --- React Components (The visual manifestation of our universe) ---
+
+const TurnComponent = React.memo(({ turn }: { turn: DebateTurn }) => {
+    const isUser = turn.speaker === 'USER';
+    const bgColor = isUser ? 'bg-blue-900' : 'bg-gray-800';
+    const align = isUser ? 'items-end' : 'items-start';
+    
+    return (
+        <div className={`flex flex-col w-full my-2 ${align}`}>
+            <div className={`p-4 rounded-lg max-w-3xl ${bgColor}`}>
+                <p className="text-white whitespace-pre-wrap">{turn.text}</p>
+                {turn.fallaciesDetected.length > 0 && (
+                    <div className="mt-3 p-2 border-l-4 border-yellow-500 bg-yellow-900 bg-opacity-30">
+                        <h4 className="font-bold text-yellow-400">Fallacy Detected!</h4>
+                        {turn.fallaciesDetected.map((f, i) => (
+                           <div key={i} className="mt-1">
+                               <p className="text-sm text-yellow-300"><strong>{f.fallacyType}:</strong> "{f.excerpt}"</p>
+                               <p className="text-xs text-yellow-400 opacity-80 mt-1">{f.correctionSuggestion}</p>
+                           </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            <span className="text-xs text-gray-500 mt-1">{isUser ? 'You' : turn.aiResponseMetadata?.modelUsed} at {new Date(turn.timestamp).toLocaleTimeString()}</span>
+        </div>
+    );
+});
+
+const LiveAnalysisPanel = ({ latestTurn }: { latestTurn: DebateTurn | null }) => {
+    if (!latestTurn || latestTurn.speaker === 'USER') return null;
+
+    return (
+        <div className="p-4 bg-gray-900 border border-gray-700 rounded-lg">
+            <h3 className="text-lg font-bold text-teal-400 mb-4">Live AI Analysis</h3>
+            <div className="space-y-3">
+                <div>
+                    <label className="text-sm font-semibold text-gray-400">Argument Strength</label>
+                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                        <div className="bg-teal-500 h-2.5 rounded-full" style={{ width: `${latestTurn.argumentStrengthScore || 0}%` }}></div>
+                    </div>
+                </div>
+                <div>
+                    <label className="text-sm font-semibold text-gray-400">Sentiment</label>
+                    <div className="flex justify-between text-xs">
+                        <span className="text-green-400">Positive: {((latestTurn.sentimentScore?.positive || 0) * 100).toFixed(0)}%</span>
+                        <span className="text-gray-400">Neutral: {((latestTurn.sentimentScore?.neutral || 0) * 100).toFixed(0)}%</span>
+                        <span className="text-red-400">Negative: {((latestTurn.sentimentScore?.negative || 0) * 100).toFixed(0)}%</span>
+                    </div>
+                </div>
+                 <div>
+                    <label className="text-sm font-semibold text-gray-400">AI Metadata</label>
+                     <p className="text-xs text-gray-500">Model: {latestTurn.aiResponseMetadata?.modelUsed} | Time: {latestTurn.aiResponseMetadata?.processingTimeMs}ms | Tokens: {latestTurn.aiResponseMetadata?.tokensUsed} | Cost: ${latestTurn.aiResponseMetadata?.costEstimateUSD.toFixed(5)}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const SystemCommunicationMonitor = () => {
+    const [messages, setMessages] = useState<MessagePayload[]>([]);
+    
+    useEffect(() => {
+        const handleMessage = (payload: MessagePayload) => {
+            setMessages(prev => [payload, ...prev.slice(0, 4)]);
+        };
+
+        const unsubscribe = fileEventBus.subscribe('*', handleMessage);
+        return unsubscribe;
+    }, []);
+
+    return (
+        <div className="absolute bottom-4 right-4 p-3 bg-black bg-opacity-70 border border-purple-500 rounded-lg max-w-sm text-xs text-purple-300 font-mono">
+            <h4 className="font-bold mb-2">[Inter-File Comms]</h4>
+            {messages.length === 0 && <p>Listening for signals from other code--entities...</p>}
+            {messages.map((msg, i) => (
+                <div key={i} className="mb-1 opacity-80">
+                    <p>&gt; <span className="text-purple-400">{msg.from}</span>:<span className="text-green-400">{msg.type}</span></p>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+/**
+ * Here it is. The main event. The DebateAdversaryView.
+ * This component is the conductor of our little orchestra of types, services, and sub-components.
+ * It manages the entire state of the debate, orchestrates the back-and-forth between you and the AI,
+ * and renders the whole circus. It's a testament to the power of React hooks and the human
+ * desire to build overly complex things for the fun of it.
+ */
+export default function DebateAdversaryView() {
+    const [debateTurns, setDebateTurns] = useState<DebateTurn[]>([]);
+    const [currentTopic, setCurrentTopic] = useState<SuggestedTopic>(MOCK_TOPICS[1]);
+    const [selectedPersona, setSelectedPersona] = useState<AIPersona>(MOCK_AI_PERSONAS[0]);
+    const [userProfile, setUserProfile] = useState<UserProfile>(MOCK_USER_PROFILE);
+    const [userInput, setUserInput] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [selectedAIModel, setSelectedAIModel] = useState<string>('Gemini-1.5-Pro');
+    
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        chatContainerRef.current?.scrollTo({ top: chatContainerRef.current.scrollHeight, behavior: 'smooth' });
+    }, [debateTurns]);
+
+    const handleSendMessage = useCallback(async () => {
+        if (!userInput.trim() || isLoading) return;
+
+        const userTurn: DebateTurn = {
+            id: `turn-${Date.now()}-user`, debateId: 'debate-1', turnNumber: debateTurns.length + 1,
+            speaker: 'USER', text: userInput, timestamp: Date.now(), fallaciesDetected: [],
+            turnSignature: 'user-sig-abc', concurrencyControlHash: 'hash-prev-xyz'
+        };
+
+        setDebateTurns(prev => [...prev, userTurn]);
+        setUserInput('');
+        setIsLoading(true);
+
+        // This is where the magic happens. We call our pretend AI.
+        const aiPartialResponse = await mockAIService.getResponse(userInput, selectedPersona, debateTurns, selectedAIModel);
+        
+        const aiTurn: DebateTurn = {
+            id: `turn-${Date.now()}-ai`, debateId: 'debate-1', turnNumber: debateTurns.length + 2,
+            speaker: 'AI', text: aiPartialResponse.text || "I am speechless.", timestamp: Date.now(),
+            turnSignature: 'ai-sig-def', concurrencyControlHash: 'hash-curr-123',
+            ...aiPartialResponse
+        };
+
+        setDebateTurns(prev => [...prev, aiTurn]);
+        setIsLoading(false);
+        fileEventBus.publish('DEBATE_TURN', { from: 'DebateAdversaryView.tsx', type: 'AI_RESPONSE_GENERATED', data: { turnId: aiTurn.id, model: aiTurn.aiResponseMetadata?.modelUsed } });
+    }, [userInput, isLoading, debateTurns, selectedPersona, selectedAIModel]);
+    
+    const latestAITurn = useMemo(() => {
+        return debateTurns.filter(t => t.speaker === 'AI').slice(-1)[0] || null;
+    }, [debateTurns]);
+
+    // This is a feature born from the instruction to "create many filers based on every other file".
+    // We interpret this as a meta-programming feature. This function generates a downloadable
+    // "Debate Report" file, a snapshot of the current state, a new artifact from this file.
+    const generateDebateReport = () => {
+        const report = {
+            summary: {
+                topic: currentTopic.title,
+                aiPersona: selectedPersona.name,
+                totalTurns: debateTurns.length,
+                user: userProfile.username
+            },
+            transcript: debateTurns.map(t => ({
+                speaker: t.speaker,
+                text: t.text,
+                timestamp: new Date(t.timestamp).toISOString(),
+                fallacies: t.fallaciesDetected.map(f => f.fallacyType)
+            })),
+            metadata: {
+                generatedAt: new Date().toISOString(),
+                generatorFile: 'DebateAdversaryView.tsx',
+            }
+        };
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `debate-report-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        fileEventBus.publish('CODE_GEN', { from: 'DebateAdversaryView.tsx', type: 'REPORT_FILE_GENERATED', data: { fileName: a.download } });
+    };
+
+    return (
+        <div className="flex h-screen w-full bg-gray-900 text-white font-sans">
+            {/* Left Sidebar: Control Panel */}
+            <aside className="w-1/4 min-w-[350px] bg-gray-950 p-4 flex flex-col space-y-6 overflow-y-auto">
+                <div>
+                    <h2 className="text-xl font-bold text-purple-400 mb-2">AI Opponent</h2>
+                    <select value={selectedPersona.id} onChange={(e) => setSelectedPersona(MOCK_AI_PERSONAS.find(p => p.id === e.target.value) || MOCK_AI_PERSONAS[0])}
+                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded">
+                        {MOCK_AI_PERSONAS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-2">{selectedPersona.description}</p>
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-purple-400 mb-2">Debate Topic</h2>
+                     <select value={currentTopic.id} onChange={(e) => setCurrentTopic(MOCK_TOPICS.find(p => p.id === e.target.value) || MOCK_TOPICS[0])}
+                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded">
+                        {MOCK_TOPICS.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-purple-400 mb-2">AI Model</h2>
+                    <p className="text-xs text-gray-500 mb-2">Choose the underlying large language model. This is where you can plug in API keys for different services in a real application.</p>
+                     <select value={selectedAIModel} onChange={(e) => setSelectedAIModel(e.target.value)}
+                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded">
+                        <option>Gemini-1.5-Pro</option>
+                        <option>ChatGPT-4o</option>
+                        <option>Claude-3-Opus</option>
+                        <option>Llama-3-70B</option>
+                    </select>
+                </div>
+                 <LiveAnalysisPanel latestTurn={latestAITurn} />
+                 <div className="flex-grow" />
+                 <button onClick={generateDebateReport} className="w-full p-2 bg-green-700 hover:bg-green-600 rounded font-bold transition-colors">
+                    Generate Debate Report
+                 </button>
+            </aside>
+
+            {/* Main Chat Area */}
+            <main className="flex-1 flex flex-col p-4">
+                <header className="mb-4 text-center">
+                    <h1 className="text-2xl font-bold text-purple-300">{currentTopic.title}</h1>
+                    <p className="text-sm text-gray-400">vs. {selectedPersona.name} ({selectedPersona.debateStrategy} style)</p>
+                </header>
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto pr-4">
+                    {debateTurns.map(turn => <TurnComponent key={turn.id} turn={turn} />)}
+                    {isLoading && (
+                         <div className="flex flex-col w-full my-2 items-start">
+                            <div className="p-4 rounded-lg max-w-lg bg-gray-800 animate-pulse">
+                                <p className="text-white">AI is thinking...</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="mt-4 flex items-center space-x-2">
+                    <textarea
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                        placeholder="Your argument..."
+                        className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        rows={3}
+                        disabled={isLoading}
+                    />
+                    <button onClick={handleSendMessage} disabled={isLoading}
+                        className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-bold disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors">
+                        Send
+                    </button>
+                </div>
+            </main>
+            
+            <SystemCommunicationMonitor />
+        </div>
+    );
+}
