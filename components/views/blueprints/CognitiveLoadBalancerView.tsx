@@ -732,6 +732,7 @@ export enum AuthEventType {
   MFAAttempt = 'MFA Attempt',
   MFAChallenge = 'MFA Challenge',
   MFAFailure = 'MFA Failure',
+  TransactionProcessing = 'Transaction Processing',
 }
 
 /**
@@ -1036,7 +1037,7 @@ export const mockBackendAPI = async (endpoint: string, method: 'GET' | 'POST' | 
         case 'users':
           if (method === 'GET') {
             result = mockUserProfiles;
-          } else if (method === 'PUT' && data && data.id) { // Example for updating user keys
+          } else if (method === 'PUT' && data && data.userId) { // Corrected from data.id
             const index = mockUserProfiles.findIndex(u => u.userId === data.userId);
             if (index !== -1) {
               mockUserProfiles[index] = { ...mockUserProfiles[index], ...data };
@@ -1522,8 +1523,8 @@ export let mockAuthLogEntries: AuthLogEntry[] = [];
   let previousHash = 'genesis_block_hash';
   for (let i = 0; i < 20; i++) {
     const eventTypes = Object.values(AuthEventType);
-    const outcomes = ['success', 'failure', 'denied', 'info'];
-    const entityId = i % 2 === 0 ? `user_${Math.floor(Math.random() * 50) + 1}` : `agent_${Math.floor(Math.random() * 5) + 1}`;
+    const outcomes = ['success', 'failure', 'denied', 'info'] as const;
+    const entityId = i % 2 === 0 ? `user_${Math.floor(Math.random() * 50) + 1}` : `agent_${mockAgentDefinitions[Math.floor(Math.random() * mockAgentDefinitions.length)].id}`;
     const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
     const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
 
@@ -2472,7 +2473,7 @@ export const useIdentity = () => {
 export const CognitiveLoadGauge: React.FC<{ load: number }> = ({ load }) => {
   const circumference = 2 * Math.PI * 45;
   const offset = circumference - (load * circumference);
-  const loadColor = getLoadColorClass(load).replace('text-', '');
+  const loadColor = getLoadColorClass(load).replace('text-', 'stroke-');
 
   return (
     <div className="relative w-40 h-40">
@@ -2504,7 +2505,7 @@ export const CognitiveLoadGauge: React.FC<{ load: number }> = ({ load }) => {
           y="50"
           textAnchor="middle"
           dominantBaseline="middle"
-          className={`text-xl font-bold ${getLoadColorClass(load)}`}
+          className={`text-xl font-bold fill-current ${getLoadColorClass(load)}`}
         >
           {(load * 100).toFixed(1)}%
         </text>
@@ -2798,7 +2799,7 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
               key={key}
               fill="none"
               stroke={colors[kIdx % colors.length]}
-              strokeWidth="2"
+              strokeWidth="0.5"
               points={data.map((d, i) => `${scaleX(i)},${scaleY(d[key])}`).join(' ')}
             />
           ))}
@@ -2808,7 +2809,7 @@ export const MockLineChart: React.FC<{ data: DataPoint[]; dataKeys: string[]; ti
                 key={`${key}-${i}`}
                 cx={scaleX(i)}
                 cy={scaleY(d[key])}
-                r="1"
+                r="0.5"
                 fill={colors[kIdx % colors.length]}
               />
             ))
@@ -2970,15 +2971,6 @@ export const FeatureEditorForm: React.FC<{ feature?: FeatureDefinition; onSave: 
     setFormData(prev => ({
       ...prev,
       [name]: checked,
-    }));
-  };
-
-  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, options } = e.target;
-    const value = Array.from(options).filter(option => option.selected).map(option => option.value);
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
     }));
   };
 
@@ -3353,7 +3345,7 @@ export const FeedbackLoopStatusCard: React.FC<{ status: FeedbackLoopStatus | nul
     return <div className="bg-gray-700 p-4 rounded-lg text-center text-gray-400">Loading feedback loop status...</div>;
   }
 
-  const efficacyColor = getLoadColorClass(status.efficacyScore).replace('text-', '');
+  const efficacyColor = getLoadColorClass(status.efficacyScore).replace('text-', 'text-');
 
   return (
     <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
@@ -3518,10 +3510,14 @@ export const PaymentEngineOverviewCard: React.FC<{ status: PaymentEngineStatus |
     return <div className="bg-gray-700 p-4 rounded-lg text-center text-gray-400">Loading payment engine status...</div>;
   }
 
-  const getOverallStatusColor = (s: PaymentEngineStatus['overallStatus']) => {
+  const getOverallStatusColor = (s: PaymentEngineStatus['overallStatus'] | 'operational' | 'degraded' | 'offline') => {
     switch (s) {
-      case 'online': return 'text-green-400';
-      case 'partially_degraded': return 'text-yellow-400';
+      case 'online':
+      case 'operational':
+         return 'text-green-400';
+      case 'partially_degraded':
+      case 'degraded':
+         return 'text-yellow-400';
       case 'offline': return 'text-red-400';
       default: return 'text-gray-400';
     }
@@ -4468,15 +4464,15 @@ const CognitiveLoadBalancerView: React.FC = () => {
 
 
   // Custom hooks for data management
-  const { features, loading: featuresLoading, error: featuresError, fetchFeatures, addFeature, updateFeature, deleteFeature } = useFeatureDefinitions();
-  const { policies, loading: policiesLoading, error: policiesError, fetchPolicies, addPolicy, updatePolicy, deletePolicy } = useThrottlingPolicies();
-  const { definitions: alertDefs, instances: alertInstances, loading: alertsLoading, error: alertsError, fetchInstances: fetchAlertInstances, updateInstance: updateAlertInstance, createDefinition: createAlertDefinition, updateDefinition: updateAlertDefinition, deleteDefinition: deleteAlertDefinition } = useAlerts();
-  const { policies: escalationPolicies, loading: escalationPoliciesLoading, error: escalationPoliciesError, fetchPolicies: fetchEscalationPolicies, addPolicy: addEscalationPolicy, updatePolicy: updateEscalationPolicy, deletePolicy: deleteEscalationPolicy } = useEscalationPolicies();
-  const { currentMetrics: systemHealth, history: systemHealthHistory, loading: systemHealthLoading, error: systemHealthError } = useSystemHealth();
+  const { features, loading: featuresLoading, error: featuresError, addFeature, updateFeature, deleteFeature } = useFeatureDefinitions();
+  const { policies, loading: policiesLoading, error: policiesError, addPolicy, updatePolicy, deletePolicy } = useThrottlingPolicies();
+  const { definitions: alertDefs, instances: alertInstances, loading: alertsLoading, error: alertsError, updateInstance: updateAlertInstance, createDefinition: createAlertDefinition, updateDefinition: updateAlertDefinition, deleteDefinition: deleteAlertDefinition } = useAlerts();
+  const { policies: escalationPolicies, loading: escalationPoliciesLoading, error: escalationPoliciesError, addPolicy: addEscalationPolicy, updatePolicy: updateEscalationPolicy, deletePolicy: deleteEscalationPolicy } = useEscalationPolicies();
+  const { currentMetrics: systemHealth, history: systemHealthHistory } = useSystemHealth();
   const { users, loading: usersLoading, error: usersError, generateUserKeyPair } = useUserProfiles();
-  const { history: historicalCognitiveData, loading: historicalLoading, error: historicalError } = useHistoricalData();
-  const { forecast: predictiveForecasts, loading: forecastLoading, error: forecastError } = usePredictiveAnalytics();
-  const { status: feedbackLoopStatus, loading: feedbackLoading, error: feedbackError } = useFeedbackLoop();
+  const { history: historicalCognitiveData } = useHistoricalData();
+  const { forecast: predictiveForecasts } = usePredictiveAnalytics();
+  const { status: feedbackLoopStatus } = useFeedbackLoop();
   const { configs: integrationConfigs, loading: integrationLoading, error: integrationError, addConfig, updateConfig, deleteConfig } = useIntegrationConfigs();
   const { definitions: agentDefs, healthMetrics: agentHealth, loading: agentsLoading, error: agentsError, addAgent, updateAgent, deleteAgent } = useAgents();
   const { metrics: tokenRailMetrics, accounts: tokenAccounts, loading: tokenRailsLoading, error: tokenRailsError } = useTokenRails();
@@ -4497,18 +4493,18 @@ const CognitiveLoadBalancerView: React.FC = () => {
       // Simulate throttling based on policies and current load
       const activePolicies = currentPolicies.filter(p => p.isActive);
       activePolicies.forEach(policy => {
-        const featureNames = policy.targetFeatureIds.map(fid => currentFeatures.find(f => f.id === fid)?.name || fid);
+        const featureIds = policy.targetFeatureIds;
         if (load > (policy.thresholdConfig.staticLoadThreshold || 0.75)) {
-          featureNames.forEach(fn => {
-            if (!throttles.includes(fn)) {
-              throttles.push(fn);
-              throttleFeature(currentFeatures.find(f => f.name === fn)?.id || fn, `Policy '${policy.name}'`, policy.userSegments);
+          featureIds.forEach(fid => {
+            if (!throttles.includes(fid)) {
+              throttles.push(fid);
+              throttleFeature(fid, `Policy '${policy.name}'`, policy.userSegments);
             }
           });
-        } else if (throttles.some(t => featureNames.includes(t))) {
-          featureNames.forEach(fn => {
-            if (throttles.includes(fn) && load < (policy.thresholdConfig.staticLoadThreshold || 0.75) - 0.1) {
-              easeFeatureThrottle(currentFeatures.find(f => f.name === fn)?.id || fn, `Load dropped below policy '${policy.name}' threshold.`);
+        } else if (throttles.some(t => featureIds.includes(t))) {
+          featureIds.forEach(fid => {
+            if (throttles.includes(fid) && load < (policy.thresholdConfig.staticLoadThreshold || 0.75) - 0.1) {
+              easeFeatureThrottle(fid, `Load dropped below policy '${policy.name}' threshold.`);
             }
           });
         }
@@ -4532,7 +4528,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   };
 
   const handleSaveFeature = async (feature: FeatureDefinition) => {
-    if (feature.id && features.some(f => f.id === feature.id)) {
+    if (features.some(f => f.id === feature.id)) {
       await updateFeature(feature);
     } else {
       await addFeature(feature);
@@ -4547,7 +4543,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   };
 
   const handleSavePolicy = async (policy: ThrottlingPolicy) => {
-    if (policy.id && policies.some(p => p.id === policy.id)) {
+    if (policies.some(p => p.id === policy.id)) {
       await updatePolicy(policy);
     } else {
       await addPolicy(policy);
@@ -4562,7 +4558,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   };
 
   const handleSaveAgent = async (agent: AgentDefinition) => {
-    if (agent.id && agentDefs.some(a => a.id === agent.id)) {
+    if (agentDefs.some(a => a.id === agent.id)) {
       await updateAgent(agent);
     } else {
       await addAgent(agent);
@@ -4587,7 +4583,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   };
 
   const handleSaveAlertDefinition = async (def: AlertDefinition) => {
-    if (def.id && alertDefs.some(d => d.id === def.id)) {
+    if (alertDefs.some(d => d.id === def.id)) {
       await updateAlertDefinition(def);
     } else {
       await createAlertDefinition(def);
@@ -4602,7 +4598,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   };
 
   const handleSaveEscalationPolicy = async (policy: EscalationPolicy) => {
-    if (policy.id && escalationPolicies.some(p => p.id === policy.id)) {
+    if (escalationPolicies.some(p => p.id === policy.id)) {
       await updateEscalationPolicy(policy);
     } else {
       await addEscalationPolicy(policy);
@@ -4617,7 +4613,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
   };
 
   const handleSaveIntegration = async (config: IntegrationConfig) => {
-    if (config.id && integrationConfigs.some(c => c.id === config.id)) {
+    if (integrationConfigs.some(c => c.id === config.id)) {
       await updateConfig(config);
     } else {
       await addConfig(config);
@@ -4652,18 +4648,20 @@ const CognitiveLoadBalancerView: React.FC = () => {
 
   // Derived state for dashboard
   const currentAvgLoad = metrics.length > 0 ? metrics[0].avgCognitiveLoad : 0;
-  const currentThrottledFeatures = metrics.length > 0 ? metrics[0].activeThrottles : [];
+  const currentThrottledFeatureIds = metrics.length > 0 ? metrics[0].activeThrottles : [];
 
   const historicalLoadDataForChart: DataPoint[] = historicalCognitiveData.slice(-15).map(data => ({
     name: new Date(data.timestamp).toLocaleDateString(),
     'Avg. Load': data.avgLoad,
     'Max Load': data.maxLoad,
+    value: data.avgLoad,
   }));
 
   const systemCpuDataForChart: DataPoint[] = systemHealthHistory.slice(-15).map(data => ({
     name: new Date(data.timestamp).toLocaleTimeString(),
     'CPU Usage': data.cpuUsage,
     'Memory Usage': data.memoryUsage,
+    value: data.cpuUsage
   }));
 
   const forecastedLoadDataForChart: DataPoint[] = predictiveForecasts.map(f => ({
@@ -4671,6 +4669,7 @@ const CognitiveLoadBalancerView: React.FC = () => {
     'Forecasted Load': f.forecastedLoad,
     'Upper Bound': f.confidenceInterval[1],
     'Lower Bound': f.confidenceInterval[0],
+    value: f.forecastedLoad
   }));
 
   const featureContributionDataForChart: DataPoint[] = historicalCognitiveData.length > 0
@@ -4679,12 +4678,6 @@ const CognitiveLoadBalancerView: React.FC = () => {
       value: contribution,
     })).filter(d => d.value > 0).sort((a, b) => b.value - a.value)
     : [];
-
-  const paymentTPSChartData: DataPoint[] = paymentRequestMetrics.slice(-20).map(m => ({
-    name: new Date(m.timestamp).toLocaleTimeString(),
-    'Amount': m.amount,
-    'Processing Time': m.processingTime,
-  }));
 
   return (
     <div className="bg-gray-800 text-white p-6 rounded-lg min-h-screen">
@@ -4700,400 +4693,3 @@ const CognitiveLoadBalancerView: React.FC = () => {
         <div className="bg-gray-900/50 p-6 rounded-lg shadow-xl flex flex-col items-center justify-center">
           <h2 className="text-xl font-bold mb-4 text-blue-300">Current Average Load</h2>
           <CognitiveLoadGauge load={currentAvgLoad} />
-          <p className="mt-4 text-sm text-gray-400">Adaptive throttling in progress based on load.</p>
-        </div>
-
-        <div className="bg-gray-900/50 p-6 rounded-lg shadow-xl">
-          <h2 className="text-xl font-bold mb-4 text-blue-300">Active Throttles</h2>
-          {currentThrottledFeatures.length > 0 ? (
-            <ul className="list-disc list-inside text-lg text-orange-300 space-y-2">
-              {currentThrottledFeatures.map((featureName, index) => (
-                                <li key={index}>{features.find(f => f.id === featureName)?.name || featureName}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-lg text-green-300">No features currently throttled.</p>
-          )}
-        </div>
-
-        <SystemHealthSummaryCard metrics={systemHealth} />
-        <PaymentEngineOverviewCard status={paymentEngineStatus} />
-      </section>
-
-      {/* Feature Management */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">Feature Management</h2>
-          <button
-            onClick={() => { setEditingFeature(undefined); setShowFeatureEditor(true); }}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Add New Feature
-          </button>
-        </div>
-        {featuresLoading ? (
-          <p className="text-gray-400">Loading features...</p>
-        ) : featuresError ? (
-          <p className="text-red-400">Error: {featuresError}</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map(feature => (
-              <FeatureStatusCard
-                key={feature.id}
-                feature={feature}
-                isThrottled={currentThrottledFeatures.includes(feature.name)}
-              />
-            ))}
-          </div>
-        )}
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={() => { setShowFeatureEditor(true); }}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md shadow-md text-sm font-medium mr-2"
-          >
-            Manage Features
-          </button>
-        </div>
-      </section>
-
-      {/* Throttling Policy Management */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">Throttling Policy Management</h2>
-          <button
-            onClick={() => { setEditingPolicy(undefined); setShowPolicyEditor(true); }}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Add New Policy
-          </button>
-        </div>
-        {policiesLoading ? (
-          <p className="text-gray-400">Loading policies...</p>
-        ) : policiesError ? (
-          <p className="text-red-400">Error: {policiesError}</p>
-        ) : (
-          <ThrottlingPoliciesTable
-            policies={policies}
-            onEditPolicy={handleEditPolicy}
-            onDeletePolicy={deletePolicy}
-          />
-        )}
-      </section>
-
-      {/* Alerts & Escalation Management */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">Active & Recent Alerts</h2>
-        </div>
-        {alertsLoading ? (
-          <p className="text-gray-400">Loading alerts...</p>
-        ) : alertsError ? (
-          <p className="text-red-400">Error: {alertsError}</p>
-        ) : (
-          <AlertsList
-            alerts={alertInstances}
-            definitions={alertDefs}
-            onAcknowledge={handleAcknowledgeAlert}
-            onResolve={handleResolveAlert}
-          />
-        )}
-
-        <div className="flex justify-between items-center mt-8 mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">Alert Definitions</h2>
-          <button
-            onClick={() => { setEditingAlertDefinition(undefined); setShowAlertDefinitionEditor(true); }}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Add New Alert Definition
-          </button>
-        </div>
-        {alertsLoading ? (
-          <p className="text-gray-400">Loading alert definitions...</p>
-        ) : alertsError ? (
-          <p className="text-red-400">Error: {alertsError}</p>
-        ) : (
-          <AlertDefinitionsTable
-            definitions={alertDefs}
-            onEditDefinition={handleEditAlertDefinition}
-            onDeleteDefinition={deleteAlertDefinition}
-          />
-        )}
-
-        <div className="flex justify-between items-center mt-8 mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">Escalation Policies</h2>
-          <button
-            onClick={() => { setEditingEscalationPolicy(undefined); setShowEscalationPolicyEditor(true); }}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Add New Escalation Policy
-          </button>
-        </div>
-        {escalationPoliciesLoading ? (
-          <p className="text-gray-400">Loading escalation policies...</p>
-        ) : escalationPoliciesError ? (
-          <p className="text-red-400">Error: {escalationPoliciesError}</p>
-        ) : (
-          <EscalationPoliciesTable
-            policies={escalationPolicies}
-            onEditPolicy={handleEditEscalationPolicy}
-            onDeletePolicy={deleteEscalationPolicy}
-          />
-        )}
-      </section>
-
-      {/* System Health & Performance */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold text-blue-300 mb-6">System Health & Performance</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <MockLineChart
-            data={historicalLoadDataForChart}
-            dataKeys={['Avg. Load', 'Max Load']}
-            title="Historical Cognitive Load"
-            xAxisLabel="Date"
-            yAxisLabel="Load %"
-          />
-          <MockLineChart
-            data={systemCpuDataForChart}
-            dataKeys={['CPU Usage', 'Memory Usage']}
-            title="System Resource Utilization"
-            xAxisLabel="Time"
-            yAxisLabel="Usage %"
-          />
-          <MockBarChart
-            data={featureContributionDataForChart}
-            dataKey="value"
-            title="Feature Load Contribution (Latest)"
-            xAxisLabel="Feature"
-            yAxisLabel="Contribution"
-          />
-          <UserSegmentDistribution historicalData={historicalCognitiveData} />
-        </div>
-      </section>
-
-      {/* Predictive Analytics & Feedback Loop */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold text-blue-300 mb-6">Predictive Analytics & Adaptive Control</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PredictiveForecastCard forecast={predictiveForecasts.length > 0 ? predictiveForecasts[0] : null} />
-          <MockLineChart
-            data={forecastedLoadDataForChart}
-            dataKeys={['Forecasted Load', 'Upper Bound', 'Lower Bound']}
-            title="Cognitive Load Forecast"
-            xAxisLabel="Time (Next 24h)"
-            yAxisLabel="Load %"
-          />
-          <div className="lg:col-span-2">
-            <FeedbackLoopStatusCard status={feedbackLoopStatus} />
-          </div>
-        </div>
-      </section>
-
-      {/* AI Agent Management */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">AI Agent Management</h2>
-          <button
-            onClick={() => { setEditingAgent(undefined); setShowAgentEditor(true); }}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Add New Agent
-          </button>
-        </div>
-        {agentsLoading ? (
-          <p className="text-gray-400">Loading AI agents...</p>
-        ) : agentsError ? (
-          <p className="text-red-400">Error: {agentsError}</p>
-        ) : (
-          <AgentStatusTable
-            agents={agentDefs}
-            healthMetrics={agentHealth}
-            onEditAgent={handleEditAgent}
-            onDeleteAgent={deleteAgent}
-          />
-        )}
-      </section>
-
-      {/* Token Rails & Real-time Payments Infrastructure */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold text-blue-300 mb-6">Token Rails & Real-time Payments</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {tokenRailsLoading ? (
-            <p className="text-gray-400">Loading token rail metrics...</p>
-          ) : tokenRailsError ? (
-            <p className="text-red-400">Error: {tokenRailsError}</p>
-          ) : (
-            tokenRailMetrics.map(metric => (
-              <TokenRailStatusCard key={metric.railId} metric={metric} />
-            ))
-          )}
-        </div>
-        <h3 className="text-xl font-bold text-gray-300 mb-4">Recent Payment Requests</h3>
-        {paymentsLoading ? (
-          <p className="text-gray-400">Loading payment requests...</p>
-        ) : paymentsError ? (
-          <p className="text-red-400">Error: {paymentsError}</p>
-        ) : (
-          <PaymentRequestsTable requests={paymentRequestMetrics} />
-        )}
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={handleTriggerTestPayment}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Simulate New Payment
-          </button>
-        </div>
-        <h3 className="text-xl font-bold text-gray-300 mb-4 mt-8">Token Account Snapshots</h3>
-        {tokenRailsLoading ? (
-          <p className="text-gray-400">Loading token accounts...</p>
-        ) : tokenRailsError ? (
-          <p className="text-red-400">Error: {tokenRailsError}</p>
-        ) : (
-          <TokenAccountsTable accounts={tokenAccounts} />
-        )}
-      </section>
-
-      {/* Digital Identity & Security Services */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold text-blue-300 mb-6">Digital Identity & Security Services</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold text-white mb-4">Identity Service Status</h3>
-            {identityLoading ? (
-              <p className="text-gray-400">Loading identity status...</p>
-            ) : identityError ? (
-              <p className="text-red-400">Error: {identityError}</p>
-            ) : identityServiceStatus ? (
-              <>
-                <p className="text-gray-400">Overall Status: <span className={`font-semibold ${identityServiceStatus.overallStatus === 'operational' ? 'text-green-400' : 'text-red-400'}`}>{identityServiceStatus.overallStatus.replace(/_/g, ' ').toUpperCase()}</span></p>
-                <p className="text-gray-400">Auth Requests/Sec: <span className="text-white font-semibold">{identityServiceStatus.authRequestsPerSecond}</span></p>
-                <p className="text-gray-400">Avg Auth Latency: <span className="text-white font-semibold">{identityServiceStatus.avgAuthLatency.toFixed(1)}ms</span></p>
-                <p className="text-gray-400">Failed Auth Rate: <span className="text-red-400 font-semibold">{(identityServiceStatus.failedAuthRate * 100).toFixed(2)}%</span></p>
-                <p className="text-gray-400">Active Sessions: <span className="text-white font-semibold">{identityServiceStatus.activeSessions}</span></p>
-                <p className="text-gray-400">Key Management: <span className={`font-semibold ${identityServiceStatus.keyManagementStatus === 'healthy' ? 'text-green-400' : 'text-red-400'}`}>{identityServiceStatus.keyManagementStatus}</span></p>
-                <p className="text-xs text-gray-500 mt-4 text-right">Last updated: {new Date(identityServiceStatus.timestamp).toLocaleTimeString()}</p>
-              </>
-            ) : <p className="text-gray-400">No identity service status available.</p>}
-          </div>
-          <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold text-white mb-4">Audit & Authentication Logs</h3>
-            {identityLoading ? (
-              <p className="text-gray-400">Loading auth logs...</p>
-            ) : identityError ? (
-              <p className="text-red-400">Error: {identityError}</p>
-            ) : (
-              <AuthLogViewer logs={authLogs} />
-            )}
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => addAuthLogEntry({ eventType: AuthEventType.LoginSuccess, entityId: `user_${Math.floor(Math.random() * 50) + 1}`, outcome: 'success', message: 'Simulated successful login' })}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md text-sm font-medium mr-2"
-              >
-                Simulate Login Success
-              </button>
-              <button
-                onClick={() => addAuthLogEntry({ eventType: AuthEventType.LoginFailure, entityId: `user_${Math.floor(Math.random() * 50) + 1}`, outcome: 'failure', message: 'Simulated failed login attempt', context: { reason: 'bad_password' } })}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-md text-sm font-medium"
-              >
-                Simulate Login Failure
-              </button>
-            </div>
-          </div>
-        </div>
-        <h3 className="text-xl font-bold text-gray-300 mb-4 mt-8">User Profiles & Digital Identity Keys</h3>
-        {usersLoading ? (
-          <p className="text-gray-400">Loading user profiles...</p>
-        ) : usersError ? (
-          <p className="text-red-400">Error: {usersError}</p>
-        ) : (
-          <UserProfileTable users={users} onGenerateKeyPair={generateUserKeyPair} />
-        )}
-      </section>
-
-      {/* Integration Configuration */}
-      <section className="mb-10 p-6 bg-gray-900/50 rounded-lg shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-blue-300">Integration Configuration</h2>
-          <button
-            onClick={() => { setEditingIntegration(undefined); setShowIntegrationEditor(true); }}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md text-sm font-medium"
-          >
-            Add New Integration
-          </button>
-        </div>
-        {integrationLoading ? (
-          <p className="text-gray-400">Loading integrations...</p>
-        ) : integrationError ? (
-          <p className="text-red-400">Error: {integrationError}</p>
-        ) : (
-          <IntegrationConfigTable
-            configs={integrationConfigs}
-            onEditConfig={handleEditIntegration}
-            onDeleteConfig={deleteConfig}
-          />
-        )}
-      </section>
-
-
-      {/* Modals for editing */}
-      {showFeatureEditor && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <FeatureEditorForm
-            feature={editingFeature}
-            onSave={handleSaveFeature}
-            onCancel={() => { setShowFeatureEditor(false); setEditingFeature(undefined); }}
-          />
-        </div>
-      )}
-      {showPolicyEditor && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <PolicyEditorForm
-            policy={editingPolicy}
-            allFeatures={features}
-            onSave={handleSavePolicy}
-            onCancel={() => { setShowPolicyEditor(false); setEditingPolicy(undefined); }}
-          />
-        </div>
-      )}
-      {showAgentEditor && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <AgentEditorForm
-            agent={editingAgent}
-            onSave={handleSaveAgent}
-            onCancel={() => { setShowAgentEditor(false); setEditingAgent(undefined); }}
-          />
-        </div>
-      )}
-      {showAlertDefinitionEditor && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <AlertDefinitionEditorForm
-            definition={editingAlertDefinition}
-            allFeatures={features}
-            onSave={handleSaveAlertDefinition}
-            onCancel={() => { setShowAlertDefinitionEditor(false); setEditingAlertDefinition(undefined); }}
-          />
-        </div>
-      )}
-      {showEscalationPolicyEditor && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <EscalationPolicyEditorForm
-            policy={editingEscalationPolicy}
-            onSave={handleSaveEscalationPolicy}
-            onCancel={() => { setShowEscalationPolicyEditor(false); setEditingEscalationPolicy(undefined); }}
-          />
-        </div>
-      )}
-      {showIntegrationEditor && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <IntegrationConfigEditorForm
-            config={editingIntegration}
-            onSave={handleSaveIntegration}
-            onCancel={() => { setShowIntegrationEditor(false); setEditingIntegration(undefined); }}
-          />
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default CognitiveLoadBalancerView;
