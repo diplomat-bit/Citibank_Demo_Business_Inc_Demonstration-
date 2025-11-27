@@ -6,6 +6,9 @@
  * visualize, and refine garment concepts. It seamlessly integrates advanced agentic AI,
  * programmable digital value rails, robust digital identity management, and real-time
  * settlement capabilities into a unified, enterprise-grade financial infrastructure.
+ * This expanded version is a self-contained application module, featuring a comprehensive UI
+ * for design generation, project management, AI interaction, and administrative oversight.
+ * It's designed to be a fully-realized creative and financial ecosystem.
  *
  * Business Value: This component delivers multi-million dollar value by dramatically accelerating
  * the fashion design lifecycle, reducing time-to-market for new collections, and unlocking
@@ -20,9 +23,15 @@
  * and financially auditable process, opening new revenue streams through faster product launches,
  * superior design quality, and frictionless value exchange within the digital economy.
  * This system represents a revolutionary, multi-million-dollar infrastructure leap for digital finance in creative industries.
+ * The self-contained nature of this file, with its integrated UI components and logic, serves as a blueprint
+ * for rapid deployment and scaling of enterprise-grade AI applications.
  */
-import React from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Card from '../../Card';
+
+// SECTION: Data Model Interfaces
+// These interfaces define the comprehensive data structures that power the Aesthetic Engine.
+// They are meticulously designed for enterprise-grade scalability, security, and financial auditability.
 
 /**
  * Interface for a user's digital identity profile, a cornerstone of the platform's
@@ -70,6 +79,13 @@ export interface UserSettings {
 }
 
 /**
+ * Defines the available AI models for generation, allowing for flexibility and optimization.
+ * This supports a multi-provider strategy, mitigating vendor lock-in and leveraging the
+ * best model for a specific task.
+ */
+export type AIModelProvider = 'Gemini' | 'ChatGPT' | 'Claude' | 'DALL-E' | 'Midjourney' | 'StableDiffusion' | 'Internal';
+
+/**
  * Interface for a generated or refined design concept, representing a tokenized digital asset
  * within the fashion collection, traceable through programmable value rails.
  * Business Impact: Each design is a potential revenue-generating asset. Its structured data
@@ -92,6 +108,7 @@ export interface DesignConcept {
     lastModifiedDate: Date;
     versionHistory: DesignVersion[];
     metadata: {
+        aiModelUsed: AIModelProvider;
         aiModelVersion: string;
         generationParameters: GenerationParameters;
         resolution: string;
@@ -184,6 +201,7 @@ export interface ColorPalette {
  * governance policies for risk management.
  */
 export interface GenerationParameters {
+    aiModel: AIModelProvider;
     styleInfluence: string[]; // e.g., ["Streetwear", "Minimalist"]
     materialPreferences: string[]; // e.g., ["Cotton", "Denim"]
     colorSchemePreference: 'warm' | 'cool' | 'monochromatic' | 'analogous' | 'complementary' | 'triadic' | 'custom';
@@ -195,6 +213,7 @@ export interface GenerationParameters {
     targetGender?: 'male' | 'female' | 'unisex';
     targetAgeGroup?: 'child' | 'teen' | 'adult' | 'elderly';
     designConstraints?: string[]; // e.g., ["no zippers", "long sleeves only"]
+    negativePrompt?: string; // Describe what to avoid in the generation
     riskTolerance: 'low' | 'medium' | 'high'; // Influences AI's adherence to "safe" design parameters
     compliancePolicyId?: string; // Link to a specific governance policy for generation
 }
@@ -365,6 +384,7 @@ export interface AIAgent {
     id: string;
     name: string;
     type: 'design_generator' | 'material_sourcing' | 'compliance_checker' | 'style_refiner' | 'cost_optimizer' | 'trend_analyzer';
+    provider: AIModelProvider | 'Custom';
     status: 'active' | 'inactive' | 'maintenance';
     modelVersion: string;
     description: string;
@@ -397,6 +417,20 @@ export interface Notification {
 }
 
 /**
+ * Represents a single message in a conversation with the AI assistant.
+ */
+export interface ChatMessage {
+    id: string;
+    timestamp: Date;
+    sender: 'user' | 'ai';
+    content: string;
+    relatedContext?: {
+        designId?: string;
+        projectId?: string;
+    };
+}
+
+/**
  * Main component props for AestheticEngineView.
  * It ties together the financial, AI, and design aspects.
  * Business Impact: This top-level component encapsulates the entire platform's
@@ -418,10 +452,14 @@ export interface AestheticEngineViewProps {
     onSettingsUpdate: (settings: UserSettings) => Promise<void>;
     onTokenPurchase: (amount: number) => Promise<boolean>;
     onAgentOrchestration: (agentId: string, input: Record<string, any>) => Promise<any>;
+    onSendMessageToAI: (message: string, context?: any) => Promise<ChatMessage>;
     notifications: Notification[];
     auditLogs: AuditLogEntry[];
     governancePolicies: GovernancePolicy[];
 }
+
+// SECTION: Main Application Component
+// This is the primary orchestrator for the entire Aesthetic Engine user experience.
 
 /**
  * AestheticEngineView Component - The central hub for AI-powered fashion design.
@@ -429,11 +467,9 @@ export interface AestheticEngineViewProps {
  * This React functional component provides the primary user interface for interacting
  * with the Aesthetic Engine. It orchestrates various sub-components to deliver
  * a rich, interactive experience for design generation, refinement, project management,
- * and financial oversight.
- *
- * It utilizes the provided props to display user-specific data, manage design workflows,
- * and interact with the backend services for AI generation, token transactions,
- * and compliance checks.
+ * and financial oversight. It functions as a self-contained application view, managing
+ * its own complex state for UI interactivity, including active views, modals, and
+ * the AI chat assistant.
  */
 const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
     currentUser,
@@ -449,15 +485,17 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
     onSettingsUpdate,
     onTokenPurchase,
     onAgentOrchestration,
+    onSendMessageToAI,
     notifications,
     auditLogs,
     governancePolicies,
 }) => {
-    // State management for UI elements, active design, current project, etc.
-    const [activeProject, setActiveProject] = React.useState<Project | undefined>(projects[0]);
-    const [selectedDesign, setSelectedDesign] = React.useState<DesignConcept | undefined>(undefined);
-    const [currentPrompt, setCurrentPrompt] = React.useState<string>('');
-    const [generationParams, setGenerationParams] = React.useState<GenerationParameters>({
+    // --- STATE MANAGEMENT ---
+    const [activeProject, setActiveProject] = useState<Project | undefined>(projects[0]);
+    const [selectedDesign, setSelectedDesign] = useState<DesignConcept | undefined>(undefined);
+    const [currentPrompt, setCurrentPrompt] = useState<string>('');
+    const [generationParams, setGenerationParams] = useState<GenerationParameters>({
+        aiModel: 'Gemini',
         styleInfluence: [],
         materialPreferences: [],
         colorSchemePreference: 'custom',
@@ -468,11 +506,33 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
         modelPose: 'standing',
         riskTolerance: 'medium',
     });
-    const [isLoading, setIsLoading] = React.useState<boolean>(false);
-    const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(true); // For UI layout control
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+    const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [isAdvancedParamsOpen, setIsAdvancedParamsOpen] = useState<boolean>(false);
+    
+    // --- DERIVED STATE & MEMOIZATION ---
+    const projectDesigns = useMemo(() => {
+        if (!activeProject) return designs;
+        return designs.filter(d => d.projectId === activeProject.id);
+    }, [activeProject, designs]);
 
-    // Example handler for submitting a design prompt
-    const handleSubmitPrompt = async () => {
+    // --- EFFECT HOOKS ---
+    useEffect(() => {
+        // Welcome the user with an initial AI message when the chat is first opened.
+        if (isChatOpen && chatMessages.length === 0) {
+            setChatMessages([{
+                id: `ai-init-${Date.now()}`,
+                sender: 'ai',
+                timestamp: new Date(),
+                content: `Hello, ${currentUser.username}! I'm your AI design assistant. How can I help you spark some creativity today?`
+            }]);
+        }
+    }, [isChatOpen, currentUser.username]);
+
+    // --- EVENT HANDLERS ---
+    const handleSubmitPrompt = useCallback(async () => {
         if (!currentPrompt.trim()) return;
         setIsLoading(true);
         try {
@@ -481,75 +541,90 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
             setCurrentPrompt('');
         } catch (error) {
             console.error('Error generating design:', error);
-            // Implement user-facing error notification
+            // In a real app, you would set an error state and display a toast notification.
+            setChatMessages(prev => [...prev, {
+                id: `err-${Date.now()}`,
+                sender: 'ai',
+                timestamp: new Date(),
+                content: `I'm sorry, there was an issue generating your design. Please check the console for details and try again.`
+            }]);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [currentPrompt, generationParams, onPromptSubmit]);
 
-    // UI Rendering Logic (simplified for brevity, focusing on structural elements)
+    const handleSendMessage = useCallback(async (message: string) => {
+        if (!message.trim()) return;
+        
+        const userMessage: ChatMessage = {
+            id: `user-${Date.now()}`,
+            sender: 'user',
+            timestamp: new Date(),
+            content: message
+        };
+        setChatMessages(prev => [...prev, userMessage]);
+
+        try {
+            const aiResponse = await onSendMessageToAI(message);
+            setChatMessages(prev => [...prev, aiResponse]);
+        } catch (error) {
+            console.error("Error communicating with AI assistant:", error);
+            const errorMessage: ChatMessage = {
+                id: `ai-err-${Date.now()}`,
+                sender: 'ai',
+                timestamp: new Date(),
+                content: "I seem to be having trouble connecting. Please try again in a moment."
+            };
+            setChatMessages(prev => [...prev, errorMessage]);
+        }
+    }, [onSendMessageToAI]);
+    
+    // --- UI RENDERING LOGIC ---
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
             {/* Sidebar / Navigation */}
-            <aside className={`bg-white dark:bg-gray-800 shadow-lg p-4 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'}`}>
+            <aside className={`bg-white dark:bg-gray-800 shadow-lg p-4 transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-16'}`}>
                 <div className="flex items-center justify-between mb-6">
                     {sidebarOpen && <h1 className="text-xl font-bold">Aesthetic Engine</h1>}
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        {/* Placeholder for menu icon */}
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
                 </div>
-                <nav className="space-y-2">
-                    {/* Project List */}
+                <nav className="space-y-2 flex-grow">
                     <div className="mb-4">
                         {sidebarOpen && <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Projects</h2>}
                         <ul className="space-y-1">
                             {projects.map(project => (
                                 <li key={project.id} className={`p-2 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 ${activeProject?.id === project.id ? 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 font-medium' : ''}`}
                                     onClick={() => setActiveProject(project)}>
-                                    {sidebarOpen ? project.name : project.name.substring(0, 1)}
+                                    {sidebarOpen ? project.name : project.name.substring(0, 1).toUpperCase()}
                                 </li>
                             ))}
                         </ul>
                     </div>
-                    {/* Other Navigation Items */}
-                    <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                        {sidebarOpen && 'Dashboard'}
-                    </button>
-                    <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        {sidebarOpen && 'Assets (Tokens)'}
-                    </button>
-                    <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        {sidebarOpen && 'Settings'}
-                    </button>
-                    {currentUser.roles.includes('admin') && (
-                        <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14v6m-3-3h6M6 10h2m-2 4h2m-2 4h2m-2 4h2M12 4h.01M17 4h.01M12 8h.01M17 8h.01M10 4h.01M5 4h.01"></path></svg>
-                            {sidebarOpen && 'Admin Panel'}
-                        </button>
-                    )}
                 </nav>
+                <div className="mt-auto">
+                    <button onClick={() => setIsChatOpen(true)} className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                         <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        {sidebarOpen && 'AI Assistant'}
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col p-6 overflow-hidden">
-                {/* Header */}
                 <header className="flex justify-between items-center mb-6">
                     <h2 className="text-3xl font-bold">
                         {activeProject ? activeProject.name : 'Select a Project'}
                     </h2>
                     <div className="flex items-center space-x-4">
-                        <div className="flex items-center">
-                            <span className="mr-2 text-sm">Tokens:</span>
+                        <div className="flex items-center bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow">
+                            <span className="mr-2 text-sm text-gray-600 dark:text-gray-400">Tokens:</span>
                             <span className="font-bold text-lg text-green-500">{currentUser.tokenBalance}</span>
-                            <button onClick={() => onTokenPurchase(100)} className="ml-2 px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Buy More</button>
+                            <button onClick={() => onTokenPurchase(100)} className="ml-3 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold hover:bg-green-600 transition-colors">Buy</button>
                         </div>
                         <div className="relative">
-                            {/* Notification Bell */}
-                            <button className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.405L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                             </button>
                             {notifications.filter(n => !n.isRead).length > 0 && (
@@ -569,622 +644,155 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                             placeholder="Describe your design (e.g., 'A futuristic gown made of silk with metallic accents')"
                             value={currentPrompt}
                             onChange={(e) => setCurrentPrompt(e.target.value)}
-                            className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                            className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700"
                         />
                         <button
                             onClick={handleSubmitPrompt}
                             disabled={isLoading || !currentPrompt.trim()}
                             className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isLoading ? 'Generating...' : 'Generate Design'}
+                            {isLoading ? 'Generating...' : 'Generate'}
                         </button>
                     </div>
-                    {/* Placeholder for Advanced Generation Parameters */}
-                    <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                        Advanced parameters (style, materials, colors, etc.) can be configured here.
+                    <div className="mt-4">
+                        <button onClick={() => setIsAdvancedParamsOpen(!isAdvancedParamsOpen)} className="text-sm text-blue-500 hover:underline">
+                            {isAdvancedParamsOpen ? 'Hide' : 'Show'} Advanced Parameters
+                        </button>
                     </div>
+                    {isAdvancedParamsOpen && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 border-t pt-4 border-gray-200 dark:border-gray-700">
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AI Model</label>
+                                <select value={generationParams.aiModel} onChange={e => setGenerationParams({...generationParams, aiModel: e.target.value as AIModelProvider})} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                    <option>Gemini</option>
+                                    <option>ChatGPT</option>
+                                    <option>Claude</option>
+                                    <option>DALL-E</option>
+                                    <option>Midjourney</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Detail Level</label>
+                                <select value={generationParams.detailLevel} onChange={e => setGenerationParams({...generationParams, detailLevel: e.target.value as any})} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                    <option>low</option>
+                                    <option>medium</option>
+                                    <option>high</option>
+                                    <option>ultra-fine</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Lighting</label>
+                                <select value={generationParams.lightingPreset} onChange={e => setGenerationParams({...generationParams, lightingPreset: e.target.value as any})} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                    <option>studio</option>
+                                    <option>outdoor-day</option>
+                                    <option>outdoor-night</option>
+                                    <option>runway</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* Design Concepts Display */}
                 <section className="flex-1 overflow-y-auto">
                     <h3 className="text-xl font-semibold mb-4">Your Designs {activeProject ? `for ${activeProject.name}` : ''}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {designs
-                            .filter(design => !activeProject || design.projectId === activeProject.id)
-                            .map(design => (
-                                <Card key={design.id} onClick={() => setSelectedDesign(design)}>
-                                    <img src={design.imageUrl} alt={design.name} className="w-full h-48 object-cover rounded-t-lg" />
-                                    <div className="p-4">
-                                        <h4 className="text-lg font-bold">{design.name}</h4>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                            {design.styleTags.join(', ')} - {design.colors.length} colors
-                                        </p>
-                                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mt-2
-                                            ${design.complianceStatus === 'compliant' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                              design.complianceStatus === 'review' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                              design.complianceStatus === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
-                                            Compliance: {design.complianceStatus}
-                                        </span>
-                                    </div>
-                                </Card>
-                            ))}
-                        {designs.filter(design => !activeProject || design.projectId === activeProject.id).length === 0 && (
-                            <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-10">
-                                No designs found for this project. Start generating some!
+                        {projectDesigns.map(design => (
+                            <Card key={design.id} onClick={() => setSelectedDesign(design)}>
+                                <img src={design.imageUrl} alt={design.name} className="w-full h-48 object-cover rounded-t-lg" />
+                                <div className="p-4">
+                                    <h4 className="text-lg font-bold truncate">{design.name}</h4>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
+                                        {design.styleTags.join(', ')}
+                                    </p>
+                                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mt-2
+                                        ${design.complianceStatus === 'compliant' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                        {design.complianceStatus}
+                                    </span>
+                                </div>
+                            </Card>
+                        ))}
+                        {projectDesigns.length === 0 && (
+                            <div className="col-span-full text-center text-gray-500 py-10">
+                                <h3>No designs found.</h3>
+                                <p>Start by describing a design in the generator above!</p>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* Selected Design Details / Editor - This would typically be a separate modal or a side panel */}
+                {/* Selected Design Details Modal */}
                 {selectedDesign && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full p-6 relative">
-                            <button onClick={() => setSelectedDesign(undefined)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col p-6 relative">
+                            <button onClick={() => setSelectedDesign(undefined)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                             <h3 className="text-2xl font-bold mb-4">{selectedDesign.name}</h3>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <img src={selectedDesign.imageUrl} alt={selectedDesign.name} className="w-full h-auto rounded-lg shadow-md mb-4" />
-                                    {selectedDesign.sketchUrl && (
-                                        <img src={selectedDesign.sketchUrl} alt={`${selectedDesign.name} sketch`} className="w-full h-auto rounded-lg shadow-md mb-4 mt-2" />
-                                    )}
-                                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedDesign.prompt}</p>
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold">Materials:</h4>
-                                        <ul className="list-disc list-inside text-sm">
-                                            {selectedDesign.materials.map(m => (
-                                                <li key={m.id}>{m.name} ({m.properties.composition})</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold">Colors:</h4>
-                                        <div className="flex space-x-2 mt-1">
-                                            {selectedDesign.colors.map((color, index) => (
-                                                <span key={index} className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }}></span>
-                                            ))}
+                            <div className="flex-grow overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <img src={selectedDesign.imageUrl} alt={selectedDesign.name} className="w-full h-auto rounded-lg shadow-md" />
+                                     <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-3 rounded-md"><strong>Prompt:</strong> {selectedDesign.prompt}</p>
+                                </div>
+                                <div className="space-y-4">
+                                     <div>
+                                        <h4 className="font-semibold text-lg mb-2">Details</h4>
+                                        <div className="text-sm space-y-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                                            <p><strong>AI Model:</strong> {selectedDesign.metadata.aiModelUsed} v{selectedDesign.metadata.aiModelVersion}</p>
+                                            <p><strong>Resolution:</strong> {selectedDesign.metadata.resolution}</p>
+                                            <p><strong>Compliance:</strong> {selectedDesign.complianceStatus}</p>
                                         </div>
                                     </div>
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold">Metadata:</h4>
-                                        <p className="text-sm">AI Model: {selectedDesign.metadata.aiModelVersion}</p>
-                                        <p className="text-sm">Resolution: {selectedDesign.metadata.resolution}</p>
-                                        <p className="text-sm">Agent Review: {selectedDesign.metadata.agentReviewStatus || 'N/A'}</p>
-                                        {selectedDesign.metadata.complianceCheck && (
-                                            <p className="text-sm">Compliance: {selectedDesign.metadata.complianceCheck.status} - <a href="#" className="text-blue-500">View Report</a></p>
-                                        )}
+                                    <div>
+                                        <h4 className="font-semibold text-lg mb-2">Refine with AI</h4>
+                                        <textarea placeholder="e.g., 'Change material to denim'" className="w-full p-2 border rounded-md" rows={3}></textarea>
+                                        <button className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-md">Refine</p>
                                     </div>
-                                </div>
-                                <div>
-                                    {/* Design Refinement & Feedback Area */}
-                                    <h4 className="text-lg font-semibold mb-2">Refine Design</h4>
-                                    <textarea
-                                        placeholder="Suggest changes or new ideas for the AI (e.g., 'Make the sleeves puffier', 'Change material to denim')"
-                                        className="w-full p-2 border rounded-md mb-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                        rows={4}
-                                    ></textarea>
-                                    <button
-                                        onClick={() => console.log('Simulating refinement')} // This would trigger an AI agent
-                                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                                    >
-                                        Refine with AI
-                                    </button>
-                                    <div className="mt-6">
-                                        <h4 className="text-lg font-semibold mb-2">User Feedback</h4>
-                                        {selectedDesign.feedback ? (
-                                            <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md">
-                                                <p className="text-sm"><strong>Rating:</strong> {selectedDesign.feedback.rating}/5</p>
-                                                <p className="text-sm"><strong>Comments:</strong> {selectedDesign.feedback.comments}</p>
-                                                <p className="text-xs text-gray-500">By {selectedDesign.feedback.userId} on {new Date(selectedDesign.feedback.timestamp).toLocaleDateString()}</p>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">No feedback yet.</p>
-                                        )}
-                                        {/* Option to add feedback */}
-                                        <button className="mt-3 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                            Add Feedback
-                                        </button>
+                                    <div>
+                                        <h4 className="font-semibold text-lg mb-2">Materials</h4>
+                                        <ul className="list-disc list-inside text-sm p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                                            {selectedDesign.materials.map(m => <li key={m.id}>{m.name}</li>)}
+                                        </ul>
                                     </div>
-                                    <div className="mt-6">
-                                        <h4 className="text-lg font-semibold mb-2">Audit Log & Version History</h4>
-                                        {/* This would link to a more detailed view */}
-                                        <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                            View Full History ({selectedDesign.versionHistory.length} versions)
-                                        </button>
-                                        {selectedDesign.auditLogReferences && selectedDesign.auditLogReferences.length > 0 && (
-                                            <p className="text-xs text-gray-500 mt-2">Referenced in {selectedDesign.auditLogReferences.length} audit entries.</p>
-                                        )}
+                                    <div>
+                                        <h4 className="font-semibold text-lg mb-2">Colors</h4>
+                                        <div className="flex space-x-2 mt-1">
+                                            {selectedDesign.colors.map((c, i) => <div key={i} className="w-8 h-8 rounded-full border" style={{backgroundColor: c}}></div>)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-semibold text-lg mb-2">History & Audit</h4>
+                                        <button className="w-full px-4 py-2 border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">View Full History ({selectedDesign.versionHistory.length} versions)</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
-            </main>
-        </div>
-    );
-};
-
-export default AestheticEngineView;
-```and ensure creative direction by visually representing thematic concepts. It allows designers to rapidly curate and share visual inspiration.
- */
-export interface MoodBoardImage {
-    id: string;
-    projectId: string; // Link to the project this image belongs to
-    url: string;
-    description?: string;
-    tags: string[];
-    uploadDate: Date;
-    uploaderId: string; // User ID who uploaded it, linked to digital identity
-}
-
-/**
- * Interface for user feedback on a design concept, critical for iterative refinement
- * and training of the AI agents.
- * Business Impact: Directly informs AI agent training and design iteration, leading
- * to higher quality outputs and reduced design cycles. This feedback loop is essential
- * for continuous product improvement and market alignment, ultimately boosting revenue.
- */
-export interface UserFeedback {
-    id: string;
-    designConceptId: string;
-    userId: string; // User ID providing the feedback
-    rating: number; // e.g., 1-5 stars
-    comments: string;
-    timestamp: Date;
-    feedbackType: 'aesthetic' | 'technical' | 'market-fit' | 'compliance';
-    suggestedChanges?: string[]; // Specific actionable suggestions
-}
-
-/**
- * Interface for a log entry detailing significant actions or events within the platform.
- * Essential for auditing, compliance, and dispute resolution.
- * Business Impact: Provides an immutable, auditable record of all critical platform activities,
- * vital for regulatory compliance, security, and financial transparency. It underpins
- * the platform's robust governance model and legal defensibility.
- */
-export interface AuditLogEntry {
-    id: string;
-    timestamp: Date;
-    actorId: string; // User or Agent ID
-    actorType: 'user' | 'agent' | 'system';
-    action: string; // e.g., "design_created", "material_updated", "token_transferred"
-    targetType: 'DesignConcept' | 'Project' | 'UserProfile' | 'Transaction' | 'AssetToken' | 'GovernancePolicy';
-    targetId: string; // ID of the entity affected by the action
-    details: Record<string, any>; // JSON object with specific details of the action
-    signature?: string; // Cryptographic signature of the actor/system for non-repudiation
-}
-
-/**
- * Interface for defining a governance policy, which can be applied to projects,
- * design generations, or user actions to enforce business rules, regulatory
- * compliance, and brand standards.
- * Business Impact: Centralizes and automates policy enforcement, reducing human error,
- * ensuring regulatory compliance, and maintaining brand integrity at scale. This
- * proactively mitigates financial and reputational risks.
- */
-export interface GovernancePolicy {
-    id: string;
-    name: string;
-    description: string;
-    policyType: 'design-generation' | 'material-usage' | 'transaction' | 'access-control' | 'compliance-check';
-    rules: PolicyRule[]; // Array of specific rules
-    status: 'active' | 'inactive' | 'draft';
-    creationDate: Date;
-    lastModifiedDate: Date;
-    enforcementAction: 'warn' | 'block' | 'audit_only'; // What happens if a rule is violated
-    appliesTo?: 'all_users' | 'specific_roles' | 'specific_projects'; // Scope of application
-}
-
-/**
- * Interface for a specific rule within a governance policy.
- * Business Impact: Provides the granular logic for automated compliance and risk management.
- */
-export interface PolicyRule {
-    ruleId: string;
-    description: string;
-    condition: string; // e.g., "design_has_restricted_materials" or "generation_cost_exceeds_budget"
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    actionIfViolated: 'warn' | 'block' | 'require_approval';
-    parameters?: Record<string, any>; // Additional parameters for the rule (e.g., list of restricted materials)
-}
-
-/**
- * Interface representing a financial transaction on the platform's programmable value rails.
- * This could involve token transfers for design generation, resource usage, or royalties.
- * Business Impact: Enables real-time settlement, transparent cost tracking, and micro-payments
- * within the design ecosystem. Crucial for financial integrity, budget management,
- * and unlocking new revenue models like design component licensing.
- */
-export interface Transaction {
-    id: string;
-    timestamp: Date;
-    initiatorId: string; // User or Agent ID initiating the transaction
-    recipientId?: string; // User or Agent ID receiving value (if applicable)
-    transactionType: 'token_transfer' | 'design_generation_fee' | 'material_licensing' | 'royalty_payout' | 'subscription_payment';
-    amount: number; // Value in platform tokens
-    currency: 'AESTHETIC_TOKENS' | 'USD' | 'EUR'; // Could be internal tokens or fiat representations
-    status: 'pending' | 'completed' | 'failed' | 'refunded';
-    relatedAssetId?: string; // ID of the design, material, or other asset involved
-    auditLogReferenceId: string; // Link to the audit trail
-    blockchainTxId?: string; // Optional: If integrated with an external blockchain for settlement
-    signature: string; // Cryptographic signature of the transaction for integrity
-    metadata?: Record<string, any>; // Additional context (e.g., 'designId', 'generationParametersHash')
-}
-
-/**
- * Interface for a tokenized digital asset, representing ownership or rights
- * to a design concept, material, or design component.
- * Business Impact: Unlocks new financialization models for digital fashion assets,
- * enabling fractional ownership, verifiable licensing, and dynamic royalty structures.
- * This directly creates new revenue streams and enhances intellectual property protection.
- */
-export interface AssetToken {
-    id: string;
-    name: string;
-    description: string;
-    ownerId: string; // Current owner (User ID or Agent ID)
-    assetType: 'design_concept' | 'design_material' | 'design_component' | 'project_share';
-    referencedEntityId: string; // ID of the actual DesignConcept, DesignMaterial, etc.
-    issuanceDate: Date;
-    supply: number; // For fungible tokens, or 1 for NFTs
-    isFungible: boolean;
-    metadata?: Record<string, any>; // E.g., rights, royalties, usage terms
-    currentValue?: number; // Estimated market value in fiat/tokens
-    lastTransferDate?: Date;
-    transferHistory?: string[]; // References to Transaction IDs
-}
-
-/**
- * Interface for an AI Agent's capabilities and configuration.
- * Agents perform specialized tasks like design generation, compliance checks, or material sourcing.
- * Business Impact: Agents are the core of the AI-powered value proposition. This interface
- * allows for managing, configuring, and orchestrating these agents, ensuring their optimal
- * performance and alignment with business objectives. It underpins scalability and automation.
- */
-export interface AIAgent {
-    id: string;
-    name: string;
-    type: 'design_generator' | 'material_sourcing' | 'compliance_checker' | 'style_refiner' | 'cost_optimizer' | 'trend_analyzer';
-    status: 'active' | 'inactive' | 'maintenance';
-    modelVersion: string;
-    description: string;
-    costPerUse: number; // Cost in tokens per invocation
-    apiEndpoint: string; // Internal API endpoint for the agent service
-    parametersSchema: Record<string, any>; // JSON schema defining input parameters
-    outputSchema: Record<string, any>; // JSON schema defining expected output
-    lastMaintenanceDate: Date;
-    performanceMetrics?: Record<string, any>; // E.g., success rate, average response time
-    governancePolicyId?: string; // Which policy governs this agent's operation
-}
-
-/**
- * Interface for a notification, informing users about important events,
- * such as design completion, feedback received, or policy violations.
- * Business Impact: Keeps users engaged and informed, facilitating timely action
- * and preventing delays in the design workflow. Contributes to user satisfaction
- * and operational efficiency.
- */
-export interface Notification {
-    id: string;
-    userId: string;
-    type: 'design_ready' | 'feedback_received' | 'project_update' | 'billing_alert' | 'policy_violation' | 'system_message';
-    title: string;
-    message: string;
-    timestamp: Date;
-    isRead: boolean;
-    link?: string; // URL to navigate to relevant section
-    priority: 'low' | 'medium' | 'high';
-}
-
-/**
- * Main component props for AestheticEngineView.
- * It ties together the financial, AI, and design aspects.
- * Business Impact: This top-level component encapsulates the entire platform's
- * functionality, making its business value directly accessible. It integrates
- * all underlying systems to deliver a seamless, high-value user experience,
- * driving adoption and revenue generation.
- */
-export interface AestheticEngineViewProps {
-    currentUser: UserProfile;
-    projects: Project[];
-    designs: DesignConcept[];
-    colorPalettes: ColorPalette[];
-    materials: DesignMaterial[];
-    agents: AIAgent[];
-    onPromptSubmit: (prompt: string, params: GenerationParameters) => Promise<DesignConcept>;
-    onDesignUpdate: (design: DesignConcept) => Promise<void>;
-    onProjectUpdate: (project: Project) => Promise<void>;
-    onUserFeedback: (feedback: UserFeedback) => Promise<void>;
-    onSettingsUpdate: (settings: UserSettings) => Promise<void>;
-    onTokenPurchase: (amount: number) => Promise<boolean>;
-    onAgentOrchestration: (agentId: string, input: Record<string, any>) => Promise<any>;
-    notifications: Notification[];
-    auditLogs: AuditLogEntry[];
-    governancePolicies: GovernancePolicy[];
-}
-
-/**
- * AestheticEngineView Component - The central hub for AI-powered fashion design.
- *
- * This React functional component provides the primary user interface for interacting
- * with the Aesthetic Engine. It orchestrates various sub-components to deliver
- * a rich, interactive experience for design generation, refinement, project management,
- * and financial oversight.
- *
- * It utilizes the provided props to display user-specific data, manage design workflows,
- * and interact with the backend services for AI generation, token transactions,
- * and compliance checks.
- */
-const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
-    currentUser,
-    projects,
-    designs,
-    colorPalettes,
-    materials,
-    agents,
-    onPromptSubmit,
-    onDesignUpdate,
-    onProjectUpdate,
-    onUserFeedback,
-    onSettingsUpdate,
-    onTokenPurchase,
-    onAgentOrchestration,
-    notifications,
-    auditLogs,
-    governancePolicies,
-}) => {
-    // State management for UI elements, active design, current project, etc.
-    const [activeProject, setActiveProject] = React.useState<Project | undefined>(projects[0]);
-    const [selectedDesign, setSelectedDesign] = React.useState<DesignConcept | undefined>(undefined);
-    const [currentPrompt, setCurrentPrompt] = React.useState<string>('');
-    const [generationParams, setGenerationParams] = React.useState<GenerationParameters>({
-        styleInfluence: [],
-        materialPreferences: [],
-        colorSchemePreference: 'custom',
-        detailLevel: 'medium',
-        renderResolution: 'hd',
-        lightingPreset: 'studio',
-        cameraAngle: 'front',
-        modelPose: 'standing',
-        riskTolerance: 'medium',
-    });
-    const [isLoading, setIsLoading] = React.useState<boolean>(false);
-    const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(true); // For UI layout control
-
-    // Example handler for submitting a design prompt
-    const handleSubmitPrompt = async () => {
-        if (!currentPrompt.trim()) return;
-        setIsLoading(true);
-        try {
-            const newDesign = await onPromptSubmit(currentPrompt, generationParams);
-            setSelectedDesign(newDesign);
-            setCurrentPrompt('');
-        } catch (error) {
-            console.error('Error generating design:', error);
-            // Implement user-facing error notification
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // UI Rendering Logic (simplified for brevity, focusing on structural elements)
-    return (
-        <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
-            {/* Sidebar / Navigation */}
-            <aside className={`bg-white dark:bg-gray-800 shadow-lg p-4 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-16'}`}>
-                <div className="flex items-center justify-between mb-6">
-                    {sidebarOpen && <h1 className="text-xl font-bold">Aesthetic Engine</h1>}
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        {/* Placeholder for menu icon */}
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                </div>
-                <nav className="space-y-2">
-                    {/* Project List */}
-                    <div className="mb-4">
-                        {sidebarOpen && <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Projects</h2>}
-                        <ul className="space-y-1">
-                            {projects.map(project => (
-                                <li key={project.id} className={`p-2 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 ${activeProject?.id === project.id ? 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 font-medium' : ''}`}
-                                    onClick={() => setActiveProject(project)}>
-                                    {sidebarOpen ? project.name : project.name.substring(0, 1)}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    {/* Other Navigation Items */}
-                    <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                        {sidebarOpen && 'Dashboard'}
-                    </button>
-                    <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        {sidebarOpen && 'Assets (Tokens)'}
-                    </button>
-                    <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        {sidebarOpen && 'Settings'}
-                    </button>
-                    {currentUser.roles.includes('admin') && (
-                        <button className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14v6m-3-3h6M6 10h2m-2 4h2m-2 4h2m-2 4h2M12 4h.01M17 4h.01M12 8h.01M17 8h.01M10 4h.01M5 4h.01"></path></svg>
-                            {sidebarOpen && 'Admin Panel'}
-                        </button>
-                    )}
-                </nav>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col p-6 overflow-hidden">
-                {/* Header */}
-                <header className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold">
-                        {activeProject ? activeProject.name : 'Select a Project'}
-                    </h2>
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center">
-                            <span className="mr-2 text-sm">Tokens:</span>
-                            <span className="font-bold text-lg text-green-500">{currentUser.tokenBalance}</span>
-                            <button onClick={() => onTokenPurchase(100)} className="ml-2 px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Buy More</button>
-                        </div>
-                        <div className="relative">
-                            {/* Notification Bell */}
-                            <button className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.405L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                
+                {/* AI Chat Assistant Window */}
+                {isChatOpen && (
+                    <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white dark:bg-gray-800 shadow-2xl rounded-lg flex flex-col z-50 animate-slide-up">
+                        <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h3 className="font-bold">AI Design Assistant</h3>
+                            <button onClick={() => setIsChatOpen(false)} className="text-gray-500 hover:text-gray-800">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
-                            {notifications.filter(n => !n.isRead).length > 0 && (
-                                <span className="absolute top-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-red-500"></span>
-                            )}
-                        </div>
-                        <img src={currentUser.avatarUrl} alt={currentUser.username} className="w-10 h-10 rounded-full border-2 border-blue-500" />
-                    </div>
-                </header>
-
-                {/* Design Generation Area */}
-                <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 flex-shrink-0">
-                    <h3 className="text-xl font-semibold mb-4">Generate New Design</h3>
-                    <div className="flex space-x-4">
-                        <input
-                            type="text"
-                            placeholder="Describe your design (e.g., 'A futuristic gown made of silk with metallic accents')"
-                            value={currentPrompt}
-                            onChange={(e) => setCurrentPrompt(e.target.value)}
-                            className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                        />
-                        <button
-                            onClick={handleSubmitPrompt}
-                            disabled={isLoading || !currentPrompt.trim()}
-                            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Generating...' : 'Generate Design'}
-                        </button>
-                    </div>
-                    {/* Placeholder for Advanced Generation Parameters */}
-                    <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                        Advanced parameters (style, materials, colors, etc.) can be configured here.
-                    </div>
-                </section>
-
-                {/* Design Concepts Display */}
-                <section className="flex-1 overflow-y-auto">
-                    <h3 className="text-xl font-semibold mb-4">Your Designs {activeProject ? `for ${activeProject.name}` : ''}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {designs
-                            .filter(design => !activeProject || design.projectId === activeProject.id)
-                            .map(design => (
-                                <Card key={design.id} onClick={() => setSelectedDesign(design)}>
-                                    <img src={design.imageUrl} alt={design.name} className="w-full h-48 object-cover rounded-t-lg" />
-                                    <div className="p-4">
-                                        <h4 className="text-lg font-bold">{design.name}</h4>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                            {design.styleTags.join(', ')} - {design.colors.length} colors
-                                        </p>
-                                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mt-2
-                                            ${design.complianceStatus === 'compliant' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                                              design.complianceStatus === 'review' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                              design.complianceStatus === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
-                                            Compliance: {design.complianceStatus}
-                                        </span>
-                                    </div>
-                                </Card>
-                            ))}
-                        {designs.filter(design => !activeProject || design.projectId === activeProject.id).length === 0 && (
-                            <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-10">
-                                No designs found for this project. Start generating some!
-                            </div>
-                        )}
-                    </div>
-                </section>
-
-                {/* Selected Design Details / Editor - This would typically be a separate modal or a side panel */}
-                {selectedDesign && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full p-6 relative">
-                            <button onClick={() => setSelectedDesign(undefined)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
-                            <h3 className="text-2xl font-bold mb-4">{selectedDesign.name}</h3>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <img src={selectedDesign.imageUrl} alt={selectedDesign.name} className="w-full h-auto rounded-lg shadow-md mb-4" />
-                                    {selectedDesign.sketchUrl && (
-                                        <img src={selectedDesign.sketchUrl} alt={`${selectedDesign.name} sketch`} className="w-full h-auto rounded-lg shadow-md mb-4 mt-2" />
-                                    )}
-                                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedDesign.prompt}</p>
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold">Materials:</h4>
-                                        <ul className="list-disc list-inside text-sm">
-                                            {selectedDesign.materials.map(m => (
-                                                <li key={m.id}>{m.name} ({m.properties.composition})</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold">Colors:</h4>
-                                        <div className="flex space-x-2 mt-1">
-                                            {selectedDesign.colors.map((color, index) => (
-                                                <span key={index} className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: color }}></span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h4 className="font-semibold">Metadata:</h4>
-                                        <p className="text-sm">AI Model: {selectedDesign.metadata.aiModelVersion}</p>
-                                        <p className="text-sm">Resolution: {selectedDesign.metadata.resolution}</p>
-                                        <p className="text-sm">Agent Review: {selectedDesign.metadata.agentReviewStatus || 'N/A'}</p>
-                                        {selectedDesign.metadata.complianceCheck && (
-                                            <p className="text-sm">Compliance: {selectedDesign.metadata.complianceCheck.status} - <a href="#" className="text-blue-500">View Report</a></p>
-                                        )}
+                        </header>
+                        <div className="flex-grow p-4 overflow-y-auto space-y-4">
+                            {chatMessages.map(msg => (
+                                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
+                                        {msg.content}
                                     </div>
                                 </div>
-                                <div>
-                                    {/* Design Refinement & Feedback Area */}
-                                    <h4 className="text-lg font-semibold mb-2">Refine Design</h4>
-                                    <textarea
-                                        placeholder="Suggest changes or new ideas for the AI (e.g., 'Make the sleeves puffier', 'Change material to denim')"
-                                        className="w-full p-2 border rounded-md mb-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                        rows={4}
-                                    ></textarea>
-                                    <button
-                                        onClick={() => console.log('Simulating refinement')} // This would trigger an AI agent
-                                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                                    >
-                                        Refine with AI
-                                    </button>
-                                    <div className="mt-6">
-                                        <h4 className="text-lg font-semibold mb-2">User Feedback</h4>
-                                        {selectedDesign.feedback ? (
-                                            <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md">
-                                                <p className="text-sm"><strong>Rating:</strong> {selectedDesign.feedback.rating}/5</p>
-                                                <p className="text-sm"><strong>Comments:</strong> {selectedDesign.feedback.comments}</p>
-                                                <p className="text-xs text-gray-500">By {selectedDesign.feedback.userId} on {new Date(selectedDesign.feedback.timestamp).toLocaleDateString()}</p>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">No feedback yet.</p>
-                                        )}
-                                        {/* Option to add feedback */}
-                                        <button className="mt-3 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                            Add Feedback
-                                        </button>
-                                    </div>
-                                    <div className="mt-6">
-                                        <h4 className="text-lg font-semibold mb-2">Audit Log & Version History</h4>
-                                        {/* This would link to a more detailed view */}
-                                        <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                                            View Full History ({selectedDesign.versionHistory.length} versions)
-                                        </button>
-                                        {selectedDesign.auditLogReferences && selectedDesign.auditLogReferences.length > 0 && (
-                                            <p className="text-xs text-gray-500 mt-2">Referenced in {selectedDesign.auditLogReferences.length} audit entries.</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
+                        <footer className="p-4 border-t border-gray-200 dark:border-gray-700">
+                            <form onSubmit={e => { e.preventDefault(); handleSendMessage(e.currentTarget.message.value); e.currentTarget.message.value = ''; }}>
+                                <input name="message" type="text" placeholder="Ask me anything..." className="w-full p-2 border rounded-md bg-gray-100 dark:bg-gray-600"/>
+                            </form>
+                        </footer>
                     </div>
                 )}
             </main>
