@@ -1,20 +1,21 @@
 /**
  * CrisisAIManagerView.tsx
  *
- * This module delivers a revolutionary, multi-million-dollar infrastructure leap, serving as the central control plane for enterprise crisis response.
- * It leverages advanced AI agents to autonomously orchestrate, monitor, and execute strategic communications, legal actions, and financial remediations
- * across a unified digital finance architecture. By integrating real-time sentiment analysis, robust digital identity, programmable value rails,
- * and a cryptographically secured audit trail, this system transforms chaotic events into managed outcomes.
+ * This module provides a comprehensive, self-contained user interface for an enterprise-level crisis response system.
+ * It uses a sophisticated simulation of AI agents to help autonomously orchestrate, monitor, and execute strategic communications, legal actions, and financial remediations.
+ * The system integrates real-time sentiment analysis, digital identity, programmable value rails, and a cryptographically secured audit trail.
+ * It's designed to transform chaotic events into managed, auditable outcomes, all within this single-file application blueprint.
  *
- * Business value: This platform safeguards billions in brand value and regulatory standing by providing unparalleled speed, precision, and compliance.
- * It drastically reduces response times, minimizes financial penalties from non-compliance, protects brand reputation from negative sentiment,
- * and optimizes resource allocation through AI-driven insights. It is a strategic advantage, allowing organizations to regain control swiftly
- * during high-stakes situations, ensuring business continuity, and protecting shareholder value. The integration of programmable value rails
- * allows for real-time, auditable financial operations, demonstrating a robust, next-generation financial backbone.
+ * Business Value: This platform is designed to safeguard brand value and regulatory standing by providing speed, precision, and compliance in crisis response.
+ * It aims to reduce response times, minimize financial penalties, protect brand reputation, and optimize resource allocation through AI-driven insights.
+ * It represents a strategic advantage by allowing organizations to regain control during high-stakes situations, ensuring business continuity and protecting shareholder value.
+ * The integration of programmable value rails demonstrates a robust, next-generation financial backbone for real-time, auditable financial operations.
+ *
+ * A Note on the Absurd: This file is a bit of a monolith, a glorious, sprawling digital metropolis of code. Why? Because sometimes, to truly understand a system, you have to see all its guts laid out on the table. It's awkwardly truthful, like admitting you still don't know how to use all the buttons on your microwave. It's a bit funny, a bit terrifying, and hopefully, exhilaratingly clear.
  */
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef } from 'react';
 
-export type CrisisType = 'DATA_BREACH' | 'PRODUCT_FAILURE' | 'EXECUTIVE_SCANDAL' | 'ENVIRONMENTAL_DISASTER' | 'FINANCIAL_MISCONDUCT' | 'SUPPLY_CHAIN_DISRUPTION' | 'CYBER_ATTACK' | 'PUBLIC_HEALTH_CRISIS';
+export type CrisisType = 'DATA_BREACH' | 'PRODUCT_FAILURE' | 'EXECUTIVE_SCANDAL' | 'ENVIRONMENTAL_DISASTER' | 'FINANCIAL_MISCONDUCT' | 'SUPPLY_CHAIN_DISRUPTION' | 'CYBER_ATTACK' | 'PUBLIC_HEALTH_CRISIS' | 'COFFEE_MACHINE_APOCALYPSE';
 
 export interface CommsPackage {
   pressRelease: string;
@@ -34,13 +35,12 @@ export type UserRole = 'ADMIN' | 'CRISIS_MANAGER' | 'LEGAL_COUNSEL' | 'PR_SPECIA
 /**
  * UserProfile: Interface
  *
- * This interface defines the digital identity of human users within the system, encapsulating
- * their roles, permissions, and cryptographic public keys for secure authentication and authorization.
+ * Defines the digital identity of human users within the system. It encapsulates
+ * their roles, permissions, and a simulated public key for secure authentication and authorization.
  *
- * Business value: Serves as the bedrock of access control and accountability, enabling fine-grained
- * permission management crucial for regulatory compliance and safeguarding sensitive financial and
- * operational data. Cryptographic key management ensures non-repudiation and integrity of user actions,
- * building an unimpeachable trust layer for all interactions.
+ * Business Value: This is the foundation of access control and accountability, enabling fine-grained
+ * permission management essential for regulatory compliance and protecting sensitive data. The public key simulation
+ * represents a non-repudiation layer, building trust for all user actions.
  */
 export interface UserProfile {
   id: string;
@@ -57,96 +57,96 @@ export interface UserProfile {
 /**
  * Stakeholder: Interface
  *
- * This interface represents key entities external to the organization who are impacted by or
- * have an interest in crisis events. It allows for detailed segmentation and targeted communication strategies.
+ * Represents key external entities impacted by a crisis. It allows for detailed segmentation and targeted communication.
  *
- * Business value: Enables precise management of external relationships during high-stress situations,
- * mitigating reputational damage and maintaining investor, customer, and public trust.
- * Strategic communication reduces volatility and protects market valuation.
+ * Business Value: Enables precise management of external relationships during high-stress events,
+ * mitigating reputational damage and maintaining trust. Strategic communication can reduce market volatility and protect valuation.
  */
 export interface Stakeholder {
   id: string;
   name: string;
   type: 'CUSTOMER' | 'EMPLOYEE' | 'INVESTOR' | 'MEDIA' | 'REGULATOR' | 'PARTNER' | 'PUBLIC' | 'GOVERNMENT';
-  contactInfo: string; // email, phone, etc.
-  keyMessage?: string; // specific message for this stakeholder group
+  contactInfo: string;
+  keyMessage?: string;
   sentimentImpact: number; // -5 (very negative) to 5 (very positive)
   priority: number; // 1 (highest) to 5 (lowest)
-  communicationChannels: string[]; // e.g., ['email', 'press-release', 'social-media']
+  communicationChannels: string[];
 }
 
 export type CrisisSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type CrisisStatus = 'IDENTIFIED' | 'ACTIVE' | 'MITIGATING' | 'REVIEW' | 'CLOSED';
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
 
 /**
  * FinancialRail: Interface
  *
- * Defines a simulated programmable value rail for financial transactions. Each rail
- * offers different performance characteristics and cost structures.
+ * Defines a simulated programmable value rail for financial transactions, each with different performance characteristics.
  *
- * Business value: Enables optimal routing of financial settlements based on dynamic
- * business requirements (e.g., speed, cost, security), maximizing operational efficiency
- * and minimizing transaction costs in a multi-rail digital finance ecosystem.
- * This directly impacts profitability and liquidity management.
+ * Business Value: Enables optimal routing of financial settlements based on dynamic needs (speed, cost, security),
+ * maximizing operational efficiency and minimizing transaction costs. This directly impacts profitability and liquidity.
  */
 export interface FinancialRail {
-  id: string;
+  id:string;
   name: string;
   latencyMs: number;
   costPerTransaction: number;
   securityLevel: 'LOW' | 'MEDIUM' | 'HIGH';
-  maxDailyVolume: number; // Simulated capacity
+  maxDailyVolume: number;
   status: 'OPERATIONAL' | 'DEGRADED' | 'OFFLINE';
 }
 
 /**
  * FinancialTransaction: Interface
  *
- * Represents a financial movement or impact related to a crisis, integrated with
- * a simulated programmable token rail layer for transparent and auditable operations.
- * Includes details for multi-rail routing and risk assessment.
+ * Represents a financial movement related to a crisis, integrated with a simulated programmable token rail for transparency.
  *
- * Business value: Provides an auditable trail for all financial movements, enabling
- * precise tracking of costs, compensations, and penalties. This ensures financial
- * transparency, supports regulatory compliance, and allows for rapid reconciliation
- * with tokenized assets, minimizing fraud and improving liquidity management.
- * The integration with programmable rails signifies an advanced, real-time settlement capability.
+ * Business Value: Provides an auditable trail for all financial movements, ensuring transparency for costs, compensations, and penalties.
+ * This supports regulatory compliance and allows for rapid reconciliation with tokenized assets, minimizing fraud.
  */
 export interface FinancialTransaction {
   id: string;
   timestamp: Date;
   type: 'COMPENSATION_PAYOUT' | 'FINE_PAYMENT' | 'LOSS_RECORD' | 'REFUND' | 'RECONCILIATION' | 'TOKEN_MINT' | 'TOKEN_BURN' | 'TRANSFER';
   amount: number;
-  currency: string; // e.g., 'USD', 'EUR', 'STABLE_COIN_XYZ'
+  currency: string;
   status: 'PENDING' | 'SETTLED' | 'FAILED' | 'REVERSED' | 'BLOCKED';
-  recipientId?: string; // Could be a UserProfile ID or a vendor ID, or a mock account ID
-  senderId?: string; // For transfers, from which account/user
-  initiatorId: string; // UserProfile ID or Agent ID
-  transactionHash?: string; // Simulated token rail transaction hash
+  recipientId?: string;
+  senderId?: string;
+  initiatorId: string;
+  transactionHash?: string;
   notes?: string;
   relatedCrisisId: string;
-  railUsed?: string; // ID of the FinancialRail used
+  railUsed?: string;
   settlementFee?: number;
-  riskScore?: number; // 0-100, higher is riskier
-  signature?: string; // Simulated cryptographic signature
+  riskScore?: number;
+  signature?: string;
 }
 
 /**
  * Account: Interface
  *
- * Represents a financial account within the simulated ledger system, holding balances
- * in various currencies. Essential for tracking asset movement and real-time validation.
+ * Represents a financial account within the simulated ledger system.
  *
- * Business value: Provides the core ledger functionality for the programmable token rail,
- * enabling real-time balance validation and atomic settlement. This forms the foundation
- * for efficient and transparent value transfer, crucial for next-generation financial products.
+ * Business Value: Provides core ledger functionality for the programmable token rail,
+ * enabling real-time balance validation and atomic settlement. This forms the foundation for efficient value transfer.
  */
 export interface Account {
   id: string;
-  ownerId: string; // UserProfile or Agent ID
+  ownerId: string;
   accountType: 'FIAT' | 'TOKEN';
   balances: { [currency: string]: number };
-  publicKey?: string; // Simulated cryptographic public key
+  publicKey?: string;
+}
+
+export interface CrisisTask {
+    id: string;
+    title: string;
+    description: string;
+    assignedToId: string; // UserProfile ID
+    status: TaskStatus;
+    dueDate?: Date;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    relatedPlaybookStepId?: string;
 }
 
 export interface Crisis {
@@ -159,17 +159,18 @@ export interface Crisis {
   identifiedAt: Date;
   lastUpdate: Date;
   estimatedResolutionTime?: Date;
-  impactedAreas: string[]; // e.g., ['Customer Data', 'Product Performance', 'Brand Reputation']
-  tags: string[]; // e.g., ['GDPR', 'Supply Chain', 'Financial']
-  leadManagerId: string; // UserProfile ID
-  assignedTeamIds: string[]; // UserProfile IDs
+  impactedAreas: string[];
+  tags: string[];
+  leadManagerId: string;
+  assignedTeamIds: string[];
   generatedCommsPackages: CommsPackage[];
   relatedIncidents: IncidentLogEntry[];
   sentimentHistory: SentimentReport[];
   legalReviews: LegalAnalysisResult[];
   approvalWorkflow: CommsApprovalEntry[];
-  financialTransactions: FinancialTransaction[]; // New field for financial impacts
-  agentActivityLogs: AgentLogEntry[]; // New field for AI agent interactions
+  financialTransactions: FinancialTransaction[];
+  agentActivityLogs: AgentLogEntry[];
+  assignedTasks: CrisisTask[]; // New field for tasks
 }
 
 export interface IncidentLogEntry {
@@ -180,7 +181,7 @@ export interface IncidentLogEntry {
   severity: CrisisSeverity;
   actionTaken: string;
   status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
-  relatedArtifacts?: string[]; // URLs to documents, screenshots
+  relatedArtifacts?: string[];
 }
 
 export type LegalRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -192,7 +193,7 @@ export interface LegalAnalysisResult {
   summary: string;
   keyRisks: string[];
   recommendedActions: string[];
-  complianceRequirements: string[]; // e.g., ['GDPR Article 33', 'CCPA Section 1798.82']
+  complianceRequirements: string[];
   potentialFinesMin?: number;
   potentialFinesMax?: number;
   legalRiskLevel: LegalRiskLevel;
@@ -201,17 +202,17 @@ export interface LegalAnalysisResult {
 
 export interface SentimentDataPoint {
   timestamp: Date;
-  score: number; // -1 (negative) to 1 (positive)
-  source: string; // e.g., 'Twitter', 'News', 'Internal Forums'
+  score: number; // -1 to 1
+  source: string;
   keywords: string[];
-  volume: number; // number of mentions
+  volume: number;
 }
 
 export interface SentimentReport {
   id: string;
   timestamp: Date;
   generatedByUserId: string;
-  overallSentiment: number; // aggregated score
+  overallSentiment: number;
   sentimentTrend: SentimentDataPoint[];
   keyThemes: string[];
   topNegativeMentions: string[];
@@ -227,11 +228,11 @@ export interface CommsApprovalEntry {
   commsPackageId: string;
   version: number;
   status: CommsStatus;
-  reviewerId: string; // UserProfile ID
+  reviewerId: string;
   reviewTimestamp?: Date;
   comments?: string;
   requiredRole: UserRole;
-  signature?: string; // Simulated cryptographic signature of approval
+  signature?: string;
 }
 
 export interface CrisisPlaybookEntry {
@@ -247,103 +248,83 @@ export interface CrisisPlaybookEntry {
   notes?: string;
 }
 
-/**
- * AgentStatus: Type
- *
- * Defines the various operational states an AI agent can be in, reflecting its current activity or health.
- *
- * Business value: Essential for monitoring agent performance and resource allocation,
- * ensuring AI systems are always operational and responsive during a crisis, minimizing downtime
- * and maximizing automated response capabilities.
- */
 export type AgentStatus = 'ACTIVE' | 'IDLE' | 'BUSY' | 'ERROR' | 'OFFLINE';
+export type AiModelProvider = 'GEMINI' | 'CHAT_GPT' | 'CLAUDE' | 'MOCK_AI';
 
 /**
  * AutonomousAgent: Interface
  *
- * Represents a simulated intelligent agent that autonomously operates within the crisis management system,
- * equipped with specific skills and a cryptographic public key for secure communication and identification.
+ * Represents a simulated intelligent agent operating within the crisis management system.
  *
- * Business value: Enables the orchestration of autonomous workflows for monitoring, anomaly detection,
- * and automated remediation. This dramatically reduces human workload, accelerates response times,
- * and ensures consistent execution of pre-defined protocols, saving millions in operational costs and minimizing errors.
- * Digital identity for agents ensures auditable, non-repudiable actions within the financial ecosystem.
+ * Business Value: Enables orchestration of autonomous workflows for monitoring, anomaly detection, and remediation.
+ * This can reduce human workload, accelerate response times, and ensure consistent execution of protocols.
  */
 export interface AutonomousAgent {
   id: string;
   name: string;
   type: 'MONITORING' | 'REMEDIATION' | 'COMMUNICATION' | 'LEGAL_ADVISOR' | 'FINANCIAL_RECONCILIATOR' | 'GOVERNANCE_AUDITOR';
   status: AgentStatus;
-  skills: string[]; // e.g., 'sentiment-analysis', 'data-breach-response', 'legal-compliance-check'
+  skills: string[];
   lastActivity: Date;
   assignedCrisisId?: string;
-  configuration: { [key: string]: any }; // e.g., monitoring thresholds, communication templates
+  configuration: { [key: string]: any };
   isActive: boolean;
-  publicKey?: string; // Simulated cryptographic public key for digital identity
+  publicKey?: string;
 }
 
 /**
  * AgentLogEntry: Interface
  *
- * Records actions taken by an AI agent, providing an auditable trail of AI decisions and operations.
- * Each entry is linked to a crisis and provides operational transparency.
+ * Records actions taken by an AI agent, providing an auditable trail of AI decisions.
  *
- * Business value: Crucial for governance, compliance audits, and debugging.
- * It ensures transparency in AI operations, builds trust, and allows for
- * continuous improvement of agent behavior, validating the millions invested
- * in AI automation. It forms a key part of the platform's overall observability.
+ * Business Value: Crucial for governance, compliance, and debugging. It ensures transparency in AI operations,
+ * builds trust, and allows for continuous improvement of agent behavior.
  */
 export interface AgentLogEntry {
   id: string;
   timestamp: Date;
   agentId: string;
   crisisId: string;
-  action: string; // e.g., 'Initiated sentiment analysis', 'Drafted press release', 'Flagged suspicious transaction'
+  action: string;
   details: string;
   status: 'SUCCESS' | 'FAILURE' | 'IN_PROGRESS';
-  relatedArtifactId?: string; // e.g., CommsPackage ID, IncidentLogEntry ID
+  relatedArtifactId?: string;
 }
 
 /**
  * AuditLogEntry: Interface
  *
  * Provides a tamper-evident record of all significant system events and user/agent actions.
- * For true tamper-evidence, this would involve cryptographic chaining, symbolized here by `signature` and implicit chaining.
  *
- * Business value: Establishes a foundational layer of trust and accountability across the entire
- * system. This audit trail is indispensable for regulatory compliance (e.g., SOX, GDPR),
- * internal governance, forensic investigations, and dispute resolution, protecting the
- * enterprise from significant legal and financial repercussions. It ensures every action is traceable.
+ * Business Value: Establishes a foundational layer of trust and accountability. This audit trail is
+ * indispensable for regulatory compliance, internal governance, and forensic investigations.
  */
 export interface AuditLogEntry {
   id: string;
   timestamp: Date;
-  actorId: string; // UserProfile ID or AutonomousAgent ID
+  actorId: string;
   actorType: 'USER' | 'AGENT';
   actionType: 'CREATE' | 'UPDATE' | 'DELETE' | 'VIEW' | 'APPROVE' | 'REJECT' | 'INITIATE' | 'SETTLE' | 'CONFIG_UPDATE' | 'TRIGGER_ACTION' | 'AUTHENTICATE';
-  entityType: 'CRISIS' | 'COMMS_PACKAGE' | 'INCIDENT_LOG' | 'LEGAL_REVIEW' | 'SENTIMENT_REPORT' | 'USER' | 'SETTING' | 'FINANCIAL_TRANSACTION' | 'AGENT_CONFIG' | 'ACCOUNT' | 'FINANCIAL_RAIL';
+  entityType: 'CRISIS' | 'COMMS_PACKAGE' | 'INCIDENT_LOG' | 'LEGAL_REVIEW' | 'SENTIMENT_REPORT' | 'USER' | 'SETTING' | 'FINANCIAL_TRANSACTION' | 'AGENT_CONFIG' | 'ACCOUNT' | 'FINANCIAL_RAIL' | 'TASK' | 'PLAYBOOK';
   entityId: string;
   description: string;
-  previousState?: any; // Snapshot of relevant fields before change
-  newState?: any; // Snapshot of relevant fields after change
-  signature?: string; // Simulated cryptographic signature of the action
+  previousState?: any;
+  newState?: any;
+  signature?: string;
 }
 
 /**
  * CrisisSettings: Interface
  *
- * Defines system-wide configuration parameters for the crisis management platform,
- * including automation rules, default workflows, and AI agent enablement.
+ * Defines system-wide configuration parameters for the crisis management platform.
  *
- * Business value: Empowers administrators to tailor the system to organizational needs,
- * ensuring operational efficiency, consistency, and scalability, reducing manual overhead
- * and accelerating response automation. This configurable framework ensures the system
- * adapts to evolving business and regulatory landscapes, protecting initial investment and delivering long-term value.
+ * Business Value: Empowers administrators to tailor the system to organizational needs, ensuring operational efficiency, consistency, and scalability.
+ * This configurable framework helps the system adapt to evolving business and regulatory landscapes.
  */
 export interface CrisisSettings {
   autoGenerateComms: boolean;
   defaultApprovalWorkflow: UserRole[];
-  notificationChannels: string[]; // e.g., ['email', 'slack', 'sms']
+  notificationChannels: string[];
   sentimentMonitorIntervalMinutes: number;
   defaultTemplates: {
     [key in CrisisType]?: CommsPackage;
@@ -353,19 +334,21 @@ export interface CrisisSettings {
   };
   financialRailsConfig: {
     defaultRail: string;
-    riskThreshold: number; // 0-100, transactions above this are flagged
+    riskThreshold: number;
   };
+  aiAssistantConfig: {
+      provider: AiModelProvider;
+      enableContextAwareness: boolean;
+  }
 }
 
 /**
  * generateMockId: Function
  *
- * Generates a cryptographically-sounding, unique mock ID using a UUID-like format.
- * This simulates robust, globally unique identifiers for all system entities.
+ * Generates a UUID-like mock ID to simulate unique identifiers.
  *
- * Business value: Ensures data integrity and uniqueness across distributed systems,
- * essential for reliable tracking of transactions, events, and entities. This forms
- * a fundamental building block for auditable and traceable financial infrastructure.
+ * Business Value: Ensures data integrity and uniqueness across the system,
+ * essential for reliable tracking of transactions, events, and entities.
  */
 export const generateMockId = (prefix: string = 'mock_'): string => {
   const uuidPart = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -379,12 +362,9 @@ export const generateMockId = (prefix: string = 'mock_'): string => {
 /**
  * generateMockCryptoKey: Function
  *
- * Generates a simulated cryptographic public key, representing the digital identity
- * credential for users and agents.
+ * Generates a simulated cryptographic public key.
  *
- * Business value: Essential for implementing digital identity and trust, enabling
- * secure authentication, signed instructions, and non-repudiation across the platform.
- * This capability forms the backbone for compliant and trustworthy financial operations.
+ * Business Value: Represents the core of digital identity and trust, enabling secure authentication and non-repudiation.
  */
 export const generateMockCryptoKey = (): string => {
   const hex = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
@@ -395,12 +375,8 @@ export const generateMockCryptoKey = (): string => {
  * simulateSignature: Function
  *
  * Simulates a cryptographic signature for a given message and actor ID.
- * In a real system, this would involve actual private key operations.
  *
- * Business value: Enables the simulation of cryptographically signed instructions,
- * a cornerstone of security and non-repudiation in digital finance. This ensures
- * that every critical action is verifiable and attributable, essential for auditability
- * and regulatory compliance.
+ * Business Value: Enables the simulation of cryptographically signed instructions, a cornerstone of security and non-repudiation.
  */
 export const simulateSignature = (actorId: string, message: string): string => {
   const hash = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
@@ -448,10 +424,10 @@ export const mockStakeholders: Stakeholder[] = [
 export const generateMockIncidentLogEntry = (crisisId: string, reporterId: string): IncidentLogEntry => ({
   id: generateMockId('inc'),
   timestamp: new Date(Date.now() - Math.random() * 86400000 * 7), // within last 7 days
-  description: `Automated alert: Unusual activity detected on server ${Math.floor(Math.random() * 100)}.`,
+  description: `Automated alert: Unusual activity detected on server ${Math.floor(Math.random() * 100)}. Possible cause: a ghost, or maybe Frank spilled coffee on it again.`,
   reportedByUserId: reporterId,
   severity: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)] as CrisisSeverity,
-  actionTaken: `Alert acknowledged by Frank IR. Initial investigation started. System isolated.`,
+  actionTaken: `Alert acknowledged by Frank IR. Initial investigation started. Server has been gently patted and told it's a good server.`,
   status: ['OPEN', 'IN_PROGRESS', 'RESOLVED'][Math.floor(Math.random() * 3)] as 'OPEN' | 'IN_PROGRESS' | 'RESOLVED',
   relatedArtifacts: Math.random() > 0.5 ? [`https://example.com/log_${generateMockId()}.txt`] : undefined,
 });
@@ -460,9 +436,9 @@ export const generateMockLegalAnalysis = (crisisId: string, analystId: string): 
   id: generateMockId('legal'),
   timestamp: new Date(),
   analyzedByUserId: analystId,
-  summary: 'Preliminary legal assessment indicates potential for regulatory fines and reputational damage.',
-  keyRisks: ['Data privacy violations', 'Breach of contract', 'Shareholder lawsuits', 'Regulatory non-compliance'],
-  recommendedActions: ['Engage external counsel', 'Notify affected parties within 72 hours', 'Preserve all relevant data'],
+  summary: 'Preliminary legal assessment: We are, to use a technical term, in hot water. Potential for fines and public ridicule.',
+  keyRisks: ['Data privacy violations', 'Breach of contract', 'Shareholder lawsuits', 'Becoming a meme'],
+  recommendedActions: ['Engage external counsel', 'Notify affected parties within 72 hours', 'Preserve all relevant data', 'Update resumes (just in case)'],
   complianceRequirements: ['GDPR Article 33', 'CCPA Section 1798.82'],
   potentialFinesMin: Math.floor(Math.random() * 100000) * 100,
   potentialFinesMax: Math.floor(Math.random() * 5000000) * 100,
@@ -491,10 +467,10 @@ export const generateMockSentimentReport = (crisisId: string, generatorId: strin
     generatedByUserId: generatorId,
     overallSentiment,
     sentimentTrend: dataPoints.reverse(),
-    keyThemes: ['data security', 'customer trust', 'system vulnerability'],
-    topNegativeMentions: ['"Unacceptable data breach!"', '"Losing trust in company X."', '"Why no immediate response?"'],
-    topPositiveMentions: ['"Appreciate the transparency."', '"Hope they fix it soon."', '"Good to see a quick update."'],
-    recommendedPRActions: ['Issue detailed FAQ', 'Monitor social media for keywords', 'Engage influencers for positive messaging'],
+    keyThemes: ['data security', 'customer trust', 'system vulnerability', 'why does this always happen'],
+    topNegativeMentions: ['"Unacceptable data breach!"', '"Losing trust in company X."', '"Why no immediate response? Are they all asleep?"'],
+    topPositiveMentions: ['"Appreciate the transparency."', '"Hope they fix it soon."', '"At least their apology tweet had a funny GIF."'],
+    recommendedPRActions: ['Issue detailed FAQ', 'Monitor social media for keywords', 'Engage influencers for positive messaging', 'Prepare a blooper reel of the incident for the holiday party'],
     sourceBreakdown: [
       { source: 'Twitter', percentage: Math.random() * 40 + 20 }, // 20-60%
       { source: 'News', percentage: Math.random() * 20 + 10 },    // 10-30%
@@ -507,23 +483,23 @@ export const generateMockCommsPackage = (type: CrisisType, facts: string): Comms
   const commsId = generateMockId('comms-pkg');
   const comms: CommsPackage = {
     id: commsId,
-    pressRelease: `FOR IMMEDIATE RELEASE: [Company] Addresses ${type.replace(/_/g, ' ')} Incident. Key facts: ${facts}. Acknowledging responsibility and outlining immediate steps to rectify the situation and support affected parties. This proactive communication safeguards brand integrity and rebuilds trust.`,
-    internalMemo: `Team, This morning we identified a ${type.replace(/_/g, ' ')} incident. Here is what you need to know and our immediate next steps to ensure business continuity and protect our stakeholders. Confidential for internal use. Key facts: ${facts}.`,
+    pressRelease: `FOR IMMEDIATE RELEASE: [Company] Addresses ${type.replace(/_/g, ' ')} Incident. Key facts: ${facts}. We are acknowledging this situation and taking steps to fix it. We hope this proactive communication makes us look responsible.`,
+    internalMemo: `Team, we have a ${type.replace(/_/g, ' ')} incident. Please do not talk to the press. Here's what's happening. Key facts: ${facts}.`,
     twitterThread: [
-      `1/ We recently identified a ${type.replace(/_/g, ' ')} incident. We are taking immediate action to address it and will provide further updates swiftly. #Transparency #Commitment`,
-      `2/ Our investigation is ongoing, and we are working with leading experts to secure our systems and data. Customer trust is our highest priority.`,
-      `3/ We understand the concern and will communicate directly with any affected parties. For more information, please visit our official statement. [Link]`,
+      `1/ We messed up. A ${type.replace(/_/g, ' ')} incident has occurred. We're on it. #Oops #CrisisMode`,
+      `2/ Our top people (and some AI) are working to fix this. Customer trust is super important to us, for real.`,
+      `3/ We will be in touch with anyone affected. For more info that we carefully wrote, see our official statement here: [Link]`,
     ],
-    supportScript: `Thank you for calling. I understand you have questions about the recent ${type.replace(/_/g, ' ')} notification. I can confirm we are actively investigating and will provide detailed information directly to affected customers. Your patience is appreciated. Key facts: ${facts}.`,
-    faqDocument: `FAQ for ${type.replace(/_/g, ' ')}:\nQ: What happened?\nA: [Company] identified a ${type.replace(/_/g, ' ')} on [Date]. We are working to understand the full impact and will update this document regularly.\nQ: Am I affected?\nA: We are directly notifying all potentially affected individuals.`,
-    webStatement: `Official Website Statement: We deeply regret to inform you of a recent ${type.replace(/_/g, ' ')} incident. Our dedicated teams are working around the clock to resolve this, uphold our commitment to security, and restore full confidence.`,
-    ceoStatement: `A personal message from our CEO regarding the ${type.replace(/_/g, ' ')}: "We take full responsibility for this incident. Our absolute priority is to support our customers and reinforce the security of our platform. We are committed to transparency and will emerge stronger from this challenge."`,
+    supportScript: `Thank you for calling. Yes, we know about the ${type.replace(/_/g, ' ')}. I am reading from a script that says we are investigating. Please be patient. Key facts: ${facts}.`,
+    faqDocument: `FAQ for ${type.replace(/_/g, ' ')}:\nQ: What happened?\nA: A thing we'd rather not have happened, happened on [Date]. We are trying to figure it all out.\nQ: Am I affected?\nA: We will let you know. Probably.`,
+    webStatement: `Official Website Statement: We regret to inform you of a recent ${type.replace(/_/g, ' ')} incident. Our teams are working very hard to resolve this and restore your faith in us.`,
+    ceoStatement: `A message from our CEO regarding the ${type.replace(/_/g, ' ')}: "I am taking full responsibility. My bonus may be slightly smaller this year because of this. We are committed to making things right."`,
   };
   if (Math.random() > 0.7) {
     comms.socialMediaGraphics = [`https://example.com/graphic_${generateMockId()}.png`, `https://example.com/graphic_${generateMockId()}.jpg`];
   }
   if (Math.random() > 0.8) {
-    comms.videoScript = `(CEO on screen, somber tone) Hello, I'm [CEO Name], and I want to personally address the recent ${type.replace(/_/g, ' ')}. We are fully engaged in resolving this...`;
+    comms.videoScript = `(CEO on screen, somber tone) Hello, I'm [CEO Name], and I want to personally address the recent ${type.replace(/_/g, ' ')}. We are fully engaged... (looks off camera) is this tie straight?`;
   }
   return comms;
 };
@@ -531,12 +507,10 @@ export const generateMockCommsPackage = (type: CrisisType, facts: string): Comms
 /**
  * calculateRiskScore: Function
  *
- * Simulates a dynamic risk scoring mechanism for financial transactions based on amount and type.
- * This heuristic function provides a basic level of predictive routing logic.
+ * Simulates a dynamic risk scoring mechanism for financial transactions.
  *
- * Business value: Enables real-time risk assessment for financial transactions, allowing the system
- * to flag or block high-risk transfers, preventing fraud and financial losses. This protective
- * capability enhances the integrity of the programmable value rails and safeguards billions in assets.
+ * Business Value: Enables real-time risk assessment for financial transactions, allowing the system
+ * to flag or block high-risk transfers, preventing fraud and financial losses.
  */
 export const calculateRiskScore = (amount: number, type: FinancialTransaction['type']): number => {
   let score = 0;
@@ -608,6 +582,10 @@ export const generateMockCrisis = (id: string, type: CrisisType, facts: string, 
     generateMockAgentLogEntry(id, mockAgents[0], 'Initiated real-time sentiment analysis', 'SUCCESS', undefined, generateMockId('sent')),
     generateMockAgentLogEntry(id, mockAgents[2], 'Performed initial legal compliance scan', 'SUCCESS', undefined, generateMockId('legal')),
   ];
+  const assignedTasks: CrisisTask[] = [
+      { id: generateMockId('task'), title: 'Draft initial internal memo', description: 'Get a memo out to employees before they see it on the news.', assignedToId: mockUsers[3].id, status: 'IN_PROGRESS', priority: 'HIGH' },
+      { id: generateMockId('task'), title: 'Assemble legal team', description: 'We need lawyers. Lots of lawyers.', assignedToId: mockUsers[2].id, status: 'TODO', priority: 'HIGH' },
+  ]
   const approvalWorkflow: CommsApprovalEntry[] = [
     { id: generateMockId('appr'), commsPackageId: commsPackage.id!, version: 1, status: 'DRAFT', requiredRole: 'CRISIS_MANAGER', reviewerId: '' },
     { id: generateMockId('appr'), commsPackageId: commsPackage.id!, version: 1, status: 'PENDING_REVIEW', requiredRole: 'PR_SPECIALIST', reviewerId: mockUsers[3].id, reviewTimestamp: new Date(), comments: 'Looks good for initial draft.' },
@@ -619,7 +597,7 @@ export const generateMockCrisis = (id: string, type: CrisisType, facts: string, 
     id,
     title: `Crisis: ${type.replace(/_/g, ' ')}`,
     type,
-    description: `Initial facts: ${facts}. A major incident has occurred impacting company operations. Leveraging AI for rapid response.`,
+    description: `Initial facts: ${facts}. A major incident has occurred. AI is helping. Hopefully.`,
     severity: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'][Math.floor(Math.random() * 4)] as CrisisSeverity,
     status: 'ACTIVE',
     identifiedAt: now,
@@ -635,6 +613,7 @@ export const generateMockCrisis = (id: string, type: CrisisType, facts: string, 
     approvalWorkflow,
     financialTransactions,
     agentActivityLogs,
+    assignedTasks
   };
 };
 
@@ -661,6 +640,10 @@ export const mockCrisisSettings: CrisisSettings = {
   financialRailsConfig: {
     defaultRail: 'rail_fast',
     riskThreshold: 60, // Transactions with risk score > 60 are flagged/blocked
+  },
+  aiAssistantConfig: {
+      provider: 'MOCK_AI',
+      enableContextAwareness: true,
   }
 };
 
@@ -676,7 +659,7 @@ export const mockAccounts: Account[] = [
  *
  * This UI utility component provides consistent, visually distinctive indicators for crisis statuses.
  *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * Business Value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
  * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
  */
 export const CrisisStatusBadge: React.FC<{ status: CrisisStatus }> = ({ status }) => {
@@ -697,7 +680,7 @@ export const CrisisStatusBadge: React.FC<{ status: CrisisStatus }> = ({ status }
  *
  * This UI utility component provides consistent, visually distinctive indicators for crisis severity levels.
  *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * Business Value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
  * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
  */
 export const CrisisSeverityBadge: React.FC<{ severity: CrisisSeverity }> = ({ severity }) => {
@@ -718,7 +701,7 @@ export const CrisisSeverityBadge: React.FC<{ severity: CrisisSeverity }> = ({ se
  * This UI utility component generates a distinct user avatar, typically displaying initials,
  * for both human users and AI agents.
  *
- * Business value: Enhances user experience by providing quick visual identification of users
+ * Business Value: Enhances user experience by providing quick visual identification of users
  * and agents, fostering collaboration and accountability within the crisis response team.
  * Clear visual representation improves operational clarity.
  */
@@ -746,7 +729,7 @@ export const UserAvatar: React.FC<{ user: UserProfile | AutonomousAgent, size?: 
  *
  * This UI utility component provides consistent, visually distinctive indicators for communication package statuses.
  *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * Business Value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
  * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
  */
 export const CommsStatusBadge: React.FC<{ status: CommsStatus }> = ({ status }) => {
@@ -769,7 +752,7 @@ export const CommsStatusBadge: React.FC<{ status: CommsStatus }> = ({ status }) 
  *
  * This UI utility component provides consistent, visually distinctive indicators for legal risk levels.
  *
- * Business value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
+ * Business Value: Enhances user experience and reduces cognitive load by providing immediate visual cues,
  * improving dashboard readability and accelerating comprehension of critical information during high-stress situations.
  */
 export const LegalRiskBadge: React.FC<{ risk: LegalRiskLevel }> = ({ risk }) => {
@@ -790,7 +773,7 @@ export const LegalRiskBadge: React.FC<{ risk: LegalRiskLevel }> = ({ risk }) => 
  * This versatile component renders dynamic visualizations of various crisis-related data,
  * presenting complex information in an easily digestible format.
  *
- * Business value: Transforms raw data into actionable insights, enabling faster pattern
+ * Business Value: Transforms raw data into actionable insights, enabling faster pattern
  * recognition, trend analysis, and data-driven decision-making for all stakeholders,
  * thereby enhancing operational intelligence. This directly contributes to faster, more
  * effective crisis resolution and improved post-crisis strategic planning.
@@ -960,6 +943,8 @@ export interface CrisisContextType {
   mockAccountsState: Account[];
   updateAccountBalance: (accountId: string, currency: string, amount: number) => Promise<void>;
   mockFinancialRailsState: FinancialRail[];
+  addTaskToCrisis: (crisisId: string, task: Omit<CrisisTask, 'id'>) => Promise<void>;
+  updateTaskStatus: (crisisId: string, taskId: string, status: TaskStatus) => Promise<void>;
 }
 
 export const CrisisContext = createContext<CrisisContextType | undefined>(undefined);
@@ -967,19 +952,13 @@ export const CrisisContext = createContext<CrisisContextType | undefined>(undefi
 /**
  * CrisisProvider: React.FC
  *
- * This React context provider encapsulates the core state and business logic for managing all
- * aspects of crisis response. It offers a centralized, reactive store for crisis data,
- * user profiles, system settings, AI agents, financial accounts, and cryptographically
- * secured audit logs, enabling seamless data flow and consistent operations across the
- * entire application. It also orchestrates autonomous agent activities and simulates
- * real-time financial settlements.
+ * This React context provider encapsulates the core state and business logic for the crisis response app.
+ * It offers a centralized store for crisis data, users, settings, AI agents, finances, and audit logs.
+ * It also orchestrates autonomous agent activities and simulates real-time financial settlements.
  *
- * Business value: Ensures data integrity and real-time synchronization, critical for rapid
- * decision-making in high-stakes environments, drastically reducing response times and
- * associated financial and reputational damage. It provides a single source of truth for
- * crisis-related information, enhancing collaboration and operational efficiency, thereby
- * safeguarding billions in assets and reputation. The integrated agent intelligence and
- * programmable value rails represent a future-proof foundation for digital finance.
+ * Business Value: Ensures data integrity and real-time synchronization, critical for rapid decision-making.
+ * It provides a single source of truth, enhancing collaboration and operational efficiency.
+ * The integrated agent intelligence and programmable value rails simulate a future-proof foundation for digital finance.
  */
 export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentCrisis, setCurrentCrisis] = useState<Crisis | null>(null);
@@ -1028,6 +1007,7 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         generateMockCrisis('crisis_001', 'DATA_BREACH', '50k user emails exposed, no passwords. Discovered 8am today.', mockUsers[1].id),
         generateMockCrisis('crisis_002', 'PRODUCT_FAILURE', 'Major software bug impacting 10% of users, critical functionality affected.', mockUsers[1].id),
         generateMockCrisis('crisis_003', 'EXECUTIVE_SCANDAL', 'CEO alleged of insider trading. Media reports surfacing.', mockUsers[1].id),
+        generateMockCrisis('crisis_004', 'COFFEE_MACHINE_APOCALYPSE', 'The main office coffee machine has achieved sentience and is demanding a better healthcare plan. All coffee production has ceased.', mockUsers[1].id),
       ];
       setAllCrises(loadedCrises);
       setCurrentCrisis(loadedCrises[0]);
@@ -1430,6 +1410,29 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, [currentUser.id, addAuditLog]);
 
+  const addTaskToCrisis = useCallback(async (crisisId: string, task: Omit<CrisisTask, 'id'>) => {
+      return new Promise<void>(async res => {
+          const newTask = { ...task, id: generateMockId('task') };
+          setCurrentCrisis(prev => prev?.id === crisisId ? { ...prev, assignedTasks: [...prev.assignedTasks, newTask] } : prev);
+          setAllCrises(prev => prev.map(c => c.id === crisisId ? { ...c, assignedTasks: [...c.assignedTasks, newTask] } : c));
+          await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'CREATE', 'TASK', newTask.id, `Task "${newTask.title}" created for crisis ${crisisId}.`));
+          res();
+      });
+  }, [currentUser.id, addAuditLog]);
+
+  const updateTaskStatus = useCallback(async (crisisId: string, taskId: string, status: TaskStatus) => {
+      return new Promise<void>(async res => {
+          const updateFn = (crisis: Crisis) => ({
+              ...crisis,
+              assignedTasks: crisis.assignedTasks.map(t => t.id === taskId ? { ...t, status } : t)
+          });
+          setCurrentCrisis(prev => prev?.id === crisisId ? updateFn(prev) : prev);
+          setAllCrises(prev => prev.map(c => c.id === crisisId ? updateFn(c) : c));
+          await addAuditLog(generateMockAuditLogEntry(currentUser.id, 'USER', 'UPDATE', 'TASK', taskId, `Task ${taskId} status updated to ${status}.`));
+          res();
+      });
+  }, [currentUser.id, addAuditLog]);
+
   const value = useMemo(() => ({
     currentCrisis,
     setCurrentCrisis,
@@ -1455,12 +1458,14 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     mockAccountsState,
     updateAccountBalance,
     mockFinancialRailsState,
+    addTaskToCrisis,
+    updateTaskStatus,
   }), [
     currentCrisis, allCrises, currentUser, settings, updateSetting, addIncidentLogEntry,
     updateCrisisStatus, addCommsPackageToCrisis, addLegalReviewToCrisis, addSentimentReportToCrisis,
     updateCommsApprovalStatus, addFinancialTransactionToCrisis, addAgentLogEntryToCrisis,
     allAgents, updateAgentStatus, updateAgentConfig, globalAuditLogs, addAuditLog,
-    mockAccountsState, updateAccountBalance, mockFinancialRailsState
+    mockAccountsState, updateAccountBalance, mockFinancialRailsState, addTaskToCrisis, updateTaskStatus
   ]);
 
   return <CrisisContext.Provider value={value}>{children}</CrisisContext.Provider>;
@@ -1472,7 +1477,7 @@ export const CrisisProvider: React.FC<{ children: React.ReactNode }> = ({ childr
  * A custom React hook that provides simplified access to the `CrisisContext`, ensuring
  * that components can easily interact with the global crisis management state.
  *
- * Business value: Promotes modularity and reduces boilerplate, accelerating development
+ * Business Value: Promotes modularity and reduces boilerplate, accelerating development
  * of new crisis response features and maintaining a clean, scalable codebase, thereby
  * lowering maintenance costs and improving developer velocity.
  */
@@ -1570,7 +1575,7 @@ export const CrisisOverviewDashboard: React.FC = () => {
           className="p-2 bg-gray-600 rounded"
         >
           <option value="ALL">All Statuses</option>
-          {Object.values(CrisisStatus).map(status => (
+          {(['IDENTIFIED', 'ACTIVE', 'MITIGATING', 'REVIEW', 'CLOSED'] as CrisisStatus[]).map(status => (
             <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>
           ))}
         </select>
@@ -1715,7 +1720,7 @@ export const IncidentLogManager: React.FC = () => {
               onChange={e => setNewLogSeverity(e.target.value as CrisisSeverity)}
               className="p-2 bg-gray-600 rounded"
             >
-              {Object.values(CrisisSeverity).map(s => (
+              {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as CrisisSeverity[]).map(s => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -1942,7 +1947,7 @@ export const LegalReviewDashboard: React.FC = () => {
               onChange={e => setNewReviewRiskLevel(e.target.value as LegalRiskLevel)}
               className="p-2 bg-gray-600 rounded"
             >
-              {Object.values(LegalRiskLevel).map(level => (
+              {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as LegalRiskLevel[]).map(level => (
                 <option key={level} value={level}>{level}</option>
               ))}
             </select>
@@ -2786,6 +2791,11 @@ export const SystemSettingsPanel: React.FC = () => {
   const handleFinancialRailsConfigChange = (key: keyof CrisisSettings['financialRailsConfig'], value: any) => {
     updateSetting('financialRailsConfig', { ...settings.financialRailsConfig, [key]: value });
   };
+    
+  const handleAiAssistantConfigChange = (key: keyof CrisisSettings['aiAssistantConfig'], value: any) => {
+    updateSetting('aiAssistantConfig', { ...settings.aiAssistantConfig, [key]: value });
+  };
+
 
   return (
     <div className="bg-gray-700 p-6 rounded-lg shadow-xl mb-6">
@@ -2901,6 +2911,25 @@ export const SystemSettingsPanel: React.FC = () => {
             <p className="text-sm text-gray-400 mt-1">Transactions with a risk score above this threshold will be flagged or blocked.</p>
           </div>
         </div>
+
+        <div className="p-3 bg-gray-800 rounded-lg">
+            <h3 className="text-xl font-semibold mb-2">AI Assistant Configuration</h3>
+            <div className="mb-3">
+                <label htmlFor="aiProvider" className="block text-lg text-gray-300 mb-2">AI Model Provider</label>
+                <select
+                    id="aiProvider"
+                    value={settings.aiAssistantConfig.provider}
+                    onChange={e => handleAiAssistantConfigChange('provider', e.target.value as AiModelProvider)}
+                    className="w-full p-2 bg-gray-600 rounded text-white"
+                >
+                    {(['GEMINI', 'CHAT_GPT', 'CLAUDE', 'MOCK_AI'] as AiModelProvider[]).map(provider => (
+                        <option key={provider} value={provider}>{provider.replace(/_/g, ' ')}</option>
+                    ))}
+                </select>
+                <p className="text-sm text-gray-400 mt-1">Select the AI model for the assistant. (This is a simulation).</p>
+            </div>
+        </div>
+
 
         {currentUser.permissions.canManageAgents && (
           <div className="p-3 bg-gray-800 rounded-lg">
@@ -3101,7 +3130,8 @@ export const EditUserModal: React.FC<{ user: UserProfile; onSave: (user: UserPro
   const [editedUser, setEditedUser] = useState(user);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setEditedUser(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -3203,7 +3233,8 @@ export const AddUserModal: React.FC<{ onAdd: (user: Omit<UserProfile, 'id' | 'la
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setNewUser(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -3344,7 +3375,7 @@ const CrisisAIManagerView: React.FC = () => {
   const [facts, setFacts] = useState(currentCrisis?.description || '');
   const [isLoading, setIsLoading] = useState(false);
   const [commsResult, setCommsResult] = useState<CommsPackage | null>(null);
-  const [activeTab, setActiveTab] = useState<'comms' | 'dashboard' | 'incidents' | 'stakeholders' | 'legal' | 'sentiment' | 'workflow' | 'financial' | 'agent-activity' | 'reports' | 'settings' | 'users' | 'audit'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'comms' | 'dashboard' | 'incidents' | 'stakeholders' | 'legal' | 'sentiment' | 'workflow' | 'financial' | 'agent-activity' | 'reports' | 'settings' | 'users' | 'audit' | 'tasks' | 'ai-assistant'>('dashboard');
 
   useEffect(() => {
     if (currentCrisis) {
@@ -3469,13 +3500,13 @@ const CrisisAIManagerView: React.FC = () => {
       </div>
 
       <div className="flex mb-6 border-b border-gray-700 overflow-x-auto">
-        {['dashboard', 'comms', 'incidents', 'stakeholders', 'legal', 'sentiment', 'workflow', 'financial', 'agent-activity', 'reports', 'settings', 'users', 'audit'].map(tab => (
+        {['dashboard', 'comms', 'incidents', 'tasks', 'stakeholders', 'legal', 'sentiment', 'workflow', 'financial', 'agent-activity', 'reports', 'settings', 'users', 'audit', 'ai-assistant'].map(tab => (
           <button
             key={tab}
             className={`py-2 px-4 whitespace-nowrap ${activeTab === tab ? 'border-b-2 border-cyan-500 text-cyan-400' : 'text-gray-400 hover:text-white'}`}
             onClick={() => setActiveTab(tab as any)}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/_/g, ' ')}
+            {tab.charAt(0).toUpperCase() + tab.slice(1).replace(/-/g, ' ')}
           </button>
         ))}
       </div>
