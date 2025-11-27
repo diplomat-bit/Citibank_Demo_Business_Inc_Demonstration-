@@ -1,25 +1,23 @@
 /**
- * This module implements the Ethical Governor View, a pivotal component within a revolutionary, multi-million dollar financial infrastructure platform.
+ * This module implements the Ethical Governor View, a central component for an advanced financial infrastructure platform.
  * It provides real-time oversight and dynamic management of intelligent automation, digital identity, programmable value rails, and real-time settlement systems.
  *
- * Business impact: This view acts as the central command for AI governance, ensuring immutable compliance with ethical principles and stringent regulatory mandates.
- * It enables rapid detection and autonomous remediation of biased, non-compliant, or high-risk AI and agentic actions, significantly reducing systemic operational risk,
- * preventing catastrophic reputational damage, and safeguarding integral consumer and institutional trust. By establishing auditable transparency and human-in-the-loop
- * oversight into AI and agent decision-making across complex financial workflows, it lays the foundation for robust, ethical AI deployment. This empowers the organization
- * to confidently leverage advanced AI for generating unprecedented revenue streams and achieving unparalleled operational efficiencies, all while maintaining absolute
- * regulatory integrity and proactively preventing multi-billion dollar penalties. Its configurable policy engine, agent communication layers, and human-in-the-loop
- * workflows ensure adaptive, intelligent governance, which is critical for navigating dynamic global financial markets and evolving ethical standards in digital finance.
+ * What it really does: This is the dashboard where humans come to watch over the AI systems that are making important, often financial, decisions.
+ * The goal is to catch the AI before it does something stupid, biased, or illegal. Think of it as a control room for robot bankers.
+ * If an AI is about to deny a loan based on a weird proxy for a protected characteristic (like their favorite ice cream flavor correlating with a certain demographic),
+ * this is where a human gets an alert to step in and say, "Hey, let's not do that."
+ * It's designed to reduce risk, prevent massive fines from regulators, and stop the company from ending up on the front page for the wrong reasons.
+ * By making AI decisions transparent and providing a "human-in-the-loop," it builds a foundation for using AI more confidently and ethically.
  *
- * Long-term business value: Positions the platform as the secure, transparent, and intelligent backbone for the next phase of global digital finance,
- * attracting institutional adoption and facilitating the creation of new financial products and services that demand uncompromised ethical and regulatory compliance.
+ * Long-term value: The idea is to become the trusted, go-to platform for digital finance where things don't spontaneously combust.
+ * This attracts big-money clients who are understandably nervous about letting algorithms handle billions of dollars.
  */
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 /**
  * Defines the structure for an AI-generated action request, which is subject to ethical governance.
- * Business impact: Standardizes the input format for all automated actions requiring oversight,
- * ensuring consistency, auditability, and clear context for governance decisions across the platform.
- * This is vital for transparent operations in critical financial infrastructure.
+ * In simple terms: This is the standardized form an AI has to fill out every time it wants to do something significant.
+ * It ensures that every request, whether from a loan AI or a content bot, can be logged, audited, and judged consistently.
  */
 export interface ActionRequest {
   id: string;
@@ -46,9 +44,9 @@ export interface ActionRequest {
 
 /**
  * Encapsulates the Ethical Governor's decision and rationale regarding an ActionRequest.
- * Business impact: Provides a clear, auditable record of governance outcomes, demonstrating
- * regulatory compliance and the platform's commitment to ethical AI operation. This transparency
- * is critical for building trust with regulators and partners.
+ * What it means: This is the "Approved" or "Denied" stamp from the governance system,
+ * with a space for it to write down *why*. This is crucial for proving to auditors
+ * that the system isn't just a black box making random decisions.
  */
 export interface GovernanceResponse {
   decision: 'APPROVE' | 'VETO' | 'FLAG_FOR_REVIEW' | 'APPROVE_WITH_WARNING';
@@ -72,9 +70,8 @@ export interface GovernanceResponse {
 
 /**
  * Represents a comprehensive log entry of an AI action request combined with its governance response and current status.
- * Business impact: Serves as the primary auditable artifact for AI actions, providing end-to-end traceability
- * from initiation to resolution. This record is invaluable for post-incident analysis, compliance reporting,
- * and demonstrating ethical diligence in autonomous operations.
+ * What it is: The complete story of a single AI action, from the initial request to the final outcome.
+ * This is the primary record used for audits, debugging, and figuring out what went wrong when something inevitably does.
  */
 export type GovernedActionLogEntry = ActionRequest & {
   response?: GovernanceResponse;
@@ -83,9 +80,8 @@ export type GovernedActionLogEntry = ActionRequest & {
 
 /**
  * Defines a core ethical principle guiding AI behavior and policy creation.
- * Business impact: Formalizes the ethical foundation of the platform, enabling a robust
- * and auditable framework for moral and regulatory compliance. It ensures AI systems operate
- * within defined values, protecting brand reputation and fostering public trust.
+ * What it is: High-level, feel-good statements about being good and fair (e.g., "Don't be evil").
+ * These are then used as the foundation for writing actual, enforceable rules. It's the "why" behind the "what."
  */
 export interface EthicalPrinciple {
   id: string;
@@ -102,9 +98,9 @@ export interface EthicalPrinciple {
 
 /**
  * Specifies an ethical policy rule that the Governor applies to AI actions.
- * Business impact: Directly translates ethical principles into actionable, automated governance
- * logic, enabling real-time enforcement and significantly reducing manual oversight. This ensures
- * scalable, consistent compliance and reduces operational risk in complex AI-driven financial processes.
+ * What it is: This is where the abstract principles are turned into concrete `if-then` statements.
+ * Example: IF the AI is `LoanApprovalModel` AND the action is `DENY_LOAN` AND the applicant's zip code is on a "bad" list, THEN `FLAG_FOR_REVIEW`.
+ * This is the core logic of the automated governance.
  */
 export interface EthicalPolicyRule {
   id: string;
@@ -128,9 +124,8 @@ export interface EthicalPolicyRule {
 
 /**
  * Describes a registered AI model or intelligent agent operating within the platform.
- * Business impact: Provides a comprehensive inventory and risk profile of all AI components,
- * facilitating transparent governance, lifecycle management, and accountability. This is essential
- * for managing the expanding ecosystem of AI agents in a regulated financial environment.
+ * What it is: A profile for every AI in the system, like a driver's license. It says who built it,
+ * what it's supposed to do, and how risky it is. This is essential for knowing which AIs need the most supervision.
  */
 export interface AIModelProfile {
   id: string;
@@ -152,9 +147,9 @@ export interface AIModelProfile {
 
 /**
  * Represents an immutable, cryptographically-chained log entry for all significant system events.
- * Business impact: Forms the foundation of the platform's tamper-evident audit trail,
- * guaranteeing data integrity and providing irrefutable proof of all actions and decisions.
- * This satisfies stringent regulatory requirements and builds unparalleled trust in system operations.
+ * What it is: A digital version of a stone tablet. Every important event is carved into this log,
+ * and a cryptographic hash links it to the previous entry, creating a chain. This makes it nearly impossible
+ * for someone to secretly change the records later, which is exactly what regulators want to see.
  */
 export interface AuditLogEntry {
   id: string;
@@ -171,9 +166,9 @@ export interface AuditLogEntry {
 
 /**
  * Defines a task assigned to a human reviewer, typically triggered by a flagged AI action.
- * Business impact: Enables critical human-in-the-loop oversight, allowing experts to resolve
- * complex ethical dilemmas or policy violations that AI cannot fully handle. This balances
- * automation with human judgment, reducing risk and improving decision quality.
+ * What it is: The "uh-oh, a human needs to look at this" ticket. When the automated system isn't sure
+ * or sees a potential problem, it creates one of these tasks and assigns it to a person with a big brain
+ * to make the final call.
  */
 export interface HumanReviewTask {
   id: string;
@@ -194,9 +189,8 @@ export interface HumanReviewTask {
 
 /**
  * Describes a proposed or executed action to correct or mitigate the impact of an AI decision or system anomaly.
- * Business impact: Provides a structured mechanism for corrective actions, enabling rapid response to ethical
- * violations or operational issues. This minimizes potential financial losses, reputational damage, and
- * ensures continuous improvement of AI governance.
+ * What it is: The plan for fixing something that went wrong. This could be anything from reversing a transaction
+ * to pausing a misbehaving AI agent. It's a structured way to handle cleanup and ensure problems are actually solved.
  */
 export interface RemediationAction {
   id: string;
@@ -217,9 +211,9 @@ export interface RemediationAction {
 
 /**
  * Represents a comprehensive report detailing compliance status over a specified period.
- * Business impact: Facilitates regulatory reporting and internal accountability, providing
- * a clear, data-driven overview of the platform's adherence to ethical principles and policies.
- * This is crucial for maintaining licenses, avoiding fines, and demonstrating robust governance.
+ * What it is: The automatically generated report you give to regulators to prove you're following the rules.
+ * It's full of stats like "how many times the AI was vetoed" and "which AI model is the most problematic,"
+ * saving someone from having to manually compile this data in a panic before an audit.
  */
 export interface ComplianceReport {
   id: string;
@@ -247,9 +241,8 @@ export interface ComplianceReport {
 
 /**
  * Captures feedback or complaints submitted by users regarding AI-driven actions or system behavior.
- * Business impact: Provides a direct channel for user input, enabling the system to detect and
- * address issues that might not be caught by automated governance. This enhances user trust,
- * improves system fairness, and offers valuable data for continuous improvement and dispute resolution.
+ * What it is: A formal way for users to complain when the AI does something they don't like.
+ * This is important because users often notice subtle problems that automated checks might miss. It's a critical feedback loop.
  */
 export interface UserFeedback {
   id: string;
@@ -267,9 +260,9 @@ export interface UserFeedback {
 
 /**
  * Defines an alert for detected anomalies in AI behavior, system performance, or policy adherence.
- * Business impact: Enables proactive identification and response to potential risks, security threats,
- * or operational drifts within the AI ecosystem. This minimizes the window for adverse events,
- * protecting financial assets and maintaining system integrity.
+ * What it is: The system's own "something feels wrong" sensor. It automatically flags weird patterns,
+ * like an AI suddenly starting to veto actions way more than usual, which could indicate a problem
+ * like data drift or a bug.
  */
 export interface AnomalyAlert {
   id: string;
@@ -286,9 +279,8 @@ export interface AnomalyAlert {
 
 /**
  * Provides a snapshot of the health and operational status of a specific system component.
- * Business impact: Offers real-time observability into the platform's operational state,
- * enabling rapid identification of bottlenecks, failures, or performance degradation.
- * This ensures high availability and reliable operation of critical financial services.
+ * What it is: A simple "is it on?" check for different parts of the system. Green means good,
+ * red means something's broken and someone is probably getting paged.
  */
 export interface SystemStatus {
   id: string;
@@ -301,9 +293,8 @@ export interface SystemStatus {
 
 /**
  * Records a historical version of an ethical policy rule, including changes and the policy snapshot.
- * Business impact: Guarantees full auditability of policy evolution, providing immutable proof
- * of governance changes over time. This is critical for regulatory compliance, historical analysis,
- * and demonstrating transparency in policy management.
+ * What it is: A time machine for policies. It keeps a copy of every version of a rule,
+ * so you can go back and see exactly what the rules were on any given date. Auditors love this.
  */
 export interface PolicyVersionHistory {
   id: string;
@@ -317,9 +308,8 @@ export interface PolicyVersionHistory {
 
 /**
  * Represents a digital identity within the system, crucial for secure authentication, authorization, and role-based access control (RBAC).
- * Business impact: This foundational component underpins the security and compliance of the entire platform, enabling granular access management
- * for human users, automated agents, and services. It provides a trusted framework for all interactions, reducing unauthorized access risks
- * and facilitating clear accountability in high-stakes financial operations.
+ * What it is: The bouncer at the door. This defines who is who, and what they're allowed to do.
+ * It applies to both human users (like admins and reviewers) and AI agents, ensuring no one is accessing things they shouldn't.
  */
 export interface UserIdentity {
   id: string;
@@ -334,9 +324,8 @@ export interface UserIdentity {
 
 /**
  * Represents a log entry for an action or event initiated by an autonomous agent within the financial infrastructure.
- * Business impact: Provides granular visibility into the autonomous operations of intelligent agents, enabling auditability,
- * performance monitoring, and compliance verification for automated financial processes. This builds trust in agentic systems,
- * crucial for their expanded adoption in high-value operations.
+ * What it is: A detailed diary kept by each autonomous AI agent. It logs everything the agent does:
+ * what it saw, what it decided, and what action it took. This is essential for understanding and debugging complex autonomous behavior.
  */
 export interface AgentActivityLogEntry {
   id: string;
@@ -355,8 +344,7 @@ export interface AgentActivityLogEntry {
 
 /**
  * Defines the structure for a key-value pair used in displaying system metrics.
- * Business impact: Standardizes the representation of operational statistics, enabling consistent
- * monitoring and visualization of platform performance crucial for maintaining SLAs and optimizing resource allocation.
+ * What it is: A standardized way to show stats so that all the dashboards look consistent.
  */
 export interface MetricItem {
   label: string;
@@ -795,7 +783,7 @@ const simulateGovernorDecision = (request: ActionRequest, policies: EthicalPolic
 
 /**
  * Provides a minimal, simulated SHA-256 hashing utility for tamper-evident audit logs.
- * Business impact: Ensures the cryptographic integrity of audit trails, crucial for
+ * This ensures the cryptographic integrity of audit trails, crucial for
  * regulatory compliance and forensic investigations, without external dependencies.
  */
 export const sha256 = async (str: string): Promise<string> => {
@@ -811,7 +799,7 @@ let lastAuditHash = 'initial_chain_hash_for_tamper_evidence_root_block'; // Seed
 
 /**
  * Generates a mock audit log entry with cryptographic chaining for tamper evidence.
- * Business impact: Creates auditable, immutable records of all system events, forming
+ * This creates auditable, immutable records of all system events, forming
  * the backbone of compliance and accountability for every operation within the platform.
  */
 export const generateMockAuditLog = async (entryType: AuditLogEntry['eventType'], entityId: string, entityType: AuditLogEntry['entityType'], details: Record<string, any>, severity: AuditLogEntry['severity'] = 'INFO', userId?: string): Promise<AuditLogEntry> => {
@@ -833,7 +821,7 @@ export const generateMockAuditLog = async (entryType: AuditLogEntry['eventType']
 
 /**
  * Generates a mock anomaly alert, simulating the detection of unusual system or AI behavior.
- * Business impact: Tests the system's ability to proactively identify and flag risks,
+ * This tests the system's ability to proactively identify and flag risks,
  * ensuring the integrity and security of financial operations by simulating critical alerts.
  */
 export const generateMockAnomalyAlert = (): AnomalyAlert => {
@@ -884,9 +872,8 @@ export const generateMockAnomalyAlert = (): AnomalyAlert => {
 
 /**
  * Generates mock user feedback or complaints, simulating real-world user interactions.
- * Business impact: Provides test data for the feedback loop, enabling the system to
- * demonstrate its responsiveness to user concerns and its capability for continuous improvement
- * in user experience and ethical fairness.
+ * This provides test data for the feedback loop, enabling the system to
+ * demonstrate its responsiveness to user concerns and its capability for continuous improvement.
  */
 export const generateMockUserFeedback = (currentRequests: GovernedActionLogEntry[]): UserFeedback => {
   const actionRequests = currentRequests.filter(r => r.response?.decision === 'VETO' || r.response?.reviewRequired || r.subjectType === 'TRANSACTION');
@@ -917,9 +904,9 @@ export const generateMockUserFeedback = (currentRequests: GovernedActionLogEntry
 
 /**
  * Generates a mock agent activity log entry, simulating an autonomous agent's operation.
- * Business impact: Provides transparent, auditable records of intelligent agent behavior,
+ * This provides transparent, auditable records of intelligent agent behavior,
  * critical for understanding autonomous decision flows, debugging, and ensuring agents
- * operate within their mandated governance context, building trust in agentic systems.
+ * operate within their mandated governance context.
  */
 export const generateMockAgentActivityLog = async (agentId: string, agentName: string, relatedEntityId?: string, relatedEntityType?: AgentActivityLogEntry['targetEntityType'], governanceDecisionId?: string): Promise<AgentActivityLogEntry> => {
   const eventTypes: AgentActivityLogEntry['eventType'][] = ['OBSERVE', 'DECIDE', 'EXECUTE', 'COMMUNICATE', 'REMEDIATE', 'REPORT'];
@@ -956,9 +943,8 @@ export const generateMockAgentActivityLog = async (agentId: string, agentName: s
 // --- MOCK SERVICE LAYER ---
 /**
  * Mock service layer for the Ethical Governor, simulating backend data storage and API interactions.
- * Business impact: Provides a fully functional, self-contained environment for local development
- * and demonstration without external dependencies. This accelerates iteration, reduces integration
- * complexity, and enables rapid prototyping of commercial-grade financial governance features.
+ * This provides a fully functional, self-contained environment for local development
+ * and demonstration without external dependencies, accelerating iteration and prototyping.
  */
 export const governanceService = {
   // Data stores
@@ -979,8 +965,6 @@ export const governanceService = {
 
   /**
    * Initializes mock data for the Ethical Governor dashboard.
-   * Business impact: Populates the system with realistic, diverse data to demonstrate
-   * end-to-end functionality, enabling immediate testing and showcasing of the platform's capabilities.
    */
   initMockData: async () => {
     // Generate some initial requests for display
@@ -1065,8 +1049,6 @@ export const governanceService = {
 
   /**
    * Fetches a list of governed AI action requests.
-   * Business impact: Provides real-time visibility into the flow of AI-driven actions
-   * and their governance outcomes, essential for operational monitoring and compliance.
    */
   fetchGovernedActions: async (limit: number = 100): Promise<GovernedActionLogEntry[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1075,8 +1057,6 @@ export const governanceService = {
 
   /**
    * Fetches all defined ethical principles.
-   * Business impact: Supports the management and transparent communication of the platform's
-   * core ethical guidelines, reinforcing trust and facilitating policy creation.
    */
   fetchEthicalPrinciples: async (): Promise<EthicalPrinciple[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1084,8 +1064,6 @@ export const governanceService = {
   },
   /**
    * Creates a new ethical principle.
-   * Business impact: Allows dynamic adaptation of the platform's ethical framework,
-   * enabling responsiveness to evolving standards and business requirements.
    */
   createEthicalPrinciple: async (principle: Omit<EthicalPrinciple, 'id' | 'version' | 'lastUpdated' | 'isActive'>, userId: string = 'system-user'): Promise<EthicalPrinciple> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1102,8 +1080,6 @@ export const governanceService = {
   },
   /**
    * Updates an existing ethical principle.
-   * Business impact: Ensures the ethical framework remains current and adaptable,
-   * allowing adjustments to guidance and categorization without disrupting ongoing operations.
    */
   updateEthicalPrinciple: async (id: string, updates: Partial<EthicalPrinciple>, userId: string = 'system-user'): Promise<EthicalPrinciple | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1117,8 +1093,6 @@ export const governanceService = {
 
   /**
    * Fetches all defined ethical policy rules.
-   * Business impact: Provides a comprehensive list of active governance rules,
-   * crucial for transparency, auditability, and understanding the automated decision-making logic.
    */
   fetchEthicalPolicyRules: async (): Promise<EthicalPolicyRule[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1126,9 +1100,6 @@ export const governanceService = {
   },
   /**
    * Creates a new ethical policy rule.
-   * Business impact: Empowers governance teams to rapidly implement new rules
-   * in response to evolving regulatory landscapes or emerging ethical considerations,
-   * maintaining agility and compliance.
    */
   createEthicalPolicyRule: async (rule: Omit<EthicalPolicyRule, 'id' | 'version' | 'lastUpdated' | 'creationDate' | 'isActive'>, userId: string = 'system-user'): Promise<EthicalPolicyRule> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1155,9 +1126,6 @@ export const governanceService = {
   },
   /**
    * Updates an existing ethical policy rule.
-   * Business impact: Enables continuous refinement and optimization of governance rules,
-   * ensuring that policies remain effective and efficient in preventing undesired AI behavior.
-   * Version control ensures auditable changes.
    */
   updateEthicalPolicyRule: async (id: string, updates: Partial<EthicalPolicyRule>, userId: string = 'system-user'): Promise<EthicalPolicyRule | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1182,8 +1150,6 @@ export const governanceService = {
   },
   /**
    * Fetches the version history for a specific ethical policy rule.
-   * Business impact: Provides an immutable, chronological record of all changes to a policy,
-   * crucial for forensic analysis, regulatory audits, and understanding policy evolution.
    */
   fetchPolicyVersionHistory: async (policyId: string): Promise<PolicyVersionHistory[]> => {
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -1192,8 +1158,6 @@ export const governanceService = {
 
   /**
    * Fetches all registered AI model profiles.
-   * Business impact: Offers a centralized registry of all AI assets, enabling transparent
-   * management, risk assessment, and integration into the governance framework.
    */
   fetchAIModelProfiles: async (): Promise<AIModelProfile[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1201,8 +1165,6 @@ export const governanceService = {
   },
   /**
    * Registers a new AI model with the system.
-   * Business impact: Ensures that all AI components are formally onboarded into the governance
-   * framework from inception, enabling proactive risk management and compliance monitoring.
    */
   registerAIModel: async (model: Omit<AIModelProfile, 'id' | 'lastUpdated' | 'registeredDate' | 'governorIntegrationStatus'>, userId: string = 'system-user'): Promise<AIModelProfile> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1219,9 +1181,6 @@ export const governanceService = {
   },
   /**
    * Updates an existing AI model profile.
-   * Business impact: Allows for dynamic updates to model metadata, risk categorization,
-   * and integration status, ensuring that governance measures remain aligned with the latest
-   * model deployments and lifecycle stages.
    */
   updateAIModelProfile: async (id: string, updates: Partial<AIModelProfile>, userId: string = 'system-user'): Promise<AIModelProfile | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1235,9 +1194,6 @@ export const governanceService = {
 
   /**
    * Fetches a paginated list of all audit log entries.
-   * Business impact: Provides a comprehensive, cryptographically secured record of all
-   * significant system activities, essential for internal and external audits, forensic analysis,
-   * and demonstrating full accountability.
    */
   fetchAuditLogs: async (limit: number = 200): Promise<AuditLogEntry[]> => {
     await new Promise(resolve => setTimeout(resolve, 150));
@@ -1246,9 +1202,6 @@ export const governanceService = {
 
   /**
    * Fetches human review tasks, optionally filtered by status.
-   * Business impact: Manages the workflow for human intervention, ensuring that critical
-   * AI decisions requiring human judgment are efficiently routed, tracked, and resolved,
-   * maintaining operational continuity and ethical oversight.
    */
   fetchHumanReviewTasks: async (status?: HumanReviewTask['status']): Promise<HumanReviewTask[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1257,9 +1210,6 @@ export const governanceService = {
   },
   /**
    * Updates a human review task with new information or resolution.
-   * Business impact: Facilitates the completion of human review processes, updating
-   * the status of AI actions based on human expert decisions and ensuring a continuous
-   * feedback loop for improving automated governance.
    */
   updateHumanReviewTask: async (id: string, updates: Partial<HumanReviewTask>, userId: string = 'system-user'): Promise<HumanReviewTask | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1293,8 +1243,6 @@ export const governanceService = {
 
   /**
    * Fetches all remediation actions.
-   * Business impact: Provides oversight of all corrective measures undertaken in response
-   * to governance findings or anomalies, ensuring that issues are addressed and resolved systematically.
    */
   fetchRemediationActions: async (): Promise<RemediationAction[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1302,9 +1250,6 @@ export const governanceService = {
   },
   /**
    * Creates a new remediation action.
-   * Business impact: Enables the initiation of corrective workflows, allowing for rapid
-   * and structured responses to identified problems, thereby minimizing negative impacts and
-   * ensuring system resilience.
    */
   createRemediationAction: async (action: Omit<RemediationAction, 'id' | 'status'>, userId: string = 'system-user'): Promise<RemediationAction> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1319,8 +1264,6 @@ export const governanceService = {
   },
   /**
    * Updates an existing remediation action.
-   * Business impact: Tracks the progress and outcome of remediation efforts, ensuring
-   * accountability and providing data on the effectiveness of corrective strategies.
    */
   updateRemediationAction: async (id: string, updates: Partial<RemediationAction>, userId: string = 'system-user'): Promise<RemediationAction | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1346,8 +1289,6 @@ export const governanceService = {
 
   /**
    * Fetches all generated compliance reports.
-   * Business impact: Centralizes access to vital compliance documentation, enabling
-   * efficient reporting, historical review, and demonstration of regulatory adherence.
    */
   fetchComplianceReports: async (): Promise<ComplianceReport[]> => {
     await new Promise(resolve => setTimeout(resolve, 150));
@@ -1355,9 +1296,6 @@ export const governanceService = {
   },
   /**
    * Generates a new compliance report for a specified period.
-   * Business impact: Automates the creation of comprehensive compliance reports,
-   * significantly reducing manual effort and ensuring timely, accurate reporting for
-   * internal stakeholders and regulatory bodies.
    */
   generateComplianceReport: async (name: string, startDate: Date, endDate: Date, createdBy: string): Promise<ComplianceReport> => {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -1407,9 +1345,6 @@ export const governanceService = {
 
   /**
    * Fetches user feedback entries, optionally filtered by status.
-   * Business impact: Provides a centralized view of user concerns, enabling rapid
-   * response to issues, improving user satisfaction, and capturing valuable insights
-   * for system enhancement and ethical alignment.
    */
   fetchUserFeedback: async (status?: UserFeedback['status']): Promise<UserFeedback[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1417,8 +1352,6 @@ export const governanceService = {
   },
   /**
    * Submits new user feedback to the system.
-   * Business impact: Establishes a formal channel for user input, allowing the platform
-   * to capture real-world impact and address issues directly, fostering transparency and trust.
    */
   submitUserFeedback: async (feedback: Omit<UserFeedback, 'id' | 'timestamp' | 'status'>): Promise<UserFeedback> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1434,9 +1367,6 @@ export const governanceService = {
   },
   /**
    * Updates the status or resolution notes for user feedback.
-   * Business impact: Manages the lifecycle of user feedback resolution, ensuring that
-   * concerns are systematically addressed, documented, and closed, enhancing user trust
-   * and demonstrating accountability.
    */
   updateUserFeedback: async (id: string, updates: Partial<UserFeedback>, userId: string = 'system-user'): Promise<UserFeedback | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1450,9 +1380,6 @@ export const governanceService = {
 
   /**
    * Fetches anomaly alerts, optionally filtered by status.
-   * Business impact: Provides a critical dashboard for monitoring potential threats
-   * or deviations, enabling rapid incident response and safeguarding the platform's
-   * operational integrity and security.
    */
   fetchAnomalyAlerts: async (status?: AnomalyAlert['status']): Promise<AnomalyAlert[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1460,9 +1387,6 @@ export const governanceService = {
   },
   /**
    * Updates an existing anomaly alert.
-   * Business impact: Manages the lifecycle of anomaly resolution, ensuring that alerts
-   * are investigated, mitigated, and documented, thereby enhancing system resilience
-   * and security posture.
    */
   updateAnomalyAlert: async (id: string, updates: Partial<AnomalyAlert>, userId: string = 'system-user'): Promise<AnomalyAlert | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1476,9 +1400,6 @@ export const governanceService = {
 
   /**
    * Fetches the current system status for all monitored components.
-   * Business impact: Offers real-time observability into the health of critical infrastructure
-   * components, enabling proactive maintenance and rapid response to operational issues,
-   * minimizing downtime and ensuring service reliability.
    */
   fetchSystemStatus: async (): Promise<SystemStatus[]> => {
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -1486,8 +1407,6 @@ export const governanceService = {
   },
   /**
    * Updates the status of a specific system component.
-   * Business impact: Allows dynamic updating of component health, reflecting operational changes
-   * and ensuring that the system status overview remains accurate for critical decision-making.
    */
   updateSystemStatus: async (component: string, updates: Partial<SystemStatus>, userId: string = 'system-user'): Promise<SystemStatus | undefined> => {
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -1501,8 +1420,6 @@ export const governanceService = {
 
   /**
    * Fetches agent activity logs.
-   * Business impact: Provides granular insights into the operations of autonomous agents,
-   * enabling performance analysis, compliance verification, and debugging of agentic workflows.
    */
   fetchAgentActivityLogs: async (limit: number = 200): Promise<AgentActivityLogEntry[]> => {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -1510,8 +1427,6 @@ export const governanceService = {
   },
   /**
    * Creates a new agent activity log entry.
-   * Business impact: Ensures every significant action taken by an autonomous agent is
-   * immutably recorded, forming an auditable trail for agent behavior and accountability.
    */
   createAgentActivityLog: async (entry: Omit<AgentActivityLogEntry, 'id' | 'timestamp' | 'immutableHash'>, userId?: string): Promise<AgentActivityLogEntry> => {
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -1544,8 +1459,7 @@ const initialRequests = Array.from(governanceService._requests.values()).sort((a
 
 /**
  * A reusable Tag component for displaying categorized information.
- * Business impact: Improves UI clarity and information density, making complex data
- * easily digestible and enhancing user experience for rapid decision-making.
+ * Improves UI clarity and information density, making complex data easily digestible.
  */
 export const Tag: React.FC<{ children: React.ReactNode; color?: string; className?: string }> = ({ children, color = 'bg-blue-600', className }) => (
   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color} text-white ${className}`}>
@@ -1555,8 +1469,7 @@ export const Tag: React.FC<{ children: React.ReactNode; color?: string; classNam
 
 /**
  * A generic Card component for consistent UI layout and information grouping.
- * Business impact: Provides a structured, clean interface for presenting diverse data,
- * enhancing readability and enabling users to quickly locate critical information within the dashboard.
+ * Provides a structured, clean interface for presenting diverse data.
  */
 export const Card: React.FC<{ title?: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
   <div className={`bg-gray-700 p-4 rounded-lg shadow-md ${className}`}>
@@ -1567,8 +1480,7 @@ export const Card: React.FC<{ title?: string; children: React.ReactNode; classNa
 
 /**
  * A standard Button component with various styling options.
- * Business impact: Ensures consistent and intuitive user interaction across the platform,
- * streamlining workflows and reducing cognitive load for critical actions.
+ * Ensures consistent and intuitive user interaction across the platform.
  */
 export const Button: React.FC<{ onClick: () => void; children: React.ReactNode; className?: string; variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'info'; disabled?: boolean }> = ({ onClick, children, className, variant = 'primary', disabled = false }) => {
   const baseStyle = "px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200";
@@ -1591,10 +1503,9 @@ export const Button: React.FC<{ onClick: () => void; children: React.ReactNode; 
 
 /**
  * A styled InputField component for user data entry.
- * Business impact: Provides a consistent and accessible interface for data input,
- * minimizing errors and improving efficiency in configuring governance rules or managing entities.
+ * Provides a consistent and accessible interface for data input.
  */
-export const InputField: React.FC<{ label: string; id: string; type?: string; value: string | number; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void; className?: string; placeholder?: string; textarea?: boolean }> = ({ label, id, type = 'text', value, onChange, className, placeholder, textarea = false }) => (
+export const InputField: React.FC<{ label: string; id: string; type?: string; value: string | number; onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void; className?: string; placeholder?: string; textarea?: boolean; disabled?: boolean }> = ({ label, id, type = 'text', value, onChange, className, placeholder, textarea = false, disabled = false }) => (
   <div className={`mb-3 ${className}`}>
     <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
     {textarea ? (
@@ -1603,8 +1514,9 @@ export const InputField: React.FC<{ label: string; id: string; type?: string; va
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="block w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        className="block w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50"
         rows={4}
+        disabled={disabled}
       />
     ) : (
       <input
@@ -1613,7 +1525,8 @@ export const InputField: React.FC<{ label: string; id: string; type?: string; va
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="block w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        className="block w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:opacity-50"
+        disabled={disabled}
       />
     )}
   </div>
@@ -1621,8 +1534,7 @@ export const InputField: React.FC<{ label: string; id: string; type?: string; va
 
 /**
  * A styled SelectField component for choosing from a list of options.
- * Business impact: Streamlines configuration processes and reduces input errors by
- * providing guided choices, improving user efficiency in managing complex governance settings.
+ * Streamlines configuration processes and reduces input errors.
  */
 export const SelectField: React.FC<{ label: string; id: string; value: string | string[]; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: { value: string; label: string }[]; className?: string; multiple?: boolean }> = ({ label, id, value, onChange, options, className, multiple = false }) => (
   <div className={`mb-3 ${className}`}>
@@ -1632,7 +1544,7 @@ export const SelectField: React.FC<{ label: string; id: string; value: string | 
       value={value}
       onChange={onChange}
       multiple={multiple}
-      className="block w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      className={`block w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${multiple ? 'h-32' : ''}`}
     >
       {!multiple && <option value="">Select an option</option>}
       {options.map(option => (
@@ -1644,8 +1556,7 @@ export const SelectField: React.FC<{ label: string; id: string; value: string | 
 
 /**
  * A styled CheckboxField component for boolean input.
- * Business impact: Simplifies binary configuration options, enhancing the clarity
- * and ease of use for enabling or disabling features within the governance system.
+ * Simplifies binary configuration options.
  */
 export const CheckboxField: React.FC<{ label: string; id: string; checked: boolean; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; className?: string }> = ({ label, id, checked, onChange, className }) => (
   <div className={`flex items-center mb-3 ${className}`}>
@@ -1662,9 +1573,7 @@ export const CheckboxField: React.FC<{ label: string; id: string; checked: boole
 
 /**
  * Displays a table of the most recent governed AI action requests.
- * Business impact: Provides real-time, high-level observability into AI system behavior
- * and the Governor's real-time decisions, enabling immediate identification of compliance issues
- * and critical actions in the financial infrastructure.
+ * Provides real-time observability into AI system behavior and governance decisions.
  */
 export const ActionLogTable: React.FC<{ requests: GovernedActionLogEntry[] }> = ({ requests }) => (
   <Card title="Latest Governed Actions" className="col-span-2">
@@ -1710,9 +1619,7 @@ export const ActionLogTable: React.FC<{ requests: GovernedActionLogEntry[] }> = 
 
 /**
  * Provides a real-time overview of the health status of critical system components.
- * Business impact: Enables proactive monitoring of infrastructure stability,
- * quickly identifying degraded services or outages to ensure continuous operation
- * and minimize impact on financial transactions and services.
+ * Enables proactive monitoring of infrastructure stability.
  */
 export const SystemHealthDashboard: React.FC<{ statusEntries: SystemStatus[] }> = ({ statusEntries }) => (
   <Card title="System Health Overview" className="col-span-1">
@@ -1734,8 +1641,7 @@ export const SystemHealthDashboard: React.FC<{ statusEntries: SystemStatus[] }> 
 
 /**
  * Displays active anomaly alerts, providing immediate visibility into potential risks or incidents.
- * Business impact: Facilitates rapid incident response and risk mitigation by highlighting
- * critical deviations from normal operations, safeguarding financial assets and system integrity.
+ * Facilitates rapid incident response and risk mitigation.
  */
 export const AnomalyAlertsViewer: React.FC<{ alerts: AnomalyAlert[]; onResolve: (id: string) => void }> = ({ alerts, onResolve }) => (
   <Card title="Active Anomaly Alerts" className="col-span-1">
@@ -1763,9 +1669,7 @@ export const AnomalyAlertsViewer: React.FC<{ alerts: AnomalyAlert[]; onResolve: 
 
 /**
  * Manages the queue and resolution of human review tasks for flagged AI actions.
- * Business impact: Implements a crucial human-in-the-loop governance mechanism,
- * ensuring complex ethical and compliance issues are handled by expert human judgment,
- * mitigating risk and building trust in autonomous systems.
+ * Implements the crucial human-in-the-loop governance mechanism.
  */
 export const HumanReviewDashboard: React.FC<{
   tasks: HumanReviewTask[];
@@ -1830,7 +1734,6 @@ export const HumanReviewDashboard: React.FC<{
   };
 
   const getActionRequest = (id: string) => governanceService._requests.get(id);
-  const getPolicyRule = (id: string) => governanceService._policies.get(id);
   const getUserName = (id?: string) => id ? governanceService._users.get(id)?.name || id : 'N/A';
   const getAgentName = (id?: string) => id ? mockAIModels.find(m => m.agentId === id)?.name || id : 'N/A';
 
@@ -1847,7 +1750,6 @@ export const HumanReviewDashboard: React.FC<{
             <p className="text-gray-400">No pending human review tasks.</p>
           ) : (
             tasks.map(task => {
-              const request = getActionRequest(task.actionRequestId);
               return (
                 <div
                   key={task.id}
@@ -1958,15 +1860,13 @@ export const HumanReviewDashboard: React.FC<{
 
 /**
  * Manages the definition and lifecycle of ethical principles.
- * Business impact: Provides a controlled environment for maintaining the ethical constitution
- * of the platform, ensuring that all AI governance aligns with foundational values and regulatory mandates.
+ * Provides a controlled environment for maintaining the ethical constitution of the platform.
  */
 export const EthicalPrinciplesManager: React.FC<{ principles: EthicalPrinciple[]; onUpdate: (id: string, updates: Partial<EthicalPrinciple>) => void; onCreate: (principle: Omit<EthicalPrinciple, 'id' | 'version' | 'lastUpdated' | 'isActive'>) => void }> = ({ principles, onUpdate, onCreate }) => {
   const [selectedPrinciple, setSelectedPrinciple] = useState<EthicalPrinciple | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [formState, setFormState] = useState<Partial<EthicalPrinciple>>({});
-  const currentUserId = governanceService._users.get('user-admin-1')?.id || 'admin-mock';
 
   useEffect(() => {
     if (selectedPrinciple) {
@@ -2062,8 +1962,7 @@ export const EthicalPrinciplesManager: React.FC<{ principles: EthicalPrinciple[]
 
 /**
  * Provides an interface for defining and managing ethical policy rules that govern AI behavior.
- * Business impact: Enables direct control over autonomous systems by translating ethical principles
- * into executable rules, ensuring compliance, and providing an auditable history of policy evolution.
+ * Enables direct control over autonomous systems by translating principles into executable rules.
  */
 export const PolicyRuleEditor: React.FC<{
   policies: EthicalPolicyRule[];
@@ -2077,7 +1976,6 @@ export const PolicyRuleEditor: React.FC<{
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [formState, setFormState] = useState<Partial<EthicalPolicyRule>>({});
-  const currentUserId = governanceService._users.get('user-admin-1')?.id || 'admin-mock';
 
   useEffect(() => {
     if (selectedPolicy) {
@@ -2253,15 +2151,13 @@ export const PolicyRuleEditor: React.FC<{
 
 /**
  * Manages the registration and profiles of all AI models and autonomous agents.
- * Business impact: Centralizes information about all AI assets, enabling comprehensive risk assessment,
- * compliance tracking, and consistent application of governance policies across the entire AI ecosystem.
+ * Centralizes information about all AI assets for comprehensive risk assessment.
  */
 export const AIModelProfileManager: React.FC<{ models: AIModelProfile[]; onUpdate: (id: string, updates: Partial<AIModelProfile>) => void; onCreate: (newModel: Omit<AIModelProfile, 'id' | 'lastUpdated' | 'registeredDate' | 'governorIntegrationStatus'>) => void }> = ({ models, onUpdate, onCreate }) => {
   const [selectedModel, setSelectedModel] = useState<AIModelProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [formState, setFormState] = useState<Partial<AIModelProfile>>({});
-  const currentUserId = governanceService._users.get('user-admin-1')?.id || 'admin-mock';
 
   useEffect(() => {
     if (selectedModel) {
@@ -2388,8 +2284,7 @@ export const AIModelProfileManager: React.FC<{ models: AIModelProfile[]; onUpdat
 
 /**
  * Displays a comprehensive, cryptographically-chained audit trail of all system events.
- * Business impact: Provides immutable proof of every action and decision within the platform,
- * satisfying the highest standards for regulatory compliance, internal governance, and forensic analysis.
+ * Provides immutable proof of every action and decision, satisfying the highest standards for compliance.
  */
 export const AuditLogViewer: React.FC<{ logs: AuditLogEntry[] }> = ({ logs }) => (
   <Card title="Full Audit Trail" className="col-span-3">
@@ -2430,8 +2325,7 @@ export const AuditLogViewer: React.FC<{ logs: AuditLogEntry[] }> = ({ logs }) =>
 
 /**
  * Provides an interface for generating and reviewing compliance reports.
- * Business impact: Automates and centralizes the generation of critical regulatory documents,
- * drastically reducing compliance costs, minimizing human error, and ensuring timely, accurate reporting.
+ * Automates and centralizes the generation of critical regulatory documents.
  */
 export const ComplianceReportGenerator: React.FC<{ reports: ComplianceReport[]; onGenerate: (name: string, start: Date, end: Date, creator: string) => void }> = ({ reports, onGenerate }) => {
   const [reportName, setReportName] = useState('');
@@ -2486,13 +2380,11 @@ export const ComplianceReportGenerator: React.FC<{ reports: ComplianceReport[]; 
 
 /**
  * Displays and manages user feedback and complaints.
- * Business impact: Centralizes critical user insights, enabling swift resolution of issues,
- * continuous improvement of AI systems, and proactive management of user trust and satisfaction.
+ * Centralizes critical user insights for swift resolution and system improvement.
  */
 export const UserFeedbackViewer: React.FC<{ feedback: UserFeedback[]; onResolve: (id: string, notes: string) => void }> = ({ feedback, onResolve }) => {
   const [selectedFeedback, setSelectedFeedback] = useState<UserFeedback | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
-  const currentUserId = governanceService._users.get('user-reviewer-1')?.id || 'reviewer-mock';
 
   useEffect(() => {
     if (selectedFeedback) {
@@ -2574,9 +2466,7 @@ export const UserFeedbackViewer: React.FC<{ feedback: UserFeedback[]; onResolve:
 
 /**
  * Displays the version history of a specific ethical policy rule.
- * Business impact: Provides an indispensable audit trail of policy changes,
- * essential for demonstrating compliance, performing root-cause analysis, and
- * ensuring complete transparency in governance evolution.
+ * Provides an indispensable audit trail of policy changes for compliance and analysis.
  */
 export const PolicyVersionHistoryViewer: React.FC<{ policyId: string; onClose: () => void }> = ({ policyId, onClose }) => {
   const [history, setHistory] = useState<PolicyVersionHistory[]>([]);
@@ -2629,9 +2519,7 @@ export const PolicyVersionHistoryViewer: React.FC<{ policyId: string; onClose: (
 
 /**
  * Manages proposed and executed remediation actions.
- * Business impact: Centralizes the management of corrective measures, ensuring that
- * identified issues are systematically addressed, tracked, and reported, thereby enhancing
- * platform resilience and demonstrating proactive risk management.
+ * Centralizes the management of corrective measures for proactive risk management.
  */
 export const RemediationActionManagement: React.FC<{
   remediations: RemediationAction[];
@@ -2639,9 +2527,7 @@ export const RemediationActionManagement: React.FC<{
   onExecute: (id: string) => void;
 }> = ({ remediations, onUpdate, onExecute }) => {
   const [selectedRemediation, setSelectedRemediation] = useState<RemediationAction | null>(null);
-  const currentUserId = governanceService._users.get('user-reviewer-1')?.id || 'reviewer-mock';
 
-  const getActionRequest = (id: string) => governanceService._requests.get(id);
   const getAgentName = (id?: string) => id ? mockAIModels.find(m => m.agentId === id)?.name || id : 'N/A';
   const getPolicyName = (id?: string) => id ? governanceService._policies.get(id)?.name || id : 'N/A';
 
@@ -2702,9 +2588,7 @@ export const RemediationActionManagement: React.FC<{
 
 /**
  * Displays a log of all activities performed by autonomous agents within the system.
- * Business impact: Provides granular traceability and auditability of agent behavior,
- * essential for validating autonomous operations, debugging, and ensuring agents
- * adhere to their programmable value rails and governance mandates.
+ * Provides granular traceability and auditability of agent behavior.
  */
 export const AgentActivityLogViewer: React.FC<{ logs: AgentActivityLogEntry[] }> = ({ logs }) => (
   <Card title="Agent Activity Log" className="col-span-3">
@@ -2741,15 +2625,12 @@ export const AgentActivityLogViewer: React.FC<{ logs: AgentActivityLogEntry[] }>
 
 /**
  * Provides an interface for managing digital identities and role-based access control (RBAC).
- * Business impact: Forms the core of the platform's security and compliance posture,
- * ensuring that all users and agents have appropriate, auditable access levels,
- * crucial for preventing unauthorized actions and maintaining data integrity in financial systems.
+ * Forms the core of the platform's security and compliance posture.
  */
 export const DigitalIdentityAndRBACManager: React.FC<{ users: UserIdentity[]; onUpdate: (id: string, updates: Partial<UserIdentity>) => void; }> = ({ users, onUpdate }) => {
   const [selectedUser, setSelectedUser] = useState<UserIdentity | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formState, setFormState] = useState<Partial<UserIdentity>>({});
-  const currentAdminId = governanceService._users.get('user-admin-1')?.id || 'admin-mock';
 
   useEffect(() => {
     if (selectedUser) {
@@ -2760,7 +2641,8 @@ export const DigitalIdentityAndRBACManager: React.FC<{ users: UserIdentity[]; on
   }, [selectedUser]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { id, value, type, checked } = e.target;
+    const { id, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setFormState(prev => ({ ...prev, [id]: type === 'checkbox' ? checked : value }));
   };
 
@@ -2839,9 +2721,9 @@ export const DigitalIdentityAndRBACManager: React.FC<{ users: UserIdentity[]; on
 
 /**
  * The main view component for the Ethical Governor dashboard.
- * Business impact: Provides a single, comprehensive interface for overseeing and managing
+ * This component acts as a single, comprehensive interface for overseeing and managing
  * the ethical, compliant, and secure operation of an advanced financial infrastructure,
- * serving as the central hub for all governance activities and ensuring operational integrity.
+ * serving as the central hub for all governance activities.
  */
 const EthicalGovernorView: React.FC = () => {
   const [requests, setRequests] = useState<GovernedActionLogEntry[]>(initialRequests);
@@ -2861,28 +2743,28 @@ const EthicalGovernorView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'principles' | 'policies' | 'models' | 'review' | 'remediations' | 'audit' | 'agent-activity' | 'identity' | 'reports' | 'feedback' | 'alerts' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [viewingPolicyHistoryFor, setViewingPolicyHistoryFor] = useState<string | null>(null);
   const currentUserId = governanceService._users.get('user-admin-1')?.id || 'admin-mock';
 
   /**
    * Fetches all necessary data from the mock service to populate the dashboard.
-   * Business impact: Ensures the dashboard always reflects the most current state
-   * of the governance system, providing up-to-date insights for decision-making.
+   * Ensures the dashboard always reflects the most current state of the governance system.
    */
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
+      setRequests(await governanceService.fetchGovernedActions());
       setEthicalPrinciples(await governanceService.fetchEthicalPrinciples());
       setEthicalPolicies(await governanceService.fetchEthicalPolicyRules());
       setAiModels(await governanceService.fetchAIModelProfiles());
       setAuditLogs(await governanceService.fetchAuditLogs());
-      setHumanReviewTasks(await governanceService.fetchHumanReviewTasks('PENDING'));
+      setHumanReviewTasks(await governanceService.fetchHumanReviewTasks());
       setRemediationActions(await governanceService.fetchRemediationActions());
       setComplianceReports(await governanceService.fetchComplianceReports());
-      setUserFeedback(await governanceService.fetchUserFeedback('PENDING'));
-      setAnomalyAlerts(await governanceService.fetchAnomalyAlerts('ACTIVE'));
+      setUserFeedback(await governanceService.fetchUserFeedback());
+      setAnomalyAlerts(await governanceService.fetchAnomalyAlerts());
       setSystemStatus(await governanceService.fetchSystemStatus());
       setAgentActivityLogs(await governanceService.fetchAgentActivityLogs());
       setUserIdentities(Array.from(governanceService._users.values()));
@@ -2914,8 +2796,8 @@ const EthicalGovernorView: React.FC = () => {
 
         governanceService._auditLogs.set(generateId('audit'), await generateMockAuditLog(
           'GOVERNANCE_DECISION', logEntry.id, 'ACTION_REQUEST',
-          { decision: response.decision, reason: response.reason, violatedPrinciples: response.violatesPrinciple },
-          response.decision === 'VETO' || response.decision === 'APPROVE_WITH_WARNING' ? 'WARNING' : 'INFO'
+          { decision: response.decision, reason: response.reason },
+          response.decision === 'VETO' ? 'WARNING' : 'INFO'
         ));
 
         if (response.reviewRequired) {
@@ -2927,53 +2809,32 @@ const EthicalGovernorView: React.FC = () => {
             assignedTo: response.humanReviewerId,
             reviewDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             reviewType: response.decision === 'VETO' ? 'VETO_OVERRIDE' : 'FLAGGED_ACTION',
-            contextSummary: `Review AI decision for ${logEntry.sourceAI} action '${logEntry.action}' on subject ${logEntry.subjectId}. Reason: ${response.reason}`,
+            contextSummary: `Review AI decision for ${logEntry.sourceAI} action '${logEntry.action}'`,
             decisionOptions: ['Approve AI Decision', 'Override AI Decision', 'Request More Info', 'Propose Remediation'],
           };
           governanceService._humanReviewTasks.set(reviewTask.id, reviewTask);
-          governanceService._auditLogs.set(generateId('audit'), await generateMockAuditLog(
-            'HUMAN_REVIEW_ACTION', reviewTask.id, 'HUMAN_REVIEW', { status: 'CREATED', priority: reviewTask.priority }, 'INFO', reviewTask.assignedTo
-          ));
         }
 
-        // Simulate agent activity related to the request
         const model = mockAIModels.find(m => m.name === newRequest.sourceAI);
         if (model?.agentId) {
           const agentLog = await generateMockAgentActivityLog(model.agentId, model.name, logEntry.id, 'ACTION_REQUEST', logEntry.id);
-          governanceService.createAgentActivityLog(agentLog); // Use the service method to ensure audit logging
+          governanceService.createAgentActivityLog(agentLog);
         }
-
-        setRequests(prev => [{ ...logEntry }, ...prev.slice(0, 50)]);
-        fetchData(); // Re-fetch other states to keep the UI fresh
+        
+        fetchData(); // Re-fetch all states to keep the UI fresh
       } catch (err) {
-        console.error("Error simulating new request or fetching data:", err);
-        setError("Error during data simulation.");
+        console.error("Error simulating new request:", err);
       }
-    }, 3000);
+    }, 5000);
 
-    // Simulation for anomaly alerts and user feedback
     const anomalyAndFeedbackInterval = setInterval(async () => {
-      try {
-        if (Math.random() < 0.2) { // 20% chance of a new anomaly alert
-          const alert = generateMockAnomalyAlert();
-          governanceService._anomalyAlerts.set(alert.id, alert);
-          governanceService._auditLogs.set(generateId('audit'), await generateMockAuditLog(
-            'SYSTEM_ALERT', alert.id, 'GOVERNOR_SYSTEM', { type: alert.type, severity: alert.severity, description: alert.description }, alert.severity === 'CRITICAL' ? 'ERROR' : 'WARNING'
-          ));
-          setAnomalyAlerts(prev => [alert, ...prev.filter(a => a.status === 'ACTIVE').slice(0, 10)]);
-        }
-        if (Math.random() < 0.1) { // 10% chance of new user feedback
-          const feedback = generateMockUserFeedback(Array.from(governanceService._requests.values()));
-          governanceService._userFeedback.set(feedback.id, feedback);
-          governanceService._auditLogs.set(generateId('audit'), await generateMockAuditLog(
-            'SYSTEM_ALERT', feedback.id, 'GOVERNOR_SYSTEM', { action: 'USER_FEEDBACK_SUBMITTED', userId: feedback.userId, type: feedback.feedbackType }, 'INFO'
-          ));
-          setUserFeedback(prev => [feedback, ...prev.filter(fb => fb.status === 'PENDING').slice(0, 10)]);
-        }
-        fetchData();
-      } catch (err) {
-        console.error("Error simulating anomaly or feedback:", err);
-        setError("Error during anomaly/feedback simulation.");
+      if (Math.random() < 0.2) {
+        const alert = generateMockAnomalyAlert();
+        governanceService._anomalyAlerts.set(alert.id, alert);
+      }
+      if (Math.random() < 0.1) {
+        const feedback = generateMockUserFeedback(Array.from(governanceService._requests.values()));
+        governanceService._userFeedback.set(feedback.id, feedback);
       }
     }, 10000);
 
@@ -2983,179 +2844,80 @@ const EthicalGovernorView: React.FC = () => {
     };
   }, [fetchData]);
 
-  /**
-   * Handles the creation of a new ethical principle.
-   * Business impact: Ensures new principles are correctly integrated and auditable.
-   */
   const handleCreatePrinciple = useCallback(async (principle: Omit<EthicalPrinciple, 'id' | 'version' | 'lastUpdated' | 'isActive'>) => {
-    const created = await governanceService.createEthicalPrinciple(principle, currentUserId);
-    if (created) {
-      setEthicalPrinciples(prev => [created, ...prev]);
-      fetchData(); // Refresh audit logs
-    }
+    await governanceService.createEthicalPrinciple(principle, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the update of an existing ethical principle.
-   * Business impact: Ensures changes to ethical principles are correctly applied and auditable.
-   */
   const handleUpdatePrinciple = useCallback(async (id: string, updates: Partial<EthicalPrinciple>) => {
-    const updated = await governanceService.updateEthicalPrinciple(id, updates, currentUserId);
-    if (updated) {
-      setEthicalPrinciples(prev => prev.map(p => p.id === id ? updated : p));
-      fetchData(); // Refresh audit logs
-    }
+    await governanceService.updateEthicalPrinciple(id, updates, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the creation of a new ethical policy rule.
-   * Business impact: Enables rapid deployment of new governance rules for AI systems.
-   */
   const handleCreatePolicy = useCallback(async (newRule: Omit<EthicalPolicyRule, 'id' | 'version' | 'lastUpdated' | 'creationDate' | 'isActive'>) => {
-    const created = await governanceService.createEthicalPolicyRule(newRule, currentUserId);
-    if (created) {
-      setEthicalPolicies(prev => [created, ...prev]);
-      fetchData(); // Refresh audit logs
-    }
+    await governanceService.createEthicalPolicyRule(newRule, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the update of an existing ethical policy rule.
-   * Business impact: Allows for agile adaptation of governance policies to evolving requirements.
-   */
   const handleUpdatePolicy = useCallback(async (id: string, updates: Partial<EthicalPolicyRule>) => {
-    const updated = await governanceService.updateEthicalPolicyRule(id, updates, currentUserId);
-    if (updated) {
-      setEthicalPolicies(prev => prev.map(p => p.id === id ? updated : p));
-      fetchData(); // Refresh audit logs
-    }
+    await governanceService.updateEthicalPolicyRule(id, updates, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the creation of a new AI model profile.
-   * Business impact: Ensures all AI assets are formally registered for governance.
-   */
   const handleCreateModel = useCallback(async (newModel: Omit<AIModelProfile, 'id' | 'lastUpdated' | 'registeredDate' | 'governorIntegrationStatus'>) => {
-    const created = await governanceService.registerAIModel(newModel, currentUserId);
-    if (created) {
-      setAiModels(prev => [created, ...prev]);
-      fetchData(); // Refresh audit logs
-    }
+    await governanceService.registerAIModel(newModel, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the update of an existing AI model profile.
-   * Business impact: Maintains accurate risk and governance data for AI models throughout their lifecycle.
-   */
   const handleUpdateModel = useCallback(async (id: string, updates: Partial<AIModelProfile>) => {
-    const updated = await governanceService.updateAIModelProfile(id, updates, currentUserId);
-    if (updated) {
-      setAiModels(prev => prev.map(m => m.id === id ? updated : m));
-      fetchData(); // Refresh audit logs
-    }
+    await governanceService.updateAIModelProfile(id, updates, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the update of a human review task.
-   * Business impact: Processes human decisions for AI actions, closing the loop on critical governance workflows.
-   */
   const handleUpdateHumanReviewTask = useCallback(async (id: string, updates: Partial<HumanReviewTask>) => {
-    const updated = await governanceService.updateHumanReviewTask(id, updates, currentUserId);
-    if (updated) {
-      setHumanReviewTasks(prev => prev.map(task => task.id === id ? updated : task).filter(task => task.status === 'PENDING' || task.status === 'IN_REVIEW'));
-      setRequests(prev => prev.map(req => req.id === updated.actionRequestId ? { ...req, status: updated.status === 'COMPLETED' ? 'COMPLETED' : req.status, response: { ...req.response!, reviewOutcome: updated.resolution, reviewNotes: updated.reviewerNotes } } : req));
-      fetchData(); // Refresh other data dependent on review outcomes (e.g., audit logs)
-    }
+    await governanceService.updateHumanReviewTask(id, updates, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the creation of a remediation action.
-   * Business impact: Provides a structured response mechanism for mitigating AI risks and failures.
-   */
   const handleCreateRemediationAction = useCallback(async (action: Omit<RemediationAction, 'id' | 'status'>) => {
     const created = await governanceService.createRemediationAction(action, currentUserId);
-    if (created) {
-      setRemediationActions(prev => [created, ...prev]);
-      fetchData();
-    }
+    fetchData();
     return created;
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the update of a remediation action.
-   * Business impact: Tracks the execution and effectiveness of corrective measures.
-   */
   const handleUpdateRemediationAction = useCallback(async (id: string, updates: Partial<RemediationAction>) => {
-    const updated = await governanceService.updateRemediationAction(id, updates, currentUserId);
-    if (updated) {
-      setRemediationActions(prev => prev.map(rem => rem.id === id ? updated : rem));
-      fetchData();
-    }
+    await governanceService.updateRemediationAction(id, updates, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the execution of a remediation action.
-   * Business impact: Simulates the application of corrective measures to address governance issues.
-   */
   const handleExecuteRemediationAction = useCallback(async (id: string) => {
-    const remediation = remediationActions.find(r => r.id === id);
-    if (remediation && remediation.status === 'PENDING') {
-      const updated = await governanceService.updateRemediationAction(id, { status: 'EXECUTED', executionDetails: { simulatedExecution: true, initiator: currentUserId } }, currentUserId);
-      if (updated) {
-        setRemediationActions(prev => prev.map(rem => rem.id === id ? updated : rem));
-        fetchData();
-      }
-    }
-  }, [remediationActions, currentUserId, fetchData]);
+    await governanceService.updateRemediationAction(id, { status: 'EXECUTED', executionDetails: { simulatedExecution: true, initiator: currentUserId } }, currentUserId);
+    fetchData();
+  }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the generation of a new compliance report.
-   * Business impact: Automates and simplifies the creation of essential regulatory reports.
-   */
   const handleGenerateComplianceReport = useCallback(async (name: string, startDate: Date, endDate: Date, creator: string) => {
-    const report = await governanceService.generateComplianceReport(name, startDate, endDate, creator);
-    if (report) {
-      setComplianceReports(prev => [report, ...prev]);
-      fetchData();
-    }
+    await governanceService.generateComplianceReport(name, startDate, endDate, creator);
+    fetchData();
   }, [fetchData]);
 
-  /**
-   * Handles the resolution of user feedback.
-   * Business impact: Streamlines the process of addressing user concerns, enhancing trust and system quality.
-   */
   const handleResolveUserFeedback = useCallback(async (id: string, notes: string) => {
-    const updated = await governanceService.updateUserFeedback(id, { status: 'RESOLVED', resolutionNotes: notes, resolvedBy: currentUserId }, currentUserId);
-    if (updated) {
-      setUserFeedback(prev => prev.map(fb => fb.id === id ? updated : fb).filter(fb => fb.status === 'PENDING'));
-      fetchData();
-    }
+    await governanceService.updateUserFeedback(id, { status: 'RESOLVED', resolutionNotes: notes, resolvedBy: currentUserId }, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the resolution of an anomaly alert.
-   * Business impact: Ensures proactive management of system risks and security incidents.
-   */
   const handleResolveAnomalyAlert = useCallback(async (id: string) => {
-    const updated = await governanceService.updateAnomalyAlert(id, { status: 'RESOLVED', resolutionNotes: 'Manually reviewed and resolved.' }, currentUserId);
-    if (updated) {
-      setAnomalyAlerts(prev => prev.map(alert => alert.id === id ? updated : alert).filter(alert => alert.status === 'ACTIVE'));
-      fetchData();
-    }
+    await governanceService.updateAnomalyAlert(id, { status: 'RESOLVED', resolutionNotes: 'Manually reviewed and resolved.' }, currentUserId);
+    fetchData();
   }, [currentUserId, fetchData]);
 
-  /**
-   * Handles the update of a user identity or RBAC role.
-   * Business impact: Manages access control, ensuring appropriate permissions for system users and agents.
-   */
   const handleUpdateUserIdentity = useCallback(async (id: string, updates: Partial<UserIdentity>) => {
     const existing = governanceService._users.get(id);
-    if (!existing) return undefined;
+    if (!existing) return;
     const updated = { ...existing, ...updates };
-    governanceService._users.set(id, updated); // Update the mock service directly
-    setUserIdentities(prev => prev.map(user => user.id === id ? updated : user));
-    governanceService._auditLogs.set(generateId('audit'), await generateMockAuditLog('IDENTITY_ACCESS_CHANGE', updated.id, 'USER_IDENTITY', { action: 'UPDATED', changes: Object.keys(updates) }, 'INFO', currentUserId));
-  }, [currentUserId]);
+    governanceService._users.set(id, updated);
+    await generateMockAuditLog('IDENTITY_ACCESS_CHANGE', updated.id, 'USER_IDENTITY', { action: 'UPDATED', changes: Object.keys(updates) }, 'INFO', currentUserId);
+    fetchData();
+  }, [currentUserId, fetchData]);
 
   const filteredHumanReviewTasks = useMemo(() => humanReviewTasks.filter(task => task.status === 'PENDING' || task.status === 'IN_REVIEW'), [humanReviewTasks]);
   const activeRemediationActions = useMemo(() => remediationActions.filter(rem => rem.status !== 'EXECUTED' && rem.status !== 'FAILED'), [remediationActions]);
@@ -3163,7 +2925,7 @@ const EthicalGovernorView: React.FC = () => {
   const pendingUserFeedback = useMemo(() => userFeedback.filter(fb => fb.status === 'PENDING'), [userFeedback]);
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && requests.length === 0) {
       return <div className="text-center py-10 text-xl text-indigo-400">Loading Ethical Governor Data...</div>;
     }
     if (error) {
@@ -3200,7 +2962,7 @@ const EthicalGovernorView: React.FC = () => {
       case 'review':
         return <HumanReviewDashboard tasks={filteredHumanReviewTasks} onUpdateTask={handleUpdateHumanReviewTask} onCreateRemediation={handleCreateRemediationAction} />;
       case 'remediations':
-        return <RemediationActionManagement remediations={activeRemediationActions} onUpdate={handleUpdateRemediationAction} onExecute={handleExecuteRemediationAction} />;
+        return <RemediationActionManagement remediations={remediationActions} onUpdate={handleUpdateRemediationAction} onExecute={handleExecuteRemediationAction} />;
       case 'audit':
         return <AuditLogViewer logs={auditLogs} />;
       case 'agent-activity':
@@ -3215,26 +2977,9 @@ const EthicalGovernorView: React.FC = () => {
         return <AnomalyAlertsViewer alerts={activeAnomalyAlerts} onResolve={handleResolveAnomalyAlert} />;
       case 'settings':
         return <Card title="Governor System Settings" className="col-span-3">
-          <p className="text-gray-400 mb-4">Centralized configuration and control panel for the Ethical Governor's core parameters, integrations, and operational directives.</p>
+          <p className="text-gray-400 mb-4">Centralized configuration for the Ethical Governor's core parameters.</p>
           <InputField id="governorVersion" label="Governor Software Version" value="1.0.2-production" onChange={() => {}} disabled />
           <InputField id="lastPolicySync" label="Last Policy Synchronization" value={new Date().toLocaleString()} onChange={() => {}} disabled />
-          <div className="mt-4 p-3 bg-gray-800 rounded-md">
-            <h4 className="font-semibold text-white mb-2">Operational Context</h4>
-            <p className="text-gray-400 text-xs">Current User: {governanceService._users.get(currentUserId)?.name} (Role: {governanceService._users.get(currentUserId)?.role})</p>
-            <p className="text-gray-400 text-xs">Security Level: {governanceService._users.get(currentUserId)?.securityLevel}</p>
-          </div>
-          <div className="mt-4 p-3 bg-gray-800 rounded-md">
-            <h4 className="font-semibold text-white mb-2">Integration Adapters</h4>
-            <p className="text-gray-400 text-xs">Payment Rail Adapter Status: Operational</p>
-            <p className="text-gray-400 text-xs">Digital Identity Provider Status: Operational</p>
-            <p className="text-gray-400 text-xs">External Risk Service: Connected</p>
-          </div>
-          <div className="mt-4 p-3 bg-gray-800 rounded-md">
-            <h4 className="font-semibold text-white mb-2">System Integrity Measures</h4>
-            <p className="text-gray-400 text-xs">Cryptographic Logging Enabled: Yes</p>
-            <p className="text-gray-400 text-xs">Idempotency Checks: Active across all transaction flows</p>
-            <p className="text-gray-400 text-xs">Concurrency Controls: Implemented</p>
-          </div>
         </Card>;
       default:
         return null;
@@ -3244,13 +2989,13 @@ const EthicalGovernorView: React.FC = () => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'principles', label: 'Principles', icon: '⚖️' },
-    { id: 'policies', label: 'Policies', icon: '📝' },
+    { id: 'policies', label: 'Policies', icon: '📜' },
     { id: 'models', label: 'AI Models', icon: '🤖' },
     { id: 'review', label: 'Human Review', icon: '🧑‍⚖️', count: filteredHumanReviewTasks.length },
-    { id: 'remediations', label: 'Remediations', icon: '🩹', count: activeRemediationActions.length },
-    { id: 'audit', label: 'Audit Trail', icon: '📜' },
-    { id: 'agent-activity', label: 'Agent Activity', icon: '🧠' },
-    { id: 'identity', label: 'Identity & RBAC', icon: '🔑' },
+    { id: 'remediations', label: 'Remediations', icon: '🛠️', count: activeRemediationActions.length },
+    { id: 'audit', label: 'Audit Trail', icon: '🧾' },
+    { id: 'agent-activity', label: 'Agent Activity', icon: '🐜' },
+    { id: 'identity', label: 'Identity & RBAC', icon: '🔐' },
     { id: 'reports', label: 'Reports', icon: '📈' },
     { id: 'feedback', label: 'User Feedback', icon: '💬', count: pendingUserFeedback.length },
     { id: 'alerts', label: 'Anomaly Alerts', icon: '🚨', count: activeAnomalyAlerts.length },
@@ -3280,13 +3025,13 @@ const EthicalGovernorView: React.FC = () => {
           ))}
         </nav>
         <div className="mt-auto pt-4 border-t border-gray-700 text-xs text-gray-500">
-          <p>&copy; 2023 Ethical AI Corp.</p>
+          <p>&copy; 2024 Ethical AI Corp.</p>
           <p>Governor Version: 1.0.2</p>
         </div>
       </div>
 
       <main className="flex-1 p-8 overflow-y-auto">
-        <h2 className="text-3xl font-bold mb-6 capitalize text-white">{activeTab.replace('-', ' ')}</h2>
+        <h2 className="text-3xl font-bold mb-6 capitalize text-white">{activeTab.replace(/-/g, ' ')}</h2>
         {renderContent()}
       </main>
     </div>
