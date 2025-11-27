@@ -1,6 +1,6 @@
-"""This module centralizes the management and intelligent automation of A/B tests and experimentation within the financial infrastructure. It provides a comprehensive view for designing, executing, monitoring, and analyzing hypotheses, leveraging agentic intelligence to drive data-informed product and operational enhancements. Business Impact: By streamlining the experimentation lifecycle, this system empowers rapid innovation, validates strategic initiatives with quantifiable metrics, and optimizes user experiences to maximize revenue, reduce operational friction, and secure market advantage in the digital finance landscape. It is a critical component for continuous value creation and adaptive strategy."""
+"""This module centralizes the management and intelligent automation of A/B tests and experimentation within the financial infrastructure. It provides a comprehensive view for designing, executing, monitoring, and analyzing hypotheses, leveraging agentic intelligence to drive data-informed product and operational enhancements. Business Impact: By streamlining the experimentation lifecycle, this system empowers rapid innovation, validates strategic initiatives with quantifiable metrics, and optimizes user experiences to maximize revenue, reduce operational friction, and secure market advantage in the digital finance landscape. It is a critical component for continuous value creation and adaptive strategy. This file is designed as a self-contained, hyper-integrated application, where all components and services are aware of each other, simulating a novel, interconnected software paradigm driven by an internal event bus and a multi-model AI core."""
 
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef } from 'react';
 import Card from '../../Card';
 
 // --- Utility Functions and Helper Types ---
@@ -13,8 +13,6 @@ import Card from '../../Card';
  * @returns A unique string ID suitable for enterprise-grade applications.
  */
 export const generateUniqueId = (prefix: string = 'id'): string => {
-    // Using cryptographic-grade random number generation if available or falling back to a robust timestamp-based approach.
-    // For browser environment, Math.random is sufficient for UI IDs, but for backend entities, crypto.randomUUID would be preferred.
     return `${prefix}-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 };
 
@@ -61,10 +59,12 @@ export const capitalizeFirstLetter = (str: string): string => {
  * @returns A deep clone of the object, preserving data state.
  */
 export const deepClone = <T>(obj: T): T => {
-    // Note: This JSON-based deep clone is suitable for simple data types.
-    // For objects with functions, Dates, RegExps, or circular references, a more robust library or custom implementation would be required.
-    // Given the data structures, JSON.parse(JSON.stringify(obj)) is sufficient here.
-    return JSON.parse(JSON.stringify(obj));
+    try {
+        return JSON.parse(JSON.stringify(obj));
+    } catch (e) {
+        console.error("Deep clone failed", e);
+        return obj; // Fallback to shallow copy on error
+    }
 };
 
 /**
@@ -112,6 +112,8 @@ export interface Metric extends BaseEntity {
     targetValue?: number; // Optional target for goal metrics
     guardrailThreshold?: { min?: number; max?: number }; // For critical operational or security thresholds
     lastUpdated: string;
+    dataSoure?: string; // e.g., 'API Gateway', 'Data Warehouse'
+    lineage?: string[]; // IDs of parent metrics
 }
 
 /**
@@ -139,6 +141,7 @@ export interface Segment extends BaseEntity {
     description: string;
     rules: string[]; // e.g., ['country = "US"', 'device = "mobile"', 'user_age > 18'] for rule-based segmentation.
     lastUpdated: string;
+    userCount?: number; // Estimated number of users in the segment.
 }
 
 /**
@@ -234,6 +237,7 @@ export interface User extends BaseEntity {
     role: UserRole;
     lastLogin: string;
     isActive: boolean;
+    team?: string; // e.g. 'Growth', 'Security', 'Platform'
 }
 
 /**
@@ -304,21 +308,21 @@ export const mockMetrics: Metric[] = [
 ];
 
 export const mockSegments: Segment[] = [
-    { id: 's1', name: 'All Users', description: 'All visitors to the site', rules: [], lastUpdated: new Date().toISOString() },
-    { id: 's2', name: 'Mobile Users - US', description: 'Users accessing from a mobile device in the US', rules: ['device = "mobile"', 'country = "US"'], lastUpdated: new Date(Date.now() - 86400000 * 3).toISOString() },
-    { id: 's3', name: 'Returning Customers', description: 'Users who have made at least one purchase before', rules: ['has_purchased = true'], lastUpdated: new Date(Date.now() - 86400000 * 7).toISOString() },
-    { id: 's4', name: 'New Signups (Last 30 Days)', description: 'Users who signed up in the last 30 days', rules: ['signup_date > (NOW() - 30 days)'], lastUpdated: new Date(Date.now() - 86400000 * 1).toISOString() },
-    { id: 's5', name: 'High-Value Shoppers', description: 'Users with average order value > $100', rules: ['average_order_value > 100'], lastUpdated: new Date(Date.now() - 86400000 * 5).toISOString() },
-    { id: 's6', name: 'International Payments', description: 'Users initiating cross-border payment transactions', rules: ['transaction_type = "international_payment"'], lastUpdated: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: 's1', name: 'All Users', description: 'All visitors to the site', rules: [], lastUpdated: new Date().toISOString(), userCount: 1500000 },
+    { id: 's2', name: 'Mobile Users - US', description: 'Users accessing from a mobile device in the US', rules: ['device = "mobile"', 'country = "US"'], lastUpdated: new Date(Date.now() - 86400000 * 3).toISOString(), userCount: 450000 },
+    { id: 's3', name: 'Returning Customers', description: 'Users who have made at least one purchase before', rules: ['has_purchased = true'], lastUpdated: new Date(Date.now() - 86400000 * 7).toISOString(), userCount: 200000 },
+    { id: 's4', name: 'New Signups (Last 30 Days)', description: 'Users who signed up in the last 30 days', rules: ['signup_date > (NOW() - 30 days)'], lastUpdated: new Date(Date.now() - 86400000 * 1).toISOString(), userCount: 50000 },
+    { id: 's5', name: 'High-Value Shoppers', description: 'Users with average order value > $100', rules: ['average_order_value > 100'], lastUpdated: new Date(Date.now() - 86400000 * 5).toISOString(), userCount: 75000 },
+    { id: 's6', name: 'International Payments', description: 'Users initiating cross-border payment transactions', rules: ['transaction_type = "international_payment"'], lastUpdated: new Date(Date.now() - 86400000 * 2).toISOString(), userCount: 120000 },
 ];
 
 export const mockUsers: User[] = [
-    { id: 'u1', name: 'Alice Smith', email: 'alice@example.com', role: 'Admin', lastLogin: new Date(Date.now() - 86400000 * 2).toISOString(), isActive: true },
-    { id: 'u2', name: 'Bob Johnson', email: 'bob@example.com', role: 'Editor', lastLogin: new Date(Date.now() - 86400000 * 1).toISOString(), isActive: true },
-    { id: 'u3', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Analyst', lastLogin: new Date(Date.now() - 86400000 * 5).toISOString(), isActive: true },
-    { id: 'u4', name: 'Diana Prince', email: 'diana@example.com', role: 'Viewer', lastLogin: new Date(Date.now() - 86400000 * 10).toISOString(), isActive: true },
-    { id: 'u5', name: 'Eve Adams', email: 'eve@example.com', role: 'Deployer', lastLogin: new Date(Date.now() - 86400000 * 3).toISOString(), isActive: true },
-    { id: 'u6', name: 'Frank Miller', email: 'frank@example.com', role: 'Editor', lastLogin: new Date(Date.now() - 86400000 * 14).toISOString(), isActive: true },
+    { id: 'u1', name: 'Alice Smith', email: 'alice@example.com', role: 'Admin', lastLogin: new Date(Date.now() - 86400000 * 2).toISOString(), isActive: true, team: 'Platform' },
+    { id: 'u2', name: 'Bob Johnson', email: 'bob@example.com', role: 'Editor', lastLogin: new Date(Date.now() - 86400000 * 1).toISOString(), isActive: true, team: 'Growth' },
+    { id: 'u3', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Analyst', lastLogin: new Date(Date.now() - 86400000 * 5).toISOString(), isActive: true, team: 'Data Science' },
+    { id: 'u4', name: 'Diana Prince', email: 'diana@example.com', role: 'Viewer', lastLogin: new Date(Date.now() - 86400000 * 10).toISOString(), isActive: true, team: 'Marketing' },
+    { id: 'u5', name: 'Eve Adams', email: 'eve@example.com', role: 'Deployer', lastLogin: new Date(Date.now() - 86400000 * 3).toISOString(), isActive: true, team: 'DevOps' },
+    { id: 'u6', name: 'Frank Miller', email: 'frank@example.com', role: 'Editor', lastLogin: new Date(Date.now() - 86400000 * 14).toISOString(), isActive: true, team: 'Security' },
 ];
 
 const createMockExperiment = (idPrefix: string, status: ExperimentStatus, hypothesis: string): Experiment => {
@@ -339,7 +343,7 @@ const createMockExperiment = (idPrefix: string, status: ExperimentStatus, hypoth
     const segments = mockSegments.slice(0, Math.floor(Math.random() * 2) + 1).map(s => s.id);
 
     const createdAt = new Date(Date.now() - Math.floor(Math.random() * 30 * 86400000)).toISOString();
-    const startDate = status !== 'Draft' ? new Date(Date.parse(createdAt) + Math.floor(Math.random() * 7 * 86400000)).toISOString() : undefined;
+    const startDate = status !== 'Draft' ? new Date(Date.parse(createdAt) + Math.floor(Math.random() * 7 * 86400000)).toISOString() : new Date().toISOString();
     const endDate = (status === 'Completed' || status === 'Archived') && startDate
         ? new Date(Date.parse(startDate) + Math.floor(Math.random() * 30 * 86400000) + 14 * 86400000).toISOString()
         : undefined;
@@ -354,7 +358,7 @@ const createMockExperiment = (idPrefix: string, status: ExperimentStatus, hypoth
         problemStatement: 'Users are not converting at the desired rate. We believe changing the UI will improve it.',
         goal: 'Increase ' + primaryMetric.name + ' by X%',
         status,
-        startDate: startDate || createdAt,
+        startDate: startDate,
         endDate: endDate,
         owner,
         reviewerId,
@@ -530,7 +534,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             timestamp: new Date().toISOString(),
             isRead: false,
         };
-        setNotifications((prev) => [newNotification, ...prev]);
+        setNotifications((prev) => [newNotification, ...prev].slice(0, 50)); // Keep last 50
     }, []);
 
     const markNotificationAsRead = useCallback((id: string) => {
@@ -541,7 +545,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
         setSettings((prev) => ({ ...prev, ...newSettings }));
-    }, []);
+        addNotification({type: 'success', message: 'Settings updated successfully.'})
+    }, [addNotification]);
 
     const value = useMemo(() => ({
         currentUser,
@@ -586,6 +591,8 @@ export interface AIAnalysisOutput {
     governanceComplianceReport?: string[]; // Links to governance module
 }
 
+export type AIModelType = 'Gemini' | 'ChatGPT' | 'Claude' | 'Llama';
+
 /**
  * Simulates an advanced AI agent for generating and analyzing experiment hypotheses and results.
  * Business Impact: This module embodies the "Agentic Intelligence Layer" by providing autonomous capabilities
@@ -594,15 +601,30 @@ export interface AIAnalysisOutput {
  * It directly contributes to the platform's intelligent automation capabilities, driving efficiency and innovation.
  */
 export class HypothesisAgentSimulator {
+    private model: AIModelType;
+
+    constructor(model: AIModelType = 'Gemini') {
+        this.model = model;
+    }
+
+    private simulateLatency(): number {
+        switch (this.model) {
+            case 'Gemini': return 1500;
+            case 'ChatGPT': return 1200;
+            case 'Claude': return 1800;
+            case 'Llama': return 800; // Simulating local/faster model
+        }
+    }
+    
     /**
      * Simulates the AI generation of an experiment design based on a hypothesis.
      * @param hypothesis The core hypothesis to design an experiment around.
      * @returns A promise resolving to an AIDesignOutput object.
      */
-    static async generateExperimentDesign(hypothesis: string): Promise<AIDesignOutput> {
+    async generateExperimentDesign(hypothesis: string): Promise<AIDesignOutput> {
         return new Promise(resolve => {
             setTimeout(() => {
-                const problemStatement = `Optimizing user engagement is critical. We hypothesize that by ${hypothesis.toLowerCase()}, we can significantly improve key performance indicators.`;
+                const problemStatement = `[${this.model} Analysis]: Optimizing user engagement is critical. We hypothesize that by ${hypothesis.toLowerCase()}, we can significantly improve key performance indicators.`;
                 const goal = `Increase user engagement rate by 15% and conversion rate by 5% over baseline through refined user experience.`;
                 const primaryMetricName = 'User Engagement Rate';
                 const secondaryMetricNames = ['Session Duration', 'Error Rate', 'Page Load Time', 'Transaction Throughput'];
@@ -639,7 +661,7 @@ export class HypothesisAgentSimulator {
                     securityConsiderations,
                     governanceContext
                 });
-            }, 1500); // Simulate API call latency for realistic user experience
+            }, this.simulateLatency()); // Simulate API call latency for realistic user experience
         });
     }
 
@@ -649,10 +671,10 @@ export class HypothesisAgentSimulator {
      * @param results The summary of experiment results to be analyzed.
      * @returns A promise resolving to an AIAnalysisOutput object.
      */
-    static async analyzeExperimentResults(experiment: Experiment, results: ExperimentResultSummary): Promise<AIAnalysisOutput> {
+    async analyzeExperimentResults(experiment: Experiment, results: ExperimentResultSummary): Promise<AIAnalysisOutput> {
         return new Promise(resolve => {
             setTimeout(() => {
-                const summary = `Comprehensive AI analysis of Experiment '${experiment.name}' provides critical insights into performance trends and actionable strategies for optimization within the financial ecosystem.`;
+                const summary = `[${this.model} Analysis]: Comprehensive AI analysis of Experiment '${experiment.name}' provides critical insights into performance trends and actionable strategies for optimization within the financial ecosystem.`;
                 const keyFindings: string[] = [];
                 const recommendations: string[] = [];
                 let riskType: AIAnalysisOutput['riskAssessment'][0]['type'] = 'Low';
@@ -699,7 +721,7 @@ export class HypothesisAgentSimulator {
                     ],
                     governanceComplianceReport
                 });
-            }, 2000); // Simulate API call latency
+            }, this.simulateLatency() + 500);
         });
     }
 
@@ -710,10 +732,10 @@ export class HypothesisAgentSimulator {
      * @param anomalyDescription Description of the anomaly detected, including context like metric, timestamp, and severity.
      * @returns A promise resolving to a string remediation suggestion.
      */
-    static async suggestRemediation(anomalyDescription: string): Promise<string> {
+    async suggestRemediation(anomalyDescription: string): Promise<string> {
         return new Promise(resolve => {
             setTimeout(() => {
-                const suggestion = `Based on the detected anomaly: "${anomalyDescription}", the Agentic Intelligence Layer recommends the following actions:\n\n` +
+                const suggestion = `[${this.model} Remediation Plan]: Based on the detected anomaly: "${anomalyDescription}", the Agentic Intelligence Layer recommends the following actions:\n\n` +
                     `1. **Isolate Impact**: Immediately quarantine affected microservices or payment rails to prevent cascading failures.\n` +
                     `2. **Verify Integrity**: Initiate cryptographic integrity checks on affected data stores and transaction logs.\n` +
                     `3. **Rollback Strategy**: Prepare to roll back recent deployments if correlation is found. Leverage immutable versioning for rapid recovery.\n` +
@@ -722,10 +744,39 @@ export class HypothesisAgentSimulator {
                     `6. **Monitor**: Intensify monitoring of related metrics (e.g., Transaction Throughput, Error Rate) for recovery validation.\n\n` +
                     `This proactive, deterministic approach ensures system resilience and maintains customer trust.`;
                 resolve(suggestion);
-            }, 1000); // Simulate processing time for complex remediation logic
+            }, this.simulateLatency() - 200);
+        });
+    }
+
+    /**
+     * Simulates a conversational AI response for the chat interface.
+     */
+    async getChatResponse(message: string, context: any): Promise<string> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                let response = `[${this.model} Assistant]: I've processed your request: "${message}". `;
+                if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+                    response += "Hello! How can I assist you with your experiments today?";
+                } else if (message.toLowerCase().includes('running experiments')) {
+                    const running = context.experiments.filter((e: Experiment) => e.status === 'Running');
+                    response += `You currently have ${running.length} running experiments. The most recent one is "${running[0]?.name}".`;
+                } else if (message.toLowerCase().includes('summarize')) {
+                    const expId = message.match(/exp-[a-z0-9-]+/);
+                    const experiment = context.experiments.find((e: Experiment) => e.id === expId?.[0]);
+                    if(experiment) {
+                        response += `Certainly. Here is a summary for experiment "${experiment.name}": ${experiment.hypothesis}. It is currently in '${experiment.status}' status. The primary goal is to ${experiment.goal}.`;
+                    } else {
+                        response += "I couldn't find an experiment to summarize. Please provide an experiment ID (e.g., summarize exp-abc123def).";
+                    }
+                } else {
+                    response += "I'm still learning and can help with basic queries about your experiments. Try asking me 'list running experiments' or 'summarize <experiment_id>'.";
+                }
+                resolve(response);
+            }, this.simulateLatency() / 2);
         });
     }
 }
+
 
 // --- Reusable UI Components ---
 
@@ -1074,6 +1125,8 @@ interface PaginatorProps {
  */
 export const Paginator: React.FC<PaginatorProps> = ({ currentPage, totalPages, onPageChange }) => {
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 1) return null;
+
     return (
         <nav className="flex justify-center mt-4">
             <ul className="flex items-center space-x-1">
@@ -1090,7 +1143,7 @@ export const Paginator: React.FC<PaginatorProps> = ({ currentPage, totalPages, o
                     <li key={page}>
                         <button
                             onClick={() => onPageChange(page)}
-                            className={`p-2 rounded-md ${currentPage === page ? 'bg-cyan-600 text-white' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/70'}`}
+                            className={`px-3 py-1 rounded-md text-sm ${currentPage === page ? 'bg-cyan-600 text-white' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/70'}`}
                         >
                             {page}
                         </button>
@@ -1191,14 +1244,14 @@ export const NavBar: React.FC<{ onViewChange: (view: string) => void; currentVie
         { id: 'experiments', label: 'Experiments', icon: <ListIcon /> },
         { id: 'metrics', label: 'Metrics', icon: <ChartBarIcon /> },
         { id: 'segments', label: 'Segments', icon: <UserGroupIcon /> },
-        { id: 'ai-designer', label: 'AI Experimentation', icon: <SparklesIcon /> }, // Dedicated AI view
+        { id: 'ai-designer', label: 'AI Experimentation', icon: <SparklesIcon /> },
         { id: 'settings', label: 'Settings', icon: <SettingsIcon /> },
     ];
 
     const handleLogout = () => {
         // Placeholder for secure logout logic, involving session invalidation and digital identity management.
         console.log('User logged out. Invalidate session and clear digital identity context.');
-        onViewChange('login'); // Redirect to a login view or similar
+        alert("Logout functionality is simulated.");
     };
 
     return (
@@ -1490,6 +1543,7 @@ export const ExperimentCreationForm: React.FC<{
     const [newTag, setNewTag] = useState('');
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+    const [aiModel, setAiModel] = useState<AIModelType>('Gemini');
 
     useEffect(() => {
         if (initialData) {
@@ -1498,7 +1552,8 @@ export const ExperimentCreationForm: React.FC<{
     }, [initialData]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
+        const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
         if (type === 'checkbox') {
             setFormData(prev => ({ ...prev, [name]: checked }));
         } else {
@@ -1524,7 +1579,7 @@ export const ExperimentCreationForm: React.FC<{
     };
 
     const handleTagRemove = (tagToRemove: string) => {
-        setFormData(prev => ({ ...prevWithTags, tags: prevWithTags.tags.filter(tag => tag !== tagToRemove) }));
+        setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
     };
 
     const handleMetricChange = (metricType: 'primary' | 'secondary', metricId: string, isChecked?: boolean) => {
@@ -1553,12 +1608,9 @@ export const ExperimentCreationForm: React.FC<{
         setFormData(prev => {
             const newVariants = [...prev.variants];
             newVariants[index] = { ...newVariants[index], [field]: value };
-            // Ensure total traffic allocation is 100% or adjust others (simplistic for now)
             if (field === 'trafficAllocation' && typeof value === 'number') {
                 const updatedAllocation = Math.max(0, Math.min(100, value)); // Clamp value
                 newVariants[index].trafficAllocation = updatedAllocation;
-
-                // Adjust other variants proportionally if it's a 2-variant setup, or leave for manual adjustment otherwise
                 if (newVariants.length === 2) {
                     const otherIndex = index === 0 ? 1 : 0;
                     newVariants[otherIndex].trafficAllocation = 100 - updatedAllocation;
@@ -1585,7 +1637,6 @@ export const ExperimentCreationForm: React.FC<{
         if (formData.variants.length > 2) { // Always keep at least control and one treatment
             setFormData(prev => {
                 const newVariants = prev.variants.filter((_, i) => i !== index);
-                // Redistribute traffic equally if possible
                 const remainingAlloc = 100;
                 const allocationPerVariant = Math.floor(remainingAlloc / newVariants.length);
                 const distributedVariants = newVariants.map((v, i) => ({
@@ -1638,7 +1689,8 @@ export const ExperimentCreationForm: React.FC<{
         }
         setIsGeneratingPlan(true);
         try {
-            const aiResponse = await HypothesisAgentSimulator.generateExperimentDesign(formData.hypothesis);
+            const agent = new HypothesisAgentSimulator(aiModel);
+            const aiResponse = await agent.generateExperimentDesign(formData.hypothesis);
             setFormData(prev => ({
                 ...prev,
                 problemStatement: aiResponse.problemStatement || prev.problemStatement,
@@ -1646,7 +1698,7 @@ export const ExperimentCreationForm: React.FC<{
                 tags: [...new Set([...prev.tags, ...aiResponse.tags])],
                 primaryMetricId: metrics.find(m => m.name === aiResponse.primaryMetricName)?.id || prev.primaryMetricId,
                 secondaryMetricIds: [...new Set([...prev.secondaryMetricIds, ...aiResponse.secondaryMetricNames.map(name => metrics.find(m => m.name === name)?.id).filter(Boolean) as string[]])],
-                variants: aiResponse.variants.map((v, idx) => ({
+                variants: aiResponse.variants.map((v) => ({
                     id: generateUniqueId('var'),
                     name: v.name,
                     description: v.description,
@@ -1659,7 +1711,7 @@ export const ExperimentCreationForm: React.FC<{
                 aiSuggestions: aiResponse,
                 lastAIAudit: new Date().toISOString(),
             }));
-            addNotification({ type: 'success', message: 'AI-generated design applied successfully!' });
+            addNotification({ type: 'success', message: `AI-generated design from ${aiModel} applied successfully!` });
         } catch (error) {
             console.error('AI design generation failed:', error);
             addNotification({ type: 'error', message: 'Failed to generate AI design. Please try again.' });
@@ -1674,6 +1726,7 @@ export const ExperimentCreationForm: React.FC<{
         .map(m => ({ value: m.id, label: `${m.name} (${m.type})` }));
     const segmentOptions = segments.map(s => ({ value: s.id, label: s.name }));
     const userOptions = users.map(u => ({ value: u.id, label: u.name }));
+    const aiModelOptions: { value: AIModelType, label: string }[] = [{ value: 'Gemini', label: 'Gemini' }, { value: 'ChatGPT', label: 'ChatGPT' }, { value: 'Claude', label: 'Claude' }, { value: 'Llama', label: 'Llama (local)' }];
 
     return (
         <div className="space-y-6">
@@ -1685,12 +1738,13 @@ export const ExperimentCreationForm: React.FC<{
                     <TextareaInput label="Problem Statement" name="problemStatement" value={formData.problemStatement} onChange={handleChange} rows={3} error={formErrors.problemStatement} />
                     <TextInput label="Goal" name="goal" value={formData.goal} onChange={handleChange} error={formErrors.goal} />
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end items-center gap-4">
+                        <SelectInput label="AI Model" options={aiModelOptions} value={aiModel} onChange={(e) => setAiModel(e.target.value as AIModelType)} />
                         <button
                             type="button"
                             onClick={handleDesignWithAI}
                             disabled={isGeneratingPlan || !formData.hypothesis.trim()}
-                            className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white transition-colors disabled:opacity-50"
+                            className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white transition-colors disabled:opacity-50 mt-5"
                         >
                             {isGeneratingPlan ? <Loader /> : <SparklesIcon />}
                             <span className="ml-2">{isGeneratingPlan ? 'Generating...' : 'Design with AI'}</span>
@@ -1723,13 +1777,14 @@ export const ExperimentCreationForm: React.FC<{
                         </div>
                         <div className="flex">
                             <TextInput
+                                label=""
                                 placeholder="Add new tag"
                                 value={newTag}
                                 onChange={(e) => setNewTag(e.target.value)}
                                 className="flex-grow mr-2"
                                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleTagAdd())}
                             />
-                            <button type="button" onClick={handleTagAdd} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white">Add Tag</button>
+                            <button type="button" onClick={handleTagAdd} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white self-end">Add</button>
                         </div>
                     </div>
                 </form>
@@ -1752,7 +1807,7 @@ export const ExperimentCreationForm: React.FC<{
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <TextInput label="Confidence Level (e.g., 0.95)" type="number" step="0.01" name="confidenceLevel" value={formData.confidenceLevel} onChange={handleNumericChange} />
-                    <TextInput label="Minimum Detectable Effect (e.g., 0.02)" type="number" step="0.01" name="minimumDetectableEffect" value={formData.minimumDetectableEffect} onChange={handleNumericChange} />
+                    <TextInput label="Minimum Detectable Effect (e.g., 0.02)" type="number" step="0.01" name="minimumDetectableEffect" value={formData.minimumDetectableEffect as any} onChange={handleNumericChange} />
                 </div>
             </Card>
 
@@ -1768,7 +1823,7 @@ export const ExperimentCreationForm: React.FC<{
                         <TextInput label="Variant Name" name="name" value={variant.name} onChange={(e) => handleVariantChange(index, 'name', e.target.value)} error={formErrors[`variant${index}Name`]} />
                         <TextareaInput label="Description" name="description" value={variant.description} onChange={(e) => handleVariantChange(index, 'description', e.target.value)} rows={2} className="mt-2" error={formErrors[`variant${index}Description`]} />
                         <TextInput label="Traffic Allocation (%)" type="number" step="1" name="trafficAllocation" value={variant.trafficAllocation} onChange={(e) => handleVariantChange(index, 'trafficAllocation', parseFloat(e.target.value))} className="mt-2" error={formErrors[`variant${index}Traffic`]} />
-                        {variant.mockupUrl && <TextInput label="Mockup URL" name="mockupUrl" value={variant.mockupUrl} onChange={(e) => handleVariantChange(index, 'mockupUrl', e.target.value)} className="mt-2" />}
+                        <TextInput label="Mockup URL (Optional)" name="mockupUrl" value={variant.mockupUrl} onChange={(e) => handleVariantChange(index, 'mockupUrl', e.target.value)} className="mt-2" />
                     </div>
                 ))}
                 <button type="button" onClick={addVariant} className="flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded text-white mt-4">
@@ -1833,6 +1888,7 @@ export const ExperimentDetailsView: React.FC<{
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isSuggestingRemediation, setIsSuggestingRemediation] = useState(false);
     const [remediationSuggestion, setRemediationSuggestion] = useState('');
+    const [aiModel, setAiModel] = useState<AIModelType>('Gemini');
 
     const primaryMetric = useMemo(() => metrics.find(m => m.id === experiment.primaryMetricId), [metrics, experiment.primaryMetricId]);
     const secondaryMetrics = useMemo(() => experiment.secondaryMetricIds.map(id => metrics.find(m => m.id === id)).filter(Boolean) as Metric[], [metrics, experiment.secondaryMetricIds]);
@@ -1847,13 +1903,14 @@ export const ExperimentDetailsView: React.FC<{
         }
         setIsAnalyzing(true);
         try {
-            const aiAnalysis = await HypothesisAgentSimulator.analyzeExperimentResults(experiment, experiment.results);
+            const agent = new HypothesisAgentSimulator(aiModel);
+            const aiAnalysis = await agent.analyzeExperimentResults(experiment, experiment.results);
             onUpdate({
                 ...experiment,
                 aiSuggestions: aiAnalysis,
                 lastAIAudit: new Date().toISOString(),
             });
-            addNotification({ type: 'success', message: 'AI analysis completed and updated for experiment.' });
+            addNotification({ type: 'success', message: `AI analysis from ${aiModel} completed.` });
         } catch (error) {
             console.error('AI analysis failed:', error);
             addNotification({ type: 'error', message: 'Failed to perform AI analysis. Please try again.' });
@@ -1866,7 +1923,8 @@ export const ExperimentDetailsView: React.FC<{
         setIsSuggestingRemediation(true);
         setRemediationSuggestion('');
         try {
-            const suggestion = await HypothesisAgentSimulator.suggestRemediation(anomalyDescription);
+            const agent = new HypothesisAgentSimulator(aiModel);
+            const suggestion = await agent.suggestRemediation(anomalyDescription);
             setRemediationSuggestion(suggestion);
             addNotification({ type: 'info', message: 'AI provided a remediation suggestion.' });
         } catch (error) {
@@ -1925,7 +1983,7 @@ export const ExperimentDetailsView: React.FC<{
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
                     <div><strong>Primary Metric:</strong> {primaryMetric?.name || 'N/A'} ({primaryMetric?.unit})</div>
                     <div><strong>Confidence Level:</strong> {(experiment.confidenceLevel * 100).toFixed(0)}%</div>
-                    <div><strong>MDE:</strong> {(experiment.minimumDetectableEffect * 100).toFixed(2)}%</div>
+                    <div><strong>MDE:</strong> {experiment.minimumDetectableEffect ? (experiment.minimumDetectableEffect * 100).toFixed(2) + '%' : 'N/A'}</div>
                     <div><strong>Planned Duration:</strong> {experiment.durationDays} days</div>
                     <div><strong>Estimated Sample Size:</strong> {experiment.sampleSize?.toLocaleString() || 'N/A'}</div>
                     <div><strong>Traffic Allocation:</strong> {experiment.trafficAllocationOverall}%</div>
@@ -2006,11 +2064,12 @@ export const ExperimentDetailsView: React.FC<{
             )}
 
             <Card title="AI Insights & Governance">
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-end mb-4 items-center gap-4">
+                     <SelectInput label="AI Model" options={[{ value: 'Gemini', label: 'Gemini' }, { value: 'ChatGPT', label: 'ChatGPT' }, { value: 'Claude', label: 'Claude' }, { value: 'Llama', label: 'Llama (local)' }]} value={aiModel} onChange={(e) => setAiModel(e.target.value as AIModelType)} />
                     <button
                         onClick={handleAnalyzeWithAI}
                         disabled={isAnalyzing || !experiment.results}
-                        className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white transition-colors disabled:opacity-50"
+                        className="flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white transition-colors disabled:opacity-50 mt-5"
                     >
                         {isAnalyzing ? <Loader /> : <SparklesIcon />}
                         <span className="ml-2">{isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}</span>
@@ -2020,43 +2079,18 @@ export const ExperimentDetailsView: React.FC<{
                     <div className="text-gray-300 space-y-3">
                         <h4 className="font-semibold text-white">Latest AI Analysis (as of {formatDate(experiment.lastAIAudit || new Date().toISOString())}):</h4>
                         <p><strong>Summary:</strong> {(experiment.aiSuggestions as AIAnalysisOutput).summary || (experiment.aiSuggestions as AIDesignOutput).problemStatement}</p>
-                        {experiment.aiSuggestions && (experiment.aiSuggestions as AIAnalysisOutput).keyFindings && (
+                        {(experiment.aiSuggestions as AIAnalysisOutput).keyFindings && (
                             <>
                                 <p><strong>Key Findings:</strong></p>
-                                <ul className="list-disc list-inside ml-4">
-                                    {(experiment.aiSuggestions as AIAnalysisOutput).keyFindings.map((f, i) => <li key={i}>{f}</li>)}
-                                </ul>
+                                <ul className="list-disc list-inside ml-4">{(experiment.aiSuggestions as AIAnalysisOutput).keyFindings.map((f, i) => <li key={i}>{f}</li>)}</ul>
                                 <p><strong>Recommendations:</strong></p>
-                                <ul className="list-disc list-inside ml-4">
-                                    {(experiment.aiSuggestions as AIAnalysisOutput).recommendations.map((r, i) => <li key={i}>{r}</li>)}
-                                </ul>
+                                <ul className="list-disc list-inside ml-4">{(experiment.aiSuggestions as AIAnalysisOutput).recommendations.map((r, i) => <li key={i}>{r}</li>)}</ul>
                                 <p><strong>Risk Assessment:</strong> {(experiment.aiSuggestions as AIAnalysisOutput).riskAssessment?.map(r => `${r.type}: ${r.description}`).join('; ') || 'N/A'}</p>
-                                {experiment.aiSuggestions.governanceComplianceReport && (
-                                    <>
-                                        <p><strong>Governance Compliance Report:</strong></p>
-                                        <ul className="list-disc list-inside ml-4">
-                                            {experiment.aiSuggestions.governanceComplianceReport.map((r, i) => <li key={i}>{r}</li>)}
-                                        </ul>
-                                    </>
-                                )}
-                                {experiment.aiSuggestions.futureExperimentSuggestions && (
-                                    <>
-                                        <p><strong>Future Experiment Suggestions:</strong></p>
-                                        <ul className="list-disc list-inside ml-4">
-                                            {experiment.aiSuggestions.futureExperimentSuggestions.map((s, i) => <li key={i}>{s}</li>)}
-                                        </ul>
-                                    </>
-                                )}
+                                {experiment.aiSuggestions.governanceComplianceReport && <> <p><strong>Governance Compliance Report:</strong></p> <ul className="list-disc list-inside ml-4">{experiment.aiSuggestions.governanceComplianceReport.map((r, i) => <li key={i}>{r}</li>)}</ul></>}
+                                {experiment.aiSuggestions.futureExperimentSuggestions && <> <p><strong>Future Experiment Suggestions:</strong></p> <ul className="list-disc list-inside ml-4">{experiment.aiSuggestions.futureExperimentSuggestions.map((s, i) => <li key={i}>{s}</li>)}</ul></>}
                             </>
                         )}
-                        {experiment.aiSuggestions && (experiment.aiSuggestions as AIDesignOutput).securityConsiderations && (
-                            <>
-                                <p><strong>AI-Suggested Security Considerations:</strong></p>
-                                <ul className="list-disc list-inside ml-4">
-                                    {(experiment.aiSuggestions as AIDesignOutput).securityConsiderations?.map((s, i) => <li key={i}>{s}</li>)}
-                                </ul>
-                            </>
-                        )}
+                        {(experiment.aiSuggestions as AIDesignOutput).securityConsiderations && <> <p><strong>AI-Suggested Security Considerations:</strong></p> <ul className="list-disc list-inside ml-4">{(experiment.aiSuggestions as AIDesignOutput).securityConsiderations?.map((s, i) => <li key={i}>{s}</li>)}</ul></>}
                     </div>
                 )}
                 {experiment.results?.overallStatus === 'GuardrailBreached' && (
@@ -2087,24 +2121,14 @@ export const ExperimentDetailsView: React.FC<{
                 <div className="space-y-3 text-gray-300">
                     {experiment.versionHistory && experiment.versionHistory.length > 0 ? (
                         <ul className="list-disc list-inside ml-4">
-                            {experiment.versionHistory.map((entry, i) => (
-                                <li key={i}>
-                                    <span className="font-semibold">{formatDate(entry.timestamp)}:</span> {entry.changes}
-                                </li>
-                            ))}
+                            {experiment.versionHistory.map((entry, i) => (<li key={i}><span className="font-semibold">{formatDate(entry.timestamp)}:</span> {entry.changes}</li>))}
                         </ul>
-                    ) : (
-                        <p>No version history available.</p>
-                    )}
+                    ) : ( <p>No version history available.</p> )}
                     {experiment.reviewComments && experiment.reviewComments.length > 0 && (
                         <>
                             <h4 className="font-semibold text-white mt-4">Review Comments:</h4>
                             <ul className="list-disc list-inside ml-4">
-                                {experiment.reviewComments.map((comment, i) => (
-                                    <li key={i}>
-                                        <span className="font-semibold">{comment.userId} ({formatDate(comment.timestamp)}):</span> {comment.comment}
-                                    </li>
-                                ))}
+                                {experiment.reviewComments.map((comment, i) => (<li key={i}><span className="font-semibold">{comment.userId} ({formatDate(comment.timestamp)}):</span> {comment.comment}</li>))}
                             </ul>
                         </>
                     )}
@@ -2119,15 +2143,8 @@ export const ExperimentDetailsView: React.FC<{
  * Business Impact: Empowers users with a sophisticated tool to leverage agentic intelligence
  * for complex experiment setup, predictive analysis, and strategic recommendations, accelerating
  * the adoption of new financial features and optimizing platform performance through AI-guided insights.
- * @param metrics All available metrics.
- * @param segments All available segments.
- * @param users All available users.
  */
-export const AIDesignerView: React.FC<{
-    metrics: Metric[];
-    segments: Segment[];
-    users: User[];
-}> = ({ metrics, segments, users }) => {
+export const AIDesignerView: React.FC = () => {
     const { addNotification } = useAppContext();
     const [hypothesisInput, setHypothesisInput] = useState('');
     const [aiDesignResult, setAiDesignResult] = useState<AIDesignOutput | null>(null);
@@ -2135,6 +2152,7 @@ export const AIDesignerView: React.FC<{
     const [anomalyInput, setAnomalyInput] = useState('');
     const [aiRemediationResult, setAiRemediationResult] = useState('');
     const [isSuggesting, setIsSuggesting] = useState(false);
+    const [aiModel, setAiModel] = useState<AIModelType>('Gemini');
 
     const handleGenerateDesign = async () => {
         if (!hypothesisInput.trim()) {
@@ -2144,7 +2162,8 @@ export const AIDesignerView: React.FC<{
         setIsGenerating(true);
         setAiDesignResult(null);
         try {
-            const result = await HypothesisAgentSimulator.generateExperimentDesign(hypothesisInput);
+            const agent = new HypothesisAgentSimulator(aiModel);
+            const result = await agent.generateExperimentDesign(hypothesisInput);
             setAiDesignResult(result);
             addNotification({ type: 'success', message: 'AI experiment design generated successfully!' });
         } catch (error) {
@@ -2163,7 +2182,8 @@ export const AIDesignerView: React.FC<{
         setIsSuggesting(true);
         setAiRemediationResult('');
         try {
-            const result = await HypothesisAgentSimulator.suggestRemediation(anomalyInput);
+            const agent = new HypothesisAgentSimulator(aiModel);
+            const result = await agent.suggestRemediation(anomalyInput);
             setAiRemediationResult(result);
             addNotification({ type: 'success', message: 'AI remediation suggestion generated!' });
         } catch (error) {
@@ -2177,6 +2197,10 @@ export const AIDesignerView: React.FC<{
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-white">AI Experimentation & Operational Intelligence</h2>
+            
+            <Card title="AI Model Selection">
+                <SelectInput label="Choose your AI Model" options={[{ value: 'Gemini', label: 'Gemini' }, { value: 'ChatGPT', label: 'ChatGPT' }, { value: 'Claude', label: 'Claude' }, { value: 'Llama', label: 'Llama (local)' }]} value={aiModel} onChange={(e) => setAiModel(e.target.value as AIModelType)} />
+            </Card>
 
             <Card title="AI-Powered Experiment Design">
                 <TextareaInput
@@ -2257,13 +2281,15 @@ export const AIDesignerView: React.FC<{
  * thereby delivering continuous business value and competitive advantage.
  */
 export const HypothesisEngineView: React.FC = () => {
-    const [currentView, setCurrentView] = useState('experiments'); // 'experiments', 'create', 'details', 'ai-designer'
+    const [currentView, setCurrentView] = useState('experiments'); // 'experiments', 'create', 'details', 'edit', 'ai-designer'
     const [experiments, setExperiments] = useState<Experiment[]>(mockExperiments);
     const [selectedExperimentId, setSelectedExperimentId] = useState<string | null>(null);
 
-    const metrics = useMemo(() => mockMetrics, []);
-    const segments = useMemo(() => mockSegments, []);
-    const users = useMemo(() => mockUsers, []);
+    // Global data stores, managed at the root to simulate a backend
+    const [metrics, setMetrics] = useState<Metric[]>(mockMetrics);
+    const [segments, setSegments] = useState<Segment[]>(mockSegments);
+    const [users, setUsers] = useState<User[]>(mockUsers);
+
 
     const handleCreateExperiment = () => {
         setSelectedExperimentId(null);
@@ -2285,7 +2311,7 @@ export const HypothesisEngineView: React.FC = () => {
                 return updatedExperiments;
             } else {
                 // Add new experiment
-                return [...prev, experiment];
+                return [experiment, ...prev];
             }
         });
         setCurrentView('experiments');
@@ -2300,7 +2326,6 @@ export const HypothesisEngineView: React.FC = () => {
     const handleDeleteExperiment = (id: string) => {
         if (window.confirm('Are you sure you want to delete this experiment? This action cannot be undone and will affect audit trails.')) {
             setExperiments(prev => prev.filter(exp => exp.id !== id));
-            // Also notify backend/agent to clean up if needed
         }
     };
 
@@ -2353,13 +2378,7 @@ export const HypothesisEngineView: React.FC = () => {
                     />
                 );
             case 'ai-designer':
-                return (
-                    <AIDesignerView
-                        metrics={metrics}
-                        segments={segments}
-                        users={users}
-                    />
-                );
+                return ( <AIDesignerView /> );
             default:
                 return <h2 className="text-xl text-white">Select a view from the navigation.</h2>;
         }
