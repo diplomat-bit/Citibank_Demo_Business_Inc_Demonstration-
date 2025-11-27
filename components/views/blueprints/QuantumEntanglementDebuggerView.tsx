@@ -485,7 +485,7 @@ export interface AgentMessage {
   receiverId: string; // Digital Identity of the receiving agent
   timestamp: string;
   payload: any; // The actual content of the message
-  messageType: 'INFO' | 'ACTION_REQUEST' | 'REPORT' | 'COMMAND';
+  messageType: 'INFO' | 'ACTION_REQUEST' | 'REPORT' | 'COMMAND' | 'AUDIT';
   signature: string; // Cryptographic signature of the message
   correlationId?: string; // For chaining related messages
 }
@@ -498,12 +498,6 @@ export interface DigitalIdentity {
   name: string;
   role: string; // e.g., "QuantumAnalyst", "RiskManager", "ComplianceOfficer"
   publicKey: string; // Mock public key for signature verification
-}
-
-interface DebugResponse {
-  mostLikelyErrorSource: string; // e.g., "Qubit 3 decoherence"
-  confidence: number;
-  suggestedFix: string; // e.g., "Check microwave pulse calibration for CNOT gate between Q2 and Q3."
 }
 
 // --- MOCK DATA GENERATORS (Extensive for Line Count and Realism) ---
@@ -521,8 +515,12 @@ const generateQubitIds = (count: number): string[] => {
 const generateMockSignature = (identityId: string, payload: any): string => {
   // In a real system, this would involve actual cryptographic signing.
   // Here, it's a deterministic hash for simulation.
-  const hash = btoa(JSON.stringify(payload) + identityId + Date.now().toString()).substring(0, 32);
-  return `SIG-${hash}`;
+  try {
+    const hash = btoa(JSON.stringify(payload) + identityId + Date.now().toString()).substring(0, 32);
+    return `SIG-${hash}`;
+  } catch (e) {
+    return 'SIG-ERROR_GENERATING_SIGNATURE';
+  }
 };
 
 /**
@@ -625,7 +623,6 @@ export const generateMockQuantumSecurityScanResult = (): QuantumSecurityScanResu
     },
   };
 };
-
 
 /**
  * Generates mock DetailedErrorSource data.
@@ -770,7 +767,7 @@ export const generateMockPerformanceMetrics = (qubitCount: number): QuantumPerfo
     }
     temperatures[id] = parseFloat((Math.random() * 20 + 10).toFixed(1)); // 10-30 mK
 
-    controlPulseAmplitudes[id] = {};
+    controlPulseAmplitudes[id] = {} as any;
     Object.values(QuantumGateType).forEach(gateType => {
       controlPulseAmplitudes[id][gateType] = parseFloat((Math.random() * 0.5 + 0.1).toFixed(3)); // 0.1-0.6 V
     });
@@ -791,7 +788,7 @@ export const generateMockPerformanceMetrics = (qubitCount: number): QuantumPerfo
     readoutErrorRate: parseFloat((0.005 + Math.random() * 0.02).toFixed(4)),
     coherenceTimes: { t1, t2, t2Echo },
     qubitTemperatures: temperatures,
-    controlPulseAmplitudes: controlPulsePulseAmplitudes,
+    controlPulseAmplitudes: controlPulseAmplitudes,
     quantumVolumeEstimate: parseFloat((Math.pow(2, Math.random() * qubitCount / 2 + 1)).toFixed(1)), // 2^(Q/2)
     algorithmicSuccessProbability: parseFloat((0.7 + Math.random() * 0.25).toFixed(3)), // 70-95%
   };
@@ -1202,7 +1199,6 @@ export const MOCK_DIGITAL_IDENTITIES: DigitalIdentity[] = [
   generateMockDigitalIdentity('user_dev_999', 'Jane Doe', 'FinancialEngineer'),
   generateMockDigitalIdentity('user_audit_101', 'Audit Compliance Agent', 'ComplianceOfficer'),
 ];
-
 
 // --- HELPER COMPONENTS (Exported for Top-Level requirement and structure) ---
 
@@ -1716,7 +1712,6 @@ export const DebuggerConfigPanel: React.FC<{ config: DebuggerConfig; onConfigCha
     </div>
   );
 };
-
 
 // --- MAIN COMPONENT (Vastly Expanded) ---
 
