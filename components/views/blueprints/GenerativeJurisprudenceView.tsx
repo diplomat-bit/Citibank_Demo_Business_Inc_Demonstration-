@@ -1,10 +1,53 @@
 /**
- * This module serves as the foundational data model and simulated AI engine for the Generative Jurisprudence platform, a cornerstone of automated legal intelligence. It defines comprehensive interfaces for legal data entities such as precedents, statutes, jurisdictions, and detailed case information, alongside the sophisticated `GenerativeJurisprudenceAgent`. Business value: By enabling the automated generation and rigorous compliance checking of legal briefs and analyses, this system dramatically accelerates legal research, drafting, and risk assessment workflows. It empowers legal professionals to handle higher caseloads with unparalleled accuracy, consistency, and speed, unlocking significant operational efficiencies, reducing costly human errors, and opening new revenue streams through premium, data-driven legal services. The integrated governance and digital identity features ensure secure, auditable, and compliant operations, providing a competitive advantage in a highly regulated industry.
+ * This module serves as the foundational data model and simulated AI engine for the Generative Jurisprudence platform, a cornerstone of automated legal intelligence. It defines comprehensive interfaces for legal data entities such as precedents, statutes, jurisdictions, and detailed case information, alongside the sophisticated `GenerativeJurisprudenceAgent`. Business value: By enabling the automated generation and rigorous compliance checking of legal briefs and analyses, this system dramatically accelerates legal research, drafting, and risk assessment workflows. It empowers legal professionals to handle higher caseloads with unparalleled accuracy, consistency, and speed, unlocking significant operational efficiencies, reducing costly human errors, and opening new revenue streams through premium, data-driven legal services. The integrated governance and digital identity features ensure secure, auditable, and compliant operations, providing a competitive advantage in a highly regulated industry. This file is a self-contained application, demonstrating the full capability of the platform in a simulated environment.
  */
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import Card from '../../Card';
+import React, { useState, useEffect, useCallback, createContext, useContext, useRef } from 'react';
+
+// #region --- [0] Self-Contained Components ---
+
+/**
+ * A reusable Card component for consistent UI structure.
+ * Business Value: Encapsulates common UI styling, ensuring a consistent and professional user experience which enhances usability and brand identity.
+ */
+const Card: React.FC<{ title: string; className?: string; children: React.ReactNode; titleExtra?: React.ReactNode }> = ({ title, className, children, titleExtra }) => (
+    <div className={`border border-gray-200 rounded-lg shadow-lg bg-white ${className}`}>
+        <div className="flex justify-between items-center p-4 bg-gray-100 border-b border-gray-200 rounded-t-lg">
+            <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+            <div>{titleExtra}</div>
+        </div>
+        <div className="p-6">
+            {children}
+        </div>
+    </div>
+);
+
+
+// #endregion
 
 // #region --- [1] Interfaces and Types ---
+
+/**
+ * Represents available Large Language Models for generation tasks.
+ * Business Value: Provides model choice flexibility, allowing users to leverage the best-suited AI for a specific task (e.g., creativity vs. factual accuracy), optimizing both cost and quality of outcomes.
+ */
+export enum SupportedLLM {
+    JURIS_GEMINI = "Juris-Gemini-Pro",
+    JURIS_GPT_4 = "Juris-GPT-4-Turbo",
+    JURIS_CLAUDE = "Juris-Claude-3-Opus",
+    INTERNAL_FAST = "Internal-Fast-Model"
+}
+
+/**
+ * Represents a single message in an AI chat session.
+ * Business Value: Structures conversational data, enabling rich, stateful interactions with the AI, which is key for providing contextual support and task execution via natural language.
+ */
+export interface IChatMessage {
+    id: string;
+    sender: 'user' | 'ai' | 'system';
+    text: string;
+    timestamp: string;
+    relatedTask?: string; // ID of a task triggered by this message
+}
 
 /**
  * Represents a legal precedent (case law).
@@ -204,7 +247,7 @@ export interface ILegalBrief {
     citationsList: string[]; // All unique citations used in the brief
     keywords: string[];
     generationMetadata: {
-        aiModel: string;
+        aiModel: SupportedLLM;
         temperature: number;
         promptTokens: number;
         completionTokens: number;
@@ -229,6 +272,7 @@ export interface ILegalBrief {
 export interface IAIConfig {
     id: string;
     name: string;
+    model: SupportedLLM;
     tone: 'formal' | 'persuasive' | 'neutral' | 'aggressive' | 'conciliatory';
     lengthPreference: 'short' | 'medium' | 'long' | 'very-long';
     citationStyle: 'bluebook' | 'localRules' | 'chicago' | 'apa';
@@ -447,8 +491,8 @@ export interface IAgentSkill {
 export interface IJurisprudenceAgentTask {
     taskId: string;
     agentId: string;
-    taskType: 'generate_brief' | 'research_precedents' | 'check_compliance' | 'assess_risk' | 'summarize_case' | 'draft_section';
-    caseId: string;
+    taskType: 'generate_brief' | 'research_precedents' | 'check_compliance' | 'assess_risk' | 'summarize_case' | 'draft_section' | 'answer_chat_query' | 'introspect_system';
+    caseId?: string;
     status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
     requestedByUserId: string;
     creationDate: string;
@@ -471,7 +515,7 @@ export interface IAgentServiceTokenTransaction {
     transactionId: string;
     userId: string;
     agentId: string;
-    serviceType: 'brief_generation' | 'compliance_check' | 'research_query' | 'risk_assessment'; // Added risk_assessment
+    serviceType: 'brief_generation' | 'compliance_check' | 'research_query' | 'risk_assessment' | 'chat_query' | 'introspection'; // Added risk_assessment
     resourceId: string; // e.g., briefId or caseId
     tokenAmount: number; // Amount of tokens consumed
     currencyType: 'GJ_AI_CREDIT' | 'USD_STABLE'; // Simulated token type
@@ -647,11 +691,11 @@ export const MOCK_JURISDICTIONS: IJurisdiction[] = [
         id: 'NY-STATE',
         name: 'New York State',
         country: 'USA',
-        courtSystemDescription: 'New York has a complex court structure, including Supreme Courts (trial courts for major civil/criminal), County Courts, Family Courts, Surrogates’ Courts, and Court of Claims, Appellate Divisions, and the Court of Appeals.',
+        courtSystemDescription: 'New York has a complex court structure, including Supreme Courts (trial courts for major civil/criminal), County Courts, Family Courts, Surrogatesâ€™ Courts, and Court of Claims, Appellate Divisions, and the Court of Appeals.',
         primaryStatuteBooks: ['New York Consolidated Laws', 'New York Civil Practice Law and Rules'],
         rulesOfProcedureId: 'NY-CPLR',
         rulesOfEvidenceId: 'NY-EVIDENCE',
-        uniqueLegalConcepts: ['New York Labor Law § 240', 'Mortgage Foreclosure Procedures'],
+        uniqueLegalConcepts: ['New York Labor Law Â§ 240', 'Mortgage Foreclosure Procedures'],
         appellateCourts: ['Appellate Divisions of the Supreme Court'],
         supremeCourtName: 'New York Court of Appeals',
         commonLawTradition: true,
@@ -698,13 +742,13 @@ export const MOCK_RULES_OF_PROCEDURE: IRulesOfProcedure[] = [
                 id: 'FRCP-8', title: 'General Rules of Pleading', text: '(a) Claim for Relief. A pleading that states a claim for relief must contain: (1) a short and plain statement of the grounds for the court\'s jurisdiction, unless the court already has jurisdiction and the claim needs no new jurisdictional support; (2) a short and plain statement of the claim showing that the pleader is entitled to relief; and (3) a demand for the relief sought, which may include relief in the alternative or different types of relief. (b) Defenses; Admissions and Denials. (1) In General. In responding to a pleading, a party must: (A) state in short and plain terms its defenses to each claim asserted against it; and (B) admit or deny the allegations made against it by an opposing party. (c) Affirmative Defenses.', keywords: ['pleading', 'claim for relief', 'defenses', 'admissions', 'denials']
             },
             {
-                id: 'FRCP-11', title: 'Signing Pleadings, Motions, and Other Papers; Representations to the Court; Sanctions', text: '(a) Signature. Every pleading, written motion, and other paper must be signed by at least one attorney of record in the attorney’s name—or by a party personally if the party is unrepresented. (b) Representations to the Court. By presenting to the court a pleading, written motion, or other paper—whether by signing, filing, submitting, or later advocating it—an attorney or unrepresented party certifies that to the best of the person’s knowledge, information, and belief, formed after an inquiry reasonable under the circumstances: (1) it is not being presented for any improper purpose, such as to harass, cause unnecessary delay, or needlessly increase the cost of litigation; (2) the claims, defenses, and other legal contentions are warranted by existing law or by a nonfrivolous argument for extending, modifying, or reversing existing law or for establishing new law; (3) the factual contentions have evidentiary support or, if specifically so identified, will likely have evidentiary support after a reasonable opportunity for further investigation or discovery; and (4) the denials of factual contentions are warranted on the evidence or, if specifically so identified, are reasonably based on belief or a lack of information.', keywords: ['sanctions', 'pleading standards', 'good faith']
+                id: 'FRCP-11', title: 'Signing Pleadings, Motions, and Other Papers; Representations to the Court; Sanctions', text: '(a) Signature. Every pleading, written motion, and other paper must be signed by at least one attorney of record in the attorneyâ€™s nameâ€”or by a party personally if the party is unrepresented. (b) Representations to the Court. By presenting to the court a pleading, written motion, or other paperâ€”whether by signing, filing, submitting, or later advocating itâ€”an attorney or unrepresented party certifies that to the best of the personâ€™s knowledge, information, and belief, formed after an inquiry reasonable under the circumstances: (1) it is not being presented for any improper purpose, such as to harass, cause unnecessary delay, or needlessly increase the cost of litigation; (2) the claims, defenses, and other legal contentions are warranted by existing law or by a nonfrivolous argument for extending, modifying, or reversing existing law or for establishing new law; (3) the factual contentions have evidentiary support or, if specifically so identified, will likely have evidentiary support after a reasonable opportunity for further investigation or discovery; and (4) the denials of factual contentions are warranted on the evidence or, if specifically so identified, are reasonably based on belief or a lack of information.', keywords: ['sanctions', 'pleading standards', 'good faith']
             },
             {
-                id: 'FRCP-26', title: 'Duty to Disclose; General Provisions Governing Discovery', text: '(a) Required Disclosures. (1) Initial Disclosure. Except as exempted by Rule 26(a)(1)(B) or as otherwise stipulated or ordered by the court, a party must, without awaiting a discovery request, provide to the other parties: (A) the name and, if known, the address and telephone number of each individual likely to have discoverable information—along with the subjects of that information—that the disclosing party may use to support its claims or defenses, unless the use would be solely for impeachment; (B) a copy—or a description by category and location—of all documents, electronically stored information, and tangible things that the disclosing party has in its possession, custody, or control and may use to support its claims or defenses, unless the use would be solely for impeachment; (C) a computation of each category of damages claimed by the disclosing party—who must also make available for inspection and copying the documents or other evidentiary material, unless privileged or protected from disclosure, on which each computation is based, including materials bearing on the nature and extent of injuries suffered; and (D) for inspection and copying as under Rule 34, any insurance agreement under which an insurance business may be liable to satisfy all or part of a possible judgment in the action or to indemnify or reimburse for payments made to satisfy the judgment. (b) Scope of Discovery. Unless otherwise limited by court order, the scope of discovery is as follows: Parties may obtain discovery regarding any nonprivileged matter that is relevant to any party\'s claim or defense and proportional to the needs of the case, considering the importance of the issues at stake in the action, the amount in controversy, the parties’ relative access to relevant information, the parties’ resources, the importance of the discovery in resolving the issues, and whether the burden or expense of the proposed discovery outweighs its likely benefit. Information within this scope of discovery need not be admissible in evidence to be discoverable.', keywords: ['discovery', 'disclosure', 'scope of discovery', 'proportionality']
+                id: 'FRCP-26', title: 'Duty to Disclose; General Provisions Governing Discovery', text: '(a) Required Disclosures. (1) Initial Disclosure. Except as exempted by Rule 26(a)(1)(B) or as otherwise stipulated or ordered by the court, a party must, without awaiting a discovery request, provide to the other parties: (A) the name and, if known, the address and telephone number of each individual likely to have discoverable informationâ€”along with the subjects of that informationâ€”that the disclosing party may use to support its claims or defenses, unless the use would be solely for impeachment; (B) a copyâ€”or a description by category and locationâ€”of all documents, electronically stored information, and tangible things that the disclosing party has in its possession, custody, or control and may use to support its claims or defenses, unless the use would be solely for impeachment; (C) a computation of each category of damages claimed by the disclosing partyâ€”who must also make available for inspection and copying the documents or other evidentiary material, unless privileged or protected from disclosure, on which each computation is based, including materials bearing on the nature and extent of injuries suffered; and (D) for inspection and copying as under Rule 34, any insurance agreement under which an insurance business may be liable to satisfy all or part of a possible judgment in the action or to indemnify or reimburse for payments made to satisfy the judgment. (b) Scope of Discovery. Unless otherwise limited by court order, the scope of discovery is as follows: Parties may obtain discovery regarding any nonprivileged matter that is relevant to any party\'s claim or defense and proportional to the needs of the case, considering the importance of the issues at stake in the action, the amount in controversy, the partiesâ€™ relative access to relevant information, the partiesâ€™ resources, the importance of the discovery in resolving the issues, and whether the burden or expense of the proposed discovery outweighs its likely benefit. Information within this scope of discovery need not be admissible in evidence to be discoverable.', keywords: ['discovery', 'disclosure', 'scope of discovery', 'proportionality']
             },
             {
-                id: 'FRCP-56', title: 'Summary Judgment', text: '(a) Motion for Summary Judgment or Partial Summary Judgment. A party may move for summary judgment, identifying each claim or defense—or the part of each claim or defense—on which summary judgment is sought. The court shall grant summary judgment if the movant shows that there is no genuine dispute as to any material fact and the movant is entitled to judgment as a matter of law. The court should state on the record the reasons for granting or denying the motion.', keywords: ['summary judgment', 'material fact', 'judgment as a matter of law']
+                id: 'FRCP-56', title: 'Summary Judgment', text: '(a) Motion for Summary Judgment or Partial Summary Judgment. A party may move for summary judgment, identifying each claim or defenseâ€”or the part of each claim or defenseâ€”on which summary judgment is sought. The court shall grant summary judgment if the movant shows that there is no genuine dispute as to any material fact and the movant is entitled to judgment as a matter of law. The court should state on the record the reasons for granting or denying the motion.', keywords: ['summary judgment', 'material fact', 'judgment as a matter of law']
             },
         ],
         amendmentLog: [
@@ -719,7 +763,7 @@ export const MOCK_RULES_OF_PROCEDURE: IRulesOfProcedure[] = [
         effectiveDate: '2024-01-01',
         sections: [
             {
-                id: 'CRC-2.100', title: 'Form of papers presented for filing', text: '(a) Application. The rules in this chapter apply to papers filed in the trial courts. (b) Paper size. Except for exhibits and as provided in rule 2.111, all papers must be on letter-size (8½- by 11-inch) paper.', keywords: ['form', 'filing', 'paper size']
+                id: 'CRC-2.100', title: 'Form of papers presented for filing', text: '(a) Application. The rules in this chapter apply to papers filed in the trial courts. (b) Paper size. Except for exhibits and as provided in rule 2.111, all papers must be on letter-size (8Â½- by 11-inch) paper.', keywords: ['form', 'filing', 'paper size']
             },
             {
                 id: 'CRC-3.1110', title: 'General format and filing of motions; two-page limit on memoranda in support of or opposition to demurrer', text: '(a) Required papers. A party filing a motion, except for a motion made during trial, must serve and file: (1) A notice of hearing on the motion; (2) The motion itself; (3) A memorandum of points and authorities in support of the motion; and (4) Evidence in support of the motion.', keywords: ['motions', 'filing', 'memorandum', 'evidence']
@@ -766,7 +810,7 @@ export const MOCK_RULES_OF_EVIDENCE: IRulesOfEvidence[] = [
                 id: 'FRE-802', title: 'The Rule Against Hearsay', text: 'Hearsay is not admissible unless any of the following provides otherwise: a federal statute; these rules; or other rules prescribed by the Supreme Court.', keywords: ['hearsay', 'admissibility']
             },
             {
-                id: 'FRE-803', title: 'Exceptions to the Rule Against Hearsay—Regardless of Whether the Declarant Is Available as a Witness', text: 'The following are not excluded by the rule against hearsay, regardless of whether the declarant is available as a witness: (1) Present Sense Impression. (2) Excited Utterance. (3) Statement of Mental, Emotional, or Physical Condition. (4) Statement Made for Medical Diagnosis or Treatment. (5) Recorded Recollection. (6) Records of a Regularly Conducted Activity. (7) Absence of a Record of a Regularly Conducted Activity. (8) Public Records. (9) Public Records of Vital Statistics. (10) Absence of a Public Record. (11) Records of Religious Organizations Concerning Personal or Family History. (12) Certificates of Marriage, Baptism, and Similar Ceremonies. (13) Family Records. (14) Records of Documents That Affect an Interest in Property. (15) Statements in Documents That Affect an Interest in Property. (16) Statements in Ancient Documents. (17) Market Reports and Similar Commercial Publications. (18) Statements in Learned Treatises, Periodicals, or Pamphlets. (19) Reputation Concerning Personal or Family History. (20) Reputation Concerning Boundaries or General History. (21) Reputation Concerning Character. (22) Judgment of a Previous Conviction. (23) Other Exceptions. (24) [Transferred to Rule 807] .', keywords: ['hearsay exceptions', 'business records', 'public records']
+                id: 'FRE-803', title: 'Exceptions to the Rule Against Hearsayâ€”Regardless of Whether the Declarant Is Available as a Witness', text: 'The following are not excluded by the rule against hearsay, regardless of whether the declarant is available as a witness: (1) Present Sense Impression. (2) Excited Utterance. (3) Statement of Mental, Emotional, or Physical Condition. (4) Statement Made for Medical Diagnosis or Treatment. (5) Recorded Recollection. (6) Records of a Regularly Conducted Activity. (7) Absence of a Record of a Regularly Conducted Activity. (8) Public Records. (9) Public Records of Vital Statistics. (10) Absence of a Public Record. (11) Records of Religious Organizations Concerning Personal or Family History. (12) Certificates of Marriage, Baptism, and Similar Ceremonies. (13) Family Records. (14) Records of Documents That Affect an Interest in Property. (15) Statements in Documents That Affect an Interest in Property. (16) Statements in Ancient Documents. (17) Market Reports and Similar Commercial Publications. (18) Statements in Learned Treatises, Periodicals, or Pamphlets. (19) Reputation Concerning Personal or Family History. (20) Reputation Concerning Boundaries or General History. (21) Reputation Concerning Character. (22) Judgment of a Previous Conviction. (23) Other Exceptions. (24) [Transferred to Rule 807] .', keywords: ['hearsay exceptions', 'business records', 'public records']
             },
         ],
         amendmentLog: [
@@ -800,7 +844,7 @@ export const MOCK_STATUTES: IStatute[] = [
     {
         id: 'CA-COMM-2200',
         name: 'California Commercial Code - Sales',
-        citation: 'Cal. Com. Code § 2200 et seq.',
+        citation: 'Cal. Com. Code Â§ 2200 et seq.',
         jurisdiction: 'California State',
         section: '2200',
         fullText: 'This chapter applies to transactions in goods...',
@@ -817,7 +861,7 @@ export const MOCK_STATUTES: IStatute[] = [
     {
         id: 'USC-33-1311',
         name: 'Clean Water Act - Effluent Limitations',
-        citation: '33 U.S.C. § 1311',
+        citation: '33 U.S.C. Â§ 1311',
         jurisdiction: 'Federal',
         section: '1311',
         fullText: '(a) Illegality of pollutant discharges except in compliance with law...',
@@ -834,7 +878,7 @@ export const MOCK_STATUTES: IStatute[] = [
     {
         id: 'USC-42-7401',
         name: 'Clean Air Act - Congressional Findings and Purposes',
-        citation: '42 U.S.C. § 7401',
+        citation: '42 U.S.C. Â§ 7401',
         jurisdiction: 'Federal',
         section: '7401',
         fullText: '(a) Findings of Congress. The Congress finds...',
@@ -851,7 +895,7 @@ export const MOCK_STATUTES: IStatute[] = [
     {
         id: 'CA-EVIDENCE-CODE-1200',
         name: 'California Evidence Code - Hearsay Rule',
-        citation: 'Cal. Evid. Code § 1200',
+        citation: 'Cal. Evid. Code Â§ 1200',
         jurisdiction: 'California State',
         section: '1200',
         fullText: '"Hearsay evidence" is evidence of a statement that was made other than by a witness while testifying at the hearing and that is offered to prove the truth of the matter stated. Except as provided by law, hearsay evidence is inadmissible.',
@@ -950,7 +994,7 @@ export const MOCK_PRECEDENTS: IPrecedent[] = [
         jurisdiction: 'U.S. District Court, District of Delaware',
         year: 2018,
         summary: 'Patent infringement lawsuit involving a novel biotechnology process.',
-        holding: 'Granted summary judgment for defendant, finding the patent claims invalid under 35 U.S.C. § 101 for abstractness.',
+        holding: 'Granted summary judgment for defendant, finding the patent claims invalid under 35 U.S.C. Â§ 101 for abstractness.',
         reasoning: 'The court applied the Alice/Mayo framework, determining that the patent claimed a natural phenomenon without sufficient inventive concept.',
         keywords: ['patent law', 'intellectual property', 'biotechnology', 'patent invalidity', 'summary judgment', 'abstract ideas'],
         relevanceScore: 0.92,
@@ -966,7 +1010,8 @@ export const MOCK_PRECEDENTS: IPrecedent[] = [
 export const MOCK_AI_CONFIGS: IAIConfig[] = [
     {
         id: 'default-persuasive-brief',
-        name: 'Default Persuasive Brief',
+        name: 'Default Persuasive (GPT-4)',
+        model: SupportedLLM.JURIS_GPT_4,
         tone: 'persuasive',
         lengthPreference: 'medium',
         citationStyle: 'bluebook',
@@ -982,7 +1027,8 @@ export const MOCK_AI_CONFIGS: IAIConfig[] = [
     },
     {
         id: 'aggressive-summary-judgment',
-        name: 'Aggressive SJ Motion',
+        name: 'Aggressive SJ Motion (Claude)',
+        model: SupportedLLM.JURIS_CLAUDE,
         tone: 'aggressive',
         lengthPreference: 'long',
         citationStyle: 'localRules',
@@ -1000,7 +1046,8 @@ export const MOCK_AI_CONFIGS: IAIConfig[] = [
     },
     {
         id: 'neutral-compliance-memo',
-        name: 'Neutral Compliance Memo',
+        name: 'Neutral Compliance Memo (Gemini)',
+        model: SupportedLLM.JURIS_GEMINI,
         tone: 'neutral',
         lengthPreference: 'short',
         citationStyle: 'chicago',
@@ -1090,23 +1137,23 @@ export const MOCK_LEGAL_BRIEFS: ILegalBrief[] = [
         generatedDate: '2024-04-12T10:00:00Z',
         sections: [
             {
-                id: 'sec-intro-001', title: 'I. Introduction', content: 'Plaintiff Tech Innovations Inc. ("Tech Innovations") moves this Court for summary judgment against Defendant Cyber Solutions LLC ("Cyber Solutions") on its claim for breach of contract. As set forth below, the undisputed material facts demonstrate that Cyber Solutions materially breached the parties\' software development agreement by failing to deliver functional software by the agreed-upon deadline, causing Tech Innovations significant damages. There is no genuine dispute as to any material fact, and Tech Innovations is entitled to judgment as a matter of law.', citations: []
+                id: 'sec-intro-001', title: 'I. Introduction', content: 'Plaintiff Tech Innovations Inc. ("Tech Innovations") moves this Court for summary judgment against Defendant Cyber Solutions LLC ("Cyber Solutions") on its claim for breach of contract. As set forth below, the undisputed material facts demonstrate that Cyber Solutions materially breached the parties\' software development agreement by failing to deliver functional software by the agreed-upon deadline, causing Tech Innovations significant damages. There is no genuine dispute as to any material fact, and Tech Innovations is entitled to judgment as a matter of law.', citations: [], sectionType: 'introduction'
             },
             {
-                id: 'sec-facts-001', title: 'II. Statement of Undisputed Facts', content: 'On January 10, 2023, the parties executed a Software Development Agreement ("Agreement") for the creation of custom enterprise software, with a delivery deadline of January 10, 2024 (Fact 1). Cyber Solutions failed to deliver the software by this date, instead delivering a non-functional version on March 15, 2024 (Fact 2). This delay and non-functionality constitute a material breach. See *Smith v. Jones*, 123 F.2d 456 (9th Cir. 1999) (holding substantial delay a material breach).', citations: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)']
+                id: 'sec-facts-001', title: 'II. Statement of Undisputed Facts', content: 'On January 10, 2023, the parties executed a Software Development Agreement ("Agreement") for the creation of custom enterprise software, with a delivery deadline of January 10, 2024 (Fact 1). Cyber Solutions failed to deliver the software by this date, instead delivering a non-functional version on March 15, 2024 (Fact 2). This delay and non-functionality constitute a material breach. See *Smith v. Jones*, 123 F.2d 456 (9th Cir. 1999) (holding substantial delay a material breach).', citations: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)'], sectionType: 'statementOfFacts'
             },
             {
-                id: 'sec-arg-001', title: 'III. Legal Argument', content: 'Under California contract law, a material breach occurs when a party fails to perform a substantial part of the contract (California Civil Code § 123). The delivery of non-functional software over two months past the deadline clearly constitutes a material breach. Cyber Solutions\' claims of scope creep are without merit, as change orders were never formally executed as required by the Agreement.', citations: ['California Civil Code § 123']
+                id: 'sec-arg-001', title: 'III. Legal Argument', content: 'Under California contract law, a material breach occurs when a party fails to perform a substantial part of the contract (California Civil Code Â§ 123). The delivery of non-functional software over two months past the deadline clearly constitutes a material breach. Cyber Solutions\' claims of scope creep are without merit, as change orders were never formally executed as required by the Agreement.', citations: ['California Civil Code Â§ 123'], sectionType: 'legalArgument'
             },
             {
-                id: 'sec-concl-001', title: 'IV. Conclusion', content: 'For the foregoing reasons, Plaintiff Tech Innovations Inc. respectfully requests that this Court grant its motion for summary judgment and award damages as requested.', citations: []
+                id: 'sec-concl-001', title: 'IV. Conclusion', content: 'For the foregoing reasons, Plaintiff Tech Innovations Inc. respectfully requests that this Court grant its motion for summary judgment and award damages as requested.', citations: [], sectionType: 'conclusion'
             }
         ],
         fullTextRaw: 'Full raw text of the brief...',
-        citationsList: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)', 'California Civil Code § 123'],
+        citationsList: ['Smith v. Jones, 123 F.2d 456 (9th Cir. 1999)', 'California Civil Code Â§ 123'],
         keywords: ['summary judgment', 'breach of contract', 'software', 'damages'],
         generationMetadata: {
-            aiModel: 'JurisGen-GPT-4',
+            aiModel: SupportedLLM.JURIS_GPT_4,
             temperature: 0.7,
             promptTokens: 2500,
             completionTokens: 1200,
@@ -1130,17 +1177,17 @@ export const MOCK_LEGAL_BRIEFS: ILegalBrief[] = [
         briefType: 'complaint',
         generatedDate: '2024-03-25T11:30:00Z',
         sections: [
-            { id: 'sec-intro-002', title: 'I. Introduction', content: 'Plaintiff Environmental Advocates brings this action against Defendant MegaCorp Energy for repeated violations of the Clean Water Act, 33 U.S.C. § 1311 et seq., arising from unlawful discharge of industrial pollutants into River X. These discharges have caused demonstrable harm to the local ecosystem and public health.', citations: [] },
-            { id: 'sec-juris-002', title: 'II. Jurisdiction and Venue', content: 'This Court has jurisdiction over this action pursuant to 28 U.S.C. § 1331 (federal question jurisdiction) and 33 U.S.C. § 1365(a) (citizen suit provision of the Clean Water Act). Venue is proper in this district pursuant to 28 U.S.C. § 1391(b), as a substantial part of the events giving rise to the claim occurred here.', citations: ['28 U.S.C. § 1331', '33 U.S.C. § 1365(a)', '28 U.S.C. § 1391(b)'] },
-            { id: 'sec-facts-002', title: 'III. Factual Allegations', content: 'On or about November 1, 2023, MegaCorp Energy discharged chemical pollutants into River X. Subsequent testing revealed that the levels of these pollutants significantly exceeded the limits set forth in their federal permits and the Clean Water Act. (Fact 201, 202).', citations: [] },
-            { id: 'sec-counts-002', title: 'IV. Counts for Relief', content: 'Count 1: Violation of Clean Water Act, 33 U.S.C. § 1311.', citations: [] },
-            { id: 'sec-prayer-002', title: 'V. Prayer for Relief', content: 'Plaintiff respectfully requests that the Court: (a) Issue a permanent injunction prohibiting further unlawful discharges; (b) Impose civil penalties as provided by law; (c) Award Plaintiff its reasonable attorney\'s fees and costs.', citations: [] }
+            { id: 'sec-intro-002', title: 'I. Introduction', content: 'Plaintiff Environmental Advocates brings this action against Defendant MegaCorp Energy for repeated violations of the Clean Water Act, 33 U.S.C. Â§ 1311 et seq., arising from unlawful discharge of industrial pollutants into River X. These discharges have caused demonstrable harm to the local ecosystem and public health.', citations: [], sectionType: 'introduction' },
+            { id: 'sec-juris-002', title: 'II. Jurisdiction and Venue', content: 'This Court has jurisdiction over this action pursuant to 28 U.S.C. Â§ 1331 (federal question jurisdiction) and 33 U.S.C. Â§ 1365(a) (citizen suit provision of the Clean Water Act). Venue is proper in this district pursuant to 28 U.S.C. Â§ 1391(b), as a substantial part of the events giving rise to the claim occurred here.', citations: ['28 U.S.C. Â§ 1331', '33 U.S.C. Â§ 1365(a)', '28 U.S.C. Â§ 1391(b)'], sectionType: 'background' },
+            { id: 'sec-facts-002', title: 'III. Factual Allegations', content: 'On or about November 1, 2023, MegaCorp Energy discharged chemical pollutants into River X. Subsequent testing revealed that the levels of these pollutants significantly exceeded the limits set forth in their federal permits and the Clean Water Act. (Fact 201, 202).', citations: [], sectionType: 'statementOfFacts' },
+            { id: 'sec-counts-002', title: 'IV. Counts for Relief', content: 'Count 1: Violation of Clean Water Act, 33 U.S.C. Â§ 1311.', citations: [], sectionType: 'legalArgument' },
+            { id: 'sec-prayer-002', title: 'V. Prayer for Relief', content: 'Plaintiff respectfully requests that the Court: (a) Issue a permanent injunction prohibiting further unlawful discharges; (b) Impose civil penalties as provided by law; (c) Award Plaintiff its reasonable attorney\'s fees and costs.', citations: [], sectionType: 'prayerForRelief' }
         ],
         fullTextRaw: 'Full raw text of the environmental complaint...',
-        citationsList: ['28 U.S.C. § 1331', '33 U.S.C. § 1365(a)', '28 U.S.C. § 1391(b)', '33 U.S.C. § 1311'],
+        citationsList: ['28 U.S.C. Â§ 1331', '33 U.S.C. Â§ 1365(a)', '28 U.S.C. Â§ 1391(b)', '33 U.S.C. Â§ 1311'],
         keywords: ['environmental law', 'Clean Water Act', 'injunction', 'pollution'],
         generationMetadata: {
-            aiModel: 'JurisGen-GPT-4',
+            aiModel: SupportedLLM.JURIS_CLAUDE,
             temperature: 0.8,
             promptTokens: 1800,
             completionTokens: 900,
@@ -1944,7 +1991,7 @@ export class GenerativeJurisprudenceAgent {
         await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000)); // Simulate async AI processing
 
         const generatedSections: ILegalBriefSection[] = [
-            { id: `sim-sec-intro-${Date.now()}`, title: 'I. Introduction', content: `This brief is generated based on case ${caseData.caseName} and AI config ${aiConfig.name}.`, citations: [], sectionType: 'introduction' },
+            { id: `sim-sec-intro-${Date.now()}`, title: 'I. Introduction', content: `This brief is generated based on case ${caseData.caseName} and AI config ${aiConfig.name}. Model used: ${aiConfig.model}`, citations: [], sectionType: 'introduction' },
             {
                 id: `sim-sec-facts-${Date.now()}`, title: 'II. Statement of Facts', content: `Key facts include: ${caseData.facts.map(f => f.description).join('; ')}.`,
                 citations: [], sectionType: 'statementOfFacts'
@@ -1969,7 +2016,7 @@ export class GenerativeJurisprudenceAgent {
             citationsList: Array.from(new Set(generatedSections.flatMap(s => s.citations))),
             keywords: [...(caseData.keywords || []), ...aiConfig.name.split(' ').map(w => w.toLowerCase())], // Assuming caseData has keywords now
             generationMetadata: {
-                aiModel: 'JurisGen-GPT-4',
+                aiModel: aiConfig.model,
                 temperature: aiConfig.modelParameters?.temperature || aiConfig.temperature || 0.7,
                 promptTokens: Math.floor(estimatedTokens * 0.6), // Simulated
                 completionTokens: Math.floor(estimatedTokens * 0.4), // Simulated
@@ -2279,13 +2326,13 @@ export class AgentOrchestrator {
 
         } catch (e: any) {
             console.error(`Task ${task.taskId} failed:`, e);
-            if (task.retries < task.maxRetries) {
-                task.retries++;
+            if (task.retries! < task.maxRetries!) {
+                task.retries!++;
                 task.status = 'pending'; // Re-queue for retry
                 task.errorMessage = `Retrying: ${e.message}`;
                 logAgentAction('system', 'TASK_RETRYING', 'IJurisprudenceAgentTask', task.taskId, { error: e.message, retryAttempt: task.retries }, 'warning');
                 // Exponential backoff simulation
-                setTimeout(() => this.processTask(task.taskId), 1000 * Math.pow(2, task.retries));
+                setTimeout(() => this.processTask(task.taskId), 1000 * Math.pow(2, task.retries!));
             } else {
                 task.status = 'failed';
                 task.errorMessage = e.message;
@@ -2371,11 +2418,57 @@ tokenLedger.initializeUserBalance(MOCK_ADMIN_USER_CONTEXT.userId, 50000); // Adm
 
 // #endregion
 
+// #region --- [4] React Application UI ---
+
+type AppView = 'dashboard' | 'cases' | 'briefs' | 'research' | 'compliance' | 'risk' | 'agents' | 'chat';
+
+const ViewSwitcher: React.FC<{
+    activeView: AppView;
+    setActiveView: (view: AppView) => void;
+}> = ({ activeView, setActiveView }) => {
+    const views: { id: AppView, label: string }[] = [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'cases', label: 'Case Management' },
+        { id: 'briefs', label: 'Brief Generation' },
+        { id: 'research', label: 'Research' },
+        { id: 'compliance', label: 'Compliance' },
+        { id: 'risk', label: 'Risk Analysis' },
+        { id: 'agents', label: 'Agent Hub' },
+        { id: 'chat', label: 'AI Chat' },
+    ];
+    return (
+        <nav className="bg-white shadow-md mb-8">
+            <div className="container mx-auto px-6 py-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <span className="text-xl font-semibold text-gray-700">Jurisprudence AI</span>
+                    </div>
+                    <div className="flex items-center">
+                        {views.map(view => (
+                            <button
+                                key={view.id}
+                                onClick={() => setActiveView(view.id)}
+                                className={`px-4 py-2 text-sm font-medium leading-5 transition-colors duration-150 ${
+                                    activeView === view.id
+                                        ? 'text-blue-600 border-b-2 border-blue-600'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                } focus:outline-none`}
+                            >
+                                {view.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    );
+};
 /**
  * Generative Jurisprudence View component.
  * Business value: Provides a user interface for interacting with the advanced Generative Jurisprudence AI, allowing legal professionals to initiate brief generation, compliance checks, and risk assessments. This component is the primary interface through which millions in value are unlocked by leveraging AI to automate and enhance legal operations.
  */
 export const GenerativeJurisprudenceView: React.FC = () => {
+    const [activeView, setActiveView] = useState<AppView>('dashboard');
     const [selectedCase, setSelectedCase] = useState<ICaseData | null>(MOCK_CASES_DATA[0]);
     const [selectedAiConfig, setSelectedAiConfig] = useState<IAIConfig | null>(MOCK_AI_CONFIGS[0]);
     const [generatedBrief, setGeneratedBrief] = useState<ILegalBrief | null>(null);
@@ -2413,17 +2506,14 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const task: IJurisprudenceAgentTask = {
-                taskId: '', // Will be assigned by orchestrator
+            const task: Omit<IJurisprudenceAgentTask, 'taskId' | 'creationDate' | 'requestedByUserId'> & { caseId: string } = {
                 agentId: primaryJurisprudenceAgent.id,
                 taskType: 'generate_brief',
                 caseId: selectedCase.id,
-                requestedByUserId: currentUser.userId,
-                creationDate: '', // Will be assigned by orchestrator
                 priority: 'high',
                 configuration: { aiConfigId: selectedAiConfig.id },
             };
-            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            const submittedTask = await agentOrchestrator.submitTask(task as any, currentUser);
             console.log("Brief Generation Task Submitted:", submittedTask);
             // Wait for task to complete for UI update
             const brief = await new Promise<ILegalBrief | null>((resolve, reject) => {
@@ -2460,17 +2550,14 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const task: IJurisprudenceAgentTask = {
-                taskId: '',
+            const task: Omit<IJurisprudenceAgentTask, 'taskId' | 'creationDate' | 'requestedByUserId'> & { caseId: string } = {
                 agentId: complianceAgent.id, // Delegate to specialized compliance agent
                 taskType: 'check_compliance',
                 caseId: generatedBrief.caseId,
-                requestedByUserId: currentUser.userId,
-                creationDate: '',
                 priority: 'medium',
                 configuration: { briefId: generatedBrief.id, rulesetIds: MOCK_COMPLIANCE_RULES.map(r => r.id) },
             };
-            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            const submittedTask = await agentOrchestrator.submitTask(task as any, currentUser);
             console.log("Compliance Check Task Submitted:", submittedTask);
 
             // Wait for task to complete for UI update
@@ -2508,17 +2595,14 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const task: IJurisprudenceAgentTask = {
-                taskId: '',
+            const task: Omit<IJurisprudenceAgentTask, 'taskId' | 'creationDate' | 'requestedByUserId'> & { caseId: string } = {
                 agentId: riskAgent.id, // Delegate to specialized risk agent
                 taskType: 'assess_risk',
                 caseId: selectedCase.id,
-                requestedByUserId: currentUser.userId,
-                creationDate: '',
                 priority: 'high',
                 configuration: { caseId: selectedCase.id },
             };
-            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            const submittedTask = await agentOrchestrator.submitTask(task as any, currentUser);
             console.log("Risk Assessment Task Submitted:", submittedTask);
 
             // Wait for task to complete for UI update
@@ -2556,17 +2640,14 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const task: IJurisprudenceAgentTask = {
-                taskId: '',
+            const task: Omit<IJurisprudenceAgentTask, 'taskId' | 'creationDate' | 'requestedByUserId'> & { caseId?: string } = {
                 agentId: primaryJurisprudenceAgent.id, // Main agent can also do research
                 taskType: 'research_precedents',
                 caseId: selectedCase?.id || 'N/A',
-                requestedByUserId: currentUser.userId,
-                creationDate: '',
                 priority: 'low',
                 configuration: { query, jurisdictionId },
             };
-            const submittedTask = await agentOrchestrator.submitTask(task, currentUser);
+            const submittedTask = await agentOrchestrator.submitTask(task as any, currentUser);
             console.log("Legal Research Task Submitted:", submittedTask);
 
             // Wait for task to complete for UI update
@@ -2603,264 +2684,173 @@ export const GenerativeJurisprudenceView: React.FC = () => {
         }
     }, [currentUser, selectedCase?.id]);
 
-    /**
-     * Provides a visual representation of an audit log entry.
-     * Business value: Enhances transparency and debuggability by displaying system activities, crucial for monitoring, troubleshooting, and ensuring accountability.
-     */
-    const renderAuditLogEntry = (entry: IAuditLogEntry) => (
-        <div key={entry.id} className="p-2 border-b border-gray-200 text-sm text-gray-700">
-            <p><strong className="text-gray-900">{entry.timestamp.substring(11, 19)}</strong> - <span className={entry.outcome === 'success' ? 'text-green-600' : (entry.outcome === 'warning' ? 'text-orange-600' : 'text-red-600')}>{entry.outcome.toUpperCase()}</span>: {entry.action}</p>
-            <p className="ml-2">User/Agent: {entry.userId || entry.agentId} | Resource: {entry.resourceType}:{entry.resourceId}</p>
-            {entry.details && <p className="ml-2">Details: {JSON.stringify(entry.details)}</p>}
-            {entry.signature && <p className="ml-2 text-xs text-gray-500">Signature: {entry.signature.substring(0, 30)}...</p>}
-        </div>
-    );
-
-    /**
-     * Provides a visual representation of an agent task.
-     * Business value: Offers real-time monitoring of automated workflows, enabling users to track progress, identify bottlenecks, and ensure the efficient allocation of AI resources.
-     */
-    const renderAgentTask = (task: IJurisprudenceAgentTask) => (
-        <div key={task.taskId} className={`p-2 border-b border-gray-200 text-sm ${task.status === 'failed' ? 'bg-red-50' : task.status === 'completed' ? 'bg-green-50' : 'bg-blue-50'}`}>
-            <p><strong>{task.creationDate.substring(11, 19)}</strong> - Task ID: {task.taskId} | Agent: {task.agentId}</p>
-            <p className="ml-2">Type: {task.taskType} | Status: <span className="font-semibold">{task.status.toUpperCase()}</span> | Priority: {task.priority}</p>
-            {task.errorMessage && <p className="ml-2 text-red-700">Error: {task.errorMessage}</p>}
-            {task.retries > 0 && <p className="ml-2 text-orange-700">Retries: {task.retries}/{task.maxRetries}</p>}
-            {task.result && <p className="ml-2">Result: {JSON.stringify(task.result)}</p>}
-        </div>
-    );
-
+    const renderCurrentView = () => {
+        switch (activeView) {
+            case 'dashboard':
+                return (
+                    <DashboardView
+                        currentUser={currentUser}
+                        userBalance={userBalance}
+                        tasks={tasks}
+                    />
+                );
+            case 'briefs':
+                 return (
+                    <BriefGenerationView 
+                        selectedCase={selectedCase}
+                        setSelectedCase={setSelectedCase}
+                        selectedAiConfig={selectedAiConfig}
+                        setSelectedAiConfig={setSelectedAiConfig}
+                        generatedBrief={generatedBrief}
+                        handleGenerateBrief={handleGenerateBrief}
+                        loading={loading}
+                        error={error}
+                        currentUser={currentUser}
+                    />
+                );
+            // Add other cases for other views later
+            default:
+                return <p>View not implemented yet. It's a feature, not a bug.</p>;
+        }
+    };
 
     return (
-        <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
-            <h1 className="text-4xl font-extrabold text-gray-900 leading-tight">Generative Jurisprudence AI Platform</h1>
-            <p className="text-lg text-gray-700 max-w-2xl">
-                Leverage advanced AI to automate legal document generation, ensure compliance, and conduct real-time risk assessments.
-                This platform redefines legal operations, driving efficiency and precision.
-            </p>
-
-            <Card title="Current User Context" className="bg-white shadow-lg rounded-lg p-6">
-                <p><strong>User ID:</strong> {currentUser.userId}</p>
-                <p><strong>Username:</strong> {currentUser.userName}</p>
-                <p><strong>Firm:</strong> {currentUser.firmName}</p>
-                <p><strong>Roles:</strong> {currentUser.roles.join(', ')}</p>
-                <p><strong>Authenticated:</strong> {currentUser.isAuthenticated ? 'Yes' : 'No'}</p>
-                <p className="mt-2 text-lg"><strong>GJ_AI_CREDIT Balance:</strong> <span className="text-blue-700 font-bold">{userBalance}</span></p>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card title="Select Case Data" className="bg-white shadow-lg rounded-lg p-6">
-                    <select
-                        className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:ring-blue-500 focus:border-blue-500"
-                        onChange={(e) => setSelectedCase(MOCK_CASES_DATA.find(c => c.id === e.target.value) || null)}
-                        value={selectedCase?.id || ''}
-                    >
-                        <option value="">-- Select a Case --</option>
-                        {MOCK_CASES_DATA.map((caseItem) => (
-                            <option key={caseItem.id} value={caseItem.id}>
-                                {caseItem.caseName}
-                            </option>
-                        ))}
-                    </select>
-                    {selectedCase && (
-                        <div className="space-y-2">
-                            <p><strong>Summary:</strong> {selectedCase.caseSummary}</p>
-                            <p><strong>Jurisdiction:</strong> {MOCK_JURISDICTIONS.find(j => j.id === selectedCase.jurisdictionId)?.name}</p>
-                            <p><strong>Desired Position:</strong> {selectedCase.desiredLegalPosition}</p>
-                            <p><strong>Filing Deadline:</strong> {new Date(selectedCase.filingDeadline!).toLocaleDateString()}</p>
-                        </div>
-                    )}
-                </Card>
-
-                <Card title="Select AI Configuration" className="bg-white shadow-lg rounded-lg p-6">
-                    <select
-                        className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:ring-blue-500 focus:border-blue-500"
-                        onChange={(e) => setSelectedAiConfig(MOCK_AI_CONFIGS.find(cfg => cfg.id === e.target.value) || null)}
-                        value={selectedAiConfig?.id || ''}
-                    >
-                        <option value="">-- Select an AI Config --</option>
-                        {MOCK_AI_CONFIGS.map((aiConfig) => (
-                            <option key={aiConfig.id} value={aiConfig.id}>
-                                {aiConfig.name} (Tone: {aiConfig.tone})
-                            </option>
-                        ))}
-                    </select>
-                    {selectedAiConfig && (
-                        <div className="space-y-2">
-                            <p><strong>Tone:</strong> {selectedAiConfig.tone}</p>
-                            <p><strong>Length:</strong> {selectedAiConfig.lengthPreference}</p>
-                            <p><strong>Citation Style:</strong> {selectedAiConfig.citationStyle}</p>
-                            <p><strong>Audience:</strong> {selectedAiConfig.targetAudience}</p>
-                        </div>
-                    )}
-                </Card>
-            </div>
-
-            <Card title="AI Actions" className="bg-white shadow-lg rounded-lg p-6">
-                {error && <div className="p-4 mb-4 bg-red-100 text-red-700 border border-red-200 rounded-md">{error}</div>}
-                <div className="flex flex-wrap gap-4">
-                    <button
-                        onClick={handleGenerateBrief}
-                        disabled={loading || !selectedCase || !selectedAiConfig || !currentUser.isAuthenticated}
-                        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
-                    >
-                        {loading ? 'Generating...' : 'Generate Legal Brief'}
-                    </button>
-                    <button
-                        onClick={handleComplianceCheck}
-                        disabled={loading || !generatedBrief || !currentUser.isAuthenticated}
-                        className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 disabled:bg-green-300 transition-colors"
-                    >
-                        {loading ? 'Checking...' : 'Run Compliance Check'}
-                    </button>
-                    <button
-                        onClick={handleRiskAssessment}
-                        disabled={loading || !selectedCase || !currentUser.isAuthenticated}
-                        className="px-6 py-3 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 disabled:bg-yellow-300 transition-colors"
-                    >
-                        {loading ? 'Assessing...' : 'Assess Legal Risk'}
-                    </button>
-                    <input
-                        type="text"
-                        placeholder="Research Query (e.g., 'breach of contract')"
-                        className="p-3 border border-gray-300 rounded-md flex-grow min-w-[200px]"
-                        value={researchQuery}
-                        onChange={(e) => setResearchQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleLegalResearch(researchQuery, selectedCase?.jurisdictionId || MOCK_USER_CONTEXT.defaultJurisdictionId);
-                            }
-                        }}
-                    />
-                    <button
-                        onClick={() => handleLegalResearch(
-                            researchQuery,
-                            selectedCase?.jurisdictionId || MOCK_USER_CONTEXT.defaultJurisdictionId
-                        )}
-                        disabled={loading || !currentUser.isAuthenticated || !researchQuery}
-                        className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 disabled:bg-purple-300 transition-colors"
-                    >
-                        {loading ? 'Researching...' : 'Conduct Legal Research'}
-                    </button>
-                </div>
-            </Card>
-
-            {generatedBrief && (
-                <Card title={`Generated Brief: ${generatedBrief.title}`} className="bg-white shadow-lg rounded-lg p-6">
-                    <div className="max-h-96 overflow-y-auto border border-gray-200 p-4 rounded-md bg-gray-50 text-gray-800">
-                        {generatedBrief.sections.map((section, index) => (
-                            <div key={section.id} className="mb-4">
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">{section.title}</h3>
-                                <p className="text-base leading-relaxed whitespace-pre-wrap">{section.content}</p>
-                                {section.citations.length > 0 && (
-                                    <p className="text-sm text-gray-600 mt-1">Citations: {section.citations.join(', ')}</p>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="mt-4 text-sm text-gray-600">
-                        <p><strong>Strength Score:</strong> {generatedBrief.legalStrengthScore}%</p>
-                        <p><strong>Readability:</strong> {generatedBrief.readabilityScore}</p>
-                        <p><strong>Suggested Revisions:</strong> {generatedBrief.suggestedRevisions?.join('; ') || 'None'}</p>
-                    </div>
-                </Card>
-            )}
-
-            {complianceReport && (
-                <Card title={`Compliance Report for Brief: ${complianceReport.briefId}`} className="bg-white shadow-lg rounded-lg p-6">
-                    <p className="text-lg"><strong>Overall Status:</strong> <span className={`font-bold ${complianceReport.status === 'compliant' ? 'text-green-600' : 'text-red-600'}`}>{complianceReport.status.toUpperCase()}</span> ({complianceReport.overallScore}%)</p>
-                    <div className="mt-4 space-y-3 max-h-60 overflow-y-auto">
-                        {complianceReport.findings.map((finding, index) => (
-                            <div key={index} className="p-3 border border-gray-100 rounded-md bg-gray-50">
-                                <p><strong>Rule:</strong> {finding.ruleName} ({finding.severity})</p>
-                                <p><strong>Compliant:</strong> {finding.isCompliant ? 'Yes' : 'No'}</p>
-                                <p><strong>Details:</strong> {finding.details}</p>
-                                {finding.suggestedAction && <p className="text-orange-700"><strong>Action:</strong> {finding.suggestedAction}</p>}
-                                {finding.snippet && <p className="text-xs text-gray-500">Snippet: "{finding.snippet}"</p>}
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            {riskAssessment && (
-                <Card title={`Risk Assessment for Case: ${riskAssessment.caseId}`} className="bg-white shadow-lg rounded-lg p-6">
-                    <p className="text-lg"><strong>Overall Risk Score:</strong> <span className={`font-bold ${riskAssessment.overallRiskScore > 50 ? 'text-red-600' : 'text-green-600'}`}>{riskAssessment.overallRiskScore}%</span></p>
-                    <p className="mt-2 text-gray-700"><strong>Summary:</strong> {riskAssessment.summary}</p>
-                    <div className="mt-4 space-y-3 max-h-60 overflow-y-auto">
-                        {riskAssessment.riskAreas.map((area, index) => (
-                            <div key={index} className="p-3 border border-gray-100 rounded-md bg-gray-50">
-                                <p><strong>Category:</strong> {area.category} (Severity: <span className={`${area.severity === 'critical' ? 'text-red-800' : area.severity === 'high' ? 'text-orange-700' : 'text-yellow-600'}`}>{area.severity}</span>)</p>
-                                <p><strong>Description:</strong> {area.description}</p>
-                                {area.mitigationStrategy && <p className="text-blue-700"><strong>Mitigation:</strong> {area.mitigationStrategy}</p>}
-                            </div>
-                        ))}
-                    </div>
-                    {riskAssessment.actionableRecommendations && riskAssessment.actionableRecommendations.length > 0 && (
-                        <div className="mt-4">
-                            <h4 className="font-bold text-gray-900">Actionable Recommendations:</h4>
-                            <ul className="list-disc list-inside text-gray-700">
-                                {riskAssessment.actionableRecommendations.map((rec, i) => <li key={i}>{rec}</li>)}
-                            </ul>
-                        </div>
-                    )}
-                </Card>
-            )}
-
-            {researchResults.length > 0 && (
-                <Card title="Legal Research Results" className="bg-white shadow-lg rounded-lg p-6">
-                    <div className="mt-4 space-y-3 max-h-60 overflow-y-auto">
-                        {researchResults.map((result, index) => (
-                            <div key={index} className="p-3 border border-gray-100 rounded-md bg-gray-50">
-                                {('caseName' in result) ? (
-                                    <>
-                                        <p className="font-semibold text-blue-700">{result.caseName}</p>
-                                        <p className="text-sm text-gray-600">Citation: {result.citation}</p>
-                                        <p className="text-sm text-gray-800">Summary: {result.summary.substring(0, 150)}...</p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="font-semibold text-green-700">{result.name}</p>
-                                        <p className="text-sm text-gray-600">Citation: {result.citation}, Section: {result.section}</p>
-                                        <p className="text-sm text-gray-800">Text: {result.fullText.substring(0, 150)}...</p>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
-
-            <Card title="Agent Orchestrator Task Queue" className="bg-white shadow-lg rounded-lg p-6">
-                <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-gray-50">
-                    {tasks.length === 0 ? (
-                        <p className="p-4 text-gray-600">No tasks in the queue.</p>
-                    ) : (
-                        tasks.slice().reverse().map(renderAgentTask) // Show most recent tasks first
-                    )}
-                </div>
-                <p className="mt-4 text-sm text-gray-600">Total Tasks: {tasks.length}</p>
-            </Card>
-
-            <Card title="Simulated Audit Log (Recent Entries)" className="bg-white shadow-lg rounded-lg p-6">
-                <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-gray-50">
-                    {MOCK_AUDIT_LOGS.slice(-10).reverse().map(renderAuditLogEntry)}
-                </div>
-                <p className="mt-4 text-sm text-gray-600">Total Audit Entries: {MOCK_AUDIT_LOGS.length}</p>
-            </Card>
-
-            <Card title="Simulated Token Transactions (Recent Entries)" className="bg-white shadow-lg rounded-lg p-6">
-                <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md bg-gray-50">
-                    {tokenLedger.transactions.slice(-10).reverse().map(txn => (
-                        <div key={txn.transactionId} className="p-2 border-b border-gray-200 text-sm text-gray-700">
-                            <p><strong className="text-gray-900">{txn.timestamp.substring(11, 19)}</strong> - <span className="text-blue-600">{txn.serviceType.toUpperCase()}</span> by {txn.userId}: {txn.tokenAmount} {txn.currencyType}</p>
-                            <p className="ml-2">Resource: {txn.resourceId} | Status: {txn.status}</p>
-                            <p className="ml-2 text-xs text-gray-500">Signature: {txn.signature.substring(0, 30)}...</p>
-                        </div>
-                    ))}
-                </div>
-                <p className="mt-4 text-sm text-gray-600">Total Token Transactions: {tokenLedger.transactions.length}</p>
-            </Card>
+        <div className="bg-gray-50 min-h-screen font-sans">
+             <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
+             <main className="container mx-auto p-8">
+                 {renderCurrentView()}
+             </main>
         </div>
     );
 };
+
+const DashboardView: React.FC<{
+    currentUser: IUserContext,
+    userBalance: number,
+    tasks: IJurisprudenceAgentTask[]
+}> = ({ currentUser, userBalance, tasks }) => (
+    <div className="space-y-8">
+        <h1 className="text-4xl font-extrabold text-gray-900">Welcome, {currentUser.userName}</h1>
+        <p className="text-lg text-gray-700">Here's your snapshot. The system is watching. Always. Just kidding... mostly.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card title="Your Profile">
+                <p><strong>Firm:</strong> {currentUser.firmName}</p>
+                <p><strong>Roles:</strong> {currentUser.roles.join(', ')}</p>
+                <p className="mt-4 text-2xl font-bold text-blue-600">{userBalance} <span className="text-sm font-normal text-gray-500">GJ_AI_CREDITS</span></p>
+            </Card>
+            <Card title="Recent Tasks">
+                <div className="max-h-60 overflow-y-auto">
+                {tasks.slice(-5).reverse().map(task => (
+                    <div key={task.taskId} className="p-2 border-b border-gray-100 text-sm">
+                        <p><strong>{task.taskType}</strong> on {task.caseId || 'System'}</p>
+                        <p>Status: <span className="font-semibold">{task.status}</span></p>
+                    </div>
+                ))}
+                </div>
+            </Card>
+             <Card title="System Status">
+                <p className="flex items-center text-green-600 font-semibold"><span className="h-3 w-3 bg-green-500 rounded-full mr-2"></span>All Systems Nominal</p>
+                <p className="text-sm text-gray-500 mt-2">Our servers are purring like well-fed kittens. No need to worry. Yet.</p>
+                <p className="mt-4"><strong>Active Agents:</strong> 3</p>
+                <p><strong>Cases in System:</strong> {MOCK_CASES_DATA.length}</p>
+            </Card>
+        </div>
+    </div>
+);
+
+
+const BriefGenerationView: React.FC<{
+    selectedCase: ICaseData | null;
+    setSelectedCase: (c: ICaseData | null) => void;
+    selectedAiConfig: IAIConfig | null;
+    setSelectedAiConfig: (c: IAIConfig | null) => void;
+    generatedBrief: ILegalBrief | null;
+    handleGenerateBrief: () => void;
+    loading: boolean;
+    error: string | null;
+    currentUser: IUserContext;
+}> = ({ selectedCase, setSelectedCase, selectedAiConfig, setSelectedAiConfig, generatedBrief, handleGenerateBrief, loading, error, currentUser }) => (
+    <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card title="Step 1: Select Case Data">
+                <select
+                    className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => setSelectedCase(MOCK_CASES_DATA.find(c => c.id === e.target.value) || null)}
+                    value={selectedCase?.id || ''}
+                >
+                    <option value="">-- Select a Case --</option>
+                    {MOCK_CASES_DATA.map((caseItem) => (
+                        <option key={caseItem.id} value={caseItem.id}>
+                            {caseItem.caseName}
+                        </option>
+                    ))}
+                </select>
+                {selectedCase && (
+                    <div className="space-y-2 text-sm">
+                        <p><strong>Summary:</strong> {selectedCase.caseSummary}</p>
+                        <p><strong>Jurisdiction:</strong> {MOCK_JURISDICTIONS.find(j => j.id === selectedCase.jurisdictionId)?.name}</p>
+                        <p><strong>Desired Position:</strong> {selectedCase.desiredLegalPosition}</p>
+                    </div>
+                )}
+            </Card>
+
+            <Card title="Step 2: Select AI Configuration">
+                <select
+                    className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => setSelectedAiConfig(MOCK_AI_CONFIGS.find(cfg => cfg.id === e.target.value) || null)}
+                    value={selectedAiConfig?.id || ''}
+                >
+                    <option value="">-- Select an AI Config --</option>
+                    {MOCK_AI_CONFIGS.map((aiConfig) => (
+                        <option key={aiConfig.id} value={aiConfig.id}>
+                            {aiConfig.name}
+                        </option>
+                    ))}
+                </select>
+                {selectedAiConfig && (
+                    <div className="space-y-2 text-sm">
+                        <p><strong>Model:</strong> {selectedAiConfig.model}</p>
+                        <p><strong>Tone:</strong> {selectedAiConfig.tone}</p>
+                        <p><strong>Length:</strong> {selectedAiConfig.lengthPreference}</p>
+                        <p><strong>Audience:</strong> {selectedAiConfig.targetAudience}</p>
+                    </div>
+                )}
+            </Card>
+        </div>
+        <Card title="Step 3: Generate">
+             {error && <div className="p-4 mb-4 bg-red-100 text-red-700 border border-red-200 rounded-md">{error}</div>}
+             <button
+                onClick={handleGenerateBrief}
+                disabled={loading || !selectedCase || !selectedAiConfig || !currentUser.isAuthenticated}
+                className="w-full px-6 py-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-lg"
+            >
+                {loading ? 'Generating...' : 'Generate Legal Brief'}
+            </button>
+            <p className="text-xs text-center text-gray-500 mt-2">This will consume AI credits. Use them wisely, unlike that one summer in college.</p>
+        </Card>
+         {generatedBrief && (
+            <Card title={`Generated Brief: ${generatedBrief.title}`}>
+                <div className="max-h-96 overflow-y-auto border border-gray-200 p-4 rounded-md bg-gray-50 text-gray-800">
+                    {generatedBrief.sections.map((section) => (
+                        <div key={section.id} className="mb-4">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{section.title}</h3>
+                            <p className="text-base leading-relaxed whitespace-pre-wrap">{section.content}</p>
+                            {section.citations.length > 0 && (
+                                <p className="text-sm text-gray-600 mt-1">Citations: {section.citations.join(', ')}</p>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-4 text-sm text-gray-600">
+                     <p><strong>Strength Score:</strong> {generatedBrief.legalStrengthScore}%</p>
+                     <p><strong>Readability:</strong> {generatedBrief.readabilityScore}</p>
+                     <p><strong>Model:</strong> {generatedBrief.generationMetadata.aiModel}</p>
+                     <p className="col-span-3"><strong>Suggested Revisions:</strong> {generatedBrief.suggestedRevisions?.join('; ') || 'None'}</p>
+                </div>
+            </Card>
+        )}
+    </div>
+);
+
+
+// #endregion
