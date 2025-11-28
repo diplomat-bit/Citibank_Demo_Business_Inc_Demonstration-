@@ -1,7 +1,8 @@
+```javascript
 // components/views/megadashboard/ecosystem/MultiCurrencyView.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Card from '../../../Card';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/genai";
 
 /**
  * @file MultiCurrencyView.tsx
@@ -44,7 +45,7 @@ import { GoogleGenAI } from "@google/genai";
 export interface Currency {
     code: string; // E.g., "USD", "EUR"
     name: string; // E.g., "United States Dollar", "Euro"
-    symbol: string; // E.g., "$", "€"
+    symbol: string; // E.g., "$", "â‚¬"
     icon: string; // Placeholder for emoji, SVG, or URL to flag icon
     decimalDigits: number; // Number of decimal places for the currency
     isFiat: boolean; // True if it's a fiat currency, false otherwise (e.g., crypto, though not fully implemented here)
@@ -273,20 +274,20 @@ export const mockApi = {
     fetchCurrencies: async (): Promise<Currency[]> => {
         await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
         return [
-            { code: 'USD', name: 'United States Dollar', symbol: '$', icon: '🇺🇸', decimalDigits: 2, isFiat: true },
-            { code: 'EUR', name: 'Euro', symbol: '€', icon: '🇪🇺', decimalDigits: 2, isFiat: true },
-            { code: 'GBP', name: 'British Pound', symbol: '£', icon: '🇬🇧', decimalDigits: 2, isFiat: true },
-            { code: 'JPY', name: 'Japanese Yen', symbol: '¥', icon: '🇯🇵', decimalDigits: 0, isFiat: true },
-            { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', icon: '🇨🇦', decimalDigits: 2, isFiat: true },
-            { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', icon: '🇦🇺', decimalDigits: 2, isFiat: true },
-            { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', icon: '🇨🇭', decimalDigits: 2, isFiat: true },
-            { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', icon: '🇨🇳', decimalDigits: 2, isFiat: true },
-            { code: 'INR', name: 'Indian Rupee', symbol: '₹', icon: '🇮🇳', decimalDigits: 2, isFiat: true },
-            { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', icon: '🇧🇷', decimalDigits: 2, isFiat: true },
-            { code: 'ZAR', name: 'South African Rand', symbol: 'R', icon: '🇿🇦', decimalDigits: 2, isFiat: true },
+            { code: 'USD', name: 'United States Dollar', symbol: '$', icon: 'ðŸ‡ºðŸ‡¸', decimalDigits: 2, isFiat: true },
+            { code: 'EUR', name: 'Euro', symbol: 'â‚¬', icon: 'ðŸ‡ªðŸ‡º', decimalDigits: 2, isFiat: true },
+            { code: 'GBP', name: 'British Pound', symbol: 'Â£', icon: 'ðŸ‡¬ðŸ‡§', decimalDigits: 2, isFiat: true },
+            { code: 'JPY', name: 'Japanese Yen', symbol: 'Â¥', icon: 'ðŸ‡¯ðŸ‡µ', decimalDigits: 0, isFiat: true },
+            { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', icon: 'ðŸ‡¨ðŸ‡¦', decimalDigits: 2, isFiat: true },
+            { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', icon: 'ðŸ‡¦ðŸ‡º', decimalDigits: 2, isFiat: true },
+            { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', icon: 'ðŸ‡¨ðŸ‡­', decimalDigits: 2, isFiat: true },
+            { code: 'CNY', name: 'Chinese Yuan', symbol: 'Â¥', icon: 'ðŸ‡¨ðŸ‡³', decimalDigits: 2, isFiat: true },
+            { code: 'INR', name: 'Indian Rupee', symbol: 'â‚¹', icon: 'ðŸ‡®ðŸ‡³', decimalDigits: 2, isFiat: true },
+            { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', icon: 'ðŸ‡§ðŸ‡·', decimalDigits: 2, isFiat: true },
+            { code: 'ZAR', name: 'South African Rand', symbol: 'R', icon: 'ðŸ‡¿ðŸ‡¦', decimalDigits: 2, isFiat: true },
             // Adding more to increase mock data variety
-            { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', icon: '🇸🇬', decimalDigits: 2, isFiat: true },
-            { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', icon: '🇳🇿', decimalDigits: 2, isFiat: true },
+            { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', icon: 'ðŸ‡¸ðŸ‡¬', decimalDigits: 2, isFiat: true },
+            { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', icon: 'ðŸ‡³ðŸ‡¿', decimalDigits: 2, isFiat: true },
         ];
     },
 
@@ -2097,4 +2098,275 @@ export const FundsTransferSection: React.FC<{
                         />
                         <Button
                             onClick={() => { setAddBeneficiaryModalOpen(true); setAddBenError(''); setAddBenSuccess(''); }}
-                            className="absolute right-
+                            className="absolute right-0 top-0 mt-7 -mr-2 text-xs text-cyan-400 hover:text-cyan-300 !p-1 !bg-transparent"
+                            ariaLabel="Add new beneficiary"
+                        >
+                            + Add New
+                        </Button>
+                    </div>
+                )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                 <CustomInput
+                    label="Amount"
+                    type="number"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    placeholder={`0.00 ${fromAccountObj?.currency.code || ''}`}
+                    step="0.01"
+                    min="0.01"
+                    disabled={loading}
+                    required
+                    error={
+                        fromAccountObj && amount && parseFloat(amount) > fromAccountObj.availableBalance
+                        ? 'Amount exceeds available balance.'
+                        : ''
+                    }
+                />
+                 <CustomInput
+                    label="Description / Reference (Optional)"
+                    type="text"
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="e.g., Monthly Rent"
+                    disabled={loading}
+                />
+            </div>
+            
+            {/* Currency Mismatch Warnings */}
+            {isInternalTransferMismatchedCurrency && <ErrorMessage message="Internal transfers must be between accounts of the same currency." className="mt-4"/>}
+            {isExternalTransferMismatchedCurrency && <ErrorMessage message={`The selected beneficiary requires ${beneficiaries.find(b => b.id === toTargetId)?.currency.code}, but your source account is in ${fromAccountObj?.currency.code}. Please perform an exchange first.`} className="mt-4"/>}
+            
+            {/* Transfer Status and Submit Button */}
+            <div className="mt-6">
+                {transferStatus && (
+                    transferStatus.success ? (
+                        <SuccessMessage message={`${transferStatus.message} Transaction ID: ${transferStatus.transactionId}. Fee: ${transferStatus.fee || 0}`} className="mb-4" />
+                    ) : (
+                        <ErrorMessage message={transferStatus.message} className="mb-4" />
+                    )
+                )}
+                {transferError && !transferStatus && <ErrorMessage message={transferError} className="mb-4" />}
+                
+                <Button
+                    onClick={handleTransfer}
+                    disabled={loading || !!transferError || isInternalTransferMismatchedCurrency || isExternalTransferMismatchedCurrency}
+                    className="w-full md:w-auto"
+                >
+                    {loading ? 'Processing Transfer...' : 'Confirm and Transfer'}
+                </Button>
+            </div>
+
+            {/* Add Beneficiary Modal */}
+            <Modal isOpen={isAddBeneficiaryModalOpen} onClose={() => setAddBeneficiaryModalOpen(false)} title="Add New Beneficiary" maxWidthClass="max-w-2xl">
+                <p className="text-gray-400 mb-4">Provide the details for the external recipient. All information is encrypted and stored securely.</p>
+                <form onSubmit={e => { e.preventDefault(); handleAddBeneficiary(); }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <CustomInput
+                            label="Beneficiary Full Name"
+                            type="text"
+                            value={newBeneficiaryName}
+                            onChange={e => setNewBeneficiaryName(e.target.value)}
+                            placeholder="John Doe"
+                            disabled={addBenLoading}
+                            required
+                        />
+                         <CustomSelect
+                            label="Beneficiary Currency"
+                            options={currencies.map(c => ({ value: c.code, label: `${c.icon} ${c.name} (${c.code})` }))}
+                            value={newBeneficiaryCurrency}
+                            onChange={e => setNewBeneficiaryCurrency(e.target.value)}
+                            disabled={addBenLoading}
+                            required
+                        />
+                        <CustomInput
+                            label="Bank Name"
+                            type="text"
+                            value={newBeneficiaryBankName}
+                            onChange={e => setNewBeneficiaryBankName(e.target.value)}
+                            placeholder="Global Bank Inc."
+                            disabled={addBenLoading}
+                            required
+                        />
+                         <CustomInput
+                            label="Account Number"
+                            type="text"
+                            value={newBeneficiaryAccountNumber}
+                            onChange={e => setNewBeneficiaryAccountNumber(e.target.value)}
+                            placeholder="1234567890"
+                            disabled={addBenLoading}
+                            required
+                        />
+                         <CustomInput
+                            label="SWIFT / BIC Code (Optional)"
+                            type="text"
+                            value={newBeneficiarySwiftCode}
+                            onChange={e => setNewBeneficiarySwiftCode(e.target.value)}
+                            placeholder="GBANUS33"
+                            disabled={addBenLoading}
+                        />
+                         <CustomInput
+                            label="IBAN (Optional, for Europe)"
+                            type="text"
+                            value={newBeneficiaryIban}
+                            onChange={e => setNewBeneficiaryIban(e.target.value)}
+                            placeholder="DE89..."
+                            disabled={addBenLoading}
+                        />
+                    </div>
+                    <div className="mt-6">
+                        {addBenError && <ErrorMessage message={addBenError} className="mb-4" />}
+                        {addBenSuccess && <SuccessMessage message={addBenSuccess} className="mb-4" />}
+                        <Button type="submit" onClick={() => {}} disabled={addBenLoading} className="w-full">
+                            {addBenLoading ? 'Adding...' : 'Save Beneficiary'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+        </Card>
+    );
+};
+
+
+// ====================================================================================================================
+// SECTION 5: APPLICATION'S MAIN VIEW COMPONENT
+// This is the primary component that orchestrates the entire Multi-Currency Dashboard.
+// It manages the active tab, fetches initial data, and renders the appropriate section component.
+// ====================================================================================================================
+
+const MultiCurrencyView: React.FC = () => {
+    const [activeTab, setActiveTab] = useState<TabName>('balances');
+    const [accounts, setAccounts] = useState<Account[]>([]);
+    const [currencies, setCurrencies] = useState<Currency[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [selectedAccountIdForTx, setSelectedAccountIdForTx] = useState<string | null>(null);
+
+    const userId = "user-123"; // Mock user ID
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const [fetchedCurrencies, fetchedAccounts, fetchedNotifications] = await Promise.all([
+                mockApi.fetchCurrencies(),
+                mockApi.fetchAccounts(userId),
+                mockApi.fetchNotifications(userId),
+            ]);
+            setCurrencies(fetchedCurrencies);
+            setAccounts(fetchedAccounts);
+            setNotifications(fetchedNotifications);
+        } catch (err) {
+            console.error("Failed to fetch initial dashboard data:", err);
+            setError("Failed to load dashboard data. Please refresh the page.");
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleViewTransactionsForAccount = (accountId: string) => {
+        setSelectedAccountIdForTx(accountId);
+        setActiveTab('transactions');
+    };
+    
+    const handleCloseTransactionDetails = () => {
+        setSelectedAccountIdForTx(null);
+        setActiveTab('balances');
+    };
+
+    const unreadNotificationCount = useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
+
+    const tabs: { id: TabName; label: string; icon: JSX.Element; badge?: number }[] = [
+        { id: 'balances', label: 'Balances', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg> },
+        { id: 'transactions', label: 'Transactions', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M18 10H6"></path></svg> },
+        { id: 'transfer', label: 'Transfer', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> },
+        { id: 'exchange', label: 'Exchange', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg> },
+        { id: 'forecast', label: 'AI Forecast', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg> },
+        { id: 'portfolio', label: 'Portfolio', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> },
+        { id: 'reports', label: 'Reports', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> },
+        { id: 'settings', label: 'Settings', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> },
+        { id: 'notifications', label: 'Notifications', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>, badge: unreadNotificationCount },
+        { id: 'admin', label: 'Admin Tools', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg> },
+    ];
+
+    if (loading) {
+        return <FullPageLoadingSpinner />;
+    }
+    if (error) {
+        return <ErrorMessage message={error} className="m-4" />;
+    }
+
+    return (
+        <div className="p-4 md:p-6 bg-gray-900 text-white min-h-screen">
+            <header className="mb-6 flex justify-between items-center">
+                <h1 className="text-2xl md:text-3xl font-bold text-white">Multi-Currency MegaDashboard</h1>
+                <div className="text-sm text-gray-400">User ID: {userId}</div>
+            </header>
+
+            <div className="flex flex-col lg:flex-row gap-6">
+                <nav className="lg:w-1/5">
+                    <ul className="space-y-2">
+                        {tabs.map(tab => (
+                            <li key={tab.id}>
+                                <button
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`w-full flex items-center p-3 rounded-lg transition-colors duration-200 ${
+                                        activeTab === tab.id ? 'bg-cyan-600 text-white' : 'hover:bg-gray-700 text-gray-300'
+                                    }`}
+                                >
+                                    {tab.icon}
+                                    <span className="ml-3 font-medium">{tab.label}</span>
+                                    {tab.badge && tab.badge > 0 ? (
+                                        <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                            {tab.badge}
+                                        </span>
+                                    ) : null}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+
+                <main className="flex-1">
+                    {activeTab === 'balances' && (
+                        <AccountBalancesSection 
+                            accounts={accounts} 
+                            currencies={currencies} 
+                            onRefresh={fetchData} 
+                            onViewTransactions={handleViewTransactionsForAccount}
+                            userId={userId}
+                        />
+                    )}
+                    {activeTab === 'transactions' && (
+                        <TransactionHistorySection 
+                            accounts={accounts}
+                            selectedAccountId={selectedAccountIdForTx}
+                            onCloseDetails={handleCloseTransactionDetails}
+                        />
+                    )}
+                    {activeTab === 'transfer' && (
+                        <FundsTransferSection 
+                            accounts={accounts}
+                            currencies={currencies}
+                            onTransferComplete={fetchData}
+                            userId={userId}
+                        />
+                    )}
+                    {/* Placeholder for other sections to be implemented */}
+                    {/* {activeTab === 'exchange' && <ExchangeRatesSection ... />} */}
+                    {/* {activeTab === 'forecast' && <AIForecastSection ... />} */}
+                    {/* etc. */}
+                </main>
+            </div>
+        </div>
+    );
+};
+
+export default MultiCurrencyView;
+```
