@@ -1,7 +1,8 @@
+```typescript
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import Card from '../../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
-import { FaDollarSign, FaEthereum, FaClock, FaExchangeAlt, FaBurn, FaPlayCircle, FaPauseCircle, FaGraduationCap, FaNetworkWired, FaCode, FaChartLine, FaCloudDownloadAlt, FaFileCode, FaLock, FaGlobe, FaCogs, FaProjectDiagram, FaBalanceScale, FaUsers, FaHandshake, FaChartBar, FaWallet, FaSpinner, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaBell } from 'react-icons/fa';
+import { FaDollarSign, FaEthereum, FaClock, FaExchangeAlt, FaBurn, FaPlayCircle, FaPauseCircle, FaGraduationCap, FaNetworkWired, FaCode, FaChartLine, FaCloudDownloadAlt, FaFileCode, FaLock, FaGlobe, FaCogs, FaProjectDiagram, FaBalanceScale, FaUsers, FaHandshake, FaChartBar, FaWallet, FaSpinner, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaBell, FaPlus, FaCalculator, FaShieldAlt, FaInfoCircle, FaVoteYea, FaFlag, FaBriefcase } from 'react-icons/fa';
 
 // --- Shared Types and Interfaces ---
 
@@ -145,6 +146,9 @@ interface TokenIssuanceContextType {
     availableNetworks: NetworkConfig[];
     addCustomNetwork: (network: NetworkConfig) => void;
     showNotification: (message: string, type: 'success' | 'error' | 'info' | 'warning') => void;
+    isLoading: boolean;
+    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    latestDeployment: DeploymentStatus | undefined;
 }
 
 const TokenIssuanceContext = createContext<TokenIssuanceContextType | undefined>(undefined);
@@ -166,6 +170,7 @@ export const TokenIssuanceProvider: React.FC<{ children: React.ReactNode }> = ({
     const [activeAirdropCampaigns, setActiveAirdropCampaigns] = useState<AirdropCampaign[]>([]);
     const [activeGovernanceProposals, setActiveGovernanceProposals] = useState<GovernanceProposal[]>([]);
     const [notifications, setNotifications] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' | 'warning'; }[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const initialNetworks: NetworkConfig[] = [
         { id: 'eth-mainnet', name: 'Ethereum Mainnet', chainId: 1, rpcUrl: 'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID', blockExplorerUrl: 'https://etherscan.io' },
@@ -173,9 +178,14 @@ export const TokenIssuanceProvider: React.FC<{ children: React.ReactNode }> = ({
         { id: 'sepolia', name: 'Sepolia Testnet', chainId: 11155111, rpcUrl: 'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID', blockExplorerUrl: 'https://sepolia.etherscan.io' },
         { id: 'polygon-mainnet', name: 'Polygon Mainnet', chainId: 137, rpcUrl: 'https://polygon-rpc.com', blockExplorerUrl: 'https://polygonscan.com' },
         { id: 'mumbai', name: 'Polygon Mumbai Testnet', chainId: 80001, rpcUrl: 'https://rpc-mumbai.maticvigil.com', blockExplorerUrl: 'https://mumbai.polygonscan.com' },
-        // Add more networks as needed
+        { id: 'bsc-mainnet', name: 'BNB Smart Chain Mainnet', chainId: 56, rpcUrl: 'https://bsc-dataseed.binance.org/', blockExplorerUrl: 'https://bscscan.com' },
+        { id: 'avalanche-mainnet', name: 'Avalanche C-Chain', chainId: 43114, rpcUrl: 'https://api.avax.network/ext/bc/C/rpc', blockExplorerUrl: 'https://snowtrace.io' },
+        { id: 'arbitrum-one', name: 'Arbitrum One', chainId: 42161, rpcUrl: 'https://arb1.arbitrum.io/rpc', blockExplorerUrl: 'https://arbiscan.io' },
+        { id: 'optimism', name: 'OP Mainnet (Optimism)', chainId: 10, rpcUrl: 'https://mainnet.optimism.io', blockExplorerUrl: 'https://optimistic.etherscan.io' },
     ];
     const [availableNetworks, setAvailableNetworks] = useState<NetworkConfig[]>(initialNetworks);
+    
+    const latestDeployment = deploymentHistory.find(d => d.status === 'completed');
 
     const addCustomNetwork = useCallback((network: NetworkConfig) => {
         setAvailableNetworks(prev => [...prev, { ...network, isCustom: true }]);
@@ -189,16 +199,18 @@ export const TokenIssuanceProvider: React.FC<{ children: React.ReactNode }> = ({
             setNotifications(prev => prev.filter(n => n.id !== id));
         }, 5000);
     }, []);
-
+    
     // Simulate loading existing data from a backend
     useEffect(() => {
         // NOTE: This is a simulated backend call
         const loadInitialData = async () => {
+            setIsLoading(true);
             await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
             // setCurrentTokenConfig(...);
             // setTokenAllocations(...);
             // setDeploymentHistory(...);
             // setAiGeneratedTokenomics(...);
+            setIsLoading(false);
         };
         loadInitialData();
     }, []);
@@ -215,6 +227,8 @@ export const TokenIssuanceProvider: React.FC<{ children: React.ReactNode }> = ({
                 activeGovernanceProposals, setActiveGovernanceProposals,
                 availableNetworks, addCustomNetwork,
                 showNotification,
+                isLoading, setIsLoading,
+                latestDeployment,
             }}
         >
             {children}
@@ -347,7 +361,7 @@ export const ExportedChart: React.FC<{ title: string; data: { label: string; val
 };
 
 
-export const ExportedInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; icon?: React.ReactNode; }> = ({ label, error, icon, ...props }) => (
+export const ExportedInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string | React.ReactNode; error?: string; icon?: React.ReactNode; }> = ({ label, error, icon, ...props }) => (
     <div className="space-y-1">
         <label className="text-sm font-medium text-gray-300 flex items-center space-x-2">
             {icon && <span>{icon}</span>}
@@ -363,7 +377,7 @@ export const ExportedInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>
     </div>
 );
 
-export const ExportedTextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; error?: string; }> = ({ label, error, ...props }) => (
+export const ExportedTextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string | React.ReactNode; error?: string; }> = ({ label, error, ...props }) => (
     <div className="space-y-1">
         <label className="text-sm font-medium text-gray-300">{label}</label>
         <textarea
@@ -374,7 +388,7 @@ export const ExportedTextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAre
     </div>
 );
 
-export const ExportedSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; options: { value: string; label: string; }[]; error?: string; }> = ({ label, options, error, ...props }) => (
+export const ExportedSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string | React.ReactNode; options: { value: string; label: string; }[]; error?: string; }> = ({ label, options, error, ...props }) => (
     <div className="space-y-1">
         <label className="text-sm font-medium text-gray-300">{label}</label>
         <select
@@ -389,7 +403,7 @@ export const ExportedSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectEleme
     </div>
 );
 
-export const ExportedCheckbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string; }> = ({ label, ...props }) => (
+export const ExportedCheckbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string | React.ReactNode; }> = ({ label, ...props }) => (
     <label className="flex items-center space-x-2 text-gray-300 cursor-pointer">
         <input type="checkbox" {...props} className="form-checkbox h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500" />
         <span className="text-sm">{label}</span>
@@ -542,7 +556,6 @@ export const ExportedTokenDefinitionForm: React.FC<{ onNext: () => void }> = ({ 
                             { value: 'ERC-1155', label: 'ERC-1155 (Multi-Token Standard)' },
                             { value: 'Custom', label: 'Custom Standard' },
                         ]}
-                        icon={<FaCode />}
                     />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1290,7 +1303,6 @@ export const ExportedDeploymentSettings: React.FC<{ onNext: () => void; onPrev: 
                         value={selectedNetworkId}
                         onChange={(e) => setSelectedNetworkId(e.target.value)}
                         options={availableNetworks.map(net => ({ value: net.id, label: net.name }))}
-                        icon={<FaEthereum />}
                     />
                     <div className="flex items-end">
                         <ExportedButton type="button" variant="secondary" onClick={() => setShowCustomNetworkModal(true)} className="w-full">
@@ -1397,34 +1409,31 @@ export const ExportedSmartContractPreview: React.FC<{ onNext: () => void; onPrev
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-${currentTokenConfig.features.mintable ? 'import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Mintable.sol";' : ''}
+${currentTokenConfig.features.mintable ? 'import "@openzeppelin/contracts/access/Ownable.sol";' : ''}
 ${currentTokenConfig.features.burnable ? 'import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";' : ''}
 ${currentTokenConfig.features.pausable ? 'import "@openzeppelin/contracts/security/Pausable.sol";' : ''}
 ${currentTokenConfig.features.upgradable ? 'import "@openzeppelin/contracts/proxy/utils/Initializable.sol";' : ''}
 ${currentTokenConfig.features.snapshots ? 'import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";' : ''}
 ${currentTokenConfig.features.permit ? 'import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";' : ''}
 ${currentTokenConfig.features.flashMint ? 'import "@openzeppelin/contracts/token/ERC20/extensions/ERC20FlashMint.sol";' : ''}
-${currentTokenConfig.features.erc1363 ? 'import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";' : ''} // ERC-1363 usually combined with pausable
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // For custom ERC-1363 (simplified)
 ${currentTokenConfig.features.erc1363 ? `
 interface IERC1363Receiver {
-    function onTokensReceived(address operator, address from, uint256 amount, bytes calldata data) external returns (bytes4);
+    function onTransferReceived(address operator, address from, uint256 amount, bytes calldata data) external returns (bytes4);
 }
 interface IERC1363Spender {
-    function onCallReceived(address operator, uint256 value, bytes calldata data) external returns (bytes4);
+    function onApprovalReceived(address owner, uint256 amount, bytes calldata data) external returns (bytes4);
 }
 ` : ''}
 
-${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')}V1 is Initializable, ERC20` : `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is ERC20`}
-${currentTokenConfig.features.mintable ? ', ERC20Mintable' : ''}
+${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is Initializable, ERC20` : `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is ERC20`}
 ${currentTokenConfig.features.burnable ? ', ERC20Burnable' : ''}
 ${currentTokenConfig.features.pausable ? ', Pausable' : ''}
 ${currentTokenConfig.features.snapshots ? ', ERC20Snapshot' : ''}
 ${currentTokenConfig.features.permit ? ', ERC20Permit' : ''}
 ${currentTokenConfig.features.flashMint ? ', ERC20FlashMint' : ''}
-${currentTokenConfig.features.erc1363 ? ', IERC1363Receiver, IERC1363Spender' : ''} // Simplified integration
 , Ownable {
 
     string private _description;
@@ -1445,24 +1454,23 @@ ${currentTokenConfig.features.erc1363 ? ', IERC1363Receiver, IERC1363Spender' : 
         string memory name_,
         string memory symbol_,
         uint256 initialSupply_,
-        address owner_
+        address initialOwner
     ) public initializer {
         __ERC20_init(name_, symbol_);
-        __Ownable_init(owner_);
+        __Ownable_init(initialOwner);
         ${currentTokenConfig.features.pausable ? '__Pausable_init();' : ''}
         ${currentTokenConfig.features.snapshots ? '__ERC20Snapshot_init();' : ''}
-        ${currentTokenConfig.features.permit ? `_deployer = msg.sender;` : ''} // Internal state for permit
+        ${currentTokenConfig.features.permit ? `__ERC20Permit_init(name_);` : ''}
         
-        _mint(owner_, initialSupply_); // Mint initial supply to owner
+        _mint(initialOwner, initialSupply_); // Mint initial supply to owner
         _description = "${currentTokenConfig.description.replace(/"/g, '\\"')}";
         _websiteUrl = "${currentTokenConfig.websiteUrl || ''}";
         // Populate social links
         ${Object.entries(currentTokenConfig.socialLinks).map(([platform, link]) => `_socialLinks["${platform}"] = "${link}";`).join('\n        ')}
     }
     ` : `
-    constructor(uint256 initialSupply_, address owner_) ERC20("${currentTokenConfig.name}", "${currentTokenConfig.symbol}") {
-        _mint(owner_, initialSupply_);
-        _transferOwnership(owner_);
+    constructor(uint256 initialSupply, address initialOwner) ERC20("${currentTokenConfig.name}", "${currentTokenConfig.symbol}") Ownable(initialOwner) {
+        _mint(initialOwner, initialSupply);
         _description = "${currentTokenConfig.description.replace(/"/g, '\\"')}";
         _websiteUrl = "${currentTokenConfig.websiteUrl || ''}";
         // Populate social links
@@ -1479,13 +1487,13 @@ ${currentTokenConfig.features.erc1363 ? ', IERC1363Receiver, IERC1363Spender' : 
         _unpause();
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override(ERC20 ${currentTokenConfig.features.snapshots ? ', ERC20Snapshot' : ''} ${currentTokenConfig.features.flashMint ? ', ERC20FlashMint' : ''} ) {
-        super._beforeTokenTransfer(from, to, amount);
+    function _update(address from, address to, uint256 value) internal virtual override(ERC20 ${currentTokenConfig.features.snapshots ? ', ERC20Snapshot' : ''} ${currentTokenConfig.features.flashMint ? ', ERC20FlashMint' : ''} ) {
         require(!paused(), "ERC20Pausable: token transfer while paused");
+        super._update(from, to, value);
     }
     ` : `
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override(ERC20 ${currentTokenConfig.features.snapshots ? ', ERC20Snapshot' : ''} ${currentTokenConfig.features.flashMint ? ', ERC20FlashMint' : ''} ) {
-        super._beforeTokenTransfer(from, to, amount);
+    function _update(address from, address to, uint256 value) internal virtual override(ERC20 ${currentTokenConfig.features.snapshots ? ', ERC20Snapshot' : ''} ${currentTokenConfig.features.flashMint ? ', ERC20FlashMint' : ''} ) {
+        super._update(from, to, value);
     }
     `}
 
@@ -1516,27 +1524,27 @@ ${currentTokenConfig.features.erc1363 ? ', IERC1363Receiver, IERC1363Spender' : 
 
     // Custom ERC-1363 functions (simplified for demonstration)
     ${currentTokenConfig.features.erc1363 ? `
-    function transferAndCall(address recipient, uint256 amount, bytes calldata data) public returns (bool) {
-        _transfer(msg.sender, recipient, amount);
-        require(recipient.code.length > 0, "ERC1363: transferAndCall to non-contract");
-        bytes4 retval = IERC1363Receiver(recipient).onTokensReceived(msg.sender, address(this), amount, data);
-        require(retval == IERC1363Receiver.onTokensReceived.selector, "ERC1363: onTokensReceived reverted");
+    function transferAndCall(address to, uint256 amount, bytes calldata data) public returns (bool) {
+        transfer(to, amount);
+        require(to.code.length > 0, "ERC1363: transfer to non-contract");
+        bytes4 retval = IERC1363Receiver(to).onTransferReceived(msg.sender, msg.sender, amount, data);
+        require(retval == IERC1363Receiver.onTransferReceived.selector, "ERC1363: onTransferReceived reverted");
         return true;
     }
 
     function approveAndCall(address spender, uint256 amount, bytes calldata data) public returns (bool) {
-        _approve(msg.sender, spender, amount);
-        require(spender.code.length > 0, "ERC1363: approveAndCall to non-contract");
-        bytes4 retval = IERC1363Spender(spender).onCallReceived(msg.sender, amount, data);
-        require(retval == IERC1363Spender.onCallReceived.selector, "ERC1363: onCallReceived reverted");
+        approve(spender, amount);
+        require(spender.code.length > 0, "ERC1363: approve to non-contract");
+        bytes4 retval = IERC1363Spender(spender).onApprovalReceived(msg.sender, amount, data);
+        require(retval == IERC1363Spender.onApprovalReceived.selector, "ERC1363: onApprovalReceived reverted");
         return true;
     }
 
-    function transferFromAndCall(address sender, address recipient, uint256 amount, bytes calldata data) public returns (bool) {
-        _transfer(sender, recipient, amount);
-        require(recipient.code.length > 0, "ERC1363: transferFromAndCall to non-contract");
-        bytes4 retval = IERC1363Receiver(recipient).onTokensReceived(_msgSender(), sender, amount, data);
-        require(retval == IERC1363Receiver.onTokensReceived.selector, "ERC1363: onTokensReceived reverted");
+    function transferFromAndCall(address from, address to, uint256 amount, bytes calldata data) public returns (bool) {
+        transferFrom(from, to, amount);
+        require(to.code.length > 0, "ERC1363: transfer to non-contract");
+        bytes4 retval = IERC1363Receiver(to).onTransferReceived(msg.sender, from, amount, data);
+        require(retval == IERC1363Receiver.onTransferReceived.selector, "ERC1363: onTransferReceived reverted");
         return true;
     }
     ` : ''}
@@ -1553,7 +1561,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 ${currentTokenConfig.features.upgradable ? 'import "@openzeppelin/contracts/proxy/utils/Initializable.sol";' : ''}
 
-${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')}V1 is Initializable, ERC721` : `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is ERC721`}
+${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is Initializable, ERC721` : `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is ERC721`}
 , Ownable {
     string private _baseTokenURI;
 
@@ -1567,17 +1575,18 @@ ${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.r
         string memory name_,
         string memory symbol_,
         string memory baseTokenURI_,
-        address owner_
+        address initialOwner
     ) public initializer {
         __ERC721_init(name_, symbol_);
-        __Ownable_init(owner_);
+        __Ownable_init(initialOwner);
         _baseTokenURI = baseTokenURI_;
     }
     ` : `
-    constructor(string memory name_, string memory symbol_, string memory baseTokenURI_, address owner_)
-        ERC721(name_, symbol_) {
+    constructor(string memory name_, string memory symbol_, string memory baseTokenURI_, address initialOwner)
+        ERC721(name_, symbol_)
+        Ownable(initialOwner)
+    {
         _baseTokenURI = baseTokenURI_;
-        _transferOwnership(owner_);
     }
     `}
 
@@ -1603,9 +1612,8 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 ${currentTokenConfig.features.upgradable ? 'import "@openzeppelin/contracts/proxy/utils/Initializable.sol";' : ''}
 
-${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')}V1 is Initializable, ERC1155` : `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is ERC1155`}
+${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is Initializable, ERC1155` : `contract ${currentTokenConfig.name.replace(/[^a-zA-Z0-9]/g, '')} is ERC1155`}
 , Ownable {
-    string private _uri;
 
     ${currentTokenConfig.features.upgradable ? `
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -1615,25 +1623,19 @@ ${currentTokenConfig.features.upgradable ? `contract ${currentTokenConfig.name.r
 
     function initialize(
         string memory uri_,
-        address owner_
+        address initialOwner
     ) public initializer {
         __ERC1155_init(uri_);
-        __Ownable_init(owner_);
-        _uri = uri_;
+        __Ownable_init(initialOwner);
     }
     ` : `
-    constructor(string memory uri_, address owner_) ERC1155(uri_) {
-        _uri = uri_;
-        _transferOwnership(owner_);
+    constructor(string memory uri_, address initialOwner) ERC1155(uri_) Ownable(initialOwner) {
+        // constructor logic
     }
     `}
 
-    function uri(uint256) public view override returns (string memory) {
-        return _uri;
-    }
-
     function setURI(string memory newuri) public onlyOwner {
-        _uri = newuri;
+        _setURI(newuri);
     }
 
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
@@ -1935,8 +1937,7 @@ export const ExportedDeploymentMonitor: React.FC<{ onNext: () => void; onPrev: (
 // --- Step 7: Post-Issuance Dashboard ---
 
 export const ExportedPostIssuanceDashboard: React.FC<{ onPrev: () => void }> = ({ onPrev }) => {
-    const { currentTokenConfig, deploymentHistory, tokenAllocations, activeAirdropCampaigns, activeGovernanceProposals, showNotification } = useTokenIssuance();
-    const latestDeployment = deploymentHistory.find(d => d.status === 'completed');
+    const { currentTokenConfig, deploymentHistory, tokenAllocations, showNotification, latestDeployment } = useTokenIssuance();
 
     const [currentSupply, setCurrentSupply] = useState<number>(currentTokenConfig?.totalSupply || 0);
     const [totalBurned, setTotalBurned] = useState<number>(0);
@@ -2042,9 +2043,6 @@ export const ExportedPostIssuanceDashboard: React.FC<{ onPrev: () => void }> = (
         { label: 'Locked/Vesting Supply', value: tokenAllocations.filter(a => a.vestingSchedule || a.isLocked).reduce((sum, a) => sum + a.amount, 0), color: '#fbbf24' },
         { label: 'Burned Supply', value: totalBurned, color: '#ef4444' },
     ];
-    // Adjust total to ensure it matches currentTokenConfig.totalSupply for percentages,
-    // or currentSupply for actual breakdown. Let's use currentTokenConfig.totalSupply as base.
-    const totalForChart = currentTokenConfig?.totalSupply || 1;
 
     return (
         <Card title="7. Post-Issuance Dashboard" icon={<FaChartLine />}>
@@ -2069,7 +2067,7 @@ export const ExportedPostIssuanceDashboard: React.FC<{ onPrev: () => void }> = (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                     <ExportedChart
                         title="Token Supply Breakdown"
-                        data={supplyBreakdownData.map(d => ({ ...d, value: d.value }))}
+                        data={supplyBreakdownData}
                     />
                     <Card title="Recent Activity (Simulated)" className="relative overflow-hidden">
                         <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
@@ -2633,7 +2631,7 @@ export const ExportedGovernanceSetup: React.FC = () => {
 };
 
 export const ExportedAuditAndSecurityReport: React.FC = () => {
-    const { currentTokenConfig, deploymentHistory } = useTokenIssuance();
+    const { currentTokenConfig, deploymentHistory, tokenAllocations } = useTokenIssuance();
     const latestDeployment = deploymentHistory.find(d => d.status === 'completed');
 
     const [auditResults, setAuditResults] = useState<{ id: string; type: 'info' | 'warning' | 'critical'; message: string; remediation?: string; }[]>([]);
@@ -2694,10 +2692,8 @@ export const ExportedAuditAndSecurityReport: React.FC = () => {
             }
         }
 
-        // Tokenomics checks (simplified)
-        // NOTE: A real audit would deeply analyze vesting, distribution, etc.
-        const totalAllocPercentage = 100; // Assuming it sums to 100 from previous step
-        if (totalAllocPercentage !== 100) {
+        const totalAllocPercentage = tokenAllocations.reduce((sum, alloc) => sum + alloc.percentage, 0);
+        if (totalAllocPercentage < 99.9 || totalAllocPercentage > 100.1) {
             results.push({ id: 'A001', type: 'critical', message: 'Total allocation percentage is not 100%. This will result in an incorrect token distribution.', remediation: 'Adjust token allocations to sum exactly 100% in the tokenomics step.' });
         }
         if (currentTokenConfig?.type === 'ERC-20' && currentTokenConfig.totalSupply > 10**27) { // Extremely large number for example
@@ -2753,7 +2749,6 @@ export const ExportedAuditAndSecurityReport: React.FC = () => {
 // --- Main Token Issuance View Component ---
 
 const TokenIssuanceView: React.FC = () => {
-    const { aiGeneratedTokenomics, setAiGeneratedTokenomics, isLoading, setIsLoading, showNotification } = useTokenIssuance();
     const [isGeneratorOpen, setGeneratorOpen] = useState(false);
     const [prompt, setPrompt] = useState("a utility token for a decentralized cloud storage network");
     const [currentStep, setCurrentStep] = useState(0);
@@ -2766,199 +2761,175 @@ const TokenIssuanceView: React.FC = () => {
         "Code Review & Compile",
         "Deployment Monitor",
         "Post-Issuance Dashboard",
-        // Add more steps for Airdrop, Governance, Audit later as needed, or make them sub-modules of dashboard
     ];
-
-    const handleGenerate = async () => {
-        setIsLoading(true);
-        setAiGeneratedTokenomics(null);
-        try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            // Expanded schema for more detailed tokenomics generation
-            const schema = {
-                type: Type.OBJECT,
-                properties: {
-                    name: { type: Type.STRING, description: "Suggestive token name" },
-                    symbol: { type: Type.STRING, description: "Suggestive token symbol (2-10 uppercase chars)" },
-                    description: { type: Type.STRING, description: "Detailed token purpose and utility" },
-                    totalSupply: { type: Type.NUMBER, description: "Total supply of the token" },
-                    decimals: { type: Type.NUMBER, description: "Number of decimals, typically 18" },
-                    allocation: {
-                        type: Type.OBJECT,
-                        properties: {
-                            team: { type: Type.NUMBER, description: "Percentage for team, e.g., 20" },
-                            investors: { type: Type.NUMBER, description: "Percentage for investors (seed, private, public combined), e.g., 30" },
-                            ecosystem: { type: Type.NUMBER, description: "Percentage for ecosystem development and grants, e.g., 25" },
-                            treasury: { type: Type.NUMBER, description: "Percentage for project treasury, e.g., 15" },
-                            marketing: { type: Type.NUMBER, description: "Percentage for marketing and partnerships, e.g., 5" },
-                            liquidity: { type: Type.NUMBER, description: "Percentage for initial liquidity provisioning, e.g., 5" },
-                        },
-                        required: ["team", "investors", "ecosystem", "treasury", "marketing", "liquidity"]
-                    },
-                    vestingRecommendations: {
-                        type: Type.OBJECT,
-                        properties: {
-                            team: { type: Type.STRING, description: "Vesting recommendation for team, e.g., 3-year linear, 1-year cliff" },
-                            investors: { type: Type.STRING, description: "Vesting recommendation for investors, e.g., 2-year linear, 6-month cliff" },
-                        }
-                    },
-                    utilitySuggestions: {
-                        type: Type.ARRAY,
-                        items: { type: Type.STRING },
-                        description: "Key utility features for the token"
-                    }
-                }
-            };
-            const fullPrompt = `Generate a detailed tokenomics model in JSON format for this token concept: "${prompt}". Include name, symbol, a detailed description, total supply (realistic number, e.g., 100M-1B), decimals (default 18), and a percentage allocation breakdown for team, investors, ecosystem, treasury, marketing, and liquidity. Ensure total allocation sums to 100%. Also provide vesting recommendations for team and investors, and a few utility suggestions.`;
-            const response = await ai.models.generateContent({ model: 'gemini-1.5-flash', contents: [{ text: fullPrompt }], config: { responseMimeType: "application/json", responseSchema: schema } });
-            const parsedResponse = JSON.parse(response.text);
-
-            // Ensure allocations sum to 100%, adjust if needed (simple normalization)
-            if (parsedResponse.allocation) {
-                const totalAllocSum = Object.values(parsedResponse.allocation).reduce((sum: number, val) => sum + (typeof val === 'number' ? val : 0), 0);
-                if (totalAllocSum !== 100 && totalAllocSum > 0) {
-                    const factor = 100 / totalAllocSum;
-                    for (const key in parsedResponse.allocation) {
-                        if (typeof parsedResponse.allocation[key] === 'number') {
-                            parsedResponse.allocation[key] = Math.round((parsedResponse.allocation[key] as number) * factor * 100) / 100; // Round to 2 decimal places
-                        }
-                    }
-                    showNotification('AI tokenomics allocation adjusted to sum 100%.', 'warning');
-                }
-            }
-            setAiGeneratedTokenomics(parsedResponse);
-            setGeneratorOpen(false); // Close generator on success
-            showNotification('AI tokenomics model generated successfully!', 'success');
-
-        } catch (error) {
-            console.error("AI Generation Error:", error);
-            showNotification(`AI generation failed: ${error instanceof Error ? error.message : String(error)}`, 'error');
-            setAiGeneratedTokenomics({ error: error instanceof Error ? error.message : String(error) });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const renderStepContent = () => {
-        switch (currentStep) {
-            case 0: return <ExportedTokenDefinitionForm onNext={() => setCurrentStep(1)} />;
-            case 1: return <ExportedTokenomicsAllocationForm onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} />;
-            case 2: return <ExportedSmartContractConfiguration onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />;
-            case 3: return <ExportedDeploymentSettings onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} />;
-            case 4: return <ExportedSmartContractPreview onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(3)} />;
-            case 5: return <ExportedDeploymentMonitor onNext={() => setCurrentStep(6)} onPrev={() => setCurrentStep(4)} />;
-            case 6: return (
-                <>
-                    <ExportedPostIssuanceDashboard onPrev={() => setCurrentStep(5)} />
-                    <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <ExportedAirdropManager />
-                        <ExportedGovernanceSetup />
-                        <ExportedAuditAndSecurityReport />
-                        {/* Placeholder for other management tools */}
-                        <Card title="Token Treasury Management" icon={<FaBriefcase />} className="col-span-1">
-                            <p className="text-gray-400 text-sm">
-                                Manage the project's token treasury, including fund transfers, budget allocations, and reporting.
-                                (Requires integration with a multi-sig or governance-controlled treasury contract).
-                            </p>
-                            <div className="space-y-3 mt-4">
-                                <ExportedInput label="Treasury Balance (Simulated)" value="10,000,000 MCT" disabled />
-                                <ExportedInput label="Recipient Address" placeholder="0x..." />
-                                <ExportedInput label="Amount to Transfer" type="number" placeholder="e.g., 1000" />
-                                <ExportedButton disabled className="w-full" variant="secondary">
-                                    Propose Treasury Transfer (TODO)
-                                </ExportedButton>
-                                <ExportedButton disabled className="w-full" variant="secondary">
-                                    View Treasury Reports (TODO)
-                                </ExportedButton>
-                            </div>
-                        </Card>
-                        <Card title="Staking & Rewards Management" icon={<FaLock />} className="col-span-1">
-                            <p className="text-gray-400 text-sm">
-                                Configure and monitor staking pools, distribute rewards, and manage liquidity mining programs.
-                            </p>
-                            <div className="space-y-3 mt-4">
-                                <ExportedInput label="Staking Pool Balance (Simulated)" value="5,000,000 MCT" disabled />
-                                <ExportedInput label="Reward Rate (%)" type="number" placeholder="e.g., 10" />
-                                <ExportedButton disabled className="w-full" variant="secondary">
-                                    Configure Staking Pool (TODO)
-                                </ExportedButton>
-                                <ExportedButton disabled className="w-full" variant="secondary">
-                                    Distribute Rewards (TODO)
-                                </ExportedButton>
-                            </div>
-                        </Card>
-                        <Card title="Legal & Compliance" icon={<FaBalanceScale />} className="col-span-1">
-                            <p className="text-gray-400 text-sm">
-                                Tools and resources to ensure your token adheres to relevant legal and regulatory frameworks.
-                                <strong className="text-red-400"> This is critical for real-world applications.</strong>
-                            </p>
-                            <div className="space-y-3 mt-4">
-                                <ExportedCheckbox label="KYC/AML Integration (Simulated)" checked disabled />
-                                <ExportedCheckbox label="Accredited Investor Verification (Simulated)" checked disabled />
-                                <ExportedButton disabled className="w-full" variant="secondary">
-                                    Generate Legal Disclaimers (TODO)
-                                </ExportedButton>
-                                <ExportedButton disabled className="w-full" variant="secondary">
-                                    Security Token Offering (STO) Tools (TODO)
-                                </ExportedButton>
-                            </div>
-                        </Card>
-                    </div>
-                </>
-            );
-            default: return <p>Unknown Step</p>;
-        }
-    };
     
-    return (
-        <TokenIssuanceProvider>
+    const InnerComponent = () => {
+        const { aiGeneratedTokenomics, setAiGeneratedTokenomics, isLoading, setIsLoading, showNotification } = useTokenIssuance();
+
+        const handleGenerate = async () => {
+            setIsLoading(true);
+            setAiGeneratedTokenomics(null);
+            try {
+                // NOTE: An API key for Google GenAI must be configured in your environment for this to work.
+                const ai = new GoogleGenAI(process.env.REACT_APP_GEMINI_API_KEY as string);
+                const schema = {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING, description: "Suggestive token name" },
+                        symbol: { type: Type.STRING, description: "Suggestive token symbol (2-10 uppercase chars)" },
+                        description: { type: Type.STRING, description: "Detailed token purpose and utility" },
+                        totalSupply: { type: Type.NUMBER, description: "Total supply of the token" },
+                        decimals: { type: Type.NUMBER, description: "Number of decimals, typically 18" },
+                        allocation: {
+                            type: Type.OBJECT,
+                            properties: {
+                                Team: { type: Type.NUMBER, description: "Percentage for team, e.g., 20" },
+                                Investors: { type: Type.NUMBER, description: "Percentage for investors (seed, private, public combined), e.g., 30" },
+                                Ecosystem: { type: Type.NUMBER, description: "Percentage for ecosystem development and grants, e.g., 25" },
+                                Treasury: { type: Type.NUMBER, description: "Percentage for project treasury, e.g., 15" },
+                                Marketing: { type: Type.NUMBER, description: "Percentage for marketing and partnerships, e.g., 5" },
+                                Liquidity: { type: Type.NUMBER, description: "Percentage for initial liquidity provisioning, e.g., 5" },
+                            },
+                            required: ["Team", "Investors", "Ecosystem", "Treasury", "Marketing", "Liquidity"]
+                        },
+                        vestingRecommendations: {
+                            type: Type.OBJECT,
+                            properties: {
+                                team: { type: Type.STRING, description: "Vesting recommendation for team, e.g., 3-year linear, 1-year cliff" },
+                                investors: { type: Type.STRING, description: "Vesting recommendation for investors, e.g., 2-year linear, 6-month cliff" },
+                            }
+                        },
+                        utilitySuggestions: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING },
+                            description: "Key utility features for the token"
+                        }
+                    }
+                };
+                const fullPrompt = `Generate a detailed tokenomics model in JSON format for this token concept: "${prompt}". Include name, symbol, a detailed description, total supply (realistic number, e.g., 100M-1B), decimals (default 18), and a percentage allocation breakdown for team, investors, ecosystem, treasury, marketing, and liquidity. Ensure total allocation sums to 100%. Also provide vesting recommendations for team and investors, and a few utility suggestions.`;
+                const response = await ai.getGenerativeModel({ model: 'gemini-1.5-flash-latest' }).generateContent({ contents: [{ parts: [{ text: fullPrompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: schema } });
+                const parsedResponse = JSON.parse(response.response.text());
+    
+                if (parsedResponse.allocation) {
+                    const totalAllocSum = Object.values(parsedResponse.allocation).reduce((sum: number, val) => sum + (typeof val === 'number' ? val : 0), 0);
+                    if (totalAllocSum !== 100 && totalAllocSum > 0) {
+                        const factor = 100 / totalAllocSum;
+                        for (const key in parsedResponse.allocation) {
+                            if (typeof parsedResponse.allocation[key] === 'number') {
+                                parsedResponse.allocation[key] = Math.round((parsedResponse.allocation[key] as number) * factor * 100) / 100;
+                            }
+                        }
+                        showNotification('AI tokenomics allocation adjusted to sum 100%.', 'warning');
+                    }
+                }
+                setAiGeneratedTokenomics(parsedResponse);
+                setGeneratorOpen(false);
+                showNotification('AI tokenomics model generated successfully!', 'success');
+    
+            } catch (error) {
+                console.error("AI Generation Error:", error);
+                showNotification(`AI generation failed: ${error instanceof Error ? error.message : String(error)}`, 'error');
+                setAiGeneratedTokenomics({ error: error instanceof Error ? error.message : String(error) });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const renderStepContent = () => {
+            switch (currentStep) {
+                case 0: return <ExportedTokenDefinitionForm onNext={() => setCurrentStep(1)} />;
+                case 1: return <ExportedTokenomicsAllocationForm onNext={() => setCurrentStep(2)} onPrev={() => setCurrentStep(0)} />;
+                case 2: return <ExportedSmartContractConfiguration onNext={() => setCurrentStep(3)} onPrev={() => setCurrentStep(1)} />;
+                case 3: return <ExportedDeploymentSettings onNext={() => setCurrentStep(4)} onPrev={() => setCurrentStep(2)} />;
+                case 4: return <ExportedSmartContractPreview onNext={() => setCurrentStep(5)} onPrev={() => setCurrentStep(3)} />;
+                case 5: return <ExportedDeploymentMonitor onNext={() => setCurrentStep(6)} onPrev={() => setCurrentStep(4)} />;
+                case 6: return (
+                    <>
+                        <ExportedPostIssuanceDashboard onPrev={() => setCurrentStep(5)} />
+                        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <ExportedAirdropManager />
+                            <ExportedGovernanceSetup />
+                            <ExportedAuditAndSecurityReport />
+                            <Card title="Token Treasury Management" icon={<FaBriefcase />} className="col-span-1">
+                                <p className="text-gray-400 text-sm">
+                                    Manage the project's token treasury, including fund transfers, budget allocations, and reporting.
+                                    (Requires integration with a multi-sig or governance-controlled treasury contract).
+                                </p>
+                                <div className="space-y-3 mt-4">
+                                    <ExportedInput label="Treasury Balance (Simulated)" value="10,000,000 MCT" disabled />
+                                    <ExportedInput label="Recipient Address" placeholder="0x..." />
+                                    <ExportedInput label="Amount to Transfer" type="number" placeholder="e.g., 1000" />
+                                    <ExportedButton disabled className="w-full" variant="secondary">
+                                        Propose Treasury Transfer (TODO)
+                                    </ExportedButton>
+                                    <ExportedButton disabled className="w-full" variant="secondary">
+                                        View Treasury Reports (TODO)
+                                    </ExportedButton>
+                                </div>
+                            </Card>
+                        </div>
+                    </>
+                );
+                default: return <p>Unknown Step</p>;
+            }
+        };
+
+        return (
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold text-white tracking-wider">Token Issuance Platform</h2>
-                    <ExportedButton onClick={() => setGeneratorOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">AI Tokenomics Modeler</ExportedButton>
+                    <ExportedButton onClick={() => setGeneratorOpen(true)} icon={<FaGraduationCap/>}>AI Tokenomics Modeler</ExportedButton>
                 </div>
-
+    
                 <div className="relative">
                     <ExportedProgressBar steps={steps} currentStep={currentStep} />
                 </div>
-
+    
                 {renderStepContent()}
-            </div>
-            {isGeneratorOpen && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setGeneratorOpen(false)}>
-                    <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-                            <h3 className="text-lg font-semibold text-white">AI Tokenomics Modeler</h3>
-                            <button onClick={() => setGeneratorOpen(false)} className="text-gray-400 hover:text-white"><FaTimes /></button>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <ExportedTextArea
-                                label="Describe your token concept (e.g., utility, industry, target users)..."
-                                value={prompt}
-                                onChange={e => setPrompt(e.target.value)}
-                                placeholder="a utility token for a decentralized cloud storage network"
-                                rows={4}
-                            />
-                            <ExportedButton onClick={handleGenerate} loading={isLoading} className="w-full">
-                                {isLoading ? 'Generating...' : 'Generate Model'}
-                            </ExportedButton>
-                            {aiGeneratedTokenomics && aiGeneratedTokenomics.error && (
-                                <Card title="AI Error" className="bg-red-800/50 border-red-700">
-                                    <pre className="text-xs text-red-300">{aiGeneratedTokenomics.error}</pre>
-                                </Card>
-                            )}
-                            {aiGeneratedTokenomics && !aiGeneratedTokenomics.error && (
-                                <Card title="Generated Tokenomics Preview">
-                                    <pre className="text-xs text-gray-300 overflow-auto max-h-60">{JSON.stringify(aiGeneratedTokenomics, null, 2)}</pre>
-                                    <p className="mt-2 text-xs text-gray-400">This model will be used to pre-fill the token definition and allocation forms.</p>
-                                </Card>
-                            )}
+                
+                {isGeneratorOpen && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setGeneratorOpen(false)}>
+                        <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e => e.stopPropagation()}>
+                            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-white">AI Tokenomics Modeler</h3>
+                                <button onClick={() => setGeneratorOpen(false)} className="text-gray-400 hover:text-white">&times;</button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <ExportedTextArea
+                                    label="Describe your token concept (e.g., utility, industry, target users)..."
+                                    value={prompt}
+                                    onChange={e => setPrompt(e.target.value)}
+                                    placeholder="a utility token for a decentralized cloud storage network"
+                                    rows={4}
+                                />
+                                <ExportedButton onClick={handleGenerate} loading={isLoading} className="w-full">
+                                    {isLoading ? 'Generating...' : 'Generate Model'}
+                                </ExportedButton>
+                                {aiGeneratedTokenomics && aiGeneratedTokenomics.error && (
+                                    <Card title="AI Error" className="bg-red-800/50 border-red-700">
+                                        <pre className="text-xs text-red-300">{aiGeneratedTokenomics.error}</pre>
+                                    </Card>
+                                )}
+                                {aiGeneratedTokenomics && !aiGeneratedTokenomics.error && (
+                                    <Card title="Generated Tokenomics Preview">
+                                        <pre className="text-xs text-gray-300 overflow-auto max-h-60">{JSON.stringify(aiGeneratedTokenomics, null, 2)}</pre>
+                                        <p className="mt-2 text-xs text-gray-400">This model will be used to pre-fill the token definition and allocation forms.</p>
+                                    </Card>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
+        )
+    }
+
+    return (
+        <TokenIssuanceProvider>
+            <InnerComponent />
         </TokenIssuanceProvider>
     );
 };
 
 export default TokenIssuanceView;
+```
