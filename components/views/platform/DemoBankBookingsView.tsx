@@ -1,14 +1,18 @@
+```typescript
 // components/views/platform/DemoBankBookingsView.tsx
 import React, { useState, useReducer, useEffect, useMemo, useCallback, useRef } from 'react';
 import Card from '../../Card';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // NOTE: In a real app, this data would come from a dedicated file e.g., /data/platform/bookingsData.ts
+// The simple data below is replaced by the extensive mock data generation in the expanded code.
+/*
 const appointments = [
     { time: '10:00 AM', service: 'Financial Consultation', client: 'Alex Chen', status: 'Confirmed' },
     { time: '11:00 AM', service: 'API Integration Support', client: 'Brenda Rodriguez', status: 'Confirmed' },
     { time: '02:00 PM', service: 'Mortgage Application Review', client: 'Charles Davis', status: 'Tentative' },
 ];
+*/
 
 // START OF EXPANDED CODE
 
@@ -231,15 +235,15 @@ export const DateUtils = {
 // ===================================================================================
 
 export class AIIntegrationService {
-    private ai: GoogleGenAI;
+    private ai: GoogleGenerativeAI;
     private static instance: AIIntegrationService;
 
     private constructor() {
-        if (!process.env.API_KEY) {
-            console.error("API_KEY environment variable not set for AIIntegrationService.");
+        if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+            console.error("NEXT_PUBLIC_GEMINI_API_KEY environment variable not set for AIIntegrationService.");
             // In a real app, you might have a fallback or a more robust error handling
         }
-        this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+        this.ai = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
     }
 
     public static getInstance(): AIIntegrationService {
@@ -251,11 +255,13 @@ export class AIIntegrationService {
 
     private async generateContent(prompt: string): Promise<string> {
         try {
-            const response = await this.ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-            return response.text;
+            const model = this.ai.getGenerativeModel({ model: "gemini-pro"});
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
         } catch (error) {
             console.error("AI content generation failed:", error);
-            throw new Error("Failed to generate content from AI model.");
+            return "Error: Could not generate content from AI model. Please check the API key and network connection.";
         }
     }
 
@@ -958,3 +964,4 @@ const DemoBankBookingsView: React.FC = () => {
 };
 
 export default DemoBankBookingsView;
+```
