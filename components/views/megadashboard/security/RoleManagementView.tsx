@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useRef, useReducer } from 'react';
 import Card from '../../../Card';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
@@ -11,7 +11,7 @@ import { Textarea } from '../../../../components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../../../components/ui/command';
 import { Calendar } from '../../../../components/ui/calendar';
-import { CalendarIcon, CheckIcon, ChevronsUpDown, Eye, EyeOff, PlusCircle, Search, Trash2, Edit2, Info, XCircle, AlertCircle, RefreshCcw, Save, Loader2, Link, Unlink } from 'lucide-react';
+import { CalendarIcon, CheckIcon, ChevronsUpDown, Eye, EyeOff, PlusCircle, Search, Trash2, Edit2, Info, XCircle, AlertCircle, RefreshCcw, Save, Loader2, Link, Unlink, ShieldAlert, Users, CheckCircle, Network, Mail, Rocket, ClipboardList, ClipboardCheck, FileText } from 'lucide-react';
 import { cn } from '../../../../lib/utils';
 import { format } from 'date-fns';
 import { Toggle } from '../../../../components/ui/toggle';
@@ -20,6 +20,7 @@ import { toast } from '../../../../components/ui/use-toast';
 import { Separator } from '../../../../components/ui/separator';
 import { Slider } from '../../../../components/ui/slider';
 import { Progress } from '../../../../components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
 
 // --- Utility Types and Interfaces ---
 
@@ -51,6 +52,7 @@ export interface Permission {
     level?: 'global' | 'organizational' | 'departmental' | 'individual'; // Scope of the permission
     tags: string[]; // e.g., ['finance', 'sensitive', 'PII']
     deprecated?: boolean;
+    riskScore: number; // 1-100, higher is riskier
     audit: AuditMeta;
 }
 
@@ -81,6 +83,8 @@ export interface User {
     firstName: string;
     lastName: string;
     department: string;
+    jobTitle: string;
+    managerId?: EntityId;
     status: 'active' | 'inactive' | 'locked';
     lastLogin: string; // ISO string
     roles: EntityId[]; // Roles assigned to this user
@@ -92,7 +96,7 @@ export interface User {
  */
 export interface AISuggestion {
     id: EntityId;
-    type: 'least_privilege' | 'role_clustering' | 'drift_detection' | 'compliance_violation';
+    type: 'least_privilege' | 'role_clustering' | 'drift_detection' | 'compliance_violation' | 'sod_violation_risk';
     targetId: EntityId; // Role ID or User ID
     message: string;
     details: Record<string, any>; // JSON object with specific details
@@ -112,12 +116,54 @@ export interface AuditLogEntry {
     timestamp: string; // ISO string
     actorId: EntityId; // User ID performing the action
     action: string; // e.g., 'ROLE_CREATED', 'PERMISSION_UPDATED', 'USER_ROLE_ASSIGNED'
-    targetType: 'role' | 'permission' | 'user';
+    targetType: 'role' | 'permission' | 'user' | 'sod_policy' | 'access_review';
     targetId: EntityId;
     details: Record<string, any>; // Old/New values, context, etc.
     ipAddress?: string;
     userAgent?: string;
 }
+
+/**
+ * Represents a Separation of Duties policy.
+ */
+export interface SoDPolicy {
+    id: EntityId;
+    name: string;
+    description: string;
+    conflictingPermissions: [EntityId, EntityId]; // A pair of permission IDs that conflict
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    status: 'enabled' | 'disabled';
+    mitigatingControl?: string; // Description of a mitigating control if the risk is accepted
+    audit: AuditMeta;
+}
+
+/**
+ * Represents an access review campaign.
+ */
+export interface AccessReviewCampaign {
+    id: EntityId;
+    name: string;
+    description: string;
+    reviewerId: EntityId; // Manager responsible for the review
+    targetScope: { type: 'role' | 'user' | 'application', id: EntityId };
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+    dueDate: string; // ISO string
+    items: AccessReviewItem[];
+    audit: AuditMeta;
+}
+
+/**
+ * Represents a single item within an access review campaign.
+ */
+export interface AccessReviewItem {
+    id: EntityId;
+    userId: EntityId;
+    resourceId: EntityId; // e.g., role ID
+    decision: 'approved' | 'revoked' | 'pending';
+    justification?: string;
+    reviewedAt?: string; // ISO string
+}
+
 
 /**
  * Context for managing global settings and state.
@@ -213,29 +259,40 @@ let mockRoles: Role[] = [
 ];
 
 let mockPermissions: Permission[] = [
-    { id: 'perm-all', name: 'All Access', description: 'Grants all possible permissions.', resource: '*', action: '*', tags: ['dangerous', 'privileged'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-user-mgmt', name: 'User Management', description: 'Create, update, delete users.', resource: 'users', action: 'manage', tags: ['admin', 'PII'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-role-mgmt', name: 'Role Management', description: 'Create, update, delete roles and assign permissions.', resource: 'roles', action: 'manage', tags: ['admin', 'security'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-audit-view', name: 'View Audit Logs', description: 'Read all audit log entries.', resource: 'audit_logs', action: 'read', tags: ['security', 'compliance'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-tx-read', name: 'Read Transactions', description: 'View all transaction details.', resource: 'transactions', action: 'read', tags: ['finance'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-tx-write', name: 'Write Transactions', description: 'Create or modify transaction details.', resource: 'transactions', action: 'write', tags: ['finance', 'sensitive'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-tx-approve', name: 'Approve Transactions', description: 'Approve pending financial transactions.', resource: 'transactions', action: 'approve', tags: ['finance', 'privileged'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-report-finance', name: 'View Finance Reports', description: 'Access financial reports and analytics.', resource: 'reports_finance', action: 'read', tags: ['finance', 'reporting'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-user-read', name: 'Read User Profiles', description: 'View basic user profile information.', resource: 'users', action: 'read_basic', tags: ['PII'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-user-update-basic', name: 'Update Basic User Info', description: 'Modify non-sensitive user profile data.', resource: 'users', action: 'update_basic', tags: ['PII'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-api-read', name: 'API Read Access', description: 'Read data via API endpoints.', resource: 'api', action: 'read', tags: ['developer', 'technical'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'perm-api-write', name: 'API Write Access', description: 'Write data via API endpoints.', resource: 'api', action: 'write', tags: ['developer', 'technical', 'sensitive'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-all', name: 'All Access', description: 'Grants all possible permissions.', resource: '*', action: '*', tags: ['dangerous', 'privileged'], riskScore: 100, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-user-mgmt', name: 'User Management', description: 'Create, update, delete users.', resource: 'users', action: 'manage', tags: ['admin', 'PII'], riskScore: 85, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-role-mgmt', name: 'Role Management', description: 'Create, update, delete roles and assign permissions.', resource: 'roles', action: 'manage', tags: ['admin', 'security'], riskScore: 90, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-audit-view', name: 'View Audit Logs', description: 'Read all audit log entries.', resource: 'audit_logs', action: 'read', tags: ['security', 'compliance'], riskScore: 60, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-tx-read', name: 'Read Transactions', description: 'View all transaction details.', resource: 'transactions', action: 'read', tags: ['finance'], riskScore: 40, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-tx-write', name: 'Write Transactions', description: 'Create or modify transaction details.', resource: 'transactions', action: 'write', tags: ['finance', 'sensitive'], riskScore: 75, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-tx-approve', name: 'Approve Transactions', description: 'Approve pending financial transactions.', resource: 'transactions', action: 'approve', tags: ['finance', 'privileged'], riskScore: 80, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-report-finance', name: 'View Finance Reports', description: 'Access financial reports and analytics.', resource: 'reports_finance', action: 'read', tags: ['finance', 'reporting'], riskScore: 50, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-user-read', name: 'Read User Profiles', description: 'View basic user profile information.', resource: 'users', action: 'read_basic', tags: ['PII'], riskScore: 30, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-user-update-basic', name: 'Update Basic User Info', description: 'Modify non-sensitive user profile data.', resource: 'users', action: 'update_basic', tags: ['PII'], riskScore: 35, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-api-read', name: 'API Read Access', description: 'Read data via API endpoints.', resource: 'api', action: 'read', tags: ['developer', 'technical'], riskScore: 45, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'perm-api-write', name: 'API Write Access', description: 'Write data via API endpoints.', resource: 'api', action: 'write', tags: ['developer', 'technical', 'sensitive'], riskScore: 70, audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
 ];
 
 let mockUsers: User[] = [
-    { id: 'user-admin-123', username: 'john.doe', email: 'john.doe@example.com', firstName: 'John', lastName: 'Doe', department: 'IT Security', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-admin'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'user-finance-mgr-1', username: 'jane.smith', email: 'jane.smith@example.com', firstName: 'Jane', lastName: 'Smith', department: 'Finance', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-finance-manager'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'user-cs-1', username: 'peter.jones', email: 'peter.jones@example.com', firstName: 'Peter', lastName: 'Jones', department: 'Customer Service', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-customer-service'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'user-cs-2', username: 'alice.brown', email: 'alice.brown@example.com', firstName: 'Alice', lastName: 'Brown', department: 'Customer Service', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-customer-service'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
-    { id: 'user-dev-1', username: 'bob.developer', email: 'bob.developer@example.com', firstName: 'Bob', lastName: 'Developer', department: 'Engineering', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-developer'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'user-admin-123', username: 'john.doe', email: 'john.doe@example.com', firstName: 'John', lastName: 'Doe', department: 'IT Security', jobTitle: 'Security Admin', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-admin'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'user-finance-mgr-1', username: 'jane.smith', email: 'jane.smith@example.com', firstName: 'Jane', lastName: 'Smith', department: 'Finance', jobTitle: 'Finance Manager', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-finance-manager'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'user-cs-1', username: 'peter.jones', email: 'peter.jones@example.com', firstName: 'Peter', lastName: 'Jones', department: 'Customer Service', jobTitle: 'CSR', managerId: 'user-finance-mgr-1', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-customer-service'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'user-cs-2', username: 'alice.brown', email: 'alice.brown@example.com', firstName: 'Alice', lastName: 'Brown', department: 'Customer Service', jobTitle: 'CSR', managerId: 'user-finance-mgr-1', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-customer-service'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
+    { id: 'user-dev-1', username: 'bob.developer', email: 'bob.developer@example.com', firstName: 'Bob', lastName: 'Developer', department: 'Engineering', jobTitle: 'Software Engineer', status: 'active', lastLogin: new Date().toISOString(), roles: ['role-developer'], audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 } },
 ];
 
 let mockAuditLogs: AuditLogEntry[] = [];
+let mockSoDPolicies: SoDPolicy[] = [
+    {
+        id: 'sod-1',
+        name: 'Transaction Creation vs. Approval',
+        description: 'A user cannot both create a transaction and approve the same transaction.',
+        conflictingPermissions: ['perm-tx-write', 'perm-tx-approve'],
+        severity: 'high',
+        status: 'enabled',
+        audit: { createdAt: new Date().toISOString(), createdBy: 'system', updatedAt: new Date().toISOString(), updatedBy: 'system', version: 1 }
+    }
+];
 
 // Helper to simulate API delay
 const simulateApiCall = <T>(data: T, delay: number = 500): Promise<T> => {
@@ -776,6 +833,7 @@ export const PermissionForm: React.FC<PermissionFormProps> = ({ permission, onSa
     const [level, setLevel] = useState<Permission['level']>(permission?.level || 'global');
     const [tags, setTags] = useState(permission?.tags.join(', ') || '');
     const [deprecated, setDeprecated] = useState(permission?.deprecated || false);
+    const [riskScore, setRiskScore] = useState(permission?.riskScore || 50);
 
     const isEditing = !!permission;
 
@@ -792,7 +850,8 @@ export const PermissionForm: React.FC<PermissionFormProps> = ({ permission, onSa
             action,
             level,
             tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
-            deprecated
+            deprecated,
+            riskScore
         };
 
         await onSave(permissionData);
@@ -867,6 +926,18 @@ export const PermissionForm: React.FC<PermissionFormProps> = ({ permission, onSa
                     className="mt-1"
                 />
             </div>
+             <div>
+                <Label htmlFor="perm-risk" className="text-gray-300">Risk Score ({riskScore})</Label>
+                <Slider
+                    id="perm-risk"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[riskScore]}
+                    onValueChange={(value) => setRiskScore(value[0])}
+                    className="mt-2"
+                />
+            </div>
             <div className="flex items-center space-x-2 mt-4">
                 <Switch
                     id="perm-deprecated"
@@ -916,7 +987,7 @@ export const RoleTable: React.FC<{ roles: Role[]; onEdit: (role: Role) => void; 
     }, [roles, searchTerm, filterStatus]);
 
     return (
-        <Card title="Roles">
+        <Card>
             <div className="flex flex-col md:flex-row gap-4 mb-4">
                 <div className="flex-grow">
                     <Input
@@ -1012,7 +1083,7 @@ export const PermissionTable: React.FC<{ permissions: Permission[]; onEdit: (per
     }, [permissions, searchTerm, filterDeprecated]);
 
     return (
-        <Card title="Permissions">
+        <Card>
             <div className="flex flex-col md:flex-row gap-4 mb-4">
                 <div className="flex-grow">
                     <Input
@@ -1038,9 +1109,8 @@ export const PermissionTable: React.FC<{ permissions: Permission[]; onEdit: (per
                     <TableRow className="border-gray-700">
                         <TableHead className="w-[200px] text-gray-300">Name</TableHead>
                         <TableHead className="text-gray-300">Description</TableHead>
-                        <TableHead className="w-[120px] text-gray-300">Resource</TableHead>
-                        <TableHead className="w-[100px] text-gray-300">Action</TableHead>
-                        <TableHead className="w-[100px] text-gray-300">Level</TableHead>
+                        <TableHead className="w-[120px] text-gray-300">Resource:Action</TableHead>
+                        <TableHead className="w-[100px] text-gray-300">Risk</TableHead>
                         <TableHead className="w-[80px] text-gray-300">Status</TableHead>
                         <TableHead className="w-[100px] text-gray-300 text-right">Actions</TableHead>
                     </TableRow>
@@ -1048,16 +1118,20 @@ export const PermissionTable: React.FC<{ permissions: Permission[]; onEdit: (per
                 <TableBody>
                     {filteredPermissions.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center text-gray-500">No permissions found.</TableCell>
+                            <TableCell colSpan={6} className="text-center text-gray-500">No permissions found.</TableCell>
                         </TableRow>
                     ) : (
                         filteredPermissions.map((permission) => (
                             <TableRow key={permission.id} className="border-gray-800 hover:bg-gray-800">
                                 <TableCell className="font-medium text-white">{permission.name}</TableCell>
                                 <TableCell className="text-gray-400">{permission.description}</TableCell>
-                                <TableCell className="text-gray-400">{permission.resource}</TableCell>
-                                <TableCell className="text-gray-400">{permission.action}</TableCell>
-                                <TableCell className="text-gray-400">{permission.level?.charAt(0).toUpperCase() + permission.level?.slice(1)}</TableCell>
+                                <TableCell className="font-mono text-xs text-gray-400">{permission.resource}:{permission.action}</TableCell>
+                                <TableCell>
+                                     <div className="flex items-center">
+                                        <Progress value={permission.riskScore} className="w-16 h-1.5" indicatorClassName={permission.riskScore > 75 ? "bg-red-500" : permission.riskScore > 50 ? "bg-yellow-500" : "bg-green-500"} />
+                                        <span className="ml-2 text-xs text-gray-400">{permission.riskScore}</span>
+                                    </div>
+                                </TableCell>
                                 <TableCell>
                                     <span className={cn(
                                         "px-2 py-0.5 rounded-full text-xs font-medium",
@@ -1100,11 +1174,12 @@ export const AISuggestionsPanel: React.FC<{ suggestions: AISuggestion[]; onAccep
 
     const getTypeIcon = (type: AISuggestion['type']) => {
         switch (type) {
-            case 'least_privilege': return <EyeOff className="h-4 w-4 mr-1" />;
-            case 'role_clustering': return <Users className="h-4 w-4 mr-1" />;
-            case 'drift_detection': return <AlertCircle className="h-4 w-4 mr-1" />;
-            case 'compliance_violation': return <ShieldAlert className="h-4 w-4 mr-1" />;
-            default: return <Info className="h-4 w-4 mr-1" />;
+            case 'least_privilege': return <EyeOff className="h-4 w-4 mr-2 text-blue-400" />;
+            case 'role_clustering': return <Users className="h-4 w-4 mr-2 text-purple-400" />;
+            case 'drift_detection': return <AlertCircle className="h-4 w-4 mr-2 text-yellow-400" />;
+            case 'compliance_violation': return <ShieldAlert className="h-4 w-4 mr-2 text-red-400" />;
+            case 'sod_violation_risk': return <Network className="h-4 w-4 mr-2 text-orange-400" />;
+            default: return <Info className="h-4 w-4 mr-2 text-gray-400" />;
         }
     };
 
@@ -1697,67 +1772,199 @@ const RoleManagementView: React.FC = () => {
                 </div>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card title="AI Role Clustering"><p>Our AI automatically groups users with similar access patterns to suggest new, optimized roles, reducing complexity and human error.</p></Card>
-                <Card title="Least-Privilege Suggestions"><p>Receive continuous, AI-driven recommendations to remove unnecessary permissions from roles, hardening your security posture automatically.</p></Card>
-                <Card title="Role Drift Detection"><p>Get alerted when a role's permissions have significantly changed over time, preventing unintended privilege escalation.</p></Card>
-            </div>
+            <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="roles">Role Management</TabsTrigger>
+                    <TabsTrigger value="permissions">Permission Management</TabsTrigger>
+                    <TabsTrigger value="analyzer">AI Analyzer</TabsTrigger>
+                </TabsList>
+                <TabsContent value="overview" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <Card title="AI Role Clustering"><p>Our AI automatically groups users with similar access patterns to suggest new, optimized roles, reducing complexity and human error.</p></Card>
+                        <Card title="Least-Privilege Suggestions"><p>Receive continuous, AI-driven recommendations to remove unnecessary permissions from roles, hardening your security posture automatically.</p></Card>
+                        <Card title="Role Drift Detection"><p>Get alerted when a role's permissions have significantly changed over time, preventing unintended privilege escalation.</p></Card>
+                    </div>
 
-            <Separator className="bg-gray-700" />
-
-            {/* AI Suggestions Section */}
-            <AISuggestionsPanel
-                suggestions={aiSuggestions}
-                onAccept={handleAcceptSuggestion}
-                onReject={handleRejectSuggestion}
-                onRefresh={handleGenerateNewSuggestions}
-                isLoading={loadingSuggestions}
-            />
-
-            <Separator className="bg-gray-700" />
-
-            {/* Role Management Section */}
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-semibold text-white">Role Management</h3>
-                <Dialog open={isRoleFormOpen} onOpenChange={setIsRoleFormOpen}>
-                    <DialogTrigger asChild>
-                        <Button onClick={() => { setEditingRole(undefined); setIsRoleFormOpen(true); }}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Create New Role
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px] bg-gray-900 border-gray-700 text-white">
-                        <DialogHeader>
-                            <DialogTitle className="text-white">{editingRole ? 'Edit Role' : 'Create New Role'}</DialogTitle>
-                            <DialogDescription className="text-gray-400">
-                                {editingRole ? 'Modify the details and permissions of this role.' : 'Define a new security role with specific permissions.'}
-                            </DialogDescription>
-                        </DialogHeader>
-                        <RoleForm
-                            role={editingRole}
-                            onSave={handleCreateOrUpdateRole}
-                            onClose={() => setIsRoleFormOpen(false)}
-                            isLoading={loadingRoles}
-                            allPermissions={permissions}
+                    <AISuggestionsPanel
+                        suggestions={aiSuggestions}
+                        onAccept={handleAcceptSuggestion}
+                        onReject={handleRejectSuggestion}
+                        onRefresh={handleGenerateNewSuggestions}
+                        isLoading={loadingSuggestions}
+                    />
+                </TabsContent>
+                <TabsContent value="roles" className="mt-6 space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-2xl font-semibold text-white">Role Management</h3>
+                        <Dialog open={isRoleFormOpen} onOpenChange={setIsRoleFormOpen}>
+                            <DialogTrigger asChild>
+                                <Button onClick={() => { setEditingRole(undefined); setIsRoleFormOpen(true); }}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Create New Role
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[500px] bg-gray-900 border-gray-700 text-white">
+                                <DialogHeader>
+                                    <DialogTitle className="text-white">{editingRole ? 'Edit Role' : 'Create New Role'}</DialogTitle>
+                                    <DialogDescription className="text-gray-400">
+                                        {editingRole ? 'Modify the details and permissions of this role.' : 'Define a new security role with specific permissions.'}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <RoleForm
+                                    role={editingRole}
+                                    onSave={handleCreateOrUpdateRole}
+                                    onClose={() => setIsRoleFormOpen(false)}
+                                    isLoading={loadingRoles}
+                                    allPermissions={permissions}
+                                />
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                    {loadingRoles ? (
+                        <div className="flex justify-center items-center h-40">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                            <span className="ml-2 text-gray-400">Loading roles...</span>
+                        </div>
+                    ) : (
+                        <RoleTable
+                            roles={roles}
+                            onEdit={handleEditRole}
+                            onDelete={handleDeleteRole}
+                            onViewUsers={handleViewRoleDetails} // Re-using role details for user management
+                            onViewDetails={handleViewRoleDetails}
                         />
-                    </DialogContent>
-                </Dialog>
-            </div>
+                    )}
+                </TabsContent>
+                 <TabsContent value="permissions" className="mt-6 space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-2xl font-semibold text-white">Permission Management</h3>
+                        <Dialog open={isPermissionFormOpen} onOpenChange={setIsPermissionFormOpen}>
+                            <DialogTrigger asChild>
+                                <Button onClick={() => { setEditingPermission(undefined); setIsPermissionFormOpen(true); }}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Create New Permission
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[500px] bg-gray-900 border-gray-700 text-white">
+                                <DialogHeader>
+                                    <DialogTitle className="text-white">{editingPermission ? 'Edit Permission' : 'Create New Permission'}</DialogTitle>
+                                    <DialogDescription className="text-gray-400">
+                                        {editingPermission ? 'Modify the details of this specific permission.' : 'Define a granular permission to control access to resources and actions.'}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <PermissionForm
+                                    permission={editingPermission}
+                                    onSave={handleCreateOrUpdatePermission}
+                                    onClose={() => setIsPermissionFormOpen(false)}
+                                    isLoading={loadingPermissions}
+                                />
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                    {loadingPermissions ? (
+                        <div className="flex justify-center items-center h-40">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                            <span className="ml-2 text-gray-400">Loading permissions...</span>
+                        </div>
+                    ) : (
+                        <PermissionTable
+                            permissions={permissions}
+                            onEdit={handleEditPermission}
+                            onDelete={handleDeletePermission}
+                        />
+                    )}
+                 </TabsContent>
+                <TabsContent value="analyzer" className="mt-6 space-y-6">
+                    <Card title="AI Role Analyzer & Simulation">
+                        <div className="space-y-4">
+                            <p className="text-gray-400">Leverage advanced AI capabilities to analyze role effectiveness, simulate policy changes, and proactively identify security gaps.</p>
 
-            {loadingRoles ? (
-                <div className="flex justify-center items-center h-40">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                    <span className="ml-2 text-gray-400">Loading roles...</span>
-                </div>
-            ) : (
-                <RoleTable
-                    roles={roles}
-                    onEdit={handleEditRole}
-                    onDelete={handleDeleteRole}
-                    onViewUsers={handleViewRoleDetails} // Re-using role details for user management
-                    onViewDetails={handleViewRoleDetails}
-                />
-            )}
+                            <div>
+                                <h4 className="font-semibold text-lg text-white mb-2">Role Health Score</h4>
+                                <p className="text-gray-400 text-sm mb-2">An aggregated metric based on least-privilege adherence, usage patterns, and compliance. Higher is better.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {roles.slice(0, 3).map(role => ( // Showing top 3 for brevity
+                                        <Card key={role.id} title={role.name} className="bg-gray-800 border-gray-700">
+                                            <div className="flex items-center space-x-3">
+                                                <Progress value={Math.min(100, 50 + role.permissions.length * 5)} className="w-full h-2 bg-gray-700" indicatorClassName="bg-blue-500" />
+                                                <span className="text-white text-sm">{Math.min(100, 50 + role.permissions.length * 5)}%</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">Permissions: {role.permissions.length} | Users: {role.users.length}</p>
+                                        </Card>
+                                    ))}
+                                </div>
+                                <Button variant="link" className="text-blue-400 text-sm mt-2">View Full Role Health Report</Button>
+                            </div>
 
+                            <Separator className="bg-gray-700" />
+
+                            <div>
+                                <h4 className="font-semibold text-lg text-white mb-2">Policy Change Simulation</h4>
+                                <p className="text-gray-400 text-sm mb-2">Simulate the impact of role or permission changes before applying them to production.</p>
+                                <div className="flex space-x-4 items-center">
+                                    <Select defaultValue="role-finance-manager">
+                                        <SelectTrigger className="w-[240px]">
+                                            <SelectValue placeholder="Select a role to simulate" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-gray-800 text-gray-200 border-gray-700">
+                                            {roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select defaultValue="add-permission">
+                                        <SelectTrigger className="w-[240px]">
+                                            <SelectValue placeholder="Select an action" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-gray-800 text-gray-200 border-gray-700">
+                                            <SelectItem value="add-permission">Add Permission</SelectItem>
+                                            <SelectItem value="remove-permission">Remove Permission</SelectItem>
+                                            <SelectItem value="change-status">Change Status</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button variant="secondary">
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin hidden" />
+                                        Run Simulation
+                                    </Button>
+                                </div>
+                                <div className="mt-4 p-3 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-400">
+                                    <p className="font-semibold text-white mb-1">Simulation Results (Preview):</p>
+                                    <p><strong>Impact on Users:</strong> 5 users affected.</p>
+                                    <p><strong>Compliance Risk:</strong> Low (no new violations detected).</p>
+                                    <p><strong>Effective Permissions:</strong> 2 new permissions gained, 0 lost.</p>
+                                </div>
+                            </div>
+
+                            <Separator className="bg-gray-700" />
+
+                            <div>
+                                <h4 className="font-semibold text-lg text-white mb-2">Role Hierarchy & Inheritance</h4>
+                                <p className="text-gray-400 text-sm mb-2">Visualize and manage parent-child relationships between roles for easier permission inheritance.</p>
+                                <div className="bg-gray-800 border border-gray-700 rounded-md p-4 h-48 flex items-center justify-center">
+                                    <p className="text-gray-500 italic">Role hierarchy visualization (e.g., D3.js graph) goes here.</p>
+                                </div>
+                                <Button variant="link" className="text-blue-400 text-sm mt-2">Manage Role Hierarchy</Button>
+                            </div>
+
+                            <Separator className="bg-gray-700" />
+
+                            <div>
+                                <h4 className="font-semibold text-lg text-white mb-2">AI-Powered Compliance Checks</h4>
+                                <p className="text-gray-400 text-sm mb-2">Automatically audit your role configurations against pre-defined compliance standards (e.g., GDPR, SOC2).</p>
+                                <div className="flex justify-between items-center bg-gray-800 border border-gray-700 rounded-md p-4">
+                                    <div>
+                                        <p className="text-white font-medium">Last Compliance Scan: <span className="text-gray-400">{format(new Date(), 'PPP HH:mm')}</span></p>
+                                        <p className="text-gray-400 text-sm">Status: <span className="text-yellow-400">2 Minor Warnings</span></p>
+                                    </div>
+                                    <Button variant="secondary">
+                                        Run Compliance Scan
+                                    </Button>
+                                </div>
+                                <Button variant="link" className="text-blue-400 text-sm mt-2">View Compliance Report</Button>
+                            </div>
+
+                        </div>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+            
             {viewingRoleDetails && (
                 <RoleDetailsPanel
                     role={viewingRoleDetails}
@@ -1766,145 +1973,6 @@ const RoleManagementView: React.FC = () => {
                     onClose={() => { setViewingRoleDetails(undefined); fetchRoles(); fetchUsers(); }} // Refresh data when closing
                 />
             )}
-
-            <Separator className="bg-gray-700" />
-
-            {/* Permission Management Section */}
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-semibold text-white">Permission Management</h3>
-                <Dialog open={isPermissionFormOpen} onOpenChange={setIsPermissionFormOpen}>
-                    <DialogTrigger asChild>
-                        <Button onClick={() => { setEditingPermission(undefined); setIsPermissionFormOpen(true); }}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Create New Permission
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px] bg-gray-900 border-gray-700 text-white">
-                        <DialogHeader>
-                            <DialogTitle className="text-white">{editingPermission ? 'Edit Permission' : 'Create New Permission'}</DialogTitle>
-                            <DialogDescription className="text-gray-400">
-                                {editingPermission ? 'Modify the details of this specific permission.' : 'Define a granular permission to control access to resources and actions.'}
-                            </DialogDescription>
-                        </DialogHeader>
-                        <PermissionForm
-                            permission={editingPermission}
-                            onSave={handleCreateOrUpdatePermission}
-                            onClose={() => setIsPermissionFormOpen(false)}
-                            isLoading={loadingPermissions}
-                        />
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            {loadingPermissions ? (
-                <div className="flex justify-center items-center h-40">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                    <span className="ml-2 text-gray-400">Loading permissions...</span>
-                </div>
-            ) : (
-                <PermissionTable
-                    permissions={permissions}
-                    onEdit={handleEditPermission}
-                    onDelete={handleDeletePermission}
-                />
-            )}
-
-            <Separator className="bg-gray-700" />
-
-            {/* AI Role Analyzer and Simulation (Advanced Section) */}
-            <Card title="AI Role Analyzer & Simulation">
-                <div className="space-y-4">
-                    <p className="text-gray-400">Leverage advanced AI capabilities to analyze role effectiveness, simulate policy changes, and proactively identify security gaps.</p>
-
-                    {/* Role Health Score */}
-                    <div>
-                        <h4 className="font-semibold text-lg text-white mb-2">Role Health Score</h4>
-                        <p className="text-gray-400 text-sm mb-2">An aggregated metric based on least-privilege adherence, usage patterns, and compliance. Higher is better.</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {roles.slice(0, 3).map(role => ( // Showing top 3 for brevity
-                                <Card key={role.id} title={role.name} className="bg-gray-800 border-gray-700">
-                                    <div className="flex items-center space-x-3">
-                                        <Progress value={Math.min(100, 50 + role.permissions.length * 5)} className="w-full h-2 bg-gray-700" indicatorClassName="bg-blue-500" />
-                                        <span className="text-white text-sm">{Math.min(100, 50 + role.permissions.length * 5)}%</span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-2">Permissions: {role.permissions.length} | Users: {role.users.length}</p>
-                                </Card>
-                            ))}
-                        </div>
-                        <Button variant="link" className="text-blue-400 text-sm mt-2">View Full Role Health Report</Button>
-                    </div>
-
-                    <Separator className="bg-gray-700" />
-
-                    {/* Policy Simulation */}
-                    <div>
-                        <h4 className="font-semibold text-lg text-white mb-2">Policy Change Simulation</h4>
-                        <p className="text-gray-400 text-sm mb-2">Simulate the impact of role or permission changes before applying them to production.</p>
-                        <div className="flex space-x-4 items-center">
-                            <Select defaultValue="role-finance-manager">
-                                <SelectTrigger className="w-[240px]">
-                                    <SelectValue placeholder="Select a role to simulate" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 text-gray-200 border-gray-700">
-                                    {roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                            <Select defaultValue="add-permission">
-                                <SelectTrigger className="w-[240px]">
-                                    <SelectValue placeholder="Select an action" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-gray-800 text-gray-200 border-gray-700">
-                                    <SelectItem value="add-permission">Add Permission</SelectItem>
-                                    <SelectItem value="remove-permission">Remove Permission</SelectItem>
-                                    <SelectItem value="change-status">Change Status</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Button variant="secondary">
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin hidden" /> {/* Show when simulating */}
-                                Run Simulation
-                            </Button>
-                        </div>
-                        <div className="mt-4 p-3 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-400">
-                            <p className="font-semibold text-white mb-1">Simulation Results (Preview):</p>
-                            <p><strong>Impact on Users:</strong> 5 users affected.</p>
-                            <p><strong>Compliance Risk:</strong> Low (no new violations detected).</p>
-                            <p><strong>Effective Permissions:</strong> 2 new permissions gained, 0 lost.</p>
-                        </div>
-                    </div>
-
-                    <Separator className="bg-gray-700" />
-
-                    {/* Role Hierarchies and Inheritance */}
-                    <div>
-                        <h4 className="font-semibold text-lg text-white mb-2">Role Hierarchy & Inheritance</h4>
-                        <p className="text-gray-400 text-sm mb-2">Visualize and manage parent-child relationships between roles for easier permission inheritance.</p>
-                        {/* This would typically be a complex graph visualization component */}
-                        <div className="bg-gray-800 border border-gray-700 rounded-md p-4 h-48 flex items-center justify-center">
-                            <p className="text-gray-500 italic">Role hierarchy visualization (e.g., D3.js graph) goes here.</p>
-                        </div>
-                        <Button variant="link" className="text-blue-400 text-sm mt-2">Manage Role Hierarchy</Button>
-                    </div>
-
-                    <Separator className="bg-gray-700" />
-
-                    {/* AI-Powered Compliance Checks */}
-                    <div>
-                        <h4 className="font-semibold text-lg text-white mb-2">AI-Powered Compliance Checks</h4>
-                        <p className="text-gray-400 text-sm mb-2">Automatically audit your role configurations against pre-defined compliance standards (e.g., GDPR, SOC2).</p>
-                        <div className="flex justify-between items-center bg-gray-800 border border-gray-700 rounded-md p-4">
-                            <div>
-                                <p className="text-white font-medium">Last Compliance Scan: <span className="text-gray-400">{format(new Date(), 'PPP HH:mm')}</span></p>
-                                <p className="text-gray-400 text-sm">Status: <span className="text-yellow-400">2 Minor Warnings</span></p>
-                            </div>
-                            <Button variant="secondary">
-                                Run Compliance Scan
-                            </Button>
-                        </div>
-                        <Button variant="link" className="text-blue-400 text-sm mt-2">View Compliance Report</Button>
-                    </div>
-
-                </div>
-            </Card>
-
         </div>
     );
 };
