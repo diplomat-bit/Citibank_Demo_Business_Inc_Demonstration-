@@ -13,8 +13,8 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, u
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { createPortal } from 'react-dom';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, CheckSquare, ChevronDown, Clock, Flag, Hash, MessageSquare, Plus, Search, Tag, Users, X, Activity, GripVertical, Paperclip, ArrowRight, BrainCircuit, Sparkles } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { Calendar, CheckSquare, ChevronDown, Clock, Flag, Hash, MessageSquare, Plus, Search, Tag, Users, X, Activity, GripVertical, Paperclip, ArrowRight, BrainCircuit, Sparkles, GanttChartSquare, BarChart3, Columns, Filter } from 'lucide-react';
 
 
 // =================================================================================================
@@ -140,21 +140,25 @@ const PRIORITY_ICON_MAP: Record<Priority, React.ReactNode> = {
     'Medium': <Flag className="w-4 h-4 text-yellow-500" />,
     'High': <Flag className="w-4 h-4 text-orange-500" />,
     'Urgent': <Flag className="w-4 h-4 text-red-500" />,
-}
+};
+
+const PIE_CHART_COLORS = ['#3b82f6', '#f97316', '#a855f7', '#10b981'];
 
 
 // =================================================================================================
 // 3. STATE MANAGEMENT (useReducer for complexity)
 // =================================================================================================
 
+type FilterState = {
+    searchTerm: string;
+    assigneeIds: string[];
+    priorities: Priority[];
+};
+
 type ProjectState = {
     tasks: EnhancedProjectTask[];
     columns: Map<ProjectStatus, EnhancedProjectTask[]>;
-    filters: {
-        searchTerm: string;
-        assigneeIds: string[];
-        priorities: Priority[];
-    };
+    filters: FilterState;
     viewMode: ViewMode;
     isTaskModalOpen: boolean;
     isAIGeneratorOpen: boolean;
@@ -169,7 +173,7 @@ type ProjectAction =
     | { type: 'UPDATE_TASK'; payload: EnhancedProjectTask }
     | { type: 'MOVE_TASK'; payload: { taskId: string; fromColumn: ProjectStatus; toColumn: ProjectStatus; newIndex: number } }
     | { type: 'REORDER_TASK_IN_COLUMN'; payload: { columnId: ProjectStatus; oldIndex: number; newIndex: number } }
-    | { type: 'SET_FILTER'; payload: { filterType: keyof ProjectState['filters']; value: any } }
+    | { type: 'SET_FILTER'; payload: { filterType: keyof FilterState; value: any } }
     | { type: 'SET_VIEW_MODE'; payload: ViewMode }
     | { type: 'OPEN_TASK_MODAL'; payload: EnhancedProjectTask | null }
     | { type: 'CLOSE_TASK_MODAL' }
@@ -192,7 +196,6 @@ const projectReducer = (state: ProjectState, action: ProjectAction): ProjectStat
         }
         case 'ADD_TASKS': {
              const newTasks = [...state.tasks, ...action.payload];
-             // Rebuild columns map
              const columns = new Map<ProjectStatus, EnhancedProjectTask[]>();
              COLUMNS.forEach(status => columns.set(status, []));
              newTasks.forEach(task => {
@@ -203,24 +206,24 @@ const projectReducer = (state: ProjectState, action: ProjectAction): ProjectStat
         }
         case 'UPDATE_TASK': {
             const updatedTasks = state.tasks.map(t => t.id === action.payload.id ? action.payload : t);
-             // Rebuild columns map after update, as status might have changed
              const columns = new Map<ProjectStatus, EnhancedProjectTask[]>();
              COLUMNS.forEach(status => columns.set(status, []));
              updatedTasks.forEach(task => {
                  const columnTasks = columns.get(task.status) || [];
                  columnTasks.push(task);
              });
-            return { ...state, tasks: updatedTasks, columns, selectedTask: action.payload };
+            return { ...state, tasks: updatedTasks, columns, selectedTask: action.payload, isTaskModalOpen: state.isTaskModalOpen };
         }
         case 'MOVE_TASK': {
             const { taskId, fromColumn, toColumn, newIndex } = action.payload;
             const newColumns = new Map(state.columns);
             
             const sourceColumnTasks = Array.from(newColumns.get(fromColumn) || []);
-            const [movedTask] = sourceColumnTasks.splice(sourceColumnTasks.findIndex(t => t.id === taskId), 1);
-            
-            if (!movedTask) return state;
+            const taskIndex = sourceColumnTasks.findIndex(t => t.id === taskId);
+            if(taskIndex === -1) return state;
 
+            const [movedTask] = sourceColumnTasks.splice(taskIndex, 1);
+            
             movedTask.status = toColumn;
             movedTask.updatedAt = new Date().toISOString();
             
@@ -277,7 +280,7 @@ export const TaskCard: React.FC<{ task: EnhancedProjectTask; onCardClick: (task:
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
-        borderLeft: `4px solid ${MOCK_LABELS.find(l => l.id === task.labels[0]?.id)?.color || '#4b5563'}`,
+        borderLeft: `4px solid ${MOCK_LABELS.find(l => task.labels.some(tl => tl.id === l.id))?.color || '#4b5563'}`,
     };
 
     return (
@@ -293,6 +296,11 @@ export const TaskCard: React.FC<{ task: EnhancedProjectTask; onCardClick: (task:
                 <div {...listeners} className="cursor-grab text-gray-500 hover:text-white">
                     <GripVertical size={16} />
                 </div>
+            </div>
+             <div className="flex flex-wrap gap-1 mt-2">
+                {task.labels.map(label => (
+                    <span key={label.id} style={{ backgroundColor: `${label.color}20`, color: label.color }} className="text-xs font-medium px-2 py-0.5 rounded-full">{label.text}</span>
+                ))}
             </div>
             <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
                 <div className="flex items-center gap-2">
@@ -325,7 +333,7 @@ export const BoardColumn: React.FC<{ status: ProjectStatus; tasks: EnhancedProje
                 <span className="text-sm font-normal text-gray-400 bg-gray-700/50 px-2 py-1 rounded-full">{tasks.length}</span>
             </h3>
             <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-3 h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-3 h-[calc(100vh-20rem)] overflow-y-auto pr-2 custom-scrollbar">
                     {tasks.map(task => <TaskCard key={task.id} task={task} onCardClick={onCardClick}/>)}
                 </div>
             </SortableContext>
@@ -370,7 +378,6 @@ export const ProjectBoard: React.FC<{
         let overColumn = findColumnForTask(overId);
         
         if (!overColumn) {
-            // It means we dropped on a column, not a task
             if (COLUMNS.includes(overId as ProjectStatus)) {
                 overColumn = overId as ProjectStatus;
             }
@@ -379,19 +386,19 @@ export const ProjectBoard: React.FC<{
         if (!activeColumn || !overColumn) return;
 
         if (activeColumn === overColumn) {
-            // Reordering within the same column
             const tasksInColumn = columns.get(activeColumn) || [];
             const oldIndex = tasksInColumn.findIndex(t => t.id === activeId);
             const newIndex = tasksInColumn.findIndex(t => t.id === overId);
-            if (oldIndex !== newIndex) {
+            if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
                  dispatch({ type: 'REORDER_TASK_IN_COLUMN', payload: { columnId: activeColumn, oldIndex, newIndex } });
             }
         } else {
-            // Moving to a different column
             const tasksInOverColumn = columns.get(overColumn) || [];
-            const newIndex = tasksInOverColumn.findIndex(t => t.id === overId);
-            const insertIndex = newIndex >= 0 ? newIndex : tasksInOverColumn.length;
-            dispatch({ type: 'MOVE_TASK', payload: { taskId: activeId, fromColumn: activeColumn, toColumn: overColumn, newIndex: insertIndex } });
+            let newIndex = tasksInOverColumn.findIndex(t => t.id === overId);
+            if(newIndex === -1) {
+                newIndex = over.data.current?.sortable.index ?? tasksInOverColumn.length;
+            }
+            dispatch({ type: 'MOVE_TASK', payload: { taskId: activeId, fromColumn: activeColumn, toColumn: overColumn, newIndex } });
         }
     };
     
@@ -402,7 +409,7 @@ export const ProjectBoard: React.FC<{
                     <BoardColumn key={status} status={status} tasks={tasks} onCardClick={onCardClick}/>
                 ))}
             </div>
-            {createPortal(
+            {typeof window !== 'undefined' && createPortal(
                 <DragOverlay>
                     {activeTask ? <TaskCard task={activeTask} onCardClick={() => {}} /> : null}
                 </DragOverlay>,
@@ -427,6 +434,13 @@ export const TaskDetailsModal: React.FC<{
         setEditedTask(prev => ({...prev, [key]: value, updatedAt: new Date().toISOString()}));
     };
     
+    useEffect(() => {
+        // This effect ensures that if the parent component sends a new task object
+        // while the modal is open (e.g., from a background refresh), the modal's
+        // state is updated to reflect the latest data.
+        setEditedTask(task);
+    }, [task]);
+
     const handleSaveChanges = () => {
         onUpdate(editedTask);
         onClose();
@@ -448,18 +462,34 @@ export const TaskDetailsModal: React.FC<{
         if(!aiSubtaskPrompt.trim()) return;
         setIsGeneratingSubtasks(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const schema = { type: Type.OBJECT, properties: { subtasks: { type: Type.ARRAY, items: { type: Type.STRING } } } };
+            // NOTE: API Key should be handled securely, e.g. via a backend proxy.
+            // This is simplified for demonstration.
+            const ai = new GoogleGenAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
+            const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const schema = Type.OBJECT({
+                subtasks: Type.ARRAY(Type.STRING),
+            });
             const fullPrompt = `You are a project manager. Based on the main task "${task.title}" and the goal "${aiSubtaskPrompt}", break it down into a list of 3-5 small, actionable subtasks.`;
-            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
-            const result = JSON.parse(response.text);
-            const newSubtasks: Subtask[] = result.subtasks.map((title: string) => ({
-                id: `subtask-${Date.now()}-${Math.random()}`,
-                title,
-                completed: false,
-            }));
-            handleUpdate('subtasks', [...editedTask.subtasks, ...newSubtasks]);
-            setAiSubtaskPrompt('');
+            
+            const result = await model.generateContent({
+                contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+                generationConfig: { responseMimeType: "application/json", responseSchema: schema },
+            });
+            
+            const response = result.response;
+            const responseText = response.text();
+            
+            const aiResult = JSON.parse(responseText);
+            
+            if (aiResult && aiResult.subtasks) {
+                const newSubtasks: Subtask[] = aiResult.subtasks.map((title: string) => ({
+                    id: `subtask-${Date.now()}-${Math.random()}`,
+                    title,
+                    completed: false,
+                }));
+                handleUpdate('subtasks', [...editedTask.subtasks, ...newSubtasks]);
+                setAiSubtaskPrompt('');
+            }
         } catch(error) {
             console.error("AI Subtask generation failed:", error);
             // In a real app, show a toast notification to the user
@@ -469,26 +499,23 @@ export const TaskDetailsModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={handleSaveChanges}>
             <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] border border-gray-700 flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
                     <h3 className="text-lg font-semibold text-white">Task Details</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20}/></button>
+                    <button onClick={handleSaveChanges} className="text-gray-400 hover:text-white"><X size={20}/></button>
                 </div>
 
-                <div className="flex-grow overflow-y-auto p-6 grid grid-cols-3 gap-6">
+                <div className="flex-grow overflow-y-auto p-6 grid grid-cols-3 gap-6 custom-scrollbar">
                     {/* Main Content Column */}
                     <div className="col-span-2 space-y-6">
-                        {/* Title */}
                         <input type="text" value={editedTask.title} onChange={e => handleUpdate('title', e.target.value)} className="w-full bg-transparent text-2xl font-bold text-white p-2 -m-2 rounded hover:bg-gray-700/50 focus:bg-gray-700/50 focus:ring-2 focus:ring-cyan-500 outline-none" />
                         
-                        {/* Description */}
                         <div>
                             <label className="text-sm font-medium text-gray-400 mb-2 block">Description</label>
                             <textarea value={editedTask.description} onChange={e => handleUpdate('description', e.target.value)} rows={5} className="w-full bg-gray-700/50 p-2 rounded text-gray-300 custom-scrollbar focus:ring-2 focus:ring-cyan-500 outline-none" placeholder="Add a more detailed description..."></textarea>
                         </div>
                         
-                        {/* Subtasks */}
                         <div className="space-y-2">
                              <label className="text-sm font-medium text-gray-400 mb-2 block">Checklist</label>
                             {editedTask.subtasks.map((sub, index) => (
@@ -506,14 +533,13 @@ export const TaskDetailsModal: React.FC<{
                                 </div>
                             ))}
                              <div className="flex gap-2 mt-2">
-                                <input type="text" value={aiSubtaskPrompt} onChange={e => setAiSubtaskPrompt(e.target.value)} placeholder="Goal for AI to generate subtasks..." className="flex-grow bg-gray-700/50 p-2 rounded text-white text-sm" />
+                                <input type="text" value={aiSubtaskPrompt} onChange={e => setAiSubtaskPrompt(e.target.value)} placeholder="Goal for AI to generate subtasks..." className="flex-grow bg-gray-700/50 p-2 rounded text-white text-sm outline-none focus:ring-2 focus:ring-purple-500" onKeyDown={e => e.key === 'Enter' && handleGenerateSubtasks()}/>
                                 <button onClick={handleGenerateSubtasks} disabled={isGeneratingSubtasks} className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50">
                                     <Sparkles size={16}/> {isGeneratingSubtasks ? 'Generating...' : 'AI'}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Comments */}
                         <div className="space-y-4">
                             <label className="text-sm font-medium text-gray-400 flex items-center gap-2"><Activity size={16}/> Activity</label>
                             <div className="flex gap-3">
@@ -541,12 +567,370 @@ export const TaskDetailsModal: React.FC<{
                     <div className="col-span-1 space-y-6">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-400 block">Status</label>
-                            <select value={editedTask.status} onChange={e => handleUpdate('status', e.target.value as ProjectStatus)} className="w-full bg-gray-700/50 p-2 rounded text-white">
+                            <select value={editedTask.status} onChange={e => handleUpdate('status', e.target.value as ProjectStatus)} className="w-full bg-gray-700/50 p-2 rounded text-white custom-select">
                                 {COLUMNS.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
                          <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-400 block">Assignee</label>
-                            <select value={editedTask.assignee?.id || ''} onChange={e => handleUpdate('assignee', MOCK_USERS.find(u=>u.id === e.target.value))} className="w-full bg-gray-700/50 p-2 rounded text-white">
+                            <select value={editedTask.assignee?.id || ''} onChange={e => handleUpdate('assignee', MOCK_USERS.find(u=>u.id === e.target.value))} className="w-full bg-gray-700/50 p-2 rounded text-white custom-select">
                                 <option value="">Unassigned</option>
-                                {MOCK_USERS.map(u => <option key={u.id} value={u.
+                                {MOCK_USERS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-400 block">Priority</label>
+                            <select value={editedTask.priority} onChange={e => handleUpdate('priority', e.target.value as Priority)} className="w-full bg-gray-700/50 p-2 rounded text-white custom-select">
+                                {(['Low', 'Medium', 'High', 'Urgent'] as Priority[]).map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-400 block">Due Date</label>
+                            <input type="date" value={editedTask.dueDate ? new Date(editedTask.dueDate).toISOString().split('T')[0] : ''} onChange={e => handleUpdate('dueDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)} className="w-full bg-gray-700/50 p-2 rounded text-white" />
+                        </div>
+                         <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-400 block">Labels</label>
+                            <div className="flex flex-wrap gap-2">
+                                {MOCK_LABELS.map(label => {
+                                    const isSelected = editedTask.labels.some(l => l.id === label.id);
+                                    return (
+                                        <button key={label.id} onClick={() => {
+                                            const newLabels = isSelected ? editedTask.labels.filter(l => l.id !== label.id) : [...editedTask.labels, label];
+                                            handleUpdate('labels', newLabels);
+                                        }}
+                                        style={{ backgroundColor: isSelected ? label.color : `${label.color}20`, color: isSelected ? 'white' : label.color, borderColor: label.color }}
+                                        className="text-xs font-medium px-2 py-1 rounded-full border"
+                                        >
+                                            {label.text}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-4 border-t border-gray-700 flex-shrink-0 flex justify-between items-center bg-gray-800/50">
+                    <p className="text-xs text-gray-400">Created: {formatDate(editedTask.createdAt)} | Updated: {formatDate(editedTask.updatedAt)}</p>
+                    <button onClick={handleSaveChanges} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-semibold">
+                        Save & Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// --- Analytics Dashboard Component ---
+const AnalyticsDashboard: React.FC<{ tasks: EnhancedProjectTask[] }> = ({ tasks }) => {
+    const tasksByStatus = useMemo(() => {
+        const counts = new Map<ProjectStatus, number>();
+        COLUMNS.forEach(col => counts.set(col, 0));
+        tasks.forEach(task => {
+            counts.set(task.status, (counts.get(task.status) || 0) + 1);
+        });
+        return Array.from(counts.entries()).map(([name, value]) => ({ name, value }));
+    }, [tasks]);
+    
+    const workloadByAssignee = useMemo(() => {
+        const counts = new Map<string, { name: string; tasks: number; storyPoints: number }>();
+        MOCK_USERS.forEach(user => counts.set(user.id, { name: user.name, tasks: 0, storyPoints: 0 }));
+        tasks.forEach(task => {
+            if (task.assignee) {
+                const current = counts.get(task.assignee.id);
+                if (current) {
+                    current.tasks += 1;
+                    current.storyPoints += task.storyPoints || 0;
+                }
+            }
+        });
+        return Array.from(counts.values());
+    }, [tasks]);
+
+    const tasksCompletedTrend = useMemo(() => {
+        const trend = new Map<string, number>();
+        tasks.forEach(task => {
+            if (task.status === 'Done' && task.updatedAt) {
+                const date = new Date(task.updatedAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
+                trend.set(date, (trend.get(date) || 0) + 1);
+            }
+        });
+        return Array.from(trend.entries()).sort().map(([name, completed]) => ({ name, completed }));
+    }, [tasks]);
+
+
+    return (
+        <div className="p-6 bg-gray-900/50 rounded-lg h-full overflow-y-auto custom-scrollbar">
+            <h2 className="text-2xl font-bold text-white mb-6">Project Analytics</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <Card title="Task Distribution by Status" className="col-span-1 lg:col-span-2 xl:col-span-1">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                            <Pie data={tasksByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
+                                {tasksByStatus.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </Card>
+                 <Card title="Team Workload" className="col-span-1 lg:col-span-2">
+                     <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={workloadByAssignee} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                            <XAxis dataKey="name" stroke="#9ca3af" />
+                            <YAxis yAxisId="left" orientation="left" stroke="#9ca3af" />
+                            <YAxis yAxisId="right" orientation="right" stroke="#9ca3af" />
+                            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
+                            <Legend />
+                            <Bar yAxisId="left" dataKey="tasks" fill="#3b82f6" name="Tasks Assigned" />
+                            <Bar yAxisId="right" dataKey="storyPoints" fill="#f97316" name="Total Story Points" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </Card>
+                 <Card title="Tasks Completed Trend" className="col-span-1 lg:col-span-3">
+                     <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={tasksCompletedTrend} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                            <XAxis dataKey="name" stroke="#9ca3af" />
+                            <YAxis stroke="#9ca3af" />
+                            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }} />
+                            <Legend />
+                            <Line type="monotone" dataKey="completed" stroke="#10b981" strokeWidth={2} name="Tasks Completed"/>
+                        </LineChart>
+                    </ResponsiveContainer>
+                </Card>
+            </div>
+        </div>
+    )
+};
+
+
+// --- AI Task Generator Modal ---
+const AITaskGeneratorModal: React.FC<{
+    onClose: () => void;
+    dispatch: React.Dispatch<ProjectAction>;
+}> = ({ onClose, dispatch }) => {
+    const [prompt, setPrompt] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [generatedTasks, setGeneratedTasks] = useState<Omit<EnhancedProjectTask, 'id'>[]>([]);
+
+    const handleGenerateTasks = async () => {
+        if (!prompt.trim()) return;
+        setIsLoading(true);
+        setError(null);
+        setGeneratedTasks([]);
+
+        try {
+            const ai = new GoogleGenAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
+            const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const schema = Type.OBJECT({
+                tasks: Type.ARRAY(Type.OBJECT({
+                    title: Type.STRING,
+                    description: Type.STRING,
+                    priority: Type.STRING,
+                    storyPoints: Type.NUMBER
+                }))
+            });
+
+            const fullPrompt = `As a senior project manager, break down the following high-level goal into a series of actionable tasks. For each task, provide a concise title, a brief description, a priority ('Low', 'Medium', 'High', or 'Urgent'), and estimate the story points (1, 2, 3, 5, or 8).
+            
+            GOAL: "${prompt}"`;
+
+            const result = await model.generateContent({
+                contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+                generationConfig: { responseMimeType: "application/json", responseSchema: schema },
+            });
+            const response = JSON.parse(result.response.text());
+
+            if (response.tasks) {
+                const newTasks = response.tasks.map((task: any) => ({
+                    ...task,
+                    status: 'Backlog',
+                    assignee: undefined,
+                    comments: [],
+                    subtasks: [],
+                    attachments: [],
+                    labels: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    priority: ['Low', 'Medium', 'High', 'Urgent'].includes(task.priority) ? task.priority : 'Medium',
+                }));
+                setGeneratedTasks(newTasks);
+            }
+
+        } catch (err) {
+            console.error("AI task generation failed:", err);
+            setError("Failed to generate tasks. Please check your API key or try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const handleAddTasksToBacklog = () => {
+        const tasksWithIds: EnhancedProjectTask[] = generatedTasks.map((task, i) => ({
+            ...task,
+            id: `ai-task-${Date.now()}-${i}`
+        }));
+        dispatch({ type: 'ADD_TASKS', payload: tasksWithIds });
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={onClose}>
+            <div className="bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl border border-gray-700 flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2"><BrainCircuit size={20}/> AI Task Generator</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20}/></button>
+                </div>
+                <div className="p-6 space-y-4">
+                    <p className="text-gray-300 text-sm">Describe a high-level goal, and our AI assistant will break it down into manageable tasks for your project.</p>
+                    <textarea
+                        value={prompt}
+                        onChange={e => setPrompt(e.target.value)}
+                        placeholder="e.g., Launch a new marketing campaign for our Q4 product release."
+                        rows={4}
+                        className="w-full bg-gray-700/50 p-2 rounded text-gray-200 custom-scrollbar focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <button onClick={handleGenerateTasks} disabled={isLoading} className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50">
+                        {isLoading ? (
+                           <><div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div> Generating...</>
+                        ) : <><Sparkles size={16}/> Generate Tasks</>}
+                    </button>
+                    {error && <p className="text-red-400 text-sm">{error}</p>}
+                </div>
+                
+                {generatedTasks.length > 0 && (
+                    <div className="border-t border-gray-700 p-6 space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                         <h4 className="text-md font-semibold text-white">Generated Tasks Preview:</h4>
+                         {generatedTasks.map((task, index) => (
+                             <div key={index} className="p-3 bg-gray-700/50 rounded-lg">
+                                <p className="font-semibold text-white">{task.title}</p>
+                                <p className="text-sm text-gray-400">{task.description}</p>
+                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-300">
+                                    <span>Priority: <span className="font-medium">{task.priority}</span></span>
+                                    <span>Story Points: <span className="font-medium">{task.storyPoints}</span></span>
+                                </div>
+                             </div>
+                         ))}
+                    </div>
+                )}
+
+                <div className="p-4 border-t border-gray-700 flex-shrink-0 flex justify-end">
+                    <button onClick={handleAddTasksToBacklog} disabled={generatedTasks.length === 0} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                        Add {generatedTasks.length} Tasks to Backlog
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Main View Component ---
+const DemoBankProjectsView = () => {
+    const { projectsData } = useContext(DataContext);
+    const [initialState] = useState<ProjectState>({
+        tasks: [],
+        columns: new Map(),
+        filters: { searchTerm: '', assigneeIds: [], priorities: [] },
+        viewMode: 'board',
+        isTaskModalOpen: false,
+        isAIGeneratorOpen: false,
+        selectedTask: null,
+        isLoading: true,
+        isLoadingAI: false,
+    });
+    
+    const [state, dispatch] = useReducer(projectReducer, initialState);
+
+    useEffect(() => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        // Simulate API fetch
+        setTimeout(() => {
+            const enhancedTasks = generateInitialTasks(projectsData.tasks);
+            dispatch({ type: 'SET_TASKS', payload: enhancedTasks });
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }, 500);
+    }, [projectsData]);
+
+    const filteredTasks = useMemo(() => {
+        return state.tasks.filter(task => {
+            const searchTermMatch = task.title.toLowerCase().includes(state.filters.searchTerm.toLowerCase());
+            const assigneeMatch = state.filters.assigneeIds.length === 0 || (task.assignee && state.filters.assigneeIds.includes(task.assignee.id));
+            const priorityMatch = state.filters.priorities.length === 0 || state.filters.priorities.includes(task.priority);
+            return searchTermMatch && assigneeMatch && priorityMatch;
+        });
+    }, [state.tasks, state.filters]);
+
+    const filteredColumns = useMemo(() => {
+        const newColumns = new Map<ProjectStatus, EnhancedProjectTask[]>();
+        COLUMNS.forEach(status => newColumns.set(status, []));
+        filteredTasks.forEach(task => {
+            const columnTasks = newColumns.get(task.status) || [];
+            columnTasks.push(task);
+        });
+        return newColumns;
+    }, [filteredTasks]);
+
+    const handleUpdateTask = (updatedTask: EnhancedProjectTask) => {
+        dispatch({ type: 'UPDATE_TASK', payload: updatedTask });
+    };
+
+    if (state.isLoading) {
+        return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-t-transparent border-cyan-500 rounded-full animate-spin"></div></div>;
+    }
+
+    return (
+        <div className="h-full flex flex-col bg-gray-900 text-white p-4">
+            {/* Header and Toolbar */}
+            <header className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h1 className="text-2xl font-bold">Project Phoenix</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                    {/* View Switcher */}
+                    <div className="flex items-center bg-gray-800 p-1 rounded-lg">
+                        {(['board', 'analytics'] as ViewMode[]).map(mode => (
+                            <button key={mode} onClick={() => dispatch({ type: 'SET_VIEW_MODE', payload: mode })} className={`px-3 py-1 text-sm rounded-md capitalize flex items-center gap-2 ${state.viewMode === mode ? 'bg-cyan-600' : 'hover:bg-gray-700'}`}>
+                                {mode === 'board' && <Columns size={16}/>}
+                                {mode === 'analytics' && <BarChart3 size={16}/>}
+                                {mode}
+                            </button>
+                        ))}
+                    </div>
+                    {/* Search and Filters */}
+                     <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}/>
+                        <input type="text" placeholder="Search tasks..." value={state.filters.searchTerm} onChange={e => dispatch({type: 'SET_FILTER', payload: {filterType: 'searchTerm', value: e.target.value}})} className="bg-gray-800 pl-10 pr-4 py-2 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none" />
+                    </div>
+                    {/* AI and Add Task Buttons */}
+                     <button onClick={() => dispatch({type: 'OPEN_AI_GENERATOR'})} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2">
+                        <BrainCircuit size={16}/> AI Generate
+                    </button>
+                </div>
+            </header>
+
+            {/* Main Content Area */}
+            <main className="flex-grow overflow-hidden">
+                {state.viewMode === 'board' && (
+                    <ProjectBoard columns={filteredColumns} onCardClick={(task) => dispatch({ type: 'OPEN_TASK_MODAL', payload: task })} dispatch={dispatch}/>
+                )}
+                {state.viewMode === 'analytics' && (
+                    <AnalyticsDashboard tasks={filteredTasks} />
+                )}
+            </main>
+            
+            {/* Modals */}
+            {state.isTaskModalOpen && state.selectedTask && (
+                <TaskDetailsModal task={state.selectedTask} onClose={() => dispatch({ type: 'CLOSE_TASK_MODAL'})} onUpdate={handleUpdateTask} />
+            )}
+             {state.isAIGeneratorOpen && (
+                <AITaskGeneratorModal onClose={() => dispatch({ type: 'CLOSE_AI_GENERATOR'})} dispatch={dispatch} />
+            )}
+        </div>
+    );
+};
+
+export default DemoBankProjectsView;
+```
