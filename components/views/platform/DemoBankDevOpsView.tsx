@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Card from '../../Card';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, AreaChart, Area,
-    PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis
+    PieChart, Pie, Cell
 } from 'recharts';
 
-// --- Original Data (expanded) ---
+// --- Original Data (for Overview tab) ---
 const buildDurationData = [
     { name: 'Build #501', duration: 5.2, success: true }, { name: 'Build #502', duration: 5.5, success: true },
     { name: 'Build #503', duration: 4.8, success: true }, { name: 'Build #504', duration: 6.1, success: false },
@@ -57,206 +57,6 @@ const buildDurationData = [
     { name: 'Build #595', duration: 5.3, success: true }, { name: 'Build #596', duration: 5.9, success: true },
     { name: 'Build #597', duration: 4.7, success: true }, { name: 'Build #598', duration: 6.2, success: false },
     { name: 'Build #599', duration: 5.0, success: true }, { name: 'Build #600', duration: 5.5, success: true },
-    { name: 'Build #601', duration: 5.2, success: true }, { name: 'Build #602', duration: 5.5, success: true },
-    { name: 'Build #603', duration: 4.8, success: true }, { name: 'Build #604', duration: 6.1, success: false },
-    { name: 'Build #605', duration: 5.4, success: true }, { name: 'Build #606', duration: 5.8, success: true },
-    { name: 'Build #607', duration: 5.1, success: true }, { name: 'Build #608', duration: 6.3, success: false },
-    { name: 'Build #609', duration: 5.0, success: true }, { name: 'Build #610', duration: 5.7, success: true },
-    { name: 'Build #611', duration: 4.9, success: true }, { name: 'Build #612', duration: 6.0, success: true },
-    { name: 'Build #613', duration: 5.6, success: true }, { name: 'Build #614', duration: 6.5, success: false },
-    { name: 'Build #615', duration: 5.3, success: true }, { name: 'Build #616', duration: 5.9, success: true },
-    { name: 'Build #617', duration: 4.7, success: true }, { name: 'Build #618', duration: 6.2, success: false },
-    { name: 'Build #619', duration: 5.0, success: true }, { name: 'Build #620', duration: 5.5, success: true },
-    { name: 'Build #621', duration: 5.2, success: true }, { name: 'Build #622', duration: 5.5, success: true },
-    { name: 'Build #623', duration: 4.8, success: true }, { name: 'Build #624', duration: 6.1, success: false },
-    { name: 'Build #625', duration: 5.4, success: true }, { name: 'Build #626', duration: 5.8, success: true },
-    { name: 'Build #627', duration: 5.1, success: true }, { name: 'Build #628', duration: 6.3, success: false },
-    { name: 'Build #629', duration: 5.0, success: true }, { name: 'Build #630', duration: 5.7, success: true },
-    { name: 'Build #631', duration: 4.9, success: true }, { name: 'Build #632', duration: 6.0, success: true },
-    { name: 'Build #633', duration: 5.6, success: true }, { name: 'Build #634', duration: 6.5, success: false },
-    { name: 'Build #635', duration: 5.3, success: true }, { name: 'Build #636', duration: 5.9, success: true },
-    { name: 'Build #637', duration: 4.7, success: true }, { name: 'Build #638', duration: 6.2, success: false },
-    { name: 'Build #639', duration: 5.0, success: true }, { name: 'Build #640', duration: 5.5, success: true },
-    { name: 'Build #641', duration: 5.2, success: true }, { name: 'Build #642', duration: 5.5, success: true },
-    { name: 'Build #643', duration: 4.8, success: true }, { name: 'Build #644', duration: 6.1, success: false },
-    { name: 'Build #645', duration: 5.4, success: true }, { name: 'Build #646', duration: 5.8, success: true },
-    { name: 'Build #647', duration: 5.1, success: true }, { name: 'Build #648', duration: 6.3, success: false },
-    { name: 'Build #649', duration: 5.0, success: true }, { name: 'Build #650', duration: 5.7, success: true },
-    { name: 'Build #651', duration: 4.9, success: true }, { name: 'Build #652', duration: 6.0, success: true },
-    { name: 'Build #653', duration: 5.6, success: true }, { name: 'Build #654', duration: 6.5, success: false },
-    { name: 'Build #655', duration: 5.3, success: true }, { name: 'Build #656', duration: 5.9, success: true },
-    { name: 'Build #657', duration: 4.7, success: true }, { name: 'Build #658', duration: 6.2, success: false },
-    { name: 'Build #659', duration: 5.0, success: true }, { name: 'Build #660', duration: 5.5, success: true },
-    { name: 'Build #661', duration: 5.2, success: true }, { name: 'Build #662', duration: 5.5, success: true },
-    { name: 'Build #663', duration: 4.8, success: true }, { name: 'Build #664', duration: 6.1, success: false },
-    { name: 'Build #665', duration: 5.4, success: true }, { name: 'Build #666', duration: 5.8, success: true },
-    { name: 'Build #667', duration: 5.1, success: true }, { name: 'Build #668', duration: 6.3, success: false },
-    { name: 'Build #669', duration: 5.0, success: true }, { name: 'Build #670', duration: 5.7, success: true },
-    { name: 'Build #671', duration: 4.9, success: true }, { name: 'Build #672', duration: 6.0, success: true },
-    { name: 'Build #673', duration: 5.6, success: true }, { name: 'Build #674', duration: 6.5, success: false },
-    { name: 'Build #675', duration: 5.3, success: true }, { name: 'Build #676', duration: 5.9, success: true },
-    { name: 'Build #677', duration: 4.7, success: true }, { name: 'Build #678', duration: 6.2, success: false },
-    { name: 'Build #679', duration: 5.0, success: true }, { name: 'Build #680', duration: 5.5, success: true },
-    { name: 'Build #681', duration: 5.2, success: true }, { name: 'Build #682', duration: 5.5, success: true },
-    { name: 'Build #683', duration: 4.8, success: true }, { name: 'Build #684', duration: 6.1, success: false },
-    { name: 'Build #685', duration: 5.4, success: true }, { name: 'Build #686', duration: 5.8, success: true },
-    { name: 'Build #687', duration: 5.1, success: true }, { name: 'Build #688', duration: 6.3, success: false },
-    { name: 'Build #689', duration: 5.0, success: true }, { name: 'Build #690', duration: 5.7, success: true },
-    { name: 'Build #691', duration: 4.9, success: true }, { name: 'Build #692', duration: 6.0, success: true },
-    { name: 'Build #693', duration: 5.6, success: true }, { name: 'Build #694', duration: 6.5, success: false },
-    { name: 'Build #695', duration: 5.3, success: true }, { name: 'Build #696', duration: 5.9, success: true },
-    { name: 'Build #697', duration: 4.7, success: true }, { name: 'Build #698', duration: 6.2, success: false },
-    { name: 'Build #699', duration: 5.0, success: true }, { name: 'Build #700', duration: 5.5, success: true },
-    { name: 'Build #701', duration: 5.2, success: true }, { name: 'Build #702', duration: 5.5, success: true },
-    { name: 'Build #703', duration: 4.8, success: true }, { name: 'Build #704', duration: 6.1, success: false },
-    { name: 'Build #705', duration: 5.4, success: true }, { name: 'Build #706', duration: 5.8, success: true },
-    { name: 'Build #707', duration: 5.1, success: true }, { name: 'Build #708', duration: 6.3, success: false },
-    { name: 'Build #709', duration: 5.0, success: true }, { name: 'Build #710', duration: 5.7, success: true },
-    { name: 'Build #711', duration: 4.9, success: true }, { name: 'Build #712', duration: 6.0, success: true },
-    { name: 'Build #713', duration: 5.6, success: true }, { name: 'Build #714', duration: 6.5, success: false },
-    { name: 'Build #715', duration: 5.3, success: true }, { name: 'Build #716', duration: 5.9, success: true },
-    { name: 'Build #717', duration: 4.7, success: true }, { name: 'Build #718', duration: 6.2, success: false },
-    { name: 'Build #719', duration: 5.0, success: true }, { name: 'Build #720', duration: 5.5, success: true },
-    { name: 'Build #721', duration: 5.2, success: true }, { name: 'Build #722', duration: 5.5, success: true },
-    { name: 'Build #723', duration: 4.8, success: true }, { name: 'Build #724', duration: 6.1, success: false },
-    { name: 'Build #725', duration: 5.4, success: true }, { name: 'Build #726', duration: 5.8, success: true },
-    { name: 'Build #727', duration: 5.1, success: true }, { name: 'Build #728', duration: 6.3, success: false },
-    { name: 'Build #729', duration: 5.0, success: true }, { name: 'Build #730', duration: 5.7, success: true },
-    { name: 'Build #731', duration: 4.9, success: true }, { name: 'Build #732', duration: 6.0, success: true },
-    { name: 'Build #733', duration: 5.6, success: true }, { name: 'Build #734', duration: 6.5, success: false },
-    { name: 'Build #735', duration: 5.3, success: true }, { name: 'Build #736', duration: 5.9, success: true },
-    { name: 'Build #737', duration: 4.7, success: true }, { name: 'Build #738', duration: 6.2, success: false },
-    { name: 'Build #739', duration: 5.0, success: true }, { name: 'Build #740', duration: 5.5, success: true },
-    { name: 'Build #741', duration: 5.2, success: true }, { name: 'Build #742', duration: 5.5, success: true },
-    { name: 'Build #743', duration: 4.8, success: true }, { name: 'Build #744', duration: 6.1, success: false },
-    { name: 'Build #745', duration: 5.4, success: true }, { name: 'Build #746', duration: 5.8, success: true },
-    { name: 'Build #747', duration: 5.1, success: true }, { name: 'Build #748', duration: 6.3, success: false },
-    { name: 'Build #749', duration: 5.0, success: true }, { name: 'Build #750', duration: 5.7, success: true },
-    { name: 'Build #751', duration: 4.9, success: true }, { name: 'Build #752', duration: 6.0, success: true },
-    { name: 'Build #753', duration: 5.6, success: true }, { name: 'Build #754', duration: 6.5, success: false },
-    { name: 'Build #755', duration: 5.3, success: true }, { name: 'Build #756', duration: 5.9, success: true },
-    { name: 'Build #757', duration: 4.7, success: true }, { name: 'Build #758', duration: 6.2, success: false },
-    { name: 'Build #759', duration: 5.0, success: true }, { name: 'Build #760', duration: 5.5, success: true },
-    { name: 'Build #761', duration: 5.2, success: true }, { name: 'Build #762', duration: 5.5, success: true },
-    { name: 'Build #763', duration: 4.8, success: true }, { name: 'Build #764', duration: 6.1, success: false },
-    { name: 'Build #765', duration: 5.4, success: true }, { name: 'Build #766', duration: 5.8, success: true },
-    { name: 'Build #767', duration: 5.1, success: true }, { name: 'Build #768', duration: 6.3, success: false },
-    { name: 'Build #769', duration: 5.0, success: true }, { name: 'Build #770', duration: 5.7, success: true },
-    { name: 'Build #771', duration: 4.9, success: true }, { name: 'Build #772', duration: 6.0, success: true },
-    { name: 'Build #773', duration: 5.6, success: true }, { name: 'Build #774', duration: 6.5, success: false },
-    { name: 'Build #775', duration: 5.3, success: true }, { name: 'Build #776', duration: 5.9, success: true },
-    { name: 'Build #777', duration: 4.7, success: true }, { name: 'Build #778', duration: 6.2, success: false },
-    { name: 'Build #779', duration: 5.0, success: true }, { name: 'Build #780', duration: 5.5, success: true },
-    { name: 'Build #781', duration: 5.2, success: true }, { name: 'Build #782', duration: 5.5, success: true },
-    { name: 'Build #783', duration: 4.8, success: true }, { name: 'Build #784', duration: 6.1, success: false },
-    { name: 'Build #785', duration: 5.4, success: true }, { name: 'Build #786', duration: 5.8, success: true },
-    { name: 'Build #787', duration: 5.1, success: true }, { name: 'Build #788', duration: 6.3, success: false },
-    { name: 'Build #789', duration: 5.0, success: true }, { name: 'Build #790', duration: 5.7, success: true },
-    { name: 'Build #791', duration: 4.9, success: true }, { name: 'Build #792', duration: 6.0, success: true },
-    { name: 'Build #793', duration: 5.6, success: true }, { name: 'Build #794', duration: 6.5, success: false },
-    { name: 'Build #795', duration: 5.3, success: true }, { name: 'Build #796', duration: 5.9, success: true },
-    { name: 'Build #797', duration: 4.7, success: true }, { name: 'Build #798', duration: 6.2, success: false },
-    { name: 'Build #799', duration: 5.0, success: true }, { name: 'Build #800', duration: 5.5, success: true },
-    { name: 'Build #801', duration: 5.2, success: true }, { name: 'Build #802', duration: 5.5, success: true },
-    { name: 'Build #803', duration: 4.8, success: true }, { name: 'Build #804', duration: 6.1, success: false },
-    { name: 'Build #805', duration: 5.4, success: true }, { name: 'Build #806', duration: 5.8, success: true },
-    { name: 'Build #807', duration: 5.1, success: true }, { name: 'Build #808', duration: 6.3, success: false },
-    { name: 'Build #809', duration: 5.0, success: true }, { name: 'Build #810', duration: 5.7, success: true },
-    { name: 'Build #811', duration: 4.9, success: true }, { name: 'Build #812', duration: 6.0, success: true },
-    { name: 'Build #813', duration: 5.6, success: true }, { name: 'Build #814', duration: 6.5, success: false },
-    { name: 'Build #815', duration: 5.3, success: true }, { name: 'Build #816', duration: 5.9, success: true },
-    { name: 'Build #817', duration: 4.7, success: true }, { name: 'Build #818', duration: 6.2, success: false },
-    { name: 'Build #819', duration: 5.0, success: true }, { name: 'Build #820', duration: 5.5, success: true },
-    { name: 'Build #821', duration: 5.2, success: true }, { name: 'Build #822', duration: 5.5, success: true },
-    { name: 'Build #823', duration: 4.8, success: true }, { name: 'Build #824', duration: 6.1, success: false },
-    { name: 'Build #825', duration: 5.4, success: true }, { name: 'Build #826', duration: 5.8, success: true },
-    { name: 'Build #827', duration: 5.1, success: true }, { name: 'Build #828', duration: 6.3, success: false },
-    { name: 'Build #829', duration: 5.0, success: true }, { name: 'Build #830', duration: 5.7, success: true },
-    { name: 'Build #831', duration: 4.9, success: true }, { name: 'Build #832', duration: 6.0, success: true },
-    { name: 'Build #833', duration: 5.6, success: true }, { name: 'Build #834', duration: 6.5, success: false },
-    { name: 'Build #835', duration: 5.3, success: true }, { name: 'Build #836', duration: 5.9, success: true },
-    { name: 'Build #837', duration: 4.7, success: true }, { name: 'Build #838', duration: 6.2, success: false },
-    { name: 'Build #839', duration: 5.0, success: true }, { name: 'Build #840', duration: 5.5, success: true },
-    { name: 'Build #841', duration: 5.2, success: true }, { name: 'Build #842', duration: 5.5, success: true },
-    { name: 'Build #843', duration: 4.8, success: true }, { name: 'Build #844', duration: 6.1, success: false },
-    { name: 'Build #845', duration: 5.4, success: true }, { name: 'Build #846', duration: 5.8, success: true },
-    { name: 'Build #847', duration: 5.1, success: true }, { name: 'Build #848', duration: 6.3, success: false },
-    { name: 'Build #849', duration: 5.0, success: true }, { name: 'Build #850', duration: 5.7, success: true },
-    { name: 'Build #851', duration: 4.9, success: true }, { name: 'Build #852', duration: 6.0, success: true },
-    { name: 'Build #853', duration: 5.6, success: true }, { name: 'Build #854', duration: 6.5, success: false },
-    { name: 'Build #855', duration: 5.3, success: true }, { name: 'Build #856', duration: 5.9, success: true },
-    { name: 'Build #857', duration: 4.7, success: true }, { name: 'Build #858', duration: 6.2, success: false },
-    { name: 'Build #859', duration: 5.0, success: true }, { name: 'Build #860', duration: 5.5, success: true },
-    { name: 'Build #861', duration: 5.2, success: true }, { name: 'Build #862', duration: 5.5, success: true },
-    { name: 'Build #863', duration: 4.8, success: true }, { name: 'Build #864', duration: 6.1, success: false },
-    { name: 'Build #865', duration: 5.4, success: true }, { name: 'Build #866', duration: 5.8, success: true },
-    { name: 'Build #867', duration: 5.1, success: true }, { name: 'Build #868', duration: 6.3, success: false },
-    { name: 'Build #869', duration: 5.0, success: true }, { name: 'Build #870', duration: 5.7, success: true },
-    { name: 'Build #871', duration: 4.9, success: true }, { name: 'Build #872', duration: 6.0, success: true },
-    { name: 'Build #873', duration: 5.6, success: true }, { name: 'Build #874', duration: 6.5, success: false },
-    { name: 'Build #875', duration: 5.3, success: true }, { name: 'Build #876', duration: 5.9, success: true },
-    { name: 'Build #877', duration: 4.7, success: true }, { name: 'Build #878', duration: 6.2, success: false },
-    { name: 'Build #879', duration: 5.0, success: true }, { name: 'Build #880', duration: 5.5, success: true },
-    { name: 'Build #881', duration: 5.2, success: true }, { name: 'Build #882', duration: 5.5, success: true },
-    { name: 'Build #883', duration: 4.8, success: true }, { name: 'Build #884', duration: 6.1, success: false },
-    { name: 'Build #885', duration: 5.4, success: true }, { name: 'Build #886', duration: 5.8, success: true },
-    { name: 'Build #887', duration: 5.1, success: true }, { name: 'Build #888', duration: 6.3, success: false },
-    { name: 'Build #889', duration: 5.0, success: true }, { name: 'Build #890', duration: 5.7, success: true },
-    { name: 'Build #891', duration: 4.9, success: true }, { name: 'Build #892', duration: 6.0, success: true },
-    { name: 'Build #893', duration: 5.6, success: true }, { name: 'Build #894', duration: 6.5, success: false },
-    { name: 'Build #895', duration: 5.3, success: true }, { name: 'Build #896', duration: 5.9, success: true },
-    { name: 'Build #897', duration: 4.7, success: true }, { name: 'Build #898', duration: 6.2, success: false },
-    { name: 'Build #899', duration: 5.0, success: true }, { name: 'Build #900', duration: 5.5, success: true },
-    { name: 'Build #901', duration: 5.2, success: true }, { name: 'Build #902', duration: 5.5, success: true },
-    { name: 'Build #903', duration: 4.8, success: true }, { name: 'Build #904', duration: 6.1, success: false },
-    { name: 'Build #905', duration: 5.4, success: true }, { name: 'Build #906', duration: 5.8, success: true },
-    { name: 'Build #907', duration: 5.1, success: true }, { name: 'Build #908', duration: 6.3, success: false },
-    { name: 'Build #909', duration: 5.0, success: true }, { name: 'Build #910', duration: 5.7, success: true },
-    { name: 'Build #911', duration: 4.9, success: true }, { name: 'Build #912', duration: 6.0, success: true },
-    { name: 'Build #913', duration: 5.6, success: true }, { name: 'Build #914', duration: 6.5, success: false },
-    { name: 'Build #915', duration: 5.3, success: true }, { name: 'Build #916', duration: 5.9, success: true },
-    { name: 'Build #917', duration: 4.7, success: true }, { name: 'Build #918', duration: 6.2, success: false },
-    { name: 'Build #919', duration: 5.0, success: true }, { name: 'Build #920', duration: 5.5, success: true },
-    { name: 'Build #921', duration: 5.2, success: true }, { name: 'Build #922', duration: 5.5, success: true },
-    { name: 'Build #923', duration: 4.8, success: true }, { name: 'Build #924', duration: 6.1, success: false },
-    { name: 'Build #925', duration: 5.4, success: true }, { name: 'Build #926', duration: 5.8, success: true },
-    { name: 'Build #927', duration: 5.1, success: true }, { name: 'Build #928', duration: 6.3, success: false },
-    { name: 'Build #929', duration: 5.0, success: true }, { name: 'Build #930', duration: 5.7, success: true },
-    { name: 'Build #931', duration: 4.9, success: true }, { name: 'Build #932', duration: 6.0, success: true },
-    { name: 'Build #933', duration: 5.6, success: true }, { name: 'Build #934', duration: 6.5, success: false },
-    { name: 'Build #935', duration: 5.3, success: true }, { name: 'Build #936', duration: 5.9, success: true },
-    { name: 'Build #937', duration: 4.7, success: true }, { name: 'Build #938', duration: 6.2, success: false },
-    { name: 'Build #939', duration: 5.0, success: true }, { name: 'Build #940', duration: 5.5, success: true },
-    { name: 'Build #941', duration: 5.2, success: true }, { name: 'Build #942', duration: 5.5, success: true },
-    { name: 'Build #943', duration: 4.8, success: true }, { name: 'Build #944', duration: 6.1, success: false },
-    { name: 'Build #945', duration: 5.4, success: true }, { name: 'Build #946', duration: 5.8, success: true },
-    { name: 'Build #947', duration: 5.1, success: true }, { name: 'Build #948', duration: 6.3, success: false },
-    { name: 'Build #949', duration: 5.0, success: true }, { name: 'Build #950', duration: 5.7, success: true },
-    { name: 'Build #951', duration: 4.9, success: true }, { name: 'Build #952', duration: 6.0, success: true },
-    { name: 'Build #953', duration: 5.6, success: true }, { name: 'Build #954', duration: 6.5, success: false },
-    { name: 'Build #955', duration: 5.3, success: true }, { name: 'Build #956', duration: 5.9, success: true },
-    { name: 'Build #957', duration: 4.7, success: true }, { name: 'Build #958', duration: 6.2, success: false },
-    { name: 'Build #959', duration: 5.0, success: true }, { name: 'Build #960', duration: 5.5, success: true },
-    { name: 'Build #961', duration: 5.2, success: true }, { name: 'Build #962', duration: 5.5, success: true },
-    { name: 'Build #963', duration: 4.8, success: true }, { name: 'Build #964', duration: 6.1, success: false },
-    { name: 'Build #965', duration: 5.4, success: true }, { name: 'Build #966', duration: 5.8, success: true },
-    { name: 'Build #967', duration: 5.1, success: true }, { name: 'Build #968', duration: 6.3, success: false },
-    { name: 'Build #969', duration: 5.0, success: true }, { name: 'Build #970', duration: 5.7, success: true },
-    { name: 'Build #971', duration: 4.9, success: true }, { name: 'Build #972', duration: 6.0, success: true },
-    { name: 'Build #973', duration: 5.6, success: true }, { name: 'Build #974', duration: 6.5, success: false },
-    { name: 'Build #975', duration: 5.3, success: true }, { name: 'Build #976', duration: 5.9, success: true },
-    { name: 'Build #977', duration: 4.7, success: true }, { name: 'Build #978', duration: 6.2, success: false },
-    { name: 'Build #979', duration: 5.0, success: true }, { name: 'Build #980', duration: 5.5, success: true },
-    { name: 'Build #981', duration: 5.2, success: true }, { name: 'Build #982', duration: 5.5, success: true },
-    { name: 'Build #983', duration: 4.8, success: true }, { name: 'Build #984', duration: 6.1, success: false },
-    { name: 'Build #985', duration: 5.4, success: true }, { name: 'Build #986', duration: 5.8, success: true },
-    { name: 'Build #987', duration: 5.1, success: true }, { name: 'Build #988', duration: 6.3, success: false },
-    { name: 'Build #989', duration: 5.0, success: true }, { name: 'Build #990', duration: 5.7, success: true },
-    { name: 'Build #991', duration: 4.9, success: true }, { name: 'Build #992', duration: 6.0, success: true },
-    { name: 'Build #993', duration: 5.6, success: true }, { name: 'Build #994', duration: 6.5, success: false },
-    { name: 'Build #995', duration: 5.3, success: true }, { name: 'Build #996', duration: 5.9, success: true },
-    { name: 'Build #997', duration: 4.7, success: true }, { name: 'Build #998', duration: 6.2, success: false },
-    { name: 'Build #999', duration: 5.0, success: true }, { name: 'Build #1000', duration: 5.5, success: true },
 ];
 
 const deploymentFrequencyData = [
@@ -273,60 +73,24 @@ const recentDeployments = [
     { id: 4, service: 'AI Advisor API', version: 'v1.8.2', status: 'Success', date: '2d ago', environment: 'Production', author: 'diana.p' },
     { id: 5, service: 'User Service', version: 'v3.0.5', status: 'Success', date: '3d ago', environment: 'Production', author: 'eve.w' },
     { id: 6, service: 'Reporting Service', version: 'v0.9.1', status: 'Pending', date: '4d ago', environment: 'Staging', author: 'frank.z' },
-    { id: 7, service: 'Fraud Detection', version: 'v1.1.2', status: 'Success', date: '5d ago', environment: 'Production', author: 'grace.l' },
-    { id: 8, service: 'Notifications', version: 'v1.0.0', status: 'Failed', date: '6d ago', environment: 'Staging', author: 'harry.k' },
-    { id: 9, service: 'Auth Service', version: 'v1.5.0', status: 'Success', date: '7d ago', environment: 'Production', author: 'isabel.t' },
-    { id: 10, service: 'Payment Gateway', version: 'v2.2.0', status: 'Success', date: '8d ago', environment: 'Production', author: 'john.j' },
-    { id: 11, service: 'Marketing Site', version: 'v1.0.0', status: 'Success', date: '9d ago', environment: 'Production', author: 'karen.b' },
-    { id: 12, service: 'KYC Service', version: 'v1.0.0', status: 'Success', date: '10d ago', environment: 'Staging', author: 'liam.g' },
-    { id: 13, service: 'Support Portal', version: 'v1.1.0', status: 'Success', date: '11d ago', environment: 'Production', author: 'mia.r' },
-    { id: 14, service: 'Data Analytics', version: 'v1.0.0', status: 'Success', date: '12d ago', environment: 'Production', author: 'noah.s' },
-    { id: 15, service: 'Mobile App API', version: 'v1.0.0', status: 'Failed', date: '13d ago', environment: 'Production', author: 'olivia.m' },
-    { id: 16, service: 'Account Service', version: 'v1.0.0', status: 'Success', date: '14d ago', environment: 'Production', author: 'peter.w' },
-    { id: 17, service: 'Investment API', version: 'v1.0.0', status: 'Success', date: '15d ago', environment: 'Production', author: 'quinn.a' },
-    { id: 18, service: 'Loan Service', version: 'v1.0.0', status: 'Success', date: '16d ago', environment: 'Staging', author: 'rachel.b' },
-    { id: 19, service: 'Card Service', version: 'v1.0.0', status: 'Success', date: '17d ago', environment: 'Production', author: 'sam.c' },
-    { id: 20, service: 'ATM API', version: 'v1.0.0', status: 'Success', date: '18d ago', environment: 'Production', author: 'tina.d' },
-    { id: 21, service: 'Merchant API', version: 'v1.0.0', status: 'Success', date: '19d ago', environment: 'Production', author: 'ursula.e' },
-    { id: 22, service: 'Compliance API', version: 'v1.0.0', status: 'Success', date: '20d ago', environment: 'Production', author: 'victor.f' },
-    { id: 23, service: 'CRM Integration', version: 'v1.0.0', status: 'Failed', date: '21d ago', environment: 'Staging', author: 'wendy.g' },
-    { id: 24, service: 'Onboarding Service', version: 'v1.0.0', status: 'Success', date: '22d ago', environment: 'Production', author: 'xavier.h' },
-    { id: 25, service: 'Risk Engine', version: 'v1.0.0', status: 'Success', date: '23d ago', environment: 'Production', author: 'yara.i' },
-    { id: 26, service: 'Fraud Scoring', version: 'v1.0.0', status: 'Success', date: '24d ago', environment: 'Production', author: 'zane.j' },
-    { id: 27, service: 'FX Service', version: 'v1.0.0', status: 'Success', date: '25d ago', environment: 'Staging', author: 'anna.k' },
-    { id: 28, service: 'Settlement Service', version: 'v1.0.0', status: 'Success', date: '26d ago', environment: 'Production', author: 'ben.l' },
-    { id: 29, service: 'Trade Engine', version: 'v1.0.0', status: 'Success', date: '27d ago', environment: 'Production', author: 'cindy.m' },
-    { id: 30, service: 'Wealth Management', version: 'v1.0.0', status: 'Success', date: '28d ago', environment: 'Production', author: 'david.n' },
-    { id: 31, service: 'Pension API', version: 'v1.0.0', status: 'Success', date: '29d ago', environment: 'Staging', author: 'elisa.o' },
-    { id: 32, service: 'Mortgage API', version: 'v1.0.0', status: 'Success', date: '30d ago', environment: 'Production', author: 'fred.p' },
-    { id: 33, service: 'Insurance API', version: 'v1.0.0', status: 'Success', date: '31d ago', environment: 'Production', author: 'gaby.q' },
-    { id: 34, service: 'Blockchain Link', version: 'v1.0.0', status: 'Success', date: '32d ago', environment: 'Production', author: 'hugo.r' },
-    { id: 35, service: 'Cyber Security', version: 'v1.0.0', status: 'Success', date: '33d ago', environment: 'Staging', author: 'irene.s' },
-    { id: 36, service: 'Quantum Cryptography', version: 'v1.0.0', status: 'Success', date: '34d ago', environment: 'Production', author: 'jake.t' },
-    { id: 37, service: 'Cloud Cost Optimizer', version: 'v1.0.0', status: 'Success', date: '35d ago', environment: 'Production', author: 'katie.u' },
-    { id: 38, service: 'DevOps Automation', version: 'v1.0.0', status: 'Success', date: '36d ago', environment: 'Production', author: 'leo.v' },
-    { id: 39, service: 'Observability Hub', version: 'v1.0.0', status: 'Success', date: '37d ago', environment: 'Staging', author: 'maya.w' },
-    { id: 40, service: 'Feature Flag Manager', version: 'v1.0.0', status: 'Success', date: '38d ago', environment: 'Production', author: 'nathan.x' },
-    { id: 41, service: 'Code Quality Scanner', version: 'v1.0.0', status: 'Success', date: '39d ago', environment: 'Production', author: 'oliver.y' },
-    { id: 42, service: 'AI Anomaly Detector', version: 'v1.0.0', status: 'Success', date: '40d ago', environment: 'Production', author: 'paula.z' },
 ];
 
 // --- New Icons ---
-export const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-export const XCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-export const InformationCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-export const ExclamationCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
-export const CogIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
-export const BugAntIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-export const CloudIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>;
-export const SecurityShieldIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.276A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.78 12.02 12.02 0 00-3.047 9.141 12.02 12.02 0 0013.972 6.096c4.015-.493 5.792-3.003 5.792-3.003s2.964-1.547 3.992-4.502l.648-1.944z" /></svg>;
-export const ServerStackIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7L4 7m16 0l-2.01-2.01M4 7l2.01-2.01m0 0l-2.01-2.01m2.01 2.01H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" /></svg>;
-export const ChartBarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2a2 2 0 01-2-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
-export const ClockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-export const RocketLaunchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2.25l-2.25 2.25M12 2.25l2.25 2.25M12 2.25V4.5m-2.25 2.25L9 9m2.25-2.25L12 9m-2.25-2.25H9m5.25 2.25L15 9m-2.25-2.25L12 9m2.25-2.25H15m0 0l-2.25-2.25M12 21.75V19.5m0-2.25V15m0-2.25V12.75m0-2.25V10.5M4.5 9.75H2.25M2.25 9.75L4.5 7.5M4.5 9.75V12.75M19.5 9.75H21.75M21.75 9.75L19.5 7.5M19.5 9.75V12.75M9.75 4.5V2.25M9.75 4.5H7.5M9.75 4.5L12 2.25M14.25 4.5V2.25M14.25 4.5H16.5M14.25 4.5L12 2.25" /></svg>;
-export const UserGroupIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h2a2 2 0 002-2V7a2 2 0 00-2-2h-2v4L15 9.5 13 5H9L7 9.5 5 9V5H3a2 2 0 00-2 2v11a2 2 0 002 2h2v-4h4v4h2v-4h4v4z" /></svg>;
-export const FolderOpenIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>;
-export const DocumentTextIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
+export const CheckCircleIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+export const XCircleIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+export const InformationCircleIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+export const ExclamationCircleIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+export const CogIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+export const BugAntIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M15.707 4.293a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L9 8.586l4.293-4.293a1 1 0 011.414 0zm-11.414 2.828a1 1 0 011.414 0L5 8.586l-1.293-1.293a1 1 0 010-1.414zM10 2a8 8 0 100 16 8 8 0 000-16zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>;
+export const CloudIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>;
+export const SecurityShieldIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.276A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.78 12.02 12.02 0 00-3.047 9.141 12.02 12.02 0 0013.972 6.096c4.015-.493 5.792-3.003 5.792-3.003s2.964-1.547 3.992-4.502l.648-1.944z" /></svg>;
+export const ServerStackIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>;
+export const ChartBarIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2a2 2 0 01-2-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
+export const ClockIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+export const RocketLaunchIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2.25l-2.25 2.25M12 2.25l2.25 2.25M12 2.25V4.5m-2.25 2.25L9 9m2.25-2.25L12 9m-2.25-2.25H9m5.25 2.25L15 9m-2.25-2.25L12 9m2.25-2.25H15m0 0l-2.25-2.25M12 21.75V19.5m0-2.25V15m0-2.25V12.75m0-2.25V10.5M4.5 9.75H2.25M2.25 9.75L4.5 7.5M4.5 9.75V12.75M19.5 9.75H21.75M21.75 9.75L19.5 7.5M19.5 9.75V12.75M9.75 4.5V2.25M9.75 4.5H7.5M9.75 4.5L12 2.25M14.25 4.5V2.25M14.25 4.5H16.5M14.25 4.5L12 2.25" /></svg>;
+export const UserGroupIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h2a2 2 0 002-2V7a2 2 0 00-2-2h-2v4L15 9.5 13 5H9L7 9.5 5 9V5H3a2 2 0 00-2 2v11a2 2 0 002 2h2v-4h4v4h2v-4h4v4z" /></svg>;
+export const FolderOpenIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>;
+export const DocumentTextIcon: React.FC<{ className?: string }> = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
 
 // --- Data Interfaces ---
 export interface Incident {
@@ -694,22 +458,22 @@ export const getStatusIcon = (status: string) => {
         case 'Fixed':
         case 'Healthy':
         case 'Open':
-            return <CheckCircleIcon />;
+            return <CheckCircleIcon className="text-green-400" />;
         case 'Failed':
         case 'Outage':
         case 'Critical':
         case 'High':
         case 'Offline':
-            return <XCircleIcon />;
+            return <XCircleIcon className="text-red-400" />;
         case 'Pending':
         case 'Investigating':
         case 'Degraded':
         case 'Medium':
-            return <ExclamationCircleIcon />;
+            return <ExclamationCircleIcon className="text-yellow-400" />;
         case 'Low':
         case 'Closed':
         case 'Maintenance':
-            return <InformationCircleIcon />;
+            return <InformationCircleIcon className="text-blue-400" />;
         default:
             return null;
     }
@@ -1046,7 +810,6 @@ export const IncidentManagementDashboard: React.FC = () => {
                         <p><strong>Description:</strong> {selectedIncident.description}</p>
                         <p><strong>Assigned To:</strong> {selectedIncident.assignedTo}</p>
                         <p><strong>Affected Users:</strong> {selectedIncident.affectedUsers.toLocaleString()}</p>
-                        {/* More details could go here, e.g., timeline, runbook links */}
                     </div>
                 )}
             </DetailModal>
@@ -1927,14 +1690,14 @@ const DemoBankDevOpsView: React.FC = () => {
         : 'N/A';
 
     const tabs = [
-        { name: DashboardTab.Overview, icon: <ChartBarIcon className="h-5 w-5 mr-2" /> },
-        { name: DashboardTab.Incidents, icon: <BugAntIcon className="h-5 w-5 mr-2" /> },
-        { name: DashboardTab.Monitoring, icon: <ChartBarIcon className="h-5 w-5 mr-2" /> }, // Reusing icon for now
-        { name: DashboardTab.Security, icon: <SecurityShieldIcon className="h-5 w-5 mr-2" /> },
-        { name: DashboardTab.Cost, icon: <CloudIcon className="h-5 w-5 mr-2" /> },
-        { name: DashboardTab.Environments, icon: <ServerStackIcon className="h-5 w-5 mr-2" /> },
-        { name: DashboardTab.Productivity, icon: <UserGroupIcon className="h-5 w-5 mr-2" /> },
-        { name: DashboardTab.Audit, icon: <DocumentTextIcon className="h-5 w-5 mr-2" /> },
+        { name: DashboardTab.Overview, icon: <ChartBarIcon /> },
+        { name: DashboardTab.Incidents, icon: <BugAntIcon /> },
+        { name: DashboardTab.Monitoring, icon: <ChartBarIcon /> },
+        { name: DashboardTab.Security, icon: <SecurityShieldIcon /> },
+        { name: DashboardTab.Cost, icon: <CloudIcon /> },
+        { name: DashboardTab.Environments, icon: <ServerStackIcon /> },
+        { name: DashboardTab.Productivity, icon: <UserGroupIcon /> },
+        { name: DashboardTab.Audit, icon: <DocumentTextIcon /> },
     ];
 
     const renderContent = () => {
@@ -1943,10 +1706,10 @@ const DemoBankDevOpsView: React.FC = () => {
                 return (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <MetricCard title="Total Deployments (YTD)" value={totalDeployments} description="Across all services" />
-                            <MetricCard title="Change Failure Rate" value={`${changeFailureRate.toFixed(1)}%`} description="Percentage of failed deployments" className={changeFailureRate > 5 ? 'bg-red-900/20' : ''} />
-                            <MetricCard title="Avg. Build Duration" value={`${avgBuildDuration.toFixed(1)}m`} description="Mean pipeline execution time" className={avgBuildDuration > 6 ? 'bg-yellow-900/20' : ''} />
-                            <MetricCard title="Mean Time to Restore" value={meanTimeToRestore} description="Time to recover from incidents" className={meanTimeToRestore !== 'N/A' && parseFloat(meanTimeToRestore) > 0.5 ? 'bg-red-900/20' : ''} />
+                            <MetricCard title="Total Deployments (YTD)" value={totalDeployments} description="Across all services" icon={<RocketLaunchIcon className="h-7 w-7 text-blue-500" />} />
+                            <MetricCard title="Change Failure Rate" value={`${changeFailureRate.toFixed(1)}%`} description="Percentage of failed deployments" className={changeFailureRate > 5 ? 'bg-red-900/20' : ''} icon={<XCircleIcon className="h-7 w-7 text-red-500" />} />
+                            <MetricCard title="Avg. Build Duration" value={`${avgBuildDuration.toFixed(1)}m`} description="Mean pipeline execution time" className={avgBuildDuration > 6 ? 'bg-yellow-900/20' : ''} icon={<ClockIcon className="h-7 w-7 text-yellow-500" />} />
+                            <MetricCard title="Mean Time to Restore" value={meanTimeToRestore} description="Time to recover from incidents" className={meanTimeToRestore !== 'N/A' && parseFloat(meanTimeToRestore) > 0.5 ? 'bg-red-900/20' : ''} icon={<ClockIcon className="h-7 w-7 text-red-500" />} />
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2026,7 +1789,7 @@ const DemoBankDevOpsView: React.FC = () => {
             <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank DevOps Platform</h2>
 
             <div className="border-b border-gray-700">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
                     {tabs.map((tab) => (
                         <button
                             key={tab.name}
@@ -2037,13 +1800,13 @@ const DemoBankDevOpsView: React.FC = () => {
                                     : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-500'
                             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                         >
-                            {tab.icon} {tab.name}
+                            <span className="mr-2">{tab.icon}</span> {tab.name}
                         </button>
                     ))}
                 </nav>
             </div>
 
-            {renderContent()}
+            <div className="mt-6">{renderContent()}</div>
         </div>
     );
 };
