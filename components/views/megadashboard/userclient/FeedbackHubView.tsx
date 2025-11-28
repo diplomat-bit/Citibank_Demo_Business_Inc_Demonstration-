@@ -9,6 +9,7 @@ import { GoogleGenAI } from "@google/genai";
 export type FeedbackStatus = 'New' | 'Under Review' | 'Planned' | 'Shipped' | 'Archived' | 'Rejected';
 export type FeedbackPriority = 'Low' | 'Medium' | 'High' | 'Critical';
 export type UserRole = 'Admin' | 'Moderator' | 'Member' | 'Guest';
+export type IntegrationType = 'Jira' | 'Slack' | 'GitHub';
 
 export interface User {
     id: string;
@@ -46,7 +47,7 @@ export interface Attachment {
     thumbnailUrl?: string;
 }
 
-export type ActivityType = 'created' | 'status_changed' | 'assigned' | 'priority_changed' | 'commented' | 'voted' | 'tag_added' | 'tag_removed' | 'attachment_added' | 'edited';
+export type ActivityType = 'created' | 'status_changed' | 'assigned' | 'priority_changed' | 'commented' | 'voted' | 'tag_added' | 'tag_removed' | 'attachment_added' | 'edited' | 'integration_linked';
 
 export interface ActivityLogEntry {
     id: string;
@@ -72,6 +73,16 @@ export interface RoadmapItem {
     keyMetrics?: string[]; // e.g., "Increased user engagement by 15%"
 }
 
+export interface IntegrationLink {
+    id: string;
+    type: IntegrationType;
+    externalId: string; // e.g., JIRA-123, GitHub issue #45
+    url: string;
+    linkedBy: string; // User ID
+    linkedAt: string; // ISO date string
+    status?: string; // e.g., "To Do", "In Progress", "Done" from the external system
+}
+
 export interface FeedbackItem {
     id: string;
     title: string;
@@ -88,6 +99,7 @@ export interface FeedbackItem {
     updatedAt: string; // ISO date string
     lastActivityAt: string; // ISO date string
     resolutionNotes?: string; // For Shipped/Rejected/Archived
+    integrations?: IntegrationLink[];
 }
 
 export interface AnalyticsData {
@@ -95,6 +107,7 @@ export interface AnalyticsData {
     topTags: { tagId: string; count: number }[];
     feedbackVelocity: { date: string; new: number; shipped: number }[];
     sentimentDistribution: { positive: number; negative: number; neutral: number };
+    aiTrendReport?: string;
 }
 
 // --- MOCK USERS ---
@@ -344,7 +357,24 @@ Summary:`;
         }
     }, [aiClient]);
 
-    return { analyzeSentiment, generateResponse, suggestTags, summarizeFeedback };
+    const generateTrendReport = useCallback(async (feedbackItems: FeedbackItem[]) => {
+        try {
+            const feedbackSamples = feedbackItems.slice(0, 20).map(f => `- ${f.title}: ${f.description.substring(0, 100)}...`).join('\n');
+            const prompt = `Analyze the following sample of recent user feedback to identify emerging trends and key themes. Provide a concise report (max 150 words) with 2-3 bullet points highlighting the most important topics.
+Feedback Sample:
+${feedbackSamples}
+Trend Report:`;
+            const model = aiClient.getGenerativeModel({ model: 'gemini-pro' });
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        } catch (err) {
+            console.error("AI Trend Report generation failed:", err);
+            return "Could not generate AI trend report.";
+        }
+    }, [aiClient]);
+
+
+    return { analyzeSentiment, generateResponse, suggestTags, summarizeFeedback, generateTrendReport };
 };
 
 // ================================================================================================
@@ -801,7 +831,7 @@ export const FeedbackDetailModal: React.FC<{ item: FeedbackItem | null; onClose:
 
 
     return (
-        <Modal isOpen={item !== null} onClose={onClose} title={editMode ? `Edit: ${item.title}` : item.title} size="lg">
+        <Modal isOpen={item !== null} onClose={onClose} title={editMode ? `Edit: ${item.title}` : item.title} size="xl">
             <div className="grid grid-cols-4 gap-6">
                 <div className="col-span-3">
                     <div className="flex items-center gap-4 mb-4">
@@ -1115,6 +1145,8 @@ export const RoadmapView: React.FC<{ roadmapItems: RoadmapItem[]; feedbackItems:
 
 export const AnalyticsDashboard: React.FC<{ feedbackItems: FeedbackItem[]; allUsers: User[]; allTags: Tag[] }> = ({ feedbackItems, allUsers, allTags }) => {
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+    const { generateTrendReport } = useAIIntegration();
+    const [loadingTrendReport, setLoadingTrendReport] = useState(false);
 
     useEffect(() => {
         // Mock data aggregation
@@ -1158,6 +1190,13 @@ export const AnalyticsDashboard: React.FC<{ feedbackItems: FeedbackItem[]; allUs
             sentimentDistribution: { positive: positiveCount, negative: negativeCount, neutral: neutralCount }
         });
     }, [feedbackItems]);
+
+    const handleGenerateReport = async () => {
+        setLoadingTrendReport(true);
+        const report = await generateTrendReport(feedbackItems);
+        setAnalytics(prev => prev ? { ...prev, aiTrendReport: report } : null);
+        setLoadingTrendReport(false);
+    };
 
     if (!analytics) return <div className="text-center text-gray-500 py-10">Loading analytics...</div>;
 
@@ -1208,6 +1247,17 @@ export const AnalyticsDashboard: React.FC<{ feedbackItems: FeedbackItem[]; allUs
                         </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-4 text-center">Based on AI Sentiment Analysis of feedback descriptions.</p>
+                </Card>
+
+                <Card title="AI Trend Analysis" className="md:col-span-2 lg:col-span-3">
+                    <div className="space-y-3">
+                        {!analytics.aiTrendReport && <Button onClick={handleGenerateReport} loading={loadingTrendReport}>Generate AI Report</Button>}
+                        {analytics.aiTrendReport && (
+                            <div className="bg-gray-700/50 p-3 rounded-md text-sm text-gray-300 whitespace-pre-wrap">
+                                {analytics.aiTrendReport}
+                            </div>
+                        )}
+                    </div>
                 </Card>
 
                 <Card title="Feedback Velocity (Last 3 Months)" className="lg:col-span-3">
@@ -1623,7 +1673,7 @@ const FeedbackHubView: React.FC = () => {
                 onUpdateItem={handleUpdateFeedbackItem}
                 onAddComment={handleAddComment}
             />
-            <Modal isOpen={showSubmitForm} onClose={() => setShowSubmitForm(false)} title="Submit New Feedback" size="sm">
+            <Modal isOpen={showSubmitForm} onClose={() => setShowSubmitForm(false)} title="Submit New Feedback" size="md">
                 <FeedbackSubmissionForm onSubmit={handleSubmitNewFeedback} onClose={() => setShowSubmitForm(false)} />
             </Modal>
         </>
