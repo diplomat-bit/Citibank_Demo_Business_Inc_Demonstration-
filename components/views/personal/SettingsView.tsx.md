@@ -2,8 +2,6 @@
 
 This is the chamber where the Instrument is tuned to the Sovereign's will. It is here that you adjust the frequencies of communication, defining how and when the deeper systems should report to your conscious self. Each setting is a refinement of the signal, ensuring that the intelligence you receive is clear, relevant, and perfectly attuned to the harmony you wish to maintain.
 
----
-
 import React, { 
     useState, 
     useEffect, 
@@ -205,9 +203,9 @@ export interface SubscriptionPlan {
     interval: 'month' | 'year';
     features: string[];
     usageLimits: {
-        projects: number;
-        aiQueries: number;
-        storageGB: number;
+        projects: number | 'unlimited';
+        aiQueries: number | 'unlimited';
+        storageGB: number | 'unlimited';
     };
 }
 
@@ -246,9 +244,10 @@ export interface Invoice {
 export interface AccountSettings {
     subscription: {
         plan: SubscriptionPlan;
-        status: 'active' | 'past_due' | 'canceled';
+        status: 'active' | 'past_due' | 'canceled' | 'trialing';
         currentPeriodEnd: string; // ISO 8601
         cancelAtPeriodEnd: boolean;
+        trialEndsAt?: string; // ISO 8601
     };
     paymentMethods: PaymentMethod[];
     billingHistory: Invoice[];
@@ -274,10 +273,11 @@ export interface ApiKey {
  */
 export interface Integration {
     id: UniqueId;
-    provider: 'google' | 'github' | 'slack' | 'figma' | 'notion';
+    provider: 'google' | 'github' | 'slack' | 'figma' | 'notion' | 'salesforce' | 'jira';
     accountName: string;
     connectedAt: string; // ISO 8601
     status: 'active' | 'revoked' | 'error';
+    scopes?: string[];
 }
 
 /**
@@ -428,6 +428,24 @@ export interface AICalibrationSettings {
     fineTuning: AIFineTune;
 }
 
+/**
+ * @interface BetaFeature
+ * @description Represents a beta feature flag.
+ */
+export interface BetaFeature {
+    id: string;
+    name: string;
+    description: string;
+    enabled: boolean;
+}
+
+/**
+ * @interface AdvancedSettings
+ * @description Settings for advanced users and experimental features.
+ */
+export interface AdvancedSettings {
+    betaFeatures: BetaFeature[];
+}
 
 /**
  * @type {string}
@@ -467,6 +485,7 @@ export const fetchAllSettings = async (): Promise<{
     security: SecuritySettings;
     accessibility: AccessibilitySettings;
     calibration: AICalibrationSettings;
+    advanced: AdvancedSettings;
 }> => {
     await delay(1200);
     console.log("API: Fetching all user settings...");
@@ -482,6 +501,7 @@ export const fetchAllSettings = async (): Promise<{
         security: MOCK_SECURITY_SETTINGS,
         accessibility: MOCK_ACCESSIBILITY_SETTINGS,
         calibration: MOCK_AI_CALIBRATION_SETTINGS,
+        advanced: MOCK_ADVANCED_SETTINGS,
     };
 };
 
@@ -621,21 +641,39 @@ export const MOCK_NOTIFICATION_SETTINGS: NotificationSettings = {
     },
 };
 
+export const MOCK_PLANS: SubscriptionPlan[] = [
+    {
+        planId: 'plan_free_tier',
+        name: 'Hobbyist',
+        price: 0,
+        currency: 'USD',
+        interval: 'month',
+        features: ['1 Project', 'Basic AI', 'Community Support'],
+        usageLimits: { projects: 1, aiQueries: 100, storageGB: 5 }
+    },
+    {
+        planId: 'plan_sovereign_pro',
+        name: 'Sovereign Pro',
+        price: 2500,
+        currency: 'USD',
+        interval: 'month',
+        features: ['Unlimited Projects', 'Priority AI Processing', 'Advanced Calibration', 'Team Features', 'Email Support'],
+        usageLimits: { projects: 'unlimited', aiQueries: 5000, storageGB: 100 }
+    },
+    {
+        planId: 'plan_enterprise',
+        name: 'Enterprise',
+        price: 10000,
+        currency: 'USD',
+        interval: 'month',
+        features: ['All Pro features', 'Dedicated Infrastructure', 'SAML SSO', '24/7 Priority Support'],
+        usageLimits: { projects: 'unlimited', aiQueries: 'unlimited', storageGB: 'unlimited' }
+    }
+];
+
 export const MOCK_ACCOUNT_SETTINGS: AccountSettings = {
     subscription: {
-        plan: {
-            planId: 'plan_sovereign_pro',
-            name: 'Sovereign Pro',
-            price: 2500,
-            currency: 'USD',
-            interval: 'month',
-            features: ['Unlimited Projects', 'Priority AI Processing', 'Advanced Calibration', 'Team Features'],
-            usageLimits: {
-                projects: Infinity,
-                aiQueries: 5000,
-                storageGB: 100,
-            },
-        },
+        plan: MOCK_PLANS[1],
         status: 'active',
         currentPeriodEnd: '2024-08-15T00:00:00Z',
         cancelAtPeriodEnd: false,
@@ -652,17 +690,32 @@ export const MOCK_ACCOUNT_SETTINGS: AccountSettings = {
             },
             isDefault: true,
         },
+        {
+            id: 'pm_2',
+            type: 'card',
+            card: {
+                brand: 'mastercard',
+                last4: '5555',
+                expMonth: 8,
+                expYear: 2026,
+            },
+            isDefault: false,
+        },
     ],
     billingHistory: [
         { id: 'in_1', date: '2024-07-15T00:00:00Z', amount: 2500, status: 'paid', pdfUrl: '#' },
         { id: 'in_2', date: '2024-06-15T00:00:00Z', amount: 2500, status: 'paid', pdfUrl: '#' },
         { id: 'in_3', date: '2024-05-15T00:00:00Z', amount: 2500, status: 'paid', pdfUrl: '#' },
+        { id: 'in_4', date: '2024-04-15T00:00:00Z', amount: 2500, status: 'paid', pdfUrl: '#' },
+        { id: 'in_5', date: '2024-03-15T00:00:00Z', amount: 2500, status: 'paid', pdfUrl: '#' },
     ],
 };
 
 export const MOCK_INTEGRATIONS_SETTINGS: IntegrationsSettings = {
     apiKeys: [
         { id: 'key_1', name: 'Personal Automation Script', tokenPrefix: 'sk_live_abc...', lastUsed: '2024-07-20T10:00:00Z', created: '2023-11-01T00:00:00Z', scopes: ['read:projects', 'write:tasks'], expiresAt: null },
+        { id: 'key_2', name: 'Data Warehouse Sync', tokenPrefix: 'sk_live_xyz...', lastUsed: '2024-07-21T18:30:00Z', created: '2024-01-10T00:00:00Z', scopes: ['read:all'], expiresAt: null },
+        { id: 'key_3', name: 'Temporary Access Key', tokenPrefix: 'sk_live_tmp...', lastUsed: null, created: '2024-07-22T09:00:00Z', scopes: ['read:tasks'], expiresAt: '2024-07-29T09:00:00Z' },
     ],
     connectedIntegrations: [
         { id: 'int_1', provider: 'github', accountName: 'aprometheus', connectedAt: '2023-02-01T00:00:00Z', status: 'active' },
@@ -671,6 +724,7 @@ export const MOCK_INTEGRATIONS_SETTINGS: IntegrationsSettings = {
     ],
     webhooks: [
         { id: 'wh_1', url: 'https://api.example.com/webhook', events: ['project.created', 'task.completed'], isActive: true, lastDelivery: { timestamp: '2024-07-21T11:05:00Z', status: 'success', statusCode: 200 } },
+        { id: 'wh_2', url: 'https://api.zapier.com/hooks/12345', events: ['*'], isActive: false, lastDelivery: { timestamp: '2024-07-19T15:00:00Z', status: 'failed', statusCode: 503 } },
     ],
 };
 
@@ -682,11 +736,13 @@ export const MOCK_SECURITY_SETTINGS: SecuritySettings = {
     activeSessions: [
         { id: 'ses_1', ipAddress: '73.125.68.100', userAgent: 'Chrome 125 on macOS', location: 'San Francisco, CA', lastAccessed: new Date().toISOString(), isCurrent: true },
         { id: 'ses_2', ipAddress: '20.54.10.12', userAgent: 'Sovereign OS Mobile on iOS', location: 'Redmond, WA', lastAccessed: '2024-07-20T18:00:00Z', isCurrent: false },
+        { id: 'ses_3', ipAddress: '8.8.8.8', userAgent: 'Firefox 126 on Linux', location: 'Mountain View, CA', lastAccessed: '2024-07-18T12:00:00Z', isCurrent: false },
     ],
     securityLog: [
         { id: 'log_1', timestamp: new Date().toISOString(), action: 'Logged In', ipAddress: '73.125.68.100', status: 'success', details: 'Successful login via password.' },
         { id: 'log_2', timestamp: '2024-07-21T09:00:00Z', action: 'API Key Created', ipAddress: '73.125.68.100', status: 'success', details: 'Created key "Personal Automation Script".' },
         { id: 'log_3', timestamp: '2024-07-20T15:30:00Z', action: 'Login Failure', ipAddress: '104.18.21.109', status: 'failure', details: 'Incorrect password attempt for user sovereign_one.' },
+        { id: 'log_4', timestamp: '2024-07-19T11:00:00Z', action: 'Password Changed', ipAddress: '73.125.68.100', status: 'success', details: 'User successfully changed their password.' },
     ],
     dataPrivacy: {
         profileVisibility: 'connections_only',
@@ -707,6 +763,8 @@ export const MOCK_ACCESSIBILITY_SETTINGS: AccessibilitySettings = {
         'saveChanges': 'ctrl+s',
         'navigateUp': 'k',
         'navigateDown': 'j',
+        'openNotifications': 'g n',
+        'createNewProject': 'c p',
     },
     fontSizeScaling: 100,
 };
@@ -746,6 +804,14 @@ export const MOCK_AI_CALIBRATION_SETTINGS: AICalibrationSettings = {
     },
 };
 
+export const MOCK_ADVANCED_SETTINGS: AdvancedSettings = {
+    betaFeatures: [
+        { id: 'beta_ai_code_gen', name: 'AI Code Generation', description: 'Enable experimental AI-powered code generation features in the editor.', enabled: true },
+        { id: 'beta_quantum_sync', name: 'Quantum Sync Protocol', description: 'Use a next-generation sync protocol for near-instantaneous cross-device updates.', enabled: false },
+        { id: 'beta_holographic_ui', name: 'Holographic UI Mode', description: 'Render UI elements with a simulated 3D holographic effect. Requires compatible hardware.', enabled: false },
+    ]
+};
+
 // SECTION: Context and Global State
 // ============================================================================
 
@@ -762,6 +828,7 @@ export interface SettingsState {
     security?: SecuritySettings;
     accessibility?: AccessibilitySettings;
     calibration?: AICalibrationSettings;
+    advanced?: AdvancedSettings;
     isLoading: boolean;
     error: string | null;
     activeSection: SettingsSection;
@@ -843,6 +910,7 @@ export const useForm = <T extends Record<string, any>>(initialValues: T, validat
     const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
 
     useEffect(() => {
+        // This prevents stale state if the parent component's data changes
         setValues(initialValues);
     }, [JSON.stringify(initialValues)]);
 
@@ -850,18 +918,32 @@ export const useForm = <T extends Record<string, any>>(initialValues: T, validat
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         
-        let processedValue = value;
+        let processedValue: any = value;
         if (type === 'checkbox') {
-             processedValue = (e.target as HTMLInputElement).checked as any;
+             processedValue = (e.target as HTMLInputElement).checked;
         }
-        if (type === 'number') {
-            processedValue = Number(value) as any;
+        if (type === 'number' || type === 'range') {
+            processedValue = Number(value);
         }
 
-        setValues(prev => ({ ...prev, [name]: processedValue }));
+        // Handle nested properties e.g., name="communication.tone"
+        if (name.includes('.')) {
+            const keys = name.split('.');
+            setValues(prev => {
+                const newState = JSON.parse(JSON.stringify(prev)); // deep copy
+                let current = newState;
+                for(let i=0; i < keys.length - 1; i++) {
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = processedValue;
+                return newState;
+            });
+        } else {
+             setValues(prev => ({ ...prev, [name]: processedValue }));
+        }
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name } = e.target;
         setTouched(prev => ({ ...prev, [name]: true }));
         setErrors(validate(values));
@@ -947,9 +1029,11 @@ export const LogOutIcon = createIcon(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 
 export const MoreHorizontalIcon = createIcon(<><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></>);
 export const EyeIcon = createIcon(<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></>);
 export const EyeOffIcon = createIcon(<><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></>);
-export const GlobeIcon = createIcon(<><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></>);
+export const GlobeIcon = createIcon(<><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 1.53 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></>);
 export const LockIcon = createIcon(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></>);
 export const BrainCircuitIcon = createIcon(<><path d="M12 2a4.5 4.5 0 0 0-4.5 4.5v.5a4.5 4.5 0 0 0-2.5 4.21V15a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2.5a4.5 4.5 0 0 0 5 0V15a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3.79a4.5 4.5 0 0 0-2.5-4.21v-.5A4.5 4.5 0 0 0 12 2z"></path><path d="M12 11.5a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 0 0 5z"></path><path d="M12 2v2"></path><path d="M12 17v2"></path><path d="m4.929 4.929.707.707"></path><path d="m18.364 18.364.707.707"></path><path d="m19.071 4.929-.707.707"></path><path d="m4.222 18.364-.707.707"></path></>);
+export const DownloadCloudIcon = createIcon(<><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></>);
+export const FlaskConicalIcon = createIcon(<><path d="M10.2 2.2c.2-.5.8-.8 1.4-.6l7.2 2.8c.5.2.8.8.6 1.4l-4.2 10.8c-.2.5-.8.8-1.4.6l-7.2-2.8c-.5-.2-.8-.8-.6-1.4L10.2 2.2z"/><path d="M10 13a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M10 22v-3.5"/><path d="M7 11h11"/></>);
 
 
 // SECTION: Generic UI Components
@@ -959,14 +1043,20 @@ export interface CardProps {
   children: ReactNode;
   className?: string;
   title?: string;
+  description?: string;
   footer?: ReactNode;
+  actions?: ReactNode;
 }
 
-export const Card: FC<CardProps> = ({ children, className = '', title, footer }) => (
+export const Card: FC<CardProps> = ({ children, className = '', title, description, footer, actions }) => (
     <div className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm ${className}`}>
-        {title && (
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+        {(title || actions) && (
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <div>
+                    {title && <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>}
+                    {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
+                </div>
+                {actions && <div className="flex-shrink-0">{actions}</div>}
             </div>
         )}
         <div className="p-6">
@@ -1115,13 +1205,13 @@ export interface ToggleProps {
 
 export const Toggle: FC<ToggleProps> = ({ label, description, enabled, onChange }) => (
     <div className="flex items-center justify-between">
-        <span className="flex-grow flex flex-col">
+        <span className="flex-grow flex flex-col pr-4">
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</span>
             {description && <span className="text-sm text-gray-500 dark:text-gray-400">{description}</span>}
         </span>
         <button
             type="button"
-            className={`${enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'} relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+            className={`${enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'} relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex-shrink-0`}
             onClick={() => onChange(!enabled)}
         >
             <span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
@@ -1135,21 +1225,29 @@ export interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, footer }) => {
+export const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, footer, size = 'lg' }) => {
     if (!isOpen) return null;
+
+    const sizeClasses = {
+        sm: 'max-w-sm',
+        md: 'max-w-md',
+        lg: 'max-w-lg',
+        xl: 'max-w-xl',
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" aria-modal="true" role="dialog">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full m-4" role="document">
+            <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 ${sizeClasses[size]}`} role="document">
                 <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                         <XIcon size={24} />
                     </button>
                 </div>
-                <div className="p-6">
+                <div className="p-6 max-h-[70vh] overflow-y-auto">
                     {children}
                 </div>
                 {footer && (
@@ -1162,6 +1260,10 @@ export const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, footer
     );
 };
 
+export const SkeletonLoader: FC<{ className?: string }> = ({ className = ''}) => (
+    <div className={`animate-pulse bg-gray-200 dark:bg-gray-700 rounded ${className}`} />
+);
+
 
 // SECTION: Settings Section Components
 // ============================================================================
@@ -1173,15 +1275,13 @@ export interface SettingsSectionProps {
 }
 
 export const SettingsSectionWrapper: FC<SettingsSectionProps> = ({ title, description, children }) => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">{title}</h3>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{description}</p>
         </div>
-        <div className="md:col-span-2">
-            <Card>
-                {children}
-            </Card>
+        <div className="lg:col-span-2 space-y-6">
+            {children}
         </div>
     </div>
 );
@@ -1192,7 +1292,10 @@ export const SettingsSectionWrapper: FC<SettingsSectionProps> = ({ title, descri
 export const ProfileSettingsSection: FC = () => {
     const { state, saveSection } = useSettings();
     const [isSaving, setIsSaving] = useState(false);
-    const { values, errors, handleChange, handleBlur, setValues } = useForm(state.profile!, (v) => {
+    
+    if (!state.profile) return null;
+    
+    const { values, errors, handleChange, handleBlur } = useForm(state.profile, (v) => {
         const err: Partial<Record<keyof UserProfile, string>> = {};
         if (!v.fullName) err.fullName = "Full name is required.";
         if (!v.username) err.username = "Username is required.";
@@ -1206,40 +1309,40 @@ export const ProfileSettingsSection: FC = () => {
         await saveSection('profile', values);
         setIsSaving(false);
     };
-    
-    if (!state.profile) return null;
 
     return (
         <SettingsSectionWrapper
             title="Personal Profile"
             description="This information will be displayed publicly so be careful what you share."
         >
-            <form onSubmit={handleSave}>
-                <div className="space-y-6">
-                    <Input name="username" label="Username" value={values.username} onChange={handleChange} onBlur={handleBlur} error={errors.username} description="This is your unique handle."/>
-                    <Input name="fullName" label="Full Name" value={values.fullName} onChange={handleChange} onBlur={handleBlur} error={errors.fullName} />
-                    <Textarea name="bio" label="Bio" value={values.bio || ''} onChange={handleChange} onBlur={handleBlur} description="A short description about yourself." />
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Avatar</label>
-                        <div className="mt-2 flex items-center space-x-4">
-                            <img className="h-16 w-16 rounded-full" src={values.avatarUrl} alt="Avatar" />
-                            <Button type="button" variant="secondary">Change</Button>
+            <Card>
+                <form onSubmit={handleSave}>
+                    <div className="space-y-6">
+                        <Input name="username" label="Username" value={values.username} onChange={handleChange} onBlur={handleBlur} error={errors.username} description="This is your unique handle."/>
+                        <Input name="fullName" label="Full Name" value={values.fullName} onChange={handleChange} onBlur={handleBlur} error={errors.fullName} />
+                        <Textarea name="bio" label="Bio" value={values.bio || ''} onChange={handleChange} onBlur={handleBlur} description="A short description about yourself." />
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Avatar</label>
+                            <div className="mt-2 flex items-center space-x-4">
+                                <img className="h-16 w-16 rounded-full" src={values.avatarUrl} alt="Avatar" />
+                                <Button type="button" variant="secondary">Change</Button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <Input name="location" label="Location" value={values.location || ''} onChange={handleChange} onBlur={handleBlur} />
-                    <Input name="website" label="Website" value={values.website || ''} onChange={handleChange} onBlur={handleBlur} error={errors.website} />
+                        
+                        <Input name="location" label="Location" value={values.location || ''} onChange={handleChange} onBlur={handleBlur} />
+                        <Input name="website" label="Website" value={values.website || ''} onChange={handleChange} onBlur={handleBlur} error={errors.website} />
 
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 pt-4 border-t dark:border-gray-700">Social Links</h4>
-                    <Input name="socialLinks.twitter" label="Twitter" value={values.socialLinks?.twitter || ''} onChange={handleChange} onBlur={handleBlur} />
-                    <Input name="socialLinks.github" label="GitHub" value={values.socialLinks?.github || ''} onChange={handleChange} onBlur={handleBlur} />
-                    <Input name="socialLinks.linkedin" label="LinkedIn" value={values.socialLinks?.linkedin || ''} onChange={handleChange} onBlur={handleBlur} />
-                </div>
-                <div className="pt-6 text-right">
-                    <Button type="submit" isLoading={isSaving}>Save Changes</Button>
-                </div>
-            </form>
+                        <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 pt-4 border-t dark:border-gray-700">Social Links</h4>
+                        <Input name="socialLinks.twitter" label="Twitter" value={values.socialLinks?.twitter || ''} onChange={handleChange} onBlur={handleBlur} />
+                        <Input name="socialLinks.github" label="GitHub" value={values.socialLinks?.github || ''} onChange={handleChange} onBlur={handleBlur} />
+                        <Input name="socialLinks.linkedin" label="LinkedIn" value={values.socialLinks?.linkedin || ''} onChange={handleChange} onBlur={handleBlur} />
+                    </div>
+                    <div className="pt-6 mt-6 border-t dark:border-gray-700 text-right">
+                        <Button type="submit" isLoading={isSaving}>Save Changes</Button>
+                    </div>
+                </form>
+            </Card>
         </SettingsSectionWrapper>
     );
 };
@@ -1260,63 +1363,72 @@ export const AppearanceSettingsSection: FC = () => {
         await saveSection('appearance', values);
         setIsSaving(false);
     };
+    
+    const debouncedValues = useDebounce(values, 500);
+    useEffect(() => {
+        // Autosave on debounce
+        saveSection('appearance', debouncedValues);
+    }, [debouncedValues, saveSection]);
 
     return (
         <SettingsSectionWrapper
             title="Appearance"
-            description="Customize the look and feel of your workspace. Your changes will be saved automatically."
+            description="Customize the look and feel of your workspace. Your changes are saved automatically."
         >
-             <div className="space-y-8">
-                <div>
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Theme</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {(Object.values(AppTheme)).map(theme => (
-                            <div key={theme} onClick={() => setFieldValue('theme', theme)} className={`cursor-pointer rounded-lg p-4 border-2 ${values.theme === theme ? 'border-blue-500' : 'border-gray-300 dark:border-gray-600'}`}>
-                                <div className={`w-full h-12 rounded bg-gray-200 theme-preview-${theme}`}></div>
-                                <p className="text-center mt-2 text-sm">{theme.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+             <Card title="Theme">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {(Object.values(AppTheme)).map(theme => (
+                        <div key={theme} onClick={() => setFieldValue('theme', theme)} className={`cursor-pointer rounded-lg p-4 border-2 ${values.theme === theme ? 'border-blue-500 ring-2 ring-blue-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                            {/* A more sophisticated theme preview */}
+                            <div className={`h-16 rounded-md flex p-2 space-x-1 theme-preview-${theme} bg-gray-100 dark:bg-gray-900`}>
+                                <div className="w-1/4 bg-gray-300 dark:bg-gray-700 rounded-l-md"></div>
+                                <div className="w-3/4 flex flex-col space-y-1">
+                                    <div className="h-1/3 bg-gray-400 dark:bg-gray-600 rounded-tr-md"></div>
+                                    <div className="h-2/3 bg-gray-200 dark:bg-gray-800 rounded-br-md"></div>
+                                </div>
                             </div>
-                        ))}
+                            <p className="text-center mt-2 text-sm">{theme.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+            <Card title="Layout & Display">
+                 <div className="space-y-8">
+                    <Select label="Layout Density" name="layoutDensity" value={values.layoutDensity} onChange={handleChange}>
+                        <option value={LayoutDensity.COMPACT}>Compact</option>
+                        <option value={LayoutDensity.COMFORTABLE}>Comfortable</option>
+                        <option value={LayoutDensity.SPACIOUS}>Spacious</option>
+                    </Select>
+                    
+                    <Select label="Sidebar Mode" name="sidebarMode" value={values.sidebarMode} onChange={handleChange}>
+                        <option value="pinned">Pinned</option>
+                        <option value="overlay">Overlay</option>
+                        <option value="hidden">Hidden</option>
+                    </Select>
+                    
+                    <div>
+                        <label htmlFor="fontSize" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font Size</label>
+                        <div className="flex items-center space-x-4">
+                             <input id="fontSize" type="range" name="fontSize" min="12" max="20" step="1" value={values.fontSize} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
+                             <span className="text-sm font-mono p-2 bg-gray-100 dark:bg-gray-700 rounded">{values.fontSize}px</span>
+                        </div>
                     </div>
-                </div>
 
-                <Select label="Layout Density" name="layoutDensity" value={values.layoutDensity} onChange={handleChange}>
-                    <option value={LayoutDensity.COMPACT}>Compact</option>
-                    <option value={LayoutDensity.COMFORTABLE}>Comfortable</option>
-                    <option value={LayoutDensity.SPACIOUS}>Spacious</option>
-                </Select>
-                
-                <Select label="Sidebar Mode" name="sidebarMode" value={values.sidebarMode} onChange={handleChange}>
-                    <option value="pinned">Pinned</option>
-                    <option value="overlay">Overlay</option>
-                    <option value="hidden">Hidden</option>
-                </Select>
-                
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font Size</label>
-                    <div className="flex items-center space-x-4">
-                         <input type="range" name="fontSize" min="12" max="20" step="1" value={values.fontSize} onChange={handleChange} className="w-full" />
-                         <span className="text-sm font-mono">{values.fontSize}px</span>
-                    </div>
+                    <Toggle 
+                        label="Reduce Motion"
+                        description="Disable animations and transitions for a simpler experience."
+                        enabled={values.reduceMotion}
+                        onChange={(val) => setFieldValue('reduceMotion', val)}
+                    />
+                    
+                    <Toggle 
+                        label="Show Avatars"
+                        description="Display user avatars next to names."
+                        enabled={values.showAvatars}
+                        onChange={(val) => setFieldValue('showAvatars', val)}
+                    />
                 </div>
-
-                <Toggle 
-                    label="Reduce Motion"
-                    description="Disable animations and transitions for a simpler experience."
-                    enabled={values.reduceMotion}
-                    onChange={(val) => setFieldValue('reduceMotion', val)}
-                />
-                
-                <Toggle 
-                    label="Show Avatars"
-                    description="Display user avatars next to names."
-                    enabled={values.showAvatars}
-                    onChange={(val) => setFieldValue('showAvatars', val)}
-                />
-
-                <div className="pt-6 text-right border-t dark:border-gray-700">
-                    <Button onClick={handleSave} isLoading={isSaving}>Save Appearance Settings</Button>
-                </div>
-            </div>
+            </Card>
         </SettingsSectionWrapper>
     );
 };
@@ -1330,7 +1442,7 @@ export const NotificationsSettingsSection: FC = () => {
     
     if (!state.notifications) return null;
     
-    const { values, setFieldValue } = useForm(state.notifications, () => ({}));
+    const { values, handleChange, setFieldValue } = useForm(state.notifications, () => ({}));
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -1349,60 +1461,144 @@ export const NotificationsSettingsSection: FC = () => {
             title="Notifications"
             description="Manage how you receive notifications from the system. Tune your signal."
         >
-            <div className="space-y-10">
+            <Card title="Master Control">
                 <Toggle 
                     label="Mute All Notifications"
-                    description="Temporarily pause all notifications."
+                    description="Temporarily pause all notifications across all channels."
                     enabled={values.globalMute}
                     onChange={(val) => setFieldValue('globalMute', val)}
                 />
-                
+            </Card>
+            
+            <Card title="Notification Channels" description="Enable or disable entire delivery channels.">
                 <div className="space-y-4">
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200">Notification Channels</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Enable or disable entire delivery channels.</p>
                     <Toggle label="Email Notifications" enabled={values.channels.email} onChange={v => setFieldValue('channels', {...values.channels, email: v})} />
                     <Toggle label="Push Notifications" enabled={values.channels.push} onChange={v => setFieldValue('channels', {...values.channels, push: v})} />
                     <Toggle label="In-App Notifications" enabled={values.channels.in_app} onChange={v => setFieldValue('channels', {...values.channels, in_app: v})} />
                     <Toggle label="SMS Notifications" enabled={values.channels.sms} onChange={v => setFieldValue('channels', {...values.channels, sms: v})} />
                 </div>
+            </Card>
                 
-                <div className="space-y-4">
-                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200">Fine-Grained Controls</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Choose where to receive notifications for specific events.</p>
-                    
-                    <table className="w-full text-sm text-left">
-                        <thead>
-                            <tr className="border-b dark:border-gray-700">
-                                <th className="py-2">Event Type</th>
-                                <th className="py-2 text-center">Email</th>
-                                <th className="py-2 text-center">Push</th>
-                                <th className="py-2 text-center">In-App</th>
+            <Card title="Fine-Grained Controls" description="Choose where to receive notifications for specific events.">
+                <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-50 dark:bg-gray-700/50">
+                        <tr className="border-b dark:border-gray-700">
+                            <th className="py-3 px-4 font-medium">Event Type</th>
+                            <th className="py-3 px-4 text-center font-medium">Email</th>
+                            <th className="py-3 px-4 text-center font-medium">Push</th>
+                            <th className="py-3 px-4 text-center font-medium">In-App</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y dark:divide-gray-700">
+                        {Object.entries(values.preferences).map(([category, settings]) => (
+                            <tr key={category} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                <td className="py-3 px-4 capitalize text-gray-700 dark:text-gray-300">{category.replace(/([A-Z])/g, ' $1')}</td>
+                                {(Object.values(NotificationChannel).filter(c => c !== 'sms') as (keyof typeof settings)[]).map(channel => (
+                                    <td key={channel} className="py-3 px-4 text-center">
+                                        <input 
+                                            type="checkbox" 
+                                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600"
+                                            checked={settings[channel] || false}
+                                            onChange={(e) => handlePreferenceChange(category, channel, e.target.checked)}
+                                        />
+                                    </td>
+                                ))}
                             </tr>
-                        </thead>
-                        <tbody>
-                            {Object.entries(values.preferences).map(([category, settings]) => (
-                                <tr key={category} className="border-b dark:border-gray-700">
-                                    <td className="py-3 capitalize text-gray-700 dark:text-gray-300">{category.replace(/([A-Z])/g, ' $1')}</td>
-                                    {(Object.values(NotificationChannel).filter(c => c !== 'sms') as (keyof typeof settings)[]).map(channel => (
-                                        <td key={channel} className="py-3 text-center">
-                                            <input 
-                                                type="checkbox" 
-                                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                                checked={settings[channel] || false}
-                                                onChange={(e) => handlePreferenceChange(category, channel, e.target.checked)}
-                                            />
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+            
+            <Card footer={<Button onClick={handleSave} isLoading={isSaving}>Save Notification Settings</Button>}/>
 
-                <div className="pt-6 text-right border-t dark:border-gray-700">
-                    <Button onClick={handleSave} isLoading={isSaving}>Save Notification Settings</Button>
+        </SettingsSectionWrapper>
+    );
+};
+
+/**
+ * Account & Billing Section
+ */
+export const AccountSettingsSection: FC = () => {
+    const { state } = useSettings();
+    if(!state.account) return null;
+
+    return (
+        <SettingsSectionWrapper
+            title="Account & Billing"
+            description="Manage your subscription, payment methods, and view your billing history."
+        >
+            <Card 
+                title="Current Plan" 
+                actions={<Button variant="secondary">Change Plan</Button>}
+            >
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h4 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{state.account.subscription.plan.name} Plan</h4>
+                        <p className="text-gray-500 dark:text-gray-400">
+                            ${(state.account.subscription.plan.price / 100).toFixed(2)} / {state.account.subscription.plan.interval}
+                        </p>
+                    </div>
+                    <div className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${state.account.subscription.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {state.account.subscription.status}
+                    </div>
                 </div>
-            </div>
+                <div className="mt-6 space-y-4">
+                    <p className="text-sm">Your plan renews on {new Date(state.account.subscription.currentPeriodEnd).toLocaleDateString()}.</p>
+                    <div className="space-y-3">
+                        {Object.entries(state.account.subscription.plan.usageLimits).map(([key, value]) => (
+                            <div key={key}>
+                                <div className="flex justify-between text-sm font-medium">
+                                    <span className="capitalize">{key.replace('GB', ' GB Storage')}</span>
+                                    <span>{value === 'unlimited' ? 'Unlimited' : `0 / ${value}`}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-1">
+                                    <div className="bg-blue-600 h-2.5 rounded-full" style={{width: value === 'unlimited' ? '100%' : '45%'}}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Card>
+
+            <Card title="Payment Methods" actions={<Button variant="secondary" size="sm" leftIcon={<PlusIcon />}>Add New</Button>}>
+                <ul className="divide-y dark:divide-gray-700">
+                    {state.account.paymentMethods.map(pm => (
+                        <li key={pm.id} className="py-3 flex justify-between items-center">
+                            <div>
+                                <p className="font-medium capitalize">{pm.card.brand} ending in {pm.card.last4}</p>
+                                <p className="text-sm text-gray-500">Expires {pm.card.expMonth}/{pm.card.expYear}</p>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                {pm.isDefault && <span className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">Default</span>}
+                                <Button variant="ghost" size="sm">Edit</Button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </Card>
+
+            <Card title="Billing History">
+                <table className="w-full text-sm">
+                    <thead className="text-left text-gray-500 dark:text-gray-400">
+                        <tr>
+                            <th className="py-2">Date</th>
+                            <th className="py-2">Amount</th>
+                            <th className="py-2">Status</th>
+                            <th className="py-2">Invoice</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y dark:divide-gray-700">
+                        {state.account.billingHistory.map(invoice => (
+                            <tr key={invoice.id}>
+                                <td className="py-3">{new Date(invoice.date).toLocaleDateString()}</td>
+                                <td className="py-3">${(invoice.amount/100).toFixed(2)}</td>
+                                <td className="py-3"><span className={`capitalize px-2 py-1 text-xs rounded-full ${invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{invoice.status}</span></td>
+                                <td className="py-3"><a href={invoice.pdfUrl} className="text-blue-600 hover:underline">Download</a></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
         </SettingsSectionWrapper>
     );
 };
@@ -1411,9 +1607,7 @@ export const NotificationsSettingsSection: FC = () => {
  * Security Settings Section
  */
 export const SecuritySettingsSection: FC = () => {
-    const { state, saveSection } = useSettings();
-    const [isSaving, setIsSaving] = useState(false);
-    
+    const { state } = useSettings();
     if (!state.security) return null;
     
     const { values, setFieldValue } = useForm(state.security, () => ({}));
@@ -1423,45 +1617,42 @@ export const SecuritySettingsSection: FC = () => {
             title="Security & Privacy"
             description="Manage your account security, active sessions, and data privacy."
         >
-            <div className="space-y-10">
-                <Card title="Password">
-                    <div className="space-y-4">
-                        <Input type="password" name="currentPassword" label="Current Password" />
-                        <Input type="password" name="newPassword" label="New Password" />
-                        <Input type="password" name="confirmPassword" label="Confirm New Password" />
-                    </div>
-                     <div className="pt-4 text-right">
+            <Card title="Password">
+                <form className="space-y-4">
+                    <Input type="password" name="currentPassword" label="Current Password" />
+                    <Input type="password" name="newPassword" label="New Password" />
+                    <Input type="password" name="confirmPassword" label="Confirm New Password" />
+                    <div className="pt-2 text-right">
                         <Button variant="secondary">Change Password</Button>
                     </div>
-                </Card>
+                </form>
+            </Card>
 
-                <Card title="Two-Factor Authentication">
-                    <Toggle 
-                        label="Enable 2FA"
-                        description="Add an extra layer of security to your account."
-                        enabled={values.twoFactorAuthentication.enabled}
-                        onChange={(val) => setFieldValue('twoFactorAuthentication', { ...values.twoFactorAuthentication, enabled: val })}
-                    />
-                </Card>
-                
-                <Card title="Active Sessions" footer={<Button variant="secondary" size="sm">Log out all other sessions</Button>}>
-                    <ul className="divide-y dark:divide-gray-700">
-                        {values.activeSessions.map(session => (
-                            <li key={session.id} className="py-3">
-                                <p className="font-semibold">{session.location} - {session.ipAddress} {session.isCurrent && <span className="text-green-500 text-xs ml-2">(Current)</span>}</p>
-                                <p className="text-sm text-gray-500">{session.userAgent}</p>
-                                <p className="text-xs text-gray-400">Last accessed: {new Date(session.lastAccessed).toLocaleString()}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </Card>
-                
-                 <Card title="Account Deletion">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Permanently delete your account and all of its associated data. This action is irreversible.</p>
-                    <Button variant="danger">Delete My Account</Button>
-                </Card>
+            <Card title="Two-Factor Authentication">
+                <Toggle 
+                    label="Enable 2FA"
+                    description="Add an extra layer of security to your account."
+                    enabled={values.twoFactorAuthentication.enabled}
+                    onChange={(val) => setFieldValue('twoFactorAuthentication', { ...values.twoFactorAuthentication, enabled: val })}
+                />
+            </Card>
+            
+            <Card title="Active Sessions" footer={<Button variant="secondary" size="sm">Log out all other sessions</Button>}>
+                <ul className="divide-y dark:divide-gray-700">
+                    {values.activeSessions.map(session => (
+                        <li key={session.id} className="py-3">
+                            <p className="font-semibold">{session.location} - {session.ipAddress} {session.isCurrent && <span className="text-green-500 text-xs ml-2">(Current)</span>}</p>
+                            <p className="text-sm text-gray-500">{session.userAgent}</p>
+                            <p className="text-xs text-gray-400">Last accessed: {new Date(session.lastAccessed).toLocaleString()}</p>
+                        </li>
+                    ))}
+                </ul>
+            </Card>
+            
+             <Card title="Account Deletion" description="Permanently delete your account and all of its associated data. This action is irreversible.">
+                <Button variant="danger">Delete My Account</Button>
+            </Card>
 
-            </div>
         </SettingsSectionWrapper>
     );
 };
@@ -1488,184 +1679,95 @@ export const AICalibrationSection: FC = () => {
             title="The Calibration Chamber"
             description="Tune the Instrument to your Sovereign will. Define the frequencies of communication and refine the signal."
         >
-            <div className="space-y-10">
-                <Card title="Primary Instrument Model">
-                     <Select label="AI Model" name="primaryModel" value={values.primaryModel} onChange={handleChange} description="Select the core AI model for primary tasks.">
-                        {Object.values(AIModel).map(model => <option key={model} value={model}>{model}</option>)}
-                    </Select>
-                </Card>
+            <Card title="Primary Instrument Model">
+                 <Select label="AI Model" name="primaryModel" value={values.primaryModel} onChange={handleChange} description="Select the core AI model for primary tasks.">
+                    {Object.values(AIModel).map(model => <option key={model} value={model}>{model}</option>)}
+                </Select>
+            </Card>
 
-                <Card title="Communication Frequency">
+            <Card title="Communication Frequency">
+                <div className="space-y-6">
                     <Select label="Tone" name="communication.tone" value={values.communication.tone} onChange={handleChange} description="The overall tone of the AI's generated text.">
                         {Object.values(AITone).map(tone => <option key={tone} value={tone}>{tone.charAt(0).toUpperCase() + tone.slice(1)}</option>)}
                     </Select>
-                    <div className="mt-4">
-                        <Select label="Proactivity Level" name="communication.proactivity" value={values.communication.proactivity} onChange={handleChange} description="How proactive should the AI be in assisting you?">
-                            {Object.values(AIProactivity).map(level => <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>)}
-                        </Select>
+                    <Select label="Proactivity Level" name="communication.proactivity" value={values.communication.proactivity} onChange={handleChange} description="How proactive should the AI be in assisting you?">
+                        {Object.values(AIProactivity).map(level => <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>)}
+                    </Select>
+                    <div>
+                        <label htmlFor="verbosity" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Verbosity ({values.communication.verbosity}%)</label>
+                        <input id="verbosity" type="range" name="communication.verbosity" min="0" max="100" value={values.communication.verbosity} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" />
                     </div>
-                </Card>
-
-                <Card title="The Sovereign's Will" footer={<Button variant="secondary" size="sm">Add New Principle</Button>}>
-                    <Textarea label="Core Objective" name="sovereignsWill.coreObjective" value={values.sovereignsWill.coreObjective} onChange={handleChange} rows={4} description="The primary, high-level directive for your AI."/>
-                    <div className="mt-6">
-                        <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Guiding Principles</h4>
-                        <div className="space-y-3">
-                            {values.sovereignsWill.principles.map((p, index) => (
-                                <div key={p.id} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
-                                    <input type="text" value={p.principle} onChange={(e) => {
-                                        const newPrinciples = [...values.sovereignsWill.principles];
-                                        newPrinciples[index].principle = e.target.value;
-                                        setFieldValue('sovereignsWill.principles', newPrinciples);
-                                    }} className="flex-grow bg-transparent border-none focus:ring-0" />
-                                    <Toggle enabled={p.isActive} onChange={v => {
-                                        const newPrinciples = [...values.sovereignsWill.principles];
-                                        newPrinciples[index].isActive = v;
-                                        setFieldValue('sovereignsWill.principles', newPrinciples);
-                                    }} label="" />
-                                    <Button variant="ghost" size="sm"><TrashIcon size={16} /></Button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </Card>
-                
-                <div className="pt-6 text-right border-t dark:border-gray-700">
-                    <Button onClick={handleSave} isLoading={isSaving}>Save Calibration</Button>
                 </div>
-            </div>
+            </Card>
+
+            <Card title="The Sovereign's Will" footer={<Button variant="secondary" size="sm">Add New Principle</Button>}>
+                <Textarea label="Core Objective" name="sovereignsWill.coreObjective" value={values.sovereignsWill.coreObjective} onChange={handleChange} rows={4} description="The primary, high-level directive for your AI."/>
+                <div className="mt-6">
+                    <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">Guiding Principles</h4>
+                    <div className="space-y-3">
+                        {values.sovereignsWill.principles.map((p, index) => (
+                            <div key={p.id} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                <input type="text" value={p.principle} onChange={(e) => {
+                                    const newPrinciples = [...values.sovereignsWill.principles];
+                                    newPrinciples[index].principle = e.target.value;
+                                    setFieldValue('sovereignsWill.principles', newPrinciples);
+                                }} className="flex-grow bg-transparent border-none focus:ring-0 text-sm" />
+                                <Toggle enabled={p.isActive} onChange={v => {
+                                    const newPrinciples = [...values.sovereignsWill.principles];
+                                    newPrinciples[index].isActive = v;
+                                    setFieldValue('sovereignsWill.principles', newPrinciples);
+                                }} label="" />
+                                <Button variant="ghost" size="sm"><TrashIcon size={16} /></Button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Card>
+            
+            <Card footer={<Button onClick={handleSave} isLoading={isSaving}>Save Calibration</Button>} />
         </SettingsSectionWrapper>
     );
 };
 
-// ... Imagine 5 more highly detailed section components here (Account, Integrations, Accessibility, etc.) ...
-// To meet the 10,000 line count, these would be just as, if not more, complex than the ones above.
-// For example, the Integrations section would have modals for adding new integrations, tables for API keys with generation/revocation flows, etc.
-// The Account section would have a detailed billing history table with invoice downloads, plan comparison, and cancellation flow.
-
-// SECTION: Main Settings View Component
-// ============================================================================
-
-export const SettingsLayout: FC<{children: ReactNode}> = ({ children }) => {
-    const { state, dispatch } = useSettings();
-    const navItems = [
-        { id: 'profile', label: 'Profile', icon: UserIcon },
-        { id: 'appearance', label: 'Appearance', icon: PaletteIcon },
-        { id: 'notifications', label: 'Notifications', icon: BellIcon },
-        { id: 'account', label: 'Account & Billing', icon: CreditCardIcon },
-        { id: 'integrations', label: 'API & Integrations', icon: CodeIcon },
-        { id: 'security', label: 'Security & Privacy', icon: ShieldIcon },
-        { id: 'accessibility', label: 'Accessibility', icon: AccessibilityIcon },
-        { id: 'calibration', label: 'AI Calibration', icon: BrainCircuitIcon },
-        { id: 'advanced', label: 'Advanced', icon: SettingsIcon },
-    ];
-
-    const handleNavClick = (section: SettingsSection) => {
-        dispatch({ type: 'SET_ACTIVE_SECTION', payload: section });
-    };
-
-    return (
-        <div className="flex h-full bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-            <aside className="w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r dark:border-gray-700 p-4">
-                <h1 className="text-xl font-bold mb-6 px-2">Settings</h1>
-                <nav>
-                    <ul className="space-y-1">
-                        {navItems.map(item => (
-                            <li key={item.id}>
-                                <a
-                                    href={`#${item.id}`}
-                                    onClick={(e) => { e.preventDefault(); handleNavClick(item.id as SettingsSection); }}
-                                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                                        state.activeSection === item.id 
-                                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' 
-                                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                                    }`}
-                                >
-                                    <item.icon className="mr-3 h-5 w-5" />
-                                    <span>{item.label}</span>
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </aside>
-            <main className="flex-1 overflow-y-auto p-8">
-                {children}
-            </main>
-        </div>
-    );
-}
-
 
 /**
- * The main settings view component. Orchestrates all settings sections.
+ * Integrations Settings Section
  */
-export const SettingsView: FC = () => {
-    const [state, dispatch] = useReducer(settingsReducer, initialState);
+export const IntegrationsSettingsSection: FC = () => {
+    const { state } = useSettings();
+    if (!state.integrations) return null;
 
-    useEffect(() => {
-        const loadSettings = async () => {
-            dispatch({ type: 'FETCH_INIT' });
-            try {
-                const settingsData = await fetchAllSettings();
-                dispatch({ type: 'FETCH_SUCCESS', payload: settingsData });
-            } catch (error) {
-                dispatch({ type: 'FETCH_FAILURE', payload: 'Failed to load settings.' });
-            }
-        };
-        loadSettings();
-    }, []);
-
-    const saveSection = useCallback(async (section: SettingsSection, data: any) => {
-        // Optimistic update
-        dispatch({ type: 'UPDATE_SECTION', payload: { section, data } });
-        const result = await updateSettingsSection(section, data);
-        if (!result.success) {
-            // Revert on failure (would require storing previous state)
-            console.error(`Failed to save ${section}: ${result.message}`);
-            // TODO: Add UI feedback for save failure
-        }
-        return result;
-    }, []);
-    
-    const contextValue = useMemo(() => ({ state, dispatch, saveSection }), [state, saveSection]);
-
-    const renderSection = () => {
-        switch (state.activeSection) {
-            case 'profile': return <ProfileSettingsSection />;
-            case 'appearance': return <AppearanceSettingsSection />;
-            case 'notifications': return <NotificationsSettingsSection />;
-            case 'security': return <SecuritySettingsSection />;
-            case 'calibration': return <AICalibrationSection />;
-            // ...other cases would be here
-            default: return <ProfileSettingsSection />;
-        }
-    };
-    
     return (
-        <SettingsContext.Provider value={contextValue}>
-            <SettingsLayout>
-                {state.isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <p>Loading your settings...</p>
-                    </div>
-                ) : state.error ? (
-                    <div className="text-red-500">{state.error}</div>
-                ) : (
-                    renderSection()
-                )}
-            </SettingsLayout>
-        </SettingsContext.Provider>
-    );
-};
+        <SettingsSectionWrapper
+            title="API & Integrations"
+            description="Connect to third-party services, manage API keys, and configure webhooks."
+        >
+            <Card title="Connected Integrations" actions={<Button variant="secondary" size="sm">Connect New</Button>}>
+                <ul className="divide-y dark:divide-gray-700">
+                    {state.integrations.connectedIntegrations.map(int => (
+                        <li key={int.id} className="py-3 flex justify-between items-center">
+                            <div>
+                                <p className="font-medium capitalize">{int.provider}</p>
+                                <p className="text-sm text-gray-500">{int.accountName}</p>
+                            </div>
+                            <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50">Disconnect</Button>
+                        </li>
+                    ))}
+                </ul>
+            </Card>
 
-export default SettingsView;
-
-// This file is intentionally verbose and includes many components in one place to fulfill
-// the directive of creating a very large, single-file component for a "REAL APPLICATION".
-// In a typical real-world scenario, this would be broken down into dozens of smaller files,
-// each in its own directory, following a more modular architecture (e.g., features-based).
-// The purpose here is to demonstrate the complexity and breadth of a comprehensive settings
-// page within the given constraints. A real application settings can easily reach this
-// level of complexity when accounting for all states, interactions, sub-components,
-// validation, API logic, and various user-configurable options.
+            <Card title="API Keys" actions={<Button variant="secondary" size="sm">Generate New Key</Button>}>
+                <table className="w-full text-sm">
+                    <thead className="text-left text-gray-500 dark:text-gray-400">
+                        <tr>
+                            <th className="py-2">Name</th>
+                            <th className="py-2">Token</th>
+                            <th className="py-2">Last Used</th>
+                            <th className="py-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y dark:divide-gray-700">
+                        {state.integrations.apiKeys.map(key => (
+                            <tr key={key.id}>
+                                <td className="py-3 font-medium">{key.name}</td>
+                                <td className="py-3 font-mono text
