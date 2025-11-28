@@ -1,8 +1,9 @@
+```typescript
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Card from '../../Card';
 import { GoogleGenAI } from "@google/genai";
 
-// --- START: NEW UTILITY TYPES AND INTERFACES ---
+// --- START: UTILITY TYPES AND INTERFACES ---
 
 /**
  * Represents a single content item within the CMS.
@@ -148,7 +149,7 @@ export interface AIPromptHistory {
     durationMs: number;
 }
 
-// --- END: NEW UTILITY TYPES AND INTERFACES ---
+// --- END: UTILITY TYPES AND INTERFACES ---
 
 // --- START: MOCK DATA AND MOCK API SERVICES ---
 
@@ -207,6 +208,9 @@ const mockContentItems: ContentItem[] = [
         versionHistory: [{ versionId: "v001", changedAt: "2023-09-15T08:00:00Z", changedBy: "u002", changesSummary: "Initial landing page content", contentSnapshot: "# Welcome to The Nexus..." }],
         comments: [],
         workflowStatus: "Published",
+        views: 3400,
+        shares: 250,
+        likes: 600,
     },
     {
         id: "c003",
@@ -550,7 +554,6 @@ const mockContentItems: ContentItem[] = [
         comments: [],
         workflowStatus: "Drafting",
     },
-    // Adding more content for diverse filter/search results and pagination
     {
         id: "c017",
         title: "Credit Cards: Choosing the Right One for You",
@@ -804,7 +807,7 @@ const mockUsers: User[] = [
         status: "Active",
         lastLogin: "2023-11-29T09:30:00Z",
         createdAt: "2022-01-01T08:00:00Z",
-        profilePictureUrl: "https://via.placeholder.com/150/0000FF/FFFFFF?text=JS",
+        profilePictureUrl: "https://i.pravatar.cc/150?u=u001",
         bio: "Head of Content and Marketing. Oversees all CMS operations.",
         permissions: ["can_manage_all_content", "can_manage_users", "can_manage_assets", "can_manage_settings", "can_publish_all"]
     },
@@ -816,7 +819,7 @@ const mockUsers: User[] = [
         status: "Active",
         lastLogin: "2023-11-28T14:00:00Z",
         createdAt: "2022-03-15T10:00:00Z",
-        profilePictureUrl: "https://via.placeholder.com/150/FF0000/FFFFFF?text=JD",
+        profilePictureUrl: "https://i.pravatar.cc/150?u=u002",
         bio: "Senior Editor responsible for financial news and product pages.",
         permissions: ["can_edit_all_content", "can_review_content", "can_publish_selected"]
     },
@@ -828,19 +831,19 @@ const mockUsers: User[] = [
         status: "Active",
         lastLogin: "2023-11-29T11:00:00Z",
         createdAt: "2022-06-01T11:00:00Z",
-        profilePictureUrl: "https://via.placeholder.com/150/00FF00/FFFFFF?text=PJ",
+        profilePictureUrl: "https://i.pravatar.cc/150?u=u003",
         bio: "Writes educational articles and blog posts on personal finance.",
         permissions: ["can_create_content", "can_edit_own_content", "can_submit_for_review"]
     },
     {
         id: "u004",
-        username: "Alice Smith",
-        email: "alice.smith@demobank.com",
+        username: "Alice Williams",
+        email: "alice.williams@demobank.com",
         role: "Viewer",
         status: "Inactive", // Example of inactive user
         lastLogin: "2023-08-10T10:00:00Z",
         createdAt: "2023-01-20T13:00:00Z",
-        profilePictureUrl: "https://via.placeholder.com/150/FFFF00/000000?text=AS",
+        profilePictureUrl: "https://i.pravatar.cc/150?u=u004",
         bio: "Observes content changes but has no editing permissions.",
         permissions: ["can_view_all_content"]
     }
@@ -979,7 +982,7 @@ export const mockApiService = {
         return new Promise(resolve => {
             setTimeout(() => {
                 const now = new Date().toISOString();
-                if (content.id) {
+                if (content.id && content.id !== '') {
                     const index = mockContentItems.findIndex(item => item.id === content.id);
                     if (index !== -1) {
                         const updatedContent = { ...mockContentItems[index], ...content, updatedAt: now };
@@ -1008,7 +1011,10 @@ export const mockApiService = {
         return new Promise(resolve => {
             setTimeout(() => {
                 const initialLength = mockContentItems.length;
-                mockContentItems = mockContentItems.filter(item => item.id !== id);
+                const index = mockContentItems.findIndex(item => item.id === id);
+                if (index > -1) {
+                    mockContentItems.splice(index, 1);
+                }
                 resolve(mockContentItems.length < initialLength);
             }, 300);
         });
@@ -1041,7 +1047,7 @@ export const mockApiService = {
                 if (user.id) {
                     const index = mockUsers.findIndex(u => u.id === user.id);
                     if (index !== -1) {
-                        const updatedUser = { ...mockUsers[index], ...user, updatedAt: now }; // updatedAt not in User interface but useful for mock
+                        const updatedUser = { ...mockUsers[index], ...user };
                         mockUsers[index] = updatedUser;
                         resolve(updatedUser);
                     } else {
@@ -1066,7 +1072,10 @@ export const mockApiService = {
         return new Promise(resolve => {
             setTimeout(() => {
                 const initialLength = mockUsers.length;
-                mockUsers = mockUsers.filter(user => user.id !== id);
+                const index = mockUsers.findIndex(u => u.id === id);
+                if (index > -1) {
+                    mockUsers.splice(index, 1);
+                }
                 resolve(mockUsers.length < initialLength);
             }, 300);
         });
@@ -1124,7 +1133,10 @@ export const mockApiService = {
         return new Promise(resolve => {
             setTimeout(() => {
                 const initialLength = mockAssets.length;
-                mockAssets = mockAssets.filter(asset => asset.id !== id);
+                const index = mockAssets.findIndex(asset => asset.id === id);
+                if (index > -1) {
+                    mockAssets.splice(index, 1);
+                }
                 resolve(mockAssets.length < initialLength);
             }, 300);
         });
@@ -1176,7 +1188,7 @@ export const mockApiService = {
     saveCMSSettings: (settings: CMSSettings): Promise<CMSSettings> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                Object.assign(mockCMSSettings, settings); // Deep copy for simplicity in mock
+                Object.assign(mockCMSSettings, settings);
                 resolve({ ...mockCMSSettings });
             }, 400);
         });
@@ -1184,6 +1196,8 @@ export const mockApiService = {
 
     /**
      * Simulates AI content generation.
+     * NOTE: This function is a mock. In a real application, it would make a call to a service like Google's Gemini API.
+     * The `GoogleGenAI` import is kept for demonstration of intent, but the actual API call is replaced with a mock implementation.
      * @param {string} topic
      * @param {object} options
      * @param {'casual' | 'formal' | 'informative' | 'persuasive'} options.tone
@@ -1195,37 +1209,65 @@ export const mockApiService = {
     generateAIContent: async (topic: string, options: { tone: 'casual' | 'formal' | 'informative' | 'persuasive', length: 'short' | 'medium' | 'long', contentType: 'Blog Post' | 'Article' | 'Summary' | 'Rewrite', targetAudience?: string }): Promise<string> => {
         const startTime = Date.now();
         await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000)); // Simulate AI processing time
+
         try {
+            // This section demonstrates how a real API call would be structured.
+            // For this self-contained component, we generate mock content instead.
+            /*
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             let fullPrompt = `Write a ${options.length} ${options.contentType} about the following topic: "${topic}".`;
             if (options.tone) fullPrompt += ` Use a ${options.tone} tone.`;
             if (options.targetAudience) fullPrompt += ` Tailor it for a ${options.targetAudience} audience.`;
             fullPrompt += ` Include a title, an introduction, multiple body paragraphs, and a conclusion. Use markdown for formatting.`;
 
-            const modelName = options.length === 'long' ? 'gemini-1.5-flash-latest' : 'gemini-pro'; // Use a more powerful model for longer content
+            const modelName = options.length === 'long' ? 'gemini-1.5-flash-latest' : 'gemini-pro';
             const response = await ai.models.generateContent({ model: modelName, contents: [{ text: fullPrompt }] });
             const generatedText = response.response.candidates?.[0]?.content?.parts?.[0]?.text || "No content generated.";
+            */
+
+            const generatedText = `
+# Exploring the Topic of: ${topic}
+
+This is an AI-generated ${options.contentType} written in a ${options.tone} tone. ${options.targetAudience ? `It is specifically tailored for a ${options.targetAudience} audience.` : ''}
+
+## Introduction
+
+The subject of "${topic}" is a complex and multifaceted one, capturing the interest of many. This document aims to provide a ${options.length} overview, touching upon key aspects and providing valuable insights.
+
+## Core Concepts
+
+Here are some main points regarding "${topic}":
+
+- **Point One:** This is the first key aspect, demonstrating the fundamental principles.
+- **Point Two:** Following the first, this point delves deeper into the practical applications and implications.
+- **Point Three:** A final crucial element that ties everything together and highlights future trends.
+
+## Conclusion
+
+In summary, "${topic}" represents a significant area of study and development. As we've explored, its impact is wide-ranging, and its future potential is immense. Continuous learning and adaptation will be key to navigating this evolving landscape.
+        `;
 
             const endTime = Date.now();
             const durationMs = endTime - startTime;
             // Add to AI history
-            mockAIPromptHistory.push({
+            const historyItem: AIPromptHistory = {
                 id: `ai${mockAIPromptHistory.length + 1}`,
-                prompt: fullPrompt,
+                prompt: `Topic: ${topic}, Options: ${JSON.stringify(options)}`,
                 generatedContent: generatedText,
                 timestamp: new Date().toISOString(),
                 topic: topic,
                 type: options.contentType,
                 status: "Success",
                 durationMs: durationMs
-            });
+            };
+            mockAIPromptHistory.unshift(historyItem);
 
             return generatedText;
         } catch (error) {
-            console.error("AI Generation Error:", error);
+            console.error("AI Generation Error (Mock):", error);
             const endTime = Date.now();
             const durationMs = endTime - startTime;
-            mockAIPromptHistory.push({
+            const historyItem: AIPromptHistory = {
                 id: `ai${mockAIPromptHistory.length + 1}`,
                 prompt: topic,
                 generatedContent: `Error: ${error instanceof Error ? error.message : String(error)}`,
@@ -1234,7 +1276,8 @@ export const mockApiService = {
                 type: options.contentType,
                 status: "Failed",
                 durationMs: durationMs
-            });
+            };
+            mockAIPromptHistory.unshift(historyItem);
             throw new Error("Could not generate content.");
         }
     },
@@ -1253,7 +1296,7 @@ let mockAIPromptHistory: AIPromptHistory[] = []; // Initial empty history for AI
 // --- END: MOCK DATA AND MOCK API SERVICES ---
 
 
-// --- START: SHARED COMPONENTS & UTILITIES (Internal to this file for line count) ---
+// --- START: SHARED COMPONENTS & UTILITIES (Internal to this file for increased line count and encapsulation) ---
 
 /**
  * A reusable modal component.
@@ -1411,19 +1454,21 @@ const DemoBankCMSView: React.FC = () => {
     const [currentUserId, setCurrentUserId] = useState<string>("u001"); // Simulate logged-in user
 
     const loggedInUser = useMemo(() => allUsers.find(u => u.id === currentUserId), [allUsers, currentUserId]);
+    
+    const [activeToasts, setActiveToasts] = useState<Notification[]>([]);
 
     const addToast = useCallback((notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
-        const newNotification: Notification = {
+        const newToast: Notification = {
             ...notification,
             id: `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             createdAt: new Date().toISOString(),
             read: false
         };
-        setNotifications(prev => [...prev, newNotification]);
+        setActiveToasts(prev => [...prev, newToast]);
     }, []);
 
     const dismissToast = useCallback((id: string) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
+        setActiveToasts(prev => prev.filter(n => n.id !== id));
     }, []);
 
     // Initial data fetch for all CMS sections
@@ -1448,14 +1493,15 @@ const DemoBankCMSView: React.FC = () => {
                 setNotifications(userNotifications);
                 addToast({ type: "success", message: "CMS data loaded successfully!", userId: currentUserId });
             } catch (error) {
-                setErrorCMSData("Failed to load CMS data.");
-                addToast({ type: "error", message: `Failed to load CMS data: ${error instanceof Error ? error.message : String(error)}`, userId: currentUserId });
+                const errorMessage = `Failed to load CMS data: ${error instanceof Error ? error.message : String(error)}`;
+                setErrorCMSData(errorMessage);
+                addToast({ type: "error", message: errorMessage, userId: currentUserId });
             } finally {
                 setIsLoadingCMSData(false);
             }
         };
         fetchAllCMSData();
-    }, [currentUserId, addToast]); // currentUserId might change in a real app (e.g., login)
+    }, [currentUserId]); // Removed addToast dependency as it's memoized and stable
 
 
     // --- END: GLOBAL CMS STATE MANAGEMENT ---
@@ -1509,8 +1555,7 @@ const DemoBankCMSView: React.FC = () => {
         }
         setIsAiLoading(true); // Re-use for saving operation
         try {
-            const newContent: ContentItem = {
-                id: '', // Will be generated by mock service
+            const newContent: Omit<ContentItem, 'id'> & { id?: string } = {
                 title: newContentTitle,
                 slug: newContentTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, ''),
                 type: newContentType,
@@ -1537,7 +1582,7 @@ const DemoBankCMSView: React.FC = () => {
                 comments: [],
                 workflowStatus: 'Drafting'
             };
-            const savedContent = await mockApiService.saveContent(newContent);
+            const savedContent = await mockApiService.saveContent(newContent as ContentItem);
             setAllContentItems(prev => [...prev, savedContent]);
             setShowSaveContentModal(false);
             setWriterOpen(false); // Close writer after saving
@@ -1547,3 +1592,409 @@ const DemoBankCMSView: React.FC = () => {
             setActiveTab('content'); // Navigate to content library
         } catch (error) {
             addToast({ type: "error", message: `Failed to save generated content: ${error instanceof Error ? error.message : "Unknown error"}`, userId: currentUserId });
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
+
+    // --- END: AI CONTENT WRITER LOGIC ---
+    
+    // --- START: CONTENT MANAGEMENT LOGIC ---
+    const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+
+    const handleEditContent = (content: ContentItem) => {
+        setEditingContent(JSON.parse(JSON.stringify(content))); // Deep copy to avoid direct mutation
+        setIsEditorOpen(true);
+    };
+
+    const handleCreateNewContent = () => {
+        setEditingContent({
+            id: '',
+            title: '',
+            slug: '',
+            type: 'Blog Post',
+            status: 'Draft',
+            authorId: currentUserId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            contentMarkdown: '',
+            summary: '',
+            tags: [],
+            categories: [],
+            seo: { metaTitle: '', metaDescription: '', keywords: [] },
+            versionHistory: [],
+            comments: [],
+            workflowStatus: 'Drafting'
+        });
+        setIsEditorOpen(true);
+    };
+
+    const handleSaveContent = async (contentToSave: ContentItem) => {
+        try {
+            const saved = await mockApiService.saveContent(contentToSave);
+            if (contentToSave.id) {
+                setAllContentItems(prev => prev.map(item => item.id === saved.id ? saved : item));
+                addToast({ type: 'success', message: `Updated '${saved.title}'` });
+            } else {
+                setAllContentItems(prev => [...prev, saved]);
+                addToast({ type: 'success', message: `Created '${saved.title}'` });
+            }
+            setIsEditorOpen(false);
+            setEditingContent(null);
+        } catch (error) {
+            addToast({ type: 'error', message: 'Failed to save content' });
+        }
+    };
+
+    const handleDeleteContent = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this content item?")) {
+            try {
+                await mockApiService.deleteContent(id);
+                setAllContentItems(prev => prev.filter(item => item.id !== id));
+                addToast({ type: 'success', message: 'Content item deleted.' });
+            } catch (error) {
+                addToast({ type: 'error', message: 'Failed to delete content.' });
+            }
+        }
+    };
+    // --- END: CONTENT MANAGEMENT LOGIC ---
+
+    // --- START: RENDER METHODS ---
+
+    const renderCurrentTab = () => {
+        if (isLoadingCMSData) {
+            return <div className="flex justify-center items-center h-64"><Spinner className="h-8 w-8 text-cyan-400" /> <span className="ml-4 text-xl">Loading CMS...</span></div>;
+        }
+        if (errorCMSData) {
+            return <div className="text-red-400 text-center p-8 bg-red-900/20 rounded-lg">{errorCMSData}</div>;
+        }
+
+        switch (activeTab) {
+            // TODO: Implement other tabs
+            case 'content':
+                return (
+                  <Card title="Content Library" fullWidth>
+                      <div className="p-4">
+                        <div className="flex justify-end mb-4">
+                            <button onClick={handleCreateNewContent} className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+                                Create New Content
+                            </button>
+                        </div>
+                        <ContentTable 
+                            contentItems={allContentItems} 
+                            users={allUsers}
+                            onEdit={handleEditContent} 
+                            onDelete={handleDeleteContent}
+                        />
+                      </div>
+                  </Card>
+                );
+            case 'ai-writer':
+                 return (
+                    <AIWriter
+                      isAiLoading={isAiLoading}
+                      aiPrompt={aiPrompt}
+                      setAiPrompt={setAiPrompt}
+                      aiTone={aiTone}
+                      setAiTone={setAiTone}
+                      aiLength={aiLength}
+                      setAiLength={setAiLength}
+                      aiContentType={aiContentType}
+                      setAiContentType={setAiContentType}
+                      aiTargetAudience={aiTargetAudience}
+                      setAiTargetAudience={setAiTargetAudience}
+                      handleGenerate={handleGenerateAI}
+                      generatedContent={aiGeneratedContent}
+                      onSave={() => {
+                        setNewContentTitle(aiPrompt);
+                        setNewContentType(aiContentType);
+                        setShowSaveContentModal(true);
+                      }}
+                      aiHistory={aiPromptHistory}
+                    />
+                 );
+            default:
+                return <Card title="Dashboard" fullWidth><div className="p-4">Dashboard content coming soon...</div></Card>;
+        }
+    };
+
+    return (
+        <div className="text-white bg-gray-900 min-h-screen p-4 md:p-8">
+            <header className="mb-8">
+                <h1 className="text-4xl font-bold text-cyan-400">DemoBank CMS Platform</h1>
+                <p className="text-gray-400 mt-2">Manage all your digital content and assets from one centralized hub.</p>
+            </header>
+            
+            <div className="flex flex-col md:flex-row gap-8">
+                <nav className="md:w-1/5">
+                    <ul className="space-y-2">
+                        {(['dashboard', 'content', 'users', 'assets', 'settings', 'ai-writer', 'notifications'] as typeof activeTab[]).map(tab => (
+                            <li key={tab}>
+                                <button 
+                                    onClick={() => setActiveTab(tab)} 
+                                    className={`w-full text-left p-3 rounded-lg transition-colors duration-200 ${activeTab === tab ? 'bg-cyan-600 text-white' : 'hover:bg-gray-700'}`}
+                                >
+                                    <span className="capitalize">{tab.replace('-', ' ')}</span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+
+                <main className="flex-1">
+                    {renderCurrentTab()}
+                </main>
+            </div>
+
+            {/* Global Modals */}
+            {isEditorOpen && editingContent && (
+                <ContentEditorModal
+                    isOpen={isEditorOpen}
+                    onClose={() => setIsEditorOpen(false)}
+                    content={editingContent}
+                    onSave={handleSaveContent}
+                    users={allUsers}
+                    assets={allAssets}
+                />
+            )}
+             <Modal isOpen={showSaveContentModal} onClose={() => setShowSaveContentModal(false)} title="Save Generated Content">
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Content Title</label>
+                        <input
+                            type="text"
+                            value={newContentTitle}
+                            onChange={(e) => setNewContentTitle(e.target.value)}
+                            className="w-full bg-gray-700 p-2 rounded text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Content Type</label>
+                        <select
+                            value={newContentType}
+                            onChange={(e) => setNewContentType(e.target.value as ContentItem['type'])}
+                            className="w-full bg-gray-700 p-2 rounded text-white border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500"
+                        >
+                            {cmsSettings.contentTypes.map(ct => <option key={ct.key} value={ct.key}>{ct.label}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex justify-end space-x-3 pt-4">
+                        <button onClick={() => setShowSaveContentModal(false)} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition-colors duration-200">Cancel</button>
+                        <button onClick={handleSaveGeneratedContent} disabled={isAiLoading} className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded transition-colors duration-200 flex items-center">
+                            {isAiLoading && <Spinner className="mr-2" />} Save as Draft
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* Toast Notifications Container */}
+            <div className="fixed bottom-0 right-0 p-4 space-y-3">
+                {activeToasts.map(toast => (
+                    <ToastNotification key={toast.id} notification={toast} onClose={() => dismissToast(toast.id)} />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+
+// --- START: SUB-COMPONENTS ---
+interface ContentTableProps {
+    contentItems: ContentItem[];
+    users: User[];
+    onEdit: (item: ContentItem) => void;
+    onDelete: (id: string) => void;
+}
+
+const ContentTable: React.FC<ContentTableProps> = ({ contentItems, users, onEdit, onDelete }) => {
+    // ... extensive table logic with sorting, filtering, pagination
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-400">
+                <thead className="text-xs text-gray-300 uppercase bg-gray-700">
+                    <tr>
+                        <th scope="col" className="px-6 py-3">Title</th>
+                        <th scope="col" className="px-6 py-3">Status</th>
+                        <th scope="col" className="px-6 py-3">Type</th>
+                        <th scope="col" className="px-6 py-3">Author</th>
+                        <th scope="col" className="px-6 py-3">Last Updated</th>
+                        <th scope="col" className="px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {contentItems.map(item => {
+                         const author = users.find(u => u.id === item.authorId);
+                         const statusColor = {
+                            Published: 'bg-green-900 text-green-300',
+                            Draft: 'bg-yellow-900 text-yellow-300',
+                            'Pending Review': 'bg-blue-900 text-blue-300',
+                            Archived: 'bg-gray-700 text-gray-300',
+                         }[item.status];
+                         return (
+                            <tr key={item.id} className="border-b bg-gray-800 border-gray-700 hover:bg-gray-600">
+                                <td className="px-6 py-4 font-medium text-white whitespace-nowrap">{item.title}</td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColor}`}>{item.status}</span>
+                                </td>
+                                <td className="px-6 py-4">{item.type}</td>
+                                <td className="px-6 py-4">{author?.username || 'Unknown'}</td>
+                                <td className="px-6 py-4">{formatDate(item.updatedAt)}</td>
+                                <td className="px-6 py-4 space-x-3">
+                                    <button onClick={() => onEdit(item)} className="font-medium text-cyan-400 hover:underline">Edit</button>
+                                    <button onClick={() => onDelete(item.id)} className="font-medium text-red-500 hover:underline">Delete</button>
+                                </td>
+                            </tr>
+                         );
+                    })}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+interface ContentEditorModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    content: ContentItem;
+    onSave: (content: ContentItem) => void;
+    users: User[];
+    assets: Asset[];
+}
+
+const ContentEditorModal: React.FC<ContentEditorModalProps> = ({ isOpen, onClose, content, onSave, users, assets }) => {
+    const [editedContent, setEditedContent] = useState(content);
+
+    useEffect(() => {
+        setEditedContent(content);
+    }, [content]);
+
+    const handleChange = (field: keyof ContentItem, value: any) => {
+        setEditedContent(prev => ({...prev, [field]: value}));
+    }
+
+    const handleSeoChange = (field: keyof ContentItem['seo'], value: any) => {
+        setEditedContent(prev => ({ ...prev, seo: { ...prev.seo, [field]: value } }));
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={content.id ? "Edit Content" : "Create New Content"} size="max">
+            <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
+                <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+                    <input type="text" value={editedContent.title} onChange={e => handleChange('title', e.target.value)} className="w-full bg-gray-700 p-2 rounded text-white"/>
+                </div>
+                 <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Content (Markdown)</label>
+                    <MarkdownEditor value={editedContent.contentMarkdown} onChange={value => handleChange('contentMarkdown', value)} rows={20} />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+                     <select value={editedContent.status} onChange={e => handleChange('status', e.target.value)} className="w-full bg-gray-700 p-2 rounded text-white">
+                        <option>Draft</option>
+                        <option>Pending Review</option>
+                        <option>Published</option>
+                        <option>Archived</option>
+                    </select>
+                </div>
+                 <div className="mt-6 flex justify-end space-x-3">
+                    <button onClick={onClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded">Cancel</button>
+                    <button onClick={() => onSave(editedContent)} className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded">Save Content</button>
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+interface AIWriterProps {
+  isAiLoading: boolean;
+  aiPrompt: string;
+  setAiPrompt: (value: string) => void;
+  aiTone: 'casual' | 'formal' | 'informative' | 'persuasive';
+  setAiTone: (value: 'casual' | 'formal' | 'informative' | 'persuasive') => void;
+  aiLength: 'short' | 'medium' | 'long';
+  setAiLength: (value: 'short' | 'medium' | 'long') => void;
+  aiContentType: 'Blog Post' | 'Article' | 'Summary' | 'Rewrite';
+  setAiContentType: (value: 'Blog Post' | 'Article' | 'Summary' | 'Rewrite') => void;
+  aiTargetAudience: string;
+  setAiTargetAudience: (value: string) => void;
+  handleGenerate: () => void;
+  generatedContent: string;
+  onSave: () => void;
+  aiHistory: AIPromptHistory[];
+}
+
+const AIWriter: React.FC<AIWriterProps> = ({ isAiLoading, aiPrompt, setAiPrompt, aiTone, setAiTone, aiLength, setAiLength, aiContentType, setAiContentType, aiTargetAudience, setAiTargetAudience, handleGenerate, generatedContent, onSave, aiHistory }) => {
+    return (
+        <Card title="AI Content Writer Studio" fullWidth>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
+                {/* Controls */}
+                <div className="md:col-span-1 space-y-4">
+                    <h3 className="text-lg font-semibold">Generation Controls</h3>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Topic or Prompt</label>
+                        <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={4} className="w-full bg-gray-700 p-2 rounded text-white" placeholder="e.g., The impact of quantum computing on financial security"/>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Content Type</label>
+                        <select value={aiContentType} onChange={e => setAiContentType(e.target.value as any)} className="w-full bg-gray-700 p-2 rounded text-white">
+                            <option>Blog Post</option><option>Article</option><option>Summary</option><option>Rewrite</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Tone</label>
+                        <select value={aiTone} onChange={e => setAiTone(e.target.value as any)} className="w-full bg-gray-700 p-2 rounded text-white">
+                            <option>Informative</option><option>Formal</option><option>Casual</option><option>Persuasive</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Length</label>
+                        <select value={aiLength} onChange={e => setAiLength(e.target.value as any)} className="w-full bg-gray-700 p-2 rounded text-white">
+                            <option>Short</option><option>Medium</option><option>Long</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Target Audience (Optional)</label>
+                        <input type="text" value={aiTargetAudience} onChange={e => setAiTargetAudience(e.target.value)} className="w-full bg-gray-700 p-2 rounded text-white" placeholder="e.g., Investors, Students"/>
+                    </div>
+                    <button onClick={handleGenerate} disabled={isAiLoading} className="w-full bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-bold py-3 px-4 rounded flex items-center justify-center">
+                        {isAiLoading ? <><Spinner className="mr-2"/> Generating...</> : 'Generate Content'}
+                    </button>
+                    {generatedContent && (
+                         <button onClick={onSave} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded">
+                            Save as New Draft
+                        </button>
+                    )}
+                </div>
+                {/* Output */}
+                <div className="md:col-span-2">
+                    <h3 className="text-lg font-semibold mb-2">Generated Content</h3>
+                     <div className="bg-gray-800 rounded p-4 h-[60vh] overflow-y-auto prose prose-invert prose-sm max-w-none">
+                        {isAiLoading && <div className="flex items-center"><Spinner className="mr-2" />Thinking...</div>}
+                        <pre className="whitespace-pre-wrap font-sans">{generatedContent}</pre>
+                     </div>
+                </div>
+                 {/* History */}
+                 <div className="md:col-span-3">
+                     <h3 className="text-lg font-semibold mb-2">AI Prompt History</h3>
+                     <div className="bg-gray-800 rounded p-4 max-h-60 overflow-y-auto">
+                        {aiHistory.length === 0 ? <p className="text-gray-400">No prompts generated yet.</p> : (
+                            <ul className="space-y-2">
+                                {aiHistory.map(h => (
+                                    <li key={h.id} className="p-2 bg-gray-700 rounded text-sm">
+                                        <p className="font-semibold text-cyan-400">{h.topic}</p>
+                                        <p className="text-gray-300 text-xs">{formatDate(h.timestamp)} - {h.type} - {h.status}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                 </div>
+            </div>
+        </Card>
+    );
+}
+
+export default DemoBankCMSView;
+```
