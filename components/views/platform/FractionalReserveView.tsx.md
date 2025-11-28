@@ -69,11 +69,14 @@ namespace TheAssemblyLayerPrinciple {
     }
 
     export const SIMULATION_CONSTANTS = {
-        INITIAL_AGENT_COUNT: 1000,
+        INITIAL_HOUSEHOLD_COUNT: 1000,
+        INITIAL_CORPORATION_COUNT: 100,
         INITIAL_BANK_COUNT: 10,
         TICKS_PER_YEAR: 12, // Monthly ticks
         MAX_SIMULATION_YEARS: 100,
         GLOBAL_ID_COUNTER: 0,
+        GOVERNMENT_ID: 'agent_gov_federal' as AgentId,
+        CENTRAL_BANK_ID: 'bank_central_001' as BankId,
     };
 
     export function generateUniqueId(prefix: 'agent' | 'bank' | 'txn' | 'asset' | 'loan' | 'policy' | 'sim'): string {
@@ -94,6 +97,7 @@ namespace TheAssemblyLayerPrinciple {
         EQUITY,
         BOND,
         COMMODITY,
+        CAPITAL_GOOD,
         CASH_EQUIVALENT,
     }
 
@@ -135,6 +139,8 @@ namespace TheAssemblyLayerPrinciple {
         DIVIDEND_PAYMENT,
         CENTRAL_BANK_OPERATION,
         SIMULATION_GENESIS,
+        CONSUMER_PURCHASE,
+        CAPITAL_INVESTMENT,
     }
 
     export interface ITransaction {
@@ -142,7 +148,7 @@ namespace TheAssemblyLayerPrinciple {
         tick: number;
         timestamp: number;
         type: TransactionType;
-        from: AgentId | BankId | 'GENESIS';
+        from: AgentId | BankId | 'GENESIS' | 'SYSTEM';
         to: AgentId | BankId | 'SYSTEM';
         amount: IMonetaryValue;
         memo: string;
@@ -163,6 +169,10 @@ namespace TheAssemblyLayerPrinciple {
             }
             return GlobalLedger.instance;
         }
+        
+        public static resetInstance(): void {
+             GlobalLedger.instance = new GlobalLedger();
+        }
 
         public recordTransaction(transaction: Omit<ITransaction, 'id' | 'timestamp'>): ITransaction {
             if (this.isLocked) {
@@ -174,12 +184,15 @@ namespace TheAssemblyLayerPrinciple {
                 timestamp: Date.now(),
             };
             this.transactions.push(newTransaction);
-            // In a real system, this would trigger events to update account balances.
             return newTransaction;
         }
 
         public getTransactionById(id: TransactionId): ITransaction | undefined {
             return this.transactions.find(t => t.id === id);
+        }
+        
+        public getTransactionsForTick(tick: number): ITransaction[] {
+            return this.transactions.filter(t => t.tick === tick);
         }
 
         public getTransactionsForEntity(entityId: AgentId | BankId): ITransaction[] {
@@ -231,6 +244,15 @@ namespace TheAssemblyLayerPrinciple {
         ): ILoan {
             const termInTicks = termInYears * SIMULATION_CONSTANTS.TICKS_PER_YEAR;
             const monthlyRate = interestRate / SIMULATION_CONSTANTS.TICKS_PER_YEAR;
+            
+            if (termInTicks <= 0 || monthlyRate <= 0) {
+                 return { // Interest-only or simple balloon loan for simplicity
+                    id: generateUniqueId('loan'), principal, outstandingPrincipal: principal.amount,
+                    interestRate, termInTicks, originationTick, lenderId, borrowerId,
+                    amortizationSchedule: [], isDefaulted: false,
+                };
+            }
+
             const monthlyPayment = principal.amount * (monthlyRate * Math.pow(1 + monthlyRate, termInTicks)) / (Math.pow(1 + monthlyRate, termInTicks) - 1);
 
             const schedule: IAmortizationPayment[] = [];
@@ -277,7 +299,7 @@ namespace TheAssemblyLayerPrinciple {
             this.balanceSheet = {
                 assets: new Map(),
                 liabilities: new Map(),
-                calculateNetWorth: () => {
+                calculateNetWorth: (): IMonetaryValue => {
                     let totalAssets = 0;
                     this.balanceSheet.assets.forEach(asset => totalAssets += asset.marketValue.amount);
                     let totalLiabilities = 0;
@@ -304,96 +326,212 @@ namespace TheAssemblyLayerPrinciple {
             this.id = id;
         }
 
-        public deposit(bankId: BankId, amount: IMonetaryValue): void {
+        public getCashBalance(): number {
+            return Array.from(this.bankAccounts.values()).reduce((sum, acc) => sum + acc.amount, 0);
+        }
+
+        public getPrimaryBankId(): BankId | undefined {
+            return this.bankAccounts.keys().next().value;
+        }
+
+        public deposit(bankId: BankId, amount: IMonetaryValue, currentTick: number, memo: string): void {
             const currentBalance = this.bankAccounts.get(bankId)?.amount || 0;
             this.bankAccounts.set(bankId, { amount: currentBalance + amount.amount, currency: amount.currency });
-            this.ledger.recordTransaction({
-                tick: 0, // Should be set by simulator
-                type: TransactionType.DEPOSIT,
-                from: this.id,
-                to: bankId,
-                amount: amount,
-                memo: `Deposit by ${this.name}`
-            });
+        }
+
+        public withdraw(bankId: BankId, amount: IMonetaryValue, currentTick: number, memo: string): boolean {
+            const currentBalance = this.bankAccounts.get(bankId)?.amount || 0;
+            if (currentBalance < amount.amount) {
+                return false;
+            }
+            this.bankAccounts.set(bankId, { amount: currentBalance - amount.amount, currency: amount.currency });
+            return true;
         }
     }
 
     export class Household extends EconomicAgent {
         private yearlyIncome: IMonetaryValue;
-        private consumptionRate: number; // Percentage of after-tax income
+        private consumptionRate: number; // Percentage of disposable income
         public creditScore: number = 700; // Simplified credit score
+        public employerId: AgentId | null = null;
 
         constructor(id: AgentId, name: string, initialIncome: IMonetaryValue) {
             super(id, name);
             this.yearlyIncome = initialIncome;
             this.consumptionRate = 0.8 + Math.random() * 0.15; // 80% - 95%
         }
+        
+        public setEmployer(corpId: AgentId) {
+            this.employerId = corpId;
+        }
 
         public update(currentTick: number, simulator: EconomicSimulator): void {
-            // 1. Receive income
-            const monthlyIncome = this.yearlyIncome.amount / SIMULATION_CONSTANTS.TICKS_PER_YEAR;
-            // For simplicity, let's assume wages are paid by a "SYSTEM" entity
-            const primaryBankId = this.bankAccounts.keys().next().value;
-            if (primaryBankId) {
-                this.deposit(primaryBankId, { amount: monthlyIncome, currency: this.yearlyIncome.currency });
-                this.ledger.recordTransaction({
-                    tick: currentTick,
-                    type: TransactionType.WAGE_PAYMENT,
-                    from: 'SYSTEM',
-                    to: this.id,
-                    amount: { amount: monthlyIncome, currency: this.yearlyIncome.currency },
-                    memo: `Monthly wage for ${this.name}`
-                });
+            // NOTE: Income is handled by the Corporation's update step (wage payment)
+            const disposableIncome = this.getMonthlyIncome(); // Simplified: assumes income already received this tick
+            
+            // 1. Pay taxes (simplified flat tax)
+            const taxAmount = disposableIncome * simulator.government.taxRate;
+            this.payTaxes(taxAmount, currentTick, simulator);
+
+            const afterTaxIncome = disposableIncome - taxAmount;
+
+            // 2. Make loan payments
+            this.makeLoanPayments(currentTick, simulator);
+
+            // 3. Consume
+            const consumptionAmount = afterTaxIncome * this.consumptionRate;
+            this.consumeGoods(consumptionAmount, currentTick, simulator);
+        }
+        
+        private getMonthlyIncome(): number {
+            return this.yearlyIncome.amount / SIMULATION_CONSTANTS.TICKS_PER_YEAR;
+        }
+
+        private payTaxes(amount: number, currentTick: number, simulator: EconomicSimulator) {
+            const primaryBankId = this.getPrimaryBankId();
+            if (!primaryBankId) return;
+            const taxPayment: IMonetaryValue = {amount, currency: Currency.USD};
+            
+            if (this.withdraw(primaryBankId, taxPayment, currentTick, "Tax Payment")) {
+                 simulator.getBank(primaryBankId)?.handleWithdrawal(this.id, taxPayment);
+                 simulator.government.receiveTax(taxPayment);
+                 this.ledger.recordTransaction({
+                    tick: currentTick, type: TransactionType.TAX_PAYMENT, from: this.id,
+                    to: simulator.government.id, amount: taxPayment, memo: "Household income tax"
+                 });
             }
+        }
+        
+        private makeLoanPayments(currentTick: number, simulator: EconomicSimulator) {
+            const primaryBankId = this.getPrimaryBankId();
+            if (!primaryBankId) return;
 
-            // 2. Pay taxes (simplified)
-            // TODO: Implement government and tax collection
-
-            // 3. Make loan payments
             this.balanceSheet.liabilities.forEach(loan => {
                 const payment = loan.amortizationSchedule.find(p => p.tick === currentTick && !p.paid);
                 if (payment) {
                     const totalPayment = payment.principalPayment + payment.interestPayment;
-                    // TODO: Implement withdrawal and payment logic
-                    payment.paid = true;
+                    const paymentAmount: IMonetaryValue = { amount: totalPayment, currency: loan.principal.currency };
+
+                    if (this.withdraw(primaryBankId, paymentAmount, currentTick, `Loan payment ${loan.id}`)) {
+                        simulator.getBank(primaryBankId)?.handleWithdrawal(this.id, paymentAmount);
+                        simulator.getBank(loan.lenderId)?.handleLoanPayment(loan, payment);
+
+                        payment.paid = true;
+                        loan.outstandingPrincipal -= payment.principalPayment;
+                    } else {
+                        loan.isDefaulted = true; // Simplified default logic
+                        console.warn(`${this.name} failed to make loan payment. Defaulting on loan ${loan.id}`);
+                    }
                 }
             });
+        }
+        
+        private consumeGoods(amount: number, currentTick: number, simulator: EconomicSimulator) {
+             const primaryBankId = this.getPrimaryBankId();
+             if (!primaryBankId || amount <= 0) return;
+             
+             const price = simulator.goodsMarket.getPrice();
+             const goodsToBuy = amount / price;
+             const totalCost: IMonetaryValue = { amount: goodsToBuy * price, currency: Currency.USD };
+             
+             // Assume a single corporate sector to buy from
+             const corporation = simulator.getCorporations()[0];
+             if (!corporation) return;
 
-            // 4. Consume
-            // TODO: Implement consumption logic, interacting with corporations
+             if (this.withdraw(primaryBankId, totalCost, currentTick, "Goods consumption")) {
+                simulator.getBank(primaryBankId)?.handleWithdrawal(this.id, totalCost);
+                // Money flows to the corporation
+                const corpBankId = corporation.getPrimaryBankId();
+                if (corpBankId) {
+                    corporation.deposit(corpBankId, totalCost, currentTick, "Sales revenue");
+                    simulator.getBank(corpBankId)?.handleDeposit(corporation.id, totalCost);
+                }
 
-            // 5. Save/Invest
-            // TODO: Decide whether to save cash or buy assets
+                simulator.goodsMarket.recordDemand(goodsToBuy);
+                this.ledger.recordTransaction({
+                    tick: currentTick, type: TransactionType.CONSUMER_PURCHASE, from: this.id,
+                    to: corporation.id, amount: totalCost, memo: "Household consumption"
+                });
+             }
         }
     }
 
     export class Corporation extends EconomicAgent {
-        private lastQuarterRevenue: IMonetaryValue;
-        private profitMargin: number;
-
+        private employees: Map<AgentId, Household> = new Map();
+        private capitalStock: number = 1000000;
+        private productionFunctionAlpha: number = 0.3; // Capital's share of income
+        
         constructor(id: AgentId, name: string) {
             super(id, name);
-            this.lastQuarterRevenue = { amount: 1000000, currency: Currency.USD };
-            this.profitMargin = 0.1 + Math.random() * 0.1; // 10-20%
+        }
+
+        public hire(household: Household): void {
+            this.employees.set(household.id, household);
+            household.setEmployer(this.id);
         }
 
         public update(currentTick: number, simulator: EconomicSimulator): void {
-            // 1. Pay wages to households
-            // 2. Make investments (e.g., buy assets) based on interest rates and expected returns
-            // 3. Pay dividends to shareholders (households)
-            // 4. Pay taxes
+            // 1. Production
+            const goodsProduced = this.produce();
+            simulator.goodsMarket.recordSupply(goodsProduced);
+
+            // 2. Pay Wages
+            this.payWages(currentTick, simulator);
+            
+            // Other logic (investment, dividends, taxes) would go here
+        }
+        
+        private produce(): number {
+            // Cobb-Douglas Production Function: Y = A * K^alpha * L^(1-alpha)
+            const A = 1.0; // Total factor productivity
+            const K = this.capitalStock;
+            const L = this.employees.size;
+            if (L === 0) return 0;
+            return A * Math.pow(K, this.productionFunctionAlpha) * Math.pow(L, 1 - this.productionFunctionAlpha);
+        }
+        
+        private payWages(currentTick: number, simulator: EconomicSimulator) {
+            const primaryBankId = this.getPrimaryBankId();
+            if (!primaryBankId) return;
+
+            this.employees.forEach(employee => {
+                const monthlyWage = 50000 / SIMULATION_CONSTANTS.TICKS_PER_YEAR; // Simplified: all get 50k/yr
+                const wagePayment: IMonetaryValue = { amount: monthlyWage, currency: Currency.USD };
+                
+                if (this.withdraw(primaryBankId, wagePayment, currentTick, `Wage for ${employee.name}`)) {
+                    simulator.getBank(primaryBankId)?.handleWithdrawal(this.id, wagePayment);
+                    
+                    const employeeBankId = employee.getPrimaryBankId();
+                    if (employeeBankId) {
+                        employee.deposit(employeeBankId, wagePayment, currentTick, "Monthly wage");
+                        simulator.getBank(employeeBankId)?.handleDeposit(employee.id, wagePayment);
+                    }
+                    
+                    this.ledger.recordTransaction({
+                        tick: currentTick, type: TransactionType.WAGE_PAYMENT, from: this.id,
+                        to: employee.id, amount: wagePayment, memo: `Monthly wage`
+                    });
+                }
+            });
         }
     }
 
     export class Government extends EconomicAgent {
+        public taxRate: number = 0.20; // 20% flat tax
+
         constructor(id: AgentId, name: string) {
             super(id, name);
         }
+        
+        public receiveTax(amount: IMonetaryValue) {
+            // In this model, government funds appear in its account magically after collection.
+            const primaryBankId = this.getPrimaryBankId();
+            if (!primaryBankId) return;
+            this.deposit(primaryBankId, amount, 0, "Tax Revenue");
+        }
 
         public update(currentTick: number, simulator: EconomicSimulator): void {
-            // 1. Collect taxes from households and corporations
-            // 2. Spend on public goods and services (injects money into the economy)
-            // 3. Issue bonds to finance deficits
+            // Government spending logic would go here
         }
     }
 
@@ -410,14 +548,10 @@ namespace TheAssemblyLayerPrinciple {
             super(id, name);
             this.id = id;
             this.centralBank = centralBank;
-            this.reserves = initialCapital; // Seeded by initial investors/government
+            this.reserves = initialCapital;
             const capitalAsset: IAsset = {
-                id: generateUniqueId('asset'),
-                ownerId: this.id,
-                type: AssetType.CASH_EQUIVALENT,
-                marketValue: initialCapital,
-                description: "Initial Tier 1 Capital",
-                lastValuationTick: 0
+                id: generateUniqueId('asset'), ownerId: this.id, type: AssetType.CASH_EQUIVALENT,
+                marketValue: initialCapital, description: "Initial Tier 1 Capital", lastValuationTick: 0
             };
             this.balanceSheet.addAsset(capitalAsset);
         }
@@ -430,58 +564,56 @@ namespace TheAssemblyLayerPrinciple {
             const currentDeposit = this.deposits.get(agentId)?.amount || 0;
             this.deposits.set(agentId, { amount: currentDeposit + amount.amount, currency: amount.currency });
             this.reserves.amount += amount.amount;
-            this.ledger.recordTransaction({
-                tick: 0, // Simulator tick
-                type: TransactionType.DEPOSIT,
-                from: agentId,
-                to: this.id,
-                amount: amount,
-                memo: `Deposit from ${agentId} to ${this.name}`
-            });
+        }
+        
+        public handleWithdrawal(agentId: AgentId, amount: IMonetaryValue): void {
+             const currentDeposit = this.deposits.get(agentId)?.amount || 0;
+             this.deposits.set(agentId, { amount: currentDeposit - amount.amount, currency: amount.currency });
+             this.reserves.amount -= amount.amount;
+        }
+
+        public handleLoanPayment(loan: ILoan, payment: IAmortizationPayment): void {
+            // When a loan payment is made, the bank's reserves increase
+            this.reserves.amount += (payment.principalPayment + payment.interestPayment);
+        }
+
+        public getTotalDeposits(): number {
+             return Array.from(this.deposits.values()).reduce((sum, d) => sum + d.amount, 0);
         }
 
         public getRequiredReserves(): MonetaryUnit {
-            let totalDeposits = 0;
-            this.deposits.forEach(value => totalDeposits += value.amount);
-            return totalDeposits * this.reserveRequirement;
+            return this.getTotalDeposits() * this.reserveRequirement;
         }
 
         public getExcessReserves(): MonetaryUnit {
             return this.reserves.amount - this.getRequiredReserves();
         }
 
-        public originateLoan(borrower: EconomicAgent, principal: IMonetaryValue, termInYears: number): ILoan | null {
+        public originateLoan(borrower: EconomicAgent, principal: IMonetaryValue, termInYears: number, currentTick: number): ILoan | null {
             const excessReserves = this.getExcessReserves();
-            if (excessReserves <= 0) {
-                console.warn(`${this.name} has no excess reserves to lend.`);
+            if (principal.amount > excessReserves) { // Simplified: can only lend up to excess reserves
+                console.warn(`${this.name} has insufficient excess reserves to lend.`);
                 return null;
             }
-
-            // In a real fractional reserve system, a loan creates a new deposit.
-            // The bank doesn't lend out its existing reserves directly.
-            // The loan amount is credited to the borrower's account.
-            const maxLoanable = excessReserves / this.reserveRequirement; // Simplified view
-            if(principal.amount > maxLoanable) {
-                 console.warn(`${this.name} cannot create a loan of this size.`);
-                 return null;
-            }
             
-            // 1. Create the loan instrument
             const interestRate = this.centralBank.getPolicyRate('discountRate') + 0.03; // Spread over central bank rate
-            const newLoan = LoanFactory.createLoan(principal, interestRate, termInYears, 0 /* sim tick */, this.id, borrower.id);
+            const newLoan = LoanFactory.createLoan(principal, interestRate, termInYears, currentTick, this.id, borrower.id);
             this.loans.set(newLoan.id, newLoan);
             borrower.balanceSheet.addLiability(newLoan);
             
-            // 2. The magic of money creation: credit the borrower's deposit account
-            this.handleDeposit(borrower.id, principal);
+            // The magic of money creation: credit the borrower's deposit account
+            const borrowerBankId = borrower.getPrimaryBankId();
+            if(borrowerBankId) {
+                // Here, the loan creates a new deposit for the borrower. The bank's reserves do not change at this moment.
+                // The bank's assets (loans) increase, and liabilities (deposits) increase.
+                const borrowerBank = this === simulator.getBank(borrowerBankId) ? this : simulator.getBank(borrowerBankId);
+                borrowerBank?.handleDeposit(borrower.id, principal);
+                borrower.deposit(borrowerBankId, principal, currentTick, "Loan proceeds");
+            }
             
             this.ledger.recordTransaction({
-                tick: 0, // sim tick
-                type: TransactionType.LOAN_ORIGINATION,
-                from: this.id,
-                to: borrower.id,
-                amount: principal,
-                memo: `Loan origination for ${borrower.name}`,
+                tick: currentTick, type: TransactionType.LOAN_ORIGINATION, from: this.id,
+                to: borrower.id, amount: principal, memo: `Loan origination for ${borrower.name}`,
                 relatedLoanId: newLoan.id
             });
             
@@ -490,62 +622,49 @@ namespace TheAssemblyLayerPrinciple {
         }
 
         public update(currentTick: number, simulator: EconomicSimulator): void {
-            // Accrue interest on loans
             this.loans.forEach(loan => {
                 if (!loan.isDefaulted) {
                     const paymentInfo = loan.amortizationSchedule.find(p => p.tick === currentTick);
                     if (paymentInfo) {
                         this.ledger.recordTransaction({
-                            tick: currentTick,
-                            type: TransactionType.INTEREST_ACCRUAL,
-                            from: loan.borrowerId,
-                            to: this.id,
-                            amount: {amount: paymentInfo.interestPayment, currency: loan.principal.currency},
-                            memo: `Interest accrued for loan ${loan.id}`,
-                            relatedLoanId: loan.id
+                            tick: currentTick, type: TransactionType.INTEREST_ACCRUAL, from: loan.borrowerId,
+                            to: this.id, amount: {amount: paymentInfo.interestPayment, currency: loan.principal.currency},
+                            memo: `Interest accrued for loan ${loan.id}`, relatedLoanId: loan.id
                         });
                     }
                 }
             });
 
-            // Check reserve requirements and borrow from interbank market if necessary
             if (this.reserves.amount < this.getRequiredReserves()) {
                 const shortfall = this.getRequiredReserves() - this.reserves.amount;
                 console.log(`${this.name} is short on reserves by ${shortfall}. Seeking interbank loan.`);
-                // TODO: Implement interbank lending market
             }
         }
     }
 
     export class TheCentralBank extends EconomicEntity {
-        public readonly id: BankId = 'bank_central_001';
+        public readonly id: BankId = SIMULATION_CONSTANTS.CENTRAL_BANK_ID;
         private memberBanks: Map<BankId, CommercialBank> = new Map();
-        
-        // --- MONETARY POLICY TOOLS ---
         private policyRates: Map<string, number> = new Map();
 
         constructor(name: string) {
-            super('bank_central_001', name);
+            super(SIMULATION_CONSTANTS.CENTRAL_BANK_ID, name);
             this.initializePolicyRates();
         }
 
         private initializePolicyRates(): void {
-            // Corresponds to the original BankingEngine's values, but now as explicit policy tools
-            this.policyRates.set('reserveRatio', 0.10); // Required reserve ratio
-            this.policyRates.set('discountRate', 0.25); // Rate for borrowing from the central bank
-            this.policyRates.set('fedFundsTarget', 0.20); // Target for interbank lending rate
+            this.policyRates.set('reserveRatio', 0.10);
+            this.policyRates.set('discountRate', 0.05);
+            this.policyRates.set('fedFundsTarget', 0.04);
         }
         
-        public setPolicyRate(policy: 'reserveRatio' | 'discountRate' | 'fedFundsTarget', rate: number): void {
+        public setPolicyRate(policy: 'reserveRatio' | 'discountRate' | 'fedFundsTarget', rate: number, currentTick: number): void {
             if (rate < 0) throw new Error("Policy rate cannot be negative.");
             this.policyRates.set(policy, rate);
-            console.log(`MONETARY POLICY ALERT: ${this.name} has set ${policy} to ${rate * 100}%.`);
+            console.log(`MONETARY POLICY ALERT (Tick ${currentTick}): ${this.name} has set ${policy} to ${rate * 100}%.`);
             this.ledger.recordTransaction({
-                tick: 0, // sim tick
-                type: TransactionType.CENTRAL_BANK_OPERATION,
-                from: this.id,
-                to: 'SYSTEM',
-                amount: { amount: rate, currency: Currency.SYS },
+                tick: currentTick, type: TransactionType.CENTRAL_BANK_OPERATION, from: this.id,
+                to: 'SYSTEM', amount: { amount: rate, currency: Currency.SYS },
                 memo: `Policy Change: ${policy} set to ${rate}`
             });
         }
@@ -558,121 +677,139 @@ namespace TheAssemblyLayerPrinciple {
             this.memberBanks.set(bank.id, bank);
         }
 
-        // --- OPEN MARKET OPERATIONS ---
-        public quantitativeEasing(amount: IMonetaryValue, targetBank: CommercialBank): void {
-            // The Central Bank creates money out of thin air and buys assets (e.g., bonds) from commercial banks.
-            // This increases the commercial bank's reserves, enabling more lending.
+        public quantitativeEasing(amount: IMonetaryValue, targetBank: CommercialBank, currentTick: number): void {
             console.log(`QE: ${this.name} is injecting ${amount.amount} into ${targetBank.name} by purchasing assets.`);
+            targetBank.reserves.amount += amount.amount;
             
-            // 1. Create reserves
-            const newReserves = amount;
-            
-            // 2. Transfer reserves to the commercial bank
-            targetBank.reserves.amount += newReserves.amount;
-            
-            // 3. Assume the central bank takes an asset from the commercial bank in return
-            // In a full simulation, this would involve a proper asset transfer.
             const qeAsset: IAsset = {
-                id: generateUniqueId('asset'),
-                ownerId: this.id,
-                type: AssetType.BOND,
-                marketValue: amount,
-                description: `Asset purchased from ${targetBank.name} via QE`,
-                lastValuationTick: 0 // sim tick
+                id: generateUniqueId('asset'), ownerId: this.id, type: AssetType.BOND,
+                marketValue: amount, description: `Asset purchased from ${targetBank.name} via QE`,
+                lastValuationTick: currentTick
             };
             this.balanceSheet.addAsset(qeAsset);
 
             this.ledger.recordTransaction({
-                tick: 0, // sim tick
-                type: TransactionType.CENTRAL_BANK_OPERATION,
-                from: this.id,
-                to: targetBank.id,
-                amount: amount,
-                memo: 'Quantitative Easing Operation',
+                tick: currentTick, type: TransactionType.CENTRAL_BANK_OPERATION, from: this.id,
+                to: targetBank.id, amount: amount, memo: 'Quantitative Easing Operation',
                 relatedAssetId: qeAsset.id
             });
         }
-
-        public quantitativeTightening(amount: IMonetaryValue, targetBank: CommercialBank): void {
-            // The opposite of QE. The Central Bank sells assets back to commercial banks,
-            // which removes reserves from the system.
-            console.log(`QT: ${this.name} is removing ${amount.amount} from ${targetBank.name} by selling assets.`);
-            
-            if (targetBank.reserves.amount < amount.amount) {
-                console.error(`QT failed: ${targetBank.name} has insufficient reserves.`);
-                return;
-            }
-
-            targetBank.reserves.amount -= amount.amount;
-
-            this.ledger.recordTransaction({
-                tick: 0, // sim tick
-                type: TransactionType.CENTRAL_BANK_OPERATION,
-                from: targetBank.id,
-                to: this.id,
-                amount: amount,
-                memo: 'Quantitative Tightening Operation'
-            });
-        }
-
+        
         public update(currentTick: number, simulator: EconomicSimulator): void {
-            // Central bank logic:
-            // 1. Review economic indicators from the analytics engine.
-            // 2. Adjust policy rates based on inflation and unemployment targets (e.g., Taylor Rule).
-            // 3. Supervise member banks for compliance with regulations.
+            // Implement a simple Taylor Rule for monetary policy
+            const analytics = simulator.analyticsEngine;
+            const currentInflation = analytics.calculateInflationRate();
+            const targetInflation = 0.02; // 2%
+            const equilibriumRate = 0.02; // Assumed natural rate of interest
+            
+            // Taylor Rule: r = p + r* + a(p - p*) + b(y - y*)
+            // Simplified: r = p + r* + 0.5(p - p*)
+            const inflationGap = currentInflation - targetInflation;
+            let newFedFundsTarget = equilibriumRate + currentInflation + 0.5 * inflationGap;
+            newFedFundsTarget = Math.max(0, Math.min(0.1, newFedFundsTarget)); // Bound the rate
+
+            if (Math.abs(newFedFundsTarget - this.getPolicyRate('fedFundsTarget')) > 0.0025) {
+                this.setPolicyRate('fedFundsTarget', newFedFundsTarget, currentTick);
+                this.setPolicyRate('discountRate', newFedFundsTarget + 0.01, currentTick);
+            }
+        }
+    }
+    
+    export class GoodsMarket {
+        private priceLevel: number = 1.0;
+        private lastTickSupply: number = 0;
+        private lastTickDemand: number = 0;
+        public inflationRate: number = 0.02; // Annual
+
+        public recordSupply(amount: number): void { this.lastTickSupply += amount; }
+        public recordDemand(amount: number): void { this.lastTickDemand += amount; }
+        public getPrice(): number { return this.priceLevel; }
+
+        public updatePriceLevel(): void {
+            if (this.lastTickSupply > 0 && this.lastTickDemand > 0) {
+                const imbalance = this.lastTickDemand / this.lastTickSupply;
+                const newPriceLevel = this.priceLevel * (1 + (imbalance - 1) * 0.1); // Inertia
+                const tickInflation = newPriceLevel / this.priceLevel - 1;
+                this.inflationRate = Math.pow(1 + tickInflation, SIMULATION_CONSTANTS.TICKS_PER_YEAR) - 1;
+                this.priceLevel = newPriceLevel;
+            }
+            this.lastTickDemand = 0;
+            this.lastTickSupply = 0;
         }
     }
 
     // --- ECONOMIC SIMULATION ENGINE ---
+    var simulator: EconomicSimulator; // Global for bank access
     export class EconomicSimulator {
         public readonly id: SimulationId;
         private currentTick: number = 0;
         private isRunning: boolean = false;
-        private agents: EconomicAgent[] = [];
+        private households: Household[] = [];
+        private corporations: Corporation[] = [];
         private banks: CommercialBank[] = [];
-        private government: Government;
-        private centralBank: TheCentralBank;
+        public government: Government;
+        public centralBank: TheCentralBank;
+        public goodsMarket: GoodsMarket;
+        public analyticsEngine: EconomicAnalyticsEngine;
         private ledger: GlobalLedger;
 
         constructor() {
             this.id = generateUniqueId('sim');
+            GlobalLedger.resetInstance(); // Ensure clean slate for new sim
             this.ledger = GlobalLedger.getInstance();
             this.centralBank = new TheCentralBank("The Central Banking Authority");
-            this.government = new Government(generateUniqueId('agent') as AgentId, "The Federal Government");
+            this.government = new Government(SIMULATION_CONSTANTS.GOVERNMENT_ID, "The Federal Government");
+            this.goodsMarket = new GoodsMarket();
+            this.analyticsEngine = new EconomicAnalyticsEngine(this);
+            simulator = this;
 
             this.initializeEconomy();
         }
 
         private initializeEconomy(): void {
             console.log(`Initializing economic simulation ${this.id}...`);
-            // Create commercial banks
+
             for (let i = 0; i < SIMULATION_CONSTANTS.INITIAL_BANK_COUNT; i++) {
                 const bank = new CommercialBank(
-                    generateUniqueId('bank') as BankId,
-                    `Commercial Bank #${i + 1}`,
-                    this.centralBank,
-                    { amount: 1000000, currency: Currency.USD } // Initial capital
+                    generateUniqueId('bank') as BankId, `Commercial Bank #${i + 1}`,
+                    this.centralBank, { amount: 1000000, currency: Currency.USD }
                 );
                 this.banks.push(bank);
                 this.centralBank.registerMemberBank(bank);
             }
+            this.government.deposit(this.banks[0].id, {amount: 10000000, currency: Currency.USD}, 0, "Initial Gov Balance");
 
-            // Create households
-            for (let i = 0; i < SIMULATION_CONSTANTS.INITIAL_AGENT_COUNT; i++) {
+
+            for (let i = 0; i < SIMULATION_CONSTANTS.INITIAL_CORPORATION_COUNT; i++) {
+                const corp = new Corporation(generateUniqueId('agent') as AgentId, `Corporation #${i+1}`);
+                const randomBank = this.banks[Math.floor(Math.random() * this.banks.length)];
+                corp.deposit(randomBank.id, {amount: 500000, currency: Currency.USD}, 0, "Initial Capital");
+                randomBank.handleDeposit(corp.id, {amount: 500000, currency: Currency.USD});
+                this.corporations.push(corp);
+            }
+
+            for (let i = 0; i < SIMULATION_CONSTANTS.INITIAL_HOUSEHOLD_COUNT; i++) {
                 const household = new Household(
-                    generateUniqueId('agent') as AgentId,
-                    `Household #${i + 1}`,
-                    { amount: 50000 + Math.random() * 100000, currency: Currency.USD } // Annual income
+                    generateUniqueId('agent') as AgentId, `Household #${i + 1}`,
+                    { amount: 50000 + Math.random() * 100000, currency: Currency.USD }
                 );
-                // Each household opens an account with a random bank and makes an initial deposit
                 const initialSavings = (Math.random() * 5000);
                 const randomBank = this.banks[Math.floor(Math.random() * this.banks.length)];
-                household.deposit(randomBank.id, { amount: initialSavings, currency: Currency.USD });
+                household.deposit(randomBank.id, { amount: initialSavings, currency: Currency.USD }, 0, "Initial Savings");
                 randomBank.handleDeposit(household.id, { amount: initialSavings, currency: Currency.USD });
-                this.agents.push(household);
+                
+                // Assign to a corporation
+                const randomCorp = this.corporations[Math.floor(Math.random() * this.corporations.length)];
+                randomCorp.hire(household);
+                this.households.push(household);
             }
             console.log("Economic simulation initialized.");
         }
+        
+        public getHouseholds(): readonly Household[] { return this.households; }
+        public getCorporations(): readonly Corporation[] { return this.corporations; }
+        public getBanks(): readonly CommercialBank[] { return this.banks; }
+        public getBank(id: BankId): CommercialBank | undefined { return this.banks.find(b => b.id === id); }
 
         public runFor(ticks: number): void {
             this.isRunning = true;
@@ -690,26 +827,24 @@ namespace TheAssemblyLayerPrinciple {
         }
 
         private step(): void {
-            // The order of operations is crucial in an agent-based model.
-            // 1. Government actions (e.g., spending)
-            this.government.update(this.currentTick, this);
-            
-            // 2. Central bank actions (policy changes)
-            this.centralBank.update(this.currentTick, this);
-
-            // 3. Banks update (accrue interest, check reserves)
+            // Production & Labor Market
+            this.corporations.forEach(corp => corp.update(this.currentTick, this));
+            // Consumption, Savings, Debt
+            this.households.forEach(agent => agent.update(this.currentTick, this));
+            // Financial System
             this.banks.forEach(bank => bank.update(this.currentTick, this));
-            
-            // 4. Agents update (earn, pay, consume, save)
-            this.agents.forEach(agent => agent.update(this.currentTick, this));
-
-            // 5. Market clearing (not implemented yet)
+            // Government
+            this.government.update(this.currentTick, this);
+            // Monetary Policy
+            this.centralBank.update(this.currentTick, this);
+            // Market Clearing
+            this.goodsMarket.updatePriceLevel();
         }
 
         public getSystemState(): object {
             return {
                 tick: this.currentTick,
-                totalAgents: this.agents.length,
+                totalAgents: this.households.length + this.corporations.length,
                 totalBanks: this.banks.length,
                 centralBankPolicy: {
                     reserveRatio: this.centralBank.getPolicyRate('reserveRatio'),
@@ -719,28 +854,18 @@ namespace TheAssemblyLayerPrinciple {
             };
         }
 
-        // Example interaction
         public demonstrateCreditCreation(): void {
-            const household = this.agents[0] as Household;
+            const household = this.households[0] as Household;
             const bank = this.banks[0];
 
             console.log("\n--- DEMONSTRATING CREDIT CREATION ---");
-            console.log(`Initial state of ${bank.name}:`);
-            console.log(`  Reserves: ${bank.reserves.amount}`);
-            console.log(`  Excess Reserves: ${bank.getExcessReserves()}`);
-            
             const loanAmount = { amount: 10000, currency: Currency.USD };
             console.log(`${household.name} is applying for a ${loanAmount.amount} loan...`);
             
-            const loan = bank.originateLoan(household, loanAmount, 5);
+            const loan = bank.originateLoan(household, loanAmount, 5, this.currentTick);
 
             if (loan) {
-                console.log(`Loan successful! New state of ${bank.name}:`);
-                console.log(`  Reserves: ${bank.reserves.amount}`);
-                console.log(`  Total Deposits: ${Array.from(bank['deposits'].values()).reduce((sum, d) => sum + d.amount, 0)}`);
-                console.log(`  Required Reserves: ${bank.getRequiredReserves()}`);
-                console.log(`  Excess Reserves: ${bank.getExcessReserves()}`);
-                console.log(`  Net worth of ${household.name}: ${household.balanceSheet.calculateNetWorth().amount}`);
+                console.log(`Loan successful!`);
             } else {
                 console.log("Loan origination failed.");
             }
@@ -749,50 +874,48 @@ namespace TheAssemblyLayerPrinciple {
     
     // --- ECONOMIC ANALYTICS & VISUALIZATION ---
     export class EconomicAnalyticsEngine {
-        private ledger: GlobalLedger;
         private simulator: EconomicSimulator;
+        private ledger: GlobalLedger;
 
         constructor(simulator: EconomicSimulator) {
             this.simulator = simulator;
             this.ledger = GlobalLedger.getInstance();
         }
 
-        public calculateMoneySupply(): { m0: number, m1: number, m2: number } {
-            // M0: Physical currency + central bank reserves (simplified)
-            // M1: M0 + demand deposits
-            // M2: M1 + savings deposits, money market funds, etc. (simplified)
-            
-            // This is a complex calculation requiring deep introspection of the simulation state.
-            // Placeholder implementation:
-            let totalReserves = 0;
-            let totalDeposits = 0;
-            // TODO: Iterate over all banks to get these values
-            
-            const m0 = totalReserves;
-            const m1 = m0 + totalDeposits;
-
-            return { m0, m1, m2: m1 }; // Simplified
+        public calculateMoneySupply(): { m0: number, m1: number } {
+            const banks = this.simulator.getBanks();
+            let totalReserves = banks.reduce((sum, b) => sum + b.reserves.amount, 0);
+            let totalDeposits = banks.reduce((sum, b) => sum + b.getTotalDeposits(), 0);
+            return { m0: totalReserves, m1: totalReserves + totalDeposits };
         }
 
         public calculateGDP(tick: number): number {
-            // Calculate Gross Domestic Product for a given period using the expenditure approach (C + I + G + (X-M))
-            // This requires tracking all final goods transactions.
-            const consumption = this.ledger.getTransactionsByType(TransactionType.ASSET_PURCHASE)
-                                .filter(t => t.tick === tick /* and is a consumption good */)
-                                .reduce((sum, t) => sum + t.amount.amount, 0);
-            // ... more logic for I, G, etc.
-            return consumption; // Highly simplified
+            const transactions = this.ledger.getTransactionsForTick(tick);
+            return transactions
+                .filter(t => t.type === TransactionType.CONSUMER_PURCHASE || t.type === TransactionType.CAPITAL_INVESTMENT)
+                .reduce((sum, t) => sum + t.amount.amount, 0);
         }
         
-        public calculateInflationRate(startTick: number, endTick: number): number {
-            // Requires a Consumer Price Index (CPI) basket of goods and tracking their prices over time.
-            return 0.02; // Placeholder
+        public calculateInflationRate(): number {
+            return this.simulator.goodsMarket.inflationRate;
         }
 
         public generateGiniCoefficient(): number {
-            // Measures wealth inequality among households.
-            // Requires getting the net worth of all households and applying the Gini formula.
-            return 0.45; // Placeholder
+            const households = this.simulator.getHouseholds();
+            if (households.length < 2) return 0;
+            
+            const wealths = households.map(h => h.balanceSheet.calculateNetWorth().amount).sort((a, b) => a - b);
+            const n = wealths.length;
+            const totalWealth = wealths.reduce((sum, w) => sum + w, 0);
+            if (totalWealth === 0) return 0;
+            
+            let numerator = 0;
+            for(let i=0; i<n; i++) {
+                numerator += (i + 1) * wealths[i];
+            }
+            
+            const gini = (2 * numerator) / (n * totalWealth) - (n + 1) / n;
+            return gini;
         }
     }
     
@@ -800,21 +923,18 @@ namespace TheAssemblyLayerPrinciple {
     export class TheAdvancedEducationalAI {
         private readonly simulator: EconomicSimulator;
         private readonly analytics: EconomicAnalyticsEngine;
-        private readonly simpleEngine: TheBankingEngine; // For comparison
+        private readonly simpleEngine: TheBankingEngine;
 
         constructor(simulator: EconomicSimulator) {
             this.simulator = simulator;
-            this.analytics = new EconomicAnalyticsEngine(simulator);
+            this.analytics = simulator.analyticsEngine;
             this.simpleEngine = new TheBankingEngine();
         }
         
         public explainThePrincipleInPractice(): string {
             const simState = this.simulator.getSystemState();
-            const reserveRatio = (simState.centralBankPolicy as any).reserveRatio;
-
+            const reserveRatio = this.simulator.centralBank.getPolicyRate('reserveRatio');
             const simpleExpansion = this.simpleEngine.calculateCreditExpansion(100);
-            
-            // Find a real loan from the ledger to use as an example
             const loanTxn = this.analytics['ledger'].getTransactionsByType(TransactionType.LOAN_ORIGINATION)[0];
             let realExample = "No loans have been originated yet in the simulation.";
 
@@ -838,7 +958,7 @@ namespace TheAssemblyLayerPrinciple {
             **Live Simulation Example:**
             ${realExample}
 
-            This dynamic process is governed not just by the reserve ratio, but by the Central Bank's full suite of policy tools, the demand for loans from creditworthy agents, and the risk appetite of the commercial banks. The money supply is therefore endogenous—determined from within the system, not exogenously injected.
+            This dynamic process is governed not just by the reserve ratio, but by the Central Bank's full suite of policy tools, the demand for loans from creditworthy agents, and the risk appetite of the commercial banks. The money supply is therefore endogenousâ€”determined from within the system, not exogenously injected.
 
             2. The Principle of Interest on Principal (The System's Metabolism):
             -------------------------------------------------------------------
@@ -848,9 +968,9 @@ namespace TheAssemblyLayerPrinciple {
 
             **Current Economic State (Tick ${simState.tick}):**
             - Total Transactions Processed: ${simState.ledgerSize}
-            - Money Supply (M1, simplified): ${this.analytics.calculateMoneySupply().m1}
-            - Gini Coefficient (Inequality): ${this.analytics.generateGiniCoefficient()}
-            - Annualized Inflation (Est.): ${(this.analytics.calculateInflationRate(0,0) * 100).toFixed(2)}%
+            - Money Supply (M1): ${this.analytics.calculateMoneySupply().m1.toFixed(2)}
+            - Gini Coefficient (Inequality): ${this.analytics.generateGiniCoefficient().toFixed(3)}
+            - Annualized Inflation (Est.): ${(this.analytics.calculateInflationRate() * 100).toFixed(2)}%
 
             This simulation demonstrates that the Assembly Layer is not a simple formula, but a complex, emergent property of countless interacting agents operating within a defined regulatory framework. The principles remain true, but their expression is rich, chaotic, and perpetually evolving.
             `;
@@ -864,19 +984,14 @@ namespace TheAssemblyLayerPrinciple {
         const simulator = new EconomicSimulator();
         const aia = new TheAdvancedEducationalAI(simulator);
 
-        // Print initial explanation based on theory
         console.log(new TheEducationalAI().explainThePrinciple());
         
-        // Run simulation for a short period
         simulator.runFor(5);
         
-        // Demonstrate a specific economic event
         simulator.demonstrateCreditCreation();
         
-        // Run for a bit longer
         simulator.runFor(5);
 
-        // Print the advanced AI's analysis of the live simulation
         console.log(aia.explainThePrincipleInPractice());
     }
 }
