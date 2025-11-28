@@ -2,7 +2,7 @@ import React, { useContext, useMemo, useState, useEffect, useCallback, createCon
 import Card from '../../../Card';
 import { DataContext } from '../../../../context/DataContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line, PieChart, Pie, Cell, ScatterChart, Scatter, ZAxis } from 'recharts';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // --- New Imports for icons/utility (assuming they exist or are simple placeholders) ---
 // Note: In a real project, these would be imported from a UI library like 'react-icons'
@@ -13,7 +13,7 @@ const IconDelete = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24
 const IconCopy = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m-4 4v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2h10a2 2 0 012 2z" /></svg>;
 const IconCog = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 const IconChartBar = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
-const IconFunnel = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>;
+const IconFunnel = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 12.414V17a1 1 0 01-.293.707l-2 2A1 1 0 0111 19v-6.586l-6.707-6.707A1 1 0 014 5V4z" /></svg>;
 const IconCheckCircle = () => <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>;
 const IconXCircle = () => <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>;
 const IconClock = () => <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -64,8 +64,8 @@ export const generatePaginationControls = (pagination: Pagination): (number | st
         pageNumbers.push(1);
         if (currentPage > 3) pageNumbers.push('...');
         if (currentPage > 2) pageNumbers.push(currentPage - 1);
-        pageNumbers.push(currentPage);
-        if (currentPage < totalPages - 1) pageNumbers.push(currentPage + 1);
+        if (currentPage > 1) pageNumbers.push(currentPage);
+        if (currentPage < totalPages) pageNumbers.push(currentPage + 1);
         if (currentPage < totalPages - 2) pageNumbers.push('...');
         pageNumbers.push(totalPages);
     }
@@ -696,8 +696,8 @@ export const generateDummyABTest = (): ABTest => {
     let conclusion: string = 'Test still running or no clear winner.';
 
     if (status === 'Completed' && variantResults.length === 2) {
-        const primaryMetricA = variantResults[0][primaryMetric];
-        const primaryMetricB = variantResults[1][primaryMetric];
+        const primaryMetricA = variantResults[0][primaryMetric as keyof typeof variantResults[0]];
+        const primaryMetricB = variantResults[1][primaryMetric as keyof typeof variantResults[1]];
 
         if (primaryMetricA > primaryMetricB * 1.05) { // 5% difference for significance
             winningVariantId = `${id}-A`;
@@ -719,12 +719,10 @@ export const generateDummyABTest = (): ABTest => {
         id: id,
         name: `A/B Test ${id}`,
         description: `Testing different ${type.replace(/_/g, ' ')} variants to improve ${primaryMetric}.`,
-        type: type,
         variants: [
             { id: `${id}-A`, name: 'Variant A', content: variantAContent, trafficShare: 50 },
             { id: `${id}-B`, name: 'Variant B', content: variantBContent, trafficShare: 50 },
         ],
-        trafficDistribution: [50, 50],
         primaryMetric: primaryMetric,
         startDate: startDate,
         endDate: endDate,
@@ -856,46 +854,46 @@ export const mockApi = {
     getCampaigns: (): Promise<MarketingCampaignDetail[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingCampaigns = Array.isArray(globalThis.mockCampaigns) ? globalThis.mockCampaigns : [];
+                const existingCampaigns = Array.isArray((globalThis as any).mockCampaigns) ? (globalThis as any).mockCampaigns : [];
                 if (existingCampaigns.length === 0) {
-                    globalThis.mockCampaigns = Array.from({ length: 20 }).map(() => generateDummyCampaign());
+                    (globalThis as any).mockCampaigns = Array.from({ length: 20 }).map(() => generateDummyCampaign());
                 }
-                resolve(globalThis.mockCampaigns);
+                resolve((globalThis as any).mockCampaigns);
             }, 500);
         });
     },
     getCampaignById: (id: string): Promise<MarketingCampaignDetail | undefined> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                resolve(globalThis.mockCampaigns.find((c: MarketingCampaignDetail) => c.campaignId === id));
+                resolve((globalThis as any).mockCampaigns.find((c: MarketingCampaignDetail) => c.campaignId === id));
             }, 300);
         });
     },
     saveCampaign: (campaign: MarketingCampaignDetail): Promise<MarketingCampaignDetail> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockCampaigns.findIndex((c: MarketingCampaignDetail) => c.campaignId === campaign.campaignId);
+                const index = (globalThis as any).mockCampaigns.findIndex((c: MarketingCampaignDetail) => c.campaignId === campaign.campaignId);
                 if (index > -1) {
-                    globalThis.mockCampaigns[index] = { ...globalThis.mockCampaigns[index], ...campaign, lastModified: new Date() };
+                    (globalThis as any).mockCampaigns[index] = { ...(globalThis as any).mockCampaigns[index], ...campaign, lastModified: new Date() };
                 } else {
                     const newCampaign = { ...campaign, campaignId: `CAM-${campaignIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-                    globalThis.mockCampaigns.push(newCampaign);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockCampaigns.push(newCampaign);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newCampaign);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockCampaigns[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockCampaigns[index]);
             }, 700);
         });
     },
     deleteCampaign: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockCampaigns.length;
-                globalThis.mockCampaigns = globalThis.mockCampaigns.filter((c: MarketingCampaignDetail) => c.campaignId !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockCampaigns.length < initialLength);
+                const initialLength = (globalThis as any).mockCampaigns.length;
+                (globalThis as any).mockCampaigns = (globalThis as any).mockCampaigns.filter((c: MarketingCampaignDetail) => c.campaignId !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockCampaigns.length < initialLength);
             }, 400);
         });
     },
@@ -903,39 +901,39 @@ export const mockApi = {
     getSegments: (): Promise<AudienceSegment[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingSegments = Array.isArray(globalThis.mockSegments) ? globalThis.mockSegments : [];
+                const existingSegments = Array.isArray((globalThis as any).mockSegments) ? (globalThis as any).mockSegments : [];
                 if (existingSegments.length === 0) {
-                    globalThis.mockSegments = Array.from({ length: 10 }).map(() => generateDummySegment());
+                    (globalThis as any).mockSegments = Array.from({ length: 10 }).map(() => generateDummySegment());
                 }
-                resolve(globalThis.mockSegments);
+                resolve((globalThis as any).mockSegments);
             }, 500);
         });
     },
     saveSegment: (segment: AudienceSegment): Promise<AudienceSegment> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockSegments.findIndex((s: AudienceSegment) => s.id === segment.id);
+                const index = (globalThis as any).mockSegments.findIndex((s: AudienceSegment) => s.id === segment.id);
                 if (index > -1) {
-                    globalThis.mockSegments[index] = { ...globalThis.mockSegments[index], ...segment, lastModified: new Date() };
+                    (globalThis as any).mockSegments[index] = { ...(globalThis as any).mockSegments[index], ...segment, lastModified: new Date() };
                 } else {
                     const newSegment = { ...segment, id: `SEG-${segmentIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-                    globalThis.mockSegments.push(newSegment);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockSegments.push(newSegment);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newSegment);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockSegments[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockSegments[index]);
             }, 700);
         });
     },
     deleteSegment: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockSegments.length;
-                globalThis.mockSegments = globalThis.mockSegments.filter((s: AudienceSegment) => s.id !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockSegments.length < initialLength);
+                const initialLength = (globalThis as any).mockSegments.length;
+                (globalThis as any).mockSegments = (globalThis as any).mockSegments.filter((s: AudienceSegment) => s.id !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockSegments.length < initialLength);
             }, 400);
         });
     },
@@ -943,39 +941,39 @@ export const mockApi = {
     getWorkflows: (): Promise<MarketingWorkflow[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingWorkflows = Array.isArray(globalThis.mockWorkflows) ? globalThis.mockWorkflows : [];
+                const existingWorkflows = Array.isArray((globalThis as any).mockWorkflows) ? (globalThis as any).mockWorkflows : [];
                 if (existingWorkflows.length === 0) {
-                    globalThis.mockWorkflows = Array.from({ length: 5 }).map(() => generateDummyWorkflow());
+                    (globalThis as any).mockWorkflows = Array.from({ length: 5 }).map(() => generateDummyWorkflow());
                 }
-                resolve(globalThis.mockWorkflows);
+                resolve((globalThis as any).mockWorkflows);
             }, 500);
         });
     },
     saveWorkflow: (workflow: MarketingWorkflow): Promise<MarketingWorkflow> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockWorkflows.findIndex((w: MarketingWorkflow) => w.id === workflow.id);
+                const index = (globalThis as any).mockWorkflows.findIndex((w: MarketingWorkflow) => w.id === workflow.id);
                 if (index > -1) {
-                    globalThis.mockWorkflows[index] = { ...globalThis.mockWorkflows[index], ...workflow, lastModified: new Date() };
+                    (globalThis as any).mockWorkflows[index] = { ...(globalThis as any).mockWorkflows[index], ...workflow, lastModified: new Date() };
                 } else {
                     const newWorkflow = { ...workflow, id: `WF-${workflowIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-                    globalThis.mockWorkflows.push(newWorkflow);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockWorkflows.push(newWorkflow);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newWorkflow);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockWorkflows[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockWorkflows[index]);
             }, 700);
         });
     },
     deleteWorkflow: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockWorkflows.length;
-                globalThis.mockWorkflows = globalThis.mockWorkflows.filter((w: MarketingWorkflow) => w.id !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockWorkflows.length < initialLength);
+                const initialLength = (globalThis as any).mockWorkflows.length;
+                (globalThis as any).mockWorkflows = (globalThis as any).mockWorkflows.filter((w: MarketingWorkflow) => w.id !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockWorkflows.length < initialLength);
             }, 400);
         });
     },
@@ -983,53 +981,53 @@ export const mockApi = {
     getEmailTemplates: (): Promise<EmailTemplate[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingTemplates = Array.isArray(globalThis.mockEmailTemplates) ? globalThis.mockEmailTemplates : [];
+                const existingTemplates = Array.isArray((globalThis as any).mockEmailTemplates) ? (globalThis as any).mockEmailTemplates : [];
                 if (existingTemplates.length === 0) {
-                    globalThis.mockEmailTemplates = Array.from({ length: 15 }).map(() => generateDummyEmailTemplate());
+                    (globalThis as any).mockEmailTemplates = Array.from({ length: 15 }).map(() => generateDummyEmailTemplate());
                 }
-                resolve(globalThis.mockEmailTemplates);
+                resolve((globalThis as any).mockEmailTemplates);
             }, 500);
         });
     },
     getEmailCampaigns: (): Promise<EmailCampaign[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingEmailCampaigns = Array.isArray(globalThis.mockEmailCampaigns) ? globalThis.mockEmailCampaigns : [];
-                if (existingEmailCampaigns.length === 0 && globalThis.mockEmailTemplates && globalThis.mockSegments) {
-                    globalThis.mockEmailCampaigns = Array.from({ length: 10 }).map(() => generateDummyEmailCampaign(
-                        globalThis.mockEmailTemplates[Math.floor(Math.random() * globalThis.mockEmailTemplates.length)].id,
-                        globalThis.mockSegments[Math.floor(Math.random() * globalThis.mockSegments.length)].id
+                const existingEmailCampaigns = Array.isArray((globalThis as any).mockEmailCampaigns) ? (globalThis as any).mockEmailCampaigns : [];
+                if (existingEmailCampaigns.length === 0 && (globalThis as any).mockEmailTemplates && (globalThis as any).mockSegments) {
+                    (globalThis as any).mockEmailCampaigns = Array.from({ length: 10 }).map(() => generateDummyEmailCampaign(
+                        (globalThis as any).mockEmailTemplates[Math.floor(Math.random() * (globalThis as any).mockEmailTemplates.length)].id,
+                        (globalThis as any).mockSegments[Math.floor(Math.random() * (globalThis as any).mockSegments.length)].id
                     ));
                 }
-                resolve(globalThis.mockEmailCampaigns);
+                resolve((globalThis as any).mockEmailCampaigns);
             }, 500);
         });
     },
     saveEmailCampaign: (campaign: EmailCampaign): Promise<EmailCampaign> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockEmailCampaigns.findIndex((c: EmailCampaign) => c.id === campaign.id);
+                const index = (globalThis as any).mockEmailCampaigns.findIndex((c: EmailCampaign) => c.id === campaign.id);
                 if (index > -1) {
-                    globalThis.mockEmailCampaigns[index] = { ...globalThis.mockEmailCampaigns[index], ...campaign, lastModified: new Date() };
+                    (globalThis as any).mockEmailCampaigns[index] = { ...(globalThis as any).mockEmailCampaigns[index], ...campaign, lastModified: new Date() };
                 } else {
                     const newCampaign = { ...campaign, id: `EMC-${emailCampaignIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-                    globalThis.mockEmailCampaigns.push(newCampaign);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockEmailCampaigns.push(newCampaign);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newCampaign);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockEmailCampaigns[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockEmailCampaigns[index]);
             }, 700);
         });
     },
     deleteEmailCampaign: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockEmailCampaigns.length;
-                globalThis.mockEmailCampaigns = globalThis.mockEmailCampaigns.filter((c: EmailCampaign) => c.id !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockEmailCampaigns.length < initialLength);
+                const initialLength = (globalThis as any).mockEmailCampaigns.length;
+                (globalThis as any).mockEmailCampaigns = (globalThis as any).mockEmailCampaigns.filter((c: EmailCampaign) => c.id !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockEmailCampaigns.length < initialLength);
             }, 400);
         });
     },
@@ -1037,39 +1035,39 @@ export const mockApi = {
     getSocialPosts: (): Promise<SocialPost[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingPosts = Array.isArray(globalThis.mockSocialPosts) ? globalThis.mockSocialPosts : [];
+                const existingPosts = Array.isArray((globalThis as any).mockSocialPosts) ? (globalThis as any).mockSocialPosts : [];
                 if (existingPosts.length === 0) {
-                    globalThis.mockSocialPosts = Array.from({ length: 25 }).map(() => generateDummySocialPost());
+                    (globalThis as any).mockSocialPosts = Array.from({ length: 25 }).map(() => generateDummySocialPost());
                 }
-                resolve(globalThis.mockSocialPosts);
+                resolve((globalThis as any).mockSocialPosts);
             }, 500);
         });
     },
     saveSocialPost: (post: SocialPost): Promise<SocialPost> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockSocialPosts.findIndex((p: SocialPost) => p.id === post.id);
+                const index = (globalThis as any).mockSocialPosts.findIndex((p: SocialPost) => p.id === post.id);
                 if (index > -1) {
-                    globalThis.mockSocialPosts[index] = { ...globalThis.mockSocialPosts[index], ...post, lastModified: new Date() };
+                    (globalThis as any).mockSocialPosts[index] = { ...(globalThis as any).mockSocialPosts[index], ...post, lastModified: new Date() };
                 } else {
                     const newPost = { ...post, id: `SP-${socialPostIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-                    globalThis.mockSocialPosts.push(newPost);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockSocialPosts.push(newPost);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newPost);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockSocialPosts[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockSocialPosts[index]);
             }, 700);
         });
     },
     deleteSocialPost: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockSocialPosts.length;
-                globalThis.mockSocialPosts = globalThis.mockSocialPosts.filter((p: SocialPost) => p.id !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockSocialPosts.length < initialLength);
+                const initialLength = (globalThis as any).mockSocialPosts.length;
+                (globalThis as any).mockSocialPosts = (globalThis as any).mockSocialPosts.filter((p: SocialPost) => p.id !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockSocialPosts.length < initialLength);
             }, 400);
         });
     },
@@ -1077,39 +1075,39 @@ export const mockApi = {
     getABTests: (): Promise<ABTest[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingTests = Array.isArray(globalThis.mockABTests) ? globalThis.mockABTests : [];
+                const existingTests = Array.isArray((globalThis as any).mockABTests) ? (globalThis as any).mockABTests : [];
                 if (existingTests.length === 0) {
-                    globalThis.mockABTests = Array.from({ length: 8 }).map(() => generateDummyABTest());
+                    (globalThis as any).mockABTests = Array.from({ length: 8 }).map(() => generateDummyABTest());
                 }
-                resolve(globalThis.mockABTests);
+                resolve((globalThis as any).mockABTests);
             }, 500);
         });
     },
     saveABTest: (test: ABTest): Promise<ABTest> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockABTests.findIndex((t: ABTest) => t.id === test.id);
+                const index = (globalThis as any).mockABTests.findIndex((t: ABTest) => t.id === test.id);
                 if (index > -1) {
-                    globalThis.mockABTests[index] = { ...globalThis.mockABTests[index], ...test, lastModified: new Date() };
+                    (globalThis as any).mockABTests[index] = { ...(globalThis as any).mockABTests[index], ...test, lastModified: new Date() };
                 } else {
                     const newTest = { ...test, id: `ABT-${abTestIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-                    globalThis.mockABTests.push(newTest);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockABTests.push(newTest);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newTest);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockABTests[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockABTests[index]);
             }, 700);
         });
     },
     deleteABTest: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockABTests.length;
-                globalThis.mockABTests = globalThis.mockABTests.filter((t: ABTest) => t.id !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockABTests.length < initialLength);
+                const initialLength = (globalThis as any).mockABTests.length;
+                (globalThis as any).mockABTests = (globalThis as any).mockABTests.filter((t: ABTest) => t.id !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockABTests.length < initialLength);
             }, 400);
         });
     },
@@ -1117,39 +1115,39 @@ export const mockApi = {
     getContacts: (): Promise<ContactProfile[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingContacts = Array.isArray(globalThis.mockContacts) ? globalThis.mockContacts : [];
+                const existingContacts = Array.isArray((globalThis as any).mockContacts) ? (globalThis as any).mockContacts : [];
                 if (existingContacts.length === 0) {
-                    globalThis.mockContacts = Array.from({ length: 50 }).map(() => generateDummyContact());
+                    (globalThis as any).mockContacts = Array.from({ length: 50 }).map(() => generateDummyContact());
                 }
-                resolve(globalThis.mockContacts);
+                resolve((globalThis as any).mockContacts);
             }, 500);
         });
     },
     saveContact: (contact: ContactProfile): Promise<ContactProfile> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const index = globalThis.mockContacts.findIndex((c: ContactProfile) => c.id === contact.id);
+                const index = (globalThis as any).mockContacts.findIndex((c: ContactProfile) => c.id === contact.id);
                 if (index > -1) {
-                    globalThis.mockContacts[index] = { ...globalThis.mockContacts[index], ...contact };
+                    (globalThis as any).mockContacts[index] = { ...(globalThis as any).mockContacts[index], ...contact };
                 } else {
                     const newContact = { ...contact, id: `CON-${contactIdCounter++}`, signUpDate: new Date(), tags: [], leadScore: 0 };
-                    globalThis.mockContacts.push(newContact);
-                    globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                    (globalThis as any).mockContacts.push(newContact);
+                    (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
                     resolve(newContact);
                     return;
                 }
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockContacts[index]);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockContacts[index]);
             }, 700);
         });
     },
     deleteContact: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const initialLength = globalThis.mockContacts.length;
-                globalThis.mockContacts = globalThis.mockContacts.filter((c: ContactProfile) => c.id !== id);
-                globalThis.mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
-                resolve(globalThis.mockContacts.length < initialLength);
+                const initialLength = (globalThis as any).mockContacts.length;
+                (globalThis as any).mockContacts = (globalThis as any).mockContacts.filter((c: ContactProfile) => c.id !== id);
+                (globalThis as any).mockAuditLogs.push(generateDummyAuditLogEntry()); // Add audit log
+                resolve((globalThis as any).mockContacts.length < initialLength);
             }, 400);
         });
     },
@@ -1157,18 +1155,18 @@ export const mockApi = {
     getNotifications: (): Promise<Notification[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingNotifications = Array.isArray(globalThis.mockNotifications) ? globalThis.mockNotifications : [];
+                const existingNotifications = Array.isArray((globalThis as any).mockNotifications) ? (globalThis as any).mockNotifications : [];
                 if (existingNotifications.length === 0) {
-                    globalThis.mockNotifications = Array.from({ length: 15 }).map(() => generateDummyNotification());
+                    (globalThis as any).mockNotifications = Array.from({ length: 15 }).map(() => generateDummyNotification());
                 }
-                resolve(globalThis.mockNotifications);
+                resolve((globalThis as any).mockNotifications);
             }, 300);
         });
     },
     markNotificationAsRead: (id: string): Promise<boolean> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const notification = globalThis.mockNotifications.find((n: Notification) => n.id === id);
+                const notification = (globalThis as any).mockNotifications.find((n: Notification) => n.id === id);
                 if (notification) {
                     notification.read = true;
                     resolve(true);
@@ -1181,11 +1179,11 @@ export const mockApi = {
     getAuditLogs: (): Promise<AuditLogEntry[]> => {
         return new Promise(resolve => {
             setTimeout(() => {
-                const existingLogs = Array.isArray(globalThis.mockAuditLogs) ? globalThis.mockAuditLogs : [];
+                const existingLogs = Array.isArray((globalThis as any).mockAuditLogs) ? (globalThis as any).mockAuditLogs : [];
                 if (existingLogs.length === 0) {
-                    globalThis.mockAuditLogs = Array.from({ length: 30 }).map(() => generateDummyAuditLogEntry());
+                    (globalThis as any).mockAuditLogs = Array.from({ length: 30 }).map(() => generateDummyAuditLogEntry());
                 }
-                resolve(globalThis.mockAuditLogs.sort((a: AuditLogEntry, b: AuditLogEntry) => b.timestamp.getTime() - a.timestamp.getTime()));
+                resolve((globalThis as any).mockAuditLogs.sort((a: AuditLogEntry, b: AuditLogEntry) => b.timestamp.getTime() - a.timestamp.getTime()));
             }, 500);
         });
     },
@@ -1193,19 +1191,19 @@ export const mockApi = {
 
 // Ensure mock data exists globally once
 if (typeof globalThis !== 'undefined') {
-    if (!globalThis.mockCampaigns) globalThis.mockCampaigns = Array.from({ length: 20 }).map(() => generateDummyCampaign());
-    if (!globalThis.mockSegments) globalThis.mockSegments = Array.from({ length: 10 }).map(() => generateDummySegment());
-    if (!globalThis.mockWorkflows) globalThis.mockWorkflows = Array.from({ length: 5 }).map(() => generateDummyWorkflow());
-    if (!globalThis.mockEmailTemplates) globalThis.mockEmailTemplates = Array.from({ length: 15 }).map(() => generateDummyEmailTemplate());
-    if (!globalThis.mockEmailCampaigns && globalThis.mockEmailTemplates && globalThis.mockSegments) globalThis.mockEmailCampaigns = Array.from({ length: 10 }).map(() => generateDummyEmailCampaign(
-        globalThis.mockEmailTemplates[Math.floor(Math.random() * globalThis.mockEmailTemplates.length)].id,
-        globalThis.mockSegments[Math.floor(Math.random() * globalThis.mockSegments.length)].id
+    if (!(globalThis as any).mockCampaigns) (globalThis as any).mockCampaigns = Array.from({ length: 20 }).map(() => generateDummyCampaign());
+    if (!(globalThis as any).mockSegments) (globalThis as any).mockSegments = Array.from({ length: 10 }).map(() => generateDummySegment());
+    if (!(globalThis as any).mockWorkflows) (globalThis as any).mockWorkflows = Array.from({ length: 5 }).map(() => generateDummyWorkflow());
+    if (!(globalThis as any).mockEmailTemplates) (globalThis as any).mockEmailTemplates = Array.from({ length: 15 }).map(() => generateDummyEmailTemplate());
+    if (!(globalThis as any).mockEmailCampaigns && (globalThis as any).mockEmailTemplates && (globalThis as any).mockSegments) (globalThis as any).mockEmailCampaigns = Array.from({ length: 10 }).map(() => generateDummyEmailCampaign(
+        (globalThis as any).mockEmailTemplates[Math.floor(Math.random() * (globalThis as any).mockEmailTemplates.length)].id,
+        (globalThis as any).mockSegments[Math.floor(Math.random() * (globalThis as any).mockSegments.length)].id
     ));
-    if (!globalThis.mockSocialPosts) globalThis.mockSocialPosts = Array.from({ length: 25 }).map(() => generateDummySocialPost());
-    if (!globalThis.mockABTests) globalThis.mockABTests = Array.from({ length: 8 }).map(() => generateDummyABTest());
-    if (!globalThis.mockContacts) globalThis.mockContacts = Array.from({ length: 50 }).map(() => generateDummyContact());
-    if (!globalThis.mockNotifications) globalThis.mockNotifications = Array.from({ length: 15 }).map(() => generateDummyNotification());
-    if (!globalThis.mockAuditLogs) globalThis.mockAuditLogs = Array.from({ length: 30 }).map(() => generateDummyAuditLogEntry());
+    if (!(globalThis as any).mockSocialPosts) (globalThis as any).mockSocialPosts = Array.from({ length: 25 }).map(() => generateDummySocialPost());
+    if (!(globalThis as any).mockABTests) (globalThis as any).mockABTests = Array.from({ length: 8 }).map(() => generateDummyABTest());
+    if (!(globalThis as any).mockContacts) (globalThis as any).mockContacts = Array.from({ length: 50 }).map(() => generateDummyContact());
+    if (!(globalThis as any).mockNotifications) (globalThis as any).mockNotifications = Array.from({ length: 15 }).map(() => generateDummyNotification());
+    if (!(globalThis as any).mockAuditLogs) (globalThis as any).mockAuditLogs = Array.from({ length: 30 }).map(() => generateDummyAuditLogEntry());
 }
 
 // Global state for a complex application should ideally use a state management library
@@ -1274,7 +1272,7 @@ export const MarketingAutomationProvider: React.FC<{ children: React.ReactNode }
         abTests: true, contacts: true, notifications: true, auditLogs: true,
     });
 
-    const safeAsyncWrapper = useCallback(async <T>(
+    const safeAsyncWrapper = useCallback(async <T,>(
         loaderKey: keyof typeof loadingState,
         apiCall: () => Promise<T>,
         setter: React.Dispatch<React.SetStateAction<T>>,
@@ -1305,7 +1303,7 @@ export const MarketingAutomationProvider: React.FC<{ children: React.ReactNode }
     const fetchAuditLogs = useCallback(() => safeAsyncWrapper('auditLogs', mockApi.getAuditLogs, setAuditLogs), [safeAsyncWrapper]);
 
     // Add/Update/Delete functions
-    const addOrUpdateGeneric = useCallback(async <T extends { id: string }>(
+    const addOrUpdateGeneric = useCallback(async <T extends { id?: string; campaignId?: string }>(
         apiCall: (item: T) => Promise<T>,
         setter: React.Dispatch<React.SetStateAction<T[]>>,
         item: T,
@@ -1315,20 +1313,21 @@ export const MarketingAutomationProvider: React.FC<{ children: React.ReactNode }
         try {
             const updatedItem = await apiCall(item);
             setter(prev => {
-                const index = prev.findIndex(i => i[idKey] === updatedItem[idKey]);
+                const index = prev.findIndex(i => i[idKey] === item[idKey]);
                 if (index > -1) {
                     return [...prev.slice(0, index), updatedItem, ...prev.slice(index + 1)];
                 } else {
                     return [...prev, updatedItem];
                 }
             });
-            fetchAuditLogs(); // Refresh audit logs on data change
+            await fetchAuditLogs(); // Refresh audit logs on data change
             return updatedItem;
         } catch (error) {
             console.error(`Failed to save ${resourceType}:`, error);
             throw error;
         }
     }, [fetchAuditLogs]);
+    
 
     const deleteGeneric = useCallback(async (
         apiCall: (id: string) => Promise<boolean>,
@@ -1341,7 +1340,7 @@ export const MarketingAutomationProvider: React.FC<{ children: React.ReactNode }
             const success = await apiCall(id);
             if (success) {
                 setter(prev => prev.filter(item => item[idKey] !== id));
-                fetchAuditLogs(); // Refresh audit logs on data change
+                await fetchAuditLogs(); // Refresh audit logs on data change
             }
             return success;
         } catch (error) {
@@ -1457,7 +1456,7 @@ export const ExportedModal: React.FC<{ children: React.ReactNode; title: string;
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]" onClick={onClose}>
             <div className={`bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ${className}`} onClick={e => e.stopPropagation()}>
-                <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                <div className="p-4 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800 z-10">
                     <h3 className="text-lg font-semibold text-white">{title}</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-white">
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1600,7 +1599,7 @@ export const ExportedCampaignForm: React.FC<{
     onCancel: () => void;
     isLoading?: boolean;
 }> = ({ campaign, onSave, onCancel, isLoading }) => {
-    const { segments, getSegmentById } = useMarketingAutomation();
+    const { segments } = useMarketingAutomation();
     const [formData, setFormData] = useState<MarketingCampaignDetail>(
         campaign || {
             campaignId: '', name: '', description: '', channel: 'PPC', objective: 'Lead Generation',
@@ -2330,2114 +2329,53 @@ export const ExportedAudienceSegmentList: React.FC = () => {
     );
 };
 
-/**
- * @function ExportedLeadScoringRules
- * @description Component for defining lead scoring rules.
- */
-export const ExportedLeadScoringRules: React.FC = () => {
-    // This is a simplified version; in a real app, rules would be saved/loaded via API
-    const [rules, setRules] = useState([
-        { id: 1, event: 'Newsletter Signup', points: 10, description: 'Signed up for newsletter' },
-        { id: 2, event: 'Product Page View', points: 5, description: 'Visited product page' },
-        { id: 3, event: 'Demo Request', points: 25, description: 'Requested a demo' },
-        { id: 4, event: 'Email Open', points: 2, description: 'Opened a marketing email' },
-        { id: 5, event: 'Purchase', points: 50, description: 'Made a purchase' },
-    ]);
-    const [newEvent, setNewEvent] = useState({ event: '', points: 0, description: '' });
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleAddRule = async () => {
-        if (newEvent.event && newEvent.points > 0) {
-            setIsLoading(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setRules(prev => [...prev, { ...newEvent, id: prev.length > 0 ? Math.max(...prev.map(r => r.id)) + 1 : 1 }]);
-            setNewEvent({ event: '', points: 0, description: '' });
-            setIsLoading(false);
-        }
-    };
-
-    const handleDeleteRule = async (id: number) => {
-        setIsLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 300));
-        setRules(prev => prev.filter(rule => rule.id !== id));
-        setIsLoading(false);
-    };
-
-    const scoringColumns = useMemo(() => [
-        { key: 'event', label: 'Event' },
-        { key: 'description', label: 'Description' },
-        { key: 'points', label: 'Points' },
-        {
-            key: 'actions', label: 'Actions', render: (rule: any) => (
-                <button onClick={() => handleDeleteRule(rule.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-            )
-        }
-    ], []);
-
-    return (
-        <Card title="Lead Scoring Rules">
-            <div className="space-y-4">
-                <ExportedTable data={rules} columns={scoringColumns} isLoading={isLoading} />
-                <div className="pt-4 border-t border-gray-700 space-y-3">
-                    <h4 className="text-lg font-semibold text-white">Add New Rule</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                        <input
-                            type="text"
-                            placeholder="Event Name (e.g., 'Website Visit')"
-                            value={newEvent.event}
-                            onChange={(e) => setNewEvent(prev => ({ ...prev, event: e.target.value }))}
-                            className="bg-gray-700/50 p-2 rounded border border-gray-600 text-white placeholder-gray-400"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Description"
-                            value={newEvent.description}
-                            onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
-                            className="bg-gray-700/50 p-2 rounded border border-gray-600 text-white placeholder-gray-400"
-                        />
-                        <input
-                            type="number"
-                            placeholder="Points"
-                            value={newEvent.points}
-                            onChange={(e) => setNewEvent(prev => ({ ...prev, points: parseInt(e.target.value) || 0 }))}
-                            className="bg-gray-700/50 p-2 rounded border border-gray-600 text-white placeholder-gray-400"
-                        />
-                        <button onClick={handleAddRule} disabled={isLoading || !newEvent.event || !newEvent.description || newEvent.points <= 0}
-                            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
-                            {isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <IconPlus />} <span>Add Rule</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Card>
-    );
-};
-
-// --- WORKFLOW AUTOMATION (JOURNEY BUILDER) FEATURES (to be exported) ---
-
-/**
- * @function ExportedWorkflowEditor
- * @description Simplified visual editor for marketing workflows.
- * (This is a heavily simplified placeholder for a true drag-and-drop builder)
- */
-export const ExportedWorkflowEditor: React.FC<{
-    workflow: MarketingWorkflow;
-    onUpdate: (workflow: MarketingWorkflow) => void;
-    onCancel: () => void;
-    isLoading?: boolean;
-}> = ({ workflow, onUpdate, onCancel, isLoading }) => {
-    const [currentWorkflow, setCurrentWorkflow] = useState<MarketingWorkflow>(workflow);
-    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-
-    useEffect(() => {
-        setCurrentWorkflow(workflow);
-    }, [workflow]);
-
-    const handleNodeChange = (nodeId: string, updates: Partial<WorkflowNode>) => {
-        setCurrentWorkflow(prev => ({
-            ...prev,
-            nodes: prev.nodes.map(node =>
-                node.id === nodeId ? { ...node, ...updates } : node
-            ),
-        }));
-    };
-
-    const handleWorkflowMetaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setCurrentWorkflow(prev => ({ ...prev, [name]: value }));
-    };
-
-    const nodeTypes = [
-        { type: 'trigger', name: 'Trigger', icon: IconPlay },
-        { type: 'action', name: 'Action', icon: IconPaperAirplane },
-        { type: 'condition', name: 'Condition', icon: IconFunnel },
-        { type: 'end', name: 'End', icon: IconStop },
-    ];
-
-    const NodeComponent: React.FC<{ node: WorkflowNode; onSelect: (id: string) => void; isSelected: boolean }> = ({ node, onSelect, isSelected }) => {
-        const typeInfo = nodeTypes.find(t => t.type === node.type);
-        const Icon = typeInfo?.icon || IconTerminal;
-        return (
-            <div
-                className={`absolute p-3 rounded-lg shadow-md cursor-pointer ${isSelected ? 'border-2 border-cyan-500' : 'border border-gray-600'}
-                    ${node.type === 'trigger' ? 'bg-green-700/50' : node.type === 'action' ? 'bg-blue-700/50' : node.type === 'condition' ? 'bg-yellow-700/50' : 'bg-gray-600/50'}`}
-                style={{ left: node.position.x, top: node.position.y }}
-                onClick={() => onSelect(node.id)}
-            >
-                <div className="flex items-center space-x-2 text-white">
-                    <Icon />
-                    <span>{node.name}</span>
-                </div>
-                <p className="text-xs text-gray-300 mt-1">{node.properties.event || node.properties.action || 'Configure'}</p>
-            </div>
-        );
-    };
-
-    const renderNodeProperties = (node: WorkflowNode | undefined) => {
-        if (!node) return <p className="text-gray-400">Select a node to view/edit properties.</p>;
-
-        const handlePropertyChange = (key: string, value: any) => {
-            handleNodeChange(node.id, { properties: { ...node.properties, [key]: value } });
-        };
-
-        return (
-            <div className="space-y-3">
-                <h4 className="text-lg font-semibold text-white">{node.name} Properties</h4>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Node Name</label>
-                    <input type="text" value={node.name} onChange={(e) => handleNodeChange(node.id, { name: e.target.value })}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                </div>
-                {node.type === 'trigger' && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Trigger Event</label>
-                        <select value={node.properties.event} onChange={(e) => handlePropertyChange('event', e.target.value)}
-                            className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md">
-                            <option value="New Lead Signup">New Lead Signup</option>
-                            <option value="Product Purchase">Product Purchase</option>
-                            <option value="Cart Abandonment">Cart Abandonment</option>
-                        </select>
-                    </div>
-                )}
-                {node.type === 'action' && (
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400">Action Type</label>
-                            <select value={node.properties.action} onChange={(e) => handlePropertyChange('action', e.target.value)}
-                                className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md">
-                                <option value="Send Email">Send Email</option>
-                                <option value="Add Tag">Add Tag</option>
-                                <option value="Update CRM">Update CRM</option>
-                                <option value="Send SMS">Send SMS</option>
-                            </select>
-                        </div>
-                        {node.properties.action === 'Send Email' && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">Email Template ID</label>
-                                <input type="text" value={node.properties.templateId} onChange={(e) => handlePropertyChange('templateId', e.target.value)}
-                                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                            </div>
-                        )}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400">Delay (e.g., "1d", "2h")</label>
-                            <input type="text" value={node.properties.delay || ''} onChange={(e) => handlePropertyChange('delay', e.target.value)}
-                                className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                        </div>
-                    </div>
-                )}
-                {node.type === 'condition' && (
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-400">Condition</label>
-                            <input type="text" value={node.properties.condition} onChange={(e) => handlePropertyChange('condition', e.target.value)}
-                                placeholder="e.g., email_opened, lead_score_gte_50"
-                                className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                        </div>
-                        <div className="flex space-x-2">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">If True (Next Node ID)</label>
-                                <input type="text" value={node.nextNodes[0] || ''} onChange={(e) => handleNodeChange(node.id, { nextNodes: [e.target.value, node.nextNodes[1]] })}
-                                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400">If False (Next Node ID)</label>
-                                <input type="text" value={node.nextNodes[1] || ''} onChange={(e) => handleNodeChange(node.id, { nextNodes: [node.nextNodes[0], e.target.value] })}
-                                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                <div className="flex justify-end space-x-3 mt-6">
-                    <button type="button" onClick={() => setSelectedNodeId(null)} className="px-4 py-2 text-sm font-medium text-gray-300 rounded-md border border-gray-600 hover:bg-gray-700">Close</button>
-                </div>
-            </div>
-        );
-    };
-
-    return (
-        <div className="h-[70vh] flex flex-col">
-            <div className="flex-none p-4 border-b border-gray-700 text-gray-300">
-                <h3 className="text-xl font-bold text-white mb-2">Workflow: {currentWorkflow.name}</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Workflow Name</label>
-                        <input type="text" name="name" value={currentWorkflow.name} onChange={handleWorkflowMetaChange}
-                            className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Description</label>
-                        <textarea name="description" value={currentWorkflow.description} onChange={handleWorkflowMetaChange} rows={1}
-                            className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md"></textarea>
-                    </div>
-                </div>
-                <div className="flex justify-end space-x-3">
-                    <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-300 rounded-md border border-gray-600 hover:bg-gray-700">Cancel</button>
-                    <button type="button" onClick={() => onUpdate(currentWorkflow)} disabled={isLoading}
-                        className="px-4 py-2 text-sm font-medium bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        {isLoading ? 'Saving...' : 'Save Workflow'}
-                    </button>
-                </div>
-            </div>
-            <div className="flex flex-1 overflow-hidden">
-                <div className="flex-1 relative bg-gray-900/40 border-r border-gray-700 overflow-auto">
-                    {/* Simplified Workflow Canvas */}
-                    <div className="relative w-[1200px] h-[600px]"> {/* Fixed size canvas for demo */}
-                        {currentWorkflow.nodes.map(node => (
-                            <NodeComponent
-                                key={node.id}
-                                node={node}
-                                onSelect={setSelectedNodeId}
-                                isSelected={selectedNodeId === node.id}
-                            />
-                        ))}
-                        {/* Render lines between connected nodes (simplified, static positions for demo) */}
-                        {currentWorkflow.nodes.map(node =>
-                            node.nextNodes.map(nextNodeId => {
-                                const nextNode = currentWorkflow.nodes.find(n => n.id === nextNodeId);
-                                if (!nextNode) return null;
-
-                                const startX = node.position.x + 100; // Assume node width 100
-                                const startY = node.position.y + 25; // Assume node height 50, center Y
-                                const endX = nextNode.position.x;
-                                const endY = nextNode.position.y + 25;
-
-                                return (
-                                    <svg key={`${node.id}-${nextNodeId}`} className="absolute overflow-visible pointer-events-none" style={{ left: 0, top: 0, width: '100%', height: '100%' }}>
-                                        <line x1={startX} y1={startY} x2={endX} y2={endY} stroke="#4b5563" strokeWidth="2" markerEnd="url(#arrowhead)" />
-                                        <defs>
-                                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-                                                <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563" />
-                                            </marker>
-                                        </defs>
-                                    </svg>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-                <div className="flex-none w-80 bg-gray-800 p-4 overflow-y-auto">
-                    {renderNodeProperties(currentWorkflow.nodes.find(n => n.id === selectedNodeId))}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-/**
- * @function ExportedWorkflowList
- * @description Displays a list of marketing workflows with CRUD actions.
- */
-export const ExportedWorkflowList: React.FC = () => {
-    const { workflows, loadingState, addOrUpdateWorkflow, deleteWorkflow } = useMarketingAutomation();
-    const [isEditorModalOpen, setEditorModalOpen] = useState(false);
-    const [selectedWorkflow, setSelectedWorkflow] = useState<MarketingWorkflow | undefined>(undefined);
-    const [isSaving, setIsSaving] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey, setSortKey] = useState('name');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredAndSortedWorkflows = useMemo(() => {
-        let sorted = [...workflows];
-        if (sortKey) {
-            sorted.sort((a, b) => {
-                const aVal = a[sortKey as keyof MarketingWorkflow];
-                const bVal = b[sortKey as keyof MarketingWorkflow];
-
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                }
-                if (typeof aVal === 'number' && typeof bVal === 'number') {
-                    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-                }
-                if (aVal instanceof Date && bVal instanceof Date) {
-                    return sortDirection === 'asc' ? aVal.getTime() - bVal.getTime() : bVal.getTime() - aVal.getTime();
-                }
-                if (typeof aVal === 'boolean' && typeof bVal === 'boolean') {
-                    return sortDirection === 'asc' ? (aVal === bVal ? 0 : aVal ? -1 : 1) : (aVal === bVal ? 0 : aVal ? 1 : -1);
-                }
-                return 0;
-            });
-        }
-
-        if (searchTerm) {
-            sorted = sorted.filter(w =>
-                w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                w.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                w.triggerType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                w.status.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        return sorted;
-    }, [workflows, sortKey, sortDirection, searchTerm]);
-
-    const paginatedWorkflows = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredAndSortedWorkflows.slice(startIndex, startIndex + pageSize);
-    }, [filteredAndSortedWorkflows, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredAndSortedWorkflows.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredAndSortedWorkflows.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handleSort = (key: string) => {
-        if (key === sortKey) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDirection('asc');
-        }
-    };
-
-    const handleAddWorkflow = () => {
-        setSelectedWorkflow(generateDummyWorkflow()); // Pre-fill with a basic structure
-        setEditorModalOpen(true);
-    };
-
-    const handleEditWorkflow = (workflow: MarketingWorkflow) => {
-        setSelectedWorkflow(workflow);
-        setEditorModalOpen(true);
-    };
-
-    const handleSaveWorkflow = async (workflowData: MarketingWorkflow) => {
-        setIsSaving(true);
-        try {
-            await addOrUpdateWorkflow(workflowData);
-            setEditorModalOpen(false);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDeleteWorkflow = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this workflow?')) {
-            await deleteWorkflow(id);
-        }
-    };
-
-    const workflowColumns = useMemo(() => [
-        { key: 'name', label: 'Name', sortable: true },
-        { key: 'description', label: 'Description', render: (w: MarketingWorkflow) => w.description.substring(0, 50) + '...' },
-        { key: 'triggerType', label: 'Trigger', sortable: true },
-        { key: 'status', label: 'Status', sortable: true },
-        {
-            key: 'isActive', label: 'Active', sortable: true, render: (w: MarketingWorkflow) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${w.isActive ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                    {w.isActive ? 'Yes' : 'No'}
-                </span>
-            )
-        },
-        { key: 'lastModified', label: 'Last Modified', sortable: true, render: (w: MarketingWorkflow) => formatDate(w.lastModified) },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (w: MarketingWorkflow) => (
-                <div className="flex space-x-2">
-                    <button onClick={() => handleEditWorkflow(w)} className="text-cyan-500 hover:text-cyan-400"><IconEdit /></button>
-                    <button onClick={() => handleDeleteWorkflow(w.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-                </div>
-            )
-        },
-    ], []);
-
-    return (
-        <Card title="Marketing Workflows">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search workflows..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-                <button onClick={handleAddWorkflow} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
-                    <IconPlus /> <span>Create New Workflow</span>
-                </button>
-            </div>
-            <ExportedTable
-                data={paginatedWorkflows}
-                columns={workflowColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onSort={handleSort}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.workflows}
-            />
-
-            <ExportedModal
-                title={selectedWorkflow ? `Edit Workflow: ${selectedWorkflow.name}` : "Create New Workflow"}
-                isOpen={isEditorModalOpen}
-                onClose={() => setEditorModalOpen(false)}
-                className="max-w-5xl h-[90vh] flex flex-col" // Added flex-col for internal layout
-            >
-                {selectedWorkflow && (
-                    <ExportedWorkflowEditor
-                        workflow={selectedWorkflow}
-                        onUpdate={handleSaveWorkflow}
-                        onCancel={() => setEditorModalOpen(false)}
-                        isLoading={isSaving}
-                    />
-                )}
-            </ExportedModal>
-        </Card>
-    );
-};
-
-// --- AI CONTENT GENERATION FEATURES (to be exported) ---
-
-/**
- * @function ExportedAICopyGenerator
- * @description Enhanced AI ad copy generator with more options.
- */
-export const ExportedAICopyGenerator: React.FC<{
-    onGenerate: (copy: string) => void;
-    isLoading: boolean;
-    initialProductDesc?: string;
-    adCopy?: string;
-}> = ({ onGenerate, isLoading, initialProductDesc = '', adCopy }) => {
-    const [productDesc, setProductDesc] = useState(initialProductDesc);
-    const [contentType, setContentType] = useState<'headline' | 'body' | 'social' | 'email_subject' | 'blog_outline'>('headline');
-    const [tone, setTone] = useState<'professional' | 'casual' | 'witty' | 'urgent' | 'empathetic'>('professional');
-    const [length, setLength] = useState<'short' | 'medium' | 'long'>('short');
-    const [keywords, setKeywords] = useState('');
-
-    const handleGenerate = async () => {
-        if (!productDesc.trim()) {
-            alert('Please provide a product description.');
-            return;
-        }
-
-        let prompt = `Generate `;
-        switch (contentType) {
-            case 'headline': prompt += `3 short, punchy ad copy headlines`; break;
-            case 'body': prompt += `a compelling ad copy paragraph`; break;
-            case 'social': prompt += `a social media post suitable for Twitter and Facebook`; break;
-            case 'email_subject': prompt += `5 engaging email subject lines`; break;
-            case 'blog_outline': prompt += `a blog post outline with 5 sections`; break;
-        }
-
-        prompt += ` for this product: "${productDesc}".`;
-        prompt += ` The tone should be ${tone}.`;
-        prompt += ` The length should be ${length}.`;
-        if (keywords) prompt += ` Include these keywords: ${keywords}.`;
-        prompt += ` Ensure the output is only the generated content, without conversational filler.`;
-
-        onGenerate(prompt); // Pass the structured prompt for external execution
-    };
-
-    return (
-        <div className="space-y-4 text-gray-300">
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Product/Service Description</label>
-                <textarea
-                    value={productDesc}
-                    onChange={e => setProductDesc(e.target.value)}
-                    placeholder="E.g., Our new AI-powered savings tool that helps users find personalized discounts automatically."
-                    rows={3}
-                    className="w-full bg-gray-700/50 p-2 rounded border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Content Type</label>
-                    <select value={contentType} onChange={e => setContentType(e.target.value as any)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="headline">Ad Headlines</option>
-                        <option value="body">Ad Body Copy</option>
-                        <option value="social">Social Media Post</option>
-                        <option value="email_subject">Email Subject Lines</option>
-                        <option value="blog_outline">Blog Outline</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Tone</label>
-                    <select value={tone} onChange={e => setTone(e.target.value as any)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="professional">Professional</option>
-                        <option value="casual">Casual</option>
-                        <option value="witty">Witty</option>
-                        <option value="urgent">Urgent</option>
-                        <option value="empathetic">Empathetic</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Length</label>
-                    <select value={length} onChange={e => setLength(e.target.value as any)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="short">Short</option>
-                        <option value="medium">Medium</option>
-                        <option value="long">Long</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Keywords (comma-separated, optional)</label>
-                <input
-                    type="text"
-                    value={keywords}
-                    onChange={e => setKeywords(e.target.value)}
-                    placeholder="E.g., savings, AI, discounts, automate"
-                    className="w-full bg-gray-700/50 p-2 rounded border border-gray-600 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-            </div>
-
-            <button onClick={handleGenerate} disabled={isLoading || !productDesc.trim()}
-                className="w-full py-2 bg-cyan-600 rounded disabled:opacity-50 flex items-center justify-center space-x-2 text-white font-medium">
-                {isLoading ? <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> <span>Generating...</span></> : <><IconLightBulb /> <span>Generate Content</span></>}
-            </button>
-
-            {adCopy && (
-                <div className="p-3 bg-gray-900/50 rounded whitespace-pre-line text-sm text-gray-200">
-                    <h4 className="font-semibold text-white mb-2">Generated Content:</h4>
-                    {adCopy}
-                </div>
-            )}
-        </div>
-    );
-};
-
-// --- EMAIL MARKETING FEATURES (to be exported) ---
-
-/**
- * @function ExportedEmailTemplateEditor
- * @description Basic editor for email templates.
- */
-export const ExportedEmailTemplateEditor: React.FC<{
-    template?: EmailTemplate;
-    onSave: (template: EmailTemplate) => void;
-    onCancel: () => void;
-    isLoading?: boolean;
-}> = ({ template, onSave, onCancel, isLoading }) => {
-    const [formData, setFormData] = useState<EmailTemplate>(
-        template || {
-            id: '', name: '', subject: '', htmlContent: '<p>Hello {{contact.firstName}},</p><p>Write your email content here...</p><p>Regards,<br>Your Team</p>',
-            plainTextContent: 'Hello {{contact.firstName}},\n\nWrite your email content here...\n\nRegards,\nYour Team',
-            createdAt: new Date(), lastModified: new Date(), tags: [],
-        }
-    );
-
-    useEffect(() => {
-        if (template) setFormData(template);
-        // Sync plain text content if HTML changes and plain text is default
-        if (!template && formData.htmlContent.includes('Write your email content here')) {
-            const htmlToPlainText = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-            setFormData(prev => ({ ...prev, plainTextContent: htmlToPlainText(prev.htmlContent) }));
-        }
-    }, [template]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleHtmlChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const html = e.target.value;
-        const htmlToPlainText = (htmlString: string) => htmlString.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-        setFormData(prev => ({ ...prev, htmlContent: html, plainTextContent: htmlToPlainText(html) }));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4 text-gray-300">
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Template Name</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Subject Line</label>
-                <input type="text" name="subject" value={formData.subject} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">HTML Content (Basic HTML editor)</label>
-                <textarea name="htmlContent" value={formData.htmlContent} onChange={handleHtmlChange} rows={10}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md font-mono focus:ring-cyan-500 focus:border-cyan-500"></textarea>
-                <p className="text-xs text-gray-500 mt-1">Use <code>{{ '{{contact.firstName}}' }}</code> for personalization.</p>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Plain Text Content (Auto-generated)</label>
-                <textarea name="plainTextContent" value={formData.plainTextContent} readOnly rows={5}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md font-mono text-gray-500"></textarea>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-                <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-300 rounded-md border border-gray-600 hover:bg-gray-700">Cancel</button>
-                <button type="submit" disabled={isLoading} className="px-4 py-2 text-sm font-medium bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isLoading ? 'Saving...' : (template ? 'Update Template' : 'Create Template')}
-                </button>
-            </div>
-        </form>
-    );
-};
-
-/**
- * @function ExportedEmailTemplateList
- * @description Displays a list of email templates with CRUD actions.
- */
-export const ExportedEmailTemplateList: React.FC = () => {
-    const { emailTemplates, loadingState, fetchEmailTemplates } = useMarketingAutomation(); // No direct add/delete for templates yet, but good to have context
-    const [isEditorModalOpen, setEditorModalOpen] = useState(false);
-    const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | undefined>(undefined);
-    const [isLoading, setIsLoading] = useState(false); // For simulate save
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey, setSortKey] = useState('name');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const addOrUpdateTemplate = async (template: EmailTemplate) => {
-        setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API call
-        if (template.id) {
-            globalThis.mockEmailTemplates = globalThis.mockEmailTemplates.map((t: EmailTemplate) => t.id === template.id ? { ...t, ...template, lastModified: new Date() } : t);
-        } else {
-            const newTemplate = { ...template, id: `TPL-${emailTemplateIdCounter++}`, createdAt: new Date(), lastModified: new Date() };
-            globalThis.mockEmailTemplates.push(newTemplate);
-        }
-        await fetchEmailTemplates();
-        setIsLoading(false);
-        setEditorModalOpen(false);
-    };
-
-    const deleteTemplate = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this template?')) {
-            setIsLoading(true);
-            await new Promise(resolve => setTimeout(resolve, 400)); // Simulate API call
-            globalThis.mockEmailTemplates = globalThis.mockEmailTemplates.filter((t: EmailTemplate) => t.id !== id);
-            await fetchEmailTemplates();
-            setIsLoading(false);
-        }
-    };
-
-
-    const filteredAndSortedTemplates = useMemo(() => {
-        let sorted = [...emailTemplates];
-        if (sortKey) {
-            sorted.sort((a, b) => {
-                const aVal = a[sortKey as keyof EmailTemplate];
-                const bVal = b[sortKey as keyof EmailTemplate];
-
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                }
-                if (aVal instanceof Date && bVal instanceof Date) {
-                    return sortDirection === 'asc' ? aVal.getTime() - bVal.getTime() : bVal.getTime() - aVal.getTime();
-                }
-                return 0;
-            });
-        }
-
-        if (searchTerm) {
-            sorted = sorted.filter(t =>
-                t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.htmlContent.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        return sorted;
-    }, [emailTemplates, sortKey, sortDirection, searchTerm]);
-
-    const paginatedTemplates = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredAndSortedTemplates.slice(startIndex, startIndex + pageSize);
-    }, [filteredAndSortedTemplates, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredAndSortedTemplates.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredAndSortedTemplates.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handleSort = (key: string) => {
-        if (key === sortKey) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDirection('asc');
-        }
-    };
-
-    const handleAddTemplate = () => {
-        setSelectedTemplate(undefined);
-        setEditorModalOpen(true);
-    };
-
-    const handleEditTemplate = (template: EmailTemplate) => {
-        setSelectedTemplate(template);
-        setEditorModalOpen(true);
-    };
-
-    const templateColumns = useMemo(() => [
-        { key: 'name', label: 'Name', sortable: true },
-        { key: 'subject', label: 'Subject', render: (t: EmailTemplate) => t.subject.substring(0, 70) + '...' },
-        { key: 'tags', label: 'Tags', render: (t: EmailTemplate) => t.tags.join(', ') || 'N/A' },
-        { key: 'lastModified', label: 'Last Modified', sortable: true, render: (t: EmailTemplate) => formatDate(t.lastModified) },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (t: EmailTemplate) => (
-                <div className="flex space-x-2">
-                    <button onClick={() => handleEditTemplate(t)} className="text-cyan-500 hover:text-cyan-400"><IconEdit /></button>
-                    <button onClick={() => deleteTemplate(t.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-                </div>
-            )
-        },
-    ], []);
-
-    return (
-        <Card title="Email Templates">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search templates..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-                <button onClick={handleAddTemplate} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
-                    <IconPlus /> <span>Create New Template</span>
-                </button>
-            </div>
-            <ExportedTable
-                data={paginatedTemplates}
-                columns={templateColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onSort={handleSort}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.emailTemplates}
-            />
-
-            <ExportedModal
-                title={selectedTemplate ? "Edit Email Template" : "Create New Email Template"}
-                isOpen={isEditorModalOpen}
-                onClose={() => setEditorModalOpen(false)}
-                className="max-w-4xl"
-            >
-                <ExportedEmailTemplateEditor
-                    template={selectedTemplate}
-                    onSave={addOrUpdateTemplate}
-                    onCancel={() => setEditorModalOpen(false)}
-                    isLoading={isLoading}
-                />
-            </ExportedModal>
-        </Card>
-    );
-};
-
-/**
- * @function ExportedEmailCampaignSender
- * @description Form for creating and scheduling email campaigns.
- */
-export const ExportedEmailCampaignSender: React.FC<{
-    campaign?: EmailCampaign;
-    onSave: (campaign: EmailCampaign) => void;
-    onCancel: () => void;
-    isLoading?: boolean;
-}> = ({ campaign, onSave, onCancel, isLoading }) => {
-    const { emailTemplates, segments } = useMarketingAutomation();
-    const [formData, setFormData] = useState<EmailCampaign>(
-        campaign || {
-            id: '', name: '', templateId: '', segmentId: '', senderEmail: 'info@yourcompany.com', senderName: 'Your Company',
-            subject: '', scheduledSendTime: new Date(Date.now() + 60 * 60 * 1000), status: 'Draft',
-            stats: { sent: 0, opens: 0, clicks: 0, bounces: 0, unsubscribes: 0 }, createdAt: new Date(), lastModified: new Date(),
-        }
-    );
-
-    useEffect(() => {
-        if (campaign) {
-            setFormData(campaign);
-        }
-    }, [campaign]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        if (name === 'templateId') {
-            const selectedTemplate = emailTemplates.find(t => t.id === value);
-            if (selectedTemplate) {
-                setFormData(prev => ({ ...prev, subject: selectedTemplate.subject }));
-            }
-        }
-    };
-
-    const handleDateTimeChange = (dateString: string, timeString: string) => {
-        const [year, month, day] = dateString.split('-').map(Number);
-        const [hours, minutes] = timeString.split(':').map(Number);
-        const newDate = new Date(year, month - 1, day, hours, minutes);
-        setFormData(prev => ({ ...prev, scheduledSendTime: newDate }));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
-    const currentDateTime = new Date();
-    const formattedDate = formData.scheduledSendTime.toISOString().split('T')[0];
-    const formattedTime = formData.scheduledSendTime.toTimeString().substring(0, 5);
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4 text-gray-300">
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Campaign Name</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Email Template</label>
-                <select name="templateId" value={formData.templateId} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="">Select a template</option>
-                    {emailTemplates.map(template => (
-                        <option key={template.id} value={template.id}>{template.name} - {template.subject}</option>
-                    ))}
-                </select>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Subject Line</label>
-                <input type="text" name="subject" value={formData.subject} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Target Audience Segment</label>
-                <select name="segmentId" value={formData.segmentId} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="">Select a segment</option>
-                    {segments.map(segment => (
-                        <option key={segment.id} value={segment.id}>{segment.name} (Est. Size: {segment.estimatedSize.toLocaleString()})</option>
-                    ))}
-                </select>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Sender Name</label>
-                    <input type="text" name="senderName" value={formData.senderName} onChange={handleChange} required
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Sender Email</label>
-                    <input type="email" name="senderEmail" value={formData.senderEmail} onChange={handleChange} required
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Scheduled Send Date</label>
-                    <input type="date" value={formattedDate} onChange={(e) => handleDateTimeChange(e.target.value, formattedTime)}
-                        min={currentDateTime.toISOString().split('T')[0]}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Scheduled Send Time</label>
-                    <input type="time" value={formattedTime} onChange={(e) => handleDateTimeChange(formattedDate, e.target.value)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Status</label>
-                <select name="status" value={formData.status} onChange={handleChange}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="Draft">Draft</option>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Sending">Sending</option>
-                    <option value="Sent">Sent</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-                <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-300 rounded-md border border-gray-600 hover:bg-gray-700">Cancel</button>
-                <button type="submit" disabled={isLoading} className="px-4 py-2 text-sm font-medium bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isLoading ? 'Saving...' : (campaign ? 'Update Campaign' : 'Schedule Campaign')}
-                </button>
-            </div>
-        </form>
-    );
-};
-
-/**
- * @function ExportedEmailCampaignList
- * @description Displays a list of email campaigns with CRUD and stats.
- */
-export const ExportedEmailCampaignList: React.FC = () => {
-    const { emailCampaigns, loadingState, addOrUpdateEmailCampaign, deleteEmailCampaign, getSegmentById, emailTemplates } = useMarketingAutomation();
-    const [isFormModalOpen, setFormModalOpen] = useState(false);
-    const [selectedCampaign, setSelectedCampaign] = useState<EmailCampaign | undefined>(undefined);
-    const [isSaving, setIsSaving] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey, setSortKey] = useState('scheduledSendTime');
-    const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc');
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const getTemplateName = useCallback((templateId: string) => {
-        return emailTemplates.find(t => t.id === templateId)?.name || 'Unknown Template';
-    }, [emailTemplates]);
-
-    const filteredAndSortedCampaigns = useMemo(() => {
-        let sorted = [...emailCampaigns];
-        if (sortKey) {
-            sorted.sort((a, b) => {
-                const aVal = a[sortKey as keyof EmailCampaign];
-                const bVal = b[sortKey as keyof EmailCampaign];
-
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                }
-                if (aVal instanceof Date && bVal instanceof Date) {
-                    return sortDirection === 'asc' ? aVal.getTime() - bVal.getTime() : bVal.getTime() - aVal.getTime();
-                }
-                if (typeof aVal === 'number' && typeof bVal === 'number') {
-                    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-                }
-                return 0;
-            });
-        }
-
-        if (searchTerm) {
-            sorted = sorted.filter(c =>
-                c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                getTemplateName(c.templateId).toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        return sorted;
-    }, [emailCampaigns, sortKey, sortDirection, searchTerm, getTemplateName]);
-
-    const paginatedCampaigns = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredAndSortedCampaigns.slice(startIndex, startIndex + pageSize);
-    }, [filteredAndSortedCampaigns, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredAndSortedCampaigns.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredAndSortedCampaigns.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handleSort = (key: string) => {
-        if (key === sortKey) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDirection('asc');
-        }
-    };
-
-    const handleAddCampaign = () => {
-        setSelectedCampaign(undefined);
-        setFormModalOpen(true);
-    };
-
-    const handleEditCampaign = (campaign: EmailCampaign) => {
-        setSelectedCampaign(campaign);
-        setFormModalOpen(true);
-    };
-
-    const handleSaveCampaign = async (campaignData: EmailCampaign) => {
-        setIsSaving(true);
-        try {
-            await addOrUpdateEmailCampaign(campaignData);
-            setFormModalOpen(false);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDeleteCampaign = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this email campaign?')) {
-            await deleteEmailCampaign(id);
-        }
-    };
-
-    const emailCampaignColumns = useMemo(() => [
-        { key: 'name', label: 'Name', sortable: true },
-        { key: 'subject', label: 'Subject' },
-        { key: 'templateId', label: 'Template', render: (c: EmailCampaign) => getTemplateName(c.templateId) },
-        { key: 'segmentId', label: 'Segment', render: (c: EmailCampaign) => getSegmentById(c.segmentId)?.name || 'N/A' },
-        { key: 'status', label: 'Status', sortable: true },
-        { key: 'scheduledSendTime', label: 'Scheduled', sortable: true, render: (c: EmailCampaign) => formatDate(c.scheduledSendTime) },
-        { key: 'stats.sent', label: 'Sent', sortable: true, render: (c: EmailCampaign) => c.stats.sent.toLocaleString() },
-        { key: 'stats.opens', label: 'Opens', sortable: true, render: (c: EmailCampaign) => c.stats.opens.toLocaleString() },
-        { key: 'stats.clicks', label: 'Clicks', sortable: true, render: (c: EmailCampaign) => c.stats.clicks.toLocaleString() },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (c: EmailCampaign) => (
-                <div className="flex space-x-2">
-                    <button onClick={() => handleEditCampaign(c)} className="text-cyan-500 hover:text-cyan-400"><IconEdit /></button>
-                    <button onClick={() => handleDeleteCampaign(c.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-                </div>
-            )
-        },
-    ], [getTemplateName, getSegmentById]);
-
-    return (
-        <Card title="Email Campaigns">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search email campaigns..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-                <button onClick={handleAddCampaign} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
-                    <IconPlus /> <span>Schedule New Email</span>
-                </button>
-            </div>
-            <ExportedTable
-                data={paginatedCampaigns}
-                columns={emailCampaignColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onSort={handleSort}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.emailCampaigns}
-            />
-
-            <ExportedModal
-                title={selectedCampaign ? "Edit Email Campaign" : "Schedule New Email Campaign"}
-                isOpen={isFormModalOpen}
-                onClose={() => setFormModalOpen(false)}
-                className="max-w-3xl"
-            >
-                <ExportedEmailCampaignSender
-                    campaign={selectedCampaign}
-                    onSave={handleSaveCampaign}
-                    onCancel={() => setFormModalOpen(false)}
-                    isLoading={isSaving}
-                />
-            </ExportedModal>
-        </Card>
-    );
-};
-
-// --- SOCIAL MEDIA MANAGEMENT FEATURES (to be exported) ---
-
-/**
- * @function ExportedSocialPostScheduler
- * @description Form for creating and scheduling social media posts.
- */
-export const ExportedSocialPostScheduler: React.FC<{
-    post?: SocialPost;
-    onSave: (post: SocialPost) => void;
-    onCancel: () => void;
-    isLoading?: boolean;
-}> = ({ post, onSave, onCancel, isLoading }) => {
-    const [formData, setFormData] = useState<SocialPost>(
-        post || {
-            id: '', content: '', platform: 'facebook', scheduledTime: new Date(Date.now() + 60 * 60 * 1000), status: 'Draft',
-            createdAt: new Date(), lastModified: new Date(),
-        }
-    );
-
-    useEffect(() => {
-        if (post) setFormData(post);
-    }, [post]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleDateTimeChange = (dateString: string, timeString: string) => {
-        const [year, month, day] = dateString.split('-').map(Number);
-        const [hours, minutes] = timeString.split(':').map(Number);
-        const newDate = new Date(year, month - 1, day, hours, minutes);
-        setFormData(prev => ({ ...prev, scheduledTime: newDate }));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
-    const currentDateTime = new Date();
-    const formattedDate = formData.scheduledTime.toISOString().split('T')[0];
-    const formattedTime = formData.scheduledTime.toTimeString().substring(0, 5);
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4 text-gray-300">
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Post Content</label>
-                <textarea name="content" value={formData.content} onChange={handleChange} required rows={5} maxLength={280}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                <p className="text-xs text-gray-500 mt-1">{formData.content.length} / 280 (Twitter-like limit)</p>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Platform</label>
-                <select name="platform" value={formData.platform} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="facebook">Facebook</option>
-                    <option value="twitter">Twitter</option>
-                    <option value="linkedin">LinkedIn</option>
-                    <option value="instagram">Instagram</option>
-                </select>
-            </div>
-            {/* Simplified image/video upload - in a real app, this would involve file inputs and storage */}
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Image/Video URLs (comma-separated, optional)</label>
-                <input
-                    type="text"
-                    name="imageUrls"
-                    value={formData.imageUrls?.join(', ') || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, imageUrls: e.target.value.split(',').map(url => url.trim()).filter(Boolean) }))}
-                    placeholder="e.g., https://example.com/image.jpg"
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500"
-                />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Scheduled Date</label>
-                    <input type="date" value={formattedDate} onChange={(e) => handleDateTimeChange(e.target.value, formattedTime)}
-                        min={currentDateTime.toISOString().split('T')[0]}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Scheduled Time</label>
-                    <input type="time" value={formattedTime} onChange={(e) => handleDateTimeChange(formattedDate, e.target.value)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Status</label>
-                <select name="status" value={formData.status} onChange={handleChange}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="Draft">Draft</option>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Posted">Posted</option>
-                    <option value="Failed">Failed</option>
-                </select>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-                <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-300 rounded-md border border-gray-600 hover:bg-gray-700">Cancel</button>
-                <button type="submit" disabled={isLoading} className="px-4 py-2 text-sm font-medium bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isLoading ? 'Saving...' : (post ? 'Update Post' : 'Schedule Post')}
-                </button>
-            </div>
-        </form>
-    );
-};
-
-/**
- * @function ExportedSocialPostList
- * @description Displays a list of social media posts with CRUD and analytics.
- */
-export const ExportedSocialPostList: React.FC = () => {
-    const { socialPosts, loadingState, addOrUpdateSocialPost, deleteSocialPost } = useMarketingAutomation();
-    const [isFormModalOpen, setFormModalOpen] = useState(false);
-    const [selectedPost, setSelectedPost] = useState<SocialPost | undefined>(undefined);
-    const [isSaving, setIsSaving] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey, setSortKey] = useState('scheduledTime');
-    const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc');
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredAndSortedPosts = useMemo(() => {
-        let sorted = [...socialPosts];
-        if (sortKey) {
-            sorted.sort((a, b) => {
-                const aVal = a[sortKey as keyof SocialPost];
-                const bVal = b[sortKey as keyof SocialPost];
-
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                }
-                if (aVal instanceof Date && bVal instanceof Date) {
-                    return sortDirection === 'asc' ? aVal.getTime() - bVal.getTime() : bVal.getTime() - aVal.getTime();
-                }
-                return 0;
-            });
-        }
-
-        if (searchTerm) {
-            sorted = sorted.filter(p =>
-                p.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.platform.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.status.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        return sorted;
-    }, [socialPosts, sortKey, sortDirection, searchTerm]);
-
-    const paginatedPosts = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredAndSortedPosts.slice(startIndex, startIndex + pageSize);
-    }, [filteredAndSortedPosts, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredAndSortedPosts.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredAndSortedPosts.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handleSort = (key: string) => {
-        if (key === sortKey) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDirection('asc');
-        }
-    };
-
-    const handleAddPost = () => {
-        setSelectedPost(undefined);
-        setFormModalOpen(true);
-    };
-
-    const handleEditPost = (post: SocialPost) => {
-        setSelectedPost(post);
-        setFormModalOpen(true);
-    };
-
-    const handleSavePost = async (postData: SocialPost) => {
-        setIsSaving(true);
-        try {
-            await addOrUpdateSocialPost(postData);
-            setFormModalOpen(false);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDeletePost = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this social media post?')) {
-            await deleteSocialPost(id);
-        }
-    };
-
-    const socialPostColumns = useMemo(() => [
-        { key: 'content', label: 'Content', render: (p: SocialPost) => p.content.substring(0, 50) + '...' },
-        { key: 'platform', label: 'Platform', sortable: true },
-        { key: 'status', label: 'Status', sortable: true },
-        { key: 'scheduledTime', label: 'Scheduled', sortable: true, render: (p: SocialPost) => formatDate(p.scheduledTime) },
-        { key: 'analytics.reach', label: 'Reach', sortable: true, render: (p: SocialPost) => p.analytics?.reach?.toLocaleString() || 'N/A' },
-        { key: 'analytics.engagement', label: 'Engagement', sortable: true, render: (p: SocialPost) => p.analytics?.engagement?.toLocaleString() || 'N/A' },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (p: SocialPost) => (
-                <div className="flex space-x-2">
-                    <button onClick={() => handleEditPost(p)} className="text-cyan-500 hover:text-cyan-400"><IconEdit /></button>
-                    <button onClick={() => handleDeletePost(p.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-                </div>
-            )
-        },
-    ], []);
-
-    return (
-        <Card title="Social Media Posts">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search posts..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-                <button onClick={handleAddPost} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
-                    <IconPlus /> <span>Schedule New Post</span>
-                </button>
-            </div>
-            <ExportedTable
-                data={paginatedPosts}
-                columns={socialPostColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onSort={handleSort}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.socialPosts}
-            />
-
-            <ExportedModal
-                title={selectedPost ? "Edit Social Media Post" : "Schedule New Social Media Post"}
-                isOpen={isFormModalOpen}
-                onClose={() => setFormModalOpen(false)}
-                className="max-w-3xl"
-            >
-                <ExportedSocialPostScheduler
-                    post={selectedPost}
-                    onSave={handleSavePost}
-                    onCancel={() => setFormModalOpen(false)}
-                    isLoading={isSaving}
-                />
-            </ExportedModal>
-        </Card>
-    );
-};
-
-// --- A/B TESTING FRAMEWORK (to be exported) ---
-
-/**
- * @function ExportedABTestForm
- * @description Form for creating and editing A/B tests.
- */
-export const ExportedABTestForm: React.FC<{
-    abTest?: ABTest;
-    onSave: (test: ABTest) => void;
-    onCancel: () => void;
-    isLoading?: boolean;
-}> = ({ abTest, onSave, onCancel, isLoading }) => {
-    const [formData, setFormData] = useState<ABTest>(
-        abTest || {
-            id: '', name: '', description: '', type: 'ad_copy',
-            variants: [{ id: 'A', name: 'Variant A', content: '', trafficShare: 50 }, { id: 'B', name: 'Variant B', content: '', trafficShare: 50 }],
-            trafficDistribution: [50, 50], primaryMetric: 'conversions',
-            startDate: new Date(), endDate: null, status: 'Planned',
-            createdAt: new Date(), lastModified: new Date(),
-        }
-    );
-
-    useEffect(() => {
-        if (abTest) setFormData(abTest);
-    }, [abTest]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleVariantChange = (index: number, key: keyof ABTest['variants'][0], value: any) => {
-        const newVariants = [...formData.variants];
-        if (key === 'trafficShare') {
-            const newShare = parseInt(value) || 0;
-            if (newShare > 100) return; // Prevent over 100%
-            const otherIndex = index === 0 ? 1 : 0;
-            const remaining = 100 - newShare;
-            newVariants[index] = { ...newVariants[index], [key]: newShare };
-            newVariants[otherIndex] = { ...newVariants[otherIndex], [key]: remaining };
-            setFormData(prev => ({ ...prev, variants: newVariants, trafficDistribution: newVariants.map(v => v.trafficShare) }));
-        } else {
-            newVariants[index] = { ...newVariants[index], [key]: value };
-            setFormData(prev => ({ ...prev, variants: newVariants }));
-        }
-    };
-
-    const handleDateChange = (name: 'startDate' | 'endDate', dateString: string) => {
-        setFormData(prev => ({ ...prev, [name]: dateString ? new Date(dateString) : null }));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSave(formData);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4 text-gray-300">
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Test Name</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Description</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} rows={2}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500"></textarea>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Test Type</label>
-                    <select name="type" value={formData.type} onChange={handleChange}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="ad_copy">Ad Copy</option>
-                        <option value="landing_page">Landing Page</option>
-                        <option value="email_subject">Email Subject</option>
-                        <option value="email_body">Email Body</option>
-                        <option value="cta_button">CTA Button</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Primary Metric</label>
-                    <select name="primaryMetric" value={formData.primaryMetric} onChange={handleChange}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="conversions">Conversions</option>
-                        <option value="clicks">Clicks</option>
-                        <option value="revenue">Revenue</option>
-                        <option value="signups">Sign-ups</option>
-                    </select>
-                </div>
-            </div>
-
-            <h4 className="text-md font-semibold text-white mt-4">Variants</h4>
-            {formData.variants.map((variant, index) => (
-                <div key={variant.id} className="p-3 bg-gray-700/50 rounded-md space-y-2">
-                    <label className="block text-sm font-medium text-gray-400">{variant.name}</label>
-                    <input
-                        type="text"
-                        value={variant.content}
-                        onChange={(e) => handleVariantChange(index, 'content', e.target.value)}
-                        placeholder={`${formData.type.replace(/_/g, ' ')} content for ${variant.name}`}
-                        className="mt-1 block w-full bg-gray-700 p-2 border border-gray-600 rounded-md"
-                    />
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Traffic Share (%)</label>
-                        <input
-                            type="number"
-                            value={variant.trafficShare}
-                            onChange={(e) => handleVariantChange(index, 'trafficShare', e.target.value)}
-                            min="0" max="100"
-                            className="mt-1 block w-full bg-gray-700 p-2 border border-gray-600 rounded-md"
-                        />
-                    </div>
-                </div>
-            ))}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">Start Date</label>
-                    <input type="date" name="startDate" value={formData.startDate.toISOString().split('T')[0]} onChange={(e) => handleDateChange('startDate', e.target.value)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-400">End Date (Optional)</label>
-                    <input type="date" name="endDate" value={formData.endDate?.toISOString().split('T')[0] || ''} onChange={(e) => handleDateChange('endDate', e.target.value)}
-                        className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500" />
-                </div>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-400">Status</label>
-                <select name="status" value={formData.status} onChange={handleChange}
-                    className="mt-1 block w-full bg-gray-700/50 p-2 border border-gray-600 rounded-md focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="Planned">Planned</option>
-                    <option value="Running">Running</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Archived">Archived</option>
-                </select>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-                <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-300 rounded-md border border-gray-600 hover:bg-gray-700">Cancel</button>
-                <button type="submit" disabled={isLoading} className="px-4 py-2 text-sm font-medium bg-cyan-600 text-white rounded-md hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isLoading ? 'Saving...' : (abTest ? 'Update A/B Test' : 'Create A/B Test')}
-                </button>
-            </div>
-        </form>
-    );
-};
-
-/**
- * @function ExportedABTestResults
- * @description Displays the results of an A/B test.
- */
-export const ExportedABTestResults: React.FC<{ abTest: ABTest }> = ({ abTest }) => {
-    if (!abTest.results || abTest.status !== 'Completed') {
-        return <p className="text-gray-400">A/B test results are not available or the test is not yet completed.</p>;
-    }
-
-    const { variantResults, winningVariantId, confidenceLevel, conclusion } = abTest.results;
-    const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042']; // Colors for chart variants
-
-    const chartData = variantResults.map(vr => ({
-        name: abTest.variants.find(v => v.id === vr.variantId)?.name || 'Unknown',
-        impressions: vr.impressions,
-        clicks: vr.clicks,
-        conversions: vr.conversions,
-        revenue: vr.revenue || 0,
-        ctr: vr.ctr,
-        conversionRate: vr.conversionRate,
-    }));
-
-    return (
-        <div className="space-y-6 text-gray-300">
-            <h3 className="text-xl font-bold text-white">Results for: {abTest.name}</h3>
-            <div className="bg-gray-700/50 p-4 rounded-lg">
-                <p className="text-lg font-semibold text-white mb-2">Conclusion:</p>
-                <p>{conclusion}</p>
-                {winningVariantId && (
-                    <p className="mt-2">
-                        Winning Variant: <span className="font-bold text-cyan-400">{abTest.variants.find(v => v.id === winningVariantId)?.name}</span>
-                        {' '}(Confidence: {confidenceLevel ? `${(confidenceLevel * 100).toFixed(0)}%` : 'N/A'})
-                    </p>
-                )}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {variantResults.map((vr, index) => {
-                    const variant = abTest.variants.find(v => v.id === vr.variantId);
-                    if (!variant) return null;
-                    const isWinner = winningVariantId === variant.id;
-
-                    return (
-                        <Card key={variant.id} className={`${isWinner ? 'border-2 border-green-500 shadow-lg' : 'border border-gray-700'}`}>
-                            <h4 className="text-lg font-semibold text-white flex items-center">
-                                {isWinner && <IconCheckCircle className="text-green-500 mr-2" />}
-                                {variant.name}
-                            </h4>
-                            <p className="text-sm text-gray-400 mt-1">{abTest.type.replace(/_/g, ' ')}: {variant.content}</p>
-                            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                                <p><span className="text-gray-400">Impressions:</span> <span className="font-semibold text-white">{vr.impressions.toLocaleString()}</span></p>
-                                <p><span className="text-gray-400">Clicks:</span> <span className="font-semibold text-white">{vr.clicks.toLocaleString()}</span></p>
-                                <p><span className="text-gray-400">Conversions:</span> <span className="font-semibold text-white">{vr.conversions.toLocaleString()}</span></p>
-                                <p><span className="text-gray-400">Revenue:</span> <span className="font-semibold text-white">{formatCurrency(vr.revenue || 0)}</span></p>
-                                <p><span className="text-gray-400">CTR:</span> <span className="font-semibold text-white">{vr.ctr.toFixed(2)}%</span></p>
-                                <p><span className="text-gray-400">Conversion Rate:</span> <span className="font-semibold text-white">{vr.conversionRate.toFixed(2)}%</span></p>
-                            </div>
-                        </Card>
-                    );
-                })}
-            </div>
-
-            <Card title="Variant Performance Comparison">
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <XAxis dataKey="name" stroke="#9ca3af" />
-                        <YAxis yAxisId="left" stroke="#9ca3af" label={{ value: 'Count', angle: -90, position: 'insideLeft', fill: '#9ca3af' }} />
-                        <YAxis yAxisId="right" orientation="right" stroke="#9ca3af" label={{ value: 'Rates (%)', angle: 90, position: 'insideRight', fill: '#9ca3af' }} />
-                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
-                        <Legend />
-                        <Bar yAxisId="left" dataKey="impressions" fill={COLORS[0]} name="Impressions" />
-                        <Bar yAxisId="left" dataKey="clicks" fill={COLORS[1]} name="Clicks" />
-                        <Bar yAxisId="left" dataKey="conversions" fill={COLORS[2]} name="Conversions" />
-                        <Line yAxisId="right" type="monotone" dataKey="ctr" stroke={COLORS[3]} dot={false} name="CTR (%)" />
-                        <Line yAxisId="right" type="monotone" dataKey="conversionRate" stroke="#ff00ff" dot={false} name="Conversion Rate (%)" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </Card>
-        </div>
-    );
-};
-
-/**
- * @function ExportedABTestList
- * @description Displays a list of A/B tests with CRUD actions.
- */
-export const ExportedABTestList: React.FC = () => {
-    const { abTests, loadingState, addOrUpdateABTest, deleteABTest } = useMarketingAutomation();
-    const [isFormModalOpen, setFormModalOpen] = useState(false);
-    const [selectedABTest, setSelectedABTest] = useState<ABTest | undefined>(undefined);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isResultsModalOpen, setResultsModalOpen] = useState(false);
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey, setSortKey] = useState('startDate');
-    const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc');
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredAndSortedTests = useMemo(() => {
-        let sorted = [...abTests];
-        if (sortKey) {
-            sorted.sort((a, b) => {
-                const aVal = a[sortKey as keyof ABTest];
-                const bVal = b[sortKey as keyof ABTest];
-
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                }
-                if (aVal instanceof Date && bVal instanceof Date) {
-                    return sortDirection === 'asc' ? aVal.getTime() - bVal.getTime() : bVal.getTime() - aVal.getTime();
-                }
-                return 0;
-            });
-        }
-
-        if (searchTerm) {
-            sorted = sorted.filter(t =>
-                t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.status.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        return sorted;
-    }, [abTests, sortKey, sortDirection, searchTerm]);
-
-    const paginatedTests = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredAndSortedTests.slice(startIndex, startIndex + pageSize);
-    }, [filteredAndSortedTests, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredAndSortedTests.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredAndSortedTests.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handleSort = (key: string) => {
-        if (key === sortKey) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDirection('asc');
-        }
-    };
-
-    const handleAddTest = () => {
-        setSelectedABTest(undefined);
-        setFormModalOpen(true);
-    };
-
-    const handleEditTest = (test: ABTest) => {
-        setSelectedABTest(test);
-        setFormModalOpen(true);
-    };
-
-    const handleViewResults = (test: ABTest) => {
-        setSelectedABTest(test);
-        setResultsModalOpen(true);
-    };
-
-    const handleSaveTest = async (testData: ABTest) => {
-        setIsSaving(true);
-        try {
-            await addOrUpdateABTest(testData);
-            setFormModalOpen(false);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDeleteTest = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this A/B test?')) {
-            await deleteABTest(id);
-        }
-    };
-
-    const abTestColumns = useMemo(() => [
-        { key: 'name', label: 'Name', sortable: true },
-        { key: 'type', label: 'Type', sortable: true, render: (t: ABTest) => t.type.replace(/_/g, ' ') },
-        { key: 'primaryMetric', label: 'Metric', sortable: true },
-        { key: 'status', label: 'Status', sortable: true },
-        { key: 'startDate', label: 'Start Date', sortable: true, render: (t: ABTest) => formatDate(t.startDate).split(',')[0] },
-        {
-            key: 'winningVariant', label: 'Winner', render: (t: ABTest) =>
-                t.status === 'Completed' && t.results?.winningVariantId ? (
-                    <span className="text-green-400 font-semibold">{t.variants.find(v => v.id === t.results?.winningVariantId)?.name}</span>
-                ) : t.status === 'Completed' ? <span className="text-gray-500">No Winner</span> : <span className="text-gray-500">N/A</span>
-        },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (t: ABTest) => (
-                <div className="flex space-x-2">
-                    <button onClick={() => handleEditTest(t)} className="text-cyan-500 hover:text-cyan-400"><IconEdit /></button>
-                    {t.status === 'Completed' && (
-                        <button onClick={() => handleViewResults(t)} className="text-blue-500 hover:text-blue-400"><IconChartBar /></button>
-                    )}
-                    <button onClick={() => handleDeleteTest(t.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-                </div>
-            )
-        },
-    ], []);
-
-    return (
-        <Card title="A/B Tests">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search A/B tests..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-                <button onClick={handleAddTest} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
-                    <IconPlus /> <span>Create New A/B Test</span>
-                </button>
-            </div>
-            <ExportedTable
-                data={paginatedTests}
-                columns={abTestColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onSort={handleSort}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.abTests}
-            />
-
-            <ExportedModal
-                title={selectedABTest ? "Edit A/B Test" : "Create New A/B Test"}
-                isOpen={isFormModalOpen}
-                onClose={() => setFormModalOpen(false)}
-                className="max-w-3xl"
-            >
-                <ExportedABTestForm
-                    abTest={selectedABTest}
-                    onSave={handleSaveTest}
-                    onCancel={() => setFormModalOpen(false)}
-                    isLoading={isSaving}
-                />
-            </ExportedModal>
-
-            <ExportedModal
-                title={`A/B Test Results: ${selectedABTest?.name}`}
-                isOpen={isResultsModalOpen}
-                onClose={() => setResultsModalOpen(false)}
-                className="max-w-4xl"
-            >
-                {selectedABTest && <ExportedABTestResults abTest={selectedABTest} />}
-            </ExportedModal>
-        </Card>
-    );
-};
-
-// --- CONTACT MANAGEMENT (LIGHT) (to be exported) ---
-
-/**
- * @function ExportedContactList
- * @description Displays a list of contacts.
- */
-export const ExportedContactList: React.FC = () => {
-    const { contacts, loadingState, deleteContact, segments } = useMarketingAutomation();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey, setSortKey] = useState('lastName');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const getSegmentNames = useCallback((segmentIds: string[]) => {
-        return segmentIds.map(id => segments.find(s => s.id === id)?.name || 'N/A').join(', ');
-    }, [segments]);
-
-    const filteredAndSortedContacts = useMemo(() => {
-        let sorted = [...contacts];
-        if (sortKey) {
-            sorted.sort((a, b) => {
-                const aVal = a[sortKey as keyof ContactProfile];
-                const bVal = b[sortKey as keyof ContactProfile];
-
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                }
-                if (typeof aVal === 'number' && typeof bVal === 'number') {
-                    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-                }
-                if (aVal instanceof Date && bVal instanceof Date) {
-                    return sortDirection === 'asc' ? aVal.getTime() - bVal.getTime() : bVal.getTime() - aVal.getTime();
-                }
-                return 0;
-            });
-        }
-
-        if (searchTerm) {
-            sorted = sorted.filter(c =>
-                c.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-        }
-        return sorted;
-    }, [contacts, sortKey, sortDirection, searchTerm]);
-
-    const paginatedContacts = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredAndSortedContacts.slice(startIndex, startIndex + pageSize);
-    }, [filteredAndSortedContacts, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredAndSortedContacts.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredAndSortedContacts.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handleSort = (key: string) => {
-        if (key === sortKey) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDirection('asc');
-        }
-    };
-
-    const handleDeleteContact = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this contact?')) {
-            await deleteContact(id);
-        }
-    };
-
-    const contactColumns = useMemo(() => [
-        { key: 'firstName', label: 'First Name', sortable: true },
-        { key: 'lastName', label: 'Last Name', sortable: true },
-        { key: 'email', label: 'Email', sortable: true },
-        { key: 'city', label: 'City', sortable: true },
-        { key: 'leadScore', label: 'Lead Score', sortable: true },
-        { key: 'tags', label: 'Tags', render: (c: ContactProfile) => c.tags.join(', ') || 'N/A' },
-        { key: 'segmentIds', label: 'Segments', render: (c: ContactProfile) => getSegmentNames(c.segmentIds) },
-        { key: 'signUpDate', label: 'Signup Date', sortable: true, render: (c: ContactProfile) => formatDate(c.signUpDate).split(',')[0] },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (c: ContactProfile) => (
-                <button onClick={() => handleDeleteContact(c.id)} className="text-red-500 hover:text-red-400"><IconDelete /></button>
-            )
-        },
-    ], [getSegmentNames]);
-
-    return (
-        <Card title="Contact Database">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search contacts..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-            </div>
-            <ExportedTable
-                data={paginatedContacts}
-                columns={contactColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                onSort={handleSort}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.contacts}
-            />
-        </Card>
-    );
-};
-
-// --- SYSTEM & AUDIT LOGS (to be exported) ---
-
-/**
- * @function ExportedNotificationCenter
- * @description Displays a list of system notifications.
- */
-export const ExportedNotificationCenter: React.FC = () => {
-    const { notifications, loadingState, markNotificationAsRead } = useMarketingAutomation();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey] = useState('timestamp');
-    const [sortDirection] = useState<'desc' | 'asc'>('desc');
-    const [filterRead, setFilterRead] = useState<'all' | 'unread'>('unread');
-
-    const filteredNotifications = useMemo(() => {
-        let sorted = [...notifications];
-        // Sort by timestamp desc by default
-        sorted.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        if (filterRead === 'unread') {
-            sorted = sorted.filter(n => !n.read);
-        }
-        return sorted;
-    }, [notifications, filterRead]);
-
-    const paginatedNotifications = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredNotifications.slice(startIndex, startIndex + pageSize);
-    }, [filteredNotifications, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredNotifications.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredNotifications.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-
-    const notificationColumns = useMemo(() => [
-        {
-            key: 'read', label: 'Status', render: (n: Notification) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${n.read ? 'bg-gray-600 text-gray-300' : 'bg-blue-600 text-white'}`}>
-                    {n.read ? 'Read' : 'New'}
-                </span>
-            )
-        },
-        {
-            key: 'type', label: 'Type', render: (n: Notification) => (
-                <span className={`capitalize ${n.type === 'error' ? 'text-red-400' : n.type === 'warning' ? 'text-yellow-400' : n.type === 'success' ? 'text-green-400' : 'text-cyan-400'}`}>
-                    {n.type}
-                </span>
-            )
-        },
-        { key: 'message', label: 'Message' },
-        { key: 'timestamp', label: 'Time', render: (n: Notification) => formatDate(n.timestamp) },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (n: Notification) => (
-                <div className="flex space-x-2">
-                    {!n.read && (
-                        <button onClick={() => markNotificationAsRead(n.id)} className="text-green-500 hover:text-green-400">Mark as Read</button>
-                    )}
-                    {n.link && (
-                        <a href={n.link} className="text-blue-500 hover:text-blue-400">View</a>
-                    )}
-                </div>
-            )
-        },
-    ], [markNotificationAsRead]);
-
-    return (
-        <Card title="Notification Center">
-            <div className="mb-4 flex justify-between items-center">
-                <div className="space-x-2">
-                    <button
-                        onClick={() => setFilterRead('all')}
-                        className={`px-3 py-1 rounded-md text-sm ${filterRead === 'all' ? 'bg-cyan-600 text-white' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600'}`}
-                    >
-                        All
-                    </button>
-                    <button
-                        onClick={() => setFilterRead('unread')}
-                        className={`px-3 py-1 rounded-md text-sm ${filterRead === 'unread' ? 'bg-cyan-600 text-white' : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600'}`}
-                    >
-                        Unread ({notifications.filter(n => !n.read).length})
-                    </button>
-                </div>
-            </div>
-            <ExportedTable
-                data={paginatedNotifications}
-                columns={notificationColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                currentSortKey={sortKey} // Sort is fixed by timestamp
-                sortDirection={sortDirection}
-                isLoading={loadingState.notifications}
-            />
-        </Card>
-    );
-};
-
-/**
- * @function ExportedAuditLog
- * @description Displays system audit logs.
- */
-export const ExportedAuditLog: React.FC = () => {
-    const { auditLogs, loadingState } = useMarketingAutomation();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize] = useState(10);
-    const [sortKey] = useState('timestamp');
-    const [sortDirection] = useState<'desc' | 'asc'>('desc'); // Always sort by newest first
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredLogs = useMemo(() => {
-        let sorted = [...auditLogs];
-        // Sort by timestamp desc by default
-        sorted.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-        if (searchTerm) {
-            sorted = sorted.filter(log =>
-                log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                log.resourceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                log.resourceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                log.userId.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        return sorted;
-    }, [auditLogs, searchTerm]);
-
-    const paginatedLogs = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredLogs.slice(startIndex, startIndex + pageSize);
-    }, [filteredLogs, currentPage, pageSize]);
-
-    const totalPages = Math.ceil(filteredLogs.length / pageSize);
-    const pagination: Pagination = { currentPage, totalPages, pageSize, totalItems: filteredLogs.length };
-
-    const handlePageChange = (page: number) => setCurrentPage(page);
-
-    const auditLogColumns = useMemo(() => [
-        { key: 'timestamp', label: 'Time', render: (log: AuditLogEntry) => formatDate(log.timestamp) },
-        { key: 'userId', label: 'User' },
-        { key: 'action', label: 'Action' },
-        { key: 'resourceType', label: 'Resource Type' },
-        { key: 'resourceId', label: 'Resource ID' },
-        {
-            key: 'changes', label: 'Changes', render: (log: AuditLogEntry) =>
-                log.changes ? (
-                    <span className="text-gray-400 hover:text-white cursor-pointer" title={JSON.stringify(log.changes, null, 2)}>
-                        View Details
-                    </span>
-                ) : 'N/A'
-        },
-    ], []);
-
-    return (
-        <Card title="Audit Log">
-            <div className="mb-4 flex justify-between items-center">
-                <input
-                    type="text"
-                    placeholder="Search logs..."
-                    value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                    className="p-2 rounded bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-            </div>
-            <ExportedTable
-                data={paginatedLogs}
-                columns={auditLogColumns}
-                keyField="id"
-                pagination={pagination}
-                onPageChange={handlePageChange}
-                currentSortKey={sortKey}
-                sortDirection={sortDirection}
-                isLoading={loadingState.auditLogs}
-            />
-        </Card>
-    );
-};
-
-// --- MAIN MARKETING AUTOMATION VIEW (Original Component Expanded) ---
-// The original MarketingAutomationView now integrates all the new features and sub-components.
-
-const MarketingAutomationView: React.FC = () => {
-    // Original DataContext, now supplemented by MarketingAutomationInternalContext
-    const dataContext = useContext(DataContext);
-    if (!dataContext) throw new Error("MarketingAutomationView must be within DataProvider");
-
-    const { marketingCampaigns: oldMarketingCampaigns } = dataContext; // Original campaigns
-    const { campaigns, loadingState, addOrUpdateCampaign, fetchCampaigns } = useMarketingAutomation(); // New data hook
+const MarketingAutomationViewContent: React.FC = () => {
+    const { campaigns, segments, workflows, emailCampaigns, socialPosts, abTests, contacts } = useMarketingAutomation();
 
     const [isCopyModalOpen, setCopyModalOpen] = useState(false);
-    const [productDesc, setProductDesc] = useState("Our new AI-powered savings tool");
     const [adCopy, setAdCopy] = useState('');
-    const [isLoadingAI, setIsLoadingAI] = useState(false); // Renamed to avoid conflict with shared loadingState
+    const [isLoadingAI, setIsLoadingAI] = useState(false);
 
-    // State for managing active tab/view
     const [activeTab, setActiveTab] = useState<'overview' | 'campaigns' | 'segments' | 'workflows' | 'emails' | 'social' | 'abtests' | 'contacts' | 'notifications' | 'audit'>('overview');
-
-    const kpiData = useMemo(() => {
-        // Use new campaigns data for comprehensive KPIs
-        const totalLeads = campaigns.reduce((sum, c) => sum + (c.analytics?.conversions || 0), 0);
-        const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenueGenerated, 0);
-        const totalCost = campaigns.reduce((sum, c) => sum + c.cost, 0);
-        const totalImpressions = campaigns.reduce((sum, c) => sum + (c.analytics?.impressions || 0), 0);
-        const totalClicks = campaigns.reduce((sum, c) => sum + (c.analytics?.clicks || 0), 0);
-
-        const roas = totalCost > 0 ? (totalRevenue / totalCost) : 0;
-        const cpl = totalLeads > 0 ? (totalCost / totalLeads) : 0;
-        const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-
-        return {
-            leads: totalLeads,
-            conversionRate: roas, // Using ROAS as conversion rate here for overall performance.
-            cpc: cpl, // Using CPL for overall cost per lead.
-            ctr: ctr,
-        };
-    }, [campaigns]);
-
+    
     const handleGenerateCopy = async (prompt: string) => {
-        setIsLoadingAI(true); setAdCopy('');
+        setIsLoadingAI(true); 
+        setAdCopy('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' }); // Switched to 1.5-flash for potential robustness
+            // NOTE: In a real app, the API key should be handled securely on a backend.
+            // This is for demonstration purposes only.
+            const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
+            if (!apiKey) {
+                setAdCopy('API key is not configured. Please set REACT_APP_GEMINI_API_KEY.');
+                return;
+            }
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
             const result = await model.generateContent(prompt);
             const response = await result.response;
             setAdCopy(response.text());
         } catch (err) {
             console.error("AI Generation Error:", err);
-            setAdCopy('Failed to generate copy. Please try again or check your API key/network connection.');
+            setAdCopy('Failed to generate copy. Check console for details (e.g., API key, network).');
         } finally {
             setIsLoadingAI(false);
         }
     };
+    
+    const kpiData = useMemo(() => {
+        const totalLeads = campaigns.reduce((sum, c) => sum + (c.analytics?.conversions || 0), 0);
+        const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenueGenerated, 0);
+        const totalCost = campaigns.reduce((sum, c) => sum + c.cost, 0);
+        const roas = totalCost > 0 ? (totalRevenue / totalCost) : 0;
+        return {
+            leads: totalLeads,
+            revenue: totalRevenue,
+            cost: totalCost,
+            roas: roas,
+        };
+    }, [campaigns]);
 
     const overviewCampaignChartData = useMemo(() => {
-        // Aggregate campaigns by channel for a different view
         const channelDataMap = new Map<string, { name: string; revenue: number; cost: number; leads: number }>();
         campaigns.forEach(c => {
             const channel = c.channel || 'Other';
@@ -4464,47 +2402,103 @@ const MarketingAutomationView: React.FC = () => {
         }));
     }, [campaigns]);
 
+    const renderActiveTab = () => {
+        switch (activeTab) {
+            case 'overview':
+                return (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <Card><h4 className="text-gray-400">Total Leads</h4><p className="text-3xl font-bold text-white">{kpiData.leads.toLocaleString()}</p></Card>
+                            <Card><h4 className="text-gray-400">Total Revenue</h4><p className="text-3xl font-bold text-white">{formatCurrency(kpiData.revenue)}</p></Card>
+                            <Card><h4 className="text-gray-400">Total Cost</h4><p className="text-3xl font-bold text-white">{formatCurrency(kpiData.cost)}</p></Card>
+                            <Card><h4 className="text-gray-400">Overall ROAS</h4><p className="text-3xl font-bold text-white">{kpiData.roas.toFixed(2)}x</p></Card>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <Card title="Performance by Channel" className="lg:col-span-2">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={overviewCampaignChartData}>
+                                        <XAxis dataKey="name" stroke="#9ca3af" />
+                                        <YAxis yAxisId="left" orientation="left" stroke="#82ca9d" />
+                                        <YAxis yAxisId="right" orientation="right" stroke="#ef4444" />
+                                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
+                                        <Legend />
+                                        <Bar yAxisId="left" dataKey="revenue" fill="#82ca9d" name="Revenue" />
+                                        <Bar yAxisId="right" dataKey="cost" fill="#ef4444" name="Cost" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </Card>
+                            <Card title="Campaign Status">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie data={statusPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
+                                            {statusPieData.map((entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                        </Pie>
+                                        <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </Card>
+                        </div>
+                    </div>
+                );
+            case 'campaigns': return <ExportedCampaignList />;
+            case 'segments': return <ExportedAudienceSegmentList />;
+            case 'workflows': return <ExportedWorkflowList />;
+            case 'emails': return <div className="space-y-6"><ExportedEmailCampaignList /><ExportedEmailTemplateList /></div>;
+            case 'social': return <ExportedSocialPostList />;
+            case 'abtests': return <ExportedABTestList />;
+            case 'contacts': return <ExportedContactList />;
+            case 'notifications': return <ExportedNotificationCenter />;
+            case 'audit': return <ExportedAuditLog />;
+            default: return null;
+        }
+    };
 
     return (
-        <MarketingAutomationProvider>
-            <div className="space-y-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold text-white tracking-wider">Marketing Automation Dashboard</h2>
-                    <div className="flex space-x-3">
-                        <button onClick={() => setCopyModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
-                            <IconLightBulb /> <span>AI Content Generator</span>
-                        </button>
-                    </div>
-                </div>
+        <div className="space-y-6">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-white tracking-wider">Marketing Automation Dashboard</h2>
+                <button onClick={() => setCopyModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2">
+                    <IconLightBulb /> <span>AI Content Generator</span>
+                </button>
+            </div>
 
-                {/* Navigation Tabs */}
-                <div className="border-b border-gray-700">
-                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button onClick={() => setActiveTab('overview')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Overview
+            <div className="border-b border-gray-700 overflow-x-auto">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    {['overview', 'campaigns', 'segments', 'workflows', 'emails', 'social', 'abtests', 'contacts', 'notifications', 'audit'].map(tab => (
+                        <button key={tab} onClick={() => setActiveTab(tab as any)} className={`capitalize whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === tab ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
+                            {tab.replace('abtests', 'A/B Tests')}
                         </button>
-                        <button onClick={() => setActiveTab('campaigns')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'campaigns' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Campaigns
-                        </button>
-                        <button onClick={() => setActiveTab('segments')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'segments' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Audiences
-                        </button>
-                        <button onClick={() => setActiveTab('workflows')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'workflows' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Workflows
-                        </button>
-                        <button onClick={() => setActiveTab('emails')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'emails' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Email Marketing
-                        </button>
-                        <button onClick={() => setActiveTab('social')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'social' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Social Media
-                        </button>
-                        <button onClick={() => setActiveTab('abtests')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'abtests' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            A/B Testing
-                        </button>
-                        <button onClick={() => setActiveTab('contacts')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'contacts' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Contacts
-                        </button>
-                        <button onClick={() => setActiveTab('notifications')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'notifications' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                            Notifications
-                        </button>
-                        <button onClick={() => setActiveTab('audit')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'audit' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-
+                    ))}
+                </nav>
+            </div>
+
+            <div className="mt-6">
+                {renderActiveTab()}
+            </div>
+
+            <ExportedModal
+                title="AI Content Generator"
+                isOpen={isCopyModalOpen}
+                onClose={() => setCopyModalOpen(false)}
+                className="max-w-3xl"
+            >
+                <ExportedAICopyGenerator
+                    onGenerate={handleGenerateCopy}
+                    isLoading={isLoadingAI}
+                    adCopy={adCopy}
+                />
+            </ExportedModal>
+        </div>
+    );
+};
+
+const MarketingAutomationView: React.FC = () => {
+    return (
+        <MarketingAutomationProvider>
+            <MarketingAutomationViewContent />
+        </MarketingAutomationProvider>
+    );
+};
+
+export default MarketingAutomationView;
