@@ -149,7 +149,7 @@ interface ChannelConfiguration {
     dailyLimit: number;
     currentDailyUsage: number;
     lastTested: string; // Timestamp of last successful test
-    settings: { [key: string]: string | number | boolean }; // Provider-specific settings
+    settings: { [key: string]: string | number | boolean | undefined }; // Provider-specific settings
 }
 
 /**
@@ -632,7 +632,7 @@ export const CommunicationOverviewMetrics: React.FC = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {summary.map((item, index) => (
+            {summary.map((item) => (
                 <Card key={item.channel} className="text-center p-4 h-full flex flex-col justify-between">
                     <div>
                         <h3 className="text-xl font-semibold text-white mb-2">{item.channel}</h3>
@@ -735,8 +735,7 @@ export const DailyCommunicationsTrend: React.FC = () => {
  * Utilizes existing `usageData` from the original file for simplicity.
  */
 export const ChannelUsagePieChart: React.FC = () => {
-    const [data, setData] = useState(usageData); // Using existing usageData for simplicity
-    const [isLoading, setIsLoading] = useState(false); // No async call for this one, so always false
+    const data = usageData; // Using existing usageData for simplicity
 
     return (
         <Card title="Usage Distribution by Channel">
@@ -2267,7 +2266,7 @@ export const ScheduledJobsMonitor: React.FC = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button
                                             onClick={() => handleRunJobNow(job.id, job.name)}
-                                            className="text-green-400 hover:text-green-300 ml-4 px-2 py-1 rounded"
+                                            className="text-green-400 hover:text-green-300 ml-4 px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                                             disabled={job.status === 'Running'}
                                             title="Manually run this job immediately"
                                         >
