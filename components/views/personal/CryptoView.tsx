@@ -3,13 +3,13 @@ import React, { useContext, useMemo, useState, useEffect, useCallback, useRef } 
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import { CryptoAsset, NFTAsset } from '../../../types';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, AreaChart, Area } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, AreaChart, Area, BarChart, Bar, Tooltip } from 'recharts';
 
 // SECTION: Enhanced Types and Interfaces for a Real-World Application
 
-export type TransactionStatus = 'pending' | 'completed' | 'failed';
-export type TransactionType = 'buy' | 'sell' | 'send' | 'receive' | 'stake' | 'unstake' | 'swap';
-export type BlockchainNetwork = 'Ethereum' | 'Polygon' | 'Solana' | 'Arbitrum' | 'Optimism';
+export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'confirmed';
+export type TransactionType = 'buy' | 'sell' | 'send' | 'receive' | 'stake' | 'unstake' | 'swap' | 'approve';
+export type BlockchainNetwork = 'Ethereum' | 'Polygon' | 'Solana' | 'Arbitrum' | 'Optimism' | 'Avalanche';
 
 export interface HistoricalDataPoint {
     timestamp: number;
@@ -38,16 +38,20 @@ export interface StakingPool {
     myStake: number;
     logoUrl: string;
     network: BlockchainNetwork;
+    lockupPeriod?: string;
 }
 
 export interface DeFiProtocol {
     id: string;
     name: string;
     tvl: number;
-    category: 'DEX' | 'Lending' | 'Liquid Staking';
+    category: 'DEX' | 'Lending' | 'Liquid Staking' | 'Yield Aggregator';
     logoUrl: string;
     description: string;
+    chains: BlockchainNetwork[];
 }
+
+export type NewsSentiment = 'positive' | 'negative' | 'neutral' | 'very positive' | 'very negative';
 
 export interface NewsArticle {
     id: string;
@@ -56,7 +60,8 @@ export interface NewsArticle {
     publishedAt: string;
     url: string;
     imageUrl: string;
-    sentiment: 'positive' | 'negative' | 'neutral';
+    sentiment: NewsSentiment;
+    summary: string;
 }
 
 export interface GasPrices {
@@ -76,9 +81,34 @@ export interface PriceAlert {
 export interface AdvancedCryptoAsset extends CryptoAsset {
     price: number;
     change24h: number;
+    change7d: number;
     marketCap: number;
     volume24h: number;
     sparkline: number[];
+    ath: number;
+    atl: number;
+    circulatingSupply: number;
+    totalSupply: number;
+}
+
+export interface NFTTrait {
+    trait_type: string;
+    value: string;
+    rarity_score: number;
+}
+
+export interface AdvancedNFTAsset extends NFTAsset {
+    collectionName: string;
+    floorPrice: number;
+    lastSale: number;
+    traits: NFTTrait[];
+}
+
+export interface AINarrative {
+    title: string;
+    summary: string;
+    confidence: number;
+    suggestions: string[];
 }
 
 // SECTION: SVG Icons as React Components for clean, dependency-free UI
@@ -103,6 +133,12 @@ export const SwapIcon: React.FC<{ className?: string }> = ({ className }) => (
 export const StakeIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+);
+
+export const AIBrainIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
 );
 
@@ -131,6 +167,7 @@ export const getChainInfo = (network: BlockchainNetwork) => {
         Solana: { name: 'Solana', color: '#9945FF' },
         Arbitrum: { name: 'Arbitrum', color: '#28a0f0' },
         Optimism: { name: 'Optimism', color: '#FF0420' },
+        Avalanche: { name: 'Avalanche', color: '#E84142' },
     };
     return info[network];
 };
@@ -138,10 +175,10 @@ export const getChainInfo = (network: BlockchainNetwork) => {
 // SECTION: Mock Data Generators to Simulate a Real Backend
 
 export const generateMockTransactions = (count: number): Transaction[] => {
-    const assets = ['ETH', 'BTC', 'SOL', 'USDC', 'MATIC'];
-    const types: TransactionType[] = ['buy', 'sell', 'send', 'receive', 'stake', 'unstake', 'swap'];
-    const statuses: TransactionStatus[] = ['completed', 'completed', 'completed', 'pending', 'failed'];
-    const networks: BlockchainNetwork[] = ['Ethereum', 'Polygon', 'Solana', 'Arbitrum', 'Optimism'];
+    const assets = ['ETH', 'BTC', 'SOL', 'USDC', 'MATIC', 'AVAX'];
+    const types: TransactionType[] = ['buy', 'sell', 'send', 'receive', 'stake', 'unstake', 'swap', 'approve'];
+    const statuses: TransactionStatus[] = ['completed', 'completed', 'confirmed', 'pending', 'failed'];
+    const networks: BlockchainNetwork[] = ['Ethereum', 'Polygon', 'Solana', 'Arbitrum', 'Optimism', 'Avalanche'];
     return Array.from({ length: count }, (_, i) => ({
         id: `tx-${i}-${Date.now()}`,
         type: types[Math.floor(Math.random() * types.length)],
@@ -173,26 +210,89 @@ export const generateAdvancedCryptoAssets = (baseAssets: CryptoAsset[]): Advance
     return baseAssets.map(asset => ({
         ...asset,
         price: asset.value / asset.amount,
-        change24h: (Math.random() - 0.5) * 10, // -5% to +5%
+        change24h: (Math.random() - 0.5) * 10,
+        change7d: (Math.random() - 0.5) * 25,
         marketCap: asset.value * (1000 + Math.random() * 5000),
         volume24h: asset.value * (100 + Math.random() * 500),
         sparkline: Array.from({ length: 30 }, () => Math.random() * asset.value),
+        ath: (asset.value / asset.amount) * (1.5 + Math.random()),
+        atl: (asset.value / asset.amount) * (0.2 + Math.random() * 0.3),
+        circulatingSupply: asset.amount * 1000,
+        totalSupply: asset.amount * 1200,
     }));
 };
 
 export const generateMockStakingPools = (): StakingPool[] => [
-    { id: 'eth-lido', asset: 'ETH', apy: 3.8, totalStaked: 9500000, myStake: 2.5, logoUrl: '/tokens/steth.png', network: 'Ethereum' },
-    { id: 'matic-lido', asset: 'MATIC', apy: 5.2, totalStaked: 850000000, myStake: 1500, logoUrl: '/tokens/matic.png', network: 'Polygon' },
-    { id: 'sol-jito', asset: 'SOL', apy: 7.1, totalStaked: 6800000, myStake: 25.5, logoUrl: '/tokens/sol.png', network: 'Solana' },
-    { id: 'arb-gmx', asset: 'ARB', apy: 4.5, totalStaked: 12000000, myStake: 0, logoUrl: '/tokens/arb.png', network: 'Arbitrum' },
+    { id: 'eth-lido', asset: 'ETH', apy: 3.8, totalStaked: 9500000, myStake: 2.5, logoUrl: '/tokens/steth.png', network: 'Ethereum', lockupPeriod: 'None' },
+    { id: 'matic-lido', asset: 'MATIC', apy: 5.2, totalStaked: 850000000, myStake: 1500, logoUrl: '/tokens/matic.png', network: 'Polygon', lockupPeriod: '3 days' },
+    { id: 'sol-jito', asset: 'SOL', apy: 7.1, totalStaked: 6800000, myStake: 25.5, logoUrl: '/tokens/sol.png', network: 'Solana', lockupPeriod: 'None' },
+    { id: 'arb-gmx', asset: 'ARB', apy: 4.5, totalStaked: 12000000, myStake: 0, logoUrl: '/tokens/arb.png', network: 'Arbitrum', lockupPeriod: '14 days' },
+    { id: 'avax-benqi', asset: 'AVAX', apy: 6.3, totalStaked: 45000000, myStake: 0, logoUrl: '/tokens/avax.png', network: 'Avalanche', lockupPeriod: 'None' },
 ];
 
 export const generateMockDeFiProtocols = (): DeFiProtocol[] => [
-    { id: 'uniswap', name: 'Uniswap', tvl: 4120000000, category: 'DEX', logoUrl: '/protocols/uniswap.png', description: 'A decentralized exchange for swapping ERC20 tokens.' },
-    { id: 'aave', name: 'Aave', tvl: 6800000000, category: 'Lending', logoUrl: '/protocols/aave.png', description: 'A decentralized non-custodial liquidity protocol where users can participate as depositors or borrowers.' },
-    { id: 'lido', name: 'Lido', tvl: 14200000000, category: 'Liquid Staking', logoUrl: '/protocols/lido.png', description: 'A liquid staking solution for ETH and other PoS assets.' },
-    { id: 'curve', name: 'Curve Finance', tvl: 2900000000, category: 'DEX', logoUrl: '/protocols/curve.png', description: 'An exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading.' },
+    { id: 'uniswap', name: 'Uniswap', tvl: 4120000000, category: 'DEX', logoUrl: '/protocols/uniswap.png', description: 'A decentralized exchange for swapping ERC20 tokens.', chains: ['Ethereum', 'Polygon', 'Arbitrum', 'Optimism'] },
+    { id: 'aave', name: 'Aave', tvl: 6800000000, category: 'Lending', logoUrl: '/protocols/aave.png', description: 'A decentralized non-custodial liquidity protocol where users can participate as depositors or borrowers.', chains: ['Ethereum', 'Polygon', 'Avalanche'] },
+    { id: 'lido', name: 'Lido', tvl: 14200000000, category: 'Liquid Staking', logoUrl: '/protocols/lido.png', description: 'A liquid staking solution for ETH and other PoS assets.', chains: ['Ethereum', 'Solana'] },
+    { id: 'curve', name: 'Curve Finance', tvl: 2900000000, category: 'DEX', logoUrl: '/protocols/curve.png', description: 'An exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading.', chains: ['Ethereum', 'Polygon', 'Arbitrum'] },
+    { id: 'yearn', name: 'Yearn Finance', tvl: 310000000, category: 'Yield Aggregator', logoUrl: '/protocols/yearn.png', description: 'A suite of products in Decentralized Finance (DeFi) that provides lending aggregation, yield generation, and insurance on the Ethereum blockchain.', chains: ['Ethereum', 'Fantom'] },
 ];
+
+export const generateMockAdvancedNFTs = (baseNfts: NFTAsset[]): AdvancedNFTAsset[] => {
+    return baseNfts.map(nft => ({
+        ...nft,
+        collectionName: 'CryptoPunks',
+        floorPrice: 45.5,
+        lastSale: 52.1,
+        traits: [
+            { trait_type: 'Type', value: 'Alien', rarity_score: 99.8 },
+            { trait_type: 'Accessory', value: 'Cap Forward', rarity_score: 35.2 },
+            { trait_type: 'Eyes', value: '3D Glasses', rarity_score: 72.4 },
+        ]
+    }));
+};
+
+// SECTION: AI-Powered Service Simulation
+
+const aiApiService = {
+    getPortfolioNarrative: (assets: AdvancedCryptoAsset[]): Promise<AINarrative> => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                const totalValue = assets.reduce((sum, a) => sum + a.value, 0);
+                const ethDominance = assets.find(a => a.symbol === 'ETH')?.value / totalValue * 100 || 0;
+                resolve({
+                    title: "Portfolio Health Check",
+                    summary: `Your portfolio appears to be moderately concentrated in Ethereum (${ethDominance.toFixed(1)}%). Recent market volatility suggests monitoring your altcoin exposure, especially in the Solana ecosystem which has shown high beta.`,
+                    confidence: 0.85,
+                    suggestions: [
+                        "Consider diversifying into stablecoins to hedge against volatility.",
+                        "Explore staking opportunities for your MATIC holdings to generate passive yield.",
+                        "Set price alerts for BTC to track key market movements.",
+                    ]
+                });
+            }, 1500);
+        });
+    },
+    getTransactionSummary: (transactions: Transaction[]): Promise<AINarrative> => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                const buyCount = transactions.filter(t => t.type === 'buy').length;
+                const sellCount = transactions.filter(t => t.type === 'sell').length;
+                const highGasTx = transactions.filter(t => t.network === 'Ethereum').length;
+                resolve({
+                    title: "Recent Activity Analysis",
+                    summary: `In the last 30 days, you've executed ${buyCount} buys and ${sellCount} sells. A significant portion of your activity (${highGasTx} transactions) was on the Ethereum mainnet, potentially incurring high gas fees.`,
+                    confidence: 0.92,
+                    suggestions: [
+                        "Utilize Layer 2 networks like Polygon or Arbitrum for smaller swaps to save on gas fees.",
+                        "Review your recurring 'buy' transactions to ensure they align with your long-term strategy.",
+                    ]
+                });
+            }, 1200);
+        });
+    }
+};
+
 
 // SECTION: Custom Hooks for State Management and Data Fetching Simulation
 
@@ -222,7 +322,56 @@ export const useCryptoDataFeed = (initialGasPrices: GasPrices) => {
     return { gasPrices, livePortfolioValue };
 };
 
+export const useAINarrative = (assets: AdvancedCryptoAsset[], transactions: Transaction[]) => {
+    const [portfolioNarrative, setPortfolioNarrative] = useState<AINarrative | null>(null);
+    const [transactionNarrative, setTransactionNarrative] = useState<AINarrative | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        setIsLoading(true);
+        const fetchNarratives = async () => {
+            const [pNarr, tNarr] = await Promise.all([
+                aiApiService.getPortfolioNarrative(assets),
+                aiApiService.getTransactionSummary(transactions)
+            ]);
+            setPortfolioNarrative(pNarr);
+            setTransactionNarrative(tNarr);
+            setIsLoading(false);
+        }
+        fetchNarratives();
+    }, [assets, transactions]);
+
+    return { portfolioNarrative, transactionNarrative, isLoading };
+}
+
+
 // SECTION: Advanced Reusable UI Components
+
+export const AINarrativeCard: React.FC<{ narrative: AINarrative | null, isLoading: boolean, icon: React.ReactNode }> = ({ narrative, isLoading, icon }) => {
+    if (isLoading) {
+        return <Card className="bg-gray-800/50 animate-pulse"><div className="h-48"></div></Card>;
+    }
+    if (!narrative) return null;
+
+    return (
+        <Card title={narrative.title} icon={icon}>
+            <p className="text-gray-300 text-sm mb-4">{narrative.summary}</p>
+            <div className="border-t border-gray-700 pt-3">
+                <h4 className="text-xs font-semibold text-cyan-400 uppercase mb-2">Suggestions</h4>
+                <ul className="space-y-2">
+                    {narrative.suggestions.map((s, i) => (
+                        <li key={i} className="flex items-start">
+                            <svg className="h-4 w-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            <span className="text-sm text-gray-400">{s}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="text-right text-xs text-gray-500 mt-3">AI Confidence: {(narrative.confidence * 100).toFixed(0)}%</div>
+        </Card>
+    );
+};
+
 
 export const AssetSparkline: React.FC<{ data: number[]; color: string }> = ({ data, color }) => (
     <div className="h-10 w-24">
@@ -235,7 +384,7 @@ export const AssetSparkline: React.FC<{ data: number[]; color: string }> = ({ da
 );
 
 export const AssetTable: React.FC<{ assets: AdvancedCryptoAsset[] }> = ({ assets }) => {
-    const [sortConfig, setSortConfig] = useState<{ key: keyof AdvancedCryptoAsset; direction: 'asc' | 'desc' } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: keyof AdvancedCryptoAsset; direction: 'asc' | 'desc' } | null>({ key: 'value', direction: 'desc' });
 
     const sortedAssets = useMemo(() => {
         let sortableAssets = [...assets];
@@ -262,8 +411,8 @@ export const AssetTable: React.FC<{ assets: AdvancedCryptoAsset[] }> = ({ assets
     };
 
     const getSortArrow = (key: keyof AdvancedCryptoAsset) => {
-        if (!sortConfig || sortConfig.key !== key) return null;
-        return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+        if (!sortConfig || sortConfig.key !== key) return ' â—';
+        return sortConfig.direction === 'asc' ? ' â–²' : ' â–¼';
     };
 
     return (
@@ -271,14 +420,14 @@ export const AssetTable: React.FC<{ assets: AdvancedCryptoAsset[] }> = ({ assets
             <table className="w-full text-sm text-left text-gray-400">
                 <thead className="text-xs text-gray-300 uppercase bg-gray-700/50">
                     <tr>
-                        {['Asset', 'Price', '24h %', 'Holdings', 'Market Cap', '24h Volume', 'Last 7 Days'].map(header => {
+                        {['Asset', 'Price', '24h %', '7d %', 'Holdings', 'Market Cap', 'Last 7 Days'].map(header => {
                             const key = {
-                                'Asset': 'name', 'Price': 'price', '24h %': 'change24h',
-                                'Holdings': 'value', 'Market Cap': 'marketCap', '24h Volume': 'volume24h'
+                                'Asset': 'name', 'Price': 'price', '24h %': 'change24h', '7d %': 'change7d',
+                                'Holdings': 'value', 'Market Cap': 'marketCap'
                             }[header] as keyof AdvancedCryptoAsset;
                             return (
-                                <th key={header} scope="col" className="px-4 py-3 cursor-pointer" onClick={() => key && requestSort(key)}>
-                                    {header}{getSortArrow(key)}
+                                <th key={header} scope="col" className="px-4 py-3 cursor-pointer select-none" onClick={() => key && requestSort(key)}>
+                                    {header}<span className="text-cyan-400">{getSortArrow(key)}</span>
                                 </th>
                             );
                         })}
@@ -295,15 +444,17 @@ export const AssetTable: React.FC<{ assets: AdvancedCryptoAsset[] }> = ({ assets
                                 </div>
                             </th>
                             <td className="px-4 py-4">{formatCurrency(asset.price, 2)}</td>
-                            <td className={`px-4 py-4 ${asset.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            <td className={`px-4 py-4 font-semibold ${asset.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {asset.change24h.toFixed(2)}%
+                            </td>
+                            <td className={`px-4 py-4 ${asset.change7d >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                {asset.change7d.toFixed(2)}%
                             </td>
                             <td className="px-4 py-4">
                                 <div>{formatCurrency(asset.value)}</div>
                                 <div className="text-xs text-gray-500">{asset.amount.toFixed(4)} {asset.symbol}</div>
                             </td>
                             <td className="px-4 py-4">{formatCurrency(asset.marketCap, 0)}</td>
-                            <td className="px-4 py-4">{formatCurrency(asset.volume24h, 0)}</td>
                             <td className="px-4 py-4">
                                 <AssetSparkline data={asset.sparkline} color={asset.change24h >= 0 ? '#4ade80' : '#f87171'} />
                             </td>
@@ -323,6 +474,7 @@ export const TransactionHistoryTable: React.FC<{ transactions: Transaction[] }> 
     const getStatusIndicator = (status: TransactionStatus) => {
         switch (status) {
             case 'completed': return <span className="px-2 py-1 text-xs font-medium text-green-300 bg-green-900/50 rounded-full">Completed</span>;
+            case 'confirmed': return <span className="px-2 py-1 text-xs font-medium text-blue-300 bg-blue-900/50 rounded-full">Confirmed</span>;
             case 'pending': return <span className="px-2 py-1 text-xs font-medium text-yellow-300 bg-yellow-900/50 rounded-full">Pending</span>;
             case 'failed': return <span className="px-2 py-1 text-xs font-medium text-red-300 bg-red-900/50 rounded-full">Failed</span>;
         }
@@ -330,9 +482,9 @@ export const TransactionHistoryTable: React.FC<{ transactions: Transaction[] }> 
     
     return (
         <div>
-            <div className="flex space-x-2 mb-4">
-                {(['all', 'buy', 'sell', 'send', 'receive', 'swap'] as const).map(f =>
-                    <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-sm rounded-full ${filter === f ? 'bg-cyan-500 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+            <div className="flex space-x-2 mb-4 overflow-x-auto pb-2">
+                {(['all', 'buy', 'sell', 'send', 'receive', 'swap', 'stake', 'unstake'] as const).map(f =>
+                    <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-sm rounded-full whitespace-nowrap ${filter === f ? 'bg-cyan-500 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
                         {f.charAt(0).toUpperCase() + f.slice(1)}
                     </button>
                 )}
@@ -352,7 +504,7 @@ export const TransactionHistoryTable: React.FC<{ transactions: Transaction[] }> 
                     <tbody>
                         {filteredTransactions.map(tx => (
                             <tr key={tx.id} className="border-b border-gray-700 hover:bg-gray-800/50">
-                                <td className="px-4 py-4">{timeAgo(tx.timestamp)}</td>
+                                <td className="px-4 py-4 whitespace-nowrap">{timeAgo(tx.timestamp)}</td>
                                 <td className="px-4 py-4 capitalize">{tx.type}</td>
                                 <td className="px-4 py-4 font-medium text-white">{tx.asset}</td>
                                 <td className="px-4 py-4">
@@ -397,14 +549,14 @@ export const PortfolioHistoryChart: React.FC<{ data: HistoricalDataPoint[] }> = 
                         stroke="#9ca3af"
                         fontSize={12}
                         tickFormatter={(value) => `$${(Number(value) / 1000).toFixed(0)}k`}
-                        domain={['dataMin', 'dataMax']}
+                        domain={['dataMin - 1000', 'dataMax + 1000']}
                     />
                     <RechartsTooltip 
                         contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.9)', borderColor: '#4b5563', borderRadius: '0.5rem' }}
                         labelFormatter={(ts) => new Date(ts).toLocaleString()}
                         formatter={(value) => [formatCurrency(Number(value)), 'Portfolio Value']}
                     />
-                    <Area type="monotone" dataKey="value" stroke="#06b6d4" fillOpacity={1} fill="url(#colorValue)" />
+                    <Area type="monotone" dataKey="value" stroke="#06b6d4" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
@@ -432,17 +584,25 @@ export const DashboardTab: React.FC<{
     historicalData: HistoricalDataPoint[],
     transactions: Transaction[],
 }> = ({ advancedAssets, historicalData, transactions }) => {
+    const { portfolioNarrative, transactionNarrative, isLoading } = useAINarrative(advancedAssets, transactions);
+    
     return (
-        <div className="space-y-6">
-            <Card title="Portfolio Performance">
-                <PortfolioHistoryChart data={historicalData} />
-            </Card>
-            <Card title="Asset Allocation">
-                <AssetTable assets={advancedAssets} />
-            </Card>
-            <Card title="Transaction History">
-                <TransactionHistoryTable transactions={transactions} />
-            </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+                 <Card title="Portfolio Performance">
+                    <PortfolioHistoryChart data={historicalData} />
+                </Card>
+                <Card title="Asset Allocation">
+                    <AssetTable assets={advancedAssets} />
+                </Card>
+            </div>
+            <div className="lg:col-span-1 space-y-6">
+                <AINarrativeCard narrative={portfolioNarrative} isLoading={isLoading} icon={<AIBrainIcon className="w-5 h-5"/>} />
+                <Card title="Transaction History">
+                    <TransactionHistoryTable transactions={transactions} />
+                </Card>
+                <AINarrativeCard narrative={transactionNarrative} isLoading={isLoading} icon={<AIBrainIcon className="w-5 h-5"/>} />
+            </div>
         </div>
     );
 };
@@ -533,8 +693,8 @@ export const DeFiTab: React.FC<{
                                     <span className="font-semibold text-white">{pool.myStake} {pool.asset}</span>
                                 </div>
                                 <div className="text-xs flex justify-between text-gray-400">
-                                    <span>Total Staked:</span>
-                                    <span className="font-semibold text-white">{formatCurrency(pool.totalStaked, 0)}</span>
+                                    <span>Lock-up:</span>
+                                    <span className="font-semibold text-white">{pool.lockupPeriod}</span>
                                 </div>
                                 <button className="mt-3 w-full text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">
                                     {pool.myStake > 0 ? 'Manage Stake' : 'Stake Now'}
