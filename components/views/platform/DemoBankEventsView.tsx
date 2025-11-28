@@ -1,6 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useReducer, FC, ReactNode } from 'react';
 import Card from '../../Card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, AreaChart, Area, PieChart, Pie, Cell, Sector } from 'recharts';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { formatDistanceToNow } from 'date-fns';
+
 
 // --- ENHANCEMENT: UTILITY FUNCTIONS & CONSTANTS ---
 
@@ -14,14 +18,18 @@ export const UI_COLORS = {
     info: '#00C49F',
     text: '#9ca3af',
     textWhite: '#ffffff',
-    background: 'rgba(31, 41, 55, 0.8)',
+    background: 'rgba(31, 41, 55, 0.95)',
     border: '#4b5563',
     grid: 'rgba(156, 163, 175, 0.2)',
     green: '#22c55e',
     red: '#ef4444',
     blue: '#3b82f6',
     yellow: '#eab308',
+    purple: '#a855f7',
+    cyan: '#22d3ee',
 };
+
+const PIE_CHART_COLORS = [UI_COLORS.primary, UI_COLORS.secondary, UI_COLORS.info, UI_COLORS.warning, UI_COLORS.purple, UI_COLORS.cyan];
 
 export const generateUUID = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -104,6 +112,17 @@ export interface Subscription {
         count: number;
         intervalSeconds: number;
     };
+    deadLettering?: {
+        enabled: boolean;
+        destination: string; // e.g., a storage account URI
+    };
+    alerting?: {
+        failureThreshold: {
+            count: number;
+            timeWindowMinutes: number;
+        };
+        notify: ('email' | 'pagerduty' | 'slack')[];
+    };
 }
 
 export interface DeliveryError {
@@ -133,6 +152,29 @@ export interface OverallMetrics {
     deliveryFailureRate: number;
     avgLatencyMs: number;
 }
+
+export interface AIInsight {
+    id: string;
+    severity: 'info' | 'warning' | 'critical';
+    title: string;
+    description: string;
+    recommendation: string;
+    timestamp: Date;
+    relatedTopic?: string;
+}
+
+export interface EventTrace {
+    eventId: string;
+    correlationId: string;
+    stages: {
+        name: string;
+        status: 'success' | 'failure' | 'in_progress';
+        timestamp: Date;
+        durationMs?: number;
+        details?: Record<string, any>;
+    }[];
+}
+
 
 // --- ENHANCEMENT: MOCK DATA GENERATION ---
 
@@ -199,9 +241,9 @@ export const generateRandomEvent = (topicName?: string): Event => {
 
 let mockSubscriptions: Subscription[] = [
     { id: generateUUID(), topic: 'db.transactions.created', destinationType: 'Webhook', destinationEndpoint: 'https://api.transaction-processor.com/v1/hooks', status: 'Active', createdAt: new Date('2023-01-11T12:00:00Z'), retryPolicy: { count: 3, intervalSeconds: 60 } },
-    { id: generateUUID(), topic: 'db.anomalies.detected', destinationType: 'Function', destinationEndpoint: 'fn-notify-security-team', status: 'Active', createdAt: new Date('2023-01-16T10:30:00Z'), retryPolicy: { count: 5, intervalSeconds: 300 } },
+    { id: generateUUID(), topic: 'db.anomalies.detected', destinationType: 'Function', destinationEndpoint: 'fn-notify-security-team', status: 'Active', createdAt: new Date('2023-01-16T10:30:00Z'), retryPolicy: { count: 5, intervalSeconds: 300 }, deadLettering: { enabled: true, destination: 'blob://dead-letters/anomalies' } },
     { id: generateUUID(), topic: 'db.payments.status_changed', destinationType: 'LogicApp', destinationEndpoint: 'la-update-erp-system', status: 'Active', createdAt: new Date('2023-02-02T08:00:00Z'), filter: { 'field': 'payload.status', 'value': 'completed' }, retryPolicy: { count: 3, intervalSeconds: 120 } },
-    { id: generateUUID(), topic: 'db.users.created', destinationType: 'Webhook', destinationEndpoint: 'https://api.crm-sync.com/v2/users', status: 'Error', createdAt: new Date('2023-02-06T11:00:00Z'), retryPolicy: { count: 2, intervalSeconds: 30 } },
+    { id: generateUUID(), topic: 'db.users.created', destinationType: 'Webhook', destinationEndpoint: 'https://api.crm-sync.com/v2/users', status: 'Error', createdAt: new Date('2023-02-06T11:00:00Z'), retryPolicy: { count: 2, intervalSeconds: 30 }, alerting: { failureThreshold: { count: 10, timeWindowMinutes: 5 }, notify: ['pagerduty', 'slack'] } },
     { id: generateUUID(), topic: 'db.transactions.created', destinationType: 'EventGrid', destinationEndpoint: 'eg-topic-finance-analytics', status: 'Paused', createdAt: new Date('2023-06-01T15:00:00Z'), filter: { 'field': 'payload.amount', 'operator': '>', 'value': 1000 }, retryPolicy: { count: 3, intervalSeconds: 60 } },
 ];
 
@@ -209,6 +251,12 @@ let mockErrors: DeliveryError[] = [
     { id: generateUUID(), eventId: generateUUID(), subscriptionId: mockSubscriptions[3].id, timestamp: new Date(Date.now() - 3600000), statusCode: 503, errorMessage: "Service Unavailable: CRM endpoint timed out.", attempt: 3 },
     { id: generateUUID(), eventId: generateUUID(), subscriptionId: mockSubscriptions[3].id, timestamp: new Date(Date.now() - 7200000), statusCode: 503, errorMessage: "Service Unavailable: CRM endpoint timed out.", attempt: 3 },
     { id: generateUUID(), eventId: generateUUID(), subscriptionId: mockSubscriptions[3].id, timestamp: new Date(Date.now() - 10800000), statusCode: 401, errorMessage: "Unauthorized: Invalid API key.", attempt: 1 },
+];
+
+const mockAIInsights: AIInsight[] = [
+    { id: generateUUID(), severity: 'warning', title: 'Increased Latency for Webhook Subscriptions', description: 'Average delivery latency for webhook destinations has increased by 35% over the last 24 hours.', recommendation: 'Investigate network performance and endpoint response times for all webhook-based subscriptions.', timestamp: new Date(Date.now() - 1000 * 60 * 30), },
+    { id: generateUUID(), severity: 'info', title: 'New Event Topic Gaining Traction', description: 'The topic `db.cards.issued` has seen a 200% increase in subscribers this week.', recommendation: 'Ensure capacity for downstream services consuming this event. Consider creating dedicated documentation for this topic.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8), relatedTopic: 'db.cards.issued' },
+    { id: generateUUID(), severity: 'critical', title: 'High Failure Rate for CRM Sync', description: 'The subscription for `db.users.created` has a 98% delivery failure rate due to persistent 503 Service Unavailable errors.', recommendation: 'Immediately contact the CRM system administrators to diagnose the outage. The subscription has been automatically paused.', timestamp: new Date(Date.now() - 1000 * 60 * 5), relatedTopic: 'db.users.created' },
 ];
 
 
@@ -346,11 +394,54 @@ export const MockApiService = {
             }, MOCK_API_LATENCY);
         });
     },
+
+    fetchAIInsights: async (): Promise<AIInsight[]> => {
+        return new Promise(resolve => {
+            setTimeout(() => resolve([...mockAIInsights]), MOCK_API_LATENCY * 2.5);
+        });
+    },
+
+    getAITroubleshootingSteps: async (error: DeliveryError): Promise<string> => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                let steps = `Based on the error message "${error.errorMessage}" (Status Code: ${error.statusCode}), here are some recommended troubleshooting steps:\n\n`;
+                if (error.statusCode && error.statusCode >= 500) {
+                    steps += `1. **Check Downstream Service Health:** The 5xx status code indicates a server-side issue. Check the health dashboard for the destination service.\n`;
+                    steps += `2. **Review Service Logs:** Examine the logs of the destination endpoint around the timestamp ${error.timestamp.toISOString()} for specific error details.\n`;
+                    steps += `3. **Verify Network Connectivity:** Ensure there are no firewall rules or network ACLs blocking traffic from the event bus to the destination.\n`;
+                } else if (error.statusCode === 401 || error.statusCode === 403) {
+                    steps += `1. **Validate Credentials:** The error indicates an authentication/authorization problem. Rotate and verify the API key or token used by the subscription.\n`;
+                    steps += `2. **Check Permissions/Roles:** Ensure the security principal associated with the subscription has the necessary permissions to access the destination endpoint.\n`;
+                } else {
+                    steps += `1. **Inspect Event Payload:** The event payload might be malformed or missing required fields. Compare the schema of the event with the destination's expected schema.\n`;
+                    steps += `2. **Manually Test Endpoint:** Send a sample payload to the destination endpoint using a tool like cURL or Postman to isolate the issue.\n`;
+                }
+                resolve(steps);
+            }, MOCK_API_LATENCY * 3);
+        });
+    },
+
+    generateFilterFromNL: async (query: string): Promise<Record<string, any>> => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                // This is a simplified mock. A real implementation would use a powerful LLM.
+                let filter = {};
+                if (query.toLowerCase().includes("amount > 1000")) {
+                    filter = { field: 'payload.amount', operator: '>', value: 1000 };
+                } else if (query.toLowerCase().includes("status is failed")) {
+                    filter = { field: 'payload.status', operator: '==', value: 'failed' };
+                } else {
+                    filter = { comment: `Could not parse natural language query: "${query}"` };
+                }
+                resolve(filter);
+            }, MOCK_API_LATENCY * 4);
+        });
+    },
 };
 
 // --- ENHANCEMENT: REUSABLE UI COMPONENTS ---
 
-export const Icon: React.FC<{ path: string; className?: string }> = ({ path, className = "w-5 h-5" }) => (
+export const Icon: FC<{ path: string; className?: string }> = ({ path, className = "w-5 h-5" }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
         <path fillRule="evenodd" d={path} clipRule="evenodd" />
     </svg>
@@ -364,9 +455,12 @@ export const ICONS = {
     REFRESH: 'M16.023 9.348h4.992v-.001a.75.75 0 01.75.75v3.496a.75.75 0 01-1.5 0v-2.24l-3.555 3.554a3 3 0 11-4.242-4.242l.001-.001 3.554-3.555h-2.24a.75.75 0 010-1.5z M3.003 12a9 9 0 1117.228 3.46.75.75 0 11-1.06 1.06A7.5 7.5 0 105.46 6.78l.001-.001a.75.75 0 011.06-1.06 9 9 0 01-3.518 6.28z',
     PLUS: 'M12 4.5v15m7.5-7.5h-15',
     CHEVRON_DOWN: 'M19.5 8.25l-7.5 7.5-7.5-7.5',
+    AI_SPARKLE: 'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.553L16.25 21.75l-.648-1.197a3.375 3.375 0 00-2.456-2.456L12 17.25l1.197-.648a3.375 3.375 0 002.456-2.456L16.25 13.5l.648 1.197a3.375 3.375 0 002.456 2.456L20.25 18l-1.197.648a3.375 3.375 0 00-2.456 2.456z',
+    CODE: 'M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5',
+    INFO: 'M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z',
 };
 
-export const LoadingSpinner: React.FC = () => (
+export const LoadingSpinner: FC = () => (
     <div className="flex justify-center items-center p-8">
         <svg className="animate-spin -ml-1 mr-3 h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -375,7 +469,7 @@ export const LoadingSpinner: React.FC = () => (
     </div>
 );
 
-export const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
+export const TabButton: FC<{ active: boolean; onClick: () => void; children: ReactNode }> = ({ active, onClick, children }) => (
     <button
         onClick={onClick}
         className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
@@ -388,7 +482,7 @@ export const TabButton: React.FC<{ active: boolean; onClick: () => void; childre
     </button>
 );
 
-export const ConfirmationModal: React.FC<{
+export const ConfirmationModal: FC<{
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
@@ -417,7 +511,7 @@ export const ConfirmationModal: React.FC<{
     );
 };
 
-export const Toast: React.FC<{ message: string; type: 'success' | 'error'; onDismiss: () => void }> = ({ message, type, onDismiss }) => {
+export const Toast: FC<{ message: string; type: 'success' | 'error'; onDismiss: () => void }> = ({ message, type, onDismiss }) => {
     useEffect(() => {
         const timer = setTimeout(() => {
             onDismiss();
@@ -437,11 +531,55 @@ export const Toast: React.FC<{ message: string; type: 'success' | 'error'; onDis
     );
 };
 
+export const AITroubleshootingModal: FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    error: DeliveryError | null;
+}> = ({ isOpen, onClose, error }) => {
+    const [steps, setSteps] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && error) {
+            setIsLoading(true);
+            MockApiService.getAITroubleshootingSteps(error).then(res => {
+                setSteps(res);
+                setIsLoading(false);
+            });
+        }
+    }, [isOpen, error]);
+
+    if (!isOpen || !error) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
+            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4">
+                 <h3 className="text-xl font-bold text-white mb-4 flex items-center"><Icon path={ICONS.AI_SPARKLE} className="w-6 h-6 mr-2 text-purple-400" /> AI Troubleshooting Assistant</h3>
+                <p className="text-sm text-gray-400 mb-2">Error ID: <span className="font-mono">{error.id}</span></p>
+                <p className="text-sm text-gray-400 mb-4">Message: <span className="font-mono text-red-400">{error.errorMessage}</span></p>
+                
+                <div className="bg-gray-900/50 p-4 rounded-md h-80 overflow-y-auto">
+                    {isLoading ? <LoadingSpinner /> : (
+                        <pre className="text-gray-300 whitespace-pre-wrap text-sm">{steps}</pre>
+                    )}
+                </div>
+
+                <div className="flex justify-end mt-6">
+                    <button onClick={onClose} className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 // --- ENHANCEMENT: DASHBOARD COMPONENTS ---
 
 type TimeRange = '1h' | '24h' | '7d';
 
-export const AdvancedLineChart: React.FC<{data: any[], timeRange: TimeRange, onTimeRangeChange: (range: TimeRange) => void, isLoading: boolean }> = ({ data, timeRange, onTimeRangeChange, isLoading }) => {
+export const AdvancedLineChart: FC<{data: any[], timeRange: TimeRange, onTimeRangeChange: (range: TimeRange) => void, isLoading: boolean }> = ({ data, timeRange, onTimeRangeChange, isLoading }) => {
     return (
         <Card title="Event Traffic Analysis">
             <div className="flex justify-end mb-4">
@@ -481,7 +619,7 @@ export const AdvancedLineChart: React.FC<{data: any[], timeRange: TimeRange, onT
     );
 };
 
-export const SubscriptionTableRow: React.FC<{
+export const SubscriptionTableRow: FC<{
     sub: Subscription;
     onAction: (action: 'edit' | 'delete' | 'toggle', sub: Subscription) => void;
 }> = ({ sub, onAction }) => {
@@ -522,7 +660,7 @@ export const SubscriptionTableRow: React.FC<{
     );
 };
 
-export const SubscriptionTable: React.FC<{
+export const SubscriptionTable: FC<{
     subscriptions: Subscription[];
     isLoading: boolean;
     onAction: (action: 'edit' | 'delete' | 'toggle', sub: Subscription) => void;
@@ -571,7 +709,7 @@ export const SubscriptionTable: React.FC<{
     );
 };
 
-export const LiveEventStream: React.FC = () => {
+export const LiveEventStream: FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [isPaused, setIsPaused] = useState(false);
 
@@ -626,7 +764,7 @@ export const LiveEventStream: React.FC = () => {
     );
 };
 
-export const SubscriptionFormModal: React.FC<{
+export const SubscriptionFormModal: FC<{
     isOpen: boolean;
     onClose: () => void;
     onSave: (sub: Omit<Subscription, 'id' | 'createdAt' | 'status'> | (Partial<Subscription> & { id: string })) => void;
@@ -771,12 +909,13 @@ export const SubscriptionFormModal: React.FC<{
     );
 };
 
-export const ErrorLogView: React.FC<{
+export const ErrorLogView: FC<{
     errors: DeliveryError[];
     subscriptions: Subscription[];
     isLoading: boolean;
     onRetry: (errorId: string) => void;
-}> = ({ errors, subscriptions, isLoading, onRetry }) => {
+    onTroubleshoot: (error: DeliveryError) => void;
+}> = ({ errors, subscriptions, isLoading, onRetry, onTroubleshoot }) => {
     const getSubscriptionTopic = (subId: string) => {
         return subscriptions.find(s => s.id === subId)?.topic || 'Unknown Topic';
     };
@@ -792,7 +931,7 @@ export const ErrorLogView: React.FC<{
                             <th scope="col" className="px-6 py-3">Error</th>
                             <th scope="col" className="px-6 py-3">Status Code</th>
                             <th scope="col" className="px-6 py-3">Attempt</th>
-                            <th scope="col" className="px-6 py-3"><span className="sr-only">Actions</span></th>
+                            <th scope="col" className="px-6 py-3">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -813,11 +952,17 @@ export const ErrorLogView: React.FC<{
                                 <td className="px-6 py-4 text-red-400">{err.errorMessage}</td>
                                 <td className="px-6 py-4">{err.statusCode || 'N/A'}</td>
                                 <td className="px-6 py-4">{err.attempt}</td>
-                                <td className="px-6 py-4 text-right">
-                                    <button onClick={() => onRetry(err.id)} className="flex items-center text-sm font-semibold text-indigo-400 hover:text-indigo-300">
-                                        <Icon path={ICONS.REFRESH} className="w-4 h-4 mr-1"/>
-                                        Retry
-                                    </button>
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center space-x-4">
+                                        <button onClick={() => onRetry(err.id)} className="flex items-center text-sm font-semibold text-indigo-400 hover:text-indigo-300">
+                                            <Icon path={ICONS.REFRESH} className="w-4 h-4 mr-1"/>
+                                            Retry
+                                        </button>
+                                         <button onClick={() => onTroubleshoot(err)} className="flex items-center text-sm font-semibold text-purple-400 hover:text-purple-300">
+                                            <Icon path={ICONS.AI_SPARKLE} className="w-4 h-4 mr-1"/>
+                                            AI Help
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -831,11 +976,45 @@ export const ErrorLogView: React.FC<{
     );
 };
 
+
+export const AIInsightsPanel: FC<{ insights: AIInsight[], isLoading: boolean }> = ({ insights, isLoading }) => {
+    const getSeverityStyles = (severity: AIInsight['severity']) => {
+        switch (severity) {
+            case 'critical': return 'border-red-500 bg-red-500/10';
+            case 'warning': return 'border-yellow-500 bg-yellow-500/10';
+            case 'info': return 'border-blue-500 bg-blue-500/10';
+            default: return 'border-gray-600 bg-gray-500/10';
+        }
+    }
+    return (
+        <Card>
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                <Icon path={ICONS.AI_SPARKLE} className="w-6 h-6 mr-2 text-purple-400" />
+                AI-Powered Insights
+            </h3>
+            <div className="space-y-4 h-96 overflow-y-auto pr-2">
+                {isLoading && <LoadingSpinner />}
+                {!isLoading && insights.map(insight => (
+                    <div key={insight.id} className={`p-4 rounded-lg border-l-4 ${getSeverityStyles(insight.severity)}`}>
+                        <div className="flex justify-between items-start">
+                             <h4 className="font-bold text-white">{insight.title}</h4>
+                             <span className="text-xs text-gray-500 flex-shrink-0 ml-2">{formatDistanceToNow(insight.timestamp, { addSuffix: true })}</span>
+                        </div>
+                        <p className="text-sm text-gray-300 mt-1">{insight.description}</p>
+                        <p className="text-sm text-green-400 mt-2"><span className="font-semibold">Recommendation:</span> {insight.recommendation}</p>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
+
+
 // --- MAIN VIEW COMPONENT ---
 
 type ActiveTab = 'overview' | 'subscriptions' | 'errors' | 'topics' | 'explorer';
 
-const DemoBankEventsView: React.FC = () => {
+const DemoBankEventsView: FC = () => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
     
     // State for data
@@ -845,6 +1024,8 @@ const DemoBankEventsView: React.FC = () => {
     const [errors, setErrors] = useState<DeliveryError[]>([]);
     const [topics, setTopics] = useState<EventTopic[]>([]);
     const [recentEvents, setRecentEvents] = useState<Event[]>([]);
+    const [aiInsights, setAIInsights] = useState<AIInsight[]>([]);
+
 
     // State for UI
     const [isLoading, setIsLoading] = useState<Record<string, boolean>>({
@@ -854,6 +1035,7 @@ const DemoBankEventsView: React.FC = () => {
         errors: true,
         topics: true,
         events: true,
+        insights: true,
     });
     const [timeRange, setTimeRange] = useState<TimeRange>('24h');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -863,6 +1045,7 @@ const DemoBankEventsView: React.FC = () => {
     const [editingSub, setEditingSub] = useState<Subscription | null>(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState<{ action: () => void; title: string; message: string } | null>(null);
+    const [troubleshootingError, setTroubleshootingError] = useState<DeliveryError | null>(null);
 
     const setLoading = (key: string, value: boolean) => setIsLoading(prev => ({ ...prev, [key]: value }));
 
@@ -873,34 +1056,22 @@ const DemoBankEventsView: React.FC = () => {
     // Data fetching logic
     const fetchData = useCallback(async () => {
         setLoading('metrics', true);
-        MockApiService.fetchOverallMetrics().then(data => {
-            setMetrics(data);
-            setLoading('metrics', false);
-        });
+        MockApiService.fetchOverallMetrics().then(data => { setMetrics(data); setLoading('metrics', false); });
 
         setLoading('subscriptions', true);
-        MockApiService.fetchSubscriptions().then(data => {
-            setSubscriptions(data);
-            setLoading('subscriptions', false);
-        });
+        MockApiService.fetchSubscriptions().then(data => { setSubscriptions(data); setLoading('subscriptions', false); });
 
         setLoading('errors', true);
-        MockApiService.fetchErrors().then(data => {
-            setErrors(data);
-            setLoading('errors', false);
-        });
+        MockApiService.fetchErrors().then(data => { setErrors(data); setLoading('errors', false); });
 
         setLoading('topics', true);
-        MockApiService.fetchTopics().then(data => {
-            setTopics(data);
-            setLoading('topics', false);
-        });
+        MockApiService.fetchTopics().then(data => { setTopics(data); setLoading('topics', false); });
         
         setLoading('events', true);
-        MockApiService.fetchRecentEvents().then(data => {
-            setRecentEvents(data);
-            setLoading('events', false);
-        });
+        MockApiService.fetchRecentEvents().then(data => { setRecentEvents(data); setLoading('events', false); });
+        
+        setLoading('insights', true);
+        MockApiService.fetchAIInsights().then(data => { setAIInsights(data); setLoading('insights', false); });
 
     }, []);
 
@@ -989,14 +1160,9 @@ const DemoBankEventsView: React.FC = () => {
         }
     };
 
-
-    const originalEventTrafficData = [
-        { name: '12:00', Published: 1200, Delivered: 1198 },
-        { name: '13:00', Published: 1500, Delivered: 1500 },
-        { name: '14:00', Published: 1300, Delivered: 1299 },
-        { name: '15:00', Published: 1800, Delivered: 1800 },
-        { name: '16:00', Published: 2200, Delivered: 2195 },
-    ];
+    const handleTroubleshoot = (error: DeliveryError) => {
+        setTroubleshootingError(error);
+    };
     
     const renderContent = () => {
         switch (activeTab) {
@@ -1006,22 +1172,13 @@ const DemoBankEventsView: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                              <Card className="text-center"><p className="text-3xl font-bold text-white">{isLoading.metrics ? '...' : metrics?.totalTopics}</p><p className="text-sm text-gray-400 mt-1">Event Topics</p></Card>
                             <Card className="text-center"><p className="text-3xl font-bold text-white">{isLoading.metrics ? '...' : metrics?.totalSubscriptions}</p><p className="text-sm text-gray-400 mt-1">Subscriptions</p></Card>
-                            <Card className="text-center"><p className="text-3xl font-bold text-white">{isLoading.metrics ? '...' : `${(metrics?.avgEventsPerHour || 0) / 1000}k`}</p><p className="text-sm text-gray-400 mt-1">Events/hr (avg)</p></Card>
+                            <Card className="text-center"><p className="text-3xl font-bold text-white">{isLoading.metrics ? '...' : `${((metrics?.avgEventsPerHour || 0) / 1000).toFixed(1)}k`}</p><p className="text-sm text-gray-400 mt-1">Events/hr (avg)</p></Card>
                             <Card className="text-center"><p className="text-3xl font-bold text-white">{isLoading.metrics ? '...' : metrics?.deliveryFailureRate}%</p><p className="text-sm text-gray-400 mt-1">Failure Rate</p></Card>
                             <Card className="text-center"><p className="text-3xl font-bold text-white">{isLoading.metrics ? '...' : metrics?.avgLatencyMs}ms</p><p className="text-sm text-gray-400 mt-1">Avg. Latency</p></Card>
                         </div>
                         <AdvancedLineChart data={timeSeriesData} timeRange={timeRange} onTimeRangeChange={setTimeRange} isLoading={isLoading.timeSeries} />
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <SubscriptionTable
-                                subscriptions={subscriptions.slice(0, 5)} // Show a preview
-                                isLoading={isLoading.subscriptions}
-                                onAction={(action, sub) => {
-                                    if (action === 'edit') handleEditSubscription(sub);
-                                    if (action === 'delete') handleDeleteSubscription(sub);
-                                    if (action === 'toggle') handleToggleSubscription(sub);
-                                }}
-                                onAdd={handleAddSubscription}
-                            />
+                            <AIInsightsPanel insights={aiInsights} isLoading={isLoading.insights} />
                             <LiveEventStream />
                         </div>
                     </div>
@@ -1038,21 +1195,31 @@ const DemoBankEventsView: React.FC = () => {
                             onAdd={handleAddSubscription}
                         />;
             case 'errors':
-                return <ErrorLogView errors={errors} subscriptions={subscriptions} isLoading={isLoading.errors} onRetry={handleRetryError} />;
+                return <ErrorLogView errors={errors} subscriptions={subscriptions} isLoading={isLoading.errors} onRetry={handleRetryError} onTroubleshoot={handleTroubleshoot} />;
             case 'topics':
                 return (
                     <Card title="Available Event Topics">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {isLoading.topics && Array.from({length: 6}).map((_, i) => <div key={i} className="bg-gray-900/30 p-4 rounded-lg animate-pulse h-40"></div>)}
                             {!isLoading.topics && topics.map(topic => (
-                                <div key={topic.name} className="bg-gray-900/30 p-4 rounded-lg flex flex-col justify-between">
+                                <div key={topic.name} className="bg-gray-900/30 p-4 rounded-lg flex flex-col justify-between hover:bg-gray-800/50 transition-colors">
                                     <div>
                                         <h4 className="font-mono text-lg text-purple-400">{topic.name}</h4>
                                         <p className="text-sm text-gray-400 mt-1">{topic.description}</p>
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-4 flex justify-between">
-                                        <span>{topic.subscriberCount} Subscribers</span>
-                                        <span>~{topic.eventsPerMinute}/min</span>
+                                    <div className="mt-4">
+                                        <div className="text-xs text-gray-500 flex justify-between">
+                                            <span>{topic.subscriberCount} Subscribers</span>
+                                            <span>~{topic.eventsPerMinute}/min</span>
+                                        </div>
+                                         <details className="mt-2">
+                                            <summary className="text-xs text-indigo-400 cursor-pointer">View Schema</summary>
+                                            <div className="mt-2 max-h-48 overflow-auto">
+                                                <SyntaxHighlighter language="json" style={atomOneDark} customStyle={{ background: 'rgba(0,0,0,0.3)', fontSize: '0.75rem' }}>
+                                                    {JSON.stringify(topic.schemaDefinition, null, 2)}
+                                                </SyntaxHighlighter>
+                                            </div>
+                                        </details>
                                     </div>
                                 </div>
                             ))}
@@ -1060,8 +1227,6 @@ const DemoBankEventsView: React.FC = () => {
                     </Card>
                 );
              case 'explorer':
-                // A full-featured event explorer would be a very large component.
-                // This is a simplified version for demonstration.
                 return (
                     <Card title="Event Explorer">
                         <div className="text-gray-400 p-4">
@@ -1120,6 +1285,11 @@ const DemoBankEventsView: React.FC = () => {
                 onConfirm={() => confirmAction?.action()}
                 title={confirmAction?.title || ''}
                 message={confirmAction?.message || ''}
+            />
+            <AITroubleshootingModal
+                isOpen={!!troubleshootingError}
+                onClose={() => setTroubleshootingError(null)}
+                error={troubleshootingError}
             />
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
         </div>
