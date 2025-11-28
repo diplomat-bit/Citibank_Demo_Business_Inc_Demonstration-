@@ -3482,7 +3482,7 @@ export class SecurityService {
                 eventId: generateUUID(),
                 instanceId: twinId === 'system' ? 'system-audit' as UUID : twinId, // Mock system twin for audit logs
                 timestamp: new Date().toISOString(),
-                type: 'SECURITY_INCIDENT', // Use specific type
+                type: 'SYSTEM_EVENT', // Use specific type
                 description: `Security event: User ${userId} attempted ${action} on ${twinId}. Outcome: ${outcome}.`,
                 details: { userId, twinId, action, outcome, details },
                 severity: outcome === 'FAILURE' ? 'CRITICAL' : 'INFO',
