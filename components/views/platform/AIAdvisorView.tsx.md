@@ -1,3 +1,4 @@
+---
 /*
 # The Interrogation Room
 *A Guide to the AI Advisor*
@@ -14,7 +15,7 @@ The `AIAdvisorView.tsx`, nicknamed "Quantum," is the primary command interface f
 
 Think of this view as having a direct line to an omniscient oracle that is bound to answer you truthfully.
 
--   **The Interrogation (`messages`)**: The main part of the view is the record of your interrogationâ€”a simple back-and-forth between you and your AI instrument.
+-   **The Interrogation (`messages`)**: The main part of the view is the record of your interrogation—a simple back-and-forth between you and your AI instrument.
 
 -   **Contextual Awareness (`previousView`)**: The oracle knows what you were last focused on. If you come from the "Covenants" (Budgets) view, its first suggestions will be about enforcing your will in that domain. This makes the interrogation efficient and relevant.
 
@@ -26,7 +27,7 @@ Think of this view as having a direct line to an omniscient oracle that is bound
 
 ### How It Works
 
-1.  **Binding the Oracle**: When the component first loads, it creates a `Chat` instance with the Gemini API. This instance is stored in a `useRef`, which is crucial because it ensures the *same interrogation session* persists. This is how the AI remembers your entire line of questioning. The AI's oath is sworn here using the `systemInstruction`.
+1.  **Binding the Oracle**: When the component first loads, it creates a `Chat` instance with the Gemini API. This instance is stored in a `useRef`, which is crucial because it ensures the *same interrogation session* persists. This is how the AI remembers your entire line of questionin g. The AI's oath is sworn here using the `systemInstruction`.
 
 2.  **Issuing a Query**: When you send a message, the `handleSendMessage` function is called.
     -   It immediately adds your query to the record so the interface feels instant.
@@ -54,12 +55,16 @@ import React, {
     Fragment,
     forwardRef,
     useImperativeHandle,
+    PropsWithChildren,
 } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { VegaLite } from 'react-vega';
 import { v4 as uuidv4 } from 'uuid';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
+
 
 // --- TYPE DEFINITIONS ---
 
@@ -68,7 +73,7 @@ import { v4 as uuidv4 } from 'uuid';
  * 'user': The end-user interacting with the UI.
  * 'ai': The AI model providing responses.
  * 'system': Internal messages for status, errors, or context.
- * 'tool': Messages related to AI tool calls.
+ * 'tool': Messages related to AI tool calls and results.
  */
 export type MessageAuthor = 'user' | 'ai' | 'system' | 'tool';
 
@@ -82,7 +87,7 @@ export type MessageAuthor = 'user' | 'ai' | 'system' | 'tool';
 export type MessageStatus = 'pending' | 'streaming' | 'complete' | 'error';
 
 /**
- * Represents a tool call requested by the AI.
+ * Defines a tool call requested by the AI model.
  */
 export interface ToolCall {
     id: string;
@@ -91,7 +96,7 @@ export interface ToolCall {
 }
 
 /**
- * Represents the result of a tool execution.
+ * Defines the result of a tool execution.
  */
 export interface ToolResult {
     callId: string;
@@ -100,17 +105,27 @@ export interface ToolResult {
 }
 
 /**
- * Represents a piece of rich content that can be displayed in a message.
- * 'markdown': Standard markdown text.
- * 'code': A block of code with a specified language.
- * 'table': Tabular data.
- * 'chart': A data visualization spec (e.g., Vega-Lite).
+ * Defines the types of rich content that can be displayed in a message.
  */
-export type ContentType = 'markdown' | 'code' | 'table' | 'chart';
+export type ContentType = 'markdown' | 'code' | 'table' | 'chart' | 'image' | 'component';
 
+/**
+ * Represents a piece of rich content within a message.
+ */
 export interface ContentPart {
     type: ContentType;
     payload: any;
+}
+
+/**
+ * Represents metadata associated with an AI message.
+ */
+export interface AIMessageMetadata {
+    tokenCount?: number;
+    modelId?: string;
+    sources?: { title: string; url: string }[];
+    relatedQuestions?: string[];
+    latencyMs?: number;
 }
 
 /**
@@ -124,6 +139,8 @@ export interface ChatMessage {
     status: MessageStatus;
     toolCalls?: ToolCall[];
     toolResults?: ToolResult[];
+    metadata?: AIMessageMetadata;
+    parentId?: string; // For threading/editing
 }
 
 /**
@@ -133,21 +150,23 @@ export interface Conversation {
     id: string;
     title: string;
     createdAt: string;
+    lastModified: string;
     messages: ChatMessage[];
     systemInstruction: string;
     contextData?: Record<string, any>;
+    aiProvider: AIProviderType;
 }
 
 /**
  * Contextual information passed to the AI Advisor.
  */
-export type AdvisorContext = 'Covenants' | 'Treasury' | 'Fleet' | 'Intelligence' | 'None';
+export type AdvisorContextType = 'Covenants' | 'Treasury' | 'Fleet' | 'Intelligence' | 'None';
 
 /**
  * Props for the main AIAdvisorView component.
  */
 export interface AIAdvisorViewProps {
-    initialContext?: AdvisorContext;
+    initialContext?: AdvisorContextType;
     user: { id: string; name: string; avatarUrl?: string };
     onNewConversation?: (conversationId: string) => void;
     initialConversationId?: string;
@@ -171,807 +190,588 @@ export interface AITool {
  * Props for the ChatInput component.
  */
 export interface ChatInputProps {
-    onSendMessage: (message: string) => void;
+    onSendMessage: (message: string, attachments?: File[]) => void;
     isSending: boolean;
     placeholder?: string;
 }
 
 /**
-
  * Ref handle for the ChatInput component to allow programmatic focus.
  */
 export interface ChatInputRef {
     focus: () => void;
+    setText: (text: string) => void;
 }
+
+/**
+ * Defines the structure of an AI service response.
+ */
+export interface AIResponse {
+    fullResponse: string;
+    toolCalls?: ToolCall[];
+    metadata: AIMessageMetadata;
+}
+
+/**
+ * Interface for a generic AI service.
+ */
+export interface IAIService {
+    generateResponse(
+        messages: ChatMessage[],
+        tools: AITool[],
+        onStream: (chunk: string) => void
+    ): Promise<AIResponse>;
+}
+
+export type AIProviderType = 'gemini' | 'openai';
+
+
+// --- UI ICONS ---
+
+/**
+ * A simple, general-purpose Icon component using inline SVG.
+ */
+const Icon = React.memo(({ name, size = 16 }: { name: string; size?: number }) => {
+    const icons: { [key: string]: React.ReactNode } = {
+        send: <path d="M10 14l11-11-11-11v7l-11 4 11 4z" />,
+        copy: <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />,
+        retry: <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />,
+        thumb_up: <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z" />,
+        thumb_down: <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z" />,
+        user: <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />,
+        bot: <path d="M19 1H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h4l3 3 3-3h4c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm-5 12h-4v-2h4v2zm0-4h-4V7h4v2z" />,
+        light_mode: <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.02 12.02c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zM20 6.01c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM4.58 18.01c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />,
+        dark_mode: <path d="M10 2c-1.82 0-3.53.5-5 1.35C7.99 5.08 10 8.3 10 12s-2.01 6.92-5 8.65C6.47 21.5 8.18 22 10 22c5.52 0 10-4.48 10-10S15.52 2 10 2z" />,
+        new_chat: <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />,
+        menu: <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />,
+    };
+
+    return (
+        <svg fill="currentColor" width={size} height={size} viewBox="0 0 24 24" style={{ verticalAlign: 'middle' }}>
+            {icons[name] || <circle cx="12" cy="12" r="10" />}
+        </svg>
+    );
+});
+Icon.displayName = 'Icon';
+
 
 // --- CONSTANTS & CONFIGURATION ---
 
 export const DEFAULT_SYSTEM_INSTRUCTION = "You are Quantum, a helpful, professional, and slightly futuristic AI advisor. You provide clear, concise, and definitive answers to serve the user's will. You can use available tools to access real-time data and perform actions.";
 
-export const CONTEXTUAL_PROMPTS: Record<AdvisorContext, string[]> = {
-    Covenants: [
-        "Summarize our current budget adherence.",
-        "Which covenants are at risk of being breached this quarter?",
-        "Project our spending for the next 6 months.",
-        "Generate a report on discretionary spending.",
-    ],
-    Treasury: [
-        "What is our current cash flow situation?",
-        "Analyze the performance of our investment portfolio.",
-        "Show me a breakdown of assets vs. liabilities.",
-        "Forecast treasury balance for the end of the fiscal year.",
-    ],
-    Fleet: [
-        "What is the operational readiness of the fleet?",
-        "List all assets currently undergoing maintenance.",
-        "Show me a map of all active fleet deployments.",
-        "Who is the commander of the starship 'Vanguard'?",
-    ],
-    Intelligence: [
-        "Summarize recent intelligence reports from the outer rim.",
-        "Are there any emerging threats we should be aware of?",
-        "Cross-reference faction 'Xylos' with recent trade anomalies.",
-        "Generate a risk assessment for sector 7.",
-    ],
-    None: [
-        "Give me a high-level summary of the current situation.",
-        "What are the most pressing issues I should be aware of?",
-        "Who can I talk to about fleet logistics?",
-        "Start a new project plan.",
-    ],
+export const CONTEXTUAL_PROMPTS: Record<AdvisorContextType, string[]> = {
+    Covenants: ["Summarize our current budget adherence.", "Which covenants are at risk of being breached?", "Project spending for the next 6 months.", "Generate a report on discretionary spending."],
+    Treasury: ["What is our current cash flow situation?", "Analyze the performance of our investment portfolio.", "Show me a breakdown of assets vs. liabilities.", "Forecast treasury balance for year-end."],
+    Fleet: ["What is the operational readiness of the fleet?", "List all assets currently undergoing maintenance.", "Show me a map of all active fleet deployments.", "Who is the commander of the starship 'Vanguard'?"],
+    Intelligence: ["Summarize recent intelligence from the outer rim.", "Are there any emerging threats we should be aware of?", "Cross-reference faction 'Xylos' with trade anomalies.", "Generate a risk assessment for sector 7."],
+    None: ["Give me a high-level summary of the current situation.", "What are the most pressing issues?", "Who can I talk to about fleet logistics?", "Start a new project plan."],
 };
 
-// --- MOCK DATA & API ---
+const LOCAL_STORAGE_KEY = 'ai_advisor_conversations';
 
-/**
- * A mock function simulating a call to a generative AI API.
- * This simulates streaming and tool calls.
- * @param messages - The history of messages in the conversation.
- * @param tools - The list of available tools.
- * @param onStream - A callback to handle streamed chunks of data.
- */
-export const mockGenerativeAIAPI = async (
-    messages: ChatMessage[],
-    tools: AITool[],
-    onStream: (chunk: string) => void
-): Promise<{ fullResponse: string; toolCalls?: ToolCall[] }> => {
-    const lastUserMessage = messages[messages.length - 1]?.content.toString().toLowerCase() || '';
 
-    // Simulate API delay
-    await new Promise(res => setTimeout(res, 500));
+// --- MOCK API & SERVICES ---
 
-    // Tool Call Simulation
-    if (lastUserMessage.includes("fleet readiness")) {
-        const toolCallId = `tool_${uuidv4()}`;
-        return {
-            fullResponse: "",
-            toolCalls: [{
-                id: toolCallId,
-                name: "get_fleet_readiness",
-                args: { status: "all" }
-            }],
-        };
+class MockGeminiService implements IAIService {
+    async generateResponse(messages: ChatMessage[], tools: AITool[], onStream: (chunk: string) => void): Promise<AIResponse> {
+        const lastUserMessage = messages[messages.length - 1]?.content.toString().toLowerCase() || '';
+        await new Promise(res => setTimeout(res, 300));
+
+        if (lastUserMessage.includes("readiness")) {
+            return {
+                fullResponse: "",
+                toolCalls: [{ id: `tool_${uuidv4()}`, name: "get_fleet_readiness", args: { status: "all" } }],
+                metadata: { modelId: 'gemini-pro-mock' }
+            };
+        }
+        if (lastUserMessage.includes("market")) {
+            return {
+                fullResponse: "",
+                toolCalls: [{ id: `tool_${uuidv4()}`, name: "get_market_data", args: { symbol: "TSLA" } }],
+                metadata: { modelId: 'gemini-pro-mock' }
+            };
+        }
+
+        let response = "I am processing your query. Stand by for a definitive answer.";
+        if (lastUserMessage.includes("hello")) response = "Greetings. I am Quantum, your AI advisor. How may I be of service?";
+        else if (lastUserMessage.includes("covenants")) response = "Analyzing covenant compliance... All budgets are within parameters. The 'Project Chimera' R&D fund is at 87% utilization.";
+
+        const chunks = response.match(/.{1,10}/g) || [];
+        for (const chunk of chunks) {
+            await new Promise(res => setTimeout(res, 40));
+            onStream(chunk);
+        }
+
+        return { fullResponse: response, metadata: { modelId: 'gemini-pro-mock', tokenCount: response.length * 2, latencyMs: 500 + chunks.length * 40 } };
+    }
+}
+
+class MockOpenAIService implements IAIService {
+    async generateResponse(messages: ChatMessage[], tools: AITool[], onStream: (chunk: string) => void): Promise<AIResponse> {
+        const lastUserMessage = messages[messages.length - 1]?.content.toString().toLowerCase() || '';
+        await new Promise(res => setTimeout(res, 400));
+
+        if (lastUserMessage.includes("sales report")) {
+            return {
+                fullResponse: "",
+                toolCalls: [{ id: `tool_${uuidv4()}`, name: "generate_sales_report", args: { quarter: "Q3", year: 2024 } }],
+                metadata: { modelId: 'gpt-4-turbo-mock' }
+            };
+        }
+
+        let response = "Acknowledged. Processing your directive now.";
+        if (lastUserMessage.includes("hello")) response = "Hello! As an advanced AI, I am ready to assist you. What is your query?";
+        else if (lastUserMessage.includes("treasury")) response = "Accessing treasury data... Current liquidity stands at 1.2B credits. The portfolio is up 3.2% this quarter, driven by strong performance in tech sector holdings.";
+
+        const chunks = response.split(' ');
+        for (const chunk of chunks) {
+            await new Promise(res => setTimeout(res, 60));
+            onStream(chunk + ' ');
+        }
+        
+        return { fullResponse: response, metadata: { modelId: 'gpt-4-turbo-mock', tokenCount: response.length, latencyMs: 400 + chunks.length * 60 } };
+    }
+}
+
+const aiServiceFactory = (provider: AIProviderType): IAIService => {
+    switch (provider) {
+        case 'gemini': return new MockGeminiService();
+        case 'openai': return new MockOpenAIService();
+        default: throw new Error(`Unknown AI provider: ${provider}`);
+    }
+};
+
+
+// --- TOOLING ---
+
+class ToolService {
+    private tools: Map<string, AITool> = new Map();
+
+    constructor(initialTools: AITool[]) {
+        initialTools.forEach(tool => this.registerTool(tool));
+    }
+
+    public registerTool(tool: AITool): void {
+        this.tools.set(tool.name, tool);
+    }
+
+    public getTool(name: string): AITool | undefined {
+        return this.tools.get(name);
     }
     
-    if (lastUserMessage.includes("sales report")) {
-        const toolCallId = `tool_${uuidv4()}`;
-        return {
-            fullResponse: "",
-            toolCalls: [{
-                id: toolCallId,
-                name: "generate_sales_report",
-                args: { quarter: "Q3", year: 2024 }
-            }],
-        };
+    public getAvailableTools(): AITool[] {
+        return Array.from(this.tools.values());
     }
 
-    // Streaming Text Simulation
-    let response = "I am processing your query. Stand by for a definitive answer.";
-    if (lastUserMessage.includes("hello")) {
-        response = "Greetings. I am Quantum, your AI advisor. How may I be of service?";
-    } else if (lastUserMessage.includes("covenants")) {
-        response = "Analyzing covenant compliance data... All budgets are currently within designated parameters. The 'Project Chimera' R&D fund is at 87% of its quarterly allocation, which is the highest utilization rate.";
+    public async executeTool(call: ToolCall): Promise<ToolResult> {
+        const tool = this.getTool(call.name);
+        if (!tool) {
+            const error = `Tool '${call.name}' not found.`;
+            console.error(error);
+            return { callId: call.id, result: null, error };
+        }
+        try {
+            const result = await tool.execute(call.args);
+            return { callId: call.id, result };
+        } catch (e: any) {
+            console.error(`Error executing tool '${call.name}':`, e);
+            return { callId: call.id, result: null, error: e.message };
+        }
     }
+}
 
-    const chunks = response.match(/.{1,10}/g) || [];
-    for (const chunk of chunks) {
-        await new Promise(res => setTimeout(res, 50));
-        onStream(chunk);
-    }
-
-    return { fullResponse: response };
-};
-
-/**
- * A collection of mock tools for demonstration purposes.
- */
 export const MOCK_TOOLS: AITool[] = [
     {
         name: "get_fleet_readiness",
-        description: "Retrieves the current operational readiness status of the entire fleet or a specific ship.",
-        parameters: {
-            type: "object",
-            properties: {
-                status: { type: "string", description: "The status to filter by", enum: ["all", "active", "maintenance", "standby"] },
-                ship_name: { type: "string", description: "The name of a specific ship to query." },
-            },
-            required: ["status"],
-        },
-        execute: async (args: { status: string; ship_name?: string }) => {
-            await new Promise(res => setTimeout(res, 1000)); // Simulate async work
-            const readinessData = [
-                { ship: "Vanguard", class: "Dreadnought", status: "active", crew: 5000 },
-                { ship: "Odyssey", class: "Explorer", status: "active", crew: 800 },
-                { ship: "Aegis", class: "Cruiser", status: "maintenance", crew: 1200 },
-                { ship: "Pathfinder", class: "Scout", status: "standby", crew: 50 },
-            ];
-            let filteredData = readinessData;
-            if (args.status !== "all") {
-                filteredData = readinessData.filter(ship => ship.status === args.status);
-            }
-            if (args.ship_name) {
-                filteredData = filteredData.filter(ship => ship.ship.toLowerCase() === args.ship_name.toLowerCase());
-            }
-            return {
-                type: 'table',
-                payload: {
-                    headers: ["Ship", "Class", "Status", "Crew Complement"],
-                    rows: filteredData.map(s => [s.ship, s.class, s.status, s.crew]),
-                }
-            };
+        description: "Retrieves the operational status of the fleet.",
+        parameters: { type: "object", properties: { status: { type: "string", description: "Status to filter by", enum: ["all", "active", "maintenance", "standby"] } }, required: ["status"] },
+        execute: async (args) => {
+            await new Promise(res => setTimeout(res, 1000));
+            const data = [{ ship: "Vanguard", class: "Dreadnought", status: "active" }, { ship: "Aegis", class: "Cruiser", status: "maintenance" }];
+            return { type: 'table', payload: { headers: ["Ship", "Class", "Status"], rows: data.map(s => [s.ship, s.class, s.status]) } };
         },
     },
     {
         name: "generate_sales_report",
-        description: "Generates a sales report for a specific quarter and year, returning data suitable for a chart.",
-        parameters: {
-            type: "object",
-            properties: {
-                quarter: { type: "string", description: "The quarter (e.g., 'Q1', 'Q2')", required: true },
-                year: { type: "number", description: "The year (e.g., 2024)", required: true },
-            },
-            required: ["quarter", "year"],
-        },
-        execute: async (args: { quarter: string; year: number }) => {
+        description: "Generates a sales report for a specific quarter and year.",
+        parameters: { type: "object", properties: { quarter: { type: "string" }, year: { type: "number" } }, required: ["quarter", "year"] },
+        execute: async (args) => {
             await new Promise(res => setTimeout(res, 1500));
-            // Mock data for a Vega-Lite chart
-            const salesData = [
-                { "month": "July", "revenue": 2870, "category": "Hardware" },
-                { "month": "July", "revenue": 1940, "category": "Software" },
-                { "month": "August", "revenue": 4320, "category": "Hardware" },
-                { "month": "August", "revenue": 2500, "category": "Software" },
-                { "month": "September", "revenue": 5550, "category": "Hardware" },
-                { "month": "September", "revenue": 3100, "category": "Software" },
-            ];
-            return {
-                type: 'chart',
-                payload: {
-                    spec: {
-                        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-                        "description": `Monthly Sales for ${args.quarter} ${args.year}`,
-                        "data": { "values": salesData },
-                        "mark": "bar",
-                        "encoding": {
-                            "x": { "field": "month", "type": "ordinal", "sort": ["July", "August", "September"] },
-                            "y": { "field": "revenue", "type": "quantitative" },
-                            "color": { "field": "category" }
-                        }
-                    }
-                }
-            };
+            const salesData = [{ "month": "July", "revenue": 2870 }, { "month": "August", "revenue": 4320 }, { "month": "September", "revenue": 5550 }];
+            return { type: 'chart', payload: { spec: { "$schema": "https://vega.github.io/schema/vega-lite/v5.json", "description": `Sales for ${args.quarter} ${args.year}`, "data": { "values": salesData }, "mark": "bar", "encoding": { "x": { "field": "month", "type": "ordinal" }, "y": { "field": "revenue", "type": "quantitative" } } } } };
         },
+    },
+    {
+        name: "get_market_data",
+        description: "Gets the latest market data for a stock symbol.",
+        parameters: { type: "object", properties: { symbol: { type: "string", description: "The stock ticker symbol." } }, required: ["symbol"] },
+        execute: async (args: { symbol: string }) => {
+            await new Promise(res => setTimeout(res, 800));
+            const price = (Math.random() * 200 + 100).toFixed(2);
+            return { type: 'markdown', payload: `The current market price for **${args.symbol.toUpperCase()}** is **$${price}**. This represents a change of **+${(Math.random() * 5).toFixed(2)}%** over the last 24 hours.` };
+        }
     }
 ];
 
+
 // --- UTILITY FUNCTIONS ---
 
-/**
- * Generates a unique identifier.
- * @returns A new UUID string.
- */
 export const generateId = (): string => uuidv4();
+export const formatTimestamp = (dateString: string): string => new Date(dateString).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
-/**
- * Formats a date string into a more readable time format.
- * @param dateString - The ISO date string to format.
- * @returns A formatted time string (e.g., "14:30").
- */
-export const formatTimestamp = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
 
-// --- CORE LOGIC HOOKS ---
+// --- STATE MANAGEMENT ---
 
-/**
- * Reducer for managing the conversation state.
- */
 type ChatAction =
     | { type: 'ADD_MESSAGE'; payload: ChatMessage }
     | { type: 'UPDATE_LAST_MESSAGE'; payload: Partial<ChatMessage> }
     | { type: 'STREAM_TO_LAST_MESSAGE'; payload: string }
     | { type: 'SET_MESSAGES'; payload: ChatMessage[] }
-    | { type: 'SET_STATUS'; payload: { messageId: string; status: MessageStatus } };
+    | { type: 'DELETE_MESSAGE'; payload: { messageId: string } }
+    | { type: 'EDIT_MESSAGE'; payload: { messageId: string; newContent: string } };
 
 export const chatReducer = (state: ChatMessage[], action: ChatAction): ChatMessage[] => {
     switch (action.type) {
-        case 'ADD_MESSAGE':
-            return [...state, action.payload];
+        case 'ADD_MESSAGE': return [...state, action.payload];
         case 'UPDATE_LAST_MESSAGE':
             if (state.length === 0) return state;
-            const lastMessage = state[state.length - 1];
-            const updatedMessage = { ...lastMessage, ...action.payload };
-            return [...state.slice(0, -1), updatedMessage];
+            return [...state.slice(0, -1), { ...state[state.length - 1], ...action.payload }];
         case 'STREAM_TO_LAST_MESSAGE':
-             if (state.length === 0 || typeof state[state.length - 1].content !== 'string') {
-                 return state;
-             }
+            if (state.length === 0 || typeof state[state.length - 1].content !== 'string') return state;
             const currentContent = state[state.length - 1].content as string;
-            return [
-                ...state.slice(0, -1),
-                { ...state[state.length - 1], content: currentContent + action.payload, status: 'streaming' as MessageStatus },
-            ];
-        case 'SET_MESSAGES':
-            return action.payload;
-        case 'SET_STATUS':
-            return state.map(msg =>
-                msg.id === action.payload.messageId ? { ...msg, status: action.payload.status } : msg
-            );
-        default:
-            return state;
+            return [...state.slice(0, -1), { ...state[state.length - 1], content: currentContent + action.payload, status: 'streaming' }];
+        case 'SET_MESSAGES': return action.payload;
+        case 'DELETE_MESSAGE': return state.filter(msg => msg.id !== action.payload.messageId);
+        case 'EDIT_MESSAGE': return state.map(msg => msg.id === action.payload.messageId ? { ...msg, content: action.payload.newContent } : msg);
+        default: return state;
     }
 };
 
 /**
- * Manages the state and logic of a single chat session.
- * @param availableTools - A list of tools the AI can use.
+ * Manages conversation lifecycle: loading, saving, creating, deleting.
+ * Uses localStorage for persistence in this demo.
  */
-export const useChatSession = (availableTools: AITool[]) => {
+export const useConversationManager = () => {
+    const [conversations, setConversations] = useState<Record<string, Conversation>>({});
+    const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (saved) {
+                setConversations(JSON.parse(saved));
+            }
+        } catch (error) {
+            console.error("Failed to load conversations from localStorage:", error);
+        }
+    }, []);
+
+    const saveConversations = useCallback((updatedConversations: Record<string, Conversation>) => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedConversations));
+            setConversations(updatedConversations);
+        } catch (error) {
+            console.error("Failed to save conversations to localStorage:", error);
+        }
+    }, []);
+
+    const createNewConversation = useCallback((context: AdvisorContextType, provider: AIProviderType) => {
+        const newConvId = generateId();
+        const newConversation: Conversation = {
+            id: newConvId,
+            title: `Interrogation ${new Date().toLocaleString()}`,
+            createdAt: new Date().toISOString(),
+            lastModified: new Date().toISOString(),
+            messages: [],
+            systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
+            contextData: { initialContext: context },
+            aiProvider: provider,
+        };
+        const updatedConversations = { ...conversations, [newConvId]: newConversation };
+        saveConversations(updatedConversations);
+        setActiveConversationId(newConvId);
+        return newConversation;
+    }, [conversations, saveConversations]);
+
+    const updateConversation = useCallback((convId: string, updatedData: Partial<Conversation>) => {
+        if (!conversations[convId]) return;
+        const updatedConversation = { ...conversations[convId], ...updatedData, lastModified: new Date().toISOString() };
+        const updatedConversations = { ...conversations, [convId]: updatedConversation };
+        saveConversations(updatedConversations);
+    }, [conversations, saveConversations]);
+    
+    const activeConversation = activeConversationId ? conversations[activeConversationId] : null;
+
+    return {
+        conversations: Object.values(conversations).sort((a,b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()),
+        activeConversation,
+        setActiveConversationId,
+        createNewConversation,
+        updateConversation,
+    };
+};
+
+/**
+ * Manages the state and logic of a single chat session.
+ */
+export const useChatSession = (conversation: Conversation | null, updateConversation: Function) => {
     const [messages, dispatch] = useReducer(chatReducer, []);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
+    const toolService = useMemo(() => new ToolService(MOCK_TOOLS), []);
 
-    const toolExecutor = useMemo(() => new Map(availableTools.map(tool => [tool.name, tool.execute])), [availableTools]);
+    useEffect(() => {
+        dispatch({ type: 'SET_MESSAGES', payload: conversation?.messages || [] });
+    }, [conversation]);
+    
+    useEffect(() => {
+        if (conversation && messages.length > 0) {
+            updateConversation(conversation.id, { messages });
+        }
+    }, [messages, conversation, updateConversation]);
 
-    const processStreamAndTools = useCallback(async (history: ChatMessage[]) => {
+    const sendMessage = useCallback(async (text: string) => {
+        if (!conversation) return;
+        
         setIsLoading(true);
         setError(null);
+        
+        const userMessage: ChatMessage = { id: generateId(), author: 'user', content: text, timestamp: new Date().toISOString(), status: 'complete' };
+        const currentMessages = [...messages, userMessage];
+        dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
 
+        const aiService = aiServiceFactory(conversation.aiProvider);
+        
         try {
             const aiMessageId = generateId();
-            dispatch({
-                type: 'ADD_MESSAGE', payload: {
-                    id: aiMessageId,
-                    author: 'ai',
-                    content: '',
-                    timestamp: new Date().toISOString(),
-                    status: 'pending',
-                }
+            dispatch({ type: 'ADD_MESSAGE', payload: { id: aiMessageId, author: 'ai', content: '', timestamp: new Date().toISOString(), status: 'pending' } });
+            
+            const response = await aiService.generateResponse(currentMessages, toolService.getAvailableTools(), (chunk) => {
+                dispatch({ type: 'STREAM_TO_LAST_MESSAGE', payload: chunk });
             });
 
-            const { fullResponse, toolCalls } = await mockGenerativeAIAPI(
-                history,
-                availableTools,
-                (chunk) => {
-                    dispatch({ type: 'STREAM_TO_LAST_MESSAGE', payload: chunk });
+            dispatch({ type: 'UPDATE_LAST_MESSAGE', payload: { content: response.fullResponse, status: 'complete', toolCalls: response.toolCalls, metadata: response.metadata }});
+            
+            if (response.toolCalls && response.toolCalls.length > 0) {
+                // In a real app, you might send tool results back to the model. Here we just display them.
+                for (const call of response.toolCalls) {
+                    const result = await toolService.executeTool(call);
+                    const toolResultMessage: ChatMessage = {
+                        id: generateId(),
+                        author: 'tool',
+                        content: result.error ? `Error: ${result.error}` : [result.result],
+                        timestamp: new Date().toISOString(),
+                        status: result.error ? 'error' : 'complete',
+                        toolResults: [result]
+                    };
+                    dispatch({type: 'ADD_MESSAGE', payload: toolResultMessage});
                 }
-            );
-
-            if (toolCalls && toolCalls.length > 0) {
-                 dispatch({
-                    type: 'UPDATE_LAST_MESSAGE', payload: {
-                        content: `Requesting to use ${toolCalls.length} tool(s)...`,
-                        status: 'complete',
-                        toolCalls,
-                    }
-                });
-                // Execute tools
-                await executeToolCalls(toolCalls);
-            } else {
-                 dispatch({
-                    type: 'UPDATE_LAST_MESSAGE', payload: {
-                        content: fullResponse,
-                        status: 'complete'
-                    }
-                });
             }
 
         } catch (e: any) {
             setError(e);
-            dispatch({
-                type: 'UPDATE_LAST_MESSAGE', payload: {
-                    content: "An error occurred while processing your request.",
-                    status: 'error'
-                }
-            });
+            dispatch({ type: 'UPDATE_LAST_MESSAGE', payload: { content: "An error occurred.", status: 'error' } });
         } finally {
             setIsLoading(false);
         }
-    }, [availableTools, toolExecutor]);
-    
-    const executeToolCalls = useCallback(async (toolCalls: ToolCall[]) => {
-        const toolResults: ToolResult[] = [];
-        
-        for (const call of toolCalls) {
-            const toolMessageId = generateId();
-            dispatch({
-                type: 'ADD_MESSAGE', payload: {
-                    id: toolMessageId,
-                    author: 'tool',
-                    content: `Executing tool: \`${call.name}\` with arguments: \`${JSON.stringify(call.args)}\``,
-                    timestamp: new Date().toISOString(),
-                    status: 'pending',
-                }
-            });
+    }, [conversation, messages, toolService]);
 
-            const executor = toolExecutor.get(call.name);
-            if (executor) {
-                try {
-                    const result = await executor(call.args);
-                    toolResults.push({ callId: call.id, result });
-                    
-                    // Parse result for rich content
-                    if (result.type && (result.type === 'table' || result.type === 'chart')) {
-                         dispatch({
-                            type: 'ADD_MESSAGE', payload: {
-                                id: generateId(),
-                                author: 'tool',
-                                content: [result], // Array of content parts
-                                timestamp: new Date().toISOString(),
-                                status: 'complete',
-                            }
-                        });
-                    } else {
-                        // Fallback for simple string/JSON results
-                        dispatch({
-                            type: 'ADD_MESSAGE', payload: {
-                                id: generateId(),
-                                author: 'tool',
-                                content: `Tool \`${call.name}\` executed successfully. Result: \`${JSON.stringify(result)}\``,
-                                timestamp: new Date().toISOString(),
-                                status: 'complete',
-                            }
-                        });
-                    }
-
-                } catch (e: any) {
-                     toolResults.push({ callId: call.id, result: null, error: e.message });
-                     dispatch({
-                        type: 'ADD_MESSAGE', payload: {
-                            id: generateId(),
-                            author: 'tool',
-                            content: `Error executing tool \`${call.name}\`: ${e.message}`,
-                            timestamp: new Date().toISOString(),
-                            status: 'error',
-                        }
-                    });
-                }
-            } else {
-                toolResults.push({ callId: call.id, result: null, error: `Tool '${call.name}' not found.` });
-            }
-        }
-        
-        // After executing tools, we might want to send results back to the AI for a final summary.
-        // For this mock, we'll just stop here. In a real implementation, you'd make another API call.
-        
-    }, [toolExecutor]);
-
-    const sendMessage = useCallback(async (text: string) => {
-        const userMessage: ChatMessage = {
-            id: generateId(),
-            author: 'user',
-            content: text,
-            timestamp: new Date().toISOString(),
-            status: 'complete',
-        };
-        dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
-
-        // Use a function to get the latest state for the async call
-        const updatedMessages = [...messages, userMessage];
-        await processStreamAndTools(updatedMessages);
-
-    }, [messages, processStreamAndTools]);
-
-    return { messages, isLoading, error, sendMessage, setMessages: (msgs: ChatMessage[]) => dispatch({ type: 'SET_MESSAGES', payload: msgs }) };
+    return { messages, isLoading, error, sendMessage, dispatch };
 };
 
-// --- UI THEME & STYLES CONTEXT ---
 
-export const ThemeContext = createContext({
-    theme: 'dark',
-    toggleTheme: () => {},
-});
+// --- UI CONTEXTS ---
 
+export const ThemeContext = createContext({ theme: 'dark', toggleTheme: () => {} });
 export const useTheme = () => useContext(ThemeContext);
+export const THEMES = { dark: { bg: '#1a1a1b', surface: '#2d2d2f', text: '#e6e6e6', primary: '#8a63d2', border: '#444' }, light: { bg: '#f4f4f5', surface: '#ffffff', text: '#1a1a1b', primary: '#6d28d9', border: '#e0e0e0' } };
 
-export const THEMES = {
-    dark: {
-        background: '#1a1a1b',
-        surface: '#2d2d2f',
-        text: '#e6e6e6',
-        primary: '#8a63d2',
-        secondary: '#555',
-        border: '#444',
-        userMessageBg: '#3a3a3c',
-        aiMessageBg: '#2d2d2f',
-    },
-    light: {
-        background: '#f4f4f5',
-        surface: '#ffffff',
-        text: '#1a1a1b',
-        primary: '#6d28d9',
-        secondary: '#ccc',
-        border: '#e0e0e0',
-        userMessageBg: '#eef2ff',
-        aiMessageBg: '#ffffff',
-    },
-};
 
-// --- UI HELPER/SUB-COMPONENTS ---
+// --- UI COMPONENTS ---
 
-/**
- * A loading spinner component.
- */
-export const LoadingSpinner = React.memo(() => (
-    <div style={styles.spinnerContainer}>
-        <div style={styles.spinner}></div>
-        <p style={{ color: useTheme().theme === 'dark' ? THEMES.dark.text : THEMES.light.text }}>Thinking...</p>
-    </div>
-));
+const LoadingSpinner = React.memo(() => <div style={styles.spinner}></div>);
 LoadingSpinner.displayName = 'LoadingSpinner';
 
-/**
- * A component to display error messages.
- */
-export const ErrorDisplay = React.memo(({ error }: { error: Error }) => (
-    <div style={styles.errorContainer}>
-        <strong>Error:</strong> {error.message}
-    </div>
-));
+const ErrorDisplay = React.memo(({ error }: { error: Error }) => <div style={styles.errorContainer}><strong>Error:</strong> {error.message}</div>);
 ErrorDisplay.displayName = 'ErrorDisplay';
 
-/**
- * Displays a block of code with syntax highlighting.
- */
-export const CodeBlock = React.memo(({ language, code }: { language: string; code: string }) => {
-    const { theme } = useTheme();
+const CodeBlock = React.memo(({ language, code }: { language: string; code: string }) => {
     const [copied, setCopied] = useState(false);
-
-    const handleCopy = useCallback(() => {
-        navigator.clipboard.writeText(code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }, [code]);
-
+    const handleCopy = useCallback(() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }, [code]);
     return (
-        <div style={{...styles.codeBlockContainer, backgroundColor: '#2d2d2f'}}>
-            <div style={styles.codeBlockHeader}>
-                <span style={{color: '#ccc'}}>{language}</span>
-                <button onClick={handleCopy} style={styles.copyButton}>
-                    {copied ? 'Copied!' : 'Copy'}
-                </button>
-            </div>
-            <SyntaxHighlighter language={language} style={vscDarkPlus} customStyle={{ margin: 0, borderRadius: '0 0 4px 4px' }}>
-                {code}
-            </SyntaxHighlighter>
+        <div style={styles.codeBlockContainer}>
+            <div style={styles.codeBlockHeader}><span>{language}</span><button onClick={handleCopy} style={styles.copyButton}>{copied ? 'Copied!' : <Icon name="copy" size={14} />}</button></div>
+            <SyntaxHighlighter language={language} style={vscDarkPlus} customStyle={{ margin: 0 }}>{code}</SyntaxHighlighter>
         </div>
     );
 });
 CodeBlock.displayName = 'CodeBlock';
 
-/**
- * Renders tabular data in a styled HTML table.
- */
-export const DataTable = React.memo(({ headers, rows }: { headers: string[]; rows: (string | number)[][] }) => {
-    const { theme } = useTheme();
-    const currentTheme = THEMES[theme];
-
+const DataTable = React.memo(({ headers, rows }: { headers: string[]; rows: any[][] }) => {
+    const { theme } = useTheme(); const currentTheme = THEMES[theme];
     return (
-        <div style={{...styles.tableContainer, borderColor: currentTheme.border}}>
-            <table style={{...styles.table, color: currentTheme.text}}>
-                <thead style={{backgroundColor: currentTheme.surface}}>
-                    <tr>
-                        {headers.map((header, index) => <th key={index} style={{...styles.tableHeader, borderBottomColor: currentTheme.border}}>{header}</th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row, rowIndex) => (
-                        <tr key={rowIndex} style={{backgroundColor: rowIndex % 2 === 0 ? currentTheme.surface : 'transparent'}}>
-                           {row.map((cell, cellIndex) => <td key={cellIndex} style={{...styles.tableCell, borderBottomColor: currentTheme.border}}>{cell}</td>)}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    )
+        <div style={{ ...styles.tableContainer, borderColor: currentTheme.border }}><table style={{ ...styles.table, color: currentTheme.text }}>
+            <thead><tr>{headers.map((h, i) => <th key={i} style={{...styles.tableHeader, borderBottomColor: currentTheme.border}}>{h}</th>)}</tr></thead>
+            <tbody>{rows.map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j} style={{...styles.tableCell, borderBottomColor: currentTheme.border}}>{cell}</td>)}</tr>)}</tbody>
+        </table></div>
+    );
 });
 DataTable.displayName = 'DataTable';
 
-/**
- * Renders a chart using Vega-Lite.
- */
-export const VegaChart = React.memo(({ spec }: { spec: any }) => {
-    const { theme } = useTheme();
-    return (
-        <div style={styles.chartContainer}>
-            <VegaLite spec={spec} actions={false} theme={theme === 'dark' ? 'dark' : 'default'} />
-        </div>
-    );
-});
+const VegaChart = React.memo(({ spec }: { spec: any }) => <div style={styles.chartContainer}><VegaLite spec={spec} actions={false} theme={useTheme().theme === 'dark' ? 'dark' : 'default'} /></div>);
 VegaChart.displayName = 'VegaChart';
 
-/**
- * Renders a single part of a message's content.
- */
-export const MessageContentPart = React.memo(({ part }: { part: ContentPart }) => {
+const MessageContentPart = React.memo(({ part }: { part: ContentPart }) => {
     switch (part.type) {
-        case 'markdown':
-            return <ReactMarkdown>{part.payload}</ReactMarkdown>;
-        case 'code':
-            return <CodeBlock language={part.payload.language} code={part.payload.code} />;
-        case 'table':
-            return <DataTable headers={part.payload.headers} rows={part.payload.rows} />;
-        case 'chart':
-            return <VegaChart spec={part.payload.spec} />;
-        default:
-            return <div>Unsupported content type</div>;
+        case 'table': return <DataTable headers={part.payload.headers} rows={part.payload.rows} />;
+        case 'chart': return <VegaChart spec={part.payload.spec} />;
+        case 'markdown': return <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>{part.payload}</ReactMarkdown>
+        default: return <div>Unsupported content.</div>;
     }
 });
 MessageContentPart.displayName = 'MessageContentPart';
 
-/**
- * Renders a single chat message with appropriate styling.
- */
-export const ChatMessageBubble = React.memo(({ message }: { message: ChatMessage }) => {
-    const { theme } = useTheme();
-    const currentTheme = THEMES[theme];
+const MessageActions = React.memo(({ message, onRetry }: { message: ChatMessage, onRetry: (message: ChatMessage) => void }) => (
+    <div style={styles.messageActions}>
+        <button style={styles.actionButton} onClick={() => navigator.clipboard.writeText(Array.isArray(message.content) ? JSON.stringify(message.content) : message.content)}><Icon name="copy" size={14}/></button>
+        {message.author === 'user' && <button style={styles.actionButton} onClick={() => onRetry(message)}><Icon name="retry" size={14}/></button>}
+        {message.author === 'ai' && <>
+            <button style={styles.actionButton}><Icon name="thumb_up" size={14}/></button>
+            <button style={styles.actionButton}><Icon name="thumb_down" size={14}/></button>
+        </>}
+    </div>
+));
+MessageActions.displayName = 'MessageActions';
+
+const ChatMessageBubble = React.memo(({ message, onRetry }: { message: ChatMessage, onRetry: (message: ChatMessage) => void }) => {
+    const { theme } = useTheme(); const currentTheme = THEMES[theme];
     const isUser = message.author === 'user';
-    const isTool = message.author === 'tool';
-    const bubbleStyle = isUser
-        ? { ...styles.messageBubble, ...styles.userMessage, backgroundColor: currentTheme.userMessageBg }
-        : isTool
-        ? { ...styles.messageBubble, ...styles.toolMessage, backgroundColor: currentTheme.surface, borderColor: currentTheme.primary }
-        : { ...styles.messageBubble, ...styles.aiMessage, backgroundColor: currentTheme.aiMessageBg };
+    const bubbleStyle = {
+        ...styles.messageBubble,
+        backgroundColor: isUser ? currentTheme.primary : currentTheme.surface,
+        color: isUser ? '#fff' : currentTheme.text,
+        alignSelf: isUser ? 'flex-end' : 'flex-start'
+    };
 
     const renderContent = () => {
-        if (Array.isArray(message.content)) {
-            return message.content.map((part, index) => <MessageContentPart key={index} part={part} />);
-        }
-        return (
-            <ReactMarkdown
-                components={{
-                    code({ node, inline, className, children, ...props }) {
-                        const match = /language-(\w+)/.exec(className || '');
-                        return !inline && match ? (
-                            <CodeBlock language={match[1]} code={String(children).replace(/\n$/, '')} />
-                        ) : (
-                            <code className={className} {...props}>
-                                {children}
-                            </code>
-                        );
-                    },
-                }}
-            >
-                {message.content}
-            </ReactMarkdown>
-        );
+        if (Array.isArray(message.content)) return message.content.map((part, i) => <MessageContentPart key={i} part={part} />);
+        return <ReactMarkdown components={{ code: ({node, inline, className, children, ...props}) => { const match = /language-(\w+)/.exec(className || ''); return !inline && match ? <CodeBlock language={match[1]} code={String(children).replace(/\n$/, '')} /> : <code className={className} {...props}>{children}</code>; }}}>{message.content}</ReactMarkdown>;
     };
 
     return (
-        <div style={{ ...styles.messageRow, justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
-            <div style={{...bubbleStyle, borderColor: currentTheme.border}}>
-                <div style={styles.messageAuthor}>
-                    <strong>{message.author.toUpperCase()}</strong>
-                    <span style={{...styles.messageTimestamp, color: currentTheme.secondary}}>{formatTimestamp(message.timestamp)}</span>
-                </div>
-                <div style={{...styles.messageContent, color: currentTheme.text}}>
-                    {renderContent()}
-                    {message.status === 'streaming' && <span style={{...styles.streamingCursor, backgroundColor: currentTheme.primary}}></span>}
-                </div>
+        <div style={styles.messageRow}>
+            {!isUser && <div style={styles.avatar}><Icon name="bot" /></div>}
+            <div style={bubbleStyle}>
+                <div style={styles.messageContent}>{renderContent()}{message.status === 'streaming' && <span style={styles.streamingCursor}></span>}</div>
+                <MessageActions message={message} onRetry={onRetry} />
             </div>
+             {isUser && <div style={styles.avatar}><Icon name="user" /></div>}
         </div>
     );
 });
 ChatMessageBubble.displayName = 'ChatMessageBubble';
 
-/**
- * A panel for suggesting initial prompts to the user.
- */
-export const ExamplePrompts = React.memo(({ prompts, onSelectPrompt }: { prompts: string[]; onSelectPrompt: (prompt: string) => void }) => {
-    const { theme } = useTheme();
-    const currentTheme = THEMES[theme];
+const ExamplePrompts = React.memo(({ prompts, onSelect }: { prompts: string[]; onSelect: (p: string) => void }) => {
+    const { theme } = useTheme(); const ct = THEMES[theme];
     return (
         <div style={styles.promptsContainer}>
-            <h3 style={{...styles.promptsHeader, color: currentTheme.text}}>Suggested Lines of Questioning</h3>
-            <div style={styles.promptsGrid}>
-                {prompts.map((prompt, index) => (
-                    <button
-                        key={index}
-                        onClick={() => onSelectPrompt(prompt)}
-                        style={{ ...styles.promptButton, backgroundColor: currentTheme.surface, color: currentTheme.text, borderColor: currentTheme.border }}
-                    >
-                        {prompt}
-                    </button>
-                ))}
-            </div>
+            <h3 style={{...styles.promptsHeader, color: ct.text}}>Suggested Lines of Questioning</h3>
+            <div style={styles.promptsGrid}>{prompts.map((p, i) => <button key={i} onClick={() => onSelect(p)} style={{ ...styles.promptButton, backgroundColor: ct.surface, color: ct.text, borderColor: ct.border }}>{p}</button>)}</div>
         </div>
     );
 });
 ExamplePrompts.displayName = 'ExamplePrompts';
 
-/**
- * The text input area for the user to type messages.
- */
-export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSendMessage, isSending, placeholder }, ref) => {
-    const [inputValue, setInputValue] = useState('');
+const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({ onSendMessage, isSending }, ref) => {
+    const [text, setText] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const { theme } = useTheme();
-    const currentTheme = THEMES[theme];
+    const { theme } = useTheme(); const ct = THEMES[theme];
 
-    useImperativeHandle(ref, () => ({
-        focus: () => {
-            textareaRef.current?.focus();
-        },
-    }));
+    useImperativeHandle(ref, () => ({ focus: () => textareaRef.current?.focus(), setText: (t: string) => setText(t) }));
+    useEffect(() => { const ta = textareaRef.current; if (ta) { ta.style.height = 'auto'; ta.style.height = `${ta.scrollHeight}px`; } }, [text]);
 
-    useEffect(() => {
-        const textarea = textareaRef.current;
-        if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
-        }
-    }, [inputValue]);
-
-    const handleSend = () => {
-        if (inputValue.trim() && !isSending) {
-            onSendMessage(inputValue.trim());
-            setInputValue('');
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
+    const handleSend = () => { if (text.trim() && !isSending) { onSendMessage(text.trim()); setText(''); } };
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
     return (
-        <div style={{ ...styles.chatInputContainer, backgroundColor: currentTheme.surface, borderColor: currentTheme.border }}>
-            <textarea
-                ref={textareaRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isSending}
-                placeholder={placeholder || 'Issue your command...'}
-                rows={1}
-                style={{ ...styles.chatTextarea, backgroundColor: 'transparent', color: currentTheme.text }}
-            />
-            <button onClick={handleSend} disabled={isSending} style={{ ...styles.sendButton, backgroundColor: isSending ? currentTheme.secondary : currentTheme.primary }}>
-                {isSending ? '...' : 'Send'}
-            </button>
+        <div style={{ ...styles.chatInputContainer, backgroundColor: ct.surface, borderColor: ct.border }}>
+            <textarea ref={textareaRef} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={handleKeyDown} disabled={isSending} placeholder={'Issue your command...'} rows={1} style={{ ...styles.chatTextarea, color: ct.text }} />
+            <button onClick={handleSend} disabled={isSending} style={{ ...styles.sendButton, backgroundColor: isSending ? '#555' : ct.primary }}><Icon name="send" /></button>
         </div>
     );
 });
 ChatInput.displayName = 'ChatInput';
 
-/**
- * The header of the chat interface.
- */
-export const ChatHeader = React.memo(({ title, onNewConversation, onToggleTheme }: { title: string; onNewConversation: () => void; onToggleTheme: () => void }) => {
-    const { theme } = useTheme();
-    const currentTheme = THEMES[theme];
-
+const ConversationHistorySidebar = React.memo(({ conversations, activeId, onSelect, onCreate, isOpen }: { conversations: Conversation[], activeId: string | null, onSelect: (id: string) => void, onCreate: () => void, isOpen: boolean }) => {
+    const { theme } = useTheme(); const ct = THEMES[theme];
     return (
-        <div style={{...styles.chatHeader, backgroundColor: currentTheme.surface, borderBottomColor: currentTheme.border }}>
-            <h2 style={{...styles.chatHeaderTitle, color: currentTheme.text}}>{title}</h2>
+        <div style={{...styles.sidebar, backgroundColor: ct.surface, transform: isOpen ? 'translateX(0)' : 'translateX(-100%)' }}>
+            <button onClick={onCreate} style={{...styles.newChatButton, color: ct.text}}>+ New Interrogation</button>
+            <div style={styles.sidebarList}>
+                {conversations.map(c => (
+                    <div key={c.id} onClick={() => onSelect(c.id)} style={{...styles.sidebarItem, backgroundColor: c.id === activeId ? ct.primary : 'transparent', color: c.id === activeId ? '#fff' : ct.text}}>
+                        <p style={styles.sidebarItemTitle}>{c.title}</p>
+                        <p style={styles.sidebarItemDate}>{new Date(c.lastModified).toLocaleDateString()}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+});
+ConversationHistorySidebar.displayName = 'ConversationHistorySidebar';
+
+const ChatHeader = React.memo(({ title, onNew, onToggleTheme, onToggleSidebar }: { title: string; onNew: () => void; onToggleTheme: () => void; onToggleSidebar: () => void }) => {
+    const { theme } = useTheme(); const ct = THEMES[theme];
+    return (
+        <div style={{ ...styles.chatHeader, backgroundColor: ct.surface, borderBottomColor: ct.border }}>
+            <button onClick={onToggleSidebar} style={styles.headerButton}><Icon name="menu" /></button>
+            <h2 style={{ ...styles.chatHeaderTitle, color: ct.text }}>{title}</h2>
             <div>
-                <button onClick={onToggleTheme} style={styles.headerButton}>
-                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                </button>
-                <button onClick={onNewConversation} style={styles.headerButton}>
-                    New Interrogation
-                </button>
+                <button onClick={onToggleTheme} style={styles.headerButton}>{theme === 'dark' ? <Icon name="light_mode" /> : <Icon name="dark_mode" />}</button>
+                <button onClick={onNew} style={styles.headerButton}><Icon name="new_chat" /></button>
             </div>
         </div>
     );
 });
 ChatHeader.displayName = 'ChatHeader';
 
+
 // --- MAIN COMPONENT ---
 
-export const AIAdvisorView = ({
-    initialContext = 'None',
-    user,
-    onNewConversation,
-    initialConversationId,
-}: AIAdvisorViewProps) => {
-    const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('dark');
-    const { messages, isLoading, error, sendMessage, setMessages } = useChatSession(MOCK_TOOLS);
-    const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+export const AIAdvisorView = ({ initialContext = 'None', user }: AIAdvisorViewProps) => {
+    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const { conversations, activeConversation, setActiveConversationId, createNewConversation, updateConversation } = useConversationManager();
+    const { messages, isLoading, error, sendMessage } = useChatSession(activeConversation, updateConversation);
+    const [isSidebarOpen, setSidebarOpen] = useState(true);
     const chatInputRef = useRef<ChatInputRef>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const themeProviderValue = useMemo(() => ({
-        theme: currentTheme,
-        toggleTheme: () => setCurrentTheme(t => (t === 'light' ? 'dark' : 'light')),
-    }), [currentTheme]);
-
-    // Effect to scroll to the bottom of the messages list
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    const themeProviderValue = useMemo(() => ({ theme, toggleTheme: () => setTheme(t => t === 'light' ? 'dark' : 'light') }), [theme]);
     
-    // Effect for loading/creating conversations
-    useEffect(() => {
-        if (initialConversationId) {
-            // In a real app, you would fetch this from a DB/API
-            console.log(`Loading conversation ${initialConversationId}...`);
-        } else {
-            // Start a new conversation
-            handleNewConversation();
-        }
-    }, [initialConversationId]);
+    useEffect(() => { if (!activeConversation && conversations.length > 0) setActiveConversationId(conversations[0].id); else if (!activeConversation && conversations.length === 0) createNewConversation(initialContext, 'gemini')}, [activeConversation, conversations, setActiveConversationId, createNewConversation, initialContext]);
+    useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
     
-    const handleNewConversation = useCallback(() => {
-        const newConvId = generateId();
-        const newConversation: Conversation = {
-            id: newConvId,
-            title: `Interrogation ${new Date().toLocaleString()}`,
-            createdAt: new Date().toISOString(),
-            messages: [],
-            systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
-            contextData: { initialContext },
-        };
-        setActiveConversation(newConversation);
-        setMessages([]);
-        chatInputRef.current?.focus();
-        if (onNewConversation) {
-            onNewConversation(newConvId);
-        }
-    }, [initialContext, onNewConversation, setMessages]);
-
-
-    const handleSelectPrompt = (prompt: string) => {
-        sendMessage(prompt);
-        chatInputRef.current?.focus();
-    };
-    
-    const themeStyles = THEMES[currentTheme];
+    const handleNewConversation = useCallback(() => createNewConversation(initialContext, 'gemini'), [createNewConversation, initialContext]);
+    const handleRetry = useCallback((message: ChatMessage) => { if (message.author === 'user') { sendMessage(message.content as string) } }, [sendMessage]);
 
     return (
         <ThemeContext.Provider value={themeProviderValue}>
-            <div style={{ ...styles.advisorContainer, backgroundColor: themeStyles.background }}>
-                <ChatHeader 
-                    title={activeConversation?.title || "Quantum Advisor"}
-                    onNewConversation={handleNewConversation}
-                    onToggleTheme={themeProviderValue.toggleTheme}
-                />
-                <div style={styles.chatArea}>
-                    <div style={styles.messagesContainer}>
-                        {messages.length === 0 && !isLoading && (
-                            <ExamplePrompts
-                                prompts={CONTEXTUAL_PROMPTS[initialContext]}
-                                onSelectPrompt={handleSelectPrompt}
-                            />
+            <div style={{ ...styles.advisorContainer, backgroundColor: THEMES[theme].bg }}>
+                <ConversationHistorySidebar conversations={conversations} activeId={activeConversation?.id || null} onSelect={setActiveConversationId} onCreate={handleNewConversation} isOpen={isSidebarOpen}/>
+                <div style={styles.mainContent}>
+                    <ChatHeader title={activeConversation?.title || "Quantum Advisor"} onNew={handleNewConversation} onToggleTheme={themeProviderValue.toggleTheme} onToggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
+                    <div style={styles.chatArea}>
+                        {messages.length === 0 && !isLoading ? (
+                            <ExamplePrompts prompts={CONTEXTUAL_PROMPTS[initialContext]} onSelect={(p) => { sendMessage(p); chatInputRef.current?.focus(); }} />
+                        ) : (
+                            <div style={styles.messagesContainer}>
+                                {messages.map(msg => <ChatMessageBubble key={msg.id} message={msg} onRetry={handleRetry} />)}
+                                {isLoading && <div style={styles.messageRow}><div style={styles.avatar}><Icon name="bot" /></div><div style={{...styles.messageBubble, ...styles.loadingBubble}}><LoadingSpinner /></div></div>}
+                                {error && <ErrorDisplay error={error} />}
+                                <div ref={messagesEndRef} />
+                            </div>
                         )}
-                        {messages.map((msg) => (
-                           <ChatMessageBubble key={msg.id} message={msg} />
-                        ))}
-                        {isLoading && messages[messages.length-1]?.author !== 'ai' && <LoadingSpinner />}
-                        {error && <ErrorDisplay error={error} />}
-                        <div ref={messagesEndRef} />
-                    </div>
-                    <div style={styles.inputWrapper}>
-                        <ChatInput
-                            ref={chatInputRef}
-                            onSendMessage={sendMessage}
-                            isSending={isLoading}
-                        />
+                        <div style={styles.inputWrapper}><ChatInput ref={chatInputRef} onSendMessage={sendMessage} isSending={isLoading} /></div>
                     </div>
                 </div>
             </div>
@@ -979,229 +779,62 @@ export const AIAdvisorView = ({
     );
 };
 
+
 // --- STYLES ---
 
 type StyleDictionary = { [key: string]: React.CSSProperties };
 
 export const styles: StyleDictionary = {
-    advisorContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        fontFamily: '"Segoe UI", "Roboto", "Helvetica Neue", sans-serif',
-        overflow: 'hidden',
-    },
-    chatHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px 20px',
-        borderBottom: '1px solid',
-        flexShrink: 0,
-    },
-    chatHeaderTitle: {
-        margin: 0,
-        fontSize: '1.2rem',
-    },
-    headerButton: {
-        marginLeft: '10px',
-        padding: '8px 12px',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-    chatArea: {
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-    },
-    messagesContainer: {
-        flexGrow: 1,
-        overflowY: 'auto',
-        padding: '20px',
-    },
-    inputWrapper: {
-        padding: '10px 20px 20px 20px',
-        flexShrink: 0,
-    },
-    messageRow: {
-        display: 'flex',
-        marginBottom: '15px',
-    },
-    messageBubble: {
-        maxWidth: '80%',
-        padding: '10px 15px',
-        borderRadius: '12px',
-        border: '1px solid',
-    },
-    userMessage: {
-        borderBottomRightRadius: '2px',
-        color: '#fff',
-    },
-    aiMessage: {
-        borderBottomLeftRadius: '2px',
-    },
-    toolMessage: {
-        borderStyle: 'dashed',
-        borderWidth: '2px',
-        width: '100%',
-        maxWidth: '80%',
-    },
-    messageAuthor: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '5px',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-    },
-    messageTimestamp: {
-        marginLeft: '10px',
-        fontSize: '0.75rem',
-    },
-    messageContent: {
-        wordWrap: 'break-word',
-    },
-    streamingCursor: {
-        display: 'inline-block',
-        width: '10px',
-        height: '1em',
-        animation: 'blink 1s step-end infinite',
-        marginLeft: '4px',
-        verticalAlign: 'text-bottom',
-    },
-    chatInputContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        padding: '5px',
-        borderRadius: '8px',
-        border: '1px solid',
-    },
-    chatTextarea: {
-        flexGrow: 1,
-        border: 'none',
-        outline: 'none',
-        resize: 'none',
-        fontSize: '1rem',
-        maxHeight: '200px',
-        padding: '10px',
-        fontFamily: 'inherit',
-    },
-    sendButton: {
-        border: 'none',
-        borderRadius: '5px',
-        color: '#fff',
-        padding: '10px 15px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-    },
-    spinnerContainer: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
-    },
-    spinner: {
-        border: '4px solid #f3f3f3',
-        borderTop: '4px solid #8a63d2',
-        borderRadius: '50%',
-        width: '30px',
-        height: '30px',
-        animation: 'spin 1s linear infinite',
-        marginRight: '10px',
-    },
-    errorContainer: {
-        padding: '10px',
-        margin: '10px 0',
-        backgroundColor: '#ffdddd',
-        color: '#d8000c',
-        borderRadius: '5px',
-        border: '1px solid #d8000c',
-    },
-    promptsContainer: {
-        textAlign: 'center',
-        padding: '40px 20px',
-    },
-    promptsHeader: {
-        marginBottom: '20px',
-    },
-    promptsGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '15px',
-        maxWidth: '800px',
-        margin: '0 auto',
-    },
-    promptButton: {
-        padding: '15px',
-        border: '1px solid',
-        borderRadius: '8px',
-        textAlign: 'left',
-        cursor: 'pointer',
-        transition: 'transform 0.2s',
-        fontSize: '0.9rem',
-    },
-    codeBlockContainer: {
-        margin: '10px 0',
-        borderRadius: '4px',
-        overflow: 'hidden',
-    },
-    codeBlockHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '5px 10px',
-        backgroundColor: '#1e1e1e',
-        fontSize: '0.8rem',
-    },
-    copyButton: {
-        background: 'none',
-        border: '1px solid #555',
-        color: '#ccc',
-        padding: '3px 8px',
-        borderRadius: '3px',
-        cursor: 'pointer',
-    },
-    tableContainer: {
-        margin: '10px 0',
-        border: '1px solid',
-        borderRadius: '4px',
-        overflowX: 'auto',
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-    },
-    tableHeader: {
-        padding: '10px',
-        textAlign: 'left',
-        borderBottom: '2px solid',
-    },
-    tableCell: {
-        padding: '10px',
-        borderBottom: '1px solid',
-    },
-    chartContainer: {
-        padding: '10px',
-        margin: '10px 0',
-    },
+    advisorContainer: { display: 'flex', height: '100vh', fontFamily: 'system-ui, sans-serif', overflow: 'hidden', transition: 'background-color 0.3s' },
+    mainContent: { flex: 1, display: 'flex', flexDirection: 'column', transition: 'margin-left 0.3s' },
+    chatHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', borderBottom: '1px solid', flexShrink: 0 },
+    chatHeaderTitle: { margin: 0, fontSize: '1.2rem' },
+    headerButton: { background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: 'inherit' },
+    chatArea: { flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    messagesContainer: { flexGrow: 1, overflowY: 'auto', padding: '20px' },
+    inputWrapper: { padding: '10px 20px 20px', flexShrink: 0, borderTop: '1px solid #444' },
+    messageRow: { display: 'flex', marginBottom: '15px', gap: '10px', alignItems: 'flex-start' },
+    avatar: { width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#444', flexShrink: 0 },
+    messageBubble: { maxWidth: '80%', padding: '12px 18px', borderRadius: '18px', position: 'relative', wordWrap: 'break-word', transition: 'background-color 0.3s' },
+    messageContent: {},
+    streamingCursor: { display: 'inline-block', width: '10px', height: '1em', backgroundColor: '#fff', animation: 'blink 1s step-end infinite', marginLeft: '4px', verticalAlign: 'text-bottom' },
+    chatInputContainer: { display: 'flex', alignItems: 'center', padding: '5px', borderRadius: '8px', border: '1px solid' },
+    chatTextarea: { flexGrow: 1, border: 'none', outline: 'none', resize: 'none', fontSize: '1rem', maxHeight: '200px', padding: '10px', backgroundColor: 'transparent', fontFamily: 'inherit' },
+    sendButton: { border: 'none', borderRadius: '5px', color: '#fff', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    spinner: { border: '3px solid rgba(255,255,255,0.3)', borderTop: '3px solid #fff', borderRadius: '50%', width: '20px', height: '20px', animation: 'spin 1s linear infinite' },
+    errorContainer: { padding: '10px', margin: '10px 0', backgroundColor: '#ffdddd', color: '#d8000c', borderRadius: '5px' },
+    promptsContainer: { textAlign: 'center', padding: '40px 20px' },
+    promptsHeader: { marginBottom: '20px' },
+    promptsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', maxWidth: '800px', margin: '0 auto' },
+    promptButton: { padding: '15px', border: '1px solid', borderRadius: '8px', textAlign: 'left', cursor: 'pointer', transition: 'transform 0.2s, background-color 0.2s', fontSize: '0.9rem', ':hover': { transform: 'scale(1.02)' } },
+    codeBlockContainer: { margin: '10px 0', borderRadius: '4px', overflow: 'hidden' },
+    codeBlockHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', backgroundColor: '#1e1e1e', fontSize: '0.8rem', color: '#ccc' },
+    copyButton: { background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' },
+    tableContainer: { margin: '10px 0', border: '1px solid', borderRadius: '4px', overflowX: 'auto' },
+    table: { width: '100%', borderCollapse: 'collapse' },
+    tableHeader: { padding: '10px', textAlign: 'left', borderBottom: '2px solid' },
+    tableCell: { padding: '10px', borderBottom: '1px solid' },
+    chartContainer: { padding: '10px', margin: '10px 0', backgroundColor: '#fff', borderRadius: '4px' },
+    messageActions: { position: 'absolute', bottom: -12, right: 10, display: 'flex', gap: '4px', background: '#333', padding: '2px 6px', borderRadius: '10px', opacity: 0, transition: 'opacity 0.2s' },
+    messageRowHover: { ' .messageActions': { opacity: 1 } }, /* This is a pseudo-selector, requires CSS-in-JS lib */
+    actionButton: { background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', padding: '4px' },
+    sidebar: { width: '260px', borderRight: '1px solid #444', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s ease-in-out' },
+    newChatButton: { padding: '15px', margin: '10px', border: '1px dashed #555', borderRadius: '8px', cursor: 'pointer', textAlign: 'center', background: 'none' },
+    sidebarList: { flex: 1, overflowY: 'auto' },
+    sidebarItem: { padding: '10px 15px', margin: '5px 10px', borderRadius: '5px', cursor: 'pointer' },
+    sidebarItemTitle: { margin: 0, fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    sidebarItemDate: { margin: '4px 0 0', fontSize: '0.8rem', opacity: 0.7 },
+    loadingBubble: { display: 'flex', alignItems: 'center', justifyContent: 'center' }
 };
 
-// CSS Keyframes for animations
 const keyframes = `
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-@keyframes blink {
-    from, to { background-color: transparent; }
-    50% { background-color: #8a63d2; }
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes blink { from, to { opacity: 0; } 50% { opacity: 1; } }
 `;
-const styleSheet = document.createElement("style");
-styleSheet.innerText = keyframes;
-document.head.appendChild(styleSheet);
-
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = keyframes;
+    document.head.appendChild(styleSheet);
+}
 
 export default AIAdvisorView;
