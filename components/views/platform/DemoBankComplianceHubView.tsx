@@ -1,6 +1,69 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, FC, ReactNode, createContext, useContext } from 'react';
 import Card from '../../Card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, AreaChart, Area, ComposedChart } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, AreaChart, Area, ComposedChart, ScatterChart, Scatter, ZAxis } from 'recharts';
+
+// --- AI Services & Utilities (Simulated) ---
+
+const fakeAIService = {
+    getInsight: async (dataType: string, data: any[]): Promise<string> => {
+        await new Promise(res => setTimeout(res, 750));
+        switch (dataType) {
+            case 'issues':
+                const openIssues = data.filter(i => i.status === 'Open').length;
+                const criticalIssues = data.filter(i => i.severity === 'Critical' && i.status === 'Open').length;
+                const overdueIssues = data.filter(i => new Date(i.dueDate) < new Date() && i.status !== 'Closed').length;
+                if (criticalIssues > 10) {
+                    return `AI Insight: CRITICAL! ${criticalIssues} critical open issues require immediate attention. ${overdueIssues} of them are overdue. Focus on these to mitigate significant risk.`;
+                }
+                return `AI Insight: There are currently ${openIssues} open issues. ${overdueIssues} are overdue. Prioritize by severity to improve compliance posture.`;
+            case 'risks':
+                const highSeverityRisks = data.filter(r => r.severityScore >= 15).length;
+                if (highSeverityRisks > 20) {
+                    return `AI Insight: The number of high-severity risks (${highSeverityRisks}) is elevated. Recommend a full review of mitigation plans for risks with scores above 15.`;
+                }
+                return `AI Insight: ${highSeverityRisks} high-severity risks identified. Current mitigation strategies appear adequate, but continuous monitoring is advised.`;
+            case 'controls':
+                const failingControls = data.filter(c => c.complianceScore < 75).length;
+                const avgScore = data.reduce((acc, c) => acc + c.complianceScore, 0) / data.length;
+                if (avgScore < 85) {
+                    return `AI Insight: Average control compliance score is ${avgScore.toFixed(1)}%, which is below the 85% target. There are ${failingControls} controls with failing scores that need remediation.`;
+                }
+                return `AI Insight: Strong control environment with an average compliance score of ${avgScore.toFixed(1)}%. ${failingControls} controls are currently below the 75% threshold.`;
+            default:
+                return `AI Insight: Overall compliance health appears stable. Continue monitoring key metrics and upcoming deadlines.`;
+        }
+    },
+    chat: async (prompt: string, context: any): Promise<string> => {
+        await new Promise(res => setTimeout(res, 1000 + Math.random() * 500));
+        const lowerPrompt = prompt.toLowerCase();
+
+        if (lowerPrompt.includes('high risk')) {
+            return "Based on the risk register, the top 3 high-severity risks are: 1) Data Breach from external attack (Score: 25), 2) Insider Threat leading to data exfiltration (Score: 20), and 3) Ransomware attack causing system-wide outage (Score: 20). Would you like to see the mitigation plans for these?";
+        }
+        if (lowerPrompt.includes('summarize') && (lowerPrompt.includes('gdpr') || lowerPrompt.includes('regulatory update'))) {
+            return "The latest GDPR-related update focuses on stricter requirements for data transfers outside the EU. Key changes include mandatory Data Transfer Impact Assessments (DTIAs) and updated Standard Contractual Clauses (SCCs). The effective date is next quarter. Impacted frameworks include GDPR, ISO 27001, and our internal Data Privacy policy.";
+        }
+        if (lowerPrompt.includes('overdue tasks') || lowerPrompt.includes('what should i do')) {
+            return "You have 15 overdue issues, 8 overdue control tests, and 22 mandatory trainings that are past due. I recommend starting with the 3 'Critical' overdue issues related to PCI DSS.";
+        }
+        if (lowerPrompt.includes('generate') && lowerPrompt.includes('policy')) {
+            return "To generate a policy, please navigate to the 'AI Copilot' tab. There you will find a dedicated tool for drafting new policies based on selected frameworks and requirements."
+        }
+        return "I can help with summarizing risks, finding policies, or identifying overdue tasks. For example, you can ask 'Show me high-risk items' or 'Summarize the latest GDPR update'.";
+    },
+    generate: async (type: 'policy' | 'risk' | 'remediation', input: string): Promise<string> => {
+        await new Promise(res => setTimeout(res, 1500));
+        switch (type) {
+            case 'policy':
+                return `## DRAFT: Remote Access Security Policy\n\n**1. Purpose:**\nThis policy establishes the requirements for secure remote access to the company's internal network and resources.\n\n**2. Scope:**\nThis policy applies to all employees, contractors, and third parties connecting to the corporate network remotely.\n\n**3. Requirements:**\n* All remote connections must be made through the corporate VPN.\n* Multi-factor authentication (MFA) is mandatory for all remote access.\n* Company-managed devices must be used. Personal devices are prohibited unless explicitly approved with required security software installed.\n* Data accessed remotely is subject to the same confidentiality and handling standards as data accessed on-premises.\n\n**4. Enforcement:**\nViolations of this policy may result in disciplinary action, up to and including termination of employment or contract.`;
+            case 'risk':
+                return `**Identified Risk:** Uncontrolled use of third-party SaaS applications.\n\n**Description:** Employees may sign up for and use unauthorized cloud applications to store or process company data, leading to a lack of visibility, potential data leakage, and non-compliance with data residency requirements.\n\n**Suggested Category:** Cybersecurity\n**Initial Likelihood:** High\n**Initial Impact:** Significant`;
+            case 'remediation':
+                return `## DRAFT: Remediation Plan for ${input}\n\n**1. Objective:** Remediate the control deficiency identified in the recent audit.\n\n**2. Action Steps:**\n* **Task 1: Root Cause Analysis:** Investigate why the control failed. (Assign: IT Security, Due: 1 week)\n* **Task 2: Implement Technical Fix:** Deploy patches/reconfigure systems as identified in analysis. (Assign: IT Ops, Due: 3 weeks)\n* **Task 3: Update Documentation:** Update relevant procedures and policies. (Assign: Compliance Team, Due: 4 weeks)\n* **Task 4: Re-testing:** Perform a test to validate the control is now effective. (Assign: Internal Audit, Due: 5 weeks)\n\n**3. Estimated Cost:** $5,000 (for engineering time)\n\n**4. Priority:** High`;
+        }
+    }
+};
+
 
 // --- Existing Data (unmodified) ---
 const controlStatusData = [
@@ -13,6 +76,7 @@ const controlStatusData = [
 const activeAudits = [
     { id: 1, framework: 'SOC 2 Type II', auditor: 'CyberTrust LLP', status: 'In Progress', dueDate: '2024-09-30' },
     { id: 2, framework: 'PCI DSS 4.0', auditor: 'SecurePay Auditors', status: 'Scheduled', dueDate: '2024-10-15' },
+    { id: 3, framework: 'ISO 27001 Surveillance', auditor: 'CertifyGlobal', status: 'Scheduled', dueDate: '2024-11-20' },
 ];
 
 // --- New Data Structures (Interfaces) ---
@@ -32,7 +96,7 @@ export interface Framework {
 export interface Policy {
     id: string;
     title: string;
-    category: 'Information Security' | 'Data Privacy' | 'Operational Compliance' | 'Financial Reporting';
+    category: 'Information Security' | 'Data Privacy' | 'Operational Compliance' | 'Financial Reporting' | 'Human Resources';
     version: string;
     status: 'Approved' | 'Draft' | 'Under Review';
     owner: string;
@@ -64,7 +128,7 @@ export interface Risk {
     id: string;
     name: string;
     description: string;
-    category: 'Cybersecurity' | 'Operational' | 'Regulatory' | 'Financial';
+    category: 'Cybersecurity' | 'Operational' | 'Regulatory' | 'Financial' | 'Strategic';
     likelihood: 'Very Low' | 'Low' | 'Medium' | 'High' | 'Very High';
     impact: 'Negligible' | 'Minor' | 'Moderate' | 'Significant' | 'Severe';
     severityScore: number; // Calculated: Likelihood * Impact (e.g., 1-5 scale each)
@@ -195,13 +259,13 @@ const mockFrameworks: Framework[] = [
     { id: 'FW007', name: 'NIST CSF', description: 'NIST Cybersecurity Framework', version: '1.1', owner: 'Security Dept', lastReviewed: '2024-04-01', status: 'Active', controlCount: 250, riskImpactScore: 87 },
 ];
 
-const mockPolicies: Policy[] = Array.from({ length: 150 }).map((_, i) => ({
+const mockPolicies: Policy[] = Array.from({ length: 500 }).map((_, i) => ({
     id: `POL${i + 1001}`,
-    title: `Information Security Policy ${i + 1}`,
-    category: getRandomElement(['Information Security', 'Data Privacy', 'Operational Compliance', 'Financial Reporting']),
-    version: `1.${getRandomInt(0, 9)}`,
+    title: `Policy ${i + 1}: ${getRandomElement(['Acceptable Use', 'Data Classification', 'Incident Response', 'Vendor Management', 'Business Continuity'])}`,
+    category: getRandomElement(['Information Security', 'Data Privacy', 'Operational Compliance', 'Financial Reporting', 'Human Resources']),
+    version: `2.${getRandomInt(0, 5)}`,
     status: getRandomElement(['Approved', 'Draft', 'Under Review']),
-    owner: getRandomElement(['John Doe', 'Jane Smith', 'Compliance Team', 'Legal Dept']),
+    owner: getRandomElement(['John Doe', 'Jane Smith', 'Compliance Team', 'Legal Dept', 'HR Dept']),
     lastUpdated: generateDate(getRandomInt(30, 700)),
     effectiveDate: generateDate(getRandomInt(10, 300)),
     reviewCycleMonths: getRandomElement([6, 12, 24]),
@@ -209,7 +273,7 @@ const mockPolicies: Policy[] = Array.from({ length: 150 }).map((_, i) => ({
     documentLink: `/docs/policy_POL${i + 1001}.pdf`,
 }));
 
-const mockControlDetails: ControlDetail[] = Array.from({ length: 1200 }).map((_, i) => {
+const mockControlDetails: ControlDetail[] = Array.from({ length: 3000 }).map((_, i) => {
     const framework = getRandomElement(mockFrameworks);
     const policy = getRandomElement(mockPolicies);
     return {
@@ -224,13 +288,13 @@ const mockControlDetails: ControlDetail[] = Array.from({ length: 1200 }).map((_,
         lastTested: generateDate(getRandomInt(0, 365)),
         nextTestDue: generateDate(getRandomInt(30, 180), true),
         testFrequencyMonths: getRandomElement([3, 6, 12]),
-        complianceScore: getRandomInt(60, 100),
+        complianceScore: getRandomInt(55, 100),
         evidenceLink: Math.random() > 0.5 ? `/evidence/CTL${i + 10001}_report.pdf` : undefined,
         owner: getRandomElement(['Auditor A', 'Auditor B', 'Security Team', 'IT Ops']),
     };
 });
 
-const mockRisks: Risk[] = Array.from({ length: 300 }).map((_, i) => {
+const mockRisks: Risk[] = Array.from({ length: 1000 }).map((_, i) => {
     const likelihood = getRandomElement(['Very Low', 'Low', 'Medium', 'High', 'Very High']);
     const impact = getRandomElement(['Negligible', 'Minor', 'Moderate', 'Significant', 'Severe']);
     const severityMap = {
@@ -239,26 +303,26 @@ const mockRisks: Risk[] = Array.from({ length: 300 }).map((_, i) => {
     };
     return {
         id: `RISK${i + 1001}`,
-        name: `Risk ID ${i + 1}: ${getRandomElement(['Data Breach', 'System Downtime', 'Regulatory Fines', 'Fraud', 'Vendor Failure'])}`,
+        name: `Risk ID ${i + 1}: ${getRandomElement(['Data Breach', 'System Downtime', 'Regulatory Fines', 'Fraud', 'Vendor Failure', 'Insider Threat'])}`,
         description: `Detailed description for risk RISK${i + 1001}.`,
-        category: getRandomElement(['Cybersecurity', 'Operational', 'Regulatory', 'Financial']),
+        category: getRandomElement(['Cybersecurity', 'Operational', 'Regulatory', 'Financial', 'Strategic']),
         likelihood: likelihood,
         impact: impact,
         severityScore: severityMap[likelihood] * severityMap[impact],
         status: getRandomElement(['Open', 'Mitigated', 'Accepted', 'Closed']),
         mitigationPlanIds: [], // Will link later
-        owner: getRandomElement(['Risk Manager', 'CISO', 'Legal Counsel', 'Operations Head']),
+        owner: getRandomElement(['Risk Manager', 'CISO', 'Legal Counsel', 'Operations Head', 'CRO']),
         lastReviewed: generateDate(getRandomInt(0, 180)),
-        relatedControls: Array.from({ length: getRandomInt(1, 3) }).map(() => getRandomElement(mockControlDetails).id),
+        relatedControls: Array.from({ length: getRandomInt(1, 5) }).map(() => getRandomElement(mockControlDetails).id),
     };
 });
 
-const mockRemediationPlans: RemediationPlan[] = Array.from({ length: 200 }).map((_, i) => ({
+const mockRemediationPlans: RemediationPlan[] = Array.from({ length: 800 }).map((_, i) => ({
     id: `REMPLAN${i + 101}`,
     title: `Remediation Plan ${i + 1}`,
     description: `Plan to address identified issues/risks ${i + 1}.`,
     status: getRandomElement(['Planned', 'In Progress', 'Completed', 'Delayed']),
-    assignedTo: getRandomElement(['Alice Johnson', 'Bob Williams', 'Charlie Brown']),
+    assignedTo: getRandomElement(['Alice Johnson', 'Bob Williams', 'Charlie Brown', 'Security Engineering Team']),
     startDate: generateDate(getRandomInt(60, 180)),
     targetCompletionDate: generateDate(getRandomInt(10, 90), true),
     actualCompletionDate: Math.random() > 0.3 ? generateDate(getRandomInt(10, 30)) : undefined,
@@ -268,7 +332,7 @@ const mockRemediationPlans: RemediationPlan[] = Array.from({ length: 200 }).map(
     priority: getRandomElement(['High', 'Medium', 'Low']),
 }));
 
-const mockIssues: Issue[] = Array.from({ length: 400 }).map((_, i) => {
+const mockIssues: Issue[] = Array.from({ length: 1500 }).map((_, i) => {
     const relatedControl = Math.random() > 0.2 ? getRandomElement(mockControlDetails) : undefined;
     const relatedRisk = Math.random() > 0.2 ? getRandomElement(mockRisks) : undefined;
     const remediationPlan = Math.random() > 0.4 ? getRandomElement(mockRemediationPlans) : undefined;
@@ -298,7 +362,7 @@ const mockIssues: Issue[] = Array.from({ length: 400 }).map((_, i) => {
     return issue;
 });
 
-const mockAuditFindings: AuditFinding[] = Array.from({ length: 100 }).map((_, i) => ({
+const mockAuditFindings: AuditFinding[] = Array.from({ length: 250 }).map((_, i) => ({
     id: `AUDITF${i + 101}`,
     auditId: getRandomElement(activeAudits).id,
     title: `Finding ${i + 1}: ${getRandomElement(['Weak Access Control', 'Inadequate Data Encryption', 'Missing Policy Review', 'Lack of Vendor Assessment'])}`,
@@ -311,7 +375,7 @@ const mockAuditFindings: AuditFinding[] = Array.from({ length: 100 }).map((_, i)
     actionPlanId: Math.random() > 0.5 ? getRandomElement(mockRemediationPlans).id : undefined,
 }));
 
-const mockVendors: Vendor[] = Array.from({ length: 80 }).map((_, i) => ({
+const mockVendors: Vendor[] = Array.from({ length: 200 }).map((_, i) => ({
     id: `VENDOR${i + 101}`,
     name: `Vendor ${i + 1} Inc.`,
     contactPerson: getRandomElement(['Emily White', 'David Green', 'Sophia Lee']),
@@ -327,20 +391,20 @@ const mockVendors: Vendor[] = Array.from({ length: 80 }).map((_, i) => ({
     documentLinks: [`/vendor_docs/VENDOR${i + 1}_SOC2.pdf`, `/vendor_docs/VENDOR${i + 1}_contract.pdf`],
 }));
 
-const mockComplianceTraining: ComplianceTraining[] = Array.from({ length: 500 }).map((_, i) => ({
+const mockComplianceTraining: ComplianceTraining[] = Array.from({ length: 2000 }).map((_, i) => ({
     id: `TRAIN${i + 1001}`,
     title: getRandomElement(['Annual Security Awareness', 'HIPAA Privacy Training', 'GDPR Compliance', 'Anti-Money Laundering']),
     courseModule: getRandomElement(['Module A', 'Module B', 'Module C']),
     status: getRandomElement(['Mandatory', 'Optional']),
     targetAudience: getRandomElement([['All Employees'], ['IT Dept'], ['Legal & Compliance'], ['Sales Team']]),
     assignedDate: generateDate(getRandomInt(30, 365)),
-    dueDate: generateDate(getRandomInt(10, 60), true),
+    dueDate: generateDate(getRandomInt(1, 90), true),
     completionDate: Math.random() > 0.4 ? generateDate(getRandomInt(1, 20)) : undefined,
     completionStatus: getRandomElement(['Not Started', 'In Progress', 'Completed', 'Overdue']),
     employeeId: `EMP${getRandomInt(1000, 9999)}`,
 }));
 
-const mockRegulatoryUpdates: RegulatoryUpdate[] = Array.from({ length: 70 }).map((_, i) => ({
+const mockRegulatoryUpdates: RegulatoryUpdate[] = Array.from({ length: 150 }).map((_, i) => ({
     id: `REG${i + 101}`,
     title: `Regulatory Update ${i + 1}: ${getRandomElement(['New Data Privacy Rule', 'Enhanced Cybersecurity Guidelines', 'AML Reporting Changes', 'Cloud Security Mandate'])}`,
     source: getRandomElement(['OCC', 'FDIC', 'SEC', 'GDPR', 'NIST', 'State Dept of Fin. Services']),
@@ -351,7 +415,7 @@ const mockRegulatoryUpdates: RegulatoryUpdate[] = Array.from({ length: 70 }).map
     documentLink: `/reg_docs/REG${i + 101}_guidance.pdf`,
 }));
 
-const mockDocuments: Document[] = Array.from({ length: 300 }).map((_, i) => ({
+const mockDocuments: Document[] = Array.from({ length: 1000 }).map((_, i) => ({
     id: `DOC${i + 1001}`,
     name: `Document ${i + 1}: ${getRandomElement(['Security Policy', 'Incident Response Plan', 'SOC 2 Report', 'Vendor Contract', 'Audit Trail'])}`,
     type: getRandomElement(['Policy', 'Procedure', 'Evidence', 'Report', 'Contract']),
@@ -440,26 +504,15 @@ export const DropdownFilter: React.FC<DropdownFilterProps> = ({ label, options, 
 };
 
 export const StatusBadge: React.FC<{ status: string; type?: 'success' | 'warning' | 'error' | 'info' | 'default' }> = ({ status, type = 'default' }) => {
-    const baseClasses = "px-2 py-1 text-xs rounded-full inline-flex items-center justify-center";
+    const baseClasses = "px-2 py-1 text-xs font-semibold rounded-full inline-flex items-center justify-center";
     let colorClasses = "";
 
     switch (type) {
-        case 'success':
-            colorClasses = 'bg-green-500/20 text-green-300';
-            break;
-        case 'warning':
-            colorClasses = 'bg-yellow-500/20 text-yellow-300';
-            break;
-        case 'error':
-            colorClasses = 'bg-red-500/20 text-red-300';
-            break;
-        case 'info':
-            colorClasses = 'bg-blue-500/20 text-blue-300';
-            break;
-        case 'default':
-        default:
-            colorClasses = 'bg-gray-500/20 text-gray-300';
-            break;
+        case 'success': colorClasses = 'bg-green-500/20 text-green-300'; break;
+        case 'warning': colorClasses = 'bg-yellow-500/20 text-yellow-300'; break;
+        case 'error': colorClasses = 'bg-red-500/20 text-red-300'; break;
+        case 'info': colorClasses = 'bg-blue-500/20 text-blue-300'; break;
+        default: colorClasses = 'bg-gray-500/20 text-gray-300'; break;
     }
     return <span className={`${baseClasses} ${colorClasses}`}>{status}</span>;
 };
@@ -509,7 +562,6 @@ export const FrameworksOverview: React.FC<FrameworksOverviewProps> = ({ framewor
 
     useEffect(() => {
         setLoading(true);
-        // Simulate API call
         setTimeout(() => {
             setFrameworks(initialFrameworks);
             setLoading(false);
@@ -540,7 +592,6 @@ export const FrameworksOverview: React.FC<FrameworksOverviewProps> = ({ framewor
             if (typeof aValue === 'number' && typeof bValue === 'number') {
                 return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
             }
-            // Fallback for other types or nullish values
             return 0;
         });
     }, [filteredFrameworks, sortKey, sortDirection]);
@@ -901,6 +952,17 @@ export const RiskRegisterDashboard: React.FC<RiskRegisterDashboardProps> = ({ ri
             value: counts[key],
         }));
     }, [risks]);
+    
+    const riskMatrixData = useMemo(() => {
+        const impactMap = {'Negligible': 1, 'Minor': 2, 'Moderate': 3, 'Significant': 4, 'Severe': 5};
+        const likelihoodMap = {'Very Low': 1, 'Low': 2, 'Medium': 3, 'High': 4, 'Very High': 5};
+        return risks.map(risk => ({
+            x: impactMap[risk.impact],
+            y: likelihoodMap[risk.likelihood],
+            z: risk.severityScore,
+            name: risk.name,
+        }));
+    }, [risks]);
 
     const PIE_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e']; // Red, Orange, Yellow, Green for severity
 
@@ -909,8 +971,25 @@ export const RiskRegisterDashboard: React.FC<RiskRegisterDashboardProps> = ({ ri
     return (
         <Card title="Risk Register Dashboard">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <Card title="Risk Heatmap (Impact vs Likelihood)" className="lg:col-span-2">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <ScatterChart margin={{ top: 20, right: 20, bottom: 40, left: 40 }}>
+                            <CartesianGrid stroke="#4b5563" />
+                            <XAxis type="number" dataKey="x" name="Impact" domain={[0, 6]} ticks={[1, 2, 3, 4, 5]} tickFormatter={(val) => ['Negligible', 'Minor', 'Moderate', 'Significant', 'Severe'][val-1]} stroke="#9ca3af" label={{ value: 'Impact', position: 'bottom', offset: 10, fill: '#9ca3af' }} />
+                            <YAxis type="number" dataKey="y" name="Likelihood" domain={[0, 6]} ticks={[1, 2, 3, 4, 5]} tickFormatter={(val) => ['Very Low', 'Low', 'Medium', 'High', 'Very High'][val-1]} stroke="#9ca3af" label={{ value: 'Likelihood', angle: -90, position: 'insideLeft', fill: '#9ca3af' }}/>
+                            <ZAxis dataKey="z" range={[100, 500]} name="Severity" />
+                            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
+                            <Legend />
+                            <Scatter name="Risks" data={riskMatrixData} fillOpacity={0.7}>
+                                {riskMatrixData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.z >= 15 ? '#ef4444' : entry.z >= 9 ? '#f97316' : entry.z >= 4 ? '#eab308' : '#22c55e'} />
+                                ))}
+                            </Scatter>
+                        </ScatterChart>
+                    </ResponsiveContainer>
+                </Card>
                 <Card title="Risk Severity Distribution" className="lg:col-span-1">
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie
                                 data={riskSeverityData}
@@ -929,23 +1008,6 @@ export const RiskRegisterDashboard: React.FC<RiskRegisterDashboardProps> = ({ ri
                             <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
                             <Legend />
                         </PieChart>
-                    </ResponsiveContainer>
-                </Card>
-                <Card title="Risk Status Overview" className="lg:col-span-2">
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart
-                            data={Object.entries(risks.reduce((acc, risk) => {
-                                acc[risk.status] = (acc[risk.status] || 0) + 1;
-                                return acc;
-                            }, {} as Record<string, number>)).map(([name, count]) => ({ name, count }))}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                            <XAxis dataKey="name" stroke="#9ca3af" />
-                            <YAxis stroke="#9ca3af" />
-                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
-                            <Legend />
-                            <Bar dataKey="count" fill="#3b82f6" />
-                        </BarChart>
                     </ResponsiveContainer>
                 </Card>
             </div>
@@ -1067,7 +1129,7 @@ export const IssueTrackingSystem: React.FC<IssueTrackingSystemProps> = ({ issues
             case 'Critical': return <StatusBadge status={severity} type="error" />;
             case 'High': return <StatusBadge status={severity} type="warning" />;
             case 'Medium': return <StatusBadge status={severity} type="info" />;
-            case 'Low': return <StatusBadge status={severity} type="success" />;
+            case 'Low': return <StatusBadge status={severity} type="default" />;
             default: return <StatusBadge status={severity} type="default" />;
         }
     };
@@ -1088,14 +1150,6 @@ export const IssueTrackingSystem: React.FC<IssueTrackingSystemProps> = ({ issues
             return acc;
         }, {} as Record<Issue['status'], number>);
         return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
-    }, [issues]);
-
-    const issueTypeChartData = useMemo(() => {
-        const typeCounts = issues.reduce((acc, issue) => {
-            acc[issue.type] = (acc[issue.type] || 0) + 1;
-            return acc;
-        }, {} as Record<Issue['type'], number>);
-        return Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
     }, [issues]);
 
     const issueSeverityChartData = useMemo(() => {
@@ -1669,7 +1723,6 @@ export const RegulatoryUpdateFeed: React.FC<RegulatoryUpdateFeedProps> = ({ upda
     useEffect(() => {
         setLoading(true);
         setTimeout(() => {
-            // Sort by effective date descending for a feed
             const sorted = [...initialUpdates].sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime());
             setUpdates(sorted);
             setLoading(false);
@@ -1849,13 +1902,11 @@ export const ComplianceCalendar: React.FC = () => {
     const [events, setEvents] = useState<ComplianceCalendarEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Combine data from various sources to create calendar events
     useEffect(() => {
         setLoading(true);
         setTimeout(() => {
             const generatedEvents: ComplianceCalendarEvent[] = [];
 
-            // From active audits
             activeAudits.forEach(audit => generatedEvents.push({
                 id: `AUDIT-${audit.id}`,
                 title: `${audit.framework} Audit`,
@@ -1865,8 +1916,7 @@ export const ComplianceCalendar: React.FC = () => {
                 link: `/audits/${audit.id}`
             }));
 
-            // From control details (next test due)
-            mockControlDetails.slice(0, 50).forEach(control => generatedEvents.push({ // Limit for demo
+            mockControlDetails.slice(0, 50).forEach(control => generatedEvents.push({
                 id: `CTLTEST-${control.id}`,
                 title: `Control Test: ${control.name}`,
                 date: control.nextTestDue,
@@ -1875,8 +1925,7 @@ export const ComplianceCalendar: React.FC = () => {
                 link: `/controls/${control.id}`
             }));
 
-            // From issues (due date)
-            mockIssues.slice(0, 50).forEach(issue => generatedEvents.push({ // Limit for demo
+            mockIssues.slice(0, 50).forEach(issue => generatedEvents.push({
                 id: `ISSUE-${issue.id}`,
                 title: `Issue Resolution: ${issue.title}`,
                 date: issue.dueDate,
@@ -1885,8 +1934,7 @@ export const ComplianceCalendar: React.FC = () => {
                 link: `/issues/${issue.id}`
             }));
 
-            // From remediation plans (target completion)
-            mockRemediationPlans.slice(0, 30).forEach(plan => generatedEvents.push({ // Limit for demo
+            mockRemediationPlans.slice(0, 30).forEach(plan => generatedEvents.push({
                 id: `REMPLAN-${plan.id}`,
                 title: `Remediation Plan: ${plan.title}`,
                 date: plan.targetCompletionDate,
@@ -1895,8 +1943,7 @@ export const ComplianceCalendar: React.FC = () => {
                 link: `/remediation/${plan.id}`
             }));
 
-            // From compliance training (due date)
-            mockComplianceTraining.slice(0, 50).forEach(training => generatedEvents.push({ // Limit for demo
+            mockComplianceTraining.slice(0, 50).forEach(training => generatedEvents.push({
                 id: `TRAIN-${training.id}`,
                 title: `Complete Training: ${training.title} (${training.employeeId})`,
                 date: training.dueDate,
@@ -1905,7 +1952,6 @@ export const ComplianceCalendar: React.FC = () => {
                 link: `/training/${training.id}`
             }));
 
-            // Sort events by date
             generatedEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
             setEvents(generatedEvents);
             setLoading(false);
@@ -1969,7 +2015,6 @@ export const ComplianceAnalyticsDashboard: React.FC = () => {
     useEffect(() => {
         setLoading(true);
         setTimeout(() => {
-            // Aggregate data for various charts
             const issuesByMonth = mockIssues.reduce((acc, issue) => {
                 const month = issue.openedDate.substring(0, 7);
                 acc[month] = (acc[month] || 0) + 1;
@@ -2008,7 +2053,7 @@ export const ComplianceAnalyticsDashboard: React.FC = () => {
         }, 1000);
     }, []);
 
-    const PIE_COLORS_RISK_CATEGORY = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
+    const PIE_COLORS_RISK_CATEGORY = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE'];
 
     if (loading) return <div className="text-gray-400 p-4">Loading analytics dashboard...</div>;
 
@@ -2077,8 +2122,6 @@ export const ComplianceAnalyticsDashboard: React.FC = () => {
                 <Card title="Compliance Score by Framework" className="lg:col-span-2">
                     <ResponsiveContainer width="100%" height={250}>
                         <ComposedChart
-                            width={500}
-                            height={400}
                             data={controlStatusData.map(d => ({
                                 name: d.name,
                                 Passed: d.Passed,
@@ -2095,12 +2138,147 @@ export const ComplianceAnalyticsDashboard: React.FC = () => {
                             <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }} />
                             <Legend />
                             <Area yAxisId="left" type="monotone" dataKey="Total" fill="#6b7280" stroke="#6b7280" />
-                            <Bar yAxisId="left" dataKey="Failed" fill="#ef4444" />
-                            <Bar yAxisId="left" dataKey="Passed" fill="#10b981" />
+                            <Bar yAxisId="left" dataKey="Failed" stackId="a" fill="#ef4444" />
+                            <Bar yAxisId="left" dataKey="Passed" stackId="a" fill="#10b981" />
                             <Line yAxisId="right" type="monotone" dataKey="Compliance" stroke="#22d3ee" strokeWidth={2} dot={{ r: 4 }} />
                         </ComposedChart>
                     </ResponsiveContainer>
                 </Card>
+            </div>
+        </Card>
+    );
+};
+
+// --- NEW: AI-POWERED & ADVANCED COMPONENTS ---
+
+interface AIInsightPillProps {
+    dataType: 'issues' | 'risks' | 'controls';
+    data: any[];
+}
+const AIInsightPill: FC<AIInsightPillProps> = ({ dataType, data }) => {
+    const [insight, setInsight] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setLoading(true);
+        fakeAIService.getInsight(dataType, data).then(res => {
+            setInsight(res);
+            setLoading(false);
+        });
+    }, [dataType, data]);
+
+    return (
+        <div className="p-4 bg-cyan-900/30 border border-cyan-700 rounded-lg">
+            {loading ? (
+                <p className="text-cyan-300 text-sm animate-pulse">Generating AI insight...</p>
+            ) : (
+                <p className="text-cyan-300 text-sm">{insight}</p>
+            )}
+        </div>
+    );
+};
+
+
+interface AICopilotViewProps {}
+const AICopilotView: FC<AICopilotViewProps> = () => {
+    const [generatorType, setGeneratorType] = useState<'policy' | 'risk' | 'remediation'>('policy');
+    const [inputText, setInputText] = useState('');
+    const [outputText, setOutputText] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerate = async () => {
+        if (!inputText) return;
+        setIsLoading(true);
+        const result = await fakeAIService.generate(generatorType, inputText);
+        setOutputText(result);
+        setIsLoading(false);
+    };
+
+    const getPlaceholder = () => {
+        switch (generatorType) {
+            case 'policy': return "e.g., Draft a simple policy for remote access security.";
+            case 'risk': return "e.g., Describe a risk related to uncontrolled use of third-party SaaS applications.";
+            case 'remediation': return "e.g., Name an issue to create a plan for, like 'Audit Finding AUDITF123: Weak Access Control'.";
+        }
+    }
+
+    return (
+        <Card title="AI Compliance Copilot">
+            <div className="flex space-x-2 mb-4 border-b border-gray-700">
+                <button onClick={() => setGeneratorType('policy')} className={`px-4 py-2 ${generatorType === 'policy' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>Policy Drafter</button>
+                <button onClick={() => setGeneratorType('risk')} className={`px-4 py-2 ${generatorType === 'risk' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>Risk Identifier</button>
+                <button onClick={() => setGeneratorType('remediation')} className={`px-4 py-2 ${generatorType === 'remediation' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>Remediation Plan Generator</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Input</h3>
+                    <textarea
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder={getPlaceholder()}
+                        className="w-full h-48 p-2 bg-gray-900/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    />
+                    <button onClick={handleGenerate} disabled={isLoading} className="mt-4 px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-md disabled:opacity-50 disabled:cursor-wait">
+                        {isLoading ? 'Generating...' : 'Generate with AI'}
+                    </button>
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">AI Generated Draft</h3>
+                    <div className="w-full h-48 p-3 bg-gray-900 rounded-md border border-gray-700 overflow-y-auto custom-scrollbar">
+                        {isLoading ? <p className="text-gray-400 animate-pulse">AI is thinking...</p> : <pre className="text-sm text-gray-300 whitespace-pre-wrap">{outputText || 'Output will appear here.'}</pre>}
+                    </div>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+
+interface IssueKanbanBoardProps {
+    issues: Issue[];
+}
+const IssueKanbanBoard: FC<IssueKanbanBoardProps> = ({ issues }) => {
+    const columns = useMemo(() => {
+        const board: { [key: string]: { name: string; issues: Issue[] } } = {
+            'Open': { name: 'Open', issues: [] },
+            'In Progress': { name: 'In Progress', issues: [] },
+            'Awaiting Review': { name: 'Awaiting Review', issues: [] },
+            'Closed': { name: 'Closed', issues: [] },
+        };
+        issues.forEach(issue => {
+            if (board[issue.status]) {
+                board[issue.status].issues.push(issue);
+            }
+        });
+        return board;
+    }, [issues]);
+
+    const getSeverityBorder = (severity: Issue['severity']) => {
+        switch (severity) {
+            case 'Critical': return 'border-l-4 border-red-500';
+            case 'High': return 'border-l-4 border-orange-500';
+            case 'Medium': return 'border-l-4 border-yellow-500';
+            case 'Low': return 'border-l-4 border-blue-500';
+        }
+    };
+
+    return (
+        <Card title="Issue Management Workflow">
+             <div className="flex space-x-4 overflow-x-auto p-2 custom-scrollbar pb-4">
+                {Object.entries(columns).map(([columnId, column]) => (
+                    <div key={columnId} className="w-80 bg-gray-900/50 rounded-lg flex-shrink-0">
+                    <h3 className="p-4 font-semibold text-white border-b border-gray-700">{column.name} ({column.issues.length})</h3>
+                    <div className="p-2 space-y-2 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        {column.issues.map(issue => (
+                        <div key={issue.id} className={`p-3 bg-gray-800 rounded-md shadow-lg cursor-grab hover:bg-gray-700/80 ${getSeverityBorder(issue.severity)}`}>
+                            <p className="font-semibold text-sm text-white mb-1">{issue.title}</p>
+                            <p className="text-xs text-gray-400">Assigned: {issue.assignedTo}</p>
+                            <p className="text-xs text-gray-400">Due: {issue.dueDate}</p>
+                        </div>
+                        ))}
+                    </div>
+                    </div>
+                ))}
             </div>
         </Card>
     );
@@ -2115,11 +2293,12 @@ const DemoBankComplianceHubView: React.FC = () => {
             case 'overview':
                 return (
                     <div className="space-y-6">
+                        <AIInsightPill dataType="issues" data={mockIssues} />
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <Card className="text-center"><p className="text-3xl font-bold text-white">{mockFrameworks.length}</p><p className="text-sm text-gray-400 mt-1">Frameworks Covered</p></Card>
                             <Card className="text-center"><p className="text-3xl font-bold text-white">{(mockControlDetails.filter(c => c.complianceScore >= 90).length / mockControlDetails.length * 100).toFixed(1)}%</p><p className="text-sm text-gray-400 mt-1">Controls Passing</p></Card>
-                            <Card className="text-center"><p className="text-3xl font-bold text-white">{mockControlDetails.filter(c => c.complianceScore < 70).length}</p><p className="text-sm text-gray-400 mt-1">Failing Controls</p></Card>
-                            <Card className="text-center"><p className="text-3xl font-bold text-white">{mockIssues.filter(i => i.status !== 'Closed').length}</p><p className="text-sm text-gray-400 mt-1">Open Issues</p></Card>
+                            <Card className="text-center"><p className="text-3xl font-bold text-red-400">{mockIssues.filter(i => i.severity === 'Critical' && i.status !== 'Closed').length}</p><p className="text-sm text-gray-400 mt-1">Open Critical Issues</p></Card>
+                            <Card className="text-center"><p className="text-3xl font-bold text-white">{mockIssues.filter(i => i.status !== 'Closed').length}</p><p className="text-sm text-gray-400 mt-1">Total Open Issues</p></Card>
                         </div>
                         <Card title="Controls Status by Framework">
                             <ResponsiveContainer width="100%" height={300}>
@@ -2165,6 +2344,8 @@ const DemoBankComplianceHubView: React.FC = () => {
                         <ComplianceCalendar />
                     </div>
                 );
+            case 'ai-copilot':
+                return <AICopilotView />;
             case 'frameworks':
                 return <FrameworksOverview frameworks={mockFrameworks} />;
             case 'policies':
@@ -2175,6 +2356,8 @@ const DemoBankComplianceHubView: React.FC = () => {
                 return <RiskRegisterDashboard risks={mockRisks} />;
             case 'issues':
                 return <IssueTrackingSystem issues={mockIssues} remediationPlans={mockRemediationPlans} />;
+            case 'workflow':
+                return <IssueKanbanBoard issues={mockIssues} />;
             case 'remediation':
                 return <RemediationPlansManager remediationPlans={mockRemediationPlans} />;
             case 'audit-findings':
@@ -2196,87 +2379,24 @@ const DemoBankComplianceHubView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Compliance Hub</h2>
+            <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank GRC & Compliance Hub</h2>
 
             <div className="flex flex-wrap border-b border-gray-700">
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'overview' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('overview')}
-                >
-                    Overview
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'frameworks' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('frameworks')}
-                >
-                    Frameworks
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'policies' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('policies')}
-                >
-                    Policies
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'controls' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('controls')}
-                >
-                    Controls
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'risks' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('risks')}
-                >
-                    Risk Register
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'issues' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('issues')}
-                >
-                    Issue Tracker
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'remediation' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('remediation')}
-                >
-                    Remediation
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'audit-findings' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('audit-findings')}
-                >
-                    Audit Findings
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'vendors' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('vendors')}
-                >
-                    Vendors
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'training' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('training')}
-                >
-                    Training
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'regulatory-updates' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('regulatory-updates')}
-                >
-                    Reg. Updates
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'documents' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('documents')}
-                >
-                    Documents
-                </button>
-                <button
-                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}
-                    onClick={() => setActiveTab('analytics')}
-                >
-                    Analytics
-                </button>
+                <button onClick={() => setActiveTab('overview')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'overview' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Overview</button>
+                <button onClick={() => setActiveTab('ai-copilot')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'ai-copilot' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>AI Copilot ✨</button>
+                <button onClick={() => setActiveTab('frameworks')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'frameworks' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Frameworks</button>
+                <button onClick={() => setActiveTab('policies')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'policies' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Policies</button>
+                <button onClick={() => setActiveTab('controls')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'controls' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Controls</button>
+                <button onClick={() => setActiveTab('risks')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'risks' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Risk Register</button>
+                <button onClick={() => setActiveTab('issues')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'issues' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Issue Tracker</button>
+                <button onClick={() => setActiveTab('workflow')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'workflow' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Workflow</button>
+                <button onClick={() => setActiveTab('remediation')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'remediation' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Remediation</button>
+                <button onClick={() => setActiveTab('audit-findings')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'audit-findings' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Audit Findings</button>
+                <button onClick={() => setActiveTab('vendors')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'vendors' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Vendors</button>
+                <button onClick={() => setActiveTab('training')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'training' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Training</button>
+                <button onClick={() => setActiveTab('regulatory-updates')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'regulatory-updates' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Reg. Updates</button>
+                <button onClick={() => setActiveTab('documents')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'documents' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Documents</button>
+                <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'analytics' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400 hover:text-white'} transition-colors`}>Analytics</button>
             </div>
 
             <div className="pt-4">
