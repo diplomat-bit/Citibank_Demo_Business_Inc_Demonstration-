@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef, FC } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, FC } from 'react';
 import Card from '../../Card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ScatterChart, Scatter, ZAxis, LineChart, Line, CartesianGrid, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ScatterChart, Scatter, ZAxis, LineChart, Line, CartesianGrid, PieChart, Pie, Cell, AreaChart, Area, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { v4 as uuidv4 } from 'uuid';
 
 // --- EXISTING DATA (KEPT FOR COMPATIBILITY) ---
@@ -34,6 +34,7 @@ export type RunStatus = 'Completed' | 'Failed' | 'Running';
 export type DeploymentStatus = 'Online' | 'Offline' | 'Error' | 'Updating';
 export type FeatureType = 'Numerical' | 'Categorical' | 'Text' | 'Timestamp';
 export type AlertSeverity = 'Critical' | 'Warning' | 'Info';
+export type AITaskType = 'DEBUG_RUN' | 'GENERATE_MODEL_CARD' | 'EXPLAIN_METRIC' | 'QUERY_DATA';
 
 export interface Artifact {
     name: string;
@@ -69,6 +70,15 @@ export interface TrainingRun {
         gitRepoUrl: string;
         commitHash: string;
     };
+    costUSD: number;
+    logs: string[];
+}
+
+export interface AuditEvent {
+    timestamp: Date;
+    user: string;
+    action: string;
+    details: string;
 }
 
 export interface ModelVersion {
@@ -82,6 +92,12 @@ export interface ModelVersion {
     runId: string;
     metrics: Record<string, number>;
     tags: Record<string, string>;
+    lineage: {
+        parentModelVersionId?: string;
+        datasets: string[];
+    };
+    explainabilityReportUrl?: string;
+    auditTrail: AuditEvent[];
 }
 
 export interface RegisteredModel {
@@ -90,6 +106,20 @@ export interface RegisteredModel {
     creationTimestamp: Date;
     lastUpdatedTimestamp: Date;
     versions: ModelVersion[];
+}
+
+export interface BiasMetric {
+    group: string;
+    metric: 'disparate_impact' | 'statistical_parity_difference';
+    value: number;
+    threshold: number;
+    pass: boolean;
+}
+
+export interface DriftMetric {
+    feature: string;
+    drift_score: number;
+    drift_detected: boolean;
 }
 
 export interface Deployment {
@@ -106,6 +136,9 @@ export interface Deployment {
         latencyP95: number;
         requestsPerSecond: number;
         errorRate: number;
+        dataDrift: DriftMetric[];
+        conceptDriftScore: number;
+        biasMetrics: BiasMetric[];
     };
 }
 
@@ -128,35 +161,56 @@ export interface MLOpsAlert {
     severity: AlertSeverity;
     timestamp: Date;
     relatedEntity: {
-        type: 'Model' | 'Deployment' | 'Feature';
+        type: 'Model' | 'Deployment' | 'Feature' | 'Pipeline';
         id: string;
     };
     acknowledged: boolean;
 }
 
+export interface MLPipeline {
+    id: string;
+    name: string;
+    description: string;
+    creationTimestamp: Date;
+    lastRunStatus: RunStatus;
+    schedule: string;
+    steps: string[];
+}
+
+export interface AIInsight {
+    id: string;
+    title: string;
+    severity: AlertSeverity;
+    insight: string;
+    recommendation: string;
+    relatedEntity: {
+        type: 'Model' | 'Deployment' | 'Feature' | 'Pipeline';
+        id: string;
+    };
+    timestamp: Date;
+}
+
+
 // --- MOCK DATA GENERATION ---
 
 const MODEL_NAMES = ['fraud-detection', 'churn-predictor', 'product-recommender', 'credit-scoring', 'loan-approval'];
-const USER_NAMES = ['ml.team', 'jane.smith', 'john.doe', 'data.science', 'ops.team'];
+const USER_NAMES = ['ml.team', 'jane.smith', 'john.doe', 'data.science', 'ops.team', 'sec.audit'];
 const GIT_REPOS = [
     'https://github.com/demobank/fraud-model',
     'https://github.com/demobank/customer-analytics',
     'https://github.com/demobank/recommendation-engine'
 ];
+const DATASETS = ['transactions_q1_2023.csv', 'user_profiles_snapshot.parquet', 'clickstream_logs.json'];
 
-/**
- * Generates a list of mock training runs for experiments.
- * @param count - The number of training runs to generate.
- * @returns An array of mock TrainingRun objects.
- */
 export const generateMockTrainingRuns = (count: number): TrainingRun[] => {
     const runs: TrainingRun[] = [];
     for (let i = 0; i < count; i++) {
         const startTime = new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 30);
         const duration = Math.random() * 3600;
         const endTime = new Date(startTime.getTime() + duration * 1000);
-        const status: RunStatus = ['Completed', 'Failed', 'Running'][Math.floor(Math.random() * 3)];
+        const status: RunStatus = i % 10 === 0 ? 'Failed' : ['Completed', 'Running'][Math.floor(Math.random() * 2)];
         const experimentName = MODEL_NAMES[i % MODEL_NAMES.length];
+        const failed = status === 'Failed';
         runs.push({
             id: `run-${uuidv4().substring(0, 8)}`,
             experimentId: `exp-${experimentName}`,
@@ -166,11 +220,11 @@ export const generateMockTrainingRuns = (count: number): TrainingRun[] => {
             durationSeconds: status !== 'Running' ? duration : undefined,
             status,
             metrics: {
-                accuracy: status === 'Completed' ? Math.random() * (0.98 - 0.85) + 0.85 : 0,
-                precision: status === 'Completed' ? Math.random() * (0.99 - 0.80) + 0.80 : 0,
-                recall: status === 'Completed' ? Math.random() * (0.97 - 0.82) + 0.82 : 0,
-                f1_score: status === 'Completed' ? Math.random() * (0.98 - 0.83) + 0.83 : 0,
-                log_loss: status === 'Completed' ? Math.random() * 0.5 + 0.1 : 0,
+                accuracy: !failed ? Math.random() * (0.98 - 0.85) + 0.85 : 0,
+                precision: !failed ? Math.random() * (0.99 - 0.80) + 0.80 : 0,
+                recall: !failed ? Math.random() * (0.97 - 0.82) + 0.82 : 0,
+                f1_score: !failed ? Math.random() * (0.98 - 0.83) + 0.83 : 0,
+                log_loss: !failed ? Math.random() * 0.5 + 0.1 : 99,
             },
             params: {
                 learning_rate: Math.random() * 0.01,
@@ -192,17 +246,13 @@ export const generateMockTrainingRuns = (count: number): TrainingRun[] => {
                 gitRepoUrl: GIT_REPOS[i % GIT_REPOS.length],
                 commitHash: uuidv4().replace(/-/g, '').substring(0, 12),
             },
+            costUSD: duration / 3600 * (Math.random() * 5 + 1), // Cost based on duration and instance type factor
+            logs: failed ? ['INFO: Starting training...', 'INFO: Loading data...', 'ERROR: OOMKilled: Out of memory on GPU 0.', 'Traceback...'] : ['INFO: Starting training...', 'INFO: Loading data...', 'INFO: Epoch 1/10 complete.', '...','INFO: Training complete.'],
         });
     }
     return runs.sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
 };
 
-/**
- * Generates a list of mock registered models with multiple versions.
- * @param names - An array of model names.
- * @param runs - The pool of training runs to link model versions to.
- * @returns An array of mock RegisteredModel objects.
- */
 export const generateMockRegisteredModels = (names: string[], runs: TrainingRun[]): RegisteredModel[] => {
     return names.map(name => {
         const versions: ModelVersion[] = [];
@@ -219,18 +269,28 @@ export const generateMockRegisteredModels = (names: string[], runs: TrainingRun[
             if (i === prodVersion) stage = 'Production';
             else if (i === stagingVersion) stage = 'Staging';
             else if (i < prodVersion - 2) stage = 'Archived';
-
+            
+            const creationTimestamp = new Date(linkedRun.startTime.getTime() + (linkedRun.durationSeconds || 0) * 1000 + 3600000);
             versions.push({
                 id: `mv-${name}-${i}-${uuidv4().substring(0, 4)}`,
                 name: name,
                 version: i,
                 description: `Version ${i} of the ${name} model. Trained with ${linkedRun.params.optimizer} optimizer.`,
-                creationTimestamp: new Date(linkedRun.startTime.getTime() + (linkedRun.durationSeconds || 0) * 1000 + 3600000),
+                creationTimestamp,
                 lastUpdatedTimestamp: new Date(),
                 stage,
                 runId: linkedRun.id,
                 metrics: linkedRun.metrics,
-                tags: { ...linkedRun.tags, 'registered_by': USER_NAMES[i % USER_NAMES.length] }
+                tags: { ...linkedRun.tags, 'registered_by': USER_NAMES[i % USER_NAMES.length] },
+                lineage: {
+                    parentModelVersionId: i > 1 ? `mv-${name}-${i-1}-${uuidv4().substring(0,4)}` : undefined,
+                    datasets: [DATASETS[i % DATASETS.length]],
+                },
+                explainabilityReportUrl: stage === 'Production' ? `/reports/xai-${name}-v${i}.pdf` : undefined,
+                auditTrail: [
+                    { timestamp: creationTimestamp, user: linkedRun.tags.user, action: 'Registered', details: `Registered from run ${linkedRun.id}`},
+                    ...(stage !== 'None' ? [{ timestamp: new Date(creationTimestamp.getTime() + 100000), user: 'ops.team', action: `Promoted to ${stage}`, details: `Passed all validation checks.`}] : [])
+                ],
             });
         }
 
@@ -244,49 +304,36 @@ export const generateMockRegisteredModels = (names: string[], runs: TrainingRun[
     });
 };
 
-/**
- * Generates a list of mock model deployments.
- * @param models - The pool of registered models.
- * @returns An array of mock Deployment objects.
- */
 export const generateMockDeployments = (models: RegisteredModel[]): Deployment[] => {
     const deployments: Deployment[] = [];
     models.forEach(model => {
         const prodVersion = model.versions.find(v => v.stage === 'Production');
         if (prodVersion) {
             deployments.push({
-                id: `deploy-prod-${model.name}`,
-                modelName: model.name,
-                modelVersion: prodVersion.version,
-                endpoint: `https://api.demobank.com/ml/models/${model.name}/predict`,
-                status: 'Online',
+                id: `deploy-prod-${model.name}`, modelName: model.name, modelVersion: prodVersion.version,
+                endpoint: `https://api.demobank.com/ml/models/${model.name}/predict`, status: 'Online',
                 creationTimestamp: new Date(prodVersion.creationTimestamp.getTime() + 7200000),
-                instanceType: 'ml.m5.large',
-                replicas: Math.floor(Math.random() * 3) + 2,
-                trafficSplit: 100,
+                instanceType: 'ml.m5.large', replicas: Math.floor(Math.random() * 3) + 2, trafficSplit: 100,
                 monitoring: {
-                    latencyP95: Math.random() * 50 + 20, // ms
-                    requestsPerSecond: Math.random() * 100 + 50,
-                    errorRate: Math.random() * 0.01,
+                    latencyP95: Math.random() * 50 + 20, requestsPerSecond: Math.random() * 100 + 50, errorRate: Math.random() * 0.01,
+                    conceptDriftScore: Math.random() * 0.2,
+                    dataDrift: [{ feature: 'transaction_amount', drift_score: Math.random() * 0.3, drift_detected: Math.random() > 0.9 }],
+                    biasMetrics: [{ group: 'age_group_under_25', metric: 'statistical_parity_difference', value: Math.random() * 0.1, threshold: 0.1, pass: true }],
                 }
             });
         }
         const stagingVersion = model.versions.find(v => v.stage === 'Staging');
         if (stagingVersion) {
             deployments.push({
-                id: `deploy-staging-${model.name}`,
-                modelName: model.name,
-                modelVersion: stagingVersion.version,
-                endpoint: `https://staging-api.demobank.com/ml/models/${model.name}/predict`,
-                status: ['Online', 'Updating'][Math.floor(Math.random() * 2)] as DeploymentStatus,
+                id: `deploy-staging-${model.name}`, modelName: model.name, modelVersion: stagingVersion.version,
+                endpoint: `https://staging-api.demobank.com/ml/models/${model.name}/predict`, status: ['Online', 'Updating'][Math.floor(Math.random() * 2)] as DeploymentStatus,
                 creationTimestamp: new Date(stagingVersion.creationTimestamp.getTime() + 7200000),
-                instanceType: 'ml.t3.medium',
-                replicas: 1,
-                trafficSplit: 100,
+                instanceType: 'ml.t3.medium', replicas: 1, trafficSplit: 100,
                 monitoring: {
-                    latencyP95: Math.random() * 80 + 40, // ms
-                    requestsPerSecond: Math.random() * 10 + 1,
-                    errorRate: Math.random() * 0.02,
+                    latencyP95: Math.random() * 80 + 40, requestsPerSecond: Math.random() * 10 + 1, errorRate: Math.random() * 0.02,
+                    conceptDriftScore: Math.random() * 0.4,
+                    dataDrift: [{ feature: 'transaction_amount', drift_score: Math.random() * 0.5, drift_detected: Math.random() > 0.7 }],
+                    biasMetrics: [{ group: 'age_group_under_25', metric: 'statistical_parity_difference', value: Math.random() * 0.15, threshold: 0.1, pass: false }],
                 }
             });
         }
@@ -294,11 +341,6 @@ export const generateMockDeployments = (models: RegisteredModel[]): Deployment[]
     return deployments;
 };
 
-/**
- * Generates a list of mock features for a feature store.
- * @param count - The number of features to generate.
- * @returns An array of mock Feature objects.
- */
 export const generateMockFeatures = (count: number): Feature[] => {
     const features: Feature[] = [];
     const prefixes = ['user', 'transaction', 'session', 'account', 'loan'];
@@ -308,85 +350,101 @@ export const generateMockFeatures = (count: number): Feature[] => {
         let featureType: FeatureType = 'Numerical';
         if (name.includes('country') || name.includes('device')) featureType = 'Categorical';
         if (name.includes('embedding')) featureType = 'Text';
-
         features.push({
-            id: `feat-${uuidv4().substring(0, 8)}`,
-            name,
+            id: `feat-${uuidv4().substring(0, 8)}`, name,
             description: `Calculates the ${name.replace(/_/g, ' ')}. Updated daily.`,
-            featureType,
-            creationTimestamp: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 365),
-            lastUpdatedTimestamp: new Date(),
+            featureType, creationTimestamp: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 365), lastUpdatedTimestamp: new Date(),
             source: ['Kafka Stream: transactions', 'Data Warehouse: user_profiles', 'Batch Job: daily_aggregation'][i % 3],
-            freshness: ['1h', '24h', '7d'][i % 3],
-            version: Math.floor(i / (prefixes.length * suffixes.length)) + 1
+            freshness: ['1h', '24h', '7d'][i % 3], version: Math.floor(i / (prefixes.length * suffixes.length)) + 1
         });
     }
     return features;
 };
 
-/**
- * Generates a list of mock alerts.
- * @param count - The number of alerts to generate.
- * @param deployments - The pool of deployments to link alerts to.
- * @returns An array of mock MLOpsAlert objects.
- */
 export const generateMockAlerts = (count: number, deployments: Deployment[]): MLOpsAlert[] => {
     const alerts: MLOpsAlert[] = [];
     const alertTypes = [
-        { title: 'High Prediction Latency', severity: 'Warning' },
-        { title: 'Concept Drift Detected', severity: 'Critical' },
-        { title: 'High Error Rate', severity: 'Critical' },
-        { title: 'Deployment Offline', severity: 'Critical' },
-        { title: 'Feature Freshness Stale', severity: 'Warning' },
+        { title: 'High Prediction Latency', severity: 'Warning' }, { title: 'Concept Drift Detected', severity: 'Critical' },
+        { title: 'High Error Rate', severity: 'Critical' }, { title: 'Deployment Offline', severity: 'Critical' },
+        { title: 'Feature Freshness Stale', severity: 'Warning' }, { title: 'Bias Threshold Breached', severity: 'Critical' }
     ];
     for (let i = 0; i < count; i++) {
         const alertType = alertTypes[i % alertTypes.length];
         const relatedDeployment = deployments[i % deployments.length];
+        if(!relatedDeployment) continue;
         alerts.push({
-            id: `alert-${uuidv4().substring(0, 8)}`,
-            title: `${alertType.title} on ${relatedDeployment.modelName}`,
-            message: `Model ${relatedDeployment.modelName} v${relatedDeployment.modelVersion} is experiencing ${alertType.title.toLowerCase()}. Current P95 latency: 150ms. Threshold: 100ms.`,
-            severity: alertType.severity as AlertSeverity,
-            timestamp: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 2),
-            relatedEntity: {
-                type: 'Deployment',
-                id: relatedDeployment.id,
-            },
-            acknowledged: Math.random() > 0.5,
+            id: `alert-${uuidv4().substring(0, 8)}`, title: `${alertType.title} on ${relatedDeployment.modelName}`,
+            message: `Model ${relatedDeployment.modelName} v${relatedDeployment.modelVersion} is experiencing ${alertType.title.toLowerCase()}. Please investigate immediately.`,
+            severity: alertType.severity as AlertSeverity, timestamp: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 2),
+            relatedEntity: { type: 'Deployment', id: relatedDeployment.id }, acknowledged: Math.random() > 0.5,
         });
     }
     return alerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 };
 
+export const generateMockPipelines = (count: number): MLPipeline[] => {
+    const pipelines: MLPipeline[] = [];
+    for (let i = 0; i < count; i++) {
+        const name = `${MODEL_NAMES[i % MODEL_NAMES.length]}-training-pipeline`;
+        pipelines.push({
+            id: `pipe-${uuidv4().substring(0,8)}`, name,
+            description: `End-to-end pipeline for retraining and deploying the ${name} model.`,
+            creationTimestamp: new Date(Date.now() - Math.random() * 1000 * 3600 * 24 * 90),
+            lastRunStatus: ['Completed', 'Failed', 'Running'][Math.floor(Math.random() * 3)] as RunStatus,
+            schedule: 'Daily at 02:00 UTC',
+            steps: ["Data Ingestion", "Data Validation", "Feature Engineering", "Model Training", "Model Evaluation", "Model Registration", "Conditional Deployment"]
+        });
+    }
+    return pipelines;
+};
+
+export const generateAIInsights = (count: number, models: RegisteredModel[], deployments: Deployment[]): AIInsight[] => {
+    const insights: AIInsight[] = [];
+    const insightTemplates = [
+        {
+            title: "Performance Degradation Detected", severity: "Warning",
+            insight: (d: Deployment) => `Deployment for ${d.modelName} v${d.modelVersion} shows a 15% increase in P95 latency over the last 24 hours.`,
+            recommendation: "Investigate underlying infrastructure or model complexity. Consider rolling back to the previous version if performance impact is critical."
+        },
+        {
+            title: "New Champion Model Identified", severity: "Info",
+            insight: (m: RegisteredModel) => `A new staging version (v${m.versions[0].version}) of ${m.name} shows a 7% improvement in accuracy over the current production model (v${m.versions.find(v=>v.stage==='Production')?.version}).`,
+            recommendation: "Initiate the promotion process to production after final review."
+        },
+        {
+            title: "Potential Data Drift", severity: "Warning",
+            insight: (d: Deployment) => `Feature 'transaction_amount' in model ${d.modelName} has a high drift score (0.78), indicating a potential shift in the input data distribution.`,
+            recommendation: "Trigger a model retraining pipeline with the latest data to ensure continued performance."
+        }
+    ];
+    for (let i = 0; i < count; i++) {
+        const template = insightTemplates[i % insightTemplates.length];
+        const deployment = deployments[i % deployments.length];
+        const model = models.find(m => m.name === deployment?.modelName);
+        if(!deployment || !model) continue;
+
+        insights.push({
+            id: `insight-${uuidv4().substring(0,8)}`, title: template.title, severity: template.severity as AlertSeverity,
+            insight: template.insight(deployment as any), recommendation: template.recommendation,
+            relatedEntity: { type: 'Deployment', id: deployment.id },
+            timestamp: new Date(Date.now() - Math.random() * 1000 * 3600 * 48),
+        });
+    }
+    return insights.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+};
 
 // --- UTILITY & HELPER FUNCTIONS ---
 
-/**
- * Formats a date object into a readable string.
- * @param date - The date to format.
- * @returns A formatted string e.g., "2023-10-27 14:30".
- */
 export const formatDate = (date?: Date): string => {
     if (!date) return 'N/A';
     return date.toLocaleString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '');
 };
 
-/**
- * Formats a number to a fixed number of decimal places.
- * @param num - The number to format.
- * @param places - The number of decimal places.
- * @returns A formatted number string.
- */
 export const formatNumber = (num?: number, places: number = 4): string => {
     if (num === undefined || num === null) return 'N/A';
     return num.toFixed(places);
 };
 
-/**
- * Returns a color based on the model stage.
- * @param stage - The model stage.
- * @returns A Tailwind CSS class string.
- */
 export const getStageColor = (stage: ModelStage): string => {
     switch (stage) {
         case 'Production': return 'bg-green-500/20 text-green-300';
@@ -396,62 +454,82 @@ export const getStageColor = (stage: ModelStage): string => {
     }
 };
 
-/**
- * Returns a color based on the run status.
- * @param status - The run status.
- * @returns A Tailwind CSS class string.
- */
 export const getStatusColor = (status: RunStatus | DeploymentStatus): string => {
     switch (status) {
-        case 'Completed':
-        case 'Online':
-            return 'text-green-400';
-        case 'Running':
-        case 'Updating':
-            return 'text-cyan-400 animate-pulse';
-        case 'Failed':
-        case 'Error':
-            return 'text-red-400';
-        case 'Offline':
-            return 'text-gray-400';
-        default:
-            return 'text-white';
+        case 'Completed': case 'Online': return 'text-green-400';
+        case 'Running': case 'Updating': return 'text-cyan-400 animate-pulse';
+        case 'Failed': case 'Error': return 'text-red-400';
+        case 'Offline': return 'text-gray-400';
+        default: return 'text-white';
     }
 };
 
 
+// --- AI SIMULATION SERVICE ---
+
+class AIService {
+    private static async simulateLLMResponse(prompt: string, delay: number = 1500): Promise<string> {
+        return new Promise(resolve => setTimeout(() => {
+            if (prompt.includes("DEBUG_RUN")) {
+                resolve(`**Analysis of Failed Run:**
+
+**Root Cause:** The training process terminated unexpectedly due to an \`OOMKilled\` error on GPU 0. This indicates the model and batch size required more memory than was available on the GPU.
+
+**Recommendations:**
+1.  **Reduce Batch Size:** The current batch size is 128. Try reducing it to 64 or 32 in your training script.
+2.  **Use Gradient Accumulation:** This technique allows you to simulate a larger batch size without increasing memory usage.
+3.  **Upgrade Instance Type:** If performance is critical, consider using an instance with more GPU memory, such as an \`ml.p3.8xlarge\`.
+4.  **Check for Memory Leaks:** Review your data loading and training loop code for potential memory leaks where tensors are not being detached from the computation graph.`);
+            } else if (prompt.includes("GENERATE_MODEL_CARD")) {
+                resolve(`**Model Card: fraud-detection v5**
+
+*   **Model Details:** This model is a Gradient Boosted Tree classifier designed to detect fraudulent transactions in real-time.
+*   **Intended Use:** To provide a risk score for incoming financial transactions, flagging suspicious ones for manual review.
+*   **Training Data:** Trained on 1.5 million anonymized transactions from Q1 2023.
+*   **Key Metrics:**
+    *   Accuracy: 0.9852
+    *   Precision: 0.9630
+    *   Recall: 0.9410
+    *   F1-Score: 0.9519
+*   **Ethical Considerations:** The model has been tested for bias across demographic groups. Bias metrics are within acceptable thresholds. Continuous monitoring is in place.`);
+            } else {
+                resolve("I am a simulated AI assistant. I can help with debugging failed runs and generating model cards.");
+            }
+        }, delay));
+    }
+
+    public static async getAIResponse(task: AITaskType, context: any): Promise<string> {
+        const prompt = `${task} - Context: ${JSON.stringify(context)}`;
+        return this.simulateLLMResponse(prompt);
+    }
+}
+
+
 // --- CUSTOM UI COMPONENTS ---
 
-/**
- * A generic, reusable modal component.
- */
-export const Modal: FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
+export const Modal: FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode; size?: 'sm'|'md'|'lg'|'xl' }> = ({ isOpen, onClose, title, children, size = 'lg' }) => {
     if (!isOpen) return null;
-
+    const sizeClasses = {
+        sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-2xl', xl: 'max-w-4xl'
+    };
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6 border border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className={`bg-gray-800 rounded-lg shadow-xl w-full p-6 border border-gray-700 ${sizeClasses[size]}`} onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center pb-4 mb-4 border-b border-gray-600">
                     <h3 className="text-xl font-semibold text-white">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
                 <div>{children}</div>
-                <div className="flex justify-end pt-4 mt-4 border-t border-gray-600">
-                    <button onClick={onClose} className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700">Close</button>
-                </div>
             </div>
         </div>
     );
 };
 
-/**
- * A custom tooltip for Recharts charts.
- */
 export const CustomTooltip: FC<any> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div className="p-4 bg-gray-900/80 border border-gray-700 rounded-md shadow-lg">
-        <p className="label text-gray-300">{`${label}`}</p>
+        <p className="label text-gray-300 font-bold">{`${label}`}</p>
         {payload.map((pld: any, index: number) => (
             <p key={index} style={{ color: pld.color }} className="text-sm">
                 {`${pld.name}: ${formatNumber(pld.value, 4)}`}
@@ -463,29 +541,21 @@ export const CustomTooltip: FC<any> = ({ active, payload, label }) => {
   return null;
 };
 
-/**
- * Pill component for displaying tags or status.
- */
 export const Pill: FC<{ text: string; colorClass: string; }> = ({ text, colorClass }) => (
     <span className={`px-2 py-1 text-xs font-medium rounded-full ${colorClass}`}>{text}</span>
 );
 
-/**
- * A generic table component with sorting capabilities.
- */
-export const SortableTable: FC<{ columns: any[]; data: any[] }> = ({ columns, data }) => {
+export const SortableTable: FC<{ columns: any[]; data: any[]; onRowClick?: (item: any) => void }> = ({ columns, data, onRowClick }) => {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
 
     const sortedData = useMemo(() => {
         let sortableData = [...data];
         if (sortConfig !== null) {
             sortableData.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
+                const valA = sortConfig.key.split('.').reduce((o,i)=>o?.[i], a);
+                const valB = sortConfig.key.split('.').reduce((o,i)=>o?.[i], b);
+                if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+                if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
                 return 0;
             });
         }
@@ -506,7 +576,7 @@ export const SortableTable: FC<{ columns: any[]; data: any[] }> = ({ columns, da
                 <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
                     <tr>
                         {columns.map(col => (
-                            <th key={col.key} scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort(col.key)}>
+                            <th key={col.key} scope="col" className="px-6 py-3 cursor-pointer" onClick={() => col.sortable !== false && requestSort(col.key)}>
                                 {col.header}
                                 {sortConfig?.key === col.key && (sortConfig.direction === 'ascending' ? ' ▲' : ' ▼')}
                             </th>
@@ -515,10 +585,10 @@ export const SortableTable: FC<{ columns: any[]; data: any[] }> = ({ columns, da
                 </thead>
                 <tbody>
                     {sortedData.map((item, index) => (
-                        <tr key={index} className="border-b border-gray-800 hover:bg-gray-800/50">
+                        <tr key={index} className={`border-b border-gray-800 hover:bg-gray-800/50 ${onRowClick ? 'cursor-pointer' : ''}`} onClick={() => onRowClick?.(item)}>
                             {columns.map(col => (
                                 <td key={col.key} className="px-6 py-4">
-                                    {col.render ? col.render(item) : item[col.key]}
+                                    {col.render ? col.render(item) : col.key.split('.').reduce((o:any, i:string) => o?.[i], item)}
                                 </td>
                             ))}
                         </tr>
@@ -531,154 +601,70 @@ export const SortableTable: FC<{ columns: any[]; data: any[] }> = ({ columns, da
 
 
 // --- SVG ICONS ---
-
-export const ChevronDownIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-    </svg>
-);
-
-export const CodeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-    </svg>
-);
-
-export const CubeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-    </svg>
-);
-
-export const ChartBarIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-    </svg>
-);
-
-export const ServerIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-    </svg>
-);
-
-export const BellIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-    </svg>
-);
-
+const Icon: FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => <div className={className}>{children}</div>;
+const ChartBarIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg></Icon>;
+const CodeIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg></Icon>;
+const CubeIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg></Icon>;
+const ServerIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg></Icon>;
+const BellIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg></Icon>;
+const PipelineIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg></Icon>;
+const ShieldCheckIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 20.944A12.02 12.02 0 0012 22a12.02 12.02 0 009-1.056c.343-.344.672-.697.978-1.063m-1.958-4.077A6.002 6.002 0 0013 11a6 6 0 10-3.465 5.337" /></svg></Icon>;
+const DatabaseIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7v5c0 2.21 3.582 4 8 4s8-1.79 8-4V7" /></svg></Icon>;
+const SparklesIcon = () => <Icon><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm6 0a1 1 0 011 1v1h1a1 1 0 010 2h-1v1a1 1 0 01-2 0V6h-1a1 1 0 010-2h1V3a1 1 0 011-1zM3 10a1 1 0 011 1v1h1a1 1 0 110 2H4v1a1 1 0 11-2 0v-1H1a1 1 0 110-2h1v-1a1 1 0 011-1zm12 0a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" clipRule="evenodd" /></svg></Icon>;
 
 // --- DETAILED VIEW COMPONENTS ---
 
-/**
- * A detailed view for a single Training Run.
- */
-export const RunDetailView: FC<{ run: TrainingRun | null }> = ({ run }) => {
-    if (!run) return <div className="text-gray-400">Select a run to see details.</div>;
+export const RunDetailView: FC<{ run: TrainingRun | null, onDebug: (run: TrainingRun) => void }> = ({ run, onDebug }) => {
+    if (!run) return <div className="text-gray-400 p-4">Select a run to see details.</div>;
 
     return (
         <div className="space-y-6">
-            <div>
-                <h3 className="text-xl font-bold text-white mb-2">Run Details ({run.id})</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div className="bg-gray-900/50 p-3 rounded-md">
-                        <p className="text-gray-400">Status</p>
-                        <p className={`font-bold ${getStatusColor(run.status)}`}>{run.status}</p>
-                    </div>
-                    <div className="bg-gray-900/50 p-3 rounded-md">
-                        <p className="text-gray-400">Start Time</p>
-                        <p className="text-white">{formatDate(run.startTime)}</p>
-                    </div>
-                    <div className="bg-gray-900/50 p-3 rounded-md">
-                        <p className="text-gray-400">Duration</p>
-                        <p className="text-white">{run.durationSeconds ? `${run.durationSeconds.toFixed(2)}s` : 'N/A'}</p>
-                    </div>
-                    <div className="bg-gray-900/50 p-3 rounded-md">
-                        <p className="text-gray-400">User</p>
-                        <p className="text-white font-mono">{run.tags.user}</p>
-                    </div>
+             {run.status === 'Failed' && (
+                <div className="p-4 bg-red-900/50 border border-red-700 rounded-md">
+                    <p className="font-bold text-red-300">This run failed.</p>
+                    <p className="text-sm text-red-400">Use the AI Assistant to help diagnose the issue.</p>
+                    <button onClick={() => onDebug(run)} className="mt-2 px-3 py-1 bg-cyan-600 text-white rounded-md text-sm hover:bg-cyan-700 flex items-center gap-2">
+                        <SparklesIcon /> Debug with AI
+                    </button>
                 </div>
-            </div>
-
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card title="Metrics">
-                    <ul>
-                        {Object.entries(run.metrics).map(([key, value]) => (
-                            <li key={key} className="flex justify-between py-1 border-b border-gray-800/50">
-                                <span className="text-gray-400 font-mono">{key}</span>
-                                <span className="text-white font-bold">{formatNumber(value)}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    <ul>{Object.entries(run.metrics).map(([k, v]) => <li key={k} className="flex justify-between py-1 border-b border-gray-800/50"><span className="text-gray-400 font-mono">{k}</span><span className="text-white font-bold">{formatNumber(v)}</span></li>)}</ul>
                 </Card>
                 <Card title="Parameters">
-                    <ul>
-                        {Object.entries(run.params).map(([key, value]) => (
-                            <li key={key} className="flex justify-between py-1 border-b border-gray-800/50">
-                                <span className="text-gray-400 font-mono">{key}</span>
-                                <span className="text-white font-bold">{value.toString()}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    <ul>{Object.entries(run.params).map(([k, v]) => <li key={k} className="flex justify-between py-1 border-b border-gray-800/50"><span className="text-gray-400 font-mono">{k}</span><span className="text-white font-bold">{v.toString()}</span></li>)}</ul>
                 </Card>
             </div>
-
-            <Card title="Source Code & Artifacts">
-                <div className="space-y-4">
-                    <div>
-                        <p className="text-gray-400 text-sm mb-1">Git Repository</p>
-                        <a href={run.sourceCode.gitRepoUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline font-mono">{run.sourceCode.gitRepoUrl}</a>
-                    </div>
-                    <div>
-                        <p className="text-gray-400 text-sm mb-1">Commit Hash</p>
-                        <p className="text-white font-mono">{run.sourceCode.commitHash}</p>
-                    </div>
-                    <div>
-                        <p className="text-gray-400 text-sm mb-1">Artifacts</p>
-                        <ul className="divide-y divide-gray-800">
-                           {run.artifacts.map(art => (
-                                <li key={art.name} className="flex justify-between items-center py-2">
-                                    <span className="text-white font-mono">{art.name} ({art.type})</span>
-                                    <span className="text-gray-400">{art.sizeMB.toFixed(2)} MB</span>
-                                </li>
-                           ))}
-                        </ul>
-                    </div>
-                </div>
-            </Card>
         </div>
     );
 };
 
-/**
- * A detailed view for a single Registered Model.
- */
-export const ModelDetailView: FC<{ model: RegisteredModel | null; onPromote: (modelName: string, version: number, stage: ModelStage) => void; }> = ({ model, onPromote }) => {
-    if (!model) return <div className="text-gray-400">Select a model to see details.</div>;
+export const ModelDetailView: FC<{ model: RegisteredModel | null; onPromote: (modelName: string, version: number, stage: ModelStage) => void; onGenerateCard: (modelVersion: ModelVersion) => void; }> = ({ model, onPromote, onGenerateCard }) => {
+    if (!model) return <div className="text-gray-400 p-4">Select a model to see details.</div>;
 
     const versionsColumns = [
         { key: 'version', header: 'Version', render: (item: ModelVersion) => <span className="font-bold text-white">{`v${item.version}`}</span> },
         { key: 'stage', header: 'Stage', render: (item: ModelVersion) => <Pill text={item.stage} colorClass={getStageColor(item.stage)} /> },
-        { key: 'accuracy', header: 'Accuracy', render: (item: ModelVersion) => formatNumber(item.metrics.accuracy) },
-        { key: 'f1_score', header: 'F1 Score', render: (item: ModelVersion) => formatNumber(item.metrics.f1_score) },
+        { key: 'metrics.accuracy', header: 'Accuracy', render: (item: ModelVersion) => formatNumber(item.metrics.accuracy) },
+        { key: 'metrics.f1_score', header: 'F1 Score', render: (item: ModelVersion) => formatNumber(item.metrics.f1_score) },
         { key: 'creationTimestamp', header: 'Created At', render: (item: ModelVersion) => formatDate(item.creationTimestamp) },
-        { key: 'actions', header: 'Actions', render: (item: ModelVersion) => (
-            <div className="space-x-2">
-                {item.stage !== 'Production' && (
-                    <button onClick={() => onPromote(item.name, item.version, 'Production')} className="text-xs px-2 py-1 bg-green-600/50 text-green-200 rounded hover:bg-green-600/80">
-                        Promote to Prod
-                    </button>
-                )}
-                {item.stage !== 'Staging' && (
-                     <button onClick={() => onPromote(item.name, item.version, 'Staging')} className="text-xs px-2 py-1 bg-cyan-600/50 text-cyan-200 rounded hover:bg-cyan-600/80">
-                        Promote to Staging
-                    </button>
-                )}
+        { key: 'actions', header: 'Actions', sortable: false, render: (item: ModelVersion) => (
+            <div className="space-x-2 flex">
+                <button onClick={(e) => {e.stopPropagation(); onGenerateCard(item)}} className="text-xs px-2 py-1 bg-purple-600/50 text-purple-200 rounded hover:bg-purple-600/80">AI Model Card</button>
+                {item.stage !== 'Production' && <button onClick={(e) => {e.stopPropagation(); onPromote(item.name, item.version, 'Production')}} className="text-xs px-2 py-1 bg-green-600/50 text-green-200 rounded hover:bg-green-600/80">To Prod</button>}
+                {item.stage !== 'Staging' && <button onClick={(e) => {e.stopPropagation(); onPromote(item.name, item.version, 'Staging')}} className="text-xs px-2 py-1 bg-cyan-600/50 text-cyan-200 rounded hover:bg-cyan-600/80">To Staging</button>}
             </div>
         )},
     ];
+    
+    return (<ModelDetailViewContent model={model} versionsColumns={versionsColumns} />);
+}
 
+const ModelDetailViewContent: FC<{ model: RegisteredModel; versionsColumns: any[] }> = ({ model, versionsColumns }) => {
+    const [selectedVersion, setSelectedVersion] = useState<ModelVersion | null>(null);
+    useEffect(() => { setSelectedVersion(null); }, [model]);
+    
     return (
         <div className="space-y-6">
             <div>
@@ -686,285 +672,250 @@ export const ModelDetailView: FC<{ model: RegisteredModel | null; onPromote: (mo
                 <p className="text-gray-400 max-w-2xl">{model.description}</p>
             </div>
             <Card title="Model Versions">
-                <SortableTable columns={versionsColumns} data={model.versions} />
+                <SortableTable columns={versionsColumns} data={model.versions} onRowClick={setSelectedVersion} />
             </Card>
-        </div>
-    );
-}
-
-// --- TABBED VIEWS ---
-
-/**
- * The main dashboard view with summary statistics and charts.
- */
-export const DashboardView: FC<{
-    stats: any;
-    runs: TrainingRun[];
-    models: RegisteredModel[];
-    deployments: Deployment[];
-}> = ({ stats, runs, models, deployments }) => {
-    
-    const productionModels = models.flatMap(m => m.versions).filter(v => v.stage === 'Production');
-    const modelStageData = [
-        { name: 'Production', value: productionModels.length },
-        { name: 'Staging', value: models.flatMap(m => m.versions).filter(v => v.stage === 'Staging').length },
-        { name: 'Archived', value: models.flatMap(m => m.versions).filter(v => v.stage === 'Archived').length },
-    ];
-    const COLORS = ['#10b981', '#06b6d4', '#6b7280'];
-
-    const deploymentMonitoringData = deployments
-        .filter(d => d.status === 'Online' && d.modelName.includes('fraud-detection'))
-        .map(d => ({
-            name: `v${d.modelVersion}`,
-            latency: d.monitoring.latencyP95,
-            rps: d.monitoring.requestsPerSecond,
-            errors: d.monitoring.errorRate * 100,
-        }));
-    
-    const recentRunMetrics = runs.slice(0, 20).map(r => ({
-        name: r.id.substring(0, 8),
-        accuracy: r.metrics.accuracy,
-        loss: r.metrics.log_loss,
-    })).reverse();
-
-    return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{stats.activeExperiments}</p><p className="text-sm text-gray-400 mt-1">Active Experiments</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{stats.totalRuns}</p><p className="text-sm text-gray-400 mt-1">Total Training Runs</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{stats.registeredModels}</p><p className="text-sm text-gray-400 mt-1">Registered Models</p></Card>
-                <Card className="text-center"><p className="text-3xl font-bold text-white">{stats.modelsInProduction}</p><p className="text-sm text-gray-400 mt-1">Models in Production</p></Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Recent Run Metrics (Accuracy vs Loss)">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={recentRunMetrics}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
-                            <XAxis dataKey="name" stroke="#9ca3af" />
-                            <YAxis yAxisId="left" stroke="#8884d8" label={{ value: 'Accuracy', angle: -90, position: 'insideLeft', fill: '#8884d8' }}/>
-                            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" label={{ value: 'Loss', angle: 90, position: 'insideRight', fill: '#82ca9d' }}/>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <Area yAxisId="left" type="monotone" dataKey="accuracy" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-                            <Area yAxisId="right" type="monotone" dataKey="loss" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </Card>
-                <Card title="Model Stages Distribution">
-                     <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                           <Pie data={modelStageData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
-                                {modelStageData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </Card>
-            </div>
-            
-            <Card title="Production Monitoring (Fraud Detection Models)">
-                <ResponsiveContainer width="100%" height={300}>
-                     <BarChart data={deploymentMonitoringData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
-                        <XAxis dataKey="name" stroke="#9ca3af" />
-                        <YAxis yAxisId="left" orientation="left" stroke="#06b6d4" label={{ value: 'Latency (ms) / RPS', angle: -90, position: 'insideLeft', fill: '#06b6d4' }}/>
-                        <YAxis yAxisId="right" orientation="right" stroke="#ef4444" label={{ value: 'Error Rate (%)', angle: 90, position: 'insideRight', fill: '#ef4444' }}/>
-                        <Tooltip content={<CustomTooltip />}/>
-                        <Legend />
-                        <Bar yAxisId="left" dataKey="latency" fill="#06b6d4" name="P95 Latency (ms)" />
-                        <Bar yAxisId="left" dataKey="rps" fill="#8884d8" name="Requests/sec" />
-                        <Line yAxisId="right" type="monotone" dataKey="errors" stroke="#ef4444" name="Error Rate (%)" />
-                    </BarChart>
-                </ResponsiveContainer>
-            </Card>
+            {selectedVersion && (
+                 <Card title={`Details for v${selectedVersion.version}`}>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div><p className="text-gray-400">Run ID</p><p className="font-mono text-white">{selectedVersion.runId}</p></div>
+                        <div><p className="text-gray-400">Parent Model</p><p className="font-mono text-white">{selectedVersion.lineage.parentModelVersionId || 'None'}</p></div>
+                        <div><p className="text-gray-400">Dataset(s)</p><p className="font-mono text-white">{selectedVersion.lineage.datasets.join(', ')}</p></div>
+                        <div><p className="text-gray-400">Explainability Report</p><p className="font-mono text-cyan-400">{selectedVersion.explainabilityReportUrl ? 'Available' : 'Not Generated'}</p></div>
+                    </div>
+                 </Card>
+            )}
         </div>
     )
 }
 
-/**
- * A view for browsing and comparing experiment runs.
- */
-export const ExperimentTrackingView: FC<{ runs: TrainingRun[]; }> = ({ runs }) => {
+// --- TABBED VIEWS ---
+
+export const DashboardView: FC<{ stats: any; runs: TrainingRun[]; models: RegisteredModel[]; deployments: Deployment[]; insights: AIInsight[] }> = ({ stats, runs, models, deployments, insights }) => {
+    const costData = useMemo(() => {
+        const costs: {[key: string]: number} = {};
+        runs.forEach(r => {
+            const day = r.startTime.toISOString().split('T')[0];
+            costs[day] = (costs[day] || 0) + r.costUSD;
+        });
+        return Object.entries(costs).map(([name, cost]) => ({name, cost})).slice(-30);
+    }, [runs]);
+
+    const modelHealthData = deployments.map(d => ({
+        name: `${d.modelName} v${d.modelVersion}`,
+        healthScore: 100 * (1 - d.monitoring.errorRate) * (1 - d.monitoring.conceptDriftScore)
+    }));
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Card><p className="text-3xl font-bold text-white">{stats.activeExperiments}</p><p className="text-sm text-gray-400 mt-1">Active Experiments</p></Card>
+                <Card><p className="text-3xl font-bold text-white">{stats.totalRuns}</p><p className="text-sm text-gray-400 mt-1">Total Training Runs</p></Card>
+                <Card><p className="text-3xl font-bold text-white">{stats.modelsInProduction}</p><p className="text-sm text-gray-400 mt-1">Models in Production</p></Card>
+                <Card><p className="text-3xl font-bold text-white">${stats.totalCost.toFixed(2)}</p><p className="text-sm text-gray-400 mt-1">Compute Cost (30d)</p></Card>
+            </div>
+            
+            <Card title="AI-Powered Insights">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {insights.slice(0, 3).map(insight => (
+                        <div key={insight.id} className={`p-4 rounded-lg border-l-4 ${insight.severity === 'Critical' ? 'border-red-500 bg-red-900/40' : insight.severity === 'Warning' ? 'border-yellow-500 bg-yellow-900/40' : 'border-cyan-500 bg-cyan-900/40'}`}>
+                            <h4 className="font-bold text-white">{insight.title}</h4>
+                            <p className="text-sm text-gray-300 mt-1">{insight.insight}</p>
+                            <p className="text-xs text-cyan-300 mt-2 font-semibold">Recommendation: <span className="font-normal text-gray-300">{insight.recommendation}</span></p>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card title="Training Compute Cost (Last 30 Days)">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={costData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                            <XAxis dataKey="name" stroke="#9ca3af" fontSize={10} />
+                            <YAxis stroke="#9ca3af" />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area type="monotone" dataKey="cost" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} unit="$" />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+                <Card title="Production Model Health">
+                     <ResponsiveContainer width="100%" height={300}>
+                        <RadialBarChart innerRadius="20%" outerRadius="80%" data={modelHealthData} startAngle={180} endAngle={0}>
+                           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                           <RadialBar background dataKey='healthScore' cornerRadius={10} />
+                           <Legend iconSize={10} wrapperStyle={{fontSize: "12px"}}/>
+                           <Tooltip />
+                        </RadialBarChart>
+                    </ResponsiveContainer>
+                </Card>
+            </div>
+        </div>
+    )
+}
+
+export const ExperimentTrackingView: FC<{ runs: TrainingRun[]; onDebug: (run:TrainingRun) => void; }> = ({ runs, onDebug }) => {
     const [selectedRun, setSelectedRun] = useState<TrainingRun | null>(null);
 
     const columns = [
         { key: 'status', header: 'Status', render: (item: TrainingRun) => <Pill text={item.status} colorClass={getStatusColor(item.status) + ' font-bold'} /> },
         { key: 'id', header: 'Run ID', render: (item: TrainingRun) => <span className="font-mono text-white">{item.id}</span> },
         { key: 'experimentName', header: 'Experiment', render: (item: TrainingRun) => <span className="font-mono">{item.experimentName}</span> },
-        { key: 'accuracy', header: 'Accuracy', render: (item: TrainingRun) => formatNumber(item.metrics.accuracy) },
-        { key: 'f1_score', header: 'F1 Score', render: (item: TrainingRun) => formatNumber(item.metrics.f1_score) },
+        { key: 'metrics.accuracy', header: 'Accuracy', render: (item: TrainingRun) => formatNumber(item.metrics.accuracy) },
+        { key: 'metrics.f1_score', header: 'F1 Score', render: (item: TrainingRun) => formatNumber(item.metrics.f1_score) },
         { key: 'startTime', header: 'Start Time', render: (item: TrainingRun) => formatDate(item.startTime) },
-        { key: 'actions', header: '', render: (item: TrainingRun) => (
-            <button onClick={() => setSelectedRun(item)} className="text-cyan-400 hover:underline">Details</button>
-        )}
     ];
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
                 <Card title="All Training Runs">
-                    <SortableTable columns={columns} data={runs} />
+                    <SortableTable columns={columns} data={runs} onRowClick={setSelectedRun} />
                 </Card>
             </div>
             <div>
                  <Card title="Run Details">
-                    <RunDetailView run={selectedRun} />
+                    <RunDetailView run={selectedRun} onDebug={onDebug} />
                  </Card>
             </div>
         </div>
     );
 };
 
-/**
- * A view for browsing and managing registered models.
- */
-export const ModelRegistryView: FC<{ models: RegisteredModel[]; onPromote: (modelName: string, version: number, stage: ModelStage) => void }> = ({ models, onPromote }) => {
+export const ModelRegistryView: FC<{ models: RegisteredModel[]; onPromote: (modelName: string, version: number, stage: ModelStage) => void; onGenerateCard: (modelVersion: ModelVersion) => void; }> = ({ models, onPromote, onGenerateCard }) => {
     const [selectedModel, setSelectedModel] = useState<RegisteredModel | null>(models[0] || null);
     
     return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-1">
                 <Card title="Models">
-                    <ul className="space-y-2">
-                        {models.map(model => (
-                            <li key={model.name}>
-                                <button
-                                    onClick={() => setSelectedModel(model)}
-                                    className={`w-full text-left p-3 rounded-md font-mono ${selectedModel?.name === model.name ? 'bg-cyan-600/30 text-white' : 'hover:bg-gray-800/50 text-gray-300'}`}
-                                >
-                                    {model.name}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
+                    <ul className="space-y-2">{models.map(model => (<li key={model.name}><button onClick={() => setSelectedModel(model)} className={`w-full text-left p-3 rounded-md font-mono ${selectedModel?.name === model.name ? 'bg-cyan-600/30 text-white' : 'hover:bg-gray-800/50 text-gray-300'}`}>{model.name}</button></li>))}</ul>
                 </Card>
             </div>
             <div className="lg:col-span-3">
                  <Card title="Model Details">
-                    <ModelDetailView model={selectedModel} onPromote={onPromote} />
+                    <ModelDetailView model={selectedModel} onPromote={onPromote} onGenerateCard={onGenerateCard} />
                  </Card>
             </div>
         </div>
     );
 }
 
-/**
- * A view for browsing the feature store.
- */
 export const FeatureStoreView: FC<{ features: Feature[] }> = ({ features }) => {
     const [searchTerm, setSearchTerm] = useState('');
-
-    const filteredFeatures = useMemo(() => {
-        return features.filter(f => 
-            f.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            f.description.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [features, searchTerm]);
-    
+    const filteredFeatures = useMemo(() => features.filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase()) || f.description.toLowerCase().includes(searchTerm.toLowerCase())), [features, searchTerm]);
     const columns = [
         { key: 'name', header: 'Feature Name', render: (f: Feature) => <span className="font-mono text-white">{f.name}</span> },
         { key: 'featureType', header: 'Type', render: (f: Feature) => <Pill text={f.featureType} colorClass="bg-purple-500/20 text-purple-300" /> },
-        { key: 'source', header: 'Source' },
-        { key: 'freshness', header: 'Freshness' },
+        { key: 'source', header: 'Source' }, { key: 'freshness', header: 'Freshness' },
         { key: 'creationTimestamp', header: 'Created At', render: (f: Feature) => formatDate(f.creationTimestamp) },
     ];
-    
     return (
         <Card title="Feature Store">
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Search features..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full p-2 bg-gray-900/50 border border-gray-700 rounded-md text-white focus:ring-cyan-500 focus:border-cyan-500"
-                />
-            </div>
+            <input type="text" placeholder="Search features..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full p-2 mb-4 bg-gray-900/50 border border-gray-700 rounded-md text-white focus:ring-cyan-500 focus:border-cyan-500" />
             <SortableTable columns={columns} data={filteredFeatures} />
         </Card>
     );
 };
 
-/**
- * A view for monitoring model deployments.
- */
 export const DeploymentsView: FC<{ deployments: Deployment[]; alerts: MLOpsAlert[]; }> = ({ deployments, alerts }) => {
+     const columns = [
+        { key: 'modelName', header: 'Model', render: (d: Deployment) => <span className="font-mono text-white">{d.modelName} (v{d.modelVersion})</span>},
+        { key: 'status', header: 'Status', render: (d: Deployment) => <span className={`font-bold ${getStatusColor(d.status)}`}>{d.status}</span>},
+        { key: 'monitoring.requestsPerSecond', header: 'RPS', render: (d: Deployment) => d.monitoring.requestsPerSecond.toFixed(2)},
+        { key: 'monitoring.latencyP95', header: 'P95 Latency (ms)', render: (d: Deployment) => d.monitoring.latencyP95.toFixed(2)},
+        { key: 'monitoring.errorRate', header: 'Error Rate', render: (d: Deployment) => `${(d.monitoring.errorRate * 100).toFixed(3)}%`},
+        { key: 'monitoring.conceptDriftScore', header: 'Concept Drift', render: (d: Deployment) => <span className={d.monitoring.conceptDriftScore > 0.5 ? 'text-yellow-400' : 'text-gray-300'}>{d.monitoring.conceptDriftScore.toFixed(3)}</span>},
+        { key: 'monitoring.biasMetrics', header: 'Bias', render: (d: Deployment) => d.monitoring.biasMetrics.every(m => m.pass) ? <span className="text-green-400">Pass</span> : <span className="text-red-400">Fail</span>},
+    ];
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-                <Card title="Model Deployments">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left text-gray-400">
-                            <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
-                                <tr>
-                                    <th className="px-4 py-3">Model</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    <th className="px-4 py-3">Endpoint</th>
-                                    <th className="px-4 py-3 text-right">RPS</th>
-                                    <th className="px-4 py-3 text-right">P95 Latency (ms)</th>
-                                    <th className="px-4 py-3 text-right">Error Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {deployments.map(d => (
-                                    <tr key={d.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                                        <td className="px-4 py-4 font-mono text-white">{d.modelName} (v{d.modelVersion})</td>
-                                        <td className="px-4 py-4"><span className={`font-bold ${getStatusColor(d.status)}`}>{d.status}</span></td>
-                                        <td className="px-4 py-4 font-mono text-cyan-400">{d.endpoint}</td>
-                                        <td className="px-4 py-4 text-right font-mono text-white">{d.monitoring.requestsPerSecond.toFixed(2)}</td>
-                                        <td className="px-4 py-4 text-right font-mono text-white">{d.monitoring.latencyP95.toFixed(2)}</td>
-                                        <td className="px-4 py-4 text-right font-mono text-white">{(d.monitoring.errorRate * 100).toFixed(3)}%</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+        <div className="space-y-6">
+            <Card title="Model Deployments">
+                <SortableTable columns={columns} data={deployments}/>
+            </Card>
+            <Card title="Active Alerts">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {alerts.filter(a => !a.acknowledged).slice(0, 6).map(alert => (
+                    <div key={alert.id} className={`p-3 rounded-md border-l-4 ${alert.severity === 'Critical' ? 'border-red-500 bg-red-500/10' : 'border-yellow-500 bg-yellow-500/10'}`}>
+                        <p className="font-bold text-white">{alert.title}</p>
+                        <p className="text-sm text-gray-300">{alert.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">{formatDate(alert.timestamp)}</p>
                     </div>
-                </Card>
-            </div>
-            <div className="lg:col-span-1">
-                <Card title="Active Alerts">
-                    <ul className="space-y-3">
-                        {alerts.filter(a => !a.acknowledged).slice(0, 5).map(alert => (
-                            <li key={alert.id} className={`p-3 rounded-md border-l-4 ${alert.severity === 'Critical' ? 'border-red-500 bg-red-500/10' : 'border-yellow-500 bg-yellow-500/10'}`}>
-                                <p className="font-bold text-white">{alert.title}</p>
-                                <p className="text-sm text-gray-300">{alert.message}</p>
-                                <p className="text-xs text-gray-500 mt-1">{formatDate(alert.timestamp)}</p>
-                            </li>
-                        ))}
-                    </ul>
-                </Card>
-            </div>
+                ))}
+                </div>
+            </Card>
         </div>
     );
 };
+
+export const PipelinesView: FC<{ pipelines: MLPipeline[] }> = ({ pipelines }) => {
+    const columns = [
+        { key: 'name', header: 'Pipeline Name', render: (p: MLPipeline) => <span className="font-mono text-white">{p.name}</span>},
+        { key: 'lastRunStatus', header: 'Last Run', render: (p: MLPipeline) => <Pill text={p.lastRunStatus} colorClass={getStatusColor(p.lastRunStatus) + ' font-bold'} />},
+        { key: 'schedule', header: 'Schedule' },
+        { key: 'creationTimestamp', header: 'Created At', render: (p: MLPipeline) => formatDate(p.creationTimestamp) },
+        { key: 'steps', header: 'Steps', render: (p: MLPipeline) => <span className="text-xs text-gray-400">{p.steps.length} steps</span>}
+    ];
+    return <Card title="ML Pipelines"><SortableTable columns={columns} data={pipelines} /></Card>;
+}
+
+export const GovernanceView: FC<{ models: RegisteredModel[] }> = ({ models }) => {
+    const allAuditEvents = useMemo(() => models.flatMap(m => m.versions.flatMap(v => v.auditTrail.map(a => ({...a, modelName: m.name, modelVersion: v.version})) )).sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()), [models]);
+    const columns = [
+        { key: 'timestamp', header: 'Timestamp', render: (a: any) => formatDate(a.timestamp)},
+        { key: 'modelName', header: 'Model', render: (a: any) => <span className="font-mono text-white">{a.modelName} v{a.modelVersion}</span>},
+        { key: 'user', header: 'User', render: (a: any) => <span className="font-mono">{a.user}</span>},
+        { key: 'action', header: 'Action', render: (a: any) => <span className="font-semibold">{a.action}</span>},
+        { key: 'details', header: 'Details' }
+    ];
+    return <Card title="Platform Audit Trail"><SortableTable columns={columns} data={allAuditEvents} /></Card>;
+};
+
+// --- AI ASSISTANT MODAL ---
+
+const AIAssistantModal: FC<{ isOpen: boolean; onClose: () => void; task: AITaskType | null; context: any }> = ({ isOpen, onClose, task, context }) => {
+    const [response, setResponse] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && task && context) {
+            const fetchResponse = async () => {
+                setIsLoading(true);
+                setResponse("");
+                const res = await AIService.getAIResponse(task, context);
+                setResponse(res);
+                setIsLoading(false);
+            };
+            fetchResponse();
+        }
+    }, [isOpen, task, context]);
+    
+    const title = task === 'DEBUG_RUN' ? `AI Debug Assistant for ${context?.id}` : `AI Assistant`;
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={title} size="xl">
+            <div className="prose prose-invert prose-sm max-w-none bg-gray-900 p-4 rounded-md min-h-[300px]">
+                {isLoading && <div className="flex items-center gap-2 text-gray-400"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400"></div>Thinking...</div>}
+                {response.split('\n').map((line, i) => {
+                    if (line.startsWith('**') && line.endsWith('**')) return <h3 key={i} className="text-cyan-400">{line.replaceAll('**', '')}</h3>
+                    if (line.startsWith('*   ')) return <li key={i}>{line.replace('*   ', '')}</li>
+                    return <p key={i}>{line}</p>
+                })}
+            </div>
+        </Modal>
+    );
+};
+
 
 // --- MAIN APPLICATION COMPONENT ---
 
 const DemoBankMachineLearningView: React.FC = () => {
     const [activeView, setActiveView] = useState('Dashboard');
     const [isLoading, setIsLoading] = useState(true);
+    const [aiAssistantState, setAIAssistantState] = useState<{isOpen: boolean; task: AITaskType | null; context: any}>({isOpen: false, task: null, context: null});
 
-    // Simulate a real-world application state management
-    const [mlData, setMlData] = useState<{
-        runs: TrainingRun[];
-        models: RegisteredModel[];
-        deployments: Deployment[];
-        features: Feature[];
-        alerts: MLOpsAlert[];
-    }>({
-        runs: [],
-        models: [],
-        deployments: [],
-        features: [],
-        alerts: [],
-    });
+    const [mlData, setMlData] = useState<{ runs: TrainingRun[]; models: RegisteredModel[]; deployments: Deployment[]; features: Feature[]; alerts: MLOpsAlert[]; pipelines: MLPipeline[]; insights: AIInsight[] }>({ runs: [], models: [], deployments: [], features: [], alerts: [], pipelines: [], insights: [] });
 
     useEffect(() => {
-        // Simulate fetching data from an API
         const fetchData = () => {
             setIsLoading(true);
             setTimeout(() => {
@@ -973,9 +924,11 @@ const DemoBankMachineLearningView: React.FC = () => {
                 const deployments = generateMockDeployments(models);
                 const features = generateMockFeatures(50);
                 const alerts = generateMockAlerts(15, deployments);
-                setMlData({ runs, models, deployments, features, alerts });
+                const pipelines = generateMockPipelines(MODEL_NAMES.length);
+                const insights = generateAIInsights(5, models, deployments);
+                setMlData({ runs, models, deployments, features, alerts, pipelines, insights });
                 setIsLoading(false);
-            }, 1000); // 1 second delay
+            }, 1000);
         };
         fetchData();
     }, []);
@@ -984,14 +937,10 @@ const DemoBankMachineLearningView: React.FC = () => {
         setMlData(prevData => {
             const newModels = prevData.models.map(m => {
                 if (m.name === modelName) {
-                    // If promoting to Production or Staging, demote any existing model in that stage
+                    const auditEvent: AuditEvent = { timestamp: new Date(), user: 'ops.team', action: `Promoted to ${newStage}`, details: 'Promotion via MLOps UI' };
                     const updatedVersions = m.versions.map(v => {
-                        if (v.stage === newStage) {
-                            return { ...v, stage: 'None' as ModelStage };
-                        }
-                        if (v.version === version) {
-                            return { ...v, stage: newStage };
-                        }
+                        if (v.stage === newStage) return { ...v, stage: 'None' as ModelStage, auditTrail: [...v.auditTrail, {...auditEvent, action: `Demoted from ${newStage}`}] };
+                        if (v.version === version) return { ...v, stage: newStage, auditTrail: [...v.auditTrail, auditEvent] };
                         return v;
                     });
                     return { ...m, versions: updatedVersions };
@@ -1001,54 +950,44 @@ const DemoBankMachineLearningView: React.FC = () => {
             return { ...prevData, models: newModels };
         });
     }, []);
+    
+    const handleDebugWithAI = (run: TrainingRun) => setAIAssistantState({ isOpen: true, task: 'DEBUG_RUN', context: { id: run.id, logs: run.logs }});
+    const handleGenerateModelCard = (modelVersion: ModelVersion) => setAIAssistantState({ isOpen: true, task: 'GENERATE_MODEL_CARD', context: { name: modelVersion.name, version: modelVersion.version, metrics: modelVersion.metrics }});
 
-    const dashboardStats = useMemo(() => {
-        const productionModels = mlData.models.flatMap(m => m.versions).filter(v => v.stage === 'Production');
-        return {
-            activeExperiments: new Set(mlData.runs.map(r => r.experimentId)).size,
-            totalRuns: mlData.runs.length,
-            registeredModels: mlData.models.length,
-            modelsInProduction: productionModels.length,
-        };
-    }, [mlData]);
+    const dashboardStats = useMemo(() => ({
+        activeExperiments: new Set(mlData.runs.map(r => r.experimentId)).size,
+        totalRuns: mlData.runs.length,
+        modelsInProduction: mlData.models.flatMap(m => m.versions).filter(v => v.stage === 'Production').length,
+        totalCost: mlData.runs.reduce((sum, run) => sum + run.costUSD, 0),
+    }), [mlData]);
 
     const navItems = [
-        { name: 'Dashboard', icon: <ChartBarIcon /> },
-        { name: 'Experiments', icon: <CodeIcon /> },
-        { name: 'Model Registry', icon: <CubeIcon /> },
-        { name: 'Deployments', icon: <ServerIcon /> },
-        { name: 'Feature Store', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7v5c0 2.21 3.582 4 8 4s8-1.79 8-4V7" /></svg> },
+        { name: 'Dashboard', icon: <ChartBarIcon /> }, { name: 'Experiments', icon: <CodeIcon /> },
+        { name: 'Model Registry', icon: <CubeIcon /> }, { name: 'Deployments', icon: <ServerIcon /> },
+        { name: 'Pipelines', icon: <PipelineIcon />}, { name: 'Feature Store', icon: <DatabaseIcon /> },
+        { name: 'Governance', icon: <ShieldCheckIcon />}
     ];
 
     const renderActiveView = () => {
-        if (isLoading) {
-            return (
-                <div className="flex justify-center items-center h-96">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500"></div>
-                </div>
-            );
-        }
+        if (isLoading) return <div className="flex justify-center items-center h-96"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500"></div></div>;
         switch (activeView) {
-            case 'Dashboard':
-                return <DashboardView stats={dashboardStats} runs={mlData.runs} models={mlData.models} deployments={mlData.deployments} />;
-            case 'Experiments':
-                return <ExperimentTrackingView runs={mlData.runs} />;
-            case 'Model Registry':
-                return <ModelRegistryView models={mlData.models} onPromote={handlePromoteModel}/>;
-            case 'Deployments':
-                return <DeploymentsView deployments={mlData.deployments} alerts={mlData.alerts} />;
-            case 'Feature Store':
-                return <FeatureStoreView features={mlData.features} />;
-            default:
-                return <div>View not found</div>;
+            case 'Dashboard': return <DashboardView stats={dashboardStats} {...mlData} />;
+            case 'Experiments': return <ExperimentTrackingView runs={mlData.runs} onDebug={handleDebugWithAI}/>;
+            case 'Model Registry': return <ModelRegistryView models={mlData.models} onPromote={handlePromoteModel} onGenerateCard={handleGenerateModelCard}/>;
+            case 'Deployments': return <DeploymentsView deployments={mlData.deployments} alerts={mlData.alerts} />;
+            case 'Pipelines': return <PipelinesView pipelines={mlData.pipelines} />;
+            case 'Feature Store': return <FeatureStoreView features={mlData.features} />;
+            case 'Governance': return <GovernanceView models={mlData.models} />;
+            default: return <div>View not found</div>;
         }
     };
 
     return (
         <div className="space-y-6">
+            <AIAssistantModal {...aiAssistantState} onClose={() => setAIAssistantState(s => ({...s, isOpen: false}))} />
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                 <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank MLOps Platform</h2>
-                <div className="relative">
+                <div className="relative mt-2 md:mt-0">
                     <BellIcon />
                     {mlData.alerts.filter(a => !a.acknowledged).length > 0 &&
                         <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
@@ -1058,59 +997,20 @@ const DemoBankMachineLearningView: React.FC = () => {
                 </div>
             </div>
 
-            <nav className="flex space-x-2 border-b border-gray-700">
+            <nav className="flex space-x-1 border-b border-gray-700 overflow-x-auto pb-px">
                 {navItems.map(item => (
-                    <button
-                        key={item.name}
-                        onClick={() => setActiveView(item.name)}
-                        className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                            activeView === item.name
-                                ? 'border-cyan-500 text-white'
-                                : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'
-                        }`}
-                    >
-                        {item.icon}
-                        <span>{item.name}</span>
+                    <button key={item.name} onClick={() => setActiveView(item.name)}
+                        className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${
+                            activeView === item.name ? 'border-cyan-500 text-white' : 'border-transparent text-gray-400 hover:text-white hover:border-gray-500'}`}>
+                        {item.icon}<span>{item.name}</span>
                     </button>
                 ))}
             </nav>
 
-            <div className="mt-6">
-                {renderActiveView()}
-            </div>
+            <div className="mt-6">{renderActiveView()}</div>
             
-            {/* The original view's components are kept below for posterity or quick reference, but are superseded by the tabbed interface. */}
-            <div className="hidden">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">12</p><p className="text-sm text-gray-400 mt-1">Active Experiments</p></Card>
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">48</p><p className="text-sm text-gray-400 mt-1">Training Runs (7d)</p></Card>
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">4</p><p className="text-sm text-gray-400 mt-1">Registered Models</p></Card>
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">2</p><p className="text-sm text-gray-400 mt-1">Models in Production</p></Card>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card title="Training Runs (Last 7 Days)">
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={trainingRunsData}>
-                                <XAxis dataKey="name" stroke="#9ca3af" />
-                                <YAxis stroke="#9ca3af" />
-                                <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
-                                <Bar dataKey="runs" fill="#06b6d4" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Card>
-                    <Card title="Experiment Results (Accuracy vs. Params)">
-                         <ResponsiveContainer width="100%" height={300}>
-                            <ScatterChart>
-                                <XAxis type="number" dataKey="params" name="Parameters (M)" unit="M" stroke="#9ca3af" />
-                                <YAxis type="number" dataKey="accuracy" name="Accuracy" unit="%" stroke="#9ca3af" domain={[90, 100]} />
-                                <ZAxis dataKey="experiment" range={[100, 101]} />
-                                <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
-                                <Scatter name="Experiments" data={experimentAccuracyData} fill="#8884d8"/>
-                            </ScatterChart>
-                        </ResponsiveContainer>
-                    </Card>
-                </div>
-                <Card title="Registered Models">
+            <div className="hidden"> {/* Original components hidden */}
+                 <Card title="Registered Models">
                      <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-gray-400">
                             <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
