@@ -17,6 +17,7 @@ export interface DBQLColumn {
     isNullable?: boolean;
     isPrimaryKey?: boolean;
     isIndexed?: boolean;
+    foreignKey?: { table: string, column: string }; // For relationships
 }
 
 export interface DBQLTable {
@@ -37,6 +38,16 @@ export interface DBQLQueryResult {
     rowCount?: number;
     error?: string;
     isCached?: boolean;
+    executionPlan?: QueryExecutionPlan;
+}
+
+export interface QueryExecutionPlan {
+    steps: {
+        operation: string;
+        details: string;
+        timeMs: number;
+    }[];
+    totalTimeMs: number;
 }
 
 export interface QueryHistoryEntry {
@@ -65,6 +76,7 @@ export interface UserPreferences {
     enableQueryCaching: boolean;
     showLineNumbers: boolean;
     resultPageSize: number;
+    showExecutionPlan: boolean;
 }
 
 export interface Notification {
@@ -93,6 +105,13 @@ export interface ChartConfig {
     dataSeries: ChartDataSeries[];
 }
 
+export interface AIQueryAnalysis {
+    originalText: string;
+    suggestedDBQL: string;
+    confidenceScore: number;
+    explanation: string;
+}
+
 // SECTION 2: CONSTANTS AND CONFIGURATION
 // =====================================================================================================================
 // Centralized definitions for messages, default settings, and application-wide configurations.
@@ -104,7 +123,7 @@ export const MAX_QUERY_HISTORY_ENTRIES = 50;
 export const MOCK_API_LATENCY_MS = 800; // Base latency for mock API calls
 export const MOCK_ERROR_RATE_PERCENT = 5; // 5% chance of a mock query error
 
-export const SYNTAX_HIGHLIGHT_KEYWORDS = ['FROM', 'SELECT', 'WHERE', 'AND', 'OR', 'ORDER', 'BY', 'DESC', 'ASC', 'LIMIT', 'OFFSET', 'GROUP', 'JOIN', 'ON', 'GET', 'INSERT', 'UPDATE', 'DELETE', 'VALUES', 'SET', 'INTO'];
+export const SYNTAX_HIGHLIGHT_KEYWORDS = ['FROM', 'SELECT', 'WHERE', 'AND', 'OR', 'ORDER', 'BY', 'DESC', 'ASC', 'LIMIT', 'OFFSET', 'GROUP', 'JOIN', 'ON', 'GET', 'INSERT', 'UPDATE', 'DELETE', 'VALUES', 'SET', 'INTO', 'AS'];
 export const SYNTAX_HIGHLIGHT_OPERATORS = ['=', '>', '<', '>=', '<=', '!=', 'LIKE', 'IN', 'IS', 'NOT', '+', '-', '*', '/'];
 export const SYNTAX_HIGHLIGHT_FUNCTIONS = ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'DATE', 'NOW', 'UPPER', 'LOWER'];
 
@@ -116,42 +135,12 @@ export const DBQL_ERROR_MESSAGES = {
     QUERY_TIMEOUT: "Execution Error: The query timed out. Please try a simpler query or adjust parameters.",
     GENERIC_ERROR: "An unexpected error occurred during query execution.",
     EMPTY_QUERY: "Query cannot be empty. Please enter a DBQL statement.",
-    INVALID_LIMIT: "LIMIT clause must be a positive integer."
+    INVALID_LIMIT: "LIMIT clause must be a positive integer.",
+    JOIN_ERROR: "JOIN Error: Invalid JOIN condition or syntax."
 };
 
 export const MOCK_SCHEMA: DBQLSchema = {
     tables: [
-        {
-            name: 'accounts',
-            description: 'Customer bank accounts information.',
-            exampleRowCount: 1500,
-            columns: [
-                { name: 'id', type: 'string', description: 'Unique account identifier', isPrimaryKey: true, isIndexed: true },
-                { name: 'name', type: 'string', description: 'Account name (e.g., "Main Checking")', isIndexed: true },
-                { name: 'type', type: 'enum', enum: ['Checking', 'Savings', 'Credit Card', 'Loan'], description: 'Type of account', isIndexed: true },
-                { name: 'balance', type: 'number', description: 'Current account balance' },
-                { name: 'currency', type: 'string', description: 'Currency code (e.g., USD, EUR)', isIndexed: true },
-                { name: 'status', type: 'enum', enum: ['Active', 'Inactive', 'Closed'], description: 'Account status', isIndexed: true },
-                { name: 'openedDate', type: 'date', description: 'Date the account was opened' },
-                { name: 'customerId', type: 'string', description: 'Foreign key to customers table', isIndexed: true },
-            ],
-        },
-        {
-            name: 'transactions',
-            description: 'Financial transactions for all accounts.',
-            exampleRowCount: 500000,
-            columns: [
-                { name: 'id', type: 'string', description: 'Unique transaction identifier', isPrimaryKey: true, isIndexed: true },
-                { name: 'accountId', type: 'string', description: 'ID of the associated account', isIndexed: true },
-                { name: 'date', type: 'date', description: 'Date and time of the transaction' },
-                { name: 'description', type: 'string', description: 'Brief description of the transaction' },
-                { name: 'amount', type: 'number', description: 'Transaction amount' },
-                { name: 'type', type: 'enum', enum: ['Credit', 'Debit'], description: 'Type of transaction (credit or debit)', isIndexed: true },
-                { name: 'category', type: 'enum', enum: ['Shopping', 'Food', 'Transport', 'Bills', 'Salary', 'Investment', 'Other', 'Entertainment', 'Healthcare', 'Utilities'], description: 'Transaction category', isIndexed: true },
-                { name: 'merchant', type: 'string', description: 'Name of the merchant involved' },
-                { name: 'status', type: 'enum', enum: ['Completed', 'Pending', 'Failed', 'Refunded'], description: 'Transaction status', isIndexed: true },
-            ],
-        },
         {
             name: 'customers',
             description: 'Customer demographic and contact information.',
@@ -170,13 +159,44 @@ export const MOCK_SCHEMA: DBQLSchema = {
             ],
         },
         {
+            name: 'accounts',
+            description: 'Customer bank accounts information.',
+            exampleRowCount: 1500,
+            columns: [
+                { name: 'id', type: 'string', description: 'Unique account identifier', isPrimaryKey: true, isIndexed: true },
+                { name: 'name', type: 'string', description: 'Account name (e.g., "Main Checking")', isIndexed: true },
+                { name: 'type', type: 'enum', enum: ['Checking', 'Savings', 'Credit Card', 'Loan'], description: 'Type of account', isIndexed: true },
+                { name: 'balance', type: 'number', description: 'Current account balance' },
+                { name: 'currency', type: 'string', description: 'Currency code (e.g., USD, EUR)', isIndexed: true },
+                { name: 'status', type: 'enum', enum: ['Active', 'Inactive', 'Closed'], description: 'Account status', isIndexed: true },
+                { name: 'openedDate', type: 'date', description: 'Date the account was opened' },
+                { name: 'customerId', type: 'string', description: 'Foreign key to customers table', isIndexed: true, foreignKey: { table: 'customers', column: 'id' } },
+            ],
+        },
+        {
+            name: 'transactions',
+            description: 'Financial transactions for all accounts.',
+            exampleRowCount: 500000,
+            columns: [
+                { name: 'id', type: 'string', description: 'Unique transaction identifier', isPrimaryKey: true, isIndexed: true },
+                { name: 'accountId', type: 'string', description: 'ID of the associated account', isIndexed: true, foreignKey: { table: 'accounts', column: 'id' } },
+                { name: 'date', type: 'date', description: 'Date and time of the transaction' },
+                { name: 'description', type: 'string', description: 'Brief description of the transaction' },
+                { name: 'amount', type: 'number', description: 'Transaction amount' },
+                { name: 'type', type: 'enum', enum: ['Credit', 'Debit'], description: 'Type of transaction (credit or debit)', isIndexed: true },
+                { name: 'category', type: 'enum', enum: ['Shopping', 'Food', 'Transport', 'Bills', 'Salary', 'Investment', 'Other', 'Entertainment', 'Healthcare', 'Utilities'], description: 'Transaction category', isIndexed: true },
+                { name: 'merchant', type: 'string', description: 'Name of the merchant involved' },
+                { name: 'status', type: 'enum', enum: ['Completed', 'Pending', 'Failed', 'Refunded'], description: 'Transaction status', isIndexed: true },
+            ],
+        },
+        {
             name: 'anomalies',
             description: 'Detected suspicious or unusual activities.',
             exampleRowCount: 2000,
             columns: [
                 { name: 'id', type: 'string', description: 'Unique anomaly identifier', isPrimaryKey: true, isIndexed: true },
-                { name: 'transactionId', type: 'string', isNullable: true, description: 'Optional: ID of the associated transaction', isIndexed: true },
-                { name: 'accountId', type: 'string', isNullable: true, description: 'Optional: ID of the associated account', isIndexed: true },
+                { name: 'transactionId', type: 'string', isNullable: true, description: 'Optional: ID of the associated transaction', isIndexed: true, foreignKey: { table: 'transactions', column: 'id' } },
+                { name: 'accountId', type: 'string', isNullable: true, description: 'Optional: ID of the associated account', isIndexed: true, foreignKey: { table: 'accounts', column: 'id' } },
                 { name: 'type', type: 'enum', enum: ['Fraud', 'Unusual Activity', 'System Error', 'Large Transaction'], description: 'Type of anomaly', isIndexed: true },
                 { name: 'severity', type: 'enum', enum: ['Low', 'Medium', 'High', 'Critical'], description: 'Severity level of the anomaly', isIndexed: true },
                 { name: 'details', type: 'string', description: 'Detailed description of the anomaly' },
@@ -191,8 +211,8 @@ export const MOCK_SCHEMA: DBQLSchema = {
             exampleRowCount: 500,
             columns: [
                 { name: 'id', type: 'string', description: 'Unique loan identifier', isPrimaryKey: true, isIndexed: true },
-                { name: 'customerId', type: 'string', description: 'Foreign key to customers table', isIndexed: true },
-                { name: 'accountId', type: 'string', description: 'Associated bank account for payments/disbursement', isIndexed: true },
+                { name: 'customerId', type: 'string', description: 'Foreign key to customers table', isIndexed: true, foreignKey: { table: 'customers', column: 'id' } },
+                { name: 'accountId', type: 'string', description: 'Associated bank account for payments/disbursement', isIndexed: true, foreignKey: { table: 'accounts', column: 'id' } },
                 { name: 'amount', type: 'number', description: 'Original loan amount' },
                 { name: 'interestRate', type: 'number', description: 'Annual interest rate' },
                 { name: 'termMonths', type: 'number', description: 'Loan term in months' },
@@ -204,6 +224,20 @@ export const MOCK_SCHEMA: DBQLSchema = {
                 { name: 'paymentFrequency', type: 'enum', enum: ['Monthly', 'Bi-Weekly'], description: 'How often payments are made' },
             ],
         },
+        {
+            name: 'investments',
+            description: 'Customer investment portfolios.',
+            exampleRowCount: 5000,
+            columns: [
+                { name: 'id', type: 'string', isPrimaryKey: true, isIndexed: true, description: 'Unique investment holding ID' },
+                { name: 'accountId', type: 'string', isIndexed: true, description: 'Account holding the investment', foreignKey: { table: 'accounts', column: 'id' } },
+                { name: 'ticker', type: 'string', isIndexed: true, description: 'Stock or fund ticker symbol' },
+                { name: 'quantity', type: 'number', description: 'Number of shares/units held' },
+                { name: 'purchasePrice', type: 'number', description: 'Average purchase price per share' },
+                { name: 'purchaseDate', type: 'date', description: 'Date of the last purchase' },
+                { name: 'currentValue', type: 'number', description: 'Current market value of the holding' },
+            ]
+        }
     ],
 };
 
@@ -233,6 +267,36 @@ export function formatDate(date: Date | string, format: 'short' | 'long' | 'date
 export function formatCurrency(amount: number, currency: string = 'USD'): string {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 }
+
+export function exportToCSV(headers: string[], rows: any[][], filename: string) {
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + [headers.join(","), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+export function exportToJSON(headers: string[], rows: any[][], filename: string) {
+    const jsonObjects = rows.map(row => {
+        const obj: Record<string, any> = {};
+        headers.forEach((header, i) => {
+            obj[header] = row[i];
+        });
+        return obj;
+    });
+    const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonObjects, null, 2));
+    const link = document.createElement("a");
+    link.setAttribute("href", jsonContent);
+    link.setAttribute("download", `${filename}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 
 // Simulated DBQL Parser (simplified for demo purposes)
 export const DBQLParser = {
@@ -504,25 +568,6 @@ export class MockDBService {
         const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
         const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
 
-        // Accounts
-        const accounts: any[] = [];
-        const accountTypes = MOCK_SCHEMA.tables.find(t => t.name === 'accounts')?.columns.find(c => c.name === 'type')?.enum || [];
-        const accountStatuses = MOCK_SCHEMA.tables.find(t => t.name === 'accounts')?.columns.find(c => c.name === 'status')?.enum || [];
-        for (let i = 0; i < 1500; i++) {
-            const id = generateUUID();
-            accounts.push({
-                id: id,
-                name: `Account ${i + 1}`,
-                type: accountTypes[Math.floor(Math.random() * accountTypes.length)],
-                balance: parseFloat((Math.random() * 100000).toFixed(2)),
-                currency: 'USD',
-                status: accountStatuses[Math.floor(Math.random() * accountStatuses.length)],
-                openedDate: getRandomDate(fiveYearsAgo, oneYearAgo).toISOString().split('T')[0],
-                customerId: `cust-${Math.floor(Math.random() * 10000)}` // Will link to customers later
-            });
-        }
-        MockDBService._data['accounts'] = accounts;
-
         // Customers
         const customers: any[] = [];
         const firstNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'];
@@ -544,11 +589,26 @@ export class MockDBService {
             });
         }
         MockDBService._data['customers'] = customers;
+        
+        // Accounts
+        const accounts: any[] = [];
+        const accountTypes = MOCK_SCHEMA.tables.find(t => t.name === 'accounts')?.columns.find(c => c.name === 'type')?.enum || [];
+        const accountStatuses = MOCK_SCHEMA.tables.find(t => t.name === 'accounts')?.columns.find(c => c.name === 'status')?.enum || [];
+        for (let i = 0; i < 1500; i++) {
+            const id = generateUUID();
+            accounts.push({
+                id: id,
+                name: `Account ${i + 1}`,
+                type: accountTypes[Math.floor(Math.random() * accountTypes.length)],
+                balance: parseFloat((Math.random() * 100000).toFixed(2)),
+                currency: 'USD',
+                status: accountStatuses[Math.floor(Math.random() * accountStatuses.length)],
+                openedDate: getRandomDate(fiveYearsAgo, oneYearAgo).toISOString().split('T')[0],
+                customerId: customers[Math.floor(Math.random() * customers.length)].id
+            });
+        }
+        MockDBService._data['accounts'] = accounts;
 
-        // Update customerId for accounts
-        MockDBService._data['accounts'].forEach(acc => {
-            acc.customerId = customers[Math.floor(Math.random() * customers.length)].id;
-        });
 
         // Transactions
         const transactions: any[] = [];
@@ -625,6 +685,25 @@ export class MockDBService {
             });
         }
         MockDBService._data['loans'] = loans;
+        
+        // Investments
+        const investments: any[] = [];
+        const tickers = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'SPY', 'QQQ', 'VTI'];
+        for(let i = 0; i < 5000; i++) {
+            const account = accounts[Math.floor(Math.random() * accounts.length)];
+            const purchasePrice = parseFloat((Math.random() * 500 + 10).toFixed(2));
+            const quantity = Math.floor(Math.random() * 100) + 1;
+            investments.push({
+                id: generateUUID(),
+                accountId: account.id,
+                ticker: tickers[Math.floor(Math.random() * tickers.length)],
+                quantity,
+                purchasePrice,
+                purchaseDate: getRandomDate(fiveYearsAgo, today).toISOString().split('T')[0],
+                currentValue: purchasePrice * quantity * (0.8 + Math.random() * 0.4) // Simulate value change
+            });
+        }
+        MockDBService._data['investments'] = investments;
 
         MockDBService._initialized = true;
         console.log("Mock database initialized with data.");
@@ -911,6 +990,7 @@ export class MockPreferenceService {
         enableQueryCaching: true,
         showLineNumbers: true,
         resultPageSize: DEFAULT_RESULT_PAGE_SIZE,
+        showExecutionPlan: false,
     };
 
     static async getPreferences(): Promise<UserPreferences> {
@@ -1383,6 +1463,9 @@ export const PaginatedTable: React.FC<PaginatedTableProps> = React.memo(({ data,
         setCurrentPage(1); // Reset page on data/filter/sort changes
     }, [data, searchTerm, sortColumn, sortDirection]);
 
+    const handleExportCSV = () => exportToCSV(headers, sortedData, "dbql_results");
+    const handleExportJSON = () => exportToJSON(headers, sortedData, "dbql_results");
+
     return (
         <div className="space-y-4">
             {title && <h3 className="text-xl font-semibold text-white">{title}</h3>}
@@ -1394,6 +1477,10 @@ export const PaginatedTable: React.FC<PaginatedTableProps> = React.memo(({ data,
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="p-2 bg-gray-800 text-white rounded-md border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500 flex-grow"
                 />
+                 <div className="flex items-center space-x-2">
+                    <button onClick={handleExportCSV} className="p-2 rounded-md bg-gray-700/50 hover:bg-gray-700 text-xs">Export CSV</button>
+                    <button onClick={handleExportJSON} className="p-2 rounded-md bg-gray-700/50 hover:bg-gray-700 text-xs">Export JSON</button>
+                </div>
                 <div className="flex items-center space-x-2 text-gray-300">
                     <button
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -1516,7 +1603,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = React.memo(({
 
     const icon = {
         success: '✓',
-        error: '✕',
+        error: '✗',
         info: 'ℹ',
         warning: '!',
     }[notification.type];
@@ -2101,6 +2188,16 @@ export const SettingsPanel: React.FC<{ preferences: UserPreferences, onSavePrefe
                                 className="p-2 bg-gray-800 text-white rounded-md border border-gray-700 w-32"
                             />
                         </div>
+                         <div className="flex items-center">
+                            <input
+                                id="showExecutionPlan"
+                                type="checkbox"
+                                checked={currentPrefs.showExecutionPlan}
+                                onChange={(e) => handleChange('showExecutionPlan', e.target.checked)}
+                                className="h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
+                            />
+                            <label htmlFor="showExecutionPlan" className="ml-2 text-gray-300 text-sm">Show Query Execution Plan</label>
+                        </div>
                     </div>
                 </div>
 
@@ -2159,6 +2256,7 @@ export const DemoBankDBQLView: React.FC = () => {
         enableQueryCaching: true,
         showLineNumbers: true,
         resultPageSize: DEFAULT_RESULT_PAGE_SIZE,
+        showExecutionPlan: false,
     });
     const [activeTab, setActiveTab] = useState<'results' | 'charts' | 'history' | 'favorites' | 'schema' | 'data' | 'settings'>('results');
     const [dataViewerTableName, setDataViewerTableName] = useState<string | null>(null);
