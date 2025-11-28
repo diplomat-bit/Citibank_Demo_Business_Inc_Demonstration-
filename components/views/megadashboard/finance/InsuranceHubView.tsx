@@ -374,7 +374,7 @@ export const generateMockCustomers = (count: number): Customer[] => {
             phone: phone,
             address: `${Math.floor(100 + Math.random() * 900)} ${addresses[Math.floor(Math.random() * addresses.length)]}`,
             dateOfBirth: dob,
-            maritalStatus: maritalStatuses[Math.floor(Math.random() * maritalStatuses.length)],
+            maritalStatus: maritalStatuses[Math.floor(Math.random() * maritalStatuses.length)] as any,
             occupation: occupations[Math.floor(Math.random() * occupations.length)],
             memberSince: memberSince,
             hasActivePolicy: Math.random() > 0.2, // 80% have active policy
@@ -1709,7 +1709,7 @@ const ClaimDetailModal: React.FC<{ claim: InsuranceClaim | null; onClose: () => 
                                 .filter(doc => doc.relatedEntityId === claim.id)
                                 .map(doc => (
                                     <li key={doc.id} className="flex items-center justify-between text-sm text-gray-300 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
-                                        <span>📄 {doc.fileName} <Pill text={doc.category} /> {doc.tags?.map((tag, idx) => <Pill key={idx} text={tag} colorClass="bg-gray-600/20 text-gray-400" />)}</span>
+                                        <span>&#128196; {doc.fileName} <Pill text={doc.category} /> {doc.tags?.map((tag, idx) => <Pill key={idx} text={tag} colorClass="bg-gray-600/20 text-gray-400" />)}</span>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline text-xs ml-2 flex-shrink-0">View Document</a>
                                     </li>
                                 ))}
@@ -1717,7 +1717,7 @@ const ClaimDetailModal: React.FC<{ claim: InsuranceClaim | null; onClose: () => 
                                 <p className="text-sm text-gray-500">No documents found for this claim.</p>
                             )}
                         </ul>
-                        <button className="mt-4 text-sm text-cyan-400 hover:underline" onClick={() => {/* Trigger document upload modal */}}>Upload New Document</button>
+                        <button className="mt-4 text-sm text-cyan-400 hover:underline" onClick={() => { /* Trigger document upload modal */ }}>Upload New Document</button>
                     </Card>
 
                     <Card title="Financial Transactions">
@@ -1744,7 +1744,7 @@ const ClaimDetailModal: React.FC<{ claim: InsuranceClaim | null; onClose: () => 
                         <div className="space-y-3 text-sm max-h-48 overflow-y-auto">
                             {extendedContext.communicationMessages
                                 .filter(msg => msg.relatedClaimId === claim.id)
-                                .sort((a,b) => a.timestamp.getTime() - b.timestamp.getTime())
+                                .sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                                 .map(msg => (
                                     <p key={msg.id} className="bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
                                         <strong className="text-cyan-300">{msg.senderType === 'User' ? extendedContext.userProfiles.find(u => u.id === msg.senderId)?.name || 'Agent' : extendedContext.customers.find(c => c.id === msg.senderId)?.name || 'Customer'}:</strong> {msg.content}
@@ -1819,4 +1819,190 @@ export const PolicyDetailModal: React.FC<{ policy: InsurancePolicy | null; onClo
                             <option value="Lapsed">Lapsed</option>
                             <option value="Cancelled">Cancelled</option>
                             <option value="Pending">Pending</option>
-                        </select
+                        </select>
+                    </div>
+                </section>
+
+                <Card title="Coverages">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {policy.coverages.map((coverage) => (
+                            <div key={coverage.name} className="bg-gray-900/50 p-3 rounded-lg border border-gray-700/50 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="font-semibold text-white">{coverage.name}</h4>
+                                    <Pill text={coverage.active ? 'Active' : 'Inactive'} colorClass={coverage.active ? 'bg-green-500/20 text-green-300' : 'bg-gray-600/20 text-gray-400'} />
+                                </div>
+                                <p className="text-gray-400 mt-1 text-xs">{coverage.description}</p>
+                                <div className="mt-2 grid grid-cols-2 gap-x-4 text-xs">
+                                    <p className="text-gray-300"><strong className="font-medium text-gray-200">Limit:</strong> ${coverage.limit.toLocaleString()}</p>
+                                    {coverage.deductible && <p className="text-gray-300"><strong className="font-medium text-gray-200">Deductible:</strong> ${coverage.deductible.toLocaleString()}</p>}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+
+                <Card title="Associated Claims">
+                    <ul className="space-y-2 max-h-48 overflow-y-auto">
+                         {extendedContext.insuranceClaims
+                                .filter(claim => claim.policyId === policy.id)
+                                .map(claim => (
+                                    <li key={claim.id} className="flex items-center justify-between text-sm text-gray-300 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                                        <span>{claim.id}: <span className="font-mono">${claim.amount.toLocaleString()}</span></span>
+                                         <Pill text={claim.status} colorClass={
+                                            claim.status === 'Approved' ? 'bg-green-500/20 text-green-300' :
+                                            claim.status === 'Under Review' ? 'bg-yellow-500/20 text-yellow-300' :
+                                            claim.status === 'Denied' ? 'bg-red-500/20 text-red-300' :
+                                            'bg-blue-500/20 text-blue-300'
+                                        } />
+                                    </li>
+                                ))}
+                        {extendedContext.insuranceClaims.filter(claim => claim.policyId === policy.id).length === 0 && (
+                            <p className="text-sm text-gray-500">No claims filed under this policy.</p>
+                        )}
+                    </ul>
+                </Card>
+                 <Card title="Premium Payments">
+                       <ul className="space-y-2 max-h-48 overflow-y-auto">
+                            {extendedContext.financialTransactions
+                                .filter(tx => tx.entityId === policy.id && tx.entityType === 'Policy' && tx.type === 'Premium')
+                                .map(tx => (
+                                    <li key={tx.id} className="flex items-center justify-between text-sm text-gray-300 bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                                        <span>{new Date(tx.transactionDate).toLocaleDateString()}: <span className="font-mono text-green-400">${tx.amount.toLocaleString()}</span></span>
+                                        <Pill text={tx.status} colorClass={tx.status === 'Completed' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'} />
+                                    </li>
+                                ))}
+                             {extendedContext.financialTransactions.filter(tx => tx.entityId === policy.id && tx.entityType === 'Policy' && tx.type === 'Premium').length === 0 && (
+                                <p className="text-sm text-gray-500">No premium payment records found.</p>
+                            )}
+                        </ul>
+                </Card>
+            </div>
+        </Modal>
+    );
+};
+
+
+// --- New Main View Component ---
+
+const InsuranceHubView: React.FC = () => {
+    const originalContext = useContext(DataContext);
+    // This hook initializes a comprehensive mock data environment if the original context is empty.
+    const extendedContext = useExtendedDataContext(originalContext?.insuranceClaims || []);
+    const [activeTab, setActiveTab] = useState('dashboard');
+    const [selectedClaim, setSelectedClaim] = useState<InsuranceClaim | null>(null);
+    const [selectedPolicy, setSelectedPolicy] = useState<InsurancePolicy | null>(null);
+
+    const handleViewClaim = (claim: InsuranceClaim) => setSelectedClaim(claim);
+    const handleCloseClaimModal = () => setSelectedClaim(null);
+    const handleViewPolicy = (policy: InsurancePolicy) => setSelectedPolicy(policy);
+    const handleClosePolicyModal = () => setSelectedPolicy(null);
+
+    // Provide the extended context to all children that need it.
+    // This pattern allows this component to be a self-contained, data-rich environment.
+    const dataContextValue = useMemo(() => ({
+        ...extendedContext,
+        insuranceClaims: extendedContext.insuranceClaims,
+        // Ensure original context functions are passed through if they exist, otherwise use extended ones.
+        updateClaimStatus: extendedContext.updateClaimStatus || originalContext?.updateClaimStatus,
+    }), [extendedContext, originalContext]);
+
+    const tabs = [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'claims', label: 'Claims', notificationCount: extendedContext.insuranceClaims.filter(c => c.status === 'New').length },
+        { id: 'policies', label: 'Policies' },
+        { id: 'customers', label: 'Customers' },
+        { id: 'tasks', label: 'Agent Tasks', notificationCount: extendedContext.agentTasks.filter(t => t.status === 'Pending' && t.priority === 'High').length },
+        { id: 'documents', label: 'Documents' },
+        { id: 'fraud', label: 'Fraud Detection', notificationCount: extendedContext.insuranceClaims.filter(c => c.fraudDetected).length },
+        { id: 'settings', label: 'Settings' }
+    ];
+
+    const renderActiveTab = () => {
+        switch (activeTab) {
+            case 'claims':
+                return <ClaimsTab onViewClaim={handleViewClaim} />;
+            case 'policies':
+                 return <PoliciesTab onViewPolicy={handleViewPolicy} />;
+            // Add other tab components here
+            // case 'customers':
+            //     return <CustomersTab />;
+            // case 'tasks':
+            //     return <AgentTasksTab />;
+            // case 'documents':
+            //     return <DocumentsTab />;
+            // case 'fraud':
+            //     return <FraudDetectionTab />;
+            // case 'settings':
+            //     return <SettingsTab />;
+            case 'dashboard':
+            default:
+                return <div>Dashboard content goes here.</div>;
+        }
+    };
+    
+    // Simple placeholder for now. This will be replaced by the full implementation.
+    const ClaimsTab: React.FC<{ onViewClaim: (claim: InsuranceClaim) => void }> = ({ onViewClaim }) => {
+        const { insuranceClaims } = useContext(DataContext) as ExtendedDataContextState;
+        
+        return (
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-white">Claims Management</h2>
+                <div className="bg-gray-800 rounded-lg p-4">
+                     <ul className="space-y-2">
+                        {insuranceClaims.slice(0, 10).map(claim => (
+                            <li key={claim.id} className="flex justify-between items-center p-2 bg-gray-700 rounded-md">
+                                <span className="text-white">{claim.id} - {claim.policyholder}</span>
+                                <button onClick={() => onViewClaim(claim)} className="text-cyan-400 hover:underline">View Details</button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        );
+    };
+
+    const PoliciesTab: React.FC<{ onViewPolicy: (policy: InsurancePolicy) => void }> = ({ onViewPolicy }) => {
+         const { insurancePolicies } = useContext(DataContext) as ExtendedDataContextState;
+        
+        return (
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-white">Policy Management</h2>
+                <div className="bg-gray-800 rounded-lg p-4">
+                     <ul className="space-y-2">
+                        {insurancePolicies.slice(0, 10).map(policy => (
+                            <li key={policy.id} className="flex justify-between items-center p-2 bg-gray-700 rounded-md">
+                                <span className="text-white">{policy.id} - {policy.policyHolderName}</span>
+                                <button onClick={() => onViewPolicy(policy)} className="text-cyan-400 hover:underline">View Details</button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        );
+    };
+
+
+    return (
+        <DataContext.Provider value={dataContextValue}>
+            <div className="bg-gray-900 text-white min-h-screen p-6">
+                <header className="mb-6">
+                    <h1 className="text-3xl font-bold text-cyan-400">Insurance Hub</h1>
+                    <p className="text-gray-400">Comprehensive management platform for all insurance operations.</p>
+                </header>
+
+                <main>
+                    <Tabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+                    <div className="mt-4">
+                        {renderActiveTab()}
+                    </div>
+                </main>
+                
+                {selectedClaim && <ClaimDetailModal claim={selectedClaim} onClose={handleCloseClaimModal} />}
+                {selectedPolicy && <PolicyDetailModal policy={selectedPolicy} onClose={handleClosePolicyModal} />}
+
+            </div>
+        </DataContext.Provider>
+    );
+};
+
+export default InsuranceHubView;
