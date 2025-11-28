@@ -2,6 +2,12 @@ import React, { useContext, useState, useEffect, useCallback, useMemo, useRef } 
 import Card from '../../../Card';
 import { DataContext } from '../../../../context/DataContext';
 import { GoogleGenAI } from "@google/genai";
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, TimeScale } from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { format, parseISO, subDays } from 'date-fns';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, TimeScale);
+
 
 // ====================================================================================================================
 // --- Type Definitions (Extensive for all new features) ---
@@ -401,19 +407,19 @@ export interface RegistryMetrics {
 const generateId = () => Math.random().toString(36).substring(2, 15);
 const getRandomDate = (daysAgoMax: number = 30) => new Date(Date.now() - Math.random() * daysAgoMax * 24 * 60 * 60 * 1000).toISOString();
 const getRandomSeverity = (): ImageVulnerability['severity'] => {
-    const severities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'];
+    const severities: ImageVulnerability['severity'][] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'];
     return severities[Math.floor(Math.random() * severities.length)];
 };
 const getRandomImageStatus = (): ContainerImage['status'] => {
-    const statuses = ['active', 'deprecated', 'archived', 'pending_scan'];
+    const statuses: ContainerImage['status'][] = ['active', 'deprecated', 'archived', 'pending_scan'];
     return statuses[Math.floor(Math.random() * statuses.length)];
 };
 const getRandomDeploymentStatus = (): ImageDeploymentTarget['status'] => {
-    const statuses = ['healthy', 'unhealthy', 'deploying', 'pending', 'rolled_back'];
+    const statuses: ImageDeploymentTarget['status'][] = ['healthy', 'unhealthy', 'deploying', 'pending', 'rolled_back'];
     return statuses[Math.floor(Math.random() * statuses.length)];
 };
 const getRandomBuildStatus = (): BuildRun['status'] => {
-    const statuses = ['SUCCESS', 'FAILED', 'RUNNING', 'PENDING', 'CANCELLED'];
+    const statuses: BuildRun['status'][] = ['SUCCESS', 'FAILED', 'RUNNING', 'PENDING', 'CANCELLED'];
     return statuses[Math.floor(Math.random() * statuses.length)];
 };
 const generateRandomText = (wordCount: number): string => {
@@ -712,7 +718,7 @@ const generateRetentionPolicy = (index: number): RetentionPolicy => ({
 
 const generateAuditLogEntry = (): AuditLogEntry => {
     const actionTypes = ['PUSH_IMAGE', 'DELETE_TAG', 'UPDATE_POLICY', 'TRIGGER_BUILD', 'LOGIN_SUCCESS', 'LOGIN_FAILED', 'CHANGE_PERMISSION'];
-    const resourceTypes = ['image', 'repository', 'policy', 'webhook', 'build_pipeline', 'user', 'role'];
+    const resourceTypes: AuditLogEntry['resourceType'][] = ['image', 'repository', 'policy', 'webhook', 'build_pipeline', 'user', 'role'];
     const action = actionTypes[Math.floor(Math.random() * actionTypes.length)];
     const resourceType = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
     const success = Math.random() > 0.1;
@@ -755,7 +761,7 @@ const generateUserRole = (isRole: boolean): UserRole => ({
     description: `This ${isRole ? 'role' : 'user'} manages ${generateRandomText(5)} in the registry.`,
     permissions: [
         { scope: 'global', resource: '*', actions: ['read', 'pull'] },
-        ...(isRole && Math.random() > 0.5 ? [{ scope: 'repository', resource: `myorg/repo-${Math.floor(Math.random() * 3)}`, actions: ['push', 'delete'] }] : []),
+        ...(isRole && Math.random() > 0.5 ? [{ scope: 'repository' as const, resource: `myorg/repo-${Math.floor(Math.random() * 3)}`, actions: ['push', 'delete'] }] : []),
     ],
     assignedUsers: isRole ? Array.from({ length: Math.floor(Math.random() * 3) }, () => `user-${Math.floor(Math.random() * 10)}`) : undefined,
     email: isRole ? undefined : `user${Math.floor(Math.random() * 10)}@example.com`,
@@ -911,34 +917,49 @@ const generateMetrics = (): RegistryMetrics => {
     };
 };
 
-const MOCK_DATA = {
-    images: Array.from({ length: 150 }, (_, i) => generateImage(`myorg/app-service-${Math.floor(i / 15)}`, `v1.0.${i % 15}`)),
-    buildPipelines: Array.from({ length: 20 }, (_, i) => generateBuildPipeline(i)),
-    webhooks: Array.from({ length: 10 }, (_, i) => generateWebhook(i)),
-    retentionPolicies: Array.from({ length: 10 }, (_, i) => generateRetentionPolicy(i)),
-    auditLogs: Array.from({ length: 500 }, generateAuditLogEntry).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
-    userRoles: Array.from({ length: 10 }, (_, i) => generateUserRole(true)).concat(Array.from({ length: 20 }, (_, i) => generateUserRole(false))),
-    notifications: Array.from({ length: 20 }, (_, i) => ({
+const MOCK_DATA_GENERATOR = () => {
+    const images = Array.from({ length: 150 }, (_, i) => generateImage(`myorg/app-service-${Math.floor(i / 15)}`, `v1.0.${i % 15}`));
+    const buildPipelines = Array.from({ length: 20 }, (_, i) => generateBuildPipeline(i));
+    const webhooks = Array.from({ length: 10 }, (_, i) => generateWebhook(i));
+    const retentionPolicies = Array.from({ length: 10 }, (_, i) => generateRetentionPolicy(i));
+    const auditLogs = Array.from({ length: 500 }, generateAuditLogEntry).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const userRoles = Array.from({ length: 10 }, (_, i) => generateUserRole(true)).concat(Array.from({ length: 20 }, (_, i) => generateUserRole(false)));
+    
+    const notifications = Array.from({ length: 20 }, (_, i) => ({
         id: generateId(),
-        type: i % 4 === 0 ? 'alert' : (i % 4 === 1 ? 'warning' : (i % 4 === 2 ? 'info' : 'success')),
+        type: i % 4 === 0 ? 'alert' as const : (i % 4 === 1 ? 'warning' as const : (i % 4 === 2 ? 'info' as const : 'success' as const)),
         message: i % 4 === 0 ? 'Critical vulnerability detected in `myorg/app-backend:latest`!' : (i % 4 === 1 ? 'Retention policy `prod-cleanup-policy-1` failed to run.' : (i % 4 === 2 ? 'New image `myorg/frontend-app:v2.0.0` pushed.' : 'Build pipeline `frontend-app-ci-1` completed successfully.')),
         timestamp: getRandomDate(14),
         read: i % 2 === 0,
-        priority: Math.random() > 0.7 ? 'HIGH' : (Math.random() > 0.5 ? 'MEDIUM' : 'LOW'),
-        source: ['Registry Scanner', 'Build System', 'User Activity', 'AI Insights'][Math.floor(Math.random() * 4)],
-        actions: Math.random() > 0.6 ? [{ label: 'View Image', action: 'view_image', payload: { imageId: MOCK_DATA.images[0]?.id } }] : [],
+        priority: Math.random() > 0.7 ? 'HIGH' as const : (Math.random() > 0.5 ? 'MEDIUM' as const : 'LOW' as const),
+        source: ['Registry Scanner', 'Build System', 'User Activity', 'AI Insights'][Math.floor(Math.random() * 4)] as 'Registry Scanner' | 'Build System' | 'User Activity' | 'AI Insights',
+        actions: Math.random() > 0.6 ? [{ label: 'View Image', action: 'view_image', payload: { imageId: images[0]?.id } }] : [],
         expiryDate: Math.random() > 0.8 ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
-    })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
-    metrics: generateMetrics(),
+    })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    const initialData = {
+        images,
+        buildPipelines,
+        webhooks,
+        retentionPolicies,
+        auditLogs,
+        userRoles,
+        notifications,
+        metrics: generateMetrics(),
+    };
+
+    // Populate build runs for pipelines and AI insights for images after initial generation
+    initialData.buildPipelines.forEach(bp => {
+        (bp as any).buildRuns = Array.from({ length: Math.floor(Math.random() * 10) + 3 }, () => generateBuildRun(bp.id));
+    });
+    initialData.images.forEach(img => {
+        (img as any).aiInsights = Array.from({ length: Math.floor(Math.random() * 5) }, () => generateImageAIInsight(img));
+    });
+
+    return initialData;
 };
 
-// Populate build runs for pipelines and AI insights for images after initial generation
-MOCK_DATA.buildPipelines.forEach(bp => {
-    (bp as any).buildRuns = Array.from({ length: Math.floor(Math.random() * 10) + 3 }, () => generateBuildRun(bp.id));
-});
-MOCK_DATA.images.forEach(img => {
-    (img as any).aiInsights = Array.from({ length: Math.floor(Math.random() * 5) }, () => generateImageAIInsight(img));
-});
+let MOCK_DATA = MOCK_DATA_GENERATOR();
 
 /**
  * Simulates an API call with a delay.
@@ -963,9 +984,11 @@ const simulateApiCall = <T,>(data: T, delay: number = 500): Promise<T> => {
  */
 export const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid Date';
-    return date.toLocaleString();
+    try {
+        return format(parseISO(dateString), 'MMM d, yyyy h:mm a');
+    } catch (error) {
+        return 'Invalid Date';
+    }
 };
 
 /**
@@ -1257,15 +1280,206 @@ export const Badge: React.FC<{ children: React.ReactNode; type?: 'info' | 'succe
  * @returns {JSX.Element}
  */
 export const Icon: React.FC<{ iconName: string; tooltip?: string; className?: string }> = ({ iconName, tooltip, className }) => {
-    const getIconSvg = (name: string) => {
-        switch (name.toLowerCase()) {
-            case 'shield': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 2.5a.5.5 0 01.5.5v4a.5.5 0 01-1 0V3a.5.5 0 01.5-.5zM5.5 8.5a.5.5 0 010-1h9a.5.5 0 010 1h-9zM15.5 10.5a.5.5 0 000-1h-11a.5.5 0 000 1h11zM10 12.5a.5.5 0 000-1h-5a.5.5 0 000 1h5zM4 14.5a.5.5 0 010-1h12a.5.5 0 010 1H4z" clipRule="evenodd"></path></svg>;
-            case 'rocket': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M11.666 1.334a.667.667 0 00-1.332 0l-1.333 1.333a.667.667 0 00.943.943l.722-.722v2.716l-2.062 2.063a.667.667 0 00-.063.882l.854.854a.667.667 0 00.882-.063L11.5 6.444v2.716l2.063 2.063a.667.667 0 00.882-.063l.854-.854a.667.667 0 00-.063-.882L12.444 6.444V3.728l.722.722a.667.667 0 00.943-.943l-1.333-1.333zM7.333 12.333a.667.667 0 000 1.334h5.334a.667.667 0 000-1.334H7.333zM6.666 14.666a.667.667 0 000 1.334h6.668a.667.667 0 000-1.334H6.666zM6 17a.667.667 0 000 1.334h8a.667.667 0 000-1.334H6z"></path></svg>;
-            case 'cogs': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M11.493 3.504a1 1 0 01-.194.275l-2 2a1 1 0 01-1.414-1.414l2-2a1 1 0 011.414 1.414zM16 10a6 6 0 11-12 0 6 6 0 0112 0zm-5 0a1 1 0 11-2 0 1 1 0 012 0zm-3 4a1 1 0 01-1-1v-2a1 1 0 012 0v2a1 1 0 01-1 1zm4 0a1 1 0 01-1-1v-2a1 1 0 012 0v2a1 1 0 01-1 1zm-2-6a1 1 0 011-1h2a1 1 0 010 2h-2a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>;
-            case 'sync': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v2.586a1 1 0 00.293.707l.5.5a1 1 0 001.414 0l.5-.5A1 1 0 005.707 6.586L6 6.293V4a1 1 0 011-1h10a1 1 0 011 1v10a1 1 0 01-1 1h-2.293l-.5.5a1 1 0 000 1.414l.5.5a1 1 0 00.707.293H18a2 2 0 002-2V4a2 2 0 00-2-2H4zm0 2h1a1 1 0 011 1v1.586l-.293.293a.5.5 0 01-.707 0L4 7.293V4zM2 14.5a2.5 2.5 0 012.5-2.5h11a.5.5 0 010 1h-11A1.5 1.5 0 003 14.5v1a.5.5 0 01-1 0v-1z" clipRule="evenodd"></path></svg>;
-            case 'trash': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 4a1 1 0 100 2h4a1 1 0 100-2H8z" clipRule="evenodd"></path></svg>;
-            case 'plus': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>;
-            case 'edit': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd"></path></svg>;
-            case 'eye': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"></path></svg>;
-            case 'question': return <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5L6.67 11.01a1 1 0 101.732 1L9 10.428V14a1 1 0 102 0v-3.572l.598.604a.5.5 0 00.707 0 .5.5 0 000-.707L10.867 7.5A1 1 0 0010 7zM9 15a1 1 0 102 0 1 1 0 00-2 0z" clipRule="evenodd"></path></svg>;
-            case 'docker': return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 13h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6V4l3-3V1h4l-3 3v3l7-7H6
+    const iconMap: { [key: string]: JSX.Element } = {
+        shield: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />,
+        rocket: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 17.313a5 5 0 01-5-5V5a2 2 0 012-2h10a2 2 0 012 2v7.313a5 5 0 01-5 5h-4z" />,
+        cogs: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.639-.536 3.297.742 2.76 2.384a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.536 1.639-.742 3.297-2.384 2.76a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.639.536-3.297-.742-2.76-2.384a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.536-1.639.742-3.297 2.384-2.76a1.724 1.724 0 002.573-1.066zM15 12a3 3 0 11-6 0 3 3 0 016 0z" />,
+        sync: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5" />,
+        trash: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />,
+        plus: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />,
+        edit: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />,
+        eye: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />,
+        question: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+        docker: <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.83 14.83c-.85.2-1.33.68-1.33 1.37 0 .8.58 1.48 1.43 1.63.85.15 1.7-.13 2.14-.8.43-.68.4-1.6-.08-2.22-.48-.62-1.3-.87-2.16-.98zM2 13h4M6 13h2M8 13h1m3 0h1m2 0h1m2 0h1m1 0h1m-1-2h-1M5 4l3-3V1h4l-3 3v3h10V4l3-3V1h4l-3 3v3h1a1 1 0 011 1v.07a8.9 8.9 0 01-1.6 4.33 8.9 8.9 0 01-4.4 3.6H6V4z" /></g>,
+    };
+
+    const iconSvg = iconMap[iconName.toLowerCase()] || <path d="M12 12L12 12" />; // Default empty path
+
+    return (
+        <span title={tooltip} className={`inline-block ${className}`}>
+            <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                {iconSvg}
+            </svg>
+        </span>
+    );
+};
+
+const ContainerRegistryView = () => {
+    const { apiKey } = useContext(DataContext);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState(MOCK_DATA);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                // In a real app, this would be an API call
+                const freshData = MOCK_DATA_GENERATOR();
+                await simulateApiCall(freshData, 1200);
+                setData(freshData);
+            } catch (err) {
+                setError("Failed to load container registry data.");
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+    
+    if (isLoading) {
+        return <div className="p-8"><LoadingSpinner /></div>
+    }
+
+    if (error) {
+        return <div className="p-8 text-red-500">{error}</div>
+    }
+
+    return (
+        <div className="p-4 sm:p-6 lg:p-8 bg-gray-900 text-gray-100 min-h-screen">
+            <h1 className="text-3xl font-bold text-white mb-2">Container Registry</h1>
+            <p className="text-gray-400 mb-6">Manage, scan, and deploy your container images with AI-powered insights.</p>
+
+             <Card className="bg-gray-800 border border-gray-700">
+                <div className="p-4">
+                    <h2 className="text-xl font-semibold mb-4 text-white">Registry Overview</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+                        <div className="p-3 bg-gray-700/50 rounded-lg">
+                            <p className="text-2xl font-bold text-cyan-400">{data.metrics.totalRepositories}</p>
+                            <p className="text-xs text-gray-400">Repositories</p>
+                        </div>
+                        <div className="p-3 bg-gray-700/50 rounded-lg">
+                            <p className="text-2xl font-bold text-cyan-400">{data.metrics.totalImages}</p>
+                            <p className="text-xs text-gray-400">Total Images</p>
+                        </div>
+                        <div className="p-3 bg-gray-700/50 rounded-lg">
+                            <p className="text-2xl font-bold text-cyan-400">{data.metrics.totalStorageGB.toFixed(2)} GB</p>
+                            <p className="text-xs text-gray-400">Storage Used</p>
+                        </div>
+                         <div className="p-3 bg-gray-700/50 rounded-lg">
+                            <p className="text-2xl font-bold text-green-400">{data.metrics.pullsLast24Hours.toLocaleString()}</p>
+                            <p className="text-xs text-gray-400">Pulls (24h)</p>
+                        </div>
+                        <div className="p-3 bg-gray-700/50 rounded-lg">
+                            <p className="text-2xl font-bold text-red-400">{data.metrics.criticalVulnerabilitiesCount}</p>
+                            <p className="text-xs text-gray-400">Critical Vulns</p>
+                        </div>
+                         <div className="p-3 bg-gray-700/50 rounded-lg">
+                            <p className="text-2xl font-bold text-yellow-400">{data.metrics.highVulnerabilitiesCount}</p>
+                            <p className="text-xs text-gray-400">High Vulns</p>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <Card className="lg:col-span-2 bg-gray-800 border border-gray-700">
+                    <div className="p-4">
+                        <h3 className="text-lg font-semibold text-white mb-4">Pull Rate (Last 24 Hours)</h3>
+                        <div className="h-64">
+                             <Line
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: {
+                                        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                                        y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                                    }
+                                }}
+                                data={{
+                                    labels: data.metrics.pullRateHistoryHourly.map(d => format(parseISO(d.timestamp), 'HH:00')),
+                                    datasets: [{
+                                        label: 'Pulls',
+                                        data: data.metrics.pullRateHistoryHourly.map(d => d.value),
+                                        borderColor: '#22d3ee',
+                                        backgroundColor: 'rgba(34, 211, 238, 0.2)',
+                                        tension: 0.3,
+                                        fill: true
+                                    }]
+                                }}
+                            />
+                        </div>
+                    </div>
+                </Card>
+                <Card className="bg-gray-800 border border-gray-700">
+                    <div className="p-4">
+                        <h3 className="text-lg font-semibold text-white mb-4">Vulnerability Breakdown</h3>
+                        <div className="h-64 flex items-center justify-center">
+                            <Doughnut 
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'right', labels: { color: '#d1d5db' } } }
+                                }}
+                                data={{
+                                    labels: ['Critical', 'High', 'Medium', 'Low', 'Info'],
+                                    datasets: [{
+                                        data: Object.values(data.metrics.vulnerabilitySeverityBreakdown),
+                                        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'],
+                                        borderColor: '#1f2937',
+                                        borderWidth: 2,
+                                    }]
+                                }}
+                            />
+                        </div>
+                    </div>
+                </Card>
+            </div>
+             <Card className="mt-6 bg-gray-800 border border-gray-700">
+                <div className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Top Repositories by Pulls (Last 30 Days)</h3>
+                    <div className="space-y-3">
+                        {data.metrics.topRepositoriesByPulls.map(repo => (
+                            <div key={repo.repository}>
+                                <div className="flex justify-between text-sm mb-1">
+                                    <span className="text-gray-300">{repo.repository}</span>
+                                    <span className="text-gray-400">{repo.pulls.toLocaleString()} pulls</span>
+                                </div>
+                                <div className="w-full bg-gray-700 rounded-full h-2.5">
+                                    <div className="bg-cyan-600 h-2.5 rounded-full" style={{ width: `${(repo.pulls / Math.max(...data.metrics.topRepositoriesByPulls.map(r => r.pulls))) * 100}%` }}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Card>
+
+             <Card className="mt-6 bg-gray-800 border border-gray-700">
+                <div className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Recent Images</h3>
+                     <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-700">
+                            <thead className="bg-gray-700/50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Repository</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Tag</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Size</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Last Pushed</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Vulns (C/H)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-gray-800 divide-y divide-gray-700">
+                                {data.images.slice(0, 5).map(image => (
+                                    <tr key={image.id} className="hover:bg-gray-700/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{image.repository}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{image.tag}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{image.size}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{formatDate(image.lastPush)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                            <span className="text-red-500">{image.vulnerabilities.filter(v => v.severity === 'CRITICAL').length}</span> / <span className="text-orange-500">{image.vulnerabilities.filter(v => v.severity === 'HIGH').length}</span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </Card>
+
+        </div>
+    );
+}
+
+export default ContainerRegistryView;
