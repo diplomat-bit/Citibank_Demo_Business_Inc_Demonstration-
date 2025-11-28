@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useEffect, useCallback, ChangeEvent, useReducer, createContext, useContext } from 'react';
 import Card from '../../../Card';
 
 // ================================================================================================
@@ -22,11 +22,13 @@ export interface Address {
  */
 export interface PrincipalOfficerInfo {
     fullName: string;
+    title: string; // e.g., CEO, President
     email: string;
     dateOfBirth: string; // YYYY-MM-DD
     phoneNumber: string;
-    ssnLast4: string; // Last 4 digits of SSN for verification
+    ssn: string; // Full SSN, will be handled securely on backend
     address: Address;
+    isUSCitizen: boolean;
 }
 
 /**
@@ -34,14 +36,19 @@ export interface PrincipalOfficerInfo {
  */
 export interface BusinessInfo {
     businessName: string;
+    dbaName?: string; // Doing Business As
     businessType: 'sole_proprietorship' | 'llc' | 'c_corp' | 's_corp' | 'partnership' | 'non_profit';
     ein: string; // Employer Identification Number
-    industry: string;
+    naicsCode: string; // North American Industry Classification System
+    businessDescription: string;
     website?: string;
     businessAddress: Address;
+    mailingAddressSameAsBusiness: boolean;
+    mailingAddress?: Address;
     formationDate: string; // YYYY-MM-DD
-    annualRevenue: string; // Projected annual revenue
-    employeesCount: string; // Number of employees
+    formationState: string;
+    annualRevenue: string;
+    employeesCount: string;
 }
 
 /**
@@ -53,9 +60,10 @@ export interface BeneficialOwner {
     email: string;
     dateOfBirth: string;
     phoneNumber: string;
-    ssnLast4: string;
+    ssn: string; // Full SSN
     ownershipPercentage: number; // 0-100
     address: Address;
+    isControlPerson: boolean; // e.g., CEO, CFO, etc.
     identityDocument?: File | null;
 }
 
@@ -73,13 +81,13 @@ export interface FileUploadState {
  * @description Defines the types of documents required for onboarding.
  */
 export interface OnboardingDocuments {
-    identityProof: FileUploadState; // Principal Officer's ID
-    addressProof: FileUploadState; // Principal Officer's address proof
-    businessRegistration?: FileUploadState; // Business registration document
-    articlesOfIncorporation?: FileUploadState; // For Corps/LLCs
-    operatingAgreement?: FileUploadState; // For LLCs/Partnerships
-    einLetter?: FileUploadState; // IRS EIN confirmation letter
-    financialStatements?: FileUploadState; // Optional: last 2 years financial statements
+    identityProof: FileUploadState;
+    addressProof: FileUploadState;
+    businessRegistration: FileUploadState;
+    articlesOfIncorporation: FileUploadState;
+    operatingAgreement: FileUploadState;
+    einLetter: FileUploadState;
+    financialStatements: FileUploadState;
 }
 
 /**
@@ -91,6 +99,7 @@ export interface AccountType {
     description: string;
     features: string[];
     monthlyFee: number;
+    transactionLimit: string;
 }
 
 /**
@@ -110,8 +119,8 @@ export interface AdditionalService {
 export interface BankAccountLinkState {
     bankName: string;
     accountHolderName: string;
-    accountNumber: string;
-    routingNumber: string;
+    accountNumber: string; // Masked
+    routingNumber: string; // Masked
     status: 'idle' | 'linking' | 'success' | 'error';
     errorMessage?: string;
 }
@@ -122,9 +131,10 @@ export interface BankAccountLinkState {
 export interface ComplianceDeclaration {
     agreedToTerms: boolean;
     agreedToPrivacyPolicy: boolean;
+    agreedToElectronicSignature: boolean;
     fatcaStatus: 'us_person' | 'non_us_person' | 'n_a';
     crsStatus: 'tax_resident' | 'not_tax_resident' | 'n_a';
-    politicallyExposedPerson: boolean;
+    isPoliticallyExposedPerson: boolean;
     sanctionedCountriesInvolvement: boolean;
 }
 
@@ -156,8 +166,9 @@ export interface TeamMember {
 export interface APIKey {
     id: string;
     name: string;
-    key: string; // Masked for display
-    permissions: string[];
+    key?: string; // Only available on creation
+    maskedKey: string;
+    permissions: ('read:transactions' | 'write:payments' | 'read:reports')[];
     isActive: boolean;
     createdAt: string; // ISO date string
     lastUsedAt?: string; // ISO date string
@@ -172,7 +183,7 @@ export interface HardwareProduct {
     description: string;
     price: number;
     imageUrl: string;
-    quantity: number; // For the order form
+    quantity: number;
 }
 
 /**
@@ -201,19 +212,40 @@ export interface OnboardingFormData {
     teamMembers: TeamMember[];
     apiKeys: APIKey[];
     hardwareOrder: HardwareProduct[];
-    eSignatureAgreement: boolean;
-    eSignatureText: string;
+    eSignature: string; // Full name as signature
 }
 
 /**
  * @description Defines structure for validation errors.
  */
 export type FormErrors<T> = {
-    [K in keyof T]?: T[K] extends object ? FormErrors<T[K]> | string : string;
+    [K in keyof T]?: T[K] extends object ? (T[K] extends any[] ? (FormErrors<T[K][number]> | string)[] | string : FormErrors<T[K]> | string) : string;
 };
 
+/**
+ * @description Represents an AI-generated insight or suggestion.
+ */
+export interface AIInsight {
+    id: string;
+    title: string;
+    content: string;
+    type: 'suggestion' | 'warning' | 'info' | 'summary';
+    isLoading: boolean;
+}
+
+/**
+ * @description Props passed to each step component.
+ */
+export interface OnboardingStepProps {
+    formData: OnboardingFormData;
+    dispatch: React.Dispatch<any>; // Using `any` for simplicity in this large file, but can be strongly typed with OnboardingAction
+    errors: FormErrors<OnboardingFormData>;
+    setErrors: React.Dispatch<React.SetStateAction<FormErrors<OnboardingFormData>>>;
+    triggerValidation: (step: number) => boolean;
+}
+
 // ================================================================================================
-// UTILITY FUNCTIONS (Exported for modularity)
+// UTILITY FUNCTIONS
 // ================================================================================================
 
 /**
@@ -242,9 +274,27 @@ export const simulateApiCall = <T, U = any>(
 };
 
 /**
+ * @description Simulates calling a generative AI model like Gemini or ChatGPT.
+ * @param prompt - The prompt to send to the AI.
+ * @param context - Any additional context for the AI.
+ * @returns A promise that resolves with the AI-generated text.
+ */
+export const simulateAICall = async (prompt: string, context?: any): Promise<string> => {
+    console.log("AI Call initiated with prompt:", prompt, "and context:", context);
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency and processing time
+    // In a real application, this would be an API call to a service like Google's Gemini or OpenAI's GPT.
+    if (prompt.includes("business description")) {
+        return `As a leading provider of innovative ${context?.industry || 'solutions'}, ${context?.businessName || 'our company'} is dedicated to revolutionizing the market. We specialize in delivering high-quality products and services tailored to meet the evolving needs of our customers, driving growth and efficiency in the digital age.`;
+    }
+    if (prompt.includes("risk analysis")) {
+        return "Based on the provided information, the business profile presents a low-to-moderate risk. Key factors include a stable industry classification (NAICS: 541511), strong projected annual revenue, and a clear beneficial ownership structure. Potential areas for monitoring include market volatility and regulatory changes within the specified industry.";
+    }
+    return "This is a simulated AI response. In a real application, this would be a meaningful text generated by an AI model based on the provided prompt.";
+};
+
+
+/**
  * @description Validates a given email address format.
- * @param email - The email string to validate.
- * @returns True if valid, false otherwise.
  */
 export const isValidEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -252,8 +302,6 @@ export const isValidEmail = (email: string): boolean => {
 
 /**
  * @description Validates if a string is not empty.
- * @param value - The string to validate.
- * @returns True if not empty, false otherwise.
  */
 export const isNotEmpty = (value: string): boolean => {
     return value.trim().length > 0;
@@ -261,8 +309,6 @@ export const isNotEmpty = (value: string): boolean => {
 
 /**
  * @description Validates a date string in YYYY-MM-DD format.
- * @param dateString - The date string to validate.
- * @returns True if valid, false otherwise.
  */
 export const isValidDate = (dateString: string): boolean => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return false;
@@ -272,18 +318,14 @@ export const isValidDate = (dateString: string): boolean => {
 
 /**
  * @description Validates if a string represents a positive number.
- * @param value - The string to validate.
- * @returns True if valid, false otherwise.
  */
-export const isPositiveNumber = (value: string): boolean => {
-    const num = parseFloat(value);
+export const isPositiveNumber = (value: string | number): boolean => {
+    const num = parseFloat(String(value));
     return !isNaN(num) && num > 0;
 };
 
 /**
  * @description Validates a US ZIP code format.
- * @param zipCode - The ZIP code string to validate.
- * @returns True if valid, false otherwise.
  */
 export const isValidZipCode = (zipCode: string): boolean => {
     return /^\d{5}(?:[-\s]\d{4})?$/.test(zipCode);
@@ -291,19 +333,28 @@ export const isValidZipCode = (zipCode: string): boolean => {
 
 /**
  * @description Validates a 10-digit phone number.
- * @param phoneNumber - The phone number string to validate.
- * @returns True if valid, false otherwise.
  */
 export const isValidPhoneNumber = (phoneNumber: string): boolean => {
     return /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(phoneNumber);
 };
 
 /**
+ * @description Validates a US Social Security Number (SSN).
+ */
+export const isValidSSN = (ssn: string): boolean => {
+    return /^\d{3}-\d{2}-\d{4}$/.test(ssn) || /^\d{9}$/.test(ssn);
+};
+
+/**
+ * @description Validates a US Employer Identification Number (EIN).
+ */
+export const isValidEIN = (ein: string): boolean => {
+    return /^\d{2}-\d{7}$/.test(ein) || /^\d{9}$/.test(ein);
+};
+
+
+/**
  * @description Formats a number to currency string.
- * @param amount - The number to format.
- * @param currency - The currency code (e.g., 'USD').
- * @param locale - The locale string (e.g., 'en-US').
- * @returns Formatted currency string.
  */
 export const formatCurrency = (amount: number, currency: string = 'USD', locale: string = 'en-US'): string => {
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
@@ -311,13 +362,9 @@ export const formatCurrency = (amount: number, currency: string = 'USD', locale:
 
 /**
  * @description Masks a string, showing only the last N characters.
- * @param input - The string to mask.
- * @param visibleLength - The number of characters to show at the end.
- * @param maskChar - The character to use for masking.
- * @returns Masked string.
  */
 export const maskString = (input: string, visibleLength: number, maskChar: string = '*'): string => {
-    if (input.length <= visibleLength) {
+    if (!input || input.length <= visibleLength) {
         return input;
     }
     return maskChar.repeat(input.length - visibleLength) + input.slice(-visibleLength);
@@ -325,7 +372,6 @@ export const maskString = (input: string, visibleLength: number, maskChar: strin
 
 /**
  * @description Generates a unique ID (simple UUID-like string).
- * @returns A unique ID string.
  */
 export const generateUniqueId = (): string => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -337,10 +383,9 @@ export const generateUniqueId = (): string => {
 
 /**
  * @description Calculates age from a date of birth string.
- * @param dobString - Date of birth in YYYY-MM-DD format.
- * @returns The age in years.
  */
 export const calculateAge = (dobString: string): number => {
+    if (!isValidDate(dobString)) return 0;
     const dob = new Date(dobString);
     const today = new Date();
     let age = today.getFullYear() - dob.getFullYear();
@@ -385,7 +430,6 @@ export const FieldError: React.FC<{ message?: string }> = ({ message }) => {
 
 /**
  * @description A reusable file dropzone component for the document upload step.
- * Manages its own internal state for file handling and progress simulation.
  */
 export const DocumentDropzone: React.FC<{
     title: string;
@@ -409,7 +453,7 @@ export const DocumentDropzone: React.FC<{
             }
 
             const fileTypeValid = allowedFileTypes.some(type => {
-                if (type.endsWith('/*')) { // e.g., 'image/*'
+                if (type.endsWith('/*')) {
                     return file.type.startsWith(type.slice(0, -1));
                 }
                 return file.type === type;
@@ -420,10 +464,9 @@ export const DocumentDropzone: React.FC<{
                 return;
             }
 
-            onFileUploadStart(); // Notify parent that upload is starting
-            onFileChange(file); // Update parent form data with selected file
+            onFileUploadStart();
+            onFileChange(file);
 
-            // Simulate upload progress
             let currentProgress = 0;
             const interval = setInterval(() => {
                 currentProgress += 10;
@@ -500,23 +543,28 @@ export const ControlledInput: React.FC<{
     readOnly?: boolean;
     textarea?: boolean;
     required?: boolean;
-}> = ({ label, name, value, onChange, type = 'text', error, placeholder, className, readOnly, textarea, required }) => {
+    adornment?: React.ReactNode;
+}> = ({ label, name, value, onChange, type = 'text', error, placeholder, className, readOnly, textarea, required, adornment }) => {
     const InputComponent = textarea ? 'textarea' : 'input';
+    const hasAdornment = !!adornment;
     return (
         <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
                 {label} {required && <span className="text-red-400">*</span>}
             </label>
-            <InputComponent
-                type={type}
-                name={name}
-                value={value}
-                onChange={onChange}
-                className={`mt-1 w-full bg-gray-700/50 border ${error ? 'border-red-500' : 'border-gray-600'} rounded-md p-2 text-white placeholder-gray-500 focus:ring-cyan-500 focus:border-cyan-500 ${className || ''} ${readOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
-                placeholder={placeholder}
-                readOnly={readOnly}
-                rows={textarea ? 4 : undefined}
-            />
+            <div className="relative">
+                <InputComponent
+                    type={type}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    className={`mt-1 w-full bg-gray-700/50 border ${error ? 'border-red-500' : 'border-gray-600'} rounded-md p-2 text-white placeholder-gray-500 focus:ring-cyan-500 focus:border-cyan-500 ${className || ''} ${readOnly ? 'opacity-70 cursor-not-allowed' : ''} ${hasAdornment ? 'pr-10' : ''}`}
+                    placeholder={placeholder}
+                    readOnly={readOnly}
+                    rows={textarea ? 4 : undefined}
+                />
+                 {adornment && <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">{adornment}</div>}
+            </div>
             <FieldError message={error} />
         </div>
     );
@@ -571,18 +619,23 @@ export const ControlledCheckbox: React.FC<{
 }> = ({ label, name, checked, onChange, error, className, required }) => {
     return (
         <div className={`flex items-start ${className || ''}`}>
-            <input
-                type="checkbox"
-                name={name}
-                checked={checked}
-                onChange={onChange}
-                className="mt-1 h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
-                required={required}
-            />
-            <label htmlFor={name} className="ml-2 text-sm text-gray-300 cursor-pointer">
-                {label} {required && <span className="text-red-400">*</span>}
-            </label>
-            <FieldError message={error} />
+            <div className="flex items-center h-5">
+                <input
+                    id={name}
+                    type="checkbox"
+                    name={name}
+                    checked={checked}
+                    onChange={onChange}
+                    className="h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
+                    required={required}
+                />
+            </div>
+            <div className="ml-3 text-sm">
+                <label htmlFor={name} className="font-medium text-gray-300 cursor-pointer">
+                    {label} {required && <span className="text-red-400">*</span>}
+                </label>
+                <FieldError message={error} />
+            </div>
         </div>
     );
 };
@@ -592,13 +645,13 @@ export const ControlledCheckbox: React.FC<{
  */
 export const AddressForm: React.FC<{
     address: Address;
-    onChange: (field: keyof Address, value: string) => void;
+    onChange: (prefix: string, field: keyof Address, value: string) => void;
     errors: FormErrors<Address>;
-    prefix: string; // To differentiate field names if multiple addresses are on one page
+    prefix: string;
     title?: string;
 }> = ({ address, onChange, errors, prefix, title }) => {
-    const handleFieldChange = (e: ChangeEvent<HTMLInputElement>) => {
-        onChange(e.target.name.replace(`${prefix}.`, '') as keyof Address, e.target.value);
+    const handleFieldChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        onChange(prefix, e.target.name.split('.').pop() as keyof Address, e.target.value);
     };
 
     const countryOptions = [
@@ -618,4 +671,11 @@ export const AddressForm: React.FC<{
         { value: 'GA', label: 'Georgia' }, { value: 'HI', label: 'Hawaii' }, { value: 'ID', label: 'Idaho' },
         { value: 'IL', label: 'Illinois' }, { value: 'IN', label: 'Indiana' }, { value: 'IA', label: 'Iowa' },
         { value: 'KS', label: 'Kansas' }, { value: 'KY', label: 'Kentucky' }, { value: 'LA', label: 'Louisiana' },
-        { value: 'ME', label: 'Maine' }, { value: 'MD
+        { value: 'ME', label: 'Maine' }, { value: 'MD', label: 'Maryland' }, { value: 'MA', label: 'Massachusetts' },
+        { value: 'MI', label: 'Michigan' }, { value: 'MN', label: 'Minnesota' }, { value: 'MS', label: 'Mississippi' },
+        { value: 'MO', label: 'Missouri' }, { value: 'MT', label: 'Montana' }, { value: 'NE', label: 'Nebraska' },
+        { value: 'NV', label: 'Nevada' }, { value: 'NH', label: 'New Hampshire' }, { value: 'NJ', label: 'New Jersey' },
+        { value: 'NM', label: 'New Mexico' }, { value: 'NY', label: 'New York' }, { value: 'NC', label: 'North Carolina' },
+        { value: 'ND', label: 'North Dakota' }, { value: 'OH', label: 'Ohio' }, { value: 'OK', label: 'Oklahoma' },
+        { value: 'OR', label: 'Oregon' }, { value: 'PA', label: 'Pennsylvania' }, { value: 'RI', label: 'Rhode Island' },
+        { value: 'SC', label: 'South Carolina' }, { value: 'SD', label: '
