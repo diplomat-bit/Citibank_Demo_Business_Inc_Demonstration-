@@ -3,7 +3,7 @@ import Card from '../../../Card';
 import { DataContext } from '../../../../context/DataContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, ScatterChart, Scatter, ZAxis } from 'recharts';
 import { FraudCase } from '../../../../types'; // Original FraudCase type
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generativeai';
 
 // --- NEW TYPES AND INTERFACES (approx. 200-300 lines) ---
 /**
@@ -645,8 +645,8 @@ export const generateMockExtendedFraudCase = (index: number, analysts: Analyst[]
         'Unusual spending pattern: sudden spike in luxury item purchases after prolonged inactivity.',
     ]);
 
-    const transactionDetails = Array.from({ length: getRandom(1, 3) }).map(() => generateMockTransactionDetails(caseAnalyst.userId, timestamp));
-    const userProfile = generateMockUserProfile(caseAnalyst.userId);
+    const transactionDetails = Array.from({ length: getRandom(1, 3) }).map(() => generateMockTransactionDetails(id, timestamp));
+    const userProfile = generateMockUserProfile(id);
     const deviceFingerprint = generateMockDeviceFingerprint();
 
     // Link device fingerprint to user
@@ -1397,7 +1397,7 @@ export const FraudCaseDetailModal: React.FC<FraudCaseDetailModalProps> = ({
             {fraudCase.resolutionNotes && (
                 <Card title="Resolution Details" className="mt-4 bg-green-900/10 border-green-800">
                     <p className="text-sm text-green-300">{fraudCase.resolutionNotes}</p>
-                    <p className="text-xs text-green-500 mt-2">Resolved on: {formatDate(fraudCase.resolutionDate!)} by {fraudCase.decisionHistory?.[0]?.decidedBy || 'System'}</p>
+                    <p className="text-xs text-green-500 mt-2">Resolved on: {formatDate(fraudCase.resolutionDate!)} by {fraudCase.decisionHistory?.[fraudCase.decisionHistory.length -1]?.decidedBy || 'System'}</p>
                 </Card>
             )}
 
@@ -1460,7 +1460,7 @@ export const FraudCaseDetailModal: React.FC<FraudCaseDetailModalProps> = ({
                             </tr>
                         </thead>
                         <tbody>
-                            {fraudCase.transactionDetails.map((tx, idx) => (
+                            {fraudCase.transactionDetails.map((tx) => (
                                 <tr key={tx.transactionId} className="border-b border-gray-800 hover:bg-gray-800/50">
                                     <td className="px-4 py-2 font-medium text-white">{tx.transactionId}</td>
                                     <td className="px-4 py-2 font-mono">{formatCurrency(tx.amount, tx.currency)}</td>
@@ -1477,4 +1477,371 @@ export const FraudCaseDetailModal: React.FC<FraudCaseDetailModalProps> = ({
                     </table>
                 </div>
             )}
-            <h4 className="text-lg font-semibold
+        </div>
+    );
+
+    const UserProfileTab: React.FC = () => (
+        <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-white mb-2">User Profile Details</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm bg-gray-900/30 p-4 rounded-lg">
+                <div><span className="text-gray-400">User ID:</span> <span className="text-white">{fraudCase.userProfile.userId}</span></div>
+                <div><span className="text-gray-400">Username:</span> <span className="text-white">{fraudCase.userProfile.username}</span></div>
+                <div><span className="text-gray-400">Email:</span> <span className="text-white">{fraudCase.userProfile.email}</span></div>
+                <div><span className="text-gray-400">Phone:</span> <span className="text-white">{fraudCase.userProfile.phoneNumber || 'N/A'}</span></div>
+                <div><span className="text-gray-400">Account Created:</span> <span className="text-white">{formatDate(fraudCase.userProfile.accountCreationDate)}</span></div>
+                <div><span className="text-gray-400">Last Login:</span> <span className="text-white">{formatDate(fraudCase.userProfile.lastLoginDate)}</span></div>
+                <div><span className="text-gray-400">Total Transactions:</span> <span className="text-white">{fraudCase.userProfile.totalTransactions}</span></div>
+                <div><span className="text-gray-400">Total Spent:</span> <span className="text-white">{formatCurrency(fraudCase.userProfile.totalAmountSpent)}</span></div>
+                <div><span className="text-gray-400">KYC Status:</span> <span className="text-white">{fraudCase.userProfile.KYCStatus}</span></div>
+                <div><span className="text-gray-400">Loyalty Tier:</span> <span className="text-white">{fraudCase.userProfile.loyaltyTier}</span></div>
+                <div><span className="text-gray-400">Reputation Score:</span> <span className="text-white font-mono">{fraudCase.userProfile.reputationScore}</span></div>
+                <div><span className="text-gray-400">Associated Accounts:</span> <span className="text-white">{fraudCase.userProfile.associatedAccounts.join(', ') || 'None'}</span></div>
+            </div>
+        </div>
+    );
+    
+    const DeviceFingerprintTab: React.FC = () => (
+        <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-white mb-2">Device Fingerprint</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm bg-gray-900/30 p-4 rounded-lg">
+                <div><span className="text-gray-400">Fingerprint ID:</span> <span className="text-white break-all">{fraudCase.deviceFingerprint.fingerprintId}</span></div>
+                <div><span className="text-gray-400">Device Type:</span> <span className="text-white">{fraudCase.deviceFingerprint.deviceType}</span></div>
+                <div><span className="text-gray-400">OS:</span> <span className="text-white">{fraudCase.deviceFingerprint.os}</span></div>
+                <div><span className="text-gray-400">Browser:</span> <span className="text-white">{fraudCase.deviceFingerprint.browser}</span></div>
+                <div><span className="text-gray-400">Screen Resolution:</span> <span className="text-white">{fraudCase.deviceFingerprint.screenWidth}x{fraudCase.deviceFingerprint.screenHeight}</span></div>
+                <div><span className="text-gray-400">Language:</span> <span className="text-white">{fraudCase.deviceFingerprint.language}</span></div>
+                <div><span className="text-gray-400">Timezone Offset:</span> <span className="text-white">{fraudCase.deviceFingerprint.timezoneOffset} mins</span></div>
+                <div><span className="text-gray-400">VPN Detected:</span> <span className={`font-bold ${fraudCase.deviceFingerprint.vpnDetected ? 'text-red-400' : 'text-green-400'}`}>{fraudCase.deviceFingerprint.vpnDetected ? 'Yes' : 'No'}</span></div>
+                <div><span className="text-gray-400">Proxy Detected:</span> <span className={`font-bold ${fraudCase.deviceFingerprint.proxyDetected ? 'text-red-400' : 'text-green-400'}`}>{fraudCase.deviceFingerprint.proxyDetected ? 'Yes' : 'No'}</span></div>
+                <div><span className="text-gray-400">First Seen:</span> <span className="text-white">{formatDate(fraudCase.deviceFingerprint.firstSeen)}</span></div>
+                <div><span className="text-gray-400">Last Seen:</span> <span className="text-white">{formatDate(fraudCase.deviceFingerprint.lastSeen)}</span></div>
+                <div className="col-span-2"><span className="text-gray-400">Plugins:</span> <span className="text-white">{fraudCase.deviceFingerprint.plugins.join(', ')}</span></div>
+                <div className="col-span-2"><span className="text-gray-400">User Agent:</span> <span className="text-white text-xs break-all">{fraudCase.deviceFingerprint.userAgent}</span></div>
+            </div>
+        </div>
+    );
+
+    const CommentsAttachmentsTab: React.FC = () => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 className="text-lg font-semibold text-white mb-2">Comments ({fraudCase.comments.length})</h4>
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    {fraudCase.comments.map(comment => (
+                        <div key={comment.id} className="bg-gray-800 p-3 rounded-lg text-sm">
+                            <p className="text-gray-300">{comment.content}</p>
+                            <p className="text-xs text-gray-500 mt-2 text-right">
+                                {comment.analystName} - {formatDate(comment.timestamp)}
+                            </p>
+                        </div>
+                    ))}
+                    {fraudCase.comments.length === 0 && <p className="text-gray-500">No comments yet.</p>}
+                </div>
+                <div className="mt-4">
+                    <textarea
+                        value={newCommentText}
+                        onChange={(e) => setNewCommentText(e.target.value)}
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-cyan-500 focus:border-cyan-500"
+                        rows={3}
+                        placeholder="Add a new comment..."
+                    />
+                    <button
+                        onClick={handleAddComment}
+                        disabled={isUpdatingCase}
+                        className="mt-2 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                    >
+                        {isUpdatingCase ? 'Adding...' : 'Add Comment'}
+                    </button>
+                </div>
+            </div>
+            <div>
+                <h4 className="text-lg font-semibold text-white mb-2">Attachments ({fraudCase.attachments.length})</h4>
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    {fraudCase.attachments.map(att => (
+                        <div key={att.id} className="bg-gray-800 p-2 rounded-lg flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-cyan-400 font-medium">{att.filename}</p>
+                                <p className="text-xs text-gray-500">Uploaded by {att.uploadedBy} on {formatDate(att.uploadedAt)}</p>
+                            </div>
+                            <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-sm px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded">View</a>
+                        </div>
+                    ))}
+                    {fraudCase.attachments.length === 0 && <p className="text-gray-500">No attachments found.</p>}
+                </div>
+                <div className="mt-4">
+                    <input
+                        type="file"
+                        onChange={handleFileChange}
+                        className="text-sm text-gray-400 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-cyan-300 hover:file:bg-gray-600"
+                    />
+                    {newAttachmentFile && <p className="text-xs text-gray-400 mt-1">Selected: {newAttachmentFile.name}</p>}
+                    <button
+                        onClick={handleUploadAttachment}
+                        disabled={!newAttachmentFile || isUploadingAttachment}
+                        className="mt-2 px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                    >
+                        {isUploadingAttachment ? 'Uploading...' : 'Upload Attachment'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const AuditLogTab: React.FC = () => (
+        <div>
+            <h4 className="text-lg font-semibold text-white mb-2">Case Audit Log</h4>
+            <div className="max-h-96 overflow-y-auto">
+                <table className="min-w-full text-sm text-left text-gray-400">
+                    <thead className="text-xs text-gray-300 uppercase bg-gray-900/30 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-4 py-2">Timestamp</th>
+                            <th scope="col" className="px-4 py-2">Action</th>
+                            <th scope="col" className="px-4 py-2">Analyst</th>
+                            <th scope="col" className="px-4 py-2">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {fraudCase.auditLog.map(log => (
+                            <tr key={log.id} className="border-b border-gray-800">
+                                <td className="px-4 py-2 text-xs">{formatDate(log.timestamp)}</td>
+                                <td className="px-4 py-2 font-medium text-white">{log.action}</td>
+                                <td className="px-4 py-2">{log.analystName}</td>
+                                <td className="px-4 py-2 text-xs font-mono">{JSON.stringify(log.details)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'Overview': return <OverviewTab />;
+            case 'Transactions': return <TransactionsTab />;
+            case 'User Profile': return <UserProfileTab />;
+            case 'Device Fingerprint': return <DeviceFingerprintTab />;
+            case 'Comments & Attachments': return <CommentsAttachmentsTab />;
+            case 'Audit Log': return <AuditLogTab />;
+            default: return null;
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+            <div className="bg-gray-800 border border-gray-700 text-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
+                <div className="flex justify-between items-center p-4 border-b border-gray-700">
+                    <h3 className="text-xl font-bold">Case Details: {fraudCase.caseId}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                </div>
+                <div className="p-4 flex-grow overflow-y-auto">
+                    <Tabs
+                        tabs={['Overview', 'Transactions', 'User Profile', 'Device Fingerprint', 'Comments & Attachments', 'Audit Log']}
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
+                    <div className="mt-4">
+                        {renderTabContent()}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- MAIN FRAUD DETECTION VIEW ---
+const FraudDetectionView: React.FC = () => {
+    const { fraudCases } = useExtendedDataContext();
+    const [selectedFraudCase, setSelectedFraudCase] = useState<ExtendedFraudCase | null>(null);
+    const [aiSummary, setAiSummary] = useState('');
+    const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+    
+    // In a real app, this would be your Gemini API key.
+    // For this example, we are mocking the AI response.
+    // const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_API_KEY!);
+    
+    const getAiSummary = useCallback(async (caseData: FraudCase) => {
+        setIsSummaryLoading(true);
+        // Mocking an AI call to avoid needing a real API key.
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
+            const prompt = `
+                Summarize the following fraud case in 3-4 bullet points.
+                - Case ID: ${caseData.id}
+                - Amount: ${caseData.amount}
+                - Risk Score: ${caseData.riskScore}
+                - Description: ${caseData.description}
+                - Status: ${caseData.status}
+                Highlight the key risk indicators and suggest a primary course of action.
+            `;
+            const mockResponse = `
+                - High-risk transaction detected for **${formatCurrency(caseData.amount)}** with a risk score of **${caseData.riskScore}**.
+                - Key indicators point towards potential account takeover, evidenced by: ${caseData.description.toLowerCase()}.
+                - The user's activity is inconsistent with historical patterns, flagged by our behavioral models.
+                - **Primary Action**: It is recommended to contact the user for verification and place a temporary hold on the account.
+            `;
+            setAiSummary(mockResponse);
+        } catch (error) {
+            console.error("AI summary generation failed:", error);
+            setAiSummary("Failed to generate AI summary. Please check the console for details.");
+        } finally {
+            setIsSummaryLoading(false);
+        }
+    }, []);
+
+    const openCaseModal = (fraudCase: ExtendedFraudCase) => {
+        setSelectedFraudCase(fraudCase);
+    };
+
+    const closeCaseModal = () => {
+        setSelectedFraudCase(null);
+        setAiSummary('');
+    };
+
+    const handleOpenRelatedCase = (relatedCase: ExtendedFraudCase) => {
+        // This allows chaining modals for related cases
+        closeCaseModal();
+        setTimeout(() => openCaseModal(relatedCase), 300); // Small delay for smoother transition
+    };
+
+    const { 
+        updateFraudCaseStatus,
+        updateFraudCaseDetails,
+        addFraudCaseComment,
+        addFraudCaseAttachment
+    } = useExtendedDataContext();
+
+    const summaryData = useMemo(() => {
+        const totalCases = fraudCases.length;
+        const newCases = fraudCases.filter(c => c.status === 'New').length;
+        const investigatingCases = fraudCases.filter(c => c.status === 'Investigating').length;
+        const totalAmountAtRisk = fraudCases.reduce((acc, c) => acc + c.amount, 0);
+        return { totalCases, newCases, investigatingCases, totalAmountAtRisk };
+    }, [fraudCases]);
+    
+    const chartData = useMemo(() => {
+        const dailyData: { [key: string]: { new: number, resolved: number, amount: number } } = {};
+        fraudCases.forEach(c => {
+            const date = new Date(c.timestamp).toISOString().split('T')[0];
+            if (!dailyData[date]) {
+                dailyData[date] = { new: 0, resolved: 0, amount: 0 };
+            }
+            dailyData[date].new++;
+            dailyData[date].amount += c.amount;
+            if (c.status === 'Resolved' || c.status === 'Dismissed') {
+                dailyData[date].resolved++;
+            }
+        });
+
+        return Object.keys(dailyData).sort().map(date => ({
+            date,
+            'New Cases': dailyData[date].new,
+            'Resolved Cases': dailyData[date].resolved,
+            'Amount at Risk': dailyData[date].amount
+        }));
+    }, [fraudCases]);
+
+    const fraudTypeDistribution = useMemo(() => {
+        const counts: { [key: string]: number } = {};
+        fraudCases.forEach(c => {
+            counts[c.fraudType] = (counts[c.fraudType] || 0) + 1;
+        });
+        return Object.entries(counts).map(([name, value]) => ({ name, value }));
+    }, [fraudCases]);
+
+    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF427A', '#82ca9d'];
+
+
+    return (
+        <div className="p-4 bg-gray-900 text-white min-h-screen">
+            <h1 className="text-3xl font-bold mb-4 text-cyan-400">Fraud Detection Center</h1>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card title="Total Cases"><p className="text-4xl font-bold">{summaryData.totalCases}</p></Card>
+                <Card title="New Cases (High Priority)"><p className="text-4xl font-bold text-red-400">{summaryData.newCases}</p></Card>
+                <Card title="Under Investigation"><p className="text-4xl font-bold text-yellow-400">{summaryData.investigatingCases}</p></Card>
+                <Card title="Total Amount at Risk"><p className="text-4xl font-bold">{formatCurrency(summaryData.totalAmountAtRisk)}</p></Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <Card title="Fraud Case Trends (Last 60 Days)" className="lg:col-span-2 h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                            <XAxis dataKey="date" stroke="#888" fontSize={12} />
+                            <YAxis stroke="#888" fontSize={12} />
+                            <Tooltip contentStyle={{ backgroundColor: '#2d3748', border: '1px solid #4a5568' }} />
+                            <Legend />
+                            <Area type="monotone" dataKey="New Cases" stackId="1" stroke="#FF8042" fill="#FF8042" fillOpacity={0.6} />
+                            <Area type="monotone" dataKey="Resolved Cases" stackId="1" stroke="#00C49F" fill="#00C49F" fillOpacity={0.6} />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+                <Card title="Fraud Type Distribution" className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie data={fraudTypeDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label>
+                                {fraudTypeDistribution.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip contentStyle={{ backgroundColor: '#2d3748', border: '1px solid #4a5568' }} />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </Card>
+            </div>
+
+            <Card title="Fraud Cases Queue" className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left">
+                    <thead className="text-xs text-gray-400 uppercase bg-gray-800">
+                        <tr>
+                            <th scope="col" className="px-6 py-3">Case ID</th>
+                            <th scope="col" className="px-6 py-3">Timestamp</th>
+                            <th scope="col" className="px-6 py-3">Amount</th>
+                            <th scope="col" className="px-6 py-3">Risk Score</th>
+                            <th scope="col" className="px-6 py-3">Status</th>
+                            <th scope="col" className="px-6 py-3">Priority</th>
+                            <th scope="col" className="px-6 py-3">Fraud Type</th>
+                            <th scope="col" className="px-6 py-3">Analyst</th>
+                            <th scope="col" className="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {fraudCases.slice(0, 100).map(c => ( // Display first 100 cases for performance
+                            <tr key={c.id} className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700/50">
+                                <td className="px-6 py-4 font-medium">{c.caseId}</td>
+                                <td className="px-6 py-4 text-gray-300">{formatDate(c.timestamp)}</td>
+                                <td className="px-6 py-4">{formatCurrency(c.amount)}</td>
+                                <td className={`px-6 py-4 font-bold ${getRiskScoreColor(c.riskScore)}`}>{c.riskScore}</td>
+                                <td className="px-6 py-4"><StatusBadge status={c.status} /></td>
+                                <td className="px-6 py-4"><PriorityBadge priority={c.priority} /></td>
+                                <td className="px-6 py-4">{c.fraudType}</td>
+                                <td className="px-6 py-4">{c.analystName || 'Unassigned'}</td>
+                                <td className="px-6 py-4">
+                                    <button onClick={() => openCaseModal(c)} className="font-medium text-cyan-400 hover:underline">Details</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+
+            {selectedFraudCase && (
+                <FraudCaseDetailModal
+                    fraudCase={selectedFraudCase}
+                    onClose={closeCaseModal}
+                    onUpdateStatus={updateFraudCaseStatus}
+                    onUpdateDetails={updateFraudCaseDetails}
+                    onAddComment={addFraudCaseComment}
+                    onAddAttachment={addFraudCaseAttachment}
+                    aiSummary={aiSummary}
+                    isSummaryLoading={isSummaryLoading}
+                    getAiSummary={getAiSummary}
+                    analysts={MOCK_ANALYSTS}
+                    onOpenRelatedCase={handleOpenRelatedCase}
+                />
+            )}
+        </div>
+    );
+};
+
+export default FraudDetectionView;
