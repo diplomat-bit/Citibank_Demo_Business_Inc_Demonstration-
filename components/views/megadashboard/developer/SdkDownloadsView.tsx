@@ -1099,7 +1099,7 @@ export interface UserPreferences {
 }
 
 const DEFAULT_USER_PREFERENCES: UserPreferences = {
-    theme: APP_CONSTANTS.DEFAULT_THEME,
+    theme: APP_CONSTANTS.DEFAULT_THEME as 'dark' | 'light',
     receiveMarketingEmails: true,
     receiveSdkUpdateNotifications: true,
     enableAiAssistedCoding: true,
@@ -1385,7 +1385,7 @@ export const SdkDetailView: React.FC<{ sdk: Sdk; onClose: () => void; onDownload
                 <p><strong>Last Updated:</strong> {new Date(sdk.lastUpdated).toLocaleDateString()}</p>
                 <p><strong>Maintainer:</strong> {sdk.maintainer}</p>
                 <p><strong>License:</strong> {sdk.license}</p>
-                <p><strong>GitHub Stats:</strong> ⭐ {sdk.stars} | 🍴 {sdk.forks} | 🐛 {sdk.issues}</p>
+                <p><strong>GitHub Stats:</strong> ⭐ {sdk.stars} | 🍴 {sdk.forks} | 🐞 {sdk.issues}</p>
                 <p><strong>Installation:</strong> <code className="bg-gray-700 p-1 rounded text-cyan-300 text-sm">{sdk.installationCmd}</code></p>
 
                 <div>
@@ -1634,7 +1634,7 @@ export const CodeReviewAssistant: React.FC<{ selectedSdk: Sdk | null; aiConfig: 
         setIsLoading(true);
         setReviewResult('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY as string });
             const reviewPrompt = `As an expert developer and security analyst, review the following code snippet written in ${selectedSdk?.language || 'a generic language'}.
             Provide constructive feedback focusing on:
             1. Potential bugs or edge cases.
@@ -1646,12 +1646,9 @@ export const CodeReviewAssistant: React.FC<{ selectedSdk: Sdk | null; aiConfig: 
             
             Code to review:\n\`\`\`${selectedSdk?.language.toLowerCase() || ''}\n${codeToReview}\n\`\`\`\n\nProvide your review in a structured, concise format, highlighting key actionable points.`;
 
-            const response = await ai.models.generateContent({
-                model: aiConfig.model,
-                contents: reviewPrompt,
-                generationConfig: { temperature: aiConfig.temperature, maxOutputTokens: aiConfig.maxTokens }
-            });
-            setReviewResult(response.text.trim());
+            const result = await ai.getGenerativeModel({ model: aiConfig.model }).generateContent(reviewPrompt);
+            const response = await result.response;
+            setReviewResult(response.text().trim());
             addToast('Code review generated successfully!', 'success');
         } catch (error) {
             console.error('Code review error:', error);
@@ -1713,18 +1710,15 @@ export const TestCaseGenerator: React.FC<{ selectedSdk: Sdk | null; aiConfig: Ai
         setIsLoading(true);
         setGeneratedTests('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY as string });
             const testPrompt = `Generate unit tests for the following ${selectedSdk?.language || 'generic'} function/code snippet using common testing frameworks for ${selectedSdk?.language || 'that language'} (e.g., Jest/Mocha for JS, Pytest for Python, Go testing for Go).
             Focus on positive cases, edge cases, and error handling.
             
             Function/Code:\n\`\`\`${selectedSdk?.language.toLowerCase() || ''}\n${functionCode}\n\`\`\`\n\nProvide the generated tests in a clear, executable format.`;
-
-            const response = await ai.models.generateContent({
-                model: aiConfig.model,
-                contents: testPrompt,
-                generationConfig: { temperature: aiConfig.temperature, maxOutputTokens: aiConfig.maxTokens }
-            });
-            setGeneratedTests(response.text.trim());
+            
+            const result = await ai.getGenerativeModel({ model: aiConfig.model }).generateContent(testPrompt);
+            const response = await result.response;
+            setGeneratedTests(response.text().trim());
             addToast('Test cases generated successfully!', 'success');
         } catch (error) {
             console.error('Test generation error:', error);
@@ -1789,7 +1783,7 @@ export const DeploymentScriptGenerator: React.FC<{ selectedSdk: Sdk | null; aiCo
         setIsLoading(true);
         setGeneratedScript('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY as string });
             const scriptPrompt = `Generate a deployment script for an application that uses the Demobank SDK (specifically the ${selectedSdk?.language || 'relevant'} SDK if specified).
             The application is described as: "${projectDescription}".
             The target deployment environment is: "${deploymentTarget}".
@@ -1803,12 +1797,9 @@ export const DeploymentScriptGenerator: React.FC<{ selectedSdk: Sdk | null; aiCo
             
             Assume standard project structure for a ${selectedSdk?.language || 'generic'} application.`;
 
-            const response = await ai.models.generateContent({
-                model: aiConfig.model,
-                contents: scriptPrompt,
-                generationConfig: { temperature: aiConfig.temperature, maxOutputTokens: aiConfig.maxTokens }
-            });
-            setGeneratedScript(response.text.trim());
+            const result = await ai.getGenerativeModel({ model: aiConfig.model }).generateContent(scriptPrompt);
+            const response = await result.response;
+            setGeneratedScript(response.text().trim());
             addToast('Deployment script generated successfully!', 'success');
         } catch (error) {
             console.error('Deployment script generation error:', error);
@@ -2878,12 +2869,14 @@ const SdkDownloadsView: React.FC = () => {
                     valA = a.language.toLowerCase();
                     valB = b.language.toLowerCase();
                 } else if (sdkSort.sortBy === 'version') {
-                    valA = a.version.split('.').map(Number); // Simple version comparison
-                    valB = b.version.split('.').map(Number);
-                    for (let i = 0; i < Math.min(valA.length, valB.length); i++) {
-                        if (valA[i] !== valB[i]) return (valA[i] - valB[i]) * (sdkSort.sortOrder === 'asc' ? 1 : -1);
+                    const aParts = a.version.split('.').map(Number);
+                    const bParts = b.version.split('.').map(Number);
+                    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                        const aVal = aParts[i] || 0;
+                        const bVal = bParts[i] || 0;
+                        if (aVal !== bVal) return (aVal - bVal) * (sdkSort.sortOrder === 'asc' ? 1 : -1);
                     }
-                    return (valA.length - valB.length) * (sdkSort.sortOrder === 'asc' ? 1 : -1);
+                    return 0;
                 } else if (sdkSort.sortBy === 'stars') {
                     valA = a.stars;
                     valB = b.stars;
@@ -2902,7 +2895,7 @@ const SdkDownloadsView: React.FC = () => {
             });
         }
         return filtered;
-    }, [MOCK_SDKS, sdkFilters, sdkSort]);
+    }, [sdkFilters, sdkSort]);
 
     // --- Effects & Handlers ---
 
@@ -2950,16 +2943,9 @@ const SdkDownloadsView: React.FC = () => {
             Ensure the code is idiomatic for ${selectedSdk.language}.
             Output should be only the code block, no extra conversational text outside of comments in the code.`;
 
-            const response = await ai.models.generateContent({
-                model: userPreferences.aiConfig.model,
-                contents: fullPrompt,
-                generationConfig: {
-                    temperature: userPreferences.aiConfig.temperature,
-                    maxOutputTokens: userPreferences.aiConfig.maxTokens
-                }
-            });
-
-            const rawText = response.text || '';
+            const result = await ai.getGenerativeModel({ model: userPreferences.aiConfig.model }).generateContent(fullPrompt);
+            const response = await result.response;
+            const rawText = response.text() || '';
             const cleanedCode = rawText.replace(/```[a-zA-Z]*\n|```/g, '').trim();
             setGeneratedCode(cleanedCode);
             addToast('Code snippet generated successfully!', 'success');
@@ -3104,7 +3090,7 @@ const SdkDownloadsView: React.FC = () => {
      * @param {string} query - The search query.
      * @async
      */
-    const handleDocSearch = async (query: string) => {
+    const handleDocSearch = useCallback(async (query: string) => {
         setIsDocLoading(true);
         try {
             const response = await mockApiClient.searchDocumentation(query);
@@ -3118,7 +3104,7 @@ const SdkDownloadsView: React.FC = () => {
         } finally {
             setIsDocLoading(false);
         }
-    };
+    }, [addToast]);
 
     // Initialize default doc content on first render
     useEffect(() => {
@@ -3179,7 +3165,7 @@ const SdkDownloadsView: React.FC = () => {
                                     </div>
                                     <div className="mt-4 flex flex-col gap-2">
                                         <button onClick={() => handleSdkDownload(sdk)} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm">Download</button>
-                                        <button onClick={() => setSelectedSdk(sdk)} className="w-full py-2 bg-gray-600/50 hover:bg-gray-600 text-white rounded-lg text-sm">AI Code Gen</button>
+                                        <button onClick={() => { setSelectedSdk(sdk); setCurrentView('ai-lab'); }} className="w-full py-2 bg-gray-600/50 hover:bg-gray-600 text-white rounded-lg text-sm">AI Code Gen</button>
                                         <button onClick={() => setShowSdkDetail(sdk)} className="w-full py-2 bg-gray-700/50 hover:bg-gray-700 text-white rounded-lg text-sm">Details</button>
                                     </div>
                                 </Card>
@@ -3201,7 +3187,6 @@ const SdkDownloadsView: React.FC = () => {
 
                     <div className="flex flex-wrap gap-6">
                         <SdkDownloadHistory history={downloadHistory} />
-                        {/* Could add another analytics card here for more code */}
                         <Card title="SDK Quick Stats" className="flex-1 min-w-[300px]">
                             <p className="text-gray-400 mb-4">Overall SDK usage and popularity trends.</p>
                             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -3234,7 +3219,6 @@ const SdkDownloadsView: React.FC = () => {
 
                     <AiToolSelector currentTool={aiCurrentTool} onSelectTool={setAiCurrentTool} />
 
-                    {/* AI Code Generator (original functionality, expanded) */}
                     {aiCurrentTool === 'code-gen' && (
                         <Card title={`AI Code Generator for ${selectedSdk?.language || 'Any SDK'}`}>
                             {selectedSdk && (
@@ -3347,7 +3331,6 @@ const SdkDownloadsView: React.FC = () => {
                             aiConfig={userPreferences.aiConfig}
                             onConfigChange={(newConfig) => setUserPreferences(prev => ({ ...prev, aiConfig: newConfig }))}
                         />
-                        {/* Could add a 'Billing & Plans' or 'Integrations' settings card here */}
                         <Card title="Account & Profile">
                             <p className="text-gray-400 mb-4">Manage your personal account details.</p>
                             <div className="space-y-3">
