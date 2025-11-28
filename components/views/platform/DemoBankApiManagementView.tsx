@@ -1,9 +1,8 @@
+```typescript
 // components/views/platform/DemoBankApiManagementView.tsx
 import React, { useState, useMemo, useCallback, useEffect, useReducer } from 'react';
 import Card from '../../Card';
 import { GoogleGenAI } from "@google/genai";
-
-// --- START OF NEW CODE ---
 
 // SECTION 1: TYPES AND INTERFACES
 // =================================
@@ -319,9 +318,6 @@ export const generateMockApiData = (count: number): ApiResource[] => {
 // SECTION 4: HELPER & UI COMPONENTS
 // =================================
 
-// Note: In a real-world application, these would be in separate files.
-// For this exercise, they are included here.
-
 export const StatCard: React.FC<{ title: string; value: string | number; change?: string; changeType?: 'increase' | 'decrease' }> = ({ title, value, change, changeType }) => {
     const changeColor = changeType === 'increase' ? 'text-green-400' : 'text-red-400';
     return (
@@ -337,7 +333,6 @@ export const StatCard: React.FC<{ title: string; value: string | number; change?
     );
 };
 
-// A very basic chart component placeholder. A real app would use a library like Recharts or Chart.js.
 export const SimpleLineChart: React.FC<{ data: AnalyticsDataPoint[]; dataKey: 'requests' | 'errors' | 'latency'; title: string }> = ({ data, dataKey, title }) => {
     const maxValue = useMemo(() => Math.max(...data.map(p => p[dataKey])), [data, dataKey]);
     const points = useMemo(() => data.map((p, i) => {
@@ -674,7 +669,6 @@ export const ApiSettingsTab: React.FC<{ api: ApiResource; onUpdateApi: (updatedA
             status,
             updatedAt: new Date()
         });
-        // In a real app, you would probably show a success toast here.
     };
 
     return (
@@ -761,16 +755,13 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
     }
 };
 
-// --- END OF NEW CODE ---
-
 
 const DemoBankApiManagementView: React.FC = () => {
     const [prompt, setPrompt] = useState("a GET endpoint at /users/{id} that returns a user object with id, name, and email fields");
     const [generatedSpec, setGeneratedSpec] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generationError, setGenerationError] = useState('');
 
-    // --- START OF NEW/MODIFIED CODE ---
     const initialState: AppState = {
         view: 'dashboard',
         apis: [],
@@ -782,7 +773,6 @@ const DemoBankApiManagementView: React.FC = () => {
     const [state, dispatch] = useReducer(appReducer, initialState);
 
     useEffect(() => {
-        // Simulate fetching initial data
         dispatch({ type: 'SET_LOADING', payload: true });
         setTimeout(() => {
             dispatch({ type: 'SET_APIS', payload: generateMockApiData(5) });
@@ -815,29 +805,33 @@ const DemoBankApiManagementView: React.FC = () => {
         return { totalApis, activeApis, totalRequests, errorRate };
     }, [state.apis]);
     
-    // --- END OF NEW/MODIFIED CODE ---
-
     const handleGenerate = async () => {
-        setIsLoading(true);
-        setError('');
+        setIsGenerating(true);
+        setGenerationError('');
         setGeneratedSpec('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const apiKey = process.env.REACT_APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+            if (!apiKey) {
+                throw new Error("API key for AI service is not configured.");
+            }
+            const ai = new GoogleGenAI({ apiKey });
+            const model = ai.getGenerativeModel({ model: "gemini-pro" });
             const fullPrompt = `Generate a simple OpenAPI 3.0 specification in YAML format for the following API endpoint: "${prompt}". Include a basic schema for the response. Do not include markdown fences.`;
-            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt });
-            setGeneratedSpec(response.text);
+            const result = await model.generateContent(fullPrompt);
+            const response = await result.response;
+            setGeneratedSpec(response.text());
         } catch (error) {
-            setError("Error: Could not generate OpenAPI spec. Please try a different prompt.");
+            setGenerationError("Error: Could not generate OpenAPI spec. Check API key or try a different prompt.");
             console.error(error);
         } finally {
-            setIsLoading(false);
+            setIsGenerating(false);
         }
     };
     
     if (state.isLoading) {
         return (
             <div className="flex justify-center items-center h-96">
-                <p className="text-white text-lg">Loading API Management Dashboard...</p>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500"></div>
             </div>
         );
     }
@@ -865,18 +859,18 @@ const DemoBankApiManagementView: React.FC = () => {
                             className="w-full h-24 bg-gray-700/50 p-3 rounded text-white font-mono text-sm focus:ring-cyan-500 focus:border-cyan-500"
                             placeholder="e.g., a POST endpoint at /login that takes a username and password and returns a JWT token"
                         />
-                        <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg disabled:opacity-50 transition-colors">
-                            {isLoading ? 'Generating Spec...' : 'Generate Spec'}
+                        <button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg disabled:opacity-50 transition-colors">
+                            {isGenerating ? 'Generating Spec...' : 'Generate Spec'}
                         </button>
                     </Card>
 
-                    {(isLoading || generatedSpec || error) && (
+                    {(isGenerating || generatedSpec || generationError) && (
                         <Card title="Generated OpenAPI Spec (YAML)">
-                            {error && <p className="text-red-400">{error}</p>}
+                            {generationError && <p className="text-red-400">{generationError}</p>}
                             <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono bg-gray-900/50 p-4 rounded max-h-96 overflow-auto">
-                                {isLoading ? 'Generating...' : generatedSpec}
+                                {isGenerating ? 'Generating...' : generatedSpec}
                             </pre>
-                            {generatedSpec && !error && (
+                            {generatedSpec && !generationError && (
                                 <div className="mt-4 flex space-x-4">
                                     <button className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg">Copy to Clipboard</button>
                                     <button className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg">Create New API from Spec</button>
@@ -895,3 +889,4 @@ const DemoBankApiManagementView: React.FC = () => {
 };
 
 export default DemoBankApiManagementView;
+```
