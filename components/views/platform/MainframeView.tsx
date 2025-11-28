@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useReducer } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, createContext, useContext, useReducer, useRef } from 'react';
 import Card from '../../Card';
 
 // SECTION: SVG ICONS
@@ -104,6 +104,18 @@ export const IconLoader: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
+export const IconBrain: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v0A2.5 2.5 0 0 1 9.5 7v0A2.5 2.5 0 0 1 7 4.5v0A2.5 2.5 0 0 1 9.5 2m0 13.5A2.5 2.5 0 0 1 12 18v0a2.5 2.5 0 0 1-2.5 2.5v0A2.5 2.5 0 0 1 7 18v0a2.5 2.5 0 0 1 2.5-2.5m5 0A2.5 2.5 0 0 1 17 18v0a2.5 2.5 0 0 1-2.5 2.5v0a2.5 2.5 0 0 1-2.5-2.5v0a2.5 2.5 0 0 1 2.5-2.5m0-13.5A2.5 2.5 0 0 1 17 4.5v0A2.5 2.5 0 0 1 14.5 7v0A2.5 2.5 0 0 1 12 4.5v0A2.5 2.5 0 0 1 14.5 2m-5 5A2.5 2.5 0 0 1 12 9.5v0A2.5 2.5 0 0 1 9.5 12v0A2.5 2.5 0 0 1 7 9.5v0A2.5 2.5 0 0 1 9.5 7m5 0A2.5 2.5 0 0 1 17 9.5v0a2.5 2.5 0 0 1-2.5 2.5v0a2.5 2.5 0 0 1-2.5-2.5v0A2.5 2.5 0 0 1 14.5 7"/></svg>
+);
+
+export const IconShield: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+);
+
+export const IconApi: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+);
+
 
 // SECTION: TYPES AND INTERFACES
 
@@ -112,6 +124,7 @@ export type ConnectionStatus = 'CONNECTED' | 'DISCONNECTED' | 'CONNECTING' | 'ER
 export type JclJobStatus = 'SUBMITTED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'HELD' | 'UNKNOWN';
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG' | 'FATAL';
 export type DatasetType = 'PS' | 'PDS' | 'PDSE' | 'VSAM';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 export interface MainframeConnection {
     id: string;
@@ -164,13 +177,27 @@ export interface SystemHealthMetric {
 export interface ApiEndpoint {
     id: string;
     path: string;
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    method: HttpMethod;
     description: string;
     linkedCicsTransaction: string;
     enabled: boolean;
+    rateLimit: number; // requests per minute
 }
 
-export type MainframeViewType = 'dashboard' | 'connections' | 'jcl' | 'files' | 'terminal' | 'migration' | 'apiGateway' | 'logs' | 'settings';
+export interface CobolAnalysisResult {
+    summary: string;
+    complexity: {
+        cyclomatic: number;
+        linesOfCode: number;
+        estimatedMaintainability: number; // 0-100
+    };
+    modernizationSuggestions: string[];
+    potentialBugs: string[];
+    dataFlowDiagram: string; // Could be Mermaid syntax for visualization
+}
+
+
+export type MainframeViewType = 'dashboard' | 'connections' | 'jcl' | 'files' | 'terminal' | 'migration' | 'apiGateway' | 'logs' | 'security' | 'settings';
 
 // SECTION: MOCK API & DATA SIMULATION
 // This layer simulates interaction with a backend service.
@@ -289,7 +316,60 @@ export const mockApi = {
             { name: 'DB2 Threads', value: Math.floor(Math.random() * 200), unit: '', healthyThreshold: 250 },
             { name: 'I/O Rate', value: Math.random() * 5000, unit: 'ops/s', healthyThreshold: 6000 },
         ];
-    }
+    },
+
+    // --- AI & Modernization ---
+    analyzeCobolCode: async (code: string): Promise<CobolAnalysisResult> => {
+        console.log("AI: Analyzing COBOL code...");
+        await new Promise(res => setTimeout(res, 2500));
+        const lines = code.split('\n').length;
+        return {
+            summary: "This COBOL program appears to be a batch processing module for updating customer records. It reads from an input file, performs data validation, and writes to an output VSAM file. The logic is sequential with several conditional paragraphs.",
+            complexity: {
+                cyclomatic: 15 + Math.floor(lines / 20),
+                linesOfCode: lines,
+                estimatedMaintainability: Math.max(0, 85 - Math.floor(lines / 10)),
+            },
+            modernizationSuggestions: [
+                "Replace `PERFORM UNTIL` loops with more structured iteration patterns.",
+                "Extract business logic from `PROCESS-RECORD` paragraph into a separate callable module.",
+                "Consider exposing the core functionality via a CICS transaction to enable real-time access.",
+                "Replace file-based I/O with DB2 SQL calls for better data integrity and scalability."
+            ],
+            potentialBugs: [
+                "Missing `INITIALIZE` statement for working-storage variables, which could lead to data contamination between runs.",
+                "Potential for 'GO TO' statements to create unmanageable spaghetti code.",
+                "No explicit error handling for file I/O operations (e.g., file not found, permission denied)."
+            ],
+            dataFlowDiagram: `graph TD\n    A[Input File: CUST-IN] --> B{PROCESS-RECORD};\n    B --> C[VSAM DB: CUST-MASTER];\n    B --> D[Output Report: CUST-RPT];`
+        };
+    },
+    // --- API Gateway ---
+    getApiEndpoints: async (connectionId: string): Promise<ApiEndpoint[]> => {
+        console.log(`API: Fetching API endpoints for ${connectionId}...`);
+        await new Promise(res => setTimeout(res, 500));
+        return MOCK_API_ENDPOINTS;
+    },
+    saveApiEndpoint: async (endpoint: Omit<ApiEndpoint, 'id'> & {id?: string}): Promise<ApiEndpoint> => {
+         console.log(`API: Saving endpoint ${endpoint.path}...`);
+        await new Promise(res => setTimeout(res, 600));
+        if (endpoint.id) {
+            const index = MOCK_API_ENDPOINTS.findIndex(e => e.id === endpoint.id);
+            if (index !== -1) {
+                MOCK_API_ENDPOINTS[index] = { ...MOCK_API_ENDPOINTS[index], ...endpoint };
+                return MOCK_API_ENDPOINTS[index];
+            }
+        }
+        const newEndpoint: ApiEndpoint = { ...endpoint, id: `api_${Date.now()}` };
+        MOCK_API_ENDPOINTS.push(newEndpoint);
+        return newEndpoint;
+    },
+     deleteApiEndpoint: async (id: string): Promise<void> => {
+        console.log(`API: Deleting endpoint ${id}...`);
+        await new Promise(res => setTimeout(res, 300));
+        const index = MOCK_API_ENDPOINTS.findIndex(c => c.id === id);
+        if (index !== -1) MOCK_API_ENDPOINTS.splice(index, 1);
+    },
 };
 
 // --- MOCK DATA ---
@@ -332,6 +412,11 @@ let MOCK_AUDIT_LOGS: AuditLog[] = Array.from({ length: 150 }, (_, i) => ({
     level: (['INFO', 'WARN', 'ERROR'][i % 10 === 0 ? 2 : (i % 5 === 0 ? 1 : 0)]) as LogLevel,
 }));
 
+let MOCK_API_ENDPOINTS: ApiEndpoint[] = [
+    { id: 'api_1', path: '/customers/{id}', method: 'GET', description: 'Retrieve customer details', linkedCicsTransaction: 'CUST01', enabled: true, rateLimit: 100 },
+    { id: 'api_2', path: '/accounts/{id}/balance', method: 'GET', description: 'Get account balance', linkedCicsTransaction: 'ACCT05', enabled: true, rateLimit: 200 },
+    { id: 'api_3', path: '/payments', method: 'POST', description: 'Submit a new payment', linkedCicsTransaction: 'PAYM02', enabled: false, rateLimit: 50 },
+];
 
 // SECTION: GLOBAL CONTEXT
 // For sharing global state like the currently selected connection
@@ -985,6 +1070,11 @@ const IconFolder: React.FC<{ className?: string }> = ({ className }) => (
 export const TerminalEmulator: React.FC = () => {
     const [history, setHistory] = useState<string[]>(['Welcome to Mock-3270 Terminal. Type HELP for commands.']);
     const [input, setInput] = useState('');
+    const terminalEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [history]);
     
     const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -993,7 +1083,7 @@ export const TerminalEmulator: React.FC = () => {
             let response = `UNKNOWN COMMAND: ${command}`;
 
             if (command === 'HELP') {
-                response = 'Available commands: LOGIN, LOGOFF, TSO, CICS, PING';
+                response = 'Available commands: LOGIN, LOGOFF, TSO, CICS, PING, NETSTAT';
             } else if (command.startsWith('LOGIN')) {
                 response = 'ACF2 LOGON PANEL... User authenticated successfully.';
             } else if (command === 'LOGOFF') {
@@ -1004,6 +1094,8 @@ export const TerminalEmulator: React.FC = () => {
                 response = 'Entering CICS Region PROD...';
             } else if (command === 'PING') {
                 response = 'PONG!';
+            } else if (command === 'NETSTAT') {
+                response = 'Active Connections:\n  TCP/IP: 143 ports open\n  VTAM: 24 sessions active';
             }
 
             newHistory.push(response);
@@ -1018,8 +1110,9 @@ export const TerminalEmulator: React.FC = () => {
             <div className="bg-black text-green-400 font-mono p-4 rounded-lg border border-gray-700 h-[600px] flex flex-col">
                 <div className="flex-grow overflow-y-auto">
                     {history.map((line, index) => (
-                        <p key={index}>{line}</p>
+                        <p key={index} className="whitespace-pre-wrap">{line}</p>
                     ))}
+                    <div ref={terminalEndRef} />
                 </div>
                 <div className="flex items-center mt-2">
                     <span>&gt;</span>
@@ -1031,6 +1124,272 @@ export const TerminalEmulator: React.FC = () => {
                         className="bg-transparent text-green-400 font-mono w-full focus:outline-none ml-2"
                         autoFocus
                     />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * ApiGatewayManager Component
+ * Manages exposing mainframe transactions as modern REST APIs.
+ */
+export const ApiGatewayManager: React.FC = () => {
+    const { selectedConnectionId } = useMainframe();
+    const [endpoints, setEndpoints] = useState<ApiEndpoint[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingEndpoint, setEditingEndpoint] = useState<ApiEndpoint | null>(null);
+
+    const fetchEndpoints = useCallback(async () => {
+        if (!selectedConnectionId) return;
+        setIsLoading(true);
+        try {
+            const data = await mockApi.getApiEndpoints(selectedConnectionId);
+            setEndpoints(data);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [selectedConnectionId]);
+    
+    useEffect(() => {
+        fetchEndpoints();
+    }, [fetchEndpoints]);
+    
+    const handleAdd = () => {
+        setEditingEndpoint(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEdit = (endpoint: ApiEndpoint) => {
+        setEditingEndpoint(endpoint);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm("Delete this API endpoint?")) {
+            await mockApi.deleteApiEndpoint(id);
+            fetchEndpoints();
+        }
+    };
+
+    const handleSave = async (data: Omit<ApiEndpoint, 'id'>) => {
+        await mockApi.saveApiEndpoint({ ...data, id: editingEndpoint?.id });
+        fetchEndpoints();
+        setIsModalOpen(false);
+    };
+
+    const getMethodColor = (method: HttpMethod) => {
+        const colors: Record<HttpMethod, string> = {
+            'GET': 'text-green-400', 'POST': 'text-blue-400', 'PUT': 'text-yellow-400', 
+            'DELETE': 'text-red-400', 'PATCH': 'text-orange-400'
+        };
+        return colors[method] || 'text-gray-400';
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-white">API Gateway</h2>
+                 <button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md flex items-center space-x-2">
+                    <IconPlusCircle className="w-5 h-5" /><span>Create Endpoint</span>
+                </button>
+            </div>
+            {isLoading ? <Spinner /> : (
+                <div className="bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-700">
+                     <table className="min-w-full divide-y divide-gray-700">
+                        <thead className="bg-gray-900">
+                           <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Method</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Path</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Linked Transaction</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                         <tbody className="bg-gray-800 divide-y divide-gray-700">
+                            {endpoints.map(ep => (
+                                <tr key={ep.id}>
+                                    <td className="px-6 py-4"><span className={`w-3 h-3 rounded-full inline-block ${ep.enabled ? 'bg-green-500' : 'bg-gray-500'}`} title={ep.enabled ? 'Enabled' : 'Disabled'}></span></td>
+                                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${getMethodColor(ep.method)}`}>{ep.method}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-white">{ep.path}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{ep.linkedCicsTransaction}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onClick={() => handleEdit(ep)} className="text-yellow-400 hover:text-yellow-300">Edit</button>
+                                        <button onClick={() => handleDelete(ep.id)} className="text-red-400 hover:text-red-300">Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+            <ApiEndpointFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} endpoint={editingEndpoint} />
+        </div>
+    );
+};
+
+
+export const ApiEndpointFormModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (data: Omit<ApiEndpoint, 'id'>) => void;
+    endpoint: ApiEndpoint | null;
+}> = ({ isOpen, onClose, onSave, endpoint }) => {
+    const [formData, setFormData] = useState({
+        path: '', method: 'GET' as HttpMethod, description: '', linkedCicsTransaction: '', enabled: true, rateLimit: 100,
+    });
+
+    useEffect(() => {
+        if (endpoint) setFormData(endpoint);
+        else setFormData({ path: '', method: 'GET', description: '', linkedCicsTransaction: '', enabled: true, rateLimit: 100 });
+    }, [endpoint, isOpen]);
+    
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value, type } = e.target;
+        const isCheckbox = type === 'checkbox';
+        setFormData(prev => ({ ...prev, [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value }));
+    };
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={endpoint ? "Edit API Endpoint" : "Create API Endpoint"}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="col-span-1">
+                        <label className="block text-sm font-medium text-gray-300">Method</label>
+                         <select name="method" value={formData.method} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-blue-500">
+                           {(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as HttpMethod[]).map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                    </div>
+                    <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-300">Path</label>
+                        <input type="text" name="path" value={formData.path} onChange={handleChange} placeholder="/customers/{id}" required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md py-2 px-3 text-white font-mono"/>
+                    </div>
+                </div>
+                <div>
+                     <label className="block text-sm font-medium text-gray-300">Description</label>
+                     <textarea name="description" value={formData.description} onChange={handleChange} rows={2} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md py-2 px-3 text-white"/>
+                </div>
+                <div>
+                     <label className="block text-sm font-medium text-gray-300">Linked CICS Transaction</label>
+                     <input type="text" name="linkedCicsTransaction" value={formData.linkedCicsTransaction} onChange={handleChange} placeholder="CUST01" required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md py-2 px-3 text-white font-mono"/>
+                </div>
+                <div>
+                     <label className="block text-sm font-medium text-gray-300">Rate Limit (req/min)</label>
+                     <input type="number" name="rateLimit" value={formData.rateLimit} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md py-2 px-3 text-white"/>
+                </div>
+                 <div className="flex items-center">
+                    <input type="checkbox" name="enabled" checked={formData.enabled} onChange={handleChange} className="h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded"/>
+                    <label className="ml-2 block text-sm text-gray-300">Enabled</label>
+                </div>
+                <div className="pt-4 flex justify-end space-x-2">
+                    <button type="button" onClick={onClose} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md">Cancel</button>
+                    <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Save Endpoint</button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
+
+/**
+ * CobolModernizationAssistant Component
+ * Uses AI to analyze and suggest improvements for COBOL code.
+ */
+export const CobolModernizationAssistant: React.FC = () => {
+    const [code, setCode] = useState(`       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CUSTUPD.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT CUST-FILE-IN ASSIGN TO CUSTIN.
+           SELECT CUST-FILE-OUT ASSIGN TO CUSTOUT.
+       DATA DIVISION.
+       FILE SECTION.
+       FD CUST-FILE-IN.
+       01 CUST-REC-IN.
+          05 CUST-ID-IN      PIC 9(5).
+          05 CUST-NAME-IN    PIC X(30).
+          05 CUST-BAL-IN     PIC 9(7)V99.
+       FD CUST-FILE-OUT.
+       01 CUST-REC-OUT.
+          05 CUST-ID-OUT     PIC 9(5).
+          05 CUST-NAME-OUT   PIC X(30).
+          05 CUST-BAL-OUT    PIC 9(7)V99.
+       WORKING-STORAGE SECTION.
+       01 WS-EOF             PIC A(1) VALUE 'N'.
+       PROCEDURE DIVISION.
+       MAIN-PARA.
+           OPEN INPUT CUST-FILE-IN
+                OUTPUT CUST-FILE-OUT.
+           PERFORM READ-PARA UNTIL WS-EOF = 'Y'.
+           CLOSE CUST-FILE-IN
+                 CUST-FILE-OUT.
+           STOP RUN.
+       READ-PARA.
+           READ CUST-FILE-IN
+               AT END MOVE 'Y' TO WS-EOF
+               NOT AT END PERFORM PROCESS-PARA.
+       PROCESS-PARA.
+           MOVE CUST-ID-IN TO CUST-ID-OUT.
+           MOVE CUST-NAME-IN TO CUST-NAME-OUT.
+           COMPUTE CUST-BAL-OUT = CUST-BAL-IN * 1.05.
+           WRITE CUST-REC-OUT.
+    `);
+    const [analysis, setAnalysis] = useState<CobolAnalysisResult | null>(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const handleAnalyze = async () => {
+        setIsAnalyzing(true);
+        setAnalysis(null);
+        const result = await mockApi.analyzeCobolCode(code);
+        setAnalysis(result);
+        setIsAnalyzing(false);
+    };
+
+    return (
+        <div>
+            <h2 className="text-2xl font-bold text-white mb-4">COBOL Modernization Assistant</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[70vh]">
+                <div className="flex flex-col space-y-4">
+                    <h3 className="text-xl font-bold text-white">COBOL Source Code</h3>
+                    <div className="flex-grow bg-gray-900 rounded-md border border-gray-700 p-1">
+                        <textarea value={code} onChange={e => setCode(e.target.value)} className="w-full h-full bg-transparent text-white font-mono text-sm resize-none focus:outline-none p-2" />
+                    </div>
+                     <button onClick={handleAnalyze} disabled={isAnalyzing} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md flex items-center justify-center space-x-2 disabled:bg-gray-500">
+                        <IconBrain className="w-5 h-5" />
+                        <span>{isAnalyzing ? 'Analyzing with AI...' : 'Analyze Code'}</span>
+                    </button>
+                </div>
+                <div className="flex flex-col space-y-4">
+                     <h3 className="text-xl font-bold text-white">AI Analysis</h3>
+                     <div className="flex-grow bg-gray-800 rounded-lg border border-gray-700 p-4 overflow-y-auto">
+                        {isAnalyzing && <Spinner />}
+                        {analysis ? (
+                            <div className="space-y-6 text-gray-300">
+                                <div><h4 className="font-bold text-white text-lg mb-2">Summary</h4><p>{analysis.summary}</p></div>
+                                <div><h4 className="font-bold text-white text-lg mb-2">Complexity Metrics</h4>
+                                    <ul className="list-disc list-inside space-y-1">
+                                        <li>Cyclomatic Complexity: <span className="font-semibold text-blue-400">{analysis.complexity.cyclomatic}</span></li>
+                                        <li>Lines of Code: <span className="font-semibold text-blue-400">{analysis.complexity.linesOfCode}</span></li>
+                                        <li>Est. Maintainability: <span className="font-semibold text-green-400">{analysis.complexity.estimatedMaintainability}/100</span></li>
+                                    </ul>
+                                </div>
+                                <div><h4 className="font-bold text-white text-lg mb-2">Modernization Suggestions</h4>
+                                    <ul className="list-disc list-inside space-y-1">{analysis.modernizationSuggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                                </div>
+                                <div><h4 className="font-bold text-white text-lg mb-2">Potential Bugs</h4>
+                                     <ul className="list-disc list-inside space-y-1">{analysis.potentialBugs.map((b, i) => <li key={i}><span className="text-yellow-400">Warning:</span> {b}</li>)}</ul>
+                                </div>
+                            </div>
+                        ) : (
+                            !isAnalyzing && <p className="text-gray-400">Submit COBOL code for an AI-powered analysis.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -1050,6 +1409,8 @@ const MainframeView: React.FC = () => {
             case 'logs': return <AuditLogViewer />;
             case 'files': return <FileTransferView />;
             case 'terminal': return <TerminalEmulator />;
+            case 'apiGateway': return <ApiGatewayManager />;
+            case 'migration': return <CobolModernizationAssistant />;
             // Add other views here when implemented
             default: return <p>View not implemented.</p>;
         }
@@ -1083,6 +1444,8 @@ const MainframeView: React.FC = () => {
                             <Tab title="JCL Jobs" icon={<IconCode className="w-5 h-5"/>} isActive={activeView === 'jcl'} onClick={() => setActiveView('jcl')} />
                             <Tab title="File Transfer" icon={<IconFile className="w-5 h-5"/>} isActive={activeView === 'files'} onClick={() => setActiveView('files')} />
                             <Tab title="Terminal" icon={<IconTerminal className="w-5 h-5"/>} isActive={activeView === 'terminal'} onClick={() => setActiveView('terminal')} />
+                            <Tab title="API Gateway" icon={<IconApi className="w-5 h-5"/>} isActive={activeView === 'apiGateway'} onClick={() => setActiveView('apiGateway')} />
+                            <Tab title="COBOL AI" icon={<IconBrain className="w-5 h-5"/>} isActive={activeView === 'migration'} onClick={() => setActiveView('migration')} />
                             <Tab title="Audit Logs" icon={<IconLog className="w-5 h-5"/>} isActive={activeView === 'logs'} onClick={() => setActiveView('logs')} />
                         </div>
                         <div className="flex-shrink-0 ml-4">
