@@ -1,8 +1,61 @@
+```javascript
 import React, { useContext, useState, useMemo, useEffect, useCallback, createContext } from 'react';
 import Card from '../../../Card';
 import { DataContext } from '../../../../context/DataContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CorporateCard, CorporateCardControls, Transaction, UserRole, CorporateCardStatus } from '../../../../types'; // Assuming UserRole and CorporateCardStatus are in types.ts
+
+// --- START: BASE TYPE DEFINITIONS (ASSUMED TO BE IN A GLOBAL TYPES.TS) ---
+// For the purpose of a complete file, these are defined here.
+
+export type CorporateCardStatus = 'Active' | 'Frozen' | 'Expired' | 'Closed';
+export type UserRole = 'Admin' | 'Finance Manager' | 'Employee' | 'Team Lead';
+export type TransactionStatus = 'Completed' | 'Pending' | 'Declined' | 'Refunded';
+
+export interface CorporateCardControls {
+    monthlyLimit: number;
+    atm: boolean;
+    online: boolean;
+    contactless: boolean;
+    international?: boolean;
+    dailyTransactionLimit?: number;
+    singleTransactionLimit?: number;
+    allowedSpendingCategories?: string[]; // Array of MCC codes
+    blockedSpendingCategories?: string[]; // Array of MCC codes
+    recurringTransactionLimit?: number;
+    blockGambling?: boolean;
+    blockAdultContent?: boolean;
+}
+
+export interface Transaction {
+    id: string;
+    date: string;
+    description: string;
+    merchant: string;
+    amount: number;
+    currency: string;
+    category: string; // e.g., 'Software', 'Travel', 'Food'
+    status: TransactionStatus;
+}
+
+export interface CorporateCard {
+    id: string;
+    holderName: string;
+    cardNumberMask: string;
+    balance: number;
+    limit: number;
+    currency: string;
+    status: CorporateCardStatus;
+    frozen: boolean;
+    controls: CorporateCardControls;
+    transactions: Transaction[];
+    issueDate?: Date;
+    expirationDate?: Date;
+    type?: 'Physical' | 'Virtual';
+    associatedProject?: string;
+}
+
+// --- END: BASE TYPE DEFINITIONS ---
+
 
 // --- START: NEW UTILITY FUNCTIONS (EXPORTED) ---
 // These functions provide common helpers for data manipulation, formatting, and UI interactions.
@@ -689,23 +742,23 @@ export const generateMockAuditLogs = (count: number): AuditLogEntry[] => {
         switch (targetType) {
             case 'card':
                 targetId = cardIds[Math.floor(Math.random() * cardIds.length)];
-                description = `Card ${action.replace('_', ' ').toLowerCase()} for ${targetId}.`;
+                description = `Card ${action.replace(/_/g, ' ').toLowerCase()} for ${targetId}.`;
                 break;
             case 'card_request':
                 targetId = requestIds[Math.floor(Math.random() * requestIds.length)];
-                description = `Card request ${action.replace('_', ' ').toLowerCase()} for ${targetId}.`;
+                description = `Card request ${action.replace(/_/g, ' ').toLowerCase()} for ${targetId}.`;
                 break;
             case 'policy':
                 targetId = policyIds[Math.floor(Math.random() * policyIds.length)];
-                description = `Policy ${action.replace('_', ' ').toLowerCase()} for ${targetId}.`;
+                description = `Policy ${action.replace(/_/g, ' ').toLowerCase()} for ${targetId}.`;
                 break;
             case 'user':
                 targetId = cardholders[Math.floor(Math.random() * cardholders.length)].id;
-                description = `User ${action.replace('_', ' ').toLowerCase()} for ${targetId}.`;
+                description = `User ${action.replace(/_/g, ' ').toLowerCase()} for ${targetId}.`;
                 break;
             case 'virtual_card':
                 targetId = virtualCardIds[Math.floor(Math.random() * virtualCardIds.length)];
-                description = `Virtual Card ${action.replace('_', ' ').toLowerCase()} for ${targetId}.`;
+                description = `Virtual Card ${action.replace(/_/g, ' ').toLowerCase()} for ${targetId}.`;
                 break;
         }
 
@@ -795,7 +848,7 @@ export const generateMockSubscriptions = (count: number, cardIds: string[]): Sub
 
     for (let i = 0; i < count; i++) {
         const cardId = cardIds[Math.floor(Math.random() * cardIds.length)];
-        const billingCycle = billingCycles[Math.floor(Math.random() * billingCycles.length)];
+        const billingCycle = billingCycles[Math.floor(Math.random() * billingCycles.length)] as Subscription['billingCycle'];
         const startDate = new Date(Date.now() - getRandomNumber(30, 730) * 24 * 60 * 60 * 1000); // Last 2 years
         let nextBillingDate: Date;
         if (billingCycle === 'monthly') nextBillingDate = new Date(startDate.getFullYear(), startDate.getMonth() + Math.floor(getRandomNumber(1, 12)), startDate.getDate());
@@ -810,7 +863,7 @@ export const generateMockSubscriptions = (count: number, cardIds: string[]): Sub
             currency: 'USD',
             billingCycle,
             nextBillingDate: nextBillingDate,
-            status: statuses[Math.floor(Math.random() * statuses.length)],
+            status: statuses[Math.floor(Math.random() * statuses.length)] as Subscription['status'],
             category: categories[Math.floor(Math.random() * categories.length)],
             startDate,
             notes: Math.random() > 0.7 ? `Notes for ${merchantNames[i % merchantNames.length]} subscription.` : undefined,
@@ -825,7 +878,7 @@ export const generateMockBudgets = (count: number, cardIds: string[]): Budget[] 
     const departmentNames = ['Sales', 'Marketing', 'Engineering', 'HR', 'Finance', 'Operations'];
 
     for (let i = 0; i < count; i++) {
-        const period = periods[Math.floor(Math.random() * periods.length)];
+        const period = periods[Math.floor(Math.random() * periods.length)] as Budget['period'];
         const totalAmount = Math.floor(getRandomNumber(5000, 100000) / 100) * 100;
         const allocatedAmount = Math.floor(totalAmount * getRandomNumber(0.8, 1));
         const spentAmount = Math.floor(allocatedAmount * getRandomNumber(0.1, 0.9));
@@ -885,7 +938,7 @@ export const generateMockComplianceReports = (count: number): ComplianceReport[]
         const generatedDate = new Date(Date.now() - getRandomNumber(0, 90 * 24 * 60 * 60 * 1000));
         const startDate = new Date(generatedDate.getFullYear(), generatedDate.getMonth() - Math.floor(getRandomNumber(1, 6)), 1);
         const endDate = new Date(generatedDate.getFullYear(), generatedDate.getMonth(), 0);
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        const status = statuses[Math.floor(Math.random() * statuses.length)] as ComplianceReport['status'];
 
         reports.push({
             id: generateUniqueId(),
@@ -926,7 +979,7 @@ export const generateMockStatements = (count: number, cardIds: string[]): Statem
             totalSpent,
             totalRefunds,
             closingBalance,
-            status: statuses[Math.floor(Math.random() * statuses.length)],
+            status: statuses[Math.floor(Math.random() * statuses.length)] as Statement['status'],
             downloadUrl: `/statements/download/${generateUniqueId()}.pdf`,
         });
     }
@@ -1086,7 +1139,7 @@ export const AdvancedCardProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }, []);
 
     const addAuditLog = useCallback((log: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
-        setAuditLogs(prev => [...prev, { ...log, id: generateUniqueId(), timestamp: new Date() }]);
+        setAuditLogs(prev => [{ ...log, id: generateUniqueId(), timestamp: new Date() }, ...prev]);
     }, []);
 
     const addUserPermissionProfile = useCallback((profile: UserPermissionProfile) => {
@@ -1167,7 +1220,7 @@ export const AdvancedCardProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     parameters: params,
                     name: `Custom Report ${formatDate(new Date(), { month: 'short', day: 'numeric' })}`
                 };
-                setComplianceReports(prev => [...prev, newReport]);
+                setComplianceReports(prev => [newReport, ...prev]);
                 addAuditLog({ actorId: 'system', action: 'GENERATE_COMPLIANCE_REPORT', targetType: 'policy', targetId: newReport.id, description: `Generated compliance report ${newReport.name}` });
                 resolve(newReport);
             }, 1500); // Simulate network delay
@@ -1187,7 +1240,7 @@ export const AdvancedCardProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     status: 'generated',
                     downloadUrl: `/statements/download/card-${cardId}-${year}-${month}.pdf`
                 };
-                setStatements(prev => [...prev, newStatement]);
+                setStatements(prev => [newStatement, ...prev]);
                 addAuditLog({ actorId: 'system', action: 'GENERATE_STATEMENT', targetType: 'card', targetId: cardId, description: `Generated statement for card ${cardId} for ${month}/${year}` });
                 resolve(newStatement);
             }, 1500);
@@ -2052,7 +2105,13 @@ const CardCompliancePolicyTab: React.FC<CardCompliancePolicyTabProps> = ({ cardI
 
 // --- END: EXPANDED CardDetailModal SUB-COMPONENTS ---
 
-const CardDetailModal: React.FC = () => {
+interface CardDetailModalProps {
+    cardId: string | null;
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const CardDetailModal: React.FC<CardDetailModalProps> = ({ cardId, isOpen, onClose }) => {
     const context = useContext(DataContext);
     const advancedContext = useContext(AdvancedCardContext);
 
@@ -2061,13 +2120,12 @@ const CardDetailModal: React.FC = () => {
     const { corporateCards, updateCorporateCardControls } = context;
     const { data: advancedData, actions: advancedActions } = advancedContext;
 
-    const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
     const [localCardControls, setLocalCardControls] = useState<CorporateCardControls | null>(null);
 
     // Get the currently selected card from the context's corporateCards list
     const selectedCard = useMemo(() => {
-        return corporateCards.find(card => card.id === selectedCardId) || null;
-    }, [selectedCardId, corporateCards]);
+        return corporateCards.find(card => card.id === cardId) || null;
+    }, [cardId, corporateCards]);
 
     // Initialize local controls when a card is selected or its controls change in context
     useEffect(() => {
@@ -2091,6 +2149,7 @@ const CardDetailModal: React.FC = () => {
                 targetId: selectedCard.id,
                 description: `Updated controls for card ${selectedCard.cardNumberMask}.`
             });
+            onClose();
         }
     };
 
@@ -2146,24 +2205,7 @@ const CardDetailModal: React.FC = () => {
         });
     }, [advancedActions, selectedCard]);
 
-    // Use a local state for modal visibility and the ID of the card being managed
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const openModal = useCallback((card: CorporateCard) => {
-        setSelectedCardId(card.id);
-        setIsModalOpen(true);
-    }, []);
-    const closeModal = useCallback(() => {
-        setSelectedCardId(null);
-        setIsModalOpen(false);
-    }, []);
-
-    // Provide the openModal function to the parent component
-    const contextValue = useMemo(() => ({ openCardDetailModal: openModal }), [openModal]);
-    // In a real app, this would be part of a larger UI context or prop drilling.
-    // For this exercise, we can extend the DataContext implicitly or make a new context.
-    // For now, I'll assume the CardManagementView can directly call `openModal`.
-
-    if (!isModalOpen || !selectedCard || !localCardControls) return null;
+    if (!isOpen || !selectedCard || !localCardControls) return null;
 
     const tabs = [
         { label: 'Controls', key: 'controls', content: (
@@ -2193,11 +2235,11 @@ const CardDetailModal: React.FC = () => {
     ];
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={closeModal}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={onClose}>
             <div className="bg-gray-800 rounded-lg shadow-2xl max-w-4xl w-full border border-gray-700 h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="p-4 border-b border-gray-700 flex justify-between items-center">
                     <h3 className="text-xl font-semibold text-white">Manage Card: {selectedCard.holderName} (...{selectedCard.cardNumberMask})</h3>
-                    <button onClick={closeModal} className="text-gray-400 hover:text-white">✕</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white">✕</button>
                 </div>
                 <div className="flex-grow overflow-hidden flex flex-col">
                     <TabbedContent
@@ -4669,45 +4711,13 @@ export const AppGeneralSettingsPanel: React.FC = () => {
 // --- END: NEW EXPORTED COMPONENTS ---
 
 // Main CardManagementView component
-const CardManagementView: React.FC = () => {
+const CardManagementViewInternal: React.FC = () => {
     const context = useContext(DataContext);
-    const advancedContext = useContext(AdvancedCardContext);
+    if (!context) throw new Error("CardManagementView must be within a DataProvider");
+    const { corporateCards, toggleCorporateCardFreeze } = context;
 
-    if (!context || !advancedContext) throw new Error("CardManagementView must be within a DataProvider and AdvancedCardProvider");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
-    const { corporateCards, toggleCorporateCardFreeze, updateCorporateCardControls } = context;
-    const { data: advancedData, actions: advancedActions } = advancedContext;
-
-    const [selectedCardIdForModal, setSelectedCardIdForModal] = useState<string | null>(null);
-
-    // This state and function are lifted to here to control the visibility of the modal
-    // It's called from within the JSX loop for each card
     const openCardDetailModal = useCallback((card: CorporateCard) => {
-        setSelectedCardIdForModal(card.id);
-    }, []);
-
-    const closeCardDetailModal = useCallback(() => {
-        setSelectedCardIdForModal(null);
-    }, []);
-
-    // Memoize chart data to avoid recalculations on every render
-    const chartData = useMemo(() => {
-        return corporateCards.map(card => ({
-            name: card.holderName.split(' ')[0],
-            spent: card.balance, // Assuming balance is spent amount for simplicity in this chart
-            limit: card.limit,
-        }));
-    }, [corporateCards]);
-
-    // This is the card detail modal, now controlled by the parent view.
-    const CardDetailModalComponent: React.FC = () => {
-        const selected = useMemo(() => {
-            return corporateCards.find(card => card.id === selectedCardIdForModal) || null;
-        }, [selectedCardIdForModal, corporateCards]);
-
-        if (!selected || !selectedCardIdForModal) return null;
-
-        const [controls, setControls] = useState<CorporateCardControls>(selected.controls);
-
-        const handleSave = () => {
-            updateCorporateCardControls(selected.id, controls);
+        setSelectedCardId
