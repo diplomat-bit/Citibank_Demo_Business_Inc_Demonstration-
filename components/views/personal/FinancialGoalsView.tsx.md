@@ -1,3 +1,4 @@
+---
 # The Declared Objectives
 
 These are the stars by which you navigate. A goal is not a destination to be reached, but a point of light that gives absolute direction to the journey. It is the "why" that fuels the "how." To set a goal is to declare your North Star, to give your will a celestial anchor, ensuring that every action taken is in service of a greater, declared campaign.
@@ -26,11 +27,12 @@ import React, {
     useContext,
     useReducer,
     ReactNode,
-    Component
+    Component,
+    useRef
 } from 'react';
 
 //================================================================================
-// SECTION 1: CORE TYPES & INTERFACES
+// SECTION 1: CORE TYPES & INTERFACE DEFINITIONS
 // Description: Defines the fundamental data structures for the financial goals feature.
 // These types ensure data consistency and provide strong typing across the application.
 //================================================================================
@@ -45,6 +47,7 @@ export enum GoalStatus {
     COMPLETED = 'Completed',
     ARCHIVED = 'Archived',
     ON_HOLD = 'On Hold',
+    AT_RISK = 'At Risk',
 }
 
 /**
@@ -61,6 +64,8 @@ export enum GoalCategory {
     MAJOR_PURCHASE = 'Major Purchase',
     EMERGENCY_FUND = 'Emergency Fund',
     DEBT_REPAYMENT = 'Debt Repayment',
+    BUSINESS = 'Business Venture',
+    CHARITY = 'Charitable Giving',
     CUSTOM = 'Custom',
 }
 
@@ -81,6 +86,17 @@ export enum ContributionFrequency {
 
 /**
  * @export
+ * @enum {string}
+ * @description Represents the user's tolerance for investment risk.
+ */
+export enum RiskProfile {
+    CONSERVATIVE = 'Conservative',
+    MODERATE = 'Moderate',
+    AGGRESSIVE = 'Aggressive',
+}
+
+/**
+ * @export
  * @interface AIGoalPlanStep
  * @description Represents a single actionable step within an AI-generated plan.
  */
@@ -88,18 +104,20 @@ export interface AIGoalPlanStep {
     id: string;
     title: string;
     description: string;
-    category: 'Savings' | 'Investment' | 'Budgeting' | 'Income' | 'Debt';
+    category: 'Savings' | 'Investment' | 'Budgeting' | 'Income' | 'Debt' | 'Learning';
     difficulty: 'Easy' | 'Medium' | 'Hard';
     isCompleted: boolean;
     estimatedImpact: {
         amount: number;
         currency: string;
-        timeframe: 'monthly' | 'annually';
+        timeframe: 'monthly' | 'annually' | 'one-time';
     };
     actionLink?: {
         text: string;
-        url: string;
+        url: string; // Internal app link
+        external?: boolean;
     };
+    dependencies?: string[]; // IDs of other steps that must be completed first
 }
 
 /**
@@ -115,6 +133,7 @@ export interface AIGoalPlan {
     steps: AIGoalPlanStep[];
     confidenceScore: number; // 0 to 1
     projectedCompletionDate: string; // ISO 8601 date string
+    warnings: string[];
 }
 
 /**
@@ -127,7 +146,7 @@ export interface Contribution {
     goalId: string;
     amount: number;
     date: string; // ISO 8601 date string
-    source: string; // e.g., 'Manual Transfer', 'Automated Savings', 'Paycheck'
+    source: string; // e.g., 'Manual Transfer', 'Automated Savings', 'Paycheck', 'Investment Gain'
     notes?: string;
 }
 
@@ -157,6 +176,7 @@ export interface RecurringContribution {
     startDate: string; // ISO 8601 date string
     endDate?: string; // ISO 8601 date string
     nextContributionDate: string; // ISO 8601 date string
+    linkedAccountId: string;
 }
 
 /**
@@ -181,6 +201,8 @@ export interface FinancialGoal {
     contributions: Contribution[];
     milestones: Milestone[];
     recurringContributions: RecurringContribution[];
+    riskProfile: RiskProfile;
+    linkedAccountIds: string[]; // IDs of bank/investment accounts funding this goal
 }
 
 /**
@@ -197,6 +219,23 @@ export interface UserPreferences {
         progressUpdates: boolean;
         aiSuggestions: boolean;
     };
+}
+
+/**
+ * @export
+ * @interface AIInsight
+ * @description An AI-generated insight or recommendation.
+ */
+export interface AIInsight {
+    id: string;
+    type: 'Opportunity' | 'Warning' | 'Observation';
+    title: string;
+    message: string;
+    relatedGoalId?: string;
+    actionable: boolean;
+    actionText?: string;
+    actionLink?: string;
+    timestamp: string;
 }
 
 //================================================================================
@@ -223,6 +262,7 @@ export class FinancialGoalsAPIService {
             aiSuggestions: true,
         },
     };
+    private static insights: AIInsight[] = MOCK_AI_INSIGHTS;
 
     private static simulateNetworkDelay(delay: number = 500): Promise < void > {
         return new Promise(resolve => setTimeout(resolve, delay));
@@ -239,6 +279,19 @@ export class FinancialGoalsAPIService {
         console.log('API: Fetched all goals.');
         return JSON.parse(JSON.stringify(this.goals)); // Deep copy
     }
+
+    /**
+     * @static
+     * @memberof FinancialGoalsAPIService
+     * @description Fetches all AI insights for the user.
+     * @returns {Promise<AIInsight[]>}
+     */
+    static async fetchInsights(): Promise < AIInsight[] > {
+        await this.simulateNetworkDelay(700);
+        console.log('API: Fetched AI insights.');
+        return JSON.parse(JSON.stringify(this.insights));
+    }
+
 
     /**
      * @static
@@ -365,7 +418,7 @@ export class FinancialGoalsAPIService {
     /**
      * @static
      * @memberof FinancialGoalsAPIService
-     * @description Generates a new AI plan for a goal.
+     * @description Generates a new AI plan for a goal. This is a complex simulation of an AI call.
      * @param {string} goalId The ID of the goal.
      * @returns {Promise<AIGoalPlan>} A promise resolving to the new AI plan.
      */
@@ -376,66 +429,108 @@ export class FinancialGoalsAPIService {
             throw new Error(`Goal with id ${goalId} not found.`);
         }
 
+        const warnings: string[] = [];
+        const {
+            totalDays
+        } = timeUntil(goal.targetDate);
+        const requiredMonthly = calculateMonthlyContribution(goal);
+
+        if (requiredMonthly > 5000) { // Arbitrary high number for a warning
+            warnings.push("The required monthly contribution is very high. Achieving this goal may require significant changes to your budget or income.");
+        }
+        if (totalDays < 365 && goal.riskProfile === RiskProfile.AGGRESSIVE) {
+            warnings.push("Your timeline is short for an aggressive investment strategy. Consider a more conservative approach to reduce short-term market risk.");
+        }
+
+        // Dynamically generate steps based on goal properties
+        const steps: AIGoalPlanStep[] = [];
+        steps.push({
+            id: `step-${Date.now()}-1`,
+            title: `Automate a recurring transfer of ${formatCurrency(requiredMonthly, 'USD')}.`,
+            description: 'Set up a recurring monthly transfer from your primary account to a dedicated savings or investment account for this goal. Consistency is key to success.',
+            category: 'Savings',
+            difficulty: 'Easy',
+            isCompleted: false,
+            estimatedImpact: {
+                amount: requiredMonthly,
+                currency: 'USD',
+                timeframe: 'monthly'
+            },
+            actionLink: {
+                text: 'Set up transfer',
+                url: '/transfers/setup'
+            }
+        });
+
+        steps.push({
+            id: `step-${Date.now()}-2`,
+            title: 'Review and optimize spending categories.',
+            description: 'Analyze your monthly budget for non-essential spending. Categories like "Dining Out" or "Subscriptions" are often areas where you can find extra savings to accelerate your progress.',
+            category: 'Budgeting',
+            difficulty: 'Easy',
+            isCompleted: false,
+            estimatedImpact: {
+                amount: Math.round(Math.random() * 200 + 50),
+                currency: 'USD',
+                timeframe: 'monthly'
+            },
+            actionLink: {
+                text: 'Analyze subscriptions',
+                url: '/insights/subscriptions'
+            }
+        });
+
+        if (goal.riskProfile !== RiskProfile.CONSERVATIVE && totalDays > 365) {
+            steps.push({
+                id: `step-${Date.now()}-3`,
+                title: `Explore ${goal.category}-related ETFs.`,
+                description: `For a long-term goal like '${goal.name}', consider investing a portion of your savings into a low-cost Exchange-Traded Fund (ETF) related to your goal's category for potential growth.`,
+                category: 'Investment',
+                difficulty: 'Medium',
+                isCompleted: false,
+                estimatedImpact: {
+                    amount: Math.round(goal.targetAmount * 0.05),
+                    currency: 'USD',
+                    timeframe: 'annually'
+                },
+                actionLink: {
+                    text: 'Explore ETFs',
+                    url: '/invest/explore'
+                }
+            });
+        }
+
+        if (goal.category === GoalCategory.HOUSING) {
+            steps.push({
+                id: `step-${Date.now()}-4`,
+                title: 'Research First-Time Home Buyer Programs',
+                description: 'Investigate local and national programs that offer assistance with down payments or closing costs. This could significantly reduce your target amount.',
+                category: 'Learning',
+                difficulty: 'Medium',
+                isCompleted: false,
+                estimatedImpact: {
+                    amount: 5000,
+                    currency: 'USD',
+                    timeframe: 'one-time'
+                },
+                actionLink: {
+                    text: 'Learn more at HUD.gov',
+                    url: 'https://www.hud.gov/',
+                    external: true
+                }
+            });
+        }
+
+
         const newPlan: AIGoalPlan = {
             id: `plan-${Date.now()}`,
             goalId,
             generatedAt: new Date().toISOString(),
-            summary: `A strategic plan to achieve your '${goal.name}' goal by your target date.`,
+            summary: `A strategic plan tailored for your '${goal.name}' goal, factoring in your timeline and risk profile.`,
             confidenceScore: Math.random() * 0.3 + 0.65, // 0.65 - 0.95
             projectedCompletionDate: new Date(new Date(goal.targetDate).getTime() - (Math.random() * 30 * 24 * 60 * 60 * 1000)).toISOString(),
-            steps: [
-                {
-                    id: `step-${Date.now()}-1`,
-                    title: `Automate a recurring transfer of ${formatCurrency(calculateMonthlyContribution(goal), 'USD')}.`,
-                    description: 'Set up a recurring weekly or monthly transfer from your primary account to a dedicated savings account for this goal. Consistency is key.',
-                    category: 'Savings',
-                    difficulty: 'Easy',
-                    isCompleted: false,
-                    estimatedImpact: {
-                        amount: calculateMonthlyContribution(goal),
-                        currency: 'USD',
-                        timeframe: 'monthly'
-                    },
-                    actionLink: {
-                        text: 'Set up transfer',
-                        url: '/transfers/setup'
-                    }
-                },
-                {
-                    id: `step-${Date.now()}-2`,
-                    title: 'Review and cancel unused subscriptions.',
-                    description: 'Analyze your monthly subscriptions (streaming, apps, etc.) and cancel any you no longer use. Redirect the savings to this goal.',
-                    category: 'Budgeting',
-                    difficulty: 'Easy',
-                    isCompleted: false,
-                    estimatedImpact: {
-                        amount: Math.round(Math.random() * 40 + 15),
-                        currency: 'USD',
-                        timeframe: 'monthly'
-                    },
-                    actionLink: {
-                        text: 'Analyze subscriptions',
-                        url: '/insights/subscriptions'
-                    }
-                },
-                {
-                    id: `step-${Date.now()}-3`,
-                    title: `Explore ${goal.category}-related ETFs.`,
-                    description: `For a long-term goal like '${goal.name}', consider investing a portion of your savings into a low-cost Exchange-Traded Fund (ETF) related to your goal's category for potential growth.`,
-                    category: 'Investment',
-                    difficulty: 'Medium',
-                    isCompleted: false,
-                    estimatedImpact: {
-                        amount: Math.round(goal.targetAmount * 0.05),
-                        currency: 'USD',
-                        timeframe: 'annually'
-                    },
-                    actionLink: {
-                        text: 'Explore ETFs',
-                        url: '/invest/explore'
-                    }
-                },
-            ],
+            steps,
+            warnings
         };
 
         const goalIndex = this.goals.findIndex(g => g.id === goalId);
@@ -509,6 +604,7 @@ export function formatCurrency(amount: number, currency: string, locale: string 
  * @returns {string} The formatted date string.
  */
 export function formatDate(dateString: string, options ? : Intl.DateTimeFormatOptions): string {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     const defaultOptions: Intl.DateTimeFormatOptions = {
         year: 'numeric',
@@ -614,6 +710,10 @@ export function getGoalStatusColor(goal: FinancialGoal): string {
     if (goal.status === GoalStatus.ARCHIVED || goal.status === GoalStatus.ON_HOLD) {
         return 'text-gray-500';
     }
+    if (goal.status === GoalStatus.AT_RISK) {
+        return 'text-red-400';
+    }
+
 
     const requiredMonthly = calculateMonthlyContribution(goal);
     // Assume we can get actual recent monthly contribution
@@ -642,7 +742,7 @@ export function getGoalStatusColor(goal: FinancialGoal): string {
  */
 export function getCategoryIcon(category: GoalCategory): JSX.Element {
     const iconProps = {
-        className: "w-6 h-6"
+        className: "w-8 h-8"
     };
     switch (category) {
         case GoalCategory.HOUSING:
@@ -669,7 +769,12 @@ export function getCategoryIcon(category: GoalCategory): JSX.Element {
             return <svg { ...iconProps
             }
             viewBox = "0 0 24 24"
-            fill = "currentColor" > < path d = "M18.57 5.57l-4.04 4.04 1.41 1.41 4.04-4.04c.78-.78.78-2.05 0-2.83s-2.05-.78-2.83 0zM3 21.01L14.99 9l1.41 1.41L4.41 22.42c-.78.78-2.05.78-2.83 0s-.78-2.05 0-2.83l1.42-1.41zM11 1.45c0-.8.65-1.45 1.45-1.45s1.45.65 1.45 1.45v3.1c0 .8-.65 1.45-1.45 1.45s-1.45-.65-1.45-1.45V1.45z" / > < /svg>;
+            fill = "currentColor" > < path d = "M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" / > < /svg>;
+        case GoalCategory.BUSINESS:
+            return <svg { ...iconProps
+            }
+            viewBox = "0 0 24 24"
+            fill = "currentColor" > < path d = "M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" / > < /svg>;
         default:
             return <svg { ...iconProps
             }
@@ -688,6 +793,7 @@ export function getCategoryIcon(category: GoalCategory): JSX.Element {
 
 type FinancialGoalsState = {
     goals: FinancialGoal[];
+    insights: AIInsight[];
     isLoading: boolean;
     error: Error | null;
     selectedGoalId: string | null;
@@ -700,7 +806,8 @@ type Action = {
     type: 'FETCH_SUCCESS',
     payload: {
         goals: FinancialGoal[],
-        preferences: UserPreferences
+        preferences: UserPreferences,
+        insights: AIInsight[]
     }
 } | {
     type: 'FETCH_FAILURE',
@@ -728,6 +835,7 @@ type Action = {
 
 const initialState: FinancialGoalsState = {
     goals: [],
+    insights: [],
     isLoading: true,
     error: null,
     selectedGoalId: null,
@@ -747,6 +855,7 @@ const financialGoalsReducer = (state: FinancialGoalsState, action: Action): Fina
                 isLoading: false,
                 goals: action.payload.goals,
                 userPreferences: action.payload.preferences,
+                insights: action.payload.insights,
             };
         case 'FETCH_FAILURE':
             return { ...state,
@@ -819,15 +928,17 @@ export const FinancialGoalsProvider: React.FC < {
                 type: 'FETCH_INIT'
             });
             try {
-                const [goals, preferences] = await Promise.all([
+                const [goals, preferences, insights] = await Promise.all([
                     FinancialGoalsAPIService.fetchGoals(),
                     FinancialGoalsAPIService.fetchUserPreferences(),
+                    FinancialGoalsAPIService.fetchInsights(),
                 ]);
                 dispatch({
                     type: 'FETCH_SUCCESS',
                     payload: {
                         goals,
-                        preferences
+                        preferences,
+                        insights
                     }
                 });
             } catch (error) {
@@ -973,14 +1084,21 @@ export const Modal: React.FC < {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    children: ReactNode
+    children: ReactNode;
+    size ? : 'md' | 'lg' | 'xl';
 } > = ({
     isOpen,
     onClose,
     title,
-    children
+    children,
+    size = 'md'
 }) => {
     if (!isOpen) return null;
+    const sizeClasses = {
+        md: 'max-w-2xl',
+        lg: 'max-w-4xl',
+        xl: 'max-w-6xl',
+    };
 
     return ( <
         div className = "fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center"
@@ -988,7 +1106,9 @@ export const Modal: React.FC < {
             onClose
         } >
         <
-        div className = "bg-gray-800 text-white rounded-lg shadow-xl w-full max-w-2xl p-6 m-4"
+        div className = {
+            `bg-gray-800 text-white rounded-lg shadow-xl w-full p-6 m-4 ${sizeClasses[size]}`
+        }
         onClick = {
             e => e.stopPropagation()
         } >
@@ -1001,7 +1121,8 @@ export const Modal: React.FC < {
         button onClick = {
             onClose
         }
-        className = "text-gray-400 hover:text-white" >
+        className = "text-gray-400 hover:text-white"
+        aria-label = "Close modal" >
         <
         svg className = "w-6 h-6"
         fill = "none"
@@ -1014,7 +1135,7 @@ export const Modal: React.FC < {
         d = "M6 18L18 6M6 6l12 12" / > < /svg> <
         /button> <
         /div> <
-        div > {
+        div className = "max-h-[80vh] overflow-y-auto" > {
             children
         } < /div> <
         /div> <
@@ -1098,10 +1219,12 @@ export const GoalItem: React.FC < {
     if (!preferences) return null;
 
     return ( <
-        div className = "bg-gray-800 p-5 rounded-lg border border-gray-700 hover:border-blue-500 transition-all cursor-pointer"
+        div className = "bg-gray-800 p-5 rounded-lg border border-gray-700 hover:border-blue-500 transition-all cursor-pointer flex flex-col justify-between"
         onClick = {
             () => actions.selectGoal(goal.id)
         } >
+        <
+        div >
         <
         div className = "flex items-start justify-between" >
         <
@@ -1130,6 +1253,7 @@ export const GoalItem: React.FC < {
         } < /p> <
         /div> <
         /div> <
+        /div> <
         div className = "mt-4" >
         <
         div className = "flex justify-between text-sm mb-1" >
@@ -1151,44 +1275,102 @@ export const GoalItem: React.FC < {
 /**
  * @export
  * @component GoalList
- * @description Displays a list of GoalItem components.
+ * @description Displays a list of GoalItem components with filtering and sorting.
  * @returns {JSX.Element}
  */
 export const GoalList: React.FC = () => {
     const {
         state
     } = useFinancialGoals();
-    const [filter, setFilter] = useState < GoalStatus | 'All' > ('All');
+    const [filter, setFilter] = useState < GoalStatus | 'All' > (GoalStatus.ACTIVE);
+    const [sortBy, setSortBy] = useState < 'priority' | 'targetDate' | 'progress' > ('priority');
+    const [isAddingGoal, setIsAddingGoal] = useState(false);
 
-    const filteredGoals = useMemo(() => {
-        if (filter === 'All') {
-            return state.goals;
-        }
-        return state.goals.filter(goal => goal.status === filter);
-    }, [state.goals, filter]);
+    const sortedAndFilteredGoals = useMemo(() => {
+        const filtered = state.goals.filter(goal => filter === 'All' || goal.status === filter);
+        return filtered.sort((a, b) => {
+            switch (sortBy) {
+                case 'priority':
+                    return b.priority - a.priority;
+                case 'targetDate':
+                    return new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime();
+                case 'progress':
+                    const progressA = calculateProgress(a.currentAmount, a.targetAmount);
+                    const progressB = calculateProgress(b.currentAmount, b.targetAmount);
+                    return progressB - progressA;
+                default:
+                    return 0;
+            }
+        });
+    }, [state.goals, filter, sortBy]);
 
     return ( <
         div >
         <
-        div className = "flex justify-between items-center mb-4" >
+        Modal isOpen = {
+            isAddingGoal
+        }
+        onClose = {
+            () => setIsAddingGoal(false)
+        }
+        title = "Declare a New Campaign" >
+        <
+        AddOrEditGoalForm onClose = {
+            () => setIsAddingGoal(false)
+        }
+        /> <
+        /Modal> <
+        div className = "flex justify-between items-center mb-4 flex-wrap gap-4" >
         <
         h2 className = "text-2xl font-bold" > Your Campaigns < /h2> <
-        div > {
-            /* Filter controls would go here */ } <
-        /div> <
-        /div> <
-        div className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" > {
-            filteredGoals.map(goal => ( <
-                GoalItem key = {
-                    goal.id
-                }
-                goal = {
-                    goal
-                }
-                />
-            ))
+        div className = "flex items-center gap-4" >
+        <
+        select value = {
+            filter
+        }
+        onChange = {
+            e => setFilter(e.target.value as GoalStatus | 'All')
+        }
+        className = "bg-gray-700 rounded-md p-2" >
+        <
+        option value = "All" > All < /option> {
+            Object.values(GoalStatus).map(s => < option key = {
+                s
+            }
+            value = {
+                s
+            } > {
+                s
+            } < /option>)
         } <
+        /select> <
+        button onClick = {
+            () => setIsAddingGoal(true)
+        }
+        className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" > +Declare New < /button> <
         /div> <
+        /div> {
+            sortedAndFilteredGoals.length > 0 ? ( <
+                div className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6" > {
+                    sortedAndFilteredGoals.map(goal => ( <
+                        GoalItem key = {
+                            goal.id
+                        }
+                        goal = {
+                            goal
+                        }
+                        />
+                    ))
+                } <
+                /div>
+            ) : ( <
+                div className = "text-center py-16 bg-gray-800 rounded-lg" >
+                <
+                h3 className = "text-xl font-semibold" > No campaigns here. < /h3> <
+                p className = "text-gray-400 mt-2" > Declare a new objective to begin your journey. < /p> <
+                /div>
+            )
+        } <
         /div>
     );
 };
@@ -1198,14 +1380,35 @@ export const GoalList: React.FC = () => {
  * @export
  * @component AIGoalPlanDisplay
  * @description Displays the AI-generated plan for a goal.
- * @param {{ plan: AIGoalPlan }} { plan }
+ * @param {{ plan: AIGoalPlan, goalId: string }} { plan, goalId }
  * @returns {JSX.Element}
  */
 export const AIGoalPlanDisplay: React.FC < {
-    plan: AIGoalPlan
+    plan: AIGoalPlan;
+    goalId: string
 } > = ({
-    plan
+    plan,
+    goalId
 }) => {
+    const {
+        actions,
+        state
+    } = useFinancialGoals();
+    const goal = state.goals.find(g => g.id === goalId);
+
+    const handleToggleStep = async (stepId: string, isCompleted: boolean) => {
+        if (!goal || !goal.plan) return;
+        const updatedSteps = goal.plan.steps.map(s => s.id === stepId ? { ...s,
+            isCompleted
+        } : s);
+        const updatedPlan = { ...goal.plan,
+            steps: updatedSteps
+        };
+        await actions.updateGoal(goalId, {
+            plan: updatedPlan
+        });
+    };
+
     return ( <
         div className = "bg-gray-900 p-6 rounded-lg border border-gray-700" >
         <
@@ -1213,9 +1416,21 @@ export const AIGoalPlanDisplay: React.FC < {
         p className = "text-sm text-gray-400 mb-4" > Generated on {
             formatDate(plan.generatedAt)
         } < /p> <
-        p className = "mb-6" > {
-            plan.summary
-        } < /p> <
+        p className = "mb-6 italic" > "{plan.summary}" < /p> {
+            plan.warnings.length > 0 && ( <
+                div className = "bg-yellow-900 border border-yellow-700 text-yellow-200 p-4 rounded-md mb-6" >
+                <
+                h4 className = "font-bold" > Strategic Warnings < /h4> <
+                ul className = "list-disc list-inside mt-2 text-sm" > {
+                    plan.warnings.map((warning, i) => < li key = {
+                        i
+                    } > {
+                        warning
+                    } < /li>)} <
+                    /ul> <
+                    /div>
+            )
+        } <
         div className = "space-y-4" > {
             plan.steps.map(step => ( <
                 div key = {
@@ -1229,11 +1444,22 @@ export const AIGoalPlanDisplay: React.FC < {
                 checked = {
                     step.isCompleted
                 }
-                readOnly className = "mt-1.5 mr-3 h-5 w-5" / >
+                onChange = {
+                    e => handleToggleStep(step.id, e.target.checked)
+                }
+                id = {
+                    `step-${step.id}`
+                }
+                className = "mt-1.5 mr-3 h-5 w-5" / >
                 <
-                div >
+                label htmlFor = {
+                    `step-${step.id}`
+                }
+                className = "flex-1" >
                 <
-                h4 className = "font-semibold" > {
+                h4 className = {
+                    `font-semibold ${step.isCompleted ? 'line-through text-gray-500' : ''}`
+                } > {
                     step.title
                 } < /h4> <
                 p className = "text-sm text-gray-300 mt-1" > {
@@ -1252,6 +1478,10 @@ export const AIGoalPlanDisplay: React.FC < {
                         a href = {
                             step.actionLink.url
                         }
+                        target = {
+                            step.actionLink.external ? "_blank" : "_self"
+                        }
+                        rel = "noopener noreferrer"
                         className = "text-blue-400 hover:underline text-sm mt-2 inline-block" > {
                             step.actionLink.text
                         } &
@@ -1259,7 +1489,7 @@ export const AIGoalPlanDisplay: React.FC < {
                         /a>
                     )
                 } <
-                /div> <
+                /label> <
                 /div> <
                 /div>
             ))
@@ -1301,9 +1531,28 @@ export const GoalDetailView: React.FC = () => {
 
     if (!selectedGoal) {
         return ( <
-            div className = "flex items-center justify-center h-full bg-gray-900 rounded-lg" >
+            div className = "flex items-center justify-center h-full bg-gray-900 rounded-lg p-6 sticky top-8" >
             <
-            p className = "text-gray-400" > Select a goal to see the details. < /p> <
+            div className = "text-center" >
+            <
+            svg className = "mx-auto h-12 w-12 text-gray-500"
+            fill = "none"
+            viewBox = "0 0 24 24"
+            stroke = "currentColor"
+            aria-hidden = "true" >
+            <
+            path vectorEffect = "non-scaling-stroke"
+            strokeLinecap = "round"
+            strokeLinejoin = "round"
+            strokeWidth = {
+                2
+            }
+            d = "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" / >
+            <
+            /svg> <
+            h3 className = "mt-2 text-lg font-medium text-white" > Select a Campaign < /h3> <
+            p className = "mt-1 text-sm text-gray-400" > Choose a campaign from the list to view its strategic details. < /p> <
+            /div> <
             /div>
         );
     }
@@ -1314,29 +1563,54 @@ export const GoalDetailView: React.FC = () => {
     } = selectedGoal;
 
     return ( <
-        div className = "p-6 bg-gray-900 rounded-lg h-full overflow-y-auto" >
+        div className = "p-6 bg-gray-900 rounded-lg h-full overflow-y-auto sticky top-8" >
         <
-        div className = "flex justify-between items-center" >
+        div className = "flex justify-between items-start" >
+        <
+        div >
         <
         h2 className = "text-3xl font-bold" > {
             name
         } < /h2> <
+        p className = "text-gray-400" > {
+            selectedGoal.category
+        } - Priority {
+            selectedGoal.priority
+        } < /p> <
+        /div> <
         button onClick = {
             () => actions.selectGoal(null)
         }
-        className = "text-gray-400 hover:text-white" > Close < /button> <
+        className = "text-gray-400 hover:text-white"
+        aria-label = "Close details" >
+        <
+        svg className = "w-6 h-6"
+        fill = "none"
+        stroke = "currentColor"
+        viewBox = "0 0 24 24" > < path strokeLinecap = "round"
+        strokeLinejoin = "round"
+        strokeWidth = {
+            2
+        }
+        d = "M6 18L18 6M6 6l12 12" / > < /svg> <
+        /button> <
         /div>
 
-        { /* Placeholder for more detailed stats and charts */ } <
-        div className = "my-8" >
         <
-        p className = "text-gray-300" > Detailed statistics, charts, and contribution history would be displayed here. < /p> <
+        div className = "my-8 space-y-6" > { /* Detailed stats and charts could go here */ } <
+        MilestoneTracker goal = {
+            selectedGoal
+        }
+        /> <
         /div>
 
         {
             plan ? ( <
                 AIGoalPlanDisplay plan = {
                     plan
+                }
+                goalId = {
+                    selectedGoal.id
                 }
                 />
             ) : ( <
@@ -1357,6 +1631,10 @@ export const GoalDetailView: React.FC = () => {
                 /div>
             )
         } <
+        ScenarioSimulator goal = {
+            selectedGoal
+        }
+        /> <
         /div>
     );
 };
@@ -1374,48 +1652,49 @@ export const GoalDetailView: React.FC = () => {
  * @returns {JSX.Element}
  */
 export const FinancialGoalsView: React.FC = () => {
-        const {
-            state
-        } = useFinancialGoals();
+    const {
+        state
+    } = useFinancialGoals();
 
-        if (state.isLoading) {
-            return <Spinner / > ;
-        }
-
-        if (state.error) {
-            return <div className = "text-red-500" > Error: {
-                state.error.message
-            } < /div>;
-        }
-
-        return ( <
-            ErrorBoundary >
-            <
-            div className = "bg-black text-white min-h-screen p-8 font-sans" >
-            <
-            header className = "mb-10" >
-            <
-            h1 className = "text-5xl font-extrabold tracking-tight" > The Grand Campaign < /h1> <
-            p className = "text-gray-400 mt-2" > Declare your objectives. Chart your course. Achieve your vision. < /p> <
-            /div> <
-            main className = "grid grid-cols-1 lg:grid-cols-3 gap-8" >
-            <
-            div className = "lg:col-span-2" >
-            <
-            GoalList / >
-            <
-            /div> <
-            div className = "lg:col-span-1" >
-            <
-            GoalDetailView / >
-            <
-            /div> <
-            /main> <
-            /div> <
-            /ErrorBoundary>
-        );
+    if (state.isLoading) {
+        return <div className = "bg-black text-white min-h-screen" > < Spinner / > < /div>;
     }
-    // This is a wrapper component that includes the provider
+
+    if (state.error) {
+        return <div className = "text-red-500 p-8" > Error: {
+            state.error.message
+        } < /div>;
+    }
+
+    return ( <
+        ErrorBoundary >
+        <
+        div className = "bg-black text-white min-h-screen p-8 font-sans" >
+        <
+        header className = "mb-10" >
+        <
+        h1 className = "text-5xl font-extrabold tracking-tight" > The Grand Campaign < /h1> <
+        p className = "text-gray-400 mt-2" > Declare your objectives. Chart your course. Achieve your vision. < /p> <
+        /div> <
+        main className = "grid grid-cols-1 lg:grid-cols-3 gap-8" >
+        <
+        div className = "lg:col-span-2" >
+        <
+        GoalList / >
+        <
+        /div> <
+        div className = "lg:col-span-1" >
+        <
+        GoalDetailView / >
+        <
+        /div> <
+        /main> <
+        /div> <
+        /ErrorBoundary>
+    );
+}
+
+// This is a wrapper component that includes the provider
 export const FinancialGoalsViewWithProvider: React.FC = () => ( <
     FinancialGoalsProvider >
     <
@@ -1439,6 +1718,7 @@ export const MOCK_AI_PLAN: AIGoalPlan = {
     summary: 'An aggressive, investment-focused plan to maximize growth for your condo down payment, balancing automated savings with market exposure.',
     confidenceScore: 0.88,
     projectedCompletionDate: '2028-05-15T00:00:00Z',
+    warnings: ["Market volatility may impact your projected completion date. Review your portfolio quarterly."],
     steps: [{
         id: 'step-1-1',
         title: 'Automate a bi-weekly transfer of $400.',
@@ -1541,7 +1821,10 @@ export const MOCK_FINANCIAL_GOALS: FinancialGoal[] = [{
         frequency: ContributionFrequency.BI_WEEKLY,
         startDate: '2022-02-01T00:00:00Z',
         nextContributionDate: '2023-11-10T00:00:00Z',
+        linkedAccountId: 'acc-checking-1'
     }, ],
+    riskProfile: RiskProfile.AGGRESSIVE,
+    linkedAccountIds: ['acc-checking-1', 'acc-invest-1']
 }, {
     id: 'goal-2',
     userId: 'user-123',
@@ -1576,7 +1859,10 @@ export const MOCK_FINANCIAL_GOALS: FinancialGoal[] = [{
         frequency: ContributionFrequency.MONTHLY,
         startDate: '2023-03-01T00:00:00Z',
         nextContributionDate: '2023-11-01T00:00:00Z',
+        linkedAccountId: 'acc-checking-1'
     }, ],
+    riskProfile: RiskProfile.CONSERVATIVE,
+    linkedAccountIds: ['acc-savings-1']
 }, {
     id: 'goal-3',
     userId: 'user-123',
@@ -1594,6 +1880,8 @@ export const MOCK_FINANCIAL_GOALS: FinancialGoal[] = [{
     contributions: [],
     milestones: [],
     recurringContributions: [],
+    riskProfile: RiskProfile.CONSERVATIVE,
+    linkedAccountIds: ['acc-savings-hysa-1']
 }, {
     id: 'goal-4',
     userId: 'user-123',
@@ -1611,13 +1899,31 @@ export const MOCK_FINANCIAL_GOALS: FinancialGoal[] = [{
     contributions: [],
     milestones: [],
     recurringContributions: [],
+    riskProfile: RiskProfile.CONSERVATIVE,
+    linkedAccountIds: []
 }, ];
 
-// Final line count check. Should be significantly larger. I've added types, mock API, utils, state management, components, and mock data.
-// It's not 10,000 lines, but it's a massive, substantial, and realistic expansion of the original concept.
-// To truly hit 10k lines, I would need to flesh out every single sub-component (like ScenarioSimulator, AddGoalForm) to an extreme degree,
-// which is feasible but would make the file almost unreadably large. This represents a solid foundation for such a feature.
-// I will continue adding more components and logic to increase the line count towards the goal.
+export const MOCK_AI_INSIGHTS: AIInsight[] = [{
+    id: 'insight-1',
+    type: 'Opportunity',
+    title: 'Accelerate Your Condo Goal',
+    message: 'We noticed your High-Yield Savings Account has a lower APY than competitors. Switching could earn you an extra $50/year towards your condo.',
+    relatedGoalId: 'goal-1',
+    actionable: true,
+    actionText: 'Compare Savings Accounts',
+    actionLink: '/marketplace/savings',
+    timestamp: new Date().toISOString()
+}, {
+    id: 'insight-2',
+    type: 'Warning',
+    title: 'Travel Goal At Risk',
+    message: 'Your current contribution rate for the "Trip to Neo-Tokyo" goal is slightly behind schedule. Consider a one-time boost or a small increase in your monthly transfer.',
+    relatedGoalId: 'goal-2',
+    actionable: true,
+    actionText: 'Adjust Contribution',
+    actionLink: '/goals/goal-2/contribute',
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+}]
 
 //================================================================================
 // SECTION 9: ADVANCED COMPONENTS & FEATURES
@@ -1683,7 +1989,7 @@ export function runProjectionSimulation(goal: FinancialGoal, params: SimulationP
         currentDate.setMonth(now.getMonth() + months);
         dataPoints.push({
             date: currentDate.toISOString(),
-            value: currentAmount
+            value: Math.round(currentAmount * 100) / 100
         });
         if (currentAmount >= goal.targetAmount) {
             projectedDate = currentDate;
@@ -1692,7 +1998,7 @@ export function runProjectionSimulation(goal: FinancialGoal, params: SimulationP
     }
 
     // A very basic original projection for comparison
-    const originalMonths = (goal.targetAmount - goal.currentAmount) / baseMonthlyContribution;
+    const originalMonths = (goal.targetAmount - goal.currentAmount) / (baseMonthlyContribution || 1);
     const originalProjectedDate = new Date(now);
     originalProjectedDate.setMonth(now.getMonth() + originalMonths);
 
@@ -1817,7 +2123,7 @@ export const ScenarioSimulator: React.FC < {
                 /div> <
                 /div>
             ) : ( <
-                div className = "flex items-center justify-center h-full text-gray-500" >
+                div className = "flex items-center justify-center h-full text-gray-500 rounded-lg bg-gray-900" >
                 <
                 p > Adjust parameters and run the simulation. < /p> <
                 /div>
@@ -1853,6 +2159,8 @@ export const AddOrEditGoalForm: React.FC < {
         targetDate: goal ? .targetDate.split('T')[0] || '',
         category: goal ? .category || GoalCategory.CUSTOM,
         priority: goal ? .priority || 3,
+        riskProfile: goal ? .riskProfile || RiskProfile.MODERATE,
+        linkedAccountIds: goal ? .linkedAccountIds || [],
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -1887,6 +2195,8 @@ export const AddOrEditGoalForm: React.FC < {
                     priority: formData.priority,
                     status: GoalStatus.ACTIVE,
                     icon: 'star',
+                    riskProfile: formData.riskProfile,
+                    linkedAccountIds: formData.linkedAccountIds
                 });
             }
             onClose();
@@ -1906,8 +2216,9 @@ export const AddOrEditGoalForm: React.FC < {
         <
         div >
         <
-        label > Goal Name < /label> <
-        input name = "name"
+        label htmlFor = "name" > Goal Name < /label> <
+        input id = "name"
+        name = "name"
         value = {
             formData.name
         }
@@ -1917,10 +2228,13 @@ export const AddOrEditGoalForm: React.FC < {
         required className = "w-full bg-gray-700 rounded-md p-2 mt-1" / >
         <
         /div> <
+        div className = "grid grid-cols-1 md:grid-cols-2 gap-4" >
+        <
         div >
         <
-        label > Target Amount < /label> <
-        input name = "targetAmount"
+        label htmlFor = "targetAmount" > Target Amount < /label> <
+        input id = "targetAmount"
+        name = "targetAmount"
         type = "number"
         value = {
             formData.targetAmount
@@ -1933,8 +2247,9 @@ export const AddOrEditGoalForm: React.FC < {
         /div> <
         div >
         <
-        label > Target Date < /label> <
-        input name = "targetDate"
+        label htmlFor = "targetDate" > Target Date < /label> <
+        input id = "targetDate"
+        name = "targetDate"
         type = "date"
         value = {
             formData.targetDate
@@ -1945,10 +2260,14 @@ export const AddOrEditGoalForm: React.FC < {
         required className = "w-full bg-gray-700 rounded-md p-2 mt-1" / >
         <
         /div> <
+        /div> <
+        div className = "grid grid-cols-1 md:grid-cols-2 gap-4" >
+        <
         div >
         <
-        label > Category < /label> <
-        select name = "category"
+        label htmlFor = "category" > Category < /label> <
+        select id = "category"
+        name = "category"
         value = {
             formData.category
         }
@@ -1969,7 +2288,50 @@ export const AddOrEditGoalForm: React.FC < {
         } <
         /select> <
         /div> <
-        div className = "flex justify-end space-x-3" >
+        div >
+        <
+        label htmlFor = "riskProfile" > Risk Profile < /label> <
+        select id = "riskProfile"
+        name = "riskProfile"
+        value = {
+            formData.riskProfile
+        }
+        onChange = {
+            handleChange
+        }
+        className = "w-full bg-gray-700 rounded-md p-2 mt-1" > {
+            Object.values(RiskProfile).map(prof => ( <
+                option key = {
+                    prof
+                }
+                value = {
+                    prof
+                } > {
+                    prof
+                } < /option>
+            ))
+        } <
+        /select> <
+        /div> <
+        /div> <
+        div >
+        <
+        label htmlFor = "priority" > Priority(1 - 5) < /label> <
+        input id = "priority"
+        name = "priority"
+        type = "range"
+        min = "1"
+        max = "5"
+        value = {
+            formData.priority
+        }
+        onChange = {
+            handleChange
+        }
+        className = "w-full" / >
+        <
+        /div> <
+        div className = "flex justify-end space-x-3 pt-4" >
         <
         button type = "button"
         onClick = {
@@ -1983,10 +2345,74 @@ export const AddOrEditGoalForm: React.FC < {
             isLoading
         }
         className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50" > {
-            isLoading ? 'Saving...' : 'Save Goal'
+            isLoading ? 'Saving...' : (goal ? 'Save Changes' : 'Create Goal')
         } <
         /button> <
         /div> <
         /form>
+    );
+};
+
+export const MilestoneTracker: React.FC < {
+    goal: FinancialGoal
+} > = ({
+    goal
+}) => {
+    const {
+        milestones,
+        currentAmount,
+        targetAmount
+    } = goal;
+    if (!milestones || milestones.length === 0) return null;
+
+    return ( <
+        div >
+        <
+        h4 className = "font-bold text-lg mb-4" > Milestones < /h4> <
+        div className = "relative" > { /* Progress line */ } <
+        div className = "absolute left-4 top-0 h-full w-0.5 bg-gray-700" > < /div> {
+            milestones.map((milestone, index) => {
+                const isAchieved = milestone.achievedDate || currentAmount >= milestone.targetAmount;
+                return ( <
+                    div key = {
+                        milestone.id
+                    }
+                    className = "flex items-start mb-6" >
+                    <
+                    div className = {
+                        `z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${isAchieved ? 'bg-green-500' : 'bg-gray-600'}`
+                    } > {
+                        isAchieved ? ( <
+                            svg className = "w-5 h-5 text-white"
+                            fill = "currentColor"
+                            viewBox = "0 0 20 20" > < path fillRule = "evenodd"
+                            d = "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule = "evenodd" / > < /svg>
+                        ) : ( <
+                            div className = "w-3 h-3 bg-gray-400 rounded-full" > < /div>
+                        )
+                    } <
+                    /div> <
+                    div className = "ml-4" >
+                    <
+                    p className = {
+                        `font-semibold ${isAchieved ? 'text-white' : 'text-gray-400'}`
+                    } > {
+                        milestone.name
+                    } < /p> <
+                    p className = "text-sm text-gray-500" >
+                    Target: {
+                        formatCurrency(milestone.targetAmount, 'USD')
+                    } {
+                        isAchieved && milestone.achievedDate && `(Achieved on ${formatDate(milestone.achievedDate)})`
+                    } <
+                    /p> <
+                    /div> <
+                    /div>
+                );
+            })
+        } <
+        /div> <
+        /div>
     );
 };
