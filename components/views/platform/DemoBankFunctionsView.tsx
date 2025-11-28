@@ -1,6 +1,20 @@
-import React, { useState, useEffect, useCallback, useMemo, FC, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, FC, ReactNode, createContext, useContext, useReducer, useRef } from 'react';
 import Card from '../../Card';
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
+
+// In a real-world scenario, you would install this package:
+// npm install @monaco-editor/react
+// For this example, we'll create a placeholder component.
+const MonacoEditorPlaceholder: FC<{ language: string; value: string; onChange: (value: string | undefined) => void; theme: string; height: string; }> = ({ value, onChange, height }) => (
+    <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-gray-900 rounded-md p-4 font-mono text-sm text-green-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+        style={{ height }}
+        spellCheck="false"
+    />
+);
+
 
 // --- START: UTILITY & HELPER COMPONENTS ---
 
@@ -34,6 +48,16 @@ export const IconSpinner: FC<{ className?: string }> = ({ className }) => (
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
 );
+export const IconCode: FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" /></svg>
+);
+export const IconWand: FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c.238.13.487.264.74.406M9.75 3.104a2.25 2.25 0 0 0-2.25 2.25c0 1.06.416 2.036 1.148 2.763L9.75 12.5M5 14.5h8.25m-8.25 0V18a2.25 2.25 0 0 0 2.25 2.25h3.75M5 14.5a2.25 2.25 0 0 1 2.25-2.25h3.75m0 0V11.25m0 0c-.238-.13-.487-.264-.74-.406M13.25 14.5a2.25 2.25 0 0 0 2.25-2.25c0-1.06-.416-2.036-1.148-2.763L13.25 7.5M13.25 14.5h-1.5m1.5 0V18a2.25 2.25 0 0 1-2.25 2.25h-3.75m-1.5-12.896a2.25 2.25 0 0 1 2.25-2.25c1.06 0 2.036.416 2.763 1.148L12 9.75M18 16.5h.008v.008H18V16.5Zm-1.5-1.5h.008v.008H16.5V15Zm-1.5-1.5h.008v.008H15V13.5Zm-1.5-1.5h.008v.008H13.5V12Z" /></svg>
+);
+export const IconShield: FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286Zm0 0A11.953 11.953 0 0 1 12 3c1.32 0 2.591.209 3.798.598Z" /></svg>
+);
+
 
 // --- END: UTILITY & HELPER COMPONENTS ---
 
@@ -95,6 +119,7 @@ export interface FunctionDetails extends FunctionSummary {
   monthlyInvocationData: { name: string; invocations: number; errors: number }[];
   memoryUsageData: { time: string; usage: number }[];
   latestLogs: LogEntry[];
+  costPerMillionInvocations: number;
 }
 
 export type ToastMessage = {
@@ -241,6 +266,7 @@ export let MOCK_FUNCTIONS_DB: FunctionDetails[] = Array.from({ length: 42 }, (_,
             usage: getRandomInt(40, 100)
         })),
         latestLogs: generateMockLogs(50),
+        costPerMillionInvocations: 0.20 + (parseInt(getRandomElement(MEMORY_SIZES)) / 128 * 0.1)
     };
 });
 
@@ -297,7 +323,7 @@ export const api = {
         // just generate new logs for simulation
         return generateMockLogs(50);
     },
-     async createFunction(data: Omit<FunctionDetails, 'id' | 'lastModified' | 'deployments' | 'monthlyInvocationData' | 'memoryUsageData' | 'latestLogs'>): Promise<FunctionDetails> {
+     async createFunction(data: Omit<FunctionDetails, 'id' | 'lastModified' | 'deployments' | 'monthlyInvocationData' | 'memoryUsageData' | 'latestLogs' | 'costPerMillionInvocations' | 'invocations30d' | 'errorRate30d' | 'avgDurationMs' >): Promise<FunctionDetails> {
         await sleep(1200);
         const newFunc: FunctionDetails = {
             ...data,
@@ -311,6 +337,7 @@ export const api = {
             monthlyInvocationData: [],
             memoryUsageData: [],
             latestLogs: [],
+            costPerMillionInvocations: 0.20 + (parseInt(data.memory) / 128 * 0.1),
         };
         MOCK_FUNCTIONS_DB.unshift(newFunc);
 
@@ -326,6 +353,16 @@ export const api = {
         const initialLength = MOCK_FUNCTIONS_DB.length;
         MOCK_FUNCTIONS_DB = MOCK_FUNCTIONS_DB.filter(f => f.id !== id);
         return { success: MOCK_FUNCTIONS_DB.length < initialLength };
+    },
+    async getAIAssistance(type: 'optimize' | 'document' | 'explain' | 'scan', code: string): Promise<string> {
+        await sleep(1500);
+        switch(type) {
+            case 'optimize': return `// AI OPTIMIZATION SUGGESTION:\n// Consider using a Map for faster lookups if the input array is large.\n${code}`;
+            case 'document': return `/**\n * @description This function handles incoming requests and returns a standardized response.\n * @param {object} event - The event payload from the caller.\n * @returns {Promise<object>} A response object with statusCode and body.\n */\n${code}`;
+            case 'explain': return `// AI EXPLANATION:\n// This is an asynchronous handler function, common in serverless environments.\n// 1. It logs the incoming event for debugging.\n// 2. It constructs a standard HTTP response object.\n// 3. It returns this response, which the serverless platform sends back to the client.`;
+            case 'scan': return `// AI SECURITY SCAN REPORT:\n// - No critical vulnerabilities found.\n// - Recommendation: Sanitize input from the 'event' object to prevent potential injection attacks.\n// - Recommendation: Avoid logging the entire event object in production to prevent leaking sensitive data.`;
+            default: return `// AI action not recognized.`;
+        }
     }
 };
 
@@ -365,15 +402,16 @@ export const useToasts = () => {
 export const Button: FC<{
     children: ReactNode;
     onClick?: () => void;
-    variant?: 'primary' | 'secondary' | 'danger';
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
     className?: string;
     disabled?: boolean;
 }> = ({ children, onClick, variant = 'primary', className = '', disabled = false }) => {
-    const baseClasses = 'px-4 py-2 rounded-md font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors duration-200';
+    const baseClasses = 'px-4 py-2 rounded-md font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 transition-colors duration-200 inline-flex items-center justify-center gap-2';
     const variantClasses = {
         primary: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
         secondary: 'bg-gray-700 text-gray-200 hover:bg-gray-600 focus:ring-gray-500',
         danger: 'bg-red-800 text-red-100 hover:bg-red-900 focus:ring-red-700',
+        ghost: 'bg-transparent text-gray-300 hover:bg-gray-700 hover:text-white',
     };
     const disabledClasses = 'disabled:opacity-50 disabled:cursor-not-allowed';
 
@@ -388,17 +426,23 @@ export const Button: FC<{
     );
 };
 
-export const Modal: FC<{ isOpen: boolean; onClose: () => void; title: string; children: ReactNode }> = ({ isOpen, onClose, title, children }) => {
+export const Modal: FC<{ isOpen: boolean; onClose: () => void; title: string; children: ReactNode; size?: 'md' | 'lg' | 'xl' }> = ({ isOpen, onClose, title, children, size = 'lg' }) => {
     if (!isOpen) return null;
 
+    const sizeClasses = {
+        md: 'max-w-md',
+        lg: 'max-w-2xl',
+        xl: 'max-w-4xl'
+    }
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-            <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4" onClick={onClose}>
+            <div className={`bg-gray-800 rounded-lg shadow-xl w-full ${sizeClasses[size]} border border-gray-700`} onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-4 border-b border-gray-700">
                     <h3 className="text-xl font-bold text-white">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
-                <div className="p-6">{children}</div>
+                <div className="p-6 max-h-[80vh] overflow-y-auto">{children}</div>
             </div>
         </div>
     );
@@ -420,8 +464,9 @@ export const FunctionMetricsDashboard: FC<{ stats: {
     totalExecutions: number;
     errorRate: number;
     avgDuration: number;
+    estimatedCost: number;
 } }> = ({ stats }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card className="text-center">
             <p className="text-3xl font-bold text-white">{stats.totalFunctions}</p>
             <p className="text-sm text-gray-400 mt-1">Functions</p>
@@ -437,6 +482,10 @@ export const FunctionMetricsDashboard: FC<{ stats: {
         <Card className="text-center">
             <p className="text-3xl font-bold text-white">{stats.avgDuration.toFixed(0)}ms</p>
             <p className="text-sm text-gray-400 mt-1">Avg. Duration</p>
+        </Card>
+        <Card className="text-center">
+            <p className="text-3xl font-bold text-white">${stats.estimatedCost.toFixed(2)}</p>
+            <p className="text-sm text-gray-400 mt-1">Est. Cost (30d)</p>
         </Card>
     </div>
 );
@@ -607,7 +656,6 @@ export const FunctionList: FC<{
     );
 };
 
-// ... More components for the FunctionDetailView
 export const FunctionDetailOverview: FC<{func: FunctionDetails}> = ({ func }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card title="Invocations vs Errors (Last 12 Months)">
@@ -642,6 +690,22 @@ export const FunctionLogsViewer: FC<{funcId: string; initialLogs: LogEntry[]}> =
     const [logs, setLogs] = useState<LogEntry[]>(initialLogs);
     const [isLoading, setIsLoading] = useState(false);
     const [logLevelFilter, setLogLevelFilter] = useState<LogLevel | 'ALL'>('ALL');
+    const [isLive, setIsLive] = useState(false);
+    const liveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    
+    useEffect(() => {
+        if(isLive) {
+            liveIntervalRef.current = setInterval(() => {
+                const newLog = generateMockLogs(1)[0];
+                setLogs(prev => [newLog, ...prev].slice(0, 100)); // Keep it capped
+            }, 2000);
+        } else {
+            if(liveIntervalRef.current) clearInterval(liveIntervalRef.current);
+        }
+        return () => {
+            if(liveIntervalRef.current) clearInterval(liveIntervalRef.current);
+        }
+    }, [isLive]);
 
     const filteredLogs = useMemo(() => {
         if (logLevelFilter === 'ALL') return logs;
@@ -659,7 +723,22 @@ export const FunctionLogsViewer: FC<{funcId: string; initialLogs: LogEntry[]}> =
     
     return (
         <Card title="Logs">
-            {/* Log controls would go here */}
+             <div className="flex justify-between items-center mb-4">
+                 <div className="flex items-center gap-2">
+                     <label htmlFor="log-level" className="text-sm text-gray-400">Log Level:</label>
+                     <select id="log-level" value={logLevelFilter} onChange={(e) => setLogLevelFilter(e.target.value as any)}
+                        className="bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-500">
+                         <option value="ALL">ALL</option>
+                         <option value="INFO">INFO</option>
+                         <option value="WARN">WARN</option>
+                         <option value="ERROR">ERROR</option>
+                         <option value="DEBUG">DEBUG</option>
+                     </select>
+                 </div>
+                 <Button variant={isLive ? 'primary' : 'secondary'} onClick={() => setIsLive(prev => !prev)}>
+                     {isLive ? '■ Stop Live Tail' : '▶ Start Live Tail'}
+                 </Button>
+            </div>
             <div className="bg-gray-900 rounded-md p-4 font-mono text-sm text-gray-300 h-96 overflow-y-auto">
                 {filteredLogs.map((log, index) => (
                     <div key={index} className="flex">
@@ -673,21 +752,56 @@ export const FunctionLogsViewer: FC<{funcId: string; initialLogs: LogEntry[]}> =
     );
 };
 
-export const FunctionCodeEditor: FC<{ code: string; runtime: FunctionRuntime; onSave: (newCode: string) => void }> = ({ code, runtime, onSave }) => {
+export const FunctionCodeEditor: FC<{ code: string; runtime: FunctionRuntime; onSave: (newCode: string) => void; addToast: (message: string, type?: ToastMessage['type']) => void; }> = ({ code, runtime, onSave, addToast }) => {
     const [currentCode, setCurrentCode] = useState(code);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    
+    const languageMap: Record<FunctionRuntime, string> = {
+        'Node.js 18': 'javascript',
+        'Python 3.9': 'python',
+        'Go 1.19': 'go',
+        'Java 17': 'java',
+        'Ruby 3.1': 'ruby'
+    };
+
+    const handleAiAction = async (type: 'optimize' | 'document' | 'explain' | 'scan') => {
+        setIsAiLoading(true);
+        addToast(`AI is processing your code...`, 'info');
+        try {
+            const result = await api.getAIAssistance(type, currentCode);
+            setCurrentCode(result);
+            addToast(`AI ${type} completed successfully!`, 'success');
+        } catch (error) {
+            addToast(`AI action failed.`, 'error');
+        } finally {
+            setIsAiLoading(false);
+        }
+    }
 
     return (
         <Card title={`Code (${runtime})`}>
             <div className="relative">
-                <textarea
+                <MonacoEditorPlaceholder
+                    height="400px"
+                    language={languageMap[runtime]}
+                    theme="vs-dark"
                     value={currentCode}
-                    onChange={(e) => setCurrentCode(e.target.value)}
-                    className="w-full h-96 bg-gray-900 rounded-md p-4 font-mono text-sm text-green-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    spellCheck="false"
+                    onChange={(value) => setCurrentCode(value || '')}
                 />
             </div>
-            <div className="mt-4 flex justify-end">
-                <Button onClick={() => onSave(currentCode)}>Save and Deploy</Button>
+            <div className="mt-4 flex justify-between items-center">
+                <div className="flex gap-2">
+                    <Button variant="secondary" onClick={() => handleAiAction('optimize')} disabled={isAiLoading}>
+                        {isAiLoading ? <IconSpinner className="w-4 h-4" /> : <IconWand className="w-4 h-4" />} AI Optimize
+                    </Button>
+                     <Button variant="secondary" onClick={() => handleAiAction('document')} disabled={isAiLoading}>
+                        {isAiLoading ? <IconSpinner className="w-4 h-4" /> : <IconCode className="w-4 h-4" />} AI Document
+                    </Button>
+                     <Button variant="secondary" onClick={() => handleAiAction('scan')} disabled={isAiLoading}>
+                        {isAiLoading ? <IconSpinner className="w-4 h-4" /> : <IconShield className="w-4 h-4" />} AI Scan
+                    </Button>
+                </div>
+                <Button onClick={() => onSave(currentCode)} disabled={code === currentCode}>Save and Deploy</Button>
             </div>
         </Card>
     );
@@ -696,43 +810,110 @@ export const FunctionCodeEditor: FC<{ code: string; runtime: FunctionRuntime; on
 
 export const DeploymentHistory: FC<{ deployments: Deployment[] }> = ({ deployments }) => (
     <Card title="Deployment History">
-        <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-400">
-                <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
-                    <tr>
-                        <th className="px-6 py-3">Version</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3">Timestamp</th>
-                        <th className="px-6 py-3">Author</th>
-                        <th className="px-6 py-3">Commit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {deployments.map(dep => (
-                        <tr key={dep.version} className="border-b border-gray-800">
-                            <td className="px-6 py-4 text-white">{dep.version}</td>
-                            <td className="px-6 py-4"><span className={dep.status === 'Success' ? 'text-green-400' : 'text-red-500'}>{dep.status}</span></td>
-                            <td className="px-6 py-4">{formatDate(dep.timestamp)}</td>
-                            <td className="px-6 py-4">{dep.author}</td>
-                            <td className="px-6 py-4 font-mono text-yellow-400">{dep.commitHash}</td>
+        {deployments.length === 0 ? (
+             <p className="text-center text-gray-500 py-8">No deployments yet.</p>
+        ) : (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-400">
+                    <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
+                        <tr>
+                            <th className="px-6 py-3">Version</th>
+                            <th className="px-6 py-3">Status</th>
+                            <th className="px-6 py-3">Timestamp</th>
+                            <th className="px-6 py-3">Author</th>
+                            <th className="px-6 py-3">Commit</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        {deployments.map(dep => (
+                            <tr key={dep.version} className="border-b border-gray-800">
+                                <td className="px-6 py-4 text-white">{dep.version}</td>
+                                <td className="px-6 py-4"><span className={dep.status === 'Success' ? 'text-green-400' : dep.status === 'Failed' ? 'text-red-500' : 'text-blue-400'}>{dep.status}</span></td>
+                                <td className="px-6 py-4">{formatDate(dep.timestamp)}</td>
+                                <td className="px-6 py-4">{dep.author}</td>
+                                <td className="px-6 py-4 font-mono text-yellow-400">{dep.commitHash}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )}
     </Card>
 );
+
+export const InvokeFunctionPanel: FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    functionId: string;
+    functionName: string;
+    addToast: (message: string, type?: ToastMessage['type']) => void;
+}> = ({ isOpen, onClose, functionId, functionName, addToast }) => {
+    const [payload, setPayload] = useState('{\n  "key": "value"\n}');
+    const [isInvoking, setIsInvoking] = useState(false);
+    const [response, setResponse] = useState<{ statusCode: number; body: string; logs: LogEntry[] } | null>(null);
+
+    const handleInvoke = async () => {
+        setIsInvoking(true);
+        setResponse(null);
+        try {
+            JSON.parse(payload);
+        } catch (e) {
+            addToast('Invalid JSON payload.', 'error');
+            setIsInvoking(false);
+            return;
+        }
+
+        const result = await api.invokeFunction(functionId, JSON.parse(payload));
+        setResponse(result);
+        addToast(`Function invoked. Status: ${result.statusCode}`, result.statusCode === 200 ? 'success' : 'error');
+        setIsInvoking(false);
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={`Invoke: ${functionName}`} size="xl">
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">JSON Payload</label>
+                    <textarea value={payload} onChange={e => setPayload(e.target.value)} rows={8} className="w-full bg-gray-900 rounded-md p-4 font-mono text-sm text-green-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500" spellCheck="false" />
+                </div>
+                <Button onClick={handleInvoke} disabled={isInvoking}>
+                    {isInvoking ? <><IconSpinner className="w-5 h-5 mr-2" /> Invoking...</> : <><IconPlay className="w-5 h-5 mr-2" /> Invoke</>}
+                </Button>
+                {response && (
+                    <div className="space-y-4 pt-4 border-t border-gray-700">
+                        <h4 className="text-lg font-semibold text-white">Invocation Result</h4>
+                        <div>
+                            <p className="font-bold">Status Code: <span className={response.statusCode === 200 ? 'text-green-400' : 'text-red-500'}>{response.statusCode}</span></p>
+                        </div>
+                        <div>
+                            <p className="font-bold mb-2">Response Body:</p>
+                            <pre className="bg-gray-900 p-4 rounded-md text-sm text-gray-300 overflow-x-auto">{JSON.stringify(JSON.parse(response.body), null, 2)}</pre>
+                        </div>
+                         <div>
+                            <p className="font-bold mb-2">Execution Logs:</p>
+                            <div className="bg-gray-900 p-4 rounded-md text-sm text-gray-300 font-mono h-40 overflow-y-auto">
+                                {response.logs.map((log, i) => <div key={i}>{log.message}</div>)}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </Modal>
+    );
+};
 
 
 export const FunctionDetailView: FC<{ 
     functionId: string; 
     onBack: () => void; 
     addToast: (message: string, type?: ToastMessage['type']) => void;
-}> = ({ functionId, onBack, addToast }) => {
+    refreshList: () => void;
+}> = ({ functionId, onBack, addToast, refreshList }) => {
     const [func, setFunc] = useState<FunctionDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('overview');
+    const [isInvokePanelOpen, setIsInvokePanelOpen] = useState(false);
     
     useEffect(() => {
         setIsLoading(true);
@@ -751,10 +932,31 @@ export const FunctionDetailView: FC<{
     const handleSaveCode = async (newCode: string) => {
         if (!func) return;
         addToast('Starting new deployment...', 'info');
-        await api.updateFunction(func.id, { code: newCode });
-        addToast('Deployment successful!', 'success');
-        // In a real app, you'd refresh the deployment history
+        try {
+            await api.updateFunction(func.id, { code: newCode });
+            addToast('Deployment successful!', 'success');
+            // Refresh details to get new deployment history
+            const updatedFunc = await api.getFunctionDetails(func.id);
+            if (updatedFunc) setFunc(updatedFunc);
+        } catch {
+            addToast('Deployment failed.', 'error');
+        }
     };
+
+    const handleDelete = async () => {
+        if (!func) return;
+        if (window.confirm(`Are you sure you want to delete function "${func.name}"? This action cannot be undone.`)) {
+             addToast('Deleting function...', 'info');
+            const result = await api.deleteFunction(func.id);
+            if(result.success) {
+                addToast('Function deleted successfully.', 'success');
+                refreshList();
+                onBack();
+            } else {
+                addToast('Failed to delete function.', 'error');
+            }
+        }
+    }
 
     if (isLoading) return <div className="flex justify-center items-center h-64"><IconSpinner className="w-12 h-12 text-red-500" /></div>;
     if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -773,13 +975,13 @@ export const FunctionDetailView: FC<{
                     <p className="text-gray-400">ID: {func.id}</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="secondary"><IconPlay className="w-4 h-4 inline-block mr-2" /> Invoke</Button>
-                    <Button variant="danger"><IconTrash className="w-4 h-4 inline-block mr-2" /> Delete</Button>
+                    <Button variant="secondary" onClick={() => setIsInvokePanelOpen(true)}><IconPlay className="w-4 h-4 inline-block mr-2" /> Invoke</Button>
+                    <Button variant="danger" onClick={handleDelete}><IconTrash className="w-4 h-4 inline-block mr-2" /> Delete</Button>
                 </div>
             </div>
             
             <div className="border-b border-gray-700">
-                <nav className="-mb-px flex space-x-8">
+                <nav className="-mb-px flex space-x-8 overflow-x-auto">
                     {tabs.map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize ${activeTab === tab ? 'border-red-500 text-red-500' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
@@ -792,11 +994,19 @@ export const FunctionDetailView: FC<{
             <div className="mt-6">
                 {activeTab === 'overview' && <FunctionDetailOverview func={func} />}
                 {activeTab === 'logs' && <FunctionLogsViewer funcId={func.id} initialLogs={func.latestLogs} />}
-                {activeTab === 'code' && <FunctionCodeEditor code={func.code} runtime={func.runtime} onSave={handleSaveCode}/>}
+                {activeTab === 'code' && <FunctionCodeEditor code={func.code} runtime={func.runtime} onSave={handleSaveCode} addToast={addToast}/>}
                 {activeTab === 'deployments' && <DeploymentHistory deployments={func.deployments} />}
                 {activeTab === 'triggers' && <Card title="Triggers"><p className="text-gray-500">Trigger management UI coming soon.</p></Card>}
                 {activeTab === 'settings' && <Card title="Settings"><p className="text-gray-500">Settings management UI coming soon.</p></Card>}
             </div>
+            
+            <InvokeFunctionPanel
+                isOpen={isInvokePanelOpen}
+                onClose={() => setIsInvokePanelOpen(false)}
+                functionId={func.id}
+                functionName={func.name}
+                addToast={addToast}
+            />
         </div>
     );
 };
@@ -812,14 +1022,18 @@ const DemoBankFunctionsView: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { toasts, addToast } = useToasts();
-
-    useEffect(() => {
+    
+    const fetchFunctions = useCallback(() => {
         setIsLoading(true);
         api.getFunctions()
             .then(setFunctions)
             .catch(() => setError('Failed to load functions. Please try again later.'))
             .finally(() => setIsLoading(false));
     }, []);
+
+    useEffect(() => {
+        fetchFunctions();
+    }, [fetchFunctions]);
 
     const handleSelectFunction = (id: string) => {
         setSelectedFunctionId(id);
@@ -832,25 +1046,28 @@ const DemoBankFunctionsView: React.FC = () => {
     };
 
     const dashboardStats = useMemo(() => {
-        return functions.reduce((acc, func) => {
+        return MOCK_FUNCTIONS_DB.reduce((acc, func) => {
             acc.totalFunctions += 1;
             acc.totalExecutions += func.invocations30d;
             acc.totalWeightedErrorRate += func.errorRate30d * func.invocations30d;
             acc.totalWeightedDuration += func.avgDurationMs * func.invocations30d;
+            acc.estimatedCost += (func.invocations30d / 1_000_000) * func.costPerMillionInvocations;
             return acc;
         }, { 
             totalFunctions: 0, 
             totalExecutions: 0, 
             totalWeightedErrorRate: 0,
             totalWeightedDuration: 0,
+            estimatedCost: 0,
         });
-    }, [functions]);
+    }, [functions]); // Depends on the full DB data for cost
     
     const overallStats = {
         totalFunctions: dashboardStats.totalFunctions,
         totalExecutions: dashboardStats.totalExecutions,
         errorRate: dashboardStats.totalExecutions > 0 ? dashboardStats.totalWeightedErrorRate / dashboardStats.totalExecutions : 0,
         avgDuration: dashboardStats.totalExecutions > 0 ? dashboardStats.totalWeightedDuration / dashboardStats.totalExecutions : 0,
+        estimatedCost: dashboardStats.estimatedCost,
     };
     
     const renderListView = () => (
@@ -878,7 +1095,7 @@ const DemoBankFunctionsView: React.FC = () => {
         <>
             <ToastContainer toasts={toasts} />
             {view === 'list' ? renderListView() :
-                selectedFunctionId ? <FunctionDetailView functionId={selectedFunctionId} onBack={handleBackToList} addToast={addToast} /> :
+                selectedFunctionId ? <FunctionDetailView functionId={selectedFunctionId} onBack={handleBackToList} addToast={addToast} refreshList={fetchFunctions} /> :
                 renderListView() /* Fallback */
             }
         </>
