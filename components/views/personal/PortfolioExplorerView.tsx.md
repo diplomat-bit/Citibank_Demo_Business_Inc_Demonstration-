@@ -1,26 +1,30 @@
-# The Atlas of Assets
-
-This is the observatory's detailed star chart. It is not just a list of your holdings, but a multi-dimensional, interactive map of your entire investment cosmos. Its purpose is to allow you to explore the composition of your power, filtering by asset class or region, to gain a deeper strategic understanding of your arsenal of growth.
-
----
-
-### A Fable for the Builder: The Cartographer's Table
-
-(The main observatory shows you the constellation of your wealth. But a true commander needs more than a simple star chart. They need an atlas. A collection of maps that can be filtered, sorted, and studied from any angle. This `PortfolioExplorerView` is that atlas.)
-
-(Its core instrument is the `Treemap`. It is a powerful visualization, a map of your dominion where the size of each territory is proportional to its power—its value. But its true strength lies in its dynamism. With a click, you can redraw the map, filtering to see only your holdings in 'North America', or only your 'Digital Assets'. You are not just viewing data; you are exploring it.)
-
-(The AI's role here is subtle but crucial. It is the master cartographer, the one who knows how to draw the maps. Its logic is 'Proportional Visualization.' When you filter your assets, the AI doesn't just remove items from a list. It recalculates the entire map, resizing every territory to show its new proportional value within the filtered view. It ensures that every map you view is a true and honest representation of that specific slice of your dominion.)
-
-(And notice the colors. They are not random. They are a data layer, a thermal imaging scan of your portfolio's recent activity. Green territories are advancing. Red ones have seen a retreat. This allows you to see, at a single glance, not just the size of your holdings, but their current momentum. It adds a layer of real-time tactical awareness to your strategic overview.)
-
-(This is the difference between a report and an explorer. A report gives you a single, static picture. An explorer gives you a living world and the tools to chart it yourself. It invites you not just to look at your wealth, but to understand its geography, its climate, and its vast, unfolding story.)
-
----
-import React, { useState, useMemo, useEffect, useCallback, useReducer, createContext, useContext } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useReducer, createContext, useContext, ReactNode } from 'react';
 import { ResponsiveTreeMap } from '@nivo/treemap';
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsiveSunburst } from '@nivo/sunburst';
+import { ResponsiveHeatMap } from '@nivo/heatmap';
+
+// region: --- ICONS (SVG) ---
+const LoadingSpinnerIcon = () => (
+  <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
+    <g fill="none" fillRule="evenodd">
+      <g transform="translate(1 1)" strokeWidth="2">
+        <circle strokeOpacity=".5" cx="18" cy="18" r="18"/>
+        <path d="M36 18c0-9.94-8.06-18-18-18">
+          <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+        </path>
+      </g>
+    </g>
+  </svg>
+);
+
+const LightbulbIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13h-5a.5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+        <path d="M5 14a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1zm.246-3.437a.5.5 0 0 1-.496-.864l.247-.451a.5.5 0 1 1 .864.496l-.247.451a.5.5 0 0 1-.368.368z"/>
+    </svg>
+);
+
 
 // region: --- TYPE DEFINITIONS ---
 
@@ -36,6 +40,14 @@ export type GroupingMode = 'AssetClass' | 'Region' | 'Sector' | 'MarketCap';
 export interface HistoricalDataPoint {
   date: string;
   value: number;
+}
+
+export interface NewsArticle {
+    title: string;
+    source: string;
+    timestamp: string;
+    sentiment: 'positive' | 'negative' | 'neutral';
+    aiSummary?: string;
 }
 
 export interface Asset {
@@ -58,13 +70,19 @@ export interface Asset {
     hold: number;
     sell: number;
   };
-  newsFeed: { title: string; source: string; timestamp: string; sentiment: 'positive' | 'negative' | 'neutral' }[];
+  newsFeed: NewsArticle[];
   esgScore: {
       environmental: number;
       social: number;
       governance: number;
       total: number;
   };
+  riskMetrics: {
+      beta: number;
+      sharpeRatio: number;
+      volatility: number;
+  };
+  aiInsight: string; // AI-generated summary/insight for this asset
 }
 
 export interface TreemapNode {
@@ -148,6 +166,7 @@ export const generateMockAsset = (id: string): Asset => {
   const currentPrice = Math.random() * 500 + 5;
   const marketValue = quantity * currentPrice;
   const costBasis = marketValue * (1 + (Math.random() - 0.5) * 0.4); // +/- 20% cost basis
+  const oneDayPerf = (Math.random() - 0.5) * 0.05; // +/- 2.5%
 
   return {
     id,
@@ -163,7 +182,7 @@ export const generateMockAsset = (id: string): Asset => {
     costBasis,
     quantity,
     performance: {
-      '1D': (Math.random() - 0.5) * 0.05, // +/- 2.5%
+      '1D': oneDayPerf,
       '1W': (Math.random() - 0.5) * 0.1,  // +/- 5%
       '1M': (Math.random() - 0.5) * 0.2,  // +/- 10%
       '3M': (Math.random() - 0.5) * 0.3,  // +/- 15%
@@ -189,6 +208,12 @@ export const generateMockAsset = (id: string): Asset => {
         governance: Math.floor(Math.random() * 100),
         total: Math.floor(Math.random() * 100),
     },
+    riskMetrics: {
+        beta: parseFloat((Math.random() * 1.5 + 0.5).toFixed(2)), // 0.5 to 2.0
+        sharpeRatio: parseFloat((Math.random() * 2 - 0.5).toFixed(2)), // -0.5 to 1.5
+        volatility: parseFloat((Math.random() * 0.3 + 0.1).toFixed(2)), // 10% to 40%
+    },
+    aiInsight: `This ${ticker} holding shows strong momentum, outperforming its sector peers over the last quarter. However, its high beta (${(Math.random() * 1.5 + 0.5).toFixed(2)}) suggests higher volatility compared to the market. Recent positive news sentiment may indicate continued short-term growth potential.`
   };
 };
 
@@ -224,7 +249,7 @@ export const getPerformanceColor = (performance: number): string => {
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     backgroundColor: '#121212',
     color: '#E0E0E0',
     display: 'flex',
@@ -244,6 +269,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexShrink: 0,
   },
   headerTitle: {
     fontSize: '24px',
@@ -315,12 +341,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
   },
   assetDetailPanel: {
-    width: '320px',
+    width: '350px',
     backgroundColor: '#1E1E1E',
-    padding: '20px',
     overflowY: 'auto',
     borderLeft: '1px solid #333',
     flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  assetDetailContent: {
+    padding: '20px',
   },
   assetDetailHeader: {
     borderBottom: '1px solid #444',
@@ -368,11 +398,13 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   viewControls: {
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     gap: '10px',
-    padding: '10px',
+    padding: '10px 20px',
     backgroundColor: '#252525',
     borderBottom: '1px solid #333',
+    flexWrap: 'wrap',
   },
   viewButton: {
     padding: '8px 16px',
@@ -395,6 +427,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   dataTableHead: {
       backgroundColor: '#333',
+      position: 'sticky',
+      top: 0,
   },
   dataTableTh: {
       padding: '12px',
@@ -421,9 +455,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     bottom: 0,
     backgroundColor: 'rgba(18, 18, 18, 0.8)',
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    gap: '20px',
     fontSize: '24px',
     color: '#FFF',
   },
@@ -435,6 +471,33 @@ const styles: { [key: string]: React.CSSProperties } = {
       color: '#FFF',
       fontSize: '14px'
   },
+  tabsContainer: {
+      display: 'flex',
+      borderBottom: '1px solid #333',
+      flexShrink: 0
+  },
+  tabButton: {
+      padding: '12px 16px',
+      border: 'none',
+      background: 'none',
+      color: '#B0B0B0',
+      cursor: 'pointer',
+      fontSize: '14px',
+      borderBottom: '2px solid transparent',
+  },
+  activeTabButton: {
+      color: '#FFFFFF',
+      borderBottom: '2px solid #007AFF',
+  },
+  aiInsightCard: {
+    background: 'rgba(0, 122, 255, 0.1)',
+    borderLeft: '3px solid #007AFF',
+    padding: '12px',
+    borderRadius: '4px',
+    fontSize: '13px',
+    lineHeight: 1.5,
+    margin: '16px 0',
+  }
 };
 
 // endregion: --- FILTER LOGIC (useReducer) ---
@@ -502,12 +565,13 @@ export const SummaryHeader: React.FC<{ assets: Asset[]; timeframe: PerformanceTi
         const totalValue = assets.reduce((sum, asset) => sum + asset.marketValue, 0);
         const totalCost = assets.reduce((sum, asset) => sum + asset.costBasis, 0);
         const weightedPerf = assets.reduce((sum, asset) => sum + asset.performance[timeframe] * asset.marketValue, 0);
-        const overallChange = weightedPerf / totalValue || 0;
+        const overallChange = totalValue > 0 ? weightedPerf / totalValue : 0;
         const overallReturn = totalValue - totalCost;
         return { totalValue, totalCost, overallChange, overallReturn };
     }, [assets, timeframe]);
     
     const perfColor = getPerformanceColor(summary.overallChange);
+    const returnColor = getPerformanceColor(summary.overallReturn / summary.totalCost);
 
     return (
         <div style={styles.summaryBar}>
@@ -517,7 +581,7 @@ export const SummaryHeader: React.FC<{ assets: Asset[]; timeframe: PerformanceTi
             </div>
             <div style={styles.summaryItem}>
                 <div style={styles.summaryLabel}>Total Return</div>
-                <div style={{...styles.summaryValue, color: getPerformanceColor(summary.overallReturn / summary.totalCost) }}>
+                <div style={{...styles.summaryValue, color: returnColor }}>
                     {formatCurrency(summary.overallReturn, currency)}
                 </div>
             </div>
@@ -665,72 +729,100 @@ export const HistoricalPriceChart: React.FC<{ data: HistoricalDataPoint[], asset
   );
 });
 
+type AssetDetailTab = 'overview' | 'performance' | 'ai_insights';
 
 export const AssetDetailPanel: React.FC<{ asset: Asset | null }> = React.memo(({ asset }) => {
+    const [activeTab, setActiveTab] = useState<AssetDetailTab>('overview');
+    
+    useEffect(() => {
+        // Reset to overview tab when a new asset is selected
+        setActiveTab('overview');
+    }, [asset]);
+    
     if (!asset) {
-        return <div style={styles.assetDetailPanel}>Select an asset to see details.</div>;
+        return <div style={{...styles.assetDetailPanel, padding: '20px' }}>Select an asset to see details.</div>;
     }
 
     const { currency } = useContext(PortfolioSettingsContext);
-
+    
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'overview':
+                return <>
+                    <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>Key Information</h3>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Asset Class</span><span style={styles.assetDetailValue}>{asset.assetClass}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Region</span><span style={styles.assetDetailValue}>{asset.region}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Sector</span><span style={styles.assetDetailValue}>{asset.sector}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Market Cap</span><span style={styles.assetDetailValue}>{asset.marketCap}</span></div>
+                    </div>
+                    <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>Market Data</h3>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Current Price</span><span style={styles.assetDetailValue}>{formatCurrency(asset.currentPrice, currency)}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Market Value</span><span style={styles.assetDetailValue}>{formatCurrency(asset.marketValue, currency)}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Quantity</span><span style={styles.assetDetailValue}>{asset.quantity.toFixed(4)}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Cost Basis</span><span style={styles.assetDetailValue}>{formatCurrency(asset.costBasis, currency)}</span></div>
+                    </div>
+                </>;
+            case 'performance':
+                return <>
+                    <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>Performance</h3>
+                        {Object.entries(asset.performance).map(([timeframe, value]) => (
+                            <div style={styles.assetDetailRow} key={timeframe}>
+                                <span style={styles.assetDetailLabel}>{timeframe}</span>
+                                <span style={{ ...styles.assetDetailValue, color: getPerformanceColor(value) }}>{formatPercentage(value)}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>1Y Historical Performance</h3>
+                        <HistoricalPriceChart data={asset.historicalData} assetName={asset.name} />
+                    </div>
+                </>;
+            case 'ai_insights':
+                return <>
+                    <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>AI-Powered Summary</h3>
+                        <div style={styles.aiInsightCard}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <LightbulbIcon /> <strong>Automated Analysis</strong>
+                            </div>
+                            {asset.aiInsight}
+                        </div>
+                    </div>
+                     <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>Risk Analysis</h3>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Beta</span><span style={styles.assetDetailValue}>{asset.riskMetrics.beta}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Sharpe Ratio</span><span style={styles.assetDetailValue}>{asset.riskMetrics.sharpeRatio}</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Volatility (1Y)</span><span style={styles.assetDetailValue}>{formatPercentage(asset.riskMetrics.volatility)}</span></div>
+                    </div>
+                    <div style={styles.assetDetailSection}>
+                        <h3 style={styles.assetDetailSectionTitle}>ESG Profile</h3>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Total Score</span><span style={styles.assetDetailValue}>{asset.esgScore.total}/100</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Environmental</span><span style={styles.assetDetailValue}>{asset.esgScore.environmental}/100</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Social</span><span style={styles.assetDetailValue}>{asset.esgScore.social}/100</span></div>
+                        <div style={styles.assetDetailRow}><span style={styles.assetDetailLabel}>Governance</span><span style={styles.assetDetailValue}>{asset.esgScore.governance}/100</span></div>
+                    </div>
+                </>;
+        }
+    };
+    
     return (
         <div style={styles.assetDetailPanel}>
-            <div style={styles.assetDetailHeader}>
-                <h2 style={styles.assetDetailTicker}>{asset.ticker}</h2>
-                <p style={styles.assetDetailName}>{asset.name}</p>
-            </div>
-
-            <div style={styles.assetDetailSection}>
-                <h3 style={styles.assetDetailSectionTitle}>Key Information</h3>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Asset Class</span>
-                    <span style={styles.assetDetailValue}>{asset.assetClass}</span>
-                </div>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Region</span>
-                    <span style={styles.assetDetailValue}>{asset.region}</span>
-                </div>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Sector</span>
-                    <span style={styles.assetDetailValue}>{asset.sector}</span>
+            <div style={{padding: '20px 20px 0 20px'}}>
+                <div style={styles.assetDetailHeader}>
+                    <h2 style={styles.assetDetailTicker}>{asset.ticker}</h2>
+                    <p style={styles.assetDetailName}>{asset.name}</p>
                 </div>
             </div>
-
-            <div style={styles.assetDetailSection}>
-                <h3 style={styles.assetDetailSectionTitle}>Market Data</h3>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Current Price</span>
-                    <span style={styles.assetDetailValue}>{formatCurrency(asset.currentPrice, currency)}</span>
-                </div>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Market Value</span>
-                    <span style={styles.assetDetailValue}>{formatCurrency(asset.marketValue, currency)}</span>
-                </div>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Quantity</span>
-                    <span style={styles.assetDetailValue}>{asset.quantity.toFixed(4)}</span>
-                </div>
-                <div style={styles.assetDetailRow}>
-                    <span style={styles.assetDetailLabel}>Cost Basis</span>
-                    <span style={styles.assetDetailValue}>{formatCurrency(asset.costBasis, currency)}</span>
-                </div>
+            <div style={styles.tabsContainer}>
+                <button onClick={() => setActiveTab('overview')} style={{...styles.tabButton, ...(activeTab === 'overview' ? styles.activeTabButton : {})}}>Overview</button>
+                <button onClick={() => setActiveTab('performance')} style={{...styles.tabButton, ...(activeTab === 'performance' ? styles.activeTabButton : {})}}>Performance</button>
+                <button onClick={() => setActiveTab('ai_insights')} style={{...styles.tabButton, ...(activeTab === 'ai_insights' ? styles.activeTabButton : {})}}>AI Insights</button>
             </div>
-            
-            <div style={styles.assetDetailSection}>
-                <h3 style={styles.assetDetailSectionTitle}>Performance</h3>
-                {Object.entries(asset.performance).map(([timeframe, value]) => (
-                    <div style={styles.assetDetailRow} key={timeframe}>
-                        <span style={styles.assetDetailLabel}>{timeframe}</span>
-                        <span style={{ ...styles.assetDetailValue, color: getPerformanceColor(value) }}>
-                            {formatPercentage(value)}
-                        </span>
-                    </div>
-                ))}
-            </div>
-
-             <div style={styles.assetDetailSection}>
-                <h3 style={styles.assetDetailSectionTitle}>1Y Historical Performance</h3>
-                <HistoricalPriceChart data={asset.historicalData} assetName={asset.name} />
+            <div style={styles.assetDetailContent}>
+                {renderTabContent()}
             </div>
         </div>
     );
@@ -820,7 +912,7 @@ export const SunburstVisualization: React.FC<{
                     <br />
                     Value: {formatCurrency(value)}
                     <br />
-                    Performance ({timeframe}): <span style={{ color: getPerformanceColor(data.performance) }}>{formatPercentage(data.performance)}</span>
+                    Performance ({timeframe}): <span style={{ color: getPerformanceColor((data as any).performance) }}>{formatPercentage((data as any).performance)}</span>
                 </div>
             )}
         />
@@ -914,11 +1006,90 @@ export const DataTableVisualization: React.FC<{
     );
 });
 
+export const HeatmapVisualization: React.FC<{ assets: Asset[], groupingMode: GroupingMode, timeframe: PerformanceTimeframe }> = React.memo(({ assets, groupingMode, timeframe }) => {
+    const heatmapData = useMemo(() => {
+        const groups: { [key: string]: { totalValue: number, weightedPerf: number, count: number } } = {};
+        
+        assets.forEach(asset => {
+            const groupKey = asset[groupingMode.charAt(0).toLowerCase() + groupingMode.slice(1) as keyof Asset] as string;
+            if (!groups[groupKey]) {
+                groups[groupKey] = { totalValue: 0, weightedPerf: 0, count: 0 };
+            }
+            groups[groupKey].totalValue += asset.marketValue;
+            groups[groupKey].weightedPerf += asset.performance[timeframe] * asset.marketValue;
+            groups[groupKey].count += 1;
+        });
+
+        const data = Object.entries(groups).map(([key, value]) => ({
+            id: key,
+            performance: value.totalValue > 0 ? value.weightedPerf / value.totalValue : 0
+        }));
+
+        if (data.length === 0) return [];
+        
+        return [{
+            id: 'Performance',
+            data: data.map(d => ({ x: d.id, y: d.performance }))
+        }];
+
+    }, [assets, groupingMode, timeframe]);
+
+    if (!heatmapData || heatmapData.length === 0 || heatmapData[0].data.length === 0) {
+        return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%'}}>Not enough data for this view.</div>
+    }
+
+    return (
+        <ResponsiveHeatMap
+            data={heatmapData}
+            keys={Array.from(new Set(heatmapData.flatMap(d => d.data.map(i => i.x as string))))}
+            indexBy="id"
+            margin={{ top: 60, right: 60, bottom: 60, left: 60 }}
+            forceSquare={false}
+            axisTop={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: -45,
+                legend: groupingMode,
+                legendOffset: -50
+            }}
+            colors={{
+                type: 'diverging',
+                scheme: 'red_green',
+                divergeAt: 0.5,
+                minValue: -0.05,
+                maxValue: 0.05,
+            }}
+            emptyColor="#555"
+            cellComponent="rect"
+            enableLabels={true}
+            labelTextColor="#ffffff"
+            theme={{
+                textColor: '#B0B0B0',
+                tooltip: {
+                    container: {
+                        background: '#2a2a2a',
+                        color: '#FFF',
+                        border: '1px solid #444'
+                    },
+                },
+            }}
+            tooltip={({ cell }) => (
+                <div style={styles.tooltip}>
+                    <strong>{cell.data.x}</strong>
+                    <br/>
+                    Performance: {formatPercentage(cell.data.y as number)}
+                </div>
+            )}
+        />
+    )
+})
+
 // endregion: --- MAIN COMPONENT ---
 
 export const PortfolioExplorerView: React.FC = () => {
     const [portfolio, setPortfolio] = useState<Asset[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [loadingMessage, setLoadingMessage] = useState('Initializing...');
     const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
     const [filterState, dispatch] = useReducer(filterReducer, initialFilterState);
     const [timeframe, setTimeframe] = useState<PerformanceTimeframe>('1D');
@@ -934,11 +1105,15 @@ export const PortfolioExplorerView: React.FC = () => {
 
     useEffect(() => {
         setIsLoading(true);
-        // Simulate API call
+        setLoadingMessage('Connecting to data streams...');
         setTimeout(() => {
-            setPortfolio(generateMockPortfolio(200));
-            setIsLoading(false);
-        }, 1500);
+            setLoadingMessage('Generating portfolio cosmos...');
+            const newPortfolio = generateMockPortfolio(200);
+            setPortfolio(newPortfolio);
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 1000);
+        }, 500);
     }, []);
 
     const filteredAssets = useMemo(() => {
@@ -974,7 +1149,6 @@ export const PortfolioExplorerView: React.FC = () => {
             }
             
             groups[groupName].value += asset.marketValue;
-            // Weighted performance for the group
             groups[groupName].performance += asset.performance[timeframe] * asset.marketValue;
             groups[groupName].children!.push({
                 id: asset.id,
@@ -987,7 +1161,6 @@ export const PortfolioExplorerView: React.FC = () => {
         });
 
         root.children = Object.values(groups).map(group => {
-            // Finalize weighted performance calculation
             if (group.value > 0) {
                 group.performance = group.performance / group.value;
             }
@@ -999,8 +1172,10 @@ export const PortfolioExplorerView: React.FC = () => {
     }, [filteredAssets, timeframe, groupingMode]);
 
     const handleNodeClick = useCallback((node: any) => {
-        if (node.data && node.data.data && node.data.data.id) {
-            const asset = portfolio.find(a => a.id === node.data.data.id);
+        // Nivo nodes have different structures depending on vis type
+        const dataPayload = node?.data?.data || node?.data;
+        if (dataPayload && dataPayload.id) {
+            const asset = portfolio.find(a => a.id === dataPayload.id);
             setSelectedAsset(asset || null);
         } else {
              setSelectedAsset(null);
@@ -1015,12 +1190,14 @@ export const PortfolioExplorerView: React.FC = () => {
                 return <SunburstVisualization data={treemapData} onNodeClick={handleNodeClick} timeframe={timeframe} />;
             case 'DataTable':
                 return <DataTableVisualization assets={filteredAssets} onAssetSelect={setSelectedAsset} />;
-            // case 'Heatmap': // Placeholder for another view
-            //     return <div>Heatmap View Coming Soon</div>;
+            case 'Heatmap':
+                return <HeatmapVisualization assets={filteredAssets} groupingMode={groupingMode} timeframe={timeframe} />;
             default:
                 return null;
         }
     };
+    
+    const isChartMode = viewMode === 'Treemap' || viewMode === 'Sunburst';
 
     return (
         <PortfolioSettingsContext.Provider value={settings}>
@@ -1034,11 +1211,37 @@ export const PortfolioExplorerView: React.FC = () => {
                     <div style={styles.visualizationContainer}>
                        {isLoading && (
                             <div style={styles.loadingOverlay}>
-                                <span>Loading Your Cosmos...</span>
+                                <LoadingSpinnerIcon/>
+                                <span>{loadingMessage}</span>
                             </div>
                         )}
                         <div style={styles.viewControls}>
-                            <div>
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                {(['Treemap', 'Sunburst', 'DataTable', 'Heatmap'] as VisualizationMode[]).map(v => (
+                                    <button
+                                        key={v}
+                                        onClick={() => setViewMode(v)}
+                                        style={{ ...styles.viewButton, ...(viewMode === v ? styles.activeViewButton : {}) }}
+                                    >
+                                        {v}
+                                    </button>
+                                ))}
+                            </div>
+                             <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                                <label style={{color: '#B0B0B0'}}>Group By:</label>
+                                <select 
+                                    value={groupingMode} 
+                                    onChange={(e) => setGroupingMode(e.target.value as GroupingMode)}
+                                    style={{...styles.viewButton, padding: '8px'}}
+                                    disabled={!isChartMode}
+                                >
+                                    <option value="AssetClass">Asset Class</option>
+                                    <option value="Region">Region</option>
+                                    <option value="Sector">Sector</option>
+                                    <option value="MarketCap">Market Cap</option>
+                                </select>
+                             </div>
+                             <div style={{display: 'flex', gap: '10px'}}>
                                 {(['1D', '1W', '1M', 'YTD', '1Y'] as PerformanceTimeframe[]).map(t => (
                                     <button
                                         key={t}
@@ -1049,30 +1252,6 @@ export const PortfolioExplorerView: React.FC = () => {
                                     </button>
                                 ))}
                             </div>
-                            <div>
-                                {(['Treemap', 'Sunburst', 'DataTable'] as VisualizationMode[]).map(v => (
-                                    <button
-                                        key={v}
-                                        onClick={() => setViewMode(v)}
-                                        style={{ ...styles.viewButton, ...(viewMode === v ? styles.activeViewButton : {}) }}
-                                    >
-                                        {v}
-                                    </button>
-                                ))}
-                            </div>
-                             <div>
-                                <label style={{color: '#B0B0B0', marginRight: '10px'}}>Group By:</label>
-                                <select 
-                                    value={groupingMode} 
-                                    onChange={(e) => setGroupingMode(e.target.value as GroupingMode)}
-                                    style={{...styles.viewButton, padding: '8px'}}
-                                >
-                                    <option value="AssetClass">Asset Class</option>
-                                    <option value="Region">Region</option>
-                                    <option value="Sector">Sector</option>
-                                    <option value="MarketCap">Market Cap</option>
-                                </select>
-                             </div>
                         </div>
                         {renderVisualization()}
                     </div>
