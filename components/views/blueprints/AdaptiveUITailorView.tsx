@@ -18,7 +18,12 @@
  * Welcome to the future. We hope it doesn't crash.
  */
 
-import React, { useState, useEffect, createContext, useContext, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback, useMemo, useRef, FC } from 'react';
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
 
 // --- CORE TYPE DEFINITIONS ---
 // We've expanded these to be ridiculously comprehensive, covering every conceivable user type and preference.
@@ -49,7 +54,11 @@ export type UIPersona =
   | 'CAFFEINATED_DEVELOPER'
   | 'ZEN_MINIMALIST'
   | 'GAMER_STRATEGIST'
-  | 'ETERNAL_NOVICE';
+  | 'ETERNAL_NOVICE'
+  | 'EXECUTIVE_OVERVIEW'
+  | 'SUPPORT_AGENT'
+  | 'MARKETING_GURU'
+  | 'HR_COORDINATOR';
 
 /**
  * @typedef UILayoutDensity
@@ -177,6 +186,8 @@ export interface UIState {
   dashboardLayout: UIDashboardLayout;
   searchScope: 'GLOBAL' | 'CONTEXTUAL' | 'WORKSPACED';
   activeAIModel: 'GEMINI' | 'CHAT_GPT' | 'CLAUDE' | 'NONE';
+  componentVisibility: { [componentId: string]: boolean };
+  featureToggles: { [featureId: string]: boolean };
 }
 
 export interface UIRecommendation {
@@ -189,6 +200,7 @@ export interface UIRecommendation {
   appliesToUserIds?: string[];
   ttl?: number;
   actionRequired: boolean;
+  userFeedback?: 'ACCEPTED' | 'REJECTED' | 'IGNORED';
 }
 
 export interface UIAdaptationRule {
@@ -204,6 +216,7 @@ export interface UIAdaptationRule {
   lastModified: number;
   validUntil?: number;
   tags?: string[];
+  executionCount: number;
 }
 
 export interface UserPermission {
@@ -292,6 +305,14 @@ export interface UserProfile {
   mfaEnabled: boolean;
   trustScore: number;
   userSegments: string[];
+  cognitiveLoadHistory: { timestamp: number; load: number; details: string }[];
+  engagementMetrics: {
+    dailyActive: boolean;
+    weeklyActive: boolean;
+    monthlyActive: boolean;
+    featureAdoptionRate: { [feature: string]: number };
+    sessionDurationAvg: number;
+  };
 }
 
 export type UserEventType =
@@ -354,13 +375,26 @@ export interface EffectivePolicy {
   name: string;
   description: string;
   condition: string;
-  action: 'BLOCK_UI_FEATURE' | 'TRIGGER_ALERT' | 'RECOMMEND_ACTION' | 'ADAPT_UI_STATE';
+  action: 'BLOCK_UI_FEATURE' | 'TRIGGER_ALERT' | 'RECOMMEND_ACTION' | 'ADAPT_UI_STATE' | 'REQUIRE_MFA';
   targetUIState?: Partial<UIState>;
   priority: number;
   enforcedByAgentId: string;
   activeSince: number;
   expiresAt?: number;
 }
+
+export interface AuditLogEntry {
+    logId: string;
+    timestamp: number;
+    actorId: string;
+    action: string;
+    targetId?: string;
+    targetType?: string;
+    details: object;
+    ipAddress: string;
+    status: 'SUCCESS' | 'FAILURE' | 'PENDING';
+}
+
 
 // --- CONSTANTS AND DEFAULTS ---
 
@@ -408,6 +442,8 @@ export const DEFAULT_UI_STATE: UIState = {
   dashboardLayout: 'TEMPLATE_BASED',
   searchScope: 'GLOBAL',
   activeAIModel: 'GEMINI',
+  componentVisibility: {},
+  featureToggles: {},
 };
 
 export const DEFAULT_USER_PROFILE: UserProfile = {
@@ -460,6 +496,8 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
   mfaEnabled: false,
   trustScore: 0.5,
   userSegments: ['default'],
+  cognitiveLoadHistory: [],
+  engagementMetrics: { dailyActive: true, weeklyActive: true, monthlyActive: true, featureAdoptionRate: {}, sessionDurationAvg: 0 },
 };
 
 // --- SIMULATED AI MODEL ABSTRACTION ---
@@ -480,14 +518,20 @@ class MockGemini implements AILanguageModel {
   async processNaturalLanguageCommand(command: string): Promise<{ changes: Partial<UIState>, explanation: string }> {
     const changes: Partial<UIState> = {};
     let explanation = "Okay, I've processed your request using my advanced multi-modal capabilities. ";
-    if (command.includes('dark')) {
+    if (command.match(/dark|night/i)) {
       changes.colorTheme = 'DARK_MODERN';
-      explanation += "I've switched to a dark modern theme for you."
+      explanation += "I've switched to a dark modern theme for you. "
     }
-    if (command.includes('cramped') || command.includes('dense')) {
+    if (command.match(/cramped|dense|busy|trader/i)) {
       changes.layout = 'DENSE';
       changes.informationDensity = 'HIGH';
-      explanation += " I also increased the information density and layout compactness."
+      changes.persona = 'FINANCIAL_TRADER';
+      explanation += "I also increased the information density and layout compactness, activating the Financial Trader persona. "
+    }
+     if (command.match(/sci-fi|cyberpunk|future/i)) {
+      changes.colorTheme = 'CYBERPUNK_NEON';
+      changes.fontPreference = 'MONOSPACE';
+      explanation += "Engaging futuristic mode with a Cyberpunk Neon theme and monospaced font."
     }
     return { changes, explanation };
   }
@@ -502,11 +546,12 @@ class MockChatGPT implements AILanguageModel {
   async processNaturalLanguageCommand(command: string): Promise<{ changes: Partial<UIState>, explanation: string }> {
     const changes: Partial<UIState> = {};
     let explanation = "Certainly! I've understood your request and am making the following adjustments. ";
-    if (command.includes('zen') || command.includes('minimal')) {
+    if (command.match(/zen|minimal|clean|simple/i)) {
       changes.persona = 'ZEN_MINIMALIST';
       changes.layout = 'SPARSE';
       changes.colorTheme = 'MONOCHROME';
-      explanation += "I've activated the 'Zen Minimalist' persona for a cleaner, more focused experience."
+      changes.notificationLevel = 'MINIMAL';
+      explanation += "I've activated the 'Zen Minimalist' persona for a cleaner, more focused experience. "
     }
     return { changes, explanation };
   }
@@ -521,10 +566,10 @@ class MockClaude implements AILanguageModel {
   async processNaturalLanguageCommand(command: string): Promise<{ changes: Partial<UIState>, explanation: string }> {
     const changes: Partial<UIState> = {};
     let explanation = "I've carefully considered the safety and helpfulness of your request. ";
-    if (command.includes('accessible') || command.includes('easy to read')) {
+    if (command.match(/accessible|easy to read|large text/i)) {
       changes.accessibility = { ...DEFAULT_ACCESSIBILITY_PREFERENCES, fontSizeScale: 1.2, contrastMode: 'HIGH_CONTRAST' };
       changes.fontPreference = 'READABLE_DYSLEXIA';
-      explanation += "I've increased the font size, enabled high contrast, and switched to a dyslexia-friendly font to improve readability and accessibility."
+      explanation += "I've increased the font size, enabled high contrast, and switched to a dyslexia-friendly font to improve readability and accessibility. "
     }
     return { changes, explanation };
   }
@@ -574,20 +619,44 @@ export function applyGovernancePolicies(currentUIState: UIState, policies: Effec
 
 export function simulateAIRecommendation(profile: UserProfile, currentUI: UIState, recentEvents: UserEvent[]): Partial<UIState> {
   const recommendations: Partial<UIState> = {};
-  // ... [Existing simulation logic can be kept or expanded]
-  // Rule: High error rate suggests user is struggling.
-  if (recentEvents.filter(e => e.type === 'ERROR').length > 3 && !currentUI.showHelpTips) {
+  
+  // Heuristic: High error rate suggests user is struggling.
+  const errorEvents = recentEvents.filter(e => e.type === 'ERROR');
+  if (errorEvents.length > 3 && !currentUI.showHelpTips) {
       recommendations.showHelpTips = true;
       recommendations.notificationLevel = 'AGGRESSIVE';
   }
-  // Rule: User is a trader, they need speed and density.
-  if (profile.persona === 'FINANCIAL_TRADER' && (currentUI.dataRefreshRate !== 'REALTIME' || currentUI.informationDensity !== 'HIGH')) {
+
+  // Heuristic: Rapid navigation might mean user is lost or exploring.
+  const navigationEvents = recentEvents.filter(e => e.type === 'NAVIGATE');
+  if (navigationEvents.length > 5 && currentUI.navigationalStyle !== 'COMMAND_PALETTE') {
+      recommendations.navigationalStyle = 'COMMAND_PALETTE'; // Suggest a more powerful navigation tool.
+  }
+  
+  // Heuristic: User is a trader, they need speed and density.
+  if (profile.jobTitle?.toLowerCase().includes('trader') && (currentUI.dataRefreshRate !== 'REALTIME' || currentUI.informationDensity !== 'HIGH')) {
       recommendations.dataRefreshRate = 'REALTIME';
       recommendations.informationDensity = 'HIGH';
       recommendations.layout = 'DENSE';
       recommendations.interactionSpeed = 'VERY_FAST';
+      recommendations.persona = 'FINANCIAL_TRADER';
   }
-  // Apply manual overrides last
+
+  // Heuristic: User frequently changes settings, maybe they like to customize.
+  const uiChangeEvents = recentEvents.filter(e => e.type === 'UI_CHANGE' && e.details.source === 'user_manual');
+  if(uiChangeEvents.length > 4) {
+      // Suggest more advanced customization options if not already visible.
+  }
+
+  // Heuristic: User is working late, suggest dark mode.
+  const hour = new Date().getHours();
+  if (hour > 20 || hour < 6) {
+    if (currentUI.colorTheme !== 'DARK_MODERN' && currentUI.colorTheme !== 'CYBERPUNK_NEON') {
+      recommendations.colorTheme = 'DARK_MODERN';
+    }
+  }
+
+  // Apply manual overrides last, as they have the highest priority.
   return { ...recommendations, ...profile.manualOverrides };
 }
 
@@ -601,7 +670,7 @@ export interface AdaptiveUIContextType {
   applyRecommendation: (recommendation: UIRecommendation) => void;
   trackUserEvent: (type: UserEventType, details?: { [key: string]: any }) => void;
   permissions: { [key: string]: boolean };
-  addAdaptationRule: (rule: UIAdaptationRule) => void;
+  addAdaptationRule: (rule: Omit<UIAdaptationRule, 'ruleId' | 'createdAt' | 'lastModified' | 'executionCount'>) => void;
   updateAdaptationRule: (ruleId: string, updates: Partial<UIAdaptationRule>) => void;
   deleteAdaptationRule: (ruleId: string) => void;
   processAgentMessage: (message: UIAgentMessage) => void;
@@ -609,6 +678,8 @@ export interface AdaptiveUIContextType {
   getRulesByTag: (tag: string) => UIAdaptationRule[];
   events: UserEvent[];
   rules: UIAdaptationRule[];
+  recommendations: UIRecommendation[];
+  auditLog: AuditLogEntry[];
   sendMessageToAI: (message: string) => Promise<{ response: string; changes: Partial<UIState> | null }>;
 }
 
@@ -644,17 +715,32 @@ export const AdaptiveUIProvider: React.FC<AdaptiveUIProviderProps> = ({
   });
 
   const [events, setEvents] = useState<UserEvent[]>([]);
+  const [recommendations, setRecommendations] = useState<UIRecommendation[]>([]);
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
   const agentMessagesRef = useRef<UIAgentMessage[]>([]);
   const [adaptationRules, setAdaptationRules] = useState<UIAdaptationRule[]>(() => [
-     { ruleId: 'rule-high-error-rate', name: 'High Error Rate Help', description: 'If errorCount > 3, enable help tips.', condition: 'errorCount > 3', action: { showHelpTips: true }, priority: 100, isEnabled: true, createdBy: 'system', createdAt: Date.now(), lastModified: Date.now(), tags: ['governance'] },
-     { ruleId: 'rule-mobile-compact', name: 'Mobile Device Compact UI', description: 'Use compact UI on mobile devices.', condition: "user.deviceInfo.deviceType == 'MOBILE'", action: { layout: 'COMPACT', componentSize: 'LARGE' }, priority: 90, isEnabled: true, createdBy: 'system', createdAt: Date.now(), lastModified: Date.now(), tags: ['responsiveness'] },
-     { ruleId: 'rule-trader-realtime', name: 'Trader Realtime Data', description: 'Financial traders get realtime data.', condition: "user.persona == 'FINANCIAL_TRADER'", action: { dataRefreshRate: 'REALTIME', informationDensity: 'HIGH' }, priority: 120, isEnabled: true, createdBy: 'system', createdAt: Date.now(), lastModified: Date.now(), tags: ['persona'] },
+     { ruleId: 'rule-high-error-rate', name: 'High Error Rate Help', description: 'If errorCount > 3, enable help tips.', condition: 'errorCount > 3', action: { showHelpTips: true }, priority: 100, isEnabled: true, createdBy: 'system', createdAt: Date.now(), lastModified: Date.now(), tags: ['governance'], executionCount: 0 },
+     { ruleId: 'rule-mobile-compact', name: 'Mobile Device Compact UI', description: 'Use compact UI on mobile devices.', condition: "user.deviceInfo.deviceType == 'MOBILE'", action: { layout: 'COMPACT', componentSize: 'LARGE' }, priority: 90, isEnabled: true, createdBy: 'system', createdAt: Date.now(), lastModified: Date.now(), tags: ['responsiveness'], executionCount: 0 },
+     { ruleId: 'rule-trader-realtime', name: 'Trader Realtime Data', description: 'Financial traders get realtime data.', condition: "user.roles.includes('trader')", action: { dataRefreshRate: 'REALTIME', informationDensity: 'HIGH', persona: 'FINANCIAL_TRADER' }, priority: 120, isEnabled: true, createdBy: 'system', createdAt: Date.now(), lastModified: Date.now(), tags: ['persona'], executionCount: 0 },
   ]);
   const [activePolicies, setActivePolicies] = useState<EffectivePolicy[]>([]);
   const [aiChatHistory, setAiChatHistory] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
 
 
   const permissions = useMemo(() => ({ 'admin': true }), []); // Simplified for demo
+
+  const logAuditEvent = useCallback((action: string, details: object, status: 'SUCCESS' | 'FAILURE' = 'SUCCESS') => {
+    const newLog: AuditLogEntry = {
+        logId: crypto.randomUUID(),
+        timestamp: Date.now(),
+        actorId: currentProfile.userId,
+        action,
+        details,
+        ipAddress: '127.0.0.1',
+        status,
+    };
+    setAuditLog(prev => [newLog, ...prev].slice(0, 200));
+  }, [currentProfile.userId]);
 
   const trackUserEvent = useCallback((type: UserEventType, details: { [key: string]: any } = {}) => {
     const newEvent: UserEvent = {
@@ -671,13 +757,16 @@ export const AdaptiveUIProvider: React.FC<AdaptiveUIProviderProps> = ({
   const updateUIState = useCallback((newPartialState: Partial<UIState>, bypassAI: boolean = false) => {
     setUiState(prev => {
       const updatedState = { ...prev, ...newPartialState, lastUpdated: Date.now() };
-      trackUserEvent('UI_CHANGE', { changes: newPartialState, source: bypassAI ? 'user_manual' : 'system_adaptive' });
+      const changeSource = bypassAI ? 'user_manual' : 'system_adaptive';
+      trackUserEvent('UI_CHANGE', { changes: newPartialState, source: changeSource });
+      logAuditEvent('UI_STATE_UPDATED', { changes: newPartialState, source: changeSource });
       return updatedState;
     });
-  }, [trackUserEvent]);
+  }, [trackUserEvent, logAuditEvent]);
 
   const applyRecommendation = useCallback((recommendation: UIRecommendation) => {
     updateUIState(recommendation.recommendedChanges);
+    setRecommendations(prev => prev.map(r => r.id === recommendation.id ? {...r, userFeedback: 'ACCEPTED'} : r));
     trackUserEvent('RECOMMENDATION_INTERACTION', { recommendationId: recommendation.id, action: 'APPLIED' });
   }, [updateUIState, trackUserEvent]);
   
@@ -696,19 +785,38 @@ export const AdaptiveUIProvider: React.FC<AdaptiveUIProviderProps> = ({
       const finalResponse = `${explanation}\n\n${response}`;
 
       if (Object.keys(changes).length > 0) {
-          updateUIState(changes);
+          updateUIState(changes, true); // Changes from chat are considered manual user intent
       }
       
       setAiChatHistory(prev => [...prev, { role: 'assistant', content: finalResponse }]);
       trackUserEvent('AI_CHAT_MESSAGE', { role: 'assistant', response: finalResponse });
+      logAuditEvent('AI_COMMAND_PROCESSED', { command: message, changes, response: finalResponse });
 
       return { response: finalResponse, changes };
-  }, [aiChatHistory, trackUserEvent, uiState, currentProfile, updateUIState]);
+  }, [aiChatHistory, trackUserEvent, uiState, currentProfile, updateUIState, logAuditEvent]);
 
+  const addAdaptationRule = useCallback((rule: Omit<UIAdaptationRule, 'ruleId' | 'createdAt' | 'lastModified' | 'executionCount'>) => {
+    const newRule: UIAdaptationRule = {
+      ...rule,
+      ruleId: crypto.randomUUID(),
+      createdAt: Date.now(),
+      lastModified: Date.now(),
+      executionCount: 0,
+    };
+    setAdaptationRules(p => [...p, newRule]);
+    logAuditEvent('ADAPTATION_RULE_CREATED', { ruleId: newRule.ruleId, name: newRule.name });
+  }, [logAuditEvent]);
 
-  const addAdaptationRule = useCallback((rule: UIAdaptationRule) => setAdaptationRules(p => [...p, rule]), []);
-  const updateAdaptationRule = useCallback((ruleId: string, updates: Partial<UIAdaptationRule>) => setAdaptationRules(p => p.map(r => r.ruleId === ruleId ? {...r, ...updates, lastModified: Date.now()} : r)), []);
-  const deleteAdaptationRule = useCallback((ruleId: string) => setAdaptationRules(p => p.filter(r => r.ruleId !== ruleId)), []);
+  const updateAdaptationRule = useCallback((ruleId: string, updates: Partial<UIAdaptationRule>) => {
+    setAdaptationRules(p => p.map(r => r.ruleId === ruleId ? {...r, ...updates, lastModified: Date.now()} : r));
+    logAuditEvent('ADAPTATION_RULE_UPDATED', { ruleId, updates });
+  }, [logAuditEvent]);
+
+  const deleteAdaptationRule = useCallback((ruleId: string) => {
+    setAdaptationRules(p => p.filter(r => r.ruleId !== ruleId));
+    logAuditEvent('ADAPTATION_RULE_DELETED', { ruleId });
+  }, [logAuditEvent]);
+
   const getRuleById = useCallback((ruleId: string) => adaptationRules.find(r => r.ruleId === ruleId), [adaptationRules]);
   const getRulesByTag = useCallback((tag: string) => adaptationRules.filter(r => r.tags?.includes(tag)), [adaptationRules]);
   const processAgentMessage = useCallback(() => {}, []);
@@ -717,27 +825,39 @@ export const AdaptiveUIProvider: React.FC<AdaptiveUIProviderProps> = ({
   useEffect(() => {
     if (!aiSimulationEnabled) return;
     const interval = setInterval(() => {
-      const recommendation = simulateAIRecommendation(currentProfile, uiState, events.slice(-20));
-      if (Object.keys(recommendation).length > 0) {
-        applyRecommendation({ id: crypto.randomUUID(), timestamp: Date.now(), recommendedChanges: recommendation, reason: 'Simulated AI behavioral analysis', confidenceScore: 0.8, sourceAgentId: 'local-sim-agent', actionRequired: false });
+      const recommendedChanges = simulateAIRecommendation(currentProfile, uiState, events.slice(-20));
+      if (Object.keys(recommendedChanges).length > 0) {
+        const newRecommendation: UIRecommendation = {
+            id: crypto.randomUUID(),
+            timestamp: Date.now(),
+            recommendedChanges,
+            reason: 'Simulated AI behavioral analysis',
+            confidenceScore: 0.8,
+            sourceAgentId: 'local-sim-agent',
+            actionRequired: true,
+            userFeedback: 'IGNORED',
+        };
+        setRecommendations(prev => [newRecommendation, ...prev].slice(0, 50));
+        logAuditEvent('UI_RECOMMENDATION_GENERATED', { recommendationId: newRecommendation.id, reason: newRecommendation.reason });
       }
     }, aiSimulationIntervalMs);
     return () => clearInterval(interval);
-  }, [aiSimulationEnabled, aiSimulationIntervalMs, currentProfile, uiState, events, applyRecommendation]);
+  }, [aiSimulationEnabled, aiSimulationIntervalMs, currentProfile, uiState, events, logAuditEvent]);
 
   useEffect(() => {
      const context = { user: currentProfile, ui: uiState, events, agentMessages: agentMessagesRef.current };
      const changes = applyGovernancePolicies(uiState, activePolicies, context);
      if (Object.keys(changes).length > 0) {
        updateUIState(changes);
+       logAuditEvent('GOVERNANCE_POLICY_APPLIED', { changes, policies: activePolicies.map(p => p.policyId) });
      }
-  }, [uiState, activePolicies, currentProfile, events, updateUIState]);
+  }, [uiState, activePolicies, currentProfile, events, updateUIState, logAuditEvent]);
 
   const contextValue = useMemo(() => ({
     uiState, currentProfile, activePolicies, updateUIState, applyRecommendation, trackUserEvent, permissions, addAdaptationRule,
     updateAdaptationRule, deleteAdaptationRule, processAgentMessage, getRuleById, getRulesByTag, events, rules: adaptationRules,
-    sendMessageToAI,
-  }), [uiState, currentProfile, activePolicies, updateUIState, applyRecommendation, trackUserEvent, permissions, addAdaptationRule, updateAdaptationRule, deleteAdaptationRule, processAgentMessage, getRuleById, getRulesByTag, events, adaptationRules, sendMessageToAI]);
+    recommendations, auditLog, sendMessageToAI,
+  }), [uiState, currentProfile, activePolicies, updateUIState, applyRecommendation, trackUserEvent, permissions, addAdaptationRule, updateAdaptationRule, deleteAdaptationRule, processAgentMessage, getRuleById, getRulesByTag, events, adaptationRules, recommendations, auditLog, sendMessageToAI]);
 
   return <AdaptiveUIContext.Provider value={contextValue}>{children}</AdaptiveUIContext.Provider>;
 };
@@ -779,6 +899,7 @@ const h2Style: React.CSSProperties = {
 const tabContainerStyle: React.CSSProperties = { display: 'flex', borderBottom: '1px solid #ccc', marginBottom: '15px' };
 const tabStyle: React.CSSProperties = { padding: '10px 15px', cursor: 'pointer', border: 'none', background: 'none' };
 const activeTabStyle: React.CSSProperties = { ...tabStyle, borderBottom: '3px solid #1a237e', fontWeight: 'bold' };
+const buttonStyle: React.CSSProperties = { padding: '8px 16px', background: '#1a237e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' };
 
 const SettingsPanel = () => {
   const { uiState, updateUIState } = useAdaptiveUI();
@@ -794,25 +915,26 @@ const SettingsPanel = () => {
             <div>
                 <label>Persona:</label>
                 <select value={uiState.persona} onChange={e => handleChange('persona', e.target.value)} style={{width: '100%'}}>
-                    {['DEFAULT', 'FINANCIAL_TRADER', 'CREATIVE_EXTRAVERT', 'ZEN_MINIMALIST'].map(p => <option key={p} value={p}>{p}</option>)}
+                    {['DEFAULT', 'FINANCIAL_TRADER', 'CREATIVE_EXTRAVERT', 'ZEN_MINIMALIST', 'EXECUTIVE_OVERVIEW', 'DEVELOPER_ENGINEER'].map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
             </div>
             <div>
                 <label>Color Theme:</label>
                 <select value={uiState.colorTheme} onChange={e => handleChange('colorTheme', e.target.value)} style={{width: '100%'}}>
-                    {['LIGHT_CLASSIC', 'DARK_MODERN', 'VIBRANT', 'CYBERPUNK_NEON'].map(t => <option key={t} value={t}>{t}</option>)}
+                    {['LIGHT_CLASSIC', 'DARK_MODERN', 'VIBRANT', 'CYBERPUNK_NEON', 'CORPORATE_BLUE'].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
             </div>
              <div>
                 <label>Layout Density:</label>
                 <select value={uiState.layout} onChange={e => handleChange('layout', e.target.value)} style={{width: '100%'}}>
-                    {['SPARSE', 'DENSE', 'COMPACT'].map(d => <option key={d} value={d}>{d}</option>)}
+                    {['SPARSE', 'DENSE', 'COMPACT', 'HYBRID'].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
             </div>
             <div>
                 <label>AI Model:</label>
                 <select value={uiState.activeAIModel} onChange={e => handleChange('activeAIModel', e.target.value)} style={{width: '100%'}}>
                     {Object.values(aiModels).filter(m => m).map(m => <option key={m!.modelId} value={m!.modelId}>{m!.name}</option>)}
+                    <option value="NONE">None</option>
                 </select>
             </div>
         </div>
@@ -825,7 +947,7 @@ const EventLogViewer = () => {
   return (
     <div style={cardStyle}>
       <h2 style={h2Style}>Real-time Event Log</h2>
-      <div style={{ height: '200px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', background: '#fafafa', fontSize: '0.8em', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+      <div style={{ height: '200px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', background: '#fafafa', fontSize: '0.8em', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontFamily: 'monospace' }}>
         {events.slice().reverse().map(e => (
           <div key={e.eventId}>{new Date(e.timestamp).toLocaleTimeString()}: <strong>{e.type}</strong> - {JSON.stringify(e.details)}</div>
         ))}
@@ -860,14 +982,15 @@ const AIAssistantChat = () => {
                             padding: '8px 12px',
                             borderRadius: '12px',
                             backgroundColor: msg.role === 'user' ? '#1a237e' : '#e8eaf6',
-                            color: msg.role === 'user' ? 'white' : 'black'
+                            color: msg.role === 'user' ? 'white' : 'black',
+                            whiteSpace: 'pre-wrap'
                         }}>{msg.content}</span>
                     </div>
                 ))}
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-                <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} style={{ flex: 1, padding: '8px' }} placeholder="e.g., 'make the interface dark and dense'"/>
-                <button onClick={handleSend} style={{ padding: '8px 16px', background: '#1a237e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Send</button>
+                <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} style={{ flex: 1, padding: '8px' }} placeholder="e.g., 'make it look like a cyberpunk terminal'"/>
+                <button onClick={handleSend} style={buttonStyle}>Send</button>
             </div>
         </div>
     );
@@ -889,10 +1012,127 @@ const ConfigurationExporter = () => {
             <h2 style={h2Style}>Configuration Exporter</h2>
             <p>Generate configuration files based on the current system state. This demonstrates the "file generation" capability.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => exportJSON(uiState, 'uiState.json')}>Export UI State</button>
-                <button onClick={() => exportJSON(currentProfile, 'userProfile.json')}>Export User Profile</button>
-                <button onClick={() => exportJSON(rules, 'adaptationRules.json')}>Export Rules</button>
+                <button style={buttonStyle} onClick={() => exportJSON(uiState, 'uiState.json')}>Export UI State</button>
+                <button style={buttonStyle} onClick={() => exportJSON(currentProfile, 'userProfile.json')}>Export User Profile</button>
+                <button style={buttonStyle} onClick={() => exportJSON(rules, 'adaptationRules.json')}>Export Rules</button>
             </div>
+        </div>
+    );
+};
+
+const AuditTrailViewer = () => {
+  const { auditLog } = useAdaptiveUI();
+  return (
+    <div style={cardStyle}>
+      <h2 style={h2Style}>Compliance Audit Trail</h2>
+      <div style={{ height: '400px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', background: '#fafafa', fontSize: '0.8em' }}>
+        <table style={{width: '100%', borderCollapse: 'collapse'}}>
+            <thead>
+                <tr style={{background: '#e8eaf6', textAlign: 'left'}}>
+                    <th style={{padding: '4px'}}>Timestamp</th>
+                    <th style={{padding: '4px'}}>Actor</th>
+                    <th style={{padding: '4px'}}>Action</th>
+                    <th style={{padding: '4px'}}>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {auditLog.map(log => (
+                    <tr key={log.logId} style={{borderBottom: '1px solid #eee'}}>
+                        <td style={{padding: '4px', whiteSpace: 'nowrap'}}>{new Date(log.timestamp).toISOString()}</td>
+                        <td style={{padding: '4px'}}>{log.actorId}</td>
+                        <td style={{padding: '4px'}}><strong>{log.action}</strong></td>
+                        <td style={{padding: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontFamily: 'monospace', fontSize: '0.9em'}}>{JSON.stringify(log.details, null, 2)}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+const RuleEngineEditor = () => {
+  const { rules, addAdaptationRule, updateAdaptationRule, deleteAdaptationRule } = useAdaptiveUI();
+  // Simplified editor state. A real one would use a form library.
+  const [editingRule, setEditingRule] = useState<Partial<UIAdaptationRule> & { isNew?: boolean }>({});
+
+  const handleSave = () => {
+      if(editingRule.isNew) {
+          addAdaptationRule({
+              name: editingRule.name || 'New Rule',
+              description: editingRule.description || '',
+              condition: editingRule.condition || 'true',
+              action: editingRule.action || {},
+              priority: editingRule.priority || 50,
+              isEnabled: editingRule.isEnabled !== false,
+              createdBy: 'admin',
+              tags: editingRule.tags || [],
+          });
+      } else if (editingRule.ruleId) {
+          updateAdaptationRule(editingRule.ruleId, editingRule);
+      }
+      setEditingRule({});
+  };
+  
+  return (
+      <div style={cardStyle}>
+          <h2 style={h2Style}>Adaptation Rule Engine</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+              <div>
+                  <h3>Rules</h3>
+                  <div style={{maxHeight: '400px', overflowY: 'auto'}}>
+                    {rules.map(rule => (
+                        <div key={rule.ruleId} onClick={() => setEditingRule(rule)} style={{padding: '8px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '5px', cursor: 'pointer', background: editingRule.ruleId === rule.ruleId ? '#e8eaf6' : 'white'}}>
+                            <strong>{rule.name}</strong> ({rule.isEnabled ? 'Enabled' : 'Disabled'})
+                        </div>
+                    ))}
+                  </div>
+                  <button style={{...buttonStyle, marginTop: '10px'}} onClick={() => setEditingRule({ isNew: true, name: 'New Rule', priority: 50, isEnabled: true, condition: 'true', action: {}})}>New Rule</button>
+              </div>
+              <div>
+                  <h3>Editor</h3>
+                  { (editingRule.ruleId || editingRule.isNew) ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <input type="text" placeholder="Rule Name" value={editingRule.name || ''} onChange={e => setEditingRule(r => ({...r, name: e.target.value}))} />
+                          <textarea placeholder="Description" value={editingRule.description || ''} onChange={e => setEditingRule(r => ({...r, description: e.target.value}))}></textarea>
+                          <label>Condition (JS expression):</label>
+                          <input type="text" placeholder="e.g., user.trustScore < 0.3" value={editingRule.condition || ''} onChange={e => setEditingRule(r => ({...r, condition: e.target.value}))} />
+                          <label>Action (JSON):</label>
+                          <textarea placeholder='e.g., {"colorTheme": "DARK_MODERN"}' rows={4} value={editingRule.action ? JSON.stringify(editingRule.action, null, 2) : ''} onChange={e => { try { setEditingRule(r => ({...r, action: JSON.parse(e.target.value)})) } catch(err) {/* ignore json parse errors while typing */} }}></textarea>
+                          <label>Priority: <input type="number" value={editingRule.priority || 50} onChange={e => setEditingRule(r => ({...r, priority: parseInt(e.target.value)}))} /></label>
+                          <label><input type="checkbox" checked={editingRule.isEnabled !== false} onChange={e => setEditingRule(r => ({...r, isEnabled: e.target.checked}))} /> Enabled</label>
+                          <div>
+                              <button style={buttonStyle} onClick={handleSave}>Save</button>
+                              {editingRule.ruleId && <button style={{...buttonStyle, background: '#c62828', marginLeft: '10px'}} onClick={() => { deleteAdaptationRule(editingRule.ruleId!); setEditingRule({}) }}>Delete</button>}
+                          </div>
+                      </div>
+                  ) : <p>Select a rule to edit or create a new one.</p>}
+              </div>
+          </div>
+      </div>
+  );
+};
+
+
+const RecommendationsPanel = () => {
+    const { recommendations, applyRecommendation } = useAdaptiveUI();
+    const pendingRecs = recommendations.filter(r => r.userFeedback === 'IGNORED');
+    
+    if (pendingRecs.length === 0) {
+        return null; // Don't show the panel if there's nothing to recommend
+    }
+    
+    return (
+        <div style={{...cardStyle, background: 'linear-gradient(45deg, #e8eaf6, #c5cae9)'}}>
+            <h2 style={h2Style}>AI Recommendations</h2>
+            {pendingRecs.map(rec => (
+                 <div key={rec.id} style={{padding: '10px', border: '1px solid #9fa8da', borderRadius: '4px', marginBottom: '10px', background: 'rgba(255,255,255,0.7)'}}>
+                     <p><strong>Reason:</strong> {rec.reason}</p>
+                     <p><strong>Suggested Changes:</strong></p>
+                     <pre style={{background: '#eee', padding: '5px', borderRadius: '4px'}}>{JSON.stringify(rec.recommendedChanges, null, 2)}</pre>
+                     <button style={buttonStyle} onClick={() => applyRecommendation(rec)}>Apply Changes</button>
+                 </div>
+            ))}
         </div>
     );
 };
@@ -905,7 +1145,7 @@ const ConfigurationExporter = () => {
  * with the personalization engine. It uses all the context, types, and logic defined above.
  * This is where the magic becomes visible.
  */
-export const AdaptiveUITailorView = () => {
+export const AdaptiveUITailorView: FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   
   const renderContent = () => {
@@ -913,10 +1153,13 @@ export const AdaptiveUITailorView = () => {
       case 'chat': return <AIAssistantChat />;
       case 'events': return <EventLogViewer />;
       case 'export': return <ConfigurationExporter />;
+      case 'rules': return <RuleEngineEditor />;
+      case 'audit': return <AuditTrailViewer />;
       case 'dashboard':
       default:
         return (
-            <div>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+              <RecommendationsPanel />
               <SettingsPanel />
             </div>
         );
@@ -934,7 +1177,9 @@ export const AdaptiveUITailorView = () => {
             <div style={tabContainerStyle}>
                 <button style={activeTab === 'dashboard' ? activeTabStyle : tabStyle} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
                 <button style={activeTab === 'chat' ? activeTabStyle : tabStyle} onClick={() => setActiveTab('chat')}>AI Assistant</button>
+                <button style={activeTab === 'rules' ? activeTabStyle : tabStyle} onClick={() => setActiveTab('rules')}>Rule Engine</button>
                 <button style={activeTab === 'events' ? activeTabStyle : tabStyle} onClick={() => setActiveTab('events')}>Event Log</button>
+                <button style={activeTab === 'audit' ? activeTabStyle : tabStyle} onClick={() => setActiveTab('audit')}>Audit Trail</button>
                 <button style={activeTab === 'export' ? activeTabStyle : tabStyle} onClick={() => setActiveTab('export')}>Exporter</button>
             </div>
             {renderContent()}
@@ -947,6 +1192,13 @@ export const AdaptiveUITailorView = () => {
 
 // --- UTILITIES & POLYFILLS ---
 
+/**
+ * Checks if a user has a required permission based on a simplified permission map.
+ * In a real application, this would be a complex check against user roles and permissions.
+ * @param effectivePermissions - A map of permissions the user has.
+ * @param requiredPermission - The permission string to check for.
+ * @returns {boolean} - True if the user has the permission.
+ */
 export function hasPermission(effectivePermissions: { [key: string]: boolean }, requiredPermission: string): boolean {
   if (effectivePermissions['admin'] || effectivePermissions['*']) return true;
   return !!effectivePermissions[requiredPermission];
@@ -957,6 +1209,7 @@ declare global {
   interface Window { crypto: Crypto; }
 }
 
+// Polyfill for crypto.randomUUID for environments that don't support it (e.g., older browsers, some test environments).
 if (typeof crypto === 'undefined' || !crypto.randomUUID) {
   (globalThis as any).crypto = {
     randomUUID: () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
