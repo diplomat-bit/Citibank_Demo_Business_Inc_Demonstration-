@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useReducer, useEffect, useMemo, useCallback, useRef, createContext, useContext, DragEvent } from 'react';
 import Card from '../../Card';
 
 // SECTION: Type Definitions for a Real-World Roadmap Application
@@ -19,10 +19,20 @@ export type Priority = 'Highest' | 'High' | 'Medium' | 'Low';
 export type ItemType = 'Feature' | 'Bug' | 'Spike' | 'Tech Debt' | 'Initiative' | 'Epic';
 
 /**
-
  * Represents the quarters of a year.
  */
 export type Quarter = 'Q1' | 'Q2' | 'Q3' | 'Q4';
+
+/**
+ * Represents an external resource linked to a roadmap item (e.g., Jira ticket, GitHub PR).
+ */
+export interface LinkedResource {
+    id: string;
+    platform: 'Jira' | 'GitHub' | 'Salesforce' | 'Zendesk';
+    url: string;
+    summary: string;
+    status?: string;
+}
 
 /**
  * Represents a user or team member.
@@ -72,6 +82,15 @@ export interface Dependency {
 }
 
 /**
+ * Represents AI-generated analysis of a roadmap item.
+ */
+export interface AIAnalysis {
+    riskLevel: 'Low' | 'Medium' | 'High' | 'Unknown';
+    riskReasoning: string;
+    generatedSummary: string;
+}
+
+/**
  * Represents a single item on the strategic roadmap.
  */
 export interface RoadmapItem {
@@ -83,6 +102,8 @@ export interface RoadmapItem {
   itemType: ItemType;
   quarter: Quarter;
   year: number;
+  startDate: string; // ISO Date string
+  endDate: string;   // ISO Date string
   owner: User;
   team: Team;
   theme: Theme;
@@ -90,6 +111,8 @@ export interface RoadmapItem {
   effort: number; // Story points or t-shirt size (e.g., 1, 2, 3, 5, 8)
   dependencies: Dependency[];
   comments: Comment[];
+  linkedResources: LinkedResource[];
+  aiAnalysis?: AIAnalysis;
   lastUpdated: string;
   createdAt: string;
   order: number; // For sorting within a quarter
@@ -117,7 +140,8 @@ export interface RoadmapState {
   isLoading: boolean;
   error: string | null;
   filters: RoadmapFilters;
-  viewMode: 'quarterly' | 'monthly' | 'yearly';
+  viewMode: 'quarterly' | 'timeline';
+  swimlaneBy: 'none' | 'team' | 'theme';
   showDependencies: boolean;
   isCompactView: boolean;
   editingItemId: string | null;
@@ -151,19 +175,26 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
     {
         id: 'item-1',
         title: 'New User Onboarding Flow',
-        description: 'Revamp the entire user onboarding experience to improve activation rates.',
+        description: 'Revamp the entire user onboarding experience to improve activation rates. This involves creating a new multi-step wizard, integrating with third-party data enrichment services, and personalizing the flow based on user personas.',
         status: 'On Track',
         priority: 'Highest',
         itemType: 'Initiative',
         quarter: 'Q3',
         year: 2024,
+        startDate: '2024-07-01',
+        endDate: '2024-09-20',
         owner: MOCK_USERS[0],
         team: MOCK_TEAMS[0],
         theme: MOCK_THEMES[0],
         progress: 65,
         effort: 8,
         dependencies: [],
-        comments: [],
+        comments: [
+            { id: 'c1', author: MOCK_USERS[1], content: 'Initial designs look promising!', timestamp: '2024-07-10T10:00:00Z' }
+        ],
+        linkedResources: [
+            {id: 'JIRA-123', platform: 'Jira', url: '#', summary: 'Epic for new onboarding', status: 'In Progress'}
+        ],
         lastUpdated: '2024-07-15T10:00:00Z',
         createdAt: '2024-06-01T09:00:00Z',
         order: 0,
@@ -178,6 +209,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Tech Debt',
         quarter: 'Q3',
         year: 2024,
+        startDate: '2024-08-05',
+        endDate: '2024-09-28',
         owner: MOCK_USERS[2],
         team: MOCK_TEAMS[2],
         theme: MOCK_THEMES[1],
@@ -185,6 +218,7 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 13,
         dependencies: [{ targetItemId: 'item-3', type: 'is_blocked_by' }],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-07-12T14:30:00Z',
         createdAt: '2024-05-20T11:00:00Z',
         order: 1,
@@ -199,6 +233,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Internal Tooling',
         quarter: 'Q2',
         year: 2024,
+        startDate: '2024-04-15',
+        endDate: '2024-06-25',
         owner: MOCK_USERS[4],
         team: MOCK_TEAMS[3],
         theme: MOCK_THEMES[2],
@@ -206,6 +242,7 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 5,
         dependencies: [],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-06-28T18:00:00Z',
         createdAt: '2024-04-10T16:00:00Z',
         order: 0,
@@ -220,6 +257,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Feature',
         quarter: 'Q4',
         year: 2024,
+        startDate: '2024-10-01',
+        endDate: '2024-12-15',
         owner: MOCK_USERS[1],
         team: MOCK_TEAMS[1],
         theme: MOCK_THEMES[3],
@@ -227,12 +266,12 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 21,
         dependencies: [{ targetItemId: 'item-1', type: 'blocks' }],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-07-14T12:00:00Z',
         createdAt: '2024-07-01T10:00:00Z',
         order: 0,
         tags: ['monetization', 'billing'],
     },
-    // ... adding more items for realism
     {
         id: 'item-5',
         title: 'Admin Dashboard V2',
@@ -242,6 +281,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Epic',
         quarter: 'Q4',
         year: 2024,
+        startDate: '2024-10-10',
+        endDate: '2024-12-20',
         owner: MOCK_USERS[3],
         team: MOCK_TEAMS[2],
         theme: MOCK_THEMES[2],
@@ -249,6 +290,7 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 13,
         dependencies: [],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-07-01T00:00:00Z',
         createdAt: '2024-07-01T00:00:00Z',
         order: 1,
@@ -262,6 +304,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Initiative',
         quarter: 'Q3',
         year: 2024,
+        startDate: '2024-07-15',
+        endDate: '2024-08-30',
         owner: MOCK_USERS[0],
         team: MOCK_TEAMS[3],
         theme: MOCK_THEMES[1],
@@ -269,6 +313,7 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 8,
         dependencies: [],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-07-10T09:00:00Z',
         createdAt: '2024-06-15T09:00:00Z',
         order: 2,
@@ -282,6 +327,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Feature',
         quarter: 'Q1',
         year: 2025,
+        startDate: '2025-01-10',
+        endDate: '2025-03-25',
         owner: MOCK_USERS[1],
         team: MOCK_TEAMS[0],
         theme: MOCK_THEMES[0],
@@ -289,6 +336,7 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 21,
         dependencies: [],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-07-05T00:00:00Z',
         createdAt: '2024-07-05T00:00:00Z',
         order: 0,
@@ -302,6 +350,8 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         itemType: 'Tech Debt',
         quarter: 'Q2',
         year: 2024,
+        startDate: '2024-05-01',
+        endDate: '2024-06-30',
         owner: MOCK_USERS[2],
         team: MOCK_TEAMS[1],
         theme: MOCK_THEMES[1],
@@ -309,13 +359,41 @@ export const MOCK_ROADMAP_ITEMS: RoadmapItem[] = [
         effort: 8,
         dependencies: [],
         comments: [],
+        linkedResources: [],
         lastUpdated: '2024-07-15T11:00:00Z',
         createdAt: '2024-04-01T10:00:00Z',
         order: 1,
     }
 ];
 
-// SECTION: State Management (Reducer and Actions)
+// SECTION: AI & Integration Mock Services
+
+const AIService = {
+    async analyzeItem(item: RoadmapItem): Promise<AIAnalysis> {
+        return new Promise(resolve => setTimeout(() => {
+            let riskLevel: 'Low' | 'Medium' | 'High' = 'Low';
+            let riskReasoning = 'The project plan seems solid with clear goals and ownership.';
+            if (item.dependencies.length > 2 || item.effort > 13) {
+                riskLevel = 'Medium';
+                riskReasoning = 'High effort and multiple dependencies increase complexity and potential for delays.';
+            }
+            if (item.status === 'At Risk' || item.status === 'Delayed' || item.progress < 20 && item.effort > 8) {
+                riskLevel = 'High';
+                riskReasoning = 'The item is already flagged as at risk or delayed, with significant work remaining. There is a high probability of not meeting the deadline without intervention.';
+            }
+            
+            const summary = `This ${item.itemType}, "${item.title}", is led by ${item.owner.name} and owned by Team ${item.team.name}. With a priority of ${item.priority} and an effort score of ${item.effort}, it is currently ${item.progress}% complete. The AI assesses the risk level as ${riskLevel}.`;
+
+            resolve({
+                riskLevel,
+                riskReasoning,
+                generatedSummary: summary,
+            });
+        }, 800));
+    },
+};
+
+// SECTION: State Management (Reducer, Context, and Actions)
 
 type RoadmapAction =
   | { type: 'FETCH_START' }
@@ -327,7 +405,8 @@ type RoadmapAction =
   | { type: 'MOVE_ITEM'; payload: { itemId: string; newQuarter: Quarter; newYear: number; newOrder: number } }
   | { type: 'SET_FILTER'; payload: { filter: keyof RoadmapFilters; value: any } }
   | { type: 'CLEAR_FILTERS' }
-  | { type: 'SET_VIEW_MODE'; payload: 'quarterly' | 'monthly' | 'yearly' }
+  | { type: 'SET_VIEW_MODE'; payload: 'quarterly' | 'timeline' }
+  | { type: 'SET_SWIMLANE'; payload: 'none' | 'team' | 'theme' }
   | { type: 'TOGGLE_DEPENDENCIES' }
   | { type: 'TOGGLE_COMPACT_VIEW' }
   | { type: 'SET_EDITING_ITEM'; payload: string | null };
@@ -346,6 +425,7 @@ export const initialRoadmapState: RoadmapState = {
         ownerIds: [],
     },
     viewMode: 'quarterly',
+    swimlaneBy: 'none',
     showDependencies: true,
     isCompactView: false,
     editingItemId: null,
@@ -387,6 +467,8 @@ export const roadmapReducer = (state: RoadmapState, action: RoadmapAction): Road
             return { ...state, filters: initialRoadmapState.filters };
         case 'SET_VIEW_MODE':
             return { ...state, viewMode: action.payload };
+        case 'SET_SWIMLANE':
+            return { ...state, swimlaneBy: action.payload };
         case 'TOGGLE_DEPENDENCIES':
             return { ...state, showDependencies: !state.showDependencies };
         case 'TOGGLE_COMPACT_VIEW':
@@ -398,21 +480,44 @@ export const roadmapReducer = (state: RoadmapState, action: RoadmapAction): Road
     }
 };
 
+interface RoadmapContextType {
+    state: RoadmapState;
+    dispatch: React.Dispatch<RoadmapAction>;
+    filteredItems: RoadmapItem[];
+}
+
+const RoadmapContext = createContext<RoadmapContextType | undefined>(undefined);
+
+
 // SECTION: Helper Hooks and Utilities
 
 /**
  * A custom hook to manage roadmap data fetching and interactions.
  */
 export const useRoadmap = () => {
+    const context = useContext(RoadmapContext);
+    if (!context) {
+        throw new Error('useRoadmap must be used within a RoadmapProvider');
+    }
+    return context;
+};
+
+export const RoadmapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(roadmapReducer, initialRoadmapState);
 
     useEffect(() => {
         dispatch({ type: 'FETCH_START' });
-        // Simulate API call
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
             try {
-                // In a real app, this would be an API call, e.g., axios.get('/api/roadmap')
-                dispatch({ type: 'FETCH_SUCCESS', payload: MOCK_ROADMAP_ITEMS });
+                // In a real app, this would be an API call.
+                // We're also enriching data with AI analysis here.
+                const itemsWithAI = await Promise.all(
+                    MOCK_ROADMAP_ITEMS.map(async item => ({
+                        ...item,
+                        aiAnalysis: await AIService.analyzeItem(item),
+                    }))
+                );
+                dispatch({ type: 'FETCH_SUCCESS', payload: itemsWithAI });
             } catch (err) {
                 dispatch({ type: 'FETCH_ERROR', payload: 'Failed to fetch roadmap data.' });
             }
@@ -434,8 +539,15 @@ export const useRoadmap = () => {
         });
     }, [state.items, state.filters]);
 
-    return { state, dispatch, filteredItems };
+    const value = { state, dispatch, filteredItems };
+
+    return (
+        <RoadmapContext.Provider value={value}>
+            {children}
+        </RoadmapContext.Provider>
+    );
 };
+
 
 export const getStatusColor = (status: Status): string => {
     switch (status) {
@@ -451,10 +563,10 @@ export const getStatusColor = (status: Status): string => {
 
 export const getPriorityIcon = (priority: Priority): string => {
     switch (priority) {
-        case 'Highest': return '🔼';
-        case 'High': return '⏫';
-        case 'Medium': return '▶️';
-        case 'Low': return '🔽';
+        case 'Highest': return '🔴';
+        case 'High': return '🟠';
+        case 'Medium': return '🟡';
+        case 'Low': return '🟢';
         default: return '';
     }
 };
@@ -475,7 +587,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 8 }) => {
                 src={user.avatarUrl}
                 alt={user.name}
             />
-            <div className="absolute bottom-0 left-12 mb-2 w-auto p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div className="absolute bottom-0 left-12 mb-2 w-auto p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
                 {user.name}
             </div>
         </div>
@@ -491,14 +603,11 @@ export interface RoadmapCardProps {
 
 export const RoadmapCard: React.FC<RoadmapCardProps> = ({ item, onEdit, isCompact }) => {
     const cardRef = useRef<HTMLDivElement>(null);
+    const { dispatch } = useRoadmap();
 
-    useEffect(() => {
-        // Expose the element's position for dependency line drawing
-        if (cardRef.current) {
-            cardRef.current.dataset.x = `${cardRef.current.offsetLeft + cardRef.current.offsetWidth / 2}`;
-            cardRef.current.dataset.y = `${cardRef.current.offsetTop + cardRef.current.offsetHeight / 2}`;
-        }
-    }, [item.order]);
+    const handleDragStart = (e: DragEvent<HTMLDivElement>, itemId: string) => {
+        e.dataTransfer.setData("application/roadmap-item-id", itemId);
+    };
 
     return (
         <div
@@ -506,21 +615,24 @@ export const RoadmapCard: React.FC<RoadmapCardProps> = ({ item, onEdit, isCompac
             id={`roadmap-item-${item.id}`}
             className="bg-gray-800 rounded-lg p-3 mb-3 shadow-lg border border-gray-700 hover:border-blue-500 transition-all duration-200 cursor-pointer"
             onClick={() => onEdit(item.id)}
+            draggable
+            onDragStart={(e) => handleDragStart(e, item.id)}
         >
             <div className="flex justify-between items-start">
                 <h4 className="font-bold text-sm text-gray-100 flex-1 pr-2">{item.title}</h4>
                 <div className={`flex-shrink-0 text-lg ${item.team.color} rounded-full h-4 w-4`} title={item.team.name}></div>
             </div>
-            {!isCompact && <p className="text-xs text-gray-400 mt-1.5">{item.theme.name}</p>}
+            {!isCompact && <p className="text-xs text-gray-400 mt-1.5" style={{color: item.theme.color.startsWith('text') ? '' : item.theme.color }}>{item.theme.name}</p>}
 
             <div className="flex items-center justify-between mt-3 text-xs">
                 <div className="flex items-center space-x-2">
                     <UserAvatar user={item.owner} size={6} />
                     <span className="text-gray-400">{getPriorityIcon(item.priority)} {item.priority}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 text-gray-400">
                     {item.dependencies.length > 0 && <span title="Has Dependencies">🔗</span>}
                     {item.comments.length > 0 && <span title={`${item.comments.length} comments`}>💬</span>}
+                    {item.linkedResources.length > 0 && <span title="Has linked resources">🖇️</span>}
                 </div>
             </div>
 
@@ -541,24 +653,40 @@ export interface QuarterColumnProps {
     year: number;
     quarter: Quarter;
     items: RoadmapItem[];
-    onEditItem: (id: string) => void;
-    isCompact: boolean;
 }
 
-export const QuarterColumn: React.FC<QuarterColumnProps> = ({ year, quarter, items, onEditItem, isCompact }) => {
+export const QuarterColumn: React.FC<QuarterColumnProps> = ({ year, quarter, items }) => {
+    const { state, dispatch } = useRoadmap();
     const sortedItems = useMemo(() => [...items].sort((a, b) => a.order - b.order), [items]);
 
+    const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const itemId = e.dataTransfer.getData("application/roadmap-item-id");
+        if (itemId) {
+            const newOrder = items.length; // Simple append, can be made more sophisticated
+            dispatch({ type: 'MOVE_ITEM', payload: { itemId, newQuarter: quarter, newYear: year, newOrder } });
+        }
+    };
+
+    const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault(); // Necessary to allow drop
+    };
+
     return (
-        <div className="flex-shrink-0 w-80 bg-gray-900/50 p-3 rounded-lg mr-4">
+        <div 
+            className="flex-shrink-0 w-80 bg-gray-900/50 p-3 rounded-lg mr-4"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+        >
             <h3 className="font-bold text-lg text-white mb-4">{quarter} {year}</h3>
-            <div className="h-full overflow-y-auto">
+            <div className="h-full min-h-[200px] overflow-y-auto">
                 {sortedItems.length > 0 ? (
                     sortedItems.map(item => (
-                        <RoadmapCard key={item.id} item={item} onEdit={onEditItem} isCompact={isCompact} />
+                        <RoadmapCard key={item.id} item={item} onEdit={(id) => dispatch({ type: 'SET_EDITING_ITEM', payload: id })} isCompact={state.isCompactView} />
                     ))
                 ) : (
                     <div className="text-center text-gray-500 py-10 border-2 border-dashed border-gray-700 rounded-lg">
-                        No items planned.
+                        Drop items here.
                     </div>
                 )}
             </div>
@@ -567,22 +695,44 @@ export const QuarterColumn: React.FC<QuarterColumnProps> = ({ year, quarter, ite
 };
 
 
-export interface RoadmapToolbarProps {
-    onAddItem: () => void;
-    onToggleDependencies: () => void;
-    showDependencies: boolean;
-    onToggleCompactView: () => void;
-    isCompactView: boolean;
-    onSetFilter: (filter: keyof RoadmapFilters, value: any) => void;
-    searchTerm: string;
-}
+export interface RoadmapToolbarProps { }
 
-export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = (props) => {
+export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = () => {
+    const { state, dispatch } = useRoadmap();
+
+    const handleAddItem = useCallback(() => {
+        const newItem: RoadmapItem = {
+            id: `item-${Date.now()}`,
+            title: 'New Roadmap Item',
+            description: '',
+            status: 'Backlog',
+            priority: 'Medium',
+            itemType: 'Feature',
+            quarter: 'Q3',
+            year: 2024,
+            startDate: '2024-07-01',
+            endDate: '2024-07-31',
+            owner: MOCK_USERS[0],
+            team: MOCK_TEAMS[0],
+            theme: MOCK_THEMES[0],
+            progress: 0,
+            effort: 3,
+            dependencies: [],
+            comments: [],
+            linkedResources: [],
+            lastUpdated: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            order: 99,
+        };
+        dispatch({ type: 'ADD_ITEM', payload: newItem });
+        dispatch({ type: 'SET_EDITING_ITEM', payload: newItem.id });
+    }, [dispatch]);
+
     return (
         <div className="flex items-center justify-between mb-6 p-2 bg-gray-800/50 rounded-lg">
             <div className="flex items-center space-x-4">
                 <button
-                    onClick={props.onAddItem}
+                    onClick={handleAddItem}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
                 >
                     Add Item
@@ -590,39 +740,45 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = (props) => {
                 <input
                     type="text"
                     placeholder="Search roadmap..."
-                    value={props.searchTerm}
-                    onChange={(e) => props.onSetFilter('searchTerm', e.target.value)}
+                    value={state.filters.searchTerm}
+                    onChange={(e) => dispatch({ type: 'SET_FILTER', payload: { filter: 'searchTerm', value: e.target.value } })}
                     className="bg-gray-700 text-white placeholder-gray-400 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
             <div className="flex items-center space-x-4 text-gray-300">
-                <label className="flex items-center cursor-pointer">
-                    <input type="checkbox" checked={props.showDependencies} onChange={props.onToggleDependencies} className="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" />
-                    <span className="ml-2">Show Dependencies</span>
+                <div className="flex items-center space-x-1 bg-gray-700 rounded-md p-1">
+                    <button
+                        onClick={() => dispatch({type: 'SET_VIEW_MODE', payload: 'quarterly'})}
+                        className={`px-3 py-1 text-sm rounded ${state.viewMode === 'quarterly' ? 'bg-blue-600 text-white' : 'hover:bg-gray-600'}`}
+                    >Quarterly</button>
+                    <button
+                        onClick={() => dispatch({type: 'SET_VIEW_MODE', payload: 'timeline'})}
+                        className={`px-3 py-1 text-sm rounded ${state.viewMode === 'timeline' ? 'bg-blue-600 text-white' : 'hover:bg-gray-600'}`}
+                    >Timeline</button>
+                </div>
+                 <label className="flex items-center cursor-pointer">
+                    <input type="checkbox" checked={state.showDependencies} onChange={() => dispatch({ type: 'TOGGLE_DEPENDENCIES' })} className="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" />
+                    <span className="ml-2">Dependencies</span>
                 </label>
                 <label className="flex items-center cursor-pointer">
-                    <input type="checkbox" checked={props.isCompactView} onChange={props.onToggleCompactView} className="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" />
-                    <span className="ml-2">Compact View</span>
+                    <input type="checkbox" checked={state.isCompactView} onChange={() => dispatch({ type: 'TOGGLE_COMPACT_VIEW' })} className="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500" />
+                    <span className="ml-2">Compact</span>
                 </label>
             </div>
         </div>
     );
 };
 
-export interface RoadmapFiltersPanelProps {
-    filters: RoadmapFilters;
-    onSetFilter: (filter: keyof RoadmapFilters, value: any) => void;
-    onClearFilters: () => void;
-}
+export interface RoadmapFiltersPanelProps {}
 
-export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = ({ filters, onSetFilter, onClearFilters }) => {
-    // Multi-select handler
+export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = () => {
+    const { state, dispatch } = useRoadmap();
     const handleMultiSelectChange = (filter: keyof RoadmapFilters, value: string) => {
-        const currentValues = filters[filter] as string[];
+        const currentValues = state.filters[filter] as string[];
         const newValues = currentValues.includes(value)
             ? currentValues.filter(v => v !== value)
             : [...currentValues, value];
-        onSetFilter(filter, newValues);
+        dispatch({ type: 'SET_FILTER', payload: { filter, value: newValues }});
     };
 
     return (
@@ -636,7 +792,7 @@ export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = ({ filter
                             <button
                                 key={team.id}
                                 onClick={() => handleMultiSelectChange('teams', team.id)}
-                                className={`px-3 py-1 text-xs rounded-full border ${filters.teams.includes(team.id) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
+                                className={`px-3 py-1 text-xs rounded-full border ${state.filters.teams.includes(team.id) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
                             >
                                 {team.name}
                             </button>
@@ -651,7 +807,7 @@ export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = ({ filter
                              <button
                                 key={status}
                                 onClick={() => handleMultiSelectChange('statuses', status)}
-                                className={`px-3 py-1 text-xs rounded-full border ${filters.statuses.includes(status) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
+                                className={`px-3 py-1 text-xs rounded-full border ${state.filters.statuses.includes(status) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
                             >
                                 {status}
                             </button>
@@ -666,7 +822,7 @@ export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = ({ filter
                              <button
                                 key={priority}
                                 onClick={() => handleMultiSelectChange('priorities', priority)}
-                                className={`px-3 py-1 text-xs rounded-full border ${filters.priorities.includes(priority) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
+                                className={`px-3 py-1 text-xs rounded-full border ${state.filters.priorities.includes(priority) ? 'bg-blue-600 border-blue-500 text-white' : 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600'}`}
                             >
                                 {getPriorityIcon(priority)} {priority}
                             </button>
@@ -675,7 +831,7 @@ export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = ({ filter
                 </div>
                 <div className="flex items-end">
                     <button
-                        onClick={onClearFilters}
+                        onClick={() => dispatch({type: 'CLEAR_FILTERS'})}
                         className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full transition-colors duration-200"
                     >
                         Clear Filters
@@ -687,11 +843,11 @@ export const RoadmapFiltersPanel: React.FC<RoadmapFiltersPanelProps> = ({ filter
 };
 
 export interface DependencyLinesProps {
-    items: RoadmapItem[];
     containerRef: React.RefObject<HTMLDivElement>;
 }
 
-export const DependencyLines: React.FC<DependencyLinesProps> = ({ items, containerRef }) => {
+export const DependencyLines: React.FC<DependencyLinesProps> = ({ containerRef }) => {
+    const { filteredItems } = useRoadmap();
     const [lines, setLines] = useState<any[]>([]);
 
     useEffect(() => {
@@ -699,14 +855,12 @@ export const DependencyLines: React.FC<DependencyLinesProps> = ({ items, contain
             if (!containerRef.current) return;
             const newLines: any[] = [];
             const itemElements: { [key: string]: HTMLElement } = {};
-            items.forEach(item => {
+            filteredItems.forEach(item => {
                 const el = document.getElementById(`roadmap-item-${item.id}`);
-                if (el) {
-                    itemElements[item.id] = el;
-                }
+                if (el) itemElements[item.id] = el;
             });
 
-            items.forEach(item => {
+            filteredItems.forEach(item => {
                 item.dependencies.forEach(dep => {
                     const sourceEl = itemElements[item.id];
                     const targetEl = itemElements[dep.targetItemId];
@@ -723,11 +877,7 @@ export const DependencyLines: React.FC<DependencyLinesProps> = ({ items, contain
 
                         newLines.push({
                             id: `${item.id}-${dep.targetItemId}`,
-                            x1: startX,
-                            y1: startY,
-                            x2: endX,
-                            y2: endY,
-                            type: dep.type,
+                            x1: startX, y1: startY, x2: endX, y2: endY, type: dep.type,
                         });
                     }
                 });
@@ -735,24 +885,26 @@ export const DependencyLines: React.FC<DependencyLinesProps> = ({ items, contain
             setLines(newLines);
         };
         
-        // Recalculate on mount and on window resize
+        const observer = new MutationObserver(calculateLines);
+        if (containerRef.current) {
+            observer.observe(containerRef.current, { childList: true, subtree: true, attributes: true });
+        }
         calculateLines();
         window.addEventListener('resize', calculateLines);
-        return () => window.removeEventListener('resize', calculateLines);
-    }, [items, containerRef]);
+        return () => {
+             window.removeEventListener('resize', calculateLines);
+             observer.disconnect();
+        }
+    }, [filteredItems, containerRef]);
 
     return (
-        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: -1 }}>
+        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
             {lines.map(line => (
                 <g key={line.id}>
                     <line
-                        x1={line.x1}
-                        y1={line.y1}
-                        x2={line.x2}
-                        y2={line.y2}
+                        x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}
                         stroke={line.type === 'blocks' ? '#f87171' : '#818cf8'}
-                        strokeWidth="2"
-                        markerEnd="url(#arrow)"
+                        strokeWidth="2" markerEnd="url(#arrow)"
                     />
                 </g>
             ))}
@@ -765,53 +917,11 @@ export const DependencyLines: React.FC<DependencyLinesProps> = ({ items, contain
     );
 };
 
-// SECTION: Main Component - RoadmapView
+// SECTION: Views (Quarterly, Timeline)
 
-const RoadmapView: React.FC = () => {
-    const { state, dispatch, filteredItems } = useRoadmap();
-    const timelineContainerRef = useRef<HTMLDivElement>(null);
-
-    const handleAddItem = useCallback(() => {
-        // In a real app, this would open a modal with a form
-        // For now, we add a mock item
-        const newItem: RoadmapItem = {
-            id: `item-${Date.now()}`,
-            title: 'New Roadmap Item',
-            description: '',
-            status: 'Backlog',
-            priority: 'Medium',
-            itemType: 'Feature',
-            quarter: 'Q3',
-            year: 2024,
-            owner: MOCK_USERS[0],
-            team: MOCK_TEAMS[0],
-            theme: MOCK_THEMES[0],
-            progress: 0,
-            effort: 3,
-            dependencies: [],
-            comments: [],
-            lastUpdated: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            order: 99,
-        };
-        dispatch({ type: 'ADD_ITEM', payload: newItem });
-        dispatch({ type: 'SET_EDITING_ITEM', payload: newItem.id });
-    }, [dispatch]);
-
-    const handleEditItem = (id: string) => {
-        dispatch({ type: 'SET_EDITING_ITEM', payload: id });
-    };
-
-    const handleCloseModal = () => {
-        dispatch({ type: 'SET_EDITING_ITEM', payload: null });
-    };
-
-    const handleSetFilter = (filter: keyof RoadmapFilters, value: any) => {
-        dispatch({ type: 'SET_FILTER', payload: { filter, value } });
-    };
-
-    const handleClearFilters = () => dispatch({ type: 'CLEAR_FILTERS' });
-
+export const QuarterlyView: React.FC = () => {
+    const { filteredItems } = useRoadmap();
+    
     const timelineData = useMemo(() => {
         const data: { [key: string]: RoadmapItem[] } = {};
         const currentYear = new Date().getFullYear();
@@ -827,11 +937,89 @@ const RoadmapView: React.FC = () => {
         return data;
     }, [filteredItems]);
 
+    return (
+        <div className="flex">
+            {Object.entries(timelineData).map(([key, items]) => {
+                const [quarter, yearStr] = key.split('-');
+                const year = parseInt(yearStr);
+                if (items.length > 0 || (year >= new Date().getFullYear() - 1 && year <= new Date().getFullYear() + 1)) {
+                    return (
+                        <QuarterColumn
+                            key={key}
+                            year={year}
+                            quarter={quarter as Quarter}
+                            items={items}
+                        />
+                    );
+                }
+                return null;
+            })}
+        </div>
+    );
+};
+
+// ... more advanced components can be added like AI Modals, Edit Modals, Timeline views etc.
+// For the sake of this example, we will stick to a reasonable but comprehensive length.
+
+// SECTION: Main Component - RoadmapView
+
+const RoadmapViewInternal: React.FC = () => {
+    const { state, dispatch, filteredItems } = useRoadmap();
+    const timelineContainerRef = useRef<HTMLDivElement>(null);
+
+    return (
+        <Card title="Strategic Roadmap">
+            <p className="text-gray-400 mb-6">A high-level, interactive view of the product and engineering roadmap, visualizing key initiatives and timelines with AI-powered insights.</p>
+            <RoadmapToolbar />
+            <RoadmapFiltersPanel />
+
+            <div
+                ref={timelineContainerRef}
+                className="relative w-full overflow-x-auto pb-4"
+                style={{ zIndex: 1 }}
+            >
+                {state.showDependencies && <DependencyLines containerRef={timelineContainerRef} />}
+                
+                {state.viewMode === 'quarterly' && <QuarterlyView />}
+                {/* Timeline view would be implemented here */}
+
+            </div>
+            
+            {state.editingItemId && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 rounded-lg p-6 w-1/2 max-w-2xl">
+                        <h2 className="text-2xl font-bold mb-4">Editing Item</h2>
+                        <p className="text-gray-300">Item ID: {state.editingItemId}</p>
+                        <p className="text-gray-400 mt-2">Full-featured editing form with tabs for details, dependencies, comments, and integrations would appear here.</p>
+                        <button
+                            onClick={() => dispatch({ type: 'SET_EDITING_ITEM', payload: null })}
+                            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+        </Card>
+    );
+};
+
+
+const RoadmapView: React.FC = () => {
+    return (
+        <RoadmapProvider>
+            <RoadmapViewWithLoader />
+        </RoadmapProvider>
+    )
+}
+
+const RoadmapViewWithLoader: React.FC = () => {
+    const { state } = useRoadmap();
 
     if (state.isLoading) {
         return (
             <Card title="Strategic Roadmap">
-                <div className="flex justify-center items-center h-64">
+                <div className="flex justify-center items-center h-96">
                     <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
             </Card>
@@ -847,73 +1035,8 @@ const RoadmapView: React.FC = () => {
             </Card>
         );
     }
-    
-    return (
-        <Card title="Strategic Roadmap">
-            <p className="text-gray-400 mb-6">A high-level view of the product and engineering roadmap, visualizing key initiatives and timelines.</p>
 
-            <RoadmapToolbar
-                onAddItem={handleAddItem}
-                onToggleDependencies={() => dispatch({ type: 'TOGGLE_DEPENDENCIES' })}
-                showDependencies={state.showDependencies}
-                onToggleCompactView={() => dispatch({ type: 'TOGGLE_COMPACT_VIEW' })}
-                isCompactView={state.isCompactView}
-                onSetFilter={handleSetFilter}
-                searchTerm={state.filters.searchTerm}
-            />
-
-            <RoadmapFiltersPanel
-                filters={state.filters}
-                onSetFilter={handleSetFilter}
-                onClearFilters={handleClearFilters}
-            />
-
-            <div
-                ref={timelineContainerRef}
-                className="relative w-full overflow-x-auto pb-4"
-                style={{ zIndex: 1 }}
-            >
-                {state.showDependencies && <DependencyLines items={filteredItems} containerRef={timelineContainerRef} />}
-                <div className="flex">
-                    {Object.entries(timelineData).map(([key, items]) => {
-                        const [quarter, yearStr] = key.split('-');
-                        const year = parseInt(yearStr);
-                        // Only render columns that have items or are in the near future/past
-                        if (items.length > 0 || (year >= new Date().getFullYear() - 1 && year <= new Date().getFullYear() + 1)) {
-                            return (
-                                <QuarterColumn
-                                    key={key}
-                                    year={year}
-                                    quarter={quarter as Quarter}
-                                    items={items}
-                                    onEditItem={handleEditItem}
-                                    isCompact={state.isCompactView}
-                                />
-                            );
-                        }
-                        return null;
-                    })}
-                </div>
-            </div>
-            
-            {/* A simple placeholder for a modal. In a real app, this would be a portal-based modal component. */}
-            {state.editingItemId && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="bg-gray-800 rounded-lg p-6 w-1/2 max-w-2xl">
-                        <h2 className="text-2xl font-bold mb-4">Editing Item</h2>
-                        <p className="text-gray-300">Item ID: {state.editingItemId}</p>
-                        <p className="text-gray-400 mt-2">Full-featured editing form would be here.</p>
-                        <button
-                            onClick={handleCloseModal}
-                            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
-        </Card>
-    );
-};
+    return <RoadmapViewInternal />;
+}
 
 export default RoadmapView;
