@@ -4,7 +4,7 @@ import Card from '../../Card';
 import { APIStatus } from '../../../types';
 import {
     ResponsiveContainer, AreaChart, Area, Tooltip as RechartsTooltip, YAxis, XAxis,
-    LineChart, Line, BarChart, Bar, CartesianGrid, Legend, PieChart, Pie, Cell
+    LineChart, Line, BarChart, Bar, CartesianGrid, Legend, PieChart, Pie, Cell, ComposedChart, Scatter,
 } from 'recharts';
 
 // --- Start of new types and utility functions (exported for modularity, even within this file) ---
@@ -30,7 +30,7 @@ export type Incident = {
     id: string;
     apiProvider: string;
     severity: 'critical' | 'high' | 'medium' | 'low';
-    status: 'open' | 'resolved' | 'acknowledged';
+    status: 'open' | 'resolved' | 'acknowledged' | 'monitoring';
     description: string;
     openedAt: string;
     resolvedAt?: string;
@@ -39,16 +39,19 @@ export type Incident = {
     rootCause?: string;
     resolutionSteps?: string;
     relatedAlertIds?: string[];
+    postmortemId?: string;
+    assignedTeam?: string;
+    communicationChannel?: string; // e.g. slack channel
 };
 
 export type AlertRule = {
     id: string;
     name: string;
     apiProvider: string;
-    metric: 'latency' | 'errorRate' | 'throughput' | 'availability';
+    metric: 'latency' | 'errorRate' | 'throughput' | 'availability' | 'cost';
     threshold: number;
     operator: 'gt' | 'lt'; // greater than, less than
-    unit: 'ms' | '%' | 'req/s';
+    unit: 'ms' | '%' | 'req/s' | 'usd';
     channels: ('email' | 'slack' | 'pagerduty' | 'webhook')[];
     enabled: boolean;
     lastTriggered?: string;
@@ -65,6 +68,7 @@ export type SLO = {
     period: 'daily' | 'weekly' | 'monthly' | 'quarterly';
     unit: '%' | 'ms' | 'decimal'; // 'decimal' for error rate/availability
     currentAchieved?: number; // Actual performance
+    errorBudgetRemaining?: number; // As a percentage
     breachCount?: number;
     lastReported?: string;
 };
@@ -72,7 +76,7 @@ export type SLO = {
 export type SystemResource = {
     id: string;
     name: string; // e.g., 'Monitoring Server 1', 'Database Cluster'
-    type: 'server' | 'database' | 'network_device';
+    type: 'server' | 'database' | 'network_device' | 'kubernetes_pod';
     cpuUsage: number; // percentage
     memoryUsage: number; // percentage
     diskUsage: number; // percentage
@@ -93,7 +97,7 @@ export type EventLog = {
 };
 
 export type UserActivity = {
-    id: string;
+    id:string;
     timestamp: string;
     user: string;
     action: string;
@@ -118,7 +122,7 @@ export type AnomalyDetectionSetting = {
     id: string;
     metric: 'latency' | 'errorRate' | 'throughput';
     apiProvider: string;
-    detectionMethod: 'std_dev' | 'moving_average_deviation';
+    detectionMethod: 'std_dev' | 'moving_average_deviation' | 'seasonal_decomposition';
     thresholdMultiplier: number; // e.g., 2 for 2 standard deviations
     timeWindowMinutes: number; // For moving average or STD dev calculation
     enabled: boolean;
@@ -126,7 +130,7 @@ export type AnomalyDetectionSetting = {
 
 export type ReportGenerationRequest = {
     id: string;
-    reportType: 'daily_summary' | 'weekly_performance' | 'monthly_slo' | 'custom_metrics';
+    reportType: 'daily_summary' | 'weekly_performance' | 'monthly_slo' | 'incident_postmortem' | 'custom_metrics';
     status: 'pending' | 'generating' | 'completed' | 'failed';
     requestedBy: string;
     requestedAt: string;
@@ -146,6 +150,50 @@ export type WebhookConfiguration = {
     lastSentStatus?: 'success' | 'failed';
     lastSentTime?: string;
 };
+
+export type Postmortem = {
+    id: string;
+    incidentId: string;
+    title: string;
+    author: string;
+    createdAt: string;
+    status: 'draft' | 'in_review' | 'published';
+    summary: string;
+    timeline: { timestamp: string; description: string }[];
+    rootCauseAnalysis: string;
+    lessonsLearned: string[];
+    actionItems: { id: string; description: string; owner: string; status: 'todo' | 'in_progress' | 'done'; dueDate: string }[];
+};
+
+export type APICostData = {
+    provider: string;
+    monthlyCosts: { month: string; cost: number; calls: number }[];
+    costByEndpoint: { endpoint: string; cost: number; calls: number }[];
+};
+
+export type GeoLatencyData = {
+    region: string;
+    countryCode: string; // e.g. US, DE, JP
+    avgLatency: number;
+    errorRate: number;
+};
+
+export type SecurityFinding = {
+    id: string;
+    apiProvider: string;
+    endpoint: string;
+    vulnerability: string; // e.g. "Unauthenticated Access", "SQL Injection", "Broken Object Level Authorization"
+    severity: 'critical' | 'high' | 'medium' | 'low' | 'informational';
+    status: 'open' | 'resolved' | 'risk_accepted';
+    detectedAt: string;
+    details: string;
+    recommendation: string;
+    cwe?: string; // Common Weakness Enumeration
+};
+
+export type DependencyNode = { id: string; label: string; type: 'api' | 'service' | 'database' | 'external' };
+export type DependencyEdge = { from: string; to: string; label?: string; animated?: boolean };
+
 
 // --- Mock Data Generation Utilities ---
 
@@ -175,8 +223,8 @@ export const MOCK_API_METRICS: APIProviderMetrics[] = [
 
 export const MOCK_INCIDENTS: Incident[] = Array.from({ length: 25 }, (_, i) => {
     const providers = ['Plaid', 'Stripe', 'Gemini', 'Global'];
-    const severities = ['critical', 'high', 'medium', 'low'];
-    const statuses = ['open', 'resolved', 'acknowledged'];
+    const severities: Incident['severity'][] = ['critical', 'high', 'medium', 'low'];
+    const statuses: Incident['status'][] = ['open', 'resolved', 'acknowledged', 'monitoring'];
     const descriptions = [
         'High latency spike detected', 'Service unavailable in APAC region', 'Partial outage: Authentication failures',
         'API endpoint /v1/transactions returning 5xx errors', 'Degraded performance on payment processing',
@@ -184,24 +232,54 @@ export const MOCK_INCIDENTS: Incident[] = Array.from({ length: 25 }, (_, i) => {
     ];
     const openedAt = new Date(currentTimestamp - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString();
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const resolvedAt = status === 'resolved' ? new Date(currentTimestamp - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined;
-    const acknowledgedBy = status === 'acknowledged' ? 'Incident Manager' : undefined;
+    const resolvedAt = status === 'resolved' ? new Date(new Date(openedAt).getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined;
+    const acknowledgedBy = ['acknowledged', 'monitoring', 'resolved'].includes(status) ? 'Incident Manager' : undefined;
 
     return {
         id: `INC-${1000 + i}`,
         apiProvider: providers[Math.floor(Math.random() * providers.length)],
         severity: severities[Math.floor(Math.random() * severities.length)],
-        status: status as Incident['status'],
+        status: status,
         description: descriptions[Math.floor(Math.random() * descriptions.length)],
         openedAt,
         resolvedAt,
         acknowledgedBy,
-        impactedEndpoints: Math.random() > 0.5 ? ['/v1/payments', '/v1/users'] : undefined,
+        impactedEndpoints: Math.random() > 0.5 ? ['/v1/payments', '/v1/users'] : ['/v1/auth'],
         rootCause: status === 'resolved' ? 'Database connection pool exhaustion' : undefined,
         resolutionSteps: status === 'resolved' ? 'Increased database connection limit, restarted affected services.' : undefined,
         relatedAlertIds: Math.random() > 0.7 ? [`ALRT-${Math.floor(Math.random() * 5)}`, `ALRT-${Math.floor(Math.random() * 5) + 5}`] : undefined,
+        postmortemId: status === 'resolved' && Math.random() > 0.5 ? `PM-${1000 + i}` : undefined,
+        assignedTeam: "SRE Team Alpha",
+        communicationChannel: "#incidents-critical"
     };
 });
+
+export const MOCK_POSTMORTEMS: Postmortem[] = MOCK_INCIDENTS.filter(inc => inc.postmortemId).map(inc => ({
+    id: inc.postmortemId!,
+    incidentId: inc.id,
+    title: `Postmortem for ${inc.description}`,
+    author: 'AI Postmortem Generator',
+    createdAt: new Date(new Date(inc.resolvedAt!).getTime() + 24 * 60 * 60 * 1000).toISOString(),
+    status: 'published',
+    summary: `A summary of the incident where ${inc.description} on ${inc.apiProvider} which impacted ${inc.impactedEndpoints?.join(', ')}. The issue was resolved by ${inc.resolutionSteps}.`,
+    timeline: [
+        { timestamp: inc.openedAt, description: 'Initial alert triggered for high latency.' },
+        { timestamp: new Date(new Date(inc.openedAt).getTime() + 5 * 60 * 1000).toISOString(), description: 'Incident declared and SRE team paged.' },
+        { timestamp: new Date(new Date(inc.openedAt).getTime() + 30 * 60 * 1000).toISOString(), description: 'Root cause investigation started.' },
+        { timestamp: inc.resolvedAt!, description: 'Mitigation applied and service recovery confirmed.' }
+    ],
+    rootCauseAnalysis: `The root cause was identified as ${inc.rootCause}. This was triggered by an unexpected surge in traffic combined with a misconfigured connection pool setting.`,
+    lessonsLearned: [
+        "Monitoring for connection pool saturation needs to be improved.",
+        "Automated rollback procedures should be tested more frequently.",
+        "Cross-team communication protocols during outages can be streamlined."
+    ],
+    actionItems: [
+        { id: `AI-${inc.id}-1`, description: "Increase DB connection pool limits in production.", owner: "DevOps Team", status: "done", dueDate: new Date(new Date(inc.resolvedAt!).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: `AI-${inc.id}-2`, description: "Add new alert for DB connection pool saturation > 80%.", owner: "SRE Team", status: "in_progress", dueDate: new Date(new Date(inc.resolvedAt!).getTime() + 14 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: `AI-${inc.id}-3`, description: "Review and update incident response runbook.", owner: "Incident Manager", status: "todo", dueDate: new Date(new Date(inc.resolvedAt!).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() }
+    ]
+}));
 
 export const MOCK_ALERT_RULES: AlertRule[] = Array.from({ length: 15 }, (_, i) => {
     const providers = ['Plaid', 'Stripe', 'Gemini', 'Global'];
@@ -211,7 +289,8 @@ export const MOCK_ALERT_RULES: AlertRule[] = Array.from({ length: 15 }, (_, i) =
         latency: 'ms',
         errorRate: '%',
         throughput: 'req/s',
-        availability: '%'
+        availability: '%',
+        cost: 'usd'
     };
     const channels: AlertRule['channels'][number][] = ['email', 'slack', 'pagerduty', 'webhook'];
 
@@ -265,14 +344,15 @@ export const MOCK_SLOS: SLO[] = Array.from({ length: 10 }, (_, i) => {
         period,
         unit,
         currentAchieved: parseFloat(currentAchieved.toFixed(objective === 'latency' ? 0 : 4)),
+        errorBudgetRemaining: Math.random() * 100,
         breachCount: breachCount,
         lastReported: new Date(currentTimestamp - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
 });
 
-export const MOCK_SYSTEM_RESOURCES: SystemResource[] = Array.from({ length: 5 }, (_, i) => {
-    const names = ['App Server 1', 'App Server 2', 'DB Replica 1', 'Load Balancer 1', 'Monitoring Agent'];
-    const types: SystemResource['type'][] = ['server', 'server', 'database', 'network_device', 'server'];
+export const MOCK_SYSTEM_RESOURCES: SystemResource[] = Array.from({ length: 8 }, (_, i) => {
+    const names = ['App Server 1', 'App Server 2', 'DB Replica 1', 'Load Balancer 1', 'Monitoring Agent', 'Kube Pod Worker-1', 'Kube Pod Worker-2', 'Main DB Primary'];
+    const types: SystemResource['type'][] = ['server', 'server', 'database', 'network_device', 'server', 'kubernetes_pod', 'kubernetes_pod', 'database'];
     const statusOptions: SystemResource['status'][] = ['healthy', 'warning', 'critical'];
     const status = i === 0 ? 'healthy' : statusOptions[Math.floor(Math.random() * statusOptions.length)];
 
@@ -371,6 +451,71 @@ export const MOCK_WEBHOOK_CONFIGS: WebhookConfiguration[] = Array.from({ length:
     };
 });
 
+export const MOCK_API_COST_DATA: APICostData[] = ['Plaid', 'Stripe', 'Gemini'].map(provider => ({
+    provider,
+    monthlyCosts: Array.from({length: 6}, (_, i) => ({
+        month: new Date(2023, 5-i, 1).toLocaleString('default', { month: 'long' }),
+        cost: 1000 + Math.random() * 5000,
+        calls: 100000 + Math.random() * 500000
+    })).reverse(),
+    costByEndpoint: [
+        { endpoint: '/v1/transactions', cost: 500 + Math.random() * 2000, calls: 50000 + Math.random() * 100000 },
+        { endpoint: '/v1/auth', cost: 300 + Math.random() * 1000, calls: 30000 + Math.random() * 80000 },
+        { endpoint: '/v1/identity', cost: 200 + Math.random() * 500, calls: 20000 + Math.random() * 30000 },
+        { endpoint: '/v1/balance', cost: 100 + Math.random() * 300, calls: 10000 + Math.random() * 20000 },
+    ]
+}));
+
+export const MOCK_GEO_LATENCY_DATA: GeoLatencyData[] = [
+    { region: 'North America', countryCode: 'US', avgLatency: 80 + Math.random() * 20, errorRate: 0.1 + Math.random() * 0.2 },
+    { region: 'Europe', countryCode: 'DE', avgLatency: 120 + Math.random() * 30, errorRate: 0.2 + Math.random() * 0.3 },
+    { region: 'Asia Pacific', countryCode: 'JP', avgLatency: 180 + Math.random() * 40, errorRate: 0.3 + Math.random() * 0.4 },
+    { region: 'South America', countryCode: 'BR', avgLatency: 250 + Math.random() * 50, errorRate: 0.5 + Math.random() * 0.5 },
+    { region: 'Australia', countryCode: 'AU', avgLatency: 220 + Math.random() * 40, errorRate: 0.4 + Math.random() * 0.3 },
+];
+
+export const MOCK_SECURITY_FINDINGS: SecurityFinding[] = Array.from({length: 15}, (_, i) => {
+    const severities: SecurityFinding['severity'][] = ['critical', 'high', 'medium', 'low', 'informational'];
+    const statuses: SecurityFinding['status'][] = ['open', 'resolved', 'risk_accepted'];
+    const vulnerabilities = ["Unauthenticated Access", "SQL Injection", "Broken Object Level Authorization", "Cross-Site Scripting (XSS)", "Insecure Direct Object References"];
+    const providers = ['Plaid', 'Stripe', 'Gemini'];
+    return {
+        id: `SEC-${500 + i}`,
+        apiProvider: providers[i % providers.length],
+        endpoint: `/v1/${['users', 'payments', 'data'][i%3]}/${i}`,
+        vulnerability: vulnerabilities[i % vulnerabilities.length],
+        severity: severities[i % severities.length],
+        status: statuses[i % statuses.length],
+        detectedAt: new Date(currentTimestamp - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+        details: "Detailed explanation of the vulnerability and its potential impact on the system.",
+        recommendation: "Upgrade library version to 2.5.1 or apply the latest security patch.",
+        cwe: `CWE-${100 + i}`
+    }
+});
+
+export const MOCK_DEPENDENCY_GRAPH = {
+    nodes: [
+        { id: 'web-app', label: 'Web App', type: 'service' },
+        { id: 'api-gateway', label: 'API Gateway', type: 'service' },
+        { id: 'auth-service', label: 'Auth Service', type: 'service' },
+        { id: 'user-db', label: 'User DB', type: 'database' },
+        { id: 'plaid-api', label: 'Plaid API', type: 'external' },
+        { id: 'stripe-api', label: 'Stripe API', type: 'external' },
+        { id: 'gemini-api', label: 'Gemini AI API', type: 'external' },
+        { id: 'transactions-service', label: 'Transactions Service', type: 'service' },
+        { id: 'transactions-db', label: 'Transactions DB', type: 'database' },
+    ],
+    edges: [
+        { from: 'web-app', to: 'api-gateway', label: 'requests' },
+        { from: 'api-gateway', to: 'auth-service', label: 'auth calls' },
+        { from: 'auth-service', to: 'user-db' },
+        { from: 'api-gateway', to: 'transactions-service', label: 'data calls' },
+        { from: 'transactions-service', to: 'transactions-db' },
+        { from: 'transactions-service', to: 'plaid-api', label: 'sync', animated: true },
+        { from: 'transactions-service', to: 'stripe-api', label: 'payments' },
+        { from: 'api-gateway', to: 'gemini-api', label: 'AI insights' },
+    ]
+};
 
 // --- Reusable UI Components (exported) ---
 
@@ -424,7 +569,7 @@ export const ExportedPagination: React.FC<{
             if (currentPage < totalPages - 2) pages.push('...');
             pages.push(totalPages);
         }
-        return Array.from(new Set(pages)).filter(p => p !== '...').map(p => typeof p === 'number' ? p : '...');
+        return Array.from(new Set(pages));
     }, [currentPage, totalPages]);
 
     return (
@@ -741,6 +886,7 @@ export const ExportedIncidentLogTable: React.FC = () => {
         switch (status) {
             case 'open': return 'bg-red-500/20 text-red-300';
             case 'acknowledged': return 'bg-yellow-500/20 text-yellow-300';
+            case 'monitoring': return 'bg-blue-500/20 text-blue-300';
             case 'resolved': return 'bg-green-500/20 text-green-300';
             default: return 'bg-gray-500/20 text-gray-300';
         }
@@ -759,6 +905,7 @@ export const ExportedIncidentLogTable: React.FC = () => {
                     <option value="all">All Statuses</option>
                     <option value="open">Open</option>
                     <option value="acknowledged">Acknowledged</option>
+                    <option value="monitoring">Monitoring</option>
                     <option value="resolved">Resolved</option>
                 </select>
                 <select
@@ -1560,7 +1707,7 @@ export const ExportedRealtimeEventStream: React.FC = () => {
         switch (severity) {
             case 'info': return <span className="text-blue-400">i</span>;
             case 'warning': return <span className="text-yellow-400">!</span>;
-            case 'error': return <span className="text-red-400">✕</span>;
+            case 'error': return <span className="text-red-400">×</span>;
             case 'success': return <span className="text-green-400">✓</span>;
             default: return null;
         }
