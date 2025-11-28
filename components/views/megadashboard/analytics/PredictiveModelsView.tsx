@@ -3,7 +3,7 @@ import Card from '../../../Card';
 import { DataContext } from '../../../../context/DataContext';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { MLModel, Feature, MLAlert, ModelDeployment, ModelMetric } from '../../../../types'; // Assume these types exist or are extended
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
 // --- Extended Types (Assumed to be in ../../../../types for real app) ---
@@ -1147,7 +1147,7 @@ const PredictiveModelsView: React.FC = () => {
     const [aiChatHistory, setAiChatHistory] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
     const [isAiChatLoading, setIsAiChatLoading] = useState(false);
 
-    const googleGenAI = useMemo(() => new GoogleGenAI({apiKey: process.env.NEXT_PUBLIC_API_KEY as string}), []);
+    const googleGenAI = useMemo(() => new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string), []);
 
 
     const generateDocs = async (model: MLModelExtended) => {
@@ -1155,8 +1155,10 @@ const PredictiveModelsView: React.FC = () => {
         setIsDocsLoading(true);
         try {
             const prompt = `Generate a brief, professional documentation entry for this machine learning model. Include a short description, its primary use case, key features, and a summary of its current performance and recent deployments. Model details: Name=${model.name}, Version=${model.version}, Accuracy=${model.accuracy}%, Status=${model.status}, Deployments=${model.deploymentHistory?.length || 0}.`;
-            const response = await googleGenAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' }).generateContent(prompt);
-            setAiDocs(response.response.text());
+            const genAIModel = googleGenAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+            const result = await genAIModel.generateContent(prompt);
+            const response = result.response;
+            setAiDocs(response.text());
         } catch(err) {
             setAiDocs("Could not generate documentation. Error: " + (err as Error).message);
         } finally {
@@ -1166,8 +1168,10 @@ const PredictiveModelsView: React.FC = () => {
 
     const generateAiContent = async (prompt: string): Promise<string | null> => {
         try {
-            const response = await googleGenAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' }).generateContent(prompt);
-            return response.response.text();
+            const genAIModel = googleGenAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+            const result = await genAIModel.generateContent(prompt);
+            const response = result.response;
+            return response.text();
         } catch (err) {
             console.error("AI content generation failed:", err);
             return null;
@@ -1197,7 +1201,7 @@ const PredictiveModelsView: React.FC = () => {
 
     const handleModelComparisonSelection = (model: MLModelExtended) => {
         setSelectedComparisonModels(prev =>
-            prev.includes(model) ? prev.filter(m => m.id !== model.id) : [...prev, model]
+            prev.find(m => m.id === model.id) ? prev.filter(m => m.id !== model.id) : [...prev, model]
         );
     };
 
@@ -1345,7 +1349,7 @@ const PredictiveModelsView: React.FC = () => {
                             <button
                                 key={`comp-${model.id}`}
                                 onClick={() => handleModelComparisonSelection(model)}
-                                className={`px-3 py-1 text-sm rounded-full transition-colors ${selectedComparisonModels.includes(model) ? 'bg-purple-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}
+                                className={`px-3 py-1 text-sm rounded-full transition-colors ${selectedComparisonModels.find(m => m.id === model.id) ? 'bg-purple-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}
                             >
                                 {model.name} v{model.version}
                             </button>
@@ -1671,7 +1675,7 @@ const PredictiveModelsView: React.FC = () => {
                                             <div key={run.id} className="bg-gray-800 p-4 rounded-lg space-y-2">
                                                 <div className="flex justify-between items-center">
                                                     <p className="font-semibold text-white">Strategy: {run.strategy}</p>
-                                                    <StatusBadge status={run.status === 'Completed' ? 'Deployed' : run.status === 'Running' ? 'Training' : 'Archived'} />
+                                                    <StatusBadge status={run.status === 'Completed' ? 'Deployed' : run.status === 'Running' ? 'Training' : 'Inactive'} />
                                                 </div>
                                                 <p className="text-sm text-gray-400">Started: {new Date(run.startedAt).toLocaleString()}</p>
                                                 {run.bestMetricValue && <p className="text-sm text-gray-400">Best Metric: {run.bestMetricValue.toFixed(4)}</p>}
