@@ -1,7 +1,8 @@
+```javascript
 import React, { useState, useEffect, useCallback, useMemo, FC } from 'react';
 import Card from '../../Card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid, LineChart, Line, PieChart, Pie, Cell, Sector } from 'recharts';
-import { ChevronUp, ChevronDown, Filter, Search, XCircle, Clock, AlertTriangle, CheckCircle, Play, FileText, Database, GitBranch, ArrowRight, ArrowLeft, RefreshCw } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { ChevronUp, ChevronDown, Filter, Search, XCircle, Clock, AlertTriangle, CheckCircle, Play, FileText, Database, GitBranch, ArrowRight, ArrowLeft, RefreshCw, Lightbulb } from 'lucide-react';
 
 const pipelineRunsData = [
     { name: 'Mon', Succeeded: 25, Failed: 2 }, { name: 'Tue', Succeeded: 28, Failed: 1 },
@@ -55,7 +56,7 @@ export interface Pipeline {
 
 export interface Activity {
     id: string;
-    name: "string";
+    name: string;
     type: ActivityType;
     status: PipelineStatus;
     startTime: string;
@@ -253,6 +254,36 @@ export const mockApi = {
             setTimeout(() => {
                 resolve(MOCK_RESOURCE_METRICS);
             }, 600);
+        });
+    },
+    fetchAIInsight: (context: { type: 'pipeline_detail', pipeline: Pipeline, runs: PipelineRun[] } | { type: 'run_failure', run: PipelineRun } | { type: 'global_overview' }) => {
+        return new Promise<string>(resolve => {
+            setTimeout(() => {
+                let insight = "No insights available.";
+                if (context.type === 'pipeline_detail') {
+                    const { pipeline, runs } = context;
+                    const failedRuns = runs.filter(r => r.status === 'Failed').length;
+                    const successRate = 1 - (failedRuns / runs.length);
+                    if (successRate < 0.9) {
+                        insight = `This pipeline's success rate is below 90%. Frequent failures seem to be linked to 'Data Validation' steps. Recommend investigating source data quality or increasing validation thresholds.`;
+                    } else if (pipeline.avgDurationMinutes > 60) {
+                        insight = `The average duration for this pipeline is over an hour. The 'DataFlow' activity is the main contributor. Consider scaling up the integration runtime or optimizing the data transformation logic.`;
+                    } else {
+                        insight = `This pipeline is performing reliably with a high success rate and stable duration. No immediate actions are recommended.`;
+                    }
+                } else if (context.type === 'run_failure') {
+                    const { run } = context;
+                    insight = `The failure in run '${run.id}' was caused by the error: "${run.errorMessage}". \n\n**Root Cause Analysis:** This error typically occurs when the source database rejects the connection due to an incorrect credential or network policy change. The 'Data quality check threshold not met' message suggests that while a connection might have been made, the subsequent validation step found inconsistencies in the source schema (e.g., unexpected NULL values in a non-nullable column).\n\n**Recommended Actions:**\n1. **Verify Credentials:** Check the linked service credentials for the source system.\n2. **Check Network:** Ensure firewall rules between the Data Factory and the source database are correct.\n3. **Inspect Source Data:** Manually query the source table to check for an increase in NULL values in key columns.`;
+                } else if (context.type === 'global_overview') {
+                    const failingPipelines = MOCK_PIPELINES.filter(p => p.lastRunStatus === 'Failed').length;
+                    if (failingPipelines > 3) {
+                         insight = `There are ${failingPipelines} pipelines currently in a failed state. The 'ERP' system seems to be a common factor. It is recommended to check the health of the ERP data source and its related services.`;
+                    } else {
+                        insight = `Overall system health is stable. 98% of pipeline runs in the last 24 hours were successful. Resource utilization is within normal parameters.`;
+                    }
+                }
+                resolve(insight);
+            }, 1200);
         });
     },
 };
@@ -461,7 +492,29 @@ export const PipelineRunHistory: FC<{ runs: PipelineRun[], onRunSelect: (run: Pi
 };
 
 export const RunDetailModal: FC<{ run: PipelineRun | null, onClose: () => void }> = ({ run, onClose }) => {
+    const [isAiExplanationLoading, setIsAiExplanationLoading] = useState(false);
+    const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    
+    useEffect(() => {
+        setAiExplanation(null);
+        setIsAiExplanationLoading(false);
+    }, [run]);
+
     if (!run) return null;
+    
+    const handleGetAIExplanation = async () => {
+        if (!run) return;
+        setIsAiExplanationLoading(true);
+        setAiExplanation(null);
+        try {
+            const insight = await mockApi.fetchAIInsight({ type: 'run_failure', run });
+            setAiExplanation(insight);
+        } catch (e) {
+            setAiExplanation("Failed to get AI explanation.");
+        } finally {
+            setIsAiExplanationLoading(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
@@ -485,6 +538,15 @@ export const RunDetailModal: FC<{ run: PipelineRun | null, onClose: () => void }
                             <div className="bg-red-900/30 p-4 rounded-md">
                                 <h4 className="font-bold text-red-300 mb-2">Error Message</h4>
                                 <pre className="text-sm text-red-200 whitespace-pre-wrap font-mono">{run.errorMessage}</pre>
+                                <button onClick={handleGetAIExplanation} disabled={isAiExplanationLoading} className="mt-4 flex items-center gap-2 px-3 py-1.5 text-xs rounded-md bg-cyan-600 hover:bg-cyan-700 text-white disabled:bg-gray-600">
+                                    {isAiExplanationLoading ? <><RefreshCw className="h-3 w-3 animate-spin"/> Loading...</> : <><Lightbulb className="h-3 w-3"/> Get AI Explanation</>}
+                                </button>
+                                {aiExplanation && (
+                                    <div className="mt-4 p-3 bg-gray-900/50 rounded-md border border-cyan-500/50">
+                                        <h5 className="font-bold text-cyan-300 mb-2">AI Analysis</h5>
+                                        <p className="text-sm text-gray-300 whitespace-pre-wrap">{aiExplanation}</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -527,11 +589,14 @@ export const PipelineDetailView: FC<{ pipelineId: string, onBack: () => void }> 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedRun, setSelectedRun] = useState<PipelineRun | null>(null);
+    const [aiInsight, setAiInsight] = useState<string | null>(null);
+    const [isInsightLoading, setIsInsightLoading] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
             try {
                 setLoading(true);
+                setIsInsightLoading(true);
                 const [p, r] = await Promise.all([
                     mockApi.fetchPipelineDetails(pipelineId),
                     mockApi.fetchPipelineRuns(pipelineId)
@@ -539,8 +604,15 @@ export const PipelineDetailView: FC<{ pipelineId: string, onBack: () => void }> 
                 if (!p) throw new Error("Pipeline not found");
                 setPipeline(p);
                 setRuns(r);
+
+                mockApi.fetchAIInsight({ type: 'pipeline_detail', pipeline: p, runs: r }).then(insight => {
+                    setAiInsight(insight);
+                    setIsInsightLoading(false);
+                });
+
             } catch (e: any) {
                 setError(e.message);
+                setIsInsightLoading(false);
             } finally {
                 setLoading(false);
             }
@@ -558,7 +630,7 @@ export const PipelineDetailView: FC<{ pipelineId: string, onBack: () => void }> 
 
     const durationOverTime = useMemo(() => {
         return runs
-            .slice()
+            .slice(0, 50) // Limit to last 50 runs for performance
             .sort((a,b) => new Date(a.startTimestamp).getTime() - new Date(b.startTimestamp).getTime())
             .map(run => ({
                 time: new Date(run.startTimestamp).toLocaleDateString(),
@@ -604,6 +676,14 @@ export const PipelineDetailView: FC<{ pipelineId: string, onBack: () => void }> 
                 <Card className="text-center"><p className="text-3xl font-bold text-white">{pipeline.trigger.type}</p><p className="text-sm text-gray-400 mt-1">Trigger Type</p></Card>
             </div>
             
+            <Card title={<div className="flex items-center gap-2"><Lightbulb size={16}/> AI-Powered Insights</div>}>
+                {isInsightLoading ? (
+                    <div className="flex items-center gap-2 text-gray-400"><RefreshCw className="h-4 w-4 animate-spin"/> Generating insights...</div>
+                ) : (
+                    <p className="text-gray-300">{aiInsight}</p>
+                )}
+            </Card>
+
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <div className="lg:col-span-3">
                     <Card title="Run Duration Over Time (minutes)">
@@ -614,8 +694,8 @@ export const PipelineDetailView: FC<{ pipelineId: string, onBack: () => void }> 
                                 <YAxis stroke="#9ca3af" />
                                 <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
                                 <Legend />
-                                <Line type="monotone" dataKey="duration" stroke="#8884d8" name="Run Duration" />
-                                <Line type="monotone" dataKey="avg" stroke="#ca8282" name="Avg. Duration" strokeDasharray="5 5" />
+                                <Line type="monotone" dataKey="duration" stroke="#8884d8" name="Run Duration" dot={false} />
+                                <Line type="monotone" dataKey="avg" stroke="#ca8282" name="Avg. Duration" strokeDasharray="5 5" dot={false}/>
                             </LineChart>
                         </ResponsiveContainer>
                     </Card>
@@ -658,6 +738,7 @@ const DemoBankDataFactoryView: React.FC = () => {
     const [resourceMetrics, setResourceMetrics] = useState<ResourceMetric[]>([]);
     const [loading, setLoading] = useState<Record<string, boolean>>({ pipelines: true, alerts: true, metrics: true });
     const [error, setError] = useState<string | null>(null);
+    const [globalAiInsight, setGlobalAiInsight] = useState<string | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -666,11 +747,10 @@ const DemoBankDataFactoryView: React.FC = () => {
     
     const ITEMS_PER_PAGE = 10;
     
-    // Debounce search input
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-            setCurrentPage(1); // Reset to first page on new search
+            setCurrentPage(1);
         }, 500);
 
         return () => {
@@ -705,12 +785,14 @@ const DemoBankDataFactoryView: React.FC = () => {
         const loadDashboardData = async () => {
             try {
                 setLoading(prev => ({ ...prev, alerts: true, metrics: true }));
-                const [alertsData, metricsData] = await Promise.all([
+                const [alertsData, metricsData, insightData] = await Promise.all([
                     mockApi.fetchAlerts(),
-                    mockApi.fetchResourceMetrics()
+                    mockApi.fetchResourceMetrics(),
+                    mockApi.fetchAIInsight({ type: 'global_overview' })
                 ]);
                 setAlerts(alertsData);
                 setResourceMetrics(metricsData);
+                setGlobalAiInsight(insightData);
             } catch(e) {
                  setError("Failed to load dashboard widgets.");
             } finally {
@@ -802,9 +884,16 @@ const DemoBankDataFactoryView: React.FC = () => {
                         )}
                     </Card>
                 </div>
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 space-y-6">
                     <Card title="Recent Alerts">
                         {loading.alerts ? <LoadingSpinner /> : <AlertsPanel alerts={alerts} />}
+                    </Card>
+                    <Card title={<div className="flex items-center gap-2"><Lightbulb size={16}/> AI-Powered Overview</div>}>
+                        {globalAiInsight ? (
+                            <p className="text-gray-300">{globalAiInsight}</p>
+                        ) : (
+                            <div className="flex items-center gap-2 text-gray-400"><RefreshCw className="h-4 w-4 animate-spin"/> Generating overview...</div>
+                        )}
                     </Card>
                 </div>
             </div>
@@ -813,3 +902,4 @@ const DemoBankDataFactoryView: React.FC = () => {
 };
 
 export default DemoBankDataFactoryView;
+```
