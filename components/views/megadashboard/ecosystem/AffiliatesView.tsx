@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Card from '../../../Card';
 import { GoogleGenAI } from "@google/genai";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // --- START NEW INTERFACES & MOCK DATA ---
+
 /**
  * Represents a single affiliate partner in the program.
  */
@@ -27,6 +29,7 @@ export interface Affiliate {
     balanceDue: number; // Outstanding balance to be paid
     notes?: string;
     website?: string;
+    tags?: string[]; // e.g., ['influencer', 'high-traffic-blog', 'paid-ads']
     socialMedia?: {
         facebook?: string;
         twitter?: string;
@@ -51,6 +54,8 @@ export interface Referral {
     commissionAmount: number; // Commission earned for this specific referral
     productPurchased?: string; // e.g., 'Premium Checking Account'
     value: number; // Value of the product/service purchased
+    ipAddress?: string; // For fraud detection
+    userAgent?: string; // For fraud detection
     notes?: string;
 }
 
@@ -148,6 +153,22 @@ export interface ProgramSettings {
     autoApproveAffiliates: boolean;
 }
 
+/**
+ * Represents a potential fraud alert.
+ */
+export interface FraudAlert {
+    id: string;
+    affiliateId: string;
+    affiliateName: string;
+    alertType: 'High Clicks, Low Conversion' | 'Multiple Referrals, Single IP' | 'Abnormal Conversion Rate' | 'Self-Referral Detected';
+    description: string;
+    timestamp: string; // ISO date string
+    riskScore: number; // 0-100
+    status: 'new' | 'investigating' | 'resolved' | 'dismissed';
+    relatedReferralIds: string[];
+}
+
+
 // Helper to generate a random date within a range
 const getRandomDate = (start: Date, end: Date) => {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).toISOString();
@@ -176,6 +197,7 @@ const generateMockAffiliates = (count: number): Affiliate[] => {
     ];
     const tiers: ('bronze' | 'silver' | 'gold' | 'platinum')[] = ['bronze', 'silver', 'gold', 'platinum'];
     const products = ['Checking Account', 'Savings Account', 'Credit Card', 'Investment Platform', 'Personal Loan'];
+    const tags = ['influencer', 'blog', 'newsletter', 'paid-ads', 'community', 'youtube'];
 
     for (let i = 0; i < count; i++) {
         const id = `aff-${String(i + 1).padStart(3, '0')}`;
@@ -211,6 +233,7 @@ const generateMockAffiliates = (count: number): Affiliate[] => {
             balanceDue: parseFloat(balanceDue.toFixed(2)),
             notes: i % 5 === 0 ? `Highly engaged partner. Strong social media presence.` : undefined,
             website: `https://${domains[i % domains.length]}`,
+            tags: Array.from({ length: getRandomInt(1, 3) }).map(() => tags[getRandomInt(0, tags.length - 1)]),
             socialMedia: {
                 twitter: i % 3 === 0 ? `@${name.toLowerCase().replace(/ /g, '')}` : undefined,
                 linkedin: i % 4 === 0 ? `linkedin.com/in/${name.toLowerCase().replace(/ /g, '')}` : undefined,
@@ -221,7 +244,7 @@ const generateMockAffiliates = (count: number): Affiliate[] => {
     return affiliates;
 };
 
-const MOCK_AFFILIATES_DATA: Affiliate[] = generateMockAffiliates(50); // Generate 50 mock affiliates
+let MOCK_AFFILIATES_DATA: Affiliate[] = generateMockAffiliates(50); // Generate 50 mock affiliates
 
 const generateMockReferrals = (affiliates: Affiliate[], count: number): Referral[] => {
     const referrals: Referral[] = [];
@@ -247,6 +270,8 @@ const generateMockReferrals = (affiliates: Affiliate[], count: number): Referral
             commissionAmount: commissionAmount,
             productPurchased: products[getRandomInt(0, products.length - 1)],
             value: value,
+            ipAddress: `192.168.1.${getRandomInt(2, 254)}`,
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         });
     }
     return referrals;
@@ -344,9 +369,35 @@ const MOCK_PROGRAM_SETTINGS: ProgramSettings = {
     autoApproveAffiliates: true,
 };
 
+const MOCK_FRAUD_ALERTS: FraudAlert[] = [
+    { id: 'frd-001', affiliateId: 'aff-005', affiliateName: 'Money Makers Hub', alertType: 'Multiple Referrals, Single IP', description: '25 referrals originated from IP address 10.0.5.12 in a 1-hour window.', timestamp: new Date().toISOString(), riskScore: 85, status: 'new', relatedReferralIds: ['ref-010', 'ref-011', 'ref-012'] },
+    { id: 'frd-002', affiliateId: 'aff-012', affiliateName: 'Credit Card King', alertType: 'High Clicks, Low Conversion', description: 'Received 10,000 clicks but only 2 conversions (0.02% rate) in the last 24 hours, well below the 1.5% average.', timestamp: new Date(Date.now() - 86400000).toISOString(), riskScore: 60, status: 'investigating', relatedReferralIds: [] },
+    { id: 'frd-003', affiliateId: 'aff-020', affiliateName: 'Debt Destroyer', alertType: 'Abnormal Conversion Rate', description: 'Conversion rate jumped from 5% to 45% overnight without a corresponding campaign.', timestamp: new Date(Date.now() - 172800000).toISOString(), riskScore: 92, status: 'new', relatedReferralIds: ['ref-050', 'ref-051'] },
+];
+
 // --- END NEW INTERFACES & MOCK DATA ---
 
 // --- START HELPER FUNCTIONS & MOCK API SERVICE ---
+
+/**
+ * Custom hook for debouncing a value.
+ * @param value The value to debounce.
+ * @param delay The debounce delay in milliseconds.
+ * @returns The debounced value.
+ */
+export function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+    return debouncedValue;
+}
+
 /**
  * Formats a number as currency.
  * @param amount - The number to format.
@@ -457,6 +508,25 @@ export const AffiliateAPIService = {
             }, getRandomInt(500, 1000));
         });
     },
+
+    /**
+     * Creates a new affiliate.
+     */
+    createAffiliate: async (newAffiliateData: Omit<Affiliate, 'id' | 'joinDate' | 'lastLogin'>): Promise<Affiliate> => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                const newAffiliate: Affiliate = {
+                    ...newAffiliateData,
+                    id: `aff-${String(MOCK_AFFILIATES_DATA.length + 1).padStart(3, '0')}`,
+                    joinDate: new Date().toISOString(),
+                    lastLogin: new Date().toISOString(),
+                };
+                MOCK_AFFILIATES_DATA.unshift(newAffiliate);
+                resolve(newAffiliate);
+            }, getRandomInt(500, 1000));
+        });
+    },
+
 
     /**
      * Fetches referrals for a specific affiliate or all referrals.
@@ -687,6 +757,18 @@ export const AffiliateAPIService = {
             }, getRandomInt(500, 1000));
         });
     },
+
+    /**
+     * Fetches potential fraud alerts.
+     */
+    getFraudAlerts: async (): Promise<FraudAlert[]> => {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(MOCK_FRAUD_ALERTS);
+            }, getRandomInt(400, 900));
+        });
+    },
+
 };
 // --- END HELPER FUNCTIONS & MOCK API SERVICE ---
 
@@ -878,6 +960,7 @@ export const AffiliateSummaryMetrics: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
+                // In a real app, this would be a single API call to an aggregate endpoint.
                 const { data: affiliates } = await AffiliateAPIService.getAffiliates({}, { page: 1, pageSize: 9999 });
                 const { data: referrals } = await AffiliateAPIService.getReferrals(undefined, { page: 1, pageSize: 9999 });
 
@@ -983,7 +1066,8 @@ export const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({ affi
     }, [isOpen, fetchAffiliate]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
+        const { name, value, type } = e.target as HTMLInputElement;
+        const checked = (e.target as HTMLInputElement).checked;
         setEditedAffiliate(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
@@ -1357,7 +1441,7 @@ export const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({ affi
 
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Affiliate Details: ${affiliate?.name || 'Loading...'}`} size="xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={`Affiliate Details: ${affiliate?.name || 'Loading...'}`} size="2xl">
             {loading && !affiliate ? (
                 <div className="text-gray-400 text-center py-8">Loading affiliate details...</div>
             ) : error ? (
@@ -1367,6 +1451,101 @@ export const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({ affi
             ) : (
                 <div className="text-gray-400 text-center py-8">No affiliate selected.</div>
             )}
+        </Modal>
+    );
+};
+
+
+interface AddNewAffiliateModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onAffiliateAdded: (newAffiliate: Affiliate) => void;
+}
+
+export const AddNewAffiliateModal: React.FC<AddNewAffiliateModalProps> = ({ isOpen, onClose, onAffiliateAdded }) => {
+    const [newAffiliate, setNewAffiliate] = useState<Partial<Affiliate>>({
+        name: '',
+        email: '',
+        status: 'pending',
+        tier: 'bronze',
+        commissionRate: 0.10,
+        paymentMethod: 'paypal',
+        paymentDetails: '',
+        referralCode: `DEMO${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        totalReferrals: 0,
+        totalConversions: 0,
+        conversionRate: 0,
+        totalCommissionEarned: 0,
+        totalCommissionPaid: 0,
+        balanceDue: 0,
+    });
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setNewAffiliate(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        if (!newAffiliate.name || !newAffiliate.email) {
+            setError("Name and Email are required.");
+            return;
+        }
+        setSubmitting(true);
+        try {
+            const createdAffiliate = await AffiliateAPIService.createAffiliate(newAffiliate as Omit<Affiliate, 'id' | 'joinDate' | 'lastLogin'>);
+            onAffiliateAdded(createdAffiliate);
+            onClose();
+            // Reset form for next time
+            setNewAffiliate({ name: '', email: '', status: 'pending', tier: 'bronze', commissionRate: 0.10 });
+        } catch (err) {
+            setError("Failed to create affiliate. Please try again.");
+            console.error(err);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Add New Affiliate">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300">Name</label>
+                        <input type="text" name="name" value={newAffiliate.name} onChange={handleInputChange} className="w-full bg-gray-700/50 p-2 rounded text-white" required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300">Email</label>
+                        <input type="email" name="email" value={newAffiliate.email} onChange={handleInputChange} className="w-full bg-gray-700/50 p-2 rounded text-white" required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300">Status</label>
+                        <select name="status" value={newAffiliate.status} onChange={handleInputChange} className="w-full bg-gray-700/50 p-2 rounded text-white">
+                            {['pending', 'active', 'suspended'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300">Tier</label>
+                        <select name="tier" value={newAffiliate.tier} onChange={handleInputChange} className="w-full bg-gray-700/50 p-2 rounded text-white">
+                            {['bronze', 'silver', 'gold', 'platinum'].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300">Commission Rate (%)</label>
+                        <input type="number" step="0.01" name="commissionRate" value={newAffiliate.commissionRate} onChange={handleInputChange} className="w-full bg-gray-700/50 p-2 rounded text-white" />
+                    </div>
+                </div>
+                {error && <p className="text-red-400 text-sm">{error}</p>}
+                <div className="flex justify-end space-x-2 pt-4">
+                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium">Cancel</button>
+                    <button type="submit" disabled={submitting} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
+                        {submitting ? 'Adding...' : 'Add Affiliate'}
+                    </button>
+                </div>
+            </form>
         </Modal>
     );
 };
@@ -1381,16 +1560,20 @@ export const AffiliateManagementTable: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [totalAffiliates, setTotalAffiliates] = useState(0);
-    const [filters, setFilters] = useState<{ status?: Affiliate['status'], tier?: Affiliate['tier'], search?: string }>({ status: 'all', tier: 'all', search: '' });
+    const [filters, setFilters] = useState<{ status?: any, tier?: any, search?: string }>({ status: 'all', tier: 'all', search: '' });
     const [sort, setSort] = useState<{ field: keyof Affiliate, direction: 'asc' | 'desc' }>({ field: 'totalCommissionEarned', direction: 'desc' });
     const [selectedAffiliateId, setSelectedAffiliateId] = useState<string | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    const debouncedSearch = useDebounce(filters.search, 500);
 
     const fetchAffiliates = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const { data, total } = await AffiliateAPIService.getAffiliates(filters, { page: currentPage, pageSize }, sort);
+            const currentFilters = { ...filters, search: debouncedSearch };
+            const { data, total } = await AffiliateAPIService.getAffiliates(currentFilters, { page: currentPage, pageSize }, sort);
             setAffiliates(data);
             setTotalAffiliates(total);
         } catch (err) {
@@ -1399,7 +1582,7 @@ export const AffiliateManagementTable: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, pageSize, filters, sort]);
+    }, [currentPage, pageSize, debouncedSearch, filters.status, filters.tier, sort]);
 
     useEffect(() => {
         fetchAffiliates();
@@ -1408,7 +1591,7 @@ export const AffiliateManagementTable: React.FC = () => {
     const totalPages = Math.ceil(totalAffiliates / pageSize);
 
     const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
-        setFilters(prev => ({ ...prev, [filterName]: value as any }));
+        setFilters(prev => ({ ...prev, [filterName]: value }));
         setCurrentPage(1); // Reset to first page on filter change
     };
 
@@ -1426,10 +1609,12 @@ export const AffiliateManagementTable: React.FC = () => {
     };
 
     const handleAffiliateSaved = (updatedAffiliate: Affiliate) => {
-        // Refresh data or update in state locally
         fetchAffiliates();
-        // You could also update the specific affiliate in the `affiliates` state without refetching all
         setAffiliates(prev => prev.map(a => a.id === updatedAffiliate.id ? updatedAffiliate : a));
+    };
+
+    const handleAffiliateAdded = (newAffiliate: Affiliate) => {
+        fetchAffiliates(); // Refetch to get the latest list with the new affiliate
     };
 
     return (
@@ -1467,7 +1652,7 @@ export const AffiliateManagementTable: React.FC = () => {
                     </select>
                 </div>
                 <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">Add New Affiliate</button>
+                    <button onClick={() => setIsAddModalOpen(true)} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">Add New Affiliate</button>
                     <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Export Data</button>
                 </div>
             </div>
@@ -1545,6 +1730,11 @@ export const AffiliateManagementTable: React.FC = () => {
                 isOpen={isDetailModalOpen}
                 onClose={() => setIsDetailModalOpen(false)}
                 onSave={handleAffiliateSaved}
+            />
+            <AddNewAffiliateModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onAffiliateAdded={handleAffiliateAdded}
             />
         </Card>
     );
@@ -1692,7 +1882,8 @@ export const ProgramSettingsView: React.FC = () => {
     }, []);
 
     const handleSettingsInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
+        const { name, value, type } = e.target as HTMLInputElement;
+        const checked = (e.target as HTMLInputElement).checked;
         setEditedSettings(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : (type === 'number' ? parseFloat(value) : value),
@@ -1871,7 +2062,7 @@ export const OutreachHistoryModal: React.FC<OutreachHistoryModalProps> = ({ isOp
             ) : history.length === 0 ? (
                 <div className="text-gray-400 text-center py-8">No outreach messages found.</div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto">
                     {history.map(msg => (
                         <div key={msg.id} className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
                             <div className="flex justify-between items-center mb-2">
@@ -1913,7 +2104,7 @@ const AffiliatesView: React.FC = () => {
         setOutreachMsg('');
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `Write a friendly and professional outreach email to a potential new affiliate partner named "${affiliateName}". Introduce Demo Bank and highlight the benefits of our affiliate program. Ensure the tone is engaging and calls to action are clear.`;
+            const prompt = `Write a friendly and professional outreach email to a potential new affiliate partner named "${affiliateName}". Introduce Demo Bank and highlight the benefits of our affiliate program, including our competitive commission rates, dedicated support, and wide range of financial products to promote. Ensure the tone is engaging and calls to action are clear for next steps.`;
             const response = await ai.models.generateContent({ model: 'gemini-1.5-flash', contents: [{ text: prompt }] }); // Changed model to 1.5-flash for potential richer output and adjusted contents format
             const generatedText = response.response.text();
             setOutreachMsg(generatedText);
@@ -1930,7 +2121,7 @@ const AffiliatesView: React.FC = () => {
 
         } catch (err) {
             console.error("Error generating outreach message:", err);
-            setOutreachMsg("Error generating outreach message. Please try again.");
+            setOutreachMsg("Error generating outreach message. Please check your API key and try again.");
         } finally {
             setIsLoading(false);
         }
@@ -1943,10 +2134,6 @@ const AffiliatesView: React.FC = () => {
         try {
             const lastDraft = MOCK_OUTREACH_HISTORY.find(msg => msg.recipient === affiliateName && msg.status === 'draft');
             if (lastDraft) {
-                await AffiliateAPIService.updateAffiliate({
-                    ...MOCK_AFFILIATES_DATA.find(a => a.name === affiliateName)!,
-                    notes: (MOCK_AFFILIATES_DATA.find(a => a.name === affiliateName)?.notes || '') + '\n' + `AI Outreach sent on ${formatDate(new Date().toISOString())}`,
-                })
                 Object.assign(lastDraft, { status: 'sent', sentDate: new Date().toISOString() });
                 alert('Email marked as sent (mock action).');
             } else {
@@ -1967,35 +2154,37 @@ const AffiliatesView: React.FC = () => {
                 return (
                     <div className="space-y-6">
                         <AffiliateSummaryMetrics />
-                        <Card title="Affiliate Leaderboard">
-                            <table className="w-full text-sm">
-                                <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
-                                    <tr>
-                                        <th className="px-6 py-3">Name</th>
-                                        <th className="px-6 py-3">Referrals</th>
-                                        <th className="px-6 py-3">Conversion</th>
-                                        <th className="px-6 py-3">Commission (YTD)</th>
-                                        <th className="px-6 py-3">Status</th>
-                                        <th className="px-6 py-3">Tier</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {MOCK_AFFILIATES_DATA.slice(0, 5).sort((a,b) => b.totalCommissionEarned - a.totalCommissionEarned).map(a => (
-                                        <tr key={a.id} className="border-b border-gray-700 hover:bg-gray-800">
-                                            <td className="px-6 py-4 text-white">{a.name}</td>
-                                            <td className="px-6 py-4">{a.totalReferrals.toLocaleString()}</td>
-                                            <td className="px-6 py-4">{a.conversionRate}%</td>
-                                            <td className="px-6 py-4 font-mono text-white">${a.totalCommissionEarned.toLocaleString()}</td>
-                                            <td className="px-6 py-4 capitalize">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${a.status === 'active' ? 'bg-green-600/20 text-green-400' : a.status === 'pending' ? 'bg-yellow-600/20 text-yellow-400' : 'bg-red-600/20 text-red-400'}`}>
-                                                    {a.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 capitalize">{a.tier}</td>
+                        <Card title="Affiliate Leaderboard (Top 5 by Earnings)">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left">Name</th>
+                                            <th className="px-6 py-3 text-left">Referrals</th>
+                                            <th className="px-6 py-3 text-left">Conversion Rate</th>
+                                            <th className="px-6 py-3 text-left">Commission Earned</th>
+                                            <th className="px-6 py-3 text-center">Status</th>
+                                            <th className="px-6 py-3 text-left">Tier</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {MOCK_AFFILIATES_DATA.slice(0, 5).sort((a,b) => b.totalCommissionEarned - a.totalCommissionEarned).map(a => (
+                                            <tr key={a.id} className="border-b border-gray-700 hover:bg-gray-800">
+                                                <td className="px-6 py-4 text-white">{a.name}</td>
+                                                <td className="px-6 py-4">{a.totalReferrals.toLocaleString()}</td>
+                                                <td className="px-6 py-4">{a.conversionRate}%</td>
+                                                <td className="px-6 py-4 font-mono text-white">${a.totalCommissionEarned.toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${a.status === 'active' ? 'bg-green-600/20 text-green-400' : a.status === 'pending' ? 'bg-yellow-600/20 text-yellow-400' : 'bg-red-600/20 text-red-400'}`}>
+                                                        {a.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 capitalize">{a.tier}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                             <div className="mt-4 text-right">
                                 <button onClick={() => setActiveSection('affiliates')} className="text-cyan-500 hover:text-cyan-400 text-sm font-medium">View All Affiliates &rarr;</button>
                             </div>
