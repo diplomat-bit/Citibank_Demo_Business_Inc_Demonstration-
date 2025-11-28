@@ -1,5 +1,6 @@
+```typescript
 // components/views/personal/SettingsView.tsx
-import React, { useState, useEffect, useReducer, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useReducer, useCallback, useMemo, useRef, createContext, useContext } from 'react';
 import Card from '../../Card';
 
 // SECTION: Type Definitions for a Real-World Application
@@ -10,9 +11,10 @@ export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD';
 export type Language = 'en-US' | 'es-ES' | 'fr-FR' | 'de-DE' | 'ja-JP';
 export type Timezone = 'UTC' | 'America/New_York' | 'Europe/London' | 'Asia/Tokyo';
 export type NotificationChannel = 'email' | 'sms' | 'push';
-export type DataExportFormat = 'json' | 'csv';
+export type DataExportFormat = 'json' | 'csv' | 'xml';
 export type Theme = 'dark' | 'light' | 'system';
 export type FontSize = 'small' | 'medium' | 'large';
+export type ConnectedAppProvider = 'Google' | 'Slack' | 'GitHub' | 'Microsoft';
 
 export interface UserProfile {
     name: string;
@@ -66,8 +68,10 @@ export interface NotificationPreferences {
 
 export interface SecuritySettings {
     twoFactorEnabled: boolean;
+    twoFactorMethod: 'app' | 'sms' | null;
     biometricLoginEnabled: boolean;
     lastPasswordChange: string; // ISO 8601 date string
+    sessionTimeout: number; // in minutes
 }
 
 export interface LoginActivity {
@@ -77,6 +81,7 @@ export interface LoginActivity {
     ipAddress: string;
     location: string;
     status: 'Success' | 'Failed';
+    isCurrent: boolean;
 }
 
 export interface TrustedDevice {
@@ -130,6 +135,14 @@ export interface ApiKey {
     scopes: string[];
 }
 
+export interface ConnectedApp {
+    id: string;
+    provider: ConnectedAppProvider;
+    username: string;
+    connectedAt: string;
+    scopes: string[];
+}
+
 export interface AccessibilitySettings {
     highContrast: boolean;
     fontSize: FontSize;
@@ -150,12 +163,6 @@ export interface UserSettings {
 // SECTION: Mock API and Data
 // ===================================
 
-/**
- * Simulates an API call with a delay.
- * @param data The data to return on success.
- * @param delay The delay in milliseconds.
- * @param shouldFail If true, the promise will reject.
- */
 export const mockApiCall = <T,>(data: T, delay = 1000, shouldFail = false): Promise<T> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -194,8 +201,10 @@ const MOCK_USER_SETTINGS: UserSettings = {
     },
     security: {
         twoFactorEnabled: true,
+        twoFactorMethod: 'app',
         biometricLoginEnabled: false,
         lastPasswordChange: '2023-10-26T10:00:00Z',
+        sessionTimeout: 60,
     },
     accessibility: {
         highContrast: false,
@@ -215,13 +224,14 @@ const MOCK_USER_SETTINGS: UserSettings = {
 };
 
 const MOCK_LOGIN_ACTIVITY: LoginActivity[] = [
-    { id: 'la1', timestamp: new Date(Date.now() - 3600000).toISOString(), device: 'Chrome on macOS', ipAddress: '192.168.1.101', location: 'New York, NY', status: 'Success' },
-    { id: 'la2', timestamp: new Date(Date.now() - 86400000).toISOString(), device: 'iPhone App', ipAddress: '72.229.28.185', location: 'New York, NY', status: 'Success' },
-    { id: 'la3', timestamp: new Date(Date.now() - 172800000).toISOString(), device: 'Chrome on Windows', ipAddress: '203.0.113.15', location: 'London, UK', status: 'Failed' },
+    { id: 'la1', timestamp: new Date().toISOString(), device: 'Chrome on macOS', ipAddress: '192.168.1.101', location: 'New York, NY', status: 'Success', isCurrent: true },
+    { id: 'la2', timestamp: new Date(Date.now() - 86400000).toISOString(), device: 'iPhone App', ipAddress: '72.229.28.185', location: 'New York, NY', status: 'Success', isCurrent: false },
+    { id: 'la3', timestamp: new Date(Date.now() - 172800000).toISOString(), device: 'Chrome on Windows', ipAddress: '203.0.113.15', location: 'London, UK', status: 'Failed', isCurrent: false },
+    { id: 'la4', timestamp: new Date(Date.now() - 259200000).toISOString(), device: 'Safari on iPad', ipAddress: '72.229.28.185', location: 'New York, NY', status: 'Success', isCurrent: false },
 ];
 
 const MOCK_TRUSTED_DEVICES: TrustedDevice[] = [
-    { id: 'td1', device: 'Chrome on macOS', location: 'New York, NY', lastLogin: new Date(Date.now() - 3600000).toISOString() },
+    { id: 'td1', device: 'Chrome on macOS', location: 'New York, NY', lastLogin: new Date().toISOString() },
     { id: 'td2', device: 'iPhone App', location: 'New York, NY', lastLogin: new Date(Date.now() - 86400000).toISOString() },
 ];
 
@@ -242,39 +252,31 @@ const MOCK_PAYMENT_METHODS: PaymentMethod[] = [
 ];
 
 const MOCK_API_KEYS: ApiKey[] = [
-    { id: 'apk1', keyPrefix: 'dv_...', label: 'My Analytics Dashboard', created: '2023-08-15T14:30:00Z', lastUsed: '2023-11-01T10:00:00Z', scopes: ['read:transactions', 'read:insights'] },
-    { id: 'apk2', keyPrefix: 'dv_...', label: 'Budgeting App Integration', created: '2023-09-01T11:00:00Z', lastUsed: null, scopes: ['read:transactions', 'write:transactions'] },
+    { id: 'apk1', keyPrefix: 'dv_sk_1a2b3c4d', label: 'My Analytics Dashboard', created: '2023-08-15T14:30:00Z', lastUsed: '2023-11-01T10:00:00Z', scopes: ['read:transactions', 'read:insights'] },
+    { id: 'apk2', keyPrefix: 'dv_sk_5e6f7g8h', label: 'Budgeting App Integration', created: '2023-09-01T11:00:00Z', lastUsed: null, scopes: ['read:transactions', 'write:transactions'] },
 ];
+
+const MOCK_CONNECTED_APPS: ConnectedApp[] = [
+    { id: 'ca1', provider: 'Google', username: 'visionary@gmail.com', connectedAt: '2023-05-10T09:00:00Z', scopes: ['Read Google Calendar', 'Access Google Drive files'] },
+];
+
 
 // SECTION: UI Helper Components
 // ==============================
 
-/**
- * A reusable loading spinner component.
- */
 export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
-    const sizeClasses = {
-        sm: 'h-5 w-5',
-        md: 'h-8 w-8',
-        lg: 'h-12 w-12',
-    };
-    return (
-        <div className={`animate-spin rounded-full border-b-2 border-cyan-400 ${sizeClasses[size]}`}></div>
-    );
+    const sizeClasses = { sm: 'h-5 w-5', md: 'h-8 w-8', lg: 'h-12 w-12' };
+    return <div className={`animate-spin rounded-full border-b-2 border-cyan-400 ${sizeClasses[size]}`}></div>;
 };
 
-/**
- * A reusable modal component.
- */
 export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center" onClick={onClose}>
             <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 w-full max-w-lg relative" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold text-white">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
                 </div>
                 <div>{children}</div>
             </div>
@@ -282,30 +284,30 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
     );
 };
 
-/**
- * A reusable input field component with a label.
- */
 export const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
     <div>
         <label className="block text-sm font-medium text-gray-400 mb-1">{label}</label>
-        <input
-            {...props}
-            className="w-full bg-gray-800/50 border border-gray-700 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
-        />
+        <input {...props} className="w-full bg-gray-800/50 border border-gray-700 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition" />
     </div>
 );
 
-/**
- * A reusable button component with different styles.
- */
-export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger'; isLoading?: boolean }> = ({ children, variant = 'primary', isLoading = false, ...props }) => {
-    const baseClasses = "px-4 py-2 rounded-md font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 flex items-center justify-center";
-    const variantClasses = {
-        primary: "bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-cyan-500 disabled:bg-cyan-800 disabled:text-gray-400",
-        secondary: "bg-gray-700 text-white hover:bg-gray-600 focus:ring-gray-500 disabled:bg-gray-800 disabled:text-gray-500",
-        danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-800 disabled:text-gray-400",
-    };
+export const SelectField: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string, children: React.ReactNode }> = ({ label, children, ...props }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-400 mb-1">{label}</label>
+        <select {...props} className="w-full bg-gray-800/50 border border-gray-700 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition">
+            {children}
+        </select>
+    </div>
+);
 
+
+export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'danger'; isLoading?: boolean }> = ({ children, variant = 'primary', isLoading = false, ...props }) => {
+    const baseClasses = "px-4 py-2 rounded-md font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 flex items-center justify-center disabled:cursor-not-allowed";
+    const variantClasses = {
+        primary: "bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-cyan-500 disabled:bg-cyan-800/50 disabled:text-gray-400",
+        secondary: "bg-gray-700 text-white hover:bg-gray-600 focus:ring-gray-500 disabled:bg-gray-800/50 disabled:text-gray-500",
+        danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-800/50 disabled:text-gray-400",
+    };
     return (
         <button className={`${baseClasses} ${variantClasses[variant]}`} disabled={isLoading || props.disabled} {...props}>
             {isLoading ? <Spinner size="sm" /> : children}
@@ -313,13 +315,16 @@ export const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
     );
 };
 
+export const ToggleSwitch: React.FC<{ checked: boolean, onChange: (checked: boolean) => void }> = ({ checked, onChange }) => (
+    <label className="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="sr-only peer" />
+        <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-cyan-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+    </label>
+);
+
 // SECTION: Settings Section Components
 // =====================================
 
-/**
- * Profile Settings Component
- * Allows user to view and edit their personal information.
- */
 export const ProfileSettings: React.FC<{ profile: UserProfile; onSave: (newProfile: UserProfile) => Promise<void> }> = ({ profile, onSave }) => {
     const [formData, setFormData] = useState(profile);
     const [isSaving, setIsSaving] = useState(false);
@@ -331,10 +336,7 @@ export const ProfileSettings: React.FC<{ profile: UserProfile; onSave: (newProfi
         const { name, value } = e.target;
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
-            setFormData(prev => ({
-                ...prev,
-                [parent]: { ...prev[parent as keyof typeof prev], [child]: value }
-            }));
+            setFormData(prev => ({ ...prev, [parent]: { ...prev[parent as keyof typeof prev], [child]: value }}));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -342,12 +344,9 @@ export const ProfileSettings: React.FC<{ profile: UserProfile; onSave: (newProfi
     
     const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, avatarUrl: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
+            reader.onloadend = () => setFormData(prev => ({ ...prev, avatarUrl: reader.result as string }));
+            reader.readAsDataURL(e.target.files[0]);
         }
     };
 
@@ -404,13 +403,8 @@ export const ProfileSettings: React.FC<{ profile: UserProfile; onSave: (newProfi
     );
 };
 
-/**
- * Security Settings Component
- * For password changes, 2FA, biometrics, and viewing activity.
- */
-export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings }> = ({ settings }) => {
+export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings; onUpdate: (newSettings: Partial<SecuritySettings>) => Promise<void> }> = ({ settings, onUpdate }) => {
     const [loginActivity, setLoginActivity] = useState<LoginActivity[]>([]);
-    const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [show2FAModal, setShow2FAModal] = useState(false);
@@ -418,37 +412,34 @@ export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings }> =
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
-            const [activity, devices] = await Promise.all([
-                mockApiCall(MOCK_LOGIN_ACTIVITY),
-                mockApiCall(MOCK_TRUSTED_DEVICES)
-            ]);
+            const activity = await mockApiCall(MOCK_LOGIN_ACTIVITY);
             setLoginActivity(activity);
-            setTrustedDevices(devices);
             setIsLoading(false);
         };
         fetchData();
     }, []);
 
     const handlePasswordChange = async (data: any) => {
-        console.log("Changing password...", data);
-        await mockApiCall({}, 1500); // Simulate API call
+        await mockApiCall({}, 1500);
+        await onUpdate({ lastPasswordChange: new Date().toISOString() });
         setShowPasswordModal(false);
-        // Could add a toast notification here
     };
 
     const handle2FASetup = async () => {
-        console.log("Setting up 2FA...");
-        await mockApiCall({}, 1500); // Simulate API call
+        await mockApiCall({}, 1500);
+        await onUpdate({ twoFactorEnabled: !settings.twoFactorEnabled });
         setShow2FAModal(false);
-        // update parent state
     };
-    
+
+    const handleBiometricToggle = (enabled: boolean) => {
+        onUpdate({ biometricLoginEnabled: enabled });
+    };
+
     const formatDate = (dateString: string) => new Date(dateString).toLocaleString();
 
     return (
         <Card title="Security">
             <div className="space-y-6">
-                {/* Password */}
                 <div className="py-3 flex justify-between items-center">
                     <div>
                         <h4 className="font-semibold text-white">Password</h4>
@@ -457,7 +448,6 @@ export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings }> =
                     <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>Change Password</Button>
                 </div>
 
-                {/* 2FA */}
                 <div className="py-3 flex justify-between items-center border-t border-gray-700/60">
                     <div>
                         <h4 className="font-semibold text-white">Two-Factor Authentication (2FA)</h4>
@@ -467,31 +457,27 @@ export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings }> =
                         <span className={`px-2 py-1 text-xs font-bold rounded-full ${settings.twoFactorEnabled ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                             {settings.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                         </span>
-                        <Button variant="secondary" onClick={() => setShow2FAModal(true)}>
-                            {settings.twoFactorEnabled ? 'Manage' : 'Enable'}
-                        </Button>
+                        <Button variant="secondary" onClick={() => setShow2FAModal(true)}>{settings.twoFactorEnabled ? 'Manage' : 'Enable'}</Button>
                     </div>
                 </div>
 
-                {/* Biometric Login */}
                 <div className="py-3 flex justify-between items-center border-t border-gray-700/60">
-                     <div>
+                    <div>
                         <h4 className="font-semibold text-white">Biometric Login</h4>
                         <p className="text-sm text-gray-400">Use Face ID or Touch ID to log in on supported devices.</p>
                     </div>
-                    <input type="checkbox" className="toggle toggle-cyan" defaultChecked={settings.biometricLoginEnabled} />
+                    <ToggleSwitch checked={settings.biometricLoginEnabled} onChange={handleBiometricToggle} />
                 </div>
                 
-                {/* Login Activity */}
                 <div className="pt-6 border-t border-gray-700/60">
-                    <h4 className="font-semibold text-white mb-2">Recent Login Activity</h4>
+                    <h4 className="font-semibold text-white mb-2">Active Sessions & Login Activity</h4>
                     {isLoading ? <Spinner /> : (
                         <ul className="divide-y divide-gray-700/60 max-h-60 overflow-y-auto">
                            {loginActivity.map(activity => (
                                <li key={activity.id} className="py-3">
                                    <div className="flex justify-between items-start">
                                        <div>
-                                           <p className="text-white font-medium">{activity.device}</p>
+                                           <p className="text-white font-medium">{activity.device} {activity.isCurrent && <span className="text-xs text-cyan-400">(This session)</span>}</p>
                                            <p className="text-sm text-gray-400">{activity.location} - {activity.ipAddress}</p>
                                        </div>
                                        <div className="text-right">
@@ -499,24 +485,7 @@ export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings }> =
                                             <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
                                        </div>
                                    </div>
-                               </li>
-                           ))}
-                        </ul>
-                    )}
-                </div>
-
-                {/* Trusted Devices */}
-                <div className="pt-6 border-t border-gray-700/60">
-                    <h4 className="font-semibold text-white mb-2">Trusted Devices</h4>
-                     {isLoading ? <Spinner /> : (
-                        <ul className="divide-y divide-gray-700/60">
-                           {trustedDevices.map(device => (
-                               <li key={device.id} className="py-3 flex justify-between items-center">
-                                   <div>
-                                       <p className="text-white font-medium">{device.device}</p>
-                                       <p className="text-sm text-gray-400">{device.location} - Last login: {formatDate(device.lastLogin)}</p>
-                                   </div>
-                                   <Button variant="danger">Revoke</Button>
+                                    {!activity.isCurrent && activity.status === 'Success' && <Button variant="secondary" size="sm" className="mt-2 text-xs">Sign out</Button>}
                                </li>
                            ))}
                         </ul>
@@ -530,9 +499,6 @@ export const SecuritySettingsSection: React.FC<{ settings: SecuritySettings }> =
     );
 };
 
-/**
- * Modal for changing the user's password.
- */
 export const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (data: any) => Promise<void> }> = ({ isOpen, onClose, onSave }) => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -543,14 +509,9 @@ export const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => voi
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (newPassword !== confirmPassword) {
-            setError("New passwords do not match.");
-            return;
-        }
-        if (newPassword.length < 12) {
-            setError("Password must be at least 12 characters long.");
-            return;
-        }
+        if (newPassword !== confirmPassword) return setError("New passwords do not match.");
+        if (newPassword.length < 12) return setError("Password must be at least 12 characters long.");
+        
         setIsSaving(true);
         try {
             await onSave({ currentPassword, newPassword });
@@ -577,9 +538,6 @@ export const ChangePasswordModal: React.FC<{ isOpen: boolean; onClose: () => voi
     );
 };
 
-/**
- * Modal for setting up Two-Factor Authentication.
- */
 export const TwoFactorAuthModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: () => Promise<void>; isEnabled: boolean }> = ({ isOpen, onClose, onSave, isEnabled }) => {
     const [code, setCode] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -605,7 +563,7 @@ export const TwoFactorAuthModal: React.FC<{ isOpen: boolean; onClose: () => void
                         </div>
                     </div>
                     <div className="flex justify-end pt-4">
-                        <Button variant="danger">Disable 2FA</Button>
+                        <Button variant="danger" onClick={handleSubmit} isLoading={isSaving}>Disable 2FA</Button>
                     </div>
                 </div>
             </Modal>
@@ -617,8 +575,7 @@ export const TwoFactorAuthModal: React.FC<{ isOpen: boolean; onClose: () => void
             <div className="space-y-4">
                 <p className="text-gray-300">Scan the QR code with your authenticator app (e.g., Google Authenticator, Authy).</p>
                 <div className="flex justify-center p-4 bg-white rounded-md">
-                    {/* Placeholder for QR Code */}
-                    <div className="w-40 h-40 bg-gray-300 flex items-center justify-center text-gray-600">QR Code</div>
+                    <div className="w-40 h-40 bg-gray-300 flex items-center justify-center text-gray-600">QR Code Placeholder</div>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <InputField label="Enter the 6-digit code from your app" value={code} onChange={e => setCode(e.target.value)} maxLength={6} required />
@@ -633,30 +590,19 @@ export const TwoFactorAuthModal: React.FC<{ isOpen: boolean; onClose: () => void
 };
 
 
-/**
- * Expanded Notification Preferences Component
- */
 export const ExpandedNotificationPreferences: React.FC<{ preferences: NotificationPreferences; onSave: (newPrefs: NotificationPreferences) => Promise<void> }> = ({ preferences, onSave }) => {
     const [prefs, setPrefs] = useState(preferences);
     const [isSaving, setIsSaving] = useState(false);
 
     const handleToggle = (category: keyof NotificationPreferences, key: string, value: any) => {
-        setPrefs(p => ({
-            ...p,
-            [category]: { ...p[category], [key]: value }
-        }));
+        setPrefs(p => ({ ...p, [category]: { ...p[category], [key]: value }}));
     };
 
     const handleChannelToggle = (category: 'largeTransaction' | 'budgetWarnings' | 'aiInsights' | 'securityAlerts', channel: NotificationChannel) => {
         setPrefs(p => {
             const currentChannels = p[category].channels;
-            const newChannels = currentChannels.includes(channel)
-                ? currentChannels.filter(c => c !== channel)
-                : [...currentChannels, channel];
-            return {
-                ...p,
-                [category]: { ...p[category], channels: newChannels }
-            };
+            const newChannels = currentChannels.includes(channel) ? currentChannels.filter(c => c !== channel) : [...currentChannels, channel];
+            return { ...p, [category]: { ...p[category], channels: newChannels }};
         });
     };
     
@@ -683,37 +629,36 @@ export const ExpandedNotificationPreferences: React.FC<{ preferences: Notificati
         <Card title="Notification Preferences">
             <div className="space-y-4">
                 <NotificationItem title="Large Transaction Alerts" description={`Notify me of any transaction over $${prefs.largeTransaction.threshold}.`}>
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.largeTransaction.enabled} onChange={e => handleToggle('largeTransaction', 'enabled', e.target.checked)} />
+                    <ToggleSwitch checked={prefs.largeTransaction.enabled} onChange={checked => handleToggle('largeTransaction', 'enabled', checked)} />
                 </NotificationItem>
                 {prefs.largeTransaction.enabled && <ChannelToggles category="largeTransaction" />}
 
                 <NotificationItem title="Budget Warnings" description={`Let me know when I'm approaching a budget limit.`}>
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.budgetWarnings.enabled} onChange={e => handleToggle('budgetWarnings', 'enabled', e.target.checked)} />
+                    <ToggleSwitch checked={prefs.budgetWarnings.enabled} onChange={checked => handleToggle('budgetWarnings', 'enabled', checked)} />
                 </NotificationItem>
                 {prefs.budgetWarnings.enabled && <ChannelToggles category="budgetWarnings" />}
                 
                 <NotificationItem title="AI Insight Notifications" description="Alert me when the AI has a new high-urgency insight.">
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.aiInsights.enabled} onChange={e => handleToggle('aiInsights', 'enabled', e.target.checked)} />
+                    <ToggleSwitch checked={prefs.aiInsights.enabled} onChange={checked => handleToggle('aiInsights', 'enabled', checked)} />
                 </NotificationItem>
                 {prefs.aiInsights.enabled && <ChannelToggles category="aiInsights" />}
 
                 <NotificationItem title="Security Alerts" description="Notify me of important security events like new logins.">
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.securityAlerts.newLogin || prefs.securityAlerts.failedLogin || prefs.securityAlerts.passwordChange} onChange={e => {
-                        const allEnabled = e.target.checked;
-                        setPrefs(p => ({ ...p, securityAlerts: { ...p.securityAlerts, newLogin: allEnabled, failedLogin: allEnabled, passwordChange: allEnabled }}));
+                    <ToggleSwitch checked={prefs.securityAlerts.newLogin || prefs.securityAlerts.failedLogin || prefs.securityAlerts.passwordChange} onChange={checked => {
+                        setPrefs(p => ({ ...p, securityAlerts: { ...p.securityAlerts, newLogin: checked, failedLogin: checked, passwordChange: checked }}));
                     }} />
                 </NotificationItem>
                 {prefs.securityAlerts.newLogin && <ChannelToggles category="securityAlerts" />}
                 
                 <h4 className="text-lg font-semibold text-white pt-4 border-t border-gray-700/60">Marketing Communications</h4>
                 <NotificationItem title="Product Updates" description="Receive emails about new features and improvements.">
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.promotional.productUpdates} onChange={e => handleToggle('promotional', 'productUpdates', e.target.checked)} />
+                     <ToggleSwitch checked={prefs.promotional.productUpdates} onChange={checked => handleToggle('promotional', 'productUpdates', checked)} />
                 </NotificationItem>
                 <NotificationItem title="Partner Offers" description="Get special offers from our partners.">
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.promotional.partnerOffers} onChange={e => handleToggle('promotional', 'partnerOffers', e.target.checked)} />
+                     <ToggleSwitch checked={prefs.promotional.partnerOffers} onChange={checked => handleToggle('promotional', 'partnerOffers', checked)} />
                 </NotificationItem>
                 <NotificationItem title="Newsletter" description="Subscribe to our monthly financial insights newsletter.">
-                    <input type="checkbox" className="toggle toggle-cyan" checked={prefs.promotional.newsletter} onChange={e => handleToggle('promotional', 'newsletter', e.target.checked)} />
+                     <ToggleSwitch checked={prefs.promotional.newsletter} onChange={checked => handleToggle('promotional', 'newsletter', checked)} />
                 </NotificationItem>
 
                 <div className="flex justify-end pt-4">
@@ -734,10 +679,6 @@ export const NotificationItem: React.FC<{ title: string; description: string; ch
     </div>
 );
 
-
-/**
- * Data & Privacy Settings Component
- */
 export const DataPrivacySettings: React.FC = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [exportStatus, setExportStatus] = useState('');
@@ -746,7 +687,7 @@ export const DataPrivacySettings: React.FC = () => {
     const handleExport = async (format: DataExportFormat) => {
         setIsExporting(true);
         setExportStatus(`Exporting your data as ${format.toUpperCase()}...`);
-        await mockApiCall({}, 2000); // Simulate export process
+        await mockApiCall({}, 2000);
         setExportStatus(`Your data export is ready. A download link has been sent to your email.`);
         setIsExporting(false);
         setTimeout(() => setExportStatus(''), 5000);
@@ -754,7 +695,6 @@ export const DataPrivacySettings: React.FC = () => {
 
     const handleDeleteAccount = async () => {
         await mockApiCall({}, 3000);
-        // This would typically redirect the user to a "goodbye" page
         alert("Account deletion process initiated. You will be logged out.");
         setShowDeleteModal(false);
     };
@@ -766,16 +706,18 @@ export const DataPrivacySettings: React.FC = () => {
                     <h4 className="font-semibold text-white">Export Your Data</h4>
                     <p className="text-sm text-gray-400 mb-3">Download a copy of your account data.</p>
                     <div className="flex space-x-2">
-                        <Button variant="secondary" onClick={() => handleExport('json')} isLoading={isExporting}>Export as JSON</Button>
-                        <Button variant="secondary" onClick={() => handleExport('csv')} isLoading={isExporting}>Export as CSV</Button>
+                        <Button variant="secondary" onClick={() => handleExport('json')} disabled={isExporting}>Export as JSON</Button>
+                        <Button variant="secondary" onClick={() => handleExport('csv')} disabled={isExporting}>Export as CSV</Button>
                     </div>
                     {exportStatus && <p className="text-sm text-cyan-300 mt-2">{exportStatus}</p>}
                 </div>
                 
                 <div className="pt-4 border-t border-gray-700/60">
-                    <h4 className="font-semibold text-white">Third-Party Connections</h4>
-                    <p className="text-sm text-gray-400 mb-3">Manage apps and services you've connected to your account.</p>
-                    <p className="text-gray-500">No applications connected.</p>
+                    <h4 className="font-semibold text-white">Data Sharing Preferences</h4>
+                    <p className="text-sm text-gray-400 mb-3">Control how your anonymized data is used to improve our services and AI models.</p>
+                    <NotificationItem title="Contribute to AI Model Improvement" description="Allow your anonymized data to be used to train and improve our financial models.">
+                        <ToggleSwitch checked={true} onChange={()=>{}} />
+                    </NotificationItem>
                 </div>
 
                 <div className="pt-4 border-t border-gray-700/60">
@@ -785,23 +727,38 @@ export const DataPrivacySettings: React.FC = () => {
                 </div>
             </div>
             <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Account">
-                <div className="space-y-4">
-                    <p className="text-gray-300">Are you sure you want to permanently delete your account? All of your data, including transactions, insights, and settings will be erased forever.</p>
-                    <InputField label="Type 'DELETE' to confirm" onChange={(e) => {
-                        // This would be tied to state to enable the button
-                    }} />
-                    <div className="flex justify-end pt-4">
-                        <Button variant="danger" onClick={handleDeleteAccount}>I understand, delete my account</Button>
-                    </div>
-                </div>
+                <DeleteAccountConfirmation onConfirm={handleDeleteAccount} />
             </Modal>
         </Card>
     );
 };
 
-/**
- * Subscription and Billing Management Component
- */
+export const DeleteAccountConfirmation: React.FC<{ onConfirm: () => Promise<void> }> = ({ onConfirm }) => {
+    const [confirmationText, setConfirmationText] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
+    const requiredText = "DELETE MY ACCOUNT";
+    const canDelete = confirmationText === requiredText;
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        await onConfirm();
+        setIsDeleting(false);
+    }
+
+    return (
+        <div className="space-y-4">
+            <p className="text-gray-300">This is a permanent action. All your data, including transactions, insights, and settings, will be erased forever.</p>
+            <p className="text-gray-300">To proceed, please type <strong className="text-red-400">{requiredText}</strong> in the box below.</p>
+            <InputField label={`Type '${requiredText}' to confirm`} value={confirmationText} onChange={(e) => setConfirmationText(e.target.value)} />
+            <div className="flex justify-end pt-4">
+                <Button variant="danger" onClick={handleDelete} disabled={!canDelete || isDeleting} isLoading={isDeleting}>
+                    I understand, delete my account
+                </Button>
+            </div>
+        </div>
+    );
+};
+
 export const SubscriptionManagement: React.FC<{ subscription: SubscriptionDetails }> = ({ subscription }) => {
     const [billingHistory, setBillingHistory] = useState<BillingHistoryItem[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -825,7 +782,6 @@ export const SubscriptionManagement: React.FC<{ subscription: SubscriptionDetail
         <Card title="Subscription & Billing">
             {isLoading ? <div className="flex justify-center"><Spinner/></div> : (
                 <div className="space-y-8">
-                    {/* Current Plan */}
                     <div>
                         <h4 className="font-semibold text-white text-lg">Current Plan</h4>
                         <div className="mt-2 bg-gray-800/50 p-4 rounded-lg flex justify-between items-center">
@@ -846,7 +802,6 @@ export const SubscriptionManagement: React.FC<{ subscription: SubscriptionDetail
                         </div>
                     </div>
                     
-                    {/* Payment Methods */}
                     <div>
                         <h4 className="font-semibold text-white text-lg">Payment Methods</h4>
                         <ul className="mt-2 space-y-2">
@@ -866,7 +821,6 @@ export const SubscriptionManagement: React.FC<{ subscription: SubscriptionDetail
                         <Button variant="secondary" className="mt-2">Add Payment Method</Button>
                     </div>
 
-                    {/* Billing History */}
                     <div>
                         <h4 className="font-semibold text-white text-lg">Billing History</h4>
                         <div className="overflow-x-auto mt-2">
@@ -900,6 +854,48 @@ export const SubscriptionManagement: React.FC<{ subscription: SubscriptionDetail
     );
 };
 
+export const GeneralSettings: React.FC<{ language: Language; timezone: Timezone; currency: Currency; onSave: (data: Partial<UserSettings>) => Promise<void>; }> = ({ language, timezone, currency, onSave }) => {
+    const [formState, setFormState] = useState({ language, timezone, currency });
+    const [isSaving, setIsSaving] = useState(false);
+    const originalState = useMemo(() => ({ language, timezone, currency }), [language, timezone, currency]);
+    const isDirty = useMemo(() => JSON.stringify(formState) !== JSON.stringify(originalState), [formState, originalState]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFormState(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        await onSave(formState);
+        setIsSaving(false);
+    };
+
+    return (
+        <Card title="General">
+            <div className="space-y-4">
+                <SelectField label="Language" name="language" value={formState.language} onChange={handleChange}>
+                    <option value="en-US">English (United States)</option>
+                    <option value="es-ES">Español (España)</option>
+                    <option value="fr-FR">Français (France)</option>
+                </SelectField>
+                <SelectField label="Timezone" name="timezone" value={formState.timezone} onChange={handleChange}>
+                    <option value="America/New_York">Eastern Time (US & Canada)</option>
+                    <option value="Europe/London">London</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                    <option value="UTC">UTC</option>
+                </SelectField>
+                <SelectField label="Currency" name="currency" value={formState.currency} onChange={handleChange}>
+                    <option value="USD">USD - United States Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                </SelectField>
+                <div className="flex justify-end pt-4">
+                    <Button onClick={handleSave} isLoading={isSaving} disabled={!isDirty}>Save Changes</Button>
+                </div>
+            </div>
+        </Card>
+    );
+}
 
 // SECTION: Main Settings View Component
 // =====================================
@@ -923,23 +919,33 @@ const SettingsView: React.FC = () => {
         fetchSettings();
     }, []);
 
+    const updateSettings = (updates: Partial<UserSettings>) => {
+        setSettings(prev => prev ? { ...prev, ...updates } : null);
+    };
+
     const handleSaveProfile = async (newProfile: UserProfile) => {
-        // Simulate API call to save profile
         await mockApiCall(newProfile);
-        setSettings(prev => prev ? { ...prev, profile: newProfile } : null);
+        updateSettings({ profile: newProfile });
     };
     
     const handleSaveNotifications = async (newPrefs: NotificationPreferences) => {
         await mockApiCall(newPrefs);
-        setSettings(prev => prev ? { ...prev, notifications: newPrefs } : null);
+        updateSettings({ notifications: newPrefs });
     };
 
+    const handleUpdateSecurity = async (securityUpdates: Partial<SecuritySettings>) => {
+        const newSettings = { ...settings!.security, ...securityUpdates };
+        await mockApiCall(newSettings);
+        setSettings(prev => prev ? { ...prev, security: newSettings } : null);
+    };
+    
+    const handleSaveGeneral = async (generalUpdates: Partial<UserSettings>) => {
+        await mockApiCall(generalUpdates);
+        updateSettings(generalUpdates);
+    }
+
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <Spinner size="lg" />
-            </div>
-        );
+        return <div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>;
     }
     
     if (error || !settings) {
@@ -955,42 +961,19 @@ const SettingsView: React.FC = () => {
         <div className="space-y-8 max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-white tracking-wider">Settings</h2>
             
-            {/* The original content is replaced by more detailed components */}
-
             <ProfileSettings profile={settings.profile} onSave={handleSaveProfile} />
-            
-            <SecuritySettingsSection settings={settings.security} />
-            
+            <GeneralSettings language={settings.language} timezone={settings.timezone} currency={settings.currency} onSave={handleSaveGeneral}/>
+            <SecuritySettingsSection settings={settings.security} onUpdate={handleUpdateSecurity} />
             <ExpandedNotificationPreferences preferences={settings.notifications} onSave={handleSaveNotifications} />
-
             <SubscriptionManagement subscription={settings.subscription} />
-            
             <DataPrivacySettings />
 
             <Card title="Appearance">
                  <p className="text-gray-400 text-sm">Theme and background customization options are available in the <span className="font-semibold text-cyan-300">Personalization</span> view.</p>
-            </Card>
-
-            <Card title="Danger Zone">
-                <div className="p-4 border border-red-500/50 bg-red-500/10 rounded-lg space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h4 className="font-semibold text-red-300">Log out of all other sessions</h4>
-                            <p className="text-sm text-red-400/80">This will sign you out of every other active session on all devices.</p>
-                        </div>
-                        <Button variant="secondary">Log out sessions</Button>
-                    </div>
-                     <div className="flex justify-between items-center">
-                        <div>
-                            <h4 className="font-semibold text-red-300">Close Account</h4>
-                            <p className="text-sm text-red-400/80">Permanently close your account. This action is irreversible.</p>
-                        </div>
-                        <Button variant="danger">Close Account</Button>
-                    </div>
-                </div>
             </Card>
         </div>
     );
 };
 
 export default SettingsView;
+```
