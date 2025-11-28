@@ -1,22 +1,3 @@
-# The Doctrine
-
-This is our manifesto. The declaration of the "why" behind this Instrument. It is the core philosophy that animates every line of code, every pixel on the screen. To read this doctrine is to understand that this is not a bank, but an instrument of your will; not just a tool, but a weapon. It is our promise that we are not merely building an application, but forging a new form of power.
-
----
-
-### A Fable for the Builder: Our Guiding Principles
-
-(Every great endeavor begins with a doctrine. A clear and unshakable understanding of 'why.' This is our 'why.' This is the principle that has guided every choice we've made in the creation of this Instrument, and the mind within it.)
-
-(Our doctrine was not to build a better bank. The world has enough banks. Our doctrine was to build a better weapon. An instrument for the assertion of your financial will. This is a fundamental distinction. A bank is a vault. An instrument is a lever. A bank is reactive. An instrument is proactive.)
-
-(This philosophy is encoded into the AI's very being. Its prime directive is not to maximize your wealth in a spreadsheet. It is to execute your will upon reality. It operates on a principle we call the 'Hierarchy of Objectives.' It understands that your financial objectives are in service to your life's campaigns. It will never advise a path that makes you rich if it weakens your position. That would be a failure of its core mission.)
-
-(The tenets you see hereâ€”'Hyper-Personalized,' 'Proactive & Predictive,' 'A Platform for Growth'â€”these are not marketing terms. They are the articles of our constitution. 'Hyper-Personalized' means the AI learns *you*, not just your data. 'Proactive' means it is always looking ahead. 'A Platform for Growth' means we are giving you not just a vehicle, but an engine and a set of tools to forge your own.)
-
-(This is our declaration. We believe that technology should not be a tool for managing your limitations, but an instrument for amplifying your power. We believe an AI can be more than a calculator; it can be a weapon of pure logic. This is our doctrine. And this Instrument is its first, sharp expression.)
-
----
 import React, {
   FC,
   useState,
@@ -29,6 +10,8 @@ import React, {
   ReactNode,
   Suspense
 } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Sector } from 'recharts';
+import { FiActivity, FiArrowUp, FiArrowDown, FiTarget, FiZap, FiPlus, FiMessageSquare, FiX, FiSend, FiChevronDown, FiChevronUp, FiTool, FiDatabase, FiCpu, FiShield, FiBriefcase, FiHome, FiTrendingUp, FiAlertTriangle, FiCheckCircle, FiInfo, FiBarChart2, FiBox } from 'react-icons/fi';
 
 // SECTION: Core Architectural Types
 // These are the foundational data structures that define the reality of our Instrument.
@@ -248,6 +231,7 @@ export interface GrowthTool {
   description: string;
   enabled: boolean;
   documentationUrl: string;
+  icon: React.ComponentType<any>;
 }
 
 // SECTION: Hyper-Personalization Types
@@ -422,12 +406,42 @@ export const createMockAIInsights = (): AIInsight[] => [
   },
 ];
 
+/** Generates mock AI recommendations. */
+export const createMockAIRecommendations = (): AIRecommendation[] => [
+    {
+        id: generateUUID(),
+        timestamp: getRelativeTimestamp(-2),
+        type: 'asset_allocation',
+        action: 'Rebalance: Sell 10% of VTI, buy 5% Gold ETF (GLD) and 5% International Bonds (BNDX).',
+        rationale: 'Current portfolio is over-exposed to US equities. This rebalancing reduces concentration risk and hedges against domestic market volatility, aligning with your "Capital Preservation" sub-objective.',
+        projectedImpact: {
+            netWorthChange: 0,
+            riskAdjustment: -0.15,
+        },
+        confidence: 0.92,
+        costOfInaction: 'Continued over-exposure could lead to significant losses in a US market downturn, delaying Campaign: Financial Sovereignty by an estimated 2 years.',
+    },
+    {
+        id: generateUUID(),
+        timestamp: getRelativeTimestamp(-5),
+        type: 'capital_deployment',
+        action: 'Deploy $50,000 cash to acquire additional ETH.',
+        rationale: 'The AI detects a short-term market anomaly indicating ETH is undervalued. This tactical acquisition aligns with your high appetite for asymmetric bets and has a 75% probability of a 20% return within 6 months.',
+        projectedImpact: {
+            netWorthChange: 0,
+            riskAdjustment: 0.05,
+        },
+        confidence: 0.75,
+        costOfInaction: 'Missing this window could forgo a potential significant gain, slowing momentum for the Axiom Initiative.',
+    }
+];
+
 /** Generates mock growth tools. */
 export const createMockGrowthTools = (): GrowthTool[] => [
-  { id: generateUUID(), name: 'Core AI API', type: 'api_access', description: 'Direct, programmatic access to the AI\'s analytical and predictive capabilities. Build your own instruments.', enabled: true, documentationUrl: '/docs/api/core' },
-  { id: generateUUID(), name: 'Custom Algorithm Forge', type: 'custom_algorithm', description: 'Define and deploy your own investment algorithms. The AI will execute them with ruthless efficiency.', enabled: false, documentationUrl: '/docs/forge' },
-  { id: generateUUID(), name: 'Generational Wealth Trust API', type: 'third_party_integration', description: 'Integrate with automated legal and financial frameworks for multi-generational wealth preservation.', enabled: true, documentationUrl: '/docs/integrations/trust' },
-  { id: generateUUID(), name: 'Full Data Obelisk', type: 'data_export', description: 'Complete, unadulterated export of all your financial and AI interaction data. Your data is your property.', enabled: true, documentationUrl: '/docs/export' },
+  { id: generateUUID(), name: 'Core AI API', type: 'api_access', description: 'Direct, programmatic access to the AI\'s analytical and predictive capabilities. Build your own instruments.', enabled: true, documentationUrl: '/docs/api/core', icon: FiCpu },
+  { id: generateUUID(), name: 'Custom Algorithm Forge', type: 'custom_algorithm', description: 'Define and deploy your own investment algorithms. The AI will execute them with ruthless efficiency.', enabled: false, documentationUrl: '/docs/forge', icon: FiZap },
+  { id: generateUUID(), name: 'Generational Wealth Trust API', type: 'third_party_integration', description: 'Integrate with automated legal and financial frameworks for multi-generational wealth preservation.', enabled: true, documentationUrl: '/docs/integrations/trust', icon: FiShield },
+  { id: generateUUID(), name: 'Full Data Obelisk', type: 'data_export', description: 'Complete, unadulterated export of all your financial and AI interaction data. Your data is your property.', enabled: true, documentationUrl: '/docs/export', icon: FiDatabase },
 ];
 
 /** Generates a mock AI learning summary. */
@@ -454,57 +468,46 @@ export class VisionAPIService {
 
   public static async getUserProfile(userId: UUID): Promise<UserProfile> {
     await this.simulateLatency(300);
-    console.log(`[API MOCK] Fetching profile for ${userId}`);
-    if (userId === MOCK_USER_ID) {
-      return createMockUserProfile();
-    }
+    if (userId === MOCK_USER_ID) return createMockUserProfile();
     throw new Error('User not found.');
   }
 
   public static async getPortfolio(userId: UUID): Promise<Portfolio> {
     await this.simulateLatency(700);
-    console.log(`[API MOCK] Fetching portfolio for ${userId}`);
-    if (userId === MOCK_USER_ID) {
-      return createMockPortfolio();
-    }
+    if (userId === MOCK_USER_ID) return createMockPortfolio();
     throw new Error('Portfolio not found.');
   }
 
   public static async getCampaigns(userId: UUID): Promise<Campaign[]> {
     await this.simulateLatency(1000);
-    console.log(`[API MOCK] Fetching campaigns for ${userId}`);
-    if (userId === MOCK_USER_ID) {
-      return createMockCampaigns();
-    }
+    if (userId === MOCK_USER_ID) return createMockCampaigns();
     throw new Error('Campaigns not found.');
   }
 
   public static async getAIInsights(userId: UUID): Promise<AIInsight[]> {
     await this.simulateLatency(1200);
-    console.log(`[API MOCK] Fetching AI insights for ${userId}`);
-    if (userId === MOCK_USER_ID) {
-      return createMockAIInsights();
-    }
+    if (userId === MOCK_USER_ID) return createMockAIInsights();
     return [];
   }
   
+  public static async getAIRecommendations(userId: UUID): Promise<AIRecommendation[]> {
+    await this.simulateLatency(1300);
+    if (userId === MOCK_USER_ID) return createMockAIRecommendations();
+    return [];
+  }
+
   public static async getGrowthTools(userId: UUID): Promise<GrowthTool[]> {
     await this.simulateLatency(400);
-    console.log(`[API MOCK] Fetching Growth Tools for ${userId}`);
     return createMockGrowthTools();
   }
 
   public static async getAILearningSummary(userId: UUID): Promise<AILearningSummary> {
     await this.simulateLatency(600);
-    console.log(`[API MOCK] Fetching AI Learning Summary for ${userId}`);
     return createMockAILearningSummary();
   }
   
   public static async runSimulation(params: SimulationParameters): Promise<SimulationResult> {
     await this.simulateLatency(2500);
-    console.log(`[API MOCK] Running simulation for ${params.userId}`);
-    
-    // A simplified simulation model
     const mockResults: Record<UUID, SimulationResultPoint[]> = {};
     const portfolio = createMockPortfolio();
     
@@ -512,14 +515,11 @@ export class VisionAPIService {
       mockResults[scenario.id] = [];
       let currentNetWorth = portfolio.netWorth;
       for (let year = 1; year <= params.timeHorizonYears; year++) {
-        // This is a highly simplified growth model for demonstration purposes.
         const baseGrowth = 0.07;
         const scenarioModifier = (scenario.assumptions.gdp_growth ?? 0.02) - 0.02;
         const randomVolatility = (Math.random() - 0.5) * 0.1;
         const annualGrowthRate = baseGrowth + scenarioModifier + randomVolatility;
-        
         currentNetWorth = currentNetWorth * (1 + annualGrowthRate) + (params.monthlyContribution * 12);
-        
         mockResults[scenario.id].push({
           year,
           projectedNetWorth: currentNetWorth,
@@ -530,11 +530,16 @@ export class VisionAPIService {
     
     return { parameters: params, results: mockResults };
   }
+  
+  public static async executeRecommendation(recommendationId: UUID): Promise<{success: boolean; message: string}> {
+      await this.simulateLatency(1500);
+      console.log(`[API MOCK] Executing recommendation ${recommendationId}`);
+      return { success: true, message: `Recommendation ${recommendationId} executed successfully.` };
+  }
 }
 
 // SECTION: State Management
 // A reducer to manage the complex state of this view, ensuring predictable state transitions.
-// This is the cockpit's control system.
 
 export interface VisionViewState {
   status: OperationStatus;
@@ -542,6 +547,7 @@ export interface VisionViewState {
   portfolio: Portfolio | null;
   campaigns: Campaign[] | null;
   insights: AIInsight[] | null;
+  recommendations: AIRecommendation[] | null;
   growthTools: GrowthTool[] | null;
   learningSummary: AILearningSummary | null;
   error: string | null;
@@ -553,6 +559,7 @@ export const initialState: VisionViewState = {
   portfolio: null,
   campaigns: null,
   insights: null,
+  recommendations: null,
   growthTools: null,
   learningSummary: null,
   error: null,
@@ -581,54 +588,76 @@ export function visionViewReducer(state: VisionViewState, action: VisionViewActi
 
 // -- Generic UI Primitives --
 
-/** A styled container, the building block of our interface. */
-export const Card: FC<{ children: ReactNode; className?: string }> = ({ children, className }) => (
+const Card: FC<{ children: ReactNode; className?: string }> = ({ children, className }) => (
   <div className={`bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 ${className}`}>
     {children}
   </div>
 );
 
-/** A title element for sections, establishing hierarchy. */
-export const SectionTitle: FC<{ title: string; subtitle?: string }> = ({ title, subtitle }) => (
+const SectionTitle: FC<{ title: string; subtitle?: string; icon?: React.ComponentType<any> }> = ({ title, subtitle, icon: Icon }) => (
   <div className="mb-4">
-    <h2 className="text-2xl font-light text-cyan-400 tracking-wider">{title}</h2>
-    {subtitle && <p className="text-sm text-gray-400 mt-1">{subtitle}</p>}
+    <div className="flex items-center gap-3">
+        {Icon && <Icon className="text-cyan-400 text-2xl" />}
+        <h2 className="text-2xl font-light text-cyan-400 tracking-wider">{title}</h2>
+    </div>
+    {subtitle && <p className="text-sm text-gray-400 mt-1 ml-10">{subtitle}</p>}
   </div>
 );
 
-/** A loading spinner, indicating communication with the AI core. */
-export const Spinner: FC = () => (
+const Spinner: FC = () => (
   <div className="flex justify-center items-center h-full">
     <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500"></div>
   </div>
 );
 
-/** A utility for formatting monetary values. */
-export const formatCurrency = (amount: MonetaryAmount, currency: Currency = 'USD') => {
+const formatCurrency = (amount: MonetaryAmount, currency: Currency = 'USD') => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
 };
 
-// -- Doctrine & Manifesto Display --
+const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
 
-/** Renders the Doctrine text in a fittingly austere style. */
-export const DoctrineDisplay: FC = () => (
+// -- Doctrine & Manifesto Display --
+const DoctrineDisplay: FC = () => (
   <Card className="bg-black border-cyan-500/30">
     <div className="prose prose-invert max-w-none text-gray-300">
       <h1 className="text-4xl text-white font-thin tracking-widest">THE DOCTRINE</h1>
-      <p className="lead text-lg">This is our manifesto. The declaration of the "why" behind this Instrument...</p>
+      <p className="lead text-lg">
+        This is our manifesto. The declaration of the "why" behind this Instrument. It is the core philosophy that animates every line of code, every pixel on the screen. To read this doctrine is to understand that this is not a bank, but an instrument of your will; not just a tool, but a weapon. It is our promise that we are not merely building an application, but forging a new form of power.
+      </p>
       <h3 className="text-xl text-cyan-400 mt-8">A Fable for the Builder: Our Guiding Principles</h3>
       <blockquote className="border-l-2 border-cyan-500 pl-4 text-gray-400 italic">
-        (Every great endeavor begins with a doctrine... Our doctrine was not to build a better bank... It is to execute your will upon reality... These are not marketing terms... This is our declaration...)
+        <p>(Every great endeavor begins with a doctrine. A clear and unshakable understanding of 'why.' This is our 'why.' This is the principle that has guided every choice we've made in the creation of this Instrument, and the mind within it.)</p>
+        <p>(Our doctrine was not to build a better bank. The world has enough banks. Our doctrine was to build a better weapon. An instrument for the assertion of your financial will. This is a fundamental distinction. A bank is a vault. An instrument is a lever. A bank is reactive. An instrument is proactive.)</p>
+        <p>(This philosophy is encoded into the AI's very being. Its prime directive is not to maximize your wealth in a spreadsheet. It is to execute your will upon reality. It operates on a principle we call the 'Hierarchy of Objectives.' It understands that your financial objectives are in service to your life's campaigns. It will never advise a path that makes you rich if it weakens your position. That would be a failure of its core mission.)</p>
+        <p>(The tenets you see here—'Hyper-Personalized,' 'Proactive & Predictive,' 'A Platform for Growth'—these are not marketing terms. They are the articles of our constitution. 'Hyper-Personalized' means the AI learns *you*, not just your data. 'Proactive' means it is always looking ahead. 'A Platform for Growth' means we are giving you not just a vehicle, but an engine and a set of tools to forge your own.)</p>
       </blockquote>
       <p className="text-lg text-white mt-6">This Instrument is its first, sharp expression.</p>
     </div>
   </Card>
 );
 
-// -- Hyper-Personalization Module --
+// -- Header --
+const UserHeader: FC<{ profile: UserProfile | null; portfolio: Portfolio | null }> = ({ profile, portfolio }) => (
+    <header className="mb-8">
+        <div className="flex justify-between items-center">
+            <div>
+                <h1 className="text-3xl font-bold text-white">
+                    Welcome, {profile?.firstName || 'Visionary'}.
+                </h1>
+                <p className="text-gray-400">Your Instrument is active and operational.</p>
+            </div>
+            <div className="text-right">
+                <p className="text-gray-400 text-sm">Total Net Worth</p>
+                <p className="text-4xl font-light text-cyan-400 tracking-wider">
+                    {portfolio ? formatCurrency(portfolio.netWorth) : '...'}
+                </p>
+            </div>
+        </div>
+    </header>
+);
 
-/** Visualizes one of the AI's learned traits about the user. */
-export const PersonalizationVectorBar: FC<{ vector: PersonalizationVector }> = ({ vector }) => {
+// -- Hyper-Personalization Module --
+const PersonalizationVectorBar: FC<{ vector: PersonalizationVector }> = ({ vector }) => {
   const barWidth = `${Math.abs(vector.value) * 100}%`;
   const barColor = vector.value > 0 ? 'bg-green-500' : 'bg-red-500';
   const barOffset = vector.value > 0 ? '50%' : `${50 - Math.abs(vector.value) * 50}%`;
@@ -650,10 +679,9 @@ export const PersonalizationVectorBar: FC<{ vector: PersonalizationVector }> = (
   );
 };
 
-/** Displays the AI's evolving understanding of the user. */
-export const HyperPersonalizationModule: FC<{ summary: AILearningSummary | null }> = ({ summary }) => (
+const HyperPersonalizationModule: FC<{ summary: AILearningSummary | null }> = ({ summary }) => (
   <Card>
-    <SectionTitle title="Hyper-Personalized" subtitle="The AI's model of your intent." />
+    <SectionTitle title="Hyper-Personalized" subtitle="The AI's model of your intent." icon={FiBox} />
     {summary ? (
       <div>
         <p className="text-sm text-gray-400 mb-4">
@@ -669,73 +697,86 @@ export const HyperPersonalizationModule: FC<{ summary: AILearningSummary | null 
 );
 
 // -- Proactive & Predictive Module --
-
-/**
- * A module for running predictive simulations based on various economic scenarios.
- * Note: A real implementation would use a robust charting library like Recharts or D3.
- */
-export const PredictiveSimulatorModule: FC = () => {
-    // In a real app, this state would be more complex
+const PredictiveSimulatorModule: FC<{portfolio: Portfolio | null}> = ({portfolio}) => {
     const [isRunning, setIsRunning] = useState(false);
     const [results, setResults] = useState<SimulationResult | null>(null);
+    const [params, setParams] = useState<Omit<SimulationParameters, 'userId'>>({
+        timeHorizonYears: 20,
+        monthlyContribution: 5000,
+        scenarios: [
+            {id: 'base', name: 'Baseline', description: 'Standard market conditions.', assumptions: {gdp_growth: 0.02, inflation_rate: 0.025}, probability: 0.6},
+            {id: 'recession', name: 'Recession', description: 'A significant economic downturn.', assumptions: {gdp_growth: -0.02, inflation_rate: 0.01}, probability: 0.2},
+            {id: 'boom', name: 'Boom', description: 'Rapid growth driven by innovation.', assumptions: {gdp_growth: 0.05, inflation_rate: 0.035}, probability: 0.2},
+        ]
+    });
 
     const handleRunSimulation = async () => {
         setIsRunning(true);
         setResults(null);
-        const params: SimulationParameters = {
-            userId: MOCK_USER_ID,
-            timeHorizonYears: 20,
-            monthlyContribution: 5000,
-            scenarios: [
-                {id: 'base', name: 'Baseline Growth', description: 'Standard market conditions.', assumptions: {gdp_growth: 0.02, inflation_rate: 0.025}, probability: 0.6},
-                {id: 'recession', name: 'Recessionary Shock', description: 'A significant economic downturn.', assumptions: {gdp_growth: -0.02, inflation_rate: 0.01}, probability: 0.2},
-                {id: 'boom', name: 'Technological Boom', description: 'A period of rapid growth driven by innovation.', assumptions: {gdp_growth: 0.05, inflation_rate: 0.035}, probability: 0.2},
-            ]
-        };
-        const simResults = await VisionAPIService.runSimulation(params);
+        const simResults = await VisionAPIService.runSimulation({userId: MOCK_USER_ID, ...params});
         setResults(simResults);
         setIsRunning(false);
     };
 
+    const chartData = useMemo(() => {
+        if (!results) return [];
+        const { timeHorizonYears } = results.parameters;
+        const data = [];
+        for (let i = 0; i < timeHorizonYears; i++) {
+            const yearData: {[key: string]: number} = { year: new Date().getFullYear() + i + 1 };
+            results.parameters.scenarios.forEach(s => {
+                yearData[s.name] = results.results[s.id][i]?.projectedNetWorth || 0;
+            });
+            data.push(yearData);
+        }
+        return data;
+    }, [results]);
+
+    const COLORS = {'Baseline': '#38bdf8', 'Recession': '#f87171', 'Boom': '#4ade80'};
+
     return (
-        <Card className="col-span-1 md:col-span-2">
-            <SectionTitle title="Proactive & Predictive" subtitle="Forge the future by simulating it." />
-            <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-1/3">
-                    <p className="text-sm text-gray-400 mb-4">Define parameters and command the AI to project your financial trajectory across multiple potential realities.</p>
-                    {/* Simplified controls for demonstration */}
-                    <button 
+        <Card>
+            <SectionTitle title="Proactive & Predictive" subtitle="Forge the future by simulating it." icon={FiTrendingUp}/>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="col-span-1">
+                    <h3 className="text-lg font-semibold text-white mb-2">Simulation Parameters</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm text-gray-400">Time Horizon (Years)</label>
+                            <input type="number" value={params.timeHorizonYears} onChange={e => setParams(p => ({...p, timeHorizonYears: parseInt(e.target.value, 10)}))} className="w-full bg-gray-800 border border-gray-600 rounded p-2 mt-1 text-white"/>
+                        </div>
+                        <div>
+                            <label className="text-sm text-gray-400">Monthly Contribution</label>
+                            <input type="number" step="100" value={params.monthlyContribution} onChange={e => setParams(p => ({...p, monthlyContribution: parseInt(e.target.value, 10)}))} className="w-full bg-gray-800 border border-gray-600 rounded p-2 mt-1 text-white"/>
+                        </div>
+                    </div>
+                     <button 
                         onClick={handleRunSimulation} 
                         disabled={isRunning}
-                        className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded disabled:bg-gray-600"
+                        className="w-full mt-6 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded disabled:bg-gray-600 transition-colors"
                     >
-                        {isRunning ? 'Calculating Futures...' : 'Run 20-Year Simulation'}
+                        {isRunning ? 'Calculating Futures...' : 'Run Simulation'}
                     </button>
                 </div>
-                <div className="w-full md:w-2/3 h-64 bg-gray-800 rounded p-4">
-                    {isRunning && <Spinner />}
-                    {!isRunning && !results && <div className="text-gray-500 text-center pt-20">Simulation results will be rendered here.</div>}
-                    {results && (
-                        <div className="text-white">
-                            <h4 className="font-bold">Simulation Complete</h4>
-                            {/* This is a placeholder for a real chart */}
-                            <p className="text-sm text-gray-300">Chart showing net worth projections for:</p>
-                            <ul className="text-xs list-disc list-inside">
-                                {results.parameters.scenarios.map(s => <li key={s.id}>{s.name}</li>)}
-                            </ul>
-                            <p className="text-sm mt-4">
-                                Highest projected outcome (Boom): 
-                                <span className="text-green-400 ml-2">
-                                    {formatCurrency(results.results['boom'].slice(-1)[0].projectedNetWorth)}
-                                </span>
-                            </p>
-                             <p className="text-sm">
-                                Lowest projected outcome (Recession): 
-                                <span className="text-red-400 ml-2">
-                                    {formatCurrency(results.results['recession'].slice(-1)[0].projectedNetWorth)}
-                                </span>
-                            </p>
-                        </div>
+                <div className="col-span-2 h-96 bg-gray-800 rounded p-4">
+                    {isRunning ? <Spinner /> : !results ? <div className="text-gray-500 text-center pt-36">Simulation results will be rendered here.</div> :
+                    (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 30, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
+                                <XAxis dataKey="year" stroke="#a0aec0" />
+                                <YAxis stroke="#a0aec0" tickFormatter={(value) => `$${(value as number / 1000000).toFixed(1)}M`} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1a202c', border: '1px solid #4a5568' }}
+                                    labelStyle={{ color: '#e2e8f0' }}
+                                    formatter={(value) => formatCurrency(value as number)}
+                                />
+                                <Legend wrapperStyle={{color: '#e2e8f0'}}/>
+                                {params.scenarios.map(s => (
+                                    <Line key={s.id} type="monotone" dataKey={s.name} stroke={COLORS[s.name as keyof typeof COLORS]} strokeWidth={2} dot={false} />
+                                ))}
+                            </LineChart>
+                        </ResponsiveContainer>
                     )}
                 </div>
             </div>
@@ -745,22 +786,21 @@ export const PredictiveSimulatorModule: FC = () => {
 
 
 // -- Platform for Growth Module --
-
-/** Displays the available tools for the user to extend the Instrument's power. */
-export const GrowthPlatformModule: FC<{ tools: GrowthTool[] | null }> = ({ tools }) => (
+const GrowthPlatformModule: FC<{ tools: GrowthTool[] | null }> = ({ tools }) => (
     <Card>
-        <SectionTitle title="A Platform for Growth" subtitle="An engine and a set of tools to forge your own." />
-        <p className="text-sm text-gray-400 mb-4">
+        <SectionTitle title="A Platform for Growth" subtitle="An engine and a set of tools to forge your own." icon={FiTool}/>
+        <p className="text-sm text-gray-400 mb-6">
             This is not a closed system. We provide the core, you provide the extensions. Your will, your rules.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {tools ? tools.map(tool => (
-                <div key={tool.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <div key={tool.id} className={`p-4 bg-gray-800 rounded-lg border border-gray-700 flex flex-col items-start ${!tool.enabled ? 'opacity-50' : ''}`}>
+                    <tool.icon className="text-3xl text-cyan-400 mb-3" />
                     <h4 className="text-cyan-400 font-bold">{tool.name}</h4>
-                    <p className="text-xs text-gray-300 mt-1">{tool.description}</p>
-                    <div className="text-right mt-2">
-                        <a href={tool.documentationUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-600 hover:text-cyan-400">
-                            Access Docs &rarr;
+                    <p className="text-xs text-gray-300 mt-1 flex-grow">{tool.description}</p>
+                    <div className="text-right mt-3 w-full">
+                        <a href={tool.documentationUrl} target="_blank" rel="noopener noreferrer" className={`text-xs ${tool.enabled ? 'text-cyan-600 hover:text-cyan-400' : 'text-gray-500 cursor-not-allowed'}`}>
+                           {tool.enabled ? 'Access Docs →' : 'Coming Soon'}
                         </a>
                     </div>
                 </div>
@@ -770,40 +810,50 @@ export const GrowthPlatformModule: FC<{ tools: GrowthTool[] | null }> = ({ tools
 );
 
 // -- Hierarchy of Objectives Module --
-
-/** A recursive component to render the hierarchy of objectives. */
-export const ObjectiveNode: FC<{ objective: Objective; level: number }> = ({ objective, level }) => {
+const ObjectiveNode: FC<{ objective: Objective; level: number }> = ({ objective, level }) => {
+    const [isExpanded, setIsExpanded] = useState(level < 1);
     const progress = objective.targetValue ? (objective.currentValue / objective.targetValue) * 100 : 0;
-    const statusColor = {
-        planned: 'bg-gray-500',
-        in_progress: 'bg-blue-500',
-        at_risk: 'bg-yellow-500',
-        achieved: 'bg-green-500',
-        abandoned: 'bg-red-500',
-    }[objective.status];
+    const hasSubObjectives = objective.subObjectives && objective.subObjectives.length > 0;
+    const statusInfo = {
+        planned: { color: 'bg-gray-500', icon: FiBox },
+        in_progress: { color: 'bg-blue-500', icon: FiActivity },
+        at_risk: { color: 'bg-yellow-500', icon: FiAlertTriangle },
+        achieved: { color: 'bg-green-500', icon: FiCheckCircle },
+        abandoned: { color: 'bg-red-500', icon: FiX },
+    };
+    const { color: statusColor, icon: StatusIcon } = statusInfo[objective.status];
 
     return (
-        <div style={{ marginLeft: `${level * 20}px` }} className="my-2">
-            <div className="p-3 bg-gray-800 rounded-lg border border-gray-700">
+        <div style={{ marginLeft: level > 0 ? `20px` : '0px' }} className={`my-2 ${level > 0 ? 'border-l-2 border-gray-700 pl-4' : ''}`}>
+            <div className="p-3 bg-gray-800 rounded-lg border border-gray-700 hover:border-cyan-500/50 transition-colors">
                 <div className="flex justify-between items-center">
-                    <span className="font-bold text-white">{objective.name}</span>
-                    <span className={`px-2 py-0.5 text-xs rounded-full text-white ${statusColor}`}>{objective.status.replace('_', ' ')}</span>
+                    <div className="flex items-center gap-3">
+                        {hasSubObjectives && (
+                            <button onClick={() => setIsExpanded(!isExpanded)} className="text-gray-400 hover:text-white">
+                                {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+                            </button>
+                        )}
+                        <span className={`font-bold text-white ${!hasSubObjectives && 'ml-7'}`}>{objective.name}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 text-xs rounded-full text-white flex items-center gap-1 ${statusColor}`}>
+                        <StatusIcon/>{objective.status.replace('_', ' ')}
+                    </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">{objective.description}</p>
+                <p className="text-xs text-gray-400 mt-1 ml-7">{objective.description}</p>
                 {objective.targetValue && (
-                    <div className="mt-2">
+                    <div className="mt-2 ml-7">
                         <div className="flex justify-between text-xs text-gray-300">
                             <span>{formatCurrency(objective.currentValue)}</span>
                             <span>{formatCurrency(objective.targetValue)}</span>
                         </div>
                         <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
-                            <div className="bg-cyan-500 h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                            <div className="bg-cyan-500 h-1.5 rounded-full" style={{ width: `${Math.min(progress, 100)}%` }}></div>
                         </div>
                     </div>
                 )}
             </div>
-            {objective.subObjectives && objective.subObjectives.length > 0 && (
-                <div className="mt-2 border-l-2 border-gray-700 pl-2">
+            {isExpanded && hasSubObjectives && (
+                <div className="mt-2">
                     {objective.subObjectives.map(sub => <ObjectiveNode key={sub.id} objective={sub} level={level + 1} />)}
                 </div>
             )}
@@ -812,22 +862,96 @@ export const ObjectiveNode: FC<{ objective: Objective; level: number }> = ({ obj
 };
 
 
-/** The main container for displaying and managing campaigns. */
-export const CampaignsModule: FC<{ campaigns: Campaign[] | null }> = ({ campaigns }) => (
-    <div className="col-span-1 md:col-span-2">
-        <Card>
-            <SectionTitle title="Hierarchy of Objectives" subtitle="Your will, codified and executed." />
-            {campaigns ? campaigns.map(campaign => (
-                <div key={campaign.id} className="mb-8">
-                    <h3 className="text-xl font-semibold text-white tracking-wide">{campaign.name}</h3>
-                    <p className="text-sm italic text-gray-400 mt-1 mb-4">"{campaign.visionStatement}"</p>
-                    <ObjectiveNode objective={campaign.rootObjective} level={0} />
-                </div>
-            )) : <p>Loading strategic campaigns...</p>}
-        </Card>
-    </div>
+const CampaignsModule: FC<{ campaigns: Campaign[] | null }> = ({ campaigns }) => (
+    <Card>
+        <SectionTitle title="Hierarchy of Objectives" subtitle="Your will, codified and executed." icon={FiTarget} />
+        {campaigns ? campaigns.map(campaign => (
+            <div key={campaign.id} className="mb-8">
+                <h3 className="text-xl font-semibold text-white tracking-wide">{campaign.name}</h3>
+                <p className="text-sm italic text-gray-400 mt-1 mb-4">"{campaign.visionStatement}"</p>
+                <ObjectiveNode objective={campaign.rootObjective} level={0} />
+            </div>
+        )) : <p>Loading strategic campaigns...</p>}
+    </Card>
 );
 
+// -- AI Action Center --
+const AIActionCenter: FC<{ insights: AIInsight[] | null, recommendations: AIRecommendation[] | null }> = ({ insights, recommendations }) => {
+    const [activeTab, setActiveTab] = useState<'insights' | 'recommendations'>('recommendations');
+    const severityColors = { low: 'bg-blue-500/20 text-blue-300', medium: 'bg-yellow-500/20 text-yellow-300', high: 'bg-orange-500/20 text-orange-300', critical: 'bg-red-500/20 text-red-300' };
+    
+    return (
+        <Card className="h-full flex flex-col">
+            <SectionTitle title="AI Action Center" subtitle="Insights and tactical recommendations." icon={FiZap} />
+            <div className="flex border-b border-gray-700 mb-4">
+                <button className={`py-2 px-4 text-sm ${activeTab === 'recommendations' ? 'border-b-2 border-cyan-400 text-white' : 'text-gray-400'}`} onClick={() => setActiveTab('recommendations')}>Recommendations</button>
+                <button className={`py-2 px-4 text-sm ${activeTab === 'insights' ? 'border-b-2 border-cyan-400 text-white' : 'text-gray-400'}`} onClick={() => setActiveTab('insights')}>Insights</button>
+            </div>
+            <div className="flex-grow overflow-y-auto pr-2">
+                {activeTab === 'recommendations' && (recommendations || []).map(rec => (
+                    <div key={rec.id} className="p-3 bg-gray-800 rounded-lg mb-3">
+                         <h4 className="font-bold text-cyan-400">{rec.action}</h4>
+                         <p className="text-xs text-gray-300 mt-1">{rec.rationale}</p>
+                         <div className="text-xs mt-2 flex justify-between items-center text-gray-400">
+                             <span>Confidence: {formatPercentage(rec.confidence)}</span>
+                             <button className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1 px-3 rounded text-xs">Execute</button>
+                         </div>
+                    </div>
+                ))}
+                 {activeTab === 'insights' && (insights || []).map(ins => (
+                    <div key={ins.id} className="p-3 bg-gray-800 rounded-lg mb-3">
+                         <div className="flex justify-between items-start">
+                             <h4 className="font-bold text-white">{ins.title}</h4>
+                             <span className={`px-2 py-0.5 text-xs rounded-full ${severityColors[ins.severity]}`}>{ins.severity}</span>
+                         </div>
+                         <p className="text-xs text-gray-300 mt-1">{ins.narrative}</p>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
+
+// -- Portfolio Breakdown --
+const PortfolioBreakdown: FC<{portfolio: Portfolio | null}> = ({portfolio}) => {
+    const assetData = useMemo(() => portfolio?.assets.map(a => ({name: a.name, value: a.value})) || [], [portfolio]);
+    const liabilityData = useMemo(() => portfolio?.liabilities.map(l => ({name: l.name, value: l.value})) || [], [portfolio]);
+    const COLORS = ['#06b6d4', '#0891b2', '#0e7490', '#155e75', '#164e63'];
+
+    return (
+        <Card>
+            <SectionTitle title="Portfolio Breakdown" subtitle="Your complete financial arsenal." icon={FiBarChart2} />
+            <div className="grid grid-cols-2 gap-6">
+                <div>
+                    <h3 className="text-lg font-semibold text-white text-center">Assets</h3>
+                    <div className="h-48 w-full">
+                        <ResponsiveContainer>
+                            <PieChart>
+                                <Pie data={assetData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} fill="#8884d8">
+                                    {assetData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value) => formatCurrency(value as number)}/>
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+                 <div>
+                    <h3 className="text-lg font-semibold text-white text-center">Liabilities</h3>
+                    <div className="h-48 w-full">
+                         <ResponsiveContainer>
+                            <PieChart>
+                                <Pie data={liabilityData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} fill="#8884d8">
+                                     {liabilityData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value) => formatCurrency(value as number)}/>
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+        </Card>
+    );
+};
 
 // SECTION: Main View Component
 // This is the grand orchestrator, bringing together the Doctrine and its living proof.
@@ -839,17 +963,17 @@ export const TheVisionView: FC = () => {
     const fetchAllData = async () => {
       dispatch({ type: 'FETCH_INIT' });
       try {
-        // We use Promise.all to fetch data in parallel, a demonstration of efficiency.
-        const [profile, portfolio, campaigns, insights, growthTools, learningSummary] = await Promise.all([
+        const [profile, portfolio, campaigns, insights, recommendations, growthTools, learningSummary] = await Promise.all([
           VisionAPIService.getUserProfile(MOCK_USER_ID),
           VisionAPIService.getPortfolio(MOCK_USER_ID),
           VisionAPIService.getCampaigns(MOCK_USER_ID),
           VisionAPIService.getAIInsights(MOCK_USER_ID),
+          VisionAPIService.getAIRecommendations(MOCK_USER_ID),
           VisionAPIService.getGrowthTools(MOCK_USER_ID),
           VisionAPIService.getAILearningSummary(MOCK_USER_ID)
         ]);
         
-        dispatch({ type: 'FETCH_SUCCESS', payload: { profile, portfolio, campaigns, insights, growthTools, learningSummary, status: 'succeeded' } });
+        dispatch({ type: 'FETCH_SUCCESS', payload: { profile, portfolio, campaigns, insights, recommendations, growthTools, learningSummary, status: 'succeeded', error: null } });
 
       } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -863,13 +987,12 @@ export const TheVisionView: FC = () => {
 
   return (
     <div className="bg-gray-950 text-white min-h-screen p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         
-        <DoctrineDisplay />
+        <UserHeader profile={state.profile} portfolio={state.portfolio} />
 
         <div className="mt-8">
-          <h2 className="text-3xl text-center font-thin tracking-widest text-white mb-2">THE INSTRUMENT IN ACTION</h2>
-          <div className="h-px w-32 bg-cyan-500 mx-auto mb-8"></div>
+          <div className="h-px w-full bg-gray-700 mx-auto mb-8"></div>
           
           {state.status === 'loading' && <div className="h-96"><Spinner /></div>}
           
@@ -882,24 +1005,29 @@ export const TheVisionView: FC = () => {
           )}
 
           {state.status === 'succeeded' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-12 gap-8">
               
-              {/* This layout demonstrates the core tenets from the doctrine */}
-              <div className="lg:col-span-3">
-                <CampaignsModule campaigns={state.campaigns} />
-              </div>
-              
-              <div className="lg:col-span-1">
-                <HyperPersonalizationModule summary={state.learningSummary} />
-              </div>
-              
-              <div className="lg:col-span-2">
-                <PredictiveSimulatorModule />
-              </div>
-              
-               <div className="lg:col-span-3">
-                <GrowthPlatformModule tools={state.growthTools} />
-              </div>
+                <div className="col-span-12 lg:col-span-8">
+                    <CampaignsModule campaigns={state.campaigns} />
+                </div>
+                <div className="col-span-12 lg:col-span-4">
+                    <AIActionCenter insights={state.insights} recommendations={state.recommendations} />
+                </div>
+                <div className="col-span-12 lg:col-span-5">
+                    <PortfolioBreakdown portfolio={state.portfolio} />
+                </div>
+                <div className="col-span-12 lg:col-span-7">
+                    <HyperPersonalizationModule summary={state.learningSummary} />
+                </div>
+                <div className="col-span-12">
+                    <PredictiveSimulatorModule portfolio={state.portfolio}/>
+                </div>
+                <div className="col-span-12">
+                    <GrowthPlatformModule tools={state.growthTools} />
+                </div>
+                 <div className="col-span-12">
+                    <DoctrineDisplay />
+                </div>
 
             </div>
           )}
