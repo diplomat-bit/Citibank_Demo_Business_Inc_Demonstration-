@@ -1,5 +1,5 @@
 // components/views/megadashboard/developer/ExtensionsView.tsx
-import React, { useState, useEffect, useCallback, createContext, useContext, useReducer } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext, useReducer, useRef } from 'react';
 import Card from '../../../Card';
 
 // --- Existing Interfaces and Mocks ---
@@ -10,24 +10,24 @@ interface Extension {
     description: string;
     icon: React.ReactNode;
     recommended?: boolean;
-    category: string; // New field
-    tags: string[]; // New field
-    rating: number; // New field (1-5)
-    installCount: number; // New field
-    price: number; // New field (0 for free)
-    lastUpdated: string; // New field (ISO date string)
-    version: string; // New field
-    screenshots: string[]; // New field (URLs)
-    documentationUrl: string; // New field
-    privacyPolicyUrl: string; // New field
+    category: string;
+    tags: string[];
+    rating: number;
+    installCount: number;
+    price: number; // 0 for free
+    lastUpdated: string; // ISO date string
+    version: string;
+    screenshots: string[];
+    documentationUrl: string;
+    privacyPolicyUrl: string;
     developerInfo: {
         id: string;
         name: string;
         contactEmail: string;
         website?: string;
-    }; // New field
-    pricingPlans?: PricingPlan[]; // New field for paid extensions
-    changelog?: ExtensionVersionLog[]; // New field for version history
+    };
+    pricingPlans?: PricingPlan[];
+    changelog?: ExtensionVersionLog[];
 }
 
 interface PricingPlan {
@@ -61,6 +61,11 @@ interface ExtensionReview {
     rating: number;
     comment: string;
     timestamp: string;
+    developerReply?: {
+        developerName: string;
+        comment: string;
+        timestamp: string;
+    };
 }
 
 interface InstalledExtension {
@@ -154,16 +159,16 @@ const MOCK_CATEGORIES: ExtensionCategory[] = [
     { id: 'cat-reporting', name: 'Reporting & Analytics', icon: <p>📊</p>, description: 'Visualize data and generate reports.' },
     { id: 'cat-security', name: 'Security & Compliance', icon: <p>🔒</p>, description: 'Ensure data security and regulatory compliance.' },
     { id: 'cat-crm', name: 'CRM & Sales', icon: <p>📈</p>, description: 'Manage customer relations and sales pipelines.' },
-    { id: 'cat-marketing', name: 'Marketing', icon: <p>📣</p>, description: 'Automate marketing campaigns and customer engagement.' },
-    { id: 'cat-ai-ml', name: 'AI & Machine Learning', icon: <p>🧠</p>, description: 'Integrate AI models and machine learning workflows.' },
+    { id: 'cat-marketing', name: 'Marketing', icon: <p>📢</p>, description: 'Automate marketing campaigns and customer engagement.' },
+    { id: 'cat-ai-ml', name: 'AI & Machine Learning', icon: <p>🤖</p>, description: 'Integrate AI models and machine learning workflows.' },
     { id: 'cat-iot', name: 'IoT & Edge Computing', icon: <p>📡</p>, description: 'Connect and manage IoT devices and data streams.' },
     { id: 'cat-data-eng', name: 'Data Engineering', icon: <p>⚙️</p>, description: 'Tools for data pipeline, ETL, and warehousing.' },
     { id: 'cat-ecommerce', name: 'E-commerce', icon: <p>🛒</p>, description: 'Enhance online store functionalities and payment gateways.' },
     { id: 'cat-hr', name: 'Human Resources', icon: <p>👨‍👩‍👧‍👦</p>, description: 'Streamline HR processes and employee management.' },
-    { id: 'cat-project-mgmt', name: 'Project Management', icon: <p>📝</p>, description: 'Tools for planning, tracking, and executing projects.' },
+    { id: 'cat-project-mgmt', name: 'Project Management', icon: <p>📋</p>, description: 'Tools for planning, tracking, and executing projects.' },
     { id: 'cat-legal', name: 'Legal & Compliance', icon: <p>⚖️</p>, description: 'Manage legal documents, contracts, and regulatory adherence.' },
     { id: 'cat-education', name: 'Education & Training', icon: <p>🎓</p>, description: 'Learning platforms and educational content delivery.' },
-    { id: 'cat-healthcare', name: 'Healthcare', icon: <p>🏥</p>, description: 'Solutions for patient management, diagnostics, and medical records.' },
+    { id: 'cat-healthcare', name: 'Healthcare', icon: <p>⚕️</p>, description: 'Solutions for patient management, diagnostics, and medical records.' },
     { id: 'cat-manufacturing', name: 'Manufacturing', icon: <p>🏭</p>, description: 'Tools for production planning, inventory, and quality control.' },
     { id: 'cat-transport', name: 'Logistics & Transport', icon: <p>🚚</p>, description: 'Optimize supply chain, fleet management, and delivery.' },
     { id: 'cat-media', name: 'Media & Entertainment', icon: <p>🎬</p>, description: 'Content creation, streaming, and digital rights management.' },
@@ -753,7 +758,7 @@ export const useExtensions = (params: Parameters<typeof mockApiService.fetchExte
             }
         };
         fetch();
-    }, [params]);
+    }, [JSON.stringify(params)]); // Deep compare params object
 
     return { extensions, totalExtensions, loading, error };
 };
@@ -855,8 +860,8 @@ export const LoadingSpinner: React.FC = () => (
     </div>
 );
 
-export const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
-    <div className="bg-red-900/30 text-red-300 p-4 rounded-lg flex items-center gap-2">
+export const ErrorMessage: React.FC<{ message: string; className?: string }> = ({ message, className = '' }) => (
+    <div className={`bg-red-900/30 text-red-300 p-4 rounded-lg flex items-center gap-2 ${className}`}>
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -994,7 +999,7 @@ export const ExtensionDetailsModal: React.FC<{ extension: Extension; reviews: Ex
         if (!onInstall || installing) return;
         setInstalling(true);
         try {
-            const newInstalled = await mockApiService.installExtension(extension.id, currentUser.id);
+            await mockApiService.installExtension(extension.id, currentUser.id);
             onInstall(extension); // Callback to update parent state
         } catch (error: any) {
             alert(`Failed to install: ${error.message}`);
@@ -1678,7 +1683,8 @@ export const PublishExtensionForm: React.FC<{ developerId: string; onSuccess: (e
     }, [developerId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
+        const { name, value, type } = e.target as HTMLInputElement;
+        const checked = type === 'checkbox' ? e.target.checked : undefined;
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
@@ -1759,7 +1765,7 @@ export const PublishExtensionForm: React.FC<{ developerId: string; onSuccess: (e
                 price: isPaid ? formData.price : 0, // Ensure price is 0 if not paid
                 pricingPlans: isPaid ? formData.pricingPlans : undefined, // Remove pricing plans if free
                 // Mock icon element from string
-                icon: <p>{formData.icon.toUpperCase().substring(0,2)}</p>
+                icon: <p>{(formData.icon as string).toUpperCase().substring(0,2)}</p>
             };
 
             const publishedExtension = await mockApiService.publishNewExtension(finalFormData);
