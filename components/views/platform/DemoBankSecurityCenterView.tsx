@@ -1,25 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext } from 'react';
 import Card from '../../Card';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, AreaChart, Area } from 'recharts';
-
-const threatsData = [
-    { name: 'Phishing', value: 35 },
-    { name: 'Brute Force', value: 22 },
-    { name: 'Malware', value: 12 },
-    { name: 'Anomalous Activity', value: 8 },
-    { name: 'DDoS Attempt', value: 5 },
-    { name: 'Insider Threat', value: 3 },
-];
-const COLORS = ['#f97316', '#eab308', '#ef4444', '#f59e0b', '#dc2626', '#84cc16'];
-
-const activeAlerts = [
-    { id: 'AL-92842', severity: 'Critical', title: 'Potential Malware Detected on `web-prod-02`', time: '15m ago', status: 'New', assignedTo: 'soc-team-b' },
-    { id: 'AL-92841', severity: 'High', title: 'Anomalous Login from Unrecognized IP (18.212.87.10)', time: '5m ago', status: 'New', assignedTo: 'soc-team-a' },
-    { id: 'AL-92840', severity: 'Medium', title: 'Multiple Failed Login Attempts for `admin`', time: '1h ago', status: 'In Progress', assignedTo: 'john.doe' },
-    { id: 'AL-92839', severity: 'Low', title: 'Outdated Security Patch on `db-main-01`', time: '3h ago', status: 'In Progress', assignedTo: 'jane.smith' },
-];
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 // --- SVG ICONS (As Components) ---
+
+const IconWrapper: React.FC<{ children: React.ReactNode, className?: string }> = ({ children, className }) => (
+    <div className={className}>{children}</div>
+);
 
 export const ShieldCheckIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,10 +46,9 @@ export const FileReportIcon: React.FC<{ className?: string }> = ({ className }) 
     </svg>
 );
 
-export const GlobeIcon: React.FC<{ className?: string }> = ({ className }) => (
+export const GlobeAltIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.293l.586-.586a2 2 0 012.828 0l2 2a2 2 0 010 2.828l-.586.586M12 22V12" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9V3m0 18a9 9 0 009-9m-9 9a9 9 0 00-9-9" />
     </svg>
 );
 
@@ -91,14 +77,27 @@ export const ExternalLinkIcon: React.FC<{ className?: string }> = ({ className }
     </svg>
 );
 
+export const BeakerIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.363-.472a6 6 0 01-3.24-3.24l-.472-2.363a2 2 0 00-.547-1.022l-2.363-.472a6 6 0 01-3.24-3.24l-.472-2.363a2 2 0 00-1.022-.547L3 3m14.121 14.121a2 2 0 01.547 1.022l.472 2.363a6 6 0 013.24 3.24l2.363.472a2 2 0 011.022.547l3 3M3 3l3.59-3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268-2.943 9.543-7a10.025 10.025 0 01-4.132 4.132L12 12m0 0l-3.59 3.59m0 0A9.953 9.953 0 015 12c0-4.478 2.943-8.268 7-9.543A10.025 10.025 0 0112.457 6.87L12 12z" />
+    </svg>
+);
+
+export const ChatBubbleLeftRightIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.722.537a5.25 5.25 0 01-4.04-4.04l-.537-3.722c-.09-1.133.8-2.136 1.931-2.193a5.25 5.25 0 014.04 4.04l.537 3.722m-18 0e-6a5.25 5.25 0 004.04-4.04l.537-3.722c.09-1.134-.8-2.135-1.932-2.193a5.25 5.25 0 00-4.04 4.04l-.537 3.722c-.09 1.134.8 2.135 1.932 2.193l3.722.537a5.25 5.25 0 004.04-4.04l.537-3.722m-4.04-4.04a5.25 5.25 0 014.04 4.04l.537 3.722" />
+    </svg>
+);
 
 // --- TYPES & INTERFACES ---
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational';
 export type Status = 'New' | 'In Progress' | 'Resolved' | 'Closed' | 'Dismissed';
-export type AssetType = 'Server' | 'Database' | 'Application' | 'Network Device' | 'Endpoint';
+export type AssetType = 'Server' | 'Database' | 'Application' | 'Network Device' | 'Endpoint' | 'Cloud Service';
 export type IncidentStatus = 'Active' | 'Contained' | 'Eradicated' | 'Recovered' | 'Closed';
 export type PlaybookStatus = 'Success' | 'Failed' | 'Running' | 'Pending';
+export type ComplianceStatus = 'Compliant' | 'Non-Compliant' | 'In-Review' | 'Not Applicable';
+export type AIGenerationState = 'idle' | 'loading' | 'success' | 'error';
 
 export interface Alert {
     id: string;
@@ -111,6 +110,7 @@ export interface Alert {
     destinationIp?: string;
     affectedAssets: string[];
     relatedIncidentId?: string;
+    mitreTactic?: string;
 }
 
 export interface Incident {
@@ -125,6 +125,8 @@ export interface Incident {
     summary: string;
     timeline: IncidentTimelineEntry[];
     iocs: IndicatorOfCompromise[];
+    aiGeneratedSummary?: string;
+    aiRecommendedActions?: string[];
 }
 
 export interface IncidentTimelineEntry {
@@ -132,6 +134,7 @@ export interface IncidentTimelineEntry {
     timestamp: Date;
     author: string;
     note: string;
+    isAutoGenerated?: boolean;
 }
 
 export interface IndicatorOfCompromise {
@@ -152,6 +155,8 @@ export interface Asset {
     protectionStatus: 'Protected' | 'Unprotected' | 'Partial';
     openVulnerabilities: number;
     lastSeen: Date;
+    cloudProvider?: 'AWS' | 'Azure' | 'GCP';
+    tags?: string[];
 }
 
 export interface Vulnerability {
@@ -182,6 +187,7 @@ export interface Playbook {
     trigger: string;
     lastRun: Date;
     lastRunStatus: PlaybookStatus;
+    successRate: number;
 }
 
 export interface UserBehavior {
@@ -189,8 +195,9 @@ export interface UserBehavior {
     userName: string;
     riskScore: number;
     baselineDeviation: number;
-    recentAnomalies: string[];
+    recentAnomalies: { description: string, timestamp: Date }[];
     lastSeen: Date;
+    department: string;
 }
 
 export interface ComplianceControl {
@@ -198,9 +205,11 @@ export interface ComplianceControl {
     framework: 'PCI-DSS' | 'GDPR' | 'SOX' | 'ISO 27001';
     controlId: string;
     description: string;
-    status: 'Compliant' | 'Non-Compliant' | 'In-Review';
+    status: ComplianceStatus;
     lastAudit: Date;
+    evidence: string[];
 }
+
 
 // --- MOCK DATA GENERATORS ---
 
@@ -210,41 +219,38 @@ const FAKE_USERS = ['john.doe', 'jane.smith', 'admin', 'soc-team-a', 'dev-team-c
 const FAKE_MALWARE = ['Trojan.GenericKD.3142', 'Ransom.WannaCry', 'Spy.ZeuS.Stealer', 'Backdoor.Agent.Tesla'];
 const FAKE_CVE = ['CVE-2021-44228', 'CVE-2022-22965', 'CVE-2017-5638', 'CVE-2019-19781'];
 const FAKE_DOMAINS = ['malicious-site.xyz', 'phishing-login.com', 'evil-cdn-network.net', 'hackers-command.ru'];
+const MITRE_TACTICS = ['TA0001', 'TA0002', 'TA0003', 'TA0005', 'TA0006', 'TA0007', 'TA0040'];
+
 
 export const generateMockAssets = (count: number): Asset[] => {
-    const assets: Asset[] = [];
-    for (let i = 0; i < count; i++) {
+    return Array.from({ length: count }, (_, i) => {
         const hostname = FAKE_HOSTNAMES[i % FAKE_HOSTNAMES.length] + `-${i}`;
-        assets.push({
+        return {
             id: `ASSET-${1000 + i}`,
             hostname: hostname,
             ipAddress: `10.1.${Math.floor(i / 255)}.${i % 255}`,
-            type: ['Server', 'Database', 'Application', 'Network Device'][i % 4] as AssetType,
-            os: ['Ubuntu 22.04 LTS', 'Windows Server 2019', 'CentOS 7', 'Cisco IOS'][i % 4],
+            type: ['Server', 'Database', 'Application', 'Network Device', 'Cloud Service'][i % 5] as AssetType,
+            os: ['Ubuntu 22.04 LTS', 'Windows Server 2019', 'CentOS 7', 'Cisco IOS', 'Amazon Linux 2'][i % 5],
             riskScore: Math.floor(Math.random() * 100),
             protectionStatus: Math.random() > 0.1 ? 'Protected' : 'Unprotected',
             openVulnerabilities: Math.floor(Math.random() * 5),
             lastSeen: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24),
-        });
-    }
-    return assets;
+            cloudProvider: ['AWS', 'Azure', 'GCP'][i % 3] as 'AWS' | 'Azure' | 'GCP',
+            tags: ['production', 'pci-scope', `tier-${i % 3 + 1}`],
+        };
+    });
 };
 
 export const generateMockAlerts = (count: number, assets: Asset[]): Alert[] => {
-    const alerts: Alert[] = [];
     const titles = [
-        'Anomalous Login from Unrecognized IP',
-        'Potential Malware Detected',
-        'Multiple Failed Login Attempts',
-        'Outdated Security Patch Detected',
-        'Suspicious Network Traffic to Known C2 Server',
-        'SQL Injection Attempt',
+        'Anomalous Login from Unrecognized IP', 'Potential Malware Detected', 'Multiple Failed Login Attempts',
+        'Outdated Security Patch Detected', 'Suspicious Network Traffic to Known C2 Server', 'SQL Injection Attempt',
         'Privilege Escalation Detected'
     ];
-    for (let i = 0; i < count; i++) {
-        const severity = [ 'Critical', 'High', 'Medium', 'Low'][i % 4] as Severity;
+    return Array.from({ length: count }, (_, i) => {
+        const severity = ['Critical', 'High', 'Medium', 'Low'][i % 4] as Severity;
         const affectedAsset = assets[Math.floor(Math.random() * assets.length)];
-        alerts.push({
+        return {
             id: `AL-${92842 + i}`,
             severity,
             title: `${titles[i % titles.length]} on \`${affectedAsset.hostname}\``,
@@ -254,34 +260,29 @@ export const generateMockAlerts = (count: number, assets: Asset[]): Alert[] => {
             sourceIp: FAKE_IPS[Math.floor(Math.random() * FAKE_IPS.length)],
             destinationIp: affectedAsset.ipAddress,
             affectedAssets: [affectedAsset.id],
-            relatedIncidentId: (severity === 'Critical' || severity === 'High') && Math.random() > 0.5 ? `INC-${101 + Math.floor(i / 10)}` : undefined
-        });
-    }
-    return alerts.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+            relatedIncidentId: (severity === 'Critical' || severity === 'High') && Math.random() > 0.5 ? `INC-${101 + Math.floor(i / 10)}` : undefined,
+            mitreTactic: MITRE_TACTICS[i % MITRE_TACTICS.length],
+        };
+    }).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 };
 
 export const generateMockVulnerabilities = (count: number, assets: Asset[]): Vulnerability[] => {
-    const vulnerabilities: Vulnerability[] = [];
-    for (let i = 0; i < count; i++) {
-        vulnerabilities.push({
-            cveId: FAKE_CVE[i % FAKE_CVE.length],
-            severity: ['Critical', 'High', 'Medium', 'Low'][i % 4] as Severity,
-            description: `A remote code execution vulnerability exists in Apache Log4j2. An attacker who successfully exploited this vulnerability could take control of an affected system.`,
-            cvssScore: parseFloat((Math.random() * 6 + 4).toFixed(1)),
-            affectedAssets: assets.slice(i, i + 5).map(a => a.hostname),
-            publishedDate: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 365),
-            remediation: 'Update to the latest version of the affected component.',
-            status: 'Open'
-        });
-    }
-    return vulnerabilities;
+    return Array.from({ length: count }, (_, i) => ({
+        cveId: FAKE_CVE[i % FAKE_CVE.length],
+        severity: ['Critical', 'High', 'Medium', 'Low'][i % 4] as Severity,
+        description: `A remote code execution vulnerability exists in Apache Log4j2. An attacker who successfully exploited this vulnerability could take control of an affected system.`,
+        cvssScore: parseFloat((Math.random() * 6 + 4).toFixed(1)),
+        affectedAssets: assets.slice(i, i + 5).map(a => a.hostname),
+        publishedDate: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 365),
+        remediation: 'Update to the latest version of the affected component.',
+        status: 'Open',
+    }));
 };
 
 export const generateMockIncidents = (count: number, allAlerts: Alert[]): Incident[] => {
-    const incidents: Incident[] = [];
-    for (let i = 0; i < count; i++) {
+    return Array.from({ length: count }, (_, i) => {
         const relatedAlerts = allAlerts.filter(a => a.relatedIncidentId === `INC-${101 + i}`);
-        incidents.push({
+        return {
             id: `INC-${101 + i}`,
             title: `Investigation of ${relatedAlerts[0]?.title || 'Critical Security Event'}`,
             status: ['Active', 'Contained', 'Eradicated', 'Closed'][i % 4] as IncidentStatus,
@@ -292,16 +293,75 @@ export const generateMockIncidents = (count: number, allAlerts: Alert[]): Incide
             relatedAlerts: relatedAlerts.map(a => a.id),
             summary: 'Initial analysis indicates a coordinated attack targeting public-facing web servers. IOCs have been identified and containment procedures are underway.',
             timeline: [
-                { id: `T-${i}-1`, timestamp: new Date(), author: 'soc-automation', note: 'Incident created from critical alert AL-92850.'},
-                { id: `T-${i}-2`, timestamp: new Date(), author: FAKE_USERS[i%3], note: 'Assigned to incident. Starting initial investigation.'},
+                { id: `T-${i}-1`, timestamp: new Date(), author: 'soc-automation', note: 'Incident created from critical alert AL-92850.', isAutoGenerated: true },
+                { id: `T-${i}-2`, timestamp: new Date(), author: FAKE_USERS[i % 3], note: 'Assigned to incident. Starting initial investigation.' },
             ],
             iocs: [
-                { id: `IOC-${i}-1`, type: 'IP', value: '203.0.113.15', firstSeen: new Date(), reputation: 'Malicious'},
-                { id: `IOC-${i}-2`, type: 'Hash', value: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', firstSeen: new Date(), reputation: 'Malicious'},
+                { id: `IOC-${i}-1`, type: 'IP', value: '203.0.113.15', firstSeen: new Date(), reputation: 'Malicious' },
+                { id: `IOC-${i}-2`, type: 'Hash', value: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', firstSeen: new Date(), reputation: 'Malicious' },
             ]
-        });
+        };
+    });
+};
+
+export const generateMockUserBehavior = (count: number): UserBehavior[] => {
+    const departments = ['Engineering', 'Marketing', 'Sales', 'Finance', 'HR'];
+    return Array.from({ length: count }, (_, i) => ({
+        userId: `u-${1000 + i}`,
+        userName: FAKE_USERS[i % FAKE_USERS.length],
+        riskScore: Math.floor(Math.random() * 100),
+        baselineDeviation: parseFloat((Math.random() * 50).toFixed(2)),
+        recentAnomalies: [
+            { description: 'Login from new country: Russia', timestamp: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 4) },
+            { description: 'Access to sensitive finance folder', timestamp: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24) }
+        ],
+        lastSeen: new Date(Date.now() - Math.random() * 1000 * 60 * 30),
+        department: departments[i % departments.length],
+    }));
+};
+
+export const generateMockComplianceControls = (count: number): ComplianceControl[] => {
+    const frameworks = ['PCI-DSS', 'GDPR', 'SOX', 'ISO 27001'];
+    return Array.from({ length: count }, (_, i) => ({
+        id: `CTRL-${2000 + i}`,
+        framework: frameworks[i % frameworks.length] as any,
+        controlId: `${frameworks[i % frameworks.length]}-REQ-${i % 20 + 1}.${i % 5 + 1}`,
+        description: 'Ensure all system components and software are protected from known vulnerabilities by installing applicable vendor-supplied security patches.',
+        status: ['Compliant', 'Non-Compliant', 'In-Review'][i % 3] as ComplianceStatus,
+        lastAudit: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 180),
+        evidence: ['Patch_Management_Policy.pdf', `Scan_Report_Q3_2023.csv`]
+    }));
+};
+
+// --- MOCK API SERVICE ---
+
+const apiService = {
+    fetchData: async <T>(generator: () => T, delay = 500): Promise<T> => {
+        return new Promise(resolve => setTimeout(() => resolve(generator()), delay));
+    },
+    getAssets: (count: number) => apiService.fetchData(() => generateMockAssets(count)),
+    getAlerts: (count: number, assets: Asset[]) => apiService.fetchData(() => generateMockAlerts(count, assets)),
+    getIncidents: (count: number, alerts: Alert[]) => apiService.fetchData(() => generateMockIncidents(count, alerts)),
+    getVulnerabilities: (count: number, assets: Asset[]) => apiService.fetchData(() => generateMockVulnerabilities(count, assets)),
+    getUserBehavior: (count: number) => apiService.fetchData(() => generateMockUserBehavior(count)),
+    getComplianceControls: (count: number) => apiService.fetchData(() => generateMockComplianceControls(count)),
+};
+
+const aiService = {
+    generateSummary: async (incident: Incident): Promise<string> => {
+        await new Promise(res => setTimeout(res, 1500));
+        return `The incident originated from a sophisticated phishing campaign targeting the finance department, leading to credential compromise. The threat actor, using the compromised account of ${incident.leadAnalyst}, escalated privileges by exploiting ${FAKE_CVE[0]}. Lateral movement was observed across multiple servers, including ${FAKE_HOSTNAMES[0]} and ${FAKE_HOSTNAMES[1]}. The primary objective appears to be data exfiltration, as indicated by large outbound traffic to the C2 server at ${incident.iocs[0].value}.`;
+    },
+    generateRecommendedActions: async (incident: Incident): Promise<string[]> => {
+        await new Promise(res => setTimeout(res, 1200));
+        return [
+            "Immediately isolate all affected assets identified in the related alerts.",
+            "Force-expire passwords for all users in the Finance department.",
+            "Block the malicious IP address and domain at the network firewall and proxy.",
+            "Initiate a full malware scan on all endpoints associated with the compromised user.",
+            "Review firewall egress rules to identify and restrict anomalous outbound traffic."
+        ];
     }
-    return incidents;
 };
 
 // --- HELPER & UTILITY COMPONENTS ---
@@ -523,16 +583,28 @@ export function DataTable<T extends { id: any }>({ data, columns, initialSort, o
     );
 }
 
-
 // --- FEATURE VIEWS ---
 
 export const DashboardView: React.FC = () => {
     const events24h = useMemo(() => Array.from({length: 24}, () => Math.floor(Math.random() * 20 + 5)), []);
     const protectedHistory = useMemo(() => Array.from({length: 24}, (_, i) => 98 - Math.random() + (i / 24)), []);
-
+    const threatsData = useMemo(() => [
+        { name: 'Phishing', value: 35 }, { name: 'Brute Force', value: 22 }, { name: 'Malware', value: 12 },
+        { name: 'Anomalous Activity', value: 8 }, { name: 'DDoS Attempt', value: 5 }, { name: 'Insider Threat', value: 3 },
+    ], []);
+    const COLORS = ['#f97316', '#eab308', '#ef4444', '#f59e0b', '#dc2626', '#84cc16'];
+    
     const eventsLastHourData = [
         { name: '50m', events: 12 }, { name: '40m', events: 19 }, { name: '30m', events: 10 },
         { name: '20m', events: 25 }, { name: '10m', events: 15 }, { name: 'Now', events: 21 },
+    ];
+    
+    const uebaRiskData = [
+        { subject: 'Privilege', A: 85, B: 60, fullMark: 100 },
+        { subject: 'Access', A: 90, B: 88, fullMark: 100 },
+        { subject: 'Login', A: 55, B: 75, fullMark: 100 },
+        { subject: 'Data', A: 70, B: 85, fullMark: 100 },
+        { subject: 'Network', A: 80, B: 90, fullMark: 100 },
     ];
 
     return (
@@ -540,42 +612,42 @@ export const DashboardView: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                     <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-400">Active Alerts</p>
+                        <p className="text-sm text-gray-400">Critical Alerts</p>
                         <BellIcon className="w-5 h-5 text-red-400" />
                     </div>
-                    <p className="text-4xl font-bold text-red-400 mt-2">4</p>
-                    <Sparkline data={[2,3,3,4,3,4,4]} color="#f87171" />
+                    <p className="text-4xl font-bold text-red-400 mt-2">12</p>
+                    <Sparkline data={[2,3,3,4,8,10,12]} color="#f87171" />
                 </Card>
                 <Card>
                     <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-400">Events (24h)</p>
-                        <FileReportIcon className="w-5 h-5 text-blue-400" />
+                        <p className="text-sm text-gray-400">Incidents</p>
+                        <ShieldCheckIcon className="w-5 h-5 text-orange-400" />
                     </div>
-                    <p className="text-4xl font-bold text-white mt-2">1,832</p>
-                    <Sparkline data={events24h} color="#60a5fa" />
+                    <p className="text-4xl font-bold text-white mt-2">4 <span className="text-xl text-gray-400">Active</span></p>
+                    <Sparkline data={[2,3,3,4,3,4,4]} color="#fb923c" />
                 </Card>
                 <Card>
                     <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-400">Resources Protected</p>
-                        <ShieldCheckIcon className="w-5 h-5 text-green-400" />
-                    </div>
-                    <p className="text-4xl font-bold text-white mt-2">98.3%</p>
-                    <Sparkline data={protectedHistory} color="#4ade80" />
-                </Card>
-                <Card>
-                    <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-400">Compliance Score</p>
+                        <p className="text-sm text-gray-400">High-Risk Users</p>
                         <UsersIcon className="w-5 h-5 text-yellow-400" />
                     </div>
-                    <p className="text-4xl font-bold text-white mt-2">A+</p>
+                    <p className="text-4xl font-bold text-white mt-2">8</p>
+                     <Sparkline data={[5,6,7,6,7,8]} color="#facc15" />
+                </Card>
+                <Card>
+                    <div className="flex justify-between items-center">
+                        <p className="text-sm text-gray-400">Compliance</p>
+                        <FileReportIcon className="w-5 h-5 text-green-400" />
+                    </div>
+                    <p className="text-4xl font-bold text-white mt-2">95%</p>
                     <div className="w-full bg-gray-700 rounded-full h-2.5 mt-4">
-                        <div className="bg-gradient-to-r from-yellow-500 to-yellow-300 h-2.5 rounded-full" style={{width: '95%'}}></div>
+                        <div className="bg-gradient-to-r from-green-500 to-green-300 h-2.5 rounded-full" style={{width: '95%'}}></div>
                     </div>
                 </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <Card title="Threats by Type (Last 24h)" className="lg:col-span-2">
+                <Card title="Threats by Type (24h)" className="lg:col-span-2">
                     <ResponsiveContainer width="100%" height={300}>
                          <PieChart>
                             <Pie data={threatsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false}>
@@ -586,24 +658,18 @@ export const DashboardView: React.FC = () => {
                         </PieChart>
                     </ResponsiveContainer>
                 </Card>
-                 <Card title="Active Alerts" className="lg:col-span-3">
-                     <div className="space-y-3">
-                        {activeAlerts.map(alert => (
-                            <div key={alert.id} className="p-3 bg-gray-900/50 rounded-lg flex items-center justify-between gap-3">
-                                <div className="flex items-start gap-3">
-                                    <SeverityBadge severity={alert.severity} />
-                                    <div>
-                                        <p className="text-sm text-white">{alert.title}</p>
-                                        <p className="text-xs text-gray-400">{alert.time}</p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                     <StatusPill status={alert.status} />
-                                     <p className="text-xs text-gray-500 mt-1">@{alert.assignedTo}</p>
-                                </div>
-                            </div>
-                        ))}
-                     </div>
+                <Card title="User Risk Analysis (UEBA)" className="lg:col-span-3">
+                    <ResponsiveContainer width="100%" height={300}>
+                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={uebaRiskData}>
+                            <PolarGrid />
+                            <PolarAngleAxis dataKey="subject" />
+                            <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                            <Radar name="High-Risk Users" dataKey="A" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
+                            <Radar name="Baseline" dataKey="B" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                            <Legend />
+                             <Tooltip contentStyle={{ backgroundColor: 'rgba(31, 41, 55, 0.8)', borderColor: '#4b5563' }}/>
+                        </RadarChart>
+                    </ResponsiveContainer>
                 </Card>
             </div>
             
@@ -619,7 +685,7 @@ export const DashboardView: React.FC = () => {
                         </BarChart>
                     </ResponsiveContainer>
                 </Card>
-                <Card title="Security Automation - Playbook Executions">
+                <Card title="Recent Playbook Executions">
                      <div className="space-y-2">
                         <div className="flex items-center justify-between p-2 rounded bg-gray-800/50">
                             <span className="text-sm font-mono">playbook:isolate-host</span>
@@ -686,6 +752,34 @@ export const AlertsView: React.FC<{alerts: Alert[], onAlertClick: (alert: Alert)
 };
 
 export const IncidentDetailPanel: React.FC<{incident: Incident}> = ({ incident }) => {
+    const [summaryState, setSummaryState] = useState<AIGenerationState>('idle');
+    const [actionsState, setActionsState] = useState<AIGenerationState>('idle');
+    const [aiSummary, setAiSummary] = useState(incident.aiGeneratedSummary || '');
+    const [aiActions, setAiActions] = useState<string[]>(incident.aiRecommendedActions || []);
+
+    const handleGenerateSummary = useCallback(async () => {
+        setSummaryState('loading');
+        try {
+            const summary = await aiService.generateSummary(incident);
+            setAiSummary(summary);
+            setSummaryState('success');
+        } catch {
+            setSummaryState('error');
+        }
+    }, [incident]);
+
+    const handleGenerateActions = useCallback(async () => {
+        setActionsState('loading');
+        try {
+            const actions = await aiService.generateRecommendedActions(incident);
+            setAiActions(actions);
+            setActionsState('success');
+        } catch {
+            setActionsState('error');
+        }
+    }, [incident]);
+
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
@@ -718,7 +812,7 @@ export const IncidentDetailPanel: React.FC<{incident: Incident}> = ({ incident }
                         {incident.timeline.map(entry => (
                              <div key={entry.id} className="relative pl-8">
                                 <div className="absolute left-0 top-1 h-full border-l-2 border-gray-700">
-                                    <div className="absolute -left-[9px] w-4 h-4 bg-blue-500 rounded-full border-2 border-gray-800"></div>
+                                    <div className={`absolute -left-[9px] w-4 h-4 rounded-full border-2 border-gray-800 ${entry.isAutoGenerated ? 'bg-purple-500' : 'bg-blue-500'}`}></div>
                                 </div>
                                 <p className="text-xs text-gray-400">{entry.timestamp.toLocaleString()} by @{entry.author}</p>
                                 <p className="text-sm text-gray-200">{entry.note}</p>
@@ -728,6 +822,28 @@ export const IncidentDetailPanel: React.FC<{incident: Incident}> = ({ incident }
                 </Card>
             </div>
             <div className="lg:col-span-1 space-y-6">
+                <Card title="AI Co-Pilot">
+                    <div className="space-y-4">
+                        <div>
+                            <button onClick={handleGenerateSummary} disabled={summaryState === 'loading'} className="flex items-center gap-2 text-sm w-full p-2 bg-indigo-600/50 hover:bg-indigo-600/80 rounded disabled:opacity-50">
+                                <BeakerIcon className="w-4 h-4" />
+                                {summaryState === 'loading' ? 'Generating Summary...' : 'Generate AI Summary'}
+                            </button>
+                            {aiSummary && <p className="text-xs mt-2 p-2 bg-gray-900 rounded">{aiSummary}</p>}
+                        </div>
+                         <div>
+                            <button onClick={handleGenerateActions} disabled={actionsState === 'loading'} className="flex items-center gap-2 text-sm w-full p-2 bg-indigo-600/50 hover:bg-indigo-600/80 rounded disabled:opacity-50">
+                                <BeakerIcon className="w-4 h-4" />
+                                {actionsState === 'loading' ? 'Generating Actions...' : 'Recommend Actions'}
+                            </button>
+                            {aiActions.length > 0 && 
+                                <ul className="text-xs mt-2 p-2 bg-gray-900 rounded list-disc list-inside space-y-1">
+                                    {aiActions.map((action, i) => <li key={i}>{action}</li>)}
+                                </ul>
+                            }
+                        </div>
+                    </div>
+                </Card>
                  <Card title="Indicators of Compromise (IOCs)">
                     <div className="space-y-2">
                         {incident.iocs.map(ioc => (
@@ -866,48 +982,141 @@ export const VulnerabilityCenterView: React.FC<{vulnerabilities: Vulnerability[]
             />
         </Card>
     );
-}
+};
+
+export const UEBAView: React.FC<{ userBehaviors: UserBehavior[]}> = ({ userBehaviors }) => {
+    const columns: Column<UserBehavior>[] = [
+        { accessor: 'userName', header: 'User', sortable: true, render: item => <span>@{item.userName}</span> },
+        { accessor: 'department', header: 'Department', sortable: true },
+        { accessor: 'riskScore', header: 'Risk Score', sortable: true, render: item => 
+             <div className="flex items-center gap-2">
+                <div className="w-16 bg-gray-700 rounded-full h-2.5">
+                    <div className="bg-red-500 h-2.5 rounded-full" style={{width: `${item.riskScore}%`}}></div>
+                </div>
+                <span>{item.riskScore}</span>
+            </div>
+        },
+        { accessor: 'baselineDeviation', header: 'Deviation (%)', sortable: true },
+        { accessor: 'recentAnomalies', header: 'Last Anomaly', sortable: false, render: item => <p className="max-w-lg truncate">{item.recentAnomalies[0]?.description}</p> },
+        { accessor: 'lastSeen', header: 'Last Seen', sortable: true, render: item => <span>{item.lastSeen.toLocaleString()}</span> },
+    ];
+    
+    return (
+        <Card title="User & Entity Behavior Analytics (UEBA)">
+            <DataTable 
+                data={userBehaviors} 
+                columns={columns}
+                initialSort={{ key: 'riskScore', direction: 'descending' }}
+            />
+        </Card>
+    );
+};
+
+export const ComplianceView: React.FC<{ controls: ComplianceControl[]}> = ({ controls }) => {
+    const columns: Column<ComplianceControl>[] = [
+        { accessor: 'controlId', header: 'Control ID', sortable: true },
+        { accessor: 'framework', header: 'Framework', sortable: true },
+        { accessor: 'description', header: 'Description', sortable: false, render: item => <p className="max-w-md truncate">{item.description}</p> },
+        { accessor: 'status', header: 'Status', sortable: true, render: item => <StatusPill status={item.status} /> },
+        { accessor: 'lastAudit', header: 'Last Audit', sortable: true, render: item => <span>{item.lastAudit.toLocaleDateString()}</span> },
+    ];
+
+    const frameworkStats = useMemo(() => {
+        const stats: Record<string, { compliant: number, total: number }> = {};
+        controls.forEach(control => {
+            if (!stats[control.framework]) {
+                stats[control.framework] = { compliant: 0, total: 0 };
+            }
+            stats[control.framework].total++;
+            if (control.status === 'Compliant') {
+                stats[control.framework].compliant++;
+            }
+        });
+        return Object.entries(stats).map(([name, data]) => ({ name, percentage: Math.round((data.compliant / data.total) * 100) }));
+    }, [controls]);
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {frameworkStats.map(stat => (
+                    <Card key={stat.name}>
+                        <p className="text-sm text-gray-400">{stat.name} Compliance</p>
+                        <p className="text-4xl font-bold text-white mt-2">{stat.percentage}%</p>
+                        <div className="w-full bg-gray-700 rounded-full h-2.5 mt-4">
+                            <div className="bg-gradient-to-r from-green-500 to-green-300 h-2.5 rounded-full" style={{ width: `${stat.percentage}%` }}></div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+            <Card title="Compliance Controls">
+                <DataTable 
+                    data={controls} 
+                    columns={columns}
+                    initialSort={{ key: 'framework', direction: 'ascending' }}
+                />
+            </Card>
+        </div>
+    );
+};
 
 // --- MAIN COMPONENT ---
-type View = 'dashboard' | 'alerts' | 'incidents' | 'assets' | 'vulnerabilities';
+type View = 'dashboard' | 'alerts' | 'incidents' | 'assets' | 'vulnerabilities' | 'ueba' | 'compliance';
 
 const DemoBankSecurityCenterView: React.FC = () => {
     const [activeView, setActiveView] = useState<View>('dashboard');
-    const [allAssets, setAllAssets] = useState<Asset[]>([]);
-    const [allAlerts, setAllAlerts] = useState<Alert[]>([]);
-    const [allIncidents, setAllIncidents] = useState<Incident[]>([]);
-    const [allVulnerabilities, setAllVulnerabilities] = useState<Vulnerability[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [data, setData] = useState<{
+        assets: Asset[];
+        alerts: Alert[];
+        incidents: Incident[];
+        vulnerabilities: Vulnerability[];
+        userBehaviors: UserBehavior[];
+        complianceControls: ComplianceControl[];
+    } | null>(null);
 
     useEffect(() => {
-        // Simulate fetching data from an API on component mount
-        const assets = generateMockAssets(250);
-        const alerts = generateMockAlerts(500, assets);
-        const incidents = generateMockIncidents(20, alerts);
-        const vulnerabilities = generateMockVulnerabilities(50, assets);
-
-        setAllAssets(assets);
-        setAllAlerts(alerts);
-        setAllIncidents(incidents);
-        setAllVulnerabilities(vulnerabilities);
+        const loadAllData = async () => {
+            setIsLoading(true);
+            const assets = await apiService.getAssets(250);
+            const [alerts, vulnerabilities, userBehaviors, complianceControls] = await Promise.all([
+                apiService.getAlerts(500, assets),
+                apiService.getVulnerabilities(50, assets),
+                apiService.getUserBehavior(100),
+                apiService.getComplianceControls(200),
+            ]);
+            const incidents = await apiService.getIncidents(20, alerts);
+            
+            setData({ assets, alerts, incidents, vulnerabilities, userBehaviors, complianceControls });
+            setIsLoading(false);
+        };
+        loadAllData();
     }, []);
 
     const renderView = () => {
+        if (isLoading || !data) {
+            return <div className="flex justify-center items-center h-96 text-gray-400">Loading Security Center Data...</div>;
+        }
+
         switch(activeView) {
             case 'dashboard':
                 return <DashboardView />;
             case 'alerts':
-                return <AlertsView alerts={allAlerts} onAlertClick={(alert) => {
+                return <AlertsView alerts={data.alerts} onAlertClick={(alert) => {
                     if (alert.relatedIncidentId) {
                         // For this demo, we are just switching views. A real app would navigate to the specific incident.
                         setActiveView('incidents');
                     }
                 }} />;
             case 'incidents':
-                return <IncidentsView incidents={allIncidents} />;
+                return <IncidentsView incidents={data.incidents} />;
             case 'assets':
-                return <AssetManagementView assets={allAssets} />;
+                return <AssetManagementView assets={data.assets} />;
             case 'vulnerabilities':
-                return <VulnerabilityCenterView vulnerabilities={allVulnerabilities} />;
+                return <VulnerabilityCenterView vulnerabilities={data.vulnerabilities} />;
+            case 'ueba':
+                return <UEBAView userBehaviors={data.userBehaviors} />;
+            case 'compliance':
+                return <ComplianceView controls={data.complianceControls} />;
             default:
                 return <DashboardView />;
         }
@@ -919,6 +1128,8 @@ const DemoBankSecurityCenterView: React.FC = () => {
         {id: 'incidents', label: 'Incidents', icon: <ShieldCheckIcon className="w-5 h-5"/>},
         {id: 'assets', label: 'Assets', icon: <ServerIcon className="w-5 h-5"/>},
         {id: 'vulnerabilities', label: 'Vulnerabilities', icon: <BugIcon className="w-5 h-5"/>},
+        {id: 'ueba', label: 'UEBA', icon: <UsersIcon className="w-5 h-5"/>},
+        {id: 'compliance', label: 'Compliance', icon: <BeakerIcon className="w-5 h-5"/>},
     ];
 
     return (
