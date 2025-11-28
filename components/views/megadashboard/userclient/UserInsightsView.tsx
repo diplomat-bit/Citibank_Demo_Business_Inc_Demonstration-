@@ -1,3 +1,4 @@
+```typescript
 // components/views/megadashboard/userclient/UserInsightsView.tsx
 // This component has been architected as a comprehensive user insights dashboard.
 // It features multiple complex charts using the Recharts library to visualize
@@ -5,11 +6,12 @@
 // The code is intentionally detailed to represent a production-quality analytics view.
 
 import React, { useState, useEffect, useReducer, useMemo, useCallback } from 'react';
-import Card from '../../../Card';
-import { AreaChart, Area, BarChart, Bar, LineChart, Line, RadialBarChart, RadialBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Funnel, FunnelChart, LabelList, Treemap } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, LineChart, Line, RadialBarChart, RadialBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Funnel, FunnelChart, LabelList, Treemap, ReferenceLine } from 'recharts';
+import { format, subDays, startOfMonth } from 'date-fns';
+import classnames from 'classnames';
 
 // ================================================================================================
-// MOCK DATA FOR CHARTS (Original)
+// MOCK DATA FOR CHARTS (Original) - Kept for reference, but new dynamic data is used.
 // ================================================================================================
 
 const userGrowthData = [
@@ -40,23 +42,13 @@ const userSatisfactionData = [
 ];
 
 // ================================================================================================
-// AI INSIGHTS (STATIC MOCK) (Original)
-// ================================================================================================
-
-const aiInsights = [
-    "The March '24 cohort shows significantly higher week-over-week retention. Investigate marketing campaigns from that period.",
-    "Predicted churn is trending upwards for Q4. Proactive retention campaigns are recommended for at-risk user segments.",
-    "User growth is accelerating, but the average Customer Effort Score (CES) has slightly decreased. Monitor support tickets for friction points."
-];
-
-
-// ================================================================================================
-// NEW - ADVANCED TYPESCRIPT INTERFACES
+// ADVANCED TYPESCRIPT INTERFACES
 // ================================================================================================
 
 export type DateRange = '7d' | '30d' | '90d' | '12m' | 'all';
 export type UserSegment = 'all' | 'new' | 'power' | 'at_risk' | 'churned';
 export type Region = 'all' | 'NA' | 'EU' | 'APAC' | 'LATAM';
+export type SortDirection = 'asc' | 'desc';
 
 export interface DashboardFilters {
     dateRange: DateRange;
@@ -127,6 +119,13 @@ export interface ABTestResult {
     winner: 'A' | 'B' | null;
 }
 
+export interface SentimentTrendPoint {
+    date: string;
+    positive: number;
+    neutral: number;
+    negative: number;
+}
+
 export interface FullDashboardData {
     kpis: {
         totalActiveUsers: number;
@@ -150,6 +149,8 @@ export interface FullDashboardData {
     ltvCac: LtvCacDataPoint[];
     subscriptionTiers: SubscriptionTier[];
     abTests: ABTestResult[];
+    sentimentTrend: SentimentTrendPoint[];
+    aiInsights: string[];
 }
 
 export interface DashboardState {
@@ -166,7 +167,7 @@ export type DashboardAction =
     | { type: 'SET_FILTERS'; payload: Partial<DashboardFilters> };
 
 // ================================================================================================
-// NEW - UTILITY & FORMATTING FUNCTIONS
+// UTILITY & FORMATTING FUNCTIONS
 // ================================================================================================
 
 /**
@@ -213,7 +214,55 @@ export const debounce = <T extends (...args: any[]) => any>(func: T, delay: numb
 };
 
 // ================================================================================================
-// NEW - MOCK DATA GENERATION
+// DYNAMIC AI INSIGHTS GENERATION
+// ================================================================================================
+
+/**
+ * Analyzes dashboard data to generate actionable, dynamic insights.
+ * @param data The full dashboard data.
+ * @returns An array of string insights.
+ */
+export const generateAIInsights = (data: FullDashboardData): string[] => {
+    const insights: string[] = [];
+    
+    // Insight 1: User Growth Trend
+    const growthTrend = data.userGrowth[data.userGrowth.length - 1].users - data.userGrowth[data.userGrowth.length - 2].users;
+    if (growthTrend > 500) {
+        insights.push(`Strong user growth continued last month, adding ${growthTrend.toLocaleString()} new users. Momentum is positive.`);
+    } else {
+        insights.push(`User growth has slowed to ${growthTrend.toLocaleString()} last month. Consider a top-of-funnel marketing push.`);
+    }
+
+    // Insight 2: Best Performing Cohort
+    const bestCohort = [...data.engagementByCohort].sort((a, b) => b.w4 - a.w4)[0];
+    insights.push(`The ${bestCohort.cohort} cohort shows the highest week-4 retention (${bestCohort.w4}%). Analyze acquisition channels and onboarding for this cohort to replicate success.`);
+
+    // Insight 3: Churn Prediction
+    const lastPrediction = data.churnPrediction[data.churnPrediction.length - 1];
+    if (lastPrediction.predicted > 2.5) {
+        insights.push(`AI predicts churn may rise to ${lastPrediction.predicted}% in ${lastPrediction.month}. Proactive retention campaigns for at-risk users are highly recommended.`);
+    }
+
+    // Insight 4: LTV vs CAC
+    const latestLtvCac = data.ltvCac[data.ltvCac.length - 1];
+    if (latestLtvCac.ltv / latestLtvCac.cac < 3) {
+        insights.push(`The LTV:CAC ratio is below the ideal 3:1 benchmark at ${(latestLtvCac.ltv / latestLtvCac.cac).toFixed(2)}:1. Focus on optimizing acquisition costs or increasing user LTV.`);
+    } else {
+        insights.push(`The LTV:CAC ratio is healthy at ${(latestLtvCac.ltv / latestLtvCac.cac).toFixed(2)}:1, indicating efficient and profitable user acquisition.`);
+    }
+    
+    // Insight 5: Feature Adoption
+    const lowestAdoption = [...data.featureAdoption].sort((a, b) => a.adoptionRate - b.adoptionRate)[0];
+    if (lowestAdoption.adoptionRate < 30) {
+        insights.push(`'${lowestAdoption.feature}' has a low adoption rate of ${lowestAdoption.adoptionRate}%. Consider in-app tutorials or a marketing campaign to improve visibility.`);
+    }
+
+    return insights;
+};
+
+
+// ================================================================================================
+// MOCK DATA GENERATION
 // ================================================================================================
 
 const REGIONS: Region[] = ['NA', 'EU', 'APAC', 'LATAM'];
@@ -228,7 +277,6 @@ const FEATURES = ['Dashboard', 'Reporting', 'Integrations', 'Team Management', '
  * @returns A complete set of dashboard data.
  */
 export const generateMockData = (filters: DashboardFilters): FullDashboardData => {
-    // This function can be extremely complex to simulate real data filtering on the backend.
     const baseUserCount = 12500;
     const filterMultiplier = (filters.region === 'all' ? 1 : 0.4) * (filters.userSegment === 'all' ? 1 : 0.3);
     const userCount = Math.floor(baseUserCount * filterMultiplier);
@@ -287,7 +335,7 @@ export const generateMockData = (filters: DashboardFilters): FullDashboardData =
         return {
             month,
             ltv: getRandomInt(100 + i*5, 120 + i*8),
-            cac: getRandomInt(70 - i*2, 80 - i*2.5)
+            cac: getRandomInt(80 - i*2, 90 - i*2.5)
         }
     });
 
@@ -303,7 +351,14 @@ export const generateMockData = (filters: DashboardFilters): FullDashboardData =
         { testName: 'Pricing Page Layout', variantA_conversions: 88, variantA_users: 500, variantB_conversions: 121, variantB_users: 500, significance: 99.8, winner: 'B' },
     ];
     
-    return {
+    const generatedSentimentTrend: SentimentTrendPoint[] = Array.from({ length: 30 }, (_, i) => ({
+        date: format(subDays(new Date(), 29 - i), 'MMM d'),
+        positive: getRandomInt(20, 50),
+        neutral: getRandomInt(10, 30),
+        negative: getRandomInt(5, 15)
+    }));
+
+    const fullData: Omit<FullDashboardData, 'aiInsights'> = {
         kpis: {
             totalActiveUsers: userCount,
             mauPercentage: 85,
@@ -326,22 +381,20 @@ export const generateMockData = (filters: DashboardFilters): FullDashboardData =
         ltvCac: generatedLtvCac,
         subscriptionTiers: generatedSubscriptionTiers,
         abTests: generatedABTests,
+        sentimentTrend: generatedSentimentTrend,
+    };
+    
+    return {
+        ...fullData,
+        aiInsights: generateAIInsights(fullData as FullDashboardData)
     };
 };
 
 // ================================================================================================
-// NEW - SIMULATED API CLIENT
+// SIMULATED API CLIENT
 // ================================================================================================
 
-/**
- * A mock API client to simulate network requests.
- */
 export class ApiClient {
-    /**
-     * Fetches the complete dashboard data.
-     * @param filters The filters to apply to the data query.
-     * @returns A promise that resolves with the full dashboard data.
-     */
     static fetchUserInsightsData(filters: DashboardFilters): Promise<FullDashboardData> {
         console.log('Fetching data with filters:', filters);
         return new Promise((resolve, reject) => {
@@ -357,7 +410,7 @@ export class ApiClient {
 }
 
 // ================================================================================================
-// NEW - STATE MANAGEMENT (useReducer)
+// STATE MANAGEMENT (useReducer)
 // ================================================================================================
 
 export const initialState: DashboardState = {
@@ -371,12 +424,6 @@ export const initialState: DashboardState = {
     data: null,
 };
 
-/**
- * Reducer function for managing the dashboard's state.
- * @param state The current state.
- * @param action The dispatched action.
- * @returns The new state.
- */
 export function dashboardReducer(state: DashboardState, action: DashboardAction): DashboardState {
     switch (action.type) {
         case 'FETCH_START':
@@ -393,8 +440,31 @@ export function dashboardReducer(state: DashboardState, action: DashboardAction)
 }
 
 // ================================================================================================
-// NEW - CUSTOM SUB-COMPONENTS
+// CUSTOM SUB-COMPONENTS
 // ================================================================================================
+
+import Card from '../../../Card';
+
+// Generic KPI Card Component
+const KpiCard: React.FC<{ title: string; value: string; change?: string; changeType?: 'increase' | 'decrease' }> = ({ title, value, change, changeType }) => (
+    <Card className="text-center">
+        <p className="text-2xl font-bold text-white">{value}</p>
+        <p className="text-xs text-gray-400 mt-1">{title}</p>
+        {change && (
+            <p className={`text-xs mt-1 ${changeType === 'increase' ? 'text-green-400' : 'text-red-400'}`}>
+                {changeType === 'increase' ? '▲' : '▼'} {change}
+            </p>
+        )}
+    </Card>
+);
+
+// Loading Skeleton Component
+const ChartSkeleton: React.FC = () => (
+    <div className="p-4 bg-gray-800 rounded-lg animate-pulse">
+        <div className="h-8 bg-gray-700 rounded w-3/4 mb-4"></div>
+        <div className="h-64 bg-gray-700 rounded"></div>
+    </div>
+);
 
 export interface CustomTooltipProps {
     active?: boolean;
@@ -402,9 +472,6 @@ export interface CustomTooltipProps {
     label?: string;
 }
 
-/**
- * A custom tooltip component for Recharts to match the dashboard's theme.
- */
 export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
@@ -421,9 +488,6 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, l
     return null;
 };
 
-/**
- * A component to display filter controls for the dashboard.
- */
 export const FilterBar: React.FC<{ filters: DashboardFilters; onFilterChange: (filters: Partial<DashboardFilters>) => void; disabled: boolean }> = ({ filters, onFilterChange, disabled }) => {
     const commonSelectClasses = "bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-colors disabled:opacity-50";
 
@@ -467,9 +531,30 @@ export const FilterBar: React.FC<{ filters: DashboardFilters; onFilterChange: (f
 
 const PIE_CHART_COLORS = ['#3b82f6', '#10b981', '#ef4444', '#f97316', '#8b5cf6'];
 
-/**
- * A component for rendering user demographics charts.
- */
+export const CustomizedTreeMapContent: React.FC<any> = ({ root, depth, x, y, width, height, index, colors, name }) => {
+    return (
+        <g>
+            <rect
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                style={{
+                    fill: depth === 1 ? colors[index % colors.length] : 'none',
+                    stroke: '#fff',
+                    strokeWidth: 2 / (depth + 1e-10),
+                    strokeOpacity: 1 / (depth + 1e-10),
+                }}
+            />
+            {depth === 1 && width > 50 && height > 25 ? (
+                <text x={x + width / 2} y={y + height / 2 + 7} textAnchor="middle" fill="#fff" fontSize={14}>
+                    {name}
+                </text>
+            ) : null}
+        </g>
+    );
+};
+
 export const DemographicsCharts: React.FC<{ data: UserDemographics }> = ({ data }) => {
     const ageData = Object.entries(data.age).map(([name, value]) => ({ name, value }));
     const genderData = Object.entries(data.gender).map(([name, value]) => ({ name, value }));
@@ -515,33 +600,6 @@ export const DemographicsCharts: React.FC<{ data: UserDemographics }> = ({ data 
     );
 };
 
-export const CustomizedTreeMapContent: React.FC<any> = ({ root, depth, x, y, width, height, index, colors, name }) => {
-    return (
-        <g>
-            <rect
-                x={x}
-                y={y}
-                width={width}
-                height={height}
-                style={{
-                    fill: depth === 1 ? colors[index % colors.length] : 'none',
-                    stroke: '#fff',
-                    strokeWidth: 2 / (depth + 1e-10),
-                    strokeOpacity: 1 / (depth + 1e-10),
-                }}
-            />
-            {depth === 1 && width > 50 && height > 25 ? (
-                <text x={x + width / 2} y={y + height / 2 + 7} textAnchor="middle" fill="#fff" fontSize={14}>
-                    {name}
-                </text>
-            ) : null}
-        </g>
-    );
-};
-
-/**
- * A funnel chart to visualize user acquisition channels.
- */
 export const AcquisitionFunnelChart: React.FC<{ data: AcquisitionChannel[] }> = ({ data }) => {
     const funnelData = [
         { value: data.reduce((sum, item) => sum + item.visitors, 0), name: 'Visitors', fill: '#6366f1' },
@@ -564,9 +622,6 @@ export const AcquisitionFunnelChart: React.FC<{ data: AcquisitionChannel[] }> = 
     );
 };
 
-/**
- * A bar chart to show performance of different acquisition channels.
- */
 export const AcquisitionChannelPerformance: React.FC<{ data: AcquisitionChannel[] }> = ({ data }) => {
     const processedData = data.map(item => ({
         ...item,
@@ -591,9 +646,6 @@ export const AcquisitionChannelPerformance: React.FC<{ data: AcquisitionChannel[
     )
 }
 
-/**
- * A component to visualize feature adoption rates.
- */
 export const FeatureAdoptionChart: React.FC<{ data: FeatureAdoption[] }> = ({ data }) => {
     return (
         <Card title="Feature Adoption & Engagement">
@@ -611,10 +663,6 @@ export const FeatureAdoptionChart: React.FC<{ data: FeatureAdoption[] }> = ({ da
     );
 };
 
-
-/**
- * A component displaying a real-time feed of user feedback.
- */
 export const UserFeedbackStream: React.FC<{ feedback: UserFeedback[] }> = ({ feedback }) => {
     const getSentimentColor = (sentiment: 'positive' | 'neutral' | 'negative') => {
         if (sentiment === 'positive') return 'border-green-500';
@@ -639,9 +687,6 @@ export const UserFeedbackStream: React.FC<{ feedback: UserFeedback[] }> = ({ fee
     );
 }
 
-/**
- * Renders A/B test results.
- */
 export const ABTestResults: React.FC<{ data: ABTestResult[] }> = ({ data }) => {
     const getWinnerClass = (winner: 'A' | 'B' | null) => {
         if (winner === 'A') return 'bg-blue-500 text-white';
@@ -689,6 +734,38 @@ export const ABTestResults: React.FC<{ data: ABTestResult[] }> = ({ data }) => {
     );
 };
 
+
+/**
+ * New component for showing sentiment trends over time.
+ */
+export const SentimentTrendChart: React.FC<{ data: SentimentTrendPoint[] }> = ({ data }) => {
+    return (
+        <Card title="Sentiment Trend (Last 30 Days)">
+            <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={data}>
+                    <defs>
+                        <linearGradient id="colorPositive" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        </linearGradient>
+                         <linearGradient id="colorNegative" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                    <XAxis dataKey="date" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Area type="monotone" dataKey="positive" stackId="1" stroke="#10b981" fill="url(#colorPositive)" name="Positive" />
+                    <Area type="monotone" dataKey="negative" stackId="1" stroke="#ef4444" fill="url(#colorNegative)" name="Negative" />
+                </AreaChart>
+            </ResponsiveContainer>
+        </Card>
+    );
+};
+
 // ================================================================================================
 // MAIN VIEW COMPONENT (REFACTORED & EXPANDED)
 // ================================================================================================
@@ -715,26 +792,30 @@ const UserInsightsView: React.FC = () => {
         dispatch({ type: 'SET_FILTERS', payload: newFilters });
     }, []);
     
-    // Using useMemo to prevent re-rendering of expensive components if data hasn't changed
     const memoizedCharts = useMemo(() => {
         if (!state.data) return null;
+        const avgUsers = state.data.userGrowth.reduce((acc, item) => acc + item.users, 0) / state.data.userGrowth.length;
+        
         return (
             <>
-                {/* Enhanced KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{state.data.kpis.totalActiveUsers.toLocaleString()}</p><p className="text-xs text-gray-400 mt-1">Total Active Users</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{state.data.kpis.dau.toLocaleString()}</p><p className="text-xs text-gray-400 mt-1">Daily Active</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{state.data.kpis.wou.toLocaleString()}</p><p className="text-xs text-gray-400 mt-1">Weekly Active</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{state.data.kpis.mauPercentage}%</p><p className="text-xs text-gray-400 mt-1">Monthly Active</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{formatCurrency(state.data.kpis.ltv)}</p><p className="text-xs text-gray-400 mt-1">Lifetime Value</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{formatCurrency(state.data.kpis.arppu)}</p><p className="text-xs text-gray-400 mt-1">ARPPU</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-white">{formatCurrency(state.data.kpis.cac)}</p><p className="text-xs text-gray-400 mt-1">Acquisition Cost</p></Card>
-                    <Card className="text-center"><p className="text-2xl font-bold text-red-400">{state.data.kpis.monthlyChurn}%</p><p className="text-xs text-gray-400 mt-1">Monthly Churn</p></Card>
+                    <KpiCard title="Total Active Users" value={state.data.kpis.totalActiveUsers.toLocaleString()} />
+                    <KpiCard title="Daily Active" value={state.data.kpis.dau.toLocaleString()} />
+                    <KpiCard title="Weekly Active" value={state.data.kpis.wou.toLocaleString()} />
+                    <KpiCard title="Monthly Active" value={`${state.data.kpis.mauPercentage}%`} />
+                    <KpiCard title="Lifetime Value" value={formatCurrency(state.data.kpis.ltv)} />
+                    <KpiCard title="ARPPU" value={formatCurrency(state.data.kpis.arppu)} />
+                    <KpiCard title="Acquisition Cost" value={formatCurrency(state.data.kpis.cac)} />
+                    <KpiCard title="Monthly Churn" value={`${state.data.kpis.monthlyChurn}%`} />
                 </div>
                 
-                 {/* Main Charts (Originals) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card title="User Growth">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <Card title="AI-Generated Key Insights" className="lg:col-span-2">
+                        <ul className="space-y-4 list-disc list-inside text-gray-300">
+                           {state.data.aiInsights.map((insight, index) => <li key={index}>{insight}</li>)}
+                        </ul>
+                   </Card>
+                   <Card title="User Growth" className="lg:col-span-3">
                         <ResponsiveContainer width="100%" height={300}>
                             <AreaChart data={state.data.userGrowth}>
                                 <defs><linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/><stop offset="95%" stopColor="#8884d8" stopOpacity={0}/></linearGradient></defs>
@@ -742,9 +823,13 @@ const UserInsightsView: React.FC = () => {
                                 <YAxis stroke="#9ca3af" />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Area type="monotone" dataKey="users" stroke="#8884d8" fill="url(#colorUsers)" name="Active Users" />
+                                <ReferenceLine y={avgUsers} label="Average" stroke="white" strokeDasharray="3 3" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Card>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card title="Engagement by Cohort (Weekly Retention %)">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={state.data.engagementByCohort}>
@@ -760,25 +845,7 @@ const UserInsightsView: React.FC = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     </Card>
-                </div>
-                
-                 {/* New - Demographics Section */}
-                <DemographicsCharts data={state.data.demographics} />
-                
-                {/* New - Acquisition Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <AcquisitionFunnelChart data={state.data.acquisitionChannels} />
-                    <AcquisitionChannelPerformance data={state.data.acquisitionChannels} />
-                </div>
-                
-                {/* Churn & Insights */}
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <Card title="AI-Generated Key Insights" className="lg:col-span-2">
-                        <ul className="space-y-4 list-disc list-inside text-gray-300">
-                           {aiInsights.map((insight, index) => <li key={index}>{insight}</li>)}
-                        </ul>
-                   </Card>
-                   <Card title="Churn Prediction (%)" className="lg:col-span-3">
+                    <Card title="Churn Prediction (%)">
                         <ResponsiveContainer width="100%" height={300}>
                            <LineChart data={state.data.churnPrediction}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
@@ -793,7 +860,13 @@ const UserInsightsView: React.FC = () => {
                    </Card>
                 </div>
                 
-                {/* New - Feature Adoption and LTV/CAC */}
+                <DemographicsCharts data={state.data.demographics} />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <AcquisitionFunnelChart data={state.data.acquisitionChannels} />
+                    <AcquisitionChannelPerformance data={state.data.acquisitionChannels} />
+                </div>
+                
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <FeatureAdoptionChart data={state.data.featureAdoption} />
                     <Card title="LTV vs CAC Analysis">
@@ -811,32 +884,21 @@ const UserInsightsView: React.FC = () => {
                     </Card>
                 </div>
                 
-                {/* Satisfaction and Feedback */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card title="User Satisfaction Scores">
                          <ResponsiveContainer width="100%" height={300}>
-                             <RadialBarChart 
-                                innerRadius="20%" 
-                                outerRadius="80%" 
-                                data={userSatisfactionData} 
-                                startAngle={180} 
-                                endAngle={0}
-                            >
-                                <RadialBar 
-                                    minAngle={15} 
-                                    background 
-                                    clockwise
-                                    dataKey="value" 
-                                />
+                             <RadialBarChart innerRadius="20%" outerRadius="80%" data={userSatisfactionData} startAngle={180} endAngle={0}>
+                                <RadialBar minAngle={15} background clockwise dataKey="value" />
                                 <Legend iconSize={10} layout="horizontal" verticalAlign="bottom" align="center" />
                                 <Tooltip content={<CustomTooltip />} />
                             </RadialBarChart>
                         </ResponsiveContainer>
                     </Card>
-                    <UserFeedbackStream feedback={state.data.recentFeedback} />
+                    <SentimentTrendChart data={state.data.sentimentTrend} />
                 </div>
+                
+                <UserFeedbackStream feedback={state.data.recentFeedback} />
 
-                {/* A/B Testing & Subscription Tiers */}
                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <ABTestResults data={state.data.abTests} />
                     <Card title="Subscription Tiers" className="lg:col-span-2">
@@ -867,7 +929,6 @@ const UserInsightsView: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
                 <h2 className="text-3xl font-bold text-white tracking-wider">User & Client Insights</h2>
-                {/* Add Export buttons or other actions here */}
                 <div className="flex space-x-2">
                     <button className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50" disabled={state.loading}>Export CSV</button>
                     <button className="px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50" disabled={state.loading}>Generate Report</button>
@@ -877,8 +938,10 @@ const UserInsightsView: React.FC = () => {
             <FilterBar filters={state.filters} onFilterChange={handleFilterChange} disabled={state.loading} />
 
             {state.loading && (
-                <div className="flex justify-center items-center h-96">
-                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><ChartSkeleton /><ChartSkeleton /></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><ChartSkeleton /><ChartSkeleton /><ChartSkeleton /></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><ChartSkeleton /><ChartSkeleton /></div>
                 </div>
             )}
             
@@ -898,3 +961,4 @@ const UserInsightsView: React.FC = () => {
 };
 
 export default UserInsightsView;
+```
