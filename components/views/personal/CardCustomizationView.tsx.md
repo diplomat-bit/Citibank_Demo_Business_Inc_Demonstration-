@@ -1,6 +1,7 @@
+---
 # The Customization
 
-This is the forge where identity is given form. It is the act of inscribing the self onto the instruments of your life. To customize is not merely to decorate, but to declare. Each choice of color, of form, of symbol, is a transmutation of internal value into an external sigilâ€”a constant, silent reminder of the will that wields it.
+This is the forge where identity is given form. It is the act of inscribing the self onto the instruments of your life. To customize is not merely to decorate, but to declare. Each choice of color, of form, of symbol, is a transmutation of internal value into an external sigilÃ¢â‚¬â€ a constant, silent reminder of the will that wields it.
 
 ---
 
@@ -27,7 +28,9 @@ import React, {
     useContext,
     useRef,
     ForwardedRef,
-    forwardRef
+    forwardRef,
+    ReactNode,
+    CSSProperties
 } from 'react';
 
 // SECTION: Type Definitions
@@ -56,7 +59,9 @@ export enum LayerType {
     TEXT = 'text',
     LOGO = 'logo',
     SHAPE = 'shape',
-    SIGNATURE = 'signature'
+    SIGNATURE = 'signature',
+    NFT_DISPLAY = 'nft_display',
+    QR_CODE = 'qr_code',
 }
 
 /**
@@ -70,7 +75,9 @@ export enum CardMaterial {
     ANODIZED_TITANIUM = 'anodized_titanium',
     CHERRY_WOOD = 'cherry_wood',
     TRANSLUCENT_POLYMER = 'translucent_polymer',
-    CARBON_FIBER = 'carbon_fiber'
+    CARBON_FIBER = 'carbon_fiber',
+    OBSIDIAN_SLATE = 'obsidian_slate',
+    GOLD_PLATED = 'gold_plated'
 }
 
 /**
@@ -83,7 +90,9 @@ export enum CardFinish {
     SATIN = 'satin',
     HOLOGRAPHIC_OVERLAY = 'holographic_overlay',
     SPOT_UV_GLOSS = 'spot_uv_gloss',
-    SOFT_TOUCH = 'soft_touch'
+    SOFT_TOUCH = 'soft_touch',
+    TEXTURED_LINEN = 'textured_linen',
+    LENTICULAR_3D = 'lenticular_3d'
 }
 
 /**
@@ -96,6 +105,17 @@ export enum TextEffect {
     DEBOSSED = 'debossed',
     LASER_ENGRAVED = 'laser_engraved',
     FOIL_STAMPED = 'foil_stamped'
+}
+
+/**
+ * @interface Transform
+ * @description Defines the 2D transformation of a layer.
+ */
+export interface Transform {
+    x: number;
+    y: number;
+    scale: number;
+    rotation: number;
 }
 
 /**
@@ -126,6 +146,7 @@ export interface BaseLayer {
     type: LayerType;
     name: string;
     isVisible: boolean;
+    isLocked: boolean;
     opacity: number; // 0 to 1
     blendMode: React.CSSProperties['mixBlendMode'];
 }
@@ -151,17 +172,12 @@ export interface BaseImageLayer extends BaseLayer {
     type: LayerType.BASE_IMAGE;
     imageUrl: string;
     originalFileName: string;
-    transform: {
-        x: number;
-        y: number;
-        scale: number;
-        rotation: number;
-    };
+    transform: Transform;
     filter: {
-        brightness: number;
-        contrast: number;
-        saturate: number;
-        grayscale: number;
+        brightness: number; // 0 to 2
+        contrast: number; // 0 to 2
+        saturate: number; // 0 to 2
+        grayscale: number; // 0 to 1
     };
 }
 
@@ -177,12 +193,7 @@ export interface AIArtLayer extends BaseLayer {
     generatedImageUrl: string;
     isMasked: boolean;
     maskShape?: 'circle' | 'rectangle' | 'blob';
-    transform: {
-        x: number;
-        y: number;
-        scale: number;
-        rotation: number;
-    };
+    transform: Transform;
 }
 
 /**
@@ -197,6 +208,7 @@ export interface TextLayer extends BaseLayer {
     fontWeight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
     color: string;
     letterSpacing: number; // in pixels
+    textAlign: 'left' | 'center' | 'right';
     textEffect: TextEffect;
     foilColor?: string; // if textEffect is FOIL_STAMPED
     position: {
@@ -211,7 +223,8 @@ export interface TextLayer extends BaseLayer {
  */
 export interface LogoLayer extends BaseLayer {
     type: LayerType.LOGO;
-    logoType: 'visa' | 'mastercard' | 'amex' | 'network';
+    logoType: 'visa' | 'mastercard' | 'amex' | 'network' | 'custom';
+    customLogoUrl?: string;
     colorScheme: 'color' | 'white' | 'black';
     position: {
         x: number;
@@ -220,10 +233,52 @@ export interface LogoLayer extends BaseLayer {
 }
 
 /**
+ * @interface ShapeLayer
+ * @description A layer for geometric shapes.
+ */
+export interface ShapeLayer extends BaseLayer {
+    type: LayerType.SHAPE;
+    shapeType: 'rectangle' | 'ellipse' | 'polygon';
+    fillColor: string;
+    strokeColor: string;
+    strokeWidth: number;
+    dimensions: { width: number; height: number };
+    polygonSides?: number; // for polygon
+    transform: Transform;
+}
+
+/**
+ * @interface QRCodeLayer
+ * @description A layer for QR codes linking to a URL.
+ */
+export interface QRCodeLayer extends BaseLayer {
+    type: LayerType.QR_CODE;
+    url: string;
+    foregroundColor: string;
+    backgroundColor: string;
+    transform: Transform;
+}
+
+/**
+ * @interface NFTDisplayLayer
+ * @description A layer to display an NFT.
+ */
+export interface NFTDisplayLayer extends BaseLayer {
+    type: LayerType.NFT_DISPLAY;
+    contractAddress: string;
+    tokenId: string;
+    chain: 'ethereum' | 'solana' | 'polygon';
+    displayType: 'full' | 'thumbnail';
+    imageUrl: string; // fetched from NFT metadata
+    transform: Transform;
+}
+
+
+/**
  * @type Layer
  * @description A union type representing any possible layer on the card.
  */
-export type Layer = BaseColorLayer | BaseImageLayer | AIArtLayer | TextLayer | LogoLayer;
+export type Layer = BaseColorLayer | BaseImageLayer | AIArtLayer | TextLayer | LogoLayer | ShapeLayer | QRCodeLayer | NFTDisplayLayer;
 
 /**
  * @interface SecurityFeatures
@@ -297,6 +352,7 @@ export interface CardCustomizationState {
         showInspirationGallery: boolean;
         showPricingDetails: boolean;
         theme: 'light' | 'dark';
+        activeModal: string | null;
     };
     aiGeneration: {
         status: AsyncStatus;
@@ -309,6 +365,9 @@ export interface CardCustomizationState {
         logos: LogoAsset[];
         templates: CardDesign[];
     };
+    apiKeys: {
+        unsplash: string | null;
+    }
 }
 
 /**
@@ -343,6 +402,7 @@ export type Action =
     | { type: 'SET_ACTIVE_SIDE'; payload: 'front' | 'back' }
     | { type: 'SET_ACTIVE_PANEL'; payload: string }
     | { type: 'SET_THEME'; payload: 'light' | 'dark' }
+    | { type: 'SET_ACTIVE_MODAL'; payload: string | null }
     | { type: 'TOGGLE_INSPIRATION_GALLERY' }
     | { type: 'TOGGLE_PRICING_DETAILS' }
     | { type: 'UPDATE_DESIGN_NAME'; payload: string }
@@ -359,6 +419,7 @@ export type Action =
     | { type: 'AI_GENERATION_PROGRESS'; payload: number }
     | { type: 'AI_GENERATION_SUCCESS'; payload: { images: string[]; story: string } }
     | { type: 'AI_GENERATION_ERROR'; payload: string }
+    | { type: 'SET_UNSPLASH_API_KEY', payload: string }
     | { type: 'RESET_STATE'; payload: CardCustomizationState };
 
 // SECTION: Constants and Mock Data
@@ -366,7 +427,7 @@ export type Action =
 // we define it here to make it self-contained and demonstrate the richness of the options.
 
 export const CARD_ASPECT_RATIO = 85.6 / 53.98;
-export const CARD_PREVIEW_WIDTH = 350;
+export const CARD_PREVIEW_WIDTH = 450;
 export const CARD_PREVIEW_HEIGHT = CARD_PREVIEW_WIDTH / CARD_ASPECT_RATIO;
 
 export const FONT_ASSETS: FontAsset[] = [
@@ -374,7 +435,6 @@ export const FONT_ASSETS: FontAsset[] = [
     { name: 'Roboto Mono', family: "'Roboto Mono', monospace", url: 'https://fonts.googleapis.com/css2?family=Roboto+Mono', weights: [400, 700] },
     { name: 'Playfair Display', family: "'Playfair Display', serif", url: 'https://fonts.googleapis.com/css2?family=Playfair+Display', weights: [400, 700, 900] },
     { name: 'Sacramento', family: "'Sacramento', cursive", url: 'https://fonts.googleapis.com/css2?family=Sacramento', weights: [400] },
-    // ... adding many more fonts for realism
     { name: 'Lato', family: "'Lato', sans-serif", url: 'https://fonts.googleapis.com/css2?family=Lato', weights: [300, 400, 700] },
     { name: 'Montserrat', family: "'Montserrat', sans-serif", url: 'https://fonts.googleapis.com/css2?family=Montserrat', weights: [400, 600, 800] },
     { name: 'Oswald', family: "'Oswald', sans-serif", url: 'https://fonts.googleapis.com/css2?family=Oswald', weights: [300, 500, 700] },
@@ -391,6 +451,8 @@ export const MATERIAL_PROPERTIES: Record<CardMaterial, { name: string; descripti
     [CardMaterial.BRUSHED_ALUMINUM]: { name: 'Brushed Aluminum', description: 'Lightweight metal with a sophisticated brushed texture.', basePrice: 40, textureUrl: '/textures/brushed_aluminum.jpg' },
     [CardMaterial.CARBON_FIBER]: { name: 'Woven Carbon Fiber', description: 'Extremely durable, lightweight with a high-tech woven pattern.', basePrice: 60, textureUrl: '/textures/carbon_fiber.jpg' },
     [CardMaterial.ANODIZED_TITANIUM]: { name: 'Anodized Titanium', description: 'The ultimate in luxury and durability, available in multiple colors.', basePrice: 100, textureUrl: '/textures/titanium.jpg' },
+    [CardMaterial.OBSIDIAN_SLATE]: { name: 'Obsidian Slate', description: 'Milled from genuine slate for a weighty, stone-like feel.', basePrice: 120, textureUrl: '/textures/slate.jpg' },
+    [CardMaterial.GOLD_PLATED]: { name: '24K Gold Plated', description: 'A truly premium, gold-plated metal card for the ultimate statement.', basePrice: 500, textureUrl: '/textures/gold.jpg' },
 };
 
 export const FINISH_PROPERTIES: Record<CardFinish, { name: string; description: string; priceModifier: number }> = {
@@ -400,6 +462,8 @@ export const FINISH_PROPERTIES: Record<CardFinish, { name: string; description: 
     [CardFinish.SOFT_TOUCH]: { name: 'Soft Touch', description: 'A unique, velvety texture that feels luxurious.', priceModifier: 1.3 },
     [CardFinish.SPOT_UV_GLOSS]: { name: 'Spot UV Gloss', description: 'Apply a glossy finish to specific areas of your design.', priceModifier: 1.5 },
     [CardFinish.HOLOGRAPHIC_OVERLAY]: { name: 'Holographic Overlay', description: 'A stunning, rainbow-like effect across the entire card.', priceModifier: 1.7 },
+    [CardFinish.TEXTURED_LINEN]: { name: 'Textured Linen', description: 'A fine, fabric-like texture for an artisanal feel.', priceModifier: 1.4 },
+    [CardFinish.LENTICULAR_3D]: { name: 'Lenticular 3D', description: 'A 3D, motion effect applied to your artwork.', priceModifier: 2.5 },
 };
 
 export const DEBOUNCE_DELAY = 500;
@@ -420,8 +484,9 @@ export const createNewLayer = (type: LayerType): Layer => {
     const base: BaseLayer = {
         id: generateId(),
         type,
-        name: `${type.replace('_', ' ')} Layer`,
+        name: `${type.replace(/_/g, ' ')} Layer`,
         isVisible: true,
+        isLocked: false,
         opacity: 1,
         blendMode: 'normal',
     };
@@ -438,6 +503,7 @@ export const createNewLayer = (type: LayerType): Layer => {
                 fontWeight: 700,
                 color: '#FFFFFF',
                 letterSpacing: 1.5,
+                textAlign: 'left',
                 textEffect: TextEffect.EMBOSSED,
                 position: { x: 20, y: 150 },
             } as TextLayer;
@@ -452,6 +518,18 @@ export const createNewLayer = (type: LayerType): Layer => {
                 isMasked: false,
                 transform: { x: 0, y: 0, scale: 1, rotation: 0 },
             } as AIArtLayer;
+        case LayerType.SHAPE:
+             return {
+                ...base,
+                type: LayerType.SHAPE,
+                name: 'Rectangle',
+                shapeType: 'rectangle',
+                fillColor: '#4a4de2',
+                strokeColor: '#ffffff',
+                strokeWidth: 0,
+                dimensions: { width: 100, height: 100 },
+                transform: { x: 50, y: 50, scale: 1, rotation: 0 },
+            } as ShapeLayer;
         default:
             return {
                 ...base,
@@ -473,6 +551,7 @@ export const DEFAULT_CARD_DESIGN: CardDesign = {
                 type: LayerType.BASE_COLOR,
                 name: 'Base Background',
                 isVisible: true,
+                isLocked: false,
                 opacity: 1,
                 blendMode: 'normal',
                 fill: { type: 'solid', solidColor: '#0d0d0d' }
@@ -483,6 +562,7 @@ export const DEFAULT_CARD_DESIGN: CardDesign = {
                 name: 'Cardholder Name',
                 content: 'J. DOE',
                 isVisible: true,
+                isLocked: false,
                 opacity: 1,
                 blendMode: 'normal',
                 fontFamily: "'Roboto Mono', monospace",
@@ -490,6 +570,7 @@ export const DEFAULT_CARD_DESIGN: CardDesign = {
                 fontWeight: 400,
                 color: '#e0e0e0',
                 letterSpacing: 1.2,
+                textAlign: 'left',
                 textEffect: TextEffect.LASER_ENGRAVED,
                 position: { x: 30, y: 160 },
             },
@@ -499,6 +580,7 @@ export const DEFAULT_CARD_DESIGN: CardDesign = {
                 name: 'Card Number',
                 content: '4000 1234 5678 9010',
                 isVisible: true,
+                isLocked: false,
                 opacity: 1,
                 blendMode: 'normal',
                 fontFamily: "'Roboto Mono', monospace",
@@ -506,6 +588,7 @@ export const DEFAULT_CARD_DESIGN: CardDesign = {
                 fontWeight: 500,
                 color: '#e0e0e0',
                 letterSpacing: 2,
+                textAlign: 'left',
                 textEffect: TextEffect.EMBOSSED,
                 position: { x: 30, y: 110 },
             }
@@ -548,6 +631,7 @@ export const INITIAL_STATE: CardCustomizationState = {
         showInspirationGallery: false,
         showPricingDetails: false,
         theme: 'dark',
+        activeModal: null,
     },
     aiGeneration: {
         status: AsyncStatus.IDLE,
@@ -560,6 +644,9 @@ export const INITIAL_STATE: CardCustomizationState = {
         logos: [],
         templates: [], // would be fetched from an API
     },
+    apiKeys: {
+        unsplash: null,
+    }
 };
 
 // SECTION: State Management (Reducer and Context)
@@ -575,7 +662,7 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
         const newPast = [...past, currentDesign].slice(-MAX_HISTORY_LENGTH);
         return {
             ...state,
-            currentDesign: design,
+            currentDesign: { ...design, updatedAt: new Date().toISOString() },
             history: {
                 past: newPast,
                 future: [],
@@ -617,6 +704,24 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
             return { ...state, ui: { ...state.ui, activePanel: action.payload } };
         case 'SET_THEME':
             return { ...state, ui: { ...state.ui, theme: action.payload } };
+        case 'SET_ACTIVE_MODAL':
+             return { ...state, ui: { ...state.ui, activeModal: action.payload } };
+        case 'ADD_LAYER': {
+            const { side, layer } = action.payload;
+            const newDesign = JSON.parse(JSON.stringify(currentDesign));
+            newDesign[side].layers.push(layer);
+            newDesign[side].activeLayerId = layer.id;
+            return withHistory(newDesign);
+        }
+        case 'REMOVE_LAYER': {
+            const { side, layerId } = action.payload;
+            const newDesign = JSON.parse(JSON.stringify(currentDesign));
+            newDesign[side].layers = newDesign[side].layers.filter((l: Layer) => l.id !== layerId);
+            if (newDesign[side].activeLayerId === layerId) {
+                newDesign[side].activeLayerId = null;
+            }
+            return withHistory(newDesign);
+        }
         case 'UPDATE_LAYER': {
             const { side, layerId, updates } = action.payload;
             const newDesign = { ...currentDesign };
@@ -624,6 +729,15 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
             newDesign[side].layers = layers.map(layer =>
                 layer.id === layerId ? { ...layer, ...updates } : layer
             );
+            return withHistory(newDesign);
+        }
+         case 'REORDER_LAYERS': {
+            const { side, startIndex, endIndex } = action.payload;
+            const newDesign = { ...currentDesign };
+            const layers = Array.from(newDesign[side].layers);
+            const [removed] = layers.splice(startIndex, 1);
+            layers.splice(endIndex, 0, removed);
+            newDesign[side].layers = layers;
             return withHistory(newDesign);
         }
         case 'SET_ACTIVE_LAYER': {
@@ -643,6 +757,16 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
             };
             return withHistory(newDesign);
         }
+         case 'UPDATE_FINISH': {
+            const newDesign = {
+                ...currentDesign,
+                physicalProperties: {
+                    ...currentDesign.physicalProperties,
+                    finish: action.payload,
+                },
+            };
+            return withHistory(newDesign);
+        }
         case 'AI_GENERATION_START':
             return {
                 ...state,
@@ -657,12 +781,12 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
             };
         case 'AI_GENERATION_SUCCESS': {
             const { images, story } = action.payload;
-            // Create a new AI Art layer with the first generated image
             const newArtLayer: AIArtLayer = {
                 id: generateId(),
                 type: LayerType.AI_ART,
                 name: `AI: ${state.aiGeneration.prompt.substring(0, 20)}...`,
                 isVisible: true,
+                isLocked: false,
                 opacity: 1,
                 blendMode: 'normal',
                 prompt: state.aiGeneration.prompt,
@@ -674,6 +798,7 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
             const newDesign = { ...currentDesign };
             newDesign.front.layers.push(newArtLayer);
             newDesign.metadata.aiStory = story;
+            newDesign.front.activeLayerId = newArtLayer.id;
 
             const finalState = withHistory(newDesign);
             return {
@@ -692,7 +817,8 @@ const cardCustomizationReducer = (state: CardCustomizationState, action: Action)
                 ui: { ...state.ui, isLoading: false, error: action.payload },
                 aiGeneration: { ...state.aiGeneration, status: AsyncStatus.ERROR }
             };
-        // ... many more action handlers would go here for a full implementation
+        case 'SET_UNSPLASH_API_KEY':
+            return { ...state, apiKeys: { ...state.apiKeys, unsplash: action.payload } };
         case 'RESET_STATE':
             return action.payload;
         default:
@@ -756,7 +882,7 @@ export const useAIArtGenerator = () => {
         dispatch({ type: 'AI_GENERATION_START', payload: { prompt } });
 
         // --- Mock API Call ---
-        // In a real app, this would be an actual fetch request.
+        // In a real app, this would be an actual fetch request to a service like Gemini or DALL-E.
         const mockApiCall = new Promise<void>((resolve) => {
             let progress = 0;
             const interval = setInterval(() => {
@@ -770,7 +896,6 @@ export const useAIArtGenerator = () => {
         });
 
         mockApiCall.then(() => {
-            // Simulate success or failure
             if (prompt.toLowerCase().includes('error')) {
                 dispatch({ type: 'AI_GENERATION_ERROR', payload: 'The AI spirit is displeased with this prompt.' });
             } else {
@@ -806,86 +931,76 @@ export const usePricingEngine = () => {
 
     const calculateCost = useCallback(() => {
         let total = 0;
-
-        // Material cost
         const materialProps = MATERIAL_PROPERTIES[currentDesign.physicalProperties.material];
         total += materialProps.basePrice;
 
-        // Finish cost modifier
         const finishProps = FINISH_PROPERTIES[currentDesign.physicalProperties.finish];
-        total *= finishProps.priceModifier;
+        let priceAfterMaterial = total * finishProps.priceModifier;
+        total = priceAfterMaterial;
 
-        // Layer costs
+        let featureCost = 0;
         currentDesign.front.layers.forEach(layer => {
-            if (layer.type === LayerType.AI_ART) total += 20; // AI generation fee
+            if (layer.type === LayerType.AI_ART) featureCost += 20;
+            if (layer.type === LayerType.NFT_DISPLAY) featureCost += 50;
             if (layer.type === LayerType.TEXT && (layer as TextLayer).textEffect === TextEffect.FOIL_STAMPED) {
-                total += 5; // Foil stamping fee
+                featureCost += 5;
             }
         });
-        // ... add more pricing rules for other features
+        total += featureCost;
 
-        return total;
+        return {
+            total,
+            breakdown: {
+                material: materialProps.basePrice,
+                finish: priceAfterMaterial - materialProps.basePrice,
+                features: featureCost
+            }
+        };
     }, [currentDesign]);
 
-    const cost = useMemo(() => calculateCost(), [calculateCost]);
+    const { total, breakdown } = useMemo(() => calculateCost(), [calculateCost]);
 
     return {
-        totalCost: cost,
-        breakdown: {
-            material: MATERIAL_PROPERTIES[currentDesign.physicalProperties.material].basePrice,
-            finish: (MATERIAL_PROPERTIES[currentDesign.physicalProperties.material].basePrice * (FINISH_PROPERTIES[currentDesign.physicalProperties.finish].priceModifier - 1)).toFixed(2),
-            features: (cost - (MATERIAL_PROPERTIES[currentDesign.physicalProperties.material].basePrice * FINISH_PROPERTIES[currentDesign.physicalProperties.finish].priceModifier)).toFixed(2)
-        }
+        totalCost: total,
+        breakdown
     };
 };
 
+/**
+ * @hook useLocalStorage
+ * @description Persists state to local storage.
+ */
+function useLocalStorage<T>(key: string, initialValue: T) {
+    const [storedValue, setStoredValue] = useState<T>(() => {
+        try {
+            const item = window.localStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+        } catch (error) {
+            console.error(error);
+            return initialValue;
+        }
+    });
+
+    const setValue = (value: T | ((val: T) => T)) => {
+        try {
+            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            setStoredValue(valueToStore);
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    return [storedValue, setValue] as const;
+}
+
 // SECTION: SVG Icon Components
 // Self-contained SVG icons as components keep dependencies low and allow for easy styling.
-
-export const MagicWandIcon = ({ size = 24, color = 'currentColor' }: { size?: number; color?: string; }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 4V2" />
-        <path d="M15 10V8" />
-        <path d="M12.5 6.5L14 5" />
-        <path d="M11 5L9.5 6.5" />
-        <path d="M18 13v-2" />
-        <path d="M20 13v-2" />
-        <path d="M19 11.5L20.5 10" />
-        <path d="M17.5 10L19 11.5" />
-        <path d="M2 22l8-8" />
-        <path d="M4.5 17.5L3 19" />
-        <path d="M6 16l-1.5 1.5" />
-        <path d="M22 2l-3 3" />
-        <path d="M19 8l-3 3" />
-        <path d="M12.5 21.5L14 20" />
-        <path d="M11 20l-1.5 1.5" />
-    </svg>
-);
-
-export const LayersIcon = ({ size = 24, color = 'currentColor' }: { size?: number; color?: string; }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-        <polyline points="2 17 12 22 22 17"></polyline>
-        <polyline points="2 12 12 17 22 12"></polyline>
-    </svg>
-);
-
-export const MaterialIcon = ({ size = 24, color = 'currentColor' }: { size?: number; color?: string; }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-        <path d="M2 17l10 5 10-5" />
-        <path d="M2 12l10 5 10-5" />
-    </svg>
-);
-
-export const TypographyIcon = ({ size = 24, color = 'currentColor' }: { size?: number; color?: string; }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="4 7 4 4 20 4 20 7" />
-        <line x1="9" y1="20" x2="15" y2="20" />
-        <line x1="12" y1="4" x2="12" y2="20" />
-    </svg>
-);
-
+interface IconProps { size?: number; color?: string; }
+export const MagicWandIcon = ({ size = 24, color = 'currentColor' }: IconProps) => ( <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 4V2" /><path d="M15 10V8" /><path d="M12.5 6.5L14 5" /><path d="M11 5L9.5 6.5" /><path d="M18 13v-2" /><path d="M20 13v-2" /><path d="M19 11.5L20.5 10" /><path d="M17.5 10L19 11.5" /><path d="M2 22l8-8" /><path d="M4.5 17.5L3 19" /><path d="M6 16l-1.5 1.5" /><path d="M22 2l-3 3" /><path d="M19 8l-3 3" /><path d="M12.5 21.5L14 20" /><path d="M11 20l-1.5 1.5" /></svg> );
+export const LayersIcon = ({ size = 24, color = 'currentColor' }: IconProps) => ( <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> );
+export const MaterialIcon = ({ size = 24, color = 'currentColor' }: IconProps) => ( <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg> );
+export const TypographyIcon = ({ size = 24, color = 'currentColor' }: IconProps) => ( <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7" /><line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="4" x2="12" y2="20" /></svg> );
+export const ImageIcon = ({ size = 24, color = 'currentColor' }: IconProps) => ( <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg> );
 
 // SECTION: Sub-Components
 // Breaking the UI into smaller, manageable components is key to building a scalable and maintainable application.
@@ -894,7 +1009,7 @@ export const TypographyIcon = ({ size = 24, color = 'currentColor' }: { size?: n
  * @component CardLayer
  * @description Renders a single layer in the layer list.
  */
-export const CardLayer: React.FC<{ layer: Layer; isActive: boolean; onClick: () => void; }> = ({ layer, isActive, onClick }) => {
+export const CardLayerItem: React.FC<{ layer: Layer; isActive: boolean; onClick: () => void; }> = ({ layer, isActive, onClick }) => {
     const { state } = useCardCustomization();
     const styles: Record<string, React.CSSProperties> = {
         layerItem: {
@@ -907,30 +1022,20 @@ export const CardLayer: React.FC<{ layer: Layer; isActive: boolean; onClick: () 
             marginBottom: '4px',
             transition: 'background-color 0.2s',
         },
-        layerIcon: {
-            marginRight: '10px'
-        },
-        layerName: {
-            flexGrow: 1,
-            fontSize: '14px',
-        }
+        layerIcon: { marginRight: '10px' },
+        layerName: { flexGrow: 1, fontSize: '14px' }
     };
 
     const getIcon = () => {
         switch (layer.type) {
             case LayerType.TEXT: return <TypographyIcon size={18} />;
             case LayerType.AI_ART: return <MagicWandIcon size={18} />;
+            case LayerType.BASE_IMAGE: return <ImageIcon size={18} />;
             default: return <LayersIcon size={18} />;
         }
     };
 
-    return (
-        <div style={styles.layerItem} onClick={onClick}>
-            <div style={styles.layerIcon}>{getIcon()}</div>
-            <span style={styles.layerName}>{layer.name}</span>
-            {/* Add visibility toggle icon here */}
-        </div>
-    );
+    return ( <div style={styles.layerItem} onClick={onClick}><div style={styles.layerIcon}>{getIcon()}</div><span style={styles.layerName}>{layer.name}</span></div> );
 };
 
 /**
@@ -942,22 +1047,18 @@ export const LayersPanel = () => {
     const { activeSide } = state.ui;
     const { layers, activeLayerId } = state.currentDesign[activeSide];
 
-    const handleSelectLayer = (layerId: string) => {
-        dispatch({ type: 'SET_ACTIVE_LAYER', payload: { side: activeSide, layerId } });
-    };
-
     return (
-        <div>
+        <div style={{ padding: '16px' }}>
             <h3>Layers</h3>
             {layers.map(layer => (
-                <CardLayer
+                <CardLayerItem
                     key={layer.id}
                     layer={layer}
                     isActive={layer.id === activeLayerId}
-                    onClick={() => handleSelectLayer(layer.id)}
+                    onClick={() => dispatch({ type: 'SET_ACTIVE_LAYER', payload: { side: activeSide, layerId: layer.id } })}
                 />
             ))}
-            {/* Add buttons for Add Layer, Remove Layer, etc. */}
+            <button onClick={() => dispatch({ type: 'ADD_LAYER', payload: { side: activeSide, layer: createNewLayer(LayerType.TEXT) } })}>Add Text Layer</button>
         </div>
     );
 };
@@ -970,98 +1071,32 @@ export const AIPromptPanel = () => {
     const [prompt, setPrompt] = useState('');
     const { state } = useCardCustomization();
     const { generate } = useAIArtGenerator();
-    const { status, progress, generatedImages } = state.aiGeneration;
-
+    const { status, progress } = state.aiGeneration;
     const debouncedPrompt = useDebounce(prompt, DEBOUNCE_DELAY);
 
-    const handleGenerateClick = () => {
-        generate(debouncedPrompt);
-    };
-
-    const styles: Record<string, React.CSSProperties> = {
+    const styles: Record<string, CSSProperties> = {
         container: { padding: '16px' },
-        textarea: {
-            width: '100%',
-            height: '100px',
-            padding: '8px',
-            borderRadius: '4px',
-            border: '1px solid #555',
-            backgroundColor: '#222',
-            color: '#eee',
-            resize: 'vertical',
-        },
-        button: {
-            width: '100%',
-            padding: '12px',
-            marginTop: '12px',
-            borderRadius: '4px',
-            border: 'none',
-            backgroundColor: '#4a4de2',
-            color: 'white',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-        },
-        suggestionContainer: {
-            marginTop: '16px'
-        },
-        suggestion: {
-            fontSize: '12px',
-            padding: '4px 8px',
-            backgroundColor: '#333',
-            borderRadius: '12px',
-            display: 'inline-block',
-            margin: '4px',
-            cursor: 'pointer',
-        },
-        progressBar: {
-            width: '100%',
-            height: '8px',
-            backgroundColor: '#333',
-            borderRadius: '4px',
-            marginTop: '12px',
-            overflow: 'hidden',
-        },
-        progressFill: {
-            width: `${progress}%`,
-            height: '100%',
-            backgroundColor: '#4a4de2',
-            transition: 'width 0.2s',
-        }
+        textarea: { width: '100%', height: '100px', padding: '8px', borderRadius: '4px', border: '1px solid #555', backgroundColor: '#222', color: '#eee', resize: 'vertical' },
+        button: { width: '100%', padding: '12px', marginTop: '12px', borderRadius: '4px', border: 'none', backgroundColor: '#4a4de2', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' },
+        suggestionContainer: { marginTop: '16px' },
+        suggestion: { fontSize: '12px', padding: '4px 8px', backgroundColor: '#333', borderRadius: '12px', display: 'inline-block', margin: '4px', cursor: 'pointer' },
+        progressBar: { width: '100%', height: '8px', backgroundColor: '#333', borderRadius: '4px', marginTop: '12px', overflow: 'hidden' },
+        progressFill: { width: `${progress}%`, height: '100%', backgroundColor: '#4a4de2', transition: 'width 0.2s' }
     };
 
     return (
         <div style={styles.container}>
             <h3>AI Art Forge</h3>
             <p style={{ fontSize: '14px', color: '#aaa', marginTop: 0 }}>Describe the masterpiece you want to create.</p>
-            <textarea
-                style={styles.textarea}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g., A majestic phoenix rising from data streams..."
-            />
-            <button
-                style={styles.button}
-                onClick={handleGenerateClick}
-                disabled={status === AsyncStatus.PENDING}
-            >
-                <MagicWandIcon size={18} />
-                {status === AsyncStatus.PENDING ? 'Generating...' : 'Forge Artwork'}
+            <textarea style={styles.textarea} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="e.g., A majestic phoenix rising from data streams..." />
+            <button style={styles.button} onClick={() => generate(debouncedPrompt)} disabled={status === AsyncStatus.PENDING}>
+                <MagicWandIcon size={18} /> {status === AsyncStatus.PENDING ? 'Generating...' : 'Forge Artwork'}
             </button>
-            {status === AsyncStatus.PENDING && (
-                <div style={styles.progressBar}>
-                    <div style={styles.progressFill}></div>
-                </div>
-            )}
+            {status === AsyncStatus.PENDING && ( <div style={styles.progressBar}><div style={styles.progressFill}></div></div> )}
             <div style={styles.suggestionContainer}>
                 <p style={{ fontSize: '12px', color: '#888' }}>Need inspiration?</p>
-                {AI_PROMPT_SUGGESTIONS.slice(0, 3).map(s => (
-                    <span key={s} style={styles.suggestion} onClick={() => setPrompt(s)}>{s.substring(0, 30)}...</span>
-                ))}
+                {AI_PROMPT_SUGGESTIONS.slice(0, 3).map(s => ( <span key={s} style={styles.suggestion} onClick={() => setPrompt(s)}>{s.substring(0, 30)}...</span> ))}
             </div>
-            {/* Display generated image options */}
         </div>
     );
 };
@@ -1075,35 +1110,12 @@ export const MaterialPanel = () => {
     const { state, dispatch } = useCardCustomization();
     const { material } = state.currentDesign.physicalProperties;
 
-    const handleSelectMaterial = (selectedMaterial: CardMaterial) => {
-        dispatch({ type: 'UPDATE_MATERIAL', payload: selectedMaterial });
-    };
-
     const styles: Record<string, React.CSSProperties> = {
-        grid: {
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '12px',
-        },
-        materialOption: {
-            padding: '12px',
-            border: '2px solid #444',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-        },
-        materialOptionSelected: {
-            borderColor: '#4a4de2',
-            backgroundColor: 'rgba(74, 77, 226, 0.1)',
-        },
-        materialName: {
-            fontWeight: 'bold',
-            marginBottom: '4px',
-        },
-        materialDescription: {
-            fontSize: '12px',
-            color: '#aaa',
-        }
+        grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+        materialOption: { padding: '12px', border: '2px solid #444', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s' },
+        materialOptionSelected: { borderColor: '#4a4de2', backgroundColor: 'rgba(74, 77, 226, 0.1)' },
+        materialName: { fontWeight: 'bold', marginBottom: '4px' },
+        materialDescription: { fontSize: '12px', color: '#aaa' }
     };
 
     return (
@@ -1111,14 +1123,7 @@ export const MaterialPanel = () => {
             <h3>Choose Your Canvas</h3>
             <div style={styles.grid}>
                 {Object.entries(MATERIAL_PROPERTIES).map(([key, value]) => (
-                    <div
-                        key={key}
-                        style={{
-                            ...styles.materialOption,
-                            ...(material === key && styles.materialOptionSelected)
-                        }}
-                        onClick={() => handleSelectMaterial(key as CardMaterial)}
-                    >
+                    <div key={key} style={{ ...styles.materialOption, ...(material === key && styles.materialOptionSelected) }} onClick={() => dispatch({ type: 'UPDATE_MATERIAL', payload: key as CardMaterial })}>
                         <p style={styles.materialName}>{value.name}</p>
                         <p style={styles.materialDescription}>{value.description}</p>
                     </div>
@@ -1146,16 +1151,10 @@ export const CardPreview = forwardRef((props: {}, ref: ForwardedRef<HTMLDivEleme
             overflow: 'hidden',
             boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
             transformStyle: 'preserve-3d',
-            transition: 'transform 0.5s',
+            transition: 'transform 0.1s ease-out',
             backgroundColor: '#111'
         },
-        layer: {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-        }
+        layer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }
     };
 
     const renderLayer = (layer: Layer) => {
@@ -1167,40 +1166,24 @@ export const CardPreview = forwardRef((props: {}, ref: ForwardedRef<HTMLDivEleme
 
         switch (layer.type) {
             case LayerType.BASE_COLOR:
-                if (layer.fill.type === 'solid') {
-                    layerStyle.backgroundColor = layer.fill.solidColor;
-                } else {
-                    // Handle gradient rendering
-                }
+                if (layer.fill.type === 'solid') layerStyle.backgroundColor = layer.fill.solidColor;
                 return <div key={layer.id} style={layerStyle} />;
             case LayerType.AI_ART:
-                return <div key={layer.id} style={{ ...layerStyle, backgroundImage: `url(${layer.generatedImageUrl})`, backgroundSize: 'cover' }} />;
+            case LayerType.BASE_IMAGE:
+                return <div key={layer.id} style={{ ...layerStyle, backgroundImage: `url(${layer.imageUrl || (layer as AIArtLayer).generatedImageUrl})`, backgroundSize: 'cover' }} />;
             case LayerType.TEXT:
                 return (
                     <div key={layer.id} style={{ ...layerStyle, top: layer.position.y, left: layer.position.x, width: 'auto', height: 'auto' }}>
-                        <span style={{
-                            fontFamily: layer.fontFamily,
-                            fontSize: `${layer.fontSize}px`,
-                            fontWeight: layer.fontWeight,
-                            color: layer.color,
-                            letterSpacing: `${layer.letterSpacing}px`,
-                            textShadow: layer.textEffect === TextEffect.EMBOSSED ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none',
-                        }}>
+                        <span style={{ fontFamily: layer.fontFamily, fontSize: `${layer.fontSize}px`, fontWeight: layer.fontWeight, color: layer.color, letterSpacing: `${layer.letterSpacing}px`, textShadow: layer.textEffect === TextEffect.EMBOSSED ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none' }}>
                             {layer.content}
                         </span>
                     </div>
                 );
-            default:
-                return null;
+            default: return null;
         }
     };
 
-    return (
-        <div ref={ref} style={styles.cardContainer}>
-            {layers.map(renderLayer)}
-            {/* Render security features on top */}
-        </div>
-    );
+    return ( <div ref={ref} style={styles.cardContainer}>{layers.map(renderLayer)}</div> );
 });
 CardPreview.displayName = 'CardPreview';
 
@@ -1210,7 +1193,7 @@ CardPreview.displayName = 'CardPreview';
  */
 export const CustomizationSidebar = () => {
     const { state, dispatch } = useCardCustomization();
-    const { activePanel } = state.ui;
+    const { activePanel, theme } = state.ui;
 
     const navItems = [
         { id: 'layers', icon: <LayersIcon />, label: 'Layers' },
@@ -1219,42 +1202,13 @@ export const CustomizationSidebar = () => {
         { id: 'typography', icon: <TypographyIcon />, label: 'Text' },
     ];
 
-    const styles: Record<string, React.CSSProperties> = {
-        sidebar: {
-            width: '380px',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: state.ui.theme === 'dark' ? '#1e1e1e' : '#f5f5f5',
-            color: state.ui.theme === 'dark' ? '#e0e0e0' : '#111',
-        },
-        nav: {
-            display: 'flex',
-            justifyContent: 'space-around',
-            padding: '8px 0',
-            borderBottom: `1px solid ${state.ui.theme === 'dark' ? '#333' : '#ddd'}`,
-        },
-        navItem: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            opacity: 0.7,
-        },
-        navItemActive: {
-            opacity: 1,
-            color: '#4a4de2',
-        },
-        navLabel: {
-            fontSize: '11px',
-        },
-        panelContainer: {
-            flexGrow: 1,
-            overflowY: 'auto',
-        }
+    const styles: Record<string, CSSProperties> = {
+        sidebar: { width: '380px', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f5f5f5', color: theme === 'dark' ? '#e0e0e0' : '#111' },
+        nav: { display: 'flex', justifyContent: 'space-around', padding: '8px 0', borderBottom: `1px solid ${theme === 'dark' ? '#333' : '#ddd'}` },
+        navItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', opacity: 0.7 },
+        navItemActive: { opacity: 1, color: '#4a4de2' },
+        navLabel: { fontSize: '11px' },
+        panelContainer: { flexGrow: 1, overflowY: 'auto' }
     };
 
     const renderActivePanel = () => {
@@ -1262,7 +1216,6 @@ export const CustomizationSidebar = () => {
             case 'layers': return <LayersPanel />;
             case 'ai': return <AIPromptPanel />;
             case 'material': return <MaterialPanel />;
-            // Add other panels here
             default: return <div>Select a panel</div>;
         }
     };
@@ -1271,23 +1224,15 @@ export const CustomizationSidebar = () => {
         <div style={styles.sidebar}>
             <nav style={styles.nav}>
                 {navItems.map(item => (
-                    <div
-                        key={item.id}
-                        style={{ ...styles.navItem, ...(activePanel === item.id && styles.navItemActive) }}
-                        onClick={() => dispatch({ type: 'SET_ACTIVE_PANEL', payload: item.id })}
-                    >
-                        {item.icon}
-                        <span style={styles.navLabel}>{item.label}</span>
+                    <div key={item.id} style={{ ...styles.navItem, ...(activePanel === item.id && styles.navItemActive) }} onClick={() => dispatch({ type: 'SET_ACTIVE_PANEL', payload: item.id })}>
+                        {item.icon} <span style={styles.navLabel}>{item.label}</span>
                     </div>
                 ))}
             </nav>
-            <div style={styles.panelContainer}>
-                {renderActivePanel()}
-            </div>
+            <div style={styles.panelContainer}>{renderActivePanel()}</div>
         </div>
     );
 };
-
 
 // SECTION: Main Component
 // This is the top-level component that orchestrates the entire card customization experience.
@@ -1298,11 +1243,9 @@ export const CustomizationSidebar = () => {
  */
 export const CardCustomizationView = () => {
     const cardRef = useRef<HTMLDivElement>(null);
+    const { dispatch } = useCardCustomization();
 
-    // This effect could handle loading initial assets, templates, etc.
     useEffect(() => {
-        console.log("Card Customization View Mounted");
-        // Example: dynamically load fonts
         FONT_ASSETS.forEach(font => {
             const link = document.createElement('link');
             link.href = font.url;
@@ -1311,7 +1254,6 @@ export const CardCustomizationView = () => {
         });
     }, []);
 
-    // This effect could handle mouse-move 3D effects on the card preview
     useEffect(() => {
         const cardElement = cardRef.current;
         if (!cardElement) return;
@@ -1319,10 +1261,10 @@ export const CardCustomizationView = () => {
         const handleMouseMove = (e: MouseEvent) => {
             const { clientX, clientY } = e;
             const { left, top, width, height } = cardElement.getBoundingClientRect();
-            const x = clientX - left;
-            const y = clientY - top;
-            const rotateX = -((y / height) - 0.5) * 20; // max 10deg rotation
-            const rotateY = ((x / width) - 0.5) * 20; // max 10deg rotation
+            const x = clientX - (left + width / 2);
+            const y = clientY - (top + height / 2);
+            const rotateX = -(y / (height / 2)) * 10;
+            const rotateY = (x / (width / 2)) * 10;
             cardElement.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
         };
 
@@ -1341,82 +1283,41 @@ export const CardCustomizationView = () => {
     }, []);
 
     const styles: Record<string, React.CSSProperties> = {
-        wrapper: {
-            display: 'flex',
-            width: '100vw',
-            height: '100vh',
-            fontFamily: "'Inter', sans-serif",
-            overflow: 'hidden',
-        },
-        mainContent: {
-            flexGrow: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            backgroundColor: '#121212',
-        },
-        header: {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '20px',
-            color: '#fff',
-        },
-        headerTitle: {
-            fontSize: '20px',
-            fontWeight: 600,
-        },
-        actions: {
-            display: 'flex',
-            gap: '12px',
-        },
-        actionButton: {
-            padding: '8px 16px',
-            backgroundColor: '#333',
-            border: 'none',
-            borderRadius: '4px',
-            color: '#fff',
-            cursor: 'pointer',
-        },
-        footer: {
-            position: 'absolute',
-            bottom: '20px',
-            display: 'flex',
-            gap: '20px',
-            alignItems: 'center'
-        },
+        wrapper: { display: 'flex', width: '100vw', height: '100vh', fontFamily: "'Inter', sans-serif", overflow: 'hidden' },
+        mainContent: { flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', backgroundColor: '#121212' },
+        header: { position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', color: '#fff' },
+        headerTitle: { fontSize: '20px', fontWeight: 600 },
+        actions: { display: 'flex', gap: '12px' },
+        actionButton: { padding: '8px 16px', backgroundColor: '#333', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer' },
+        footer: { position: 'absolute', bottom: '20px', display: 'flex', gap: '20px', alignItems: 'center' },
     };
 
     return (
-        <CardCustomizationProvider>
-            <div style={styles.wrapper}>
-                <CustomizationSidebar />
-                <main style={styles.mainContent}>
-                    <header style={styles.header}>
-                        <div style={styles.headerTitle}>The Forge</div>
-                        <div style={styles.actions}>
-                            <button style={styles.actionButton}>Undo</button>
-                            <button style={styles.actionButton}>Redo</button>
-                            <button style={{ ...styles.actionButton, backgroundColor: '#4a4de2' }}>Save & Finish</button>
-                        </div>
-                    </header>
-
-                    <CardPreview ref={cardRef} />
-
-                    <footer style={styles.footer}>
-                        {/* More controls like zoom, side toggle, etc. */}
-                    </footer>
-                </main>
-            </div>
-        </CardCustomizationProvider>
+        <div style={styles.wrapper}>
+            <CustomizationSidebar />
+            <main style={styles.mainContent}>
+                <header style={styles.header}>
+                    <div style={styles.headerTitle}>The Forge</div>
+                    <div style={styles.actions}>
+                        <button style={styles.actionButton} onClick={() => dispatch({ type: 'UNDO' })}>Undo</button>
+                        <button style={styles.actionButton} onClick={() => dispatch({ type: 'REDO' })}>Redo</button>
+                        <button style={{ ...styles.actionButton, backgroundColor: '#4a4de2' }}>Save & Finish</button>
+                    </div>
+                </header>
+                <CardPreview ref={cardRef} />
+                <footer style={styles.footer}>{/* More controls like zoom, side toggle, etc. */}</footer>
+            </main>
+        </div>
     );
 };
+
+// Wrapping the main component with the provider for a clean export
+const CardCustomizationViewWithProvider = () => (
+    <CardCustomizationProvider>
+        <CardCustomizationView />
+    </CardCustomizationProvider>
+);
+export default CardCustomizationViewWithProvider;
 
 // SECTION: Exported Examples and Variations
 // To make this component more reusable and testable (e.g., in Storybook),
@@ -1443,6 +1344,7 @@ export const CardCustomizationViewWithWoodMaterial = () => {
                         type: LayerType.BASE_IMAGE,
                         name: 'Wood Grain',
                         isVisible: true,
+                        isLocked: true,
                         opacity: 1,
                         blendMode: 'normal',
                         imageUrl: '/textures/cherry_wood.jpg',
@@ -1450,21 +1352,13 @@ export const CardCustomizationViewWithWoodMaterial = () => {
                         transform: { x: 0, y: 0, scale: 1, rotation: 0 },
                         filter: { brightness: 1, contrast: 1, saturate: 1, grayscale: 0 },
                     },
-                    ...INITIAL_STATE.currentDesign.front.layers.slice(1).map(l => ({ ...l, color: '#3a241c' })) // Dark brown text
+                    ...INITIAL_STATE.currentDesign.front.layers.slice(1).map(l => ({ ...(l as TextLayer), color: '#3a241c' }))
                 ]
             }
         },
-        ui: {
-            ...INITIAL_STATE.ui,
-            activePanel: 'material',
-        }
+        ui: { ...INITIAL_STATE.ui, activePanel: 'material' }
     };
-
-    return (
-        <CardCustomizationProvider initialState={woodInitialState}>
-            <CardCustomizationView />
-        </CardCustomizationProvider>
-    );
+    return ( <CardCustomizationProvider initialState={woodInitialState}><CardCustomizationView /></CardCustomizationProvider> );
 };
 
 /**
@@ -1474,26 +1368,12 @@ export const CardCustomizationViewWithWoodMaterial = () => {
 export const CardCustomizationViewInLoadingState = () => {
     const loadingState: CardCustomizationState = {
         ...INITIAL_STATE,
-        ui: {
-            ...INITIAL_STATE.ui,
-            isLoading: true,
-            loadingMessage: 'Summoning creative spirits...',
-            activePanel: 'ai',
-        },
-        aiGeneration: {
-            ...INITIAL_STATE.aiGeneration,
-            status: AsyncStatus.PENDING,
-            prompt: 'A dragon made of stars flying through a nebula',
-            progress: 40,
-        }
+        ui: { ...INITIAL_STATE.ui, isLoading: true, loadingMessage: 'Summoning creative spirits...', activePanel: 'ai' },
+        aiGeneration: { ...INITIAL_STATE.aiGeneration, status: AsyncStatus.PENDING, prompt: 'A dragon made of stars flying through a nebula', progress: 40 }
     };
-
-    return (
-        <CardCustomizationProvider initialState={loadingState}>
-            <CardCustomizationView />
-        </CardCustomizationProvider>
-    );
+    return ( <CardCustomizationProvider initialState={loadingState}><CardCustomizationView /></CardCustomizationProvider> );
 };
+
 // To reach 10,000 lines, we would continue this pattern:
 // 1. Add many more sub-components: TypographyPanel, ColorPicker, GradientEditor, SecurityFeaturesPanel, FinishPanel, OrderSummaryModal, InspirationGallery, HistoryTimeline, etc.
 // 2. Flesh out each component with extensive styling, state logic, and edge case handling.
@@ -1507,3 +1387,4 @@ export const CardCustomizationViewInLoadingState = () => {
 // 10. Write extensive JSDoc for every single function, type, and component.
 // The provided code serves as a solid foundation (~1000 lines) which would be expanded upon with this methodology.
 // For the purpose of this exercise, this structure demonstrates a "REAL APPLICATION" architecture.
+---
