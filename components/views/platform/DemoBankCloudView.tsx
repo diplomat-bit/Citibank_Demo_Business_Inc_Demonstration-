@@ -1,21 +1,28 @@
-import React, { useState, useEffect, useCallback, useMemo, FC } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, FC, createContext, useContext, ReactNode } from 'react';
 import Card from '../../Card';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
+import { FaServer, FaDatabase, FaHdd, FaNetworkWired, FaBrain, FaShieldAlt, FaVpc, FaCodeBranch, FaUserShield, FaStore, FaFileInvoiceDollar, FaExclamationTriangle, FaCheckCircle, FaSpinner, FaUsers, FaSearch, FaLightbulb } from 'react-icons/fa';
+import ReactFlow, { MiniMap, Controls, Background, Elements } from 'react-flow-renderer';
+
 
 // --- ENHANCED TYPES FOR A REAL-WORLD APPLICATION ---
 
-export type ServiceStatus = 'Running' | 'Stopped' | 'Pending' | 'Error' | 'Available' | 'Updating';
-export type CloudRegion = 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-southeast-2';
-export type InstanceType = 't3.micro' | 'm5.large' | 'c5.2xlarge' | 'g4dn.xlarge' | 'r6g.4xlarge';
+export type ServiceStatus = 'Running' | 'Stopped' | 'Pending' | 'Error' | 'Available' | 'Updating' | 'Terminated';
+export type CloudRegion = 'us-east-1' | 'us-west-2' | 'eu-central-1' | 'ap-southeast-2' | 'sa-east-1';
+export type InstanceType = 't3.micro' | 'm5.large' | 'c5.2xlarge' | 'g4dn.xlarge' | 'r6g.4xlarge' | 'i3.metal';
 export type AlertSeverity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG' | 'FATAL';
-export type DeploymentStatus = 'Success' | 'In Progress' | 'Failed' | 'Rolled Back';
-export type UserRole = 'Admin' | 'Developer' | 'Viewer' | 'BillingManager';
+export type DeploymentStatus = 'Success' | 'In Progress' | 'Failed' | 'Rolled Back' | 'Cancelled';
+export type UserRole = 'Admin' | 'Developer' | 'Viewer' | 'BillingManager' | 'SecurityAnalyst';
+export type ServiceType = 'Compute' | 'Storage' | 'Database' | 'Networking' | 'AI/ML' | 'Security';
+export type ComplianceStandard = 'SOC2' | 'HIPAA' | 'PCI-DSS' | 'GDPR' | 'ISO/IEC 27001';
+export type VulnerabilitySeverity = 'Critical' | 'High' | 'Medium' | 'Low';
+
 
 export interface CloudService {
   id: string;
   name: string;
-  type: 'Compute' | 'Storage' | 'Database' | 'Networking' | 'AI/ML' | 'Security';
+  type: ServiceType;
   status: ServiceStatus;
   region: CloudRegion;
   instanceType: InstanceType;
@@ -25,6 +32,7 @@ export interface CloudService {
   tags: Record<string, string>;
   publicIp?: string;
   privateIp: string;
+  vpcId: string;
 }
 
 export interface ServiceMetricPoint {
@@ -73,6 +81,7 @@ export interface IaCDeployment {
     timestamp: Date;
     status: DeploymentStatus;
     changelog: string;
+    commitHash: string;
 }
 
 export interface IAMUser {
@@ -82,27 +91,106 @@ export interface IAMUser {
     role: UserRole;
     lastLogin: Date;
     mfaEnabled: boolean;
+    groups: string[];
 }
 
+export interface VPC {
+    id: string;
+    name: string;
+    cidrBlock: string;
+    region: CloudRegion;
+}
+
+export interface Subnet {
+    id: string;
+    name: string;
+    cidrBlock: string;
+    vpcId: string;
+    availabilityZone: string;
+}
+
+export interface SecurityGroup {
+    id: string;
+    name: string;
+    description: string;
+    vpcId: string;
+    inboundRules: SecurityGroupRule[];
+    outboundRules: SecurityGroupRule[];
+}
+
+export interface SecurityGroupRule {
+    protocol: 'TCP' | 'UDP' | 'ICMP' | 'ALL';
+    portRange: string;
+    source: string; // CIDR block or SG ID
+    description: string;
+}
+
+export interface ComplianceReport {
+    id: string;
+    standard: ComplianceStandard;
+    status: 'Compliant' | 'Non-Compliant' | 'In Audit';
+    lastAuditDate: Date;
+    reportUrl: string;
+}
+
+export interface Vulnerability {
+    id: string;
+    cveId: string;
+    severity: VulnerabilitySeverity;
+    description: string;
+    affectedResource: string;
+    detectedAt: Date;
+    status: 'Open' | 'Patched' | 'Ignored';
+}
+
+export interface MarketplaceApp {
+    id: string;
+    name: string;
+    vendor: string;
+    category: 'Databases' | 'Analytics' | 'DevOps' | 'Security' | 'Web';
+    version: string;
+    description: string;
+    logoUrl: string; // A path or data URI
+    monthlyPrice: number;
+}
+
+export interface AIInsight {
+    id: string;
+    type: 'Cost' | 'Security' | 'Performance' | 'Reliability';
+    severity: 'High' | 'Medium' | 'Low';
+    title: string;
+    description: string;
+    recommendation: string;
+    relatedResourceId: string;
+}
 
 // --- MOCK DATA GENERATION FOR A REAL-WORLD SIMULATION ---
 
-const REGIONS: CloudRegion[] = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-southeast-2'];
+const REGIONS: CloudRegion[] = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-southeast-2', 'sa-east-1'];
 const SERVICE_TYPES: CloudService['type'][] = ['Compute', 'Storage', 'Database', 'Networking', 'AI/ML', 'Security'];
-const INSTANCE_TYPES: InstanceType[] = ['t3.micro', 'm5.large', 'c5.2xlarge', 'g4dn.xlarge', 'r6g.4xlarge'];
+const INSTANCE_TYPES: InstanceType[] = ['t3.micro', 'm5.large', 'c5.2xlarge', 'g4dn.xlarge', 'r6g.4xlarge', 'i3.metal'];
 const STATUSES: ServiceStatus[] = ['Running', 'Stopped', 'Pending', 'Error', 'Available', 'Updating'];
 
 const generateRandomIp = () => `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
 
+export const generateMockVPCs = (): VPC[] => [
+    { id: 'vpc-prod-use1', name: 'vpc-production-us-east-1', cidrBlock: '10.0.0.0/16', region: 'us-east-1' },
+    { id: 'vpc-prod-euw1', name: 'vpc-production-eu-central-1', cidrBlock: '10.1.0.0/16', region: 'eu-central-1' },
+    { id: 'vpc-dev-use1', name: 'vpc-development-us-east-1', cidrBlock: '10.2.0.0/16', region: 'us-east-1' },
+];
+const mockVPCs = generateMockVPCs();
+
 export const generateMockServices = (count: number): CloudService[] => {
     return Array.from({ length: count }, (_, i) => {
         const type = SERVICE_TYPES[i % SERVICE_TYPES.length];
+        const region = REGIONS[i % REGIONS.length];
+        const vpc = mockVPCs.find(v => v.region === region) || mockVPCs[0];
         return {
             id: `srv-${Date.now()}-${i}`,
-            name: `${type.toLowerCase().replace('/','-')}-${i.toString().padStart(3,'0')}-${REGIONS[i % REGIONS.length].split('-')[0]}`,
+            name: `${type.toLowerCase().replace('/','-')}-${i.toString().padStart(3,'0')}-${region.split('-')[0]}`,
             type,
             status: STATUSES[Math.floor(Math.random() * STATUSES.length)],
-            region: REGIONS[i % REGIONS.length],
+            region,
             instanceType: INSTANCE_TYPES[Math.floor(Math.random() * INSTANCE_TYPES.length)],
             createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
             uptime: Math.floor(Math.random() * 720),
@@ -110,6 +198,7 @@ export const generateMockServices = (count: number): CloudService[] => {
             tags: { project: `project-${i%5}`, owner: `team-${['alpha', 'beta', 'gamma'][i%3]}` },
             publicIp: type === 'Compute' ? generateRandomIp() : undefined,
             privateIp: `10.0.${Math.floor(i/256)}.${i%256}`,
+            vpcId: vpc.id,
         };
     });
 };
@@ -175,10 +264,10 @@ export const generateMockInvoices = (): BillingInvoice[] => {
         return {
             id: `inv-${d.getFullYear()}-${d.getMonth()+1}`,
             month: d.toLocaleString('default', { month: 'long', year: 'numeric' }),
-            amount: 38000 + Math.random() * 5000,
+            amount: 38000 + Math.random() * 5000 * (i === 1 ? 1.5 : 1), // Spike last month for anomaly
             status: i === 0 ? 'Due' : 'Paid',
             dueDate: new Date(d.getFullYear(), d.getMonth() + 1, 15),
-            pdfUrl: `#`, // In a real app, this would be a link to a PDF file
+            pdfUrl: `#`,
         };
     });
 };
@@ -192,22 +281,44 @@ export const generateMockDeployments = (): IaCDeployment[] => {
         version: `v1.${5 - Math.floor(i/4)}.${i%4}`,
         deployedBy: users[i % users.length],
         timestamp: new Date(Date.now() - i * 6 * 60 * 60 * 1000),
-        status: ['Success', 'Success', 'Success', 'Failed', 'In Progress'][Math.floor(Math.random() * 4.5)],
-        changelog: `Update ${templates[i % templates.length]} to version ${`v1.${5 - Math.floor(i/4)}.${i%4}`}.`
+        status: ['Success', 'Success', 'Success', 'Failed', 'In Progress'][Math.floor(Math.random() * 4.5)] as DeploymentStatus,
+        changelog: `Update ${templates[i % templates.length]} to version ${`v1.${5 - Math.floor(i/4)}.${i%4}`}.`,
+        commitHash: (Math.random() + 1).toString(36).substring(2, 9),
     }));
 };
 
 export const generateMockUsers = (): IAMUser[] => {
-    const roles: UserRole[] = ['Admin', 'Developer', 'Viewer', 'BillingManager'];
     return [
-        { id: 'usr-1', name: 'Alice Wonder', email: 'alice@demobank.com', role: 'Admin', lastLogin: new Date(Date.now() - 30 * 60 * 1000), mfaEnabled: true },
-        { id: 'usr-2', name: 'Bob Builder', email: 'bob@demobank.com', role: 'Developer', lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000), mfaEnabled: true },
-        { id: 'usr-3', name: 'Charlie Bucket', email: 'charlie@demobank.com', role: 'Developer', lastLogin: new Date(Date.now() - 25 * 60 * 60 * 1000), mfaEnabled: false },
-        { id: 'usr-4', name: 'Diana Prince', email: 'diana@demobank.com', role: 'Viewer', lastLogin: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), mfaEnabled: true },
-        { id: 'usr-5', name: 'Eve Moneypenny', email: 'eve@demobank.com', role: 'BillingManager', lastLogin: new Date(Date.now() - 8 * 60 * 60 * 1000), mfaEnabled: true },
+        { id: 'usr-1', name: 'Alice Wonder', email: 'alice@demobank.com', role: 'Admin', lastLogin: new Date(Date.now() - 30 * 60 * 1000), mfaEnabled: true, groups: ['Admins', 'Core-Infra'] },
+        { id: 'usr-2', name: 'Bob Builder', email: 'bob@demobank.com', role: 'Developer', lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000), mfaEnabled: true, groups: ['Developers', 'Project-Alpha'] },
+        { id: 'usr-3', name: 'Charlie Bucket', email: 'charlie@demobank.com', role: 'Developer', lastLogin: new Date(Date.now() - 25 * 60 * 60 * 1000), mfaEnabled: false, groups: ['Developers', 'Project-Beta'] },
+        { id: 'usr-4', name: 'Diana Prince', email: 'diana@demobank.com', role: 'Viewer', lastLogin: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), mfaEnabled: true, groups: ['Viewers'] },
+        { id: 'usr-5', name: 'Eve Moneypenny', email: 'eve@demobank.com', role: 'BillingManager', lastLogin: new Date(Date.now() - 8 * 60 * 60 * 1000), mfaEnabled: true, groups: ['Billing'] },
+        { id: 'usr-6', name: 'Frank Castle', email: 'frank@demobank.com', role: 'SecurityAnalyst', lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000), mfaEnabled: true, groups: ['Security', 'Admins'] },
     ];
 };
 
+export const generateMockSecurityData = (): { reports: ComplianceReport[], vulnerabilities: Vulnerability[] } => ({
+    reports: [
+        { id: 'comp-1', standard: 'SOC2', status: 'Compliant', lastAuditDate: new Date(Date.now() - 80 * 24 * 60 * 60 * 1000), reportUrl: '#' },
+        { id: 'comp-2', standard: 'HIPAA', status: 'Compliant', lastAuditDate: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000), reportUrl: '#' },
+        { id: 'comp-3', standard: 'PCI-DSS', status: 'In Audit', lastAuditDate: new Date(Date.now() - 300 * 24 * 60 * 60 * 1000), reportUrl: '#' },
+        { id: 'comp-4', standard: 'GDPR', status: 'Non-Compliant', lastAuditDate: new Date(Date.now() - 150 * 24 * 60 * 60 * 1000), reportUrl: '#' },
+    ],
+    vulnerabilities: [
+        { id: 'vuln-1', cveId: 'CVE-2023-4863', severity: 'Critical', description: 'Heap buffer overflow in libwebp', affectedResource: 'srv-compute-003-us', detectedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), status: 'Open' },
+        { id: 'vuln-2', cveId: 'CVE-2023-38545', severity: 'High', description: 'SOCKS5 heap buffer overflow in curl', affectedResource: 'srv-compute-015-eu', detectedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), status: 'Patched' },
+        { id: 'vuln-3', cveId: 'CVE-2023-29491', severity: 'Medium', description: 'Information disclosure in OpenSSL', affectedResource: 'srv-database-002-ap', detectedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), status: 'Open' },
+    ]
+});
+
+export const generateMockMarketplaceApps = (): MarketplaceApp[] => [
+    { id: 'app-1', name: 'QuantumLeap DB', vendor: 'FutureData', category: 'Databases', version: '3.14', description: 'A hyper-scalable post-quantum database.', logoUrl: 'FaDatabase', monthlyPrice: 1500 },
+    { id: 'app-2', name: 'CodeGuardian', vendor: 'SecuriCode', category: 'Security', version: '2.0.1', description: 'AI-powered continuous security scanning for your repos.', logoUrl: 'FaShieldAlt', monthlyPrice: 500 },
+    { id: 'app-3', name: 'DeploySphere', vendor: 'CI/CD Solutions', category: 'DevOps', version: '5.2.0', description: 'Automated multi-cloud deployment pipelines.', logoUrl: 'FaCodeBranch', monthlyPrice: 350 },
+    { id: 'app-4', name: 'InsightEngine', vendor: 'DataViz Inc.', category: 'Analytics', version: '7.8.2', description: 'Natural language business intelligence and visualization.', logoUrl: 'FaBrain', monthlyPrice: 2000 },
+    { id: 'app-5', name: 'Nginx WebStack', vendor: 'Community', category: 'Web', version: '1.25.3', description: 'Pre-configured high-performance Nginx web server stack.', logoUrl: 'FaServer', monthlyPrice: 50 },
+];
 
 // --- MOCK API LAYER ---
 
@@ -289,7 +400,37 @@ const mockApi = {
     getUsers: async() => {
         await new Promise(res => setTimeout(res, 450));
         return mockUsers;
-    }
+    },
+    getNetworking: async() => {
+        await new Promise(res => setTimeout(res, 750));
+        // In a real app, this data would be structured and related.
+        return { vpcs: mockVPCs, subnets: [], securityGroups: [] };
+    },
+    getSecurity: async() => {
+        await new Promise(res => setTimeout(res, 850));
+        return generateMockSecurityData();
+    },
+    getMarketplaceApps: async() => {
+        await new Promise(res => setTimeout(res, 600));
+        return generateMockMarketplaceApps();
+    },
+    getAILogSummary: async(logs: ServiceLogEntry[]): Promise<string> => {
+        await new Promise(res => setTimeout(res, 2000));
+        const errors = logs.filter(l => l.level === 'ERROR' || l.level === 'FATAL').length;
+        const warnings = logs.filter(l => l.level === 'WARN').length;
+        if(errors > 0) {
+            return `Log analysis complete. Found ${errors} critical error(s) and ${warnings} warning(s). Key error message: "${logs.find(l=>l.level==='ERROR')?.message}". Recommend immediate investigation of the database connection issues.`;
+        }
+        return `Log analysis complete. System appears stable with ${warnings} warnings but no critical errors. Common activities include user authentications and data processing.`;
+    },
+    getAIInsights: async(): Promise<AIInsight[]> => {
+        await new Promise(res => setTimeout(res, 1500));
+        return [
+            { id: 'ai-1', type: 'Cost', severity: 'High', title: 'Unusual Cost Spike Detected', description: 'Last month\'s bill showed a 50% increase compared to the previous 6-month average.', recommendation: 'Investigate spending on Compute resources in us-east-1. Consider rightsizing instances or purchasing reserved instances.', relatedResourceId: 'inv-2023-11'},
+            { id: 'ai-2', type: 'Security', severity: 'Medium', title: 'MFA Not Enforced', description: 'User charlie@demobank.com does not have Multi-Factor Authentication enabled, increasing risk of unauthorized access.', recommendation: 'Enforce MFA for all users, especially those with developer or admin privileges.', relatedResourceId: 'usr-3' },
+            { id: 'ai-3', type: 'Performance', severity: 'Low', title: 'Underutilized Database Instance', description: 'The database instance srv-database-002-ap has an average CPU utilization of less than 5%.', recommendation: 'Consider scaling down this instance to a smaller size to save costs without impacting performance for its current workload.', relatedResourceId: 'srv-1234-5690' }
+        ];
+    },
 };
 
 // Initialize mock data globally so it persists across re-renders
@@ -373,6 +514,7 @@ export const getStatusColor = (status: ServiceStatus | DeploymentStatus) => {
         case 'Success':
             return 'text-green-400';
         case 'Stopped':
+        case 'Terminated':
             return 'text-gray-400';
         case 'Pending':
         case 'Updating':
@@ -381,6 +523,7 @@ export const getStatusColor = (status: ServiceStatus | DeploymentStatus) => {
         case 'Error':
         case 'Failed':
         case 'Rolled Back':
+        case 'Cancelled':
             return 'text-red-400';
         default:
             return 'text-white';
@@ -409,16 +552,42 @@ export const getLogLevelColor = (level: LogLevel) => {
 
 const PIE_CHART_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#de3163'];
 
+const getIconForService = (type: ServiceType) => {
+    switch(type) {
+        case 'Compute': return <FaServer className="mr-2" />;
+        case 'Database': return <FaDatabase className="mr-2" />;
+        case 'Storage': return <FaHdd className="mr-2" />;
+        case 'Networking': return <FaNetworkWired className="mr-2" />;
+        case 'AI/ML': return <FaBrain className="mr-2" />;
+        case 'Security': return <FaShieldAlt className="mr-2" />;
+        default: return <FaServer className="mr-2" />;
+    }
+};
+
+const getIconForMarketplaceCategory = (category: MarketplaceApp['category']) => {
+    const props = { size: '2em', className: "mb-2 text-cyan-400" };
+    switch(category) {
+        case 'Databases': return <FaDatabase {...props} />;
+        case 'Security': return <FaShieldAlt {...props} />;
+        case 'DevOps': return <FaCodeBranch {...props} />;
+        case 'Analytics': return <FaBrain {...props} />;
+        case 'Web': return <FaServer {...props} />;
+    }
+}
+
 // --- UI SUB-COMPONENTS ---
 
-export const LoadingSpinner: FC = () => (
-    <div className="flex justify-center items-center h-full w-full">
-        <svg className="animate-spin -ml-1 mr-3 h-8 w-8 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-    </div>
-);
+export const LoadingSpinner: FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+    const sizeMap = { sm: 'h-5 w-5', md: 'h-8 w-8', lg: 'h-12 w-12' };
+    return (
+        <div className="flex justify-center items-center h-full w-full">
+            <svg className={`animate-spin text-cyan-400 ${sizeMap[size]}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+    );
+}
 
 export const ErrorDisplay: FC<{ error: Error | null }> = ({ error }) => (
     <div className="text-red-400 bg-red-900/50 p-4 rounded-lg">
@@ -457,7 +626,7 @@ export const DashboardHeader: FC<{ region: CloudRegion | 'all' }> = ({ region })
                 <p className="text-sm text-gray-400 mt-1">Active Services</p>
             </Card>
             <Card className="text-center">
-                <p className="text-3xl font-bold text-white">{data.uptime}%</p>
+                <p className="text-3xl font-bold text-green-400">{data.uptime}%</p>
                 <p className="text-sm text-gray-400 mt-1">Uptime (30d)</p>
             </Card>
             <Card className="text-center">
@@ -465,7 +634,7 @@ export const DashboardHeader: FC<{ region: CloudRegion | 'all' }> = ({ region })
                 <p className="text-sm text-gray-400 mt-1">Month-to-Date Cost</p>
             </Card>
             <Card className="text-center">
-                <p className="text-3xl font-bold text-white">{data.activeAlerts}</p>
+                <p className={`text-3xl font-bold ${data.activeAlerts > 0 ? 'text-red-400' : 'text-white'}`}>{data.activeAlerts}</p>
                 <p className="text-sm text-gray-400 mt-1">Active Alerts</p>
             </Card>
         </div>
@@ -560,7 +729,7 @@ export const ServicesTable: FC<{ region: CloudRegion | 'all', onServiceSelect: (
                             {filteredServices.map(service => (
                                 <tr key={service.id} className="border-b border-gray-800 hover:bg-gray-800/50">
                                     <td className="px-6 py-4 font-mono text-white">{service.name}</td>
-                                    <td className="px-6 py-4">{service.type}</td>
+                                    <td className="px-6 py-4 flex items-center">{getIconForService(service.type)} {service.type}</td>
                                     <td className="px-6 py-4">{service.region}</td>
                                     <td className="px-6 py-4"><span className={`${getStatusColor(service.status)} font-semibold`}>{service.status}</span></td>
                                     <td className="px-6 py-4">{formatCurrency(service.costPerHour)}</td>
@@ -579,7 +748,7 @@ export const ServicesTable: FC<{ region: CloudRegion | 'all', onServiceSelect: (
 };
 
 export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: boolean, onClose: () => void }> = ({ service, isOpen, onClose }) => {
-    const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'logs' | 'config'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'logs' | 'config' | 'ai'>('overview');
     const [timeRange, setTimeRange] = useState(1); // 1 hour
     const { data: metrics, isLoading: metricsLoading } = useApiData(
         () => service ? mockApi.getServiceMetrics(service.id, timeRange) : Promise.resolve(null),
@@ -587,12 +756,24 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
     );
     const { data: logs, isLoading: logsLoading } = useApiData(
         () => service ? mockApi.getServiceLogs(service.id) : Promise.resolve(null),
-        [service, activeTab === 'logs']
+        [service, activeTab === 'logs' || activeTab === 'ai']
     );
+    const [aiSummary, setAiSummary] = useState('');
+    const [isAiLoading, setIsAiLoading] = useState(false);
+
+    const handleAiAnalysis = useCallback(async () => {
+        if(!logs) return;
+        setIsAiLoading(true);
+        setAiSummary('');
+        const summary = await mockApi.getAILogSummary(logs);
+        setAiSummary(summary);
+        setIsAiLoading(false);
+    }, [logs]);
 
     useEffect(() => {
         if (isOpen) {
             setActiveTab('overview');
+            setAiSummary('');
         }
     }, [isOpen]);
 
@@ -608,6 +789,7 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
             <div><strong className="text-gray-400">Total Uptime:</strong> {service.uptime} hours</div>
             <div><strong className="text-gray-400">Public IP:</strong> {service.publicIp || 'N/A'}</div>
             <div><strong className="text-gray-400">Private IP:</strong> {service.privateIp}</div>
+            <div><strong className="text-gray-400">VPC:</strong> {service.vpcId}</div>
             <div><strong className="text-gray-400">Tags:</strong>
                 <div className="flex flex-wrap gap-1 mt-1">
                     {Object.entries(service.tags).map(([key, value]) => (
@@ -620,7 +802,7 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
 
     const renderMetrics = () => (
         <div>
-             <div className="flex justify-end mb-4">
+             <div className="flex justify-end mb-4 space-x-2">
                 {[1, 6, 24, 7*24].map(hours => (
                     <button key={hours} onClick={() => setTimeRange(hours)} className={`px-3 py-1 text-xs rounded-md ${timeRange === hours ? 'bg-cyan-600' : 'bg-gray-700 hover:bg-gray-600'}`}>
                         {hours < 24 ? `${hours}H` : `${hours/24}D`}
@@ -672,6 +854,25 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
         </div>
     );
 
+    const renderAiAnalysis = () => (
+        <div>
+            <button 
+                onClick={handleAiAnalysis} 
+                disabled={isAiLoading || logsLoading}
+                className="bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg flex items-center mb-4"
+            >
+                {isAiLoading ? <FaSpinner className="animate-spin mr-2" /> : <FaBrain className="mr-2" />}
+                {isAiLoading ? 'Analyzing Logs...' : 'Analyze with AI'}
+            </button>
+            {aiSummary && (
+                <div className="bg-gray-900/50 p-4 rounded-lg border-l-4 border-cyan-400">
+                    <h4 className="text-lg font-semibold text-white mb-2">AI Summary</h4>
+                    <p className="text-gray-300 whitespace-pre-wrap">{aiSummary}</p>
+                </div>
+            )}
+        </div>
+    );
+
     const renderConfig = () => (
         <div className="bg-gray-900 font-mono text-xs rounded-md p-4 h-96 overflow-y-auto">
             <pre className="text-green-300">
@@ -680,7 +881,7 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
                     instanceType: service.instanceType,
                     region: service.region,
                     network: {
-                        vpcId: 'vpc-0a1b2c3d4e5f6',
+                        vpcId: service.vpcId,
                         subnetId: 'subnet-1a2b3c4d5e6f7',
                         securityGroups: ['sg-9f8e7d6c5b4a3', 'sg-f1e2d3c4b5a69'],
                     },
@@ -700,14 +901,17 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
             <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col text-white">
                 <div className="flex justify-between items-center p-4 border-b border-gray-700">
                     <h3 className="text-xl font-bold">{service.name} Details</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
                 <div className="p-4 border-b border-gray-700">
-                    <nav className="flex space-x-4">
+                    <nav className="flex space-x-1 sm:space-x-4 text-sm">
                         <button onClick={() => setActiveTab('overview')} className={`px-3 py-2 rounded-md ${activeTab === 'overview' ? 'bg-cyan-600' : 'hover:bg-gray-700'}`}>Overview</button>
                         <button onClick={() => setActiveTab('metrics')} className={`px-3 py-2 rounded-md ${activeTab === 'metrics' ? 'bg-cyan-600' : 'hover:bg-gray-700'}`}>Metrics</button>
                         <button onClick={() => setActiveTab('logs')} className={`px-3 py-2 rounded-md ${activeTab === 'logs' ? 'bg-cyan-600' : 'hover:bg-gray-700'}`}>Logs</button>
                         <button onClick={() => setActiveTab('config')} className={`px-3 py-2 rounded-md ${activeTab === 'config' ? 'bg-cyan-600' : 'hover:bg-gray-700'}`}>Configuration</button>
+                        <button onClick={() => setActiveTab('ai')} className={`px-3 py-2 rounded-md ${activeTab === 'ai' ? 'bg-cyan-600' : 'hover:bg-gray-700'} flex items-center`}>
+                           <FaLightbulb className="mr-1"/> AI Analysis
+                        </button>
                     </nav>
                 </div>
                 <div className="p-6 overflow-y-auto">
@@ -715,6 +919,7 @@ export const ServiceDetailModal: FC<{ service: CloudService | null, isOpen: bool
                     {activeTab === 'metrics' && renderMetrics()}
                     {activeTab === 'logs' && renderLogs()}
                     {activeTab === 'config' && renderConfig()}
+                    {activeTab === 'ai' && renderAiAnalysis()}
                 </div>
             </div>
         </div>
@@ -811,21 +1016,32 @@ export const BillingAndCostManagement: FC = () => {
 };
 
 export const CloudViewTabs: FC<{ activeTab: string, setActiveTab: (tab: string) => void}> = ({activeTab, setActiveTab}) => {
-    const tabs = ['Dashboard', 'Services', 'Alerts', 'Billing', 'Deployments', 'IAM'];
+    const tabs = [
+        {name: 'Dashboard', icon: FaServer},
+        {name: 'Services', icon: FaHdd},
+        {name: 'Alerts', icon: FaExclamationTriangle},
+        {name: 'Billing', icon: FaFileInvoiceDollar},
+        {name: 'Deployments', icon: FaCodeBranch},
+        {name: 'IAM', icon: FaUsers},
+        {name: 'Security', icon: FaUserShield},
+        {name: 'Networking', icon: FaVpc},
+        {name: 'Marketplace', icon: FaStore},
+    ];
     return (
-        <div className="border-b border-gray-700 mb-6">
+        <div className="border-b border-gray-700 mb-6 overflow-x-auto">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                 {tabs.map(tab => (
                     <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
+                        key={tab.name}
+                        onClick={() => setActiveTab(tab.name)}
                         className={`${
-                            activeTab === tab
+                            activeTab === tab.name
                                 ? 'border-cyan-500 text-cyan-400'
                                 : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
-                        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                        } flex items-center whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
                     >
-                        {tab}
+                        <tab.icon className="mr-2" />
+                        {tab.name}
                     </button>
                 ))}
             </nav>
@@ -847,6 +1063,7 @@ export const DeploymentView: FC = () => {
                                 <th scope="col" className="px-6 py-3">Timestamp</th>
                                 <th scope="col" className="px-6 py-3">Template</th>
                                 <th scope="col" className="px-6 py-3">Version</th>
+                                <th scope="col" className="px-6 py-3">Commit</th>
                                 <th scope="col" className="px-6 py-3">Deployed By</th>
                                 <th scope="col" className="px-6 py-3">Status</th>
                             </tr>
@@ -857,6 +1074,7 @@ export const DeploymentView: FC = () => {
                                     <td className="px-6 py-4">{formatDate(d.timestamp)}</td>
                                     <td className="px-6 py-4 font-mono text-white">{d.templateName}</td>
                                     <td className="px-6 py-4">{d.version}</td>
+                                    <td className="px-6 py-4 font-mono text-cyan-400 hover:underline cursor-pointer">{d.commitHash}</td>
                                     <td className="px-6 py-4">{d.deployedBy}</td>
                                     <td className="px-6 py-4"><span className={`${getStatusColor(d.status)} font-semibold`}>{d.status}</span></td>
                                 </tr>
@@ -883,6 +1101,7 @@ export const IAMView: FC = () => {
                                 <th scope="col" className="px-6 py-3">Name</th>
                                 <th scope="col" className="px-6 py-3">Email</th>
                                 <th scope="col" className="px-6 py-3">Role</th>
+                                <th scope="col" className="px-6 py-3">Groups</th>
                                 <th scope="col" className="px-6 py-3">MFA</th>
                                 <th scope="col" className="px-6 py-3">Last Login</th>
                             </tr>
@@ -893,6 +1112,9 @@ export const IAMView: FC = () => {
                                     <td className="px-6 py-4 text-white">{u.name}</td>
                                     <td className="px-6 py-4">{u.email}</td>
                                     <td className="px-6 py-4">{u.role}</td>
+                                    <td className="px-6 py-4 flex flex-wrap gap-1">
+                                        {u.groups.map(g => <span key={g} className="bg-gray-700 text-xs px-2 py-1 rounded-full">{g}</span>)}
+                                    </td>
                                     <td className="px-6 py-4">{u.mfaEnabled ? <span className="text-green-400">Enabled</span> : <span className="text-yellow-400">Disabled</span>}</td>
                                     <td className="px-6 py-4">{timeSince(u.lastLogin)}</td>
                                 </tr>
@@ -905,6 +1127,160 @@ export const IAMView: FC = () => {
     );
 };
 
+export const SecurityView: FC = () => {
+    const {data, isLoading, error} = useApiData(mockApi.getSecurity);
+    
+    const getComplianceStatusPill = (status: ComplianceReport['status']) => {
+        switch(status) {
+            case 'Compliant': return <span className="text-xs px-2 py-1 rounded-full bg-green-800 text-green-300">{status}</span>;
+            case 'Non-Compliant': return <span className="text-xs px-2 py-1 rounded-full bg-red-800 text-red-300">{status}</span>;
+            case 'In Audit': return <span className="text-xs px-2 py-1 rounded-full bg-yellow-800 text-yellow-300">{status}</span>;
+        }
+    };
+    
+    const getVulnerabilitySeverityPill = (severity: VulnerabilitySeverity) => {
+        switch(severity) {
+            case 'Critical': return <span className="font-bold text-red-500">{severity}</span>
+            case 'High': return <span className="font-bold text-red-400">{severity}</span>
+            case 'Medium': return <span className="font-bold text-yellow-400">{severity}</span>
+            case 'Low': return <span className="font-bold text-gray-400">{severity}</span>
+        }
+    };
+
+    if (isLoading) return <Card><LoadingSpinner/></Card>;
+    if (error || !data) return <ErrorDisplay error={error} />;
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card title="Compliance Status">
+                <ul className="space-y-3">
+                    {data.reports.map(report => (
+                        <li key={report.id} className="flex justify-between items-center p-3 bg-gray-900/50 rounded-md">
+                            <div>
+                                <p className="font-bold text-white">{report.standard}</p>
+                                <p className="text-xs text-gray-400">Last Audit: {report.lastAuditDate.toLocaleDateString()}</p>
+                            </div>
+                            {getComplianceStatusPill(report.status)}
+                        </li>
+                    ))}
+                </ul>
+            </Card>
+            <Card title="Open Vulnerabilities">
+                <div className="max-h-[400px] overflow-y-auto">
+                    {data.vulnerabilities.filter(v => v.status === 'Open').map(vuln => (
+                        <div key={vuln.id} className="p-3 mb-2 rounded-md bg-gray-900/50">
+                            <div className="flex justify-between items-center">
+                                <p className="font-mono text-cyan-400 text-sm">{vuln.cveId}</p>
+                                {getVulnerabilitySeverityPill(vuln.severity)}
+                            </div>
+                            <p className="text-sm text-gray-300 mt-1">{vuln.description}</p>
+                            <p className="text-xs text-gray-500 mt-2">On: {vuln.affectedResource}</p>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+export const NetworkingView: FC = () => {
+    const { data, isLoading, error } = useApiData(mockApi.getNetworking);
+    
+    const elements: Elements = useMemo(() => {
+        if (!data) return [];
+        const initialElements: Elements = [
+            { id: 'internet', data: { label: 'Internet Gateway' }, position: { x: 400, y: 50 }, className: 'bg-green-700 text-white' }
+        ];
+
+        data.vpcs.forEach((vpc, i) => {
+            initialElements.push({
+                id: vpc.id,
+                data: { label: `${vpc.name} (${vpc.cidrBlock})` },
+                position: { x: 150, y: 150 + i * 200 },
+                style: { width: 500, height: 100, backgroundColor: '#1f2937', color: 'white', borderColor: '#06b6d4' }
+            });
+            initialElements.push({ id: `e-inet-${vpc.id}`, source: 'internet', target: vpc.id, animated: true });
+        });
+        return initialElements;
+    }, [data]);
+
+    if (isLoading) return <Card><LoadingSpinner /></Card>;
+    if (error) return <ErrorDisplay error={error} />;
+
+    return (
+        <Card title="VPC Topology">
+            <div className="w-full h-[600px] bg-gray-900 rounded-lg">
+                <ReactFlow elements={elements}>
+                    <MiniMap />
+                    <Controls />
+                    <Background />
+                </ReactFlow>
+            </div>
+        </Card>
+    );
+};
+
+export const MarketplaceView: FC = () => {
+    const { data: apps, isLoading, error } = useApiData(mockApi.getMarketplaceApps);
+
+    if (isLoading) return <Card><LoadingSpinner /></Card>;
+    if (error) return <ErrorDisplay error={error} />;
+
+    return (
+        <Card title="Marketplace">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {apps?.map(app => (
+                    <div key={app.id} className="bg-gray-900/50 rounded-lg p-6 flex flex-col items-center text-center hover:bg-gray-800/50 transition-colors duration-200">
+                        {getIconForMarketplaceCategory(app.category)}
+                        <h4 className="text-xl font-bold text-white mb-1">{app.name}</h4>
+                        <p className="text-sm text-gray-400 mb-2">by {app.vendor}</p>
+                        <p className="text-xs text-gray-500 mb-4 h-16">{app.description}</p>
+                        <p className="text-lg font-semibold text-white mb-4">{formatCurrency(app.monthlyPrice)}/mo</p>
+                        <button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg">
+                            Deploy
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
+
+export const AIInsightsDashboard: FC = () => {
+    const {data: insights, isLoading, error} = useApiData(mockApi.getAIInsights);
+    
+    const getInsightIcon = (type: AIInsight['type']) => {
+        const props = {className: "text-2xl text-cyan-400"};
+        switch(type) {
+            case 'Cost': return <FaFileInvoiceDollar {...props}/>
+            case 'Security': return <FaShieldAlt {...props}/>
+            case 'Performance': return <FaServer {...props}/>
+            case 'Reliability': return <FaCheckCircle {...props}/>
+        }
+    }
+    
+    return (
+        <Card title="AI Advisor Insights">
+             {isLoading && <LoadingSpinner />}
+             {error && <ErrorDisplay error={error} />}
+             <div className="space-y-4">
+                {insights?.map(insight => (
+                    <div key={insight.id} className="flex items-start bg-gray-900/50 p-4 rounded-lg">
+                        <div className="mr-4">{getInsightIcon(insight.type)}</div>
+                        <div>
+                            <h4 className="font-bold text-white">{insight.title}</h4>
+                            <p className="text-sm text-gray-400 mt-1">{insight.description}</p>
+                            <div className="mt-2 bg-gray-800 p-2 rounded-md">
+                                <p className="text-xs font-semibold text-cyan-300">Recommendation:</p>
+                                <p className="text-sm text-gray-300">{insight.recommendation}</p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+             </div>
+        </Card>
+    )
+}
 
 // --- MAIN VIEW COMPONENT ---
 
@@ -920,7 +1296,10 @@ const DemoBankCloudView: React.FC = () => {
                     <div className="space-y-6">
                         <DashboardHeader region={selectedRegion} />
                         <ResourceCharts />
-                        <AlertsPanel region={selectedRegion} />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <AlertsPanel region={selectedRegion} />
+                            <AIInsightsDashboard />
+                        </div>
                     </div>
                 );
             case 'Services':
@@ -933,6 +1312,12 @@ const DemoBankCloudView: React.FC = () => {
                 return <DeploymentView />;
             case 'IAM':
                 return <IAMView />;
+            case 'Security':
+                return <SecurityView />;
+            case 'Networking':
+                return <NetworkingView />;
+            case 'Marketplace':
+                return <MarketplaceView />;
             default:
                 return null;
         }
