@@ -1,3 +1,4 @@
+```typescript
 // components/views/megadashboard/business/CompetitiveIntelligenceView.tsx
 import React, { useContext, useMemo, useState, useCallback, useEffect } from 'react';
 import Card from '../../../Card';
@@ -306,321 +307,7 @@ const generateCompetitor = (id: string, name: string): Competitor => {
 
 const generateMarketTrend = (): MarketTrend => {
     const categories = ['Regulatory', 'Technological', 'Economic', 'Societal'];
-    const impacts = ['low', 'medium', 'high'];
-    return {
-        id: `trend-${Math.random().toString(36).substring(7)}`,
-        name: `Trend: ${Math.random().toString(36).substring(2, 10)}`,
-        description: `Description for market trend focusing on ${pickRandom(categories)} changes.`,
-        impact: pickRandom(impa<ctrl60>```typescript
-// components/views/megadashboard/business/CompetitiveIntelligenceView.tsx
-import React, { useContext, useMemo, useState, useCallback, useEffect } from 'react';
-import Card from '../../../Card';
-import { DataContext } from '../../../../context/DataContext';
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Legend, BarChart, XAxis, YAxis, Tooltip, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
-import { GoogleGenAI } from "@google/genai";
-
-// --- Utility Types and Interfaces ---
-
-export interface CompetitorFinancials {
-    revenue: number; // in millions
-    profitMargin: number; // percentage
-    marketCap: number; // in billions
-    growthRate: number; // annual percentage
-    roa: number; // return on assets
-    roe: number; // return on equity
-    debtToEquity: number;
-}
-
-export interface CompetitorProductFeature {
-    name: string;
-    ourRating: number; // 1-5
-    competitorRating: number; // 1-5
-    description: string;
-    isKeyDifferentiator: boolean;
-}
-
-export interface CompetitorProduct {
-    id: string;
-    name: string;
-    category: string;
-    pricingModel: string; // e.g., "Subscription", "Transaction-based", "Freemium"
-    basePrice: number;
-    features: CompetitorProductFeature[];
-    userReviews: { score: number; comment: string; sentiment: 'positive' | 'negative' | 'neutral' }[];
-    marketShare: number; // percentage
-    startDate: string; // YYYY-MM-DD
-}
-
-export interface CompetitorInvestment {
-    date: string; // YYYY-MM-DD
-    investor: string;
-    amount: number; // in millions
-    round: string;
-}
-
-export interface CompetitorExecutive {
-    name: string;
-    role: string;
-    tenure: string;
-    pastExperience: string[];
-}
-
-export interface Competitor {
-    id: string;
-    name: string;
-    logoUrl: string;
-    industry: string;
-    hqLocation: string;
-    foundingYear: number;
-    marketSegments: string[];
-    description: string;
-    strengths: string[];
-    weaknesses: string[];
-    opportunities: string[];
-    threats: string[];
-    financials: CompetitorFinancials;
-    products: CompetitorProduct[];
-    investments: CompetitorInvestment[];
-    executives: CompetitorExecutive[];
-    strategicMoves: { date: string; description: string; impact: string }[];
-    newsArticles: NewsArticle[];
-    socialMediaMentions: SocialMediaMention[];
-    customerBaseSize: number;
-    churnRate: number; // percentage
-    customerSatisfactionScore: number; // CSAT 1-100
-    employeeCount: number;
-}
-
-export interface MarketTrend {
-    id: string;
-    name: string;
-    description: string;
-    impact: 'low' | 'medium' | 'high';
-    category: string; // e.g., "Regulatory", "Technological", "Societal"
-    growthProjection: number; // annual percentage
-    startDate: string; // YYYY-MM-DD
-}
-
-export interface RegulatoryUpdate {
-    id: string;
-    title: string;
-    description: string;
-    effectiveDate: string;
-    impactLevel: 'low' | 'medium' | 'high';
-    affectedProducts: string[];
-}
-
-export interface NewsArticle {
-    id: string;
-    title: string;
-    source: string;
-    date: string; // YYYY-MM-DD
-    url: string;
-    sentiment: 'positive' | 'negative' | 'neutral';
-    keywords: string[];
-    summary: string;
-}
-
-export interface SocialMediaMention {
-    id: string;
-    platform: string;
-    username: string;
-    date: string; // YYYY-MM-DD
-    content: string;
-    sentiment: 'positive' | 'negative' | 'neutral';
-    likes: number;
-    reposts: number;
-    comments: number;
-    keywords: string[];
-}
-
-export interface Recommendation {
-    id: string;
-    category: string; // e.g., "Product Development", "Marketing", "Pricing", "Operations"
-    title: string;
-    description: string;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    potentialImpact: string;
-    aiConfidence: number; // 0-100
-}
-
-export interface UserInteractionLog {
-    timestamp: string;
-    action: string;
-    details: string;
-}
-
-export interface CompetitorBenchmarkingData {
-    metric: string;
-    ourValue: number;
-    competitorValue: number;
-    unit: string;
-}
-
-// --- Simulated Data Generation Utilities ---
-
-const generateRandomDate = (start: Date, end: Date) => {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).toISOString().split('T')[0];
-};
-
-const generateRandomNumber = (min: number, max: number, decimals: number = 0) => {
-    return parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
-};
-
-const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-
-const generateFinancials = (): CompetitorFinancials => ({
-    revenue: generateRandomNumber(500, 5000, 0), // millions
-    profitMargin: generateRandomNumber(10, 40, 2), // percentage
-    marketCap: generateRandomNumber(5, 50, 2), // billions
-    growthRate: generateRandomNumber(5, 25, 2), // percentage
-    roa: generateRandomNumber(5, 15, 2),
-    roe: generateRandomNumber(10, 30, 2),
-    debtToEquity: generateRandomNumber(0.1, 1.5, 2),
-});
-
-const generateProductFeature = (name: string): CompetitorProductFeature => ({
-    name,
-    ourRating: generateRandomNumber(1, 5),
-    competitorRating: generateRandomNumber(1, 5),
-    description: `Detailed description for ${name} feature.`,
-    isKeyDifferentiator: Math.random() > 0.7,
-});
-
-const generateProduct = (id: string, competitorName: string): CompetitorProduct => {
-    const categories = ['Savings', 'Checking', 'Loans', 'Investments', 'Credit Cards', 'Wealth Management'];
-    const pricingModels = ['Subscription', 'Transaction-based', 'Freemium', 'Tiered'];
-    const featureNames = ['Online Banking', 'Mobile App', '24/7 Support', 'Low Fees', 'High Interest', 'Quick Approvals', 'Advanced Analytics'];
-
-    return {
-        id: `prod-${id}`,
-        name: `${competitorName} ${pickRandom(categories)} Product ${id}`,
-        category: pickRandom(categories),
-        pricingModel: pickRandom(pricingModels),
-        basePrice: generateRandomNumber(0, 50),
-        features: featureNames.map(generateProductFeature),
-        userReviews: Array.from({ length: generateRandomNumber(5, 20) }).map(() => {
-            const score = generateRandomNumber(1, 5);
-            let sentiment: 'positive' | 'negative' | 'neutral';
-            if (score >= 4) sentiment = 'positive';
-            else if (score <= 2) sentiment = 'negative';
-            else sentiment = 'neutral';
-            return {
-                score,
-                comment: `User review comment for product ${id} with score ${score}.`,
-                sentiment,
-            };
-        }),
-        marketShare: generateRandomNumber(1, 15, 2),
-        startDate: generateRandomDate(new Date('2010-01-01'), new Date('2022-01-01')),
-    };
-};
-
-const generateInvestment = (competitorName: string): CompetitorInvestment => ({
-    date: generateRandomDate(new Date('2015-01-01'), new Date('2023-01-01')),
-    investor: pickRandom(['Sequoia Capital', 'Andreessen Horowitz', 'SoftBank', 'Tiger Global', 'BlackRock']),
-    amount: generateRandomNumber(10, 500), // millions
-    round: pickRandom(['Seed', 'Series A', 'Series B', 'Series C', 'Series D', 'IPO']),
-});
-
-const generateExecutive = (): CompetitorExecutive => ({
-    name: `Exec ${Math.random().toString(36).substring(7)}`,
-    role: pickRandom(['CEO', 'CTO', 'CFO', 'CMO', 'Head of Product']),
-    tenure: `${generateRandomNumber(1, 10)} years`,
-    pastExperience: Array.from({ length: generateRandomNumber(1, 3) }).map(() => `Company ${Math.random().toString(36).substring(7)}`),
-});
-
-const generateNewsArticle = (competitorName: string): NewsArticle => {
-    const sentiments: ('positive' | 'negative' | 'neutral')[] = ['positive', 'negative', 'neutral'];
-    return {
-        id: `news-${Math.random().toString(36).substring(7)}`,
-        title: `${competitorName} in the News: ${Math.random().toString(36).substring(2, 10)}`,
-        source: pickRandom(['TechCrunch', 'Bloomberg', 'Reuters', 'Wall Street Journal', 'Financial Times']),
-        date: generateRandomDate(new Date('2023-01-01'), new Date()),
-        url: `https://example.com/news/${Math.random().toString(36).substring(7)}`,
-        sentiment: pickRandom(sentiments),
-        keywords: pickRandom([['finance', 'tech'], ['investment', 'growth'], ['regulation', 'market']]),
-        summary: `Summary of the news article about ${competitorName} and its recent activities.`,
-    };
-};
-
-const generateSocialMediaMention = (competitorName: string): SocialMediaMention => {
-    const sentiments: ('positive' | 'negative' | 'neutral')[] = ['positive', 'negative', 'neutral'];
-    return {
-        id: `social-${Math.random().toString(36).substring(7)}`,
-        platform: pickRandom(['Twitter', 'LinkedIn', 'Reddit', 'Facebook']),
-        username: `@user${Math.random().toString(36).substring(7)}`,
-        date: generateRandomDate(new Date('2023-01-01'), new Date()),
-        content: `A social media post mentioning ${competitorName}: ${Math.random().toString(36).substring(2, 20)}`,
-        sentiment: pickRandom(sentiments),
-        likes: generateRandomNumber(0, 1000),
-        reposts: generateRandomNumber(0, 200),
-        comments: generateRandomNumber(0, 50),
-        keywords: pickRandom([['#fintech', '#innovation'], ['#banking', '#competitor']]),
-    };
-};
-
-const generateCompetitor = (id: string, name: string): Competitor => {
-    const marketSegments = ['Retail Banking', 'SME Banking', 'Corporate Banking', 'Wealth Management', 'Digital Payments'];
-    const descriptions = [
-        `Leading digital-first bank focusing on seamless user experience.`,
-        `Traditional banking giant with a strong physical presence and expanding digital offerings.`,
-        `Niche fintech player specializing in lending solutions for small businesses.`,
-        `Global investment bank with a growing retail arm.`,
-    ];
-    const strengths = ['Strong brand recognition', 'Robust technology stack', 'Extensive customer base', 'Innovative product development'];
-    const weaknesses = ['Legacy systems', 'High operational costs', 'Limited digital presence', 'Niche market focus'];
-    const opportunities = ['Market expansion', 'Strategic partnerships', 'Emerging technologies', 'Regulatory changes'];
-    const threats = ['New market entrants', 'Economic downturn', 'Cybersecurity risks', 'Intense price competition'];
-
-    const numProducts = generateRandomNumber(2, 5);
-    const numInvestments = generateRandomNumber(0, 3);
-    const numExecutives = generateRandomNumber(3, 7);
-    const numNews = generateRandomNumber(3, 10);
-    const numSocial = generateRandomNumber(5, 15);
-    const strategicMovesDescriptions = [
-        'Acquired a smaller fintech startup to expand digital offerings.',
-        'Launched a new AI-powered customer service platform.',
-        'Expanded into a new international market.',
-        'Announced a partnership with a major e-commerce provider.',
-        'Revised pricing model for premium accounts.',
-    ];
-    const impactLevels = ['Low', 'Medium', 'High'];
-
-    return {
-        id,
-        name,
-        logoUrl: `/logos/${name.toLowerCase().replace(/\s/g, '')}.png`, // Placeholder
-        industry: 'Fintech/Banking',
-        hqLocation: pickRandom(['New York', 'London', 'Singapore', 'Berlin', 'San Francisco']),
-        foundingYear: generateRandomNumber(1980, 2020),
-        marketSegments: Array.from({ length: generateRandomNumber(1, 3) }).map(() => pickRandom(marketSegments)),
-        description: pickRandom(descriptions),
-        strengths: Array.from({ length: generateRandomNumber(2, 4) }).map(() => pickRandom(strengths)),
-        weaknesses: Array.from({ length: generateRandomNumber(2, 4) }).map(() => pickRandom(weaknesses)),
-        opportunities: Array.from({ length: generateRandomNumber(2, 4) }).map(() => pickRandom(opportunities)),
-        threats: Array.from({ length: generateRandomNumber(2, 4) }).map(() => pickRandom(threats)),
-        financials: generateFinancials(),
-        products: Array.from({ length: numProducts }).map((_, i) => generateProduct(`${id}-${i}`, name)),
-        investments: Array.from({ length: numInvestments }).map(() => generateInvestment(name)),
-        executives: Array.from({ length: numExecutives }).map(generateExecutive),
-        strategicMoves: Array.from({ length: generateRandomNumber(2, 5) }).map(() => ({
-            date: generateRandomDate(new Date('2022-01-01'), new Date()),
-            description: pickRandom(strategicMovesDescriptions),
-            impact: pickRandom(impactLevels),
-        })),
-        newsArticles: Array.from({ length: numNews }).map(() => generateNewsArticle(name)),
-        socialMediaMentions: Array.from({ length: numSocial }).map(() => generateSocialMediaMention(name)),
-        customerBaseSize: generateRandomNumber(100000, 10000000),
-        churnRate: generateRandomNumber(0.5, 5, 2),
-        customerSatisfactionScore: generateRandomNumber(70, 95),
-        employeeCount: generateRandomNumber(1000, 50000),
-    };
-};
-
-const generateMarketTrend = (): MarketTrend => {
-    const categories = ['Regulatory', 'Technological', 'Economic', 'Societal'];
-    const impacts = ['low', 'medium', 'high'];
+    const impacts: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
     return {
         id: `trend-${Math.random().toString(36).substring(7)}`,
         name: `Trend: ${Math.random().toString(36).substring(2, 10)}`,
@@ -633,7 +320,7 @@ const generateMarketTrend = (): MarketTrend => {
 };
 
 const generateRegulatoryUpdate = (): RegulatoryUpdate => {
-    const impactLevels = ['low', 'medium', 'high'];
+    const impactLevels: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
     const affected = ['Savings', 'Loans', 'Investments', 'Digital Payments', 'Data Privacy'];
     return {
         id: `reg-${Math.random().toString(36).substring(7)}`,
@@ -660,9 +347,9 @@ export const mockRegulatoryUpdates: RegulatoryUpdate[] = Array.from({ length: 7 
 
 // --- AI Service Mock/Wrapper (Expanded) ---
 export const aiService = {
-    _apiKey: process.env.API_KEY as string,
-    _model: 'gemini-2.5-flash',
-    _ai: new GoogleGenAI({apiKey: process.env.API_KEY as string}),
+    _apiKey: process.env.REACT_APP_GEMINI_API_KEY as string,
+    _model: 'gemini-1.5-flash',
+    _ai: new GoogleGenAI(process.env.REACT_APP_GEMINI_API_KEY || ""),
 
     async generateContent(prompt: string): Promise<string> {
         if (!this._apiKey) {
@@ -670,9 +357,10 @@ export const aiService = {
             return this._mockAiResponse(prompt);
         }
         try {
-            const response = await this._ai.models.generateContent({ model: this._model, contents: [{ role: 'user', parts: [{ text: prompt }] }] });
-            const result = await response.response;
-            return result.text();
+            const model = this._ai.getGenerativeModel({ model: this._model });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            return response.text();
         } catch (error) {
             console.error("Error calling Google GenAI:", error);
             return this._mockAiResponse(prompt); // Fallback to mock on error
@@ -704,109 +392,66 @@ export const aiService = {
 - Rapidly changing regulatory landscape.
 - Potential for economic downturn impacting consumer spending.
 - Cybersecurity breaches impacting customer trust.`;
-        } else if (prompt.includes("competitor analysis for FinFuture Inc.")) {
-            return `**FinFuture Inc. Deep Dive:**
-FinFuture Inc. is a leading digital challenger bank known for its aggressive pricing strategy and a highly intuitive mobile application.
-
-**Key Offerings:**
-- Zero-fee checking accounts with high-yield savings options.
-- AI-driven budget planning tools.
-- Instant loan approvals up to $10,000.
-- Integration with popular payment apps.
-
-**Strategic Insights:**
-- **Product Focus:** FinFuture prioritizes customer acquisition through low-cost, high-value digital products. Their recent investment in blockchain-based payment solutions indicates a move towards faster, cheaper international transfers.
-- **Marketing:** Heavily relies on social media campaigns and influencer marketing, targeting younger, tech-savvy demographics.
-- **Technology:** Built on a microservices architecture, allowing for rapid iteration and scalability. They excel in data analytics to personalize user experience.
-
-**Potential Counter-Strategies for Demo Bank:**
-1.  **Enhance Value Proposition:** Introduce tiered loyalty programs or premium features that justify Demo Bank's potentially higher fees.
-2.  **Target Niche Markets:** Focus on segments less served by FinFuture, e.g., small businesses needing specific financial tools or affluent customers seeking personalized wealth management.
-3.  **Customer Service Differentiator:** Emphasize superior, human-centric customer support, leveraging our existing branch network if applicable, as a counterpoint to FinFuture's purely digital approach.`;
-        } else if (prompt.includes("product roadmap suggestions")) {
-            return `**Product Roadmap Suggestions based on FinFuture Analysis:**
-
-1.  **AI-Powered Financial Assistant (Q2 2025):** Develop a conversational AI that can help users with budgeting, investment advice, and predictive spending analysis, similar to FinFuture's smart tools but with a stronger focus on personalized, actionable insights.
-2.  **Gamified Savings Challenges (Q3 2025):** Introduce engaging challenges and rewards within the mobile app to encourage savings, leveraging behavioral economics principles.
-3.  **SME Lending Automation (Q4 2025):** Streamline the small business loan application and approval process using AI-driven credit scoring and automated workflows to compete with FinFuture's rapid loan offerings.
-4.  **Open Banking API Initiatives (Q1 2026):** Explore partnerships and API integrations to offer a wider ecosystem of financial services, including third-party investment platforms or specialized insurance.`;
-        } else if (prompt.includes("pricing strategy recommendation")) {
-            return `**Pricing Strategy Recommendation:**
-
-Given FinFuture's aggressive zero-fee model, a direct price match is unsustainable and undesirable for Demo Bank, which offers a broader value.
-
-**Recommendation:**
-Adopt a **"Value-Driven Tiered Pricing"** strategy.
-
-1.  **Freemium/Basic Tier (Competitive):** Offer a basic digital-only checking/savings account with essential features and limited or no monthly fees to attract entry-level customers, matching FinFuture on basic functionality.
-2.  **Standard Tier (Balanced):** A mid-tier offering with a moderate monthly fee (or fee waived with minimum balance/direct deposit) that includes enhanced features like advanced budgeting tools, a limited number of free wire transfers, and priority customer support.
-3.  **Premium Tier (Differentiated):** A higher-fee tier targeting affluent customers or those needing comprehensive services. This tier would include personalized financial advisory, dedicated relationship managers, higher interest rates on savings, advanced investment tools, and exclusive perks.
-
-**Justification:** This approach allows us to compete on price for basic services while differentiating and monetizing our superior value, personalized service, and broader product suite at higher tiers.`;
-        } else if (prompt.includes("marketing campaign ideas")) {
-            return `**Marketing Campaign Ideas to Counter FinFuture:**
-
-1.  **"Beyond Zero Fees: The True Value of Your Bank" Campaign:**
-    *   **Focus:** Highlight the holistic value Demo Bank provides beyond just low fees – superior customer service, personalized advice, robust security, and a wider range of trusted financial products.
-    *   **Channels:** Digital video ads (YouTube, CTV), content marketing (blog posts, whitepapers comparing "true cost" vs. just "fee cost"), social media testimonials.
-2.  **"Your Financial Partner for Life" Campaign:**
-    *   **Focus:** Emphasize Demo Bank's role as a long-term partner, catering to evolving financial needs from savings to investments to wealth management, contrasting with FinFuture's likely transactional focus.
-    *   **Channels:** LinkedIn, professional networking events, thought leadership articles, podcasts.
-3.  **Hyper-Local Community Engagement:**
-    *   **Focus:** Leverage our physical presence (if applicable) and community involvement to build trust and local brand affinity that digital-only competitors struggle to replicate.
-    *   **Channels:** Local events, sponsorships, partnerships with local businesses, localized digital ads.`;
-        } else if (prompt.includes("customer sentiment analysis")) {
-            return `**Overall Customer Sentiment for FinFuture Inc.:**
-
-*   **Positive (60%):** Customers highly praise the ease of use of their mobile app, the speed of transactions, and the attractive interest rates on savings. Many appreciate the "no-frills" approach to banking.
-*   **Neutral (25%):** Some users find the customer support to be purely digital, lacking a human touch, and wish for more comprehensive financial planning tools.
-*   **Negative (15%):** Criticisms often revolve around perceived lack of personalized service for complex issues, occasional app glitches during peak times, and limited options for international banking.
-
-**Key Takeaways:** FinFuture excels in digital convenience and cost-effectiveness, appealing to a segment prioritizing these. However, there's a clear opportunity for Demo Bank to differentiate by emphasizing superior human-assisted customer support and holistic financial solutions.`;
-        } else if (prompt.includes("generate a detailed profile")) {
-            return `**Detailed AI-Generated Profile for GlobalBank Digital:**
-
-**Overview:** GlobalBank Digital is a subsidiary of a major international banking conglomerate, launched specifically to capture the digital-first market. It aims to combine the trust and regulatory compliance of its parent company with the agility and user experience of a fintech startup.
-
-**Key Offerings:**
-*   **Global Accounts:** Multi-currency accounts with competitive exchange rates, targeting international travelers and expatriates.
-*   **Advanced Investment Platforms:** Robust self-service investment tools, including access to global markets, robo-advisory, and fractional share investing.
-*   **Business Banking:** Strong suite of digital tools for SMEs, including integrated invoicing, payroll, and international payment solutions.
-
-**Strategic Focus:**
-*   **International Reach:** Leveraging the parent company's global network, GlobalBank Digital prioritizes cross-border services and appeals to a diverse, internationally mobile customer base.
-*   **Hybrid Model:** While primarily digital, they offer access to limited physical branch services of their parent bank for complex issues, providing a sense of security.
-*   **Technology & Compliance:** High investment in secure, scalable cloud infrastructure and advanced KYC/AML technologies, showcasing a commitment to both innovation and regulatory adherence.
-
-**Market Position:**
-*   **Competes with:** Neo-banks for digital convenience, but also traditional banks for comprehensive global services.
-*   **Target Audience:** Affluent digital natives, international professionals, and SMEs with global aspirations.
-
-**Recent Activities (AI Synthesized):**
-*   Q1 2024: Launched a new blockchain-powered trade finance platform for corporate clients.
-*   Q4 2023: Expanded its multi-currency account offerings to include five new Asian currencies.
-*   Q3 2023: Partnered with a leading cybersecurity firm to enhance data protection for its investment platform.
-
-**Predicted Future Moves:**
-*   Likely to acquire smaller regional fintechs to expand local market penetration and specialized service offerings.
-*   Expect increased focus on AI in customer support to manage their growing global user base efficiently.
-*   Potential for entering the crypto asset management space under strict regulatory guidance.
-
-**Impact on Demo Bank:** GlobalBank Digital poses a significant threat in the global banking and sophisticated investment sectors. Demo Bank should assess its own international service capabilities and advanced investment tools. Partnerships for global reach or specialization might be a strategic counter.`;
+        } else if (prompt.includes("product roadmap suggestions") || prompt.includes("strategic recommendations")) {
+            return JSON.stringify([
+                {
+                    "id": "rec-prod-001",
+                    "category": "Product Development",
+                    "title": "Launch AI-Powered Financial Wellness Coach",
+                    "description": "Develop a feature within the mobile app that provides personalized financial advice, budgeting tips, and savings goals based on user's spending habits. This directly counters competitor's analytical tools while adding a layer of proactive coaching.",
+                    "priority": "high",
+                    "potentialImpact": "Increase user engagement and loyalty by providing tangible value beyond basic banking services.",
+                    "aiConfidence": 95
+                },
+                {
+                    "id": "rec-mkt-001",
+                    "category": "Marketing",
+                    "title": "Human-Centric 'Beyond the Algorithm' Campaign",
+                    "description": "Launch a marketing campaign highlighting Demo Bank's superior human customer support and personalized advisory services. Contrast this with the purely digital, often impersonal, support from fintech competitors.",
+                    "priority": "medium",
+                    "potentialImpact": "Attract customer segments that value trust and personalized relationships over purely low-cost options.",
+                    "aiConfidence": 88
+                },
+                {
+                    "id": "rec-prc-001",
+                    "category": "Pricing",
+                    "title": "Introduce a Value-Based Premium Tier",
+                    "description": "Instead of competing on zero fees, create a premium subscription tier that bundles services like a dedicated financial advisor, investment platform access, and no-fee international transfers for a flat monthly fee.",
+                    "priority": "high",
+                    "potentialImpact": "Create a new revenue stream and cater to affluent customers who are willing to pay for enhanced value and convenience.",
+                    "aiConfidence": 92
+                },
+                {
+                    "id": "rec-ops-001",
+                    "category": "Operations",
+                    "title": "Streamline SME Onboarding with API Integrations",
+                    "description": "Simplify the onboarding process for small and medium-sized enterprises by integrating with popular accounting software (e.g., QuickBooks, Xero) to automate data entry and verification.",
+                    "priority": "medium",
+                    "potentialImpact": "Reduce friction for a high-value customer segment and capture market share in the business banking space.",
+                    "aiConfidence": 85
+                },
+                {
+                    "id": "rec-prod-002",
+                    "category": "Product Development",
+                    "title": "Gamified Savings & Investment Features",
+                    "description": "Introduce gamification elements like savings challenges, badges, and social leaderboards to make personal finance more engaging, especially for younger demographics.",
+                    "priority": "low",
+                    "potentialImpact": "Improve app 'stickiness' and encourage positive financial habits among users.",
+                    "aiConfidence": 78
+                }
+            ]);
         } else if (prompt.includes("simulate a 'what-if' scenario")) {
-            return `**What-If Scenario Simulation: FinFuture Cuts Loan Rates by 0.5%**
-
-**Scenario Details:** FinFuture Inc. announces an across-the-board 0.5% reduction in interest rates for all personal and small business loans, effective immediately.
+            return `**What-If Scenario Simulation: Competitor Cuts Loan Rates by 0.5%**
 
 **Predicted Impact on Demo Bank:**
 
 1.  **Loan Portfolio (High Impact):**
     *   **New Loan Applications:** Expect a 10-15% drop in new loan applications for Demo Bank, especially for unsecured personal loans and small business lines of credit where rate sensitivity is high.
-    *   **Existing Customers:** Increased risk of churn (2-3%) among existing Demo Bank loan customers, particularly those with newer loans or considering refinancing. Competitor FinFuture's aggressive rate could be a significant draw.
+    *   **Existing Customers:** Increased risk of churn (2-3%) among existing Demo Bank loan customers, particularly those with newer loans or considering refinancing. The competitor's aggressive rate could be a significant draw.
     *   **Revenue:** Estimated 5-8% reduction in projected loan interest income over the next 12 months, assuming no counter-action.
 
 2.  **Customer Acquisition (Medium Impact):**
-    *   FinFuture's attractive rates will strengthen their marketing message, potentially diverting general customer acquisition efforts, even for non-loan products.
+    *   The attractive rates will strengthen their marketing message, potentially diverting general customer acquisition efforts, even for non-loan products.
     *   Difficulty in acquiring rate-sensitive customers.
 
 3.  **Brand Perception (Medium Impact):**
@@ -815,58 +460,17 @@ Adopt a **"Value-Driven Tiered Pricing"** strategy.
 **Recommended Counter-Actions for Demo Bank:**
 
 1.  **Targeted Rate Match/Offer (Immediate):**
-    *   **Option A:** Introduce a limited-time promotional rate for new loan customers that matches FinFuture's rate, or offers an introductory lower rate for the first 6-12 months.
+    *   **Option A:** Introduce a limited-time promotional rate for new loan customers that matches the competitor's rate, or offers an introductory lower rate for the first 6-12 months.
     *   **Option B:** Offer existing loyal customers (e.g., those with multiple products, high balances) a rate review or a small reduction to mitigate churn risk.
 
 2.  **Emphasize Value & Service (Ongoing):**
-    *   Intensify marketing campaigns highlighting Demo Bank's superior customer service, personalized financial advice, faster loan processing, and flexible repayment terms, which may not be FinFuture's strong suits.
+    *   Intensify marketing campaigns highlighting Demo Bank's superior customer service, personalized financial advice, faster loan processing, and flexible repayment terms.
     *   Showcase successful customer stories and testimonials.
 
 3.  **Diversify Loan Products (Medium-term):**
-    *   Accelerate development of specialized loan products where FinFuture may not compete directly, e.g., niche industry loans, green financing, or complex structured lending.
+    *   Accelerate development of specialized loan products where the competitor may not compete directly, e.g., niche industry loans, green financing, or complex structured lending.
 
-**Overall Strategic Implication:** This move by FinFuture underscores the need for Demo Bank to clearly define its value proposition beyond just pricing in the lending market. Focus on customer segments that value service, relationships, and comprehensive solutions over purely the lowest rate.`;
-        } else if (prompt.includes("identify market trends")) {
-            return `**AI-Identified Market Trends & Impact:**
-
-1.  **Trend: Hyper-Personalization of Financial Services:**
-    *   **Description:** Leveraging AI and big data to offer highly customized products, services, and advice based on individual customer behavior, goals, and life events.
-    *   **Impact on Demo Bank:** High. Competitors are heavily investing here. Demo Bank must enhance its data analytics capabilities and develop AI-driven recommendation engines to stay competitive and prevent customer migration to more "understanding" platforms.
-    *   **Opportunities:** Increased customer satisfaction, higher product adoption, improved cross-selling.
-
-2.  **Trend: Embedded Finance:**
-    *   **Description:** Integration of financial services directly into non-financial platforms and apps (e.g., e-commerce sites offering instant credit, ride-sharing apps offering payment accounts).
-    *   **Impact on Demo Bank:** Medium-High. This trend could disintermediate traditional banks. Demo Bank should explore partnerships with non-financial industry players and develop API-first financial products to be part of these ecosystems.
-    *   **Threats:** Loss of direct customer touchpoints, reduced transaction volume through proprietary channels.
-
-3.  **Trend: Sustainable & Ethical Banking (ESG):**
-    *   **Description:** Growing consumer demand for financial institutions that demonstrate strong environmental, social, and governance (ESG) practices, including green loans, ethical investments, and transparent operations.
-    *   **Impact on Demo Bank:** Medium. While not an immediate threat, it's a growing differentiator. Demo Bank can attract a significant segment by developing and promoting ESG-compliant products and showcasing its own sustainability efforts.
-    *   **Opportunities:** Attract new, socially conscious customer segments, enhance brand reputation, meet evolving regulatory expectations.
-
-4.  **Trend: Web3 and Decentralized Finance (DeFi) Exploration:**
-    *   **Description:** Investigation into blockchain, cryptocurrencies, NFTs, and decentralized autonomous organizations (DAOs) for new financial paradigms.
-    *   **Impact on Demo Bank:** Low-Medium, but evolving. While mainstream adoption is still nascent, ignoring this area completely is risky. Demo Bank should monitor developments, perhaps explore pilot programs or partnerships in regulated blockchain spaces (e.g., tokenized assets, stablecoins).
-    *   **Threats:** New, highly disruptive competitors emerging from the crypto space if traditional finance fails to adapt.`;
-        } else if (prompt.includes("identify key regulatory changes")) {
-            return `**AI-Identified Key Regulatory Changes & Impact:**
-
-1.  **Regulation: Open Banking Mandates (e.g., PSD3, GDPR-like extensions):**
-    *   **Description:** Expansion of existing open banking frameworks, requiring banks to share more customer data (with consent) with third-party providers via secure APIs, and enhancing data privacy rights.
-    *   **Impact on Demo Bank:** High. Requires significant investment in API infrastructure, data security, and consent management systems. It also creates opportunities for new data-driven services and partnerships.
-    *   **Strategic Imperative:** Proactively build out robust, secure APIs and explore partnership opportunities rather than just meeting compliance minimums.
-
-2.  **Regulation: Increased Scrutiny on AI/ML in Lending & Risk:**
-    *   **Description:** Regulators are becoming more concerned about algorithmic bias, fairness, transparency, and explainability in AI models used for credit scoring, fraud detection, and other critical financial decisions.
-    *   **Impact on Demo Bank:** Medium-High. If Demo Bank uses AI for these functions, it must ensure its models are auditable, fair, and non-discriminatory. Requires investment in explainable AI (XAI) tools and rigorous model validation.
-    *   **Risk Mitigation:** Establish clear governance frameworks for AI model development and deployment, conduct regular bias audits.
-
-3.  **Regulation: Digital Asset & Cryptocurrency Frameworks:**
-    *   **Description:** Governments globally are working to establish clearer regulatory frameworks for digital assets, including stablecoins, crypto exchanges, and DLT-based financial instruments.
-    *   **Impact on Demo Bank:** Low-Medium, but growing. If Demo Bank plans to enter or expand services related to digital assets, understanding and complying with these evolving rules is critical. This could include licensing, custody requirements, and anti-money laundering (AML) protocols specific to crypto.
-    *   **Opportunity/Threat:** Early movers who can navigate this complexity can gain an advantage; laggards risk being left behind or facing penalties.
-
-**Overall Strategic Implication:** The regulatory environment is becoming more complex and demanding, especially concerning data, AI, and new digital assets. Demo Bank needs robust compliance functions and forward-thinking technology investments to navigate these changes effectively and turn compliance into a competitive advantage.`;
+**Overall Strategic Implication:** This move underscores the need for Demo Bank to clearly define its value proposition beyond just pricing in the lending market. Focus on customer segments that value service, relationships, and comprehensive solutions over purely the lowest rate.`;
         }
         return `AI Response for: "${prompt.substring(0, 100)}..." (Mocked response, add more specific mocks)`;
     },
@@ -928,7 +532,7 @@ export const MetricCard: React.FC<{ title: string; value: string | number; descr
 );
 
 export const AiResponseDisplay: React.FC<{ content: string; isLoading: boolean; defaultText: string }> = ({ content, isLoading, defaultText }) => (
-    <div className="min-h-[12rem] max-h-96 overflow-y-auto whitespace-pre-line text-sm text-gray-300 bg-gray-900 p-4 rounded-md">
+    <div className="min-h-[12rem] max-h-96 overflow-y-auto whitespace-pre-wrap text-sm text-gray-300 bg-gray-900 p-4 rounded-md">
         {isLoading ? <LoadingSpinner /> : (content || defaultText)}
     </div>
 );
@@ -1655,6 +1259,7 @@ const CompetitiveIntelligenceView: React.FC = () => {
                                             <Radar name="Demo Bank" dataKey="ourRating" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.6} />
                                             <Radar name={selectedCompetitor.name} dataKey="competitorRating" stroke="#f43f5e" fill="#f43f5e" fillOpacity={0.6} />
                                             <Legend />
+                                            <Tooltip contentStyle={{ backgroundColor: '#1f2937', borderColor: '#4b5563' }}/>
                                         </RadarChart>
                                     </ResponsiveContainer>
                                 </Card>
