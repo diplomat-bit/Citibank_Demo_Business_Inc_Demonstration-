@@ -1,33 +1,86 @@
 // components/views/platform/DemoBankFeatureManagementView.tsx
-import React, { useState, useReducer, useEffect, useCallback, useMemo, FC, ReactNode } from 'react';
-import Card from '../../Card';
+import React, { useState, useReducer, useEffect, useCallback, useMemo, FC, ReactNode, useRef, Suspense, lazy } from 'react';
+import { create } from 'zustand';
+import { produce } from 'immer';
+import { Toaster, toast } from 'react-hot-toast';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import ReactFlow, { MiniMap, Controls, Background, Elements, isNode, Position, ArrowHeadType } from 'reactflow';
+// Note: In a real project, you would import the CSS for reactflow: import 'reactflow/dist/style.css';
+import {
+    ChevronDown, ChevronUp, ChevronRight, AlertTriangle, CheckCircle, XCircle, FileCode, Search, BrainCircuit,
+    Plus, Trash2, Copy, Zap, History, TestTube2, Puzzle, SlidersHorizontal, Package, Wand2, Info, Moon, Sun, Settings
+} from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
+
+// SECTION: Icon Library
+// ==========================================================
+const icons = {
+    chevronDown: <ChevronDown size={16} />,
+    chevronUp: <ChevronUp size={16} />,
+    chevronRight: <ChevronRight size={16} />,
+    warning: <AlertTriangle size={16} className="text-yellow-400" />,
+    success: <CheckCircle size={16} className="text-green-400" />,
+    error: <XCircle size={16} className="text-red-400" />,
+    code: <FileCode size={16} />,
+    search: <Search size={18} />,
+    ai: <BrainCircuit size={18} />,
+    add: <Plus size={16} />,
+    delete: <Trash2 size={16} />,
+    copy: <Copy size={16} />,
+    zap: <Zap size={16} />,
+    history: <History size={18} />,
+    abTest: <TestTube2 size={18} />,
+    dependencies: <Puzzle size={18} />,
+    targeting: <SlidersHorizontal size={18} />,
+    sdk: <Package size={18} />,
+    aiMagic: <Wand2 size={16} />,
+    info: <Info size={16} />,
+    moon: <Moon size={18} />,
+    sun: <Sun size={18} />,
+    settings: <Settings size={18} />
+};
+
 
 // SECTION: Type Definitions for a Real-World Application
 // ==========================================================
 
 export type FeatureFlagStatus = 'enabled' | 'disabled' | 'archived';
 export type Environment = 'development' | 'staging' | 'production';
-export type TargetingRuleOperator = 'is' | 'is_not' | 'contains' | 'does_not_contain' | 'is_one_of' | 'is_not_one_of' | 'greater_than' | 'less_than';
-export type RolloutStrategy = 'percentage' | 'ring' | 'canary';
+export type TargetingRuleOperator = 'is' | 'is_not' | 'contains' | 'does_not_contain' | 'is_one_of' | 'is_not_one_of' | 'greater_than' | 'less_than' | 'semver_equals' | 'semver_greater_than' | 'semver_less_than';
+export type RolloutStrategy = 'percentage' | 'ring' | 'canary' | 'scheduled';
 export type AiModelType = 'gemini-2.5-flash' | 'gemini-pro' | 'gemini-advanced';
 
 export interface TargetingRule {
     id: string;
-    property: string; // e.g., 'user.country', 'user.email', 'app.version'
+    property: string;
     operator: TargetingRuleOperator;
     value: string | string[] | number;
 }
 
 export interface TargetingGroup {
-    id:string;
+    id: string;
     rules: TargetingRule[];
-    condition: 'AND' | 'OR'; // How rules within this group are combined
+    condition: 'AND' | 'OR';
+}
+
+export interface FeatureFlagDependency {
+    id: string;
+    sourceFlagKey: string;
+    targetFlagKey: string;
+    condition: 'enabled' | 'disabled'; // Target is only active if source is in this state
+}
+
+export interface CodeReference {
+    id: string;
+    filePath: string;
+    line: number;
+    codeSnippet: string;
+    lastDetected: string;
 }
 
 export interface FeatureFlag {
     id: string;
-    key: string; // The programmatic key for the flag
+    key: string;
     name: string;
     description: string;
     status: Record<Environment, FeatureFlagStatus>;
@@ -40,6 +93,8 @@ export interface FeatureFlag {
     rolloutStrategy: RolloutStrategy;
     isTemporary: boolean;
     expiryDate?: string;
+    dependencies: FeatureFlagDependency[];
+    codeReferences: CodeReference[];
 }
 
 export interface RolloutStage {
@@ -75,33 +130,60 @@ export interface AuditLogEntry {
 export interface ABTestVariant {
     id: string;
     name: string;
-    trafficSplit: number; // 0-100
+    trafficSplit: number;
+}
+
+export interface ABTestResult {
+    conversions: number;
+    visitors: number;
+    rate: number;
+    confidenceInterval: [number, number];
+    pValue: number;
+    uplift: number; // vs control
 }
 
 export interface ABTest {
     id: string;
     name: string;
+    hypothesis: string;
     featureFlagKey: string;
-    status: 'draft' | 'running' | 'completed';
+    status: 'draft' | 'running' | 'completed' | 'paused';
     variants: ABTestVariant[];
-    goalMetric: string; // e.g., 'conversion_rate', 'user_retention'
+    goalMetric: string;
     startDate: string;
     endDate?: string;
-    results?: Record<string, { conversions: number; visitors: number; rate: number }>;
+    results?: Record<string, ABTestResult>;
+    winner?: string; // variant id
+}
+
+export interface StaleFlagInfo {
+    flagKey: string;
+    reason: 'temporary_expired' | 'fully_rolled_out' | 'inactive' | 'no_code_references';
+    lastUpdated: string;
+    suggestion: string;
 }
 
 // SECTION: Mock Data Generation & API Simulation
 // ==========================================================
 
-const MOCK_TEAMS = ['Core Banking', 'Mobile App', 'Growth & Marketing', 'Platform Infrastructure', 'Data Science'];
-const MOCK_TAGS = ['q1-2024', 'mobile', 'web', 'internal-tool', 'performance', 'new-feature', 'beta'];
-const MOCK_USERS = ['dev-team@demobank.com', 'product-manager-jane', 'qa-tester-bob', 'release-engineer-sara'];
-const MOCK_USER_PROPERTIES = ['country', 'email', 'subscriptionTier', 'internalTester', 'appVersion'];
+const MOCK_TEAMS = ['Core Banking', 'Mobile App', 'Growth & Marketing', 'Platform Infrastructure', 'Data Science', 'Security', 'Compliance'];
+const MOCK_TAGS = ['q1-2024', 'mobile', 'web', 'internal-tool', 'performance', 'new-feature', 'beta', 'pci-dss', 'refactor'];
+const MOCK_USERS = ['dev-team@demobank.com', 'product-manager-jane', 'qa-tester-bob', 'release-engineer-sara', 'data-scientist-mike'];
+const MOCK_USER_PROPERTIES = ['country', 'email', 'subscriptionTier', 'internalTester', 'appVersion', 'userAge'];
 
 const getRandomElement = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+const generateId = () => Math.random().toString(36).substring(2, 12);
+
+export const generateMockCodeReferences = (): CodeReference[] => Array.from({ length: Math.floor(Math.random() * 5) }, (_, i) => ({
+    id: generateId(),
+    filePath: `/src/components/views/feature_${i}/${getRandomElement(['CheckoutButton.tsx', 'UserProfile.vue', 'api/payments.py'])}`,
+    line: 50 + Math.floor(Math.random() * 100),
+    codeSnippet: `if (featureFlags.isEnabled('${generateId()}')) { ... }`,
+    lastDetected: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000).toISOString(),
+}));
 
 export const generateMockFeatureFlag = (id: number): FeatureFlag => {
-    const key = `feature-${id}-${Math.random().toString(36).substring(2, 8)}`;
+    const key = `feature-${id}-${generateId()}`;
     const createdAt = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString();
     return {
         id: `ff-${id}`,
@@ -133,22 +215,23 @@ export const generateMockFeatureFlag = (id: number): FeatureFlag => {
         },
         rolloutStrategy: getRandomElement(['percentage', 'ring', 'canary']),
         isTemporary: Math.random() > 0.8,
+        dependencies: [],
+        codeReferences: generateMockCodeReferences(),
     };
 };
 
-export const generateMockAuditLog = (flag: FeatureFlag): AuditLogEntry => {
-    return {
-        id: `log-${Math.random().toString(36).substring(2, 10)}`,
-        timestamp: new Date().toISOString(),
-        user: getRandomElement(MOCK_USERS),
-        featureFlagKey: flag.key,
-        environment: 'staging',
-        action: 'UPDATE_ROLLOUT_PERCENTAGE',
-        details: `Changed rollout percentage in staging from 25% to 50%`,
-        beforeState: { rolloutPercentage: { development: 100, staging: 25, production: 0 } },
-        afterState: { rolloutPercentage: { development: 100, staging: 50, production: 0 } },
-    };
-};
+export const generateMockAuditLog = (flag: FeatureFlag, action: string = 'UPDATE_ROLLOUT_PERCENTAGE'): AuditLogEntry => ({
+    id: `log-${generateId()}`,
+    timestamp: new Date().toISOString(),
+    user: getRandomElement(MOCK_USERS),
+    featureFlagKey: flag.key,
+    environment: getRandomElement(['staging', 'production']),
+    action,
+    details: `Changed rollout percentage from 25% to 50%`,
+    beforeState: { rolloutPercentage: { development: 100, staging: 25, production: 0 } },
+    afterState: { rolloutPercentage: { development: 100, staging: 50, production: 0 } },
+});
+
 
 export class MockFeatureManagementAPI {
     private static _instance: MockFeatureManagementAPI;
@@ -158,10 +241,11 @@ export class MockFeatureManagementAPI {
 
     private constructor() {
         this.featureFlags = Array.from({ length: 150 }, (_, i) => generateMockFeatureFlag(i + 1));
-        this.auditLogs = this.featureFlags.slice(0, 50).map(generateMockAuditLog);
+        this.auditLogs = this.featureFlags.slice(0, 50).map(flag => generateMockAuditLog(flag));
         this.abTests = [{
             id: 'ab-test-1',
             name: 'New Checkout Button Color',
+            hypothesis: 'Changing the checkout button from blue to green will increase conversion rate by at least 2%.',
             featureFlagKey: this.featureFlags[0].key,
             status: 'running',
             variants: [
@@ -171,9 +255,10 @@ export class MockFeatureManagementAPI {
             goalMetric: 'checkout_conversion_rate',
             startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
             results: {
-                'v1': { conversions: 1024, visitors: 10000, rate: 10.24 },
-                'v2': { conversions: 1150, visitors: 10000, rate: 11.50 },
-            }
+                'v1': { conversions: 1024, visitors: 10000, rate: 10.24, confidenceInterval: [9.9, 10.5], pValue: 0.5, uplift: 0 },
+                'v2': { conversions: 1150, visitors: 10000, rate: 11.50, confidenceInterval: [11.2, 11.8], pValue: 0.04, uplift: 12.3 },
+            },
+            winner: 'v2',
         }];
     }
 
@@ -184,8 +269,8 @@ export class MockFeatureManagementAPI {
         return MockFeatureManagementAPI._instance;
     }
 
-    private simulateLatency = <T>(data: T): Promise<T> => {
-        return new Promise(resolve => setTimeout(() => resolve(data), 300 + Math.random() * 500));
+    private simulateLatency = <T>(data: T, duration?: number): Promise<T> => {
+        return new Promise(resolve => setTimeout(() => resolve(data), duration ?? 300 + Math.random() * 500));
     };
 
     public async getFeatureFlags(): Promise<FeatureFlag[]> {
@@ -197,18 +282,31 @@ export class MockFeatureManagementAPI {
         return this.simulateLatency(flag ? { ...flag } : undefined);
     }
     
+    public async createFeatureFlag(flagData: Omit<FeatureFlag, 'id' | 'createdAt' | 'updatedAt' | 'dependencies' | 'codeReferences'>): Promise<FeatureFlag> {
+        const newFlag: FeatureFlag = {
+            ...flagData,
+            id: `ff-${this.featureFlags.length + 1}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            dependencies: [],
+            codeReferences: [],
+        };
+        this.featureFlags.unshift(newFlag);
+        this.auditLogs.unshift(generateMockAuditLog(newFlag, 'CREATE_FLAG'));
+        return this.simulateLatency(newFlag);
+    }
+
     public async updateFeatureFlag(updatedFlag: FeatureFlag): Promise<FeatureFlag> {
         const index = this.featureFlags.findIndex(f => f.id === updatedFlag.id);
         if (index !== -1) {
             const oldFlag = this.featureFlags[index];
             this.featureFlags[index] = { ...updatedFlag, updatedAt: new Date().toISOString() };
-            // Create an audit log entry
             this.auditLogs.unshift({
-                id: `log-${Math.random().toString(36).substring(2, 10)}`,
+                id: `log-${generateId()}`,
                 timestamp: new Date().toISOString(),
                 user: 'api-user@demobank.com',
                 featureFlagKey: updatedFlag.key,
-                environment: 'production', // Assume change is for prod for simplicity
+                environment: 'production',
                 action: 'UPDATE_FLAG',
                 details: `Flag ${updatedFlag.key} was updated.`,
                 beforeState: oldFlag,
@@ -219,30 +317,124 @@ export class MockFeatureManagementAPI {
         throw new Error("Feature flag not found");
     }
 
-    public async getAuditLogs(): Promise<AuditLogEntry[]> {
-        return this.simulateLatency([...this.auditLogs].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+    public async getAuditLogs(limit: number = 100): Promise<AuditLogEntry[]> {
+        const sortedLogs = [...this.auditLogs].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return this.simulateLatency(sortedLogs.slice(0, limit));
     }
 
     public async getABTests(): Promise<ABTest[]> {
         return this.simulateLatency([...this.abTests]);
     }
+
+    public async getStaleFlags(): Promise<StaleFlagInfo[]> {
+        const staleFlags: StaleFlagInfo[] = [
+            {
+                flagKey: this.featureFlags[10].key,
+                reason: 'fully_rolled_out',
+                lastUpdated: this.featureFlags[10].updatedAt,
+                suggestion: 'Flag is at 100% in production for over 90 days. Consider archiving and removing from code.',
+            },
+            {
+                flagKey: this.featureFlags[25].key,
+                reason: 'inactive',
+                lastUpdated: this.featureFlags[25].updatedAt,
+                suggestion: 'Flag has been disabled in all environments for 6 months. Consider archiving.',
+            },
+            {
+                flagKey: this.featureFlags[40].key,
+                reason: 'no_code_references',
+                lastUpdated: this.featureFlags[40].updatedAt,
+                suggestion: 'Our scanner found no code references for this flag. It may be obsolete. Please verify before archiving.',
+            }
+        ];
+        return this.simulateLatency(staleFlags, 800);
+    }
 }
 
 export const api = MockFeatureManagementAPI.getInstance();
 
+
+// SECTION: State Management (Zustand)
+// ==========================================================
+type AppStore = {
+    view: string;
+    featureFlags: FeatureFlag[];
+    auditLogs: AuditLogEntry[];
+    abTests: ABTest[];
+    staleFlags: StaleFlagInfo[];
+    selectedFlag: FeatureFlag | null;
+    isLoading: { [key: string]: boolean };
+    theme: 'dark' | 'light';
+
+    // Actions
+    setView: (view: string) => void;
+    loadInitialData: () => Promise<void>;
+    selectFlag: (flag: FeatureFlag | null) => void;
+    updateFlag: (updatedFlag: FeatureFlag) => Promise<void>;
+    toggleTheme: () => void;
+};
+
+const useStore = create<AppStore>((set, get) => ({
+    view: 'feature_flags_list',
+    featureFlags: [],
+    auditLogs: [],
+    abTests: [],
+    staleFlags: [],
+    selectedFlag: null,
+    isLoading: { initial: true },
+    theme: 'dark',
+
+    setView: (view) => set({ view, selectedFlag: view.startsWith('feature_flag_') ? get().selectedFlag : null }),
+
+    loadInitialData: async () => {
+        set(produce(draft => { draft.isLoading.initial = true; }));
+        const [flags, logs, tests, stale] = await Promise.all([
+            api.getFeatureFlags(),
+            api.getAuditLogs(),
+            api.getABTests(),
+            api.getStaleFlags()
+        ]);
+        set(produce(draft => {
+            draft.featureFlags = flags;
+            draft.auditLogs = logs;
+            draft.abTests = tests;
+            draft.staleFlags = stale;
+            draft.isLoading.initial = false;
+        }));
+    },
+
+    selectFlag: (flag) => set({ selectedFlag: flag, view: flag ? 'feature_flag_detail' : 'feature_flags_list' }),
+    
+    updateFlag: async (updatedFlag) => {
+        set(produce(draft => { draft.isLoading[updatedFlag.id] = true; }));
+        const savedFlag = await api.updateFeatureFlag(updatedFlag);
+        set(produce(draft => {
+            const index = draft.featureFlags.findIndex(f => f.id === savedFlag.id);
+            if (index !== -1) draft.featureFlags[index] = savedFlag;
+            if (draft.selectedFlag?.id === savedFlag.id) draft.selectedFlag = savedFlag;
+            draft.isLoading[savedFlag.id] = false;
+        }));
+        toast.success(`Flag "${savedFlag.name}" updated successfully!`);
+    },
+
+    toggleTheme: () => set(state => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+}));
+
+
 // SECTION: UI Helper Components
 // ==========================================================
 
-export const Pill: FC<{ color: string; children: ReactNode }> = ({ color, children }) => {
+export const Pill: FC<{ color: string; children: ReactNode; className?: string }> = ({ color, children, className }) => {
     const colorClasses = {
         green: 'bg-green-800 text-green-200',
         blue: 'bg-blue-800 text-blue-200',
         yellow: 'bg-yellow-800 text-yellow-200',
         red: 'bg-red-800 text-red-200',
         gray: 'bg-gray-700 text-gray-300',
+        purple: 'bg-purple-800 text-purple-200',
     }[color] || 'bg-gray-700 text-gray-300';
     return (
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${colorClasses}`}>
+        <span className={`px-2 py-1 text-xs font-medium rounded-full inline-flex items-center gap-1 ${colorClasses} ${className}`}>
             {children}
         </span>
     );
@@ -255,18 +447,45 @@ export const LoadingSpinner: FC<{ size?: number }> = ({ size = 24 }) => (
     </svg>
 );
 
-export const Tab: FC<{ active: boolean; onClick: () => void; children: ReactNode }> = ({ active, onClick, children }) => (
+export const Tab: FC<{ active: boolean; onClick: () => void; children: ReactNode; icon?: ReactNode }> = ({ active, onClick, children, icon }) => (
     <button
         onClick={onClick}
-        className={`px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none ${
+        className={`px-4 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none flex items-center gap-2 ${
             active
                 ? 'border-b-2 border-cyan-500 text-white'
                 : 'text-gray-400 hover:text-white'
         }`}
     >
-        {children}
+        {icon}{children}
     </button>
 );
+
+export const Card: FC<{ title?: string; children: ReactNode; className?: string }> = ({ title, children, className }) => (
+    <div className={`bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg p-6 ${className}`}>
+        {title && <h3 className="text-xl font-bold text-white mb-4">{title}</h3>}
+        {children}
+    </div>
+);
+
+export const CodeBlock: FC<{ code: string, language: string }> = ({ code, language }) => {
+    const handleCopy = () => {
+        navigator.clipboard.writeText(code);
+        toast.success("Copied to clipboard!");
+    };
+    return (
+        <div className="bg-gray-900 rounded-md my-4 relative group">
+            <div className="absolute top-2 right-2 flex items-center gap-2">
+                <span className="text-xs text-gray-400">{language}</span>
+                <button onClick={handleCopy} className="p-1.5 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {icons.copy}
+                </button>
+            </div>
+            <pre className="p-4 text-sm text-cyan-200 overflow-x-auto">
+                <code>{code}</code>
+            </pre>
+        </div>
+    );
+};
 
 // SECTION: AI Rollout Plan Generator (Enhanced)
 // ==========================================================
@@ -282,6 +501,11 @@ export const AiRolloutPlanner: FC = () => {
         setIsLoading(true);
         setGeneratedPlan(null);
         setError(null);
+        if (!process.env.API_KEY) {
+            setError("API key not configured. Please set your Google GenAI API key in the environment variables.");
+            setIsLoading(false);
+            return;
+        }
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
             const schema = {
@@ -319,7 +543,6 @@ export const AiRolloutPlanner: FC = () => {
             const response = await ai.models.generateContent({ model: aiModel, contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
             const parsedPlan = JSON.parse(response.text) as GeneratedRolloutPlan;
             
-            // Ensure status is initialized for each stage
             parsedPlan.stages = parsedPlan.stages.map(stage => ({ ...stage, status: 'pending' }));
             
             setGeneratedPlan(parsedPlan);
@@ -366,13 +589,13 @@ export const AiRolloutPlanner: FC = () => {
                 </div>
 
                 <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors flex items-center justify-center">
-                    {isLoading ? <><LoadingSpinner size={20} /> <span className="ml-2">Generating Plan...</span></> : 'Generate Rollout Plan'}
+                    {isLoading ? <><LoadingSpinner size={20} /> <span className="ml-2">Generating Plan...</span></> : <><Wand2 size={16} /> <span className="ml-2">Generate Rollout Plan</span></>}
                 </button>
             </Card>
             
             {error && (
                 <Card title="Error">
-                    <p className="text-red-400">{error}</p>
+                    <div className="flex items-center gap-2 text-red-400"><XCircle/> {error}</div>
                 </Card>
             )}
 
@@ -395,7 +618,6 @@ export const AiRolloutPlanner: FC = () => {
                                 </div>
                             </div>
                             <div className="relative pl-6">
-                                {/* Timeline line */}
                                 <div className="absolute top-0 left-[34px] w-0.5 h-full bg-gray-700" />
 
                                 {generatedPlan.stages.map((stage: RolloutStage, index: number) => (
@@ -453,7 +675,6 @@ export const AiRolloutPlanner: FC = () => {
     );
 };
 
-
 // SECTION: Feature Flag List View
 // ==========================================================
 type SortConfig = { key: keyof FeatureFlag; direction: 'ascending' | 'descending' };
@@ -507,22 +728,25 @@ export const FeatureFlagTable: FC<{ flags: FeatureFlag[], onSelectFlag: (flag: F
     
     return (
         <Card title={`All Feature Flags (${flags.length})`}>
-            <input
-                type="text"
-                placeholder="Filter by name, key, or tag..."
-                value={filter}
-                onChange={e => setFilter(e.target.value)}
-                className="w-full bg-gray-800 p-2 rounded mb-4 text-white placeholder-gray-500"
-            />
+            <div className="relative mb-4">
+                <input
+                    type="text"
+                    placeholder="Filter by name, key, or tag..."
+                    value={filter}
+                    onChange={e => setFilter(e.target.value)}
+                    className="w-full bg-gray-800 p-2 pl-10 rounded text-white placeholder-gray-500 border border-gray-700 focus:ring-cyan-500 focus:border-cyan-500"
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{icons.search}</div>
+            </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-700">
                     <thead className="bg-gray-800">
                         <tr>
                             {['name', 'key', 'status', 'rolloutPercentage', 'ownerTeam', 'updatedAt'].map(key => (
                                 <th key={key} scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                    <button onClick={() => requestSort(key as keyof FeatureFlag)} className="flex items-center">
+                                    <button onClick={() => requestSort(key as keyof FeatureFlag)} className="flex items-center gap-1">
                                         {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                                        {sortConfig.key === key && (sortConfig.direction === 'ascending' ? ' ▲' : ' ▼')}
+                                        {sortConfig.key === key && (sortConfig.direction === 'ascending' ? icons.chevronUp : icons.chevronDown)}
                                     </button>
                                 </th>
                             ))}
@@ -548,7 +772,6 @@ export const FeatureFlagTable: FC<{ flags: FeatureFlag[], onSelectFlag: (flag: F
                     </tbody>
                 </table>
             </div>
-            {/* Pagination Controls */}
             <div className="flex justify-between items-center mt-4">
                 <span className="text-sm text-gray-400">
                     Showing {paginatedFlags.length} of {sortedAndFilteredFlags.length} flags
@@ -568,14 +791,23 @@ export const FeatureFlagTable: FC<{ flags: FeatureFlag[], onSelectFlag: (flag: F
 
 export const FeatureFlagDetailView: FC<{ flag: FeatureFlag, onBack: () => void }> = ({ flag, onBack }) => {
     const [currentEnv, setCurrentEnv] = useState<Environment>('production');
-    
-    // This would be a real state management solution in a real app
+    const updateFlagInStore = useStore(state => state.updateFlag);
     const [localFlag, setLocalFlag] = useState(flag);
 
+    useEffect(() => {
+        setLocalFlag(flag);
+    }, [flag]);
+    
     const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value, 10);
-        setLocalFlag(f => ({...f, rolloutPercentage: {...f.rolloutPercentage, [currentEnv]: value}}));
+        setLocalFlag(produce(draft => {
+            draft.rolloutPercentage[currentEnv] = value;
+        }));
     };
+    
+    const handleSave = () => {
+        updateFlagInStore(localFlag);
+    }
 
     return (
         <Card>
@@ -594,7 +826,6 @@ export const FeatureFlagDetailView: FC<{ flag: FeatureFlag, onBack: () => void }
                 </div>
             </div>
             
-            {/* Environment Tabs */}
             <div className="border-b border-gray-700 mb-4">
                 {(['production', 'staging', 'development'] as Environment[]).map(env => (
                     <Tab key={env} active={currentEnv === env} onClick={() => setCurrentEnv(env)}>
@@ -604,7 +835,6 @@ export const FeatureFlagDetailView: FC<{ flag: FeatureFlag, onBack: () => void }
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left Column: Status & Rollout */}
                 <div className="md:col-span-2 space-y-6">
                     <Card title="Status & Rollout">
                         <div className="flex items-center space-x-4 mb-4">
@@ -628,11 +858,26 @@ export const FeatureFlagDetailView: FC<{ flag: FeatureFlag, onBack: () => void }
                     <Card title="Targeting Rules">
                         <p className="text-sm text-gray-400 mb-4">Apply this feature to specific user segments. Rules within a group are combined with the selected condition.</p>
                         {localFlag.targetingRules[currentEnv].length === 0 && <p className="text-gray-500">No targeting rules for this environment.</p>}
-                        {/* Rule Builder UI would go here */}
+                        {/* A full rule builder would be implemented here */}
+                    </Card>
+                     <Card title="Code References">
+                        {localFlag.codeReferences.length > 0 ? (
+                            <ul className="space-y-3">
+                                {localFlag.codeReferences.map(ref => (
+                                    <li key={ref.id} className="bg-gray-900/70 p-3 rounded-md">
+                                        <div className="flex items-center gap-2 text-cyan-400 font-mono text-sm">
+                                            {icons.code} {ref.filePath}:{ref.line}
+                                        </div>
+                                        <CodeBlock code={ref.codeSnippet} language="typescript" />
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">No code references found.</p>
+                        )}
                     </Card>
                 </div>
                 
-                {/* Right Column: Info & Actions */}
                 <div className="space-y-6">
                      <Card title="Information">
                          <ul className="text-sm space-y-2">
@@ -643,7 +888,7 @@ export const FeatureFlagDetailView: FC<{ flag: FeatureFlag, onBack: () => void }
                      </Card>
                      <Card title="Actions">
                          <div className="flex flex-col space-y-2">
-                             <button className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded transition-colors text-sm">Save Changes</button>
+                             <button onClick={handleSave} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded transition-colors text-sm">Save Changes</button>
                              <button className="w-full py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors text-sm">View History</button>
                              <button className="w-full py-2 bg-red-800 hover:bg-red-900 rounded transition-colors text-sm text-red-200">Archive Flag</button>
                          </div>
@@ -658,15 +903,7 @@ export const FeatureFlagDetailView: FC<{ flag: FeatureFlag, onBack: () => void }
 // ==========================================================
 
 export const AuditLogView: FC = () => {
-    const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        api.getAuditLogs().then(data => {
-            setLogs(data);
-            setIsLoading(false);
-        });
-    }, []);
+    const { auditLogs, isLoading } = useStore(state => ({ auditLogs: state.auditLogs, isLoading: state.isLoading.initial }));
 
     if(isLoading) return <div className="flex justify-center items-center h-64"><LoadingSpinner size={48} /></div>;
 
@@ -684,7 +921,7 @@ export const AuditLogView: FC = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-gray-900/50 divide-y divide-gray-800">
-                        {logs.map(log => (
+                        {auditLogs.map(log => (
                             <tr key={log.id}>
                                 <td className="px-4 py-3 text-sm text-gray-400">{new Date(log.timestamp).toLocaleString()}</td>
                                 <td className="px-4 py-3 text-sm text-white font-medium">{log.user}</td>
@@ -702,67 +939,78 @@ export const AuditLogView: FC = () => {
     );
 };
 
+// SECTION: A/B Testing View
+// ==========================================================
+export const ABTestingView: FC = () => {
+    const { abTests, isLoading } = useStore(state => ({ abTests: state.abTests, isLoading: state.isLoading.initial }));
+
+    if (isLoading) return <div className="flex justify-center items-center h-64"><LoadingSpinner size={48} /></div>;
+    
+    return (
+        <div className="space-y-6">
+            {abTests.map(test => (
+                <Card key={test.id} title={test.name}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <h4 className="font-semibold text-gray-300">Hypothesis</h4>
+                            <p className="text-gray-400 mb-4">{test.hypothesis}</p>
+                            <h4 className="font-semibold text-gray-300 mb-2">Results</h4>
+                            <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={Object.entries(test.results || {}).map(([key, value]) => ({ name: test.variants.find(v => v.id === key)?.name, rate: value.rate }))}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                                        <XAxis dataKey="name" stroke="#A0AEC0" />
+                                        <YAxis stroke="#A0AEC0" />
+                                        <RechartsTooltip contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568' }} />
+                                        <Legend />
+                                        <Bar dataKey="rate" fill="#4FD1C5" name="Conversion Rate (%)" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                        <div>
+                             <h4 className="font-semibold text-gray-300">Details</h4>
+                             <ul className="text-sm space-y-2 mt-2">
+                                <li><strong>Status:</strong> <Pill color={test.status === 'running' ? 'green' : 'gray'}>{test.status}</Pill></li>
+                                <li><strong>Goal Metric:</strong> <span className="text-gray-300">{test.goalMetric}</span></li>
+                                <li><strong>Start Date:</strong> <span className="text-gray-300">{new Date(test.startDate).toLocaleDateString()}</span></li>
+                                {test.winner && <li><strong>Winner:</strong> <span className="text-green-400 font-bold">{test.variants.find(v=>v.id === test.winner)?.name}</span></li>}
+                             </ul>
+
+                             <div className="mt-4 bg-gray-900/50 p-4 rounded-lg">
+                                 <h5 className="font-semibold text-white flex items-center gap-2">{icons.aiMagic} AI Summary</h5>
+                                 <p className="text-sm text-gray-300 mt-2">
+                                     The 'Variant A (Green)' is the clear winner with a {test.results?.v2.uplift}% uplift in conversion rate and statistical significance (p={test.results?.v2.pValue}). Recommend rolling out the green button to 100% of users.
+                                 </p>
+                             </div>
+                        </div>
+                    </div>
+                </Card>
+            ))}
+        </div>
+    );
+}
 
 // SECTION: Main View Component
 // ==========================================================
 
-type View = 'ai_planner' | 'feature_flags_list' | 'feature_flag_detail' | 'audit_log';
-
-interface AppState {
-    currentView: View;
-    featureFlags: FeatureFlag[];
-    selectedFlag: FeatureFlag | null;
-    isLoading: boolean;
-}
-
-type AppAction =
-    | { type: 'SET_VIEW'; payload: View }
-    | { type: 'SET_FLAGS'; payload: FeatureFlag[] }
-    | { type: 'SELECT_FLAG'; payload: FeatureFlag | null }
-    | { type: 'START_LOADING' };
-
-const initialState: AppState = {
-    currentView: 'feature_flags_list',
-    featureFlags: [],
-    selectedFlag: null,
-    isLoading: true,
-};
-
-function appReducer(state: AppState, action: AppAction): AppState {
-    switch (action.type) {
-        case 'SET_VIEW':
-            return { ...state, currentView: action.payload };
-        case 'SET_FLAGS':
-            return { ...state, featureFlags: action.payload, isLoading: false };
-        case 'SELECT_FLAG':
-            return { ...state, selectedFlag: action.payload, currentView: action.payload ? 'feature_flag_detail' : 'feature_flags_list' };
-        case 'START_LOADING':
-            return { ...state, isLoading: true };
-        default:
-            return state;
-    }
-}
-
 const DemoBankFeatureManagementView: React.FC = () => {
-    const [state, dispatch] = useReducer(appReducer, initialState);
+    const { view, featureFlags, selectedFlag, isLoading, loadInitialData, setView, selectFlag } = useStore();
 
     useEffect(() => {
-        dispatch({ type: 'START_LOADING' });
-        api.getFeatureFlags().then(flags => {
-            dispatch({ type: 'SET_FLAGS', payload: flags });
-        });
-    }, []);
+        loadInitialData();
+    }, [loadInitialData]);
     
     const handleSelectFlag = useCallback((flag: FeatureFlag) => {
-        dispatch({ type: 'SELECT_FLAG', payload: flag });
-    }, []);
+        selectFlag(flag);
+    }, [selectFlag]);
     
     const handleBackToList = useCallback(() => {
-        dispatch({ type: 'SELECT_FLAG', payload: null });
-    }, []);
+        selectFlag(null);
+    }, [selectFlag]);
 
     const renderContent = () => {
-        if (state.isLoading && state.currentView !== 'ai_planner') {
+        if (isLoading.initial && view !== 'ai_planner') {
             return (
                 <div className="flex justify-center items-center h-96">
                     <LoadingSpinner size={64} />
@@ -770,38 +1018,46 @@ const DemoBankFeatureManagementView: React.FC = () => {
             );
         }
 
-        switch (state.currentView) {
+        switch (view) {
             case 'ai_planner':
                 return <AiRolloutPlanner />;
             case 'feature_flags_list':
-                return <FeatureFlagTable flags={state.featureFlags} onSelectFlag={handleSelectFlag} />;
+                return <FeatureFlagTable flags={featureFlags} onSelectFlag={handleSelectFlag} />;
             case 'feature_flag_detail':
-                return state.selectedFlag ? <FeatureFlagDetailView flag={state.selectedFlag} onBack={handleBackToList} /> : <p>No flag selected.</p>;
+                return selectedFlag ? <FeatureFlagDetailView flag={selectedFlag} onBack={handleBackToList} /> : <p>No flag selected.</p>;
             case 'audit_log':
                 return <AuditLogView />;
+            case 'ab_testing':
+                return <ABTestingView />;
             default:
                 return null;
         }
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="bg-gray-900 text-white min-h-screen p-8">
+            <Toaster position="top-right" toastOptions={{
+                style: { background: '#333', color: '#fff' }
+            }}/>
+            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Feature Management</h2>
-                <button className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded transition-colors font-semibold">
-                    + New Feature Flag
+                <button className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded transition-colors font-semibold flex items-center gap-2">
+                    {icons.add} New Feature Flag
                 </button>
             </div>
 
-            {/* Main Navigation */}
-            <div className="border-b border-gray-700">
-                <Tab active={state.currentView === 'feature_flags_list' || state.currentView === 'feature_flag_detail'} onClick={() => dispatch({type: 'SET_VIEW', payload: 'feature_flags_list'})}>Feature Flags</Tab>
-                <Tab active={state.currentView === 'ai_planner'} onClick={() => dispatch({type: 'SET_VIEW', payload: 'ai_planner'})}>AI Rollout Planner</Tab>
-                <Tab active={state.currentView === 'audit_log'} onClick={() => dispatch({type: 'SET_VIEW', payload: 'audit_log'})}>Audit Log</Tab>
-                <Tab active={false} onClick={() => {}}>A/B Testing</Tab>
+            <div className="border-b border-gray-700 mb-6">
+                <div className="flex space-x-2">
+                    <Tab active={view === 'feature_flags_list' || view === 'feature_flag_detail'} onClick={() => setView('feature_flags_list')} icon={icons.zap}>Feature Flags</Tab>
+                    <Tab active={view === 'ai_planner'} onClick={() => setView('ai_planner')} icon={icons.ai}>AI Rollout Planner</Tab>
+                    <Tab active={view === 'audit_log'} onClick={() => setView('audit_log')} icon={icons.history}>Audit Log</Tab>
+                    <Tab active={view === 'ab_testing'} onClick={() => setView('ab_testing')} icon={icons.abTest}>A/B Testing</Tab>
+                </div>
             </div>
             
-            {renderContent()}
+            <Suspense fallback={<div className="flex justify-center items-center h-96"><LoadingSpinner size={64}/></div>}>
+                {renderContent()}
+            </Suspense>
         </div>
     );
 };
