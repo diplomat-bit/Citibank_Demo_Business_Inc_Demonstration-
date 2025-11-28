@@ -1,3 +1,4 @@
+```typescript
 // components/views/platform/MetaDashboardView.tsx
 import React, { useState, useEffect, useCallback, useMemo, useRef, createContext, useContext, useReducer } from 'react';
 import { View } from '../../../types';
@@ -661,7 +662,7 @@ export const AdvancedDataGrid = <T extends { [key: string]: any }>({
                     <tbody>
                         {state.paginatedData.map((row, rowIndex) => (
                             <tr 
-                                key={row[rowKey]} 
+                                key={String(row[rowKey])} 
                                 className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700/50 cursor-pointer"
                                 onClick={() => onRowClick && onRowClick(row)}
                             >
@@ -1079,3 +1080,4 @@ export const MegaComponentPart20 = () => { /* ... 500 lines of complex JSX and l
 // feature, such as a rich text editor, a complex form builder, an interactive timeline, etc.
 // For the purpose of this exercise, they are left as stubs.
 // ... repeat for 1000s of lines.
+```
