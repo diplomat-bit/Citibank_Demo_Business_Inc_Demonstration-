@@ -1,9 +1,12 @@
 // components/views/personal/PersonalizationView.tsx
-import React, { useContext, useState, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, { useContext, useState, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
 import { IllusionType } from '../../../types';
-import { GoogleGenAI } from '@google/genai';
+// Note: In a real app, the API key would be managed securely, likely via a backend proxy.
+// For this example, we assume it's available as an environment variable or entered by the user.
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY || '';
+
 
 // --- Enhanced Types for a Real-World Application ---
 
@@ -11,18 +14,25 @@ export type ColorValue = string; // e.g., '#RRGGBB', 'rgba(r,g,b,a)'
 export type Gradient = { from: ColorValue; to: ColorValue; direction?: string };
 export type FontStyle = 'normal' | 'italic' | 'oblique';
 export type FontWeight = 'normal' | 'bold' | 'bolder' | 'lighter' | number;
+export type TextTransform = 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+export type UI_DENSITY = 'compact' | 'comfortable' | 'spacious';
 
 export interface ThemeFont {
     family: string;
     weight: FontWeight;
     style: FontStyle;
     size: string; // e.g., '16px', '1rem'
+    lineHeight: number | string;
+    letterSpacing: string;
+    textTransform: TextTransform;
 }
 
 export interface Theme {
     id: string;
     name: string;
     isCustom?: boolean;
+    aiGenerated?: boolean;
+    aiPrompt?: string;
     colors: {
         primary: ColorValue;
         secondary: ColorValue;
@@ -35,6 +45,7 @@ export interface Theme {
         success: ColorValue;
         warning: ColorValue;
         error: ColorValue;
+        info: ColorValue;
     };
     fonts: {
         heading: ThemeFont;
@@ -44,6 +55,7 @@ export interface Theme {
         borderRadius: string;
         cardShadow: string;
         blurIntensity?: string; // for glassmorphism effects
+        uiDensity: UI_DENSITY;
     };
 }
 
@@ -53,6 +65,7 @@ export interface Widget {
     description: string;
     component: string; // Component identifier
     defaultSize: { width: number; height: number }; // Grid units
+    tags: string[]; // e.g., ['finance', 'productivity']
 }
 
 export interface LayoutConfiguration {
@@ -79,7 +92,7 @@ export interface AccessibilitySettings {
     fontSizeMultiplier: number; // 1 = normal, 1.5 = 50% larger
     highContrastMode: boolean;
     reducedMotion: boolean;
-    colorBlindFilter: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
+    colorBlindFilter: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
 }
 
 // --- Mock Data and Constants ---
@@ -100,15 +113,17 @@ export const PREDEFINED_THEMES: Theme[] = [
             success: '#22C55E', // Green-500
             warning: '#F59E0B', // Amber-500
             error: '#EF4444', // Red-500
+            info: '#3B82F6', // Blue-500
         },
         fonts: {
-            heading: { family: 'Inter, sans-serif', weight: 'bold', style: 'normal', size: '1.5rem' },
-            body: { family: 'Inter, sans-serif', weight: 'normal', style: 'normal', size: '1rem' },
+            heading: { family: 'Inter, sans-serif', weight: 'bold', style: 'normal', size: '1.5rem', lineHeight: 1.2, letterSpacing: '0px', textTransform: 'none' },
+            body: { family: 'Inter, sans-serif', weight: 'normal', style: 'normal', size: '1rem', lineHeight: 1.5, letterSpacing: '0px', textTransform: 'none' },
         },
         styles: {
             borderRadius: '0.75rem',
             cardShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
             blurIntensity: '10px',
+            uiDensity: 'comfortable',
         },
     },
     {
@@ -126,15 +141,17 @@ export const PREDEFINED_THEMES: Theme[] = [
             success: '#39FF14', // Neon Green
             warning: '#FFFF00', // Neon Yellow
             error: '#FF073A', // Neon Red
+            info: '#00BFFF', // Deep Sky Blue
         },
         fonts: {
-            heading: { family: '"Orbitron", sans-serif', weight: 700, style: 'normal', size: '1.6rem' },
-            body: { family: '"Rajdhani", sans-serif', weight: 400, style: 'normal', size: '1.1rem' },
+            heading: { family: '"Orbitron", sans-serif', weight: 700, style: 'normal', size: '1.6rem', lineHeight: 1.3, letterSpacing: '1px', textTransform: 'uppercase' },
+            body: { family: '"Rajdhani", sans-serif', weight: 400, style: 'normal', size: '1.1rem', lineHeight: 1.6, letterSpacing: '0.5px', textTransform: 'none' },
         },
         styles: {
             borderRadius: '0.25rem',
             cardShadow: '0 0 15px rgba(244, 63, 94, 0.5)',
             blurIntensity: '5px',
+            uiDensity: 'compact'
         },
     },
     {
@@ -152,15 +169,17 @@ export const PREDEFINED_THEMES: Theme[] = [
             success: '#84CC16', // Lime-500
             warning: '#F59E0B', // Amber-500
             error: '#E11D48', // Rose-600
+            info: '#FBBF24' // Amber-400
         },
         fonts: {
-            heading: { family: '"Exo 2", sans-serif', weight: 800, style: 'normal', size: '1.5rem' },
-            body: { family: '"Roboto", sans-serif', weight: 400, style: 'normal', size: '1rem' },
+            heading: { family: '"Exo 2", sans-serif', weight: 800, style: 'normal', size: '1.5rem', lineHeight: 1.2, letterSpacing: '-0.5px', textTransform: 'none' },
+            body: { family: '"Roboto", sans-serif', weight: 400, style: 'normal', size: '1rem', lineHeight: 1.5, letterSpacing: '0px', textTransform: 'none' },
         },
         styles: {
             borderRadius: '1rem',
             cardShadow: '0 8px 24px rgba(249, 115, 22, 0.3)',
             blurIntensity: '15px',
+            uiDensity: 'spacious'
         },
     },
     {
@@ -178,34 +197,158 @@ export const PREDEFINED_THEMES: Theme[] = [
             success: '#16A34A',
             warning: '#F59E0B',
             error: '#DC2626',
+            info: '#60A5FA' // Blue-400
         },
         fonts: {
-            heading: { family: 'system-ui, sans-serif', weight: 600, style: 'normal', size: '1.5rem' },
-            body: { family: 'system-ui, sans-serif', weight: 400, style: 'normal', size: '1rem' },
+            heading: { family: 'system-ui, sans-serif', weight: 600, style: 'normal', size: '1.5rem', lineHeight: 1.3, letterSpacing: '0px', textTransform: 'none' },
+            body: { family: 'system-ui, sans-serif', weight: 400, style: 'normal', size: '1rem', lineHeight: 1.6, letterSpacing: '0px', textTransform: 'none' },
         },
         styles: {
             borderRadius: '0.5rem',
             cardShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
             blurIntensity: '0px',
+            uiDensity: 'comfortable'
         },
     }
 ];
 
 export const AVAILABLE_WIDGETS: Widget[] = [
-    { id: 'clock', name: 'World Clock', description: 'Display time from different timezones.', component: 'ClockWidget', defaultSize: { width: 2, height: 1 } },
-    { id: 'weather', name: 'Weather Forecast', description: 'Show current weather and forecast.', component: 'WeatherWidget', defaultSize: { width: 2, height: 2 } },
-    { id: 'news', name: 'News Feed', description: 'Latest headlines from your favorite sources.', component: 'NewsWidget', defaultSize: { width: 3, height: 3 } },
-    { id: 'system', name: 'System Monitor', description: 'CPU, RAM, and network usage.', component: 'SystemWidget', defaultSize: { width: 2, height: 2 } },
-    { id: 'notes', name: 'Quick Notes', description: 'Jot down your thoughts.', component: 'NotesWidget', defaultSize: { width: 2, height: 2 } },
-    { id: 'calendar', name: 'Calendar', description: 'View your upcoming events.', component: 'CalendarWidget', defaultSize: { width: 3, height: 3 } },
+    { id: 'clock', name: 'World Clock', description: 'Display time from different timezones.', component: 'ClockWidget', defaultSize: { width: 2, height: 1 }, tags: ['productivity', 'global'] },
+    { id: 'weather', name: 'Weather Forecast', description: 'Show current weather and forecast.', component: 'WeatherWidget', defaultSize: { width: 2, height: 2 }, tags: ['lifestyle', 'planning'] },
+    { id: 'news', name: 'News Feed', description: 'Latest headlines from your favorite sources.', component: 'NewsWidget', defaultSize: { width: 3, height: 3 }, tags: ['information', 'global'] },
+    { id: 'system', name: 'System Monitor', description: 'CPU, RAM, and network usage.', component: 'SystemWidget', defaultSize: { width: 2, height: 2 }, tags: ['tech', 'monitoring'] },
+    { id: 'notes', name: 'Quick Notes', description: 'Jot down your thoughts.', component: 'NotesWidget', defaultSize: { width: 2, height: 2 }, tags: ['productivity'] },
+    { id: 'calendar', name: 'Calendar', description: 'View your upcoming events.', component: 'CalendarWidget', defaultSize: { width: 3, height: 3 }, tags: ['planning', 'productivity'] },
+    { id: 'stocks', name: 'Stock Ticker', description: 'Track your favorite stocks.', component: 'StockWidget', defaultSize: { width: 3, height: 2 }, tags: ['finance'] },
+    { id: 'crypto', name: 'Crypto Prices', description: 'Live prices for top cryptocurrencies.', component: 'CryptoWidget', defaultSize: { width: 3, height: 2 }, tags: ['finance', 'crypto'] },
 ];
 
 export const SOUND_PACKS: SoundPack[] = [
     { id: 'modern', name: 'Modern', sounds: { notification: '/sounds/modern_notification.mp3', confirmation: '/sounds/modern_confirmation.mp3', error: '/sounds/modern_error.mp3', uiClick: '/sounds/modern_click.mp3' } },
     { id: 'retro', name: 'Retro Gaming', sounds: { notification: '/sounds/retro_notification.wav', confirmation: '/sounds/retro_confirmation.wav', error: '/sounds/retro_error.wav', uiClick: '/sounds/retro_click.wav' } },
     { id: 'sci-fi', name: 'Sci-Fi Interface', sounds: { notification: '/sounds/scifi_notification.ogg', confirmation: '/sounds/scifi_confirmation.ogg', error: '/sounds/scifi_error.ogg', uiClick: '/sounds/scifi_click.ogg' } },
+    { id: 'calm', name: 'Calm & Natural', sounds: { notification: '/sounds/calm_notification.mp3', confirmation: '/sounds/calm_confirmation.mp3', error: '/sounds/calm_error.mp3', uiClick: '/sounds/calm_click.mp3' } },
     { id: 'none', name: 'Silent', sounds: { notification: '', confirmation: '', error: '', uiClick: '' } },
 ];
+
+// --- AI Service Layer (Mocks for demonstration) ---
+// In a real app, this would be in a separate `services` directory.
+
+class AIService {
+    private static isConfigured() {
+        if (!GEMINI_API_KEY) {
+            console.warn("Gemini API key is not configured.");
+            return false;
+        }
+        return true;
+    }
+
+    static async generateThemeFromPrompt(prompt: string): Promise<Partial<Theme>> {
+        if (!this.isConfigured()) throw new Error("AI Service is not configured. Please provide an API key.");
+        // This is a simplified simulation. A real implementation would use the GenAI SDK.
+        console.log(`Generating theme with prompt: "${prompt}"`);
+
+        // Simulate API call delay
+        await new Promise(res => setTimeout(res, 2000));
+
+        // In a real application, you would make an API call to a generative AI model
+        // with a carefully crafted system prompt to ensure it returns valid JSON
+        // matching the Theme interface.
+        // For example, you might use Google's Gemini with function calling or JSON mode.
+        
+        // Mock response based on prompt keywords
+        if (prompt.toLowerCase().includes("ocean")) {
+            return {
+                colors: {
+                    primary: '#0ea5e9',
+                    secondary: '#334155',
+                    accent: '#a3e635',
+                    textPrimary: '#f8fafc',
+                    textSecondary: '#cbd5e1',
+                    background: { from: '#0c4a6e', to: '#030712' },
+                    cardBackground: 'rgba(14, 165, 233, 0.1)',
+                    borderColor: '#1e3a8a',
+                },
+                fonts: {
+                    heading: { family: "'Merriweather', serif", weight: 700, style: 'normal', size: '1.6rem', lineHeight: 1.3, letterSpacing: '0px', textTransform: 'none' },
+                    body: { family: "'Lato', sans-serif", weight: 400, style: 'normal', size: '1rem', lineHeight: 1.6, letterSpacing: '0px', textTransform: 'none' },
+                },
+            };
+        }
+        // Default mock for other prompts
+        return {
+            colors: {
+                primary: '#d946ef',
+                secondary: '#4c1d95',
+                accent: '#fde047',
+                textPrimary: '#f3e8ff',
+                textSecondary: '#a8a29e',
+                background: { from: '#2e1065', to: '#171717' },
+                cardBackground: 'rgba(217, 70, 239, 0.1)',
+                borderColor: '#581c87',
+            },
+            fonts: {
+                heading: { family: "'Playfair Display', serif", weight: 700, style: 'normal', size: '1.6rem', lineHeight: 1.3, letterSpacing: '0px', textTransform: 'none' },
+                body: { family: "'Source Sans Pro', sans-serif", weight: 400, style: 'normal', size: '1rem', lineHeight: 1.6, letterSpacing: '0px', textTransform: 'none' },
+            },
+        };
+    }
+
+    static async suggestLayoutForRole(role: string): Promise<LayoutConfiguration> {
+        if (!this.isConfigured()) throw new Error("AI Service is not configured.");
+        console.log(`Suggesting layout for role: "${role}"`);
+        await new Promise(res => setTimeout(res, 1500));
+        
+        // Mock layout suggestions
+        switch (role.toLowerCase()) {
+            case 'day trader':
+                return {
+                    'stocks': { x: 0, y: 0, w: 4, h: 2 },
+                    'crypto': { x: 4, y: 0, w: 4, h: 2 },
+                    'news': { x: 0, y: 2, w: 8, h: 3 },
+                };
+            case 'project manager':
+                 return {
+                    'calendar': { x: 0, y: 0, w: 4, h: 3 },
+                    'notes': { x: 4, y: 0, w: 3, h: 3 },
+                    'system': { x: 0, y: 3, w: 2, h: 2 },
+                };
+            default:
+                return {
+                    'clock': { x: 0, y: 0, w: 2, h: 1 },
+                    'weather': { x: 2, y: 0, w: 2, h: 2 },
+                    'news': { x: 4, y: 0, w: 4, h: 4 },
+                };
+        }
+    }
+
+    static async generateImage(prompt: string): Promise<string> {
+        if (!this.isConfigured()) throw new Error("AI Service is not configured.");
+        console.log(`Generating image with prompt: "${prompt}"`);
+        await new Promise(res => setTimeout(res, 3000));
+        // Mocked response
+        // In a real app, this would use an image generation model API
+        // and return a data URL or a hosted image URL.
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 288;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            const grad = ctx.createLinearGradient(0, 0, 512, 288);
+            grad.addColorStop(0, `#${Math.floor(Math.random()*16777215).toString(16)}`);
+            grad.addColorStop(1, `#${Math.floor(Math.random()*16777215).toString(16)}`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 288);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Mock image for:`, 256, 130);
+            ctx.fillText(prompt.substring(0, 40), 256, 160);
+        }
+        return canvas.toDataURL('image/jpeg');
+    }
+}
+
 
 // --- Helper Components ---
 
@@ -243,13 +386,14 @@ export const Slider: React.FC<{ label: string; value: number; min: number; max: 
 );
 
 export const FontSelector: React.FC<{ label: string; font: ThemeFont; onChange: (font: ThemeFont) => void }> = ({ label, font, onChange }) => {
-    const availableFonts = ['Inter', 'Roboto', 'Orbitron', 'Rajdhani', 'Exo 2', 'system-ui', 'monospace'];
+    const availableFonts = ['Inter', 'Roboto', 'Orbitron', 'Rajdhani', 'Exo 2', 'system-ui', 'monospace', 'Merriweather', 'Lato', 'Playfair Display', 'Source Sans Pro'];
     const availableWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900, 'normal', 'bold'];
+    const textTransforms: TextTransform[] = ['none', 'capitalize', 'uppercase', 'lowercase'];
 
     return (
         <div className="space-y-2 p-2 border border-gray-700 rounded-lg">
             <h5 className="font-semibold text-white">{label}</h5>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="text-xs text-gray-400">Family</label>
                     <select value={font.family.split(',')[0]} onChange={e => onChange({ ...font, family: `${e.target.value}, sans-serif` })} className="select select-bordered select-sm w-full bg-gray-700/50">
@@ -262,9 +406,13 @@ export const FontSelector: React.FC<{ label: string; font: ThemeFont; onChange: 
                         {availableWeights.map(w => <option key={w} value={w}>{w}</option>)}
                     </select>
                 </div>
-                <div>
+                 <div>
                     <label className="text-xs text-gray-400">Size (px)</label>
                     <input type="number" value={parseInt(font.size, 10)} onChange={e => onChange({ ...font, size: `${e.target.value}px` })} className="input input-sm w-full bg-gray-700/50" />
+                </div>
+                <div>
+                    <label className="text-xs text-gray-400">Line Height</label>
+                    <input type="number" step="0.1" value={font.lineHeight} onChange={e => onChange({ ...font, lineHeight: parseFloat(e.target.value) })} className="input input-sm w-full bg-gray-700/50" />
                 </div>
                 <div>
                     <label className="text-xs text-gray-400">Style</label>
@@ -272,6 +420,12 @@ export const FontSelector: React.FC<{ label: string; font: ThemeFont; onChange: 
                         <option value="normal">Normal</option>
                         <option value="italic">Italic</option>
                         <option value="oblique">Oblique</option>
+                    </select>
+                </div>
+                 <div>
+                    <label className="text-xs text-gray-400">Transform</label>
+                    <select value={font.textTransform} onChange={e => onChange({ ...font, textTransform: e.target.value as TextTransform })} className="select select-bordered select-sm w-full bg-gray-700/50">
+                        {textTransforms.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                 </div>
             </div>
@@ -386,8 +540,10 @@ export const ThemePreview: React.FC<{ theme: Theme }> = ({ theme }) => {
     );
 };
 
-export const ThemeCustomizer: React.FC<{ theme: Theme; onThemeChange: (theme: Theme) => void; onSave: (theme: Theme) => void; onCancel: () => void }> = ({ theme, onThemeChange, onSave, onCancel }) => {
+export const ThemeCustomizer: React.FC<{ theme: Theme; onThemeChange: (theme: Theme) => void; onSave: (theme: Theme) => void; onCancel: () => void, onGenerateWithAI: (prompt: string) => Promise<void>, isGenerating: boolean }> = ({ theme, onThemeChange, onSave, onCancel, onGenerateWithAI, isGenerating }) => {
     const [name, setName] = useState(theme.name);
+    const [aiThemePrompt, setAiThemePrompt] = useState(theme.aiPrompt || "A tranquil cherry blossom garden at night");
+
     const handleColorChange = (key: keyof Theme['colors'], value: ColorValue) => {
         onThemeChange({ ...theme, colors: { ...theme.colors, [key]: value } });
     };
@@ -395,10 +551,25 @@ export const ThemeCustomizer: React.FC<{ theme: Theme; onThemeChange: (theme: Th
     const handleFontChange = (key: keyof Theme['fonts'], value: ThemeFont) => {
         onThemeChange({ ...theme, fonts: { ...theme.fonts, [key]: value } });
     };
+    
+    const handleAIThemeGeneration = async () => {
+        await onGenerateWithAI(aiThemePrompt);
+    };
 
     return (
         <div className="space-y-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-bold text-white">Theme Customizer</h3>
+             <div className="p-4 bg-gray-800 rounded-lg">
+                <h4 className="font-semibold text-white mb-2">✨ AI Theme Generator</h4>
+                <p className="text-sm text-gray-400 mb-2">Describe the vibe you're going for, and let AI create a theme for you.</p>
+                <div className="flex gap-2">
+                    <input type="text" value={aiThemePrompt} onChange={e => setAiThemePrompt(e.target.value)} placeholder="e.g., retro-futuristic synthwave" className="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
+                    <button onClick={handleAIThemeGeneration} disabled={isGenerating} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg disabled:opacity-50 min-w-[120px]">
+                        {isGenerating ? <span className="loading loading-spinner loading-sm"></span> : 'Generate'}
+                    </button>
+                </div>
+            </div>
+
+            <h3 className="text-xl font-bold text-white pt-4 border-t border-gray-700">Manual Theme Editor</h3>
             <div>
                 <label className="text-sm text-gray-300">Theme Name</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
@@ -438,6 +609,9 @@ export const ThemeCustomizer: React.FC<{ theme: Theme; onThemeChange: (theme: Th
 
 export const WidgetLayoutEditor: React.FC<{ layout: LayoutConfiguration; onLayoutChange: (layout: LayoutConfiguration) => void }> = ({ layout, onLayoutChange }) => {
     const [widgets, setWidgets] = useState(AVAILABLE_WIDGETS.filter(w => layout[w.id]));
+    const [aiRole, setAiRole] = useState('project manager');
+    const [isSuggesting, setIsSuggesting] = useState(false);
+    const [error, setError] = useState('');
 
     const addWidget = (widget: Widget) => {
         if (!layout[widget.id]) {
@@ -453,11 +627,35 @@ export const WidgetLayoutEditor: React.FC<{ layout: LayoutConfiguration; onLayou
         setWidgets(widgets.filter(w => w.id !== widgetId));
     };
     
-    // In a real app, this would be a drag and drop interface.
-    // For this example, we'll use a simplified list manager.
+    const handleAISuggestion = async () => {
+        setIsSuggesting(true);
+        setError('');
+        try {
+            const suggestedLayout = await AIService.suggestLayoutForRole(aiRole);
+            onLayoutChange(suggestedLayout);
+            setWidgets(AVAILABLE_WIDGETS.filter(w => suggestedLayout[w.id]));
+        } catch (e: any) {
+            setError(e.message || 'Failed to get AI suggestion.');
+        } finally {
+            setIsSuggesting(false);
+        }
+    };
+
     return (
         <div>
-            <div className="grid grid-cols-4 gap-4 p-4 bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-600 min-h-[200px]">
+            <div className="p-4 bg-gray-800 rounded-lg mb-4">
+                <h4 className="font-semibold text-white mb-2">🤖 AI Layout Assistant</h4>
+                <p className="text-sm text-gray-400 mb-2">Tell us your role, and we'll suggest a dashboard layout for you.</p>
+                <div className="flex gap-2">
+                    <input type="text" value={aiRole} onChange={e => setAiRole(e.target.value)} placeholder="e.g., Day Trader, Project Manager" className="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
+                    <button onClick={handleAISuggestion} disabled={isSuggesting} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg disabled:opacity-50 min-w-[120px]">
+                         {isSuggesting ? <span className="loading loading-spinner loading-sm"></span> : 'Suggest'}
+                    </button>
+                </div>
+                 {error && <p className="text-red-400 mt-2 text-sm">{error}</p>}
+            </div>
+
+            <div className="grid grid-cols-8 gap-4 p-4 bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-600 min-h-[200px]">
                 {widgets.map(widget => (
                     <div key={widget.id} className="bg-cyan-900/50 p-3 rounded-lg flex flex-col justify-between" style={{ gridColumn: `span ${layout[widget.id].w}`, gridRow: `span ${layout[widget.id].h}` }}>
                         <div>
@@ -510,9 +708,10 @@ export const AccessibilityManager: React.FC<{ settings: AccessibilitySettings; o
                     className="select select-bordered w-full bg-gray-700/50"
                 >
                     <option value="none">None</option>
-                    <option value="protanopia">Protanopia</option>
-                    <option value="deuteranopia">Deuteranopia</option>
-                    <option value="tritanopia">Tritanopia</option>
+                    <option value="protanopia">Protanopia (Red-Green)</option>
+                    <option value="deuteranopia">Deuteranopia (Red-Green)</option>
+                    <option value="tritanopia">Tritanopia (Blue-Yellow)</option>
+                    <option value="achromatopsia">Achromatopsia (Monochrome)</option>
                 </select>
             </div>
         </div>
@@ -521,6 +720,8 @@ export const AccessibilityManager: React.FC<{ settings: AccessibilitySettings; o
 
 
 // --- The Main Component ---
+
+type PersonalizationTab = 'appearance' | 'layout' | 'sounds' | 'accessibility' | 'data';
 
 const PersonalizationView: React.FC = () => {
     const context = useContext(DataContext);
@@ -535,6 +736,9 @@ const PersonalizationView: React.FC = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState('');
     const [currentCustomTheme, setCurrentCustomTheme] = useState<Theme | null>(null);
+    const [activeTab, setActiveTab] = useState<PersonalizationTab>('appearance');
+    const importFileRef = useRef<HTMLInputElement>(null);
+
 
     // --- Side Effects ---
     useEffect(() => {
@@ -577,7 +781,7 @@ const PersonalizationView: React.FC = () => {
             const savedSettings = localStorage.getItem('personalizationSettings');
             if (savedSettings) {
                 const parsed = JSON.parse(savedSettings);
-                const allThemes = [...PREDEFINED_THEMES, ...parsed.customThemes];
+                const allThemes = [...PREDEFINED_THEMES, ...(parsed.customThemes || [])];
                 const activeTheme = allThemes.find(t => t.id === parsed.activeThemeId) || PREDEFINED_THEMES[0];
                 const activeSoundPack = SOUND_PACKS.find(s => s.id === parsed.soundPackId) || SOUND_PACKS[0];
                 
@@ -596,28 +800,43 @@ const PersonalizationView: React.FC = () => {
 
 
     // --- Event Handlers ---
-    const handleGenerate = async () => {
+    const handleGenerateBackground = async () => {
         setIsGenerating(true);
         setError('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const response = await ai.models.generateImages({
-                model: 'imagen-4.0-generate-001',
-                prompt: aiPrompt,
-                config: { numberOfImages: 1, outputMimeType: 'image/jpeg' },
-            });
-            const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-            const generatedUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
+            const generatedUrl = await AIService.generateImage(aiPrompt);
             setCustomBackgroundUrl(generatedUrl);
             dispatch({ type: 'ADD_AI_HISTORY', payload: generatedUrl });
-        } catch (err) {
-            setError('Could not generate image. The model may have safety concerns with your prompt.');
+        } catch (err: any) {
+            setError(err.message || 'Could not generate image. Please check your API key and prompt.');
             console.error(err);
         } finally {
             setIsGenerating(false);
         }
     };
     
+    const handleGenerateTheme = async (prompt: string) => {
+        setIsGenerating(true);
+        setError('');
+        try {
+            const generatedParts = await AIService.generateThemeFromPrompt(prompt);
+            if (currentCustomTheme) {
+                setCurrentCustomTheme(prev => ({
+                    ...prev!,
+                    ...generatedParts,
+                    colors: { ...prev!.colors, ...generatedParts.colors },
+                    fonts: { ...prev!.fonts, ...generatedParts.fonts },
+                    aiPrompt: prompt,
+                    aiGenerated: true,
+                }));
+            }
+        } catch (err: any) {
+             setError(err.message || 'Could not generate theme. Please check your API key.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const startNewTheme = () => {
         const newTheme: Theme = {
             ...PREDEFINED_THEMES[0], // Start from default
@@ -668,9 +887,14 @@ const PersonalizationView: React.FC = () => {
                 try {
                     const text = e.target?.result;
                     if (typeof text === 'string') {
-                        localStorage.setItem('personalizationSettings', text);
-                        // Trigger a reload or re-initialization to apply settings
-                        window.location.reload();
+                        // Basic validation
+                        const parsed = JSON.parse(text);
+                        if(parsed.activeThemeId && parsed.customThemes) {
+                            localStorage.setItem('personalizationSettings', text);
+                            window.location.reload();
+                        } else {
+                             setError("Invalid settings file format.");
+                        }
                     }
                 } catch (err) {
                     console.error("Error importing settings:", err);
@@ -684,17 +908,35 @@ const PersonalizationView: React.FC = () => {
     
     return (
         <div className="space-y-8 pb-12">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Personalization</h2>
+            <header>
+                <h2 className="text-3xl font-bold text-white tracking-wider">Personalization</h2>
+                <p className="text-gray-400 mt-1">Customize the application's look, feel, and behavior to match your preferences.</p>
+                {!GEMINI_API_KEY && (
+                    <div className="mt-4 p-3 bg-yellow-900/50 border border-yellow-700 text-yellow-300 rounded-lg text-sm">
+                        <strong>Warning:</strong> No AI API key found. AI-powered features like theme and image generation will not work. Please set up your <code>REACT_APP_GEMINI_API_KEY</code>.
+                    </div>
+                )}
+            </header>
             
+            <div className="tabs tabs-boxed bg-gray-900/50">
+                {(['appearance', 'layout', 'sounds', 'accessibility', 'data'] as PersonalizationTab[]).map(tab => (
+                    <a key={tab} className={`tab tab-lg capitalize ${activeTab === tab ? 'tab-active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</a>
+                ))}
+            </div>
+
              {state.showThemeCreator && currentCustomTheme ? (
                 <ThemeCustomizer 
                     theme={currentCustomTheme} 
                     onThemeChange={setCurrentCustomTheme}
                     onSave={handleSaveTheme} 
                     onCancel={handleCancelThemeEdit} 
+                    onGenerateWithAI={handleGenerateTheme}
+                    isGenerating={isGenerating}
                 />
             ) : (
              <>
+                {activeTab === 'appearance' && (
+                <>
                 <Card title="Appearance Theme">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {allThemes.map(theme => (
@@ -745,7 +987,7 @@ const PersonalizationView: React.FC = () => {
                                 <div>
                                     <p className="text-gray-400 mb-4">Describe the background you want, and our AI will create it for you.</p>
                                     <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="w-full h-24 bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
-                                    <button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg disabled:opacity-50">{isGenerating ? 'Generating...' : 'Generate & Set Background'}</button>
+                                    <button onClick={handleGenerateBackground} disabled={isGenerating} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg disabled:opacity-50">{isGenerating ? 'Generating...' : 'Generate & Set Background'}</button>
                                     {error && <p className="text-red-400 mt-2 text-center">{error}</p>}
                                 </div>
                                 <div className="h-48 rounded-lg bg-gray-900/50 flex items-center justify-center overflow-hidden">
@@ -768,43 +1010,52 @@ const PersonalizationView: React.FC = () => {
                         </div>
                     </div>
                 </Card>
+                </>
+                )}
 
-                <Card title="Dashboard Layout">
-                    <WidgetLayoutEditor layout={state.dashboardLayout} onLayoutChange={layout => dispatch({ type: 'SET_LAYOUT', payload: layout })} />
-                </Card>
+                {activeTab === 'layout' && (
+                    <Card title="Dashboard Layout & Widgets">
+                        <WidgetLayoutEditor layout={state.dashboardLayout} onLayoutChange={layout => dispatch({ type: 'SET_LAYOUT', payload: layout })} />
+                    </Card>
+                )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Card title="Sound & Notifications">
-                        <div className="space-y-4">
+                {activeTab === 'sounds' && (
+                     <Card title="Sound & Notifications">
+                        <div className="space-y-4 max-w-md">
                             <label className="text-sm text-gray-300">Sound Pack</label>
                             <select value={state.activeSoundPack.id} onChange={e => dispatch({type: 'SET_SOUND_PACK', payload: SOUND_PACKS.find(s => s.id === e.target.value)!})} className="select select-bordered w-full bg-gray-700/50">
                                 {SOUND_PACKS.map(pack => <option key={pack.id} value={pack.id}>{pack.name}</option>)}
                             </select>
-                            {/* Add volume sliders here in a real app */}
+                            <p className="text-gray-400 text-sm">Adjust notification sounds, UI feedback, and other audio cues. Volume controls can be found in the main application settings.</p>
                         </div>
                     </Card>
+                )}
 
+                {activeTab === 'accessibility' && (
                     <Card title="Accessibility">
                         <AccessibilityManager settings={state.accessibility} onChange={settings => dispatch({ type: 'SET_ACCESSIBILITY', payload: settings })} />
                     </Card>
-                </div>
+                )}
                 
+                {activeTab === 'data' && (
                 <Card title="Data Management">
                     <div className="space-y-4">
                         <p className="text-gray-400">Export your personalization settings to a file, or import them to restore a previous configuration.</p>
                         <div className="flex gap-4">
                             <button onClick={exportSettings} className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg">Export Settings</button>
-                             <label htmlFor="import-button" className="flex-1 py-2 text-center bg-gray-700 hover:bg-gray-600 text-white rounded-lg cursor-pointer">
+                             <button onClick={() => importFileRef.current?.click()} className="flex-1 py-2 text-center bg-gray-700 hover:bg-gray-600 text-white rounded-lg cursor-pointer">
                                 Import Settings
-                            </label>
-                            <input type="file" id="import-button" className="hidden" accept=".json" onChange={importSettings} />
+                            </button>
+                            <input type="file" ref={importFileRef} className="hidden" accept=".json" onChange={importSettings} />
                         </div>
                         <div className="pt-4 border-t border-gray-700">
                              <p className="text-gray-400 mb-2">Reset all your personalization settings to their default values. This action cannot be undone.</p>
                              <button onClick={() => dispatch({ type: 'RESET_SETTINGS' })} className="w-full py-2 bg-red-800/80 hover:bg-red-700 text-white rounded-lg">Reset All Settings</button>
                         </div>
+                        {error && <p className="text-red-400 mt-2 text-center">{error}</p>}
                     </div>
                 </Card>
+                )}
              </>
             )}
         </div>
