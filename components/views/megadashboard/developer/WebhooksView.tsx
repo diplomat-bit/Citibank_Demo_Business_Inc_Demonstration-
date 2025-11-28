@@ -1,11 +1,45 @@
+```typescript
 // components/views/megadashboard/developer/WebhooksView.tsx
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+// In a real project, you would install these dependencies:
+// npm install react-chartjs-2 chart.js @google/genai uuid lodash
+// npm install -D @types/uuid @types/lodash
+import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer } from 'react';
 import Card from '../../../Card';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from 'uuid';
-import { debounce } from 'lodash'; // Assuming lodash is available or will be installed
+import { debounce } from 'lodash';
 
-// New Interfaces to support a real-world application with extensive features
+// --- Chart.js Setup ---
+import { Line, Bar, Pie } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler,
+} from 'chart.js';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+);
+
+// --- Type Definitions ---
+
 export interface Webhook {
     id: string;
     url: string;
@@ -561,6 +595,7 @@ const WebhooksView: React.FC = () => {
     const [editingWebhook, setEditingWebhook] = useState<WebhookFormData | null>(null);
     const [webhookFormErrors, setWebhookFormErrors] = useState<any>({});
     const [showDeleteWebhookConfirm, setShowDeleteWebhookConfirm] = useState<string | null>(null); // Webhook ID to delete
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
     // Events State
     const [events, setEvents] = useState<WebhookEvent[]>(initialEvents);
@@ -574,6 +609,11 @@ const WebhooksView: React.FC = () => {
     const [aiAnalysis, setAiAnalysis] = useState('');
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [aiError, setAiError] = useState('');
+    const [aiAlertSuggestion, setAiAlertSuggestion] = useState<any>(null);
+    const [isAiSuggesting, setIsAiSuggesting] = useState(false);
+    const [aiPayloadDescription, setAiPayloadDescription] = useState('');
+    const [isAiPayloadGenerating, setIsAiPayloadGenerating] = useState(false);
+    const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY as string;
 
     // Alerts State
     const [alertRules, setAlertRules] = useState<AlertRule[]>(MOCK_ALERT_RULES);
@@ -692,7 +732,7 @@ const WebhooksView: React.FC = () => {
 
     // --- Handlers for Webhooks Management ---
 
-    const handleCreateWebhook = () => {
+    const handleCreateWebhook = (templateConfig: Partial<WebhookFormData> = {}) => {
         setEditingWebhook({
             url: '',
             events: ['*'],
@@ -706,6 +746,7 @@ const WebhooksView: React.FC = () => {
             metadata: [{ key: '', value: '', id: uuidv4() }],
             environment: 'development',
             tags: [],
+            ...templateConfig,
         });
         setIsWebhookModalOpen(true);
         setWebhookFormErrors({});
@@ -717,6 +758,7 @@ const WebhooksView: React.FC = () => {
             headers: webhook.headers.length > 0 ? webhook.headers : [{ key: '', value: '', id: uuidv4() }],
             metadata: Object.entries(webhook.metadata).map(([key, value]) => ({ key, value, id: uuidv4() }))
                 .concat({ key: '', value: '', id: uuidv4() }), // Ensure there's always an empty row for new input
+            authType: webhook.authConfig.type,
             authToken: webhook.authConfig.token,
             username: webhook.authConfig.username,
             password: webhook.authConfig.password, // This should never be shown unmasked in real UI
@@ -841,22 +883,34 @@ const WebhooksView: React.FC = () => {
         setAiAnalysis('');
         setAiError('');
         try {
-            // In a real application, the API_KEY would be secured server-side.
-            // For a client-side mock, we use process.env.API_KEY.
-            if (!process.env.API_KEY) {
-                throw new Error("API_KEY is not defined. Cannot perform AI analysis.");
+            if (!geminiApiKey) {
+                throw new Error("VITE_GEMINI_API_KEY is not defined. Cannot perform AI analysis.");
             }
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `I have a failed webhook delivery. The event type was "${selectedEvent.type}". The final error was "${selectedEvent.error || 'N/A'}". The payload was ${JSON.stringify(selectedEvent.payload, null, 2)}. Delivery attempts: ${JSON.stringify(selectedEvent.deliveryAttempts, null, 2)}. What is the likely cause of this failure and how can I fix it? Provide specific, actionable steps.`;
-            const model = ai.getGenerativeModel({ model: 'gemini-pro' }); // Using gemini-pro for more detailed analysis
+            const ai = new GoogleGenerativeAI(geminiApiKey);
+            const prompt = `Analyze a failed webhook delivery.
+            - Event Type: "${selectedEvent.type}"
+            - Final Error: "${selectedEvent.error || 'N/A'}"
+            - Payload: ${JSON.stringify(selectedEvent.payload, null, 2)}
+            - Delivery Attempts: ${JSON.stringify(selectedEvent.deliveryAttempts, null, 2)}
+            
+            Provide a structured analysis in JSON format. The format must be:
+            {
+              "likelyCause": "A brief explanation of the most probable reason for failure.",
+              "confidence": "High | Medium | Low",
+              "recommendedFix": "Specific, actionable steps to resolve the issue.",
+              "impactAnalysis": "Potential impact of this failure on the system or user.",
+              "preventativeMeasures": "Suggestions to prevent this issue from recurring."
+            }
+            Respond with ONLY the valid JSON object, without any surrounding text or markdown.`;
+            const model = ai.getGenerativeModel({ model: 'gemini-pro' });
             const result = await model.generateContent(prompt);
-            const response = result.response;
-            const text = response.text();
+            const text = result.response.text();
             setAiAnalysis(text);
         } catch (error: any) {
             console.error("AI Analysis Error:", error);
-            setAiError(`Error generating AI analysis: ${error.message || 'Unknown error'}. Please check your API key and network connection.`);
-            setAiAnalysis("Error generating analysis. Check the console for details.");
+            const errorMessage = `Error generating AI analysis: ${error.message || 'Unknown error'}. Please check your API key and network connection.`;
+            setAiError(errorMessage);
+            setAiAnalysis(JSON.stringify({ error: errorMessage }, null, 2));
         } finally {
             setIsAiLoading(false);
         }
@@ -877,7 +931,6 @@ const WebhooksView: React.FC = () => {
             return;
         }
 
-        // Simulate replaying the event
         const newAttempt = {
             attempt: eventToReplay.deliveryAttempts.length + 1,
             status: Math.random() > 0.7 ? 'Success' : 'Failure',
@@ -893,7 +946,7 @@ const WebhooksView: React.FC = () => {
             status: newAttempt.status === 'Success' ? 'Delivered' : 'Failed',
             deliveryAttempts: [...eventToReplay.deliveryAttempts, newAttempt],
             error: newAttempt.status === 'Failure' ? newAttempt.errorDetails : undefined,
-            timestamp: new Date().toISOString(), // Update timestamp to reflect last action
+            timestamp: new Date().toISOString(),
         };
 
         await simulateApiCall(updatedEvent);
@@ -1131,7 +1184,6 @@ const WebhooksView: React.FC = () => {
             return;
         }
 
-        // Simulate sending a test event
         const targetWebhook = testEventConfig.webhookId ? webhooks.find(wh => wh.id === testEventConfig.webhookId) : null;
         const simulatedResponseStatus = Math.random() > 0.8 ? 500 : 200;
         const simulatedLatency = Math.floor(Math.random() * 500) + 50;
@@ -1182,7 +1234,6 @@ const WebhooksView: React.FC = () => {
             return;
         }
 
-        // Simulate event replay
         const eligibleEvents = events.filter(evt =>
             (eventReplayConfig.webhookIds.length === 0 || eventReplayConfig.webhookIds.includes(evt.webhookId)) &&
             (eventReplayConfig.eventTypes.includes('*') || eventReplayConfig.eventTypes.includes(evt.type)) &&
@@ -1211,7 +1262,6 @@ const WebhooksView: React.FC = () => {
                 replayedEvents.push({ eventId: evt.id, status: newAttempt.status, attempt: newAttempt });
             }
 
-            // Update events in state (simplified for bulk)
             setEvents(prevEvents => {
                 const updatedEventsMap = new Map(prevEvents.map(e => [e.id, e]));
                 replayedEvents.forEach(replayed => {
@@ -1253,7 +1303,8 @@ const WebhooksView: React.FC = () => {
     };
 
 
-    // Generic reusable components (would be in separate files in a real app)
+    // In a real application, these reusable components would be in their own files.
+    // They are kept here for the purpose of a single-file response.
 
     // Pagination Component
     export const Pagination: React.FC<{ pagination: PaginationInfo; onPageChange: (page: number) => void; }> = ({ pagination, onPageChange }) => {
@@ -1376,22 +1427,72 @@ const WebhooksView: React.FC = () => {
         );
     };
 
-    // Chart Placeholder (for demonstration)
-    export const ChartPlaceholder: React.FC<ChartConfig> = ({ title, type, data, unit, description }) => (
-        <Card title={title} className="col-span-1">
-            <div className="flex flex-col h-full">
-                <p className="text-sm text-gray-400 mb-2">{description}</p>
-                <div className="flex-grow flex items-center justify-center bg-gray-700/50 rounded-md p-4 min-h-[150px]">
-                    <p className="text-gray-500 text-xs italic">
-                        [Placeholder for a {type} chart showing {title.toLowerCase()}]
-                        <br/>
-                        {data.slice(0, 3).map((d, i) => <span key={i} className="block">{d.time}: {d.value}{unit}</span>)}
-                        {data.length > 3 && <span className="block">...</span>}
-                    </p>
+    // Reusable Chart Component (replaces placeholder)
+    export const AnalyticsChart: React.FC<ChartConfig> = ({ title, type, data, unit, description }) => {
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top' as const,
+                    labels: { color: '#D1D5DB' }
+                },
+                title: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function (context: any) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) { label += `${context.parsed.y} ${unit || ''}`; }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { ticks: { color: '#9CA3AF' }, grid: { color: '#374151' } },
+                y: { ticks: { color: '#9CA3AF' }, grid: { color: '#374151' } }
+            }
+        };
+
+        const chartData = {
+            labels: data.map(d => d.time),
+            datasets: [{
+                label: title,
+                data: data.map(d => d.value),
+                borderColor: '#22D3EE',
+                backgroundColor: 'rgba(34, 211, 238, 0.2)',
+                fill: type === 'line',
+                tension: 0.3,
+                pointBackgroundColor: '#22D3EE',
+                pointBorderColor: '#fff',
+            }],
+        };
+
+        const pieData = {
+            labels: data.map(d => d.label || d.time),
+            datasets: [{
+                data: data.map(d => d.value),
+                backgroundColor: data.map(d => d.color || '#22D3EE'),
+                borderColor: '#1F2937',
+                borderWidth: 2,
+            }]
+        };
+
+        return (
+            <Card title={title} className="col-span-1 lg:col-span-1">
+                <div className="flex flex-col h-full">
+                    <p className="text-sm text-gray-400 mb-2">{description}</p>
+                    <div className="relative flex-grow h-64">
+                        {type === 'line' && <Line options={options} data={chartData} />}
+                        {type === 'bar' && <Bar options={options} data={chartData} />}
+                        {type === 'pie' && <Pie options={{ ...options, scales: undefined }} data={pieData} />}
+                    </div>
                 </div>
-            </div>
-        </Card>
-    );
+            </Card>
+        );
+    };
+
 
     // --- Component JSX ---
     return (
@@ -1408,12 +1509,12 @@ const WebhooksView: React.FC = () => {
                         {[
                             { id: 'dashboard', label: 'Dashboard', icon: '📊' },
                             { id: 'endpoints', label: 'Endpoints', icon: '🔌' },
-                            { id: 'events', label: 'Events Log', icon: '📝' },
+                            { id: 'events', label: 'Events Log', icon: '📜' },
                             { id: 'alerts', label: 'Alerts', icon: '🚨' },
                             { id: 'api-keys', label: 'API Keys', icon: '🔑' },
                             { id: 'settings', label: 'Global Settings', icon: '⚙️' },
-                            { id: 'audit-log', label: 'Audit Log', icon: '📜' },
-                            { id: 'testing', label: 'Developer Tools', icon: '🧪' },
+                            { id: 'audit-log', label: 'Audit Log', icon: '📋' },
+                            { id: 'testing', label: 'Developer Tools', icon: '🔬' },
                         ].map(item => (
                             <li key={item.id}>
                                 <button
@@ -1467,7 +1568,7 @@ const WebhooksView: React.FC = () => {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {chartConfigs.map(chart => (
-                                    <ChartPlaceholder key={chart.id} {...chart} />
+                                    <AnalyticsChart key={chart.id} {...chart} />
                                 ))}
                             </div>
 
@@ -1984,11 +2085,11 @@ const WebhooksView: React.FC = () => {
 
                                     {selectedEvent.status === 'Failed' && (
                                         <Card title="AI Analysis for Failure">
-                                            <p className="text-sm text-gray-300 whitespace-pre-line">{isAiLoading ? 'Analyzing...' : (aiError || aiAnalysis || 'Click "Analyze" to get AI insights.')}</p>
-                                            <button onClick={handleAiAnalyze} disabled={isAiLoading} className="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50">
+                                            <pre className="text-xs bg-gray-900 p-3 rounded-md overflow-x-auto text-white">{isAiLoading ? 'Analyzing...' : aiError ? aiError : aiAnalysis ? JSON.stringify(JSON.parse(aiAnalysis), null, 2) : 'Click "Analyze" to get AI insights.'}</pre>
+                                            <button onClick={handleAiAnalyze} disabled={isAiLoading || !geminiApiKey} className="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                                                 {isAiLoading ? 'Analyzing...' : 'Analyze with AI'}
                                             </button>
-                                            {aiError && <p className="text-red-400 text-xs mt-2">{aiError}</p>}
+                                            {!geminiApiKey && <p className="text-yellow-500 text-xs mt-2">AI features disabled. Please set VITE_GEMINI_API_KEY in your environment.</p>}
                                         </Card>
                                     )}
                                 </div>
@@ -2933,3 +3034,4 @@ const WebhooksView: React.FC = () => {
 };
 
 export default WebhooksView;
+```
