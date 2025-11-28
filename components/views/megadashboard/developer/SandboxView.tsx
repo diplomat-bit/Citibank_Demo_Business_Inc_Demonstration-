@@ -1,3 +1,4 @@
+```typescript
 import React, { useState, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
 import Card from '../../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -2514,3 +2515,4 @@ const WrappedSandboxView: React.FC = () => (
 );
 
 export default WrappedSandboxView;
+```
