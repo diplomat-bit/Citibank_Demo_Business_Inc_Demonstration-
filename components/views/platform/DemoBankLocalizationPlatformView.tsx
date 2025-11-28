@@ -1,3 +1,4 @@
+```typescript
 // components/views/platform/DemoBankLocalizationPlatformView.tsx
 import React, { useState, useReducer, useEffect, useCallback, useMemo, createContext, useContext, useRef } from 'react';
 import Card from '../../Card';
@@ -62,9 +63,9 @@ export const SUPPORTED_TONES = [
  * Configuration for the Google GenAI API.
  */
 export const API_CONFIG = {
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     responseMimeType: 'application/json',
-    apiKey: process.env.API_KEY as string,
+    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.API_KEY || "", // Use environment variables
 };
 
 /**
@@ -224,7 +225,7 @@ export const formatDate = (date: string | Date): string => {
  * @returns {string} The truncated string.
  */
 export const truncateString = (str: string, length: number): string => {
-    if (str.length <= length) return str;
+    if (!str || str.length <= length) return str;
     return str.substring(0, length) + '...';
 };
 
@@ -449,6 +450,17 @@ export const localizationReducer = (state: AppState, action: Action): AppState =
                 ),
             };
         }
+        case 'UPDATE_GLOSSARY_TERM': {
+            const { projectId, term: updatedTerm } = action.payload;
+             return {
+                ...state,
+                projects: state.projects.map(p =>
+                    p.id === projectId
+                        ? { ...p, glossary: p.glossary.map(t => t.id === updatedTerm.id ? updatedTerm : t), updatedAt: new Date().toISOString() }
+                        : p
+                ),
+            };
+        }
         case 'DELETE_GLOSSARY_TERM': {
              const { projectId, termId } = action.payload;
              return {
@@ -596,7 +608,7 @@ Translation requirements:
     if (glossary && glossary.length > 0) {
         const glossaryInstructions = glossary.map(term => {
             if (term.doNotTranslate) {
-                return `- The term "${term.source}" must not be translated. It should remain as "${term.source}".`;
+                return `- The term "${term.source}" must not be translated. It should remain as "${term.source}". This is a brand name or a technical term.`;
             }
             return `- The term "${term.source}" must be translated as "${term.translation}".`;
         }).join('\n');
@@ -623,10 +635,12 @@ export const AI_RESPONSE_SCHEMA = {
                     languageCode: { type: Type.STRING },
                     translatedText: { type: Type.STRING },
                     qualityScore: { type: Type.NUMBER },
-                }
+                },
+                required: ["languageCode", "translatedText", "qualityScore"]
             }
         }
-    }
+    },
+    required: ["translations"]
 };
 
 /**
@@ -645,7 +659,7 @@ export const executeTranslation = async (
     dispatch: React.Dispatch<Action>
 ) => {
     if (!API_CONFIG.apiKey) {
-        dispatch({ type: 'API_REQUEST_FAILURE', payload: { error: 'API key is not configured.' } });
+        dispatch({ type: 'API_REQUEST_FAILURE', payload: { error: 'API key is not configured. Please add NEXT_PUBLIC_GEMINI_API_KEY to your environment variables.' } });
         return;
     }
 
@@ -664,19 +678,42 @@ export const executeTranslation = async (
     dispatch({ type: 'API_REQUEST_START', payload: startRequest });
 
     try {
-        const ai = new GoogleGenAI({ apiKey: API_CONFIG.apiKey });
-        const fullPrompt = buildAIPrompt({ sourceText, targetLanguages, tone, context, glossary });
-        
-        const response = await ai.models.generateContent({
+        const ai = new GoogleGenAI(API_CONFIG.apiKey);
+        const model = ai.getGenerativeModel({ 
             model: API_CONFIG.model,
-            contents: fullPrompt,
-            config: {
+            generationConfig: {
                 responseMimeType: API_CONFIG.responseMimeType,
-                responseSchema: AI_RESPONSE_SCHEMA
+                // The new SDK recommends passing schema as part of the tool definition
             }
         });
 
-        const parsedResponse = JSON.parse(response.text);
+        const fullPrompt = buildAIPrompt({ sourceText, targetLanguages, tone, context, glossary });
+        
+        const result = await model.generateContent({
+            contents: [{role: "user", parts: [{ text: fullPrompt }]}],
+            tools: [{
+                functionDeclarations: [{
+                    name: "format_translations",
+                    description: "Formats the translations into the required JSON structure.",
+                    parameters: AI_RESPONSE_SCHEMA
+                }]
+            }],
+            toolConfig: {
+                functionCallingConfig: {
+                    mode: "ANY",
+                    allowedFunctionNames: ["format_translations"]
+                }
+            }
+        });
+        
+        const call = result.response.functionCalls()?.[0];
+
+        if (!call) {
+             throw new Error("AI model did not return a valid function call. It might have responded with text instead of JSON.");
+        }
+
+        const parsedResponse = call.args;
+
         const translations: Translation[] = parsedResponse.translations.map((t: any) => {
             const lang = SUPPORTED_LANGUAGES.find(l => l.code === t.languageCode);
             return {
@@ -858,7 +895,7 @@ export const ToneSelector: React.FC<{
 export const TranslationInputForm: React.FC<{
     project: LocalizationProject;
 }> = ({ project }) => {
-    const { dispatch } = useLocalization();
+    const { state, dispatch } = useLocalization();
     const [sourceText, setSourceText] = useState("Welcome to your dashboard");
     const [targetLanguages, setTargetLanguages] = useState<LanguageCode[]>(project.settings.defaultTargetLanguages);
     const [tone, setTone] = useState<ToneKey>(project.settings.defaultTone);
@@ -910,8 +947,8 @@ export const TranslationInputForm: React.FC<{
                         placeholder="e.g., 'A button on the main dashboard'"
                     />
                 </div>
-                <button onClick={handleGenerate} className="w-full mt-2 py-3 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors text-white font-semibold">
-                    Generate Translations
+                <button onClick={handleGenerate} disabled={state.isLoading} className="w-full mt-2 py-3 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-white font-semibold flex items-center justify-center">
+                   {state.isLoading ? <LoadingSpinner/> : "Generate Translations"}
                 </button>
             </div>
         </Card>
@@ -1096,7 +1133,9 @@ export const ProjectManager: React.FC = () => {
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
                         </select>
-                        <button onClick={() => setIsCreating(true)} className="p-3 bg-cyan-600 hover:bg-cyan-700 rounded transition-colors"><IconPlus className="w-5 h-5" /></button>
+                        <Tooltip text="Create New Project">
+                           <button onClick={() => setIsCreating(true)} className="p-3 bg-cyan-600 hover:bg-cyan-700 rounded transition-colors"><IconPlus className="w-5 h-5" /></button>
+                        </Tooltip>
                     </div>
                 </div>
 
@@ -1128,12 +1167,80 @@ export const ProjectManager: React.FC = () => {
     );
 };
 
+export const GlossaryManager: React.FC<{ project: LocalizationProject }> = ({ project }) => {
+    const { dispatch } = useLocalization();
+    const [newTerm, setNewTerm] = useState<Omit<GlossaryTerm, 'id'>>({ source: '', translation: '', isCaseSensitive: false, doNotTranslate: false });
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleAddTerm = () => {
+        if(newTerm.source.trim() && (newTerm.translation.trim() || newTerm.doNotTranslate)) {
+            dispatch({ type: 'ADD_GLOSSARY_TERM', payload: { projectId: project.id, term: newTerm }});
+            setNewTerm({ source: '', translation: '', isCaseSensitive: false, doNotTranslate: false });
+            setIsAdding(false);
+        }
+    };
+    
+    const handleDeleteTerm = (termId: string) => {
+        dispatch({ type: 'DELETE_GLOSSARY_TERM', payload: { projectId: project.id, termId }});
+    };
+
+    return (
+        <Card title="Glossary">
+            <div className="space-y-3">
+                {project.glossary.length === 0 && !isAdding && <p className="text-sm text-gray-400">No glossary terms yet.</p>}
+                {project.glossary.map(term => (
+                    <div key={term.id} className="p-2 bg-gray-900/50 rounded flex justify-between items-center text-sm">
+                        <div>
+                            <p className="font-mono text-cyan-300">{term.source} â†’ {term.doNotTranslate ? <span className="italic text-yellow-400">[Do Not Translate]</span> : <span className="text-green-300">{term.translation}</span>}</p>
+                            <p className="text-xs text-gray-400">{term.isCaseSensitive ? 'Case-sensitive' : 'Case-insensitive'}</p>
+                        </div>
+                        <button onClick={() => handleDeleteTerm(term.id)} className="text-red-500 hover:text-red-400"><IconTrash className="w-4 h-4"/></button>
+                    </div>
+                ))}
+                 {isAdding && (
+                    <div className="p-3 bg-gray-800 rounded space-y-2">
+                        <input type="text" placeholder="Source Term" value={newTerm.source} onChange={e => setNewTerm({...newTerm, source: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-sm"/>
+                        <input type="text" placeholder="Translation" value={newTerm.translation} disabled={newTerm.doNotTranslate} onChange={e => setNewTerm({...newTerm, translation: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-sm disabled:opacity-50"/>
+                        <div className="flex items-center text-sm space-x-4">
+                            <label className="flex items-center"><input type="checkbox" checked={newTerm.isCaseSensitive} onChange={e => setNewTerm({...newTerm, isCaseSensitive: e.target.checked})} className="mr-2"/> Case-sensitive</label>
+                            <label className="flex items-center"><input type="checkbox" checked={newTerm.doNotTranslate} onChange={e => setNewTerm({...newTerm, doNotTranslate: e.target.checked})} className="mr-2"/> Do Not Translate</label>
+                        </div>
+                        <div className="flex justify-end space-x-2 pt-2">
+                             <button onClick={() => setIsAdding(false)} className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded text-xs">Cancel</button>
+                             <button onClick={handleAddTerm} className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 rounded text-xs">Add Term</button>
+                        </div>
+                    </div>
+                )}
+                 {!isAdding && <button onClick={() => setIsAdding(true)} className="w-full text-sm py-2 bg-gray-700/50 hover:bg-gray-700 rounded mt-2">Add New Term</button>}
+            </div>
+        </Card>
+    )
+};
+
+
 // SECTION 8: MAIN VIEW COMPONENT
 // ============================================================================
 
 const EnhancedDemoBankLocalizationPlatformView: React.FC = () => {
-    const { state } = useLocalization();
+    const { state, dispatch } = useLocalization();
     const activeProject = useMemo(() => state.projects.find(p => p.id === state.activeProjectId), [state.projects, state.activeProjectId]);
+    const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if(state.error) {
+            if (errorTimeoutRef.current) {
+                clearTimeout(errorTimeoutRef.current);
+            }
+            errorTimeoutRef.current = setTimeout(() => {
+                dispatch({ type: 'SET_ERROR', payload: null });
+            }, 5000);
+        }
+        return () => {
+            if (errorTimeoutRef.current) {
+                clearTimeout(errorTimeoutRef.current);
+            }
+        }
+    }, [state.error, dispatch]);
     
     return (
         <div className="space-y-6">
@@ -1147,9 +1254,8 @@ const EnhancedDemoBankLocalizationPlatformView: React.FC = () => {
                         <TranslationInputForm project={activeProject} />
                         <TranslationResultsDisplay />
                     </div>
-                    <div>
-                        {/* Placeholder for History/Glossary sidebar */}
-                        <Card title="Project Details">
+                    <div className="space-y-6">
+                       <Card title="Project Details">
                            <div className="space-y-2 text-sm text-gray-300">
                                <p><span className="font-semibold text-gray-100">Project:</span> {activeProject.name}</p>
                                <p><span className="font-semibold text-gray-100">Description:</span> {activeProject.description || 'N/A'}</p>
@@ -1158,6 +1264,7 @@ const EnhancedDemoBankLocalizationPlatformView: React.FC = () => {
                                <p><span className="font-semibold text-gray-100">Last Updated:</span> {formatDate(activeProject.updatedAt)}</p>
                            </div>
                         </Card>
+                        <GlossaryManager project={activeProject} />
                     </div>
                 </div>
             ) : (
@@ -1170,7 +1277,7 @@ const EnhancedDemoBankLocalizationPlatformView: React.FC = () => {
             )}
 
              {state.error && (
-                <div className="fixed bottom-5 right-5 bg-red-800 text-white p-4 rounded-lg shadow-lg max-w-sm">
+                <div className="fixed bottom-5 right-5 bg-red-800 text-white p-4 rounded-lg shadow-lg max-w-sm z-50 animate-pulse">
                     <h4 className="font-bold">An Error Occurred</h4>
                     <p className="text-sm">{state.error}</p>
                 </div>
@@ -1190,3 +1297,4 @@ const DemoBankLocalizationPlatformView: React.FC = () => {
 
 
 export default DemoBankLocalizationPlatformView;
+```
