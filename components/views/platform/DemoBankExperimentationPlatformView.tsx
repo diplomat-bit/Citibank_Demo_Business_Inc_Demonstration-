@@ -1,13 +1,16 @@
 // components/views/platform/DemoBankExperimentationPlatformView.tsx
-import React, { useState, useReducer, useEffect, useCallback, useMemo, createContext, useContext } from 'react';
+import React, { useState, useReducer, useEffect, useCallback, useMemo, createContext, useContext, ReactNode, FC } from 'react';
 import Card from '../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 // --- ENHANCED FEATURE SET: TYPE DEFINITIONS ---
 
-export type ExperimentStatus = 'Draft' | 'Running' | 'Paused' | 'Completed';
-export type ViewMode = 'dashboard' | 'list' | 'details' | 'create';
+export type ExperimentStatus = 'Draft' | 'Running' | 'Paused' | 'Completed' | 'Archived';
+export type ViewMode = 'dashboard' | 'list' | 'details' | 'create' | 'edit' | 'settings';
 export type SignificanceLevel = 0.90 | 0.95 | 0.99;
+export type WinnerDeterminationLogic = 'frequentist' | 'bayesian';
+export type IntegrationProvider = 'Google Analytics' | 'Mixpanel' | 'Segment' | 'LaunchDarkly';
 
 export interface Variant {
     id: string;
@@ -22,10 +25,11 @@ export interface Metric {
     type: 'Primary' | 'Secondary';
     description: string;
     goal: 'Increase' | 'Decrease';
+    source: string; // e.g., 'GA Event: user_signup'
 }
 
 export interface AudienceRule {
-    attribute: 'country' | 'device' | 'browser' | 'isNewVisitor';
+    attribute: 'country' | 'device' | 'browser' | 'isNewVisitor' | 'utmSource';
     operator: 'is' | 'is_not' | 'contains' | 'does_not_contain';
     value: string | boolean;
 }
@@ -48,12 +52,14 @@ export interface Experiment {
     endDate?: string;
     createdAt: string;
     updatedAt: string;
+    tags: string[];
 }
 
 export interface VariantResult {
     variantId: string;
     visitors: number;
     conversions: number;
+    dailyPerformance: { date: string; visitors: number; conversions: number }[];
 }
 
 export interface MetricResult {
@@ -65,6 +71,22 @@ export interface ExperimentResults {
     experimentId: string;
     metrics: MetricResult[];
     lastUpdatedAt: string;
+}
+
+export interface AIInsight {
+    summary: string;
+    observations: string[];
+    recommendations: string[];
+    confidence: 'High' | 'Medium' | 'Low';
+}
+
+export interface PlatformSettings {
+    defaultSignificanceLevel: SignificanceLevel;
+    winnerLogic: WinnerDeterminationLogic;
+    notifications: {
+        onWinnerDeclared: boolean;
+        onSignificantUplift: boolean;
+    };
 }
 
 // --- UTILITY & HELPER FUNCTIONS ---
@@ -145,8 +167,8 @@ export const calculatePValue = (z: number): number => {
     // Simplified erf approximation
     const t = 1.0 / (1.0 + 0.5 * Math.abs(z));
     const tau = t * Math.exp(-z*z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))));
-    const p = z >= 0 ? tau : 2 - tau;
-    return p;
+    const p = z >= 0 ? 1 - tau / 2 : tau / 2;
+    return 2 * p; // Two-tailed test
 };
 
 /**
@@ -234,14 +256,15 @@ const MOCK_EXPERIMENTS: Experiment[] = [
             { id: 'var-1b', name: 'Variant B', description: 'New green button.', trafficSplit: 50 }
         ],
         metrics: [
-            { id: 'met-1-pri', name: 'Sign-up Rate', type: 'Primary', description: 'Percentage of visitors who complete the sign-up form.', goal: 'Increase' },
-            { id: 'met-1-sec', name: 'Button Click-through Rate', type: 'Secondary', description: 'Percentage of visitors who click the main CTA.', goal: 'Increase' }
+            { id: 'met-1-pri', name: 'Sign-up Rate', type: 'Primary', description: 'Percentage of visitors who complete the sign-up form.', goal: 'Increase', source: 'Internal Event: signup_complete' },
+            { id: 'met-1-sec', name: 'Button Click-through Rate', type: 'Secondary', description: 'Percentage of visitors who click the main CTA.', goal: 'Increase', source: 'Internal Event: cta_click' }
         ],
         audience: initialAudience,
         startDate: new Date('2023-10-01T00:00:00Z').toISOString(),
         endDate: new Date('2023-10-15T00:00:00Z').toISOString(),
         createdAt: new Date('2023-09-28T10:00:00Z').toISOString(),
-        updatedAt: new Date('2023-10-15T00:00:00Z').toISOString()
+        updatedAt: new Date('2023-10-15T00:00:00Z').toISOString(),
+        tags: ['Homepage', 'Conversion Optimization']
     },
     {
         id: 'exp-2',
@@ -253,14 +276,15 @@ const MOCK_EXPERIMENTS: Experiment[] = [
             { id: 'var-2b', name: 'Simplified (3-step)', description: 'A condensed onboarding experience.', trafficSplit: 50 }
         ],
         metrics: [
-            { id: 'met-2-pri', name: 'User Activation', type: 'Primary', description: 'Percentage of users who complete a key action within 7 days of sign-up.', goal: 'Increase' },
-            { id: 'met-2-sec', name: 'Onboarding Completion Rate', type: 'Secondary', description: 'Percentage of users who finish the entire onboarding flow.', goal: 'Increase' }
+            { id: 'met-2-pri', name: 'User Activation', type: 'Primary', description: 'Percentage of users who complete a key action within 7 days of sign-up.', goal: 'Increase', source: 'Segment: user_activated' },
+            { id: 'met-2-sec', name: 'Onboarding Completion Rate', type: 'Secondary', description: 'Percentage of users who finish the entire onboarding flow.', goal: 'Increase', source: 'Internal Event: onboarding_finished' }
         ],
         audience: { ...initialAudience, rules: [{ attribute: 'isNewVisitor', operator: 'is', value: true }] },
         startDate: new Date('2023-11-01T00:00:00Z').toISOString(),
         endDate: new Date('2023-11-30T00:00:00Z').toISOString(),
         createdAt: new Date('2023-10-25T14:00:00Z').toISOString(),
-        updatedAt: new Date('2023-11-05T12:00:00Z').toISOString()
+        updatedAt: new Date('2023-11-05T12:00:00Z').toISOString(),
+        tags: ['Onboarding', 'User Experience']
     },
     {
         id: 'exp-3',
@@ -272,31 +296,46 @@ const MOCK_EXPERIMENTS: Experiment[] = [
             { id: 'var-3b', name: 'Variant (Annual First)', description: 'New layout with annual plans featured.', trafficSplit: 50 }
         ],
         metrics: [
-            { id: 'met-3-pri', name: 'Annual Plan Selection Rate', type: 'Primary', description: 'Percentage of new subscriptions that are for an annual plan.', goal: 'Increase' }
+            { id: 'met-3-pri', name: 'Annual Plan Selection Rate', type: 'Primary', description: 'Percentage of new subscriptions that are for an annual plan.', goal: 'Increase', source: 'Stripe: annual_plan_subscribed'}
         ],
         audience: initialAudience,
         createdAt: new Date('2023-11-10T09:00:00Z').toISOString(),
-        updatedAt: new Date('2023-11-10T09:00:00Z').toISOString()
+        updatedAt: new Date('2023-11-10T09:00:00Z').toISOString(),
+        tags: ['Pricing', 'Monetization']
     }
 ];
+
+const generateDailyData = (startDate: Date, days: number, baseVisitors: number, baseConversions: number) => {
+    const data = [];
+    for (let i = 0; i < days; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        data.push({
+            date: date.toISOString().split('T')[0],
+            visitors: Math.floor(baseVisitors + (Math.random() - 0.5) * baseVisitors * 0.2),
+            conversions: Math.floor(baseConversions + (Math.random() - 0.5) * baseConversions * 0.3)
+        });
+    }
+    return data;
+};
 
 const MOCK_RESULTS: { [key: string]: ExperimentResults } = {
     'exp-1': {
         experimentId: 'exp-1',
         lastUpdatedAt: new Date().toISOString(),
         metrics: [
-            { // Primary Metric: Sign-up Rate
+            { 
                 metricId: 'met-1-pri',
                 variantResults: {
-                    'var-1a': { variantId: 'var-1a', visitors: 10250, conversions: 410 },
-                    'var-1b': { variantId: 'var-1b', visitors: 10310, conversions: 526 }
+                    'var-1a': { variantId: 'var-1a', visitors: 10250, conversions: 410, dailyPerformance: generateDailyData(new Date('2023-10-01'), 15, 680, 27) },
+                    'var-1b': { variantId: 'var-1b', visitors: 10310, conversions: 526, dailyPerformance: generateDailyData(new Date('2023-10-01'), 15, 685, 35) }
                 }
             },
-            { // Secondary Metric: Button CTR
+            {
                 metricId: 'met-1-sec',
                 variantResults: {
-                    'var-1a': { variantId: 'var-1a', visitors: 10250, conversions: 1230 },
-                    'var-1b': { variantId: 'var-1b', visitors: 10310, conversions: 1546 }
+                    'var-1a': { variantId: 'var-1a', visitors: 10250, conversions: 1230, dailyPerformance: generateDailyData(new Date('2023-10-01'), 15, 680, 82) },
+                    'var-1b': { variantId: 'var-1b', visitors: 10310, conversions: 1546, dailyPerformance: generateDailyData(new Date('2023-10-01'), 15, 685, 103) }
                 }
             }
         ]
@@ -305,18 +344,18 @@ const MOCK_RESULTS: { [key: string]: ExperimentResults } = {
         experimentId: 'exp-2',
         lastUpdatedAt: new Date().toISOString(),
         metrics: [
-            { // Primary Metric: User Activation
+            {
                 metricId: 'met-2-pri',
                 variantResults: {
-                    'var-2a': { variantId: 'var-2a', visitors: 5400, conversions: 2100 },
-                    'var-2b': { variantId: 'var-2b', visitors: 5350, conversions: 2120 }
+                    'var-2a': { variantId: 'var-2a', visitors: 5400, conversions: 2100, dailyPerformance: generateDailyData(new Date('2023-11-01'), 10, 540, 210) },
+                    'var-2b': { variantId: 'var-2b', visitors: 5350, conversions: 2120, dailyPerformance: generateDailyData(new Date('2023-11-01'), 10, 535, 212) }
                 }
             },
-            { // Secondary Metric: Onboarding Completion
+            {
                 metricId: 'met-2-sec',
                 variantResults: {
-                    'var-2a': { variantId: 'var-2a', visitors: 5400, conversions: 3500 },
-                    'var-2b': { variantId: 'var-2b', visitors: 5350, conversions: 4200 }
+                    'var-2a': { variantId: 'var-2a', visitors: 5400, conversions: 3500, dailyPerformance: generateDailyData(new Date('2023-11-01'), 10, 540, 350) },
+                    'var-2b': { variantId: 'var-2b', visitors: 5350, conversions: 4200, dailyPerformance: generateDailyData(new Date('2023-11-01'), 10, 535, 420) }
                 }
             }
         ]
@@ -339,13 +378,15 @@ export const mockExperimentService = {
         console.log(`MOCK_API: Fetching results for experiment ${id}...`);
         return new Promise(resolve => setTimeout(() => {
             const results = MOCK_RESULTS[id];
-            // Simulate data changes for running experiments
             if (results && MOCK_EXPERIMENTS.find(e => e.id === id)?.status === 'Running') {
                 const updatedResults = JSON.parse(JSON.stringify(results));
                 for (const metric of updatedResults.metrics) {
                     for (const variantId in metric.variantResults) {
-                        metric.variantResults[variantId].visitors += Math.floor(Math.random() * 100);
-                        metric.variantResults[variantId].conversions += Math.floor(Math.random() * 10);
+                        const newVisitors = Math.floor(Math.random() * 100);
+                        const newConversions = Math.floor(Math.random() * 10);
+                        metric.variantResults[variantId].visitors += newVisitors;
+                        metric.variantResults[variantId].conversions += newConversions;
+                        metric.variantResults[variantId].dailyPerformance.push({ date: new Date().toISOString().split('T')[0], visitors: newVisitors, conversions: newConversions });
                     }
                 }
                 MOCK_RESULTS[id] = updatedResults;
@@ -386,10 +427,31 @@ export const mockExperimentService = {
                 reject(new Error("Experiment not found"));
             }
          }, 400));
+    },
+    getAIInsight: async (results: ExperimentResults, experiment: Experiment): Promise<AIInsight> => {
+        console.log(`MOCK_API: Generating AI insight for ${experiment.name}`);
+        // In a real app, this would be a complex prompt to a powerful model.
+        // Here we simulate the response.
+        return new Promise(resolve => setTimeout(() => {
+            resolve({
+                summary: `The experiment appears to be successful. The variant '${experiment.variants[1].name}' is outperforming the control for the primary metric '${experiment.metrics[0].name}'.`,
+                observations: [
+                    "Statistically significant uplift detected in the primary metric.",
+                    "Secondary metrics are also showing positive trends, reinforcing the primary hypothesis.",
+                    "No significant anomalies detected in traffic distribution or conversion patterns."
+                ],
+                recommendations: [
+                    "Consider rolling out the winning variant to 100% of traffic.",
+                    "Plan a follow-up experiment to iterate on the winning design, perhaps testing copy variations.",
+                    "Archive this experiment and document the learnings for the team."
+                ],
+                confidence: "High"
+            });
+        }, 1500));
     }
 };
 
-// --- STATE MANAGEMENT (useReducer) ---
+// --- STATE MANAGEMENT (useReducer & Context) ---
 
 interface ExperimentationPlatformState {
     view: ViewMode;
@@ -399,6 +461,7 @@ interface ExperimentationPlatformState {
     currentResults: ExperimentResults | null;
     isLoading: boolean;
     error: string | null;
+    settings: PlatformSettings;
 }
 
 const initialState: ExperimentationPlatformState = {
@@ -409,6 +472,11 @@ const initialState: ExperimentationPlatformState = {
     currentResults: null,
     isLoading: true,
     error: null,
+    settings: {
+        defaultSignificanceLevel: 0.95,
+        winnerLogic: 'frequentist',
+        notifications: { onWinnerDeclared: true, onSignificantUplift: false }
+    }
 };
 
 type Action =
@@ -427,7 +495,7 @@ type Action =
 const reducer = (state: ExperimentationPlatformState, action: Action): ExperimentationPlatformState => {
     switch (action.type) {
         case 'SET_VIEW':
-            return { ...state, view: action.payload, selectedExperimentId: null, currentExperimentData: null, currentResults: null };
+            return { ...state, view: action.payload, selectedExperimentId: action.payload === 'details' ? state.selectedExperimentId : null, currentExperimentData: null, currentResults: null };
         case 'FETCH_INIT_START':
             return { ...state, isLoading: true, error: null };
         case 'FETCH_INIT_SUCCESS':
@@ -460,6 +528,19 @@ const reducer = (state: ExperimentationPlatformState, action: Action): Experimen
     }
 };
 
+const ExperimentationPlatformContext = createContext<{
+    state: ExperimentationPlatformState;
+    dispatch: React.Dispatch<Action>;
+} | null>(null);
+
+const useExperimentationPlatform = () => {
+    const context = useContext(ExperimentationPlatformContext);
+    if (!context) {
+        throw new Error('useExperimentationPlatform must be used within a ExperimentationPlatformProvider');
+    }
+    return context;
+};
+
 // --- REUSABLE UI COMPONENTS ---
 
 export const Spinner: React.FC = () => (
@@ -473,7 +554,8 @@ export const StatusBadge: React.FC<{ status: ExperimentStatus }> = ({ status }) 
         Draft: 'bg-gray-500 text-gray-100',
         Running: 'bg-green-500 text-white animate-pulse',
         Paused: 'bg-yellow-500 text-yellow-900',
-        Completed: 'bg-blue-500 text-white'
+        Completed: 'bg-blue-500 text-white',
+        Archived: 'bg-indigo-500 text-white'
     };
     return <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colorMap[status]}`}>{status}</span>;
 };
@@ -515,12 +597,18 @@ export const AITestDesigner: React.FC<{ onDesignComplete: (plan: any) => void }>
     const [prompt, setPrompt] = useState("changing the main call-to-action button from blue to green will increase sign-ups");
     const [generatedTest, setGeneratedTest] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleGenerate = async () => {
         setIsLoading(true);
         setGeneratedTest(null);
+        setError(null);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            // NOTE: This requires a valid Google AI API Key in environment variables
+            if (!process.env.REACT_APP_GEMINI_API_KEY) {
+                throw new Error("Gemini API key is not configured.");
+            }
+            const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY as string });
             const schema = {
                 type: Type.OBJECT,
                 properties: {
@@ -556,13 +644,13 @@ export const AITestDesigner: React.FC<{ onDesignComplete: (plan: any) => void }>
                 required: ["name", "hypothesis", "primaryMetric", "variants"]
             };
             const fullPrompt = `You are an expert Experimentation Manager at a top tech company. Design a simple, clear A/B test for this hypothesis: "${prompt}". Your output must be a valid JSON object matching the provided schema. Ensure the variants include a 'Control' and at least one 'Variant'.`;
-            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt, config: { responseMimeType: "application/json", responseSchema: schema } });
+            const response = await ai.models.generateContent({ model: 'gemini-1.5-flash', contents: fullPrompt, generationConfig: { responseMimeType: "application/json" }, tools: [{ functionDeclarations: [], codeExecution: { enable: false } }] });
             const parsedResponse = JSON.parse(response.text);
             setGeneratedTest(parsedResponse);
             onDesignComplete(parsedResponse);
-        } catch (error) {
-            console.error("AI Generation Error:", error);
-            // In a real app, show this error to the user
+        } catch (err: any) {
+            console.error("AI Generation Error:", err);
+            setError(`Failed to generate test plan. ${err.message || "Please check your API key and try again."}`);
         } finally {
             setIsLoading(false);
         }
@@ -580,6 +668,7 @@ export const AITestDesigner: React.FC<{ onDesignComplete: (plan: any) => void }>
             <button onClick={handleGenerate} disabled={isLoading} className="w-full mt-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 transition-colors">
                 {isLoading ? 'Designing Test...' : 'Design Test With AI'}
             </button>
+            {error && <p className="text-red-400 mt-4">{error}</p>}
             {generatedTest && (
                  <div className="mt-4 p-4 bg-gray-900/50 rounded-md space-y-2 border border-cyan-700">
                     <h4 className="text-lg font-bold text-white">AI Generated Plan:</h4>
@@ -599,14 +688,19 @@ export const ExperimentList: React.FC<{ experiments: Experiment[]; onSelect: (id
         <Card title="All Experiments">
             <div className="divide-y divide-gray-700">
                 {experiments.map(exp => (
-                    <div key={exp.id} className="p-4 hover:bg-gray-800/50 cursor-pointer" onClick={() => onSelect(exp.id)}>
+                    <div key={exp.id} className="p-4 hover:bg-gray-800/50 cursor-pointer transition-colors duration-200" onClick={() => onSelect(exp.id)}>
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl font-bold text-white">{exp.name}</h3>
                             <StatusBadge status={exp.status} />
                         </div>
                         <p className="text-gray-400 mt-1">{exp.hypothesis}</p>
-                        <div className="text-xs text-gray-500 mt-2">
-                            <span>Created: {formatDate(exp.createdAt)}</span> | <span>Last Updated: {formatDate(exp.updatedAt)}</span>
+                        <div className="flex items-center justify-between mt-2">
+                             <div className="text-xs text-gray-500">
+                                <span>Created: {formatDate(exp.createdAt)}</span> | <span>Last Updated: {formatDate(exp.updatedAt)}</span>
+                            </div>
+                            <div className="flex space-x-2">
+                                {exp.tags.map(tag => <span key={tag} className="px-2 py-0.5 text-xs bg-gray-600 rounded-full">{tag}</span>)}
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -615,11 +709,58 @@ export const ExperimentList: React.FC<{ experiments: Experiment[]; onSelect: (id
     );
 };
 
+const AIResultsAnalysis: FC<{ experiment: Experiment, results: ExperimentResults }> = ({ experiment, results }) => {
+    const [insight, setInsight] = useState<AIInsight | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerateInsight = async () => {
+        setIsLoading(true);
+        const generatedInsight = await mockExperimentService.getAIInsight(results, experiment);
+        setInsight(generatedInsight);
+        setIsLoading(false);
+    };
+
+    return (
+        <Card title="AI-Powered Insight Engine">
+            {!insight && (
+                <div className="text-center">
+                    <p className="text-gray-300 mb-4">Let our AI analyze the results and provide a summary, observations, and recommendations.</p>
+                    <button onClick={handleGenerateInsight} disabled={isLoading} className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg disabled:opacity-50 transition-colors">
+                        {isLoading ? 'Analyzing...' : 'Generate AI Insight'}
+                    </button>
+                </div>
+            )}
+            {isLoading && !insight && <Spinner />}
+            {insight && (
+                <div className="space-y-4">
+                    <div>
+                        <h4 className="font-bold text-cyan-400">Summary (Confidence: {insight.confidence})</h4>
+                        <p className="text-gray-200">{insight.summary}</p>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-cyan-400">Key Observations</h4>
+                        <ul className="list-disc list-inside text-gray-300 space-y-1 mt-1">
+                            {insight.observations.map((obs, i) => <li key={i}>{obs}</li>)}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-cyan-400">Recommendations</h4>
+                         <ul className="list-disc list-inside text-gray-300 space-y-1 mt-1">
+                            {insight.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
+                        </ul>
+                    </div>
+                </div>
+            )}
+        </Card>
+    );
+};
+
 /**
  * Component for displaying and analyzing experiment results.
  */
 export const ResultsDisplay: React.FC<{ experiment: Experiment, results: ExperimentResults }> = ({ experiment, results }) => {
-    const significanceLevel: SignificanceLevel = 0.95;
+    const { state } = useExperimentationPlatform();
+    const significanceLevel = state.settings.defaultSignificanceLevel;
     const controlVariant = useMemo(() => experiment.variants.find(v => v.name.toLowerCase().includes('control')), [experiment.variants]);
     
     if (!controlVariant) {
@@ -628,8 +769,13 @@ export const ResultsDisplay: React.FC<{ experiment: Experiment, results: Experim
     
     return (
         <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-white">Results Analysis</h3>
-            <p className="text-gray-400">Analysis based on a {significanceLevel * 100}% confidence level. Last updated: {new Date(results.lastUpdatedAt).toLocaleString()}</p>
+            <div className="flex justify-between items-center">
+                 <h3 className="text-2xl font-bold text-white">Results Analysis</h3>
+                 <p className="text-gray-400 text-sm">Last updated: {new Date(results.lastUpdatedAt).toLocaleString()}</p>
+            </div>
+            
+            <AIResultsAnalysis experiment={experiment} results={results} />
+
             {experiment.metrics.map(metric => {
                 const metricResult = results.metrics.find(m => m.metricId === metric.id);
                 if (!metricResult) {
@@ -797,6 +943,7 @@ export const ExperimentDetailsView: React.FC<{
                         <div key={m.id} className="p-3 mb-2 bg-gray-900/50 rounded-md">
                             <p className="font-bold text-white">{m.name} <span className="text-xs font-normal text-cyan-400">({m.type})</span></p>
                             <p className="text-gray-400 text-sm mt-1">{m.description}</p>
+                            <p className="text-gray-500 text-xs mt-1">Source: {m.source}</p>
                         </div>
                     ))}
                 </Card>
@@ -813,19 +960,75 @@ export const ExperimentDetailsView: React.FC<{
     );
 };
 
+const DashboardView: FC = () => {
+    const { state } = useExperimentationPlatform();
+    const runningExperiments = state.experiments.filter(e => e.status === 'Running');
+    const completedExperiments = state.experiments.filter(e => e.status === 'Completed');
+    
+    // Mock data for charts
+    const weeklyWinRate = [
+        { name: 'Wk 40', rate: 60 },
+        { name: 'Wk 41', rate: 55 },
+        { name: 'Wk 42', rate: 70 },
+        { name: 'Wk 43', rate: 65 },
+        { name: 'Wk 44', rate: 75 },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card title="Running Experiments">
+                    <p className="text-5xl font-bold text-white">{runningExperiments.length}</p>
+                    <p className="text-gray-400">Active tests driving insights.</p>
+                </Card>
+                <Card title="Completed Last 30 Days">
+                     <p className="text-5xl font-bold text-white">{completedExperiments.length}</p>
+                     <p className="text-gray-400">Experiments that have concluded recently.</p>
+                </Card>
+                <Card title="Avg. Uplift (Primary Metric)">
+                    <p className="text-5xl font-bold text-green-400">+5.2%</p>
+                     <p className="text-gray-400">Average improvement from winning variants.</p>
+                </Card>
+            </div>
+            <Card title="Recent Activity">
+                {runningExperiments.slice(0, 3).map(exp => (
+                    <div key={exp.id} className="p-3 border-b border-gray-700 last:border-b-0">
+                        <div className="flex justify-between">
+                            <p className="text-white font-semibold">{exp.name}</p>
+                            <StatusBadge status={exp.status} />
+                        </div>
+                        <p className="text-sm text-gray-400">Started on {formatDate(exp.startDate)}</p>
+                    </div>
+                ))}
+            </Card>
+            <Card title="Weekly Experiment Win Rate">
+                 <ResponsiveContainer width="100%" height={250}>
+                    <AreaChart data={weeklyWinRate} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                        <XAxis dataKey="name" stroke="#A0AEC0" />
+                        <YAxis stroke="#A0AEC0" unit="%" />
+                        <Tooltip contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568' }} />
+                        <Area type="monotone" dataKey="rate" stroke="#38B2AC" fill="#38B2AC" fillOpacity={0.3} />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </Card>
+        </div>
+    );
+}
+
 
 /**
  * The main container view for the entire experimentation platform.
  */
-const DemoBankExperimentationPlatformView: React.FC = () => {
-    const [state, dispatch] = useReducer(reducer, initialState);
+const MainView: React.FC = () => {
+    const { state, dispatch } = useExperimentationPlatform();
 
     useEffect(() => {
         dispatch({ type: 'FETCH_INIT_START' });
         mockExperimentService.getExperiments()
             .then(data => dispatch({ type: 'FETCH_INIT_SUCCESS', payload: data }))
             .catch(err => dispatch({ type: 'FETCH_INIT_FAILURE', payload: err.message }));
-    }, []);
+    }, [dispatch]);
 
     const handleSelectExperiment = useCallback((id: string) => {
         dispatch({ type: 'SELECT_EXPERIMENT_START', payload: id });
@@ -839,28 +1042,23 @@ const DemoBankExperimentationPlatformView: React.FC = () => {
                 throw new Error("Experiment not found");
             }
         }).catch(err => dispatch({ type: 'SELECT_EXPERIMENT_FAILURE', payload: err.message }));
-    }, []);
+    }, [dispatch]);
     
     const handleStatusChange = useCallback(async (id: string, status: ExperimentStatus) => {
         const updatedExperiment = await mockExperimentService.updateExperimentStatus(id, status);
         dispatch({ type: 'UPDATE_EXPERIMENT_SUCCESS', payload: updatedExperiment });
-    }, []);
+    }, [dispatch]);
 
     const handleRefreshResults = useCallback(async (id: string) => {
         const results = await mockExperimentService.getExperimentResults(id);
         if(results) {
             dispatch({ type: 'REFRESH_RESULTS_SUCCESS', payload: results });
         }
-    }, []);
+    }, [dispatch]);
 
     const handleAIDesignComplete = (plan: any) => {
         console.log("AI Plan Received:", plan);
-        // Here, you would typically use this plan to populate a form for creating a new experiment.
-        // For this demo, we will just log it. A real implementation would involve creating a new draft experiment.
-        // For example:
-        // const newExperiment: Experiment = { ... };
-        // dispatch({ type: 'CREATE_EXPERIMENT_DRAFT', payload: newExperiment });
-        // dispatch({ type: 'SET_VIEW', payload: 'edit_draft' });
+        alert("AI generated test plan received! See console for details. In a real app, this would populate the creation form.");
     };
 
     const renderContent = () => {
@@ -872,6 +1070,8 @@ const DemoBankExperimentationPlatformView: React.FC = () => {
         }
 
         switch (state.view) {
+            case 'dashboard':
+                 return <DashboardView />;
             case 'details':
                 if (state.isLoading || !state.currentExperimentData) return <Spinner />;
                 return <ExperimentDetailsView
@@ -889,18 +1089,33 @@ const DemoBankExperimentationPlatformView: React.FC = () => {
         }
     };
     
+    const navButtonStyle = (view: ViewMode) => 
+        `px-4 py-2 rounded transition-colors ${state.view === view ? 'bg-cyan-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`;
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Experimentation</h2>
                 <nav className="flex space-x-2">
-                    <button onClick={() => dispatch({ type: 'SET_VIEW', payload: 'list' })} className={`px-4 py-2 rounded ${state.view === 'list' ? 'bg-cyan-600' : 'bg-gray-700 hover:bg-gray-600'}`}>All Experiments</button>
-                    <button onClick={() => dispatch({ type: 'SET_VIEW', payload: 'create' })} className={`px-4 py-2 rounded ${state.view === 'create' ? 'bg-cyan-600' : 'bg-gray-700 hover:bg-gray-600'}`}>Create with AI</button>
+                    <button onClick={() => dispatch({ type: 'SET_VIEW', payload: 'dashboard' })} className={navButtonStyle('dashboard')}>Dashboard</button>
+                    <button onClick={() => dispatch({ type: 'SET_VIEW', payload: 'list' })} className={navButtonStyle('list')}>All Experiments</button>
+                    <button onClick={() => dispatch({ type: 'SET_VIEW', payload: 'create' })} className={navButtonStyle('create')}>Create with AI</button>
                 </nav>
             </div>
             
             {renderContent()}
         </div>
+    );
+};
+
+
+const DemoBankExperimentationPlatformView: React.FC = () => {
+    const [state, dispatch] = useReducer(reducer, initialState);
+
+    return (
+        <ExperimentationPlatformContext.Provider value={{ state, dispatch }}>
+            <MainView />
+        </ExperimentationPlatformContext.Provider>
     );
 };
 
