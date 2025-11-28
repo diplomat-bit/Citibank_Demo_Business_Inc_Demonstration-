@@ -1,7 +1,6 @@
 // components/views/platform/DemoBankSupplyChainView.tsx
 import React, { useState, useReducer, useContext, useEffect, useMemo, useCallback, useRef } from 'react';
 import Card from '../../Card';
-import { GoogleGenAI } from "@google/genai";
 
 // SECTION: ENHANCED TYPE DEFINITIONS FOR A REAL-WORLD APPLICATION
 
@@ -90,6 +89,18 @@ export interface ComplianceDocument {
     status: 'Verified' | 'Pending' | 'Rejected';
 }
 
+export interface AIInsight {
+    id: string;
+    type: 'Prediction' | 'Anomaly' | 'Recommendation';
+    severity: 'Info' | 'Warning' | 'Critical';
+    title: string;
+    description: string;
+    relatedEntityId: string; // e.g., Shipment ID
+    timestamp: string;
+    factors: string[];
+}
+
+
 export interface Shipment {
     id: string;
     status: ShipmentStatus;
@@ -101,6 +112,7 @@ export interface Shipment {
     pickupDate: string;
     estimatedDeliveryDate: string;
     actualDeliveryDate?: string;
+    aiPredictedDeliveryDate?: string;
     items: ShipmentItem[];
     totalValue: number;
     totalWeightKg: number;
@@ -109,6 +121,7 @@ export interface Shipment {
     documents: ComplianceDocument[];
     riskLevel: RiskLevel;
     assignedAgent: string;
+    aiInsights: AIInsight[];
 }
 
 export interface SupplierFinancials {
@@ -158,7 +171,10 @@ export interface InventoryItem {
     warehouseLocation: string;
     lastStockedDate: string;
     reorderPoint: number;
+    status: 'In Stock' | 'Low Stock' | 'Out of Stock';
 }
+
+export type ViewMode = 'dashboard' | 'shipments' | 'suppliers' | 'orders' | 'inventory' | 'analytics';
 
 export interface AppState {
     shipments: Shipment[];
@@ -169,9 +185,10 @@ export interface AppState {
     error: string | null;
     selectedShipmentId: string | null;
     selectedSupplierId: string | null;
-    viewMode: 'dashboard' | 'shipments' | 'suppliers' | 'orders';
+    viewMode: ViewMode;
     userRole: 'analyst' | 'manager' | 'coordinator';
     notifications: Notification[];
+    aiInsights: AIInsight[];
 }
 
 export interface Notification {
@@ -221,10 +238,16 @@ export const CARRIER_NAMES = {
 };
 
 export const AGENT_NAMES = ['John Doe', 'Jane Smith', 'Carlos Ray', 'Priya Singh', 'Kenji Tanaka'];
+export const WAREHOUSE_LOCATIONS = ['WH-US-WEST-01', 'WH-EU-CENTRAL-03', 'WH-ASIA-EAST-02'];
 
 const getRandomElement = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 const getRandomDate = (start: Date, end: Date): Date => new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-const randomInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min;
+const randomInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + add(min, 0); // Changed to avoid replacing a lot
+
+// Helper for randomInt to avoid linting issues
+function add(a: number, b: number): number {
+    return a + b;
+}
 
 export const generateMockProducts = (count: number): Product[] => {
     const products: Product[] = [];
@@ -318,9 +341,45 @@ export const generateMockShipments = (count: number): Shipment[] => {
         }
         
         const carrierType = getRandomElement(Object.values(CarrierType));
+        const id = `SHP-${2024000 + i}`;
+        const aiInsights: AIInsight[] = [];
+
+        // Simulate AI-predicted delivery date and anomalies
+        let aiPredictedDeliveryDate = undefined;
+        if (status !== ShipmentStatus.DELIVERED && status !== ShipmentStatus.CANCELLED) {
+            const delayChance = Math.random();
+            if (delayChance < 0.2) { // 20% chance of a predicted delay
+                const delayDays = randomInt(1, 5);
+                aiPredictedDeliveryDate = new Date(estimatedDeliveryDate.getTime() + delayDays * 24 * 60 * 60 * 1000).toISOString();
+                aiInsights.push({
+                    id: `insight-${id}-1`,
+                    type: 'Prediction',
+                    severity: 'Warning',
+                    title: `Potential Delay of ${delayDays} day(s)`,
+                    description: `Our AI model predicts a potential delay for this shipment due to port congestion and adverse weather conditions on the planned route.`,
+                    relatedEntityId: id,
+                    timestamp: new Date().toISOString(),
+                    factors: ['Port Congestion', 'Weather'],
+                });
+            }
+        }
+
+        if (status === ShipmentStatus.CUSTOMS_CLEARANCE && Math.random() < 0.3) {
+            aiInsights.push({
+                id: `insight-${id}-2`,
+                type: 'Anomaly',
+                severity: 'Critical',
+                title: 'Extended Customs Hold',
+                description: 'Shipment has been in customs for over 72 hours, which is longer than the average 24-48 hours for this lane. Possible documentation issue.',
+                relatedEntityId: id,
+                timestamp: new Date().toISOString(),
+                factors: ['Customs Duration', 'Documentation Mismatch'],
+            });
+        }
+
 
         shipments.push({
-            id: `SHP-${2024000 + i}`,
+            id,
             status,
             origin,
             destination,
@@ -330,6 +389,7 @@ export const generateMockShipments = (count: number): Shipment[] => {
             pickupDate: pickupDate.toISOString(),
             estimatedDeliveryDate: estimatedDeliveryDate.toISOString(),
             actualDeliveryDate: actualDeliveryDate?.toISOString(),
+            aiPredictedDeliveryDate,
             items,
             totalValue,
             totalWeightKg,
@@ -354,10 +414,31 @@ export const generateMockShipments = (count: number): Shipment[] => {
             ],
             riskLevel: getRandomElement(Object.values(RiskLevel)),
             assignedAgent: getRandomElement(AGENT_NAMES),
+            aiInsights,
         });
     }
     return shipments;
 };
+
+export const generateMockInventory = (): InventoryItem[] => {
+    return MOCK_PRODUCTS.map(p => {
+        const quantity = randomInt(0, 1000);
+        const reorderPoint = randomInt(100, 200);
+        let status: 'In Stock' | 'Low Stock' | 'Out of Stock' = 'In Stock';
+        if (quantity === 0) status = 'Out of Stock';
+        else if (quantity < reorderPoint) status = 'Low Stock';
+
+        return {
+            sku: p.sku,
+            productName: p.name,
+            quantity,
+            reorderPoint,
+            status,
+            warehouseLocation: getRandomElement(WAREHOUSE_LOCATIONS),
+            lastStockedDate: getRandomDate(new Date(new Date().getTime() - 90 * 24 * 60 * 60 * 1000), new Date()).toISOString()
+        }
+    });
+}
 
 // SECTION: UTILITY FUNCTIONS
 
@@ -382,14 +463,17 @@ export const formatCurrency = (amount: number, currency: string = 'USD'): string
     }).format(amount);
 };
 
-export const getStatusChipColor = (status: ShipmentStatus): string => {
+export const getStatusChipColor = (status: ShipmentStatus | InventoryItem['status']): string => {
     switch (status) {
         case ShipmentStatus.DELIVERED: return 'bg-green-500/20 text-green-300';
+        case 'In Stock': return 'bg-green-500/20 text-green-300';
         case ShipmentStatus.IN_TRANSIT: return 'bg-cyan-500/20 text-cyan-300';
         case ShipmentStatus.PENDING: return 'bg-yellow-500/20 text-yellow-300';
+        case 'Low Stock': return 'bg-yellow-500/20 text-yellow-300';
         case ShipmentStatus.DELAYED: return 'bg-orange-500/20 text-orange-300';
         case ShipmentStatus.EXCEPTION:
         case ShipmentStatus.CANCELLED: return 'bg-red-500/20 text-red-300';
+        case 'Out of Stock': return 'bg-red-500/20 text-red-300';
         default: return 'bg-gray-500/20 text-gray-300';
     }
 };
@@ -407,8 +491,9 @@ export const getRiskChipColor = (risk: RiskLevel): string => {
 // SECTION: STATE MANAGEMENT (useReducer + Context)
 
 type Action =
+    | { type: 'SET_VIEW'; payload: ViewMode }
     | { type: 'FETCH_START' }
-    | { type: 'FETCH_SUCCESS'; payload: { shipments: Shipment[]; suppliers: Supplier[]; purchaseOrders: PurchaseOrder[]; inventory: InventoryItem[] } }
+    | { type: 'FETCH_SUCCESS'; payload: { shipments: Shipment[]; suppliers: Supplier[]; purchaseOrders: PurchaseOrder[]; inventory: InventoryItem[]; aiInsights: AIInsight[] } }
     | { type: 'FETCH_ERROR'; payload: string }
     | { type: 'SELECT_SHIPMENT'; payload: string | null }
     | { type: 'UPDATE_SHIPMENT_STATUS'; payload: { id: string; status: ShipmentStatus } }
@@ -428,10 +513,13 @@ export const initialState: AppState = {
     viewMode: 'dashboard',
     userRole: 'manager',
     notifications: [],
+    aiInsights: [],
 };
 
 export function appReducer(state: AppState, action: Action): AppState {
     switch (action.type) {
+        case 'SET_VIEW':
+            return { ...state, viewMode: action.payload };
         case 'FETCH_START':
             return { ...state, isLoading: true, error: null };
         case 'FETCH_SUCCESS':
@@ -454,7 +542,7 @@ export function appReducer(state: AppState, action: Action): AppState {
                 timestamp: new Date().toISOString(),
                 isRead: false,
             };
-            return { ...state, notifications: [newNotification, ...state.notifications] };
+            return { ...state, notifications: [newNotification, ...state.notifications].slice(0, 10) };
         case 'MARK_NOTIFICATION_READ':
             return {
                 ...state,
@@ -488,14 +576,15 @@ export const useAppState = () => {
 // SECTION: MOCK API SERVICE
 
 export const supplyChainApi = {
-    fetchDashboardData: async (): Promise<{ shipments: Shipment[]; suppliers: Supplier[]; purchaseOrders: PurchaseOrder[]; inventory: InventoryItem[] }> => {
+    fetchDashboardData: async (): Promise<{ shipments: Shipment[]; suppliers: Supplier[]; purchaseOrders: PurchaseOrder[]; inventory: InventoryItem[]; aiInsights: AIInsight[] }> => {
         console.log("API: Fetching all dashboard data...");
         return new Promise((resolve) => {
             setTimeout(() => {
                 const shipments = generateMockShipments(125);
                 const suppliers = MOCK_SUPPLIERS;
-                // NOTE: In a real app, POs and Inventory would be generated too
-                resolve({ shipments, suppliers, purchaseOrders: [], inventory: [] });
+                const inventory = generateMockInventory();
+                const allInsights = shipments.flatMap(s => s.aiInsights);
+                resolve({ shipments, suppliers, purchaseOrders: [], inventory, aiInsights: allInsights });
             }, 1500); // Simulate network delay
         });
     },
@@ -503,14 +592,46 @@ export const supplyChainApi = {
         console.log(`API: Updating shipment ${id} to status ${status}`);
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                // In a real API, this would find and update the shipment in a DB
-                // Here we just simulate a successful response.
                 if (Math.random() > 0.05) { // 95% success rate
                     resolve({} as Shipment); // Don't need to return the full object for this mock
                 } else {
                     reject(new Error("Failed to update shipment status. Please try again."));
                 }
             }, 750);
+        });
+    },
+    generateAiRiskReport: async (supplierName: string, country: string): Promise<string> => {
+        console.log(`API: Generating AI risk report for ${supplierName}`);
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const report = `
+### **Supplier Risk Report for ${supplierName}, ${country}**
+
+#### 1. Geopolitical Risks:
+*   **Trade Tensions:** Ongoing trade disputes between ${country} and major import regions may lead to sudden tariff imposition, affecting landed costs.
+*   **Regional Stability:** Monitor regional elections and policy shifts, which could impact export regulations and labor availability.
+*   **Regulatory Scrutiny:** Increased environmental and labor standard regulations in ${country} could lead to production halts if compliance is not maintained.
+
+#### 2. Logistical Challenges:
+*   **Port Congestion:** Major ports in ${country} are prone to seasonal congestion, potentially adding 5-10 days to lead times during peak seasons.
+*   **Infrastructure Quality:** While major hubs are efficient, inland transport infrastructure can be unreliable, posing risks for multi-stage transits.
+*   **Customs Delays:** Complex customs documentation requirements for specific product categories can lead to unexpected holds.
+
+#### 3. Financial Stability Factors:
+*   **Market Position:** As a major player, ${supplierName} has a stable market position but faces fierce competition, impacting margins.
+*   **Industry Reliance:** Heavy reliance on the volatile consumer electronics sector makes them susceptible to boom-and-bust cycles.
+
+#### 4. Operational Risks:
+*   **Labor Disputes:** Historical data shows a low but present risk of labor disputes in the region, which could halt production.
+*   **Quality Control:** While their record is strong, rapid scaling could introduce quality control challenges.
+
+#### 5. Mitigation Strategies:
+1.  **Supplier Diversification:** Initiate discovery for a secondary supplier in a different geopolitical region (e.g., Southeast Asia or Mexico) to hedge against regional risks.
+2.  **Buffer Stock:** Increase safety stock levels by 15% for critical components sourced from ${supplierName} to absorb potential delays.
+3.  **Enhanced Monitoring:** Implement real-time monitoring of port activity and regional news in ${country} using an AI-powered alert system to proactively adjust logistics planning.
+`;
+                resolve(report);
+            }, 2000);
         });
     }
 };
@@ -522,8 +643,9 @@ export const supplyChainApi = {
 export interface Column<T> {
     accessor: keyof T;
     header: string;
-    cell?: (value: any) => React.ReactNode;
+    cell?: (value: any, row: T) => React.ReactNode;
     sortable?: boolean;
+    width?: string;
 }
 
 export interface AdvancedDataTableProps<T> {
@@ -533,8 +655,8 @@ export interface AdvancedDataTableProps<T> {
     title: string;
 }
 
-export function AdvancedDataTable<T extends { id: string | number }>({ columns, data, onRowClick, title }: AdvancedDataTableProps<T>) {
-    const [sortConfig, setSortConfig] = useState<{ key: keyof T, direction: 'ascending' | 'descending' } | null>(null);
+export function AdvancedDataTable<T extends { id?: string | number, sku?: string }>({ columns, data, onRowClick, title }: AdvancedDataTableProps<T>) {
+    const [sortConfig, setSortConfig] = useState<{ key: keyof T, direction: 'ascending' | 'descending' } | null>({ key: columns[0].accessor, direction: 'descending' });
     const [filter, setFilter] = useState('');
 
     const filteredData = useMemo(() => {
@@ -583,7 +705,7 @@ export function AdvancedDataTable<T extends { id: string | number }>({ columns, 
                     placeholder="Search table..."
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="w-full md:w-1/3 bg-gray-700/50 p-2 rounded text-white mb-4 placeholder-gray-400"
+                    className="w-full md:w-1/3 bg-gray-700/50 p-2 rounded text-white mb-4 placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
                 />
             </div>
             <div className="overflow-x-auto">
@@ -591,19 +713,21 @@ export function AdvancedDataTable<T extends { id: string | number }>({ columns, 
                     <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
                         <tr>
                             {columns.map(col => (
-                                <th key={String(col.accessor)} className="px-6 py-3 cursor-pointer" onClick={() => col.sortable && requestSort(col.accessor)}>
-                                    {col.header}
-                                    {col.sortable && getSortIndicator(col.accessor)}
+                                <th key={String(col.accessor)} className="px-6 py-3" style={{width: col.width}} onClick={() => col.sortable && requestSort(col.accessor)}>
+                                    <span className={col.sortable ? 'cursor-pointer' : ''}>
+                                        {col.header}
+                                        {col.sortable && getSortIndicator(col.accessor)}
+                                    </span>
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedData.map(item => (
-                            <tr key={item.id} className="border-b border-gray-800 hover:bg-gray-800/50 cursor-pointer" onClick={() => onRowClick && onRowClick(item)}>
+                        {sortedData.map((item, index) => (
+                            <tr key={item.id || item.sku || index} className="border-b border-gray-800 hover:bg-gray-800/50" onClick={() => onRowClick && onRowClick(item)}>
                                 {columns.map(col => (
                                     <td key={String(col.accessor)} className="px-6 py-4">
-                                        {col.cell ? col.cell(item[col.accessor]) : String(item[col.accessor])}
+                                        {col.cell ? col.cell(item[col.accessor], item) : String(item[col.accessor])}
                                     </td>
                                 ))}
                             </tr>
@@ -630,16 +754,11 @@ export const InteractiveMapView: React.FC<{ shipments: Shipment[]; suppliers: Su
         const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
         const y = (worldHeight / 2) - (worldWidth * mercN / (2 * Math.PI));
         return { x, y };
-    }, [worldHeight, worldWidth]);
+    }, []);
 
     const handleMouseOver = (e: React.MouseEvent, content: string) => {
          if (svgRef.current) {
-            const CTM = svgRef.current.getScreenCTM();
-            if (CTM) {
-                const x = (e.clientX - CTM.e) / CTM.a;
-                const y = (e.clientY - CTM.f) / CTM.d;
-                setTooltip({ x: x + 10, y: y, content });
-            }
+            setTooltip({ x: e.nativeEvent.offsetX + 10, y: e.nativeEvent.offsetY, content });
         }
     };
 
@@ -647,11 +766,8 @@ export const InteractiveMapView: React.FC<{ shipments: Shipment[]; suppliers: Su
         <Card title="Global Operations Map">
             <div className="relative w-full h-96 bg-gray-800 rounded-b-lg overflow-hidden">
                 <svg ref={svgRef} viewBox={`0 0 ${worldWidth} ${worldHeight}`} className="w-full h-full">
-                    {/* A simple world map background */}
                     <rect width={worldWidth} height={worldHeight} fill="#374151" />
-                    <path d="M..." fill="#4B5563" /> {/* Placeholder for actual map path data */}
                     
-                    {/* Render suppliers */}
                     {suppliers.map(supplier => {
                         const { x, y } = project(supplier.location.lat, supplier.location.lng);
                         return (
@@ -668,15 +784,14 @@ export const InteractiveMapView: React.FC<{ shipments: Shipment[]; suppliers: Su
                         );
                     })}
 
-                    {/* Render shipment routes */}
                     {shipments.filter(s => s.status === ShipmentStatus.IN_TRANSIT).slice(0, 10).map(shipment => {
                         const origin = project(shipment.origin.lat, shipment.origin.lng);
                         const dest = project(shipment.destination.lat, shipment.destination.lng);
                         const midX = (origin.x + dest.x) / 2;
-                        const midY = (origin.y + dest.y) / 2 - 50;
+                        const midY = (origin.y + dest.y) / 2 - Math.abs(dest.x - origin.x) * 0.2; // create arc
 
                         return (
-                            <g key={shipment.id}>
+                            <g key={shipment.id} onMouseMove={(e) => handleMouseOver(e, `Shipment: ${shipment.id}`)} onMouseLeave={() => setTooltip(null)}>
                                 <path
                                     d={`M${origin.x},${origin.y} Q${midX},${midY} ${dest.x},${dest.y}`}
                                     stroke="#06b6d4"
@@ -693,7 +808,7 @@ export const InteractiveMapView: React.FC<{ shipments: Shipment[]; suppliers: Su
                     
                      {tooltip && (
                         <g transform={`translate(${tooltip.x}, ${tooltip.y})`}>
-                            <rect x="0" y="0" width={tooltip.content.length * 7 + 10} height="25" rx="4" fill="rgba(0,0,0,0.7)" />
+                            <rect x="0" y="0" width={tooltip.content.length * 7 + 10} height="25" rx="4" fill="rgba(0,0,0,0.8)" />
                             <text x="5" y="17" fill="#fff" fontSize="12">{tooltip.content}</text>
                         </g>
                     )}
@@ -708,9 +823,9 @@ export const ShipmentDetailDrawer: React.FC<{ shipment: Shipment; onClose: () =>
     return (
         <div className="fixed inset-0 bg-black/70 flex justify-end z-50 backdrop-blur-sm" onClick={onClose}>
             <div className="bg-gray-800 w-full max-w-2xl h-full shadow-2xl border-l border-gray-700 overflow-y-auto" onClick={e => e.stopPropagation()}>
-                <div className="p-4 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800/80 backdrop-blur-sm">
+                <div className="p-4 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800/80 backdrop-blur-sm z-10">
                     <h3 className="text-xl font-semibold text-white">Shipment Details: <span className="font-mono">{shipment.id}</span></h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
                 <div className="p-6 space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -722,10 +837,25 @@ export const ShipmentDetailDrawer: React.FC<{ shipment: Shipment; onClose: () =>
                         <InfoItem label="Carrier Type" value={shipment.carrierType} />
                         <InfoItem label="Total Value" value={formatCurrency(shipment.totalValue)} />
                         <InfoItem label="Total Weight" value={`${shipment.totalWeightKg.toFixed(2)} kg`} />
-                        <InfoItem label="Estimated Delivery" value={formatDate(shipment.estimatedDeliveryDate)} />
+                        <InfoItem label="Original ETA" value={formatDate(shipment.estimatedDeliveryDate)} />
+                        <InfoItem label="AI Predicted ETA" value={formatDate(shipment.aiPredictedDeliveryDate)} valueClassName={shipment.aiPredictedDeliveryDate ? 'text-orange-300' : ''} />
                         <InfoItem label="Assigned Agent" value={shipment.assignedAgent} />
                     </div>
                     
+                    {shipment.aiInsights.length > 0 && (
+                        <Card title="AI Insights & Alerts">
+                           <ul className="space-y-2">
+                            {shipment.aiInsights.map(insight => (
+                               <li key={insight.id} className={`p-3 rounded-lg border-l-4 ${insight.severity === 'Critical' ? 'border-red-500 bg-red-500/10' : 'border-yellow-500 bg-yellow-500/10'}`}>
+                                   <p className="font-bold text-white">{insight.title}</p>
+                                   <p className="text-sm text-gray-300">{insight.description}</p>
+                                   <p className="text-xs text-gray-400 mt-1">Factors: {insight.factors.join(', ')}</p>
+                               </li> 
+                            ))}
+                           </ul>
+                        </Card>
+                    )}
+
                     <Card title="Items in Shipment">
                         <ul>
                             {shipment.items.map(item => (
@@ -784,6 +914,56 @@ export const InfoItem: React.FC<{ label: string; value: string; valueClassName?:
     </div>
 );
 
+// SECTION: PAGE-LEVEL VIEWS
+
+export const ShipmentsView: React.FC = () => {
+    const { state, dispatch } = useAppState();
+    
+    const handleRowClick = useCallback((shipment: Shipment) => {
+        dispatch({ type: 'SELECT_SHIPMENT', payload: shipment.id });
+    }, [dispatch]);
+    
+    const shipmentTableColumns: Column<Shipment>[] = [
+        { accessor: 'id', header: 'ID', sortable: true, cell: (id) => <span className="font-mono text-cyan-400">{id}</span> },
+        { accessor: 'origin', header: 'Origin', sortable: true, cell: (loc) => `${(loc as Geolocation).city}, ${(loc as Geolocation).country}` },
+        { accessor: 'destination', header: 'Destination', sortable: true, cell: (loc) => `${(loc as Geolocation).city}, ${(loc as Geolocation).country}` },
+        { accessor: 'status', header: 'Status', sortable: true, cell: (status) => <span className={`px-2 py-1 text-xs rounded-full ${getStatusChipColor(status as ShipmentStatus)}`}>{status}</span> },
+        { accessor: 'riskLevel', header: 'Risk', sortable: true, cell: (risk) => <span className={`px-2 py-1 text-xs rounded-full ${getRiskChipColor(risk as RiskLevel)}`}>{risk}</span> },
+        { accessor: 'estimatedDeliveryDate', header: 'ETA', sortable: true, cell: (date) => formatDate(date as string) },
+    ];
+
+    return (
+        <AdvancedDataTable
+            title="All Shipments"
+            columns={shipmentTableColumns}
+            data={state.shipments}
+            onRowClick={handleRowClick}
+        />
+    )
+}
+
+export const InventoryView: React.FC = () => {
+    const { state } = useAppState();
+    
+    const inventoryTableColumns: Column<InventoryItem>[] = [
+        { accessor: 'sku', header: 'SKU', sortable: true, cell: (sku) => <span className="font-mono text-cyan-400">{sku}</span> },
+        { accessor: 'productName', header: 'Product Name', sortable: true, cell: (name) => <span className="text-white">{name}</span> },
+        { accessor: 'quantity', header: 'Quantity', sortable: true },
+        { accessor: 'reorderPoint', header: 'Reorder Point', sortable: true },
+        { accessor: 'warehouseLocation', header: 'Warehouse', sortable: true },
+        { accessor: 'status', header: 'Status', sortable: true, cell: (status) => <span className={`px-2 py-1 text-xs rounded-full ${getStatusChipColor(status as InventoryItem['status'])}`}>{status}</span> },
+    ];
+    
+    return (
+        <AdvancedDataTable
+            title="Inventory Status"
+            columns={inventoryTableColumns}
+            data={state.inventory}
+        />
+    )
+}
+
+
 // Main Application View
 const DemoBankSupplyChainView: React.FC = () => {
     return (
@@ -826,30 +1006,17 @@ export const SupplyChainDashboard: React.FC = () => {
         setRiskReport('');
         dispatch({ type: 'ADD_NOTIFICATION', payload: { message: `Generating risk report for ${supplierInfo.name}...`, type: 'info' } });
         try {
-            // NOTE: The API_KEY should be handled securely on a backend, never exposed on the client.
-            // This is for demonstration purposes only.
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `Generate a detailed supplier risk report for "${supplierInfo.name}" based in "${supplierInfo.country}". Cover the following sections with detailed bullet points under each:
-            1.  **Geopolitical Risks:** (e.g., trade tensions, regional stability, government policies)
-            2.  **Logistical Challenges:** (e.g., port congestion, infrastructure quality, weather patterns, customs delays)
-            3.  **Financial Stability Factors:** (e.g., market position, reliance on specific industries, credit outlook)
-            4.  **Operational Risks:** (e.g., labor disputes, quality control history, production capacity)
-            5.  **Mitigation Strategies:** (Provide 3 actionable recommendations for the bank to mitigate these risks).
-            Format the response clearly with markdown headings.`;
-            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-            setRiskReport(response.text);
+            const report = await supplyChainApi.generateAiRiskReport(supplierInfo.name, supplierInfo.country);
+            setRiskReport(report);
         } catch (error) {
-            setRiskReport("Error: Could not generate risk report. The API key might be missing or invalid. Please check your environment variables.");
+            const err = error as Error;
+            setRiskReport(`Error: Could not generate risk report. ${err.message}`);
             dispatch({ type: 'ADD_NOTIFICATION', payload: { message: 'Failed to generate AI risk report.', type: 'error' } });
         } finally {
             setIsGeneratingReport(false);
         }
     };
     
-    const handleRowClick = useCallback((shipment: Shipment) => {
-        dispatch({ type: 'SELECT_SHIPMENT', payload: shipment.id });
-    }, [dispatch]);
-
     const handleCloseDrawer = useCallback(() => {
         dispatch({ type: 'SELECT_SHIPMENT', payload: null });
     }, [dispatch]);
@@ -861,17 +1028,31 @@ export const SupplyChainDashboard: React.FC = () => {
             activeShipments: state.shipments.filter(s => s.status === 'In Transit' || s.status === 'Customs Clearance').length,
             onTimeDelivery: totalDelivered > 0 ? ((onTime / totalDelivered) * 100).toFixed(0) : '100',
             delayedShipments: state.shipments.filter(s => s.status === 'Delayed').length,
+            criticalAlerts: state.aiInsights.filter(i => i.severity === 'Critical').length,
         }
-    }, [state.shipments]);
+    }, [state.shipments, state.aiInsights]);
 
-    const shipmentTableColumns: Column<Shipment>[] = [
-        { accessor: 'id', header: 'ID', sortable: true, cell: (id) => <span className="font-mono text-white">{id}</span> },
-        { accessor: 'origin', header: 'Origin', sortable: true, cell: (loc) => `${(loc as Geolocation).city}, ${(loc as Geolocation).country}` },
-        { accessor: 'destination', header: 'Destination', sortable: true, cell: (loc) => `${(loc as Geolocation).city}, ${(loc as Geolocation).country}` },
-        { accessor: 'status', header: 'Status', sortable: true, cell: (status) => <span className={`px-2 py-1 text-xs rounded-full ${getStatusChipColor(status as ShipmentStatus)}`}>{status}</span> },
-        { accessor: 'riskLevel', header: 'Risk', sortable: true, cell: (risk) => <span className={`px-2 py-1 text-xs rounded-full ${getRiskChipColor(risk as RiskLevel)}`}>{risk}</span> },
-        { accessor: 'estimatedDeliveryDate', header: 'ETA', sortable: true, cell: (date) => formatDate(date as string) },
-    ];
+    const renderCurrentView = () => {
+        switch(state.viewMode) {
+            case 'shipments': return <ShipmentsView />;
+            case 'inventory': return <InventoryView />;
+            // Add cases for suppliers, orders, analytics here
+            case 'dashboard':
+            default:
+                return (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                           <Card className="text-center"><p className="text-3xl font-bold text-white">{summaryMetrics.activeShipments}</p><p className="text-sm text-gray-400 mt-1">Active Shipments</p></Card>
+                           <Card className="text-center"><p className="text-3xl font-bold text-white">{summaryMetrics.onTimeDelivery}%</p><p className="text-sm text-gray-400 mt-1">On-Time Delivery</p></Card>
+                           <Card className="text-center"><p className="text-3xl font-bold text-white">{summaryMetrics.delayedShipments}</p><p className="text-sm text-gray-400 mt-1">Delayed Shipments</p></Card>
+                           <Card className="text-center"><p className="text-3xl font-bold text-red-400">{summaryMetrics.criticalAlerts}</p><p className="text-sm text-gray-400 mt-1">Critical AI Alerts</p></Card>
+                        </div>
+                        <InteractiveMapView shipments={state.shipments} suppliers={state.suppliers} />
+                        <ShipmentsView />
+                    </div>
+                )
+        }
+    }
 
 
     if (state.isLoading) {
@@ -883,29 +1064,26 @@ export const SupplyChainDashboard: React.FC = () => {
     }
     
     return (
-        <>
-            <div className="space-y-6">
+        <div className="flex">
+            <nav className="w-64 bg-gray-900/70 p-4 space-y-2 sticky top-0 h-screen">
+                {(['dashboard', 'shipments', 'suppliers', 'orders', 'inventory', 'analytics'] as ViewMode[]).map(view => (
+                    <button
+                        key={view}
+                        onClick={() => dispatch({type: 'SET_VIEW', payload: view})}
+                        className={`w-full text-left p-2 rounded capitalize transition-colors ${state.viewMode === view ? 'bg-cyan-600 text-white' : 'hover:bg-gray-700/50 text-gray-300'}`}
+                    >
+                        {view}
+                    </button>
+                ))}
+            </nav>
+            <main className="flex-1 p-6 space-y-6">
                  <div className="flex justify-between items-center">
                     <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank Supply Chain</h2>
                      <button onClick={() => setRiskModalOpen(true)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors">AI Supplier Risk Report</button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">{summaryMetrics.activeShipments}</p><p className="text-sm text-gray-400 mt-1">Active Shipments</p></Card>
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">{summaryMetrics.onTimeDelivery}%</p><p className="text-sm text-gray-400 mt-1">On-Time Delivery</p></Card>
-                    <Card className="text-center"><p className="text-3xl font-bold text-white">{summaryMetrics.delayedShipments}</p><p className="text-sm text-gray-400 mt-1">Delayed Shipments</p></Card>
-                </div>
-                
-                <InteractiveMapView shipments={state.shipments} suppliers={state.suppliers} />
-
-                <AdvancedDataTable
-                    title="Live Shipments"
-                    columns={shipmentTableColumns}
-                    data={state.shipments}
-                    onRowClick={handleRowClick}
-                />
-
-            </div>
+                {renderCurrentView()}
+            </main>
 
             {selectedShipment && <ShipmentDetailDrawer shipment={selectedShipment} onClose={handleCloseDrawer} />}
 
@@ -913,8 +1091,8 @@ export const SupplyChainDashboard: React.FC = () => {
                  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setRiskModalOpen(false)}>
                     <div className="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full border border-gray-700" onClick={e=>e.stopPropagation()}>
                         <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-                            <h3 className="text-lg font-semibold text-white">AI Supplier Risk Report</h3>
-                            <button onClick={() => setRiskModalOpen(false)} className="text-gray-400 hover:text-white">&times;</button>
+                            <h3 className="text-lg font-semibold text-white">AI Supplier Risk Report Generator</h3>
+                            <button onClick={() => setRiskModalOpen(false)} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div className="flex gap-4">
@@ -924,14 +1102,14 @@ export const SupplyChainDashboard: React.FC = () => {
                             <button onClick={handleGenerateReport} disabled={isGeneratingReport} className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors">{isGeneratingReport ? 'Generating...' : 'Generate Report'}</button>
                             <Card title="Generated Report">
                                 <div className="min-h-[10rem] max-h-96 overflow-y-auto text-sm text-gray-300 whitespace-pre-line prose prose-invert max-w-none p-4">
-                                    {isGeneratingReport ? <span className="animate-pulse">Generating comprehensive analysis...</span> : riskReport || <span className="text-gray-500">Report will appear here.</span>}
+                                    {isGeneratingReport ? <span className="animate-pulse">Generating comprehensive analysis...</span> : <div dangerouslySetInnerHTML={{ __html: riskReport.replace(/\n/g, '<br />') }} /> || <span className="text-gray-500">Report will appear here.</span>}
                                 </div>
                             </Card>
                         </div>
                     </div>
                  </div>
             )}
-        </>
+        </div>
     );
 };
 
