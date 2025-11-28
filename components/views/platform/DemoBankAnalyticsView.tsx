@@ -1,22 +1,7 @@
+```typescript
 import React, { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import Card from '../../Card';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, CartesianGrid } from 'recharts';
-
-const queryPerformanceData = [
-    { name: 'Mon', duration: 2.5 }, { name: 'Tue', duration: 2.8 }, { name: 'Wed', duration: 2.3 },
-    { name: 'Thu', duration: 3.1 }, { name: 'Fri', duration: 3.5 }, { name: 'Sat', duration: 1.8 },
-    { name: 'Sun', duration: 1.5 },
-];
-
-const popularDatasets = [
-    { id: 1, name: 'transactions_clean', size: '1.2 TB', queries: 1520 },
-    { id: 2, name: 'customer_360', size: '800 GB', queries: 1250 },
-    { id: 3, name: 'product_catalog', size: '50 GB', queries: 850 },
-    { id: 4, name: 'web_logs_partitioned', size: '12 TB', queries: 680 },
-];
-
-
-// --- START OF NEW CODE ---
 
 // =================================================================================================
 // TYPE DEFINITIONS FOR A REAL-WORLD APPLICATION
@@ -354,11 +339,13 @@ export const KpiCard: React.FC<{ title: string; value: string; description: stri
             <div className="animate-pulse">
                 <div className="h-9 bg-gray-700 rounded w-1/2 mx-auto"></div>
                 <div className="h-4 bg-gray-700 rounded w-3/4 mx-auto mt-2"></div>
+                <div className="h-4 bg-gray-700 rounded w-1/2 mx-auto mt-3"></div>
             </div>
         ) : (
             <>
+                <p className="text-sm text-gray-400 mt-1">{title}</p>
                 <p className="text-3xl font-bold text-white">{value}</p>
-                <p className="text-sm text-gray-400 mt-1">{description}</p>
+                <p className="text-sm text-gray-500 mt-1">{description}</p>
             </>
         )}
     </Card>
@@ -602,7 +589,7 @@ export const WarehouseStatusView: React.FC<{ warehouses: Warehouse[], isLoading:
 
     return (
         <Card title="Warehouse Status">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             {isLoading ? (
                 Array.from({length: 4}).map((_, i) => (
                     <div key={i} className="bg-gray-900/50 p-4 rounded-lg animate-pulse">
@@ -630,13 +617,69 @@ export const WarehouseStatusView: React.FC<{ warehouses: Warehouse[], isLoading:
     );
 };
 
-// --- END OF NEW CODE ---
-
+/**
+ * A component to display popular/most-used datasets.
+ */
+export const PopularDatasetsTable: React.FC<{ datasets: Dataset[], isLoading: boolean }> = ({ datasets, isLoading }) => (
+    <Card title="Popular Datasets">
+        <div className="overflow-x-auto">
+           <table className="w-full text-sm text-left text-gray-400">
+               <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
+                   <tr>
+                       <th scope="col" className="px-6 py-3">Dataset Name</th>
+                       <th scope="col" className="px-6 py-3">Owner</th>
+                       <th scope="col" className="px-6 py-3">Size</th>
+                       <th scope="col" className="px-6 py-3">Queries (Total)</th>
+                       <th scope="col" className="px-6 py-3">Sensitivity</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {isLoading ? (
+                       Array.from({length: 5}).map((_, i) => (
+                           <tr key={i} className="border-b border-gray-800 animate-pulse">
+                               <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-32"></div></td>
+                               <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-24"></div></td>
+                               <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-16"></div></td>
+                               <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-12"></div></td>
+                               <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-16"></div></td>
+                           </tr>
+                       ))
+                   ) : (
+                       datasets.map(d => (
+                           <tr key={d.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                               <td className="px-6 py-4 font-mono text-white">{d.name}</td>
+                               <td className="px-6 py-4">{d.owner}</td>
+                               <td className="px-6 py-4">{d.size}</td>
+                               <td className="px-6 py-4">{d.queries.toLocaleString()}</td>
+                               <td className="px-6 py-4">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                    d.sensitivity === 'High' ? 'bg-red-900 text-red-300' :
+                                    d.sensitivity === 'Medium' ? 'bg-yellow-900 text-yellow-300' : 'bg-green-900 text-green-300'
+                                }`}>
+                                    {d.sensitivity}
+                                </span>
+                               </td>
+                           </tr>
+                       ))
+                   )}
+               </tbody>
+           </table>
+       </div>
+   </Card>
+);
 
 const DemoBankAnalyticsView: React.FC = () => {
-    // --- START OF MODIFIED/ENHANCED CODE ---
     const [timeRange, setTimeRange] = useState<TimeRange>('24h');
-    const { loading, kpiData, queryHistory, costBreakdown, warehouseStatus, queryPerformanceHistory, error } = useDashboardData(timeRange);
+    const { 
+        loading, 
+        kpiData, 
+        queryHistory, 
+        costBreakdown, 
+        warehouseStatus, 
+        queryPerformanceHistory, 
+        detailedDatasets,
+        error 
+    } = useDashboardData(timeRange);
 
     const formattedKpis = useMemo(() => {
         return {
@@ -646,7 +689,6 @@ const DemoBankAnalyticsView: React.FC = () => {
             scanned: kpiData ? formatBytes(kpiData.dataScannedLast24h * 1024 * 1024) : '0 MB',
         };
     }, [kpiData]);
-    // --- END OF MODIFIED/ENHANCED CODE ---
 
     return (
         <div className="space-y-6">
@@ -658,14 +700,12 @@ const DemoBankAnalyticsView: React.FC = () => {
             {error && <Card className="bg-red-900/50 border-red-500 text-red-200"><p><strong>Error:</strong> {error}</p></Card>}
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* --- MODIFIED: Use new KpiCard component --- */}
-                <KpiCard title="Workspaces" value={formattedKpis.workspaces} description="Analytics Workspaces" isLoading={loading} />
+                <KpiCard title="Workspaces" value={formattedKpis.workspaces} description="Active Analytics Workspaces" isLoading={loading} />
                 <KpiCard title="Queries" value={formattedKpis.queries} description={`Queries Run (${timeRange.toUpperCase()})`} isLoading={loading} />
                 <KpiCard title="Avg Duration" value={formattedKpis.duration} description="Avg. Query Duration" isLoading={loading} />
                 <KpiCard title="Data Scanned" value={formattedKpis.scanned} description={`Data Scanned (${timeRange.toUpperCase()})`} isLoading={loading} />
             </div>
 
-            {/* --- MODIFIED: Use new enhanced chart component --- */}
             <QueryPerformanceChart data={queryPerformanceHistory} isLoading={loading} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -673,33 +713,12 @@ const DemoBankAnalyticsView: React.FC = () => {
                 <WarehouseStatusView warehouses={warehouseStatus} isLoading={loading} />
             </div>
             
-            {/* --- MODIFIED: Using new detailed queries table --- */}
             <RecentQueriesTable queries={queryHistory} isLoading={loading} />
 
-            <Card title="Popular Datasets">
-                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-gray-400">
-                        <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
-                            <tr>
-                                <th scope="col" className="px-6 py-3">Dataset Name</th>
-                                <th scope="col" className="px-6 py-3">Size</th>
-                                <th scope="col" className="px-6 py-3">Queries (24h)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {popularDatasets.map(d => (
-                                <tr key={d.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                                    <td className="px-6 py-4 font-mono text-white">{d.name}</td>
-                                    <td className="px-6 py-4">{d.size}</td>
-                                    <td className="px-6 py-4">{d.queries.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </Card>
+            <PopularDatasetsTable datasets={detailedDatasets} isLoading={loading} />
         </div>
     );
 };
 
 export default DemoBankAnalyticsView;
+```
