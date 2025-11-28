@@ -1,3 +1,4 @@
+---
 ```typescript
 import React from 'react'; // Assuming React is available in the scope
 
@@ -19,13 +20,14 @@ export namespace TheFinancialInstrumentForge {
      * - **Personal**: Instruments tailored for individual needs, like annuities or bespoke loans.
      * - **Insurance**: Products focused on risk mitigation and transfer.
      * - **Alternative**: Investments in non-traditional asset classes like real estate, commodities, or private equity.
+     * - **Impact**: Instruments designed to generate positive social or environmental impact alongside a financial return.
      */
-    export type FinancialProductClass = "Structured" | "Decentralized" | "Personal" | "Insurance" | "Alternative";
+    export type FinancialProductClass = "Structured" | "Decentralized" | "Personal" | "Insurance" | "Alternative" | "Impact";
 
     /**
-     * Defines the type of input parameter for an instrument.
+     * Defines the type of input parameter for an instrument, hinting at the required UI component.
      */
-    export type ParameterType = "number" | "percentage" | "date" | "select" | "currency" | "boolean" | "asset_picker";
+    export type ParameterType = "number" | "percentage" | "date" | "select" | "currency" | "boolean" | "asset_picker" | "risk_slider" | "textarea";
 
     /**
      * Defines the structure for a configurable parameter within a blueprint.
@@ -40,8 +42,13 @@ export namespace TheFinancialInstrumentForge {
             readonly required?: boolean;
             readonly minValue?: number;
             readonly maxValue?: number;
+            readonly pattern?: string; // For regex validation
             readonly options?: Array<{ value: string | number; label: string }>;
         };
+        readonly uiHint?: {
+            readonly placeholder?: string;
+            readonly step?: number;
+        }
     }
 
     /**
@@ -55,7 +62,7 @@ export namespace TheFinancialInstrumentForge {
         readonly productClass: FinancialProductClass;
         readonly underlyingAssets: string[]; // e.g., ['SPX', 'NDX', 'BTC']
         readonly payoffFormula: string; // A mathematical or logical representation of the payoff
-        readonly legalFramework: "ISDA" | "Custom" | "SmartContract";
+        readonly legalFramework: "ISDA" | "Custom" | "SmartContract" | "Governmental";
         readonly jurisdiction: "US" | "EU" | "UK" | "SG" | "Global";
         readonly configurableParameters: IParameterDefinition[];
     }
@@ -72,7 +79,17 @@ export namespace TheFinancialInstrumentForge {
         readonly customParameters: Record<string, any>;
         readonly investorId: string;
         readonly creationDate: Date;
-        status: "Draft" | "Analyzed" | "Minted" | "Matured";
+        status: "Draft" | "Analyzed" | "Minted" | "Matured" | "Failed";
+    }
+    
+    /**
+     * Describes the outcome of a specific stress test scenario.
+     */
+    export interface IStressTestResult {
+        scenario: string;
+        description: string;
+        impactOnValue: number; // as a percentage change
+        narrative: string;
     }
 
     /**
@@ -86,29 +103,41 @@ export namespace TheFinancialInstrumentForge {
             expectedShortfall95: number;
             volatility: number;
             sensitivityAnalysis: Record<string, number>; // Greeks: Delta, Gamma, Vega, Theta
+            downsideDeviation: number; // Sortino Ratio denominator
         };
         readonly reward: {
             summary: string;
             expectedReturn: number;
             sharpeRatio: number;
+            sortinoRatio: number;
             bestCaseScenario: number;
             worstCaseScenario: number;
+            returnDistributionSkewness: number;
         };
         readonly suitability: {
             summary: string;
             score: number; // 0-100
             warnings: string[];
+            ethicalConsiderations: string;
         };
         readonly complianceChecks: {
             mifidII: "Pass" | "Fail" | "N/A";
             doddFrank: "Pass" | "Fail" | "N/A";
             localRegs: "Pass" | "Fail" | "N/A";
+            regulatoryRedFlags: string[];
         };
         readonly simulationData?: {
             payoffDistribution: Array<{ value: number; probability: number }>;
             monteCarloPaths?: number[][];
         };
         readonly backtestResult?: IBacktestResult;
+        readonly marketSentiment?: {
+            summary: string;
+            score: number; // -1 to 1
+            keyHeadlines: string[];
+        };
+        readonly stressTestResults?: IStressTestResult[];
+        readonly aiNarrative: string; // Full, conversational explanation from the AI
     }
 
     /**
@@ -178,18 +207,34 @@ export namespace TheFinancialInstrumentForge {
             this.logger.log('INFO', `Fetching data for asset: ${assetId}`);
             // In a real app, this would be a complex lookup. Here we simulate it.
             switch (assetId) {
-                case 'SPX':
-                    return { price: 4500, volatility: 0.20, dividendYield: 0.015 };
-                case 'NDX':
-                    return { price: 15000, volatility: 0.25, dividendYield: 0.008 };
-                case 'BTC':
-                    return { price: 60000, volatility: 0.80, dividendYield: 0 };
-                case 'ETH':
-                    return { price: 3000, volatility: 0.95, dividendYield: 0.02 }; // Staking yield
+                case 'SPX': return { price: 4500, volatility: 0.20, dividendYield: 0.015 };
+                case 'NDX': return { price: 15000, volatility: 0.25, dividendYield: 0.008 };
+                case 'BTC': return { price: 60000, volatility: 0.80, dividendYield: 0 };
+                case 'ETH': return { price: 3000, volatility: 0.95, dividendYield: 0.02 }; // Staking yield
+                case 'VTI': return { price: 230, volatility: 0.18, dividendYield: 0.016 };
+                case 'BND': return { price: 75, volatility: 0.05, dividendYield: 0.025 };
+                case 'GLD': return { price: 180, volatility: 0.15, dividendYield: 0 };
+                case 'CAT_BOND_INDEX': return { price: 100, volatility: 0.04, dividendYield: 0.06 };
+                case 'IMPACT_FUND_A': return { price: 50, volatility: 0.12, dividendYield: 0.01 };
                 default:
                     this.logger.log('WARN', `No data for asset ${assetId}. Using fallback.`);
                     return { price: 100, volatility: 0.30, dividendYield: 0.01 };
             }
+        }
+
+        public getNewsSentiment(assetIds: string[]): { summary: string; score: number; keyHeadlines: string[] } {
+             this.logger.log('INFO', 'Fetching news sentiment.', { assets: assetIds });
+             // Simulated NLP analysis of news headlines
+             const score = (Math.random() - 0.5) * 2; // -1 to 1
+             return {
+                 score,
+                 summary: score > 0.5 ? "Overwhelmingly positive news coverage focused on strong earnings and macro tailwinds." : score > 0 ? "Slightly positive sentiment with some mixed economic signals." : score > -0.5 ? "Negative sentiment driven by regulatory concerns and market volatility." : "Extremely negative sentiment; widespread fears of a downturn.",
+                 keyHeadlines: [
+                     `Fed Signals Potential Pause in Rate Hikes, Boosting ${assetIds[0]}`,
+                     "Geopolitical Tensions Weigh on Market Outlook",
+                     `Analyst Upgrades ${assetIds[0]} to 'Buy' on Innovation Pipeline`
+                 ]
+             };
         }
 
         public getHistoricalData(assetId: string, years: number): number[] {
@@ -297,6 +342,34 @@ export namespace TheFinancialInstrumentForge {
                         { key: "retirementAge", label: "Target Retirement Age", description: "The age at which payouts will begin.", type: "number", defaultValue: 65, validationRules: { minValue: 50, maxValue: 80 } },
                         { key: "payoutFrequency", label: "Payout Frequency", description: "How often to receive payments in retirement.", type: "select", defaultValue: "monthly", validationRules: { options: [{ value: 'monthly', label: 'Monthly' }, { value: 'quarterly', label: 'Quarterly' }, { value: 'annually', label: 'Annually' }] } }
                     ]
+                },
+                {
+                    id: "cat_bond_1",
+                    name: "Catastrophe Bond (Florida Hurricane)",
+                    description: "An insurance-linked security that provides high yield, but loses principal if a specified catastrophic event (e.g., a major hurricane in Florida) occurs.",
+                    productClass: "Insurance",
+                    underlyingAssets: ["CAT_BOND_INDEX"],
+                    payoffFormula: "IF(EventTriggered, 0, Principal * (1 + Coupon)^Term)",
+                    legalFramework: "Custom",
+                    jurisdiction: "Global",
+                    configurableParameters: [
+                        { key: "couponRate", label: "Annual Coupon", description: "The high yield paid for taking on the catastrophe risk.", type: "percentage", defaultValue: 0.08, validationRules: { minValue: 0.04, maxValue: 0.20 } },
+                        { key: "eventTrigger", label: "Event Trigger", description: "The specific condition for loss of principal.", type: "textarea", defaultValue: "A Category 4 or higher hurricane making landfall in the state of Florida as determined by the NHC." }
+                    ]
+                },
+                {
+                    id: "sib_1",
+                    name: "Social Impact Bond (Recidivism Reduction)",
+                    description: "Funds a social program to reduce prison recidivism. If the program meets its goals, the government repays investors with a return. If not, investors lose their principal.",
+                    productClass: "Impact",
+                    underlyingAssets: ["IMPACT_FUND_A"],
+                    payoffFormula: "IF(SuccessKPI_Met, Principal * (1 + SuccessReturn), Principal * (1 - LossShare))",
+                    legalFramework: "Governmental",
+                    jurisdiction: "US",
+                    configurableParameters: [
+                        { key: "successReturn", label: "Success Return Rate", description: "The annual return if KPIs are met.", type: "percentage", defaultValue: 0.06, validationRules: { minValue: 0.01, maxValue: 0.10 } },
+                        { key: "lossShare", label: "Principal Loss Share", description: "The percentage of principal lost if KPIs are not met.", type: "percentage", defaultValue: 1.0, validationRules: { minValue: 0, maxValue: 1.0 } }
+                    ]
                 }
             ];
         }
@@ -342,13 +415,25 @@ export namespace TheFinancialInstrumentForge {
                     case "defi_lending_aave_1":
                         analysisResult = this.analyzeDeFiLending(instrument);
                         break;
+                    case "cat_bond_1":
+                        analysisResult = this.analyzeCatastropheBond(instrument);
+                        break;
+                    case "sib_1":
+                        analysisResult = this.analyzeSocialImpactBond(instrument);
+                        break;
                     default:
                          return this.getPendingAnalysis(instrument);
                 }
+                
+                // Augment with common analyses
                 analysisResult = {
                     ...analysisResult,
-                    backtestResult: this.backtestStrategy(instrument)
+                    backtestResult: this.backtestStrategy(instrument),
+                    marketSentiment: this.marketDataService.getNewsSentiment(instrument.blueprint.underlyingAssets),
+                    stressTestResults: this.runStressTests(instrument, analysisResult),
                 };
+                analysisResult.aiNarrative = this.generateAINarrative(instrument, analysisResult);
+
                 this.logger.log('INFO', 'Analysis complete.', { instanceId: instrument.instanceId });
                 return analysisResult;
             } catch (error) {
@@ -358,23 +443,27 @@ export namespace TheFinancialInstrumentForge {
         }
 
         private getPendingAnalysis(instrument: ICustomInstrument): IAIAnalysisResult {
-            return {
+            const base = {
                 timestamp: new Date(),
-                risk: { summary: "Analysis pending for this instrument type.", valueAtRisk95: 0, expectedShortfall95: 0, volatility: 0, sensitivityAnalysis: {} },
-                reward: { summary: "Analysis pending.", expectedReturn: 0, sharpeRatio: 0, bestCaseScenario: 0, worstCaseScenario: 0 },
-                suitability: { summary: "Analysis pending.", score: 0, warnings: [] },
-                complianceChecks: { mifidII: "N/A", doddFrank: "N/A", localRegs: "N/A" }
+                risk: { summary: "Analysis pending for this instrument type.", valueAtRisk95: 0, expectedShortfall95: 0, volatility: 0, sensitivityAnalysis: {}, downsideDeviation: 0 },
+                reward: { summary: "Analysis pending.", expectedReturn: 0, sharpeRatio: 0, sortinoRatio: 0, bestCaseScenario: 0, worstCaseScenario: 0, returnDistributionSkewness: 0 },
+                suitability: { summary: "Analysis pending.", score: 0, warnings: [], ethicalConsiderations: "Analysis pending." },
+                complianceChecks: { mifidII: "N/A", doddFrank: "N/A", localRegs: "N/A", regulatoryRedFlags: [] },
+                aiNarrative: "The AI analysis for this specific instrument blueprint has not been implemented yet. Please select another blueprint or contact support."
             };
+            return base;
         }
 
         private getErrorAnalysis(error: Error): IAIAnalysisResult {
-             return {
+             const base = {
                 timestamp: new Date(),
-                risk: { summary: `Analysis failed: ${error.message}`, valueAtRisk95: 0, expectedShortfall95: 0, volatility: 0, sensitivityAnalysis: {} },
-                reward: { summary: "Analysis failed.", expectedReturn: 0, sharpeRatio: 0, bestCaseScenario: 0, worstCaseScenario: 0 },
-                suitability: { summary: "Analysis failed.", score: 0, warnings: ["Critical error during analysis. Results are invalid."] },
-                complianceChecks: { mifidII: "Fail", doddFrank: "Fail", localRegs: "Fail" }
+                risk: { summary: `Analysis failed: ${error.message}`, valueAtRisk95: 0, expectedShortfall95: 0, volatility: 0, sensitivityAnalysis: {}, downsideDeviation: 0 },
+                reward: { summary: "Analysis failed.", expectedReturn: 0, sharpeRatio: 0, sortinoRatio: 0, bestCaseScenario: 0, worstCaseScenario: 0, returnDistributionSkewness: 0 },
+                suitability: { summary: "Analysis failed.", score: 0, warnings: ["Critical error during analysis. Results are invalid."], ethicalConsiderations: "Analysis failed due to a critical error." },
+                complianceChecks: { mifidII: "Fail", doddFrank: "Fail", localRegs: "Fail", regulatoryRedFlags: ["System error during compliance check."] },
+                aiNarrative: `I'm sorry, but a critical error occurred while I was analyzing this instrument: ${error.message}. The results are unreliable. Please check the parameters or contact an administrator.`
             };
+            return base;
         }
 
         private runMonteCarloSimulation(
@@ -408,7 +497,6 @@ export namespace TheFinancialInstrumentForge {
             return { paths, finalPrices };
         }
         
-        // Helper from the MarketDataService, duplicated here for internal use
         private standardNormalRandom(): number {
             let u = 0, v = 0;
             while(u === 0) u = Math.random();
@@ -423,14 +511,6 @@ export namespace TheFinancialInstrumentForge {
             
             const participationRate = instrument.customParameters.participationRate;
             const cap = instrument.customParameters.cap;
-
-            // Bond component valuation (for principal protection)
-            const bondValue = instrument.principal / Math.pow(1 + riskFreeRate, instrument.termInYears);
-            
-            // Option component valuation (for upside)
-            const optionBudget = instrument.principal - bondValue;
-            // This is a simplification. In reality, we'd use Black-Scholes or similar to price the call option
-            // and derive the participation rate or cap from the option budget. Here, we'll use simulation.
 
             const sim = this.runMonteCarloSimulation(assetData.price, instrument.termInYears, riskFreeRate, assetData.volatility, assetData.dividendYield);
             
@@ -452,7 +532,6 @@ export namespace TheFinancialInstrumentForge {
             const couponRate = instrument.customParameters.couponRate;
             const knockInBarrier = instrument.customParameters.knockInBarrier * assetData.price;
             
-            // This instrument is equivalent to being long a bond and short a put option.
             const totalCouponValue = instrument.principal * couponRate * instrument.termInYears;
 
             const sim = this.runMonteCarloSimulation(assetData.price, instrument.termInYears, riskFreeRate, assetData.volatility, assetData.dividendYield);
@@ -460,10 +539,8 @@ export namespace TheFinancialInstrumentForge {
             const payoffs = sim.finalPrices.map(finalPrice => {
                 let finalPrincipal;
                 if (finalPrice < knockInBarrier) {
-                    // Knock-in event: Investor receives depreciated asset
                     finalPrincipal = instrument.principal * (finalPrice / assetData.price);
                 } else {
-                    // No knock-in: Investor receives full principal
                     finalPrincipal = instrument.principal;
                 }
                 return finalPrincipal + totalCouponValue;
@@ -473,19 +550,16 @@ export namespace TheFinancialInstrumentForge {
         }
         
         private analyzeDeFiLending(instrument: ICustomInstrument): IAIAnalysisResult {
-            // DeFi analysis has different risk factors: smart contract risk, oracle risk, etc.
-            // We'll simulate APY fluctuations.
-            const avgAPY = 0.05; // Assume 5% average APY for USDC lending
-            const apyVolatility = 0.5; // High volatility in APYs
+            const avgAPY = 0.05;
+            const apyVolatility = 0.5;
             
             const sim = this.runMonteCarloSimulation(avgAPY, instrument.termInYears, 0, apyVolatility, 0, 5000);
             
-            // We simulate the final value based on a fluctuating APY path.
             const payoffs = sim.paths.map(path => {
                 let value = instrument.principal;
                 const dailyRatePath = path.map(apy => apy / 365);
                 for(const rate of dailyRatePath) {
-                    value *= (1 + Math.max(0, rate)); // APY can't be negative
+                    value *= (1 + Math.max(0, rate));
                 }
                 return value;
             });
@@ -494,8 +568,50 @@ export namespace TheFinancialInstrumentForge {
             
             analysis.risk.summary = "Primary risks are smart contract vulnerabilities, oracle failures, and extreme APY volatility. Principal is not guaranteed and can be lost in a protocol failure. Low market risk for stablecoins.";
             analysis.suitability.warnings.push("DeFi protocols are experimental technology. Do not invest more than you can afford to lose.");
-            analysis.complianceChecks.mifidII = "N/A"; // Often outside traditional frameworks
+            analysis.complianceChecks.mifidII = "N/A";
+            analysis.suitability.ethicalConsiderations = "Funds may be used to lend to anonymous entities for purposes that may not align with the investor's values, including leveraged trading.";
             
+            return analysis;
+        }
+        
+        private analyzeCatastropheBond(instrument: ICustomInstrument): IAIAnalysisResult {
+            // This is not based on market simulation, but on event probability.
+            const annualEventProbability = 0.02; // 2% chance of a triggering event per year
+            const probabilityOfNoEvent = Math.pow(1 - annualEventProbability, instrument.termInYears);
+            
+            const coupon = instrument.customParameters.couponRate;
+            const totalReturnIfNoEvent = instrument.principal * Math.pow(1 + coupon, instrument.termInYears);
+            const totalReturnIfEvent = 0; // Total loss of principal
+
+            // Simulate based on event probability
+            const numSimulations = 10000;
+            const payoffs = Array.from({ length: numSimulations }).map(() => {
+                return Math.random() < probabilityOfNoEvent ? totalReturnIfNoEvent : totalReturnIfEvent;
+            });
+
+            const analysis = this.compileAnalysisFromPayoffs(instrument, payoffs);
+            analysis.risk.summary = "This is a binary risk instrument. The primary risk is the total loss of principal if a specified catastrophic event occurs. It has no market correlation, which can be a diversification benefit.";
+            analysis.suitability.warnings.push("This instrument can result in 100% loss of capital. It is suitable only for sophisticated investors.");
+            analysis.suitability.ethicalConsiderations = "While providing necessary capital to the insurance industry, this instrument profits from the absence of major natural disasters that cause human suffering.";
+            return analysis;
+        }
+
+        private analyzeSocialImpactBond(instrument: ICustomInstrument): IAIAnalysisResult {
+            // Analysis based on the probability of meeting the social KPI.
+            const probabilityOfSuccess = 0.70; // Assume a 70% chance the social program succeeds
+            const { successReturn, lossShare } = instrument.customParameters;
+            
+            const returnIfSuccess = instrument.principal * Math.pow(1 + successReturn, instrument.termInYears);
+            const returnIfFailure = instrument.principal * (1 - lossShare);
+
+            const numSimulations = 10000;
+            const payoffs = Array.from({ length: numSimulations }).map(() => {
+                return Math.random() < probabilityOfSuccess ? returnIfSuccess : returnIfFailure;
+            });
+
+            const analysis = this.compileAnalysisFromPayoffs(instrument, payoffs);
+            analysis.risk.summary = `The risk is tied to the performance of a social program, not financial markets. There is a ${(100 * (1 - probabilityOfSuccess)).toFixed(0)}% chance of losing ${(lossShare * 100).toFixed(0)}% of the principal.`;
+            analysis.suitability.ethicalConsiderations = "This instrument directly funds a positive social outcome. Investors should ensure the program's methodology and KPIs are robust and genuinely beneficial to the target community.";
             return analysis;
         }
 
@@ -510,7 +626,12 @@ export namespace TheFinancialInstrumentForge {
             const stdDev = Math.sqrt(excessReturns.reduce((sum, r) => sum + Math.pow(r - totalReturn, 2), 0) / (n - 1));
             const annualVolatility = stdDev / Math.sqrt(instrument.termInYears);
             
-            const sharpeRatio = (expectedAnnualReturn - riskFreeRate) / annualVolatility;
+            const sharpeRatio = annualVolatility > 0 ? (expectedAnnualReturn - riskFreeRate) / annualVolatility : Infinity;
+
+            const downsideReturns = returns.filter(r => r < totalReturn);
+            const downsideDeviation = Math.sqrt(downsideReturns.reduce((sum, r) => sum + Math.pow(r - totalReturn, 2), 0) / n);
+            const annualDownsideDeviation = downsideDeviation / Math.sqrt(instrument.termInYears);
+            const sortinoRatio = annualDownsideDeviation > 0 ? (expectedAnnualReturn - riskFreeRate) / annualDownsideDeviation : Infinity;
 
             const sortedReturns = [...returns].sort((a, b) => a - b);
             const varIndex = Math.floor(0.05 * n);
@@ -519,14 +640,17 @@ export namespace TheFinancialInstrumentForge {
             
             const bestCaseScenario = Math.max(...payoffs);
             const worstCaseScenario = Math.min(...payoffs);
+            
+            const mean = totalReturn;
+            const m3 = returns.reduce((sum, r) => sum + Math.pow(r - mean, 3), 0) / n;
+            const skewness = m3 / Math.pow(stdDev, 3);
 
             const suitabilityScore = this.calculateSuitabilityScore(instrument, expectedAnnualReturn, annualVolatility);
 
-            // Create payoff distribution for charting
             const minPayoff = Math.min(...payoffs);
             const maxPayoff = Math.max(...payoffs);
             const numBins = 20;
-            const binWidth = (maxPayoff - minPayoff) / numBins;
+            const binWidth = (maxPayoff - minPayoff) / numBins || 1;
             const bins = Array(numBins).fill(0);
             for (const p of payoffs) {
                 const binIndex = Math.min(numBins - 1, Math.floor((p - minPayoff) / binWidth));
@@ -544,25 +668,30 @@ export namespace TheFinancialInstrumentForge {
                     valueAtRisk95,
                     expectedShortfall95,
                     volatility: annualVolatility,
-                    sensitivityAnalysis: {}, // Placeholder for Greeks
+                    sensitivityAnalysis: {},
+                    downsideDeviation: annualDownsideDeviation,
                 },
                 reward: {
                     summary: this.getRewardSummary(expectedAnnualReturn, bestCaseScenario, instrument.principal),
                     expectedReturn: expectedAnnualReturn,
                     sharpeRatio,
+                    sortinoRatio,
                     bestCaseScenario,
                     worstCaseScenario,
+                    returnDistributionSkewness: skewness,
                 },
                 suitability: {
                     summary: `With a score of ${suitabilityScore.toFixed(0)}/100, this instrument is ${suitabilityScore > 70 ? "highly suitable" : suitabilityScore > 40 ? "moderately suitable" : "potentially unsuitable"} for a ${instrument.riskProfile.toLowerCase()} investor.`,
                     score: suitabilityScore,
                     warnings: suitabilityScore < 50 ? ["High risk/reward mismatch for stated profile."] : [],
+                    ethicalConsiderations: "This instrument has no specific ethical flags based on its structure, but investors should consider the activities of the underlying asset issuers."
                 },
-                complianceChecks: { mifidII: "Pass", doddFrank: "Pass", localRegs: "Pass" }, // Mocked
+                complianceChecks: { mifidII: "Pass", doddFrank: "Pass", localRegs: "Pass", regulatoryRedFlags: [] },
                 simulationData: {
                     payoffDistribution,
-                    monteCarloPaths: paths?.slice(0, 50) // Return a subset of paths for visualization
-                }
+                    monteCarloPaths: paths?.slice(0, 50)
+                },
+                aiNarrative: "", // To be filled in later
             };
         }
         
@@ -611,6 +740,49 @@ export namespace TheFinancialInstrumentForge {
 
             return Math.max(0, Math.min(100, score));
         }
+
+        private runStressTests(instrument: ICustomInstrument, baseAnalysis: IAIAnalysisResult): IStressTestResult[] {
+            // Simplified stress tests. A real system would re-run simulations with modified parameters.
+            const { volatility } = baseAnalysis.risk;
+            const { expectedReturn } = baseAnalysis.reward;
+
+            return [
+                {
+                    scenario: "Market Crash (-30%)",
+                    description: "Simulates a sharp, sudden market downturn affecting the underlying asset.",
+                    impactOnValue: -0.30 * volatility / 0.20, // Naive scaling with SPX vol
+                    narrative: "In a severe market crash, this instrument's value is expected to decline significantly, though protective features may cushion some of the blow."
+                },
+                {
+                    scenario: "Interest Rate Shock (+3%)",
+                    description: "Simulates a rapid increase in the risk-free interest rate by 300 basis points.",
+                    impactOnValue: -0.05 * instrument.termInYears, // Naive duration estimate
+                    narrative: "A sharp rise in rates would decrease the present value of future cash flows, negatively impacting the instrument's valuation."
+                },
+                {
+                    scenario: "Volatility Spike (+50%)",
+                    description: "Simulates a major increase in market volatility.",
+                    impactOnValue: (instrument.blueprint.id.startsWith('rcn') ? -0.15 : 0.05), // Options become more valuable, but short options lose value
+                    narrative: "Increased volatility can have mixed effects. For instruments with embedded long options it can be beneficial, but for those with short option exposure it significantly increases risk."
+                }
+            ];
+        }
+
+        private generateAINarrative(instrument: ICustomInstrument, analysis: IAIAnalysisResult): string {
+            // Simulates a call to a large language model like GPT-4 or Gemini.
+            const { risk, reward, suitability } = analysis;
+            const intro = `Hello! I've completed my analysis of the "${instrument.blueprint.name}" you've designed with a principal of $${instrument.principal.toLocaleString()}. Here is my assessment based on your '${instrument.riskProfile}' profile.`;
+            
+            const rewardSection = `Looking at the potential upside, I project an expected annual return of ${(reward.expectedReturn * 100).toFixed(2)}%. In an optimistic scenario, the instrument could mature at a value of $${reward.bestCaseScenario.toLocaleString(undefined, {maximumFractionDigits: 0})}, while a pessimistic outcome could see it fall to $${reward.worstCaseScenario.toLocaleString(undefined, {maximumFractionDigits: 0})}. The Sharpe Ratio of ${reward.sharpeRatio.toFixed(2)} suggests a ${reward.sharpeRatio > 1 ? 'strong' : reward.sharpeRatio > 0.5 ? 'reasonable' : 'poor'} risk-adjusted return compared to a risk-free asset.`;
+            
+            const riskSection = `On the risk side, the annualized volatility is ${(risk.volatility * 100).toFixed(1)}%. More tangibly, our Value-at-Risk (VaR) model indicates there is a 5% chance you could lose at least $${risk.valueAtRisk95.toLocaleString(undefined, {maximumFractionDigits: 0})} over the instrument's term. In those worst-case scenarios, the average loss could be as high as $${risk.expectedShortfall95.toLocaleString(undefined, {maximumFractionDigits: 0})}. ${risk.summary}`;
+            
+            const suitabilitySection = `Based on these factors, I've calculated a suitability score of ${suitability.score.toFixed(0)} out of 100 for your profile. ${suitability.summary}. ${suitability.warnings.join(' ')}`;
+            
+            const conclusion = `In conclusion, this instrument offers ${reward.summary.toLowerCase().replace(' potential.', '')} potential but comes with ${risk.summary.toLowerCase().replace(' risk.', '')} risk. Please review the detailed charts and stress tests before making a final decision.`;
+            
+            return `${intro}\n\n${rewardSection}\n\n${riskSection}\n\n${suitabilitySection}\n\n${conclusion}`;
+        }
         
         public backtestStrategy(instrument: ICustomInstrument): IBacktestResult {
             const years = 5;
@@ -625,7 +797,6 @@ export namespace TheFinancialInstrumentForge {
             const histData = this.marketDataService.getHistoricalData(assetId, years);
             const benchmarkData = this.marketDataService.getHistoricalData("SPX", years);
 
-            // This is a highly simplified backtest. A real one would be event-driven.
             const initialAssetPrice = histData[0];
             const finalAssetPrice = histData[histData.length - 1];
             const initialBenchmarkPrice = benchmarkData[0];
@@ -635,7 +806,6 @@ export namespace TheFinancialInstrumentForge {
             const benchmarkReturn = (finalBenchmarkPrice / initialBenchmarkPrice) - 1;
             
             let strategyReturn = 0;
-            // Simplified payoff calculation based on blueprint
             if (instrument.blueprint.id.startsWith('ppn')) {
                  const participationRate = instrument.customParameters.participationRate;
                  const cap = instrument.customParameters.cap;
@@ -663,51 +833,10 @@ export namespace TheFinancialInstrumentForge {
 
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // SECTION 4: REACT UI COMPONENTS (Using React.createElement as per original)
+    // SECTION 4: REACT UI COMPONENTS (Using React.createElement for consistency)
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     const e = React.createElement;
-
-    /**
-     * @component TheForgeComponent
-     * @description The main container component for the entire Financial Instrument Forge application.
-     * It manages the application state and orchestrates the interaction between sub-components.
-     * @deprecated Replaced by the more modern FinancialInstrumentForgeView functional component.
-     */
-    class TheForgeComponent {
-        private readonly engineerAI: TheFinancialEngineerAI;
-        
-        constructor() {
-            this.engineerAI = new TheFinancialEngineerAI(new MarketDataService());
-        }
-        
-        public render(): React.ReactElement {
-            const TabbedBlueprintSelector = e('div', { className: 'forge-placeholder' }, 'TabbedBlueprintSelector (Legacy)');
-            const ParameterWorkbench = e('div', { className: 'forge-placeholder' }, 'ParameterWorkbench (Legacy)');
-            const AIAnalysisSection = e('div', { className: 'forge-placeholder' }, 'AIAnalysisSection (Legacy)');
-            const MintButton = e('button', { className: 'forge-placeholder' }, 'Mint (Legacy)');
-            
-            const view = e('div', { className: 'legacy-forge-view' },
-                e('h1', null, 'The Financial Instrument Forge (Legacy)'),
-                TabbedBlueprintSelector,
-                ParameterWorkbench,
-                AIAnalysisSection,
-                MintButton
-            );
-            return view;
-        }
-    }
-
-    /**
-     * @interface FinancialInstrumentForgeViewProps
-     * @description Props for the main view component.
-     */
-    export interface IFinancialInstrumentForgeViewProps {
-        blueprintService: BlueprintService;
-        engineerAI: TheFinancialEngineerAI;
-        logger: LoggerService;
-        defaultInvestorId: string;
-    }
 
     /**
      * @component FinancialInstrumentForgeView
@@ -729,7 +858,6 @@ export namespace TheFinancialInstrumentForge {
 
         React.useEffect(() => {
             if (selectedBlueprint) {
-                // Create a new draft instrument whenever the blueprint changes
                 const defaultCustomParams: Record<string, any> = {};
                 selectedBlueprint.configurableParameters.forEach(p => {
                     defaultCustomParams[p.key] = p.defaultValue;
@@ -746,30 +874,26 @@ export namespace TheFinancialInstrumentForge {
                     creationDate: new Date(),
                     status: 'Draft',
                 });
-                setAnalysis(null); // Clear previous analysis
+                setAnalysis(null);
             }
         }, [selectedBlueprint, defaultInvestorId]);
 
         const handleParameterChange = React.useCallback((key: string, value: any) => {
             if (!instrument) return;
 
-            // Simple validation
             const paramDef = instrument.blueprint.configurableParameters.find(p => p.key === key);
             let parsedValue = value;
-            if (paramDef?.type === 'number' || paramDef?.type === 'percentage') {
+            if (paramDef?.type === 'number' || paramDef?.type === 'percentage' || paramDef?.type === 'currency') {
                 parsedValue = parseFloat(value);
                 if (isNaN(parsedValue)) parsedValue = 0;
             }
 
             setInstrument(prev => prev ? ({
                 ...prev,
-                customParameters: {
-                    ...prev.customParameters,
-                    [key]: parsedValue
-                },
+                customParameters: { ...prev.customParameters, [key]: parsedValue },
                 status: 'Draft'
             }) : null);
-            setAnalysis(null); // Clear analysis on parameter change
+            setAnalysis(null);
         }, [instrument]);
         
         const handleCoreParamChange = React.useCallback((key: 'principal' | 'termInYears' | 'riskProfile', value: any) => {
@@ -784,7 +908,6 @@ export namespace TheFinancialInstrumentForge {
             setIsLoading(true);
             setError(null);
             
-            // Simulate async operation
             setTimeout(() => {
                 try {
                     const result = engineerAI.analyzeInstrument(instrument);
@@ -797,7 +920,7 @@ export namespace TheFinancialInstrumentForge {
                 } finally {
                     setIsLoading(false);
                 }
-            }, 1500); // Simulate network/computation latency
+            }, 1500);
         }, [instrument, engineerAI, logger]);
 
         const handleMintClick = React.useCallback(() => {
@@ -819,7 +942,7 @@ export namespace TheFinancialInstrumentForge {
                     instrument && e(ParameterWorkbench, { instrument, onCoreChange: handleCoreParamChange, onCustomChange: handleParameterChange })
                 ),
                 e('div', { className: 'forge-right-panel' },
-                    e(AnalysisDashboard, { analysis, isLoading, error }),
+                    e(AnalysisDashboard, { analysis, isLoading, error, instrument }),
                     e(MintingConsole, {
                         instrumentStatus: instrument?.status || 'Draft',
                         onAnalyze: handleAnalyzeClick,
@@ -830,11 +953,140 @@ export namespace TheFinancialInstrumentForge {
             )
         );
     };
+    
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // SECTION 4A: DETAILED UI SUB-COMPONENTS
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    export const AnalysisDashboard: React.FC<{
+        analysis: IAIAnalysisResult | null;
+        isLoading: boolean;
+        error: string | null;
+        instrument: ICustomInstrument | null;
+    }> = ({ analysis, isLoading, error, instrument }) => {
+        if (isLoading) {
+            return e('div', { className: 'widget analysis-dashboard loading' },
+                e('div', { className: 'spinner' }),
+                e('h3', null, 'AI Engineer is Analyzing...'),
+                e('p', null, 'Running thousands of simulations to assess risk and reward.')
+            );
+        }
+        if (error) {
+            return e('div', { className: 'widget analysis-dashboard error' }, e('h3', null, 'Analysis Error'), e('p', null, error));
+        }
+        if (!analysis) {
+            return e('div', { className: 'widget analysis-dashboard placeholder' }, 
+                e('h3', { className: 'widget-title' }, "3. AI Analysis & Minting"),
+                e('p', null, "Configure your instrument and click 'Analyze' to see the AI's assessment.")
+            );
+        }
+        
+        return e('div', { className: 'widget analysis-dashboard' },
+            e('h2', { className: 'widget-title' }, "3. AI Analysis Results"),
+            e('div', { className: 'dashboard-grid' },
+                e(AINarrativeView, { narrative: analysis.aiNarrative }),
+                e(SuitabilityGauge, { score: analysis.suitability.score, profile: instrument?.riskProfile || 'Moderate' }),
+                e(KeyMetrics, { analysis }),
+                e(PayoffDistributionChart, { data: analysis.simulationData?.payoffDistribution || [], principal: instrument?.principal || 0 }),
+                e(StressTestResults, { results: analysis.stressTestResults || [] }),
+                e(BacktestChart, { result: analysis.backtestResult })
+            )
+        );
+    };
 
-    /**
-     * @component BlueprintSelector
-     * @description A component for selecting a financial product blueprint from a list.
-     */
+    const AINarrativeView: React.FC<{ narrative: string }> = ({ narrative }) => {
+        return e('div', { className: 'grid-item-full-width narrative-view' },
+            e('h3', { className: 'widget-subtitle' }, 'AI Narrative Summary'),
+            e('p', { className: 'narrative-text' }, narrative)
+        );
+    };
+    
+    const SuitabilityGauge: React.FC<{ score: number; profile: string }> = ({ score, profile }) => {
+        const rotation = (score / 100) * 180 - 90;
+        const color = score > 70 ? '#28a745' : score > 40 ? '#ffc107' : '#dc3545';
+        return e('div', { className: 'grid-item gauge-container' },
+            e('h3', { className: 'widget-subtitle' }, 'Suitability Score'),
+            e('div', { className: 'gauge' },
+                e('div', { className: 'gauge-arc' }),
+                e('div', { className: 'gauge-needle', style: { transform: `rotate(${rotation}deg)` } }),
+                e('div', { className: 'gauge-center' }),
+                e('div', { className: 'gauge-value', style: { color } }, score.toFixed(0)),
+            ),
+            e('p', { className: 'gauge-label' }, `For ${profile} Profile`)
+        );
+    };
+    
+    const KeyMetrics: React.FC<{ analysis: IAIAnalysisResult }> = ({ analysis }) => {
+        const { risk, reward } = analysis;
+        const metrics = [
+            { label: "Expected Annual Return", value: `${(reward.expectedReturn * 100).toFixed(2)}%`, positive: true },
+            { label: "Annual Volatility", value: `${(risk.volatility * 100).toFixed(2)}%`, positive: false },
+            { label: "Sharpe Ratio", value: reward.sharpeRatio.toFixed(2), positive: reward.sharpeRatio > 1 },
+            { label: "95% Value at Risk (VaR)", value: `$${risk.valueAtRisk95.toLocaleString(undefined, {maximumFractionDigits:0})}`, positive: false },
+        ];
+        return e('div', { className: 'grid-item metrics-container' },
+            e('h3', { className: 'widget-subtitle' }, 'Key Metrics'),
+            e('div', { className: 'metrics-grid' }, 
+                ...metrics.map(m => e('div', { key: m.label, className: 'metric-item' },
+                    e('div', { className: 'metric-label' }, m.label),
+                    e('div', { className: `metric-value ${m.positive ? 'positive' : 'negative'}` }, m.value)
+                ))
+            )
+        );
+    };
+
+    const PayoffDistributionChart: React.FC<{ data: Array<{ value: number, probability: number }>, principal: number }> = ({ data, principal }) => {
+        if (!data.length) return null;
+        const maxProb = Math.max(...data.map(d => d.probability));
+        return e('div', { className: 'grid-item-full-width chart-container' },
+            e('h3', { className: 'widget-subtitle' }, 'Simulated Payoff Distribution'),
+            e('div', { className: 'chart' },
+                data.map((d, i) => e('div', { key: i, className: 'bar-wrapper' },
+                    e('div', { className: `bar ${d.value < principal ? 'loss' : 'gain'}`, style: { height: `${(d.probability / maxProb) * 100}%` }, title: `Payoff: $${d.value.toFixed(0)}, Prob: ${(d.probability*100).toFixed(1)}%` })
+                ))
+            )
+        );
+    };
+    
+    const StressTestResults: React.FC<{ results: IStressTestResult[] }> = ({ results }) => {
+        return e('div', { className: 'grid-item' },
+            e('h3', { className: 'widget-subtitle' }, 'Stress Tests'),
+            e('table', { className: 'stress-test-table' },
+                e('thead', null, e('tr', null, e('th', null, 'Scenario'), e('th', null, 'Impact'))),
+                e('tbody', null, ...results.map(r => e('tr', { key: r.scenario, title: r.narrative },
+                    e('td', null, r.scenario),
+                    e('td', { className: r.impactOnValue >= 0 ? 'positive' : 'negative' }, `${(r.impactOnValue * 100).toFixed(1)}%`)
+                )))
+            )
+        );
+    };
+    
+    const BacktestChart: React.FC<{ result?: IBacktestResult }> = ({ result }) => {
+        if (!result) return null;
+        return e('div', { className: 'grid-item' },
+            e('h3', { className: 'widget-subtitle' }, '5-Year Backtest'),
+            e('div', { className: 'backtest-summary' },
+                e('div', { className: 'backtest-metric' },
+                    e('span', { className: 'metric-label' }, 'Strategy Return'),
+                    e('span', { className: `metric-value ${result.strategyReturns > result.benchmarkReturns ? 'positive' : 'negative'}` }, `${(result.strategyReturns*100).toFixed(2)}%`)
+                ),
+                e('div', { className: 'backtest-metric' },
+                    e('span', { className: 'metric-label' }, 'S&P 500 Benchmark'),
+                    e('span', { className: 'metric-value' }, `${(result.benchmarkReturns*100).toFixed(2)}%`)
+                ),
+            ),
+             e('p', { className: 'backtest-narrative' }, result.summary)
+        );
+    };
+
+
+    export interface IFinancialInstrumentForgeViewProps {
+        blueprintService: BlueprintService;
+        engineerAI: TheFinancialEngineerAI;
+        logger: LoggerService;
+        defaultInvestorId: string;
+    }
+
     export const BlueprintSelector: React.FC<{
         blueprints: IProductBlueprint[];
         selectedId: string | null;
@@ -860,35 +1112,30 @@ export namespace TheFinancialInstrumentForge {
         );
     };
 
-    /**
-     * @component ParameterWorkbench
-     * @description A dynamic form for configuring the parameters of the selected instrument.
-     */
     export const ParameterWorkbench: React.FC<{
         instrument: ICustomInstrument;
         onCoreChange: (key: 'principal' | 'termInYears' | 'riskProfile', value: any) => void;
         onCustomChange: (key: string, value: any) => void;
     }> = ({ instrument, onCoreChange, onCustomChange }) => {
-        const renderInputField = (param: IParameterDefinition, value: any, onChange: (v: any) => void) => {
+        const renderInputField = (param: IParameterDefinition) => {
             const id = `param-${param.key}`;
-            const inputProps = {
-                id,
-                value,
-                onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onChange(e.target.value),
-                className: 'param-input'
-            };
+            const value = instrument.customParameters[param.key];
+            const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onCustomChange(param.key, e.target.value);
             
             let inputElement;
             switch(param.type) {
                 case 'select':
-                    inputElement = e('select', inputProps,
+                    inputElement = e('select', { id, value, onChange, className: 'param-input' },
                         param.validationRules?.options?.map(opt =>
                             e('option', { key: opt.value, value: opt.value }, opt.label)
                         )
                     );
                     break;
+                case 'textarea':
+                    inputElement = e('textarea', { id, value, onChange, className: 'param-input', rows: 3 });
+                    break;
                 default:
-                    inputElement = e('input', { ...inputProps, type: 'number', step: param.type === 'percentage' ? 0.01 : 1 });
+                    inputElement = e('input', { id, value, onChange, className: 'param-input', type: 'number', step: param.type === 'percentage' ? 0.01 : 1 });
             }
 
             return e('div', { key: param.key, className: 'param-field' },
@@ -898,29 +1145,47 @@ export namespace TheFinancialInstrumentForge {
         };
         
         const coreParams = [
-            e('div', { key: 'principal', className: 'param-field' },
-                e('label', { htmlFor: 'core-principal', className: 'param-label' }, 'Principal Amount'),
-                e('input', { id: 'core-principal', type: 'number', value: instrument.principal, onChange: (e) => onCoreChange('principal', Number(e.target.value) || 0), className: 'param-input' })
-            ),
-            e('div', { key: 'term', className: 'param-field' },
-                e('label', { htmlFor: 'core-term', className: 'param-label' }, 'Term (Years)'),
-                e('input', { id: 'core-term', type: 'number', value: instrument.termInYears, onChange: (e) => onCoreChange('termInYears', Number(e.target.value) || 0), className: 'param-input' })
-            ),
-             e('div', { key: 'risk', className: 'param-field' },
-                e('label', { htmlFor: 'core-risk', className: 'param-label' }, 'Investor Risk Profile'),
-                e('select', { id: 'core-risk', value: instrument.riskProfile, onChange: (e) => onCoreChange('riskProfile', e.target.value), className: 'param-input' },
-                    e('option', { value: 'Conservative' }, 'Conservative'),
-                    e('option', { value: 'Moderate' }, 'Moderate'),
-                    e('option', { value: 'Aggressive' }, 'Aggressive'),
-                    e('option', { value: 'Speculative' }, 'Speculative'),
-                )
-            ),
+            { key: 'principal', label: 'Principal Amount', type: 'number', value: instrument.principal },
+            { key: 'termInYears', label: 'Term (Years)', type: 'number', value: instrument.termInYears },
+            { key: 'riskProfile', label: 'Investor Risk Profile', type: 'select', value: instrument.riskProfile, options: ['Conservative', 'Moderate', 'Aggressive', 'Speculative'] },
         ];
 
         return e('div', { className: 'widget parameter-workbench' },
-            e('h2', { className: 'widget-title' }, '2. Configure Parameters'),
+            e('h2', { className: 'widget-title' }, '2. Configure Instrument'),
             e('h3', { className: 'category-title' }, 'Core Parameters'),
-            ...coreParams,
+            ...coreParams.map(p => e('div', { key: p.key, className: 'param-field' },
+                e('label', { htmlFor: `core-${p.key}`, className: 'param-label' }, p.label),
+                p.type === 'select'
+                    ? e('select', { id: `core-${p.key}`, value: p.value, onChange: (e) => onCoreChange(p.key as any, e.target.value), className: 'param-input' },
+                        p.options?.map(o => e('option', { key: o, value: o }, o))
+                      )
+                    : e('input', { id: `core-${p.key}`, type: 'number', value: p.value, onChange: (e) => onCoreChange(p.key as any, Number(e.target.value) || 0), className: 'param-input' })
+            )),
             e('h3', { className: 'category-title' }, 'Blueprint-Specific Parameters'),
-            instrument.blueprint.configurableParameters.map(param =>
-                render
+            ...instrument.blueprint.configurableParameters.map(renderInputField)
+        );
+    };
+
+    const MintingConsole: React.FC<{
+        instrumentStatus: ICustomInstrument['status'];
+        onAnalyze: () => void;
+        onMint: () => void;
+        isLoading: boolean;
+    }> = ({ instrumentStatus, onAnalyze, onMint, isLoading }) => {
+        return e('div', { className: 'minting-console' },
+            e('button', {
+                className: 'forge-button analyze',
+                onClick: onAnalyze,
+                disabled: isLoading || ['Analyzed', 'Minted'].includes(instrumentStatus)
+            }, 'Analyze Instrument'),
+            e('button', {
+                className: 'forge-button mint',
+                onClick: onMint,
+                disabled: isLoading || instrumentStatus !== 'Analyzed'
+            }, 'Mint Instrument')
+        );
+    };
+
+}
+```
+        ---
