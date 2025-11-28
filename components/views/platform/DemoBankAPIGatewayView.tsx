@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Card from '../../Card';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart, Bar, Line, Legend, CartesianGrid, PieChart, Pie, Cell, BarChart } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart, Bar, Line, Legend, CartesianGrid, PieChart, Pie, Cell, BarChart, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 
 // In a real app, this data would come from a dedicated file or a live API call
 const originalTrafficData = Array.from({ length: 24 }, (_, i) => ({
@@ -79,13 +79,47 @@ export const IconChevronLeft: React.FC<React.SVGProps<SVGSVGElement>> = (props) 
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="15 18 9 12 15 6" /></svg>
 );
 
+export const IconBot: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 8V4H8" /><rect x="4" y="8" width="16" height="12" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
+);
+
+export const IconSettings: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
+);
+
+export const IconFileText: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+);
+
+export const IconMapPin: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+);
+
+export const IconDatabase: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>
+);
+
+export const IconTrendingUp: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+);
+
+export const IconFilter: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
+);
+
+export const IconRefreshCw: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
+);
+
 // SECTION: TYPE DEFINITIONS
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS';
 export type EndpointStatus = 'Healthy' | 'Degraded' | 'Down';
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
-export type SecurityEventType = 'SQLi Attempt' | 'XSS Attempt' | 'Anomalous Traffic' | 'Credential Stuffing';
+export type SecurityEventType = 'SQLi Attempt' | 'XSS Attempt' | 'Anomalous Traffic' | 'Credential Stuffing' | 'Auth Failure';
 export type TimeRange = '1h' | '24h' | '7d' | '30d';
+export type AIInsightCategory = 'PERFORMANCE' | 'COST' | 'SECURITY' | 'RELIABILITY';
+export type RuleAction = 'block' | 'throttle' | 'log';
 
 export interface Endpoint {
     id: string;
@@ -119,6 +153,7 @@ export interface LogEntry {
     path?: string;
     method?: HttpMethod;
     statusCode?: number;
+    ip?: string;
 }
 
 export interface ApiKey {
@@ -135,9 +170,18 @@ export interface ApiKey {
 export interface RateLimitRule {
     id: string;
     pathPattern: string;
+    methods: HttpMethod[] | ['*'];
     requests: number;
     perSeconds: number;
-    action: 'block' | 'throttle';
+    action: RuleAction;
+    isEnabled: boolean;
+}
+
+export interface CacheRule {
+    id: string;
+    pathPattern: string;
+    ttlSeconds: number;
+    isEnabled: boolean;
 }
 
 export interface CacheStats {
@@ -149,6 +193,14 @@ export interface CacheStats {
     writeOpsPerSec: number;
 }
 
+export interface GeoLocation {
+    country: string;
+    countryCode: string;
+    city: string;
+    lat: number;
+    lon: number;
+}
+
 export interface SecurityEvent {
     id: string;
     timestamp: Date;
@@ -156,7 +208,8 @@ export interface SecurityEvent {
     sourceIp: string;
     path: string;
     details: string;
-    actionTaken: 'Blocked' | 'Logged' | 'Alerted';
+    actionTaken: 'Blocked' | 'Logged' | 'Alerted' | 'Rate Limited';
+    geo: GeoLocation;
 }
 
 export interface DashboardMetrics {
@@ -164,6 +217,23 @@ export interface DashboardMetrics {
     errorRate: number;
     avgLatency: number;
     uptime: number;
+}
+
+export interface AIInsight {
+    id: string;
+    category: AIInsightCategory;
+    title: string;
+    description: string;
+    recommendation: string;
+    severity: 'Low' | 'Medium' | 'High';
+    timestamp: Date;
+}
+
+export interface Integration {
+    id: 'datadog' | 'pagerduty' | 'slack' | 'github';
+    name: string;
+    description: string;
+    isEnabled: boolean;
 }
 
 export interface Notification {
@@ -221,6 +291,15 @@ export const useDebounce = <T>(value: T, delay: number): T => {
 const randomChoice = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 const generateId = (): string => Math.random().toString(36).substring(2, 10);
+
+const GEO_LOCATIONS: GeoLocation[] = [
+    { country: 'United States', countryCode: 'US', city: 'New York', lat: 40.7128, lon: -74.0060 },
+    { country: 'Germany', countryCode: 'DE', city: 'Berlin', lat: 52.5200, lon: 13.4050 },
+    { country: 'Japan', countryCode: 'JP', city: 'Tokyo', lat: 35.6895, lon: 139.6917 },
+    { country: 'Brazil', countryCode: 'BR', city: 'São Paulo', lat: -23.5505, lon: -46.6333 },
+    { country: 'India', countryCode: 'IN', city: 'Bangalore', lat: 12.9716, lon: 77.5946 },
+    { country: 'Nigeria', countryCode: 'NG', city: 'Lagos', lat: 6.5244, lon: 3.3792 },
+];
 
 export const generateEndpoints = (): Endpoint[] => [
     { id: generateId(), method: 'GET', path: '/v1/users/me', avgLatency: 85, errorRate: 0.1, status: 'Healthy', requests: 120500, peakLatency: 250, uptime: 99.99 },
@@ -300,7 +379,7 @@ export const generateLogEntry = (): LogEntry => {
     switch (level) {
         case 'ERROR':
             statusCode = randomChoice([500, 502, 503, 404, 401]);
-            message = randomChoice(['Database connection lost', 'Upstream service unavailable', 'Null pointer exception in UserServic', 'Authentication failed']);
+            message = randomChoice(['Database connection lost', 'Upstream service unavailable', 'Null pointer exception in UserService', 'Authentication failed']);
             break;
         case 'WARN':
             statusCode = randomChoice([200, 429]);
@@ -314,13 +393,14 @@ export const generateLogEntry = (): LogEntry => {
 
     return {
         id: generateId(),
-        timestamp: new Date(),
+        timestamp: new Date(Date.now() - Math.random() * 10000),
         level,
         message,
         requestId: `req-${generateId()}`,
         path: endpoint.path,
         method: endpoint.method,
         statusCode,
+        ip: `192.168.1.${Math.floor(Math.random() * 255)}`
     };
 };
 
@@ -335,10 +415,10 @@ export const generateApiKeys = (): ApiKey[] => {
 };
 
 export const generateRateLimitRules = (): RateLimitRule[] => [
-    { id: generateId(), pathPattern: '/v1/payments/send', requests: 5, perSeconds: 60, action: 'throttle' },
-    { id: generateId(), pathPattern: '/v1/login', requests: 10, perSeconds: 60, action: 'block' },
-    { id: generateId(), pathPattern: '/v1/ai/advisor/*', requests: 20, perSeconds: 3600, action: 'throttle' },
-    { id: generateId(), pathPattern: '/*', requests: 100, perSeconds: 1, action: 'throttle' },
+    { id: generateId(), pathPattern: '/v1/payments/send', methods: ['POST'], requests: 5, perSeconds: 60, action: 'throttle', isEnabled: true },
+    { id: generateId(), pathPattern: '/v1/login', methods: ['POST'], requests: 10, perSeconds: 60, action: 'block', isEnabled: true },
+    { id: generateId(), pathPattern: '/v1/ai/advisor/*', methods: ['*'], requests: 20, perSeconds: 3600, action: 'throttle', isEnabled: true },
+    { id: generateId(), pathPattern: '/*', methods: ['*'], requests: 100, perSeconds: 1, action: 'throttle', isEnabled: false },
 ];
 
 export const generateCacheStats = (): CacheStats => ({
@@ -351,10 +431,18 @@ export const generateCacheStats = (): CacheStats => ({
 });
 
 export const generateSecurityEvents = (): SecurityEvent[] => [
-    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 2), type: 'SQLi Attempt', sourceIp: '198.51.100.23', path: '/v1/login', details: "UNION SELECT username, password FROM users", actionTaken: 'Blocked' },
-    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 15), type: 'XSS Attempt', sourceIp: '203.0.113.88', path: '/v1/users/me/profile', details: "<script>alert('XSS')</script> in bio field", actionTaken: 'Blocked' },
-    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 45), type: 'Anomalous Traffic', sourceIp: '192.0.2.14', path: '/v1/accounts', details: "500 requests in 10s from single IP", actionTaken: 'Alerted' },
-    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 120), type: 'Credential Stuffing', sourceIp: '198.51.100.0/24', path: '/v1/login', details: "High failure rate from multiple IPs in subnet", actionTaken: 'Logged' },
+    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 2), type: 'SQLi Attempt', sourceIp: '198.51.100.23', path: '/v1/login', details: "UNION SELECT username, password FROM users", actionTaken: 'Blocked', geo: randomChoice(GEO_LOCATIONS) },
+    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 15), type: 'XSS Attempt', sourceIp: '203.0.113.88', path: '/v1/users/me/profile', details: "<script>alert('XSS')</script> in bio field", actionTaken: 'Blocked', geo: randomChoice(GEO_LOCATIONS) },
+    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 45), type: 'Anomalous Traffic', sourceIp: '192.0.2.14', path: '/v1/accounts', details: "500 requests in 10s from single IP", actionTaken: 'Alerted', geo: randomChoice(GEO_LOCATIONS) },
+    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 120), type: 'Credential Stuffing', sourceIp: '198.51.100.0/24', path: '/v1/login', details: "High failure rate from multiple IPs in subnet", actionTaken: 'Logged', geo: randomChoice(GEO_LOCATIONS) },
+    { id: generateId(), timestamp: new Date(Date.now() - 1000 * 60 * 180), type: 'Auth Failure', sourceIp: '192.0.2.14', path: '/v1/sessions', details: "Invalid JWT token", actionTaken: 'Logged', geo: randomChoice(GEO_LOCATIONS) },
+];
+
+export const generateAIInsights = (): AIInsight[] => [
+    { id: generateId(), category: 'PERFORMANCE', title: "High Latency on AI Advisor", description: "The p99 latency for the `/v1/ai/advisor/chat` endpoint has increased by 80% in the last 24 hours.", recommendation: "Investigate the downstream AI model service for performance degradation. Consider adding a dedicated cache for common queries.", severity: 'High', timestamp: new Date() },
+    { id: generateId(), category: 'COST', title: "Uncached Static Assets", description: "The `/v1/assets/*` path has a low cache hit rate (15%) but accounts for 25% of total egress traffic.", recommendation: "Implement a cache rule with a 24-hour TTL for this path to significantly reduce data transfer costs.", severity: 'Medium', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8) },
+    { id: generateId(), category: 'SECURITY', title: "Anomalous Traffic from New ASN", description: "A sudden spike of 404 errors is originating from ASN 12345 (BogusNet), targeting non-existent user profiles.", recommendation: "Monitor traffic from this ASN and consider adding a rate-limiting rule or blocking it at the WAF if the pattern persists.", severity: 'Medium', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2) },
+    { id: generateId(), category: 'RELIABILITY', title: "High Error Rate on Market Data", description: "The `/v3/data/market-trends` endpoint is experiencing a 5.6% error rate, indicating potential issues with the upstream data provider.", recommendation: "Enable the circuit breaker for this service to prevent cascading failures and notify the data provider of the issue.", severity: 'High', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
 ];
 
 // SECTION: MOCK API SERVICE
@@ -370,6 +458,15 @@ export const apiService = {
     getRateLimitRules: (): Promise<RateLimitRule[]> => new Promise(res => setTimeout(() => res(generateRateLimitRules()), 300)),
     getCacheStats: (): Promise<CacheStats> => new Promise(res => setTimeout(() => res(generateCacheStats()), 450)),
     getSecurityEvents: (): Promise<SecurityEvent[]> => new Promise(res => setTimeout(() => res(generateSecurityEvents()), 900)),
+    getAIInsights: (): Promise<AIInsight[]> => new Promise(res => setTimeout(() => res(generateAIInsights()), 1200)),
+    getNaturalLanguageResponse: (query: string): Promise<string> => {
+        const lowerQuery = query.toLowerCase();
+        let response = "I'm not sure how to answer that. Try asking about 'errors', 'latency', or 'traffic'.";
+        if (lowerQuery.includes('error')) response = `The total error rate in the last 24 hours is ${ (0.8 + Math.random() * 0.1).toFixed(2) }%. The endpoint with the highest error rate is /v3/data/market-trends.`;
+        if (lowerQuery.includes('latency')) response = `The average p99 latency across all services is ${ (180 + Math.random() * 20).toFixed(0) }ms.`;
+        if (lowerQuery.includes('traffic')) response = `Total requests in the last 24 hours were approximately ${formatNumber(1200000 + (Math.random() - 0.5) * 100000)}. Peak traffic occurred around 14:00 UTC.`;
+        return new Promise(res => setTimeout(() => res(response), 1500));
+    },
 };
 
 // SECTION: REUSABLE UI COMPONENTS
@@ -413,7 +510,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
 
 
 export interface TabsProps {
-    tabs: { id: string; label: string }[];
+    tabs: { id: string; label: string, icon?: React.ReactNode }[];
     activeTab: string;
     onTabClick: (id: string) => void;
 }
@@ -428,8 +525,9 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabClick }) => (
                         activeTab === tab.id
                             ? 'border-sky-400 text-sky-400'
                             : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+                    } flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
                 >
+                    {tab.icon}
                     {tab.label}
                 </button>
             ))}
@@ -686,7 +784,8 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = () => {
         'SQLi Attempt': 'bg-red-500/20 text-red-300',
         'XSS Attempt': 'bg-orange-500/20 text-orange-300',
         'Anomalous Traffic': 'bg-yellow-500/20 text-yellow-300',
-        'Credential Stuffing': 'bg-purple-500/20 text-purple-300'
+        'Credential Stuffing': 'bg-purple-500/20 text-purple-300',
+        'Auth Failure': 'bg-pink-500/20 text-pink-300'
     };
     
     return (
@@ -698,6 +797,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = () => {
                             <th scope="col" className="px-6 py-3">Timestamp</th>
                             <th scope="col" className="px-6 py-3">Event Type</th>
                             <th scope="col" className="px-6 py-3">Source IP</th>
+                            <th scope="col" className="px-6 py-3">Location</th>
                             <th scope="col" className="px-6 py-3">Path</th>
                             <th scope="col" className="px-6 py-3">Details</th>
                             <th scope="col" className="px-6 py-3">Action Taken</th>
@@ -706,7 +806,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = () => {
                     <tbody>
                         {isLoading ? (
                             Array.from({length: 4}).map((_, i) => (
-                                <tr key={i}><td colSpan={6} className="p-2"><SkeletonLoader className="h-8 w-full"/></td></tr>
+                                <tr key={i}><td colSpan={7} className="p-2"><SkeletonLoader className="h-8 w-full"/></td></tr>
                             ))
                         ) : (
                             events.map(event => (
@@ -716,6 +816,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = () => {
                                         <span className={`px-2 py-1 text-xs rounded-full ${eventTypeStyles[event.type]}`}>{event.type}</span>
                                     </td>
                                     <td className="px-6 py-4 font-mono">{event.sourceIp}</td>
+                                    <td className="px-6 py-4">{event.geo.city}, {event.geo.countryCode}</td>
                                     <td className="px-6 py-4 font-mono text-white">{event.path}</td>
                                     <td className="px-6 py-4">{event.details}</td>
                                     <td className="px-6 py-4">
@@ -851,14 +952,109 @@ export const DashboardContent: React.FC = () => {
     );
 };
 
+export const AICopilotView: React.FC = () => {
+    const [insights, setInsights] = useState<AIInsight[]>([]);
+    const [isLoadingInsights, setIsLoadingInsights] = useState(true);
+    const [nlQuery, setNlQuery] = useState("");
+    const [nlResponse, setNlResponse] = useState("");
+    const [isNlLoading, setIsNlLoading] = useState(false);
+
+    useEffect(() => {
+        apiService.getAIInsights().then(data => {
+            setInsights(data);
+            setIsLoadingInsights(false);
+        });
+    }, []);
+
+    const handleNlSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!nlQuery.trim()) return;
+        setIsNlLoading(true);
+        setNlResponse("");
+        apiService.getNaturalLanguageResponse(nlQuery).then(response => {
+            setNlResponse(response);
+            setIsNlLoading(false);
+        });
+    };
+
+    const insightSeverityStyles = {
+        'High': 'border-red-500/50 bg-red-500/10',
+        'Medium': 'border-yellow-500/50 bg-yellow-500/10',
+        'Low': 'border-sky-500/50 bg-sky-500/10',
+    };
+    const insightIconStyles = {
+        'PERFORMANCE': <IconTrendingUp className="w-6 h-6 text-purple-400" />,
+        'COST': <IconInfo className="w-6 h-6 text-green-400" />,
+        'SECURITY': <IconShieldCheck className="w-6 h-6 text-red-400" />,
+        'RELIABILITY': <IconAlertTriangle className="w-6 h-6 text-yellow-400" />,
+    }
+
+    return (
+        <div className="space-y-8">
+             <Card title="AI Natural Language Query" icon={<IconBot className="w-5 h-5 text-gray-300"/>}>
+                <p className="text-sm text-gray-400 mb-4">Ask questions about your API Gateway performance in plain English.</p>
+                <form onSubmit={handleNlSubmit} className="flex gap-2">
+                    <input 
+                        type="text"
+                        value={nlQuery}
+                        onChange={(e) => setNlQuery(e.target.value)}
+                        placeholder="e.g., 'What was the p99 latency for /v1/transactions yesterday?'"
+                        className="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-sky-500 focus:border-sky-500"
+                        disabled={isNlLoading}
+                    />
+                    <button type="submit" className="px-4 py-2 rounded-md bg-sky-600 hover:bg-sky-500 font-semibold" disabled={isNlLoading}>
+                        {isNlLoading ? 'Asking...' : 'Ask'}
+                    </button>
+                </form>
+                {isNlLoading && <div className="mt-4"><Spinner /></div>}
+                {nlResponse && (
+                    <div className="mt-4 p-4 bg-gray-800/50 rounded-md border border-gray-700 flex items-start gap-3">
+                        <IconBot className="w-8 h-8 flex-shrink-0 text-sky-400 mt-1" />
+                        <p className="text-gray-300">{nlResponse}</p>
+                    </div>
+                )}
+            </Card>
+
+            <Card title="AI-Generated Insights" icon={<IconBot className="w-5 h-5 text-gray-300"/>}>
+                {isLoadingInsights ? (
+                    <Spinner />
+                ) : (
+                    <div className="space-y-4">
+                        {insights.map(insight => (
+                            <div key={insight.id} className={`border rounded-lg p-4 ${insightSeverityStyles[insight.severity]}`}>
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0 mt-1">{insightIconStyles[insight.category]}</div>
+                                    <div>
+                                        <div className="flex items-center gap-3">
+                                            <h4 className="font-bold text-white">{insight.title}</h4>
+                                            <span className="text-xs text-gray-400">{new Date(insight.timestamp).toLocaleString()}</span>
+                                        </div>
+                                        <p className="text-sm text-gray-300 mt-1">{insight.description}</p>
+                                        <p className="text-sm text-sky-300 mt-2 bg-sky-500/10 p-2 rounded-md">
+                                            <strong>Recommendation:</strong> {insight.recommendation}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Card>
+        </div>
+    )
+}
+
+
 // SECTION: MAIN VIEW COMPONENT
 
 const DemoBankAPIGatewayView: React.FC = () => {
     const TABS = [
-        { id: 'dashboard', label: 'Dashboard' },
-        { id: 'logs', label: 'Live Logs' },
-        { id: 'api_keys', label: 'API Keys' },
-        { id: 'security', label: 'Security' },
+        { id: 'dashboard', label: 'Dashboard', icon: <IconTrendingUp className="w-4 h-4" /> },
+        { id: 'logs', label: 'Live Logs', icon: <IconFileText className="w-4 h-4" /> },
+        { id: 'api_keys', label: 'API Keys', icon: <IconInfo className="w-4 h-4" /> },
+        { id: 'security', label: 'Security', icon: <IconShieldCheck className="w-4 h-4" /> },
+        { id: 'ai_copilot', label: 'AI Co-Pilot', icon: <IconBot className="w-4 h-4" /> },
+        { id: 'settings', label: 'Settings', icon: <IconSettings className="w-4 h-4" /> },
     ];
     const [activeTab, setActiveTab] = React.useState('dashboard');
     const [notifications, setNotifications] = React.useState<Notification[]>([]);
@@ -881,13 +1077,34 @@ const DemoBankAPIGatewayView: React.FC = () => {
                 return <ApiKeyManager addNotification={addNotification} />;
             case 'security':
                 return <SecurityDashboard />;
+            case 'ai_copilot':
+                return <AICopilotView />;
+            case 'settings':
+                return <Card title="Settings"><p className="text-gray-400">Integration and alert settings will be configured here.</p></Card>;
             default:
                 return null;
         }
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-4 md:p-6 bg-gray-900 text-white min-h-screen">
+             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-white">API Gateway</h1>
+                    <p className="text-sm text-gray-400">Monitor, secure, and analyze your API traffic with AI-powered insights.</p>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <button className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">
+                        <IconFileText className="w-4 h-4" />
+                        View Docs
+                    </button>
+                     <button className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-gray-700 hover:bg-gray-600 transition-colors">
+                        <IconRefreshCw className="w-4 h-4" />
+                        Refresh Data
+                    </button>
+                </div>
+            </div>
+
             <Tabs tabs={TABS} activeTab={activeTab} onTabClick={setActiveTab} />
             <div className="mt-6">
                 {renderContent()}
