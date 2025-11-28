@@ -175,8 +175,9 @@ const getRandom = (min: number, max: number, decimals: number = 0) => {
 };
 
 const subtractHours = (date: Date, hours: number) => {
-    date.setHours(date.getHours() - hours);
-    return date;
+    const newDate = new Date(date);
+    newDate.setHours(newDate.getHours() - hours);
+    return newDate;
 };
 
 // --- Data Generators ---
@@ -192,7 +193,7 @@ export const generateMockModels = (count: number): DeployedModel[] => {
         const version = `${getRandom(1, 5)}.${getRandom(0, 9)}.${getRandom(0, 20)}`;
         models.push({
             id: `model_${i + 1}_${Date.now()}`,
-            name: `${name}-v${version}`,
+            name: `${name}`,
             version,
             status: statusValues[getRandom(0, statusValues.length - 1)],
             endpoint: `https://api.demobank.ai/v1/predict/${name}`,
@@ -272,6 +273,50 @@ export const generateMockLogs = (count: number): string[] => {
     return logs;
 }
 
+export const generateMockTrainingExperiments = (count: number): TrainingExperiment[] => {
+    const experiments: TrainingExperiment[] = [];
+    const modelNames = ['fraud-detection', 'product-recommender', 'churn-predictor'];
+    const statuses: Array<'Running' | 'Completed' | 'Failed'> = ['Running', 'Completed', 'Failed'];
+    for (let i = 0; i < count; i++) {
+        const status = statuses[getRandom(0, statuses.length - 1)];
+        experiments.push({
+            id: `exp_${i + 1}`,
+            modelName: `${modelNames[i % modelNames.length]}-v${getRandom(4, 6)}`,
+            startTime: subtractHours(new Date(), getRandom(1, 72)).toISOString(),
+            durationMinutes: status === 'Running' ? getRandom(10, 50) : getRandom(60, 240),
+            status,
+            hyperparameters: {
+                learning_rate: getRandom(0.001, 0.01, 4),
+                epochs: getRandom(50, 100),
+                batch_size: 32,
+            },
+            metrics: {
+                accuracy: status === 'Completed' ? getRandom(95, 99, 2) : undefined,
+                f1Score: status === 'Completed' ? getRandom(94, 98, 2) : undefined,
+            },
+            datasetVersion: `ds_v${getRandom(5, 10)}_${new Date().getFullYear()}`,
+        });
+    }
+    return experiments.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+};
+
+export const generateMockDataPipelines = (count: number): DataPipeline[] => {
+    const pipelines: DataPipeline[] = [];
+    const names = ['User Transactions Ingest', 'Behavioral Data ETL', 'Feature Engineering', 'Data Validation'];
+    const statuses = Object.values(PipelineStatus);
+    for (let i = 0; i < count; i++) {
+        pipelines.push({
+            id: `pipe_${i + 1}`,
+            name: names[i % names.length],
+            status: statuses[getRandom(0, statuses.length - 1)],
+            lastRun: subtractHours(new Date(), getRandom(1, 8)).toISOString(),
+            nextRun: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4 hours from now
+            avgDurationMinutes: getRandom(15, 90),
+        });
+    }
+    return pipelines;
+};
+
 // --- Mock API Fetch Functions ---
 
 const mockApi = <T>(data: T): Promise<T> => {
@@ -304,6 +349,8 @@ export const fetchModelPerformanceHistory = () => mockApi(
 export const fetchAlerts = () => mockApi(generateMockAlerts(8));
 export const fetchResourceUsage = () => mockApi(generateMockResourceUsage(60));
 export const fetchLogs = () => mockApi(generateMockLogs(1));
+export const fetchTrainingExperiments = () => mockApi(generateMockTrainingExperiments(5));
+export const fetchDataPipelines = () => mockApi(generateMockDataPipelines(4));
 
 
 // =================================================================
@@ -366,7 +413,7 @@ export const LoadingOverlay: React.FC = () => (
 );
 
 export const StatusBadge: React.FC<{ status: ModelStatus | PipelineStatus }> = ({ status }) => {
-    const styles = {
+    const styles: Record<string, string> = {
         [ModelStatus.Online]: 'bg-green-500/20 text-green-300',
         [ModelStatus.Scaling]: 'bg-cyan-500/20 text-cyan-300',
         [ModelStatus.Offline]: 'bg-gray-500/20 text-gray-300',
@@ -404,15 +451,113 @@ export const AlertItem: React.FC<{ alert: PlatformAlert }> = ({ alert }) => {
     );
 };
 
+export const AIPlatformHeader: React.FC = () => (
+    <div className="flex flex-wrap justify-between items-center gap-4">
+        <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank AI Platform</h2>
+        <div className="flex items-center space-x-4">
+            <button className="flex items-center space-x-2 text-sm bg-gray-800/50 hover:bg-gray-700/50 px-4 py-2 rounded-md text-gray-300">
+                <span>Last 30 Days</span>
+                <IconChevronDown className="w-4 h-4" />
+            </button>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md shadow-lg transition-colors duration-200">
+                Deploy New Model
+            </button>
+        </div>
+    </div>
+);
+
+export const AIInsightAdvisor: React.FC = () => {
+    const insights = [
+        { id: 1, text: "Model 'fraud-detection' precision dropped by 2%. Consider retraining with the latest 'Q2_Transactions' dataset.", severity: 'Warning' },
+        { id: 2, text: "API usage for 'Product Recs' increased by 35% week-over-week. Provision additional resources to maintain low latency.", severity: 'Info' },
+        { id: 3, text: "'churn-predictor' is approaching 90% resource utilization. Enable auto-scaling to prevent outages.", severity: 'Critical' },
+    ];
+
+    const getIcon = (severity: string) => {
+        if (severity === 'Critical') return <IconExclamation className="w-5 h-5 text-red-400" />;
+        if (severity === 'Warning') return <IconExclamation className="w-5 h-5 text-yellow-400" />;
+        return <IconInfo className="w-5 h-5 text-blue-400" />;
+    };
+
+    return (
+        <Card title="AI-Powered Insights">
+             <div className="space-y-4 h-full">
+                {insights.map(insight => (
+                    <div key={insight.id} className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 pt-1">{getIcon(insight.severity)}</div>
+                        <p className="text-sm text-gray-300">{insight.text}</p>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
+
+export const TrainingPipelinesPanel: React.FC = () => {
+    const { data: experiments, isLoading } = useMockApi(fetchTrainingExperiments);
+    const getStatusIcon = (status: 'Running' | 'Completed' | 'Failed') => {
+        if (status === 'Running') return <IconSpinner className="w-4 h-4 text-blue-400" />;
+        if (status === 'Completed') return <IconCheckCircle className="w-4 h-4 text-green-400" />;
+        return <IconXCircle className="w-4 h-4 text-red-400" />;
+    };
+    return (
+        <Card title="Recent Training Experiments">
+            <div className="relative" style={{ height: 300 }}>
+                {isLoading && <LoadingOverlay />}
+                <div className="space-y-3 overflow-y-auto h-full pr-2">
+                    {experiments?.map(exp => (
+                        <div key={exp.id} className="bg-gray-900/30 p-3 rounded-md">
+                            <div className="flex justify-between items-center">
+                                <span className="font-mono text-sm text-white">{exp.modelName}</span>
+                                <div className="flex items-center space-x-2 text-xs text-gray-400">
+                                    {getStatusIcon(exp.status)}
+                                    <span>{exp.status}</span>
+                                </div>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                                Started: {new Date(exp.startTime).toLocaleDateString()} | Duration: {exp.durationMinutes} min
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+export const DataPipelinesPanel: React.FC = () => {
+    const { data: pipelines, isLoading } = useMockApi(fetchDataPipelines);
+    return (
+        <Card title="Data Pipelines">
+            <div className="relative" style={{ height: 300 }}>
+                {isLoading && <LoadingOverlay />}
+                <div className="space-y-3 overflow-y-auto h-full pr-2">
+                    {pipelines?.map(pipe => (
+                        <div key={pipe.id} className="bg-gray-900/30 p-3 rounded-md">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-white">{pipe.name}</span>
+                                <StatusBadge status={pipe.status} />
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                                Last Run: {new Date(pipe.lastRun).toLocaleTimeString()}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    );
+};
+
 export const AIPlatformAlertsPanel: React.FC = () => {
     const { data: alerts, isLoading } = useMockApi(fetchAlerts);
     return (
         <Card title="Recent Alerts">
-            <div className="relative space-y-3" style={{ height: 300 }}>
+            <div className="relative" style={{ height: "100%" }}>
                 {isLoading && <LoadingOverlay />}
                 {alerts?.length ? (
-                    <div className="overflow-y-auto h-full pr-2">
-                        {alerts.map(alert => <AlertItem key={alert.id} alert={alert} />)}
+                    <div className="overflow-y-auto h-full pr-2 space-y-3">
+                        {alerts.slice(0, 5).map(alert => <AlertItem key={alert.id} alert={alert} />)}
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-full text-gray-500">
@@ -467,9 +612,12 @@ export const AIPlatformModelsTable: React.FC<{ onSelectModel: (model: DeployedMo
                     <table className="w-full text-sm text-left text-gray-400">
                         <thead className="text-xs text-gray-300 uppercase bg-gray-900/30">
                             <tr>
-                                {(['name', 'status', 'avgInferenceTimeMs', 'errorRatePercent', 'project'] as const).map((key) => (
+                                {(['name', 'version', 'status', 'project', 'deployedAt', 'avgInferenceTimeMs'] as const).map((key) => (
                                     <th scope="col" className="px-6 py-3 cursor-pointer" key={key} onClick={() => requestSort(key)}>
-                                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())} {getSortIndicator(key)}
+                                        <div className="flex items-center">
+                                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())} 
+                                            <span className="ml-1">{getSortIndicator(key)}</span>
+                                        </div>
                                     </th>
                                 ))}
                                 <th scope="col" className="px-6 py-3">Actions</th>
@@ -479,10 +627,11 @@ export const AIPlatformModelsTable: React.FC<{ onSelectModel: (model: DeployedMo
                             {sortedModels.map(model => (
                                 <tr key={model.id} className="border-b border-gray-800 hover:bg-gray-800/50">
                                     <td className="px-6 py-4 font-mono text-white">{model.name}</td>
+                                    <td className="px-6 py-4 font-mono">{model.version}</td>
                                     <td className="px-6 py-4"><StatusBadge status={model.status} /></td>
-                                    <td className="px-6 py-4">{model.avgInferenceTimeMs.toFixed(0)} ms</td>
-                                    <td className="px-6 py-4">{model.errorRatePercent.toFixed(2)}%</td>
                                     <td className="px-6 py-4">{model.project}</td>
+                                    <td className="px-6 py-4">{new Date(model.deployedAt).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4">{model.avgInferenceTimeMs.toFixed(0)} ms</td>
                                     <td className="px-6 py-4">
                                         <button onClick={() => onSelectModel(model)} className="font-medium text-blue-400 hover:underline">Details</button>
                                     </td>
@@ -507,8 +656,8 @@ export const AIPlatformModelDetailsModal: React.FC<{ model: DeployedModel | null
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 backdrop-blur-md" onClick={onClose}>
             <div className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center p-4 border-b border-gray-700">
-                    <h3 className="text-xl font-bold text-white font-mono">{model.name}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+                    <h3 className="text-xl font-bold text-white font-mono">{model.name} <span className="text-base text-gray-400 font-normal">v{model.version}</span></h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
                 <div className="flex-shrink-0 border-b border-gray-700">
                     <nav className="flex space-x-4 px-4">
@@ -732,7 +881,7 @@ const DemoBankAIPlatformView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white tracking-wider">Demo Bank AI Platform</h2>
+            <AIPlatformHeader />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card className="text-center">
@@ -752,45 +901,53 @@ const DemoBankAIPlatformView: React.FC = () => {
                     <p className="text-sm text-gray-400 mt-1">Avg. Inference Time</p>
                 </Card>
             </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card title="Primary Model Performance Over Time">
+                    <div className="relative">
+                        {performanceLoading && <LoadingOverlay />}
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={performanceData ?? []}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                                <XAxis dataKey="name" stroke="#9ca3af" />
+                                <YAxis stroke="#9ca3af" domain={[90, 100]} unit="%" />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Line type="monotone" dataKey="accuracy" stroke="#82ca9d" strokeWidth={2} name="Accuracy" />
+                                <Line type="monotone" dataKey="f1Score" stroke="#8884d8" strokeWidth={2} name="F1 Score" />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </Card>
+                <Card title="API Usage & Latency">
+                    <div className="relative">
+                        {apiLoading && <LoadingOverlay />}
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={apiData ?? []} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+                                <XAxis type="number" stroke="#9ca3af" />
+                                <YAxis type="category" dataKey="name" stroke="#9ca3af" width={120} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Bar dataKey="calls" fill="#8884d8" name="API Calls" />
+                                <Bar dataKey="avgLatency" fill="#82ca9d" name="Avg Latency (ms)" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </Card>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                 <TrainingPipelinesPanel />
+                 <DataPipelinesPanel />
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <Card title="Primary Model Performance Over Time">
-                        <div className="relative">
-                            {performanceLoading && <LoadingOverlay />}
-                            <ResponsiveContainer width="100%" height={300}>
-                                <LineChart data={performanceData ?? []}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
-                                    <XAxis dataKey="name" stroke="#9ca3af" />
-                                    <YAxis stroke="#9ca3af" domain={[90, 100]} unit="%" />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Legend />
-                                    <Line type="monotone" dataKey="accuracy" stroke="#82ca9d" strokeWidth={2} name="Accuracy" />
-                                    <Line type="monotone" dataKey="f1Score" stroke="#8884d8" strokeWidth={2} name="F1 Score" />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </Card>
+                    <AIInsightAdvisor />
                 </div>
                 <AIPlatformAlertsPanel />
             </div>
-
-            <Card title="API Usage & Latency">
-                <div className="relative">
-                    {apiLoading && <LoadingOverlay />}
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={apiData ?? []} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
-                            <XAxis type="number" stroke="#9ca3af" />
-                            <YAxis type="category" dataKey="name" stroke="#9ca3af" width={120} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <Bar dataKey="calls" fill="#8884d8" name="API Calls" />
-                            <Bar dataKey="avgLatency" fill="#82ca9d" name="Avg Latency (ms)" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            </Card>
 
             <AIPlatformModelsTable onSelectModel={handleSelectModel} />
             
