@@ -937,7 +937,8 @@ export const FactorConfigEditorModal: React.FC<{
     }, [factorConfig, isOpen]);
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
+        const { name, value, type } = e.target as HTMLInputElement;
+        const checked = (e.target as HTMLInputElement).checked;
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value),
@@ -1141,7 +1142,8 @@ export const RiskRuleEditorModal: React.FC<{
     }, [rule, isOpen, availableFactors]);
 
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement;
+        const { name, value, type } = e.target as HTMLInputElement;
+        const checked = (e.target as HTMLInputElement).checked;
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value),
@@ -1393,7 +1395,7 @@ export const RiskRuleEnginePanel: React.FC<{
             case '>=': return '>=';
             case '<=': return '<=';
             case '==': return '=';
-            case '!=': return '≠';
+            case '!=': return 'â‰ ';
             default: return op;
         }
     }, []);
@@ -1784,9 +1786,8 @@ export const AlertConfigEditorModal: React.FC<{
     onClose: () => void;
     alertConfig: RiskAlertConfiguration | null;
     onSave: (config: RiskAlertConfiguration) => void;
-    availableProfiles: RiskProfileExtended[];
     availableFactors: RiskFactorConfig[];
-}> = ({ isOpen, onClose, alertConfig, onSave, availableProfiles, availableFactors }) => {
+}> = ({ isOpen, onClose, alertConfig, onSave, availableFactors }) => {
     const [formData, setFormData] = useState<RiskAlertConfiguration>(alertConfig || {
         id: generateUniqueId(),
         name: '',
@@ -1800,3 +1801,464 @@ export const AlertConfigEditorModal: React.FC<{
         isEnabled: true,
         createdAt: new Date().toISOString(),
         lastModifiedAt: new Date().toISOString(),
+    });
+
+    useEffect(() => {
+        if (alertConfig) {
+            setFormData(deepClone(alertConfig));
+        } else {
+            setFormData({
+                id: generateUniqueId(),
+                name: '',
+                description: '',
+                targetProfileIds: 'all',
+                thresholdOperator: '>',
+                thresholdValue: 70,
+                factorTrigger: undefined,
+                notificationChannels: ['dashboard'],
+                recipients: ['admin@example.com'],
+                isEnabled: true,
+                createdAt: new Date().toISOString(),
+                lastModifiedAt: new Date().toISOString(),
+            });
+        }
+    }, [alertConfig, isOpen]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        if (name === 'recipients') {
+            setFormData(prev => ({ ...prev, recipients: value.split(',').map(r => r.trim()).filter(Boolean) }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleChannelChange = (channel: 'email' | 'slack' | 'dashboard' | 'sms') => {
+        setFormData(prev => {
+            const newChannels = prev.notificationChannels.includes(channel)
+                ? prev.notificationChannels.filter(c => c !== channel)
+                : [...prev.notificationChannels, channel];
+            return { ...prev, notificationChannels: newChannels };
+        });
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave({ ...formData, lastModifiedAt: new Date().toISOString() });
+        onClose();
+    };
+
+    const title = alertConfig ? `Edit Alert: ${alertConfig.name}` : 'Create New Alert';
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={title} className="max-w-2xl">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <Input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Alert Name" required />
+                <Textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" required />
+
+                <div className="grid grid-cols-2 gap-4">
+                    <Select name="factorTrigger" value={formData.factorTrigger || ''} onChange={handleChange}>
+                        <option value="">Overall Score</option>
+                        {availableFactors.map(f => <option key={f.key} value={f.key}>{f.name}</option>)}
+                    </Select>
+                    <div className="flex items-center space-x-2">
+                        <Select name="thresholdOperator" value={formData.thresholdOperator} onChange={handleChange} className="w-1/3">
+                            <option value=">">&gt;</option>
+                            <option value="<">&lt;</option>
+                        </Select>
+                        <Input type="number" name="thresholdValue" value={formData.thresholdValue} onChange={handleChange} className="w-2/3" required />
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-400">Notification Channels</label>
+                    <div className="flex space-x-4 mt-2">
+                        {(['dashboard', 'email', 'slack', 'sms'] as const).map(channel => (
+                            <label key={channel} className="flex items-center">
+                                <input type="checkbox" checked={formData.notificationChannels.includes(channel)} onChange={() => handleChannelChange(channel)} className="form-checkbox h-5 w-5 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500" />
+                                <span className="ml-2 text-white capitalize">{channel}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                <Input type="text" name="recipients" value={formData.recipients.join(', ')} onChange={handleChange} placeholder="Recipients (comma-separated)" />
+
+                <ToggleSwitch label="Is Enabled" checked={formData.isEnabled} onChange={val => setFormData(p => ({ ...p, isEnabled: val }))} />
+
+                <div className="flex justify-end space-x-3 mt-6">
+                    <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
+                    <Button type="submit">Save Alert</Button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
+
+export const AlertManagementPanel: React.FC<{
+    alertConfigs: RiskAlertConfiguration[];
+    factorConfigs: RiskFactorConfig[];
+}> = ({ alertConfigs, factorConfigs }) => {
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+
+    return (
+        <Card title="Alert Management">
+            <div className="flex justify-end mb-4">
+                <Button onClick={() => setIsEditorOpen(true)}>Create Alert</Button>
+            </div>
+            {/* Table of alerts would go here */}
+            <p className="text-gray-400">Alert configurations will be listed here.</p>
+            <AlertConfigEditorModal
+                isOpen={isEditorOpen}
+                onClose={() => setIsEditorOpen(false)}
+                alertConfig={null}
+                onSave={(config) => console.log('Save Alert:', config)}
+                availableFactors={factorConfigs}
+            />
+        </Card>
+    );
+};
+
+export const ReportingPanel: React.FC<{ reportConfigs: RiskReportConfig[] }> = ({ reportConfigs }) => {
+    return (
+        <Card title="Reporting">
+            <div className="flex justify-end mb-4">
+                <Button>Create Report</Button>
+            </div>
+            <p className="text-gray-400">Report configurations and generation options will be available here.</p>
+            {/* Table of reports would go here */}
+        </Card>
+    );
+};
+
+// =====================================================================================================================
+// END: ALERTS & REPORTING COMPONENTS
+// =====================================================================================================================
+
+// =====================================================================================================================
+// START: AI INTEGRATION COMPONENTS
+// =====================================================================================================================
+
+const useGeminiAI = () => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const generateContent = useCallback(async (prompt: string): Promise<string> => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            // This is a mock implementation. A real app would use the GoogleGenAI SDK here.
+            // const genAI = new GoogleGenAI(process.env.REACT_APP_GEMINI_API_KEY!);
+            // const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            // const result = await model.generateContent(prompt);
+            // const response = await result.response;
+            // return response.text();
+
+            // Mock response:
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+            if (prompt.includes("summarize")) {
+                 return `This risk profile exhibits elevated scores in Transaction (85) and Network (80) factors, suggesting potential issues with unusual financial activity or access from untrusted networks. While Identity risk is moderately high (70), Behavioral risk (65) is less concerning. The overall score of 78 warrants a high-priority review. Key recommendations include investigating recent high-value transactions and analyzing network access logs for suspicious IP addresses.`;
+            }
+            if (prompt.includes("mitigation")) {
+                 return `Based on the risk profile, here are three prioritized mitigation strategies:\n1. **Enhanced Due diligence (EDD):** Given the high Transaction and Identity scores, immediately initiate an EDD process. Request source of wealth/funds documentation and verify corporate structure against official registries.\n2. **Network Traffic Analysis:** The high Network risk score necessitates a deep dive into access logs. Cross-reference IP addresses with threat intelligence feeds and look for patterns indicative of VPN/proxy usage or automated access.\n3. **Behavioral Monitoring Alert Tuning:** While Behavioral risk is moderate, configure more sensitive alerts for this profile. Specifically, trigger alerts for deviations in transaction frequency, value, or geographic location from established patterns.`;
+            }
+            return "AI response could not be generated for this prompt.";
+
+        } catch (e) {
+            setError("Failed to communicate with AI service.");
+            console.error(e);
+            return "Error generating content.";
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    return { generateContent, isLoading, error };
+};
+
+export const AIInsightPanel: React.FC<{ profile: RiskProfileExtended | null }> = ({ profile }) => {
+    const { generateContent, isLoading, error } = useGeminiAI();
+    const [summary, setSummary] = useState('');
+    const [mitigations, setMitigations] = useState('');
+
+    const generateInsights = useCallback(async () => {
+        if (!profile) return;
+        const summaryPrompt = `Summarize the risk profile for "${profile.name}" (ID: ${profile.id}) with an overall score of ${profile.overallScore}. Key factor scores are: ${JSON.stringify(profile.factors)}. Provide a concise, executive-level summary.`;
+        const mitigationPrompt = `Provide the top 3 actionable mitigation strategies for the risk profile of "${profile.name}" with these factors: ${JSON.stringify(profile.factors)}.`;
+
+        setSummary('');
+        setMitigations('');
+
+        const summaryResponse = await generateContent(summaryPrompt);
+        setSummary(summaryResponse);
+        const mitigationResponse = await generateContent(mitigationPrompt);
+        setMitigations(mitigationResponse);
+    }, [profile, generateContent]);
+
+    return (
+        <Card title="AI-Powered Insights & Recommendations">
+            <div className="p-4">
+                {!profile ? (
+                     <p className="text-gray-500">Select a profile to generate AI insights.</p>
+                ) : (
+                    <>
+                        <Button onClick={generateInsights} disabled={isLoading}>
+                            {isLoading ? 'Generating...' : 'Generate AI Insights'}
+                        </Button>
+                        {error && <AlertMessage type="error" message={error} className="mt-4" />}
+
+                        {isLoading && <LoadingSpinner message="AI is analyzing..." className="mt-4" />}
+
+                        {summary && (
+                            <div className="mt-4">
+                                <h4 className="font-semibold text-cyan-300">AI Risk Summary</h4>
+                                <p className="text-gray-300 whitespace-pre-wrap">{summary}</p>
+                            </div>
+                        )}
+                        {mitigations && (
+                             <div className="mt-4">
+                                <h4 className="font-semibold text-cyan-300">AI Recommended Mitigations</h4>
+                                <p className="text-gray-300 whitespace-pre-wrap">{mitigations}</p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </Card>
+    );
+};
+
+// =====================================================================================================================
+// END: AI INTEGRATION COMPONENTS
+// =====================================================================================================================
+
+// =====================================================================================================================
+// START: MAIN DASHBOARD AND LAYOUT COMPONENTS
+// =====================================================================================================================
+const RiskProfileList: React.FC<{
+    profiles: RiskProfileExtended[];
+    selectedProfileId: string | null;
+    onSelectProfile: (id: string) => void;
+    onAddProfile: () => void;
+}> = ({ profiles, selectedProfileId, onSelectProfile, onAddProfile }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredProfiles = useMemo(() => {
+        return profiles.filter(p =>
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [profiles, searchTerm]);
+
+    const getScoreColor = (score: number) => {
+        if (score > 75) return 'text-red-400';
+        if (score > 50) return 'text-yellow-400';
+        return 'text-green-400';
+    };
+
+    return (
+        <div className="bg-gray-800/50 p-4 rounded-lg flex flex-col h-full">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Risk Profiles</h2>
+                <Button size="sm" onClick={onAddProfile}>New Profile</Button>
+            </div>
+            <Input
+                type="text"
+                placeholder="Search profiles..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="mb-4"
+            />
+            <div className="flex-grow overflow-y-auto">
+                <ul className="space-y-2">
+                    {filteredProfiles.map(profile => (
+                        <li
+                            key={profile.id}
+                            onClick={() => onSelectProfile(profile.id)}
+                            className={`p-3 rounded-md cursor-pointer transition-colors duration-200 ${selectedProfileId === profile.id ? 'bg-cyan-600/30 ring-2 ring-cyan-500' : 'hover:bg-gray-700/50'}`}
+                        >
+                            <div className="flex justify-between items-center">
+                                <span className="font-semibold text-white">{profile.name}</span>
+                                <span className={`font-mono font-bold ${getScoreColor(profile.overallScore)}`}>{profile.overallScore}</span>
+                            </div>
+                            <p className="text-xs text-gray-400">{profile.id}</p>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+};
+
+
+const ProfileDashboard: React.FC<{ profile: RiskProfileExtended; factorConfigs: RiskFactorConfig[] }> = ({ profile, factorConfigs }) => {
+    const radarData = useMemo(() =>
+        factorConfigs.map(factor => ({
+            subject: factor.name,
+            A: profile.factors[factor.key] || 0,
+            fullMark: 100,
+        })), [profile, factorConfigs]);
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 <Card title="Overall Score" className="flex flex-col items-center justify-center">
+                     <div className={`text-7xl font-bold ${profile.overallScore > 75 ? 'text-red-500' : profile.overallScore > 50 ? 'text-yellow-500' : 'text-green-500'}`}>
+                         {profile.overallScore}
+                     </div>
+                     <p className="text-gray-400 mt-2">Last Analyzed: {new Date(profile.lastAnalyzed).toLocaleDateString()}</p>
+                 </Card>
+                 <Card title="Risk Factor Radar" className="col-span-2 h-[350px]">
+                    <ResponsiveContainer>
+                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                            <PolarGrid stroke="#444" />
+                            <PolarAngleAxis dataKey="subject" stroke="#ccc" />
+                            <Radar name={profile.name} dataKey="A" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.6} />
+                        </RadarChart>
+                    </ResponsiveContainer>
+                 </Card>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RiskTrendChart history={profile.riskScoreHistory} profileName={profile.name} />
+                <FactorDistributionChart profile={profile} factorConfigs={factorConfigs} />
+            </div>
+            <AIInsightPanel profile={profile} />
+        </div>
+    );
+};
+
+
+const RiskScoringView = () => {
+    const dataContext = useContext(DataContext);
+    const { profiles: initialProfiles } = dataContext?.riskScores || { profiles: initialMockRiskProfiles };
+
+    // Centralized state management for the entire view
+    const { profiles, addProfile, updateProfile, deleteProfile, setProfiles } = useRiskProfilesCRUD(initialProfiles as RiskProfileExtended[]);
+    const { factorConfigs, addFactor, updateFactor, deleteFactor } = useFactorConfigsCRUD(mockFactorConfigs);
+    const { riskRules, addRule, updateRule, deleteRule } = useRiskRulesCRUD(mockRiskRules);
+
+    const [selectedProfileId, setSelectedProfileId] = useState<string | null>(profiles[0]?.id || null);
+    const [activeMainTab, setActiveMainTab] = useState('dashboard');
+    const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
+    const [editingProfile, setEditingProfile] = useState<RiskProfileExtended | null>(null);
+
+    const selectedProfile = useMemo(() => {
+        return profiles.find(p => p.id === selectedProfileId) || null;
+    }, [profiles, selectedProfileId]);
+
+    const handleAddProfile = () => {
+        setEditingProfile(null);
+        setIsProfileEditorOpen(true);
+    };
+
+    const handleEditProfile = (profile: RiskProfileExtended) => {
+        setEditingProfile(profile);
+        setIsProfileEditorOpen(true);
+    };
+
+    const handleSaveProfile = (profile: RiskProfileExtended) => {
+        if (profiles.some(p => p.id === profile.id)) {
+            updateProfile(profile);
+        } else {
+            addProfile(profile);
+            setSelectedProfileId(profile.id);
+        }
+    };
+
+    const handleTestRuleSimulation = useCallback((rule: RiskRule, profile: RiskProfileExtended) => {
+        const { newOverallScore, triggeredRules } = applyRiskRules(profile, [rule], factorConfigs);
+        const didTrigger = triggeredRules.length > 0;
+        alert(
+            `Testing rule "${rule.name}" on profile "${profile.name}":\n\n` +
+            `Rule Triggered: ${didTrigger ? 'Yes' : 'No'}\n` +
+            `Original Score: ${profile.overallScore}\n` +
+            `Simulated Score (with only this rule): ${newOverallScore}`
+        );
+    }, [factorConfigs]);
+
+    const profileSpecificTabs = [
+        { id: 'dashboard', title: 'Dashboard', content: selectedProfile ? <ProfileDashboard profile={selectedProfile} factorConfigs={factorConfigs} /> : null },
+        { id: 'history', title: 'Historical Data', content: selectedProfile ? <RiskHistoryTable history={selectedProfile.riskScoreHistory} profileName={selectedProfile.name} /> : null },
+        { id: 'simulation', title: 'Simulation', content: <RiskSimulationPanel selectedProfile={selectedProfile} factorConfigs={factorConfigs} riskRules={riskRules} /> },
+    ];
+    
+    const globalTabs = [
+        { id: 'ruleEngine', title: 'Rule Engine', content: <RiskRuleEnginePanel riskRules={riskRules} onUpdateRule={updateRule} onAddRule={addRule} onDeleteRule={deleteRule} factorConfigs={factorConfigs} onTestRuleSimulation={handleTestRuleSimulation} selectedProfile={selectedProfile} /> },
+        { id: 'factorConfig', title: 'Factor Configuration', content: <FactorConfigurationPanel factorConfigs={factorConfigs} onUpdateFactor={updateFactor} onAddFactor={addFactor} onDeleteFactor={deleteFactor} /> },
+        { id: 'alerts', title: 'Alerts', content: <AlertManagementPanel alertConfigs={mockAlertConfigs} factorConfigs={factorConfigs} /> },
+        { id: 'reporting', title: 'Reporting', content: <ReportingPanel reportConfigs={mockReportConfigs} /> },
+    ];
+
+    const TABS = {
+        dashboard: { title: 'Profile Dashboard', content: <TabbedContainer tabs={profileSpecificTabs} activeTab={activeMainTab} onTabChange={setActiveMainTab} /> },
+        rules: { title: 'Global Settings', content: <TabbedContainer tabs={globalTabs} activeTab={activeMainTab} onTabChange={setActiveMainTab} /> },
+    }
+    
+    const [currentView, setCurrentView] = useState<'dashboard' | 'rules'>('dashboard');
+
+    return (
+        <div className="p-6 bg-gray-900 text-white min-h-screen">
+            <header className="mb-6">
+                <h1 className="text-3xl font-bold text-cyan-400">Advanced Risk Scoring Engine</h1>
+                <p className="text-gray-400">Monitor, analyze, and simulate risk profiles across your organization.</p>
+            </header>
+
+            <div className="flex space-x-4 mb-4 border-b border-gray-700">
+                <button onClick={() => setCurrentView('dashboard')} className={`py-2 px-4 text-lg font-semibold ${currentView === 'dashboard' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>Profile Analysis</button>
+                <button onClick={() => setCurrentView('rules')} className={`py-2 px-4 text-lg font-semibold ${currentView === 'rules' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>System Configuration</button>
+            </div>
+
+            <div className="grid grid-cols-12 gap-6">
+                <div className="col-span-3">
+                    <RiskProfileList
+                        profiles={profiles}
+                        selectedProfileId={selectedProfileId}
+                        onSelectProfile={setSelectedProfileId}
+                        onAddProfile={handleAddProfile}
+                    />
+                </div>
+
+                <main className="col-span-9">
+                    {currentView === 'dashboard' && (
+                        !selectedProfile ? (
+                            <Card>
+                                <div className="p-8 text-center text-gray-500">
+                                    <h2 className="text-2xl font-bold">No Profile Selected</h2>
+                                    <p>Please select a risk profile from the list on the left to see details.</p>
+                                </div>
+                            </Card>
+                        ) : (
+                            <TabbedContainer
+                                tabs={profileSpecificTabs}
+                                activeTab={activeMainTab}
+                                onTabChange={(tabId) => {
+                                    setActiveMainTab(tabId);
+                                    if(currentView !== 'dashboard') setCurrentView('dashboard');
+                                }}
+                            />
+                        )
+                    )}
+                    {currentView === 'rules' && (
+                         <TabbedContainer
+                            tabs={globalTabs}
+                            activeTab={activeMainTab}
+                            onTabChange={(tabId) => {
+                                setActiveMainTab(tabId);
+                                if(currentView !== 'rules') setCurrentView('rules');
+                            }}
+                        />
+                    )}
+                </main>
+            </div>
+            <RiskProfileEditorModal
+                isOpen={isProfileEditorOpen}
+                onClose={() => setIsProfileEditorOpen(false)}
+                profile={editingProfile}
+                onSave={handleSaveProfile}
+                factorConfigs={factorConfigs}
+            />
+        </div>
+    );
+};
+
+export default RiskScoringView;
