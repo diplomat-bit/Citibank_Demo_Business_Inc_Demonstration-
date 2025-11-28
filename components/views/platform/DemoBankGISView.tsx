@@ -1,13 +1,27 @@
 // components/views/platform/DemoBankGISView.tsx
-import React, { useState, useEffect, useReducer, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useReducer, useCallback, useMemo, useRef, DragEvent } from 'react';
 import Card from '../../Card';
 import { GoogleGenAI, Type } from "@google/genai";
+
+// --- SVG ICONS ---
+
+const Icons = {
+    Generate: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>,
+    Layers: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>,
+    Inspect: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    Analyze: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>,
+    DrawPoint: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"/></svg>,
+    DrawLine: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" transform="rotate(45 10 10) scale(0.8)" /></svg>,
+    DrawPolygon: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M18 9.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM11.5 3a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM4 11.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0zM11.5 20a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM18 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5.5 17a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z"/></svg>,
+};
+
 
 // --- TYPES & INTERFACES ---
 
 export type GeoJSONGeometry = GeoJSONPoint | GeoJSONMultiPoint | GeoJSONLineString | GeoJSONMultiLineString | GeoJSONPolygon | GeoJSONMultiPolygon;
 export type GeoJSON = GeoJSONFeature | GeoJSONFeatureCollection | GeoJSONGeometry;
 export type LngLat = [number, number]; // [longitude, latitude]
+export type DrawMode = 'select' | 'point' | 'line' | 'polygon';
 
 export interface GeoJSONPoint {
     type: 'Point';
@@ -90,7 +104,8 @@ export interface AnalysisResult {
     metrics?: Record<string, number | string>;
 }
 
-export type AnalysisType = 'proximity' | 'buffer' | 'intersection' | 'data-enrichment';
+export type AnalysisType = 'proximity' | 'buffer' | 'intersection' | 'data-enrichment' | 'natural-language-query';
+
 
 // --- CONSTANTS ---
 
@@ -113,9 +128,9 @@ export const MAX_ZOOM = 22;
 export const WORLD_GEOJSON: GeoJSONFeatureCollection = {
   type: "FeatureCollection",
   features: [
-    // A simplified world map could be included here. For brevity, it's represented by a single large polygon.
     {
       type: "Feature",
+      id: "world-base-feature",
       properties: { name: "World Base Map" },
       geometry: {
         type: "Polygon",
@@ -301,6 +316,21 @@ export class GISAIService {
         }
         return parsed as GeoJSONFeatureCollection;
     }
+    
+    public async geocode(query: string): Promise<GeoJSONPoint> {
+        const prompt = `Find the geographic coordinates (longitude, latitude) for the location: "${query}". Respond with a GeoJSON Point geometry.`;
+        const response = await this.ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: { responseMimeType: "application/json" }
+        });
+        const parsed = JSON.parse(response.text);
+        if (parsed.type !== 'Point') {
+            throw new Error("Could not geocode the location.");
+        }
+        return parsed as GeoJSONPoint;
+    }
+
 
     public async performSpatialAnalysis(analysisType: AnalysisType, prompt: string, contextLayers: MapLayer[]): Promise<AnalysisResult> {
         const contextGeoJSON = contextLayers.map(l => ({ name: l.name, data: l.data }));
@@ -313,6 +343,7 @@ export class GISAIService {
         
         Based on the user request and context layers, provide a summary of your findings. 
         If applicable, generate a new GeoJSON FeatureCollection representing the result of the analysis (e.g., buffer zones, intersection points).
+        If the analysis type is 'natural-language-query', focus on answering the question in the summary and generating a feature collection of the relevant features.
         Also, provide key metrics if relevant (e.g., count of features, total area).
         
         Respond in the following JSON format:
@@ -507,8 +538,11 @@ export const MapView: React.FC<{
     viewState: MapViewState;
     onViewStateChange: (newViewState: MapViewState) => void;
     onFeatureClick: (layerId: string, featureId: string | number) => void;
+    onMapClick: (coords: LngLat) => void;
+    onMouseMove: (coords: LngLat) => void;
     selectedFeatureId: string | number | null;
-}> = ({ layers, viewState, onViewStateChange, onFeatureClick, selectedFeatureId }) => {
+    drawPreview?: GeoJSONGeometry | null;
+}> = ({ layers, viewState, onViewStateChange, onFeatureClick, onMapClick, onMouseMove, selectedFeatureId, drawPreview }) => {
     const mapRef = useRef<SVGSVGElement>(null);
     const [isPanning, setIsPanning] = useState(false);
     const [panStart, setPanStart] = useState<{ x: number, y: number } | null>(null);
@@ -528,33 +562,47 @@ export const MapView: React.FC<{
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
+        if (e.target !== mapRef.current) return;
         setIsPanning(true);
         setPanStart({ x: e.clientX, y: e.clientY });
     };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isPanning || !panStart) return;
-        const dx = e.clientX - panStart.x;
-        const dy = e.clientY - panStart.y;
-        setPanStart({ x: e.clientX, y: e.clientY });
+    const handleMapMouseMove = (e: React.MouseEvent) => {
+        if (isPanning && panStart) {
+            const dx = e.clientX - panStart.x;
+            const dy = e.clientY - panStart.y;
+            setPanStart({ x: e.clientX, y: e.clientY });
 
-        const TILE_SIZE = 512;
-        const scale = Math.pow(2, viewState.zoom);
-        const worldSize = TILE_SIZE * scale;
-        
-        const dLng = dx * 360 / worldSize;
-        const dLat = dy * 360 / worldSize; // This is a simplification, should be Mercator-aware
-        
-        onViewStateChange({
-            ...viewState,
-            longitude: viewState.longitude - dLng,
-            latitude: viewState.latitude + dLat,
-        });
+            const TILE_SIZE = 512;
+            const scale = Math.pow(2, viewState.zoom);
+            const worldSize = TILE_SIZE * scale;
+            
+            const dLng = dx * 360 / worldSize;
+            const dLat = dy * 360 / worldSize; // This is a simplification, should be Mercator-aware
+            
+            onViewStateChange({
+                ...viewState,
+                longitude: viewState.longitude - dLng,
+                latitude: viewState.latitude + dLat,
+            });
+        } else {
+             const rect = mapRef.current!.getBoundingClientRect();
+             const coords = unproject(e.clientX - rect.left, e.clientY - rect.top, width, height, viewState);
+             onMouseMove(coords);
+        }
     };
 
     const handleMouseUp = () => {
         setIsPanning(false);
         setPanStart(null);
+    };
+
+    const handleMapClick = (e: React.MouseEvent) => {
+        if (e.target === mapRef.current) { // Prevent clicks on features from propagating
+            const rect = mapRef.current!.getBoundingClientRect();
+            const coords = unproject(e.clientX - rect.left, e.clientY - rect.top, width, height, viewState);
+            onMapClick(coords);
+        }
     };
     
     const scale = Math.pow(2, viewState.zoom);
@@ -569,8 +617,9 @@ export const MapView: React.FC<{
                 height="100%"
                 onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
+                onMouseMove={handleMapMouseMove}
                 onMouseUp={handleMouseUp}
+                onClick={handleMapClick}
                 className={isPanning ? 'cursor-grabbing' : 'cursor-grab'}
             >
                 <g transform={transform}>
@@ -600,6 +649,18 @@ export const MapView: React.FC<{
                             })}
                         </g>
                     ))}
+                     {drawPreview && (
+                        <g
+                            fill="#00FFFF"
+                            stroke="#00FFFF"
+                            strokeWidth={2 / scale}
+                            fillOpacity={0.3}
+                            strokeOpacity={0.9}
+                            style={{ pointerEvents: 'none' }}
+                        >
+                            {geojsonToSvgPath({ type: 'Feature', geometry: drawPreview, properties: {} }, project, { ...DEFAULT_LAYER_STYLE, fillColor: '#00FFFF', strokeColor: '#00FFFF', pointRadius: 5 })}
+                        </g>
+                    )}
                 </g>
             </svg>
         </div>
@@ -653,14 +714,42 @@ export const LayerManagerPanel: React.FC<{
     layers: MapLayer[];
     onLayerUpdate: (id: string, updates: Partial<MapLayer>) => void;
     onLayerDelete: (id: string) => void;
-}> = ({ layers, onLayerUpdate, onLayerDelete }) => {
+    onLayerReorder: (startIndex: number, endIndex: number) => void;
+}> = ({ layers, onLayerUpdate, onLayerDelete, onLayerReorder }) => {
     const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
+    const dragItem = useRef<number | null>(null);
+    const dragOverItem = useRef<number | null>(null);
+
+    const handleDragStart = (e: DragEvent, index: number) => {
+        dragItem.current = index;
+    };
+    
+    const handleDragEnter = (e: DragEvent, index: number) => {
+        dragOverItem.current = index;
+    };
+
+    const handleDragEnd = () => {
+        if (dragItem.current !== null && dragOverItem.current !== null) {
+            onLayerReorder(dragItem.current, dragOverItem.current);
+        }
+        dragItem.current = null;
+        dragOverItem.current = null;
+    };
+
 
     return (
         <Card title="Layer Manager">
             <ul className="space-y-2">
-                {layers.map(layer => (
-                    <li key={layer.id} className="bg-gray-700/50 p-3 rounded">
+                {layers.map((layer, index) => (
+                    <li 
+                        key={layer.id} 
+                        className="bg-gray-700/50 p-3 rounded"
+                        draggable={!layer.isBaseLayer}
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragEnter={(e) => handleDragEnter(e, index)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => e.preventDefault()}
+                    >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                                 <input
@@ -679,7 +768,7 @@ export const LayerManagerPanel: React.FC<{
                                         autoFocus
                                     />
                                 ) : (
-                                    <span onDoubleClick={() => setEditingLayerId(layer.id)} className="text-white">{layer.name}</span>
+                                    <span onDoubleClick={() => !layer.isBaseLayer && setEditingLayerId(layer.id)} className="text-white">{layer.name}</span>
                                 )}
                             </div>
                             <div className="flex items-center space-x-2">
@@ -762,6 +851,7 @@ export const SpatialAnalysisPanel: React.FC<{
                         <option value="buffer">Buffer Generation</option>
                         <option value="intersection">Intersection Analysis</option>
                         <option value="data-enrichment">Data Enrichment</option>
+                        <option value="natural-language-query">Natural Language Query</option>
                     </select>
                 </div>
                 <div>
@@ -803,10 +893,6 @@ export const SpatialAnalysisPanel: React.FC<{
 
 
 const DemoBankGISView: React.FC = () => {
-    // Retain original states for backward compatibility idea, though they are now part of a larger system.
-    const [prompt, setPrompt] = useState("a polygon for Central Park in New York City");
-    const [generatedGeoJson, setGeneratedGeoJson] = useState<any>(null); // Kept for potential direct display if needed
-    
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     
@@ -827,31 +913,53 @@ const DemoBankGISView: React.FC = () => {
         isBaseLayer: true,
     }];
     
-    const { layers, addLayer, removeLayer, updateLayer, selectedFeature, setSelectedFeature } = useLayersManager(initialLayers);
+    const { layers, addLayer, removeLayer, updateLayer, reorderLayers, selectedFeature, setSelectedFeature } = useLayersManager(initialLayers);
     const [viewState, setViewState] = useState<MapViewState>(INITIAL_MAP_VIEW_STATE);
     const [activeTab, setActiveTab] = useState<'generate' | 'layers' | 'inspect' | 'analyze'>('generate');
+    const [drawMode, setDrawMode] = useState<DrawMode>('select');
+    const [drawingPoints, setDrawingPoints] = useState<LngLat[]>([]);
+    const [mousePosition, setMousePosition] = useState<LngLat | null>(null);
 
     const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    const [apiKey, setApiKey] = useState<string | null>(null);
+    const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
     const aiService = useMemo(() => {
-        const apiKey = process.env.NEXT_PUBLIC_API_KEY || process.env.API_KEY;
-        if (!apiKey) {
-            console.error("API_KEY environment variable not set!");
-            addNotification('error', 'API Key not configured. AI features are disabled.');
+        if (!apiKey) return null;
+        try {
+            return new GISAIService(apiKey);
+        } catch (error) {
+            addNotification('error', `Failed to initialize AI service: ${error instanceof Error ? error.message : String(error)}`);
             return null;
         }
-        return new GISAIService(apiKey);
-    }, [addNotification]);
+    }, [apiKey, addNotification]);
+
+    useEffect(() => {
+       const key = process.env.NEXT_PUBLIC_API_KEY || process.env.API_KEY || localStorage.getItem('gis-api-key');
+       if(key) {
+        setApiKey(key);
+       } else {
+        setIsApiKeyModalOpen(true);
+       }
+    }, []);
+
+    const handleApiKeySubmit = (key: string) => {
+        setApiKey(key);
+        localStorage.setItem('gis-api-key', key);
+        setIsApiKeyModalOpen(false);
+        addNotification('success', 'API Key saved.');
+    };
 
     const handleGenerate = async (generationPrompt: string) => {
-        if (!aiService) return;
+        if (!aiService) {
+            addNotification('error', 'AI Service not available. Check your API key.');
+            return;
+        }
         setIsLoading(true);
         try {
             const geojson = await aiService.generateGeoJSON(generationPrompt);
-            setGeneratedGeoJson(geojson); // Also update legacy state
-
-            // Ensure all features have a unique ID for selection
             geojson.features.forEach(f => f.id = f.id || generateId());
 
             const color = getRandomHexColor();
@@ -864,8 +972,7 @@ const DemoBankGISView: React.FC = () => {
 
             addNotification('success', 'Successfully generated GeoJSON layer.');
 
-            // Fit map to new layer
-            const mapElement = document.querySelector('.w-full.h-full.bg-gray-900'); // hacky way to get dimensions
+            const mapElement = document.querySelector('.w-full.h-full.bg-gray-900');
             if (mapElement) {
                 const { width, height } = mapElement.getBoundingClientRect();
                 const bounds = calculateGeoJSONBounds(geojson);
@@ -880,7 +987,10 @@ const DemoBankGISView: React.FC = () => {
     };
     
     const handleAnalysis = async (type: AnalysisType, prompt: string, layerIds: string[]) => {
-        if (!aiService) return;
+        if (!aiService) {
+            addNotification('error', 'AI Service not available. Check your API key.');
+            return;
+        }
         setIsAnalyzing(true);
         try {
             const contextLayers = layers.filter(l => layerIds.includes(l.id));
@@ -906,6 +1016,45 @@ const DemoBankGISView: React.FC = () => {
             setIsAnalyzing(false);
         }
     };
+    
+    const finishDrawing = () => {
+        let newFeature: GeoJSONFeature | null = null;
+        if (drawMode === 'point' && drawingPoints.length > 0) {
+            newFeature = { type: 'Feature', geometry: { type: 'Point', coordinates: drawingPoints[0] }, properties: { name: "New Point" } };
+        } else if (drawMode === 'line' && drawingPoints.length > 1) {
+            newFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: drawingPoints }, properties: { name: "New Line" } };
+        } else if (drawMode === 'polygon' && drawingPoints.length > 2) {
+            newFeature = { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[...drawingPoints, drawingPoints[0]]] }, properties: { name: "New Polygon" } };
+        }
+
+        if (newFeature) {
+            newFeature.id = generateId();
+            const color = getRandomHexColor();
+            addLayer({
+                name: `Drawn ${drawMode}`,
+                data: { type: 'FeatureCollection', features: [newFeature] },
+                isVisible: true,
+                style: { ...DEFAULT_LAYER_STYLE, fillColor: color, strokeColor: '#FFFFFF' },
+            });
+        }
+        setDrawingPoints([]);
+        setDrawMode('select');
+    };
+
+    const handleMapClick = (coords: LngLat) => {
+        if (drawMode !== 'select') {
+            setDrawingPoints(prev => [...prev, coords]);
+        }
+    };
+    
+    const drawPreview = useMemo((): GeoJSONGeometry | null => {
+        if (drawMode === 'select' || drawingPoints.length === 0 || !mousePosition) return null;
+        if (drawMode === 'point') return { type: 'Point', coordinates: drawingPoints[0] };
+        if (drawMode === 'line') return { type: 'LineString', coordinates: [...drawingPoints, mousePosition] };
+        if (drawMode === 'polygon') return { type: 'Polygon', coordinates: [[...drawingPoints, mousePosition, drawingPoints[0]]] };
+        return null;
+    }, [drawMode, drawingPoints, mousePosition]);
+
 
     const handleFeatureClick = (layerId: string, featureId: string | number) => {
         setSelectedFeature({ layerId, featureId });
@@ -917,7 +1066,7 @@ const DemoBankGISView: React.FC = () => {
             case 'generate':
                 return <AIGeneratorPanel onGenerate={handleGenerate} isGenerating={isLoading} />;
             case 'layers':
-                return <LayerManagerPanel layers={layers} onLayerUpdate={updateLayer} onLayerDelete={removeLayer} />;
+                return <LayerManagerPanel layers={layers} onLayerUpdate={updateLayer} onLayerDelete={removeLayer} onLayerReorder={reorderLayers} />;
             case 'inspect':
                 return <PropertyInspectorPanel selectedFeature={selectedFeature} />;
             case 'analyze':
@@ -927,27 +1076,27 @@ const DemoBankGISView: React.FC = () => {
         }
     };
 
-    const iconForTab = (tab: string) => {
-        switch (tab) {
-            case 'generate': return <>🧠</>;
-            case 'layers': return <>📚</>;
-            case 'inspect': return <>🔍</>;
-            case 'analyze': return <>🔬</>;
-            default: return null;
-        }
+    const iconForTab = (tab: 'generate' | 'layers' | 'inspect' | 'analyze') => {
+        const iconMap = {
+            generate: <Icons.Generate />,
+            layers: <Icons.Layers />,
+            inspect: <Icons.Inspect />,
+            analyze: <Icons.Analyze />,
+        };
+        return iconMap[tab];
     };
 
     return (
         <div className="h-screen w-full flex flex-col bg-gray-900 text-white">
-            <header className="bg-gray-800/50 backdrop-blur-sm p-4 text-center z-10 shadow-md">
+            <header className="bg-gray-800/50 backdrop-blur-sm p-4 text-center z-20 shadow-md">
                 <h1 className="text-2xl font-bold tracking-wider">Demo Bank Advanced GIS Platform</h1>
             </header>
             <div className="flex flex-grow h-[calc(100vh-68px)] relative">
-                <div className="absolute top-4 left-4 z-10 flex flex-col space-y-2">
-                   {['generate', 'layers', 'inspect', 'analyze'].map(tab => (
+                <div className="absolute top-4 left-4 z-20 flex flex-col space-y-2">
+                   {(['generate', 'layers', 'inspect', 'analyze'] as const).map(tab => (
                        <IconButton
                             key={tab}
-                            onClick={() => setActiveTab(tab as any)}
+                            onClick={() => setActiveTab(tab)}
                             label={tab.charAt(0).toUpperCase() + tab.slice(1)}
                             icon={iconForTab(tab)}
                             active={activeTab === tab}
@@ -955,11 +1104,24 @@ const DemoBankGISView: React.FC = () => {
                    ))}
                 </div>
 
-                <div className={`absolute top-0 left-16 z-10 h-full transition-transform transform ${activeTab ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className={`absolute top-0 left-20 z-10 h-full transition-transform transform ${activeTab ? 'translate-x-0' : '-translate-x-full'}`}>
                    <Sidebar>
                      {tabContent()}
                    </Sidebar>
                 </div>
+                
+                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-gray-700/80 p-2 rounded-lg shadow-lg flex space-x-2">
+                    <button onClick={() => setDrawMode('point')} className={`px-2 py-1 rounded ${drawMode === 'point' ? 'bg-cyan-600' : ''}`}><Icons.DrawPoint /></button>
+                    <button onClick={() => setDrawMode('line')} className={`px-2 py-1 rounded ${drawMode === 'line' ? 'bg-cyan-600' : ''}`}><Icons.DrawLine /></button>
+                    <button onClick={() => setDrawMode('polygon')} className={`px-2 py-1 rounded ${drawMode === 'polygon' ? 'bg-cyan-600' : ''}`}><Icons.DrawPolygon /></button>
+                </div>
+
+                {drawMode !== 'select' && (
+                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-gray-700/80 p-2 rounded-lg shadow-lg flex space-x-2">
+                        <button onClick={finishDrawing} className="px-4 py-2 bg-green-600 rounded">Finish</button>
+                        <button onClick={() => { setDrawingPoints([]); setDrawMode('select'); }} className="px-4 py-2 bg-red-600 rounded">Cancel</button>
+                    </div>
+                )}
                 
                 <main className="flex-grow h-full">
                     <MapView 
@@ -967,7 +1129,10 @@ const DemoBankGISView: React.FC = () => {
                         viewState={viewState}
                         onViewStateChange={setViewState}
                         onFeatureClick={handleFeatureClick}
+                        onMapClick={handleMapClick}
+                        onMouseMove={setMousePosition}
                         selectedFeatureId={selectedFeature?.feature.id || null}
+                        drawPreview={drawPreview}
                     />
                 </main>
             </div>
@@ -992,8 +1157,30 @@ const DemoBankGISView: React.FC = () => {
                     )}
                 </div>
             </Modal>
+            
+            <Modal isOpen={isApiKeyModalOpen} onClose={() => setIsApiKeyModalOpen(false)} title="Enter API Key">
+                 <div className="space-y-4 text-gray-300">
+                    <p>Please provide your Google AI Studio API key to enable AI features. This key will be stored in your browser's local storage.</p>
+                    <input 
+                        type="password"
+                        id="apiKeyInput"
+                        className="w-full bg-gray-700 p-2 rounded text-white"
+                        placeholder="Enter your API Key"
+                    />
+                    <button
+                        onClick={() => {
+                            const key = (document.getElementById('apiKeyInput') as HTMLInputElement).value;
+                            if (key) handleApiKeySubmit(key);
+                        }}
+                        className="w-full py-2 bg-cyan-600 hover:bg-cyan-700 rounded"
+                    >
+                        Save Key
+                    </button>
+                 </div>
+            </Modal>
         </div>
     );
 };
 
 export default DemoBankGISView;
+```
