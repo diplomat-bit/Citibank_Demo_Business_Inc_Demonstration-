@@ -1,3 +1,4 @@
+---
 # The Nexus: The Map of Consequence
 
 **(This is not a chart. This is the Nexus. The living map of the golden web, a real-time visualization of the emergent relationships between all the disparate parts of your financial life. This is the Instrument's consciousness, revealed.)**
@@ -12,8 +13,9 @@ This view is interactive and exploratory. It invites you to become a cartographe
 
 ---
 
-import React, { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext, useReducer } from 'react';
 import { a, useSpring, useSprings, animated } from '@react-spring/web';
+import { throttle } from 'lodash';
 
 //================================================================================================
 // SECTION 1: CORE TYPES & ENUMS
@@ -37,6 +39,10 @@ export enum NexusEntityType {
   ASSET = 'ASSET', // Property, vehicles
   TAG = 'TAG', // User-defined tags for transactions/goals
   INSIGHT = 'INSIGHT', // AI-generated observations
+  MARKET_EVENT = 'MARKET_EVENT', // External economic events
+  NEWS_ARTICLE = 'NEWS_ARTICLE', // News related to investments or market events
+  API_INTEGRATION = 'API_INTEGRATION', // Represents a connected external service
+  CORPORATE_PROJECT = 'CORPORATE_PROJECT', // For enterprise use-cases
 }
 
 /**
@@ -58,6 +64,10 @@ export enum NexusLinkType {
   EVIDENCE = 'EVIDENCE', // Transaction -> Insight
   RECOMMENDATION = 'RECOMMENDATION', // Insight -> Goal/Budget
   DEPENDENCY = 'DEPENDENCY', // Goal -> Goal
+  CORRELATION = 'CORRELATION', // Investment -> MarketEvent
+  REFERENCE = 'REFERENCE', // MarketEvent -> NewsArticle
+  CONNECTION = 'CONNECTION', // Visionary -> APIIntegration
+  PROJECT_IMPACT = 'PROJECT_IMPACT', // CorporateProject -> IncomeSource
 }
 
 /**
@@ -126,6 +136,7 @@ export interface InvestmentNode extends BaseNexusNode {
   value: number;
   assetClass: string; // e.g., 'equity', 'fixed-income', 'crypto'
   expectedReturn: number; // percentage
+  symbol?: string; // e.g., 'AAPL', 'BTC'
 }
 
 export interface DebtNode extends BaseNexusNode {
@@ -159,7 +170,38 @@ export interface InsightNode extends BaseNexusNode {
   severity: 'info' | 'warning' | 'critical';
   description: string;
   actionable: boolean;
+  aiModel: 'GPT-4' | 'Gemini-Pro' | 'Rule-Based';
 }
+
+export interface MarketEventNode extends BaseNexusNode {
+  type: NexusEntityType.MARKET_EVENT;
+  eventType: 'interest_rate_change' | 'inflation_report' | 'earnings_call';
+  impact: 'positive' | 'negative' | 'neutral';
+  description: string;
+}
+
+export interface NewsArticleNode extends BaseNexusNode {
+  type: NexusEntityType.NEWS_ARTICLE;
+  source: string; // e.g., 'Bloomberg', 'Reuters'
+  url: string;
+  sentiment: number; // -1 to 1
+}
+
+export interface APIIntegrationNode extends BaseNexusNode {
+  type: NexusEntityType.API_INTEGRATION;
+  provider: 'Plaid' | 'AlphaVantage' | 'Zillow';
+  status: 'connected' | 'disconnected' | 'error';
+  lastSync: number;
+}
+
+export interface CorporateProjectNode extends BaseNexusNode {
+  type: NexusEntityType.CORPORATE_PROJECT;
+  budget: number;
+  deadline: number;
+  status: 'on_track' | 'at_risk' | 'delayed';
+  revenueImpact: number;
+}
+
 
 /**
  * @type NexusNode
@@ -177,7 +219,11 @@ export type NexusNode =
   | RecurringPaymentNode
   | AssetNode
   | TagNode
-  | InsightNode;
+  | InsightNode
+  | MarketEventNode
+  | NewsArticleNode
+  | APIIntegrationNode
+  | CorporateProjectNode;
 
 /**
  * @interface NexusLink
@@ -249,6 +295,17 @@ export interface ViewportTransform {
 }
 
 /**
+ * @interface ContextMenuState
+ * @description Defines the state for the right-click context menu.
+ */
+export interface ContextMenuState {
+    isOpen: boolean;
+    x: number;
+    y: number;
+    nodeId: string | null;
+}
+
+/**
  * @interface InteractionState
  * @description Manages the state of user interactions with the graph.
  */
@@ -256,12 +313,12 @@ export interface InteractionState {
   selectedNodeId: string | null;
   hoveredNodeId: string | null;
   draggedNodeId: string | null;
-  contextMenu: {
-    isOpen: boolean;
-    x: number;
-    y: number;
-    nodeId: string | null;
+  lasso: {
+    isActive: boolean;
+    start: Vector2D | null;
+    end: Vector2D | null;
   } | null;
+  contextMenu: ContextMenuState;
 }
 
 /**
@@ -301,18 +358,22 @@ export const NODE_VISUAL_CONFIG: Record<NexusEntityType, {
     icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
     mass: number;
 }> = {
-  [NexusEntityType.VISIONARY]: { baseRadius: 40, colorKey: 'accent1', icon: (p) => <svg {...p}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2zm0 6h2v2h-2z"/></svg>, mass: 10 },
-  [NexusEntityType.ACCOUNT]: { baseRadius: 25, colorKey: 'primary', icon: (p) => <svg {...p}><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>, mass: 5 },
-  [NexusEntityType.TRANSACTION]: { baseRadius: 8, colorKey: 'neutral', icon: (p) => <svg {...p}><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4v3z"/></svg>, mass: 1 },
-  [NexusEntityType.BUDGET]: { baseRadius: 20, colorKey: 'secondary', icon: (p) => <svg {...p}><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm-1 14H5c-.55 0-1-.45-1-1V8h16v9c0 .55-.45 1-1 1z"/></svg>, mass: 4 },
-  [NexusEntityType.GOAL]: { baseRadius: 30, colorKey: 'accent2', icon: (p) => <svg {...p}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>, mass: 8 },
-  [NexusEntityType.INCOME_SOURCE]: { baseRadius: 22, colorKey: 'success', icon: (p) => <svg {...p}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5L6 12l1.41-1.41L10.5 14.67l7.09-7.09L19 9l-8.5 8.5z"/></svg>, mass: 4 },
-  [NexusEntityType.INVESTMENT]: { baseRadius: 18, colorKey: 'accent3', icon: (p) => <svg {...p}><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 17.08l1.5 1.41z"/></svg>, mass: 3 },
-  [NexusEntityType.DEBT]: { baseRadius: 18, colorKey: 'error', icon: (p) => <svg {...p}><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>, mass: 3 },
-  [NexusEntityType.RECURRING_PAYMENT]: { baseRadius: 12, colorKey: 'warning', icon: (p) => <svg {...p}><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>, mass: 2 },
-  [NexusEntityType.ASSET]: { baseRadius: 28, colorKey: 'primary', icon: (p) => <svg {...p}><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>, mass: 6 },
-  [NexusEntityType.TAG]: { baseRadius: 10, colorKey: 'neutral', icon: (p) => <svg {...p}><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>, mass: 1 },
-  [NexusEntityType.INSIGHT]: { baseRadius: 15, colorKey: 'accent2', icon: (p) => <svg {...p}><path d="M11 21c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2s2 .9 2 2v14c0 1.1-.9 2-2 2zm-7-7c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2s2 .9 2 2v7c0 1.1-.9 2-2 2zm14 0c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2s2 .9 2 2v7c0 1.1-.9 2-2 2z"/></svg>, mass: 2 },
+  [NexusEntityType.VISIONARY]: { baseRadius: 40, colorKey: 'accent1', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2zm0 6h2v2h-2z"/></svg>, mass: 10 },
+  [NexusEntityType.ACCOUNT]: { baseRadius: 25, colorKey: 'primary', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>, mass: 5 },
+  [NexusEntityType.TRANSACTION]: { baseRadius: 8, colorKey: 'neutral', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4v3z"/></svg>, mass: 1 },
+  [NexusEntityType.BUDGET]: { baseRadius: 20, colorKey: 'secondary', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm-1 14H5c-.55 0-1-.45-1-1V8h16v9c0 .55-.45 1-1 1z"/></svg>, mass: 4 },
+  [NexusEntityType.GOAL]: { baseRadius: 30, colorKey: 'accent2', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>, mass: 8 },
+  [NexusEntityType.INCOME_SOURCE]: { baseRadius: 22, colorKey: 'success', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5L6 12l1.41-1.41L10.5 14.67l7.09-7.09L19 9l-8.5 8.5z"/></svg>, mass: 4 },
+  [NexusEntityType.INVESTMENT]: { baseRadius: 18, colorKey: 'accent3', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.09-4-4L2 17.08l1.5 1.41z"/></svg>, mass: 3 },
+  [NexusEntityType.DEBT]: { baseRadius: 18, colorKey: 'error', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>, mass: 3 },
+  [NexusEntityType.RECURRING_PAYMENT]: { baseRadius: 12, colorKey: 'warning', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>, mass: 2 },
+  [NexusEntityType.ASSET]: { baseRadius: 28, colorKey: 'primary', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>, mass: 6 },
+  [NexusEntityType.TAG]: { baseRadius: 10, colorKey: 'neutral', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>, mass: 1 },
+  [NexusEntityType.INSIGHT]: { baseRadius: 15, colorKey: 'accent2', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M11 21c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2s2 .9 2 2v14c0 1.1-.9 2-2 2zm-7-7c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2s2 .9 2 2v7c0 1.1-.9 2-2 2zm14 0c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2s2 .9 2 2v7c0 1.1-.9 2-2 2z"/></svg>, mass: 2 },
+  [NexusEntityType.MARKET_EVENT]: { baseRadius: 20, colorKey: 'info', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M10 4v2h4V4zm8 13v-2.17C18 14.4 17.6 14 17.17 14H6.83C6.4 14 6 14.4 6 14.83V17H4v-7c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v7h-2z"/></svg>, mass: 3 },
+  [NexusEntityType.NEWS_ARTICLE]: { baseRadius: 12, colorKey: 'neutral', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 4h16v2H4zm0 4h12v2H4z"/></svg>, mass: 1 },
+  [NexusEntityType.API_INTEGRATION]: { baseRadius: 16, colorKey: 'success', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M13 7h-2v2h2V7zm0 4h-2v6h2v-6zm4-9.99L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>, mass: 2 },
+  [NexusEntityType.CORPORATE_PROJECT]: { baseRadius: 26, colorKey: 'accent1', icon: (p) => <svg {...p} viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>, mass: 7 },
 };
 
 /**
@@ -334,6 +395,10 @@ export const LINK_VISUAL_CONFIG: Record<NexusLinkType, { colorKey: string; strok
     [NexusLinkType.EVIDENCE]: { colorKey: 'info', strokeWidth: 1, dashed: true },
     [NexusLinkType.RECOMMENDATION]: { colorKey: 'accent1', strokeWidth: 2, dashed: true },
     [NexusLinkType.DEPENDENCY]: { colorKey: 'accent2', strokeWidth: 2, dashed: false },
+    [NexusLinkType.CORRELATION]: { colorKey: 'info', strokeWidth: 1.5, dashed: true },
+    [NexusLinkType.REFERENCE]: { colorKey: 'secondary', strokeWidth: 0.7, dashed: true },
+    [NexusLinkType.CONNECTION]: { colorKey: 'success', strokeWidth: 2.5 },
+    [NexusLinkType.PROJECT_IMPACT]: { colorKey: 'accent1', strokeWidth: 3, dashed: false },
 };
 
 /**
@@ -347,6 +412,7 @@ export const SIMULATION_CONFIG = {
   linkDistance: 100,
   linkStrength: 0.5,
   centerForce: 0.05,
+  collisionRadiusPadding: 5,
   velocityDecay: 0.4, // Friction
   simulationAlpha: 1, // Initial energy
   simulationAlphaMin: 0.001, // When simulation stops
@@ -376,7 +442,7 @@ export const THEME = {
     neutral: '#adb5bd',
   },
   dark: {
-    background: '#1a1a1a',
+    background: '#121212',
     text: '#e9ecef',
     textSecondary: '#adb5bd',
     border: '#495057',
@@ -445,113 +511,45 @@ export const generateMockNexusData = (): NexusGraphData => {
     riskTolerance: 'medium',
   });
   
-  // ... continue with a large amount of mock data generation
   const checkingAccountId = 'acc-chk-01';
-  nodes.push({
-    id: checkingAccountId,
-    type: NexusEntityType.ACCOUNT,
-    label: 'Primary Checking',
-    timestamp: Date.now(),
-    accountType: 'checking',
-    balance: 5230.12,
-    currency: 'USD',
-    institution: 'Nexus Bank'
-  });
+  nodes.push({ id: checkingAccountId, type: NexusEntityType.ACCOUNT, label: 'Primary Checking', timestamp: Date.now(), accountType: 'checking', balance: 5230.12, currency: 'USD', institution: 'Nexus Bank' });
   links.push({ id: `link-${visionaryId}-${checkingAccountId}`, source: visionaryId, target: checkingAccountId, type: NexusLinkType.OWNERSHIP, strength: 1.0 });
 
   const savingsAccountId = 'acc-sav-01';
-  nodes.push({
-    id: savingsAccountId,
-    type: NexusEntityType.ACCOUNT,
-    label: 'Emergency Fund',
-    timestamp: Date.now(),
-    accountType: 'savings',
-    balance: 15000.00,
-    currency: 'USD',
-    institution: 'Nexus Bank'
-  });
+  nodes.push({ id: savingsAccountId, type: NexusEntityType.ACCOUNT, label: 'Emergency Fund', timestamp: Date.now(), accountType: 'savings', balance: 15000.00, currency: 'USD', institution: 'Nexus Bank' });
   links.push({ id: `link-${visionaryId}-${savingsAccountId}`, source: visionaryId, target: savingsAccountId, type: NexusLinkType.OWNERSHIP, strength: 1.0 });
 
   const creditCardId = 'acc-cc-01';
-  nodes.push({
-    id: creditCardId,
-    type: NexusEntityType.ACCOUNT,
-    label: 'Travel Rewards CC',
-    timestamp: Date.now(),
-    accountType: 'credit',
-    balance: -1245.33,
-    currency: 'USD',
-    institution: 'Capital Two'
-  });
+  nodes.push({ id: creditCardId, type: NexusEntityType.ACCOUNT, label: 'Travel Rewards CC', timestamp: Date.now(), accountType: 'credit', balance: -1245.33, currency: 'USD', institution: 'Capital Two' });
   links.push({ id: `link-${visionaryId}-${creditCardId}`, source: visionaryId, target: creditCardId, type: NexusLinkType.OWNERSHIP, strength: 1.0 });
   
   const salaryId = 'inc-salary-01';
-  nodes.push({
-      id: salaryId,
-      type: NexusEntityType.INCOME_SOURCE,
-      label: 'Salary (Tech Corp)',
-      timestamp: Date.now(),
-      monthlyAmount: 6000,
-      isStable: true,
-      sourceType: 'salary'
-  });
+  nodes.push({ id: salaryId, type: NexusEntityType.INCOME_SOURCE, label: 'Salary (Tech Corp)', timestamp: Date.now(), monthlyAmount: 6000, isStable: true, sourceType: 'salary' });
   links.push({id: `link-${salaryId}-${checkingAccountId}`, source: salaryId, target: checkingAccountId, type: NexusLinkType.FUNDING, strength: 0.9});
 
   const freelanceId = 'inc-freelance-01';
-  nodes.push({
-      id: freelanceId,
-      type: NexusEntityType.INCOME_SOURCE,
-      label: 'Freelance Design',
-      timestamp: Date.now(),
-      monthlyAmount: 800,
-      isStable: false,
-      sourceType: 'freelance'
-  });
+  nodes.push({ id: freelanceId, type: NexusEntityType.INCOME_SOURCE, label: 'Freelance Design', timestamp: Date.now(), monthlyAmount: 800, isStable: false, sourceType: 'freelance' });
   links.push({id: `link-${freelanceId}-${checkingAccountId}`, source: freelanceId, target: checkingAccountId, type: NexusLinkType.FUNDING, strength: 0.1});
 
 
   const rentId = 'rpay-rent-01';
-  nodes.push({
-      id: rentId,
-      type: NexusEntityType.RECURRING_PAYMENT,
-      label: 'Apartment Rent',
-      timestamp: Date.now(),
-      amount: 2200,
-      frequency: 'monthly',
-      nextDueDate: new Date().setDate(1)
-  });
+  nodes.push({ id: rentId, type: NexusEntityType.RECURRING_PAYMENT, label: 'Apartment Rent', timestamp: Date.now(), amount: 2200, frequency: 'monthly', nextDueDate: new Date().setDate(1) });
   links.push({id: `link-${rentId}-${checkingAccountId}`, source: rentId, target: checkingAccountId, type: NexusLinkType.SERVICE, strength: 1.0});
 
   const groceriesBudgetId = 'bud-groceries-01';
-  nodes.push({
-      id: groceriesBudgetId,
-      type: NexusEntityType.BUDGET,
-      label: 'Groceries',
-      limit: 400,
-      spent: 250.78,
-      period: 'monthly',
-      variance: (250.78 / 400 - 1) * 100
-  });
+  nodes.push({ id: groceriesBudgetId, type: NexusEntityType.BUDGET, label: 'Groceries', limit: 400, spent: 250.78, period: 'monthly', variance: (250.78 / 400 - 1) * 100 });
 
   const entertainmentBudgetId = 'bud-ent-01';
-  nodes.push({
-      id: entertainmentBudgetId,
-      type: NexusEntityType.BUDGET,
-      label: 'Entertainment',
-      limit: 200,
-      spent: 250,
-      period: 'monthly',
-      variance: (250 / 200 - 1) * 100
-  });
+  nodes.push({ id: entertainmentBudgetId, type: NexusEntityType.BUDGET, label: 'Entertainment', limit: 200, spent: 250, period: 'monthly', variance: (250 / 200 - 1) * 100 });
 
-  const transactions: TransactionNode[] = Array.from({ length: 50 }, (_, i) => {
+  const transactions: TransactionNode[] = Array.from({ length: 150 }, (_, i) => {
     const isGroceries = Math.random() > 0.5;
     const amount = isGroceries ? (Math.random() * 50 + 10) : (Math.random() * 80 + 15);
     return {
         id: `txn-${i}`,
         type: NexusEntityType.TRANSACTION,
         label: `TXN #${i+1}`,
-        timestamp: Date.now() - (Math.random() * 30 * 24 * 60 * 60 * 1000),
+        timestamp: Date.now() - (Math.random() * 90 * 24 * 60 * 60 * 1000),
         amount: -amount,
         currency: 'USD',
         category: isGroceries ? 'Groceries' : 'Entertainment',
@@ -559,7 +557,6 @@ export const generateMockNexusData = (): NexusGraphData => {
         vendor: isGroceries ? 'Whole Foods' : 'Cinema Paradiso',
     }
   });
-
   nodes.push(...transactions);
   transactions.forEach(txn => {
       links.push({ id: `link-${creditCardId}-${txn.id}`, source: creditCardId, target: txn.id, type: NexusLinkType.PAYMENT, strength: txn.amount / 100 });
@@ -568,43 +565,29 @@ export const generateMockNexusData = (): NexusGraphData => {
   });
 
   const houseGoalId = 'goal-house-01';
-  nodes.push({
-      id: houseGoalId,
-      type: NexusEntityType.GOAL,
-      label: 'House Down Payment',
-      targetAmount: 50000,
-      currentAmount: 15000,
-      deadline: new Date().setFullYear(new Date().getFullYear() + 3),
-      priority: 'critical',
-      progress: 15000 / 50000
-  });
+  nodes.push({ id: houseGoalId, type: NexusEntityType.GOAL, label: 'House Down Payment', targetAmount: 50000, currentAmount: 15000, deadline: new Date().setFullYear(new Date().getFullYear() + 3), priority: 'critical', progress: 15000 / 50000 });
   links.push({ id: `link-${savingsAccountId}-${houseGoalId}`, source: savingsAccountId, target: houseGoalId, type: NexusLinkType.ALLOCATION, strength: 1.0 });
   
   const vacationGoalId = 'goal-vacation-01';
-  nodes.push({
-      id: vacationGoalId,
-      type: NexusEntityType.GOAL,
-      label: 'Japan Trip',
-      targetAmount: 8000,
-      currentAmount: 6000,
-      deadline: new Date().setFullYear(new Date().getFullYear() + 1),
-      priority: 'high',
-      progress: 6000 / 8000
-  });
-
+  nodes.push({ id: vacationGoalId, type: NexusEntityType.GOAL, label: 'Japan Trip', targetAmount: 8000, currentAmount: 6000, deadline: new Date().setFullYear(new Date().getFullYear() + 1), priority: 'high', progress: 6000 / 8000 });
+  links.push({ id: `link-${savingsAccountId}-${vacationGoalId}`, source: savingsAccountId, target: vacationGoalId, type: NexusLinkType.ALLOCATION, strength: 0.5 });
+  
   const overspendingInsightId = 'ins-overspend-01';
-  nodes.push({
-      id: overspendingInsightId,
-      type: NexusEntityType.INSIGHT,
-      label: 'Entertainment Overspend',
-      severity: 'warning',
-      description: 'Entertainment spending is 25% over budget, potentially delaying the Japan Trip goal.',
-      actionable: true
-  });
-
+  nodes.push({ id: overspendingInsightId, type: NexusEntityType.INSIGHT, label: 'Entertainment Overspend', severity: 'warning', description: 'Entertainment spending is 25% over budget, potentially delaying the Japan Trip goal.', actionable: true, aiModel: 'Gemini-Pro' });
   links.push({ id: `link-${entertainmentBudgetId}-${overspendingInsightId}`, source: entertainmentBudgetId, target: overspendingInsightId, type: NexusLinkType.EVIDENCE, strength: 0.8 });
   links.push({ id: `link-${overspendingInsightId}-${vacationGoalId}`, source: overspendingInsightId, target: vacationGoalId, type: NexusLinkType.RECOMMENDATION, strength: 0.8 });
 
+  const plaidApiId = 'api-plaid-01';
+  nodes.push({ id: plaidApiId, type: NexusEntityType.API_INTEGRATION, label: 'Plaid Connection', provider: 'Plaid', status: 'connected', lastSync: Date.now() });
+  links.push({ id: `link-${visionaryId}-${plaidApiId}`, source: visionaryId, target: plaidApiId, type: NexusLinkType.CONNECTION, strength: 1.0});
+
+  const stockId = 'inv-aapl-01';
+  nodes.push({ id: stockId, type: NexusEntityType.INVESTMENT, label: 'Apple Inc.', value: 12000, assetClass: 'equity', expectedReturn: 0.15, symbol: 'AAPL' });
+  links.push({ id: `link-${savingsAccountId}-${stockId}`, source: savingsAccountId, target: stockId, type: NexusLinkType.CONTRIBUTION, strength: 0.7});
+  
+  const marketEventId = 'me-ratehike-01';
+  nodes.push({ id: marketEventId, type: NexusEntityType.MARKET_EVENT, label: 'Fed Rate Hike', eventType: 'interest_rate_change', impact: 'negative', description: 'Federal Reserve announced a 25bps rate hike.' });
+  links.push({ id: `link-${stockId}-${marketEventId}`, source: stockId, target: marketEventId, type: NexusLinkType.CORRELATION, strength: 0.6 });
 
   return { nodes, links };
 };
@@ -730,13 +713,12 @@ export const useNexusData = (filters: FilterState) => {
 
 /**
  * @hook useForceSimulation
- * @description A from-scratch force-directed graph simulation engine.
+ * @description A from-scratch force-directed graph simulation engine with collision detection.
  */
 export const useForceSimulation = (
     graphData: NexusGraphData | null,
     width: number,
-    height: number,
-    draggedNodeId: string | null
+    height: number
 ) => {
     const [simulatedNodes, setSimulatedNodes] = useState<SimulatedNode[]>([]);
     const simulationRef = useRef<number>();
@@ -757,7 +739,6 @@ export const useForceSimulation = (
             }))
             .filter(l => l.sourceNode && l.targetNode);
     }, [graphData, nodesMap]);
-
 
     // Initialize nodes when data changes
     useEffect(() => {
@@ -783,8 +764,6 @@ export const useForceSimulation = (
                 simulationRef.current = undefined;
                 return;
             }
-
-            // Update alpha
             alpha += (SIMULATION_CONFIG.simulationAlphaMin - alpha) * SIMULATION_CONFIG.simulationAlphaDecay;
 
             setSimulatedNodes(currentNodes => {
@@ -805,10 +784,14 @@ export const useForceSimulation = (
                     const sourceMassRatio = targetNode.mass / (sourceNode.mass + targetNode.mass);
                     const targetMassRatio = sourceNode.mass / (sourceNode.mass + targetNode.mass);
                     
-                    sourceNode.vx += dxForce * sourceMassRatio;
-                    sourceNode.vy += dyForce * sourceMassRatio;
-                    targetNode.vx -= dxForce * targetMassRatio;
-                    targetNode.vy -= dyForce * targetMassRatio;
+                    if(!sourceNode.isFixed) {
+                        sourceNode.vx += dxForce * sourceMassRatio;
+                        sourceNode.vy += dyForce * sourceMassRatio;
+                    }
+                    if(!targetNode.isFixed) {
+                        targetNode.vx -= dxForce * targetMassRatio;
+                        targetNode.vy -= dyForce * targetMassRatio;
+                    }
                 });
                 
                 // 2. Charge force (repulsion)
@@ -824,38 +807,64 @@ export const useForceSimulation = (
                         if (d2 > SIMULATION_CONFIG.chargeDistanceMax ** 2) continue;
 
                         const force = SIMULATION_CONFIG.chargeStrength / d2 * alpha;
-
                         const dxForce = dx * force;
                         const dyForce = dy * force;
 
-                        nodeA.vx += dxForce;
-                        nodeA.vy += dyForce;
-                        nodeB.vx -= dxForce;
-                        nodeB.vy -= dyForce;
+                        if(!nodeA.isFixed) {
+                            nodeA.vx += dxForce;
+                            nodeA.vy += dyForce;
+                        }
+                        if(!nodeB.isFixed) {
+                            nodeB.vx -= dxForce;
+                            nodeB.vy -= dyForce;
+                        }
                     }
                 }
 
                 // 3. Center force
                 newNodes.forEach(node => {
-                    node.vx += (width / 2 - node.x) * SIMULATION_CONFIG.centerForce * alpha;
-                    node.vy += (height / 2 - node.y) * SIMULATION_CONFIG.centerForce * alpha;
+                    if(!node.isFixed) {
+                        node.vx += (width / 2 - node.x) * SIMULATION_CONFIG.centerForce * alpha;
+                        node.vy += (height / 2 - node.y) * SIMULATION_CONFIG.centerForce * alpha;
+                    }
                 });
+                
+                // 4. Collision detection
+                 for (let i = 0; i < newNodes.length; i++) {
+                    for (let j = i + 1; j < newNodes.length; j++) {
+                        const nodeA = newNodes[i];
+                        const nodeB = newNodes[j];
+                        const dx = nodeB.x - nodeA.x;
+                        const dy = nodeB.y - nodeA.y;
+                        const d = Math.sqrt(dx*dx + dy*dy);
+                        const rA = NODE_VISUAL_CONFIG[nodeA.type].baseRadius;
+                        const rB = NODE_VISUAL_CONFIG[nodeB.type].baseRadius;
+                        const minDistance = rA + rB + SIMULATION_CONFIG.collisionRadiusPadding;
+
+                        if (d < minDistance) {
+                            const overlap = (minDistance - d) / d / 2;
+                            const ox = dx * overlap;
+                            const oy = dy * overlap;
+                            if(!nodeA.isFixed) {
+                                nodeA.x -= ox;
+                                nodeA.y -= oy;
+                            }
+                            if(!nodeB.isFixed) {
+                                nodeB.x += ox;
+                                nodeB.y += oy;
+                            }
+                        }
+                    }
+                }
 
                 // Update positions
                 return newNodes.map(node => {
-                    if (node.isFixed) {
-                        return { ...node, vx: 0, vy: 0 };
-                    }
+                    if (node.isFixed) return { ...node, vx: 0, vy: 0 };
                     
-                    // Apply velocity decay (friction)
                     node.vx *= SIMULATION_CONFIG.velocityDecay;
                     node.vy *= SIMULATION_CONFIG.velocityDecay;
-
-                    // Update position
                     node.x += node.vx;
                     node.y += node.vy;
-                    
-                    // Boundary collision (simple)
                     node.x = clamp(node.x, 0, width);
                     node.y = clamp(node.y, 0, height);
 
@@ -868,17 +877,12 @@ export const useForceSimulation = (
         
         simulationRef.current = requestAnimationFrame(tick);
 
-        return () => {
-            if (simulationRef.current) {
-                cancelAnimationFrame(simulationRef.current);
-            }
-        };
+        return () => { if (simulationRef.current) cancelAnimationFrame(simulationRef.current); };
     }, [linksWithNodes, width, height]);
 
 
-    const updateNodePosition = useCallback((nodeId: string, pos: { x: number, y: number, isFixed: boolean }) => {
+    const updateNodePosition = useCallback((nodeId: string, pos: { x?: number, y?: number, isFixed: boolean }) => {
         setSimulatedNodes(nodes => nodes.map(n => n.id === nodeId ? { ...n, ...pos } : n));
-        // Restart simulation
     }, []);
 
     return { simulatedNodes, linksWithNodes, updateNodePosition };
@@ -891,40 +895,33 @@ export const useForceSimulation = (
  */
 export const useGraphInteractions = (
     svgRef: React.RefObject<SVGSVGElement>,
-    updateNodePosition: (nodeId: string, pos: { x: number, y: number, isFixed: boolean }) => void
+    updateNodePosition: (nodeId: string, pos: { x?: number, y?: number, isFixed: boolean }) => void
 ) => {
     const [viewport, setViewport] = useState<ViewportTransform>({ x: 0, y: 0, k: 1 });
     const [interaction, setInteraction] = useState<InteractionState>({
-        selectedNodeId: null,
-        hoveredNodeId: null,
-        draggedNodeId: null,
-        contextMenu: null,
+        selectedNodeId: null, hoveredNodeId: null, draggedNodeId: null, lasso: null,
+        contextMenu: { isOpen: false, x: 0, y: 0, nodeId: null },
     });
     
-    const isDraggingRef = useRef(false);
-    const startDragPointRef = useRef<{x: number, y: number} | null>(null);
+    const isPanningRef = useRef(false);
+    const startPanPointRef = useRef<{x: number, y: number} | null>(null);
 
     const getSVGPoint = useCallback((clientX: number, clientY: number) => {
         if (!svgRef.current) return { x: 0, y: 0 };
         const pt = svgRef.current.createSVGPoint();
-        pt.x = clientX;
-        pt.y = clientY;
+        pt.x = clientX; pt.y = clientY;
         const screenCTM = svgRef.current.getScreenCTM();
-        if (screenCTM) {
-            return pt.matrixTransform(screenCTM.inverse());
-        }
-        return pt;
+        return screenCTM ? pt.matrixTransform(screenCTM.inverse()) : pt;
     }, [svgRef]);
 
     const handleWheel = useCallback((e: WheelEvent) => {
         e.preventDefault();
         const { clientX, clientY, deltaY } = e;
         const point = getSVGPoint(clientX, clientY);
-        
         const zoomFactor = Math.pow(1.001, -deltaY);
         
         setViewport(v => {
-            const newK = clamp(v.k * zoomFactor, 0.1, 10);
+            const newK = clamp(v.k * zoomFactor, 0.05, 5);
             const newX = point.x - (point.x - v.x) * (newK / v.k);
             const newY = point.y - (point.y - v.y) * (newK / v.k);
             return { x: newX, y: newY, k: newK };
@@ -932,75 +929,40 @@ export const useGraphInteractions = (
     }, [getSVGPoint]);
     
     const handleMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-        if (e.button !== 0) return; // Only left-click
-        isDraggingRef.current = true;
-        startDragPointRef.current = { x: e.clientX, y: e.clientY };
+        if (e.button !== 0) return;
+        isPanningRef.current = true;
+        startPanPointRef.current = { x: e.clientX, y: e.clientY };
     }, []);
-
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        if (!isDraggingRef.current || !startDragPointRef.current) return;
-        const dx = e.clientX - startDragPointRef.current.x;
-        const dy = e.clientY - startDragPointRef.current.y;
-        
-        setViewport(v => ({...v, x: v.x + dx / v.k, y: v.y + dy / v.k}));
-        startDragPointRef.current = { x: e.clientX, y: e.clientY };
-    }, []);
-
-    const handleMouseUp = useCallback(() => {
-        isDraggingRef.current = false;
-        startDragPointRef.current = null;
-    }, []);
-
-    const onNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
-        e.stopPropagation();
-        setInteraction(i => ({...i, draggedNodeId: nodeId}));
-        const point = getSVGPoint(e.clientX, e.clientY);
-        updateNodePosition(nodeId, { x: point.x, y: point.y, isFixed: true });
-    }, [getSVGPoint, updateNodePosition]);
-
-    const onNodeMouseMove = useCallback((e: React.MouseEvent) => {
-        if (interaction.draggedNodeId) {
-            const point = getSVGPoint(e.clientX, e.clientY);
-            updateNodePosition(interaction.draggedNodeId, { x: point.x, y: point.y, isFixed: true });
-        }
-    }, [interaction.draggedNodeId, getSVGPoint, updateNodePosition]);
-
-    const onNodeMouseUp = useCallback((e: React.MouseEvent, nodeId: string) => {
-        e.stopPropagation();
-        updateNodePosition(nodeId, { x: e.clientX, y: e.clientY, isFixed: false });
-        setInteraction(i => ({ ...i, draggedNodeId: null, selectedNodeId: nodeId }));
-    }, [updateNodePosition]);
-
-
+    
     useEffect(() => {
         const svg = svgRef.current;
         if (!svg) return;
         
         const handleGlobalMouseMove = (e: MouseEvent) => {
-            if(interaction.draggedNodeId) {
+            if (interaction.draggedNodeId) {
                 const point = getSVGPoint(e.clientX, e.clientY);
                 updateNodePosition(interaction.draggedNodeId, { x: point.x, y: point.y, isFixed: true });
-            } else if (isDraggingRef.current && startDragPointRef.current) {
-                const dx = e.clientX - startDragPointRef.current.x;
-                const dy = e.clientY - startDragPointRef.current.y;
-                setViewport(v => ({...v, x: v.x + dx, y: v.y + dy}));
-                startDragPointRef.current = { x: e.clientX, y: e.clientY };
+            } else if (isPanningRef.current && startPanPointRef.current) {
+                const dx = e.clientX - startPanPointRef.current.x;
+                const dy = e.clientY - startPanPointRef.current.y;
+                setViewport(v => ({...v, x: v.x + dx / v.k, y: v.y + dy / v.k}));
+                startPanPointRef.current = { x: e.clientX, y: e.clientY };
             }
         };
 
-        const handleGlobalMouseUp = () => {
+        const handleGlobalMouseUp = (e: MouseEvent) => {
              if (interaction.draggedNodeId) {
-                const lastPos = getSVGPoint(window.event.clientX, window.event.clientY);
-                updateNodePosition(interaction.draggedNodeId, {x: lastPos.x, y: lastPos.y, isFixed: false});
+                const point = getSVGPoint(e.clientX, e.clientY);
+                updateNodePosition(interaction.draggedNodeId, {x: point.x, y: point.y, isFixed: false});
                 setInteraction(i => ({...i, draggedNodeId: null }));
              }
-             if (isDraggingRef.current) {
-                isDraggingRef.current = false;
-                startDragPointRef.current = null;
+             if (isPanningRef.current) {
+                isPanningRef.current = false;
+                startPanPointRef.current = null;
              }
         };
 
-        svg.addEventListener('wheel', handleWheel);
+        svg.addEventListener('wheel', handleWheel, { passive: false });
         window.addEventListener('mousemove', handleGlobalMouseMove);
         window.addEventListener('mouseup', handleGlobalMouseUp);
 
@@ -1011,37 +973,24 @@ export const useGraphInteractions = (
         };
     }, [svgRef, handleWheel, interaction.draggedNodeId, getSVGPoint, updateNodePosition]);
     
+    const onNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
+        e.stopPropagation();
+        setInteraction(i => ({...i, draggedNodeId: nodeId}));
+        const point = getSVGPoint(e.clientX, e.clientY);
+        updateNodePosition(nodeId, { x: point.x, y: point.y, isFixed: true });
+    }, [getSVGPoint, updateNodePosition]);
+
     const onNodeClick = useCallback((e: React.MouseEvent, nodeId: string) => {
         e.stopPropagation();
-        if (interaction.draggedNodeId) return; // Prevent click on drag end
+        if (interaction.draggedNodeId) return;
         setInteraction(i => ({ ...i, selectedNodeId: i.selectedNodeId === nodeId ? null : nodeId }));
     }, [interaction.draggedNodeId]);
     
-    const onNodeMouseEnter = useCallback((nodeId: string) => {
-        setInteraction(i => ({ ...i, hoveredNodeId: nodeId }));
-    }, []);
+    const onNodeMouseEnter = useCallback((nodeId: string) => setInteraction(i => ({ ...i, hoveredNodeId: nodeId })), []);
+    const onNodeMouseLeave = useCallback(() => setInteraction(i => ({ ...i, hoveredNodeId: null })), []);
+    const onCanvasClick = useCallback(() => setInteraction(i => ({...i, selectedNodeId: null, contextMenu: {...i.contextMenu, isOpen: false }})), []);
 
-    const onNodeMouseLeave = useCallback(() => {
-        setInteraction(i => ({ ...i, hoveredNodeId: null }));
-    }, []);
-    
-    const onCanvasClick = useCallback(() => {
-        setInteraction(i => ({...i, selectedNodeId: null}));
-    }, []);
-
-
-    return {
-        viewport,
-        interaction,
-        onNodeMouseDown,
-        onNodeMouseUp,
-        onCanvasClick,
-        onNodeClick,
-        onNodeMouseEnter,
-        onNodeMouseLeave,
-        handleMouseDown,
-        // onNodeMouseMove is handled globally
-    };
+    return { viewport, interaction, onNodeMouseDown, onCanvasClick, onNodeClick, onNodeMouseEnter, onNodeMouseLeave, handleMouseDown };
 };
 
 
@@ -1050,199 +999,88 @@ export const useGraphInteractions = (
 // The building blocks of The Nexus view, from individual nodes to control panels.
 //================================================================================================
 
-/**
- * @component NexusNodeComponent
- * @description Renders a single node in the graph with appropriate styling and interactivity.
- */
-export const NexusNodeComponent = React.memo(({
-    node,
-    onMouseDown,
-    onMouseUp,
-    onClick,
-    onMouseEnter,
-    onMouseLeave,
-    isSelected,
-    isHovered,
-    isDragged,
-}: {
+export const NexusNodeComponent = React.memo(({ node, onMouseDown, onClick, onMouseEnter, onMouseLeave, isSelected, isHovered, isDragged, zoomScale }: {
     node: SimulatedNode;
     onMouseDown: (e: React.MouseEvent, id: string) => void;
-    onMouseUp: (e: React.MouseEvent, id: string) => void;
     onClick: (e: React.MouseEvent, id: string) => void;
     onMouseEnter: (id: string) => void;
     onMouseLeave: () => void;
     isSelected: boolean;
     isHovered: boolean;
     isDragged: boolean;
+    zoomScale: number;
 }) => {
     const { theme } = useTheme();
     const config = NODE_VISUAL_CONFIG[node.type];
     const color = theme[config.colorKey as keyof Theme] || theme.neutral;
     const radius = config.baseRadius;
-    const springProps = useSpring({
-      transform: `translate(${node.x}, ${node.y})`,
-      config: { mass: 1, tension: 500, friction: 40 }
-    });
+    const springProps = useSpring({ transform: `translate(${node.x}, ${node.y})`, config: { mass: 1, tension: 800, friction: 50, precision: 0.1 } });
     
-    const pulseSpring = useSpring({
-       r: isSelected || isHovered ? radius * 1.2 : radius,
-       strokeWidth: isSelected ? 4 : 2,
-       config: { tension: 300, friction: 10 }
-    });
+    const pulseSpring = useSpring({ r: isSelected || isHovered ? radius * 1.2 : radius, strokeWidth: isSelected ? 4 : 2, config: { tension: 300, friction: 10 } });
+
+    const showDetails = zoomScale > 0.5;
 
     return (
-        <animated.g
-            transform={springProps.transform}
-            onMouseDown={(e) => onMouseDown(e, node.id)}
-            onMouseUp={(e) => onMouseUp(e, node.id)}
-            onClick={(e) => onClick(e, node.id)}
-            onMouseEnter={() => onMouseEnter(node.id)}
-            onMouseLeave={onMouseLeave}
-            style={{ cursor: isDragged ? 'grabbing' : 'grab' }}
-        >
-            <animated.circle
-                r={pulseSpring.r}
-                fill={color}
-                stroke={isSelected ? theme.accent1 : theme.border}
-                strokeWidth={pulseSpring.strokeWidth}
-                opacity={isDragged ? 0.7 : 1}
-            />
-            <config.icon
-                x={-radius * 0.6}
-                y={-radius * 0.6}
-                width={radius * 1.2}
-                height={radius * 1.2}
-                fill={theme.background}
-            />
-            {(isHovered || isSelected) && (
-                <text
-                    y={radius + 15}
-                    textAnchor="middle"
-                    fill={theme.text}
-                    fontSize="12px"
-                    paintOrder="stroke"
-                    stroke={theme.background}
-                    strokeWidth="3px"
-                    strokeLinejoin="round"
-                >
-                    {node.label}
-                </text>
+        <animated.g transform={springProps.transform} onMouseDown={(e) => onMouseDown(e, node.id)} onClick={(e) => onClick(e, node.id)} onMouseEnter={() => onMouseEnter(node.id)} onMouseLeave={onMouseLeave} style={{ cursor: isDragged ? 'grabbing' : 'grab' }}>
+            <animated.circle r={pulseSpring.r} fill={color} stroke={isSelected ? theme.accent1 : theme.border} strokeWidth={pulseSpring.strokeWidth} opacity={isDragged ? 0.7 : 1} />
+            {showDetails && <config.icon x={-radius * 0.6} y={-radius * 0.6} width={radius * 1.2} height={radius * 1.2} fill={theme.background} />}
+            {(isHovered || isSelected) && showDetails && (
+                <text y={radius + 15} textAnchor="middle" fill={theme.text} fontSize={`${clamp(12 / zoomScale, 10, 18)}px`} paintOrder="stroke" stroke={theme.background} strokeWidth="3px" strokeLinejoin="round" > {node.label} </text>
             )}
         </animated.g>
     );
 });
 
-/**
- * @component NexusLinkComponent
- * @description Renders a single link between two nodes.
- */
-export const NexusLinkComponent = React.memo(({ link }: { link: SimulatedLink }) => {
+export const NexusLinkComponent = React.memo(({ link, isHighlighted }: { link: SimulatedLink; isHighlighted: boolean }) => {
     const { theme } = useTheme();
     const config = LINK_VISUAL_CONFIG[link.type];
     const color = theme[config.colorKey as keyof Theme] || theme.neutral;
     
     const springProps = useSpring({
         d: `M${link.sourceNode.x},${link.sourceNode.y} L${link.targetNode.x},${link.targetNode.y}`,
-        config: { mass: 1, tension: 500, friction: 40 }
+        stroke: isHighlighted ? theme.accent2 : color,
+        strokeWidth: isHighlighted ? config.strokeWidth * 2 : config.strokeWidth,
+        opacity: isHighlighted ? 1 : 0.6,
+        config: { mass: 1, tension: 800, friction: 50, precision: 0.1 }
     });
 
-    return (
-        <animated.path
-            d={springProps.d}
-            stroke={color}
-            strokeWidth={config.strokeWidth}
-            strokeDasharray={config.dashed ? '5,5' : 'none'}
-            fill="none"
-            opacity={0.6}
-        />
-    );
+    return <animated.path d={springProps.d} stroke={springProps.stroke} strokeWidth={springProps.strokeWidth} strokeDasharray={config.dashed ? '5,5' : 'none'} fill="none" opacity={springProps.opacity} />;
 });
 
-/**
- * @component NexusDossierPanel
- * @description A side panel that displays detailed information about the selected node.
- */
 export const NexusDossierPanel = React.memo(({ node, onClose }: { node: NexusNode | null; onClose: () => void; }) => {
     const { theme } = useTheme();
-    const springProps = useSpring({
-        transform: node ? 'translateX(0%)' : 'translateX(100%)',
-        config: { tension: 210, friction: 20 }
-    });
-
+    const springProps = useSpring({ transform: node ? 'translateX(0%)' : 'translateX(100%)', config: { tension: 210, friction: 20 } });
     if (!node) return null;
 
     const renderNodeDetails = () => {
         switch (node.type) {
-            case NexusEntityType.GOAL:
-                const goal = node as GoalNode;
-                return (
-                    <>
-                        <p>Target: {formatCurrency(goal.targetAmount)}</p>
-                        <p>Saved: {formatCurrency(goal.currentAmount)}</p>
-                        <p>Progress: {(goal.progress * 100).toFixed(1)}%</p>
-                        <p>Deadline: {new Date(goal.deadline).toLocaleDateString()}</p>
-                        <p>Priority: {goal.priority}</p>
-                    </>
-                );
-            case NexusEntityType.ACCOUNT:
-                const account = node as AccountNode;
-                return (
-                    <>
-                        <p>Balance: {formatCurrency(account.balance, account.currency)}</p>
-                        <p>Institution: {account.institution}</p>
-                        <p>Type: {account.accountType}</p>
-                    </>
-                );
-            default:
-                return <p>Details not available for this node type.</p>;
+            case NexusEntityType.GOAL: const goal = node as GoalNode; return (<> <p>Target: {formatCurrency(goal.targetAmount)}</p> <p>Saved: {formatCurrency(goal.currentAmount)}</p> <p>Progress: {(goal.progress * 100).toFixed(1)}%</p> <p>Deadline: {new Date(goal.deadline).toLocaleDateString()}</p> <p>Priority: {goal.priority}</p> </>);
+            case NexusEntityType.ACCOUNT: const account = node as AccountNode; return (<> <p>Balance: {formatCurrency(account.balance, account.currency)}</p> <p>Institution: {account.institution}</p> <p>Type: {account.accountType}</p> </>);
+            default: return Object.entries(node).map(([key, value]) => !['id', 'type', 'label', 'timestamp', 'metadata'].includes(key) && <p key={key}><strong>{key}:</strong> {String(value)}</p>);
         }
     };
     
     return (
-        <animated.div style={{
-            ...springProps,
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: '350px',
-            height: '100%',
-            backgroundColor: theme.background,
-            borderLeft: `1px solid ${theme.border}`,
-            padding: '20px',
-            boxSizing: 'border-box',
-            color: theme.text,
-            overflowY: 'auto',
-            boxShadow: '-5px 0 15px rgba(0,0,0,0.1)'
-        }}>
+        <animated.div style={{ ...springProps, position: 'absolute', top: 0, right: 0, width: '350px', height: '100%', backgroundColor: theme.background, borderLeft: `1px solid ${theme.border}`, padding: '20px', boxSizing: 'border-box', color: theme.text, overflowY: 'auto', boxShadow: '-5px 0 15px rgba(0,0,0,0.2)', zIndex: 1000 }}>
             <button onClick={onClose} style={{ float: 'right', background: 'none', border: 'none', color: theme.text, fontSize: '24px', cursor: 'pointer' }}>&times;</button>
             <h2>{node.label}</h2>
-            <p style={{ color: theme.textSecondary, fontStyle: 'italic' }}>{node.type}</p>
+            <p style={{ color: theme.textSecondary, fontStyle: 'italic', textTransform: 'capitalize' }}>{node.type.replace(/_/g, ' ').toLowerCase()}</p>
             <hr style={{ borderColor: theme.border, margin: '20px 0' }}/>
             {renderNodeDetails()}
         </animated.div>
     );
 });
 
-
-/**
- * @component NexusControls
- * @description UI controls for filtering and interacting with the Nexus graph.
- */
-export const NexusControls = React.memo(({ filters, setFilters, initialData } : {
+export const NexusControls = React.memo(({ filters, setFilters } : {
     filters: FilterState;
     setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
-    initialData: NexusGraphData | null;
 }) => {
     const { theme, toggleTheme, themeName } = useTheme();
 
     const handleTypeToggle = (type: NexusEntityType) => {
         setFilters(f => {
             const newTypes = new Set(f.enabledNodeTypes);
-            if (newTypes.has(type)) {
-                newTypes.delete(type);
-            } else {
-                newTypes.add(type);
-            }
+            newTypes.has(type) ? newTypes.delete(type) : newTypes.add(type);
             return { ...f, enabledNodeTypes: newTypes };
         });
     };
@@ -1252,42 +1090,14 @@ export const NexusControls = React.memo(({ filters, setFilters, initialData } : 
     };
 
     return (
-        <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            background: theme.background,
-            padding: '15px',
-            borderRadius: '8px',
-            border: `1px solid ${theme.border}`,
-            boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-            width: '300px',
-            zIndex: 10
-        }}>
+        <div style={{ position: 'absolute', top: '20px', left: '20px', background: theme.background, padding: '15px', borderRadius: '8px', border: `1px solid ${theme.border}`, boxShadow: '0 5px 15px rgba(0,0,0,0.2)', width: '300px', zIndex: 10 }}>
             <h3 style={{ marginTop: 0, marginBottom: '15px' }}>Nexus Controls</h3>
-            <input 
-              type="text"
-              placeholder="Search nodes..."
-              value={filters.searchTerm}
-              onChange={handleSearchChange}
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box', background: theme.background, color: theme.text, border: `1px solid ${theme.border}` }}
-            />
+            <input type="text" placeholder="Search nodes..." value={filters.searchTerm} onChange={handleSearchChange} style={{ width: '100%', padding: '8px', boxSizing: 'border-box', background: theme.background, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: '4px' }}/>
             <h4 style={{ marginTop: '20px', marginBottom: '10px' }}>Node Types</h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', maxHeight: '200px', overflowY: 'auto' }}>
                 {Object.values(NexusEntityType).map(type => (
-                    <button
-                        key={type}
-                        onClick={() => handleTypeToggle(type)}
-                        style={{
-                            padding: '5px 10px',
-                            border: `1px solid ${theme.border}`,
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            background: filters.enabledNodeTypes.has(type) ? theme.primary : 'transparent',
-                            color: filters.enabledNodeTypes.has(type) ? theme.background : theme.text
-                        }}
-                    >
-                        {type}
+                    <button key={type} onClick={() => handleTypeToggle(type)} style={{ padding: '5px 10px', border: `1px solid ${theme.border}`, borderRadius: '12px', cursor: 'pointer', background: filters.enabledNodeTypes.has(type) ? theme.primary : 'transparent', color: filters.enabledNodeTypes.has(type) ? theme.background : theme.text }} >
+                        {type.replace(/_/g, ' ').toLowerCase()}
                     </button>
                 ))}
             </div>
@@ -1298,29 +1108,13 @@ export const NexusControls = React.memo(({ filters, setFilters, initialData } : 
     );
 });
 
-/**
- * @component LoadingSpinner
- * @description A simple loading spinner.
- */
 export const LoadingSpinner: React.FC = () => {
     const { theme } = useTheme();
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', flexDirection: 'column' }}>
-            <style>{`
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `}</style>
-            <div style={{
-                border: `4px solid ${theme.border}`,
-                borderTop: `4px solid ${theme.primary}`,
-                borderRadius: '50%',
-                width: '50px',
-                height: '50px',
-                animation: 'spin 1s linear infinite'
-            }} />
-            <p style={{ marginTop: '20px' }}>Awakening the Nexus...</p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', flexDirection: 'column', backgroundColor: theme.background }}>
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            <div style={{ border: `4px solid ${theme.border}`, borderTop: `4px solid ${theme.primary}`, borderRadius: '50%', width: '50px', height: '50px', animation: 'spin 1s linear infinite' }} />
+            <p style={{ marginTop: '20px', color: theme.text }}>Awakening the Nexus...</p>
         </div>
     );
 };
@@ -1338,15 +1132,13 @@ export const TheNexusView: React.FC = () => {
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
-        });
+        setDimensions({ width: containerRef.current.clientWidth, height: containerRef.current.clientHeight });
       }
     };
     updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    const throttledUpdate = throttle(updateDimensions, 200);
+    window.addEventListener('resize', throttledUpdate);
+    return () => window.removeEventListener('resize', throttledUpdate);
   }, []);
 
   const [filters, setFilters] = useState<FilterState>({
@@ -1356,76 +1148,61 @@ export const TheNexusView: React.FC = () => {
     searchTerm: '',
   });
 
-  const { graphData, isLoading, error, initialData } = useNexusData(filters);
-
-  const { simulatedNodes, linksWithNodes, updateNodePosition } = useForceSimulation(
-    graphData,
-    dimensions.width,
-    dimensions.height,
-    null // This will be passed from interaction state later
-  );
-
-  const { viewport, interaction, onNodeMouseDown, onNodeMouseUp, onCanvasClick, onNodeClick, onNodeMouseEnter, onNodeMouseLeave, handleMouseDown } = useGraphInteractions(svgRef, updateNodePosition);
+  const { graphData, isLoading, error } = useNexusData(filters);
+  const { simulatedNodes, linksWithNodes, updateNodePosition } = useForceSimulation(graphData, dimensions.width, dimensions.height);
+  const { viewport, interaction, onNodeMouseDown, onCanvasClick, onNodeClick, onNodeMouseEnter, onNodeMouseLeave, handleMouseDown } = useGraphInteractions(svgRef, updateNodePosition);
   
-  const selectedNode = useMemo(() => {
-      if (!interaction.selectedNodeId || !graphData) return null;
-      return graphData.nodes.find(n => n.id === interaction.selectedNodeId) || null;
+  const selectedNodeData = useMemo(() => {
+    if (!interaction.selectedNodeId || !graphData) return null;
+    return graphData.nodes.find(n => n.id === interaction.selectedNodeId) || null;
   }, [interaction.selectedNodeId, graphData]);
+  
+  const highlightedLinkIds = useMemo(() => {
+    if (!interaction.hoveredNodeId || !graphData) return new Set();
+    const connectedLinks = graphData.links.filter(l => l.source === interaction.hoveredNodeId || l.target === interaction.hoveredNodeId);
+    return new Set(connectedLinks.map(l => l.id));
+  }, [interaction.hoveredNodeId, graphData]);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div>Error: {error.message}</div>;
   
   return (
     <div ref={containerRef} style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
-      <NexusControls filters={filters} setFilters={setFilters} initialData={initialData} />
-      <svg
-        ref={svgRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        onMouseDown={handleMouseDown}
-        onClick={onCanvasClick}
-        style={{ cursor: 'move' }}
-      >
+      <NexusControls filters={filters} setFilters={setFilters} />
+      <svg ref={svgRef} width={dimensions.width} height={dimensions.height} onMouseDown={handleMouseDown} onClick={onCanvasClick} style={{ cursor: 'move', background: useTheme().theme.background }}>
         <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.k})`}>
-          {linksWithNodes.map(link => (
-            <NexusLinkComponent key={link.id} link={link} />
-          ))}
-          {simulatedNodes.map(node => (
-            <NexusNodeComponent
-              key={node.id}
-              node={node}
-              onMouseDown={onNodeMouseDown}
-              onMouseUp={onNodeMouseUp}
-              onClick={onNodeClick}
-              onMouseEnter={onNodeMouseEnter}
-              onMouseLeave={onNodeMouseLeave}
-              isSelected={interaction.selectedNodeId === node.id}
-              isHovered={interaction.hoveredNodeId === node.id}
-              isDragged={interaction.draggedNodeId === node.id}
-            />
-          ))}
+          <g style={{opacity: 0.5}}>
+            {linksWithNodes.map(link => (
+                <NexusLinkComponent key={link.id} link={link} isHighlighted={highlightedLinkIds.has(link.id)} />
+            ))}
+          </g>
+          <g>
+            {simulatedNodes.map(node => (
+                <NexusNodeComponent
+                    key={node.id}
+                    node={node}
+                    onMouseDown={onNodeMouseDown}
+                    onClick={onNodeClick}
+                    onMouseEnter={onNodeMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                    isSelected={interaction.selectedNodeId === node.id}
+                    isHovered={interaction.hoveredNodeId === node.id}
+                    isDragged={interaction.draggedNodeId === node.id}
+                    zoomScale={viewport.k}
+                />
+            ))}
+          </g>
         </g>
       </svg>
-      <NexusDossierPanel node={selectedNode} onClose={() => onCanvasClick()} />
+      <NexusDossierPanel node={selectedNodeData} onClose={onCanvasClick} />
     </div>
   );
 };
 
-/**
- * @function App
- * @description A wrapper component to provide the theme to TheNexusView.
- */
-export const AppWrapper = () => {
-    return (
-        <ThemeProvider>
-            <TheNexusView />
-        </ThemeProvider>
-    );
-};
+export const AppWrapper = () => (
+    <ThemeProvider>
+        <TheNexusView />
+    </ThemeProvider>
+);
 
 export default AppWrapper;
