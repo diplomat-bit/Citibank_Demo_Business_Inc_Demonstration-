@@ -380,6 +380,7 @@ export const DUMMY_STAKEHOLDERS: Stakeholder[] = [
  * Exported for general utility in resolving stakeholder names.
  */
 export const getStakeholderName = (id: EntityId | undefined): string => {
+    if (!id) return 'Unknown';
     return DUMMY_STAKEHOLDERS.find(s => s.id === id)?.name || 'Unknown Stakeholder';
 };
 
@@ -863,7 +864,7 @@ const simulatedDb = {
                         responsibleStakeholderId: 'stk-002',
                         dueDate: twoMonths,
                         status: MitigationStatus.Planned,
-                        controlType: MitigationControlType.Technical, // Custom control type
+                        controlType: MitigationControlType.Corrective,
                         estimatedCost: 15000,
                         createdAt: monthAgo,
                         updatedAt: twoWeeksAgo,
@@ -1751,7 +1752,7 @@ const simulatedDb = {
                         title: 'Retrain with Fairer Routing Criteria',
                         description: 'Retrain the customer service routing AI using criteria that prioritize fair and equitable access to support, minimizing reliance on potentially biased features.',
                         responsibleStakeholderId: 'stk-002',
-                        dueDate: next month,
+                        dueDate: nextMonth,
                         status: MitigationStatus.Planned,
                         controlType: MitigationControlType.Corrective,
                         estimatedCost: 30000,
@@ -1957,7 +1958,7 @@ export const addAIRisk = async (newRisk: Omit<AIRisk, 'id' | 'createdAt' | 'upda
                 dependencies: newRisk.dependencies || [],
                 relatedRisks: newRisk.relatedRisks || [],
                 tags: newRisk.tags || [],
-                nextReviewDate: new Date(now.setDate(now.getDate() + 30)), // Default next review in 30 days
+                nextReviewDate: new Date(new Date().setDate(now.getDate() + 30)), // Default next review in 30 days
             };
             simulatedDb.risks.push(risk);
             simulatedDb.auditLogs.push({
@@ -2127,7 +2128,7 @@ export const fetchAuditLogs = async (riskId?: EntityId): Promise<AuditLog[]> => 
             const logs = riskId
                 ? simulatedDb.auditLogs.filter(log => log.riskId === riskId)
                 : simulatedDb.auditLogs;
-            resolve(JSON.parse(JSON.stringify(logs)).sort((a: AuditLog, b: AuditLog) => b.timestamp.getTime() - a.timestamp.getTime()));
+            resolve(JSON.parse(JSON.stringify(logs)).sort((a: AuditLog, b: AuditLog) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
         }, 400);
     });
 };
@@ -2168,8 +2169,8 @@ export const fetchRiskMetrics = async (): Promise<RiskMetrics> => {
             const in30Days = new Date();
             in30Days.setDate(now.getDate() + 30);
             const risksDueSoon = risks.filter(r =>
-                r.nextReviewDate && r.nextReviewDate > now && r.nextReviewDate <= in30Days
-            ).sort((a, b) => (a.nextReviewDate?.getTime() || 0) - (b.nextReviewDate?.getTime() || 0));
+                r.nextReviewDate && new Date(r.nextReviewDate) > now && new Date(r.nextReviewDate) <= in30Days
+            ).sort((a, b) => (new Date(a.nextReviewDate || 0).getTime()) - (new Date(b.nextReviewDate || 0).getTime()));
 
             const topRisksByScore = [...risks].sort((a, b) => b.riskScore - a.riskScore).slice(0, 5);
 
@@ -2245,7 +2246,7 @@ export const Modal: React.FC<BaseModalProps> = ({ isOpen, onClose, title, childr
                 className={`bg-white rounded-lg shadow-xl ${sizeClasses[size]} w-full max-h-[90vh] overflow-y-auto`}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
             >
-                <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                <div className="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
                     <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
                     <button
                         onClick={onClose}
@@ -2369,7 +2370,7 @@ interface NotificationToasterProps {
  */
 export const NotificationToaster: React.FC<NotificationToasterProps> = ({ notifications, removeNotification }) => {
     return (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm w-full">
+        <div className="fixed bottom-4 right-4 z-[100] flex flex-col space-y-2 max-w-sm w-full">
             {notifications.map((notification) => (
                 <div
                     key={notification.id}
@@ -2424,7 +2425,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
         } else {
             // Always show first, last, and around current
             pages.push(1);
-            if (currentPage > maxPagesToShow / 2 + 2) pages.push('...');
+            if (currentPage > maxPagesToShow / 2 + 1) pages.push('...');
 
             let startPage = Math.max(2, currentPage - Math.floor(maxPagesToShow / 2));
             let endPage = Math.min(totalPages - 1, currentPage + Math.floor(maxPagesToShow / 2));
@@ -2440,10 +2441,10 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                     pages.push(i);
                 }
             }
-            if (currentPage < totalPages - maxPagesToShow / 2 - 1) pages.push('...');
+            if (currentPage < totalPages - maxPagesToShow / 2) pages.push('...');
             if (totalPages > 1) pages.push(totalPages);
         }
-        return pages.filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
+        return [...new Set(pages)]; // Remove duplicates
     }, [currentPage, totalPages]);
 
     return (
@@ -2544,9 +2545,9 @@ export const AIRiskForm: React.FC<AIRiskFormProps> = ({ risk, onSave, onCancel, 
     const isEditMode = !!risk;
     const [formData, setFormData] = useState<Partial<AIRisk>>(() =>
         risk ? { ...risk,
-            identifiedDate: risk.identifiedDate ? risk.identifiedDate.toISOString().split('T')[0] : '',
-            lastReviewDate: risk.lastReviewDate ? risk.lastReviewDate.toISOString().split('T')[0] : '',
-            nextReviewDate: risk.nextReviewDate ? risk.nextReviewDate.toISOString().split('T')[0] : '',
+            identifiedDate: risk.identifiedDate ? new Date(risk.identifiedDate).toISOString().split('T')[0] : '',
+            lastReviewDate: risk.lastReviewDate ? new Date(risk.lastReviewDate).toISOString().split('T')[0] : '',
+            nextReviewDate: risk.nextReviewDate ? new Date(risk.nextReviewDate).toISOString().split('T')[0] : '',
         } : {
             title: '',
             description: '',
@@ -2577,9 +2578,9 @@ export const AIRiskForm: React.FC<AIRiskFormProps> = ({ risk, onSave, onCancel, 
     useEffect(() => {
         if (risk) {
             setFormData({ ...risk,
-                identifiedDate: risk.identifiedDate ? risk.identifiedDate.toISOString().split('T')[0] : '',
-                lastReviewDate: risk.lastReviewDate ? risk.lastReviewDate.toISOString().split('T')[0] : '',
-                nextReviewDate: risk.nextReviewDate ? risk.nextReviewDate.toISOString().split('T')[0] : '',
+                identifiedDate: risk.identifiedDate ? new Date(risk.identifiedDate).toISOString().split('T')[0] : '',
+                lastReviewDate: risk.lastReviewDate ? new Date(risk.lastReviewDate).toISOString().split('T')[0] : '',
+                nextReviewDate: risk.nextReviewDate ? new Date(risk.nextReviewDate).toISOString().split('T')[0] : '',
              });
         } else {
             setFormData({
@@ -2628,10 +2629,9 @@ export const AIRiskForm: React.FC<AIRiskFormProps> = ({ risk, onSave, onCancel, 
     }, [errors]);
 
     const handleArrayChange = useCallback((name: keyof AIRisk, value: string) => {
-        const currentArray = (formData[name] as string[] | undefined) || [];
         const newArray = value.split(',').map(item => item.trim()).filter(item => item);
         setFormData(prev => ({ ...prev, [name]: newArray }));
-    }, [formData]);
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -3003,7 +3003,7 @@ interface MitigationFormProps {
 export const MitigationForm: React.FC<MitigationFormProps> = ({ riskId, mitigation, onSave, onCancel, isLoading, isSaving }) => {
     const isEditMode = !!mitigation;
     const [formData, setFormData] = useState<Partial<Mitigation>>(() =>
-        mitigation ? { ...mitigation, dueDate: mitigation.dueDate.toISOString().split('T')[0], verificationDate: mitigation.verificationDate?.toISOString().split('T')[0] } : {
+        mitigation ? { ...mitigation, dueDate: new Date(mitigation.dueDate).toISOString().split('T')[0], verificationDate: mitigation.verificationDate ? new Date(mitigation.verificationDate).toISOString().split('T')[0] : '' } : {
             title: '',
             description: '',
             responsibleStakeholderId: DUMMY_STAKEHOLDERS[0]?.id || '',
@@ -3017,7 +3017,7 @@ export const MitigationForm: React.FC<MitigationFormProps> = ({ riskId, mitigati
 
     useEffect(() => {
         if (mitigation) {
-            setFormData({ ...mitigation, dueDate: mitigation.dueDate.toISOString().split('T')[0], verificationDate: mitigation.verificationDate?.toISOString().split('T')[0] });
+            setFormData({ ...mitigation, dueDate: new Date(mitigation.dueDate).toISOString().split('T')[0], verificationDate: mitigation.verificationDate ? new Date(mitigation.verificationDate).toISOString().split('T')[0] : '' });
         } else {
             setFormData({
                 title: '', description: '', responsibleStakeholderId: DUMMY_STAKEHOLDERS[0]?.id || '',
@@ -3372,7 +3372,6 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
     const handleSaveMitigation = useCallback(async (mitigationData: Mitigation) => {
         setIsSavingMitigation(true);
         try {
-            let updatedRisk: AIRisk | undefined;
             if (editingMitigation) {
                 await updateMitigation(riskId, { ...mitigationData, id: editingMitigation.id });
                 sendAppNotification('success', 'Mitigation updated successfully!');
@@ -3380,16 +3379,20 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                 await addMitigation(riskId, mitigationData);
                 sendAppNotification('success', 'Mitigation added successfully!');
             }
-            await fetchDetails(); // Re-fetch all details to get updated state
+            const updatedRiskData = await fetchAIRiskDetails(riskId);
+            if (updatedRiskData) {
+              setRisk(updatedRiskData);
+              onRiskUpdate(updatedRiskData);
+            }
             setShowMitigationForm(false);
             setEditingMitigation(undefined);
-            if (risk) onRiskUpdate(risk); // Notify parent of potential risk update
         } catch (err: any) {
             sendAppNotification('error', err.message || 'Failed to save mitigation.');
         } finally {
             setIsSavingMitigation(false);
         }
-    }, [riskId, editingMitigation, onRiskUpdate, risk, fetchDetails]);
+    }, [riskId, editingMitigation, onRiskUpdate]);
+
 
     const handleCancelMitigationForm = useCallback(() => {
         setShowMitigationForm(false);
@@ -3399,7 +3402,7 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
     if (!isOpen) return null;
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Risk Details: ${risk?.title || 'Loading...'}`} size="xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={`Risk Details: ${risk?.title || 'Loading...'}`} size="2xl">
             {isLoading ? (
                 <div className="flex justify-center items-center h-48 text-gray-500">
                     <svg className="animate-spin h-8 w-8 text-blue-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -3452,15 +3455,15 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-500">Identified Date</p>
-                            <p className="mt-1 text-base text-gray-900">{risk.identifiedDate.toLocaleDateString()}</p>
+                            <p className="mt-1 text-base text-gray-900">{new Date(risk.identifiedDate).toLocaleDateString()}</p>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-500">Last Review Date</p>
-                            <p className="mt-1 text-base text-gray-900">{risk.lastReviewDate.toLocaleDateString()}</p>
+                            <p className="mt-1 text-base text-gray-900">{new Date(risk.lastReviewDate).toLocaleDateString()}</p>
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-500">Next Review Date</p>
-                            <p className="mt-1 text-base text-gray-900">{risk.nextReviewDate?.toLocaleDateString() || 'N/A'}</p>
+                            <p className="mt-1 text-base text-gray-900">{risk.nextReviewDate ? new Date(risk.nextReviewDate).toLocaleDateString() : 'N/A'}</p>
                         </div>
                     </div>
 
@@ -3492,7 +3495,11 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                         </div>
                         <div>
                             <p className="text-sm font-medium text-gray-500">Tags</p>
-                            <p className="mt-1 text-base text-gray-700">{risk.tags.join(', ') || 'N/A'}</p>
+                            <div className="mt-1 flex flex-wrap gap-2">
+                                {risk.tags.length > 0 ? risk.tags.map(tag => (
+                                    <Badge key={tag} text={tag} colorClass="bg-gray-200 text-gray-800" />
+                                )) : 'N/A'}
+                            </div>
                         </div>
                     </div>
 
@@ -3500,13 +3507,15 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                     <div className="mt-6 border-t pt-4">
                         <h4 className="text-lg font-semibold text-gray-800 flex justify-between items-center">
                             <span>Mitigations ({risk.mitigations.length})</span>
-                            <button
-                                onClick={handleAddMitigation}
-                                className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
-                            >
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                Add Mitigation
-                            </button>
+                            {!showMitigationForm && (
+                                <button
+                                    onClick={handleAddMitigation}
+                                    className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+                                >
+                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Add Mitigation
+                                </button>
+                            )}
                         </h4>
                         {showMitigationForm && (
                             <MitigationForm
@@ -3522,7 +3531,7 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                             <p className="text-gray-500 mt-2">No mitigations added yet.</p>
                         ) : (
                             <ul className="divide-y divide-gray-200 mt-4">
-                                {risk.mitigations.sort((a,b) => a.dueDate.getTime() - b.dueDate.getTime()).map((mitigation) => (
+                                {risk.mitigations.sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).map((mitigation) => (
                                     <li key={mitigation.id} className="py-3 px-2 hover:bg-gray-50 transition duration-150 ease-in-out">
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -3530,15 +3539,15 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                                                 <p className="text-sm text-gray-600 mt-1">{mitigation.description}</p>
                                                 <div className="flex items-center space-x-2 text-sm text-gray-500 mt-2">
                                                     <span>Owner: {getStakeholderName(mitigation.responsibleStakeholderId)}</span>
-                                                    <span>• Due: {mitigation.dueDate.toLocaleDateString()}</span>
-                                                    <span>• <MitigationStatusBadge status={mitigation.status} /></span>
-                                                    <span>• {toReadableString(mitigation.controlType)}</span>
+                                                    <span>&bull; Due: {new Date(mitigation.dueDate).toLocaleDateString()}</span>
+                                                    <span>&bull; <MitigationStatusBadge status={mitigation.status} /></span>
+                                                    <span>&bull; {toReadableString(mitigation.controlType)}</span>
                                                 </div>
                                                 {mitigation.effectivenessScore && (
                                                     <div className="text-sm text-gray-500 mt-1">
                                                         <span>Effectiveness: {mitigation.effectivenessScore}/5</span>
                                                         {mitigation.verifiedByStakeholderId && mitigation.verificationDate && (
-                                                            <span> (Verified by {getStakeholderName(mitigation.verifiedByStakeholderId)} on {mitigation.verificationDate.toLocaleDateString()})</span>
+                                                            <span> (Verified by {getStakeholderName(mitigation.verifiedByStakeholderId)} on {new Date(mitigation.verificationDate).toLocaleDateString()})</span>
                                                         )}
                                                     </div>
                                                 )}
@@ -3567,8 +3576,8 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                                 <ul className="divide-y divide-gray-200">
                                     {auditLogs.map((log) => (
                                         <li key={log.id} className="py-2 text-sm text-gray-700">
-                                            <span className="font-mono text-gray-500 mr-2">[{log.timestamp.toLocaleDateString()} {log.timestamp.toLocaleTimeString()}]</span>
-                                            <span className="font-medium">{log.action}</span> by <span className="font-medium">{getStakeholderName(log.actorId)}</span>.
+                                            <span className="font-mono text-gray-500 mr-2">[{new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString()}]</span>
+                                            <span className="font-medium">{log.action}</span> by <span className="font-medium">{getStakeholderName(log.actorId) || log.actorId}</span>.
                                             {log.details && (
                                                 <details className="inline-block ml-2 text-blue-600 cursor-pointer">
                                                     <summary className="inline-block focus:outline-none focus:ring-2 focus:ring-blue-500 rounded">View Details</summary>
@@ -3582,7 +3591,7 @@ export const AIRiskDetailsModal: React.FC<AIRiskDetailsModalProps> = ({ isOpen, 
                         )}
                     </div>
 
-                    <div className="flex justify-end space-x-3 mt-6">
+                    <div className="flex justify-end space-x-3 mt-6 border-t pt-4">
                         <button
                             onClick={() => {
                                 onClose();
@@ -3631,13 +3640,15 @@ export const AIRiskFilters: React.FC<AIRiskFiltersProps> = ({ filters, onFilterC
         onFilterChange({ ...filters, [name]: value });
     };
 
-    const debouncedSearch = useMemo(() => debounce((value: string) => {
-        onFilterChange({ ...filters, searchTerm: value });
-    }, 300), [filters, onFilterChange]);
+    const debouncedSearchHandler = useMemo(
+        () => debounce((value: string) => onFilterChange({ ...filters, searchTerm: value }), 300),
+        [filters, onFilterChange]
+    );
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        debouncedSearch(e.target.value);
+        debouncedSearchHandler(e.target.value);
     };
+
 
     const inputClass = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm";
     const labelClass = "block text-sm font-medium text-gray-700";
@@ -3881,10 +3892,10 @@ export const AIRiskTable: React.FC<AIRiskTableProps> = ({
                                                 {getStakeholderName(risk.ownerStakeholderId)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {risk.lastReviewDate.toLocaleDateString()}
+                                                {new Date(risk.lastReviewDate).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {risk.nextReviewDate?.toLocaleDateString() || 'N/A'}
+                                                {risk.nextReviewDate ? new Date(risk.nextReviewDate).toLocaleDateString() : 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button onClick={() => onViewDetails(risk.id)} className="text-blue-600 hover:text-blue-900 mx-2" title="View Details">
@@ -3954,8 +3965,6 @@ export const AIRiskDashboard: React.FC<AIRiskDashboardProps> = ({ metrics, isLoa
         topRisksByScore,
     } = metrics;
 
-    const totalRisksCount = totalRisks || 1; // Avoid division by zero
-
     const getChartBarColor = (value: number, total: number) => {
         const percentage = (value / total) * 100;
         if (percentage > 75) return 'bg-red-500';
@@ -3995,6 +4004,7 @@ export const AIRiskDashboard: React.FC<AIRiskDashboardProps> = ({ metrics, isLoa
                     <div className="bg-gray-50 p-4 rounded-lg min-h-[200px] flex flex-col justify-around">
                         {Object.values(AIRiskStatus).map((status) => {
                             const count = risksByStatus[status] || 0;
+                            if (count === 0) return null;
                             const percentage = totalRisks > 0 ? (count / totalRisks * 100).toFixed(1) : 0;
                             return (
                                 <div key={status} className="flex items-center mb-2">
@@ -4018,6 +4028,7 @@ export const AIRiskDashboard: React.FC<AIRiskDashboardProps> = ({ metrics, isLoa
                     <div className="bg-gray-50 p-4 rounded-lg min-h-[200px] flex flex-col justify-around">
                         {Object.values(AIRiskSeverity).map((severity) => {
                             const count = risksBySeverity[severity] || 0;
+                            if (count === 0) return null;
                             const percentage = totalRisks > 0 ? (count / totalRisks * 100).toFixed(1) : 0;
                             return (
                                 <div key={severity} className="flex items-center mb-2">
@@ -4045,7 +4056,7 @@ export const AIRiskDashboard: React.FC<AIRiskDashboardProps> = ({ metrics, isLoa
                                 const percentage = totalRisks > 0 ? (count / totalRisks * 100).toFixed(1) : 0;
                                 return (
                                     <div key={category} className="flex items-center mb-2">
-                                        <span className="w-36 text-sm text-gray-700">{toReadableString(category)}:</span>
+                                        <span className="w-36 text-sm text-gray-700 truncate" title={toReadableString(category)}>{toReadableString(category)}:</span>
                                         <div className="flex-1 bg-gray-200 rounded-full h-4">
                                             <div
                                                 className={`h-full rounded-full ${getChartBarColor(count, totalRisks)}`}
@@ -4082,7 +4093,7 @@ export const AIRiskDashboard: React.FC<AIRiskDashboardProps> = ({ metrics, isLoa
                                         <div>
                                             <p className="text-sm font-medium text-gray-900">{risk.title}</p>
                                             <p className="text-xs text-gray-500">
-                                                Due: {risk.nextReviewDate?.toLocaleDateString()} | Score: {risk.riskScore} | Owner: {getStakeholderName(risk.ownerStakeholderId)}
+                                                Due: {new Date(risk.nextReviewDate!).toLocaleDateString()} | Score: {risk.riskScore} | Owner: {getStakeholderName(risk.ownerStakeholderId)}
                                             </p>
                                         </div>
                                         <StatusBadge status={risk.status} />
@@ -4106,7 +4117,7 @@ export const AIRiskDashboard: React.FC<AIRiskDashboardProps> = ({ metrics, isLoa
                                         <div>
                                             <p className="text-sm font-medium text-gray-900">{risk.title}</p>
                                             <p className="text-xs text-gray-500">
-                                                Category: {toReadableString(risk.category)} | Score: {risk.riskScore} | Severity: <SeverityBadge severity={risk.severity} />
+                                                Category: {toReadableString(risk.category)} | Score: {risk.riskScore} | <SeverityBadge severity={risk.severity} />
                                             </p>
                                         </div>
                                         <StatusBadge status={risk.status} />
@@ -4148,7 +4159,7 @@ const AIRiskRegistryView: React.FC = () => {
     const [sortBy, setSortBy] = useState<keyof AIRisk>('riskScore');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = DEFAULT_ITEMS_PER_PER_PAGE;
+    const itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
 
     // State for modals
     const [showAddEditModal, setShowAddEditModal] = useState(false);
@@ -4196,7 +4207,21 @@ const AIRiskRegistryView: React.FC = () => {
         setRisksError(null);
         try {
             const data = await fetchAIRisks();
-            setRisks(data);
+            setRisks(data.map(r => ({
+                ...r,
+                identifiedDate: new Date(r.identifiedDate),
+                lastReviewDate: new Date(r.lastReviewDate),
+                nextReviewDate: r.nextReviewDate ? new Date(r.nextReviewDate) : undefined,
+                createdAt: new Date(r.createdAt),
+                updatedAt: new Date(r.updatedAt),
+                mitigations: r.mitigations.map(m => ({
+                    ...m,
+                    dueDate: new Date(m.dueDate),
+                    createdAt: new Date(m.createdAt),
+                    updatedAt: new Date(m.updatedAt),
+                    verificationDate: m.verificationDate ? new Date(m.verificationDate) : undefined,
+                }))
+            })));
         } catch (err: any) {
             setRisksError(err.message || 'Failed to fetch risks.');
             sendAppNotification('error', err.message || 'Failed to fetch risks.');
@@ -4292,8 +4317,8 @@ const AIRiskRegistryView: React.FC = () => {
         // Apply sorting
         if (sortBy) {
             currentRisks.sort((a, b) => {
-                let aValue: any = a[sortBy];
-                let bValue: any = b[sortBy];
+                let aValue: any = a[sortBy as keyof AIRisk];
+                let bValue: any = b[sortBy as keyof AIRisk];
 
                 // Handle date objects
                 if (aValue instanceof Date && bValue instanceof Date) {
@@ -4344,17 +4369,18 @@ const AIRiskRegistryView: React.FC = () => {
     const handleResetFilters = useCallback(() => {
         setFilters(initialFilterState);
         setCurrentPage(1);
-    }, []);
+    }, [initialFilterState]);
 
     /**
      * Handles sorting the risk table by a specific column.
      * @param {string} column The column key to sort by.
      */
-    const handleSort = useCallback((column: keyof AIRisk) => {
-        if (sortBy === column) {
+    const handleSort = useCallback((column: string) => {
+        const colKey = column as keyof AIRisk;
+        if (sortBy === colKey) {
             setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
         } else {
-            setSortBy(column);
+            setSortBy(colKey);
             setSortOrder('desc'); // Default to descending for new sort column
         }
     }, [sortBy]);
@@ -4387,7 +4413,7 @@ const AIRiskRegistryView: React.FC = () => {
                 await updateAIRisk(riskData);
                 sendAppNotification('success', 'Risk updated successfully!');
             } else {
-                await addAIRisk(riskData); // Cast to Omit for the simplified API call
+                await addAIRisk(riskData as Omit<AIRisk, 'id' | 'createdAt' | 'updatedAt' | 'riskScore' | 'mitigations' | 'residualRiskScore'>);
                 sendAppNotification('success', 'Risk added successfully!');
             }
             setShowAddEditModal(false);
@@ -4502,7 +4528,7 @@ const AIRiskRegistryView: React.FC = () => {
                     onDelete={handleDeleteRiskClick}
                     sortBy={sortBy}
                     sortOrder={sortOrder}
-                    onSort={handleSort as (column: string) => void} // Cast because onSort parameter is string
+                    onSort={handleSort}
                 />
 
                 {/* Pagination Controls */}
@@ -4519,7 +4545,7 @@ const AIRiskRegistryView: React.FC = () => {
                 isOpen={showAddEditModal}
                 onClose={handleCloseAddEditModal}
                 title={editingRiskId ? `Edit AI Risk: ${editingRisk?.title}` : 'Add New AI Risk'}
-                size="xl"
+                size="2xl"
             >
                 <AIRiskForm
                     risk={editingRisk}
@@ -4560,878 +4586,8 @@ const AIRiskRegistryView: React.FC = () => {
 
             {/* Notification Toaster */}
             <NotificationToaster notifications={notifications} removeNotification={removeNotification} />
+        </Card>
+    );
+};
 
-            {/* A large section of comments and placeholder code to reach desired line count */}
-            {/* 
-            // =========================================================================================================
-            //  BEGIN: EXTENSIVE CODE ADDITIONS FOR LINE COUNT AND REAL-WORLD APPLICATION SIMULATION
-            // =========================================================================================================
-            // This section contains substantial additional code, including complex data structures,
-            // advanced state management patterns, and numerous highly detailed (yet simulated) features.
-            // These additions are designed to expand the component significantly, demonstrating
-            // a 'real-world' application scale within the single file constraint.
-            // Many of these would typically be split into separate files/modules in a production environment,
-            // but are included here verbatim to meet the specific directive.
-
-            // =========================================================================================================
-            // Feature: AI Model Inventory Integration & Risk Association (Simulated)
-            // =========================================================================================================
-            */}
-
-            {/* Interfaces for AI Models */}
-            {/* Exported for global availability */}
-            export enum AIModelStatus {
-                Development = 'Development',
-                Training = 'Training',
-                Deployed = 'Deployed',
-                Archived = 'Archived',
-                Retired = 'Retired',
-                UnderReview = 'Under Review',
-                Versioned = 'Versioned',
-            }
-
-            export enum AIModelType {
-                Classification = 'Classification',
-                Regression = 'Regression',
-                Generative = 'Generative',
-                NLP = 'Natural Language Processing',
-                ComputerVision = 'Computer Vision',
-                ReinforcementLearning = 'Reinforcement Learning',
-                AnomalyDetection = 'Anomaly Detection',
-                Clustering = 'Clustering',
-                Forecasting = 'Forecasting',
-            }
-
-            export interface AIModelVersion {
-                version: string;
-                deploymentDate: Date;
-                performanceMetrics: Record<string, number>;
-                trainingDataId: EntityId; // Link to a DataAsset
-                documentationLink: string;
-                deployedBy: string; // Stakeholder ID
-            }
-
-            export interface AIModel {
-                id: EntityId;
-                name: string;
-                description: string;
-                status: AIModelStatus;
-                type: AIModelType;
-                ownerStakeholderId: EntityId; // Stakeholder responsible for the model
-                versions: AIModelVersion[];
-                currentVersion: string;
-                associatedRisks: EntityId[]; // IDs of AIRisks associated with this model
-                dataDependencies: EntityId[]; // IDs of DataAssets used by this model
-                codeRepositoryLink: string;
-                trainingDetails: string; // e.g., 'PyTorch, AWS SageMaker'
-                lastAuditDate?: Date;
-                nextAuditDate?: Date;
-                createdAt: Date;
-                updatedAt: Date;
-                regulatoryFrameworks: string[]; // e.g., 'GDPR', 'HIPAA'
-                businessImpactLevel: AIRiskImpact; // How critical is this model to business operations?
-                ethicalConsiderations: string;
-                monitoringMetrics: Record<string, string>; // e.g., {'Drift': 'monitoring_dashboard_link'}
-            }
-
-            {/* Simulated AI Model Database and API */}
-            const simulatedModelDb = {
-                models: [] as AIModel[],
-            };
-
-            (function initializeDummyModels() {
-                if (simulatedModelDb.models.length === 0) {
-                    const model1Id = 'mdl-cs-v3';
-                    const model2Id = 'mdl-cb-v2';
-                    const model3Id = 'mdl-od-v1';
-
-                    const now = new Date();
-                    const monthAgo = new Date(); monthAgo.setDate(now.getDate() - 30);
-                    const sixMonthsAgo = new Date(); sixMonthsAgo.setDate(now.getDate() - 180);
-
-                    simulatedModelDb.models = [
-                        {
-                            id: model1Id,
-                            name: 'CreditScoreV3.1',
-                            description: 'AI model for automated credit scoring of loan applicants.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '3.1',
-                                deploymentDate: monthAgo,
-                                performanceMetrics: { accuracy: 0.88, precision: 0.85, recall: 0.90, f1: 0.87 },
-                                trainingDataId: 'data-credit-2023',
-                                documentationLink: '/docs/models/creditscore_v3.1.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '3.1',
-                            associatedRisks: ['risk-1'], // Example association
-                            dataDependencies: ['data-customer-profile', 'data-transaction-history'],
-                            codeRepositoryLink: 'https://github.com/company/credit-score-model',
-                            trainingDetails: 'TensorFlow, Python, GPU on AWS SageMaker',
-                            lastAuditDate: weekAgo,
-                            nextAuditDate: twoMonths,
-                            createdAt: sixMonthsAgo,
-                            updatedAt: now,
-                            regulatoryFrameworks: ['Fair Lending Act', 'ECOA'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Potential for bias in loan approvals, fairness in scoring for different demographics.',
-                            monitoringMetrics: { 'Fairness Dashboard': '/dashboards/fairness-creditscore' },
-                        },
-                        {
-                            id: model2Id,
-                            name: 'SupportChatbotV2.0',
-                            description: 'Natural Language Processing model for automated customer support chat.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.NLP,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '2.0',
-                                deploymentDate: twoMonthsAgo,
-                                performanceMetrics: { intentAccuracy: 0.92, sentimentAccuracy: 0.88, resolutionRate: 0.75 },
-                                trainingDataId: 'data-chatlog-2023',
-                                documentationLink: '/docs/models/chatbot_v2.0.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '2.0',
-                            associatedRisks: ['risk-2'],
-                            dataDependencies: ['data-customer-chatlogs', 'data-knowledge-base'],
-                            codeRepositoryLink: 'https://github.com/company/support-chatbot',
-                            trainingDetails: 'PyTorch, Hugging Face Transformers, Azure ML',
-                            lastAuditDate: weekAgo,
-                            nextAuditDate: nextMonth,
-                            createdAt: threeMonthsAgo,
-                            updatedAt: now,
-                            regulatoryFrameworks: ['GDPR', 'CCPA'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Privacy of customer data, potential for miscommunication, user experience.',
-                            monitoringMetrics: { 'Privacy Audit': '/reports/privacy-chatbot', 'Performance': '/dashboards/chatbot-perf' },
-                        },
-                        {
-                            id: model3Id,
-                            name: 'ObjectDetectorV1.0',
-                            description: 'Computer Vision model for object detection in security camera feeds.',
-                            status: AIModelStatus.Mitigated,
-                            type: AIModelType.ComputerVision,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: threeMonthsAgo,
-                                performanceMetrics: { mAP: 0.78, inferenceSpeed: 30 },
-                                trainingDataId: 'data-security-footage',
-                                documentationLink: '/docs/models/objectdetector_v1.0.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-3'],
-                            dataDependencies: ['data-security-images'],
-                            codeRepositoryLink: 'https://github.com/company/object-detector',
-                            trainingDetails: 'YOLOv5, OpenCV, On-premise GPU cluster',
-                            lastAuditDate: twoWeeksAgo,
-                            nextAuditDate: twoMonths,
-                            createdAt: sixMonthsAgo,
-                            updatedAt: now,
-                            regulatoryFrameworks: ['ISO 27001'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Accuracy on different demographics, potential for surveillance misuse, adversarial robustness.',
-                            monitoringMetrics: { 'Security Audit': '/reports/security-detector' },
-                        },
-                        {
-                            id: 'mdl-pm-v1.5',
-                            name: 'PredictiveMaintenanceV1.5',
-                            description: 'Time-series model to predict equipment failures in manufacturing.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Forecasting,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.5',
-                                deploymentDate: new Date('2023-01-15'),
-                                performanceMetrics: { r2: 0.91, mae: 0.05 },
-                                trainingDataId: 'data-sensor-logs',
-                                documentationLink: '/docs/models/pm_v1.5.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.5',
-                            associatedRisks: ['risk-4'],
-                            dataDependencies: ['data-equipment-sensor', 'data-maintenance-history'],
-                            codeRepositoryLink: 'https://github.com/company/predictive-maintenance',
-                            trainingDetails: 'Scikit-learn, Apache Spark, Databricks',
-                            lastAuditDate: new Date('2024-03-01'),
-                            nextAuditDate: new Date('2024-06-01'),
-                            createdAt: new Date('2022-10-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: [],
-                            businessImpactLevel: AIRiskImpact.Medium,
-                            ethicalConsiderations: 'Accuracy and false positives/negatives impact on operational costs and safety.',
-                            monitoringMetrics: { 'Drift Monitor': '/dashboards/pm-drift' },
-                        },
-                        {
-                            id: 'mdl-md-v1',
-                            name: 'MedicalDiagnosisV1.0',
-                            description: 'AI model assisting in early detection of specific medical conditions from images.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.ComputerVision,
-                            ownerStakeholderId: 'stk-005',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-11-01'),
-                                performanceMetrics: { sensitivity: 0.94, specificity: 0.91, auc: 0.96 },
-                                trainingDataId: 'data-medical-images',
-                                documentationLink: '/docs/models/meddiag_v1.0.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-5'],
-                            dataDependencies: ['data-xray-scans', 'data-patient-records'],
-                            codeRepositoryLink: 'https://github.com/company/medical-diagnosis-ai',
-                            trainingDetails: 'PyTorch, NVIDIA Clara, Google Cloud AI Platform',
-                            lastAuditDate: new Date('2024-03-20'),
-                            nextAuditDate: new Date('2024-05-20'),
-                            createdAt: new Date('2023-08-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['FDA Regulations', 'HIPAA'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Explainability of diagnoses, potential for misdiagnosis, patient safety, data privacy.',
-                            monitoringMetrics: { 'Explainability UI': '/dashboards/xai-meddiag', 'Performance': '/dashboards/meddiag-perf' },
-                        },
-                        {
-                            id: 'mdl-ns-v1',
-                            name: 'NewsSummarizerV1.0',
-                            description: 'Generative AI model for summarizing news articles.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Generative,
-                            ownerStakeholderId: 'stk-005',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-07-01'),
-                                performanceMetrics: { rouge1: 0.45, rouge2: 0.22, rougel: 0.38 },
-                                trainingDataId: 'data-news-articles',
-                                documentationLink: '/docs/models/newssummarizer_v1.0.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-6'],
-                            dataDependencies: ['data-public-news-corpus'],
-                            codeRepositoryLink: 'https://github.com/company/news-summarizer',
-                            trainingDetails: 'Fine-tuned LLM (e.g., GPT-3.5), Azure OpenAI',
-                            lastAuditDate: new Date('2024-03-10'),
-                            nextAuditDate: new Date('2024-06-10'),
-                            createdAt: new Date('2023-04-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: [],
-                            businessImpactLevel: AIRiskImpact.Medium,
-                            ethicalConsiderations: 'Accuracy of summaries, potential for misinformation, bias in content generation.',
-                            monitoringMetrics: { 'Fact-Check Score': '/dashboards/fact-check-ns' },
-                        },
-                        {
-                            id: 'mdl-llm-ent-v1',
-                            name: 'LLM-Enterprise-V1',
-                            description: 'Proprietary Large Language Model for internal enterprise applications.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Generative,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2024-01-01'),
-                                performanceMetrics: { perplexity: 15.2, responseTime: 2.5 },
-                                trainingDataId: 'data-enterprise-corpus',
-                                documentationLink: '/docs/models/llm_ent_v1.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-7'],
-                            dataDependencies: ['data-internal-documents', 'data-employee-communications'],
-                            codeRepositoryLink: 'https://github.com/company/enterprise-llm',
-                            trainingDetails: 'Custom transformer architecture, distributed training on cloud GPUs',
-                            lastAuditDate: new Date('2024-02-15'),
-                            nextAuditDate: new Date('2024-05-15'),
-                            createdAt: new Date('2023-06-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['GDPR', 'Internal Data Security Policies'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Resource consumption, potential for data leakage, hallucination, misuse.',
-                            monitoringMetrics: { 'Cost Monitor': '/dashboards/llm-cost', 'Security Log': '/logs/llm-security' },
-                        },
-                        {
-                            id: 'mdl-pd-v1',
-                            name: 'PhishingDetectorV1.0',
-                            description: 'AI model for real-time detection of phishing emails.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-09-01'),
-                                performanceMetrics: { accuracy: 0.99, falsePositiveRate: 0.01 },
-                                trainingDataId: 'data-phishing-corpus',
-                                documentationLink: '/docs/models/phishing_detector_v1.0.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-8'],
-                            dataDependencies: ['data-email-headers', 'data-email-content'],
-                            codeRepositoryLink: 'https://github.com/company/phishing-detector',
-                            trainingDetails: 'XGBoost, NLP features, on-premise servers',
-                            lastAuditDate: new Date('2024-01-20'),
-                            nextAuditDate: new Date('2024-07-20'),
-                            createdAt: new Date('2023-06-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['NIST Cybersecurity Framework'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Potential for malicious exploitation, false positives impacting legitimate communication.',
-                            monitoringMetrics: { 'Attack Monitor': '/dashboards/attack-detection' },
-                        },
-                        {
-                            id: 'mdl-re-v2',
-                            name: 'RecommendationEngineV2.0',
-                            description: 'AI model providing personalized product recommendations to users.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification, // or Ranking
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '2.0',
-                                deploymentDate: new Date('2024-03-01'),
-                                performanceMetrics: { clickThroughRate: 0.15, coverage: 0.8 },
-                                trainingDataId: 'data-user-interactions',
-                                documentationLink: '/docs/models/rec_engine_v2.0.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '2.0',
-                            associatedRisks: ['risk-9'],
-                            dataDependencies: ['data-user-behavior', 'data-product-catalog'],
-                            codeRepositoryLink: 'https://github.com/company/recommendation-engine',
-                            trainingDetails: 'Deep learning (neural networks), collaborative filtering, GCP AI Platform',
-                            lastAuditDate: new Date('2024-03-10'),
-                            nextAuditDate: new Date('2024-05-10'),
-                            createdAt: new Date('2023-10-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: [],
-                            businessImpactLevel: AIRiskImpact.Major,
-                            ethicalConsiderations: 'Filter bubbles, manipulation, model robustness against malicious input.',
-                            monitoringMetrics: { 'A/B Test Results': '/dashboards/ab-tests', 'Model Health': '/dashboards/rec-engine-health' },
-                        },
-                        {
-                            id: 'mdl-dp-v2.1',
-                            name: 'DynamicPricingV2.1',
-                            description: 'AI model that adjusts product prices in real-time based on market demand and competitor prices.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Regression,
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '2.1',
-                                deploymentDate: new Date('2024-02-01'),
-                                performanceMetrics: { revenueIncrease: 0.07, priceElasticityAccuracy: 0.88 },
-                                trainingDataId: 'data-market-prices',
-                                documentationLink: '/docs/models/dynamic_pricing_v2.1.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '2.1',
-                            associatedRisks: ['risk-10'],
-                            dataDependencies: ['data-sales-history', 'data-competitor-prices', 'data-market-demand'],
-                            codeRepositoryLink: 'https://github.com/company/dynamic-pricing-ai',
-                            trainingDetails: 'Reinforcement Learning, online learning, Kubernetes cluster',
-                            lastAuditDate: new Date('2024-03-05'),
-                            nextAuditDate: new Date('2024-06-05'),
-                            createdAt: new Date('2023-09-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Antitrust Laws'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Price gouging, algorithmic collusion, fairness to consumers, market manipulation.',
-                            monitoringMetrics: { 'Market Competition Monitor': '/dashboards/market-comp', 'Price Fairness Audit': '/reports/price-fairness' },
-                        },
-                        {
-                            id: 'mdl-fd-v3',
-                            name: 'FraudDetectionV3',
-                            description: 'AI model to detect fraudulent financial transactions.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '3.0',
-                                deploymentDate: new Date('2023-11-15'),
-                                performanceMetrics: { precision: 0.95, recall: 0.89, f1: 0.92 },
-                                trainingDataId: 'data-transaction-history',
-                                documentationLink: '/docs/models/fraud_detection_v3.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '3.0',
-                            associatedRisks: ['risk-11'],
-                            dataDependencies: ['data-transaction-logs', 'data-customer-profiles'],
-                            codeRepositoryLink: 'https://github.com/company/fraud-detection-ai',
-                            trainingDetails: 'Neural networks, anomaly detection, real-time streaming data processing',
-                            lastAuditDate: new Date('2024-03-01'),
-                            nextAuditDate: new Date('2024-06-01'),
-                            createdAt: new Date('2023-07-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['PCI DSS', 'AML Regulations'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'False positives impacting legitimate users, data privacy, model robustness against adversarial attacks.',
-                            monitoringMetrics: { 'Fraud Alert Dashboard': '/dashboards/fraud-alerts', 'Data Integrity Monitor': '/monitors/data-integrity' },
-                        },
-                        {
-                            id: 'mdl-as-v2',
-                            name: 'ApplicantScreenerV2',
-                            description: 'AI system for initial screening and ranking of job applicants.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification,
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '2.0',
-                                deploymentDate: new Date('2024-01-20'),
-                                performanceMetrics: { hiringRateAccuracy: 0.85, resumeMatchScore: 0.90 },
-                                trainingDataId: 'data-job-applications',
-                                documentationLink: '/docs/models/applicant_screener_v2.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '2.0',
-                            associatedRisks: ['risk-12'],
-                            dataDependencies: ['data-job-postings', 'data-applicant-resumes'],
-                            codeRepositoryLink: 'https://github.com/company/applicant-screener-ai',
-                            trainingDetails: 'NLP, semantic matching, Python on AWS Lambda',
-                            lastAuditDate: new Date('2024-03-10'),
-                            nextAuditDate: new Date('2024-05-10'),
-                            createdAt: new Date('2023-09-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Equal Employment Opportunity laws'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Bias in hiring, lack of transparency, potential for discrimination, negative candidate experience.',
-                            monitoringMetrics: { 'Fairness Audit Report': '/reports/hiring-fairness', 'Candidate Feedback': '/dashboards/candidate-feedback' },
-                        },
-                        {
-                            id: 'mdl-mtp-v1',
-                            name: 'MarketTrendPredictorV1',
-                            description: 'AI model to forecast market trends for investment strategies.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Forecasting,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-10-01'),
-                                performanceMetrics: { r2: 0.85, RMSE: 0.02 },
-                                trainingDataId: 'data-market-history',
-                                documentationLink: '/docs/models/market_predictor_v1.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-13'],
-                            dataDependencies: ['data-stock-prices', 'data-economic-indicators', 'data-news-sentiment'],
-                            codeRepositoryLink: 'https://github.com/company/market-trend-predictor',
-                            trainingDetails: 'LSTM, Prophet, Azure Data Science VM',
-                            lastAuditDate: new Date('2024-03-01'),
-                            nextAuditDate: new Date('2024-04-15'),
-                            createdAt: new Date('2023-07-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Financial Regulations'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Accuracy degradation due to concept drift, systemic risk if widely adopted, market manipulation.',
-                            monitoringMetrics: { 'Prediction Accuracy Monitor': '/monitors/prediction-accuracy', 'Data Freshness Alert': '/alerts/data-freshness' },
-                        },
-                        {
-                            id: 'mdl-dna-v1',
-                            name: 'DroneNavigationAI',
-                            description: 'AI system for autonomous navigation and obstacle avoidance in delivery drones.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.ReinforcementLearning,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-08-01'),
-                                performanceMetrics: { collisionRate: 0.001, deliverySuccessRate: 0.98 },
-                                trainingDataId: 'data-simulation-environment',
-                                documentationLink: '/docs/models/drone_navigation_v1.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-14'],
-                            dataDependencies: ['data-sensor-readings', 'data-map-data'],
-                            codeRepositoryLink: 'https://github.com/company/drone-navigation-ai',
-                            trainingDetails: 'Deep RL, gazebo simulator, custom hardware accelerators',
-                            lastAuditDate: new Date('2024-02-20'),
-                            nextAuditDate: new Date('2024-05-20'),
-                            createdAt: new Date('2023-03-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Aviation Safety Regulations', 'Local Drone Laws'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Public safety, accountability in case of accidents, environmental impact of drone operations, autonomous decision-making in critical situations.',
-                            monitoringMetrics: { 'Safety Incident Log': '/logs/drone-incidents', 'Collision Avoidance Metrics': '/dashboards/collision-avoidance' },
-                        },
-                        {
-                            id: 'mdl-ra-v1',
-                            name: 'ResourceAllocatorV1',
-                            description: 'AI system optimizing the allocation of public resources based on predefined criteria.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Optimization, // Custom type for this example
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-12-01'),
-                                performanceMetrics: { efficiencyGain: 0.12, fairnessIndex: 0.75 },
-                                trainingDataId: 'data-resource-demand',
-                                documentationLink: '/docs/models/resource_allocator_v1.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-15'],
-                            dataDependencies: ['data-demographics', 'data-resource-availability', 'data-need-assessment'],
-                            codeRepositoryLink: 'https://github.com/company/resource-allocator-ai',
-                            trainingDetails: 'Linear programming, multi-objective optimization, IBM Watson Studio',
-                            lastAuditDate: new Date('2024-03-15'),
-                            nextAuditDate: new Date('2024-06-15'),
-                            createdAt: new Date('2023-07-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Human Rights Laws', 'Ethical AI Guidelines'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Algorithmic discrimination, fairness in resource distribution, societal impact, transparency of allocation criteria.',
-                            monitoringMetrics: { 'Fairness Dashboard': '/dashboards/resource-fairness', 'Ethical Compliance': '/reports/ethical-compliance' },
-                        },
-                        {
-                            id: 'mdl-pl-ai',
-                            name: 'PersonalizedLearningAI',
-                            description: 'AI platform adapting educational content to individual student needs and pace.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Recommendation,
-                            ownerStakeholderId: 'stk-005',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-11-01'),
-                                performanceMetrics: { studentEngagement: 0.8, learningOutcomesImprovement: 0.15 },
-                                trainingDataId: 'data-student-progress',
-                                documentationLink: '/docs/models/personalized_learning_ai.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-16'],
-                            dataDependencies: ['data-student-performance', 'data-curriculum'],
-                            codeRepositoryLink: 'https://github.com/company/personalized-learning-ai',
-                            trainingDetails: 'Adaptive learning algorithms, Bayesian inference, Google Cloud Platform',
-                            lastAuditDate: new Date('2024-02-25'),
-                            nextAuditDate: new Date('2024-05-25'),
-                            createdAt: new Date('2023-06-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['FERPA', 'COPPA'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Digital divide amplification, educational equity, student data privacy, potential for algorithmic ' +
-                                'biases in learning paths, impact on critical thinking vs. rote learning.',
-                            monitoringMetrics: { 'Equity Dashboard': '/dashboards/learning-equity', 'Privacy Audit': '/reports/student-privacy' },
-                        },
-                        {
-                            id: 'mdl-po-v1',
-                            name: 'ProductionOptimizerV1',
-                            description: 'AI system for optimizing industrial production line processes to maximize output.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Optimization,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2024-01-10'),
-                                performanceMetrics: { productionEfficiencyIncrease: 0.08, defectRateReduction: 0.05 },
-                                trainingDataId: 'data-manufacturing-logs',
-                                documentationLink: '/docs/models/production_optimizer_v1.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-17'],
-                            dataDependencies: ['data-sensor-readings', 'data-production-schedules'],
-                            codeRepositoryLink: 'https://github.com/company/production-optimizer-ai',
-                            trainingDetails: 'Dynamic programming, reinforcement learning, Siemens MindSphere',
-                            lastAuditDate: new Date('2024-03-05'),
-                            nextAuditDate: new Date('2024-06-05'),
-                            createdAt: new Date('2023-09-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Environmental Protection Agency (EPA) Regulations', 'ISO 14001'],
-                            businessImpactLevel: AIRiskImpact.Medium,
-                            ethicalConsiderations: 'Unintended environmental impact (e.g., increased waste, energy consumption), safety of workers, quality control.',
-                            monitoringMetrics: { 'Waste & Energy Monitor': '/dashboards/environmental-impact', 'Safety Incident Tracking': '/logs/production-safety' },
-                        },
-                        {
-                            id: 'mdl-fr-v3',
-                            name: 'FaceRecognitionV3',
-                            description: 'Image recognition model used in public safety applications for identification and surveillance.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.ComputerVision,
-                            ownerStakeholderId: 'stk-005',
-                            versions: [{
-                                version: '3.0',
-                                deploymentDate: new Date('2023-06-01'),
-                                performanceMetrics: { accuracy: 0.98, falsePositiveRate: 0.005, falseNegativeRate: 0.01 },
-                                trainingDataId: 'data-public-faces',
-                                documentationLink: '/docs/models/face_recognition_v3.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '3.0',
-                            associatedRisks: ['risk-18'],
-                            dataDependencies: ['data-public-image-datasets', 'data-identification-databases'],
-                            codeRepositoryLink: 'https://github.com/company/face-recognition-ai',
-                            trainingDetails: 'Deep CNNs, contrastive learning, custom GPU clusters',
-                            lastAuditDate: new Date('2024-02-01'),
-                            nextAuditDate: new Date('2024-05-01'),
-                            createdAt: new Date('2023-01-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Civil Rights Act', 'Biometric Privacy Laws'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Bias against certain demographics (e.g., race, gender), surveillance misuse, civil liberties violations, privacy infringement.',
-                            monitoringMetrics: { 'Bias Audit Report': '/reports/face-recognition-bias', 'Accuracy Metrics by Group': '/dashboards/group-accuracy' },
-                        },
-                        {
-                            id: 'mdl-la-ai',
-                            name: 'LoanApprovalAI',
-                            description: 'AI system for automated loan application approval and risk assessment.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification,
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2024-02-10'),
-                                performanceMetrics: { approvalRate: 0.7, defaultRatePredictionAccuracy: 0.92 },
-                                trainingDataId: 'data-loan-applications',
-                                documentationLink: '/docs/models/loan_approval_ai.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-19'],
-                            dataDependencies: ['data-credit-scores', 'data-financial-history', 'data-applicant-info'],
-                            codeRepositoryLink: 'https://github.com/company/loan-approval-ai',
-                            trainingDetails: 'Logistic Regression, Gradient Boosting, AWS SageMaker',
-                            lastAuditDate: new Date('2024-03-20'),
-                            nextAuditDate: new Date('2024-06-20'),
-                            createdAt: new Date('2023-10-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Fair Credit Reporting Act', 'ECOA', 'CFPB Guidelines'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Lack of accountability for automated denials, algorithmic discrimination, transparency of decision-making, adverse impact on vulnerable populations.',
-                            monitoringMetrics: { 'Denial Rate Audit': '/reports/loan-denial-audit', 'Explainability Log': '/logs/loan-explanations' },
-                        },
-                        {
-                            id: 'mdl-prod-ml-infra',
-                            name: 'Production ML Inference Infrastructure',
-                            description: 'Shared infrastructure for deploying and serving all production machine learning models.',
-                            status: AIModelStatus.Deployed, // Representing the infrastructure itself as a 'model' for risk purposes
-                            type: AIModelType.Technical, // Custom type
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-01-01'),
-                                performanceMetrics: { uptime: 0.999, latency: 50 },
-                                trainingDataId: 'N/A',
-                                documentationLink: '/docs/infra/ml_inference_platform.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-20'],
-                            dataDependencies: [],
-                            codeRepositoryLink: 'https://github.com/company/mlops-infra',
-                            trainingDetails: 'N/A (Infrastructure)',
-                            lastAuditDate: new Date('2024-03-10'),
-                            nextAuditDate: new Date('2024-06-10'),
-                            createdAt: new Date('2022-10-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['NIST Cybersecurity Framework'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Overall security posture impacting all models, availability and reliability for mission-critical AI.',
-                            monitoringMetrics: { 'Security Dashboard': '/dashboards/infra-security', 'Uptime Monitor': '/monitors/infra-uptime' },
-                        },
-                        {
-                            id: 'mdl-ai-act-comp',
-                            name: 'AI Act Compliance Framework',
-                            description: 'Internal framework and governance policies to ensure compliance with emerging AI regulations like the EU AI Act.',
-                            status: AIModelStatus.UnderReview,
-                            type: AIModelType.Governance, // Custom type
-                            ownerStakeholderId: 'stk-003',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2024-01-01'), // Date of framework inception
-                                performanceMetrics: { complianceScore: 0.6, auditReadiness: 0.5 },
-                                trainingDataId: 'N/A',
-                                documentationLink: '/docs/governance/ai_act_framework.pdf',
-                                deployedBy: 'stk-003',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-21'],
-                            dataDependencies: [],
-                            codeRepositoryLink: 'N/A',
-                            trainingDetails: 'N/A (Framework)',
-                            lastAuditDate: new Date('2024-03-25'),
-                            nextAuditDate: new Date('2024-05-25'),
-                            createdAt: new Date('2023-08-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['EU AI Act'],
-                            businessImpactLevel: AIRiskImpact.Critical,
-                            ethicalConsiderations: 'Ensuring ethical principles are embedded in all AI systems, avoiding legal penalties for non-compliance, maintaining public trust.',
-                            monitoringMetrics: { 'Compliance Checklist': '/checklists/ai-act', 'Legal Advisory Log': '/logs/legal-advisory' },
-                        },
-                        {
-                            id: 'mdl-ai-supply-chain',
-                            name: 'AI Supply Chain Risk Management System',
-                            description: 'System to identify, assess, and mitigate risks related to the AI supply chain, including data and hardware.',
-                            status: AIModelStatus.Development, // The system itself is under development
-                            type: AIModelType.Operational,
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '0.9-beta',
-                                deploymentDate: new Date('2024-03-01'),
-                                performanceMetrics: { supplierDiversityScore: 0.4, riskCoverage: 0.6 },
-                                trainingDataId: 'N/A',
-                                documentationLink: '/docs/system/ai_supply_chain_mgmt.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '0.9-beta',
-                            associatedRisks: ['risk-22'],
-                            dataDependencies: ['data-supplier-info', 'data-geopolitical-analysis'],
-                            codeRepositoryLink: 'https://github.com/company/ai-supply-chain-mgmt',
-                            trainingDetails: 'N/A (System)',
-                            lastAuditDate: new Date('2024-03-10'),
-                            nextAuditDate: new Date('2024-06-10'),
-                            createdAt: new Date('2023-11-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Export Control Regulations'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Ensuring ethical sourcing, transparency in the supply chain, resilience against global disruptions.',
-                            monitoringMetrics: { 'Supplier Risk Scorecard': '/scorecards/supplier-risk', 'Geopolitical Risk Feed': '/feeds/geopolitical-risk' },
-                        },
-                        {
-                            id: 'mdl-cs-router-ai',
-                            name: 'CustomerServiceRouterAI',
-                            description: 'AI system for routing customer inquiries to the most appropriate support channel or agent.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Classification,
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2024-02-15'),
-                                performanceMetrics: { firstContactResolutionRate: 0.65, routingAccuracy: 0.88 },
-                                trainingDataId: 'data-customer-interactions',
-                                documentationLink: '/docs/models/customer_service_router_ai.pdf',
-                                deployedBy: 'stk-001',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-23'],
-                            dataDependencies: ['data-customer-profiles', 'data-interaction-history', 'data-agent-skills'],
-                            codeRepositoryLink: 'https://github.com/company/customer-service-router-ai',
-                            trainingDetails: 'NLP, rule-based systems, cloud-based platform',
-                            lastAuditDate: new Date('2024-03-20'),
-                            nextAuditDate: new Date('2024-05-20'),
-                            createdAt: new Date('2023-10-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Consumer Protection Laws'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Algorithmic discrimination in service allocation, impact on vulnerable customers, fairness of wait times and resolution quality.',
-                            monitoringMetrics: { 'Bias Detection Dashboard': '/dashboards/cs-bias', 'Customer Satisfaction Score': '/dashboards/csat' },
-                        },
-                        {
-                            id: 'mdl-fl-platform',
-                            name: 'FederatedLearningPlatform',
-                            description: 'Platform enabling collaborative training of AI models across decentralized data sources without centralizing raw data.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Technical,
-                            ownerStakeholderId: 'stk-002',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-09-01'),
-                                performanceMetrics: { trainingEfficiency: 0.8, privacyLoss: 0.05 },
-                                trainingDataId: 'N/A', // Distributed
-                                documentationLink: '/docs/platform/federated_learning.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-24'],
-                            dataDependencies: ['data-distributed-datasets'],
-                            codeRepositoryLink: 'https://github.com/company/federated-learning-platform',
-                            trainingDetails: 'PySyft, TensorFlow Federated, custom secure multi-party computation',
-                            lastAuditDate: new Date('2024-03-01'),
-                            nextAuditDate: new Date('2024-06-01'),
-                            createdAt: new Date('2023-04-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['GDPR', 'HIPAA'],
-                            businessImpactLevel: AIRiskImpact.High,
-                            ethicalConsiderations: 'Data inference attacks, privacy leakage from model updates, robustness against malicious participants, secure aggregation challenges.',
-                            monitoringMetrics: { 'Privacy Budget Monitor': '/monitors/privacy-budget', 'Attack Detection Log': '/logs/fl-attacks' },
-                        },
-                        {
-                            id: 'mdl-aa-tool',
-                            name: 'AdvancedAnalyticsAI',
-                            description: 'Complex AI-driven tool for advanced data analysis and predictive modeling for business users.',
-                            status: AIModelStatus.Deployed,
-                            type: AIModelType.Reporting, // Custom type
-                            ownerStakeholderId: 'stk-001',
-                            versions: [{
-                                version: '1.0',
-                                deploymentDate: new Date('2023-07-01'),
-                                performanceMetrics: { querySpeed: 200, insightGenerationRate: 0.7 },
-                                trainingDataId: 'N/A', // Operates on user-provided data
-                                documentationLink: '/docs/tool/advanced_analytics_ai.pdf',
-                                deployedBy: 'stk-002',
-                            }],
-                            currentVersion: '1.0',
-                            associatedRisks: ['risk-25'],
-                            dataDependencies: ['data-business-intelligence', 'data-user-uploads'],
-                            codeRepositoryLink: 'https://github.com/company/advanced-analytics-ai',
-                            trainingDetails: 'Graph Neural Networks, time-series analysis, AWS Quicksight integration',
-                            lastAuditDate: new Date('2024-01-15'),
-                            nextAuditDate: new Date('2024-07-15'),
-                            createdAt: new Date('2023-03-01'),
-                            updatedAt: new Date(),
-                            regulatoryFrameworks: ['Data Governance Policies'],
-                            businessImpactLevel: AIRiskImpact.Medium,
-                            ethicalConsiderations: 'User error due to complexity, misinterpretation of AI outputs, potential for incorrect business decisions, accessibility for non-expert users.',
-                            monitoringMetrics: { 'User Engagement Metrics': '/dashboards/user-engagement', 'Error Rate Log': '/logs/tool-errors' },
-                        },
-                    ];
-                }
-            })();
-
-            /**
-             * Simulates fetching AI Models.
-             * Exported for modularity and interaction with the main component if needed.
-             */
-            export const fetchAIModels = async (): Promise<AIModel[]> => {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        resolve(JSON.parse(JSON.stringify(simulatedModelDb.models)));
-                    }, 400);
-                });
-            };
-
-            /**
-             * Simulates fetching an AI Model by ID.
-             * Exported for modularity.
-             */
-            export const fetchAIModelById = async (id: EntityId): Promise<AIModel | undefined> => {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        resolve(JSON.parse(JSON.stringify(simulatedModelDb.models.find(m => m.id === id))));
-                    }, 200);
-                });
-            };
-
-            {/*
-            // =========================================================================================================
-            // Feature: Data Asset Inventory Integration & Risk Association (Simulated)
-            // =========================================================================================================
-            */}
-
-            {/* Interfaces for Data Assets */}
-            {/* Exported for global availability */}
-            export enum DataAssetType {
-                Database = 'Database',
-                DataLake = 'Data Lake',
-                API = 'API',
-                FileStorage = 'File Storage',
-                Streaming = 'Streaming',
-                DocumentStore = 'Document Store',
-                ExternalSource = 'External Source',
-            }
-
-            export enum DataClassification {
-                Public = 'Public',
-                Internal = 'Internal',
-                Confidential = 'Confidential',
-                Restricted = 'Restricted',
-                Sensitive = 'Sensitive',
-            }
-
-            export interface DataAsset {
-                id: EntityId;
-                name: string;
-                description: string;
-                type: DataAsset
+export default AIRiskRegistryView;
