@@ -802,12 +802,20 @@ const DemoBankBlockchainView: React.FC = () => {
         setError('');
         setGeneratedCode('');
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            // NOTE: This requires a valid API key to be set in environment variables.
+            // For this demo, we assume it's configured. In a real app, this would be handled securely.
+            const apiKey = process.env.REACT_APP_GEMINI_API_KEY || (window as any).GEMINI_API_KEY;
+            if (!apiKey) {
+                setError("API Key not found. Please configure your Gemini API key.");
+                setIsLoading(false);
+                return;
+            }
+            const ai = new GoogleGenAI({ apiKey });
             const fullPrompt = `Generate a basic Solidity smart contract for the following purpose: "${prompt}". Include comments explaining the code. Start with the SPDX license identifier and pragma directive. Do not include markdown fences.`;
-            const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: fullPrompt });
+            const response = await ai.models.generateContent({ model: 'gemini-1.5-flash', contents: [{role: "user", parts: [{text: fullPrompt}]}] });
             setGeneratedCode(response.text);
         } catch (error) {
-            setError("Error: Could not generate contract. Your prompt may have violated safety policies.");
+            setError("Error: Could not generate contract. Your prompt may have violated safety policies, or the API key may be invalid.");
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -826,7 +834,7 @@ const DemoBankBlockchainView: React.FC = () => {
         
         const deploymentTxData = {
             from: userWallet.address,
-            to: '0x0000000000000000000000000000000000000000', // Null address for deployment
+            to: '0x0000000000000000000000000000000000000000' as WalletAddress, // Null address for deployment
             amount: 0,
             timestamp: Date.now(),
             data: generatedCode,
