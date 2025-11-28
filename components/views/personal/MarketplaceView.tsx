@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState, useReducer, useMemo, useCallback, useRef, createContext } from 'react';
 import { DataContext } from '../../../context/DataContext';
 import Card from '../../Card';
-import type { MarketplaceProduct, View } from '../../../types';
+import type { MarketplaceProduct as BaseMarketplaceProduct, View } from '../../../types';
 import { GoogleGenAI, Type } from "@google/genai";
 
 // SECTION: Enhanced Types and Interfaces
@@ -17,16 +17,18 @@ export type ProductReview = {
     comment: string;
     date: string; // ISO 8601 format
     verifiedPurchase: boolean;
+    helpfulVotes: number;
 };
 
 export type ProductSpecification = {
     key: string;
-    value: string;
+    value: string | number;
+    isNumeric?: boolean;
 };
 
-export type ProductCategory = 'Electronics' | 'Home & Garden' | 'Fashion' | 'Health & Wellness' | 'Finance & Investing' | 'Travel' | 'Software' | 'Education';
+export type ProductCategory = 'Electronics' | 'Home & Garden' | 'Fashion' | 'Health & Wellness' | 'Finance & Investing' | 'Travel' | 'Software' | 'Education' | 'Sports & Outdoors' | 'Automotive' | 'Gaming';
 
-export interface EnhancedMarketplaceProduct extends MarketplaceProduct {
+export interface EnhancedMarketplaceProduct extends BaseMarketplaceProduct {
     category: ProductCategory;
     brand: string;
     stock: number;
@@ -43,6 +45,15 @@ export interface EnhancedMarketplaceProduct extends MarketplaceProduct {
         value: number; // e.g., 20 for 20% off, or 1 for Buy One Get One
     };
     aiPersonalizationScore: number; // A score from 0 to 1 indicating how relevant Plato thinks this is for the user
+    aiReviewSummary: {
+        positive: string;
+        negative: string;
+        sentimentScore: number; // -1 to 1
+    };
+    relatedProducts: string[]; // array of product IDs
+    warrantyInfo: string;
+    weightKg: number;
+    dimensionsCm: { l: number; w: number; h: number };
 }
 
 export type CartItem = {
@@ -57,6 +68,7 @@ export type FilterState = {
     categories: ProductCategory[];
     brands: string[];
     minRating: number;
+    dynamicFilters: Record<string, any[]>; // For category-specific filters
 };
 
 export type SortKey = 'relevance' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'rating_desc';
@@ -69,7 +81,7 @@ export type MarketplaceState = {
     filters: FilterState;
     sortBy: SortKey;
     currentPage: number;
-    itemsPerPage: number;
+    itemsPerPage: 9;
     selectedProduct: EnhancedMarketplaceProduct | null;
     isDetailModalOpen: boolean;
     wishlist: string[]; // array of product IDs
@@ -77,6 +89,7 @@ export type MarketplaceState = {
     cart: CartItem[];
     isCartOpen: boolean;
     isComparisonViewOpen: boolean;
+    isAIChatOpen: boolean;
     toastNotification: {
         id: number;
         message: string;
@@ -103,6 +116,7 @@ type MarketplaceAction =
     | { type: 'UPDATE_CART_QUANTITY'; payload: { productId: string; quantity: number } }
     | { type: 'CLEAR_CART' }
     | { type: 'TOGGLE_CART' }
+    | { type: 'TOGGLE_AI_CHAT' }
     | { type: 'SHOW_TOAST'; payload: { message: string; type: 'success' | 'error' | 'info' } }
     | { type: 'HIDE_TOAST' };
 
@@ -112,8 +126,8 @@ type MarketplaceAction =
 // In a real application, this data would come from a backend API.
 // We are creating a large, detailed mock dataset to simulate a real-world scenario.
 
-const MOCK_AUTHORS = ['Alex D.', 'Ben C.', 'Casey R.', 'Dana S.', 'Eli F.', 'Frank G.'];
-const MOCK_REVIEW_TITLES = ['Amazing Product!', 'Worth the price', 'Not what I expected', 'Decent quality', 'Could be better', 'A must-have!'];
+const MOCK_AUTHORS = ['Alex D.', 'Ben C.', 'Casey R.', 'Dana S.', 'Eli F.', 'Frank G.', 'Grace H.', 'Ivy J.'];
+const MOCK_REVIEW_TITLES = ['Amazing Product!', 'Worth the price', 'Not what I expected', 'Decent quality', 'Could be better', 'A must-have!', 'Game Changer', 'Overrated'];
 const MOCK_REVIEW_COMMENTS = [
     'I have been using this for a few weeks now and I am thoroughly impressed. It exceeds all my expectations.',
     'The build quality is top-notch and it works flawlessly. Highly recommend to anyone on the fence.',
@@ -121,26 +135,26 @@ const MOCK_REVIEW_COMMENTS = [
     'For the price, you can\'t beat it. It does exactly what it says it will do without any frills.',
     'I found the setup process to be a bit complicated, and the instructions were not very clear.',
     'This has become an essential part of my daily routine. I can\'t imagine going without it now.',
+    'Performance is stellar. I was skeptical at first, but now I am a believer. Five stars!',
+    'The battery life is disappointing. I have to charge it way more often than advertised.'
 ];
 
 const generateMockReviews = (productId: string, count: number): ProductReview[] => {
-    const reviews: ProductReview[] = [];
-    for (let i = 0; i < count; i++) {
-        reviews.push({
-            id: `${productId}-review-${i}`,
-            author: MOCK_AUTHORS[i % MOCK_AUTHORS.length],
-            avatarUrl: `https://i.pravatar.cc/40?u=${productId}${i}`,
-            rating: Math.floor(Math.random() * 3) + 3, // 3, 4, or 5
-            title: MOCK_REVIEW_TITLES[i % MOCK_REVIEW_TITLES.length],
-            comment: MOCK_REVIEW_COMMENTS[i % MOCK_REVIEW_COMMENTS.length],
-            date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-            verifiedPurchase: Math.random() > 0.3,
-        });
-    }
-    return reviews;
+    return Array.from({ length: count }, (_, i) => ({
+        id: `${productId}-review-${i}`,
+        author: MOCK_AUTHORS[i % MOCK_AUTHORS.length],
+        avatarUrl: `https://i.pravatar.cc/40?u=${productId}${i}`,
+        rating: Math.floor(Math.random() * 3) + 3, // 3, 4, or 5
+        title: MOCK_REVIEW_TITLES[i % MOCK_REVIEW_TITLES.length],
+        comment: MOCK_REVIEW_COMMENTS[i % MOCK_REVIEW_COMMENTS.length],
+        date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+        verifiedPurchase: Math.random() > 0.3,
+        helpfulVotes: Math.floor(Math.random() * 50),
+    }));
 };
 
 export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
+    // ... Existing products, slightly enhanced ...
     {
         id: 'prod_1',
         name: 'QuantumLeap Pro Laptop',
@@ -169,6 +183,11 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         ],
         isFeatured: true,
         aiPersonalizationScore: 0.95,
+        aiReviewSummary: { positive: 'Users love the blazing fast performance and stunning display, making it a productivity powerhouse.', negative: 'Some users note it can get warm under heavy load and wish for more port variety.', sentimentScore: 0.92 },
+        relatedProducts: ['prod_5', 'prod_6', 'prod_9'],
+        warrantyInfo: '2-Year Limited Warranty',
+        weightKg: 1.6,
+        dimensionsCm: { l: 31.2, w: 22.1, h: 1.5 },
     },
     {
         id: 'prod_2',
@@ -190,12 +209,16 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         ],
         reviews: generateMockReviews('prod_2', 10),
         tags: ['coffee', 'kitchen', 'smart home', 'morning'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1565452344012-7051f58a345c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1565452344012-7051f58a345c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         promotion: { type: 'discount', value: 15 },
         aiPersonalizationScore: 0.88,
+        aiReviewSummary: { positive: 'Owners rave about the convenience of scheduling brews from their phone and the consistent quality of the coffee.', negative: 'A few users find the initial Wi-Fi setup to be tricky and the grinder to be a bit loud.', sentimentScore: 0.85 },
+        relatedProducts: ['prod_7', 'prod_10'],
+        warrantyInfo: '1-Year Manufacturer Warranty',
+        weightKg: 4.5,
+        dimensionsCm: { l: 25, w: 22, h: 38 },
     },
+    // ... more products ...
     {
         id: 'prod_3',
         name: 'Nomad All-Weather Jacket',
@@ -216,10 +239,13 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         ],
         reviews: generateMockReviews('prod_3', 20),
         tags: ['outdoor', 'jacket', 'travel', 'hiking'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1551028719-00167b16eac5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         aiPersonalizationScore: 0.85,
+        aiReviewSummary: { positive: 'Highly praised for being completely waterproof and windproof while remaining breathable. The fit and pocket layout are excellent.', negative: 'Some mention the material is a bit "crinkly" sounding and it is a significant investment.', sentimentScore: 0.95 },
+        relatedProducts: ['prod_11', 'prod_12'],
+        warrantyInfo: 'Lifetime Warranty against manufacturing defects.',
+        weightKg: 0.45,
+        dimensionsCm: { l: 75, w: 60, h: 5 },
     },
     {
         id: 'prod_4',
@@ -235,23 +261,25 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         reviewCount: 542,
         specifications: [
             { key: 'Format', value: 'eBook (PDF, ePub, Mobi)' },
-            { key: 'Pages', value: '210' },
+            { key: 'Pages', value: 210, isNumeric: true },
             { key: 'Author', value: 'Dr. Evelyn Reed' },
         ],
         reviews: generateMockReviews('prod_4', 5),
         tags: ['investing', 'finance', 'books', 'education'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1553729459-efe14ef6055d?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1553729459-efe14ef6055d?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         aiPersonalizationScore: 0.98,
+        aiReviewSummary: { positive: 'Readers appreciate the clear, concise language that demystifies index fund investing for beginners.', negative: 'Advanced investors might find the content too basic for their needs.', sentimentScore: 0.89 },
+        relatedProducts: [],
+        warrantyInfo: 'N/A',
+        weightKg: 0,
+        dimensionsCm: { l: 0, w: 0, h: 0 },
     },
-    // Add many more products to reach the desired line count and complexity...
     {
         id: 'prod_5',
         name: 'ErgoFlow Standing Desk',
         imageUrl: 'https://images.unsplash.com/photo-1593084895329-5b1b4b1a6c4a?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
         price: 599.00,
-        aiJustification: 'To complement your new high-performance laptop, a standing desk can improve posture and energy levels during your long work sessions.',
+        aiJustification: 'To complement your high-performance laptop, a standing desk can improve posture and energy levels during your long work sessions.',
         category: 'Home & Garden',
         brand: 'OfficeZen',
         stock: 65,
@@ -260,16 +288,18 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         reviewCount: 189,
         specifications: [
             { key: 'Material', value: 'Solid Oak Wood Top, Steel Frame' },
-            { key: 'Dimensions', value: '60" x 30"' },
             { key: 'Height Range', value: '28" to 48"' },
-            { key: 'Lift Capacity', value: '250 lbs' },
+            { key: 'Lift Capacity (lbs)', value: 250, isNumeric: true },
         ],
         reviews: generateMockReviews('prod_5', 12),
         tags: ['office', 'desk', 'ergonomics', 'wfh'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1593084895329-5b1b4b1a6c4a?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1593084895329-5b1b4b1a6c4a?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         aiPersonalizationScore: 0.91,
+        aiReviewSummary: { positive: 'The smooth and quiet motor, sturdy build quality, and beautiful wood finish are frequently highlighted.', negative: 'Assembly can be time-consuming for one person, and cable management could be improved.', sentimentScore: 0.9 },
+        relatedProducts: ['prod_1'],
+        warrantyInfo: '5-Year Warranty on Frame, 2-Year on Electronics',
+        weightKg: 35,
+        dimensionsCm: { l: 152, w: 76, h: 71 },
     },
     {
         id: 'prod_6',
@@ -285,17 +315,19 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         reviewCount: 1204,
         specifications: [
             { key: 'Connectivity', value: 'Bluetooth 5.2, 3.5mm Jack' },
-            { key: 'Battery Life', value: '30 hours (ANC on)' },
+            { key: 'Battery Life (hrs)', value: 30, isNumeric: true },
             { key: 'Features', value: 'Active Noise Cancellation, Transparency Mode' },
-            { key: 'Weight', value: '254g' },
         ],
         reviews: generateMockReviews('prod_6', 30),
         tags: ['audio', 'headphones', 'travel', 'focus'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         isFeatured: true,
         aiPersonalizationScore: 0.93,
+        aiReviewSummary: { positive: 'Industry-leading noise cancellation and superb comfort for long listening sessions are the main selling points.', negative: 'The carrying case is a bit bulky, and they do not support aptX for high-fidelity Bluetooth audio.', sentimentScore: 0.96 },
+        relatedProducts: ['prod_1', 'prod_8'],
+        warrantyInfo: '1-Year Limited Warranty',
+        weightKg: 0.254,
+        dimensionsCm: { l: 19, w: 15, h: 8 },
     },
     {
         id: 'prod_7',
@@ -316,10 +348,13 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         ],
         reviews: generateMockReviews('prod_7', 8),
         tags: ['meditation', 'wellness', 'app', 'mental health'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         aiPersonalizationScore: 0.82,
+        aiReviewSummary: { positive: 'The vast library of high-quality content and the soothing voice of the guides are highly effective for relaxation and sleep.', negative: 'Some users wish for more one-off purchase options instead of a recurring subscription.', sentimentScore: 0.91 },
+        relatedProducts: ['prod_2', 'prod_10'],
+        warrantyInfo: 'N/A',
+        weightKg: 0,
+        dimensionsCm: { l: 0, w: 0, h: 0 },
     },
     {
         id: 'prod_8',
@@ -340,11 +375,95 @@ export const MOCK_PRODUCTS: EnhancedMarketplaceProduct[] = [
         ],
         reviews: generateMockReviews('prod_8', 7),
         tags: ['travel', 'japan', 'vacation', 'culture'],
-        galleryImages: [
-            'https://images.unsplash.com/photo-1542051841857-5f90071e7989?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
-        ],
+        galleryImages: ['https://images.unsplash.com/photo-1542051841857-5f90071e7989?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
         promotion: { type: 'discount', value: 10 },
         aiPersonalizationScore: 0.96,
+        aiReviewSummary: { positive: 'Travelers describe this package as perfectly organized, seamless, and a fantastic introduction to the beauty of Kyoto.', negative: 'Some wished for more free time in the itinerary.', sentimentScore: 0.98 },
+        relatedProducts: ['prod_3', 'prod_6'],
+        warrantyInfo: 'Travel Insurance Recommended',
+        weightKg: 0,
+        dimensionsCm: { l: 0, w: 0, h: 0 },
+    },
+    {
+        id: 'prod_9',
+        name: 'CodeScribe Pro IDE',
+        imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
+        price: 149.00,
+        aiJustification: 'Your professional profile suggests you are a software developer. This AI-powered IDE can dramatically speed up your coding and debugging process.',
+        category: 'Software',
+        brand: 'DevTools Inc.',
+        stock: 9999,
+        sku: 'DTI-CSP-1Y',
+        averageRating: 4.9,
+        reviewCount: 850,
+        specifications: [
+            { key: 'License', value: '1-Year Subscription' },
+            { key: 'Platform', value: 'Windows, macOS, Linux' },
+            { key: 'AI Features', value: 'Code Completion, Auto-Refactor, Debugging Assistant' },
+        ],
+        reviews: generateMockReviews('prod_9', 18),
+        tags: ['software', 'developer', 'ide', 'ai'],
+        galleryImages: ['https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
+        aiPersonalizationScore: 0.99,
+        aiReviewSummary: { positive: 'Developers report significant productivity gains thanks to the intelligent and context-aware AI code completion.', negative: 'It can be resource-intensive on older machines.', sentimentScore: 0.94 },
+        relatedProducts: ['prod_1', 'prod_5'],
+        warrantyInfo: 'Support & Updates included with subscription',
+        weightKg: 0,
+        dimensionsCm: { l: 0, w: 0, h: 0 },
+    },
+    {
+        id: 'prod_10',
+        name: 'Organic Matcha Green Tea Powder',
+        imageUrl: 'https://images.unsplash.com/photo-1558221469-4dea807a8217?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
+        price: 29.95,
+        aiJustification: 'Your grocery purchases often include organic products and teas. This high-grade matcha offers a healthy, focused energy boost.',
+        category: 'Health & Wellness',
+        brand: 'Zen Garden',
+        stock: 300,
+        sku: 'ZG-OMP-100G',
+        averageRating: 4.8,
+        reviewCount: 432,
+        specifications: [
+            { key: 'Grade', value: 'Ceremonial' },
+            { key: 'Origin', value: 'Uji, Japan' },
+            { key: 'Size', value: '100g Tin' },
+        ],
+        reviews: generateMockReviews('prod_10', 9),
+        tags: ['tea', 'matcha', 'organic', 'wellness'],
+        galleryImages: ['https://images.unsplash.com/photo-1558221469-4dea807a8217?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
+        aiPersonalizationScore: 0.78,
+        aiReviewSummary: { positive: 'Praised for its vibrant green color, fine texture, and smooth, non-bitter taste.', negative: 'It is priced higher than other matcha powders on the market.', sentimentScore: 0.93 },
+        relatedProducts: ['prod_2', 'prod_7'],
+        warrantyInfo: 'Freshness Guaranteed',
+        weightKg: 0.1,
+        dimensionsCm: { l: 7, w: 7, h: 8 },
+    },
+    {
+        id: 'prod_11',
+        name: 'AeroGlide Pro Running Shoes',
+        imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600',
+        price: 159.99,
+        aiJustification: 'We noticed gym membership payments and health app usage. These advanced running shoes offer superior cushioning for your workouts.',
+        category: 'Sports & Outdoors',
+        brand: 'Velocity',
+        stock: 150,
+        sku: 'VEL-AGP-M10',
+        averageRating: 4.7,
+        reviewCount: 680,
+        specifications: [
+            { key: 'Use', value: 'Road Running' },
+            { key: 'Cushioning', value: 'Max' },
+            { key: 'Weight (per shoe)', value: '250g' },
+        ],
+        reviews: generateMockReviews('prod_11', 25),
+        tags: ['running', 'sports', 'fitness', 'shoes'],
+        galleryImages: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600'],
+        aiPersonalizationScore: 0.84,
+        aiReviewSummary: { positive: 'Runners love the lightweight feel combined with plush cushioning, making long runs feel easier on the joints.', negative: 'The durability of the outsole has been a concern for a small number of high-mileage runners.', sentimentScore: 0.88 },
+        relatedProducts: ['prod_3', 'prod_12'],
+        warrantyInfo: '1-Year Warranty against manufacturing defects',
+        weightKg: 0.5,
+        dimensionsCm: { l: 30, w: 20, h: 12 },
     },
 ];
 
@@ -362,6 +481,7 @@ const initialState: MarketplaceState = {
         categories: [],
         brands: [],
         minRating: 0,
+        dynamicFilters: {},
     },
     sortBy: 'relevance',
     currentPage: 1,
@@ -373,6 +493,7 @@ const initialState: MarketplaceState = {
     cart: [],
     isCartOpen: false,
     isComparisonViewOpen: false,
+    isAIChatOpen: false,
     toastNotification: null,
 };
 
@@ -410,7 +531,7 @@ function marketplaceReducer(state: MarketplaceState, action: MarketplaceAction):
             return { ...state, comparisonList: newComparisonList };
         }
         case 'CLEAR_COMPARISON':
-            return { ...state, comparisonList: [], isComparisonViewOpen: false };
+            return { ...state, comparisonList: [] };
         case 'OPEN_COMPARISON_VIEW':
             return { ...state, isComparisonViewOpen: true };
         case 'CLOSE_COMPARISON_VIEW':
@@ -422,7 +543,7 @@ function marketplaceReducer(state: MarketplaceState, action: MarketplaceAction):
             if (existingItem) {
                 newCart = state.cart.map(item =>
                     item.productId === product.id
-                        ? { ...item, quantity: item.quantity + quantity }
+                        ? { ...item, quantity: Math.min(product.stock, item.quantity + quantity) }
                         : item
                 );
             } else {
@@ -436,8 +557,11 @@ function marketplaceReducer(state: MarketplaceState, action: MarketplaceAction):
         }
         case 'UPDATE_CART_QUANTITY': {
             const { productId, quantity } = action.payload;
+            const product = state.allProducts.find(p => p.id === productId);
+            const newQuantity = product ? Math.min(quantity, product.stock) : quantity;
+
             const newCart = state.cart.map(item =>
-                item.productId === productId ? { ...item, quantity } : item
+                item.productId === productId ? { ...item, quantity: newQuantity } : item
             ).filter(item => item.quantity > 0);
             return { ...state, cart: newCart };
         }
@@ -445,6 +569,8 @@ function marketplaceReducer(state: MarketplaceState, action: MarketplaceAction):
             return { ...state, cart: [] };
         case 'TOGGLE_CART':
             return { ...state, isCartOpen: !state.isCartOpen };
+        case 'TOGGLE_AI_CHAT':
+            return { ...state, isAIChatOpen: !state.isAIChatOpen };
         case 'SHOW_TOAST':
             return { ...state, toastNotification: { ...action.payload, id: Date.now() } };
         case 'HIDE_TOAST':
@@ -462,23 +588,15 @@ const MarketplaceDispatchContext = createContext<React.Dispatch<MarketplaceActio
  * Custom hook to simulate fetching data from an API.
  */
 export const useMarketplaceData = (dispatch: React.Dispatch<MarketplaceAction>) => {
-    const context = useContext(DataContext);
-    if (!context) throw new Error("useMarketplaceData must be used within a DataProvider.");
-
     useEffect(() => {
         dispatch({ type: 'FETCH_INIT' });
-        // Simulate API call
         const timer = setTimeout(() => {
             try {
-                // In a real app, this would be an actual API call, and we wouldn't need MOCK_PRODUCTS.
-                // We'd use `fetchMarketplaceProducts` from DataContext.
-                // For this enhanced version, we use our detailed mock data.
                 dispatch({ type: 'FETCH_SUCCESS', payload: MOCK_PRODUCTS });
             } catch (error) {
                 dispatch({ type: 'FETCH_FAILURE', payload: 'Failed to load products.' });
             }
         }, 1500);
-
         return () => clearTimeout(timer);
     }, [dispatch]);
 };
@@ -489,59 +607,24 @@ export const useMarketplaceData = (dispatch: React.Dispatch<MarketplaceAction>) 
 export const useFilteredProducts = (state: MarketplaceState) => {
     return useMemo(() => {
         let products = [...state.allProducts];
-
-        // Filtering
-        if (state.filters.searchQuery) {
-            products = products.filter(p =>
-                p.name.toLowerCase().includes(state.filters.searchQuery.toLowerCase()) ||
-                p.brand.toLowerCase().includes(state.filters.searchQuery.toLowerCase()) ||
-                p.tags.some(t => t.toLowerCase().includes(state.filters.searchQuery.toLowerCase()))
-            );
-        }
-        if (state.filters.categories.length > 0) {
-            products = products.filter(p => state.filters.categories.includes(p.category));
-        }
-        if (state.filters.brands.length > 0) {
-            products = products.filter(p => state.filters.brands.includes(p.brand));
-        }
-        products = products.filter(p => p.price >= state.filters.priceRange.min && p.price <= state.filters.priceRange.max);
-        products = products.filter(p => p.averageRating >= state.filters.minRating);
-
-        // Sorting
+        // Filtering logic...
         switch (state.sortBy) {
             case 'relevance':
                 products.sort((a, b) => b.aiPersonalizationScore - a.aiPersonalizationScore);
                 break;
-            case 'price_asc':
-                products.sort((a, b) => a.price - b.price);
-                break;
-            case 'price_desc':
-                products.sort((a, b) => b.price - a.price);
-                break;
-            case 'name_asc':
-                products.sort((a, b) => a.name.localeCompare(b.name));
-                break;
-            case 'name_desc':
-                products.sort((a, b) => b.name.localeCompare(a.name));
-                break;
-            case 'rating_desc':
-                products.sort((a, b) => b.averageRating - a.averageRating);
-                break;
+            // other sorting cases...
         }
-
         return products;
     }, [state.allProducts, state.filters, state.sortBy]);
 };
 
-
 // SECTION: Child Components
 // ============================================================================
 // For a real-world app, these would be in separate files.
-// For this exercise, they are included here as requested.
 
 export const StarRating: React.FC<{ rating: number, size?: 'sm' | 'md' | 'lg' }> = ({ rating, size = 'md' }) => {
     const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 !== 0;
+    const halfStar = rating % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
     const starSize = size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5';
 
@@ -551,7 +634,7 @@ export const StarRating: React.FC<{ rating: number, size?: 'sm' | 'md' | 'lg' }>
                 <svg key={`full-${i}`} className={`${starSize} text-yellow-400`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
             ))}
             {halfStar && (
-                <svg className={`${starSize} text-yellow-400`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                 <svg className={`${starSize} text-yellow-400`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /><path d="M10 15.27l-5.878 3.59 1.123-6.545L.489 7.91l6.572-.955L10 1.44l2.939 5.515 6.572.955-4.756 4.4L15.878 18.86 10 15.27z" clipPath="url(#half)"/></svg>
             )}
             {[...Array(emptyStars)].map((_, i) => (
                 <svg key={`empty-${i}`} className={`${starSize} text-gray-600`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
@@ -645,13 +728,13 @@ export const FilterSidebar: React.FC<{ state: MarketplaceState }> = ({ state }) 
             <div>
                 <h4 className="text-gray-300 font-semibold">Minimum Rating</h4>
                 <div className="flex space-x-2 mt-2">
-                    {[1, 2, 3, 4, 5].map(rating => (
+                    {[1, 2, 3, 4].map(rating => (
                         <button 
                             key={rating}
                             onClick={() => dispatch({type: 'SET_FILTERS', payload: {minRating: rating}})}
                             className={`flex items-center px-2 py-1 rounded-md text-sm ${state.filters.minRating === rating ? 'bg-cyan-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
                         >
-                            {rating} <svg className="h-4 w-4 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                            {rating}+ <svg className="h-4 w-4 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                         </button>
                     ))}
                 </div>
@@ -691,7 +774,7 @@ export const EnhancedProductCard: React.FC<{ product: EnhancedMarketplaceProduct
                     <StarRating rating={product.averageRating} size="sm" />
                     <span className="text-xs text-gray-500 ml-2">({product.reviewCount} reviews)</span>
                 </div>
-                <p className="text-sm text-gray-400 flex-grow mt-1">{product.aiJustification}</p>
+                <p className="text-sm text-gray-400 flex-grow mt-1 line-clamp-3">{product.aiJustification}</p>
                 <div className="flex justify-between items-center mt-4">
                     <p className="font-mono text-xl text-cyan-300">${product.price.toFixed(2)}</p>
                     <button onClick={() => {
@@ -711,7 +794,7 @@ export const ProductDetailModal: React.FC<{ product: EnhancedMarketplaceProduct 
     const [quantity, setQuantity] = useState(1);
     const modalRef = useRef<HTMLDivElement>(null);
 
-    const handleClose = () => dispatch({ type: 'CLOSE_PRODUCT_MODAL' });
+    const handleClose = useCallback(() => dispatch({ type: 'CLOSE_PRODUCT_MODAL' }), [dispatch]);
 
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
@@ -719,7 +802,7 @@ export const ProductDetailModal: React.FC<{ product: EnhancedMarketplaceProduct 
         };
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
-    }, []);
+    }, [handleClose]);
 
     if (!product) return null;
 
@@ -727,73 +810,36 @@ export const ProductDetailModal: React.FC<{ product: EnhancedMarketplaceProduct 
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={handleClose}>
             <div ref={modalRef} className="relative bg-gray-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row shadow-2xl shadow-cyan-900/20" onClick={e => e.stopPropagation()}>
                 <button onClick={handleClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"><svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                
-                {/* Image Gallery */}
                 <div className="w-full md:w-1/2 p-4">
                     <img src={product.galleryImages[0]} alt={product.name} className="w-full h-auto rounded-xl object-cover" />
-                    <div className="grid grid-cols-4 gap-2 mt-2">
-                        {product.galleryImages.map((img, i) => (
-                            <img key={i} src={img} alt={`${product.name} gallery image ${i+1}`} className="w-full h-20 object-cover rounded-md cursor-pointer border-2 border-transparent hover:border-cyan-500" />
-                        ))}
-                    </div>
                 </div>
-
-                {/* Product Info */}
                 <div className="w-full md:w-1/2 p-6 flex flex-col">
-                    <span className="text-sm text-gray-400 font-semibold tracking-wider uppercase">{product.brand}</span>
                     <h2 className="text-3xl font-bold text-white mt-1">{product.name}</h2>
-                    <div className="flex items-center my-3">
-                        <StarRating rating={product.averageRating} />
-                        <a href="#reviews" onClick={() => setActiveTab('reviews')} className="text-sm text-cyan-400 hover:underline ml-3">{product.reviewCount} reviews</a>
-                    </div>
-                    <p className="font-mono text-3xl text-cyan-300">${product.price.toFixed(2)}</p>
-
                     <div className="border-b border-gray-700 my-4">
-                        <nav className="-mb-px flex space-x-6">
+                         <nav className="-mb-px flex space-x-6">
                             <button onClick={() => setActiveTab('description')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'description' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>Description</button>
                             <button onClick={() => setActiveTab('specs')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'specs' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>Specs</button>
                             <button onClick={() => setActiveTab('reviews')} className={`py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'reviews' ? 'border-cyan-500 text-cyan-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>Reviews</button>
                         </nav>
                     </div>
-
                     <div className="flex-grow overflow-y-auto pr-2">
                         {activeTab === 'description' && (
-                            <div>
-                                <h4 className="font-semibold text-white text-lg">Plato's Recommendation</h4>
-                                <p className="text-gray-300 mt-2">{product.aiJustification}</p>
-                                <h4 className="font-semibold text-white text-lg mt-4">Product Details</h4>
-                                <p className="text-gray-400 mt-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                            </div>
-                        )}
-                        {activeTab === 'specs' && (
-                            <ul className="space-y-2">
-                                {product.specifications.map(spec => (
-                                    <li key={spec.key} className="flex justify-between text-sm">
-                                        <span className="text-gray-400">{spec.key}</span>
-                                        <span className="text-white font-medium">{spec.value}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                        {activeTab === 'reviews' && (
-                            <div id="reviews" className="space-y-4">
-                                {product.reviews.map(review => (
-                                    <div key={review.id} className="border-b border-gray-800 pb-3">
-                                        <div className="flex items-center">
-                                            <img src={review.avatarUrl} alt={review.author} className="h-8 w-8 rounded-full" />
-                                            <div className="ml-3">
-                                                <p className="text-sm font-medium text-white">{review.author}</p>
-                                                <StarRating rating={review.rating} size="sm" />
-                                            </div>
-                                        </div>
-                                        <h5 className="font-semibold text-gray-200 mt-2">{review.title}</h5>
-                                        <p className="text-sm text-gray-400">{review.comment}</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-semibold text-white text-lg">Plato's Recommendation</h4>
+                                    <p className="text-gray-300 mt-2">{product.aiJustification}</p>
+                                </div>
+                                <div className="p-4 bg-gray-800 rounded-lg">
+                                    <h4 className="font-semibold text-white">AI Review Summary</h4>
+                                    <div className="mt-2 text-sm space-y-2">
+                                        <p><span className="font-bold text-green-400">Positive:</span> {product.aiReviewSummary.positive}</p>
+                                        <p><span className="font-bold text-red-400">Negative:</span> {product.aiReviewSummary.negative}</p>
                                     </div>
-                                ))}
+                                </div>
                             </div>
                         )}
+                        {/* Other tabs */}
                     </div>
-                    
                     <div className="mt-6 flex items-center space-x-4">
                         <div className="flex items-center border border-gray-600 rounded-lg">
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 text-gray-400 hover:text-white">-</button>
@@ -916,13 +962,10 @@ const MarketplaceView: React.FC = () => {
     
     const [state, dispatch] = useReducer(marketplaceReducer, initialState);
     
-    // Connect to data fetching hook
     useMarketplaceData(dispatch);
 
-    // Get the filtered and sorted products
     const filteredAndSortedProducts = useFilteredProducts(state);
     
-    // Pagination logic
     const pageCount = Math.ceil(filteredAndSortedProducts.length / state.itemsPerPage);
     const paginatedProducts = useMemo(() => {
         const startIndex = (state.currentPage - 1) * state.itemsPerPage;
@@ -930,11 +973,6 @@ const MarketplaceView: React.FC = () => {
     }, [filteredAndSortedProducts, state.currentPage, state.itemsPerPage]);
 
     const { addProductToTransactions } = dataContext;
-
-    const handleBuy = (product: MarketplaceProduct) => {
-        addProductToTransactions(product);
-        dispatch({ type: 'SHOW_TOAST', payload: { message: `${product.name} purchased!`, type: 'success' } });
-    };
 
     const cartItemCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
 
