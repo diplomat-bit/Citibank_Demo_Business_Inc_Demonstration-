@@ -1,5 +1,5 @@
 // components/views/megadashboard/digitalassets/SmartContractsView.tsx
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, FC, ReactNode } from 'react';
 import Card from '../../../Card';
 import { GoogleGenAI } from "@google/genai";
 
@@ -37,6 +37,8 @@ export interface DeployedContract {
     timestamp: number;
     sourceCode: string;
     version: string;
+    verificationStatus: 'unverified' | 'pending' | 'verified' | 'failed';
+    tags: string[];
 }
 
 // Represents a smart contract event
@@ -72,6 +74,7 @@ export interface ContractTemplate {
     tags: string[];
     author: string;
     version: string;
+    complexity: 'Beginner' | 'Intermediate' | 'Advanced';
 }
 
 // Represents a DeFi staking position
@@ -97,6 +100,7 @@ export interface NFTAsset {
     owner: string;
     mintedBy: string;
     mintTimestamp: number;
+    attributes?: { trait_type: string; value: string | number }[];
 }
 
 // AI Audit Report details
@@ -116,10 +120,30 @@ export interface AIAuditReport {
 
 // AI Code Assistant response
 export interface AICodeAssistantResponse {
-    type: 'generate' | 'explain' | 'optimize' | 'debug';
+    type: 'generate' | 'explain' | 'optimize' | 'debug' | 'test' | 'doc';
     content: string;
     suggestions?: string[];
     timestamp: number;
+}
+
+// Represents DAO Governance Proposal
+export interface DAOProposal {
+    id: number;
+    title: string;
+    description: string;
+    proposer: string;
+    status: 'pending' | 'active' | 'succeeded' | 'defeated' | 'executed';
+    forVotes: number;
+    againstVotes: number;
+    abstainVotes: number;
+    endTimestamp: number;
+}
+
+// Represents current gas prices
+export interface GasPrices {
+    low: number; // in Gwei
+    medium: number;
+    high: number;
 }
 
 // --- END: Utility Types and Interfaces ---
@@ -159,7 +183,8 @@ contract MyToken is ERC20, Ownable {
         `,
         tags: ['token', 'erc20', 'openzeppelin'],
         author: 'OpenZeppelin / Modified',
-        version: '0.8.0'
+        version: '0.8.0',
+        complexity: 'Beginner',
     },
     {
         id: 'erc721',
@@ -198,7 +223,8 @@ contract MyNFT is ERC721, Ownable {
         `,
         tags: ['nft', 'erc721', 'openzeppelin'],
         author: 'OpenZeppelin / Modified',
-        version: '0.8.0'
+        version: '0.8.0',
+        complexity: 'Beginner',
     },
     {
         id: 'simple-dao',
@@ -256,7 +282,8 @@ contract SimpleDAO {
         `,
         tags: ['dao', 'governance'],
         author: 'Community',
-        version: '0.8.0'
+        version: '0.8.0',
+        complexity: 'Intermediate',
     },
     {
         id: 'multisig',
@@ -384,7 +411,8 @@ contract SimpleMultiSig {
         `,
         tags: ['wallet', 'multisig', 'security'],
         author: 'Community',
-        version: '0.8.0'
+        version: '0.8.0',
+        complexity: 'Intermediate',
     },
 ];
 
@@ -471,7 +499,9 @@ export const mockDeployContract = async (
         network: network,
         timestamp: Date.now(),
         sourceCode: `// Placeholder source for ${contractName}`, // Source would typically be stored
-        version: '1.0.0'
+        version: '1.0.0',
+        verificationStatus: 'unverified',
+        tags: ['custom'],
     };
 };
 
@@ -582,10 +612,14 @@ export const mockMintNFT = async (contractAddress: string, toAddress: string, to
         contractAddress: contractAddress,
         name: `MyNFT #${tokenId}`,
         description: `A unique digital collectible: ${tokenURI}`,
-        imageUrl: `https://ipfs.io/ipfs/QmVG...mockimage.png`, // Placeholder image
+        imageUrl: `https://picsum.photos/seed/${tokenId}/400`, // Placeholder image
         owner: toAddress,
         mintedBy: minterAddress,
         mintTimestamp: Date.now(),
+        attributes: [
+            { trait_type: "Edition", value: 1 },
+            { trait_type: "Rarity", value: "Common" }
+        ],
     };
 };
 
@@ -700,7 +734,7 @@ export const analyzeSmartContractWithAI = async (code: string): Promise<AIAuditR
 
 
 export const getAICodeSuggestion = async (
-    type: 'generate' | 'explain' | 'optimize' | 'debug',
+    type: 'generate' | 'explain' | 'optimize' | 'debug' | 'test' | 'doc',
     input: string,
     context?: string
 ): Promise<AICodeAssistantResponse> => {
@@ -722,6 +756,12 @@ export const getAICodeSuggestion = async (
             case 'debug':
                 prompt = `You are a Solidity debugger. Identify potential bugs, errors, or logical flaws in the following Solidity code and suggest fixes. Code: \`\`\`solidity\n${input}\n\`\`\` ${context ? `Additional context: ${context}` : ''}`;
                 break;
+            case 'test':
+                 prompt = `You are a Solidity testing expert. Generate a comprehensive set of unit tests for the following Solidity code using the Hardhat framework with ethers.js and Chai. Code: \`\`\`solidity\n${input}\n\`\`\` ${context ? `Additional context: ${context}` : ''}`;
+                break;
+            case 'doc':
+                 prompt = `You are a technical writer specializing in blockchain. Generate clear and concise NatSpec documentation (/// comments) for the following Solidity smart contract. Code: \`\`\`solidity\n${input}\n\`\`\` ${context ? `Additional context: ${context}` : ''}`;
+                break;
             default:
                 throw new Error('Unknown AI assistant type');
         }
@@ -730,8 +770,8 @@ export const getAICodeSuggestion = async (
         const textResponse = response.text;
 
         // Extract code block if present
-        const codeMatch = textResponse.match(/```solidity\n([\s\S]*?)\n```/);
-        const codeContent = codeMatch && codeMatch[1] ? codeMatch[1] : textResponse;
+        const codeMatch = textResponse.match(/```(solidity|javascript)\n([\s\S]*?)\n```/);
+        const codeContent = codeMatch && codeMatch[2] ? codeMatch[2] : textResponse;
 
         return {
             type,
@@ -768,7 +808,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, readOnl
         <textarea
             value={value}
             onChange={e => onChange(e.target.value)}
-            className={`w-full ${height} bg-gray-900/50 p-3 rounded-lg text-white font-mono text-sm border border-gray-700 focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all resize-y`}
+            className={`w-full ${height} bg-gray-900/50 p-3 rounded-lg text-white font-mono text-sm border border-gray-700 focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all resize-y scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800`}
             readOnly={readOnly}
             placeholder={placeholder}
             spellCheck="false"
@@ -873,7 +913,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                     {children}
                 </div>
             </div>
@@ -938,7 +978,7 @@ const SmartContractsView: React.FC = () => {
 
     // --- AI Code Assistant State ---
     const [isAICodeAssistantOpen, setAICodeAssistantOpen] = useState(false);
-    const [aiCodeAssistantMode, setAICodeAssistantMode] = useState<'generate' | 'explain' | 'optimize' | 'debug'>('generate');
+    const [aiCodeAssistantMode, setAICodeAssistantMode] = useState<'generate' | 'explain' | 'optimize' | 'debug' | 'test' | 'doc'>('generate');
     const [aiCodeAssistantInput, setAICodeAssistantInput] = useState('');
     const [aiCodeAssistantContext, setAICodeAssistantContext] = useState('');
     const [aiCodeAssistantOutput, setAICodeAssistantOutput] = useState<AICodeAssistantResponse | null>(null);
@@ -1413,7 +1453,7 @@ const SmartContractsView: React.FC = () => {
                 {wallet.isConnected && (
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                         <Card title="Wallet Address" className="bg-gray-800/50">
-                            <span className="font-mono text-cyan-400 text-sm">{wallet.address}</span>
+                            <span className="font-mono text-cyan-400 text-sm break-all">{wallet.address}</span>
                         </Card>
                         <Card title="Balance" className="bg-gray-800/50">
                             <span className="font-bold text-green-400 text-lg">{wallet.balance || '0.00 ETH'}</span>
@@ -1761,31 +1801,13 @@ const SmartContractsView: React.FC = () => {
                     {activeTab === 'ai-tools' && (
                         <div className="space-y-6">
                             <Card title="AI Code Assistant">
-                                <div className="flex space-x-2 border-b border-gray-700 mb-4">
-                                    <button
-                                        className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 ${aiCodeAssistantMode === 'generate' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`}
-                                        onClick={() => setAICodeAssistantMode('generate')}
-                                    >
-                                        Generate Code
-                                    </button>
-                                    <button
-                                        className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 ${aiCodeAssistantMode === 'explain' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`}
-                                        onClick={() => setAICodeAssistantMode('explain')}
-                                    >
-                                        Explain Code
-                                    </button>
-                                    <button
-                                        className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 ${aiCodeAssistantMode === 'optimize' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`}
-                                        onClick={() => setAICodeAssistantMode('optimize')}
-                                    >
-                                        Optimize Code
-                                    </button>
-                                    <button
-                                        className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 ${aiCodeAssistantMode === 'debug' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`}
-                                        onClick={() => setAICodeAssistantMode('debug')}
-                                    >
-                                        Debug Code
-                                    </button>
+                                <div className="flex space-x-2 border-b border-gray-700 mb-4 overflow-x-auto scrollbar-hide">
+                                    <button className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 whitespace-nowrap ${aiCodeAssistantMode === 'generate' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`} onClick={() => setAICodeAssistantMode('generate')}>Generate Code</button>
+                                    <button className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 whitespace-nowrap ${aiCodeAssistantMode === 'explain' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`} onClick={() => setAICodeAssistantMode('explain')}>Explain Code</button>
+                                    <button className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 whitespace-nowrap ${aiCodeAssistantMode === 'optimize' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`} onClick={() => setAICodeAssistantMode('optimize')}>Optimize Code</button>
+                                    <button className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 whitespace-nowrap ${aiCodeAssistantMode === 'debug' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`} onClick={() => setAICodeAssistantMode('debug')}>Debug Code</button>
+                                    <button className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 whitespace-nowrap ${aiCodeAssistantMode === 'test' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`} onClick={() => setAICodeAssistantMode('test')}>Generate Tests</button>
+                                    <button className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 whitespace-nowrap ${aiCodeAssistantMode === 'doc' ? 'bg-gray-700 text-cyan-400 border-b-2 border-cyan-500' : 'bg-gray-800 text-gray-400 hover:text-white'}`} onClick={() => setAICodeAssistantMode('doc')}>Generate Docs</button>
                                 </div>
 
                                 <div className="space-y-4">
@@ -2293,3 +2315,4 @@ const SmartContractsView: React.FC = () => {
 };
 
 export default SmartContractsView;
+        
