@@ -26,7 +26,7 @@
  * The self-contained nature of this file, with its integrated UI components and logic, serves as a blueprint
  * for rapid deployment and scaling of enterprise-grade AI applications.
  */
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import Card from '../../Card';
 
 // SECTION: Data Model Interfaces
@@ -116,7 +116,7 @@ export interface DesignConcept {
         agentReviewStatus?: 'pending' | 'reviewed' | 'actioned' | 'rejected'; // Status of AI agent review for quality/compliance
         complianceCheck?: { status: 'pass' | 'fail' | 'pending'; report: string; }; // Simulated compliance check by a governance agent
     };
-    feedback?: UserFeedback;
+    feedback?: UserFeedback[];
     isFavorite: boolean;
     notes?: string;
     collaborators?: string[]; // User IDs of collaborators, managed via digital identity
@@ -458,6 +458,10 @@ export interface AestheticEngineViewProps {
     governancePolicies: GovernancePolicy[];
 }
 
+type MainView = 'dashboard' | 'admin_panel' | 'analytics' | 'marketplace';
+type ModalView = 'none' | 'design_details' | 'buy_tokens' | 'user_settings' | 'notifications';
+
+
 // SECTION: Main Application Component
 // This is the primary orchestrator for the entire Aesthetic Engine user experience.
 
@@ -496,8 +500,8 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
     const [currentPrompt, setCurrentPrompt] = useState<string>('');
     const [generationParams, setGenerationParams] = useState<GenerationParameters>({
         aiModel: 'Gemini',
-        styleInfluence: [],
-        materialPreferences: [],
+        styleInfluence: ["Streetwear", "Minimalist"],
+        materialPreferences: ["Cotton", "Denim"],
         colorSchemePreference: 'custom',
         detailLevel: 'medium',
         renderResolution: 'hd',
@@ -505,12 +509,21 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
         cameraAngle: 'front',
         modelPose: 'standing',
         riskTolerance: 'medium',
+        targetGender: 'unisex',
+        targetAgeGroup: 'adult',
+        designConstraints: [],
+        negativePrompt: '',
     });
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
     const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [isAdvancedParamsOpen, setIsAdvancedParamsOpen] = useState<boolean>(false);
+    const [activeMainView, setActiveMainView] = useState<MainView>('dashboard');
+    const [activeModal, setActiveModal] = useState<ModalView>('none');
+    const chatInputRef = useRef<HTMLInputElement>(null);
+
     
     // --- DERIVED STATE & MEMOIZATION ---
     const projectDesigns = useMemo(() => {
@@ -526,32 +539,39 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                 id: `ai-init-${Date.now()}`,
                 sender: 'ai',
                 timestamp: new Date(),
-                content: `Hello, ${currentUser.username}! I'm your AI design assistant. How can I help you spark some creativity today?`
+                content: `Hello, ${currentUser.username}! I'm your AI design assistant. How can I help you spark some creativity today? You can ask me to generate a design, refine an existing one, or even suggest project ideas.`
             }]);
         }
-    }, [isChatOpen, currentUser.username]);
+    }, [isChatOpen, currentUser.username, chatMessages.length]);
 
     // --- EVENT HANDLERS ---
     const handleSubmitPrompt = useCallback(async () => {
-        if (!currentPrompt.trim()) return;
+        if (!currentPrompt.trim()) {
+            setError("Please enter a design description.");
+            return;
+        }
         setIsLoading(true);
+        setError(null);
         try {
             const newDesign = await onPromptSubmit(currentPrompt, generationParams);
+            setActiveProject(projects.find(p => p.id === newDesign.projectId));
             setSelectedDesign(newDesign);
+            setActiveModal('design_details');
             setCurrentPrompt('');
-        } catch (error) {
-            console.error('Error generating design:', error);
-            // In a real app, you would set an error state and display a toast notification.
+        } catch (err) {
+            console.error('Error generating design:', err);
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during design generation.";
+            setError(errorMessage);
             setChatMessages(prev => [...prev, {
                 id: `err-${Date.now()}`,
                 sender: 'ai',
                 timestamp: new Date(),
-                content: `I'm sorry, there was an issue generating your design. Please check the console for details and try again.`
+                content: `I'm sorry, there was an issue generating your design: ${errorMessage}. Please check the console for details and try again.`
             }]);
         } finally {
             setIsLoading(false);
         }
-    }, [currentPrompt, generationParams, onPromptSubmit]);
+    }, [currentPrompt, generationParams, onPromptSubmit, projects]);
 
     const handleSendMessage = useCallback(async (message: string) => {
         if (!message.trim()) return;
@@ -564,11 +584,23 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
         };
         setChatMessages(prev => [...prev, userMessage]);
 
+        // Command parsing logic
+        if (message.startsWith('/generate')) {
+            const prompt = message.replace('/generate', '').trim();
+            setCurrentPrompt(prompt);
+            setChatMessages(prev => [...prev, {id:`ai-cmd-${Date.now()}`, sender:'ai', timestamp: new Date(), content: `Understood! I've set the main prompt to "${prompt}". Hit the 'Generate' button when you're ready.`}]);
+            return;
+        }
+
         try {
-            const aiResponse = await onSendMessageToAI(message);
+            const context = {
+                activeProjectId: activeProject?.id,
+                selectedDesignId: selectedDesign?.id
+            };
+            const aiResponse = await onSendMessageToAI(message, context);
             setChatMessages(prev => [...prev, aiResponse]);
-        } catch (error) {
-            console.error("Error communicating with AI assistant:", error);
+        } catch (err) {
+            console.error("Error communicating with AI assistant:", err);
             const errorMessage: ChatMessage = {
                 id: `ai-err-${Date.now()}`,
                 sender: 'ai',
@@ -577,17 +609,148 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
             };
             setChatMessages(prev => [...prev, errorMessage]);
         }
-    }, [onSendMessageToAI]);
-    
+    }, [onSendMessageToAI, activeProject, selectedDesign]);
+
+    const handleParamChange = (param: keyof GenerationParameters, value: any) => {
+        setGenerationParams(prev => ({ ...prev, [param]: value }));
+    };
+
+    const handleOpenModal = (modal: ModalView, design?: DesignConcept) => {
+        if (design) setSelectedDesign(design);
+        setActiveModal(modal);
+    };
+
     // --- UI RENDERING LOGIC ---
+    const renderMainView = () => {
+        switch (activeMainView) {
+            case 'dashboard':
+                return renderDashboard();
+            // Stubs for future expansion
+            case 'admin_panel':
+                return <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"><h2>Admin Panel (Placeholder)</h2></div>;
+            case 'analytics':
+                 return <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"><h2>Analytics Dashboard (Placeholder)</h2></div>;
+            case 'marketplace':
+                return <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"><h2>Design Marketplace (Placeholder)</h2></div>;
+            default:
+                return renderDashboard();
+        }
+    };
+
+    const renderDashboard = () => (
+        <>
+            {/* Design Generation Area */}
+            <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 flex-shrink-0">
+                <h3 className="text-xl font-semibold mb-4">Generate New Design</h3>
+                {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
+                <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                    <textarea
+                        rows={2}
+                        placeholder="Describe your design (e.g., 'A futuristic gown made of silk with metallic accents')"
+                        value={currentPrompt}
+                        onChange={(e) => setCurrentPrompt(e.target.value)}
+                        className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                        onClick={handleSubmitPrompt}
+                        disabled={isLoading || !currentPrompt.trim()}
+                        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center"
+                    >
+                        {isLoading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating...
+                            </>
+                        ) : 'Generate'}
+                    </button>
+                </div>
+                <div className="mt-4">
+                    <button onClick={() => setIsAdvancedParamsOpen(!isAdvancedParamsOpen)} className="text-sm text-blue-500 hover:underline">
+                        {isAdvancedParamsOpen ? 'Hide' : 'Show'} Advanced Parameters
+                    </button>
+                </div>
+                {isAdvancedParamsOpen && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 border-t pt-4 border-gray-200 dark:border-gray-700 animate-fade-in">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AI Model</label>
+                            <select value={generationParams.aiModel} onChange={e => handleParamChange('aiModel', e.target.value as AIModelProvider)} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                {['Gemini', 'ChatGPT', 'DALL-E', 'Midjourney', 'StableDiffusion', 'Internal'].map(m => <option key={m}>{m}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Detail Level</label>
+                            <select value={generationParams.detailLevel} onChange={e => handleParamChange('detailLevel', e.target.value as any)} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="ultra-fine">Ultra-Fine</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Lighting</label>
+                            <select value={generationParams.lightingPreset} onChange={e => handleParamChange('lightingPreset', e.target.value as any)} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                <option value="studio">Studio</option>
+                                <option value="outdoor-day">Outdoor Day</option>
+                                <option value="outdoor-night">Outdoor Night</option>
+                                <option value="runway">Runway</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Camera Angle</label>
+                             <select value={generationParams.cameraAngle} onChange={e => handleParamChange('cameraAngle', e.target.value as any)} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
+                                <option>front</option><option>back</option><option>side</option><option>3/4</option><option>top</option><option>bottom</option>
+                            </select>
+                        </div>
+                         <div className="col-span-full">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Negative Prompt (what to avoid)</label>
+                            <input type="text" value={generationParams.negativePrompt} onChange={e => handleParamChange('negativePrompt', e.target.value)} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md" placeholder="e.g., blurry, cartoon, extra limbs"/>
+                        </div>
+                    </div>
+                )}
+            </section>
+
+            {/* Design Concepts Display */}
+            <section className="flex-1 overflow-y-auto">
+                <h3 className="text-xl font-semibold mb-4">Your Designs {activeProject ? `for ${activeProject.name}` : ''}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {projectDesigns.map(design => (
+                        <Card key={design.id} onClick={() => handleOpenModal('design_details', design)}>
+                            <img src={design.imageUrl} alt={design.name} className="w-full h-48 object-cover rounded-t-lg" />
+                            <div className="p-4">
+                                <h4 className="text-lg font-bold truncate">{design.name}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
+                                    {design.styleTags.join(', ')}
+                                </p>
+                                <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mt-2
+                                    ${design.complianceStatus === 'compliant' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'}`}>
+                                    {design.complianceStatus}
+                                </span>
+                            </div>
+                        </Card>
+                    ))}
+                    {projectDesigns.length === 0 && (
+                        <div className="col-span-full text-center text-gray-500 py-10 bg-white dark:bg-gray-800 rounded-lg">
+                            <h3 className="text-xl">No designs found.</h3>
+                            <p className="mt-2">Start by describing a design in the generator above!</p>
+                        </div>
+                    )}
+                </div>
+            </section>
+        </>
+    );
+    
     return (
         <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
             {/* Sidebar / Navigation */}
-            <aside className={`bg-white dark:bg-gray-800 shadow-lg p-4 transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-16'}`}>
+            <aside className={`bg-white dark:bg-gray-800 shadow-lg p-4 transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-20'}`}>
                 <div className="flex items-center justify-between mb-6">
                     {sidebarOpen && <h1 className="text-xl font-bold">Aesthetic Engine</h1>}
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        {sidebarOpen ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>}
                     </button>
                 </div>
                 <nav className="space-y-2 flex-grow">
@@ -595,18 +758,23 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                         {sidebarOpen && <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Projects</h2>}
                         <ul className="space-y-1">
                             {projects.map(project => (
-                                <li key={project.id} className={`p-2 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 ${activeProject?.id === project.id ? 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 font-medium' : ''}`}
-                                    onClick={() => setActiveProject(project)}>
-                                    {sidebarOpen ? project.name : project.name.substring(0, 1).toUpperCase()}
+                                <li key={project.id} className={`p-2 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center ${activeProject?.id === project.id ? 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 font-medium' : ''}`}
+                                    onClick={() => setActiveProject(project)} title={project.name}>
+                                    <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                                    {sidebarOpen && <span className="truncate">{project.name}</span>}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </nav>
-                <div className="mt-auto">
-                    <button onClick={() => setIsChatOpen(true)} className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                <div className="mt-auto space-y-2">
+                    <button onClick={() => setIsChatOpen(true)} className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700" title="AI Assistant">
                          <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                         {sidebarOpen && 'AI Assistant'}
+                    </button>
+                     <button onClick={() => {}} className="flex items-center w-full p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700" title="Settings">
+                         <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        {sidebarOpen && 'Settings'}
                     </button>
                 </div>
             </aside>
@@ -621,7 +789,7 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                         <div className="flex items-center bg-white dark:bg-gray-800 px-3 py-1 rounded-full shadow">
                             <span className="mr-2 text-sm text-gray-600 dark:text-gray-400">Tokens:</span>
                             <span className="font-bold text-lg text-green-500">{currentUser.tokenBalance}</span>
-                            <button onClick={() => onTokenPurchase(100)} className="ml-3 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold hover:bg-green-600 transition-colors">Buy</button>
+                            <button onClick={() => handleOpenModal('buy_tokens')} className="ml-3 px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold hover:bg-green-600 transition-colors">Buy</button>
                         </div>
                         <div className="relative">
                             <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -635,97 +803,13 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                     </div>
                 </header>
 
-                {/* Design Generation Area */}
-                <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 flex-shrink-0">
-                    <h3 className="text-xl font-semibold mb-4">Generate New Design</h3>
-                    <div className="flex space-x-4">
-                        <input
-                            type="text"
-                            placeholder="Describe your design (e.g., 'A futuristic gown made of silk with metallic accents')"
-                            value={currentPrompt}
-                            onChange={(e) => setCurrentPrompt(e.target.value)}
-                            className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700"
-                        />
-                        <button
-                            onClick={handleSubmitPrompt}
-                            disabled={isLoading || !currentPrompt.trim()}
-                            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Generating...' : 'Generate'}
-                        </button>
-                    </div>
-                    <div className="mt-4">
-                        <button onClick={() => setIsAdvancedParamsOpen(!isAdvancedParamsOpen)} className="text-sm text-blue-500 hover:underline">
-                            {isAdvancedParamsOpen ? 'Hide' : 'Show'} Advanced Parameters
-                        </button>
-                    </div>
-                    {isAdvancedParamsOpen && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 border-t pt-4 border-gray-200 dark:border-gray-700">
-                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">AI Model</label>
-                                <select value={generationParams.aiModel} onChange={e => setGenerationParams({...generationParams, aiModel: e.target.value as AIModelProvider})} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
-                                    <option>Gemini</option>
-                                    <option>ChatGPT</option>
-                                    <option>Claude</option>
-                                    <option>DALL-E</option>
-                                    <option>Midjourney</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Detail Level</label>
-                                <select value={generationParams.detailLevel} onChange={e => setGenerationParams({...generationParams, detailLevel: e.target.value as any})} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
-                                    <option>low</option>
-                                    <option>medium</option>
-                                    <option>high</option>
-                                    <option>ultra-fine</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Lighting</label>
-                                <select value={generationParams.lightingPreset} onChange={e => setGenerationParams({...generationParams, lightingPreset: e.target.value as any})} className="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md">
-                                    <option>studio</option>
-                                    <option>outdoor-day</option>
-                                    <option>outdoor-night</option>
-                                    <option>runway</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-                </section>
-
-                {/* Design Concepts Display */}
-                <section className="flex-1 overflow-y-auto">
-                    <h3 className="text-xl font-semibold mb-4">Your Designs {activeProject ? `for ${activeProject.name}` : ''}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {projectDesigns.map(design => (
-                            <Card key={design.id} onClick={() => setSelectedDesign(design)}>
-                                <img src={design.imageUrl} alt={design.name} className="w-full h-48 object-cover rounded-t-lg" />
-                                <div className="p-4">
-                                    <h4 className="text-lg font-bold truncate">{design.name}</h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
-                                        {design.styleTags.join(', ')}
-                                    </p>
-                                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mt-2
-                                        ${design.complianceStatus === 'compliant' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                        {design.complianceStatus}
-                                    </span>
-                                </div>
-                            </Card>
-                        ))}
-                        {projectDesigns.length === 0 && (
-                            <div className="col-span-full text-center text-gray-500 py-10">
-                                <h3>No designs found.</h3>
-                                <p>Start by describing a design in the generator above!</p>
-                            </div>
-                        )}
-                    </div>
-                </section>
+                 {renderMainView()}
 
                 {/* Selected Design Details Modal */}
-                {selectedDesign && (
+                {activeModal === 'design_details' && selectedDesign && (
                     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in">
                         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col p-6 relative">
-                            <button onClick={() => setSelectedDesign(undefined)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                            <button onClick={() => setActiveModal('none')} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                             <h3 className="text-2xl font-bold mb-4">{selectedDesign.name}</h3>
@@ -740,13 +824,13 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                                         <div className="text-sm space-y-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                                             <p><strong>AI Model:</strong> {selectedDesign.metadata.aiModelUsed} v{selectedDesign.metadata.aiModelVersion}</p>
                                             <p><strong>Resolution:</strong> {selectedDesign.metadata.resolution}</p>
-                                            <p><strong>Compliance:</strong> {selectedDesign.complianceStatus}</p>
+                                            <p><strong>Compliance:</strong> <span className={selectedDesign.complianceStatus === 'compliant' ? 'text-green-500' : 'text-yellow-500'}>{selectedDesign.complianceStatus}</span></p>
                                         </div>
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-2">Refine with AI</h4>
-                                        <textarea placeholder="e.g., 'Change material to denim'" className="w-full p-2 border rounded-md" rows={3}></textarea>
-                                        <button className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-md">Refine</p>
+                                        <textarea placeholder="e.g., 'Change material to denim'" className="w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500" rows={3}></textarea>
+                                        <button className="mt-2 px-4 py-2 bg-purple-600 text-white rounded-md w-full hover:bg-purple-700">Refine</button>
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-2">Materials</h4>
@@ -756,13 +840,13 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-2">Colors</h4>
-                                        <div className="flex space-x-2 mt-1">
-                                            {selectedDesign.colors.map((c, i) => <div key={i} className="w-8 h-8 rounded-full border" style={{backgroundColor: c}}></div>)}
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {selectedDesign.colors.map((c, i) => <div key={i} title={c} className="w-8 h-8 rounded-full border dark:border-gray-500" style={{backgroundColor: c}}></div>)}
                                         </div>
                                     </div>
                                     <div>
                                         <h4 className="font-semibold text-lg mb-2">History & Audit</h4>
-                                        <button className="w-full px-4 py-2 border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">View Full History ({selectedDesign.versionHistory.length} versions)</button>
+                                        <button className="w-full px-4 py-2 border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-600">View Full History ({selectedDesign.versionHistory.length} versions)</button>
                                     </div>
                                 </div>
                             </div>
@@ -775,7 +859,7 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                     <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white dark:bg-gray-800 shadow-2xl rounded-lg flex flex-col z-50 animate-slide-up">
                         <header className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
                             <h3 className="font-bold">AI Design Assistant</h3>
-                            <button onClick={() => setIsChatOpen(false)} className="text-gray-500 hover:text-gray-800">
+                            <button onClick={() => setIsChatOpen(false)} className="text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </header>
@@ -789,8 +873,8 @@ const AestheticEngineView: React.FC<AestheticEngineViewProps> = ({
                             ))}
                         </div>
                         <footer className="p-4 border-t border-gray-200 dark:border-gray-700">
-                            <form onSubmit={e => { e.preventDefault(); handleSendMessage(e.currentTarget.message.value); e.currentTarget.message.value = ''; }}>
-                                <input name="message" type="text" placeholder="Ask me anything..." className="w-full p-2 border rounded-md bg-gray-100 dark:bg-gray-600"/>
+                            <form onSubmit={e => { e.preventDefault(); handleSendMessage(chatInputRef.current?.value || ''); if(chatInputRef.current) chatInputRef.current.value = ''; }}>
+                                <input ref={chatInputRef} name="message" type="text" placeholder="Ask me anything..." className="w-full p-2 border rounded-md bg-gray-100 dark:bg-gray-600 dark:border-gray-500"/>
                             </form>
                         </footer>
                     </div>
