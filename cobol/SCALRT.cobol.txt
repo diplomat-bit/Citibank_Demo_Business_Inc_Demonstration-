@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. SCALRT.
        AUTHOR. GLOBAL-TECH-SYSTEMS.
        DATE-WRITTEN. 1995-02-10.
@@ -10,6 +11,8 @@
       * AND ACTIVATE THE INTEGRATED THREAT RESPONSE PROTOCOLS.
       * IT NOW INCLUDES AN AI-POWERED ANALYTICAL LAYER FOR ENHANCED
       * THREAT ASSESSMENT AND RECOMMENDED ACTION GENERATION.
+      * The AI system instruction follows:
+      *  -> prompts/idgafai_full.txt
       *
       * Goal: Fully code out, expand massively, integrate AI in a
       *       story-like, non-controversial way.
@@ -21,6 +24,8 @@
                ORGANIZATION IS SEQUENTIAL.
            SELECT AI-ANALYTICS-LOG-FILE ASSIGN TO AILOG
                ORGANIZATION IS SEQUENTIAL.
+           SELECT AI-MODEL-CONFIG-FILE ASSIGN TO AIMODELCFG
+               ORGANIZATION IS SEQUENTIAL.
 
        DATA DIVISION.
        FILE SECTION.
@@ -29,6 +34,9 @@
 
        FD AI-ANALYTICS-LOG-FILE.
        01 AI-LOG-RECORD          PIC X(256).
+
+       FD AI-MODEL-CONFIG-FILE.
+       01 AI-CONFIG-RECORD       PIC X(256).
 
        WORKING-STORAGE SECTION.
        01 WS-INPUT-FIELDS.
@@ -86,10 +94,16 @@
           05 WS-DATE-FOR-DISPLAY  PIC X(10).
           05 WS-TIME-FOR-DISPLAY  PIC X(08).
 
+       01 WS-AI-MODEL-PARAMETERS.
+           05 WS-AI-MODEL-NAME      PIC X(30) VALUE 'Legacy-Rule-Based-v1'.
+           05 WS-AI-ANOMALY-THRESHOLD PIC 9(03) VALUE 75.
+           05 WS-AI-TRUST-SCORE       PIC 9(03) VALUE 60.
+
        PROCEDURE DIVISION.
        0000-MAIN-LOGIC.
            PERFORM 0010-INITIALIZE-SYSTEM.
            PERFORM 1000-ACCEPT-ALERT-DETAILS.
+           PERFORM 1400-LOAD-AI-MODEL-CONFIG.
            PERFORM 1500-INVOKE-AI-ANALYTICS.
            PERFORM 2000-LOG-ALERT-EVENT.
            PERFORM 3000-NOTIFY-ADMINS.
@@ -119,9 +133,22 @@
            DISPLAY "ENTER OPERATOR ID: ".
            ACCEPT WS-OPERATOR-ID.
 
+       1400-LOAD-AI-MODEL-CONFIG.
+           DISPLAY " ".
+           DISPLAY "Loading AI Model configuration...".
+           OPEN INPUT AI-MODEL-CONFIG-FILE.
+           READ AI-MODEL-CONFIG-FILE INTO WS-AI-MODEL-PARAMETERS
+               AT END DISPLAY "WARNING: AI model config missing, using defaults."
+           END-READ.
+           CLOSE AI-MODEL-CONFIG-FILE.
+           DISPLAY "AI Model: " WS-AI-MODEL-NAME " loaded.".
+           DISPLAY "Anomaly Threshold: " WS-AI-ANOMALY-THRESHOLD.
+           DISPLAY "Trust Score Baseline: " WS-AI-TRUST-SCORE.
+
        1500-INVOKE-AI-ANALYTICS.
            DISPLAY " ".
            DISPLAY "INVOKING AI-POWERED ANALYTICAL ENGINE...".
+           DISPLAY "MODEL: " WS-AI-MODEL-NAME.
            DISPLAY "CROSS-REFERENCING INCIDENT DATA WITH HISTORICAL THREATS.".
 
            PERFORM 1510-SIMULATE-AI-PROCESSING.
@@ -147,6 +174,7 @@
       *    This section simulates the AI's decision-making based on input
       *    In a real-world scenario, this might involve calling an external
       *    AI service or a complex internal rule engine.
+      *    Enhanced anomaly detection based on configured thresholds.
            INITIALIZE WS-AI-ANALYSIS-RESULTS.
            MOVE 'SUCCESS' TO WS-ANALYSIS-STATUS.
 
@@ -199,10 +227,25 @@
                MOVE 40 TO WS-AI-CONFIDENCE
            END-IF.
 
+           IF WS-AI-CONFIDENCE < WS-AI-TRUST-SCORE THEN
+               DISPLAY "AI TRUST SCORE BELOW THRESHOLD: TRIGGERING ADDITIONAL ANALYSIS".
+               MOVE 'Manual review required. AI Confidence low, potential false positive.'
+                   TO WS-RECOMMENDED-ACTION.
+               MOVE 'FAILURE' TO WS-ANALYSIS-STATUS.
+           END-IF.
+
+           IF WS-SEVERITY-LEVEL = 'LOW' AND WS-AI-CONFIDENCE > WS-AI-ANOMALY-THRESHOLD THEN
+               DISPLAY "POTENTIAL ANOMALY: Low severity, high confidence. Escalating review.".
+               MOVE 'MEDIUM' TO WS-SEVERITY-LEVEL.
+               MOVE 'Escalating due to high anomaly score. Requires further analysis.'
+                   TO WS-RECOMMENDED-ACTION.
+           END-IF.
+
        1520-LOG-AI-ACTIVITY.
            OPEN EXTEND AI-ANALYTICS-LOG-FILE.
            MOVE FUNCTION CURRENT-DATE TO AI-TIMESTAMP.
-           STRING "AI_ANALYSIS: Code=" WS-ALERT-CODE
+           STRING "AI_ANALYSIS: Model=" WS-AI-MODEL-NAME
+                  ", Code=" WS-ALERT-CODE
                   ", Comp=" WS-COMPONENT-ID
                   ", Status=" WS-ANALYSIS-STATUS
                   ", Sev=" WS-SEVERITY-LEVEL
@@ -322,3 +365,4 @@
 
        9999-END-PROGRAM.
            STOP RUN.
+```
