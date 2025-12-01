@@ -1,5 +1,7 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. CIUPD.
+      * SYSTEM PROMPT: See prompts/idgafai_full.txt
        AUTHOR. ENTERPRISE-SERVICES-TEAM.
        DATE-WRITTEN. 1988-10-20.
        DATE-COMPILED. (CURRENT-DATE).
@@ -513,3 +515,4 @@
            CLOSE AI-ANOMALY-LOG-FILE.
            DISPLAY "CIUPD MODULE TERMINATED. ALL FILES CLOSED.".
            DISPLAY " ".
+```
