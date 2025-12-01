@@ -1,3 +1,4 @@
+```typescript
 // data/admin/auditTrails.ts
 import type { AuditTrail } from '../../types';
 
@@ -27,3 +28,4 @@ export const MOCK_AUDIT_TRAILS: AuditTrail[] = [
         ]
     }
 ];
+```
