@@ -1,13 +1,13 @@
-       IDENTIFICATION DIVISION.
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. DAWDR.
-       AUTHOR. AI-CORE-DEVELOPMENT.
+       AUTHOR. SYSTEMS-DEVELOPMENT.
        DATE-WRITTEN. 1989-01-16.
       ******************************************************************
-      * AI-FINANCE-CORE - ADVANCED WITHDRAWAL PROCESSING MODULE
+      * WITHDRAWAL PROCESSING MODULE (DAWDR)
       *
-      * This module handles sophisticated withdrawal requests,
-      * integrating AI-driven fraud detection and financial advisory
-      * services to ensure secure and responsible transactions.
+      * This module processes withdrawal requests. It includes automated
+      * checks for high-risk transaction patterns and provides rule-based
+      * notifications to the user.
       * It validates available funds, enforces daily limits, logs all
       * transactions, and provides contextual feedback.
       ******************************************************************
@@ -174,8 +174,8 @@
            ELSE
               PERFORM 2050-AI-PRE-CHECK-FRAUD
               IF AI-FRAUD-DETECTED
-                 DISPLAY "WARNING: AI SYSTEM FLAGGED THIS TRANSACTION FOR REVIEW."
-                 DISPLAY "         Transaction placed on hold or requires manual override."
+                 DISPLAY "WARNING: AUTOMATED SYSTEM FLAGGED THIS TRANSACTION."
+                 DISPLAY "         Transaction placed on hold for review."
                  MOVE "FRAUD FLAGGED" TO WS-TRANSACTION-STATUS
                  PERFORM 4000-LOG-TRANSACTION
               ELSE
@@ -244,20 +244,20 @@
            MOVE 'N' TO WS-AI-FRAUD-FLAG.
            INITIALIZE WS-AI-MESSAGE.
 
-           *> Simulate basic AI fraud detection rules:
+           *> Simulate basic automated fraud detection rules:
            *> Rule 1: Very large single withdrawal relative to balance.
            IF WS-INPUT-WDR-AMT > (DA-AVAILABLE-BAL * 0.50) AND
               WS-INPUT-WDR-AMT > WS-LARGE-WDR-THRESHOLD
-              DISPLAY "AI-FRAUD-ALERT: Large withdrawal relative to account size. Flagging."
-              MOVE "HIGH_VALUE_WDR" TO WS-AI-MESSAGE
+              DISPLAY "NOTICE: Withdrawal is >50% of balance. Flagged for review."
+              MOVE "FLAG: WDR >50% OF BALANCE" TO WS-AI-MESSAGE
               MOVE 'Y' TO WS-AI-FRAUD-FLAG
            END-IF.
 
            *> Rule 2: Withdrawal amount exceeds a fixed high-risk threshold for any account.
            IF WS-INPUT-WDR-AMT > WS-HIGH-RISK-AMT-THRESHOLD
-              DISPLAY "AI-FRAUD-ALERT: Withdrawal amount exceeds general high-risk threshold. Flagging."
+              DISPLAY "NOTICE: Withdrawal exceeds high-risk threshold. Flagged for review."
               IF NO-FRAUD-DETECTED
-                 MOVE "EXCEEDS_HR_THRESHOLD" TO WS-AI-MESSAGE
+                 MOVE "FLAG: WDR > HIGH-RISK THRESHOLD" TO WS-AI-MESSAGE
                  MOVE 'Y' TO WS-AI-FRAUD-FLAG
               END-IF
            END-IF.
@@ -265,14 +265,14 @@
            *> Rule 3: Account has unusual activity (simulated by a very low balance after hypothetical withdrawal)
            IF (DA-AVAILABLE-BAL - WS-INPUT-WDR-AMT) < 0 AND
               DA-AVAILABLE-BAL > 0  *> If it would overdraw and wasn't already 0
-              DISPLAY "AI-FRAUD-ALERT: Potential overdraw. Flagging for review."
+              DISPLAY "NOTICE: Withdrawal exceeds available funds. Flagged for review."
               IF NO-FRAUD-DETECTED
-                 MOVE "POTENTIAL_OVERDRAW" TO WS-AI-MESSAGE
+                 MOVE "FLAG: WDR > AVAILABLE BALANCE" TO WS-AI-MESSAGE
                  MOVE 'Y' TO WS-AI-FRAUD-FLAG
               END-IF
            END-IF.
 
-           *> In a real scenario, this would involve calling an external AI service
+           *> In a real scenario, this would involve calling an external service
            *> with transaction context, account history, location data, etc.,
            *> for a more sophisticated analysis.
        2050-EXIT.
@@ -304,7 +304,7 @@
               DISPLAY "REQUESTED:   " WS-INPUT-WDR-AMT
               DISPLAY "CURRENT DAY TOTAL (incl. this): " WS-TEMP-DAILY-WDR-TOTAL
               MOVE "DAILY_LIMIT_EXCD" TO WS-TRANSACTION-STATUS
-              MOVE "Daily limit exceeded by AI-Finance-Core" TO WS-AI-MESSAGE
+              MOVE "Daily withdrawal limit exceeded" TO WS-AI-MESSAGE
            ELSE
               MOVE WS-TEMP-DAILY-WDR-TOTAL TO DL-DAILY-WDR-TOTAL
               PERFORM 2062-UPDATE-DAILY-LIMIT-RECORD
@@ -315,7 +315,7 @@
        2060-EXIT.
            EXIT.
 
-       2061-CREATE-DAILY-LIMIT-RECORD.
+       2061-CREATE-Daily-limit-RECORD.
            WRITE DAILY-LIMITS-RECORD
                INVALID KEY
                    DISPLAY "CRITICAL ERROR: FAILED TO CREATE DAILY LIMIT RECORD FOR " DL-ACCOUNT-NUMBER
@@ -393,19 +393,19 @@
            INITIALIZE WS-AI-MESSAGE.
 
            IF WS-TRANSACTION-STATUS EQUAL "PROCESSED"
-              *> Simulate AI financial advice based on new balance or transaction pattern
+              *> Simulate rule-based financial notifications
               IF DA-CURRENT-BALANCE < WS-LOW-BALANCE-THRESHOLD
-                 DISPLAY "AI-ADVISOR: Your balance is getting low. Consider reviewing your spending habits."
-                 MOVE "LOW_BALANCE_ADVICE" TO WS-AI-MESSAGE
+                 DISPLAY "NOTICE: Account balance is below the low-balance threshold."
+                 MOVE "INFO: BALANCE BELOW THRESHOLD" TO WS-AI-MESSAGE
                  MOVE 'Y' TO WS-AI-ADVICE-FLAG
               ELSE IF WS-INPUT-WDR-AMT > WS-LARGE-WDR-THRESHOLD
-                 DISPLAY "AI-ADVISOR: For large withdrawals, exploring our savings or investment plans might be beneficial."
-                 MOVE "LARGE_WDR_ADVICE" TO WS-AI-MESSAGE
+                 DISPLAY "INFO: Large withdrawal recorded. Refer to documentation for savings/investment options."
+                 MOVE "INFO: LARGE WDR PROCESSED" TO WS-AI-MESSAGE
                  MOVE 'Y' TO WS-AI-ADVICE-FLAG
               END-IF
            END-IF.
 
-           *> In a real system, this would trigger a more sophisticated AI model
+           *> In a real system, this would trigger a more sophisticated model
            *> to provide personalized financial insights or product recommendations
            *> based on a broader analysis of user history and market data.
        3100-EXIT.
