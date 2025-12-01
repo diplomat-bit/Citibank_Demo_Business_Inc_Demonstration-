@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. APMAIN.
        AUTHOR. AI INTEGRATION TEAM.
       ******************************************************************
@@ -333,3 +334,4 @@
            DISPLAY "* MAINFRAME ACCOUNTS PAYABLE SYSTEM - SHUTDOWN    *".
            DISPLAY "***************************************************".
            DISPLAY " ".
+```
