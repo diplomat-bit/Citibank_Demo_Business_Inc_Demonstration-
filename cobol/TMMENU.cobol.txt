@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+           IDENTIFICATION DIVISION.
        PROGRAM-ID. TMMENU.
        AUTHOR. FICTIONAL-DEV-TEAM.
        DATE-WRITTEN. 2024-07-27.
@@ -7,6 +8,10 @@
       * This program presents the main menu for teller operations and
       * dispatches to various sub-functions, including AI-enhanced ones.
       ******************************************************************
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE COMPUTER. IBM-Z.
+       OBJECT COMPUTER. IBM-Z.
        DATA DIVISION.
        WORKING-STORAGE SECTION.
       *----------------------------------------------------------------*
@@ -69,6 +74,9 @@
 
       *----------------------------------------------------------------*
       * AI System Simulation Messages
+      *   NOTE: These should be replaced with calls to a real AI service
+      *   when available.  The content of the AI responses should
+      *   be dictated by the system prompt defined in prompts/idgafai_full.txt
       *----------------------------------------------------------------*
        01 WS-AI-MESSAGES.
           05 AI-MSG-ANOMALY-SCAN    PIC X(70) VALUE
@@ -224,6 +232,10 @@
 
       ******************************************************************
       * 5000-LEVEL: AI-Enhanced Teller Operations (Story-like integration)
+      *   NOTE: The specific output from the AI routines should be
+      *   governed by the system prompt defined in prompts/idgafai_full.txt.
+      *   The AI routines are currently simulated with canned messages and
+      *   should be replaced with calls to a real AI service.
       ******************************************************************
        5100-AI-ANOMALY-DETECTION.
            DISPLAY AI-MSG-ANOMALY-SCAN AT 2201.
@@ -279,3 +291,4 @@
            END-PERFORM.
            .
        END PROGRAM TMMENU.
+```
