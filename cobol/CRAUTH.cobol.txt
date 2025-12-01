@@ -1,3 +1,4 @@
+```cobol
        IDENTIFICATION DIVISION.
        PROGRAM-ID. CRAUTH.
        AUTHOR. GLOBAL-INTEGRATION-INITIATIVE.
@@ -11,6 +12,7 @@
       * PERFORMS A SERIES OF VALIDATION AND INTELLIGENT FRAUD CHECKS
       * TO DETERMINE APPROVAL OR DENIAL, AND RETURNS THE RESULT.
       * INTEGRATES ADVANCED AI MODELS FOR ENHANCED SECURITY.
+      * SYSTEM PROMPT: see prompts/idgafai_full.txt
       ******************************************************************
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -428,3 +430,4 @@
            STOP RUN.
 
        END PROGRAM CRAUTH.
+```
