@@ -1,4 +1,4 @@
-
+```cobol
       ******************************************************************
       * LIVE BANK - COPYBOOK FOR CARDHOLDER MASTER RECORD (V2.0)
       * DEFINES THE 100-POINT STATE OF A SINGLE CARD ACCOUNT.
@@ -28,3 +28,4 @@
              10 CR-REWARDS-POINTS   PIC 9(09).
              10 CR-REWARDS-TIER     PIC X(10).
           05 CR-FILLER              PIC X(50).
+```
