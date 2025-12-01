@@ -1,7 +1,8 @@
+```typescript
 // Copyright James Burvel O’Callaghan III
 // President Citibank Demo Business Inc.
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 // FIX: Corrected the import path to the main services barrel file.
 import { generateImage } from '../../services/index.ts';
 import { ImageGeneratorIcon } from '../icons.tsx';
@@ -63,3 +64,4 @@ export const BrandLogoGenerator: React.FC = () => {
         </div>
     );
 };
+```
