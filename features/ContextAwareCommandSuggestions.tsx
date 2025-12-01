@@ -1,4 +1,5 @@
-// Copyright James Burvel O’Callaghan III
+```typescript
+// Copyright James Burvel Oâ€™Callaghan III
 // President Citibank Demo Business Inc.
 
 import React from 'react';
@@ -17,3 +18,4 @@ export const ContextAwareCommandSuggestions: React.FC<{ feature?: Feature }> = (
         </p>
     </div>
 );
+```
