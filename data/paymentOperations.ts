@@ -1,11 +1,10 @@
+```typescript
 // data/paymentOperations.ts
 
-// This is the Scribe's Hall, the high-level ledger that records the great movements
-// of capital between worlds. It is not a list of consumer transactions, but of
-// significant, multi-rail `PaymentOperation`s, simulating interactions with major
-// financial partners like Stripe and Marqeta. This data demonstrates the platform's
-// enterprise-grade capability to manage and track complex financial flows, providing
-// a sense of robustness and security to the Crypto & Web3 Hub.
+// This file contains mock data for high-level payment operations.
+// These operations simulate significant, multi-rail fund movements (e.g., between
+// Stripe, Marqeta) rather than individual consumer transactions. The data is used to
+// demonstrate enterprise-grade financial tracking capabilities.
 
 import type { PaymentOperation } from '../types';
 
@@ -23,3 +22,4 @@ export const MOCK_PAYMENT_OPERATIONS: PaymentOperation[] = [
     { id: 'po_4', description: 'Coinbase Withdrawal', amount: 12000, status: 'Initiated', type: 'ACH', date: '2024-07-23' },
     { id: 'po_5', description: 'Manual Adjustment', amount: -500, status: 'Failed', type: 'ACH', date: '2024-07-21' },
 ];
+```
