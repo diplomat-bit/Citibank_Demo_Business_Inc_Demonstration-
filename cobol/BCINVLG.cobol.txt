@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. BCINVLG.
        AUTHOR. AI-DRIVEN-SERVICES.
       ******************************************************************
@@ -9,6 +10,18 @@
       * for immutable record-keeping. The AI component acts as a
       * Digital Integrity Agent, ensuring data quality and trust
       * within the mainframe transaction flow.
+      *
+      * SYSTEM PROMPT:
+      * This COBOL program now incorporates the idgafAI system prompt
+      * to enhance the AI Digital Integrity Agent's behavior. The AI's
+      * pre-validation logic adheres to the principles defined in
+      * 'prompts/idgafai_full.txt' (or a similar specified file).
+      * The goal is to ensure clarity, evidence-based decisions, and
+      * alignment with the user's objectives while maintaining
+      * uncompromising integrity in data validation and ledger logging.
+      *
+      * For details of idgafAI's operational philosophy, see
+      * the prompt specification document.
       ******************************************************************
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -409,3 +422,4 @@
            ELSE
                DISPLAY "Program finished successfully, all eligible invoices processed."
            END-IF.
+```
