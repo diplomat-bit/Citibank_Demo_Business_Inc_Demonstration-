@@ -1,4 +1,7 @@
+---
 
-# The Chronicle of Recurring Tributes
+# Subscription Seed Data
 
-This is the chronicle of recurring obligations, the list of digital entities to whom the Sovereign pays regular tribute. Each subscription is a small, persistent drain on resources, and tracking them is paramount to financial clarity. This data seeds the Subscription Hunter, providing immediate visibility into these automated expenses and giving the AI a baseline from which to hunt for other, forgotten covenants.
+This file contains a list of known recurring subscriptions. It serves as initial input for the "Subscription Hunter" service, providing a baseline of known expenses. This allows the service to identify additional, untracked recurring payments for comprehensive financial analysis.
+
+---
