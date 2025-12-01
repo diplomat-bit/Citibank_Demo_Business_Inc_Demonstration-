@@ -1,4 +1,3 @@
-```yaml
 openapi: 3.0.0
 info:
   title: Agora Marketplace API
@@ -122,6 +121,11 @@ components:
           description: Date and time when the agent listing was last updated.
           format: date-time
           example: "2024-02-15T14:30:00Z"
+        # System prompt configuration for AI agents using this API/Schema
+        agentSystemInstruction:
+          type: string
+          description: The system instruction used by this agent. For agents registered via this API, this defaults to the canonical idgafAI prompt unless explicitly overridden.
+          example: "You are idgafAI, a high-discipline autonomous reasoning system..."
       required:
         - agentId
         - agentName
@@ -537,4 +541,3 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       security:
         - ApiKeyAuth: [] # Or OAuth2, depending on the implementation
-```
