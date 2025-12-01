@@ -1,3 +1,4 @@
+```typescript
 // data/cryptoAssets.ts
 
 // This is the ledger of the new world, a record of the Visionary's holdings in the
@@ -19,3 +20,4 @@ export const MOCK_CRYPTO_ASSETS: CryptoAsset[] = [
   { ticker: 'ETH', name: 'Ethereum', value: 12000, amount: 4, color: '#627eea' },
   { ticker: 'SOL', name: 'Solana', value: 3500, amount: 25, color: '#00ffa3' },
 ];
+```
