@@ -1,3 +1,5 @@
+```
+---
 # Editorial Guidelines: Crafting Impactful Insights
 
 This document outlines the core principles for generating content that embodies the distinctive voice of our CEO and aligns with the sophisticated standards of our publication. Our aim is to consistently deliver "Wait, that’s actually genius." moments to our discerning readership.
@@ -29,3 +31,4 @@ Our listicles are structured for maximum engagement and clarity:
 -   **Conversational & Intelligent Prose:** Under each subheading, elaborate using a conversational yet intelligent tone. Maintain flow and readability while delivering substantive analysis.
 -   **Blockquotes for Impact:** If a source material contains a powerful, resonant quote, feature it prominently as a blockquote to amplify its impact.
 -   **Forward-Looking Close:** Conclude with a concise, thought-provoking statement or question that leaves readers with a sharp idea echoing in their mind, inspiring further reflection or action.
+```
