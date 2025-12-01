@@ -1,3 +1,4 @@
+```typescript
 // data/rewardPoints.ts
 
 // This is the treasury of accolades, the vault where the currency of discipline is
@@ -20,3 +21,4 @@ export const MOCK_REWARD_POINTS: RewardPoints = {
     lastRedeemed: 5000,
     currency: 'Points',
 };
+```
