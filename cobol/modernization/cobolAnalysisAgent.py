@@ -26,14 +26,33 @@ class COBOLAnalysisAgent:
         self.model_name = model_name  # Could be configurable, too
         openai.api_key = self.openai_api_key # Initialize OpenAI with API key
 
+        #Load system prompt from file
+        self.system_prompt = self._load_system_prompt()
+
+    def _load_system_prompt(self, prompt_file="prompts/idgafai_full.txt"):
+        """Loads the system prompt from the specified file."""
+        try:
+            with open(prompt_file, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except FileNotFoundError:
+            print(f"System prompt file not found: {prompt_file}. Using default.")
+            return "You are a helpful AI assistant."  # Default prompt
+        except Exception as e:
+            print(f"Error loading system prompt: {e}.  Using default.")
+            return "You are a helpful AI assistant."
+
     def _get_openai_response(self, prompt: str,  temperature: float = 0.2, max_tokens: int = 2000) -> str:
         """
         Internal method to interact with the OpenAI API.  Handles API calls and retries.
         """
         try:
+            messages = [
+                {"role": "system", "content": self.system_prompt},  # Include the system prompt
+                {"role": "user", "content": prompt}
+            ]
             response = openai.ChatCompletion.create(
                 model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
+                messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 # Add other OpenAI parameters here as needed.
@@ -88,7 +107,7 @@ class COBOLAnalysisAgent:
             analysis_results = {}
             # 1. Identify Sections/Paragraphs and their Purpose
             section_analysis_prompt = f"""
-            You are a COBOL code analysis expert.  Analyze the following COBOL code and identify the purpose of each section or paragraph, 
+            Analyze the following COBOL code and identify the purpose of each section or paragraph, 
             e.g., 'DATA DIVISION', 'PROCEDURE DIVISION', 'INPUT-OUTPUT SECTION', 'FILE STATUS', etc.  
             Provide a concise summary (1-2 sentences) of each section's function. Also provide line numbers and the code of each section, if possible.
             COBOL Code:\n\n{cobol_code}
@@ -98,7 +117,7 @@ class COBOLAnalysisAgent:
 
             # 2. Extract Business Logic Highlights
             business_logic_prompt = f"""
-            You are a senior software architect specializing in COBOL modernization.  Identify the key business rules and logic implemented within the provided COBOL code.
+            Identify the key business rules and logic implemented within the provided COBOL code.
             Focus on critical processes such as data validation, calculations, data transformations, file I/O operations, and any decision-making logic.
             Summarize each identified business rule in a clear and concise manner. Provide line numbers if you can.
             COBOL Code:\n\n{cobol_code}
@@ -108,7 +127,7 @@ class COBOLAnalysisAgent:
 
             # 3. Assess Code Complexity and areas of risk
             complexity_prompt = f"""
-            You are a code quality analyst.  Assess the complexity of the following COBOL code.  
+            Assess the complexity of the following COBOL code.  
             Identify potential areas of technical debt, such as overly complex paragraphs, use of GOTO statements, or other indicators of code that might be difficult to maintain or modernize.
             Also, note any security risks or vulnerabilities you can detect.
             COBOL Code:\n\n{cobol_code}
@@ -118,7 +137,7 @@ class COBOLAnalysisAgent:
 
             # 4. Suggest Modernization Strategies (e.g., Java, Python)
             modernization_prompt = f"""
-            You are a modernization specialist. Based on the analysis of this COBOL code, recommend potential modernization strategies,
+            Based on the analysis of this COBOL code, recommend potential modernization strategies,
             such as the target programming languages (e.g., Java, Python, C#), architectural patterns (e.g., microservices, REST APIs), and frameworks to consider.
             Also, suggest a phased approach, if appropriate. Consider also the use of automated refactoring tools.
             COBOL Code:\n\n{cobol_code}
@@ -128,7 +147,7 @@ class COBOLAnalysisAgent:
 
             # 5. Data Flow Analysis (If feasible and code allows)
             data_flow_prompt = f"""
-            You are a COBOL data flow analyst. Analyze the provided COBOL code to identify how data flows through the program.
+            Analyze the provided COBOL code to identify how data flows through the program.
             Trace the movement of data between different sections of the code, including the DATA DIVISION and PROCEDURE DIVISION.
             Identify data sources (files, databases), data transformations, and data destinations.
             COBOL Code:\n\n{cobol_code}
