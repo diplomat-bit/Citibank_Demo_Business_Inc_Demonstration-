@@ -1,3 +1,4 @@
+```typescript
 // data/complianceCases.ts
 
 // This is the docket of the digital magistrate, the list of financial events that
@@ -18,3 +19,4 @@ export const MOCK_COMPLIANCE_CASES: ComplianceCase[] = [
   { id: 'case_1', reason: 'Transaction over $10,000', entityType: 'PaymentOrder', entityId: 'po_003', status: 'open', openedDate: '2024-07-21' },
   { id: 'case_2', reason: 'New Counterparty Requires Verification', entityType: 'Counterparty', entityId: 'cp_004', status: 'open', openedDate: '2024-07-23' },
 ];
+```
