@@ -5,14 +5,14 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 // Defining them here to ensure commercial-grade completeness without external dependency assumptions.
 
 /**
- * Parameters required to initiate a high-fidelity Quantum Oracle simulation.
+ * Parameters required to initiate a high-fidelity financial simulation.
  */
 interface SimulationParameters {
     scenarioId: string;
     inputVector: { [key: string]: number | string | boolean };
     runtimeConfig: {
         maxDurationSeconds: number;
-        fidelityLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'QUANTUM';
+        fidelityLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'MAXIMUM';
         outputFormat: 'JSON' | 'GRAPH_DB' | 'TIME_SERIES';
     };
     externalDataSources: string[]; // e.g., 'NYSE_TICKER', 'GEMINI_API'
@@ -42,18 +42,18 @@ interface SimulationResult {
     riskAssessment: {
         confidenceScore: number;
         volatilityIndex: number;
-        quantumEntanglementFactor: number; // Novel metric
+        modelUncertainty: number; // 0.0-1.0, where 1.0 is highest uncertainty
     };
 }
 
 // =================================================================================================
-// --- MOCK SERVICE (Normally imported from simulation_deck/services/QuantumSimulationService) ---
+// --- MOCK SERVICE (Normally imported from simulation_deck/services/SimulationService) ---
 
-const QuantumSimulationServiceMock = {
+const SimulationServiceMock = {
     async startSimulation(params: SimulationParameters): Promise<{ simulationId: string }> {
         // Simulate API latency and job ID creation
         await new Promise(resolve => setTimeout(resolve, 500));
-        const newId = `QOS-${Date.now()}-${params.scenarioId.toUpperCase().substring(0, 5)}`;
+        const newId = `SIM-${Date.now()}-${params.scenarioId.toUpperCase().substring(0, 5)}`;
         return { simulationId: newId };
     },
 
@@ -72,7 +72,7 @@ const QuantumSimulationServiceMock = {
             output = {
                 projectedROI: 0.18 + Math.random() * 0.05,
                 marketDelta: { T_1: 0.03, T_5: 0.12 },
-                optimalStrategy: 'Adaptive Quantization Hedge',
+                optimalStrategy: 'Adaptive Momentum Strategy',
             };
         } else if (elapsedSeconds > 50 && Math.random() < 0.05) { // Simulate rare failure
              status = 'ERROR';
@@ -85,14 +85,14 @@ const QuantumSimulationServiceMock = {
             executionTimeMs: Date.now() - startTime,
             finalOutput: output,
             progressLog: [
-                { name: 'Multiverse Data Ingestion', progress: 100, timestamp: startTime, details: '10TB of historical and sentient data vectors ingested.' },
-                { name: 'Hyper-Dimensional Projection', progress: Math.min(progress, 60), timestamp: startTime + 10000, details: 'Running parallel reality forks analysis.' },
-                { name: 'Economic Synthesis & Validation', progress: progress, timestamp: Date.now(), details: status === 'COMPLETED' ? 'Validated 99.9% fidelity.' : 'Validating coherence metrics.' }
+                { name: 'Historical Data Aggregation', progress: 100, timestamp: startTime, details: '10TB of historical market data ingested.' },
+                { name: 'Stochastic Model Projection', progress: Math.min(progress, 60), timestamp: startTime + 10000, details: 'Running Monte Carlo scenario analysis.' },
+                { name: 'Economic Synthesis & Validation', progress: progress, timestamp: Date.now(), details: status === 'COMPLETED' ? 'Validated against backtesting data.' : 'Validating model convergence.' }
             ],
             riskAssessment: {
                 confidenceScore: progress / 100,
                 volatilityIndex: 0.25 - (progress / 400),
-                quantumEntanglementFactor: 0.999,
+                modelUncertainty: 1 - (progress / 100) * 0.95, // Uncertainty decreases as simulation progresses
             },
         };
     },
@@ -100,11 +100,11 @@ const QuantumSimulationServiceMock = {
     async cancelSimulation(simulationId: string): Promise<void> {
         // Simulate async cancellation confirmation
         await new Promise(resolve => setTimeout(resolve, 800));
-        console.info(`[Oracle Core] Simulation ${simulationId} terminated by user.`);
+        console.info(`[Simulation Core] Simulation ${simulationId} terminated by user.`);
     }
 };
 
-const SimulationService = QuantumSimulationServiceMock; // Use the mock for logic implementation
+const SimulationService = SimulationServiceMock; // Use the mock for logic implementation
 
 // =================================================================================================
 // --- HOOK IMPLEMENTATION ---
@@ -127,7 +127,7 @@ interface SimulationRunnerHook {
 }
 
 /**
- * A React hook for managing the state and lifecycle of a running simulation from the Oracle Core.
+ * A React hook for managing the state and lifecycle of a running simulation from the Simulation Core.
  * It uses a persistent polling mechanism to track the status of long-running, complex simulations.
  */
 export const useSimulationRunner = (config: SimulationRunnerConfig = {}): SimulationRunnerHook => {
@@ -161,7 +161,7 @@ export const useSimulationRunner = (config: SimulationRunnerConfig = {}): Simula
     }, []);
 
     /**
-     * Initiates a new simulation job with the Oracle Core.
+     * Initiates a new simulation job with the Simulation Core.
      */
     const runSimulation = useCallback(async (params: SimulationParameters) => {
         resetSimulation();
@@ -206,7 +206,7 @@ export const useSimulationRunner = (config: SimulationRunnerConfig = {}): Simula
         } catch (err) {
             // Revert status if cancellation fails, indicating the job might still be processing
             setStatus('RUNNING');
-            setError('Cancellation request failed to reach Oracle Core. The simulation may still complete.');
+            setError('Cancellation request failed to reach the Simulation Core. The simulation may still complete.');
             console.error('Cancellation failure:', err);
             // Restart polling to track its eventual status (COMPLETED/ERROR)
             if (currentId) setSimulationId(null); // Trigger useEffect re-run to restart polling logic
@@ -245,7 +245,7 @@ export const useSimulationRunner = (config: SimulationRunnerConfig = {}): Simula
                     // Job finished, stop recursion
                     if (timerRef.current) clearTimeout(timerRef.current);
                     if (latestResult.status === 'ERROR') {
-                        setError('Simulation terminated with an error state detected by Oracle Core.');
+                        setError('Simulation terminated with an error state detected by the Simulation Core.');
                     }
                 } else {
                     // Job still running, schedule next poll
@@ -289,4 +289,3 @@ export const useSimulationRunner = (config: SimulationRunnerConfig = {}): Simula
         resetSimulation,
     };
 };
-```
