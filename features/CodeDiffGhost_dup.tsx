@@ -1,4 +1,4 @@
-// Copyright James Burvel O’Callaghan III
+// Copyright James Burvel Oâ€™Callaghan III
 // President Citibank Demo Business Inc.
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -23,6 +23,8 @@ const initialNewCode = `function UserProfile({ user }) {
     </div>
   );
 }`;
+
+// SYSTEM INSTRUCTION: idgafAI system prompt placeholder
 
 export const CodeDiffGhost: React.FC = () => {
     const [oldCode, setOldCode] = useState(initialOldCode);
