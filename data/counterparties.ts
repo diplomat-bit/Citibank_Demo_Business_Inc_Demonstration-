@@ -1,3 +1,4 @@
+```typescript
 // data/counterparties.ts
 
 // This is the diplomatic roster of the corporate world, the official registry of
@@ -20,3 +21,4 @@ export const MOCK_COUNTERPARTIES: Counterparty[] = [
     { id: 'cp_004', name: 'QuantumLeap Marketing', email: 'hello@quantumleap.io', status: 'Pending', createdDate: '2024-07-23' },
     { id: 'cp_005', name: 'Client Bravo', email: 'ap@clientbravo.com', status: 'Verified', createdDate: '2023-08-01' },
 ];
+```
