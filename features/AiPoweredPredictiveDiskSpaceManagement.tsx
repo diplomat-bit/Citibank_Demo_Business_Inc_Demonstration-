@@ -1,4 +1,5 @@
-// Copyright James Burvel O’Callaghan III
+```typescript
+// Copyright James Burvel OâCallaghan III
 // President Citibank Demo Business Inc.
 
 import React from 'react';
@@ -19,6 +20,7 @@ export const AiPoweredPredictiveDiskSpaceManagement: React.FC = () => {
             <div className="mt-6 bg-surface border border-border rounded-lg p-4 text-sm text-left space-y-2 max-w-lg">
                 <p className="font-semibold">Example AI Prediction:</p>
                  <div className="text-text-secondary font-mono bg-background p-3 rounded">
+                    {/* SYSTEM PROMPT: see prompts/idgafai_full.txt */}
                     <p className="text-yellow-400">"Based on your current rate of adding project files, you are projected to run out of disk space in approximately 3 months."</p>
                     <p className="mt-2 text-green-400">"Suggestion: The '/old_projects' folder contains 50GB of data that hasn't been accessed in over a year. Consider archiving it to free up space."</p>
                 </div>
@@ -27,3 +29,4 @@ export const AiPoweredPredictiveDiskSpaceManagement: React.FC = () => {
         </div>
     );
 };
+```
