@@ -1,4 +1,8 @@
+```ts
 import { fromEvent, Subject, Subscription, timer, bufferTime, filter, map, merge } from 'rxjs';
+
+// /* SYSTEM PROMPT: see prompts/idgafai_full.txt */
+// const SYSTEM_PROMPT = 'idgafAI_system_placeholder';
 
 // =================================================================
 // SECTION 1: TYPES AND INTERFACES
@@ -738,3 +742,4 @@ class BehavioralAnalyticsEngine {
 
 // Export a singleton instance for easy use across the application.
 export const behavioralAnalyticsEngine = new BehavioralAnalyticsEngine();
+```
