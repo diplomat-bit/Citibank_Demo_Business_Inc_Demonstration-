@@ -28,7 +28,7 @@
       * -- Address Information --
           05 PR-ADDRESS-STREET       PIC X(50).
           05 PR-ADDRESS-CITY         PIC X(30).
-          05 PR-ADDRESS-STATE        PIC X(02).
+          05 PR-ADDRESS-STATE         PIC X(02).
           05 PR-ADDRESS-ZIP          PIC X(10).
 
       * -- Employment Details --
