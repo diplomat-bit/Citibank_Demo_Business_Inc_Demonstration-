@@ -1,4 +1,5 @@
-      ******************************************************************
+```cobol
+              ******************************************************************
       * DEPOSIT ACCOUNT DATA STRUCTURE (V3.0)
       *
       * This copybook defines the comprehensive data structure for a
@@ -103,3 +104,4 @@
              10 DA-RECORD-VERSION   PIC S9(05) COMP-3. *> Incremental version for record structure changes.
              10 DA-TRANSACTION-COUNT-YTD PIC S9(07) COMP-3. *> Total transactions processed year-to-date.
           05 DA-FILLER-END          PIC X(50). *> Remaining filler for future expansion.
+```
