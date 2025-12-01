@@ -1,4 +1,11 @@
+---
 
-# The Oracle's Warning
+# Financial Anomaly Data
 
-This is the Oracle's warning, the chronicle of deviations from the norm. This is not a list of rule violations, but of behavioral oddities detected by the ever-watchful eye of the Core Intelligence. Each `FinancialAnomaly` is a story, complete with an AI-generated explanation of *why* it is suspicious. This rich, detailed dataset is the heart of the Anomaly Detection view, showcasing one of the most powerful and futuristic capabilities of the entire platform.
+This file contains the dataset for `FinancialAnomaly` records.
+
+These records identify behaviors that deviate from established patterns. They are not confirmed rule violations but are flagged for review based on statistical analysis.
+
+Each record includes an AI-generated explanation of the factors that triggered the anomaly detection. This dataset populates the Anomaly Detection view, providing a factual basis for investigating potentially suspicious activity.
+
+---
