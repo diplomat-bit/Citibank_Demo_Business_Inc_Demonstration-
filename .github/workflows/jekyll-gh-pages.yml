@@ -1,4 +1,5 @@
-name: Generate and Deploy Markdown Index
+---
+        name: Generate and Deploy Markdown Index
 
 on:
   push:
@@ -63,3 +64,5 @@ jobs:
       - name: Deploy Markdown Index to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+        ---
