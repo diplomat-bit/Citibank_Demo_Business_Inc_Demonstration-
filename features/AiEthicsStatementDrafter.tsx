@@ -1,4 +1,5 @@
-// Copyright James Burvel O’Callaghan III
+```typescript
+// Copyright James Burvel Oâ€™Callaghan III
 // President Citibank Demo Business Inc.
 
 import React, { useState, useCallback } from 'react';
@@ -66,3 +67,4 @@ export const AiEthicsStatementDrafter: React.FC = () => {
         </div>
     );
 };
+```
