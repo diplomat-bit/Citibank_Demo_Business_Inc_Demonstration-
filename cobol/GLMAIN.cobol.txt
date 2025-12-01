@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. GLMAIN.
        AUTHOR. MAINFRAME-AI-INITIATIVE.
        DATE-WRITTEN. 2024-07-27.
@@ -7,9 +7,9 @@
       *
       * THIS IS THE SUB-MENU CONTROLLER FOR THE GENERAL LEDGER
       * SYSTEM (GL). THE SINGLE SOURCE OF TRUTH. 100% BALANCED.
-      * It now incorporates advanced AI functionalities to augment
-      * financial operations and provide deeper insights, aiming to
-      * enhance efficiency and accuracy for human operators.
+      * It integrates a high-discipline reasoning engine for direct,
+      * evidence-based analysis of financial data. The AI component
+      * prioritizes clarity and factual accuracy over embellishment.
       ******************************************************************
        ENVIRONMENT DIVISION.
        DATA DIVISION.
@@ -52,12 +52,12 @@
           05 FILLER PIC X(80) VALUE "*   4. GENERATE FINANCIAL REPORTS                  *".
           05 FILLER PIC X(80) VALUE "*   5. MANAGE CHART OF ACCOUNTS                    *".
           05 FILLER PIC X(80) VALUE ALL "*".
-          05 FILLER PIC X(80) VALUE "*        AI-POWERED INSIGHTS & AUTOMATION          *".
+          05 FILLER PIC X(80) VALUE "*        AI-ASSISTED ANALYSIS & FUNCTIONS            *".
           05 FILLER PIC X(80) VALUE ALL "*".
           05 FILLER PIC X(80) VALUE "*   A. AI: ANOMALY DETECTION (JOURNAL ENTRIES)     *".
           05 FILLER PIC X(80) VALUE "*   B. AI: PREDICTIVE ANALYTICS (BALANCE TRENDS)   *".
           05 FILLER PIC X(80) VALUE "*   C. AI: RECONCILIATION ASSISTANT                *".
-          05 FILLER PIC X(80) VALUE "*   D. AI: INTELLIGENT REPORTING SUMMARIES         *".
+          05 FILLER PIC X(80) VALUE "*   D. AI: AUTOMATED REPORTING SUMMARIES           *".
           05 FILLER PIC X(80) VALUE "*   E. AI: CONFIGURE ASSISTANCE SETTINGS           *".
           05 FILLER PIC X(80) VALUE ALL "*".
           05 FILLER PIC X(80) VALUE "*   X. EXIT TO MAIN MENU                           *".
@@ -166,7 +166,7 @@
                    END-IF
                WHEN "D"
                    IF AI-ENABLED
-                       DISPLAY "Activating AI: Intelligent Reporting Summaries..."
+                       DISPLAY "Activating AI: Automated Reporting Summaries..."
                        CALL "GLREPORTAI" USING WS-AI-STATUS
                        PERFORM 8000-LOG-AI-ACTIVITY USING 'AI_INTELLIGENT_REPORTING' 'INFO' WS-AI-MESSAGE
                    ELSE
