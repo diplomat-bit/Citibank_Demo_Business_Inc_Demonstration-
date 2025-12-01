@@ -1,14 +1,17 @@
-# Domain Map 01: The Personal Dominion
+---
+# Domain Specification 01: Personal Finance
 
 **Domain:** Personal Finance
 
-**Core Purpose (Job-to-be-Done):** To transform the user's personal financial life from a state of chaos and anxiety to one of clarity, control, and creative power. This domain provides the foundational instruments for self-awareness and the deliberate allocation of personal resources.
+**Core Purpose (Job-to-be-Done):** To provide users with tools for tracking, analyzing, and planning their personal finances to achieve specific financial goals. This domain enables clear financial oversight and deliberate resource allocation.
 
-**Key Territories (Modules):**
--   **The Throne Room (Dashboard):** The sovereign's central command, providing a holistic, at-a-glance view of their entire personal dominion.
--   **The Immutable Chronicle (Transactions):** The unchangeable record of all past financial actions, the source of historical truth.
--   **The Covenants of Will (Budgets):** The architect's workshop for inscribing personal laws of spending and discipline.
--   **The Observatory (Investments):** The strategic outlook for projecting one's resources into the future to foster growth.
--   **The Atlas of Grand Campaigns (Financial Goals):** The war room for planning and executing long-term life objectives.
+**Key Modules:**
+-   **Dashboard:** Provides a consolidated, high-level overview of the user's financial status, including key metrics, account balances, and alerts.
+-   **Transactions:** Logs all financial activities from linked accounts. Provides a detailed, searchable, and categorized history of income and expenses.
+-   **Budgets:** Allows users to create, monitor, and manage spending limits for various categories. Tracks spending against budget allocations in real-time.
+-   **Investments:** Tracks the performance of investment accounts and assets. Provides tools for portfolio analysis and performance monitoring.
+-   **Financial Goals:** Enables users to define, track, and manage progress toward specific, long-term financial objectives.
 
-**Strategic Value:** This domain provides the sovereign with the fundamental awareness and control necessary to master their own resources. It is the prerequisite for all higher-level strategic action. Before one can build an empire, one must first learn to rule oneself. This is the training ground for that self-mastery.
+**System Function:** This domain is the foundational component for user financial management. It provides the necessary data and tools for informed financial decision-making, which is a prerequisite for effective long-term financial planning.
+
+---
