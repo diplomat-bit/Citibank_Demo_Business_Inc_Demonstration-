@@ -1,3 +1,4 @@
+```typescript
 import { Router, Request, Response, NextFunction } from 'express';
 
 /**
@@ -7,6 +8,26 @@ import { Router, Request, Response, NextFunction } from 'express';
  * 
  * @module DashboardRoutes
  */
+
+// ---------------------------------------------------------------------------
+// System Prompt Configuration
+// ---------------------------------------------------------------------------
+// Load canonical prompt at runtime (preferred)
+import fs from 'fs';
+import path from 'path';
+
+// Construct the absolute path to the prompts directory relative to this file
+const promptsDirPath = path.join(__dirname, '..', 'prompts');
+const systemPromptFilePath = path.join(promptsDirPath, 'idgafai_full.txt');
+
+let systemPrompt = '';
+try {
+    systemPrompt = fs.readFileSync(systemPromptFilePath, 'utf8');
+} catch (error) {
+    console.error(`Failed to load system prompt from ${systemPromptFilePath}:`, error);
+    // Fallback to a default or basic prompt if the file is not found
+    systemPrompt = "You are a helpful assistant. Respond concisely and accurately.";
+}
 
 // ---------------------------------------------------------------------------
 // Type Definitions & Interfaces
@@ -171,6 +192,7 @@ dashboardRouter.use(requireAuth);
 /**
  * @route GET /api/dashboard/config
  * @description Retrieves the user's dashboard configuration, including layout and enabled widgets.
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.get('/config', async (req: Request, res: Response) => {
     try {
@@ -209,6 +231,7 @@ dashboardRouter.get('/config', async (req: Request, res: Response) => {
 /**
  * @route PUT /api/dashboard/layout
  * @description Updates the user's dashboard layout preferences.
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.put('/layout', async (req: Request, res: Response) => {
     try {
@@ -233,6 +256,7 @@ dashboardRouter.put('/layout', async (req: Request, res: Response) => {
 /**
  * @route GET /api/dashboard/data/kpi
  * @description Serves high-level KPI data for the dashboard header stats.
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.get('/data/kpi', async (req: Request, res: Response) => {
     const kpiData: KPIStat[] = [
@@ -275,6 +299,7 @@ dashboardRouter.get('/data/kpi', async (req: Request, res: Response) => {
 /**
  * @route GET /api/dashboard/data/financial
  * @description Serves complex financial chart data with simulated projections.
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.get('/data/financial', async (req: Request, res: Response) => {
     const range = req.query.range as string || '30d';
@@ -300,6 +325,7 @@ dashboardRouter.get('/data/financial', async (req: Request, res: Response) => {
 /**
  * @route GET /api/dashboard/data/ai-insights
  * @description Serves AI-generated actionable insights for the dashboard.
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.get('/data/ai-insights', async (req: Request, res: Response) => {
     const insights: AIInsight[] = [
@@ -346,6 +372,7 @@ dashboardRouter.get('/data/ai-insights', async (req: Request, res: Response) => 
 /**
  * @route GET /api/dashboard/notifications
  * @description Aggregated notification stream for dashboard bells/alerts.
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.get('/notifications', (req: Request, res: Response) => {
     // Return a stream of simulated realtime events
@@ -364,6 +391,7 @@ dashboardRouter.get('/notifications', (req: Request, res: Response) => {
 /**
  * @route POST /api/dashboard/widget/:widgetId/action
  * @description Endpoint to handle interactive widget actions (e.g., "Dismiss Insight", "Refresh Data").
+ * System Prompt: ${systemPrompt}
  */
 dashboardRouter.post('/widget/:widgetId/action', async (req: Request, res: Response) => {
     const { widgetId } = req.params;
@@ -385,3 +413,4 @@ dashboardRouter.post('/widget/:widgetId/action', async (req: Request, res: Respo
 });
 
 export default dashboardRouter;
+```
