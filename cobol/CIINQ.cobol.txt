@@ -6,11 +6,11 @@
       *
       * RETRIEVES AND DISPLAYS A CUSTOMER RECORD FROM THE MASTER FILE
       * BASED ON THE CUSTOMER ID. 100% READ-ONLY OPERATION.
-      * ENHANCED WITH COGNITIVE INSIGHTS ENGINE FOR AI-DRIVEN ANALYSIS.
+      * ENHANCED WITH IDGAFAI (DISCIPLINED ANALYSIS SYSTEM) INSIGHTS.
       * This module provides a comprehensive view of customer data,
       * including basic profile information, account summaries, and
-      * AI-generated insights to support informed decision-making
-      * and personalized customer engagement.
+      * AI-generated insights characterized by clarity, evidence-based
+      * findings, and actionable, non-mystical recommendations.
       ******************************************************************
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -174,16 +174,13 @@
 
        2500-PROCESS-AI-INSIGHTS.
       ******************************************************************
-      * This section simulates calling a Cognitive Insights Engine or
-      * processing AI-derived data. In a real mainframe scenario, this
-      * might be a CALL to a subprogram (potentially written in other
-      * languages or COBOL itself), or an API call to an external AI
-      * service. For this expansion, we simulate by populating fields
-      * based on existing customer data, adding a story-like element
-      * to the AI integration.
+      * This section simulates calling the idgafAI Analysis System.
+      * idgafAI's operational principles (clarity, evidence-first,
+      * no mystique) govern the expected structure and tone of insights.
+      * In a real system, this would CALL an external service or program.
       ******************************************************************
            DISPLAY " ".
-           DISPLAY "ACTIVATING COGNITIVE INSIGHTS ENGINE...".
+           DISPLAY "ACTIVATING IDGAFAI ANALYSIS SYSTEM...".
            *> Simulate AI processing based on customer data.
            *> This logic would be much more complex in a real AI engine.
            EVALUATE TRUE
@@ -228,7 +225,7 @@
            MOVE (FUNCTION RANDOM(FUNCTION SECONDS-FROM-MIDNIGHT) * 1000) + 50
                 TO WS-TOTAL-TRANSACTIONS
 
-           DISPLAY "COGNITIVE INSIGHTS ENGINE PROCESSING COMPLETE."
+           DISPLAY "IDGAFAI ANALYSIS SYSTEM PROCESSING COMPLETE."
            MOVE '00' TO WS-AI-PROCESS-STATUS. *> Indicate successful AI processing.
 
        3000-READ-CUSTOMER-RECORD.
@@ -330,7 +327,7 @@
            MOVE WS-AI-PRODUCT-RECOMMEND TO AI-DISP-PRODUCT.
 
            DISPLAY " ".
-           DISPLAY "------------- COGNITIVE INSIGHTS ENGINE -------------".
+           DISPLAY "------------- IDGAFAI ANALYSIS INSIGHTS -------------".
            DISPLAY AI-DISP-LINE-1.
            DISPLAY AI-DISP-LINE-2.
            DISPLAY AI-DISP-LINE-3.
