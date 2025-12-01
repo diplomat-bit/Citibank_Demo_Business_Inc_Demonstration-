@@ -1,4 +1,5 @@
-// Copyright James Burvel O’Callaghan III
+```typescript
+// Copyright James Burvel Oâ€™Callaghan III
 // President Citibank Demo Business Inc.
 
 import React from 'react';
@@ -7,7 +8,7 @@ import type { Feature } from '../../../types';
 export const AutomatedCodeDocumentationGeneration: React.FC<{ feature?: Feature }> = ({ feature }) => (
     <div className="h-full flex flex-col items-center justify-center text-center p-8 text-text-primary">
         <div className="text-6xl mb-4" aria-hidden="true">
-            🚧
+            ðŸš§
         </div>
         <h1 className="text-3xl font-bold mb-2">
             {feature?.name || 'Feature'} is Under Construction
@@ -17,3 +18,4 @@ export const AutomatedCodeDocumentationGeneration: React.FC<{ feature?: Feature 
         </p>
     </div>
 );
+```
