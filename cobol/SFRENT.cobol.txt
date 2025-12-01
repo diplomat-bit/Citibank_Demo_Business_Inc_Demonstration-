@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. SFRENT.
        AUTHOR. PROGRAMMING-TEAM.
       ******************************************************************
@@ -239,31 +239,32 @@
 
        PROCESS-AI-ASSESSMENT.
            DISPLAY "INITIATING AI-POWERED CLIENT SUITABILITY ANALYSIS...".
-           *> In a real scenario, this would be a CALL to an AI microservice.
-           *> For this simulation, we'll assign a sample score and recommendation.
-           *> The AI system considers factors like customer history, credit score,
-           *> and prior interactions to provide a predictive assessment.
-           DISPLAY "AI ACCESSING CUSTOMER DATA FOR PREDICTIVE MODELING...".
+           *> In a real scenario, this would be a CALL to an AI reasoning system
+           *> (idgafAI::Analyst persona) for an evidence-based assessment.
+           *> The system evaluates known data (credit score, history) to
+           *> generate a risk profile without speculation or hype.
+           *> This simulation uses credit score as the primary input.
+           DISPLAY "AI ACCESSING CUSTOMER DATA FOR RISK PROFILING...".
 
            *> Simulate AI processing based on primary customer's credit score
            MOVE WS-CUST-ID-IN TO C-CUSTOMER-ID.
            READ CUSTOMER-MASTER-FILE
                INVALID KEY
                    MOVE 50 TO WS-AI-SUIT-SCORE
-                   MOVE "REVIEW REQUIRED" TO WS-AI-RECOMMEND
+                   MOVE "DATA INSUFFICIENT" TO WS-AI-RECOMMEND
                NOT INVALID KEY
                    IF C-CREDIT-SCORE > 800
                        MOVE 95 TO WS-AI-SUIT-SCORE
-                       MOVE "HIGHLY RECOMMENDED" TO WS-AI-RECOMMEND
+                       MOVE "PROFILE: LOW-RISK" TO WS-AI-RECOMMEND
                    ELSE IF C-CREDIT-SCORE > 700
                        MOVE 80 TO WS-AI-SUIT-SCORE
-                       MOVE "RECOMMENDED" TO WS-AI-RECOMMEND
+                       MOVE "PROFILE: STD-RISK" TO WS-AI-RECOMMEND
                    ELSE IF C-CREDIT-SCORE > 600
                        MOVE 65 TO WS-AI-SUIT-SCORE
-                       MOVE "ACCEPTABLE" TO WS-AI-RECOMMEND
+                       MOVE "PROFILE: MED-RISK" TO WS-AI-RECOMMEND
                    ELSE
                        MOVE 40 TO WS-AI-SUIT-SCORE
-                       MOVE "RISK ASSESSMENT" TO WS-AI-RECOMMEND
+                       MOVE "PROFILE: HIGH-RISK" TO WS-AI-RECOMMEND
                    END-IF
            END-READ.
            DISPLAY "AI ASSESSMENT COMPLETE. Suitability Score: "
