@@ -1,3 +1,4 @@
+```yaml
 openapi: 3.1.0
 info:
   title: Gemini API (OpenAI Proxy)
@@ -403,3 +404,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT # Or other token format like 'API Key' if it's not strictly JWT. For Gemini, it's typically an API key.
+```
