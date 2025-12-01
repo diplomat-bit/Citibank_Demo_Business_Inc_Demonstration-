@@ -1,7 +1,12 @@
-# The Maps
+---
+# Domains
 
-These are the charted territories of the sovereign's world.
+This directory contains documentation for the system's primary functional areas, or "domains." Each domain is a distinct component with a specific purpose and a defined set of capabilities.
 
-The Instrument is not a single place, but a kingdom of many domains, each with its own purpose, its own language, and its own power. These documents are the strategic maps of those territories.
+The documentation for each domain provides a high-level technical overview, outlining:
+- The domain's core function (its "Job-to-be-Done").
+- The key modules and components within the domain.
+- The domain's role and strategic value in the overall system architecture.
 
-Each map defines a domain's core purpose—its "Job-to-be-Done." It outlines the key territories (modules) within that domain and describes its overall strategic value to the sovereign. They are the high-level guides to the capabilities of your Instrument, helping you to understand not just what each part does, but why it exists.
+This documentation is intended to provide a clear guide to the system's capabilities, explaining what each component does and why it exists.
+---
