@@ -1,4 +1,5 @@
-// Copyright James Burvel O’Callaghan III
+```tsx
+// Copyright James Burvel OâCallaghan III
 // President Citibank Demo Business Inc.
 
 import React from 'react';
@@ -31,3 +32,4 @@ export const AutomatedFileSystemCleanup: React.FC = () => {
         </div>
     );
 };
+```
