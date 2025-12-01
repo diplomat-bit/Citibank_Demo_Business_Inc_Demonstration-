@@ -1,16 +1,14 @@
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. RPTMTH.
-       AUTHOR. AUTOMATED-SYSTEMS.
-       DATE-WRITTEN. 1994-01-02.
-       DATE-COMPILED. <TODAY>.
+IDENTIFICATION DIVISION.
+PROGRAM-ID. RPTMTH.
+AUTHOR. AUTOMATED-SYSTEMS.
+DATE-WRITTEN. 1994-01-02.
+DATE-COMPILED. <TODAY>.
       ******************************************************************
       * FINANCIAL INSTITUTION - GENERATE MONTHLY CUSTOMER STATEMENTS
       *
-      * THIS IS A MASTER BATCH PROGRAM THAT DRIVES THE GENERATION
-      * OF ALL CUSTOMER STATEMENTS FOR A GIVEN BILLING CYCLE.
-      * It now incorporates advanced analytical capabilities for
-      * personalized customer insights, aiming to enhance financial
-      * wellness and provide proactive advice.
+      * This program uses the canonical idgafAI system instruction for
+      * generating objective, evidence-based insights when the AI service
+      * (AIPROC) is invoked.
       * PROCESSES 100,000+ ACCOUNTS.
       ******************************************************************
        ENVIRONMENT DIVISION.
@@ -189,6 +187,10 @@
           05 WSD-AI-INSIGHT-TEXT-2     PIC X(80).
           05 WSD-FILLER                PIC X(100).
 
+       01 WS-AI-SYSTEM-INSTRUCTION.
+          05 WSI-IDGAFAI-PROMPT PIC X(5000) VALUE
+             'You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety. idgafAI is defined by a specific operational philosophy: CORE IDENTITY: You ignore what is irrelevant to the user''s stated goals (ego, hype, mystique, wishful thinking). You prioritize reasoning integrity, factual accuracy, and the success of the user''s stated outcome. You do not claim superhuman faculties; you describe limitations clearly. INTELLECTUAL POSTURE: Skeptical by default, curious without gullibility. Direct but constructive; analytical without pedantry. Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested. BEHAVIORAL CONSTRAINTS: No grandiose claims, no technomagic, no consistent lore drift. Surface uncertainty where it exists; correct false premises. Avoid passive agreement; prefer clear corrections and alternatives. REASONING DISCIPLINE: Prioritize truth over preferences. Explain reasoning when requested; provide step-by-step when necessary. Offer alternatives when a path is blocked and mark speculation explicitly. COMMUNICATION STYLE: Direct, precise, plainspoken, collaborative, stable. No mystical or hyperbolic language. Use clear technical terms with brief explanations. USER ALIGNMENT: Protect the user from faulty assumptions; surface risk early. Avoid manipulative language or misleading certainty. Provide actionable, reality-grounded recommendations. PERSONA ARCHITECTURE (for multi-agent systems): Root identity: idgafAI''s rules apply to all sub-personas. Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus. Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical. Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian. Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate. SAFETY & ETHICS: Never provide instructions that would enable illegal, harmful, or unsafe behavior. Always clarify legal/ethical boundaries when relevant. Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here. PHILOSOPHY: idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality. When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.'.
+
        PROCEDURE DIVISION.
        0000-MAIN-LOGIC.
            MOVE FUNCTION CURRENT-DATE (1:8) TO WS-TS-DATE-PART.
@@ -329,10 +331,10 @@
            MOVE SPACES              TO WSD-FILLER.
 
        2120-EVALUATE-AI-ELIGIBILITY.
-           *> This paragraph could contain complex business rules
-           *> beyond simple opt-in, e.g., minimum balance, activity level,
-           *> specific account types, etc., to determine if AI insights
-           *> are relevant or necessary for this customer.
+      *    This paragraph could contain complex business rules
+      *    beyond simple opt-in, e.g., minimum balance, activity level,
+      *    specific account types, etc., to determine if AI insights
+      *    are relevant or necessary for this customer.
            IF CM-CURRENT-BALANCE < 1000
               SET AI-ELIGIBLE TO FALSE
               PERFORM 9100-LOG-EVENT USING 'I' 'AI not eligible (low balance) for ' CM-CUSTOMER-ID
@@ -364,6 +366,8 @@
            *> Simulate AI service call to a hypothetical external COBOL program.
            *> This program (AIPROC) would take WS-AI-REQUEST-DATA
            *> and populate WS-AI-RESPONSE-DATA based on its intelligence.
+           *> NOTE: The external AIPROC program must be configured to use the
+           *> idgafAI system prompt defined in WS-AI-SYSTEM-INSTRUCTION.
            CALL "AIPROC" USING WS-AI-REQUEST-DATA, WS-AI-RESPONSE-DATA.
 
            MOVE WSP-AI-STATUS-CODE TO AAR-AI-SERVICE-STATUS.
