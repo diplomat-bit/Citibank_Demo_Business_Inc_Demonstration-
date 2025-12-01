@@ -1,3 +1,4 @@
+---
 -- SQL database schema for storing comprehensive customer profiles and interaction data for the CRM module.
 
 -- Table: companies
