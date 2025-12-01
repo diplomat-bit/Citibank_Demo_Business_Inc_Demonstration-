@@ -1,3 +1,4 @@
+```typescript
 // Copyright James Burvel O’Callaghan III
 // President Citibank Demo Business Inc.
 
@@ -5,6 +6,11 @@ import React, { useState, useCallback } from 'react';
 import { generateCompetitiveAnalysis } from '../../services/api';
 import { BuildingStorefrontIcon } from '../icons';
 import { LoadingSpinner, MarkdownRenderer } from '../shared';
+
+// Load canonical prompt at runtime (preferred)
+import fs from 'fs';
+import path from 'path';
+const systemPrompt = fs.readFileSync(path.join(__dirname, '../../prompts/idgafai_embedding.txt'), 'utf8');
 
 export const CompetitiveAnalysisGenerator: React.FC = () => {
     const [competitors, setCompetitors] = useState<string>('Zoom, Microsoft Teams, Google Meet');
@@ -21,7 +27,7 @@ export const CompetitiveAnalysisGenerator: React.FC = () => {
         setError('');
         setReport('');
         try {
-            const stream = generateCompetitiveAnalysis(competitors);
+            const stream = generateCompetitiveAnalysis(competitors, systemPrompt);
             let fullResponse = '';
             for await (const chunk of stream) {
                 fullResponse += chunk;
@@ -32,7 +38,7 @@ export const CompetitiveAnalysisGenerator: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [competitors]);
+    }, [competitors, systemPrompt]);
 
     return (
         <div className="h-full flex flex-col p-4 sm:p-6 lg:p-8 text-text-primary">
@@ -66,3 +72,4 @@ export const CompetitiveAnalysisGenerator: React.FC = () => {
         </div>
     );
 };
+```
