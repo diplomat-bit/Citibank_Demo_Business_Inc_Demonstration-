@@ -12090,4 +12090,3 @@ components:
           nullable: true
           example: "Please redirect user to the provided URI to complete authentication."
           description: "A descriptive message regarding the next steps." 
----
