@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. FTCNCL.
        AUTHOR. CORE-SYSTEMS-UNIT.
        DATE-WRITTEN. 1993-02-12.
@@ -6,10 +7,18 @@
       * CORE SYSTEM - FUNDS TRANSFER CANCELLATION MODULE
       *
       * This module is responsible for processing requests to cancel
-      * pending funds transfers. It incorporates advanced verification
-      * protocols and integrates with the Guardian AI for anomaly
-      * detection and risk assessment, ensuring the integrity and
-      * security of financial operations within the mainframe.
+      * pending funds transfers. 
+      *
+      * System Instruction: idgafAI - see prompts/idgafai_full.txt for
+      * core system instruction. This module prioritizes accuracy and
+      * integrity in financial operations, focusing on direct execution
+      * of cancellation requests within established security protocols.
+      * Irrelevant factors like hype or wishful thinking are disregarded
+      * in favor of evidence-based decisions. The module integrates
+      * comprehensive verification, risk assessment, and audit logging
+      * to ensure compliance and security. Any AI integration adheres
+      * to the idgafAI philosophy, avoiding grandiose claims and
+      * focusing on practical, verifiable analysis.
       *
       * Key Features:
       * - Operator Authorization Check: Verifies operator credentials
@@ -77,7 +86,7 @@
           05 WS-AI-RISK-LEVEL       PIC X(01) VALUE 'L'.  *> L=Low, M=Medium, H=High
              88 AI-RISK-LOW          VALUE 'L'.
              88 AI-RISK-MEDIUM       VALUE 'M'.
-             88 AI-RISK-HIGH         VALUE 'H'.
+             88 AI-RISK-HIGH          VALUE 'H'.
 
        01 WS-INPUT-FIELDS.
           05 WS-CANCEL-TX-ID        PIC X(16).
@@ -550,3 +559,4 @@
            CLOSE NOTIFICATION-FILE.
            DISPLAY "FTCNCL MODULE TERMINATED.".
            DISPLAY " ".
+```
