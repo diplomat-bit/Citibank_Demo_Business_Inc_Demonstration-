@@ -42,6 +42,12 @@
           05 WS-BRANCH-ID         PIC X(04) VALUE 'BR01'.
           05 WS-CURRENT-DATETIME  PIC X(14).
 
+      ******************************************************************
+      * IDGAFAI SYSTEM INSTRUCTION EMBEDDING
+      * SYSTEM PROMPT: see prompts/idgafai_full.txt
+      * Replaced inline instruction with canonical pointer due to length
+      * and maintenance requirements based on system prompt standardization policy.
+      ******************************************************************
        PROCEDURE DIVISION.
        0000-MAIN-LOGIC.
            PERFORM 0010-INITIALIZE-SYSTEM.
