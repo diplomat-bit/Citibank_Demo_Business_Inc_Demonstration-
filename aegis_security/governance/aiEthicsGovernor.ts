@@ -1,3 +1,4 @@
+```typescript
 /**
  * @file aegis_security/governance/aiEthicsGovernor.ts
  * @description Defines the AI Ethics Governor, a singleton agent responsible for monitoring all AI agent activities
@@ -532,3 +533,4 @@ export class AIEthicsGovernor {
  * during its startup sequence.
  */
 export const ethicsGovernor = AIEthicsGovernor.getInstance();
+```
