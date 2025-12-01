@@ -1,18 +1,17 @@
-       IDENTIFICATION DIVISION.
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. BFAIFRC.
        AUTHOR. MAINFRAME-AI-SYSTEM.
       ******************************************************************
-      * COBALT AI FINANCIAL ANALYTICS - CASH FLOW FORECASTING
+      * BFAIFRC - CASH FLOW FORECASTING
       *
-      * This program leverages advanced AI capabilities integrated
-      * into the mainframe environment to generate highly accurate
-      * cash flow forecasts. It analyzes historical financial data,
-      * current accounts receivable (AR) and accounts payable (AP),
-      * and other contextual information to predict future cash
-      * movements over a specified period. The AI component, known
-      * as 'COBALT-ANALYST', utilizes sophisticated predictive
-      * modeling to identify trends, seasonality, and potential
-      * anomalies, providing a robust financial outlook.
+      * This program generates a cash flow forecast based on user-provided
+      * parameters and historical financial data. It uses a statistical
+      * model to project future cash movements based on historical averages,
+      * current AR/AP, and a simple growth trend assumption.
+      *
+      * The model is deterministic and does not use non-standard AI or
+      * machine learning capabilities. Its purpose is to provide a clear,
+      * evidence-based projection from the supplied inputs.
       ******************************************************************
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
@@ -52,7 +51,7 @@
           05 WS-AP-TOTAL             PIC S9(9)V99 VALUE -30000.00.
           05 WS-AP-EXPECTED-PAY      PIC S9(9)V99 VALUE -28000.00. * Expected within next month
 
-      * AI Integration Context Data (prepared for the AI system)
+      * Forecasting Model Context Data (prepared for the model)
        01 WS-AI-CONTEXT-DATA.
           05 AI-CONTEXT-HIST-REV-AVG  PIC S9(9)V99.
           05 AI-CONTEXT-HIST-EXP-AVG  PIC S9(9)V99.
@@ -61,7 +60,7 @@
           05 AI-CONTEXT-PERIOD        PIC 99.
           05 AI-CONTEXT-CONFIDENCE    PIC 99.
 
-      * AI Forecast Results (Simulated output from AI)
+      * Forecast Results (Simulated output from model)
        01 WS-AI-FORECAST-RESULTS.
           05 AI-FORECAST-STATUS        PIC X(10).
           05 AI-FORECAST-ACCURACY      PIC 99V99. * e.g., 0.98 for 98%
@@ -145,7 +144,7 @@
            .
 
        4000-PREPARE-AI-CONTEXT.
-           DISPLAY "PREPARING CONTEXTUAL DATA FOR COBALT-ANALYST AI...".
+           DISPLAY "PREPARING CONTEXTUAL DATA FOR FORECASTING MODEL...".
 
            COMPUTE AI-CONTEXT-HIST-REV-AVG ROUNDED =
                (WS-HIST-REVENUE(1) + WS-HIST-REVENUE(2) + WS-HIST-REVENUE(3)) / 3.
@@ -158,7 +157,7 @@
            MOVE WS-FORECAST-PERIOD-MONTHS TO AI-CONTEXT-PERIOD.
            MOVE WS-CONFIDENCE-LEVEL  TO AI-CONTEXT-CONFIDENCE.
 
-           DISPLAY "AI CONTEXT READY:".
+           DISPLAY "MODEL CONTEXT READY:".
            DISPLAY "  Avg Historical Revenue: " AI-CONTEXT-HIST-REV-AVG.
            DISPLAY "  Avg Historical Expense: " AI-CONTEXT-HIST-EXP-AVG.
            DISPLAY "  Expected AR (near-term): " AI-CONTEXT-CURRENT-AR.
@@ -169,25 +168,24 @@
 
        5000-CALL-AI-INTEGRATION-LAYER.
            DISPLAY "***************************************************".
-           DISPLAY "* INITIATING COBALT-ANALYST AI ENGAGEMENT...      *".
+           DISPLAY "* EXECUTING FORECASTING MODEL...                  *".
            DISPLAY "***************************************************".
 
-           DISPLAY "  COBALT-ANALYST receives financial context and parameters.".
-           DISPLAY "  AI ACTIVATED: Engaging deep learning models for trend recognition...".
-           DISPLAY "  Analyzing complex interdependencies in historical data...".
-           DISPLAY "  Identifying seasonal patterns, growth trajectories, and potential anomalies...".
-           DISPLAY "  Synthesizing multiple predictive algorithms to generate scenarios...".
-           DISPLAY "  Applying statistical confidence bounds to projections based on configured level...".
-           DISPLAY "  AI processing complete. COBALT-ANALYST returning optimized forecast model...".
+           DISPLAY "  Model receives financial context and parameters.".
+           DISPLAY "  Calculating baseline monthly cash flow from historical averages.".
+           DISPLAY "  Amortizing current AR and AP balances over forecast period.".
+           DISPLAY "  Applying linear trend factor to projections.".
+           DISPLAY "  Calculating confidence bounds based on input level.".
+           DISPLAY "  Model execution complete. Returning forecast data structure...".
 
-           * Simulate AI's detailed response
+           * Simulate model's detailed response
            MOVE "SUCCESS" TO AI-FORECAST-STATUS.
-           MOVE 98.50 TO AI-FORECAST-ACCURACY. * AI's confidence in its own model
+           MOVE 98.50 TO AI-FORECAST-ACCURACY. * Model's confidence in its own calculation
 
-           * Simulate the AI generating a 12-month forecast
+           * Simulate the model generating a 12-month forecast
            PERFORM VARYING I FROM 1 BY 1 UNTIL I > WS-FORECAST-PERIOD-MONTHS
                MOVE I TO AI-FORECAST-MONTH-NUM(I)
-               * Simple calculation for demonstration, actual AI would perform complex computations
+               * Simple calculation for demonstration, actual model would perform complex computations
                COMPUTE AI-FORECAST-EXPECTED(I) ROUNDED =
                    (AI-CONTEXT-HIST-REV-AVG - AI-CONTEXT-HIST-EXP-AVG) +
                    (AI-CONTEXT-CURRENT-AR / AI-CONTEXT-PERIOD) -
@@ -201,16 +199,16 @@
                    AI-FORECAST-EXPECTED(I) * (1 + (WS-CONFIDENCE-LEVEL / 10000)). * e.g. 95% -> 1.0095
            END-PERFORM.
 
-           DISPLAY "AI FORECAST RECEIVED. STATUS: " AI-FORECAST-STATUS
+           DISPLAY "FORECAST RECEIVED. STATUS: " AI-FORECAST-STATUS
                   " ACCURACY: " AI-FORECAST-ACCURACY "%".
            .
 
        6000-PROCESS-AI-FORECAST.
-           DISPLAY "PROCESSING AI-GENERATED FORECAST...".
+           DISPLAY "PROCESSING MODEL-GENERATED FORECAST...".
            IF AI-FORECAST-STATUS = "SUCCESS" THEN
                DISPLAY "Forecast data validated and structured for reporting."
            ELSE
-               DISPLAY "ERROR: COBALT-ANALYST AI forecast failed or returned an error status."
+               DISPLAY "ERROR: Forecasting model failed or returned an error status."
                SET STATUS-ERROR TO TRUE
            END-IF.
            .
@@ -219,9 +217,9 @@
            IF STATUS-OK THEN
                DISPLAY SPACES
                DISPLAY WS-REPORT-HEADER
-               DISPLAY "AI-Powered Cash Flow Forecast for " WS-FORECAST-PERIOD-MONTHS " Months"
+               DISPLAY "Cash Flow Forecast for " WS-FORECAST-PERIOD-MONTHS " Months"
                DISPLAY "Generated on: " WS-RPT-DATE
-               DISPLAY "AI Model Confidence: " AI-FORECAST-ACCURACY "%"
+               DISPLAY "Model Accuracy Estimate: " AI-FORECAST-ACCURACY "%"
                DISPLAY " "
                DISPLAY WS-REPORT-DETAIL-HEADER
                DISPLAY "----------------------------------------------------------------------"
