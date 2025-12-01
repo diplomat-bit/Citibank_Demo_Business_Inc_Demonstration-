@@ -1,4 +1,9 @@
+---
 
-# The Report from the Engine Room
+# API Connection Status
 
-This is the report from the Engine Room, a real-time diagnostic of the vital connections that power the Instrument. Each entry is a status check on a critical third-party API, from Plaid to Google Gemini itself. This data is not for show; it is a foundational element of the application's narrative, proving its architecture is that of a serious, enterprise-grade platform. It builds trust through absolute transparency, showing the health of every gear in the great machine.
+This document describes the real-time diagnostic status for critical third-party API connections used by the application.
+
+Each entry represents a status check on a specific external service, such as Plaid or Google Gemini. This data provides transparency into the operational health of external dependencies, a standard practice for maintaining system reliability. The purpose is to enable clear monitoring and diagnostics for developers and operators.
+
+---
