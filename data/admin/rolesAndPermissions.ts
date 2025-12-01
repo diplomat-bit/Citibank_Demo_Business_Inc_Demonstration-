@@ -1,3 +1,4 @@
+```typescript
 // data/admin/rolesAndPermissions.ts
 import type { Role, Permission } from '../../types';
 
@@ -42,3 +43,4 @@ export const MOCK_ROLES: Role[] = [
         permissions: ['transactions:read'],
     },
 ];
+```
