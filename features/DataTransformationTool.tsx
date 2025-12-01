@@ -1,4 +1,5 @@
-// Copyright James Burvel O’Callaghan III
+```tsx
+// Copyright James Burvel OâCallaghan III
 // President Citibank Demo Business Inc.
 
 import React, { useState, useCallback } from 'react';
@@ -24,8 +25,9 @@ export const DataTransformationTool: React.FC = () => {
         setError('');
         setOutput('');
         try {
+            // SYSTEM PROMPT: see prompts/idgafai_full.txt
             const fullPrompt = `Transform the following JSON data based on the instruction. Only output the transformed JSON data.\n\nInstruction: "${prompt}"\n\nInput:\n\`\`\`json\n${input}\n\`\`\``;
-            const stream = streamContent(fullPrompt, "You are a data transformation engine.");
+            const stream = streamContent(fullPrompt, "__PROMPTS__/idgafai_full.txt");
             let fullResponse = '';
             for await (const chunk of stream) {
                 fullResponse += chunk;
@@ -68,3 +70,4 @@ export const DataTransformationTool: React.FC = () => {
         </div>
     );
 };
+```
