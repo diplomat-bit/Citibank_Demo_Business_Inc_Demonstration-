@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. BCMAIN.
        AUTHOR. SYSTEM-AUTOMATION-TEAM.
       ******************************************************************
@@ -270,3 +271,4 @@
            DISPLAY "Final Timestamp: " WS-LAST-UPDATE-TIMESTAMP.
            * Perform any final cleanup or logging here.
            CONTINUE.
+```
