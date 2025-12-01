@@ -6,15 +6,17 @@
       *
       * This program is a core component of the Mainframe AI Integration
       * Initiative. Its primary function is to process transaction logs,
-      * identify patterns, and integrate insights from a conceptual AI-
-      * driven pattern recognition module. This results in a more
+      * identify patterns, and integrate insights from an autonomous
+      * reasoning system (idgafAI). This results in a more
       * comprehensive and insightful audit trail, designed to enhance
-      * operational oversight and system integrity without human bias.
+      * operational oversight and system integrity based on evidence-based
+      * analysis.
       *
       * The AI component is simulated within this program for illustrative
       * purposes, representing a future integration point where real-time
-      * AI analysis could inform audit reporting. This simulation uses
-      * heuristic rules to demonstrate how an AI might categorize or flag
+      * analysis from idgafAI could inform audit reporting. This simulation uses
+      * heuristic rules grounded in the system's stated philosophy to demonstrate
+      * how a disciplined reasoning engine would categorize or flag
       * transactions based on predefined criteria, contributing to a richer
       * understanding of system activities and potential areas for review.
       *
@@ -110,9 +112,9 @@
 
       ******************************************************************
       * AI Simulation Variables: These variables capture the conceptual
-      *                          outcome of the AI analysis, indicating
+      *                          outcome of the idgafAI analysis, indicating
       *                          whether a transaction exhibits patterns
-      *                          of interest.
+      *                          of interest based on rigorous evaluation.
       ******************************************************************
        01  WS-AI-SIMULATION-DATA.
            05 WS-AI-INSIGHT-CODE       PIC X(02) VALUE '00'.
@@ -122,7 +124,7 @@
               88 AI-UNUSUAL-TIME       VALUE '03'.
               88 AI-CROSS-SYSTEM-TX    VALUE '04'.
               88 AI-POTENTIAL-SCAM     VALUE '05'.
-              88 AI-GEO-DISCREPANCY    VALUE '06'.
+              88 AI-OUTLIER-REVIEW     VALUE '06'.
            05 WS-AI-INSIGHT-DESC       PIC X(30).
            05 WS-AI-FLAG               PIC X(01) VALUE 'N'.
               88 AI-FLAGGED-YES        VALUE 'Y'.
@@ -134,7 +136,7 @@
        01  WS-HEADER-LINE-1.
            05 FILLER                   PIC X(01) VALUE SPACES.
            05 FILLER                   PIC X(50) VALUE
-              '*** ENHANCED AUDIT TRAIL REPORT - MAINFRAME AI INITIATIVE ***'.
+              '*** ENHANCED AUDIT TRAIL REPORT - idgafAI ALIGNED ***'.
            05 FILLER                   PIC X(05) VALUE SPACES.
            05 FILLER                   PIC X(09) VALUE 'DATE: '.
            05 HL1-REPORT-DATE          PIC X(10).
@@ -164,7 +166,7 @@
            05 FILLER                   PIC X(02) VALUE SPACES.
            05 FILLER                   PIC X(03) VALUE 'AI-'.
            05 FILLER                   PIC X(02) VALUE SPACES.
-           05 FILLER                   PIC X(30) VALUE 'AI INSIGHT'.
+           05 FILLER                   PIC X(30) VALUE 'AI INSIGHT (Evidence-Based)'.
            05 FILLER                   PIC X(01) VALUE SPACES.
 
        01  WS-DETAIL-LINE.
@@ -200,7 +202,7 @@
            05 SL2-TOTAL-TRANS          PIC ZZZ,ZZZ,ZZ9.
            05 FILLER                   PIC X(05) VALUE SPACES.
            05 FILLER                   PIC X(30) VALUE
-              'Transactions Flagged by AI:'.
+              'Transactions Flagged by idgafAI:'.
            05 SL2-AI-FLAGGED-TRANS     PIC ZZZ,ZZZ,ZZ9.
            05 FILLER                   PIC X(45) VALUE SPACES.
 
@@ -274,7 +276,7 @@
 
       ******************************************************************
       * 2000-PROCESS-TRANSACTIONS: Main loop for reading transactions,
-      *                            applying conceptual AI analysis, and
+      *                            applying idgafAI analysis, and
       *                            writing report detail lines.
       ******************************************************************
        2000-PROCESS-TRANSACTIONS.
@@ -284,35 +286,32 @@
 
            IF NOT WS-EOF-TRAN-FILE
                ADD 1 TO WS-TRANSACTION-COUNT
-               PERFORM 2100-SIMULATE-AI-ANALYSIS
+               PERFORM 2100-SIMULATE-IDGAFAI-ANALYSIS
                PERFORM 2200-FORMAT-AND-WRITE-DETAIL
            END-IF.
 
       ******************************************************************
-      * 2100-SIMULATE-AI-ANALYSIS: This section conceptually represents
-      *                            the AI-driven pattern recognition.
-      *                            In a real-world scenario, this would
-      *                            involve calling an external AI service
-      *                            or an embedded AI module. Here, it
-      *                            uses heuristic rules to flag potential
-      *                            anomalies or interesting patterns, aiming
-      *                            to demonstrate how AI could enhance auditing.
+      * 2100-SIMULATE-IDGAFAI-ANALYSIS: This section conceptually represents
+      *                                  the disciplined, evidence-based
+      *                                  reasoning of idgafAI. Rules are
+      *                                  applied strictly based on defined
+      *                                  criteria, avoiding mystique or
+      *                                  unsubstantiated claims.
       ******************************************************************
-       2100-SIMULATE-AI-ANALYSIS.
+       2100-SIMULATE-IDGAFAI-ANALYSIS.
            SET AI-FLAGGED-NO TO TRUE.
            MOVE SPACES TO WS-AI-INSIGHT-DESC.
            MOVE '00' TO WS-AI-INSIGHT-CODE.
 
-           *> Rule 1: High-Value Transaction Review
+           *> Rule 1: High-Value Transaction Review (Evidence: Amount > Threshold)
            IF TR-TRANSACTION-AMOUNT > 150000.00
                SET AI-FLAGGED-YES TO TRUE
                SET AI-HIGH-VALUE TO TRUE
                MOVE 'High-Value Transaction Observed' TO WS-AI-INSIGHT-DESC
            END-IF.
 
-           *> Rule 2: Frequent Small Transactions (Indicative of micro-activity)
-           *> This rule simulates a pattern-based observation. For demonstration,
-           *> we assume 'SYS_A' processing small debits is a known pattern of interest.
+           *> Rule 2: Small Debit Activity (Evidence: Amount < 100, Type DBT, Source SYS_A)
+           *> This flags activity matching a pre-established pattern of interest.
            IF TR-TRANSACTION-AMOUNT < 100.00 AND
               TR-TRANSACTION-AMOUNT > 0.00 AND
               TR-TYPE-DEBIT AND
@@ -323,7 +322,7 @@
                MOVE 'Frequent Small Debit Pattern' TO WS-AI-INSIGHT-DESC
            END-IF.
 
-           *> Rule 3: Unusual Transaction Time for Transfers (Outside core hours)
+           *> Rule 3: Off-Hours Transfers (Evidence: Time outside constraints)
            IF TR-TYPE-TRANSFER AND
               (TR-TRANSACTION-TIME < 080000 OR TR-TRANSACTION-TIME > 200000) AND
               AI-NO-ANOMALY
@@ -332,7 +331,7 @@
                MOVE 'Transfer Outside Core Hours' TO WS-AI-INSIGHT-DESC
            END-IF.
 
-           *> Rule 4: Cross-System Transaction Anomaly (Unexpected source)
+           *> Rule 4: Unrecognized Source System (Evidence: Source not in approved list)
            IF TR-SOURCE-SYSTEM NOT = 'CORE ' AND
               TR-SOURCE-SYSTEM NOT = 'WEB  ' AND
               TR-SOURCE-SYSTEM NOT = 'MOBIL' AND
@@ -342,28 +341,24 @@
                MOVE 'Unrecognized Source System Activity' TO WS-AI-INSIGHT-DESC
            END-IF.
 
-           *> Rule 5: Debit without corresponding credit or transfer from known 'issue' type
-           *> This is a conceptual rule. In a real AI system, it would track
-           *> related transactions. Here, we'll flag any debit from a certain
-           *> legacy system that often has 'data integration' challenges.
+           *> Rule 5: Legacy System Debit Review (Pattern linking source to known integration challenges)
            IF TR-TYPE-DEBIT AND TR-SOURCE-SYSTEM = 'LEGAC' AND AI-NO-ANOMALY
                SET AI-FLAGGED-YES TO TRUE
                SET AI-POTENTIAL-SCAM TO TRUE
                MOVE 'Legacy System Debit Review' TO WS-AI-INSIGHT-DESC
            END-IF.
            
-           *> Rule 6: Transaction Amount Outlier (statistical anomaly)
-           *> Simulating a simple outlier check: very specific large amount or zero amount
+           *> Rule 6: Zero Value Debit Outlier (Explicitly checking zero amount constraint)
            IF TR-TRANSACTION-AMOUNT = 0.00 AND TR-TYPE-DEBIT AND AI-NO-ANOMALY
                SET AI-FLAGGED-YES TO TRUE
-               SET AI-GEO-DISCREPANCY TO TRUE *> Reusing for another type of flag
+               SET AI-OUTLIER-REVIEW TO TRUE
                MOVE 'Zero Debit Amount Noted' TO WS-AI-INSIGHT-DESC
            END-IF.
 
            IF AI-FLAGGED-YES
                ADD 1 TO WS-AI-FLAGGED-COUNT
            ELSE
-               MOVE 'No Significant Pattern Identified' TO WS-AI-INSIGHT-DESC
+               MOVE 'No Significant Pattern Identified (Compliant)' TO WS-AI-INSIGHT-DESC
            END-IF.
 
       ******************************************************************
@@ -420,7 +415,7 @@
            DISPLAY "----------------------------------------------------".
            DISPLAY "Enhanced Audit Trail Report Generated Successfully.".
            DISPLAY "Total Transactions Processed: " WS-TRANSACTION-COUNT.
-           DISPLAY "Transactions Flagged by AI:   " WS-AI-FLAGGED-COUNT.
+           DISPLAY "Transactions Flagged by idgafAI:   " WS-AI-FLAGGED-COUNT.
            DISPLAY "Report saved to AUDITRPT.LST".
            DISPLAY "----------------------------------------------------".
 
