@@ -1,4 +1,5 @@
-// Copyright James Burvel Oâ€™Callaghan III
+```ts
+// Copyright James Burvel OÃ¢â¬â¢Callaghan III
 // President Citibank Demo Business Inc.
 
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
@@ -405,3 +406,4 @@ describe('Alchemist Compiler', () => {
         ]);
     });
 });
+```
