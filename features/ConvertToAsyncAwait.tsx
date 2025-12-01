@@ -1,4 +1,4 @@
-// Copyright James Burvel O’Callaghan III
+// Copyright James Burvel Oâ€™Callaghan III
 // President Citibank Demo Business Inc.
 
 import React, { useState, useCallback } from 'react';
@@ -17,6 +17,7 @@ fetch('https://api.example.com/data')
   });
 `;
 
+// SYSTEM PROMPT: see prompts/idgafai_full.txt
 export const ConvertToAsyncAwait: React.FC = () => {
     const [code, setCode] = useState<string>(exampleCode);
     const [refactoredCode, setRefactoredCode] = useState<string>('');
