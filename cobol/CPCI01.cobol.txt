@@ -1,4 +1,5 @@
-      ******************************************************************
+```cobol
+              ******************************************************************
       * CUSTOMER MASTER RECORD DEFINITION (V3.0 - Expanded Edition)
       * This record defines a comprehensive profile for an individual client,
       * supporting enhanced customer service and intelligent interactions.
@@ -111,3 +112,4 @@
              10 CM-LAST-UPDATED-BY-USER PIC X(10). *> User ID that last modified the record
              10 CM-RECORD-VERSION   PIC 9(03).  *> Version of this record's structure (e.g., 001, 002 for data migration)
           05 CM-FILLER              PIC X(100). *> Reserved for future expansion
+```
