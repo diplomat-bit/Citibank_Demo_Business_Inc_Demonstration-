@@ -1,3 +1,4 @@
+```typescript
 // data/platform/erpData.ts
 export const orderVolumeData = [
     { name: 'Jan', orders: 230 },
@@ -20,3 +21,4 @@ export const recentSalesOrders = [
     { id: 'SO-00124', customer: 'Cyberdyne Systems', amount: 22500, status: 'Processing', date: '2024-07-23' },
     { id: 'SO-00123', customer: 'NeuroLink Inc.', amount: 8000, status: 'Delivered', date: '2024-07-21' },
 ];
+```
