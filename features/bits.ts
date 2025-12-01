@@ -1,4 +1,4 @@
-// Copyright James Burvel Oâ€™Callaghan III
+// Copyright James Burvel OÃ¢â‚¬â„¢Callaghan III
 // President Citibank Demo Business Inc.
 
 
