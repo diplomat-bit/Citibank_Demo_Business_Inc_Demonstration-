@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. DADEP.
        AUTHOR. INSTITUTION-DEV-TEAM.
        DATE-WRITTEN. 1989-01-15.
@@ -8,6 +9,7 @@
       * APPLIES A DEPOSIT TO A CUSTOMER'S ACCOUNT.
       * INCLUDES ENHANCED VALIDATION AND AI-ASSISTED ANOMALY DETECTION.
       ******************************************************************
+      * SYSTEM PROMPT: see prompts/idgafai_full.txt
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
@@ -311,3 +313,4 @@
            CLOSE TRANSACTION-LOG-FILE.
            DISPLAY "DADEP MODULE TERMINATED. All files closed.".
            DISPLAY " ".
+```
