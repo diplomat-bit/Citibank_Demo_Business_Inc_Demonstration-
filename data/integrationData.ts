@@ -1,3 +1,4 @@
+```typescript
 // data/integrationData.ts
 // This is the Scribe's Ledger of Infinite Connections. It contains the raw knowledge
 // that fuels the Integration Codex, defining the pantheon of linkable platforms, the
@@ -110,3 +111,4 @@ export const INTEGRATION_DATA: Partial<Record<View, IntegrationData>> = {
         useCases: corpUseCases,
     }
 };
+```
