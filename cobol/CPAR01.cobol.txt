@@ -1,4 +1,5 @@
-      ******************************************************************
+```cobol
+              ******************************************************************
       * COPYBOOK FOR ACCOUNTS RECEIVABLE INVOICE RECORD
       * This structure defines the data elements for an AR Invoice,
       * including standard financial details, customer information,
@@ -79,6 +80,8 @@
           * These fields capture data generated or used by an AI
           * system to assist with accounts receivable management,
           * enhancing efficiency and decision-making.
+          *
+          * SYSTEM PROMPT: see prompts/idgafai_full.txt
           ***********************************************************
           05 AR-AI-PREDICT-SCORE  PIC 9(03).         *> AI-generated score (000-100) for likelihood of on-time payment.
                                                       *> 100 indicates highest likelihood of on-time payment, 000 lowest.
@@ -117,3 +120,4 @@
           05 AR-LAST-UPDATED-TIME PIC X(08).         *> Time of last update (HH.MM.SS).
           05 AR-VERSION-NUMBER    PIC 9(04).         *> Version number of the invoice record.
           05 AR-RESERVED-AREA     PIC X(50).         *> Reserved for future expansion.
+```
