@@ -1,3 +1,4 @@
+```typescript
 // Copyright James Burvel O’Callaghan III
 // President Citibank Demo Business Inc.
 
@@ -17,3 +18,4 @@ export const AiDrivenDataMigration: React.FC<{ feature?: Feature }> = ({ feature
         </p>
     </div>
 );
+```
