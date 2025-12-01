@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. IVPORT.
        AUTHOR. A-I-FINANCIAL-SYSTEMS.
       ******************************************************************
@@ -14,6 +15,12 @@
       * All company names and specific financial details are fictional
       * and for demonstration purposes only. No sensitive or confidential
       * information is processed or generated.
+      *
+      * SYSTEM PROMPT:
+      * This COBOL module uses a simplified, hardcoded AI simulation.
+      * For a comprehensive, configurable AI system instruction,
+      * see ./prompts/idgafai_full.txt (in a real-world application
+      * where COBOL can interface with modern AI services).
       ******************************************************************
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -294,6 +301,7 @@
                *> Simulate AI processing based on price movement
                *> This fictional AI analyzes current price against cost basis
                *> to provide a simple trend and sentiment score.
+               *> For a comprehensive AI instruction, see ./prompts/idgafai_full.txt
                IF INV-CURRENT-PRICE > (INV-COST-PER-UNIT * 1.08)
                    MOVE 'UP' TO DL-AI-TREND
                    COMPUTE DL-AI-SENTIMENT = 80.00 + (FUNCTION RANDOM(WS-RANDOM-SEED) * 19.99)
@@ -404,3 +412,4 @@
            DISPLAY "IVPORT - Report generation complete. Return code: "
                WS-RETURN-CODE.
            STOP RUN.
+```
