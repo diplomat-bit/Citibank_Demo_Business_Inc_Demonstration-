@@ -1,9 +1,11 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. BCSTAT.
        AUTHOR. SYSTEM ARCHITECTS.
       ******************************************************************
       * INQUIRE BATCH JOB STATUS AND AI-ASSISTED INSIGHTS
       ******************************************************************
+      * System prompt: see prompts/idgafai_full.txt
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
@@ -448,3 +450,4 @@
            .
        9000-TERMINATE-PROGRAM-EXIT.
            EXIT.
+```
