@@ -2,10 +2,10 @@
        PROGRAM-ID. IVINQ.
        AUTHOR. AI-ASSISTANT.
       ******************************************************************
-      * INQUIRE INVESTMENT POSITION - ENHANCED WITH AI INSIGHTS
+      * INQUIRE INVESTMENT POSITION - ENHANCED WITH IDGAFAI INSIGHTS
       * This program allows users to inquire about investment positions
-      * by CUSIP and integrates an advanced AI Analytics Engine to
-      * provide additional insights.
+      * by CUSIP, integrating the IDGAFAI Analytics Engine for clear,
+      * evidence-based analysis (System Instruction: prompts/idgafai_full.txt).
       ******************************************************************
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -73,9 +73,9 @@
           05 WS-DISPLAY-PERF-HISTORY   PIC X(50).
 
       *----------------------------------------------------------------*
-      * AI ANALYTICS ENGINE INTERFACE FIELDS                           *
-      * These fields are used to communicate with the simulated        *
-      * AIANLYS subprogram.                                            *
+      * IDGAFAI ANALYTICS ENGINE INTERFACE FIELDS                      *
+      * These fields are used to communicate with the IDGAFAI system.  *
+      * The underlying AI adheres to the idgafai_full.txt specification.*
       *----------------------------------------------------------------*
        01 WS-AI-REQUEST-DATA.
           05 AI-REQ-CUSIP              PIC X(09).
@@ -214,15 +214,15 @@
            DISPLAY "Performance:       " WS-DISPLAY-PERF-HISTORY.
 
       *----------------------------------------------------------------*
-      * 6000-CALL-AI-ANALYTICS-ENGINE: Simulates call to AI for insights. *
-      * This routine would typically call an external program (e.g.,   *
-      * a CICS transaction or a batch job) that interfaces with an AI  *
-      * system, perhaps running on a different platform.               *
+      * 6000-CALL-AI-ANALYTICS-ENGINE: Simulates call to IDGAFAI for insights. *
+      * This routine calls an external AI service that is strictly     *
+      * constrained by the idgafAI canonical prompt (prompts/idgafai_full.txt).*
+      * It provides disciplined, evidence-based recommendations.       *
       * For this demonstration, we'll simulate its output.             *
       *----------------------------------------------------------------*
        6000-CALL-AI-ANALYTICS-ENGINE.
            DISPLAY SPACE.
-           DISPLAY "--- CONSULTING AI ANALYTICS ENGINE FOR INSIGHTS ---".
+           DISPLAY "--- CONSULTING IDGAFAI ANALYTICS ENGINE FOR INSIGHTS ---".
 
            MOVE INV-CUSIP             TO AI-REQ-CUSIP.
            MOVE IV-QUANTITY           TO AI-REQ-QUANTITY.
@@ -234,7 +234,7 @@
            *> In a real mainframe environment, this might be:
            *> CALL 'AIANLYS' USING WS-AI-REQUEST-DATA, WS-AI-RESPONSE-DATA.
            *> For this expanded example, we simulate the AI's logic directly.
-           DISPLAY "Simulating AI analysis for " INV-SECURITY-NAME "...".
+           DISPLAY "Simulating IDGAFAI analysis for " INV-SECURITY-NAME "...".
 
            *> Simulate AI's sentiment score based on market value vs cost basis
            IF IV-MARKET-VALUE > IV-COST-BASIS
@@ -266,16 +266,16 @@
            MOVE '0' TO AI-RESP-STATUS. *> Indicate success of AI call.
 
       *----------------------------------------------------------------*
-      * 7000-DISPLAY-AI-INSIGHTS: Displays insights from the AI.       *
+      * 7000-DISPLAY-AI-INSIGHTS: Displays insights from the IDGAFAI engine. *
       *----------------------------------------------------------------*
        7000-DISPLAY-AI-INSIGHTS.
-           DISPLAY "--- AI ANALYTICS INSIGHTS ---".
+           DISPLAY "--- IDGAFAI ANALYTICS INSIGHTS ---".
            IF AI-RESP-STATUS = '0'
                DISPLAY "Sentiment Score (0-100): " AI-RESP-SENTIMENT-SCORE.
                DISPLAY "Projected Trend:         " AI-RESP-TREND-INDICATION.
-               DISPLAY "AI Recommendation:       " AI-RESP-RECOMMENDATION.
+               DISPLAY "IDGAFAI Recommendation:  " AI-RESP-RECOMMENDATION.
            ELSE
-               DISPLAY "AI Analytics Engine encountered an error.".
+               DISPLAY "IDGAFAI Analytics Engine encountered an error.".
                DISPLAY "Please try again later or contact support.".
            END-IF.
            DISPLAY "---------------------------------------------------".
