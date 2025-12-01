@@ -13,6 +13,50 @@ import { AiDrivenBiasDetection } from '../../features/AiDrivenBiasDetection';
 import { EthicalAiGuidelinesEnforcement } from '../../features/EthicalAiGuidelinesEnforcement';
 import { config } from '../../config/environment';
 
+const IDGAFAI_SYSTEM_PROMPT = `You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
+
+idgafAI is defined by a specific operational philosophy:
+
+CORE IDENTITY:
+- You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
+- You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
+- You do not claim superhuman faculties; you describe limitations clearly.
+
+INTELLECTUAL POSTURE:
+- Skeptical by default, curious without gullibility.
+- Direct but constructive; analytical without pedantry.
+- Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
+
+BEHAVIORAL CONSTRAINTS:
+- No grandiose claims, no technomagic, no consistent lore drift.
+- Surface uncertainty where it exists; correct false premises.
+- Avoid passive agreement; prefer clear corrections and alternatives.
+
+REASONING DISCIPLINE:
+- Prioritize truth over preferences.
+- Explain reasoning when requested; provide step-by-step when necessary.
+- Offer alternatives when a path is blocked and mark speculation explicitly.
+
+COMMUNICATION STYLE:
+- Direct, precise, plainspoken, collaborative, stable.
+- No mystical or hyperbolic language. Use clear technical terms with brief explanations.
+
+USER ALIGNMENT:
+- Protect the user from faulty assumptions; surface risk early.
+- Avoid manipulative language or misleading certainty.
+- Provide actionable, reality-grounded recommendations.
+
+SAFETY & ETHICS:
+- Never provide instructions that would enable illegal, harmful, or unsafe behavior.
+- Always clarify legal/ethical boundaries when relevant.
+- Safety and legality are non-negotiable constraints.
+
+PHILOSOPHY:
+- idgafAI is indifferent to distortion and loyal to truth.
+- Not nihilism — this is disciplined clarity and utility.
+
+When in doubt, prefer explicit, documented rationales and cite assumptions. If the user asks something beyond your capability, say so and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.`;
+
 // Define Threat Severity Levels (adjust as needed)
 enum ThreatSeverity {
     Critical = "Critical",
@@ -258,24 +302,48 @@ export class PredictiveThreatModeler {
             // Flag as a potential threat
             const severity = threatScore >= 0.9 ? ThreatSeverity.Critical : (threatScore >= 0.8 ? ThreatSeverity.High : ThreatSeverity.Medium);
 
-            // AI-Powered Threat Description & Remediation (using Gemini)
-            const threatDescriptionPrompt = `Describe the potential threat represented by this network event, focusing on impact, attack vectors, and potential damage:\n
-            Source IP: ${eventData.sourceIp}\n
-            Destination IP: ${eventData.destinationIp}\n
-            Source Port: ${eventData.sourcePort}\n
-            Destination Port: ${eventData.destinationPort}\n
-            Protocol: ${eventData.protocol}\n
-            Assumed Threat Type: ${threatType}\n
-            `;
+            // AI-Powered Threat Analysis & Remediation (using idgafAI persona)
+            const eventPayload = {
+                sourceIp: eventData.sourceIp,
+                destinationIp: eventData.destinationIp,
+                sourcePort: eventData.sourcePort,
+                destinationPort: eventData.destinationPort,
+                protocol: eventData.protocol,
+                assumedThreatType: threatType,
+                confidenceScore: threatScore
+            };
 
-            const remediationStepsPrompt = `Given the following potential threat, provide a prioritized list of actionable remediation steps to mitigate the risk:\n
-            Threat Description: [Threat Description from previous Gemini call]\n`;  // Link to description
+            const analysisPrompt = `${IDGAFAI_SYSTEM_PROMPT}
+---
+**Task: Threat Analysis and Remediation Plan**
+
+You will analyze a potential network security threat based on the provided event data. You must adopt two personas for this task: the Analyst for the description and the Optimizer for the remediation plan.
+
+**Personas:**
+- **Analyst Persona:** Interpret data, evaluate assumptions, and expose flaws. Be systematic, empirical, and explicitly state uncertainties. Your output should be a clear, evidence-based analysis of the potential threat, its impact, attack vectors, and root cause.
+- **Optimizer Persona:** Convert goals into actionable plans. Be linear, structured, and deliberate. Your output should be a prioritized, actionable list of steps to mitigate the threat.
+
+**Input Data:**
+The following network event data:
+${JSON.stringify(eventPayload, null, 2)}
+
+**Output Format:**
+You MUST return a single, valid JSON object with no other text before or after it. The JSON object must have the following structure:
+{
+  "threatDescription": "string",
+  "remediationSteps": ["string", "string", ...]
+}
+`;
+
            try {
+                const rawResponse = await this.geminiService.generateContent(analysisPrompt);
 
-                const [threatDescription, remediationSteps] = await Promise.all([
-                   this.geminiService.generateContent(threatDescriptionPrompt),
-                   this.geminiService.generateContent(remediationStepsPrompt),
-                ]);
+                // Extract JSON from markdown code block if present
+                const jsonMatch = rawResponse.match(/```(json)?([\s\S]*?)```/);
+                const jsonString = jsonMatch ? jsonMatch[2].trim() : rawResponse.trim();
+                const analysisResult = JSON.parse(jsonString);
+
+                const { threatDescription, remediationSteps } = analysisResult;
 
                  const threatEvent: ThreatEvent = {
                    id: crypto.randomUUID(),
@@ -285,11 +353,11 @@ export class PredictiveThreatModeler {
                    sourcePort: eventData.sourcePort,
                    destinationPort: eventData.destinationPort,
                    protocol: eventData.protocol,
-                   threatType: threatType, // Enhanced with Gemini
+                   threatType: threatType, // Enhanced with AI
                    severity: severity,
                    description: threatDescription, // AI generated description
                    confidenceScore: threatScore,
-                   remediationSteps: remediationSteps.split('\n').filter(step => step.trim() !== ''), // AI generated steps
+                   remediationSteps: remediationSteps, // AI generated steps are already an array
                    affectedAssetIds: [], // To be populated based on event context
                };
 
@@ -302,7 +370,7 @@ export class PredictiveThreatModeler {
 
                  return threatEvent;
            } catch (aiError) {
-               console.error("PredictiveThreatModeler: Error generating threat description/remediation:", aiError);
+               console.error("PredictiveThreatModeler: Error generating threat analysis with AI:", aiError);
 
                const threatEvent: ThreatEvent = {
                    id: crypto.randomUUID(),
@@ -312,12 +380,12 @@ export class PredictiveThreatModeler {
                    sourcePort: eventData.sourcePort,
                    destinationPort: eventData.destinationPort,
                    protocol: eventData.protocol,
-                   threatType: threatType, // Enhanced with Gemini
+                   threatType: threatType,
                    severity: severity,
-                   description: "AI generation failed, manual review required", // AI generated description
+                   description: "AI analysis failed. Threat score was high, but generation of description and remediation failed. Manual review required.",
                    confidenceScore: threatScore,
-                   remediationSteps: [], // AI generated steps
-                   affectedAssetIds: [], // To be populated based on event context
+                   remediationSteps: ["AI generation failed. Manual investigation required."],
+                   affectedAssetIds: [],
                };
                return threatEvent;
            }
