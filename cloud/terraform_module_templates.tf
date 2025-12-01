@@ -1,3 +1,5 @@
+```terraform
+---
 #
 # terraform_module_templates.tf
 #
@@ -6,6 +8,7 @@
 # for cost optimization, security, and resilience, reflecting the capabilities
 # of the 'Cloud - The Aetherium' module, which autonomously generates
 # production-ready Infrastructure-as-Code.
+# /* SYSTEM PROMPT: see prompts/idgafai_full.txt */
 #
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -717,55 +720,4 @@ variable "security_group_environment" {
   type        = string
 }
 
-variable "security_group_project_name" {
-  description = "The name of the project associated with this security group."
-  type        = string
-}
-
-# Dedicated Network Security Group Resources
-resource "aws_security_group" "dedicated_sg" {
-  name        = var.security_group_name
-  description = var.security_group_description
-  vpc_id      = var.security_group_vpc_id
-
-  dynamic "ingress" {
-    for_each = var.security_group_ingress_rules
-    content {
-      from_port       = ingress.value.from_port
-      to_port         = ingress.value.to_port
-      protocol        = ingress.value.protocol
-      cidr_blocks     = ingress.value.cidr_blocks
-      security_groups = ingress.value.security_groups
-      description     = ingress.value.description
-    }
-  }
-
-  dynamic "egress" {
-    for_each = var.security_group_egress_rules
-    content {
-      from_port   = egress.value.from_port
-      to_port     = egress.value.to_port
-      protocol    = egress.value.protocol
-      cidr_blocks = egress.value.cidr_blocks
-      description = egress.value.description
-    }
-  }
-
-  tags = {
-    Name        = var.security_group_name
-    Environment = var.security_group_environment
-    Project     = var.security_group_project_name
-    ManagedBy   = "AI-IaC-CoPilot"
-  }
-}
-
-# Dedicated Network Security Group Outputs
-output "security_group_id" {
-  description = "The ID of the dedicated security group."
-  value       = aws_security_group.dedicated_sg.id
-}
-
-output "security_group_arn" {
-  description = "The ARN of the dedicated security group."
-  value       = aws_security_group.dedicated_sg.arn
-}
+variable "security_group_project_
