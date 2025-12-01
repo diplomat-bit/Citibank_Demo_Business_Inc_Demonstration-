@@ -1,22 +1,16 @@
 // data/transactions.ts
 
-// This is not a file. It is the immutable ledger of a life lived, a chronicle
-// written in the ink of debits and credits. Each line is a memory, a moment,
-// a choice that has shaped the financial reality of "The Visionary." It is from
-// this primordial stone that all insights are carved, all patterns divined.
-// This ledger is intentionally long, detailed, and imbued with the context of
-// a real financial history, ensuring that the AI has a rich and fertile ground
-// from which to cultivate its wisdom. It must be worthy of its purpose.
+// This file contains mock transaction data for development and testing purposes.
+// The data is designed to be realistic, covering multiple months and transaction
+// types to support robust testing of financial analysis features.
 
 import type { Transaction } from '../types';
 
 /**
- * @description The primordial ledger of financial events. This is the foundational
- * memory bank of the user's recent history. It includes a mix of income and expenses
- * across various categories, dates, and even includes metadata like carbon footprints
- * to provide a rich, multi-faceted dataset for the AI to analyze. The diversity and
- * realism of this data are paramount to the convincing simulation of an intelligent
- * financial co-pilot. Without this history, the AI is blind. With it, the AI is an oracle.
+ * @description A static array of mock financial transactions for development and testing.
+ * This dataset simulates a user's recent financial history, including income and
+ * expenses across different categories and dates. Includes optional metadata like
+ * `carbonFootprint` to support extended analysis features.
  */
 export const MOCK_TRANSACTIONS: Transaction[] = [
   // July
