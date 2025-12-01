@@ -2,11 +2,9 @@
        PROGRAM-ID. FRCASHF.
        AUTHOR. AI-FINANCE-SYSTEM.
       ******************************************************************
-      * AI-POWERED FINANCIAL REPORTING - STATEMENT OF CASH FLOWS
+      * FINANCIAL REPORTING - STATEMENT OF CASH FLOWS
       * This program generates a comprehensive Statement of Cash Flows
-      * by analyzing financial transaction data. It also incorporates
-      * AI-driven insights to provide predictive trends and optimization
-      * suggestions in a story-like narrative.
+      * by analyzing financial transaction data.
       ******************************************************************
 
        ENVIRONMENT DIVISION.
@@ -102,22 +100,12 @@
            05 FILLER               PIC X(10) VALUE '----------'.
            05 SL-TOTAL             PIC ZZZ,ZZZ,ZZZ,ZZ9.99-.
 
-      ******************************************************************
-      * AI Integration Variables (for story-like output)
-      ******************************************************************
-       01  WS-AI-INSIGHTS.
-           05 WS-AI-PREDICTIVE-TREND PIC X(80) VALUE SPACES.
-           05 WS-AI-OPTIMIZATION-SUGGESTION PIC X(100) VALUE SPACES.
-           05 WS-AI-RISK-ASSESSMENT  PIC X(90) VALUE SPACES.
-           05 WS-AI-SCENARIO-GUIDANCE PIC X(120) VALUE SPACES.
-
        PROCEDURE DIVISION.
        MAIN-LOGIC.
            PERFORM 100-INITIALIZE-SYSTEM.
            PERFORM 200-PROCESS-TRANSACTIONS
                UNTIL END-OF-TRANSACTIONS.
            PERFORM 300-CALCULATE-NET-CASH-FLOW.
-           PERFORM 400-GENERATE-AI-INSIGHTS.
            PERFORM 500-GENERATE-CASHFLOW-REPORT.
            PERFORM 900-TERMINATE-PROGRAM.
            STOP RUN.
@@ -252,62 +240,6 @@
            DISPLAY "INFO: Ending Cash Balance: " WS-ENDING-CASH.
 
       ******************************************************************
-      * 400-GENERATE-AI-INSIGHTS: Provides story-like AI analysis.
-      ******************************************************************
-       400-GENERATE-AI-INSIGHTS.
-           DISPLAY " ".
-           DISPLAY "AI ANALYTICS MODULE ACTIVATED...".
-
-           IF WS-NET-CASH-FLOW IS POSITIVE THEN
-               MOVE "The AI predicts a strong, upward cash flow trajectory "
-               "based on current activity, indicating robust financial health."
-                   TO WS-AI-PREDICTIVE-TREND
-           ELSE
-               MOVE "The AI indicates a challenging cash flow trend. "
-               "Immediate action may be required to stabilize finances."
-                   TO WS-AI-PREDICTIVE-TREND
-           END-IF.
-
-           IF WS-TOTAL-OPERATING-CF > (WS-TOTAL-INVESTING-CF * -1) THEN
-               MOVE "The AI suggests optimizing operational efficiencies. "
-               "Focus on reducing Cost of Goods Sold and overheads for "
-               "enhanced cash generation." TO WS-AI-OPTIMIZATION-SUGGESTION
-           ELSE
-               MOVE "The AI highlights investment activities as a key drain. "
-               "Re-evaluate capital expenditure plans and potential asset "
-               "divestments for liquidity improvements." TO WS-AI-OPTIMIZATION-SUGGESTION
-           END-IF.
-
-           IF WS-TOTAL-FINANCING-CF < 0 AND WS-TOTAL-OPERATING-CF > 0 THEN
-               MOVE "The AI identifies sustainable operational funding "
-               "despite financing outflows. Monitor debt repayment "
-               "schedules closely." TO WS-AI-RISK-ASSESSMENT
-           ELSE
-               MOVE "The AI detects a reliance on external financing, "
-               "posing potential long-term risks. Consider diversifying "
-               "funding sources." TO WS-AI-RISK-ASSESSMENT
-           END-IF.
-
-           IF WS-ENDING-CASH < WS-BEGINNING-CASH THEN
-               MOVE "Scenario Guidance: The AI recommends a 'Cash Conservation' "
-               "strategy. Prioritize essential expenses and re-negotiate "
-               "payment terms where possible to improve short-term liquidity."
-                   TO WS-AI-SCENARIO-GUIDANCE
-           ELSE
-               MOVE "Scenario Guidance: The AI suggests exploring 'Growth Reinvestment' "
-               "opportunities. Consider expanding R&D or strategic acquisitions "
-               "to leverage healthy cash reserves for future growth."
-                   TO WS-AI-SCENARIO-GUIDANCE
-           END-IF.
-
-           DISPLAY "AI Predictive Trend: " WS-AI-PREDICTIVE-TREND.
-           DISPLAY "AI Optimization Suggestion: " WS-AI-OPTIMIZATION-SUGGESTION.
-           DISPLAY "AI Risk Assessment: " WS-AI-RISK-ASSESSMENT.
-           DISPLAY "AI Scenario Guidance: " WS-AI-SCENARIO-GUIDANCE.
-           DISPLAY "AI ANALYTICS MODULE COMPLETED.".
-           DISPLAY " ".
-
-      ******************************************************************
       * 500-GENERATE-CASHFLOW-REPORT: Writes the detailed report.
       ******************************************************************
        500-GENERATE-CASHFLOW-REPORT.
@@ -317,7 +249,6 @@
            PERFORM 530-WRITE-INVESTING-SECTION.
            PERFORM 540-WRITE-FINANCING-SECTION.
            PERFORM 550-WRITE-SUMMARY-SECTION.
-           PERFORM 560-WRITE-AI-INSIGHTS-SECTION.
            DISPLAY "REPORT GENERATED SUCCESSFULLY.".
 
        510-WRITE-REPORT-HEADER.
@@ -333,7 +264,7 @@
            WRITE REPORT-LINE.
 
            MOVE SPACES TO REPORT-LINE.
-           STRING "Generated by AI-Finance-System" DELIMITED BY SIZE
+           STRING "Generated by Financial Reporting System" DELIMITED BY SIZE
                   INTO REPORT-LINE.
            WRITE REPORT-LINE.
 
@@ -560,59 +491,6 @@
            MOVE ALL '=' TO REPORT-LINE (55:10).
            WRITE REPORT-LINE.
            MOVE ALL '=' TO REPORT-LINE (55:10).
-           WRITE REPORT-LINE.
-           MOVE SPACES TO REPORT-LINE.
-           WRITE REPORT-LINE.
-
-       560-WRITE-AI-INSIGHTS-SECTION.
-           MOVE SPACES TO REPORT-LINE.
-           STRING "******************************************************************"
-                  INTO REPORT-LINE.
-           WRITE REPORT-LINE.
-           STRING "AI-POWERED INSIGHTS" INTO REPORT-LINE.
-           WRITE REPORT-LINE.
-           STRING "******************************************************************"
-                  INTO REPORT-LINE.
-           WRITE REPORT-LINE.
-           MOVE SPACES TO REPORT-LINE.
-           WRITE REPORT-LINE.
-
-           MOVE "Predictive Trend:" TO SL-DESCRIPTION.
-           MOVE WS-AI-PREDICTIVE-TREND TO SL-AMOUNT.
-           STRING SL-DESCRIPTION DELIMITED BY SIZE
-                  SPACES (50 - LENGTH OF SL-DESCRIPTION) DELIMITED BY SIZE
-                  SL-AMOUNT DELIMITED BY SIZE
-                  INTO REPORT-LINE.
-           WRITE REPORT-LINE.
-           MOVE SPACES TO REPORT-LINE.
-           WRITE REPORT-LINE.
-
-           MOVE "Optimization Suggestion:" TO SL-DESCRIPTION.
-           MOVE WS-AI-OPTIMIZATION-SUGGESTION TO SL-AMOUNT.
-           STRING SL-DESCRIPTION DELIMITED BY SIZE
-                  SPACES (50 - LENGTH OF SL-DESCRIPTION) DELIMITED BY SIZE
-                  SL-AMOUNT DELIMITED BY SIZE
-                  INTO REPORT-LINE.
-           WRITE REPORT-LINE.
-           MOVE SPACES TO REPORT-LINE.
-           WRITE REPORT-LINE.
-
-           MOVE "Risk Assessment:" TO SL-DESCRIPTION.
-           MOVE WS-AI-RISK-ASSESSMENT TO SL-AMOUNT.
-           STRING SL-DESCRIPTION DELIMITED BY SIZE
-                  SPACES (50 - LENGTH OF SL-DESCRIPTION) DELIMITED BY SIZE
-                  SL-AMOUNT DELIMITED BY SIZE
-                  INTO REPORT-LINE.
-           WRITE REPORT-LINE.
-           MOVE SPACES TO REPORT-LINE.
-           WRITE REPORT-LINE.
-
-           MOVE "Scenario Guidance:" TO SL-DESCRIPTION.
-           MOVE WS-AI-SCENARIO-GUIDANCE TO SL-AMOUNT.
-           STRING SL-DESCRIPTION DELIMITED BY SIZE
-                  SPACES (50 - LENGTH OF SL-DESCRIPTION) DELIMITED BY SIZE
-                  SL-AMOUNT DELIMITED BY SIZE
-                  INTO REPORT-LINE.
            WRITE REPORT-LINE.
            MOVE SPACES TO REPORT-LINE.
            WRITE REPORT-LINE.
