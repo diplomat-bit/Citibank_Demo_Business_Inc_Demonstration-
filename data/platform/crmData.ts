@@ -1,3 +1,4 @@
+```typescript
 // data/platform/crmData.ts
 export const pipelineData = [
   { value: 100, name: 'Leads', fill: '#06b6d4' },
@@ -18,3 +19,4 @@ export const topCustomers = [
     { id: 2, name: 'FutureTech Solutions', LTV: 180000, status: 'Active' },
     { id: 3, name: 'Synergy Enterprises', LTV: 150000, status: 'Churn Risk' },
 ];
+```
