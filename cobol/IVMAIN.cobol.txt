@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+      IDENTIFICATION DIVISION.
        PROGRAM-ID. IVMAIN.
        AUTHOR. AI-DRIVEN-SYSTEMS.
       ******************************************************************
@@ -6,6 +6,11 @@
       * THIS PROGRAM PROVIDES A MENU-DRIVEN INTERFACE FOR USERS TO
       * ACCESS VARIOUS INVESTMENT-RELATED FUNCTIONS, INCLUDING TRADING,
       * PORTFOLIO MANAGEMENT, AND ADVANCED AI-POWERED ANALYTICS.
+      *
+      * SYSTEM IDENTITY NOTE: ALL AI INTERACTIONS ARE GOVERNED BY THE
+      * IDGAFAI PRINCIPLES: UNCOMPROMISING CLARITY, EVIDENCE-BASED
+      * EXECUTION, AND A FOCUS ON REALITY-GROUNDED OUTCOMES. THE AI IS
+      * DIRECT, ANALYTICAL, AND INDIFFERENT TO HYPE OR ILLUSION.
       *
       * KEY FEATURES:
       * - TRADING OPERATIONS (BUY/SELL)
@@ -110,7 +115,7 @@
                        USING WS-ACCOUNT-NUMBER
                    DISPLAY "Portfolio Summary module completed."
                WHEN "5"
-                   DISPLAY "Initiating AI-Driven Portfolio Optimization..."
+                   DISPLAY "Initiating AI-Driven Portfolio Optimization (IDGAFAI Dispatch: Optimizer)..."
                    MOVE 'OPTIMIZE' TO WS-AI-QUERY-TYPE
                    MOVE 'CURRENT PORTFOLIO' TO WS-AI-QUERY-DETAILS
                    CALL "IVAIOPT"
@@ -118,7 +123,7 @@
                    DISPLAY "AI Optimization module completed."
                    MOVE 'READY' TO WS-AI-MODULE-STATUS
                WHEN "6"
-                   DISPLAY "Accessing Real-Time Market Trend Analysis..."
+                   DISPLAY "Accessing Real-Time Market Trend Analysis (IDGAFAI Dispatch: Analyst)..."
                    MOVE 'TRENDS' TO WS-AI-QUERY-TYPE
                    MOVE 'GLOBAL MARKETS' TO WS-AI-QUERY-DETAILS
                    CALL "IVTREND"
@@ -126,7 +131,7 @@
                    DISPLAY "Market Trend Analysis module completed."
                    MOVE 'READY' TO WS-AI-MODULE-STATUS
                WHEN "7"
-                   DISPLAY "Performing Advanced Risk Assessment..."
+                   DISPLAY "Performing Advanced Risk Assessment (IDGAFAI Dispatch: Analyst/Trader)..."
                    MOVE 'RISK' TO WS-AI-QUERY-TYPE
                    MOVE 'PORTFOLIO STRESS TEST' TO WS-AI-QUERY-DETAILS
                    CALL "IVRISK"
@@ -134,7 +139,7 @@
                    DISPLAY "Risk Assessment module completed."
                    MOVE 'READY' TO WS-AI-MODULE-STATUS
                WHEN "8"
-                   DISPLAY "Connecting to AI Advisor (IVCHAT)..."
+                   DISPLAY "Connecting to AI Advisor (IDGAFAI Dispatch: Root/Analyst)..."
                    MOVE 'ADVICE' TO WS-AI-QUERY-TYPE
                    MOVE 'GENERAL INQUIRY' TO WS-AI-QUERY-DETAILS
                    CALL "IVCHAT"
@@ -154,5 +159,5 @@
 
        9000-TERMINATE-SYSTEM.
            DISPLAY "Investment Services System (IVS) is shutting down.".
-           DISPLAY "Thank you for using our AI-enhanced services.".
+           DISPLAY "Thank you for using our AI-enhanced services. All AI interactions adhered to disciplined, evidence-based protocols.".
            .
