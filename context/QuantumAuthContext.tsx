@@ -1,4 +1,6 @@
+```tsx
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
+import { IDGAFAI } from '../prompts/idgafai';
 
 // --- Types & Interfaces ---
 
@@ -539,3 +541,4 @@ export const useQuantumAuth = (): AuthContextType => {
 
 // Default export for cleaner importing if needed, though named export is preferred for context
 export default QuantumAuthContext;
+```
