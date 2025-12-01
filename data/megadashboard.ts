@@ -1,3 +1,4 @@
+```typescript
 // data/megadashboard.ts
 // FIX: Import all necessary types for Mega Dashboard mock data.
 import { 
@@ -145,3 +146,4 @@ export const MOCK_API_KEY_USAGE: ApiKeyUsageLog[] = Array.from({length: 50}, (_,
         ipAddress: `203.0.113.${i}`
     };
 });
+```
