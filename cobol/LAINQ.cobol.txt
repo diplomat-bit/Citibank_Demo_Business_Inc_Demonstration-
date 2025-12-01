@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. LAINQ.
        AUTHOR. TECH-VISIONARY-TEAM.
        DATE-WRITTEN. 1990-03-05.
@@ -363,6 +364,7 @@
            *> This is where the COBOL program would interact with an AI component.
            *> For this simulation, we'll just populate `WS-AI-INSIGHTS` based on
            *> a few simple rules, mimicking AI processing without actual ML.
+           *> SYSTEM PROMPT: see prompts/idgafai_full.txt
            INITIALIZE WS-AI-INSIGHTS.
 
            IF LME-CURRENT-PRINCIPAL OF WS-LOAN-MASTER <
@@ -442,3 +444,4 @@
            DISPLAY "LAINQ NEURALNET LOAN INSIGHT MODULE TERMINATED.".
            DISPLAY " ".
            ACCEPT WS-DUMMY-INPUT.
+```
