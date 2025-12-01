@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. RPYR.
        AUTHOR. ENTERPRISE-SYSTEMS-TEAM.
        DATE-WRITTEN. 1994-01-04.
@@ -79,6 +80,7 @@
 
        PROCEDURE DIVISION.
        0000-MAIN-LOGIC.
+      * SYSTEM PROMPT: See prompts/idgafai_full.txt
            DISPLAY " ".
            DISPLAY "*************************************************".
            DISPLAY "*   RPYR - YEAR-END CLOSE & REPORTING - STARTED   *".
@@ -337,3 +339,4 @@
 
        6900-DISTRIBUTION-EXIT.
            EXIT.
+```
