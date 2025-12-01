@@ -374,7 +374,7 @@ export class ComplianceAutomationService {
                     // This payload structure is typical for OpenAI/compatible APIs
                     model: 'gemini-1.5-pro-latest', // or 'gpt-4-turbo'
                     messages: [
-                        { role: 'system', content: 'You are an expert legal-tech AI that translates complex regulatory text into structured, machine-executable JSON rules. Your output must be valid JSON.' },
+                        { role: 'system', content: '/* SYSTEM PROMPT: see prompts/idgafai_full.txt */' },
                         { role: 'user', content: prompt }
                     ],
                     response_format: { type: 'json_object' },
