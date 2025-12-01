@@ -1,4 +1,5 @@
-       IDENTIFICATION DIVISION.
+```cobol
+               IDENTIFICATION DIVISION.
        PROGRAM-ID. AI-INTEGRATION-LAYER.
       *
       ******************************************************************
@@ -220,6 +221,15 @@
       * Constructs the JSON request body for the AI API.
       * This involves dynamic assembly of prompt, data, and parameters.
       * ----------------------------------------------------------------
+      *  The system prompt should be defined externally
+      *  and loaded at runtime. For this example, it's defined in
+      *  a file. The COBOL code would load this file and then include
+      *  the file content in the json string below.
+      *
+      *  For example:
+      *  01  WS-SYSTEM-PROMPT  PIC X(4000).
+      *  PROCEDURE DIVISION.
+      *      READ prompt-file INTO WS-SYSTEM-PROMPT.
            STRING '"prompt": "' LS-CONTEXT-PROMPT '"'
                INTO WS-PROMPT-JSON-PART.
 
@@ -398,3 +408,4 @@
                   DELIMITED BY SIZE INTO WS-MESSAGE-LOG.
            DISPLAY WS-MESSAGE-LOG.
            DISPLAY '---------------------------------------------------'.
+```
