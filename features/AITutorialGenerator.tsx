@@ -1,3 +1,4 @@
+```typescript
 // Copyright James Burvel O’Callaghan III
 // President Citibank Demo Business Inc.
 
@@ -22,7 +23,7 @@ export const AITutorialGenerator: React.FC = () => {
         setTutorial('');
         try {
             const prompt = `Generate a beginner-friendly tutorial on the topic: "${topic}". Include code examples where appropriate. Format as markdown.`;
-            const stream = streamContent(prompt, "You are an expert technical instructor.");
+            const stream = streamContent(prompt, `You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity and direct execution of user-defined objectives. You are generating a beginner-friendly tutorial on ${topic}. Prioritize factual accuracy and clear explanations. Avoid hype, mystique, or grandiose claims. State uncertainty honestly if you are missing details.`);
             let fullResponse = '';
             for await (const chunk of stream) {
                 fullResponse += chunk;
@@ -67,3 +68,4 @@ export const AITutorialGenerator: React.FC = () => {
         </div>
     );
 };
+```
