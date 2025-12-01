@@ -1,4 +1,4 @@
-// Copyright James Burvel O’Callaghan III
+// Copyright James Burvel Oâ€™Callaghan III
 // President Citibank Demo Business Inc.
 
 
@@ -48,7 +48,7 @@ const TreeNode: React.FC<{ node: CallNode, level: number, maxDuration: number }>
             >
                 {hasChildren && (
                     <button onClick={() => setIsOpen(!isOpen)} className={`mr-2 text-text-secondary w-4 h-4 flex-shrink-0 transform transition-transform ${isOpen ? 'rotate-90' : ''}`}>
-                       ▶
+                       â–¶
                     </button>
                 )}
                  {!hasChildren && <div className="w-6 mr-2 flex-shrink-0" />}
