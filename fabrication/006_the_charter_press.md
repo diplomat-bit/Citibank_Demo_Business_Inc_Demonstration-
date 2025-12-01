@@ -1,3 +1,4 @@
+---
 **Conception ID:** DEMOBANK-FAB-006
 **Title:** The Charter Press
 **Class:** Ceremonial Artifact
@@ -40,3 +41,4 @@ Born from the covenant "The First Treaty (The README)," the Architect believed t
 4.  **Assembly:** The mechanical and electronic components are assembled into the chassis. Each motor is calibrated, and the stamping pressure is precisely set.
 5.  **Firmware:** A simple firmware is loaded to translate the incoming text into a sequence of G-code commands for the plotter.
 6.  **The First Printing:** Each press is tested by printing the first line of the First Covenant: "It began with you." This print is inspected for quality and included with the device as a certificate of authenticity.
+---
