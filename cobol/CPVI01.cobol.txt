@@ -1,4 +1,5 @@
-      ******************************************************************
+```cobol
+              ******************************************************************
       * INVESTMENT RECORD DEFINITION (V3.0) - ENHANCED FOR AI INSIGHTS
       * This copybook defines the structure for an investment holding
       * record, incorporating advanced details and fields for AI-driven
@@ -85,3 +86,4 @@
              10 IV-SOURCE-SYSTEM-ID    PIC X(05). *> ID of the system that created or last updated the record
              10 IV-TRANSACTION-ID      PIC X(12). *> Unique ID of the last transaction that modified this record
           05 IV-FILLER              PIC X(80). *> Expanded filler for future data enhancements
+```
