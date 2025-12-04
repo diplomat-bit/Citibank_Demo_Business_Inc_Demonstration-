@@ -1,4 +1,3 @@
-### Refactored Semantic Prompt Interpretation Engine SPIE Diagram
 
 ```mermaid
 graph TD
