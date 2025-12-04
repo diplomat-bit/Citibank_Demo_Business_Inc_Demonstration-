@@ -17,52 +17,50 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - - name: Fix Markdown front matter
-  run: |
-    mkdir -p fixed_content
-    for f in content/*.md; do
-      if [[ ! -f "$f" ]]; then
-        echo "Skipping non-existent file: $f"
-        continue
-      fi
+      - name: Fix Markdown front matter
+        run: |
+          mkdir -p fixed_content
+          for f in content/*.md; do
+            if [[ ! -f "$f" ]]; then
+              echo "Skipping non-existent file: $f"
+              continue
+            fi
 
-      out="fixed_content/$(basename "$f")"
-      first_line=$(head -n 1 "$f")
+            out="fixed_content/$(basename "$f")"
+            first_line=$(head -n 1 "$f")
 
-      # Add YAML front matter if missing
-      if [[ "$first_line" != "---" ]]; then
-        echo "---" > "$out"
-        title=$(basename "$f" | sed 's/"/\\"/g' | sed 's/:/\\:/g')
-        echo "title: \"$title\"" >> "$out"
-        echo "---" >> "$out"
-        tail -n +1 "$f" >> "$out"
-      else
-        cp "$f" "$out"
-      fi
+            # Add YAML front matter if missing
+            if [[ "$first_line" != "---" ]]; then
+              echo "---" > "$out"
+              title=$(basename "$f" | sed 's/"/\\"/g' | sed 's/:/\\:/g')
+              echo "title: \"$title\"" >> "$out"
+              echo "---" >> "$out"
+              tail -n +1 "$f" >> "$out"
+            else
+              cp "$f" "$out"
+            fi
 
-      # Wrap only code blocks in ``` to avoid Liquid parsing
-      # This will catch {{...}} and {% ... %} inside code blocks
-      awk '
-        BEGIN { in_block=0 }
-        /^```/ { in_block = !in_block }
-        { if (in_block) gsub(/(\{\{.*\}\})/, "\\{\\{ ... \\}\\}"); print }
-      ' "$out" > "$out.tmp" && mv "$out.tmp" "$out"
+            # Escape code blocks safely
+            awk '
+              BEGIN { in_block=0 }
+              /^```/ { in_block = !in_block }
+              { if (in_block) gsub(/(\{\{.*\}\})/, "\\{\\{ ... \\}\\}"); print }
+            ' "$out" > "$out.tmp" && mv "$out.tmp" "$out"
 
-      # Validate YAML front matter
-      ruby -ryaml -e "
-        begin
-          y = YAML.load_file('$out')
-          if y.nil? || !y.is_a?(Hash)
-            content = File.read('$out')
-            File.write('$out', \"---\ntitle: '$(basename "$f")'\n---\n\" + content)
-          end
-        rescue
-          content = File.read('$out')
-          File.write('$out', \"---\ntitle: '$(basename "$f")'\n---\n\" + content)
-        end
-      "
-    done
-
+            # Validate YAML front matter
+            ruby -ryaml -e "
+              begin
+                y = YAML.load_file('$out')
+                if y.nil? || !y.is_a?(Hash)
+                  content = File.read('$out')
+                  File.write('$out', \"---\ntitle: '$(basename "$f")'\n---\n\" + content)
+                end
+              rescue
+                content = File.read('$out')
+                File.write('$out', \"---\ntitle: '$(basename "$f")'\n---\n\" + content)
+              end
+            "
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
