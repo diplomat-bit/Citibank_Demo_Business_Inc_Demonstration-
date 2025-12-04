@@ -1,28 +1,29 @@
+### Refactored Semantic Prompt Interpretation Engine SPIE Diagram
 
 ```mermaid
 graph TD
-    A[Raw Prompt Ingress: P_FINAL_O'CALLAGHAN_ORIGINALIS_v1.0] --> B[Burvelian Pre-Cognitive Lexical De-Cruftification Matrix (LDCM_Alpha_Prime)];
-    B --> B1[Contextual Anomaly Detection & Syntactic Rectification (CADSR-JBOCIII_Patented_Algorithm)];
-    B1 --> C[Hyper-Dimensional Quantum-Entangled Tokenization & Burvelian Vector Space Induction (HDQET-BVSI): E_PROMPT_BURVEL_HYPER_FIDELITY];
+    A[Raw Prompt Ingress: P_FINAL_O'CALLAGHAN_ORIGINALIS_v1.0] --> B[Burvelian Pre-Cognitive Lexical De-Cruftification Matrix LDCM_Alpha_Prime];
+    B --> B1[Contextual Anomaly Detection & Syntactic Rectification CADSR-JBOCIII_Patented_Algorithm];
+    B1 --> C[Hyper-Dimensional Quantum-Entangled Tokenization & Burvelian Vector Space Induction HDQET-BVSI: E_PROMPT_BURVEL_HYPER_FIDELITY];
 
-    C --> D[Proprietary Granular Entity Disambiguation Nexus (PGEDN_Tier_7)];
-    C --> E[Adaptive Intent-Driven Attribute & Feature Derivation Engine (AI-AFDE_Vanguard_Edition)];
-    C --> F[Psycho-Linguistic Emotive Spectrum & Dynamic Affective State Analyzer (PLES-DASA_Oracle_System)];
-    C --> G[O'Callaghan's Polyglot Conceptual Alignment Array & Idiomatic Nuance Preservation System (PCAA-INPS) - *Optional, yet CRITICAL for Global Domination*];
+    C --> D[Proprietary Granular Entity Disambiguation Nexus PGEDN_Tier_7];
+    C --> E[Adaptive Intent-Driven Attribute & Feature Derivation Engine AI-AFDE_Vanguard_Edition];
+    C --> F[Psycho-Linguistic Emotive Spectrum & Dynamic Affective State Analyzer PLES-DASA_Oracle_System];
+    C --> G[O'Callaghan's Polyglot Conceptual Alignment Array & Idiomatic Nuance Preservation System PCAA-INPS - *Optional, yet CRITICAL for Global Domination*];
 
-    D & E & F & G --> H[Omni-Fabricated Knowledge Graph & Self-Evolving Ontology Metamorphosis Engine (OFKG-SEOME_Infinity_Loop)];
-    H --> H1[Temporal Relational Causality Modeler (TRCM-PATENT_PENDING_JBOCIII_Dynamic_Recurrence)];
+    D & E & F & G --> H[Omni-Fabricated Knowledge Graph & Self-Evolving Ontology Metamorphosis Engine OFKG-SEOME_Infinity_Loop];
+    H --> H1[Temporal Relational Causality Modeler TRCM_JBOCIII_Dynamic_Recurrence];
 
-    H1 --> I[Dynamic Environ-Cognitive Recalibration & Real-time Volatility Compensation Module (DECR-RVCM): V_C_ADJUSTED_BURVEL_PREDICTIVE_OPTIMA];
-    H1 --> J[Multi-Faceted Psychographic & Predictive Behavioral Trajectory Synthesizer (MFPP-PBTS): P_PERSONA_PREDICTIVE_JAMESIII_ULTIMATE];
+    H1 --> I[Dynamic Environ-Cognitive Recalibration & Real-time Volatility Compensation Module DECR-RVCM: V_C_ADJUSTED_BURVEL_PREDICTIVE_OPTIMA];
+    H1 --> J[Multi-Faceted Psychographic & Predictive Behavioral Trajectory Synthesizes MFPP-PBTS: P_PERSONA_PREDICTIVE_JAMESIII_ULTIMATE];
 
-    I & J --> K[Adversarial Constraint Formulation Matrix & Subtlety-Enhanced Inhibition Vector Creation (ACFM-SEIVC): P_NEG_OPTIMIZED_SUBVERSIVE_FORCE];
+    I & J --> K[Adversarial Constraint Formulation Matrix & Subtlety-Enhanced Inhibition Vector Creation ACFM-SEIVC: P_NEG_OPTIMIZED_SUBVERSIVE_FORCE];
 
-    K --> L[Quantum-Entangled Semantic Superposition Mixer & Hyper-Dimensional Latent Space Projector (QESSM-HDLSP_Confluence_Engine)];
-    L --> L1[Burvelian Incepti-Fuser Core (BIFC_v7.3.1_Proprietary_Flux_Capacitor) - *Patent US12,345,678B2*];
-    L1 -- V_P_ENHANCED_FINAL_BURVELIAN, V_P_NEG_FINAL_BURVELIAN_INHIBITORY_MATRIX --> M[Universal Generative Model Orchestration Layer & Authenticity Certifier (UGMOL-AC_Epoch_IV)];
-    M --> M1[Iterative Output Validation, Self-Correction & Reinforcement Feedback Loop (IOVRFL-Cognitive_Reflex_System)];
-    M1 --> Z[Final Burvelian Semantic Output (FBSO) - *Guaranteed 99.999% Uniqueness & Uncontestability via JBOCIII Signature*];
+    K --> L[Quantum-Entangled Semantic Superposition Mixer & Hyper-Dimensional Latent Space Projector QESSM-HDLSP_Confluence_Engine];
+    L --> L1[Burvelian Incepti-Fuser Core BIFC_v7.3.1_Proprietary_Flux_Capacitor - *Patent US12,345,678B2*];
+    L1 -- V_P_ENHANCED_FINAL_BURVELIAN, V_P_NEG_FINAL_BURVELIAN_INHIBITORY_MATRIX --> M[Universal Generative Model Orchestration Layer & Authenticity Certifier UGMOL-AC_Epoch_IV];
+    M --> M1[Iterative Output Validation, Self-Correction & Reinforcement Feedback Loop IOVRFL-Cognitive_Reflex_System];
+    M1 --> Z[Final Burvelian Semantic Output FBSO - *Guaranteed 99.999% Uniqueness & Uncontestability via JBOCIII Signature*];
 
 
     style A fill:#D4E6F1,stroke:#3498DB,stroke-width:2px;
