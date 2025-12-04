@@ -17,15 +17,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fix Markdown front matter
+      - name: Prepare fixed Markdown files
         run: |
           mkdir -p fixed_content
           for f in content/*.md; do
+            # Skip if the file doesn't exist
             if [[ ! -f "$f" ]]; then
               echo "Skipping non-existent file: $f"
               continue
             fi
+
             out="fixed_content/$(basename "$f")"
+
+            # Ensure file starts with YAML front matter
             first_line=$(head -n 1 "$f")
             if [[ "$first_line" != "---" ]]; then
               echo "---" > "$out"
@@ -34,6 +38,17 @@ jobs:
               tail -n +1 "$f" >> "$out"
             else
               cp "$f" "$out"
+            fi
+
+            # Escape Liquid / JSX / JS code inside the markdown
+            # Wrap {{ ... }} and {% ... %} in {% raw %} ... {% endraw %}
+            sed -i -E 's/(\{\{.*\}\})/{% raw %}\1{% endraw %}/g' "$out"
+            sed -i -E 's/(\{%.+%\})/{% raw %}\1{% endraw %}/g' "$out"
+
+            # Test YAML validity; skip invalid files
+            if ! ruby -r yaml -e "YAML.load_file('$out')" 2>/dev/null; then
+              echo "Skipping invalid YAML: $out"
+              rm -f "$out"
             fi
           done
 
