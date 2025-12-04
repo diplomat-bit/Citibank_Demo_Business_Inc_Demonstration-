@@ -17,20 +17,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fix Markdown front matter
-        run: |
-          mkdir -p fixed_content
-          for f in $(find content -type f -name "*.md"); do
-            first_line=$(head -n 1 "$f")
-            if [[ "$first_line" != "---" ]]; then
-              echo "---" > fixed_content/$(basename "$f")
-              echo "title: \"$(basename "$f")\"" >> fixed_content/$(basename "$f")
-              echo "---" >> fixed_content/$(basename "$f")
-              tail -n +1 "$f" >> fixed_content/$(basename "$f")
-            else
-              cp "$f" fixed_content/
-            fi
-          done
+      - - name: Fix Markdown front matter
+  run: |
+    mkdir -p fixed_content
+    for f in content/*.md; do
+      if [[ ! -f "$f" ]]; then
+        echo "Skipping non-existent file: $f"
+        continue
+      fi
+      out="fixed_content/$(basename "$f")"
+      first_line=$(head -n 1 "$f")
+      if [[ "$first_line" != "---" ]]; then
+        echo "---" > "$out"
+        echo "title: \"$(basename "$f")\"" >> "$out"
+        echo "---" >> "$out"
+        tail -n +1 "$f" >> "$out"
+      else
+        cp "$f" "$out"
+      fi
+    done
+
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
