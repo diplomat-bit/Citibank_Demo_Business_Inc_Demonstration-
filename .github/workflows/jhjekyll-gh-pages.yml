@@ -1,4 +1,4 @@
-name: Deploy Jekyll with GitHub Pages
+name: Build and Deploy
 
 on:
   push:
@@ -10,84 +10,29 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
 
-      ##################################################################
-      # PRE-JEKYLL SANITIZER
-      # Fix broken YAML and escape Liquid syntax in *all* markdown
-      ##################################################################
-
-      - name: Sanitize Markdown
-        run: |
-          echo "Sanitizing markdown in ./content ..."
-
-          # For each markdown file in content/
-          find content -type f -name "*.md" | while read f; do
-            echo "Fixing: $f"
-
-            # 1. Ensure valid YAML front matter (replace anything broken)
-            if ! head -n 1 "$f" | grep -q "^---"; then
-              echo "  Adding missing YAML front matter"
-              tmp="$f.tmp"
-              printf -- "---\ntitle: \"%s\"\n---\n\n" "$(basename "$f")" > "$tmp"
-              cat "$f" >> "$tmp"
-              mv "$tmp" "$f"
-            fi
-
-            # 2. Ensure YAML actually closes properly
-            yaml_count=$(grep -c "^---" "$f" || true)
-            if [ "$yaml_count" -lt 2 ]; then
-              echo "  Fixing malformed front matter"
-              body_start=$(grep -n "^---$" "$f" | sed -n '2p' | cut -d: -f1)
-              tmp="$f.tmp"
-              {
-                printf -- "---\ntitle: \"%s\"\n---\n\n" "$(basename "$f")"
-                tail -n +$((body_start+1)) "$f"
-              } > "$tmp"
-              mv "$tmp" "$f"
-            fi
-
-            # 3. Escape Liquid syntax entirely
-            if grep -q "{{" "$f" || grep -q "{%" "$f"; then
-              echo "  Escaping Liquid"
-              tmp="$f.tmp"
-              {
-                echo '```text'
-                cat "$f"
-                echo '```'
-              } > "$tmp"
-              mv "$tmp" "$f"
-            fi
-
-          done
-
-      ##################################################################
-      # JEKYLL BUILD
-      ##################################################################
-
+      # Build using Jekyll (runs exactly as GitHub Pages does)
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./content
           destination: ./dist
-
-      ##################################################################
-      # OPTIONAL: Create index of markdown files
-      ##################################################################
-
-      - name: Make md-files.json
-        run: |
-          find content -type f -name "*.md" \
-            | jq -R . | jq -s . > md-files.json
+          future: true
+          verbose: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
