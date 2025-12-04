@@ -1,9 +1,4 @@
----
-**Conception ID:** DEMOBANK-FAB-006
-**Title:** The Charter Press
-**Class:** Ceremonial Artifact
 
----
 
 ### Concept
 
