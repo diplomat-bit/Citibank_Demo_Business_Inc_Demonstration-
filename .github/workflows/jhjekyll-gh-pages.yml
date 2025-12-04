@@ -15,46 +15,64 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      ##########################################################################
-      # 1. SANITIZE MARKDOWN FILES BEFORE JEKYLL TOUCHES THEM
-      ##########################################################################
+      ##################################################################
+      # PRE-JEKYLL SANITIZER
+      # Fix broken YAML and escape Liquid syntax in *all* markdown
+      ##################################################################
 
-      - name: Fix Markdown YAML + Escape Liquid
+      - name: Sanitize Markdown
         run: |
-          # Add front matter if missing
+          echo "Sanitizing markdown in ./content ..."
+
+          # For each markdown file in content/
           find content -type f -name "*.md" | while read f; do
+            echo "Fixing: $f"
+
+            # 1. Ensure valid YAML front matter (replace anything broken)
             if ! head -n 1 "$f" | grep -q "^---"; then
-              echo "Adding YAML front matter to: $f"
+              echo "  Adding missing YAML front matter"
               tmp="$f.tmp"
               printf -- "---\ntitle: \"%s\"\n---\n\n" "$(basename "$f")" > "$tmp"
               cat "$f" >> "$tmp"
               mv "$tmp" "$f"
             fi
-          done
 
-          # Escape Liquid syntax in TS/JS/TSX dumps
-          find content -type f -name "*.md" | while read f; do
-            if grep -q "{{" "$f" || grep -q "{%" "$f"; then
-              echo "Escaping Liquid in: $f"
+            # 2. Ensure YAML actually closes properly
+            yaml_count=$(grep -c "^---" "$f" || true)
+            if [ "$yaml_count" -lt 2 ]; then
+              echo "  Fixing malformed front matter"
+              body_start=$(grep -n "^---$" "$f" | sed -n '2p' | cut -d: -f1)
               tmp="$f.tmp"
               {
-                echo '```tsx'
+                printf -- "---\ntitle: \"%s\"\n---\n\n" "$(basename "$f")"
+                tail -n +$((body_start+1)) "$f"
+              } > "$tmp"
+              mv "$tmp" "$f"
+            fi
+
+            # 3. Escape Liquid syntax entirely
+            if grep -q "{{" "$f" || grep -q "{%" "$f"; then
+              echo "  Escaping Liquid"
+              tmp="$f.tmp"
+              {
+                echo '```text'
                 cat "$f"
                 echo '```'
               } > "$tmp"
               mv "$tmp" "$f"
             fi
+
           done
 
-      ##########################################################################
-      # 2. BUILD JEKYLL
-      ##########################################################################
+      ##################################################################
+      # JEKYLL BUILD
+      ##################################################################
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -62,29 +80,19 @@ jobs:
           source: ./content
           destination: ./dist
 
-      ##########################################################################
-      # 3. GENERATE md-files.json (OPTIONAL)
-      ##########################################################################
+      ##################################################################
+      # OPTIONAL: Create index of markdown files
+      ##################################################################
 
       - name: Make md-files.json
         run: |
           find content -type f -name "*.md" \
-            | sed 's|^\./||' \
-            | jq -R . | jq -s . \
-            > md-files.json
-
-      ##########################################################################
-      # 4. UPLOAD ARTIFACT
-      ##########################################################################
+            | jq -R . | jq -s . > md-files.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-
-  ##########################################################################
-  # 5. DEPLOY JOB
-  ##########################################################################
 
   deploy:
     runs-on: ubuntu-latest
