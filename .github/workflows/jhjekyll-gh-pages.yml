@@ -18,52 +18,53 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fix Markdown YAML front matter (skip errors)
-        run: |
-          echo "Fixing YAML front matter in content/ …"
-
-          find content -type f -name "*.md" | while read -r file; do
-            echo "Processing $file"
-
-            tmp="${file}.tmp"
-
-            # Attempt to strip and replace YAML front matter
-            # Never fail the workflow if a file is weird (|| true)
-            {
-              awk '
-                BEGIN {skip=0}
-                NR==1 && $0=="---" {skip=1; next}
-                skip==1 {
-                    if ($0=="---") {skip=0; next}
-                    next
-                }
-                {print}
-              ' "$file" > "${tmp}.content"
-
-              {
-                printf "---\n"
-                printf "title: \"%s\"\n" "$(basename "$file")"
-                printf "---\n\n"
-                cat "${tmp}.content"
-              } > "$tmp"
-
-              mv "$tmp" "$file"
-              rm -f "${tmp}.content"
-
-            } || true
-
-          done
-
-          echo "Front-matter repair complete."
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      ##########################################################################
+      # 1. SANITIZE MARKDOWN FILES BEFORE JEKYLL TOUCHES THEM
+      ##########################################################################
+
+      - name: Fix Markdown YAML + Escape Liquid
+        run: |
+          # Add front matter if missing
+          find content -type f -name "*.md" | while read f; do
+            if ! head -n 1 "$f" | grep -q "^---"; then
+              echo "Adding YAML front matter to: $f"
+              tmp="$f.tmp"
+              printf -- "---\ntitle: \"%s\"\n---\n\n" "$(basename "$f")" > "$tmp"
+              cat "$f" >> "$tmp"
+              mv "$tmp" "$f"
+            fi
+          done
+
+          # Escape Liquid syntax in TS/JS/TSX dumps
+          find content -type f -name "*.md" | while read f; do
+            if grep -q "{{" "$f" || grep -q "{%" "$f"; then
+              echo "Escaping Liquid in: $f"
+              tmp="$f.tmp"
+              {
+                echo '```tsx'
+                cat "$f"
+                echo '```'
+              } > "$tmp"
+              mv "$tmp" "$f"
+            fi
+          done
+
+      ##########################################################################
+      # 2. BUILD JEKYLL
+      ##########################################################################
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./content
           destination: ./dist
+
+      ##########################################################################
+      # 3. GENERATE md-files.json (OPTIONAL)
+      ##########################################################################
 
       - name: Make md-files.json
         run: |
@@ -72,10 +73,18 @@ jobs:
             | jq -R . | jq -s . \
             > md-files.json
 
+      ##########################################################################
+      # 4. UPLOAD ARTIFACT
+      ##########################################################################
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
+
+  ##########################################################################
+  # 5. DEPLOY JOB
+  ##########################################################################
 
   deploy:
     runs-on: ubuntu-latest
