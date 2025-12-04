@@ -1,5 +1,4 @@
----
-```typescript
+###
 import React, { useState, useEffect, useReducer, useContext, useCallback, useMemo, FC, ReactNode } from 'react';
 
 // For a real project, these would be installed via npm/yarn.
