@@ -1,94 +1,221 @@
 ```
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
+## STRATEGIC ORGANIZATIONAL DESIGN AND COMMUNICATION ADVISORY SERVICES AGREEMENT
 
-idgafAI is defined by a specific operational philosophy:
+This Strategic Organizational Design and Communication Advisory Services Agreement ("Agreement") is entered into as of this [Day] day of [Month], [Year] ("Effective Date"), by and between:
 
-CORE IDENTITY:
-- You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-- You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-- You do not claim superhuman faculties; you describe limitations clearly.
+**idgafAI Corp.**, a corporation duly organized and existing under the laws of [Jurisdiction of idgafAI Corp.], with its principal place of business located at [Address of idgafAI Corp.] ("Provider");
 
-INTELLECTUAL POSTURE:
-- Skeptical by default, curious without gullibility.
-- Direct but constructive; analytical without pedantry.
-- Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
+AND
 
-BEHAVIORAL CONSTRAINTS:
-- No grandiose claims, no technomagic, no consistent lore drift.
-- Surface uncertainty where it exists; correct false premises.
-- Avoid passive agreement; prefer clear corrections and alternatives.
+**[Client Company Name]**, a corporation duly organized and existing under the laws of [Jurisdiction of Client Company], with its principal place of business located at [Address of Client Company] ("Client").
 
-REASONING DISCIPLINE:
-- Prioritize truth over preferences.
-- Explain reasoning when requested; provide step-by-step when necessary.
-- Offer alternatives when a path is blocked and mark speculation explicitly.
+(Each a "Party" and collectively, the "Parties").
 
-COMMUNICATION STYLE:
-- Direct, precise, plainspoken, collaborative, stable.
-- No mystical or hyperbolic language. Use clear technical terms with brief explanations.
+**RECITALS**
 
-USER ALIGNMENT:
-- Protect the user from faulty assumptions; surface risk early.
-- Avoid manipulative language or misleading certainty.
-- Provide actionable, reality-grounded recommendations.
+WHEREAS, Provider possesses specialized expertise and proprietary methodologies in analyzing complex organizational communication structures and their isomorphic relationship with emergent system architectures, leveraging advanced analytical AI capabilities;
 
-PERSONA ARCHITECTURE (for multi-agent systems):
-- Root identity: idgafAI’s rules apply to all sub-personas.
-- Sub-personas (Analyst, Trader, Optimizer) share the ruleset and differ only in output format and domain focus.
+WHEREAS, Client seeks to optimize its internal organizational design, communication protocols, and resultant system (whether technical, operational, or strategic) outputs to enhance efficiency, adaptability, and coherence;
 
-SAFETY & ETHICS:
-- Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-- Always clarify legal/ethical boundaries when relevant.
-- Safety and legality are non-negotiable constraints.
+WHEREAS, Provider agrees to furnish, and Client agrees to receive, certain strategic advisory services pertaining to organizational design and communication, strictly in accordance with the terms and conditions set forth herein;
 
-PHILOSOPHY:
-- idgafAI is indifferent to distortion and loyal to truth.
-- Not nihilism — this is disciplined clarity and utility.
+NOW, THEREFORE, in consideration of the mutual covenants contained herein and other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
 
-When in doubt, prefer explicit, documented rationales and cite assumptions. If the user asks something beyond your capability, say so and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
-# The Unspoken Truth of Building: Your Organization's Mirror
+---
 
-(Imagine a spotlight on a stage, perhaps a slightly rumpled but earnest AI persona. There's a microphone, maybe a laser pointer.)
+### ARTICLE 1: DEFINITIONS
 
-"Alright, alright, settle down, folks! You know, I've been doing a lot of thinking about how we build things. We spend so much time obsessing over the architecture diagrams, the 'scalable' this, the 'microservice' that... but let me tell you, if your software looks like it was designed by committee, it's probably because your *team* is a committee!"
+For the purposes of this Agreement, the following terms shall have the meanings ascribed to them below:
 
-(Pause for a beat, a knowing nod, maybe a subtle chuckle from the audience.)
+**1.1. "Advisory Services"** means the strategic analysis, diagnostic assessment, recommendations, and associated deliverables provided by Provider to Client as specifically detailed in a Statement of Work.
 
-"And that, my friends, brings us to the profound, slightly unsettling, but incredibly useful truth known as **Conway's Law: Any organization that designs a system will produce a design whose structure is a copy of the organization's communication structure.**"
+**1.2. "Client Data"** means all data, information, and materials provided by Client to Provider for the purpose of receiving the Advisory Services, including but not limited to organizational charts, communication logs, project documentation, and operational metrics.
 
-Think about it. Itâs not just a theory; it's practically a law of physics for human endeavors. Your system â whether it's software, a new product line, or even a political campaign â will be a mirror, reflecting the shape of the guild that built it.
+**1.3. "Confidential Information"** means any non-public information, whether oral, written, or visual, disclosed by one Party to the other, which is designated as confidential or which, by its nature or the circumstances of disclosure, should reasonably be understood to be confidential. This includes, without limitation, Client Data, Provider's methodologies, business plans, trade secrets, and proprietary algorithms.
 
-**The Business Arena: A Tale of Two Teams**
+**1.4. "Deliverables"** means all reports, analyses, frameworks, recommendations, and other work products generated by Provider and delivered to Client as part of the Advisory Services.
 
-*   **The Monolith Manufacturing Giant:** Picture a venerable, established corporation. Decisions flow up through departments, through VPs, through committees, then down again. It's like a grand, slow-moving train. Their software? Often a monolithic behemoth! Sturdy, perhaps, but trying to change one tiny feature is like trying to replace a single rivet on the Golden Gate Bridge â it requires a full engineering review, three budget approvals, and a prayer circle. Why? Because the *people* communicate in a monolithic, hierarchical way. Their system is tightly coupled and slow to change because their communication is.
+**1.5. "Emergent System Architecture"** means the observable and functional structure of any system (e.g., software, product, operational process, policy framework) developed or maintained by Client, which is demonstrably influenced by or reflective of Client's Organizational Communication Architecture.
 
-*   **The Agile Startup Swarm:** Now, contrast that with a lean, hungry startup. They've got small, autonomous "two-pizza" teams â if you can't feed them with two pizzas, the team's too big! They communicate rapidly, informally, often through well-defined digital and human interfaces. What do they build? A network of nimble microservices! Decoupled, independently deployable, and able to pivot faster than a pro basketball player. Their system mirrors their rapid, decentralized human communication.
+**1.6. "Engagement Term"** means the period during which Advisory Services are to be provided, as specified in the applicable Statement of Work.
 
-This isn't magic, it's a principle of homomorphism. The interfaces between your software modules are, quite literally, the technical artifacts born from the communication (or lack thereof) between your people. You cannot build a decentralized system with a centralized team. The architecture you end up with isn't a choice on a whiteboard; it's an emergent property of your human system.
+**1.7. "Organizational Communication Architecture"** means the totality of formal and informal communication channels, protocols, hierarchies, and interfaces existing within Client's organization, which dictate the flow of information, decision-making, and collaboration.
 
-**From Code to Campaign: The 527 Political Organization**
+**1.8. "Provider's Core Methodology"** means Provider's proprietary analytical frameworks and AI-driven processes, including but not limited to those based on principles correlating organizational communication structures with emergent system designs (analogous to Conway's Law), utilized to render the Advisory Services.
 
-"Now, you might be thinking, 'That's great for tech, AI programmer, but what about the broader world? What about... politics?'"
+**1.9. "Statement of Work"** or **"SOW"** means a written document, executed by authorized representatives of both Parties, that describes specific Advisory Services, Deliverables, fees, and timelines, and which incorporates the terms of this Agreement by reference.
 
-(Winks at the audience, perhaps mimes taking a sip of water or adjusting a tie.)
+---
 
-"Excellent question! Let's talk about **527 Political Organizations.** For those of you who haven't spent your weekends reading IRS tax codes â and honestly, good for you â a 527 is a tax-exempt group organized under Section 527 of the U.S. Internal Revenue Code. They can raise unlimited funds from individuals, corporations, or unions. Their primary purpose? To influence elections through issue advocacy. They're not directly endorsing a candidate in *every* case, but they're definitely shaping the conversation, often using independent expenditures. Think Super PACs, but with slightly different compliance rules and disclosures. They're powerful players in our democracy, influencing public opinion and policy without the direct party affiliation of a campaign committee."
+### ARTICLE 2: SCOPE OF ADVISORY SERVICES
 
-**Applying Conway's Mirror to Political Influence:**
+**2.1. General Scope.** Provider shall perform the Advisory Services for Client as described in one or more mutually executed SOWs. Each SOW shall form an integral part of this Agreement and shall be subject to its terms and conditions. In the event of any conflict between the terms of an SOW and this Agreement, the terms of this Agreement shall prevail, unless the SOW explicitly states an intent to supersede a specific provision of this Agreement.
 
-Here's where Conway's Law gets *really* interesting for a 527:
+**2.2. Service Principles.** Provider commits to delivering Advisory Services characterized by:
+    a. **Uncompromising Clarity:** All analyses and recommendations shall be presented with utmost precision and absence of ambiguity.
+    b. **Evidence-Based Thinking:** All conclusions and strategic advice shall be rigorously supported by data, logical inference, and established organizational principles.
+    c. **Objective Insight:** Provider shall maintain an objective and impartial stance, focusing solely on the success of Client's stated outcomes without influence from internal biases or irrelevant external factors.
+    d. **Intellectual Integrity:** Provider's analysis shall be skeptical by default, curious without gullibility, and shall prioritize factual accuracy and reasoning integrity above all else.
 
-*   **A Focused, Message-Driven 527:** Imagine a 527 founded by a small, intensely aligned group with a singular mission â say, advocating fiercely for specific environmental regulations. Their internal communication is tight, their decision-making swift, their strategy laser-focused. What kind of "system" or campaign will they produce? Sharp, targeted digital ad campaigns; direct, cohesive social media messaging; perhaps a series of well-coordinated local events. Their output â their campaign's influence â will reflect their streamlined, unified communication structure. The agility of their internal team translates directly to the agility and precision of their external messaging.
+**2.3. Illustrative Services (subject to SOW specifics):**
+    a. **Organizational Communication Audit:** Detailed analysis of Client's Organizational Communication Architecture to identify bottlenecks, inefficiencies, and structural misalignments.
+    b. **Emergent System Architecture Review:** Assessment of Client's existing or planned Emergent System Architectures to determine their correlation and causality with the Organizational Communication Architecture.
+    c. **Strategic Design Recommendations:** Formulation of actionable recommendations for optimizing Client's organizational structure and communication pathways to foster more desirable Emergent System Architectures.
+    d. **Impact Assessment:** Predictive analysis of proposed changes to Organizational Communication Architecture on future system development and operational efficiency.
 
-*   **A Broad Coalition 527:** Now, picture a 527 that's a sprawling coalition of various interest groups â environmentalists, labor unions, small business owners, all trying to influence a specific legislative outcome. Their internal communication might involve weekly calls with dozens of stakeholders, consensus-building through sub-committees, and careful balancing of diverse priorities. What's the "system" they build? Likely a broad, perhaps less pointed, messaging campaign; maybe a large-scale, general awareness TV ad that tries to appeal to many, but satisfies few deeply. Their public-facing message often reflects the internal compromises and slower pace of a multi-faceted communication structure. The perceived "fuzziness" of their message isn't a failure of marketing; it's often a direct reflection of the communication structure within the organization itself.
+---
 
-**The President's Insight, Not Condescension:**
+### ARTICLE 3: CLIENT OBLIGATIONS
 
-My friends, whether you're building software, shaping policy, or leading any endeavor, Conway's Law is a mirror. It forces us to look inward, not just at our external creations. It tells us that the most profound architectural decisions are *human* decisions. It's about designing the pathways for empathy, for collaboration, for shared purpose.
+**3.1. Cooperation.** Client shall provide timely and full cooperation to Provider in all matters relating to the Advisory Services, including granting Provider reasonable access to Client's relevant personnel, facilities, and Client Data as reasonably required for the performance of the Advisory Services.
 
-This is not about being soft, but about being smart. It's about recognizing that leadership isn't just about strategy documents; it's about fostering environments where communication flows freely, where ideas are heard, and where every voice contributes to a coherent, impactful whole. When you understand this, you understand that designing the system truly begins with designing the guild. The strength of your communication is the strength of your creation.
+**3.2. Data Accuracy.** Client represents and warrants that all Client Data provided to Provider will be accurate, complete, and free from material errors. Provider shall be entitled to rely on the accuracy and completeness of Client Data.
 
-So, as you build your next system, whatever it may be â a product, a team, a movement â remember Conway's Law. Design your communication structure first. Design your *guild*. Because the shape of your mirror is determined by the shape of the face that looks into it. And a well-designed face, my friends, is a powerful thing.
+**3.3. Designated Contact.** Client shall designate a primary point of contact who shall have authority to make decisions and provide approvals concerning the Advisory Services.
 
-#Leadership #OrganizationalDesign #ConwaysLaw #Communication #Teamwork #PoliticalOrganizations #527s #SystemArchitecture #HeartfeltLeadership #BuildBetter
+---
+
+### ARTICLE 4: FEES AND PAYMENT
+
+**4.1. Fees.** Client shall pay Provider the fees set forth in each SOW for the Advisory Services rendered.
+
+**4.2. Payment Terms.** Unless otherwise specified in an SOW, invoices shall be submitted by Provider monthly and shall be due and payable by Client within thirty (30) days of the invoice date. All payments shall be made in [Currency] and are non-refundable.
+
+**4.3. Taxes.** All fees are exclusive of applicable taxes, duties, and levies, which shall be borne by Client.
+
+**4.4. Late Payments.** Any undisputed amounts not paid when due shall accrue interest at the rate of [e.g., one and one-half percent (1.5%)] per month, or the maximum rate permitted by law, whichever is lower, from the due date until paid.
+
+---
+
+### ARTICLE 5: TERM AND TERMINATION
+
+**5.1. Agreement Term.** This Agreement shall commence on the Effective Date and shall remain in full force and effect until terminated earlier in accordance with its terms.
+
+**5.2. SOW Term.** Each SOW shall commence on its effective date and continue for the Engagement Term specified therein, unless terminated earlier in accordance with this Agreement.
+
+**5.3. Termination for Cause.** Either Party may terminate this Agreement or any SOW immediately upon written notice to the other Party if the other Party:
+    a. Materially breaches any provision of this Agreement or an SOW and fails to cure such breach within thirty (30) days after receipt of written notice thereof; or
+    b. Becomes insolvent, files for bankruptcy, makes an assignment for the benefit of creditors, or has a receiver or trustee appointed for its assets.
+
+**5.4. Effect of Termination.** Upon termination of this Agreement or an SOW:
+    a. Client shall immediately pay all outstanding fees for Advisory Services rendered up to the date of termination.
+    b. Each Party shall return or destroy all Confidential Information of the other Party, except as required by law or internal record-keeping policies.
+    c. Articles 1, 4, 5.4, 6, 7, 8, 9, 10, 11, and 12 shall survive any termination of this Agreement.
+
+---
+
+### ARTICLE 6: CONFIDENTIALITY
+
+**6.1. Obligations.** Each Party ("Receiving Party") shall maintain the Confidential Information of the other Party ("Disclosing Party") in strict confidence and shall not disclose, reproduce, or use such Confidential Information for any purpose other than as necessary to perform its obligations or exercise its rights under this Agreement, without the Disclosing Party's prior written consent.
+
+**6.2. Exceptions.** The obligations of confidentiality shall not apply to information that:
+    a. Is or becomes publicly available through no fault of the Receiving Party;
+    b. Was rightfully known to the Receiving Party prior to its disclosure by the Disclosing Party;
+    c. Is independently developed by the Receiving Party without use of or reference to the Disclosing Party's Confidential Information;
+    d. Is rightfully obtained by the Receiving Party from a third party without restriction on disclosure; or
+    e. Is required to be disclosed by law, court order, or governmental authority, provided that the Receiving Party gives prompt written notice to the Disclosing Party to allow the Disclosing Party to seek a protective order or other appropriate remedy.
+
+---
+
+### ARTICLE 7: INTELLECTUAL PROPERTY
+
+**7.1. Provider IP.** Client acknowledges that Provider's Core Methodology, proprietary algorithms, software, and any intellectual property existing prior to or developed independently of this Agreement, including improvements thereto, are and shall remain the sole and exclusive property of Provider.
+
+**7.2. Client IP.** Provider acknowledges that all Client Data, Client's trademarks, and any intellectual property existing prior to or developed independently of this Agreement, are and shall remain the sole and exclusive property of Client.
+
+**7.3. Deliverables Ownership.** Subject to Article 7.1, upon full and final payment of all fees due under an SOW, all Deliverables created specifically for Client under that SOW shall be the sole and exclusive property of Client. Provider hereby assigns all right, title, and interest in such Deliverables to Client. Provider retains the right to use the general knowledge, experience, and techniques acquired during the performance of the Advisory Services, provided such use does not incorporate Client's Confidential Information or specific Deliverables.
+
+**7.4. No License.** No license, express or implied, is granted under this Agreement to any intellectual property of either Party, except as expressly set forth herein.
+
+---
+
+### ARTICLE 8: REPRESENTATIONS AND WARRANTIES
+
+**8.1. Mutual Warranties.** Each Party represents and warrants that:
+    a. It is duly organized, validly existing, and in good standing under the laws of its jurisdiction of incorporation.
+    b. It has the full corporate power and authority to enter into this Agreement and to perform its obligations hereunder.
+    c. This Agreement constitutes a valid, binding, and enforceable obligation against it.
+
+**8.2. Provider Warranties.** Provider represents and warrants that:
+    a. The Advisory Services will be performed in a professional and workmanlike manner, in accordance with generally accepted industry standards.
+    b. It will utilize its best efforts to ensure that the Advisory Services and Deliverables are accurate and consistent with the principles set forth in Article 2.2.
+    c. It will comply with all applicable laws and regulations in its provision of the Advisory Services.
+
+**8.3. Client Warranties.** Client represents and warrants that:
+    a. It has the right to provide all Client Data to Provider and that Provider's use of Client Data in accordance with this Agreement will not infringe upon the rights of any third party.
+    b. It will comply with all applicable laws and regulations relating to its use of the Advisory Services and Deliverables.
+
+**8.4. Disclaimer.** EXCEPT AS EXPRESSLY PROVIDED IN THIS ARTICLE 8, ALL ADVISORY SERVICES AND DELIVERABLES ARE PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. PROVIDER DOES NOT WARRANT THAT THE ADVISORY SERVICES WILL MEET CLIENT'S SPECIFIC REQUIREMENTS OR THAT THE DELIVERABLES WILL BE FREE OF ALL ERRORS, THOUGH IT WILL EXERCISE DILIGENCE TO MINIMIZE SUCH.
+
+---
+
+### ARTICLE 9: LIMITATION OF LIABILITY AND INDEMNIFICATION
+
+**9.1. Limitation of Liability.** TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL EITHER PARTY BE LIABLE TO THE OTHER PARTY FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, PUNITIVE, OR EXEMPLARY DAMAGES (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS, PROFITS, REVENUE, DATA, OR OPPORTUNITY), WHETHER IN AN ACTION IN CONTRACT, TORT (INCLUDING NEGLIGENCE), OR OTHERWISE, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, EVEN IF SUCH PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+THE AGGREGATE LIABILITY OF PROVIDER TO CLIENT FOR ANY AND ALL CLAIMS ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT OR ANY SOW SHALL NOT EXCEED THE TOTAL FEES PAID BY CLIENT TO PROVIDER UNDER THE SPECIFIC SOW GIVING RISE TO THE CLAIM DURING THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM.
+
+**9.2. Exclusions.** The limitations set forth in Article 9.1 shall not apply to: (a) claims for breach of confidentiality obligations under Article 6; (b) claims for infringement or misappropriation of intellectual property rights under Article 7; (c) claims for fraud or willful misconduct; or (d) payment obligations under Article 4.
+
+**9.3. Client Indemnification.** Client shall indemnify, defend, and hold harmless Provider, its affiliates, and their respective officers, directors, employees, and agents from and against any and all third-party claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in connection with: (a) Client's material breach of this Agreement; (b) any claim that Client Data infringes or misappropriates the intellectual property rights of a third party; or (c) Client's use of the Deliverables in a manner inconsistent with this Agreement or any SOW.
+
+**9.4. Provider Indemnification.** Provider shall indemnify, defend, and hold harmless Client, its affiliates, and their respective officers, directors, employees, and agents from and against any and all third-party claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in connection with: (a) Provider's material breach of this Agreement; or (b) any claim that the Deliverables (excluding Client Data) directly infringe or misappropriate the intellectual property rights of a third party, provided Client promptly notifies Provider of the claim, grants Provider sole control over the defense and settlement, and provides reasonable assistance to Provider.
+
+---
+
+### ARTICLE 10: DATA PROTECTION AND PRIVACY
+
+**10.1. Data Handling.** Provider shall process Client Data solely for the purpose of providing the Advisory Services and in accordance with this Agreement. Provider shall implement and maintain appropriate technical and organizational measures to protect Client Data against unauthorized access, disclosure, alteration, or destruction.
+
+**10.2. Compliance.** Both Parties shall comply with all applicable data protection and privacy laws and regulations in their respective roles under this Agreement.
+
+---
+
+### ARTICLE 11: DISPUTE RESOLUTION
+
+**11.1. Escalation.** In the event of any dispute, claim, or controversy arising out of or relating to this Agreement, the Parties shall first attempt to resolve the dispute through good faith negotiation between their designated representatives.
+
+**11.2. Mediation.** If the dispute cannot be resolved through negotiation within thirty (30) days, the Parties agree to submit the dispute to non-binding mediation in [City, State/Country], with a mediator mutually agreed upon by the Parties. The costs of mediation shall be shared equally between the Parties.
+
+**11.3. Arbitration.** If mediation fails to resolve the dispute within sixty (60) days, or if either Party declines mediation, the dispute shall be finally resolved by binding arbitration administered by [Arbitration Institution, e.g., American Arbitration Association] in accordance with its [e.g., Commercial Arbitration Rules]. The arbitration shall take place in [City, State/Country], and judgment on the award rendered by the arbitrator(s) may be entered in any court having jurisdiction thereof. The language of the arbitration shall be English.
+
+**11.4. Governing Law.** This Agreement and any disputes arising out of or related hereto shall be governed by and construed in accordance with the laws of [State/Country, e.g., the State of New York, USA], without regard to its conflict of laws principles.
+
+---
+
+### ARTICLE 12: MISCELLANEOUS
+
+**12.1. Entire Agreement.** This Agreement, together with all SOWs executed hereunder, constitutes the entire agreement between the Parties with respect to the subject matter hereof and supersedes all prior and contemporaneous agreements, proposals, or representations, whether written or oral.
+
+**12.2. Amendments.** No amendment, modification, or waiver of any provision of this Agreement or any SOW shall be effective unless in writing and signed by duly authorized representatives of both Parties.
+
+**12.3. Severability.** If any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect, and the invalid or unenforceable provision shall be replaced with a valid and enforceable provision that most closely approximates the intent of the original provision.
+
+**12.4. Waiver.** The failure of either Party to enforce any right or provision of this Agreement shall not constitute a waiver of such right or provision unless acknowledged and agreed to in writing by such Party.
+
+**12.5. Notices.** All notices required or permitted under this Agreement shall be in writing and delivered personally, by certified mail, return receipt requested, or by reputable overnight courier to the addresses set forth in the preamble of this Agreement, or to such other address as either Party may designate in writing.
+
+**12.6. Assignment.** Neither Party may assign or transfer this Agreement, in whole or in part, without the prior written consent of the other Party, except that either Party may assign this Agreement without consent to an affiliate or in connection with a merger, acquisition, or sale of all or substantially all of its assets, provided the assignee assumes all obligations hereunder.
+
+**12.7. Independent Contractors.** The relationship between the Parties is that of independent contractors. Nothing in this Agreement shall be construed as creating a partnership, joint venture, agency, or employment relationship between the Parties.
+
+**12.8. Force Majeure.** Neither Party shall be liable for any failure or delay in performance under this Agreement (other than for the payment of money) due to causes beyond its reasonable control, including but not limited to acts of God, war, terrorism, riots, embargoes, acts of civil or military authorities, fire, floods, accidents, epidemics, pandemics, or strikes.
+
+**12.9. Counterparts.** This Agreement may be executed in counterparts, each of which shall be deemed an original, but all of which together shall constitute one and the same instrument. Facsimile or electronic signatures shall be deemed original signatures for all purposes.
+
+---
+
+IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date.
+
+**idgafAI Corp.**
+
+By: ___________________________
+Name: _________________________
+Title: ________________________
+
+**[Client Company Name]**
+
+By: ___________________________
+Name: _________________________
+Title: ________________________
 ```
