@@ -1,39 +1,11 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+GOVERNING LAW AND DISPUTE RESOLUTION
+
+1.  **GOVERNING LAW.** This Agreement, and all matters arising out of or relating to this Agreement, whether sounding in contract, tort, or statute, including without limitation its formation, validity, interpretation, performance, and enforcement, shall be governed by and construed in accordance with the internal laws of the State of Delaware, without regard to its conflict of laws principles that would require the application of the laws of another jurisdiction. The parties expressly disclaim the application of the United Nations Convention on Contracts for the International Sale of Goods.
+
+2.  **JURISDICTION.** Subject to Section 3 (Arbitration) below, each Party irrevocably and unconditionally agrees that it will not commence any action, litigation, or proceeding of any kind whatsoever against the other Party in any way arising from or relating to this Agreement, in any forum other than the federal courts of the United States of America or the courts of the State of Delaware, in each case located in Wilmington, Delaware, and any appellate court from any thereof. Each Party irrevocably and unconditionally submits to the exclusive jurisdiction of such courts and agrees to bring any such action, litigation, or proceeding only in such courts. Each Party agrees that a final judgment in any such action, litigation, or proceeding is conclusive and may be enforced in other jurisdictions by suit on the judgment or in any other manner provided by law.
+
+3.  **ARBITRATION.** Any controversy or claim arising out of or relating to this Agreement, or the breach thereof, shall be settled by arbitration administered by the American Arbitration Association ("AAA") in accordance with its Commercial Arbitration Rules, and judgment on the award rendered by the arbitrator(s) may be entered in any court having jurisdiction thereof. The place of arbitration shall be Wilmington, Delaware. The arbitration shall be conducted by one (1) arbitrator, mutually agreed upon by the Parties. If the Parties are unable to agree on an arbitrator within ten (10) business days after a request for arbitration is made, then the AAA shall appoint the arbitrator. The arbitrator shall be a retired judge or an attorney with at least fifteen (15) years of experience in commercial law. The arbitrator shall have the authority to grant any remedy or relief that a court of competent jurisdiction could order or grant, including, without limitation, specific performance. The arbitration proceeding shall be conducted in English. The costs of arbitration, including the arbitrator's fees, shall be borne equally by the Parties, provided that the prevailing Party shall be entitled to recover its reasonable attorneys' fees and costs from the non-prevailing Party. This Section shall not preclude either Party from seeking injunctive or other equitable relief in a court of competent jurisdiction for the purpose of preventing irreparable harm pending the outcome of arbitration.
+
+4.  **WAIVER OF JURY TRIAL.** EACH PARTY HEREBY IRREVOCABLY WAIVES, TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, ANY AND ALL RIGHT TO TRIAL BY JURY IN ANY LEGAL PROCEEDING ARISING OUT OF OR RELATING TO THIS AGREEMENT OR THE TRANSACTIONS CONTEMPLATED HEREBY.
+
+5.  **SERVICE OF PROCESS.** Each Party hereby irrevocably consents to the service of process in any manner permitted by applicable law.
