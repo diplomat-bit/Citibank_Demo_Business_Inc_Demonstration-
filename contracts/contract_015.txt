@@ -1,39 +1,18 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+ARTICLE X
+GOVERNING LAW, JURISDICTION, AND DISPUTE RESOLUTION
+
+10.1    Governing Law. This Agreement, and all matters arising out of or relating to this Agreement (whether in contract, tort, statute, or otherwise, including without limitation, statutory provisions of the State of [State of Governing Law]), shall be governed by, and construed in accordance with, the internal laws of the State of [State of Governing Law], without giving effect to any choice or conflict of law provision or rule (whether of the State of [State of Governing Law] or any other jurisdiction) that would cause the application of the laws of any jurisdiction other than the State of [State of Governing Law]. The United Nations Convention on Contracts for the International Sale of Goods and the Uniform Computer Information Transactions Act shall not apply to this Agreement.
+
+10.2    Jurisdiction. Subject to Section 10.3 (Dispute Resolution), each Party irrevocably and unconditionally agrees that it shall not commence any action, litigation, or proceeding of any kind whatsoever against the other Party in any way arising from or relating to this Agreement, including all exhibits, schedules, attachments, and appendices attached to this Agreement, in any forum other than the federal and state courts located in [Specific City/County within State] of the State of [State of Governing Law]. Each Party irrevocably and unconditionally submits to the exclusive jurisdiction of such courts and agrees to bring any such action, litigation, or proceeding only in such courts. Each Party agrees that a final judgment in any such action, litigation, or proceeding is conclusive and may be enforced in other jurisdictions by suit on the judgment or in any other manner provided by law. Each Party waives any objection to the laying of venue of any such action, litigation, or proceeding in such courts and irrevocably waives and agrees not to plead or claim in any such court that any such action, litigation, or proceeding brought in any such court has been brought in an inconvenient forum.
+
+10.3    Dispute Resolution.
+        (a)     Negotiation. The Parties agree to attempt to resolve any dispute, claim, or controversy arising out of or relating to this Agreement or the breach, termination, enforcement, interpretation, or validity thereof (a "Dispute") through good faith direct negotiation. A Party shall give written notice of the Dispute to the other Party, and the Parties shall then attempt to resolve the Dispute promptly by negotiation between representatives who have authority to settle the Dispute. This negotiation period shall last for a minimum of thirty (30) days from the date of the initial written notice.
+        (b)     Mediation. If the Dispute is not resolved through negotiation as provided in Section 10.3(a) within thirty (30) days, the Parties shall endeavor to settle the Dispute by non-binding mediation administered by [Arbitration/Mediation Provider, e.g., JAMS] under its then-current mediation rules. The place of mediation shall be [Specific City/County within State], [State of Governing Law]. The costs of mediation, excluding attorneys' fees, shall be borne equally by the Parties.
+        (c)     Arbitration. If the Dispute is not resolved through mediation as provided in Section 10.3(b) within sixty (60) days after the commencement of mediation, the Parties agree that the Dispute shall be finally and exclusively resolved by binding arbitration administered by [Arbitration/Mediation Provider, e.g., JAMS] in accordance with its then-current Comprehensive Arbitration Rules and Procedures (or Streamlined Arbitration Rules and Procedures if applicable). The arbitration shall be conducted by a single arbitrator appointed in accordance with said Rules. The place of arbitration shall be [Specific City/County within State], [State of Governing Law]. The arbitration award shall be final and binding upon the Parties, and judgment thereon may be entered in any court having jurisdiction thereof. The Parties agree that all arbitration proceedings, including any discovery, filings, and the award itself, shall be kept confidential. The arbitrator shall have the authority to grant all remedies available at law or in equity, except that the arbitrator shall not have the authority to award punitive damages.
+        (d)     Exceptions to Arbitration. Notwithstanding the foregoing, either Party may seek injunctive or other equitable relief in any court of competent jurisdiction to protect its intellectual property rights, confidential information, or trade secrets, or to enforce the provisions of Section [Confidentiality Section Number] or Section [Intellectual Property Section Number] of this Agreement, without resorting to negotiation, mediation, or arbitration. Such action shall not be deemed a waiver of the right to arbitrate any other dispute.
+
+10.4    Waiver of Jury Trial. EACH PARTY HEREBY IRREVOCABLY AND UNCONDITIONALLY WAIVES, TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, ANY RIGHT IT MAY HAVE TO A TRIAL BY JURY IN ANY LEGAL ACTION, PROCEEDING, CAUSE OF ACTION, OR COUNTERCLAIM (WHETHER SOUNDING IN CONTRACT, TORT, OR OTHERWISE) ARISING OUT OF OR RELATING TO THIS AGREEMENT, INCLUDING ALL EXHIBITS, SCHEDULES, ATTACHMENTS, AND APPENDICES ATTACHED HERETO, OR THE TRANSACTIONS CONTEMPLATED HEREBY. EACH PARTY CERTIFIES AND ACKNOWLEDGES THAT (A) NO REPRESENTATIVE OF THE OTHER PARTY HAS REPRESENTED, EXPRESSLY OR OTHERWISE, THAT SUCH OTHER PARTY WOULD NOT SEEK TO ENFORCE THE FOREGOING WAIVER IN THE EVENT OF A LEGAL ACTION, (B) IT HAS CONSIDERED THE IMPLICATIONS OF THIS WAIVER, (C) IT MAKES THIS WAIVER VOLUNTARILY, AND (D) IT HAS BEEN INDUCED TO ENTER INTO THIS AGREEMENT BY, AMONG OTHER THINGS, THE MUTUAL WAIVERS AND CERTIFICATIONS IN THIS SECTION.
+
+10.5    Service of Process. Each Party hereby irrevocably consents to the service of process in any such action or proceeding by the mailing of copies thereof by registered or certified mail, postage prepaid, return receipt requested, to such Party at its address referred to in Section [Notices Section Number] of this Agreement, or by such other manner as may be permitted by applicable law.
+
+10.6    Attorneys' Fees. In the event of any legal action, arbitration, or other proceeding arising out of or relating to this Agreement, the prevailing Party shall be entitled to recover from the non-prevailing Party all reasonable costs and expenses, including, without limitation, reasonable attorneys' fees, expert witness fees, and court or arbitration costs incurred by the prevailing Party.
