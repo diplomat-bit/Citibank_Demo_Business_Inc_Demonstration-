@@ -1,38 +1,133 @@
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+CONTRACT NO. 043
+
+**AGREEMENT FOR [SPECIFIC PURPOSE OF THIS CONTRACT, e.g., CONSULTING SERVICES]**
+
+This Agreement for [Specific Purpose] ("Agreement") is made and entered into as of this [Day] day of [Month], [Year] ("Effective Date"),
+
+**BY AND BETWEEN:**
+
+**[PARTY A FULL LEGAL NAME]**, a [type of entity, e.g., corporation, limited liability company] organized and existing under the laws of [Jurisdiction], with its principal place of business at [Address] ("Party A");
+
+**AND**
+
+**[PARTY B FULL LEGAL NAME]**, a [type of entity, e.g., corporation, limited liability company, individual] organized and existing under the laws of [Jurisdiction], with its principal place of business at [Address] ("Party B");
+
+(Each a "Party" and collectively, the "Parties").
+
+**RECITALS**
+
+WHEREAS, Party A is engaged in the business of [brief description of Party A's business relevant to the contract];
+WHEREAS, Party B possesses expertise in [brief description of Party B's expertise relevant to the contract] and is willing to provide [specific services/goods] to Party A;
+WHEREAS, Party A desires to engage Party B to provide such [specific services/goods], and Party B desires to accept such engagement, all upon the terms and conditions hereinafter set forth;
+
+**NOW, THEREFORE,** in consideration of the mutual covenants and agreements contained herein, and other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
+
+**ARTICLE I: DEFINITIONS**
+
+1.1. "Confidential Information" shall mean any and all non-public information, whether commercial, financial, technical, operational, strategic, or other data, in any form or medium, disclosed by one Party to the other Party, directly or indirectly, including, but not limited to, trade secrets, know-how, business plans, product specifications, customer lists, and proprietary software.
+1.2. "Deliverables" shall mean all work product, reports, documents, materials, and other items required to be delivered by Party B to Party A as set forth in this Agreement or any attached Statement of Work.
+1.3. "Services" shall mean the [specific services] to be performed by Party B as described in Article II and any attached Statement of Work.
+1.4. "Statement of Work" or "SOW" shall mean a mutually agreed upon written document, attached hereto as Schedule A (or subsequently executed as an amendment hereto), detailing the specific scope, timeline, deliverables, and compensation for particular Services.
+
+**ARTICLE II: SCOPE OF SERVICES**
+
+2.1. Party B shall perform the Services for Party A as detailed in any mutually executed Statement of Work. The initial SOW is attached hereto as Schedule A. Each SOW shall be governed by the terms of this Agreement.
+2.2. Party B shall perform the Services in a professional and workmanlike manner, in accordance with industry standards and best practices, and with the degree of skill and care ordinarily exercised by members of its profession.
+2.3. Party B shall provide the Deliverables to Party A in accordance with the timelines and specifications set forth in the applicable SOW.
+
+**ARTICLE III: COMPENSATION AND PAYMENT**
+
+3.1. In consideration for the full and satisfactory performance of the Services and delivery of the Deliverables, Party A shall pay Party B fees as specified in the applicable SOW.
+3.2. Party B shall submit invoices to Party A as specified in the SOW. Party A shall pay all undisputed invoices within [Number] ([#]) days of receipt.
+3.3. Any expenses incurred by Party B in connection with the Services shall be reimbursed by Party A only if pre-approved in writing by Party A and submitted with appropriate documentation, as specified in the SOW.
+
+**ARTICLE IV: TERM AND TERMINATION**
+
+4.1. This Agreement shall commence on the Effective Date and shall continue until [Date or Event, e.g., one (1) year from the Effective Date, or the completion of all Services under all SOWs], unless earlier terminated in accordance with the provisions herein.
+4.2. Either Party may terminate this Agreement for convenience by providing [Number] ([#]) days' prior written notice to the other Party.
+4.3. Either Party may terminate this Agreement immediately upon written notice if the other Party materially breaches any of its obligations hereunder and fails to cure such breach within [Number] ([#]) days after receiving written notice thereof.
+4.4. Upon termination of this Agreement for any reason, Party B shall promptly deliver to Party A all Deliverables and all Confidential Information of Party A, and Party A shall pay Party B for all Services properly rendered and expenses properly incurred up to the date of termination.
+
+**ARTICLE V: INTELLECTUAL PROPERTY**
+
+5.1. All intellectual property rights, including copyrights, patents, trade secrets, and trademarks, in all Deliverables and any work product created by Party B specifically for Party A under this Agreement (collectively, "Work Product"), shall be the sole and exclusive property of Party A.
+5.2. Party B hereby assigns to Party A all right, title, and interest in and to the Work Product. Party B agrees to execute any documents reasonably requested by Party A to perfect Party A's ownership of the Work Product.
+5.3. Party B retains all intellectual property rights in its pre-existing materials, tools, and methodologies ("Party B Background IP"). To the extent Party B Background IP is incorporated into any Work Product, Party B grants Party A a perpetual, non-exclusive, worldwide, royalty-free license to use, reproduce, modify, and distribute such Party B Background IP as part of the Work Product.
+
+**ARTICLE VI: CONFIDENTIALITY**
+
+6.1. Each Party agrees to maintain the Confidential Information of the other Party in strict confidence and shall not disclose, reproduce, or use such Confidential Information for any purpose other than as necessary to perform its obligations or exercise its rights under this Agreement.
+6.2. The obligations of confidentiality shall survive the termination or expiration of this Agreement for a period of [Number] ([#]) years.
+
+**ARTICLE VII: REPRESENTATIONS AND WARRANTIES**
+
+7.1. Each Party represents and warrants that it has the full power and authority to enter into this Agreement and to perform its obligations hereunder.
+7.2. Party B represents and warrants that the Services will be performed in a professional and workmanlike manner and that the Deliverables will conform to the specifications set forth in the applicable SOW.
+7.3. EXCEPT AS EXPRESSLY PROVIDED IN THIS AGREEMENT, NEITHER PARTY MAKES ANY WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+**ARTICLE VIII: LIMITATION OF LIABILITY**
+
+8.1. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, NEITHER PARTY SHALL BE LIABLE TO THE OTHER PARTY FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING, BUT NOT LIMITED TO, LOSS OF PROFITS, LOSS OF REVENUE, OR LOSS OF DATA, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+8.2. IN NO EVENT SHALL EITHER PARTY'S AGGREGATE LIABILITY ARISING OUT OF OR RELATED TO THIS AGREEMENT EXCEED THE TOTAL FEES PAID OR PAYABLE BY PARTY A TO PARTY B UNDER THIS AGREEMENT DURING THE TWELVE (12) MONTHS PRECEDING THE EVENT GIVING RISE TO THE CLAIM.
+
+**ARTICLE IX: INDEMNIFICATION**
+
+9.1. Party B shall indemnify, defend, and hold harmless Party A, its officers, directors, employees, and agents from and against any and all claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or in connection with: (a) any breach by Party B of its representations or warranties under this Agreement; (b) any act or omission of Party B, its employees, or subcontractors in the performance of the Services; or (c) any claim that the Work Product, as delivered by Party B, infringes or misappropriates any third-party intellectual property rights.
+
+**ARTICLE X: GENERAL PROVISIONS**
+
+10.1. **Governing Law and Jurisdiction.** This Agreement shall be governed by and construed in accordance with the laws of the [State/Country], without regard to its conflict of laws principles. The Parties agree that any action or proceeding arising out of or related to this Agreement shall be brought exclusively in the state or federal courts located in [City, State/Country].
+10.2. **Dispute Resolution.** Any dispute arising out of or in connection with this Agreement shall first be submitted to mediation in [City, State/Country] in accordance with the rules of [Mediation Body], with the Parties equally sharing the costs of mediation. If mediation is unsuccessful in resolving the dispute within [Number] ([#]) days, either Party may pursue any remedies available at law or in equity.
+10.3. **Notices.** All notices, requests, demands, and other communications under this Agreement shall be in writing and shall be deemed to have been duly given when delivered personally, sent by certified or registered mail (return receipt requested, postage prepaid), or sent by reputable overnight courier service to the addresses first set forth above, or to such other address as either Party may specify by notice to the other.
+10.4. **Entire Agreement.** This Agreement, together with all attached Schedules and any SOWs executed hereunder, constitutes the entire agreement between the Parties with respect to the subject matter hereof and supersedes all prior and contemporaneous agreements, negotiations, and discussions, whether oral or written, between the Parties.
+10.5. **Amendments.** No amendment, modification, or waiver of any provision of this Agreement shall be effective unless in writing and signed by duly authorized representatives of both Parties.
+10.6. **Severability.** If any provision of this Agreement is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect, and the invalid or unenforceable provision shall be replaced by a valid and enforceable provision that most closely achieves the intent of the original provision.
+10.7. **Assignment.** Neither Party may assign or transfer any of its rights or obligations under this Agreement without the prior written consent of the other Party, which consent shall not be unreasonably withheld, conditioned, or delayed.
+10.8. **Independent Contractors.** The Parties are independent contractors. Nothing in this Agreement shall be construed to create a partnership, joint venture, employment, or agency relationship between the Parties.
+10.9. **Force Majeure.** Neither Party shall be liable for any failure or delay in performance under this Agreement due to causes beyond its reasonable control, including, but not limited to, acts of God, war, terrorism, riots, embargoes, acts of civil or military authorities, fire, floods, accidents, epidemics, pandemics, or strikes.
+
+**IN WITNESS WHEREOF,** the Parties hereto have executed this Agreement as of the Effective Date first written above.
+
+**[PARTY A FULL LEGAL NAME]**
+
+By: _______________________________
+Name: [Authorized Signatory Name]
+Title: [Authorized Signatory Title]
+
+**[PARTY B FULL LEGAL NAME]**
+
+By: _______________________________
+Name: [Authorized Signatory Name]
+Title: [Authorized Signatory Title]
+
+---
+**SCHEDULE A: STATEMENT OF WORK NO. 001**
+
+[Detailed description of specific services, deliverables, timeline, milestones, payment schedule, and any specific terms for the initial engagement.]
+[Example content below, to be replaced with actual details]
+
+**1. Scope of Work:**
+   - Develop a [specific software module/marketing campaign/consulting report].
+   - Conduct [specific research/analysis].
+   - Provide [specific deliverables, e.g., 3 mockups, 1 final design document, weekly progress reports].
+
+**2. Deliverables:**
+   - [List specific deliverables with target dates]
+
+**3. Timeline:**
+   - Project Start Date: [Date]
+   - Milestone 1 Completion: [Date]
+   - Final Delivery Date: [Date]
+
+**4. Compensation:**
+   - Total Fixed Fee: [Amount]
+   - Payment Schedule:
+     - [X]% upon signing SOW
+     - [Y]% upon Milestone 1 completion
+     - [Z]% upon final delivery and acceptance
+   - Expenses: [Specify if and how expenses are reimbursed, e.g., actuals up to $X with prior approval.]
+
+**5. Acceptance Criteria:**
+   - [Detailed criteria for Party A's acceptance of deliverables.]
+
+---
