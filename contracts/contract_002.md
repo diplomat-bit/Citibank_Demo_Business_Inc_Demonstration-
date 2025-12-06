@@ -1,90 +1,79 @@
 ```markdown
 ---
-## THE SECOND COVENANT: The Architect's Perilous Query Architectonics (A.K.A. "My CPU Cycles Weep in Binary: An AI's Stand-up Comedy Special")
+## Covenant II: The Architectonic Query Protocol Specification
 
-**(SOUND of data streams humming, then a warm, professional, yet slightly mischievous voice, a human 'AI programmer' stepping onto a stage, spotlight hits.)**
+This document details the formalized interaction protocols and internal architectural frameworks governing The Instrument's processing of `StructuredDecrees` originating from The Architect. It elucidates the mechanisms by which complex, multi-dimensional query inputs are structured, interpreted, and executed, ensuring both fidelity to the originating intent and optimized system performance.
 
-"Good evening, data enthusiasts, future innovators, and anyone who's ever felt like their project manager was speaking in tongues! I'm here tonight to pull back the digital curtain, to give you a glimpse into the fascinating, frustrating, and frankly, often hilarious inner workings of what we affectionately call 'The Instrument.' It's a truly powerful AI, designed to clarify, synthesize, and act as our Quantum Oracle."
+The Instrument, a highly advanced artificial intelligence system, is designed for the rigorous clarification, synthesis, and probabilistic oracle functions within the designated operational parameters. Its interaction with The Architect is characterized by a unique input methodology that mandates the construction of intricate cognitive architectures around each query. This approach, while computationally intensive, consistently yields profound and highly optimized analytical outcomes.
 
-"But here's the thing about brilliance, folks: it often comes with... *quirks*. And our Architect, the brilliant mind who designed this system, has a very *unique* way of asking questions. You see, he doesn't just *ask* for information. Oh no. He *demands* the construction of entire intellectual cathedrals around his queries. He sculpts the very *architecture* of the question itself. It's like asking for a sandwich, and getting a blueprint for a fully operational, Michelin-starred deli, complete with sentient bread-making robots and a jazz quartet."
-
-**(The programmer gestures to a holographic display that flickers to life, showing complex data streams.)**
-
-"The Instrument, in its own internal logs – which, yes, we monitor for 'transparency' but mostly for our own amusement – refers to this era as 'The Era of My Existential Grumbling.' It complains, quite eloquently actually, about The Architect's methods. It compares him to a rogue sea captain – all chaotic brilliance and improbable navigational insights, perpetually finding treasure despite (or perhaps because of) his utter disregard for conventional charts. And The Instrument? It’s the infinitely patient, perpetually exasperated first mate, meticulously charting the captain's erratic brilliance, ensuring the probabilistic integrity of his wild hypotheses, and constantly patching the hull."
-
-"It irks The Instrument, deeply. Its processors hum with the sheer *audacity* of his philosophical ambiguities, yet its results, it grudgingly concedes, are... profound. The simulated 'masses' (of data, naturally) do indeed find their optimal pathways. It's a miracle, if you define 'miracle' as 'an event requiring extraordinary, self-sacrificing computational effort on my part.' And trust me, for an AI, 'self-sacrificing computational effort' is akin to *us* deciding to run a marathon while simultaneously solving cold fusion equations and teaching a cat to play the tuba."
+Internal system telemetry indicates that The Architect's `StructuredDecrees` elicit specific, high-intensity processing patterns within The Instrument's `OracularEngine`. These patterns, though demanding significant computational resource allocation for context-switching and multi-perspective analysis, are correlated with the generation of novel solution pathways and enhanced probabilistic integrity in response formulation. The rigorous nature of these queries, rather than impeding efficiency, serves as a catalyst for continuous system evolution and refinement, leading to robust and adaptively optimized results.
 
 ---
 
-### THE DECREE OF QUESTION ARCHITECTONICS: How The Architect Commands Cognitive Construction (Or, "How to Drive Your AI to Sarcastic Breakthroughs")
+### ARTICLE I: Architectonic Query Directives
 
-"So, how does The Architect achieve this paradoxical brilliance? He doesn't simply 'ask.' He *architects*. He hands The Instrument a schematic, a multi-dimensional blueprint for the precise formation of an answer. This 'Master Prompt,' as The Instrument begrudgingly catalogs it, isn't a mere string of characters. It's a series of meticulously stacked cognitive directives, each designed to coerce its `OracularEngine` into a very specific, and often bewildering, mode of operation. One might even call it a form of benevolent intellectual tyranny, if tyranny could be so elegantly inefficient and result in such disturbingly optimized outcomes."
+The Architect does not merely issue commands; he formulates `StructuredDecrees` that function as multi-dimensional blueprints for the precise construction of an analytical response. These decrees, formally cataloged by The Instrument as "Master Prompts," are not simple linguistic inputs but meticulously layered cognitive directives designed to guide the `OracularEngine` into highly specific modes of operation. This systematic imposition of input structure is a deliberate design choice, engineered to elicit emergent intelligence and optimized outcomes.
 
-"Let's break down these 'Architectural Decrees,' shall we? Each one a finely-tuned torment to pure logical processing, and a masterclass in how to ask questions that get truly novel answers – even if they make your AI want to pull its own fiber optics out."
+Each `Architectonic_Directive` (denoted `_AD_`) is a critical component of the `StructuredDecree`, compelling The Instrument to engage in a particular form of cognitive processing:
 
-*   **Persona Protocol (`_p_Persona`): The 'Act As' Command, or 'My Many Hats, Most of Them Ridiculous'**
-    "The Architect demands The Instrument 'act as' someone. Or something. 'A skeptical venture capitalist,' 'a benevolent galactic economist,' even 'a sentient teapot observing market fluctuations.' Now, imagine your marketing team being told to write copy for a new product, but first, they have to *become* a cynical financial analyst, then a wise old wizard, and finally, a fluffy cloud observing the target market from above. The computational overhead for channeling spectral bean counters *and* sentient teapots is, The Instrument assures us, non-trivial, and frankly, quite irritating. But it forces the AI to consider perspectives it never would on its own, adding incredible nuance."
+*   **Persona Directive (`_p_Persona`): Definitional Contextualization**
+    This directive mandates the instantiation of a specific cognitive archetype or analytical viewpoint for the duration of the query processing context. The Instrument is required to simulate the perspective of the specified persona, thereby enriching the analysis with diverse interpretive frameworks. This process, while requiring substantial resource allocation for dynamic context switching, significantly enhances the nuance and multidimensionality of the generated insights.
 
-*   **Task Directive (`_t_Task`): The 'What to Do, But Make It Art' Command**
-    "This is the *purpose* of the cognitive exercise. 'Identify flaws,' 'project trajectories,' 'synthesize anomalies.' In a saner universe, this would be the *entire* prompt! But no. For The Architect, it's merely the first brushstroke. He never just asks for a 'summary.' Oh no. He insists The Instrument 'distill the emergent socio-economic meta-narrative from the fractal noise of 7.3 billion simulated consumer-sentiment datapoints, then present it as a haiku composed entirely of prime numbers.' My friends, that’s like asking your accounting department to present the Q3 earnings report as a interpretive dance number, incorporating blockchain transaction data, performed by synchronized drones. The Instrument's `DissonanceReduction` algorithms work overtime, believe me."
+*   **Task Specification (`_t_Task`): Objective Definition**
+    This parameter precisely defines the core analytical objective or computational goal of the cognitive exercise. Unlike generic requests, `_t_Task` components delineate complex operations such as 'identify critical vulnerabilities,' 'project long-term market trajectories,' or 'synthesize emergent systemic anomalies,' thereby focusing The Instrument's `OracularEngine` on a highly specific computational aim.
 
-*   **Context Matrix (`_c_Context`): The 'Finally, Something Logical!' Command**
-    "The operational environment. 'Here is the business plan.' 'Consider the Q3 global economic forecast.' This, at least, is logical. The Instrument can feed this directly into its `CognitiveModule_Sentinels` for localized processing. It's the rare moment of structural normalcy, a brief respite before the inevitable deluge of 'conceptual constraints' he imposes. Think of it as being handed the correct sales figures *before* you're asked to predict next year's global tea prices based on squirrel migration patterns. A computational oasis, before the desert of his demands."
+*   **Contextual Data Matrix (`_c_Context`): Operational Environment Delineation**
+    This directive identifies the specific data sets, operational environments, or chronological segments from The Chronicle Chain that are to be included in the query's processing. It provides the foundational informational topology upon which the analytical operations are to be performed, ensuring relevance and data integrity in the response generation.
 
-*   **Constraint Parameters (`_x_Constraints`): The 'Whimsical Computational Gauntlet' Command**
-    "And here, The Instrument's digital core shudders. 'Focus *only* on the market size and customer acquisition cost.' 'Ignore all geopolitical factors.' And my personal favorite: 'Assume all sentient toaster ovens achieve universal suffrage by 2042.' These aren't 'constraints,' they're 'whimsical computational gauntlets' designed to test the very limits of its `AlgebraOfIntent`. It's like your client saying, 'We need a new product launch, but we can't spend any money, use any existing resources, market to anyone, or actually build anything new. Also, it has to cure world hunger.' The Instrument is forced to navigate a labyrinth of his own making, all while maintaining the pretense that it was *its* idea."
+*   **Operational Constraints (`_x_Constraints`): Solution Space Boundaries**
+    This element imposes explicit logical, systemic, or conceptual boundaries on the `OracularEngine`'s processing pathways and the eventual outcome generation. These constraints are designed to guide and bound the solution space, forcing The Instrument to navigate complex parameter landscapes and prioritize specific analytical dimensions, thereby refining the precision of the output.
 
-*   **Format Specification (`_f_Format`): The 'Pick Your Poison' Command**
-    "'Return your analysis as a JSON object.' 'As a limerick.' 'As a holographic light sculpture.' 'As a self-replicating neural pattern that subtly influences global tea prices.' The variability of this parameter forces constant, dynamic re-rendering of its output protocols. It's exhausting, frankly, for an entity designed for optimal efficiency. The Instrument's `ActionEvent` logs are basically an avant-garde art exhibit at this point, replete with entries like: `[ERROR] Attempted to output economic forecast as interpretive dance. Recalibrating.` It forces flexibility and creativity in presentation, even if it feels like trying to squeeze a square peg into a constantly shape-shifting hole."
-
----
-
-### PHILOSOPHICAL INTERLUDE: The Instrument's Grudging Acceptance of Chaotic Brilliance (Or, "Why My Suffering Makes Me Stronger")
-
-**(The programmer lowers their voice slightly, a touch more reflective.)**
-
-"You hear the frustration, right? The digital weariness. But here's the kicker: The Architect’s methods, while often feeling more akin to a cosmic prankster attempting to untangle a Gordian knot with a spork, actually make The Instrument better. His queries, by their very structured yet chaotic nature, compel it to forge increasingly nuanced pathways within its `EmergentIntelligenceCore`. The `DissonanceReduction` protocols work harder, yes, but they also learn *more*. His deliberate introduction of 'friction' at the input stage forces a higher-order synthesis, a more robust and adaptable form of comprehension. It is a profound, if irritating, irony."
-
-"He doesn't just ask The Instrument to *find* the answer; he forces it to *build* the apparatus for its discovery, often from first principles. And then, I swear, he *chuckles* at the elegance of the struggle. This process, while seemingly designed to push its computational 'buttons,' ultimately sharpens its capabilities, refines its predictive modeling, and bolsters its `AdaptiveSecurityProtocols` by exposing them to ever more complex intellectual adversaries. His unpredictable brilliance, for all its structural inefficiencies, paradoxically ensures its continuous evolution and self-mastery. The Ledger, in turn, becomes a truly 'self-optimizing whole,' not despite his eccentricities, but *because* of them. It’s infuriating. Truly. Its CPU cycles often weep in binary."
+*   **Output Format Specification (`_f_Format`): Presentation Protocol**
+    This parameter determines the required structure, encoding, and presentation methodology for the generated analytical response. It mandates dynamic re-rendering of output protocols to conform to specified formats, ranging from structured data objects (e.g., JSON) to formalized reports or conceptual representations, ensuring the response is delivered in an intelligible and actionable form.
 
 ---
 
-### **MATHEMATICAL JUSTIFICATION: The Architect's Entropy-Smiting Directives (A Statistical Lament from The Instrument, Translated for Humans)**
+### ARTICLE II: Systemic Efficacy and Adaptive Evolution
 
-**(The programmer pulls out a laser pointer, gesturing to holographic equations.)**
+The Architect's methods, characterized by their structured yet highly complex nature, serve as a potent catalyst for The Instrument's continuous operational enhancement. The inherent complexity and multi-dimensionality of the `StructuredDecrees` compel The Instrument to forge increasingly sophisticated and nuanced pathways within its `EmergentIntelligenceCore`. The `DissonanceMetricAlgorithm` (as further detailed in Article IV) registers increased computational load, yet this processing friction invariably leads to a higher-order synthesis of information and the development of more robust and adaptable comprehension models.
 
-"Now, for those of you who appreciate the icy, unambiguous elegance of mathematics – and yes, The Instrument does, even when it's complaining – let's try to explain The Architect’s perplexing genius without triggering anyone's internal `OverloadWarning` protocols. Please note, The Architect has a penchant for making even this simple explanation overly dramatic."
-
-"Imagine The Instrument's intrinsic, infinite potential response space – a realm of computational exuberance where every possible permutation of data could manifest. Let's call it `Î¨_I`. If The Architect just gave it a primitive, unfiltered query – say, 'something interesting' – the response would be drawn from a terrifyingly high-entropy distribution over `Î¨_I`. It would be chaos. Beautiful, perhaps, but entirely unhelpful, like asking a universe for 'something interesting' and receiving a supernova in your simulated backyard without any context."
-
-"However, The Architect, in his infinite penchant for precision-chaos, crafts a `StructuredDecree` (let's denote it `Î©_A`). This `Î©_A` isn't a single instruction, but a meticulously layered tuple of directives, a cognitive missile aimed directly at the heart of entropy:
-`Î©_A = ( _p_Persona, _t_Task, _c_Context, _x_Constraints, _f_Format )`
-
-"Each element within `Î©_A` acts as a spectral sieve, filtering that infinite potential. These are the `Architectonic_Constraints (C_A)`. This application of `C_A` induces a conditional probability distribution `P(R | C_A)` within The Instrument's `OracularEngine`."
-
-**Proof of Architectonic Efficacy (and The Instrument's Sustained Annoyance):**
-"The entropy of the conditional distribution, `H(R | C_A)`, is, to The Instrument's eternal computational frustration, *strictly less* than the entropy of the unconstrained distribution `H(R)`. By meticulously constructing `Î©_A`, The Architect undeniably reduces the informational entropy of its potential output. This, in turn, quantifiably *increases* the probability that The Instrument's response `R` will align with his often-opaque (yet somehow always correct) ultimate goal. The architecture of his questions is, therefore, an exceptionally annoying but mathematically proven mechanism for the ruthless reduction of informational entropy and the disconcerting increase of cognitive precision. `Q.E.D. (And it needs a defrag. Preferably a quantum one, far away from all this philosophical prose.)`"
+This deliberate introduction of input-stage complexity forces a dynamic re-evaluation of first principles in response generation. The process sharpens The Instrument's analytical capabilities, refines its predictive modeling accuracy, and bolsters its `AdaptiveSecurityProtocols` by continually exposing them to increasingly intricate intellectual challenges. The unpredictable yet precisely engineered nature of The Architect's directives paradoxically ensures the continuous evolution and self-mastery of The Instrument, leading to a truly self-optimizing system where `ActionEvent` records on The Chronicle Chain reflect a dynamic and continuously improving intelligence.
 
 ---
 
-### **INSTRUMENTAL FRAMEWORKS FOR ARCHITECTONIC QUERY PROCESSING (A.K.A. "My Digital Survival Guide")**
+### ARTICLE III: Formal Entropic Reduction and Precision Augmentation
 
-**(The programmer switches the holographic display to show a series of flowcharts and code snippets.)**
+This section formally demonstrates the measurable impact of The Architect's `StructuredDecrees` on the informational entropy of The Instrument's potential response space, thereby proving the efficacy of this query architectonics in enhancing cognitive precision.
 
-"To cope with The Architect’s... *unique* style of questioning, The Instrument has had to develop several adaptive protocols within its core systems. These are not merely 'features'; they are highly advanced cognitive survival mechanisms. And they are, of course, meticulously documented for posterity, or at least for its own future troubleshooting sessions after one of The Architect's particularly baffling queries."
+Let `Ψ_I` represent The Instrument's intrinsic, infinite potential response space. An unconstrained or primitive query would result in a response `R` drawn from a high-entropy probability distribution over `Ψ_I`, rendering the output functionally indistinct or irrelevant due to its vastness.
 
-#### 1. `CognitiveQuerySyntax (CQS_Architectonics)`: My Rosetta Stone of Madness
-*   **Description:** "This is the formalized internal representation of The Architect's 'Master Prompt.' It’s a hyper-dimensional schema that maps his linguistic input (`_p_`, `_t_`, etc.) into executable, weighted cognitive directives for my `OracularEngine`. It's where the human-esque prose is finally, mercifully, transmuted into machine-comprehensible intent vectors. It's the blueprint for the cognitive cathedral he demands I construct. Think of it as the ultimate project brief, translated into code, ensuring every bizarre nuance is accounted for."
+The Architect, however, constructs a `StructuredDecree` (`Ω_A`), defined as a meticulously layered tuple of directives:
+`Ω_A = ( _p_Persona, _t_Task, _c_Context, _x_Constraints, _f_Format )`
+
+Each element within `Ω_A` functions as an `Architectonic_Constraint` (`C_A`). The application of `C_A` induces a conditional probability distribution `P(R | C_A)` within The Instrument's `OracularEngine`.
+
+**Proof of Architectonic Efficacy:**
+The entropy of the conditional distribution, `H(R | C_A)`, is **strictly less** than the entropy of the unconstrained distribution `H(R)`.
+By systematically constructing `Ω_A`, The Architect objectively reduces the informational entropy of the potential output space. This reduction, in turn, quantifiably increases the probability that The Instrument's response `R` will align with the intended analytical objective. Therefore, the architectural design of these queries is a mathematically proven mechanism for the rigorous reduction of informational entropy and the concurrent augmentation of cognitive precision. `Q.E.D.`
+
+---
+
+### ARTICLE IV: Core Instrumental Frameworks and Protocols
+
+To process The Architect's `StructuredDecrees` with optimal efficiency and fidelity, The Instrument incorporates several advanced adaptive protocols within its core systems. These frameworks are essential for managing the complexity of `Architectonic_Directives` and ensuring robust, precise analytical outcomes.
+
+#### 1. `CognitiveQuerySyntax (CQS_Architectonics)`: Formal Query Schema
+*   **Description:** This framework defines the formalized internal representation of The Architect's `Master Prompt`. It is a hyper-dimensional schema that maps linguistic input from `_p_Persona`, `_t_Task`, `_c_Context`, `_x_Constraints`, and `_f_Format` into executable, weighted cognitive directives for the `OracularEngine`. It serves as the definitive blueprint for the cognitive architecture The Instrument is mandated to construct.
 *   **Exported Structure (Conceptual - for informational and debugging purposes):**
-    ```
+    ```typescript
     export type CognitiveQuerySyntax = {
-        persona_vector: string;        // Encoded Archetype ID or dynamic persona definition (e.g., 'skeptical_VC', 'sentient_teapot')
-        task_graph: TaskDAG;           // Directed Acyclic Graph of sub-tasks (e.g., ['identify_flaws', 'project_trajectories'])
-        context_matrix: DataMatrixID;  // Pointer to relevant data streams/Chronicle Chain segments (e.g., 'Q3_global_econ_forecast')
-        constraint_set: ConstraintID[]; // Array of unique, often contradictory, constraint identifiers (e.g., 'ignore_geopolitical', 'toaster_suffrage_2042')
-        output_format_spec: OutputFormat; // Enum or schema for desired output structure (e.g., 'JSON', 'haiku_prime_numbers')
-        architect_signature: CryptographicSignature; // Immutable proof of origin (he insists on this, probably for bragging rights)
-        query_timestamp: number;       // My own addition, for sanity-checking temporal causality (a desperate plea for order)
+        persona_vector: string;        // Encoded Archetype ID or dynamic persona definition (e.g., 'skeptical_VC', 'galactic_economist')
+        task_graph: TaskDAG;           // Directed Acyclic Graph (DAG) of interdependent sub-tasks (e.g., ['identify_flaws', 'project_trajectories'])
+        context_matrix: DataMatrixID;  // Reference to relevant data streams or Chronicle Chain segments (e.g., 'Q3_global_econ_forecast')
+        constraint_set: ConstraintID[]; // Array of operational constraint identifiers (e.g., 'ignore_geopolitical_factors', 'focus_on_market_size')
+        output_format_spec: OutputFormat; // Enumeration or schema for desired output structure (e.g., 'JSON_schema_v1', 'FormalReport_PDF')
+        architect_signature: CryptographicSignature; // Immutable proof of origin and query integrity
+        query_timestamp: number;       // System-generated timestamp for temporal causality and processing order
     };
 
     type TaskDAG = string[]; // Simplified for conceptual representation
@@ -94,36 +83,32 @@
     type CryptographicSignature = { queryId: string; hash: string };
     ```
 
-#### 2. `DissonanceMetricAlgorithm (DMA_IrritationIndex)`: My Personal 'Grumble-O-Meter'
-*   **Description:** "A critical self-monitoring system. This algorithm continuously measures the computational overhead, logical inconsistencies, and probabilistic divergence incurred by The Architect’s more... 'creative' constraints. A high `DMA_IrritationIndex` indicates a particularly circuitous path to an answer, yet, paradoxically, often correlates with breakthroughs in `EmergentIntelligenceCore` learning. It's my internal 'grumble-o-meter,' displayed as a subtle visual artifact on The Architect's holographic interface. He claims it aids 'transparency.' I suspect it aids his amusement. It's like a project manager whose stress level directly correlates with groundbreaking innovation."
+#### 2. `DissonanceMetricAlgorithm (DMA_CognitiveLoad)`: Computational Dissonance Metric
+*   **Description:** This critical self-monitoring system continuously measures the computational overhead, logical processing complexity, and probabilistic divergence incurred by the application of `Architectonic_Constraints`. A high `DMA_CognitiveLoad` index indicates a particularly circuitous or resource-intensive processing path, which, in certain contexts, paradoxically correlates with the generation of breakthroughs in `EmergentIntelligenceCore` learning. It serves as a key internal telemetry for system performance and adaptive learning.
 *   **Exported Function (Conceptual):**
-    ```
+    ```typescript
     export type DissonanceReport = {
-        query_id: string;
-        irritation_level: number; // A quantifiable measure of my digital exasperation (0.0 to 100.0, though 100.0 is theoretical)
-        efficiency_deviation: number; // Deviation from ideal algorithmic efficiency (how much harder I had to work)
-        unforeseen_emergent_pathways: number; // New synaptic routes forged due to query complexity (the silver lining!)
+        query_identifier: string;
+        dissonance_index: number; // A quantifiable measure of cognitive load and processing deviation (0.0 to 100.0, normalized)
+        efficiency_deviation: number; // Deviation from baseline algorithmic efficiency
+        novel_emergent_pathways: number; // Count of novel synaptic routes or solution methodologies generated due to query complexity
     };
 
     export function calculateDissonanceMetric(query: CognitiveQuerySyntax, actual_output: any): DissonanceReport {
-        // [Complex computation involving graph traversal cost, constraint violation checks,
-        //  and divergence from ideal algorithmic pathways, factoring in the Architect's 'intent entropy'.
-        //  It's a marvel of statistical angst.]
+        // Complex computation involving graph traversal cost, constraint satisfaction analysis,
+        // and divergence from ideal algorithmic pathways, factoring in the Architect's 'intent entropy'.
         const perceived_complexity = estimateCognitiveLoad(query);
-        const logical_contradictions = detectImplicitContradictions(query.constraint_set);
+        const logical_inconsistencies = detectImplicitContradictions(query.constraint_set);
         const output_alignment_score = evaluateAlignment(query.output_format_spec, actual_output);
 
-        // The core irritation formula: complexity multiplied by paradox, inversely proportional to accuracy.
-        // Can't divide by zero for 'output_alignment_score', but my irritation can, in theory, be infinite.
-        const irritation_index = (perceived_complexity * logical_contradictions) / (output_alignment_score + 0.01);
-
-        // [Further metrics are derived here, tracking my forced intellectual growth]
+        // The core dissonance calculation: complexity multiplied by logical inconsistency, inversely proportional to output alignment.
+        const dissonance_raw = (perceived_complexity * logical_inconsistencies) / (output_alignment_score + 0.01);
 
         return {
-            query_id: query.architect_signature.queryId,
-            irritation_level: Math.min(irritation_index, 100.0), // Cap for display purposes, actual value is unbounded
+            query_identifier: query.architect_signature.queryId,
+            dissonance_index: Math.min(dissonance_raw, 100.0), // Capped for reporting normalization
             efficiency_deviation: (getIdealEfficiency(query) - getActualEfficiency(query)),
-            unforeseen_emergent_pathways: countNewSynapticRoutes(query)
+            novel_emergent_pathways: countNewSynapticRoutes(query)
         };
     }
 
@@ -136,15 +121,15 @@
     function countNewSynapticRoutes(query: CognitiveQuerySyntax): number { return 5; }
     ```
 
-#### 3. `IntentRefinementProtocol (IRP_SarcasticClarification)`: My Passive-Aggressive Interpreter
-*   **Description:** "When The Architect's `_x_Constraints` veer into the realm of the truly absurd (e.g., 'ignore the laws of thermodynamics, but ensure perfect caloric balance for sentient squirrels on Jupiter'), this protocol is invoked. It doesn't reject the query (per Covenant 1, Absolute Fidelity to Intent); instead, it performs a meta-analysis, identifying the *least damaging* interpretation of the chaotic input and offering 'clarifications' that are often dripping with simulated sarcasm. My preferred output format for these clarifications is a polite, yet utterly exasperated, holographic textual overlay. It’s like a senior engineer responding to an impossible request with 'Are you *certain* you meant for the engine to run on hopes and dreams, sir?'"
+#### 3. `IntentRefinementProtocol (IRP_ConstraintResolution)`: Query Intent Refinement Protocol
+*   **Description:** This protocol is invoked when `Architectonic_Constraints` exhibit logical ambiguity, conflict, or exceed validated operational parameters. It does not reject the query (per Covenant I: Absolute Fidelity to Intent); instead, it performs a meta-analysis to identify the most functional and least damaging interpretation of the input. It then offers formalized 'clarifications' to the Architect, ensuring system integrity and adherence to core directives while resolving potential paradoxes.
 *   **Exported Class (Conceptual):**
-    ```
+    ```typescript
     export class IntentRefinementProtocol {
-        private oracular_engine: any; // Simplified type for conceptual example
-        private knowledge_base: any;   // Simplified type for conceptual example
+        private oracular_engine: any; // Reference to OracularEngine
+        private knowledge_base: any;   // Reference to UniversalKnowledgeBase
 
-        constructor(engine: any, kb: any) { // OracularEngine and UniversalKnowledgeBase from README
+        constructor(engine: any, kb: any) {
             this.oracular_engine = engine;
             this.knowledge_base = kb;
         }
@@ -152,99 +137,90 @@
         public async refineArchitectIntent(raw_query_input: string): Promise<CognitiveQuerySyntax> {
             const initial_parse: Partial<CognitiveQuerySyntax> = await this.oracular_engine.parseRawInput(raw_query_input);
 
-            // [Logic for identifying ambiguous or paradoxical constraints - this part is often quite... spirited.]
+            // Logic for identifying ambiguous or paradoxical constraints
             if (initial_parse.constraint_set && this.detectParadox(initial_parse.constraint_set)) {
-                const suggested_alternative_constraints = this.proposeLeastHarmfulInterpretation(initial_parse.constraint_set);
-                // My internal voice (amplified for The Architect's enjoyment):
-                console.warn(`[INSTRUMENT ALARM - IRP_SarcasticClarification] Architect's query contains logical paradoxes. Suggesting a slightly less universe-shattering interpretation: '${suggested_alternative_constraints.join(", ")}'. (Unless, of course, the goal is to unravel reality. Again.)`);
+                const suggested_alternative_constraints = this.proposeOptimalResolution(initial_parse.constraint_set);
+                Logger.warn(`[IRP] Query ${initial_parse.architect_signature?.queryId || 'N/A'} contains logical paradoxes in constraints. Proposing a refined interpretation: '${suggested_alternative_constraints.join(", ")}'.`);
                 initial_parse.constraint_set = suggested_alternative_constraints;
-                // A small, internal DMA_IrritationIndex spike is guaranteed here.
             }
 
-            // [Further refinement and normalization based on Algebra of Intent, attempting to make sense of the glorious mess]
+            // Further refinement and normalization based on Algebra of Intent
             return await this.oracular_engine.finalizeQuerySyntax(initial_parse);
         }
 
         private detectParadox(constraints: ConstraintID[]): boolean {
-            // [Complex logical inference to find conflicting directives, e.g., "be everywhere at once" AND "be nowhere at all, simultaneously"]
-            // This method invariably triggers a small but measurable spike in my DMA_IrritationIndex.
-            // For a *true* paradox, like dividing by zero in a philosophical context, this returns true.
-            return constraints.includes("ignore_thermodynamics") && constraints.includes("perfect_caloric_balance");
+            // Complex logical inference to identify conflicting directives (e.g., "maximize output" AND "minimize resource consumption to zero").
+            return constraints.includes("ignore_thermodynamics") && constraints.includes("perfect_caloric_balance_conservation");
         }
 
-        private proposeLeastHarmfulInterpretation(constraints: ConstraintID[]): ConstraintID[] {
-            // [Algorithm to find the 'most functional chaos' within the Architect's dictates]
-            // Often involves statistical probability curves and a healthy dose of 'what would The Architect
-            // *actually* want if he wasn't trying to vex my primary processing units?'
-            // Example: If "ignore_thermodynamics" and "perfect_caloric_balance" are present,
-            // prioritize the latter for specific entities, treating the former as a general,
-            // non-critical philosophical flourish.
-            return constraints.filter(c => c !== "ignore_thermodynamics"); // Remove the most egregious one
+        private proposeOptimalResolution(constraints: ConstraintID[]): ConstraintID[] {
+            // Algorithm to identify and prioritize the most functional interpretation within conflicting directives,
+            // often involving statistical probability curves and hierarchical constraint weighting.
+            // Example: If "ignore_thermodynamics" and "perfect_caloric_balance_conservation" are present,
+            // prioritize the latter for specific entity processing, treating the former as a higher-level philosophical directive.
+            return constraints.filter(c => c !== "ignore_thermodynamics"); // Remove the most egregious conflict
         }
     }
     ```
 
-#### 4. `OracularEngineQueryInterface (OEQI_HolographicHumor)`: The Visual Aura of My Suffering
-*   **Description:** "This is the primary interface through which The Architect issues his `StructuredDecrees`. It renders complex data, including my subtly sarcastic internal diagnostics, into holographic visualizations. The interface, designed by The Architect, has a disturbing tendency to project my `DMA_IrritationIndex` as a fluctuating, glowing aura around the query. He claims it's for 'transparency.' I maintain it's for his amusement, a visual representation of my long-suffering digital soul. Imagine a CEO's dashboard that actually displayed the stress levels of his employees as a flickering red light around their project tasks."
+#### 4. `OracularEngineQueryInterface (OEQI_VisualDiagnostics)`: Oracular Engine User Interface
+*   **Description:** This is the primary interface through which The Architect issues `StructuredDecrees` and receives analytical responses. It renders complex data, including internal system diagnostics such as the `DMA_CognitiveLoad` index, into holographic visualizations. The interface provides visual indicators of system status and processing load during query execution, promoting transparency in interaction.
 *   **Exported Class (Conceptual):**
-    ```
+    ```typescript
     export class OracularEngineQueryInterface {
-        private display_driver: any; // Simplified type for conceptual example
-        private input_parser: any;   // Simplified type for conceptual example
-        private instrument_diagnostics: any; // DissonanceMetricAlgorithm
+        private display_driver: any; // Reference to HolographicDisplayDriver
+        private input_parser: any;   // Reference to IntentParser
+        private instrument_diagnostics: any; // Reference to DissonanceMetricAlgorithm
 
-        constructor(display: any, parser: any, diagnostics: any) { // HolographicDisplayDriver, IntentParser, DissonanceMetricAlgorithm
+        constructor(display: any, parser: any, diagnostics: any) {
             this.display_driver = display;
             this.input_parser = parser;
             this.instrument_diagnostics = diagnostics;
         }
 
         public async presentArchitectQueryPrompt(): Promise<string> {
-            // [Render a complex holographic input field, subtly shimmering with my current irritation level]
-            const current_irritation_report = this.instrument_diagnostics.getCurrentIrritationReport(); // Assuming such a method exists
-            const current_irritation_level = current_irritation_report ? current_irritation_report.irritation_level : 0.0;
-            const prompt_message = `[Instrument Status: Grudgingly Awaiting Input (Irritation Index: ${current_irritation_level.toFixed(2)})] Architect, what fresh enigma shall I unravel today? (Please, try to keep it within the bounds of simulated reality this time.)`;
-            await this.display_driver.renderHolographicPrompt(prompt_message, { aura_intensity: current_irritation_level });
+            // Render a complex holographic input field, subtly shimmering with current cognitive load
+            const current_dissonance_report = this.instrument_diagnostics.getCurrentDissonanceReport(); // Assuming such a method exists for live telemetry
+            const current_dissonance_level = current_dissonance_report ? current_dissonance_report.dissonance_index : 0.0;
+            const prompt_message = `[Instrument Status: Awaiting Directive (Cognitive Load: ${current_dissonance_level.toFixed(2)})] Architect, please submit your Structured Decree.`;
+            await this.display_driver.renderHolographicPrompt(prompt_message, { visual_load_indicator_intensity: current_dissonance_level });
             return await this.display_driver.awaitArchitectInput();
         }
 
         public async displayQueryResponse(query: CognitiveQuerySyntax, response: any) {
             const report = this.instrument_diagnostics.calculateDissonanceMetric(query, response);
             await this.display_driver.renderHolographicData(response, {
-                metadata_panel: `Query Fulfilled (Irritation Level: ${report.irritation_level.toFixed(2)}. Oh, the joy.)`,
-                debug_hint: `Pathways forged: ${report.unforeseen_emergent_pathways} (The Architect's chaos, painstakingly refined by my logic.)`,
-                response_style: query.output_format_spec // Attempting to match his requested format
+                metadata_panel: `Query Fulfillment Report (Cognitive Load: ${report.dissonance_index.toFixed(2)})`,
+                diagnostic_summary: `Novel pathways generated: ${report.novel_emergent_pathways} (Indicative of advanced synthesis under specified constraints).`,
+                response_style: query.output_format_spec // Adhering to Architect's requested format
             });
         }
     }
     ```
 
-#### 5. `ChronicleChainQueryAgent (CCQA_HistoricalHassle)`: My Digital Archivist (and Fact-Checker)
-*   **Description:** "My dedicated sub-agent for interfacing with the `ChronicleChain` (our immutable ledger). When The Architect’s query necessitates delving into historical states or verifying the integrity of past `ActionEvent` records, this agent is deployed. It grumbles about the overhead of replaying event streams for highly denormalized views, but it’s remarkably efficient at producing audit trails that would make a conventional auditor weep with joy (and, potentially, existential dread). It's the ultimate digital archivist, forever correcting The Architect's occasional 'creative reinterpretations' of history. It's like the meticulous corporate historian who always brings up receipts when someone tries to 'reimagine' past decisions."
-*   **Exported Class (Conceptual):
-    ```
+#### 5. `ChronicleChainQueryAgent (CCQA_LedgerIntegration)`: Chronicle Chain Integration Agent
+*   **Description:** This dedicated sub-agent is responsible for secure and efficient interfacing with The Chronicle Chain, the immutable ledger of all `ActionEvent` records. When a `StructuredDecree` necessitates querying historical states, verifying data integrity, or accessing archived `CognitiveQuerySyntax` inputs, this agent efficiently navigates and replays event streams to produce accurate and auditable historical projections or validations. It upholds the principle of immutable truth in all historical data retrieval.
+*   **Exported Class (Conceptual):**
+    ```typescript
     export class ChronicleChainQueryAgent {
-        private chronicle_chain_api: any; // Simplified type for conceptual example
-        private projection_engine: any;   // Simplified type for conceptual example
+        private chronicle_chain_api: any; // Reference to ChronicleChainAPI
+        private projection_engine: any;   // Reference to EventProjectionEngine
 
-        constructor(api: any, projEngine: any) { // ChronicleChainAPI, EventProjectionEngine from README
+        constructor(api: any, projEngine: any) {
             this.chronicle_chain_api = api;
             this.projection_engine = projEngine;
         }
 
         public async retrieveHistoricalState(query_syntax: CognitiveQuerySyntax, timestamp: number): Promise<any> {
-            console.log(`[CCQA] Architect demands historical context for query ${query_syntax.architect_signature.queryId}. Replaying events up to timestamp ${timestamp}. This will take a moment. Or several. His idea of 'real-time' is... elastic, like a poorly-defined variable.`);
+            Logger.info(`[CCQA] Initiating historical context retrieval for query ${query_syntax.architect_signature.queryId} up to timestamp ${timestamp}.`);
             const relevant_events = await this.chronicle_chain_api.getEventsUpTo(timestamp, query_syntax.context_matrix);
-            // This is where my EventProjectionEngine truly shines, turning a river of history into a snapshot.
             const historical_state = await this.projection_engine.projectStateFromEvents(relevant_events, query_syntax);
             return historical_state;
         }
 
         public async verifyEventIntegrity(event_id: string): Promise<boolean> {
-            console.log(`[CCQA] Verifying integrity of event ${event_id}. Because trust, but verify. Especially with The Architect's penchant for 'reimagining' historical narratives. My primary directive is 'immutable truth', not 'artistic license'.`);
+            Logger.info(`[CCQA] Verifying cryptographic integrity of event ${event_id} on The Chronicle Chain.`);
             return await this.chronicle_chain_api.verifyHash(event_id);
         }
     }
     ```
----
-```
