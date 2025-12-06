@@ -1,39 +1,17 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+1.  **General Indemnity.** Each Party (the "Indemnifying Party") shall indemnify, defend, and hold harmless the other Party, its affiliates, and their respective directors, officers, employees, agents, successors, and assigns (collectively, the "Indemnified Parties") from and against any and all losses, damages, liabilities, deficiencies, claims, actions, judgments, settlements, interest, awards, penalties, fines, costs, or expenses of whatever kind, including reasonable attorneys' fees, expert fees, and the costs of enforcing any right to indemnification under this Agreement and the cost of pursuing any insurance providers (collectively, "Losses"), arising out of or resulting from any third-party claim, suit, action, demand, or proceeding (each, a "Claim") brought against any Indemnified Party to the extent such Losses arise out of or result from:
+    a.  any breach by the Indemnifying Party of any of its representations, warranties, covenants, or obligations under this Agreement;
+    b.  any negligence, gross negligence, or willful misconduct of the Indemnifying Party or its employees, agents, or subcontractors in connection with this Agreement; or
+    c.  any actual or alleged infringement, misappropriation, or violation of any intellectual property right or other proprietary right of any third party by the Indemnifying Party or any material, product, or service provided by the Indemnifying Party.
+
+2.  **Indemnification Procedure.**
+    a.  **Notice.** An Indemnified Party seeking indemnification hereunder shall give prompt written notice (the "Notice of Claim") to the Indemnifying Party of any Claim for which indemnification may be sought. Failure to give prompt notice shall not relieve the Indemnifying Party of its obligations hereunder, except to the extent that such failure materially prejudices the Indemnifying Party's ability to defend the Claim.
+    b.  **Defense.** The Indemnifying Party shall have the right, at its sole cost and expense, to assume the defense of any Claim with counsel of its choice, provided that: (i) the Indemnifying Party notifies the Indemnified Party in writing within thirty (30) days after receipt of the Notice of Claim that the Indemnifying Party elects to assume the defense; (ii) the Indemnifying Party conducts the defense diligently and in good faith; (iii) the Indemnified Party cooperates reasonably with the Indemnifying Party in the defense (at the Indemnifying Party's expense); and (iv) the Indemnified Party may, at its own expense, retain separate counsel to participate in the defense.
+    c.  **Settlement.** The Indemnifying Party shall not settle any Claim without the prior written consent of the Indemnified Party, which consent shall not be unreasonably withheld, conditioned, or delayed, unless the settlement: (i) involves only monetary relief that is fully paid by the Indemnifying Party; (ii) includes a full and unconditional release of the Indemnified Parties from all liability with respect to such Claim; and (iii) does not require the Indemnified Parties to admit fault or take any action or refrain from taking any action. If the Indemnifying Party elects not to assume the defense or fails to do so diligently, the Indemnified Party may defend or settle the Claim, and the Indemnifying Party shall be liable for all Losses incurred by the Indemnified Party in such defense or settlement.
+
+3.  **Exclusions and Limitations.**
+    a.  **No Indemnification for Indemnified Party's Fault.** The Indemnifying Party shall not be obligated to indemnify an Indemnified Party for any Losses to the extent such Losses arise from the gross negligence or willful misconduct of the Indemnified Party or its breach of this Agreement.
+    b.  **Consequential Damages Waiver.** NOTWITHSTANDING ANYTHING TO THE CONTRARY IN THIS AGREEMENT, NEITHER PARTY SHALL BE LIABLE TO THE OTHER PARTY FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING, WITHOUT LIMITATION, LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS OPPORTUNITIES), EVEN IF SUCH PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES, EXCEPT TO THE EXTENT SUCH DAMAGES ARE INCLUDED IN A THIRD-PARTY CLAIM FOR WHICH INDEMNIFICATION IS PROVIDED UNDER SECTION 1 ABOVE. This limitation shall not apply to claims for indemnification under Section 1(c) relating to intellectual property infringement or misappropriation.
+
+4.  **Survival.** The provisions of this Section on Indemnification shall survive the termination or expiration of this Agreement for a period of three (3) years.
+
+5.  **Exclusive Remedy.** This Section on Indemnification sets forth the entire liability and exclusive remedy of the Parties for any breach of this Agreement related to third-party claims.
