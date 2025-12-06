@@ -1,39 +1,121 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+```
+SOFTWARE DEVELOPMENT AND AI SYSTEMS INTEGRATION AGREEMENT
+
+This Software Development and AI Systems Integration Agreement (this "Agreement") is made effective as of the [Day] day of [Month], [Year] (the "Effective Date"),
+
+BETWEEN:
+
+[CLIENT COMPANY NAME], a corporation duly organized and existing under the laws of [State/Country], with its principal place of business at [Client Address] ("Client");
+
+AND
+
+[DEVELOPER COMPANY NAME], a corporation duly organized and existing under the laws of [State/Country], with its principal place of business at [Developer Address] ("Developer").
+
+(Each a "Party" and collectively, the "Parties")
+
+RECITALS
+
+WHEREAS, Client desires to engage Developer to perform certain software development services and integrate artificial intelligence components into Client's existing systems and infrastructure;
+WHEREAS, Developer possesses the necessary expertise, experience, and resources to provide such software development and AI systems integration services;
+WHEREAS, the Parties wish to set forth the terms and conditions under which Developer will provide these services to Client;
+
+NOW, THEREFORE, in consideration of the mutual covenants and agreements contained herein, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
+
+1.  DEFINITIONS
+
+    1.1. "AI Model" means any machine learning model, algorithm, or artificial intelligence system, including its underlying code, data, and trained weights, developed, integrated, or used by Developer under this Agreement.
+    1.2. "Confidential Information" means all non-public information, whether commercial, financial, technical, operational, or otherwise, disclosed by one Party (the "Disclosing Party") to the other Party (the "Receiving Party"), whether orally, visually, in writing, or by any other means, and which is either identified as confidential or would reasonably be understood to be confidential given the nature of the information and the circumstances of disclosure. It includes, but is not limited to, trade secrets, proprietary algorithms, source code, object code, designs, specifications, business plans, customer lists, financial data, and personal data.
+    1.3. "Deliverables" means all software, AI Models, documentation, specifications, reports, analyses, data, and other materials or items, in any form or medium, that Developer is required to develop, produce, or provide to Client under this Agreement or any SOW.
+    1.4. "Intellectual Property Rights" means all present and future rights conferred by statute, common law, or equity in or in relation to any copyright, trademarks, patents, designs, discoveries, inventions, trade secrets, moral rights, data, databases, and all other intellectual property rights, whether registered or unregistered, and including all applications and rights to apply for any of the foregoing throughout the world.
+    1.5. "Personal Data" means any information relating to an identified or identifiable natural person, as defined by applicable data protection laws, including without limitation the General Data Protection Regulation (EU) 2016/679 ("GDPR") and the California Consumer Privacy Act ("CCPA").
+    1.6. "Project" means the specific software development and AI systems integration work to be performed by Developer for Client as described in a SOW.
+    1.7. "Services" means the software development, AI systems integration, consulting, support, and other related services to be performed by Developer for Client as described in any SOW.
+    1.8. "Statement of Work" or "SOW" means a written document, mutually executed by the Parties, that specifies the scope of work, Deliverables, timelines, fees, and other details for a specific Project. Each SOW shall be governed by the terms and conditions of this Agreement.
+    1.9. "Software" means any computer program, application, library, or code, whether in source code or object code form, developed or provided by Developer as part of the Services.
+
+2.  SCOPE OF SERVICES
+
+    2.1. Developer shall provide the Services to Client as set forth in one or more SOWs executed by both Parties. Each SOW shall describe, at a minimum: (a) the specific Services to be performed; (b) the Deliverables to be provided; (c) the Project timelines and milestones; (d) the fees for the Services and Deliverables; and (e) any specific Client responsibilities or materials required.
+    2.2. In the event of any conflict or inconsistency between the terms of this Agreement and any SOW, the terms of this Agreement shall prevail, unless the SOW explicitly states an intent to supersede a specific provision of this Agreement, in which case the SOW shall prevail solely with respect to that specific Project.
+    2.3. Developer shall use commercially reasonable efforts to perform the Services in a professional and workmanlike manner, in accordance with industry standards, and in compliance with all applicable laws and regulations.
+
+3.  FEES AND PAYMENT
+
+    3.1. Client shall pay Developer the fees specified in each SOW for the Services and Deliverables.
+    3.2. Unless otherwise specified in a SOW, Developer shall invoice Client on a [e.g., monthly, milestone-based] basis. Invoices shall include a detailed description of the Services performed, Deliverables provided, and expenses incurred.
+    3.3. Client shall pay all undisputed invoices within [e.g., thirty (30)] days of the invoice date. Late payments may accrue interest at the rate of [e.g., one and one-half percent (1.5%)] per month, or the highest rate permitted by law, whichever is lower.
+    3.4. All fees are exclusive of applicable taxes, including but not limited to sales, use, excise, and value-added taxes, which shall be borne by Client.
+
+4.  INTELLECTUAL PROPERTY RIGHTS
+
+    4.1. **Developer's Pre-existing Intellectual Property.** Developer retains all right, title, and interest in and to any intellectual property, technology, or materials (including Software, AI Models, and methodologies) that Developer owned or developed independently of this Agreement, or that Developer develops or acquires without use of Client's Confidential Information or specific direction under a SOW (collectively, "Developer Pre-existing IP"). Developer grants Client a non-exclusive, worldwide, royalty-free, perpetual, irrevocable license to use, reproduce, modify, and distribute the Developer Pre-existing IP to the extent necessary to use and operate the Deliverables provided under this Agreement.
+    4.2. **Client's Pre-existing Intellectual Property.** Client retains all right, title, and interest in and to any intellectual property, technology, or materials that Client owned or developed independently of this Agreement ("Client Pre-existing IP"). Client grants Developer a non-exclusive, worldwide, royalty-free license to use, reproduce, modify, and display the Client Pre-existing IP solely as necessary for Developer to perform the Services under this Agreement.
+    4.3. **Project IP.** All Intellectual Property Rights in and to the Deliverables (excluding Developer Pre-existing IP and Client Pre-existing IP incorporated therein), including all Software and AI Models developed by Developer specifically for Client under a SOW ("Project IP"), shall be exclusively owned by Client upon full payment for the applicable SOW. Developer hereby assigns, and agrees to assign, all right, title, and interest in and to the Project IP to Client. Developer agrees to execute any documents reasonably requested by Client to perfect Client's ownership of such Project IP.
+    4.4. **Open Source Components.** Developer may use open source components in the Deliverables. Developer shall identify such components in each SOW and shall ensure that the licensing terms of such components are compatible with Client's intended use of the Deliverables and do not require Client to disclose its proprietary source code.
+
+5.  CONFIDENTIALITY
+
+    5.1. **Obligations.** The Receiving Party shall: (a) hold the Disclosing Party's Confidential Information in strict confidence; (b) not disclose such Confidential Information to any third party without the Disclosing Party's prior written consent, except as permitted herein; (c) use such Confidential Information solely for the purpose of performing its obligations or exercising its rights under this Agreement; and (d) take all reasonable measures to protect the confidentiality of such Confidential Information, which shall be no less stringent than the measures it uses to protect its own confidential information of a similar nature.
+    5.2. **Exclusions.** The obligations of confidentiality shall not apply to information that: (a) is or becomes publicly available through no fault of the Receiving Party; (b) was rightfully in the Receiving Party's possession prior to disclosure by the Disclosing Party; (c) is independently developed by the Receiving Party without use of or reference to the Disclosing Party's Confidential Information; (d) is rightfully obtained by the Receiving Party from a third party without restriction on disclosure; or (e) is required to be disclosed by law or by a governmental or regulatory authority, provided that the Receiving Party gives prior written notice to the Disclosing Party to allow it to seek a protective order or other appropriate remedy.
+    5.3. **Duration.** The confidentiality obligations shall survive the termination or expiration of this Agreement for a period of [e.g., five (5)] years, or indefinitely for trade secrets.
+
+6.  DATA PROTECTION AND SECURITY
+
+    6.1. Both Parties shall comply with all applicable data protection and privacy laws and regulations in the performance of their respective obligations under this Agreement.
+    6.2. To the extent Developer processes Personal Data on behalf of Client, the Parties shall enter into a separate Data Processing Addendum ("DPA") which shall be incorporated by reference into this Agreement and will govern the terms of such processing.
+    6.3. Developer shall implement and maintain appropriate technical and organizational measures to protect Client's data, including Personal Data, against unauthorized or unlawful processing and against accidental loss, destruction, or damage. These measures shall include, but not be limited to, data encryption, access controls, regular security audits, and incident response plans.
+
+7.  REPRESENTATIONS AND WARRANTIES
+
+    7.1. **Mutual Warranties.** Each Party represents and warrants that: (a) it is duly organized, validly existing, and in good standing under the laws of its jurisdiction of incorporation; (b) it has the full corporate power and authority to enter into this Agreement and to carry out its obligations hereunder; and (c) the execution and delivery of this Agreement and the performance of its obligations do not conflict with or violate any other agreement to which it is a party.
+    7.2. **Developer Warranties.** Developer represents and warrants that: (a) the Services will be performed in a professional and workmanlike manner, consistent with generally accepted industry standards; (b) the Deliverables will substantially conform to the specifications set forth in the applicable SOW; (c) the Deliverables, as delivered, will not infringe upon or misappropriate any Intellectual Property Rights of any third party; (d) Developer has all necessary rights and licenses to provide the Services and Deliverables; and (e) Developer shall comply with all applicable laws and regulations in its performance of the Services.
+    7.3. **Disclaimer.** EXCEPT AS EXPRESSLY PROVIDED IN THIS AGREEMENT, NEITHER PARTY MAKES ANY OTHER WARRANTIES, EXPRESS OR IMPLIED, STATUTORY OR OTHERWISE, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+8.  INDEMNIFICATION
+
+    8.1. **Developer Indemnification.** Developer shall defend, indemnify, and hold harmless Client, its affiliates, directors, officers, employees, and agents from and against any and all claims, demands, suits, losses, damages, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or in connection with: (a) any claim that the Deliverables, as delivered by Developer, infringe or misappropriate any third-party Intellectual Property Right; (b) any breach by Developer of its representations or warranties under this Agreement; or (c) any gross negligence or willful misconduct by Developer in the performance of the Services.
+    8.2. **Client Indemnification.** Client shall defend, indemnify, and hold harmless Developer, its affiliates, directors, officers, employees, and agents from and against any and all claims, demands, suits, losses, damages, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or in connection with: (a) any claim that Client Pre-existing IP or materials provided by Client to Developer infringe or misappropriate any third-party Intellectual Property Right; (b) Client's use of the Deliverables in a manner not authorized by this Agreement or the applicable SOW; or (c) any breach by Client of its representations or warranties under this Agreement.
+    8.3. **Indemnification Procedure.** The indemnifying Party's obligations are conditioned upon the indemnified Party: (a) providing prompt written notice of any claim; (b) granting sole control of the defense and settlement of the claim to the indemnifying Party (provided that the indemnifying Party may not settle any claim without the indemnified Party's prior written consent, not to be unreasonably withheld, if such settlement imposes any monetary obligation or admission of fault on the indemnified Party); and (c) providing reasonable cooperation, at the indemnifying Party's expense, in the defense and settlement of the claim.
+
+9.  LIMITATION OF LIABILITY
+
+    9.1. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL EITHER PARTY BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA, OR USE), INCURRED BY THE OTHER PARTY OR ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, EVEN IF SUCH PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+    9.2. THE TOTAL AGGREGATE LIABILITY OF EITHER PARTY TO THE OTHER FOR ANY AND ALL CLAIMS ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT SHALL NOT EXCEED THE TOTAL FEES PAID BY CLIENT TO DEVELOPER UNDER THIS AGREEMENT DURING THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM.
+    9.3. THE LIMITATIONS IN SECTIONS 9.1 AND 9.2 SHALL NOT APPLY TO: (A) CLAIMS FOR INDEMNIFICATION UNDER SECTION 8; (B) CLAIMS FOR BREACH OF SECTION 5 (CONFIDENTIALITY); (C) CLAIMS FOR INFRINGEMENT OR MISAPPROPRIATION OF INTELLECTUAL PROPERTY RIGHTS; OR (D) CLAIMS ARISING FROM A PARTY'S GROSS NEGLIGENCE OR WILLFUL MISCONDUCT.
+
+10. TERM AND TERMINATION
+
+    10.1. **Term.** This Agreement shall commence on the Effective Date and shall continue until terminated as provided herein. Each SOW shall have its own term as specified therein.
+    10.2. **Termination for Convenience.** [Optional clause: Either Party may terminate this Agreement for convenience upon [e.g., sixty (60)] days' prior written notice to the other Party. In such event, Client shall pay Developer for all Services performed and Deliverables provided up to the effective date of termination.]
+    10.3. **Termination for Cause.** Either Party may terminate this Agreement or any SOW immediately upon written notice if the other Party: (a) materially breaches any provision of this Agreement or an SOW and fails to cure such breach within [e.g., thirty (30)] days after receiving written notice thereof; or (b) becomes insolvent, files for bankruptcy, or makes an assignment for the benefit of creditors.
+    10.4. **Effect of Termination.** Upon termination or expiration of this Agreement: (a) all outstanding SOWs shall terminate; (b) Client shall pay Developer for all Services performed and Deliverables provided up to the effective date of termination; (c) each Receiving Party shall return or destroy all Confidential Information of the Disclosing Party; and (d) sections 1, 4, 5, 8, 9, 10.4, 11, and 12 shall survive.
+
+11. GOVERNING LAW AND DISPUTE RESOLUTION
+
+    11.1. **Governing Law.** This Agreement and any dispute or claim arising out of or in connection with it or its subject matter or formation (including non-contractual disputes or claims) shall be governed by and construed in accordance with the laws of the State of [State], without regard to its conflict of laws principles.
+    11.2. **Dispute Resolution.**
+        (a) **Negotiation.** The Parties shall first attempt to resolve any dispute arising out of or relating to this Agreement through good faith negotiations between their respective senior management.
+        (b) **Mediation.** If the dispute is not resolved through negotiation within [e.g., thirty (30)] days, the Parties agree to endeavor to settle the dispute by mediation administered by [e.g., the American Arbitration Association] under its Commercial Mediation Procedures.
+        (c) **Arbitration.** Any dispute, controversy, or claim arising out of or relating to this Agreement, or the breach, termination, or invalidity thereof, that cannot be resolved through negotiation or mediation, shall be settled by binding arbitration administered by [e.g., the American Arbitration Association] in accordance with its Commercial Arbitration Rules. The arbitration shall take place in [City, State], and shall be conducted by a single arbitrator. The decision of the arbitrator shall be final and binding upon the Parties, and judgment on the award rendered by the arbitrator may be entered in any court having jurisdiction thereof.
+
+12. MISCELLANEOUS
+
+    12.1. **Notices.** All notices, requests, demands, and other communications hereunder shall be in writing and shall be deemed to have been duly given when delivered by hand, sent by reputable overnight courier, or sent by email (with confirmation of receipt), to the addresses set forth at the beginning of this Agreement or such other address as a Party may designate by written notice to the other Party.
+    12.2. **Assignment.** Neither Party may assign or transfer its rights or obligations under this Agreement without the prior written consent of the other Party, which consent shall not be unreasonably withheld. Notwithstanding the foregoing, either Party may assign this Agreement to an affiliate or in connection with a merger, acquisition, or sale of all or substantially all of its assets, provided that the assignee agrees in writing to be bound by the terms of this Agreement.
+    12.3. **Entire Agreement.** This Agreement, together with all SOWs executed hereunder, constitutes the entire agreement between the Parties with respect to the subject matter hereof and supersedes all prior and contemporaneous agreements, proposals, and representations, whether written or oral.
+    12.4. **Amendments.** No amendment, modification, or waiver of any provision of this Agreement shall be effective unless in writing and signed by duly authorized representatives of both Parties.
+    12.5. **Severability.** If any provision of this Agreement is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect, and the invalid or unenforceable provision shall be replaced by a valid and enforceable provision that most closely achieves the intent of the original provision.
+    12.6. **Waiver.** The failure of either Party to enforce any right or provision of this Agreement will not constitute a waiver of future enforcement of that right or provision.
+    12.7. **Force Majeure.** Neither Party shall be liable for any delay or failure in performance of its obligations under this Agreement due to causes beyond its reasonable control, including but not limited to acts of God, war, terrorism, riots, embargoes, acts of civil or military authorities, fire, floods, accidents, epidemics, pandemics, strikes, or shortages of transportation, facilities, fuel, energy, labor, or materials.
+    12.8. **Independent Contractors.** The Parties are independent contractors. Nothing in this Agreement shall be construed as creating a partnership, joint venture, agency, or employment relationship between the Parties. Neither Party has the authority to bind the other Party or to incur any obligations on its behalf.
+    12.9. **Counterparts.** This Agreement may be executed in counterparts, each of which shall be deemed an original, but all of which together shall constitute one and the same instrument. Facsimile or electronic signatures shall be considered original signatures for all purposes.
+
+IN WITNESS WHEREOF, the Parties have executed this Software Development and AI Systems Integration Agreement as of the Effective Date.
+
+[CLIENT COMPANY NAME]                      [DEVELOPER COMPANY NAME]
+
+By: _________________________             By: _________________________
+Name: _______________________             Name: _______________________
+Title: ______________________             Title: ______________________
+Date: _______________________             Date: _______________________
+```
