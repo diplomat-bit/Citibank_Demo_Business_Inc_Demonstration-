@@ -1,39 +1,90 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+MUTUAL NON-DISCLOSURE AGREEMENT
+
+This MUTUAL NON-DISCLOSURE AGREEMENT (the "Agreement"), effective as of [Date of Agreement], is entered into by and between:
+
+[Party A Full Legal Name], a [Type of Entity, e.g., corporation, limited liability company] organized and existing under the laws of [State/Country of Incorporation], with its principal place of business at [Party A Address] ("Party A");
+
+AND
+
+[Party B Full Legal Name], a [Type of Entity, e.g., corporation, limited liability company] organized and existing under the laws of [State/Country of Incorporation], with its principal place of business at [Party B Address] ("Party B").
+
+Party A and Party B may hereinafter be referred to individually as a "Party" and collectively as the "Parties."
+
+WHEREAS, the Parties wish to explore a potential business relationship concerning [Brief description of the purpose, e.g., "the development of collaborative software solutions" or "a potential commercial transaction"] (the "Permitted Purpose");
+
+WHEREAS, in connection with the Permitted Purpose, each Party (the "Disclosing Party") may disclose to the other Party (the "Receiving Party") certain confidential and proprietary information;
+
+WHEREAS, the Parties desire to protect such confidential information from unauthorized disclosure and use.
+
+NOW, THEREFORE, in consideration of the mutual covenants and agreements contained herein, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties hereby agree as follows:
+
+1.  DEFINITIONS
+    1.1. "Confidential Information" means any and all information, whether commercial, financial, technical, operational, strategic, or otherwise, in any form or medium (written, oral, electronic, visual, or otherwise), disclosed by a Disclosing Party to a Receiving Party in connection with the Permitted Purpose, including, but not limited to, trade secrets, intellectual property (whether patentable or not), know-how, designs, specifications, data, formulas, algorithms, software, source code, object code, processes, procedures, business plans, product plans, marketing plans, financial information, customer lists, prospect lists, employee information, vendor information, and all analyses, compilations, forecasts, studies, or other documents prepared by the Receiving Party which contain or reflect such information.
+    1.2. Information shall be deemed "Confidential Information" regardless of whether it is marked or designated as such, provided that if disclosed orally, it is identified as confidential at the time of disclosure and summarized in writing by the Disclosing Party within thirty (30) days thereafter.
+
+2.  EXCLUSIONS
+    Confidential Information shall not include information which:
+    2.1. Is or becomes publicly available without breach of this Agreement by the Receiving Party;
+    2.2. Was known by the Receiving Party prior to its disclosure by the Disclosing Party, without breach of any obligation of confidentiality owed to the Disclosing Party or any third party;
+    2.3. Is independently developed by the Receiving Party without reference to or reliance upon the Disclosing Party's Confidential Information;
+    2.4. Is rightfully received by the Receiving Party from a third party without restriction on disclosure and without breach of any obligation of confidentiality owed to the Disclosing Party or any third party; or
+    2.5. Is approved for release by prior written consent of the Disclosing Party.
+
+3.  OBLIGATIONS OF CONFIDENTIALITY
+    3.1. Non-Disclosure: The Receiving Party shall not, during the Term of this Agreement and for a period of [e.g., five (5)] years thereafter, directly or indirectly, disclose or permit the disclosure of any Confidential Information to any third party without the prior written consent of the Disclosing Party.
+    3.2. Non-Use: The Receiving Party shall not use the Confidential Information for any purpose other than the Permitted Purpose. Any other use is strictly prohibited.
+    3.3. Standard of Care: The Receiving Party shall protect the Confidential Information with at least the same degree of care as it uses to protect its own confidential and proprietary information of a similar nature, but in no event less than a reasonable degree of care.
+    3.4. Limited Access: The Receiving Party shall limit access to Confidential Information to those of its directors, officers, employees, agents, advisors, and contractors (collectively, "Representatives") who have a legitimate need to know such information for the Permitted Purpose and who are bound by confidentiality obligations no less protective than those contained herein. The Receiving Party shall be responsible for any breach of this Agreement by its Representatives.
+
+4.  COMPELLED DISCLOSURE
+    If the Receiving Party is compelled by law, regulation, judicial or administrative order, or governmental authority to disclose any Confidential Information, it shall (to the extent legally permissible) provide the Disclosing Party with prompt written notice thereof, prior to such disclosure, so that the Disclosing Party may seek a protective order or other appropriate remedy. The Receiving Party shall cooperate with the Disclosing Party in any such efforts. If disclosure is nonetheless required, the Receiving Party shall disclose only that portion of the Confidential Information that it is legally required to disclose.
+
+5.  NO LICENSE OR OWNERSHIP
+    All Confidential Information shall remain the exclusive property of the Disclosing Party. Nothing in this Agreement grants the Receiving Party any right, title, interest, license, or option in or to any of the Confidential Information, including any intellectual property rights embodied therein.
+
+6.  RETURN OR DESTRUCTION OF CONFIDENTIAL INFORMATION
+    Upon the Disclosing Party's written request, or upon the termination or expiration of this Agreement, the Receiving Party shall promptly:
+    6.1. Return to the Disclosing Party all tangible forms of Confidential Information, including all copies, reproductions, and summaries thereof; or
+    6.2. Destroy all tangible forms of Confidential Information, including all copies, reproductions, and summaries thereof, and certify such destruction in writing to the Disclosing Party.
+    6.3. Notwithstanding the foregoing, the Receiving Party may retain one (1) copy of the Confidential Information for archival purposes only, subject to the continuing confidentiality obligations set forth herein. Electronic copies residing in routine backup systems need not be deleted until such systems are next refreshed, provided they remain subject to all confidentiality obligations.
+
+7.  TERM
+    This Agreement shall commence on the Effective Date and shall continue in full force and effect for a period of [e.g., two (2)] years (the "Term"), unless earlier terminated as provided herein. The obligations of confidentiality set forth in Section 3 shall survive the termination or expiration of this Agreement for the period specified in Section 3.1.
+
+8.  REMEDIES
+    The Parties acknowledge that a breach of this Agreement may cause irreparable harm to the Disclosing Party for which monetary damages alone would be an inadequate remedy. Therefore, in addition to any other remedies available at law or in equity, the Disclosing Party shall be entitled to seek injunctive relief (without the necessity of posting a bond or other security) to prevent or mitigate any actual or threatened breach of this Agreement.
+
+9.  GOVERNING LAW AND JURISDICTION
+    This Agreement shall be governed by and construed in accordance with the laws of [State/Country, e.g., the State of Delaware, without regard to its conflict of laws principles]. The Parties hereby irrevocably consent to the exclusive jurisdiction of the state and federal courts located in [County, State/City, Country, e.g., New Castle County, Delaware] for any action or proceeding arising out of or relating to this Agreement.
+
+10. ENTIRE AGREEMENT
+    This Agreement constitutes the entire agreement between the Parties concerning the subject matter hereof and supersedes all prior and contemporaneous agreements, understandings, negotiations, and discussions, whether oral or written, between the Parties relating thereto.
+
+11. AMENDMENTS AND WAIVERS
+    No amendment, modification, or waiver of any provision of this Agreement shall be effective unless in writing and signed by duly authorized representatives of both Parties. No failure or delay by either Party in exercising any right, power, or privilege under this Agreement shall operate as a waiver thereof, nor shall any single or partial exercise thereof preclude any other or further exercise thereof or the exercise of any other right, power, or privilege.
+
+12. SEVERABILITY
+    If any provision of this Agreement is found by a court of competent jurisdiction to be invalid, illegal, or unenforceable, such provision shall be enforced to the maximum extent permissible, and the validity, legality, and enforceability of the remaining provisions shall not in any way be affected or impaired thereby.
+
+13. ASSIGNMENT
+    Neither Party may assign or transfer its rights or obligations under this Agreement, in whole or in part, without the prior written consent of the other Party, which consent shall not be unreasonably withheld, conditioned, or delayed. Any attempted assignment or transfer in violation of this Section shall be null and void.
+
+14. NOTICES
+    All notices or other communications required or permitted under this Agreement shall be in writing and shall be deemed duly given: (a) upon personal delivery; (b) upon confirmed facsimile transmission; (c) upon the first business day after deposit with an internationally recognized overnight courier service for next business day delivery; or (d) upon the fifth business day after deposit in the mail, postage prepaid, certified or registered mail, return receipt requested, and addressed to the respective Party at the address set forth above, or to such other address as such Party may designate by notice hereunder.
+
+15. COUNTERPARTS
+    This Agreement may be executed in one or more counterparts, each of which shall be deemed an original, but all of which together shall constitute one and the same instrument. Facsimile or electronic signatures shall be deemed original signatures for all purposes.
+
+IN WITNESS WHEREOF, the Parties have caused this Agreement to be executed by their duly authorized representatives as of the Effective Date.
+
+[Party A Full Legal Name]
+
+By: _______________________________
+Name: [Authorized Signatory Name]
+Title: [Authorized Signatory Title]
+
+[Party B Full Legal Name]
+
+By: _______________________________
+Name: [Authorized Signatory Name]
+Title: [Authorized Signatory Title]
