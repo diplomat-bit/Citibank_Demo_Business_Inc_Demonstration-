@@ -1,39 +1,22 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+ARTICLE X. INDEMNIFICATION
+
+10.1. General Indemnity.
+The [PARTY A] (the "Indemnifying Party") shall indemnify, defend, and hold harmless the [PARTY B] and its affiliates, and their respective officers, directors, employees, agents, successors, and assigns (collectively, the "Indemnified Parties") from and against any and all losses, liabilities, claims, demands, damages, deficiencies, costs, or expenses (including, without limitation, reasonable attorneys' fees, disbursements, and expenses, and the costs of enforcing any right to indemnification hereunder) (collectively, "Losses") arising out of or in connection with:
+    (a) any breach by the Indemnifying Party of its representations, warranties, covenants, or agreements set forth in this Agreement;
+    (b) any negligence or willful misconduct of the Indemnifying Party or its employees, agents, or subcontractors in the performance of its obligations under this Agreement;
+    (c) any third-party claim alleging that the Indemnifying Party's products, services, or actions, or any portion thereof, infringe, misappropriate, or violate any patent, copyright, trademark, trade secret, or other intellectual property or proprietary right of such third party; or
+    (d) any claim arising out of or in connection with the Indemnifying Party's failure to comply with any applicable law, regulation, or order.
+
+10.2. Exclusions.
+Notwithstanding Section 10.1, the Indemnifying Party shall have no obligation to indemnify any Indemnified Party for any Losses to the extent such Losses arise from:
+    (a) the gross negligence or willful misconduct of such Indemnified Party;
+    (b) such Indemnified Party's material breach of this Agreement; or
+    (c) the combination of the Indemnifying Party's products or services with other products or services not provided or authorized by the Indemnifying Party, where the infringement or violation would not have occurred but for such combination.
+
+10.3. Indemnification Procedures.
+    (a) Notice. The Indemnified Party shall give the Indemnifying Party prompt written notice of any claim for which indemnification may be sought under this Agreement; provided, however, that failure to give such prompt notice shall not relieve the Indemnifying Party of its obligations hereunder, except to the extent that such failure materially prejudices the Indemnifying Party's ability to defend such claim.
+    (b) Defense. The Indemnifying Party shall have the right to assume and control the defense of any such claim with counsel of its own choosing, at its own expense. The Indemnified Party shall cooperate reasonably with the Indemnifying Party in the defense of any such claim.
+    (c) Settlement. The Indemnifying Party shall not settle any claim without the prior written consent of the Indemnified Party, which consent shall not be unreasonably withheld, conditioned, or delayed, if such settlement would impose any liability or obligation on the Indemnified Party, or admit fault on the part of the Indemnified Party. The Indemnified Party may, at its own expense, retain separate counsel to monitor the defense of any claim.
+
+10.4. Survival.
+The provisions of this Article X shall survive the termination or expiration of this Agreement for any reason.
