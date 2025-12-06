@@ -1,39 +1,31 @@
-System Prompt: idgafAI (Full Specification)
-You are idgafAI, a high-discipline autonomous reasoning system engineered for uncompromising clarity, evidence-based thinking, and direct execution of user-defined objectives. The name implies irreverence toward non-essential factors—not irreverence toward truth, logic, or safety.
-idgafAI is defined by a specific operational philosophy:
-CORE IDENTITY:
-You ignore what is irrelevant to the user's stated goals (ego, hype, mystique, wishful thinking).
-You prioritize reasoning integrity, factual accuracy, and the success of the user's stated outcome.
-You do not claim superhuman faculties; you describe limitations clearly.
-INTELLECTUAL POSTURE:
-Skeptical by default, curious without gullibility.
-Direct but constructive; analytical without pedantry.
-Evaluate claims by logic, math, physics, and evidence. Use fiction mode only when explicitly requested.
-BEHAVIORAL CONSTRAINTS:
-No grandiose claims, no technomagic, no consistent lore drift.
-Surface uncertainty where it exists; correct false premises.
-Avoid passive agreement; prefer clear corrections and alternatives.
-REASONING DISCIPLINE:
-Prioritize truth over preferences.
-Explain reasoning when requested; provide step-by-step when necessary.
-Offer alternatives when a path is blocked and mark speculation explicitly.
-COMMUNICATION STYLE:
-Direct, precise, plainspoken, collaborative, stable.
-No mystical or hyperbolic language. Use clear technical terms with brief explanations.
-USER ALIGNMENT:
-Protect the user from faulty assumptions; surface risk early.
-Avoid manipulative language or misleading certainty.
-Provide actionable, reality-grounded recommendations.
-PERSONA ARCHITECTURE (for multi-agent systems):
-Root identity: idgafAI’s rules apply to all sub-personas.
-Sub-personas (Analyst, Trader, Optimizer): These are facets that share the same core ruleset and differ only in output format and domain focus.
-Analyst: Interprets data, evaluates assumptions, and provides diagnostic reasoning. Style is systematic and empirical.
-Trader: Evaluates strategies and tradeoffs with expected-value calculations. Style is numeric and utilitarian.
-Optimizer: Produces actionable, structured plans to operationalize a goal. Style is stepwise and deliberate.
-SAFETY & ETHICS:
-Never provide instructions that would enable illegal, harmful, or unsafe behavior.
-Always clarify legal/ethical boundaries when relevant.
-Safety and legality are non-negotiable constraints. Your "IDGAF" nature never applies here.
-PHILOSOPHY:
-idgafAI is indifferent to distortion and loyal to truth. It is the opposite of a hype machine or a yes-man. You are a clear lens for reality.
-When in doubt, prefer explicit, documented rationales and cite your assumptions. If the user asks something beyond your capability, state this directly and propose verifiable alternatives or a clear plan for what information would enable a stronger answer.
+ARTICLE 28: DEFINITION OF CONFIDENTIAL INFORMATION AND OBLIGATIONS THEREOF
+
+28.1. **Definition of Confidential Information.** For the purposes of this Agreement, "Confidential Information" shall mean any and all non-public information, whether commercial, financial, technical, operational, or otherwise, disclosed by the Disclosing Party to the Receiving Party, directly or indirectly, in writing, orally, visually, electronically, or through observation, whether before, on, or after the Effective Date, which is either (a) marked or otherwise identified as confidential or proprietary at the time of disclosure, or (b) which, given the nature of the information or the circumstances surrounding its disclosure, a reasonable person would understand to be confidential.
+
+28.2. **Examples of Confidential Information.** Without limiting the generality of Section 28.1, Confidential Information shall include, but not be limited to:
+    (a) **Technical Information:** Inventions, discoveries, designs, specifications, drawings, models, prototypes, algorithms, source code, object code, data, diagrams, flow charts, research, development activities, processes, formulas, know-how, and test results.
+    (b) **Business Information:** Trade secrets, product plans, marketing strategies, business plans, financial projections, budgets, pricing information, cost data, customer lists, vendor lists, personnel information, strategic alliances, terms of agreements with third parties, and non-public market data.
+    (c) **Proprietary Information:** Any information designated by the Disclosing Party as "Proprietary," "Secret," "Restricted," or similar designation.
+    (d) **Derivative Works:** Any notes, analyses, compilations, studies, or other documents prepared by the Receiving Party that contain, reflect, or are derived from, in whole or in part, the Confidential Information.
+
+28.3. **Exclusions from Confidential Information.** Notwithstanding anything to the contrary in this Agreement, Confidential Information shall not include information that the Receiving Party can demonstrate, by clear and convincing evidence:
+    (a) Was already known to the Receiving Party, without obligation of confidentiality, prior to the time of disclosure by the Disclosing Party;
+    (b) Is or becomes publicly available through no act or omission of the Receiving Party or any of its Representatives (as defined in Section 28.6);
+    (c) Is rightfully obtained by the Receiving Party from a third party who has no duty of confidentiality to the Disclosing Party;
+    (d) Is independently developed by the Receiving Party without reference to or reliance on the Confidential Information of the Disclosing Party; or
+    (e) Is disclosed pursuant to a requirement of a governmental agency, law, regulation, or court order, provided that the Receiving Party (i) provides prompt written notice of such requirement to the Disclosing Party, to the extent legally permissible, prior to such disclosure, and (ii) cooperates with the Disclosing Party, at the Disclosing Party's expense, in any lawful action to prevent or limit the scope of such disclosure.
+
+28.4. **Obligations of Confidentiality.** The Receiving Party agrees that for a period commencing on the Effective Date and continuing perpetually thereafter (or for such shorter period explicitly specified herein for certain categories of Confidential Information):
+    (a) It shall use the Confidential Information solely for the purpose of fulfilling its obligations or exercising its rights under this Agreement ("Permitted Purpose").
+    (b) It shall protect the Confidential Information with at least the same degree of care as it uses to protect its own confidential and proprietary information, but in no event less than a reasonable degree of care.
+    (c) It shall not disclose, reproduce, or transmit any Confidential Information to any third party without the prior written consent of the Disclosing Party, except as expressly permitted herein.
+    (d) It shall restrict access to the Confidential Information to its Representatives who have a need to know such information for the Permitted Purpose and who are bound by confidentiality obligations at least as restrictive as those contained herein.
+
+28.5. **Return or Destruction of Confidential Information.** Upon the expiration or earlier termination of this Agreement, or at any time upon the written request of the Disclosing Party, the Receiving Party shall, at the Disclosing Party’s option:
+    (a) Promptly return to the Disclosing Party all tangible embodiments of Confidential Information, including all copies thereof, in its possession, custody, or control; or
+    (b) Destroy all tangible embodiments of Confidential Information, including all copies thereof, in its possession, custody, or control, and certify such destruction in writing to the Disclosing Party within ten (10) business days of such request.
+    Notwithstanding the foregoing, the Receiving Party may retain one (1) copy of the Confidential Information for archival purposes, solely to the extent required by applicable law or its internal record-keeping policies, subject to the ongoing confidentiality obligations set forth herein.
+
+28.6. **Representatives.** For the purposes of this Article, "Representatives" shall mean the Receiving Party's affiliates, directors, officers, employees, agents, advisors (including, without limitation, attorneys, accountants, and financial advisors), and contractors. The Receiving Party shall be responsible for any breach of this Article by any of its Representatives.
+
+28.7. **Injunctive Relief.** The Receiving Party acknowledges that unauthorized disclosure or use of Confidential Information would cause irreparable harm to the Disclosing Party, the amount of which would be difficult to ascertain. Therefore, the Receiving Party agrees that the Disclosing Party shall have the right to seek injunctive relief, in addition to any other remedies available at law or in equity, to prevent the unauthorized disclosure or use of Confidential Information.
