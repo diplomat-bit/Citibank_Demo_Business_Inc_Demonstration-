@@ -58,7 +58,7 @@ graph TD
     K -- Risk Assessment --> B
     E -- Encrypted Transmission TLS/mTLS --> F
     F --> G
-    F --> K : Contextual Data
+    F --> K Contextual Data
     G -- Biometric Match Request --> J
     J -- Biometric Template --> G
     G -- Verification Result --> F
@@ -239,7 +239,7 @@ graph TD
         D -- Renders --> G[Ledger Finalization Visuals]
         A -- State Changes --> B
         E & F & G -- Interacts With --> H[Video Stream Element]
-        I[Client-Side Feature Extraction] --> E : Facial Landmarks
+        I[Client-Side Feature Extraction] --> E Facial Landmarks
     end
 ```
 
