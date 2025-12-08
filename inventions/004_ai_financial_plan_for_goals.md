@@ -46,11 +46,11 @@ Upon the user's explicit directive e.g. clicking "Generate AI Plan", a signal is
 graph TD
     UI_Input[User Input Natural Language or Structured Form] --> NLP_Parser{NLP Parser};
     NLP_Parser --> Goal_Name[Extract Goal Name];
-    NLP_Parser --> Target_State[Extract Target Financial State (TFS)];
+    NLP_Parser --> Target_State[Extract Target Financial State TFS];
     Target_State --> TFS_Capital[Capital Accumulation: $X];
     Target_State --> TFS_Debt[Debt Reduction: Net Debt < $Y];
     Target_State --> TFS_Allocation[Asset Allocation: Equity > Z%];
-    NLP_Parser --> Target_Horizon[Extract Target Temporal Horizon (TTH)];
+    NLP_Parser --> Target_Horizon[Extract Target Temporal Horizon TTH];
     NLP_Parser --> Risk_Profile[Infer/Query Risk Tolerance];
     NLP_Parser --> Priority[Assign Goal Priority];
     NLP_Parser --> Constraints[Identify Liquidity/Ethical Constraints];
@@ -183,7 +183,7 @@ graph TD
     D[Output Schema Mandate] --> PE;
     PE --> StructuredPrompt[Generate Structured Prompt];
     StructuredPrompt --> AIM[AI Model Interaction];
-    AIM --> GenAIM[Generative AI Model (LLM)];
+    AIM --> GenAIM[Generative AI Model LLM];
     GenAIM --> RawJSONResponse[Raw JSON Plan Response];
     RawJSONResponse --> RV[Response Validation & Parsing];
     RV -- "If Invalid" --> Error[Error Handling / Re-prompt AI];
@@ -215,7 +215,7 @@ The client application mobile, web retrieves the structured plan. It then render
 ```mermaid
 graph TD
     A[Validated Plan PSM-M] --> B[Feasibility Dashboard];
-    A --> C[Categorized Action List (Steps)];
+    A --> C[Categorized Action List Steps];
     A --> D[Progress Tracking Integrations];
     A --> E[Feedback Mechanism];
     A --> F[Interactive Projections];
@@ -244,7 +244,7 @@ graph TD
     C[User Financial Data FDAC-M] --> B;
     D[External Market Data] --> B;
     B --> E{Deviation Detection / Scheduled Review};
-    E -- "Deviation Detected (Threshold Exceeded)" --> F[Update FSV];
+    E -- "Deviation Detected Threshold Exceeded" --> F[Update FSV];
     E -- "Scheduled Review" --> F;
     F --> G[Construct Recalibration Prompt];
     G --> H[Generative AI Orchestration Module];
@@ -277,7 +277,7 @@ This module ensures that all AI-generated advice and system operations adhere to
 ```mermaid
 graph TD
     A[AI Generated Plan GAIO-M] --> B{Compliance Engine Sub-module};
-    B --> C{Regulatory Database (Rules, Laws)};
+    B --> C{Regulatory Database Rules, Laws};
     C --> B;
     B -- "Non-Compliant Flag" --> D[Human Review / AI Re-prompt];
     A --> E{Bias Detection & Mitigation Sub-module};
@@ -343,7 +343,7 @@ graph TD
     A[Current Financial Plan PSM-M] --> B[Scenario Definition Interface];
     B --> C[Select Pre-defined Scenarios];
     B --> D[Define Custom Scenarios];
-    C & D --> E[Stochastic Simulation Engine (Monte Carlo)];
+    C & D --> E[Stochastic Simulation Engine Monte Carlo];
     E --> F[Generate Multiple Financial Trajectories];
     F --> G[Impact Analysis & Visualization];
     G --> H[Present Scenario Results to User CSPI-M];
@@ -382,7 +382,7 @@ graph TD
     C --> H[Application Facilitation];
     G & H --> I[Product Recommendations & Integration];
     I --> User_Product_Action[User via CSPI-M];
-    C -- "Real-time Product Data" --> J[Third-Party Integration Layer (API)];
+    C -- "Real-time Product Data" --> J[Third-Party Integration Layer API];
     J --> Product_Providers[External Product Providers];
 ```
 
