@@ -96,7 +96,7 @@ graph TD
     F -- Backend Unavailability --> K[Client-Side Fallback Rendering <br> OGC Latent Interpolation];
     K --> J;
     J -- Telemetry & Subconscious Preference --> L[Client-Side Analytics CAPA <br> SPE];
-    L --> F; %% To RAMS via Backend
+    L --> F %% To RAMS via Backend
 
     style A fill:#D4E6F1,stroke:#3498DB,stroke-width:2px;
     style B fill:#EBF5FB,stroke:#85C1E9,stroke-width:2px;
@@ -122,7 +122,7 @@ graph TD
         C --> E[Semantic Prompt Interpretation Engine SPIE <br> QONT & TCR]
         C --> K[Content Moderation Policy Enforcement Service CMPES <br> PEES & HMC]
         E --> F[Generative Model API Connector GMAC <br> QMME & EAF]
-        F --> G[External Generative AI Model <br> (Including O'Callaghan-Opt Models)]
+        F --> G["External Generative AI Model <br> (Including O'Callaghan-Opt Models)"]
         G --> F
         F --> H[Image Post-Processing Module IPPM <br> NPDCM & ASET]
         H --> I[Dynamic Asset Management System DAMS <br> QDRM & ILP]
