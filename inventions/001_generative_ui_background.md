@@ -96,7 +96,8 @@ graph TD
     F -- Backend Unavailability --> K[Client-Side Fallback Rendering <br> OGC Latent Interpolation];
     K --> J;
     J -- Telemetry & Subconscious Preference --> L[Client-Side Analytics CAPA <br> SPE];
-    L --> F %% To RAMS via Backend
+    L --> F
+    %% To RAMS via Backend
 
     style A fill:#D4E6F1,stroke:#3498DB,stroke-width:2px;
     style B fill:#EBF5FB,stroke:#85C1E9,stroke-width:2px;
