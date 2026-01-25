@@ -8763,58 +8763,7 @@ paths:
         Governance (ESG) impact of the user's entire investment portfolio,
         benchmarking against industry standards and suggesting more sustainable
         alternatives.
-  /sustainability/carbon-offsets:
-    post:
-      summary: Purchase Carbon Offsets
-      responses:
-        '200':
-          description: Carbon offsets purchased successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
-                required:
-                  - amountOffsetKgCO2e
-                  - purchaseDate
-                  - purchaseId
-                  - totalCostUSD
-              example:
-                purchaseId: co_purchase_xyz123
-                amountOffsetKgCO2e: 500
-                totalCostUSD: 12.5
-                projectSupported: Verified Carbon Standard Project X
-                transactionId: txn_offset_12345
-                purchaseDate: '2024-07-22T14:00:00Z'
-                certificateUrl: https://demobank.com/certificates/co_purchase_xyz123.pdf
-        '400':
-          description: Invalid request payload or parameters.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
-                required:
-                  - code
-                  - message
-                  - timestamp
-              example:
-                code: INVALID_INPUT
-                message: >-
-                  The provided input data is invalid. Please check the request
-                  body.
-                timestamp: '2024-07-22T08:00:00Z'
-        '401':
-          description: Authentication failed or token is missing/invalid.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties: {}
-                required:
-                  - code
-                  - message
-                  - timestamp
+  
               example:
                 code: UNAUTHENTICATED
                 message: 'Authentication failed: Invalid or missing access token.'
