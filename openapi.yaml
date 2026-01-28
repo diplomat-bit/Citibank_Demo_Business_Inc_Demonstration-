@@ -29,7 +29,7 @@ info:
     not just meet themâ€”they will amplify them. This is finance, reimagined,
     limitless, and brought to life by AI.
 servers:
-  - url: https://ce47fe80-dabc-4ad0-b0e7-cf285695b8b8.mock.pstmn.io
+  - url: https://75975599-8fdc-4274-8701-05fc0b8089cc.mock.pstmn.io
 paths:
   /users/register:
     post:
